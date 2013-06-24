@@ -176,12 +176,15 @@ private:
 
                 /** "Add Nym" Dialog **/
                 int mc_nymmanager_addnym_dialog_already_init;
-
+                int mc_nymmanager_addnym_dialog_advanced_showing;
                 QDialog * mc_nym_manager_addnym_dialog;
                     //Grid layout
                     QGridLayout * mc_nym_manager_addnym_gridlayout;
                         //Label (header)
                         QLabel * mc_nym_manager_addnym_header;
+
+                        //Label (Toggle Advanced Options Label/Button)
+                        QLabel * mc_nym_manager_addnym_subheader_toggleadvanced_options_label;
 
                         //Label (instructions)
                         QLabel * mc_nym_manager_addnym_subheader_instructions;
@@ -191,6 +194,9 @@ private:
 
                         //Combobox (choose source)
                         QComboBox * mc_nym_manager_addnym_choosesource_answer_selection;
+
+                        //Button (create nym)
+                        QPushButton * mc_nym_manager_addnym_create_nym_btn;
 
 
                 /** Nym Manger Slot locks **/
@@ -339,6 +345,10 @@ private slots:
         //Nym Manager slots
             void mc_nymmanager_addnym_slot();
             void mc_nymmanager_dataChanged_slot(QModelIndex,QModelIndex);
+
+                //Add Nym Dialog slots
+                void mc_addnym_dialog_showadvanced_slot(QString);
+
 
         //Address Book slots
             //Create a new blank editable address book row

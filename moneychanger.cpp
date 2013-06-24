@@ -42,6 +42,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 
                 //"Add Nym" dialog
                 mc_nymmanager_addnym_dialog_already_init = 0;
+                mc_nymmanager_addnym_dialog_advanced_showing = 0;
 
             //Withdraw
                 //As Cash
@@ -111,14 +112,14 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_systrayMenu->addSeparator();
 
             //Nym/Account section
-            mc_systrayMenu_nym = new QAction("Nym: Trader Bob", 0);
+            mc_systrayMenu_nym = new QAction("Nym: Load Nym", 0);
             mc_systrayMenu_nym->setIcon(mc_systrayIcon_nym);
             mc_systrayMenu->addAction(mc_systrayMenu_nym);
                 //Connect the nym/account to a re-action upon "clicked"
                 connect(mc_systrayMenu_nym, SIGNAL(triggered()), this, SLOT(mc_defaultnym_slot()));
 
             //Server section
-            mc_systrayMenu_server = new QAction("Server: Digitails", 0);
+            mc_systrayMenu_server = new QAction("Server: None", 0);
             mc_systrayMenu_server->setIcon(mc_systrayIcon_server);
             mc_systrayMenu->addAction(mc_systrayMenu_server);
 
@@ -816,25 +817,38 @@ Moneychanger::~Moneychanger()
                         mc_nym_manager_addnym_header = new QLabel("<h2>Add Pseudonym</h2>",0);
                         mc_nym_manager_addnym_gridlayout->addWidget(mc_nym_manager_addnym_header, 0,0, 1,1, Qt::AlignRight);
 
+                        //Label (Show Advanced Option(s)) (Also a button/connection)
+                        mc_nym_manager_addnym_subheader_toggleadvanced_options_label = new QLabel("<a href='#'>Advanced Option(s)</a>", 0);
+                        mc_nym_manager_addnym_gridlayout->addWidget(mc_nym_manager_addnym_subheader_toggleadvanced_options_label, 1,0, 1,1, Qt::AlignRight);
+                            //Connect with a re-action
+                            connect(mc_nym_manager_addnym_subheader_toggleadvanced_options_label, SIGNAL(linkActivated(QString)), this, SLOT(mc_addnym_dialog_showadvanced_slot(QString)));
+
+
                         //Label (instructions)
                         mc_nym_manager_addnym_subheader_instructions = new QLabel("Below are some options that will help determine how your Pseudonym will be added. Selecting \"No-Source\" is for self-signed Pseudonyms.");
                         mc_nym_manager_addnym_subheader_instructions->setWordWrap(1);
                         mc_nym_manager_addnym_subheader_instructions->setStyleSheet("QLabel{padding:0.5em;}");
-                        mc_nym_manager_addnym_gridlayout->addWidget(mc_nym_manager_addnym_subheader_instructions, 1,0, 1,1);
+                        mc_nym_manager_addnym_gridlayout->addWidget(mc_nym_manager_addnym_subheader_instructions, 2,0, 1,1);
 
                         //Label (Choose Source Question)
                         mc_nym_manager_addnym_choosesource_label = new QLabel("<h3>Choose the source of the Pseudonym</h3>");
-                        mc_nym_manager_addnym_choosesource_label->setStyleSheet("QLabel{padding:0.5em;}");
-                        mc_nym_manager_addnym_gridlayout->addWidget(mc_nym_manager_addnym_choosesource_label, 2,0, 1,1);
+                        mc_nym_manager_addnym_choosesource_label->setStyleSheet("QLabel{padding:1em;}");
+                        mc_nym_manager_addnym_gridlayout->addWidget(mc_nym_manager_addnym_choosesource_label, 3,0, 1,1);
 
                         //Combobox (Dropdown box: Choose Source)
                         mc_nym_manager_addnym_choosesource_answer_selection = new QComboBox(0);
                         mc_nym_manager_addnym_choosesource_answer_selection->addItem("Namecoin");
                         mc_nym_manager_addnym_choosesource_answer_selection->addItem("No-Source");
+                        mc_nym_manager_addnym_choosesource_answer_selection->setCurrentIndex(1);
                         mc_nym_manager_addnym_choosesource_answer_selection->setStyleSheet("QComboBox{padding:0.5em;}");
-                        mc_nym_manager_addnym_gridlayout->addWidget(mc_nym_manager_addnym_choosesource_answer_selection, 3,0, 1,1);
+                        mc_nym_manager_addnym_gridlayout->addWidget(mc_nym_manager_addnym_choosesource_answer_selection, 4,0, 1,1);
 
-
+                        //Create Nym (button)
+                        mc_nym_manager_addnym_create_nym_btn = new QPushButton("Create a new Pseudonym", 0);
+                        mc_nym_manager_addnym_create_nym_btn->setStyleSheet("QPushButton{padding:1em;}");
+                        mc_nym_manager_addnym_gridlayout->addWidget(mc_nym_manager_addnym_create_nym_btn, 5,0, 1,1, Qt::AlignHCenter);
+                            //Connect create nym button with a re-action;
+                            connect(mc_nym_manager_addnym_create_nym_btn, SIGNAL(clicked()), this, SLOT(mc_addnym_dialog_createnym_slot()));
 
                 //Show dialog.
                 mc_nym_manager_addnym_dialog->show();
@@ -847,7 +861,7 @@ Moneychanger::~Moneychanger()
             }
 
             //Resize
-            mc_nym_manager_addnym_dialog->resize(500, 300);
+            mc_nym_manager_addnym_dialog->resize(400, 290);
         }
 
         void Moneychanger::mc_nymmanager_dataChanged_slot(QModelIndex topLeft, QModelIndex bottomRight){
@@ -895,6 +909,23 @@ Moneychanger::~Moneychanger()
                 mc_nymmanager_proccessing_dataChanged = 0;
             }
         }
+
+
+            /**** ****
+             **** Nym Manager -> Add Nym Dialog (Private Slots)
+             **** ****/
+            void Moneychanger::mc_addnym_dialog_showadvanced_slot(QString link_href){
+                //If advanced options are already showing, hide, if they are hidden, show them.
+                if(mc_nymmanager_addnym_dialog_advanced_showing == 0){
+                    //Show advanced options.
+                        //Show the Bits option
+
+                }else if(mc_nymmanager_addnym_dialog_advanced_showing == 1){
+                    //Hide advanced options.
+                        //Hide the Bits option
+                }
+            }
+
 
     /* Address Book Slots */
         //When "add contact" is clicked, Add a blank row to the address book so the user can edit it and save their changes.
