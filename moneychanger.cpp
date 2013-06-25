@@ -1,4 +1,5 @@
 #include "moneychanger.h"
+#include "ot_worker.h"
 
 #include "opentxs/OTAPI.h"
 #include "opentxs/OT_ME.h"
@@ -13,6 +14,16 @@ Moneychanger::Moneychanger(QWidget *parent)
      ** Init variables *
      **/
 
+    //Thread Related
+    ot_worker_background = new ot_worker();
+    ot_worker_background->mc_overview_ping();
+
+    ot_worker_timer = new QTimer(ot_worker_background);
+    //Connect timer to a ot_worker_background->overview_ping
+    connect(ot_worker_timer, SIGNAL(timeout()), this, SLOT(mc_worker_overview_ping_slot()));
+    ot_worker_timer->start(10000);
+
+    //OT Related
     ot_me = new OT_ME();
 
     //SQLite databases
@@ -35,6 +46,9 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_addressbook_paste_into = ""; //When set, the selected nym will be pasted into the desired area.
 
         //Menu
+            //Overview
+                mc_overview_already_init = 0;
+
             //Nym Manager
                 mc_nymmanager_already_init = 0;
                 mc_nymmanager_refreshing = 0;
@@ -105,6 +119,8 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_systrayMenu_overview = new QAction("Overview", 0);
             mc_systrayMenu_overview->setIcon(mc_systrayIcon_overview);
             mc_systrayMenu->addAction(mc_systrayMenu_overview);
+                //Connect the Overview to a re-action when "clicked";
+                connect(mc_systrayMenu_overview, SIGNAL(triggered()), this, SLOT(mc_overview_slot()));
 
 
 
@@ -120,6 +136,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 
             //Server section
             mc_systrayMenu_server = new QAction("Server: None", 0);
+            mc_systrayMenu_server->setDisabled(1);
             mc_systrayMenu_server->setIcon(mc_systrayIcon_server);
             mc_systrayMenu->addAction(mc_systrayMenu_server);
 
@@ -383,6 +400,41 @@ Moneychanger::~Moneychanger()
     /* **
      * Menu Dialog Related Calls
      */
+
+        /** Overview Dialog **/
+            void Moneychanger::mc_overview_dialog(){
+
+                /** If the overview dialog has already been init
+                 *  just show it, Other wise, init and show if this is
+                 *  the first time.
+                 **/
+                if(mc_overview_already_init == 0){
+                    //The overview dialog has not been init yet; Init, then show it.
+                    mc_overview_dialog_page = new QDialog(0);
+                    mc_overview_dialog_page->setWindowFlags(Qt::WindowStaysOnTopHint);
+                    mc_overview_dialog_page->setWindowTitle("Overview | Moneychanger");
+                        //Grid Layout
+                        mc_overview_gridlayout = new QGridLayout(0);
+                        mc_overview_dialog_page->setLayout(mc_overview_gridlayout);
+
+                        /** Flag Already Init **/
+                        mc_overview_already_init = 1;
+
+                   //Show it
+                        mc_overview_dialog_page->show();
+
+
+                }else{
+                    //Just show it
+                    mc_overview_dialog_page->show();
+                }
+
+
+                //Resize
+                mc_overview_dialog_page->resize(600, 400);
+
+            }
+
 
         /** Nym Manager Dialog **/
             void Moneychanger::mc_nymmanager_dialog(){
@@ -799,6 +851,11 @@ Moneychanger::~Moneychanger()
 
 /** ****** ****** ****** **
  ** Private Slots        **/
+    /* Overview Slots */
+        void Moneychanger::mc_worker_overview_ping_slot(){
+            ot_worker_background->mc_overview_ping();
+        }
+
 
     /* Nym Slots */
         void Moneychanger::mc_nymmanager_addnym_slot(){
@@ -923,6 +980,19 @@ Moneychanger::~Moneychanger()
                 }else if(mc_nymmanager_addnym_dialog_advanced_showing == 1){
                     //Hide advanced options.
                         //Hide the Bits option
+                }
+            }
+
+
+            void Moneychanger::mc_addnym_dialog_createnym_slot(){
+                std::string pseudonym = OTAPI_Wrap::CreateNym(1024, "", "");
+                QString new_pseudonym = QString::fromStdString(pseudonym);
+
+                //Success if non null
+                if(new_pseudonym != ""){
+
+                }else{
+                    //Failed to create pseudonym
                 }
             }
 
@@ -1054,6 +1124,12 @@ Moneychanger::~Moneychanger()
             //Close qt app (no need to deinit anything as of the time of this comment)
             //TO DO: Check if the OT queue caller is still proccessing calls.... Then quit the app. (Also tell user that the OT is still calling other wise they might think it froze during OT calls)
             qApp->quit();
+        }
+
+        //Overview
+        void Moneychanger::mc_overview_slot(){
+            //The operator has requested to open the dialog to the "Overview";
+            mc_overview_dialog();
         }
 
 

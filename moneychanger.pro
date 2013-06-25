@@ -13,9 +13,17 @@ TEMPLATE = app
 
 DEPENDPATH += .
 SOURCES += main.cpp\
-        moneychanger.cpp
+        moneychanger.cpp \
+    MTRecord.cpp \
+    MTRecordList.cpp \
+    ot_worker.cpp
 
-HEADERS  += moneychanger.h
+HEADERS  += moneychanger.h \
+    MTRecordList.h \
+    MTRecord.h \
+    ot_worker.h
+
+DEFINES += "OT_ZMQ_MODE=1"
 
 #LIBS += /usr/lib/libboost_thread.so.1.46.1 -ldl
 ##QMAKE_CXXFLAGS += -fPIC -DPIC --param ssp-buffer-size=4

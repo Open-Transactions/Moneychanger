@@ -7,6 +7,7 @@
 #include <QMenu>
 #include <QList>
 #include <QDebug>
+#include <QTimer>
 #include <QLabel>
 #include <QWidget>
 #include <QDialog>
@@ -19,7 +20,7 @@
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QPushButton>
- #include <QRadioButton>
+#include <QRadioButton>
 #include <QSystemTrayIcon>
 #include <QCoreApplication>
 #include <QStandardItemModel>
@@ -29,6 +30,10 @@
 #include <opentxs/OT_ME.h>
 #include <opentxs/OTLog.h>
 
+#include "ot_worker.h"
+
+#include "MTRecordList.h"
+#include "MTRecord.h"
 
 class Moneychanger : public QWidget
 {
@@ -49,6 +54,9 @@ private:
      **           **/
         //Open Transaction
         OT_ME * ot_me;
+
+        ot_worker * ot_worker_background;
+        QTimer * ot_worker_timer;
 
         //Sqlite database(s)
         QSqlDatabase addressbook_db;
@@ -142,6 +150,12 @@ private:
             QAction * mc_systrayMenu_bottomblank;
 
         //MC Systray Dialogs
+            /** Overview **/
+            int mc_overview_already_init;
+
+            QDialog * mc_overview_dialog_page;
+                //Grid layout
+                QGridLayout * mc_overview_gridlayout;
 
             /** Nym Manager **/
             int mc_nymmanager_already_init;
@@ -331,6 +345,9 @@ private:
 
         //Menu Dialog
 
+            //Overview
+            void mc_overview_dialog();
+
             //Default Nym
             void mc_nymmanager_dialog();
 
@@ -342,12 +359,17 @@ private:
                 void mc_withdraw_asvoucher_dialog();
 
 private slots:
+        //Overview Slots
+                //Thread slots
+                void mc_worker_overview_ping_slot();
+
         //Nym Manager slots
             void mc_nymmanager_addnym_slot();
             void mc_nymmanager_dataChanged_slot(QModelIndex,QModelIndex);
 
                 //Add Nym Dialog slots
                 void mc_addnym_dialog_showadvanced_slot(QString);
+                void mc_addnym_dialog_createnym_slot();
 
 
         //Address Book slots
@@ -366,6 +388,9 @@ private slots:
         //Systray Menu Slots
             //Shutdown
             void mc_shutdown_slot();
+
+            //Overview
+            void mc_overview_slot();
 
             //Default Nym
             void mc_defaultnym_slot();
