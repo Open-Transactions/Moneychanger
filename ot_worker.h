@@ -7,6 +7,8 @@
 #include <QList>
 #include <QMap>
 #include <QVariant>
+#include <QMutex>
+#include <QMutexLocker>
 
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
@@ -21,7 +23,12 @@ class ot_worker : public QObject
     Q_OBJECT
 public:
     explicit ot_worker(QObject *parent = 0);
-    void mc_overview_ping();
+
+    //Overview worker stuff
+        void mc_overview_ping();
+        QList< QMap<QString, QVariant> > mc_overview_get_currentlist();
+            //Overview thread things
+            QMutex overview_list_mutex;
 
 private:
     MTRecordList list;

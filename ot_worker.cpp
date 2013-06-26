@@ -47,6 +47,9 @@ ot_worker::ot_worker(QObject *parent) :
 
 
 void ot_worker::mc_overview_ping(){
+    //Lock overview_list (Unlocks when function is returned)
+    QMutexLocker overview_list_mutex_locker(&overview_list_mutex);
+
     //Repopulate the list
     list.Populate();
     int listSize = list.size();
@@ -65,11 +68,7 @@ void ot_worker::mc_overview_ping(){
           listSize = list.size();
           a = 0;
 
-          //Clear backend memory of overview visuals
-            //TODO ^^
-
         }else{
-            qDebug() << "FILLING CELL\n========\n";
             MTRecord recordmt = *record;
             qDebug() << recordmt.IsOutgoing();
             qDebug() << recordmt.IsPending();
@@ -101,9 +100,23 @@ void ot_worker::mc_overview_ping(){
                 //Append
                 overview_list->append(record_map);
         }
-
-        qDebug() << "OVERVIEW LIST" << overview_list->size();
     }
 }
 
+
+QList< QMap<QString, QVariant> > ot_worker::mc_overview_get_currentlist(){
+    //Return the current overview_list (if not locked)
+
+    //Lock overview_list (Unlocks when function is returned)
+    QMutexLocker overview_list_mutex_locker(&overview_list_mutex);
+
+    //Make "DEEP COPY" of overviewlist
+    QList< QMap<QString, QVariant> > deep_copy_overview_list = QList< QMap<QString, QVariant> >();
+        //Copy
+        for(int a = 0; a < overview_list->size(); a++){
+            deep_copy_overview_list.append(overview_list->at(a));
+        }
+
+    return deep_copy_overview_list;
+}
 

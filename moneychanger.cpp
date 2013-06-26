@@ -427,18 +427,26 @@ Moneychanger::~Moneychanger()
                             mc_overview_hbox_twopane_holder->setLayout(mc_overview_hbox_twopane);
                             mc_overview_gridlayout->addWidget(mc_overview_hbox_twopane_holder, 1,0, 1,1);
 
-                                //Incomming (Pane)
-                                mc_overview_incomming_pane_holder = new QWidget(0);
-                                mc_overview_incomming_pane = new QVBoxLayout(0);
-                                mc_overview_incomming_pane_holder->setLayout(mc_overview_incomming_pane);
-                                mc_overview_hbox_twopane->addWidget(mc_overview_incomming_pane_holder);
-                                    //Label (Incomming header)
-                                    mc_overview_incomming_header_label = new QLabel("<b>Incoming</b>");
-                                    mc_overview_incomming_pane->addWidget(mc_overview_incomming_header_label);
+                                //incoming (Pane)
+                                mc_overview_incoming_pane_holder = new QWidget(0);
+                                mc_overview_incoming_pane = new QVBoxLayout(0);
+                                mc_overview_incoming_pane_holder->setLayout(mc_overview_incoming_pane);
+                                mc_overview_hbox_twopane->addWidget(mc_overview_incoming_pane_holder);
+                                    //Label (incoming header)
+                                    mc_overview_incoming_header_label = new QLabel("<b>Incoming</b>");
+                                    mc_overview_incoming_pane->addWidget(mc_overview_incoming_header_label);
 
-                                    //Table view (incomming list)
-                                    mc_overview_incomming_tableview = new QTableView(0);
-                                    mc_overview_incomming_pane->addWidget(mc_overview_incomming_tableview);
+                                    //Table view (incoming list)
+                                    mc_overview_incoming_standarditemmodel = new QStandardItemModel(0,4,0);
+                                    mc_overview_incoming_standarditemmodel->setHorizontalHeaderItem(0, new QStandardItem(QString("Account")));
+                                    mc_overview_incoming_standarditemmodel->setHorizontalHeaderItem(1, new QStandardItem(QString("Pseudonym")));
+                                    mc_overview_incoming_standarditemmodel->setHorizontalHeaderItem(2, new QStandardItem(QString("Asset ID")));
+                                    mc_overview_incoming_standarditemmodel->setHorizontalHeaderItem(3, new QStandardItem(QString("Date")));
+                                    mc_overview_incoming_tableview = new QTableView(0);
+                                    mc_overview_incoming_tableview->setModel(mc_overview_incoming_standarditemmodel);
+                                    mc_overview_incoming_tableview->resizeColumnsToContents();
+                                    mc_overview_incoming_pane->addWidget(mc_overview_incoming_tableview);
+
 
                                 //Outgoing (Pane)
                                 mc_overview_outgoing_pane_holder = new QWidget(0);
@@ -451,7 +459,14 @@ Moneychanger::~Moneychanger()
                                     mc_overview_outgoing_pane->addWidget(mc_overview_outgoing_header_label);
 
                                     //Table vivew (outgoing list)
+                                    mc_overview_outgoing_standarditemmodel = new QStandardItemModel(0,4,0);
+                                    mc_overview_outgoing_standarditemmodel->setHorizontalHeaderItem(0, new QStandardItem(QString("Account")));
+                                    mc_overview_outgoing_standarditemmodel->setHorizontalHeaderItem(1, new QStandardItem(QString("Pseudonym")));
+                                    mc_overview_outgoing_standarditemmodel->setHorizontalHeaderItem(2, new QStandardItem(QString("Asset ID")));
+                                    mc_overview_outgoing_standarditemmodel->setHorizontalHeaderItem(3, new QStandardItem(QString("Date")));
                                     mc_overview_outgoing_tableview = new QTableView(0);
+                                    mc_overview_outgoing_tableview->setModel(mc_overview_outgoing_standarditemmodel);
+                                    mc_overview_outgoing_tableview->resizeColumnsToContents();
                                     mc_overview_outgoing_pane->addWidget(mc_overview_outgoing_tableview);
 
 
@@ -469,8 +484,28 @@ Moneychanger::~Moneychanger()
 
 
                 //Resize
-                mc_overview_dialog_page->resize(600, 400);
+                mc_overview_dialog_page->resize(800, 400);
 
+                //Refresh visual data
+                mc_overview_dialog_refresh();
+            }
+
+            //Overview refresh function
+            void Moneychanger::mc_overview_dialog_refresh(){
+                //(Lock the overview dialog refreshing mechinism until finished)
+                QMutexLocker overview_refresh_locker(&mc_overview_refreshing_visuals_mutex);
+
+                //Update the overview dialog visuals
+                QList< QMap<QString,QVariant> > current_list_copy = ot_worker_background->mc_overview_get_currentlist();
+
+                //Clear all records (In the future we should have a scan for updates records mechinism for now we will go for a browser "refresh" all mechinism)
+                mc_overview_incoming_standarditemmodel->removeRows(0, mc_overview_incoming_standarditemmodel->rowCount(), QModelIndex());
+
+                int total_records_to_visualize = current_list_copy.size();
+                for(int a = 0; a < total_records_to_visualize; a++){
+                    //First thing is first: Does this record go to the outgoing or incomming tableview?
+                    qDebug() << current_list_copy.at(a);
+                }
             }
 
 
@@ -619,7 +654,7 @@ Moneychanger::~Moneychanger()
                             }
 
                             //Add nym id and names to the manager list
-                            int total_nym_accounts = account_list_id.count();
+                            int total_nym_accounts = account_list_id.size();
                             int row_index = 0;
                             for(int a = 0; a < total_nym_accounts; a++){
                                 //Add nym account name and id to the list.
@@ -1054,7 +1089,7 @@ Moneychanger::~Moneychanger()
         void Moneychanger::mc_addressbook_confirm_remove_contact_slot(){
             //First validate if anything is selected, before continuing (this is a must).
             QModelIndexList indexList = mc_addressbook_tableview->selectionModel()->selectedIndexes();
-            int total_selected = indexList.count();
+            int total_selected = indexList.size();
             if(total_selected >= 1){
                 //Loop through every selected menu and delete it visually as well as through the database/storage.
                 int total_deleted = 0;
@@ -1127,7 +1162,7 @@ Moneychanger::~Moneychanger()
         void Moneychanger::mc_addressbook_paste_selected_slot(){
             //First validate if anything is selected, before continuing (this is a must).
             QModelIndexList indexList = mc_addressbook_tableview->selectionModel()->selectedIndexes();
-            int total_selected = indexList.count();
+            int total_selected = indexList.size();
             qDebug() << "TOTAL SELECTED" << total_selected;
             if(total_selected >= 1){
                 //Paste the selection into the appropriate contact.

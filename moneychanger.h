@@ -6,6 +6,7 @@
 #include <QtSql>
 #include <QMenu>
 #include <QList>
+#include <QMutex>
 #include <QDebug>
 #include <QTimer>
 #include <QLabel>
@@ -20,6 +21,7 @@
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QPushButton>
+#include <QMutexLocker>
 #include <QRadioButton>
 #include <QSystemTrayIcon>
 #include <QCoreApplication>
@@ -152,24 +154,25 @@ private:
         //MC Systray Dialogs
             /** Overview **/
             int mc_overview_already_init;
-
+            QMutex mc_overview_refreshing_visuals_mutex;
             QDialog * mc_overview_dialog_page;
                 //Grid layout
                 QGridLayout * mc_overview_gridlayout;
                     //Header (label)
                     QLabel * mc_overview_header_label;
 
-                    //Horizontal Two Pane(Incomming/Outgoing) layout
+                    //Horizontal Two Pane(incoming/Outgoing) layout
                     QWidget * mc_overview_hbox_twopane_holder;
                     QHBoxLayout * mc_overview_hbox_twopane;
-                        //Incomming (pane)
-                        QWidget * mc_overview_incomming_pane_holder;
-                        QVBoxLayout * mc_overview_incomming_pane;
+                        //incoming (pane)
+                        QWidget * mc_overview_incoming_pane_holder;
+                        QVBoxLayout * mc_overview_incoming_pane;
                             //Header (label)
-                            QLabel * mc_overview_incomming_header_label;
+                            QLabel * mc_overview_incoming_header_label;
 
                             //Table view
-                            QTableView * mc_overview_incomming_tableview;
+                            QStandardItemModel * mc_overview_incoming_standarditemmodel;
+                            QTableView * mc_overview_incoming_tableview;
 
                         //Outgoing Table View
                         QWidget * mc_overview_outgoing_pane_holder;
@@ -178,6 +181,7 @@ private:
                             QLabel * mc_overview_outgoing_header_label;
 
                             //Tabel view
+                            QStandardItemModel * mc_overview_outgoing_standarditemmodel;
                             QTableView * mc_overview_outgoing_tableview;
 
 
@@ -371,6 +375,8 @@ private:
 
             //Overview
             void mc_overview_dialog();
+                //Refresh visual
+                void mc_overview_dialog_refresh();
 
             //Default Nym
             void mc_nymmanager_dialog();
