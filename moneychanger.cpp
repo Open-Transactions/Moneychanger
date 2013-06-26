@@ -417,6 +417,44 @@ Moneychanger::~Moneychanger()
                         mc_overview_gridlayout = new QGridLayout(0);
                         mc_overview_dialog_page->setLayout(mc_overview_gridlayout);
 
+                            //Label (header)
+                            mc_overview_header_label = new QLabel("<h3>Overview of Transactions</h3>", 0);
+                            mc_overview_gridlayout->addWidget(mc_overview_header_label, 0,0, 1,1, Qt::AlignRight);
+
+                            //Horizontal Layout Box
+                            mc_overview_hbox_twopane_holder = new QWidget(0);
+                            mc_overview_hbox_twopane = new QHBoxLayout(0);
+                            mc_overview_hbox_twopane_holder->setLayout(mc_overview_hbox_twopane);
+                            mc_overview_gridlayout->addWidget(mc_overview_hbox_twopane_holder, 1,0, 1,1);
+
+                                //Incomming (Pane)
+                                mc_overview_incomming_pane_holder = new QWidget(0);
+                                mc_overview_incomming_pane = new QVBoxLayout(0);
+                                mc_overview_incomming_pane_holder->setLayout(mc_overview_incomming_pane);
+                                mc_overview_hbox_twopane->addWidget(mc_overview_incomming_pane_holder);
+                                    //Label (Incomming header)
+                                    mc_overview_incomming_header_label = new QLabel("<b>Incoming</b>");
+                                    mc_overview_incomming_pane->addWidget(mc_overview_incomming_header_label);
+
+                                    //Table view (incomming list)
+                                    mc_overview_incomming_tableview = new QTableView(0);
+                                    mc_overview_incomming_pane->addWidget(mc_overview_incomming_tableview);
+
+                                //Outgoing (Pane)
+                                mc_overview_outgoing_pane_holder = new QWidget(0);
+                                mc_overview_outgoing_pane = new QVBoxLayout(0);
+                                mc_overview_outgoing_pane_holder->setLayout(mc_overview_outgoing_pane);
+                                mc_overview_hbox_twopane->addWidget(mc_overview_outgoing_pane_holder);
+
+                                    //Label (Outgoing header)
+                                    mc_overview_outgoing_header_label = new QLabel("<b>Outgoing</b>");
+                                    mc_overview_outgoing_pane->addWidget(mc_overview_outgoing_header_label);
+
+                                    //Table vivew (outgoing list)
+                                    mc_overview_outgoing_tableview = new QTableView(0);
+                                    mc_overview_outgoing_pane->addWidget(mc_overview_outgoing_tableview);
+
+
                         /** Flag Already Init **/
                         mc_overview_already_init = 1;
 

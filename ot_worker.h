@@ -4,6 +4,9 @@
 #include <QDebug>
 #include <QObject>
 #include <QThread>
+#include <QList>
+#include <QMap>
+#include <QVariant>
 
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
@@ -22,6 +25,7 @@ public:
 
 private:
     MTRecordList list;
+    QList< QMap<QString,QVariant> > * overview_list;
 
 signals:
     

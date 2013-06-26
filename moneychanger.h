@@ -156,6 +156,30 @@ private:
             QDialog * mc_overview_dialog_page;
                 //Grid layout
                 QGridLayout * mc_overview_gridlayout;
+                    //Header (label)
+                    QLabel * mc_overview_header_label;
+
+                    //Horizontal Two Pane(Incomming/Outgoing) layout
+                    QWidget * mc_overview_hbox_twopane_holder;
+                    QHBoxLayout * mc_overview_hbox_twopane;
+                        //Incomming (pane)
+                        QWidget * mc_overview_incomming_pane_holder;
+                        QVBoxLayout * mc_overview_incomming_pane;
+                            //Header (label)
+                            QLabel * mc_overview_incomming_header_label;
+
+                            //Table view
+                            QTableView * mc_overview_incomming_tableview;
+
+                        //Outgoing Table View
+                        QWidget * mc_overview_outgoing_pane_holder;
+                        QVBoxLayout * mc_overview_outgoing_pane;
+                            //Header (label)
+                            QLabel * mc_overview_outgoing_header_label;
+
+                            //Tabel view
+                            QTableView * mc_overview_outgoing_tableview;
+
 
             /** Nym Manager **/
             int mc_nymmanager_already_init;

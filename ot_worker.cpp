@@ -6,6 +6,8 @@ ot_worker::ot_worker(QObject *parent) :
     /** ** ** **
      ** Init MTList
      **/
+    overview_list = new QList< QMap<QString,QVariant> >();
+
     int nServerCount  = OTAPI_Wrap::GetServerCount();
     int nAssetCount   = OTAPI_Wrap::GetAssetTypeCount();
     int nNymCount     = OTAPI_Wrap::GetNymCount();
@@ -39,21 +41,33 @@ ot_worker::ot_worker(QObject *parent) :
     list.AcceptReceiptsAutomatically (true);
     list.AcceptTransfersAutomatically(true);
 
+    //Populate
+    list.Populate();
 }
 
 
 void ot_worker::mc_overview_ping(){
-
+    //Repopulate the list
+    list.Populate();
     int listSize = list.size();
+        //Clear backend memory to the visual table.
+        for(int a = 0; a < overview_list->size();a++){
+            overview_list->removeAt(0);
+        }
+
+    //REadd to the backend memory to the visual table.
     for(int a = 0;a < listSize;a++){
         weak_ptr_MTRecord weakRecord = list.GetRecord(a);
         shared_ptr_MTRecord record = weakRecord.lock();
         if (weakRecord.expired()) {
           OTLog::Output(2, "Reloading table due to expired pointer");
           list.Populate();
+          listSize = list.size();
+          a = 0;
 
-          //Repopulating, wait till next ping(or timer ping)
-          a = listSize;
+          //Clear backend memory of overview visuals
+            //TODO ^^
+
         }else{
             qDebug() << "FILLING CELL\n========\n";
             MTRecord recordmt = *record;
@@ -72,13 +86,24 @@ void ot_worker::mc_overview_ping(){
             qDebug() << recordmt.GetRecordType();
             qDebug() << QString::fromStdString(recordmt.GetServerID());
 
+            //Add to overview list
+                //Map of record
+                QMap<QString, QVariant> record_map = QMap<QString,QVariant>();
+                record_map.insert("isoutgoing", recordmt.IsOutgoing());
+                record_map.insert("ispending", recordmt.IsPending());
+                record_map.insert("isreceipt", recordmt.IsReceipt());
+                record_map.insert("isrecord", recordmt.IsRecord());
+                record_map.insert("accountId", QString::fromStdString(recordmt.GetAccountID()));
+                record_map.insert("amount", QString::fromStdString(recordmt.GetAmount()));
+                record_map.insert("assetId", QString::fromStdString(recordmt.GetAssetID()));
+                record_map.insert("currencyTLA", QString::fromStdString(recordmt.GetCurrencyTLA()));
 
-
-
-
-
-
+                //Append
+                overview_list->append(record_map);
         }
+
+        qDebug() << "OVERVIEW LIST" << overview_list->size();
     }
-    list.Populate();
 }
+
+
