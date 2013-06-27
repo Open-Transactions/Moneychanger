@@ -14,14 +14,12 @@ Moneychanger::Moneychanger(QWidget *parent)
      ** Init variables *
      **/
 
+    //Default nym
+    default_nym_id = "";
+
     //Thread Related
     ot_worker_background = new ot_worker();
     ot_worker_background->mc_overview_ping();
-
-    ot_worker_timer = new QTimer(ot_worker_background);
-    //Connect timer to a ot_worker_background->overview_ping
-    connect(ot_worker_timer, SIGNAL(timeout()), this, SLOT(mc_worker_overview_ping_slot()));
-    ot_worker_timer->start(10000);
 
     //OT Related
     ot_me = new OT_ME();
@@ -32,6 +30,23 @@ Moneychanger::Moneychanger(QWidget *parent)
     qDebug() << addressbook_db.lastError();
     bool db_opened = addressbook_db.open();
     qDebug() << "DB OPENED " << db_opened;
+
+        //Query for default nym (So we know for setting later on -- Pseudonym manager)
+        QSqlQuery default_nym_query(addressbook_db);
+        default_nym_query.exec(QString("SELECT `nym` FROM `default_nym` LIMIT 0,1"));
+        if(default_nym_query.size() == 0){
+            QSqlQuery insert_blank_row(addressbook_db);
+            insert_blank_row.exec(QString("INSERT INTO `default_nym (`nym`) VALUES('')"));
+            insert_blank_row.first();
+
+            //Ask OT what the display name of this nym is
+
+        }else{
+            if(default_nym_query.next()){
+                QString default_nym_id_db = default_nym_query.value(0).toString();
+                default_nym_id = default_nym_id_db;
+            }
+        }
 
     /* *** *** ***
      * Init Memory Trackers (there may be other int below than just memory trackers but generally there will be mostly memory trackers below)
@@ -403,6 +418,8 @@ Moneychanger::~Moneychanger()
 
         /** Overview Dialog **/
             void Moneychanger::mc_overview_dialog(){
+                //Tell OT to repopulate
+                ot_worker_background->mc_overview_ping();
 
                 /** If the overview dialog has already been init
                  *  just show it, Other wise, init and show if this is
@@ -421,17 +438,17 @@ Moneychanger::~Moneychanger()
                             mc_overview_header_label = new QLabel("<h3>Overview of Transactions</h3>", 0);
                             mc_overview_gridlayout->addWidget(mc_overview_header_label, 0,0, 1,1, Qt::AlignRight);
 
-                            //Horizontal Layout Box
-                            mc_overview_hbox_twopane_holder = new QWidget(0);
-                            mc_overview_hbox_twopane = new QHBoxLayout(0);
-                            mc_overview_hbox_twopane_holder->setLayout(mc_overview_hbox_twopane);
-                            mc_overview_gridlayout->addWidget(mc_overview_hbox_twopane_holder, 1,0, 1,1);
+                            //Vertical Layout Box
+                            mc_overview_vbox_twopane_holder = new QWidget(0);
+                            mc_overview_vbox_twopane = new QVBoxLayout(0);
+                            mc_overview_vbox_twopane_holder->setLayout(mc_overview_vbox_twopane);
+                            mc_overview_gridlayout->addWidget(mc_overview_vbox_twopane_holder, 1,0, 1,1);
 
                                 //incoming (Pane)
                                 mc_overview_incoming_pane_holder = new QWidget(0);
                                 mc_overview_incoming_pane = new QVBoxLayout(0);
                                 mc_overview_incoming_pane_holder->setLayout(mc_overview_incoming_pane);
-                                mc_overview_hbox_twopane->addWidget(mc_overview_incoming_pane_holder);
+                                mc_overview_vbox_twopane->addWidget(mc_overview_incoming_pane_holder);
                                     //Label (incoming header)
                                     mc_overview_incoming_header_label = new QLabel("<b>Incoming</b>");
                                     mc_overview_incoming_pane->addWidget(mc_overview_incoming_header_label);
@@ -444,7 +461,6 @@ Moneychanger::~Moneychanger()
                                     mc_overview_incoming_standarditemmodel->setHorizontalHeaderItem(3, new QStandardItem(QString("Date")));
                                     mc_overview_incoming_tableview = new QTableView(0);
                                     mc_overview_incoming_tableview->setModel(mc_overview_incoming_standarditemmodel);
-                                    mc_overview_incoming_tableview->resizeColumnsToContents();
                                     mc_overview_incoming_pane->addWidget(mc_overview_incoming_tableview);
 
 
@@ -452,7 +468,7 @@ Moneychanger::~Moneychanger()
                                 mc_overview_outgoing_pane_holder = new QWidget(0);
                                 mc_overview_outgoing_pane = new QVBoxLayout(0);
                                 mc_overview_outgoing_pane_holder->setLayout(mc_overview_outgoing_pane);
-                                mc_overview_hbox_twopane->addWidget(mc_overview_outgoing_pane_holder);
+                                mc_overview_vbox_twopane->addWidget(mc_overview_outgoing_pane_holder);
 
                                     //Label (Outgoing header)
                                     mc_overview_outgoing_header_label = new QLabel("<b>Outgoing</b>");
@@ -466,7 +482,6 @@ Moneychanger::~Moneychanger()
                                     mc_overview_outgoing_standarditemmodel->setHorizontalHeaderItem(3, new QStandardItem(QString("Date")));
                                     mc_overview_outgoing_tableview = new QTableView(0);
                                     mc_overview_outgoing_tableview->setModel(mc_overview_outgoing_standarditemmodel);
-                                    mc_overview_outgoing_tableview->resizeColumnsToContents();
                                     mc_overview_outgoing_pane->addWidget(mc_overview_outgoing_tableview);
 
 
@@ -503,9 +518,35 @@ Moneychanger::~Moneychanger()
 
                 int total_records_to_visualize = current_list_copy.size();
                 for(int a = 0; a < total_records_to_visualize; a++){
-                    //First thing is first: Does this record go to the outgoing or incomming tableview?
-                    qDebug() << current_list_copy.at(a);
+                    //Get map for this record
+                        QMap<QString, QVariant> temp_record_map = current_list_copy.at(a);
+                        QList<QStandardItem *> new_row;
+
+                        QStandardItem * account_id_item = new QStandardItem(QString(temp_record_map["accountId"].toString()));
+                        new_row.append(account_id_item);
+
+                        QStandardItem * pseudonym_id_item = new QStandardItem(QString(temp_record_map["nymId"].toString()));
+                        new_row.append(pseudonym_id_item);
+
+                        QStandardItem * asset_id_item = new QStandardItem(QString(temp_record_map["assetId"].toString()));
+                        new_row.append(asset_id_item);
+
+                        QStandardItem * date_item = new QStandardItem(QString(temp_record_map["date"].toString()));
+                        new_row.append(date_item);
+
+
+                    // Does this record go to the outgoing or incomming tableview?
+                        QVariant isOutgoing = temp_record_map["isoutgoing"];
+                        bool isOutgoing_bool = isOutgoing.toBool();
+                        if(isOutgoing_bool == false){
+                            //Incomming
+                            mc_overview_incoming_standarditemmodel->appendRow(new_row);
+                        }else{
+                            //Outgoing
+                            mc_overview_outgoing_standarditemmodel->appendRow(new_row);
+                        }
                 }
+
             }
 
 
@@ -560,6 +601,7 @@ Moneychanger::~Moneychanger()
                                         mc_nym_manager_tableview = new QTableView(0);
                                         mc_nym_manager_tableview->setSelectionMode(QAbstractItemView::SingleSelection);
                                         mc_nym_manager_tableview->setModel(mc_nym_manager_tableview_itemmodel);
+
                                         //mc_nym_manager_tableview->hideColumn(3);
                                         mc_nym_manager_tableview->setColumnWidth(0, 175);
                                         mc_nym_manager_tableview->setColumnWidth(1, 150);
@@ -611,23 +653,6 @@ Moneychanger::~Moneychanger()
                         mc_nym_manager_tableview_itemmodel->removeRows(0, mc_nym_manager_tableview_itemmodel->rowCount());
 
                         //Get the default set nym (So we can have a "radio" form input "bubbled/checked" on the defualt nym)
-                        QString default_nym_by_id = "";
-
-
-                        QSqlQuery default_set_nym(addressbook_db);
-                        default_set_nym.exec(QString("SELECT `nym` FROM `default_nym`"));
-                        qDebug() << "DB QUERY LAST ERROR: " << default_set_nym.lastError();
-
-                        if(default_set_nym.first()){
-                            //Extract data
-                            QString default_nym = default_set_nym.value(0).toString();
-
-                            if(default_nym != ""){
-                                //set the default nym by id
-                                default_nym_by_id = default_nym;
-                            }
-
-                        }
 
                         //Refresh the nym manager
                         /** Call OT for all information we need for this dialog **/
@@ -666,9 +691,17 @@ Moneychanger::~Moneychanger()
                                 //Place extracted data into the table view
                                 QStandardItem * col_one = new QStandardItem(account_name);
                                 QStandardItem * col_two = new QStandardItem(account_id);
+                                    //Column two is uneditable
+                                    col_two->setEditable(0);
+
                                 QStandardItem * col_three = new QStandardItem();
                                     //Column three is a checkmark, we need to set some options in this case.
                                     col_three->setCheckable(1);
+
+                                    //If this is the default pseudonym; if yes, mark as checked
+                                    if(default_nym_id == account_id){
+                                        col_three->setCheckState(Qt::Checked);
+                                    }
 
                                 mc_nym_manager_tableview_itemmodel->setItem(row_index, 0, col_one);
                                 mc_nym_manager_tableview_itemmodel->setItem(row_index, 1, col_two);
@@ -924,10 +957,6 @@ Moneychanger::~Moneychanger()
 
 /** ****** ****** ****** **
  ** Private Slots        **/
-    /* Overview Slots */
-        void Moneychanger::mc_worker_overview_ping_slot(){
-            ot_worker_background->mc_overview_ping();
-        }
 
 
     /* Nym Slots */
@@ -1000,6 +1029,11 @@ Moneychanger::~Moneychanger()
                 /** Flag Proccessing dataChanged **/
                 mc_nymmanager_proccessing_dataChanged = 1;
 
+                /** Proccess the "Display Name" column **/
+                if(topLeft.column() == 0){
+                    qDebug() << "EDITING FIRST COLUMN";
+                }
+
                 /** Proccess the "Default" column (if triggered) **/
                 if(topLeft.column() == 2){
                     //The (default) 2 column has checked(or unchecked) a box, (uncheck all checkboxes, except the newly selected one)
@@ -1025,9 +1059,18 @@ Moneychanger::~Moneychanger()
                             QStandardItem * checkbox_model = mc_nym_manager_tableview_itemmodel->item(a, 2);
 
                             //Update the checkbox item at the backend.
-                            checkbox_model->setCheckState(Qt::Checked);
+                                //Get nym id we are targeting to update.
+                                QStandardItem * nym_id = mc_nym_manager_tableview_itemmodel->item(a, 1);
+                                QVariant nym_id_variant = nym_id->text();
+                                QString nym_id_string = nym_id_variant.toString();
+
+                                //SQL UPDATE default nym
+                                QSqlQuery update_default_nym(addressbook_db);
+                                update_default_nym.exec(QString("UPDATE `default_nym` SET `nym` = '%1'").arg(nym_id_string));
+                                qDebug() << update_default_nym.lastError();
 
                             //Update the checkbox item visually.
+                            checkbox_model->setCheckState(Qt::Checked);
                             mc_nym_manager_tableview_itemmodel->setItem(a, 2, checkbox_model);
                         }
 

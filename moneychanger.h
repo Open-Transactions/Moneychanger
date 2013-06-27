@@ -58,7 +58,8 @@ private:
         OT_ME * ot_me;
 
         ot_worker * ot_worker_background;
-        QTimer * ot_worker_timer;
+
+        QString default_nym_id;
 
         //Sqlite database(s)
         QSqlDatabase addressbook_db;
@@ -162,8 +163,8 @@ private:
                     QLabel * mc_overview_header_label;
 
                     //Horizontal Two Pane(incoming/Outgoing) layout
-                    QWidget * mc_overview_hbox_twopane_holder;
-                    QHBoxLayout * mc_overview_hbox_twopane;
+                    QWidget * mc_overview_vbox_twopane_holder;
+                    QVBoxLayout * mc_overview_vbox_twopane;
                         //incoming (pane)
                         QWidget * mc_overview_incoming_pane_holder;
                         QVBoxLayout * mc_overview_incoming_pane;
@@ -389,9 +390,6 @@ private:
                 void mc_withdraw_asvoucher_dialog();
 
 private slots:
-        //Overview Slots
-                //Thread slots
-                void mc_worker_overview_ping_slot();
 
         //Nym Manager slots
             void mc_nymmanager_addnym_slot();
@@ -414,6 +412,9 @@ private slots:
 
             //When the operator has clicked the "Select and paste" button, we will detect what to paste and where to paste it into.
             void mc_addressbook_paste_selected_slot();
+
+
+
 
         //Systray Menu Slots
             //Shutdown

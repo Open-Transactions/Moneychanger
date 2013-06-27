@@ -70,6 +70,8 @@ void ot_worker::mc_overview_ping(){
 
         }else{
             MTRecord recordmt = *record;
+
+            /** Refernce Comment/Code **
             qDebug() << recordmt.IsOutgoing();
             qDebug() << recordmt.IsPending();
             qDebug() << recordmt.IsReceipt();
@@ -84,6 +86,7 @@ void ot_worker::mc_overview_ping(){
             qDebug() << QString::fromStdString(recordmt.GetNymID());
             qDebug() << recordmt.GetRecordType();
             qDebug() << QString::fromStdString(recordmt.GetServerID());
+            ** End of Reference Comment/Code **/
 
             //Add to overview list
                 //Map of record
@@ -96,6 +99,10 @@ void ot_worker::mc_overview_ping(){
                 record_map.insert("amount", QString::fromStdString(recordmt.GetAmount()));
                 record_map.insert("assetId", QString::fromStdString(recordmt.GetAssetID()));
                 record_map.insert("currencyTLA", QString::fromStdString(recordmt.GetCurrencyTLA()));
+                record_map.insert("nymId", QString::fromStdString(recordmt.GetNymID()));
+                record_map.insert("name", QString::fromStdString(recordmt.GetName()));
+                record_map.insert("serverId", QString::fromStdString(recordmt.GetServerID()));
+                record_map.insert("recordType", recordmt.GetRecordType());
 
                 //Append
                 overview_list->append(record_map);
