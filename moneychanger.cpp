@@ -39,14 +39,15 @@ Moneychanger::Moneychanger(QWidget *parent)
             insert_blank_row.exec(QString("INSERT INTO `default_nym (`nym`) VALUES('')"));
             insert_blank_row.first();
 
-            //Ask OT what the display name of this nym is
-
         }else{
             if(default_nym_query.next()){
                 QString default_nym_id_db = default_nym_query.value(0).toString();
                 default_nym_id = default_nym_id_db;
             }
         }
+
+        //Ask OT what the display name of this nym is and store it for quick retrieval later on(mostly for "Default Nym" displaying" purposes")
+        default_nym_name =  QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(default_nym_id.toStdString()));
 
     /* *** *** ***
      * Init Memory Trackers (there may be other int below than just memory trackers but generally there will be mostly memory trackers below)
@@ -148,6 +149,9 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_systrayMenu->addAction(mc_systrayMenu_nym);
                 //Connect the nym/account to a re-action upon "clicked"
                 connect(mc_systrayMenu_nym, SIGNAL(triggered()), this, SLOT(mc_defaultnym_slot()));
+
+                //Load "default" nym
+                mc_systrayMenu_nym_load_nym(default_nym_id, default_nym_name);
 
             //Server section
             mc_systrayMenu_server = new QAction("Server: None", 0);
@@ -720,6 +724,14 @@ Moneychanger::~Moneychanger()
                  **/
                 mc_nym_manager_dialog->resize(600, 300);
 
+            }
+
+
+            void Moneychanger::mc_systrayMenu_nym_load_nym(QString nym_id, QString nym_name){
+                //Rename "NYM:" if a nym is loaded
+                if(nym_id != ""){
+                    mc_systrayMenu_nym->setText("Nym: "+nym_name);
+                }
             }
 
 

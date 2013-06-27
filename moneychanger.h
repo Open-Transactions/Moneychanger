@@ -60,6 +60,7 @@ private:
         ot_worker * ot_worker_background;
 
         QString default_nym_id;
+        QString default_nym_name;
 
         //Sqlite database(s)
         QSqlDatabase addressbook_db;
@@ -381,6 +382,8 @@ private:
 
             //Default Nym
             void mc_nymmanager_dialog();
+                //Load nym
+                void mc_systrayMenu_nym_load_nym(QString, QString);
 
             //Withdraw
                 //As Cash
