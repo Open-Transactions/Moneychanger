@@ -218,6 +218,9 @@ private:
                             //Remove nym button
                             QPushButton * mc_nym_manager_addremove_btngroup_removebtn;
 
+                    /** Third Row (most recent error) **/
+                        QLabel * mc_nym_manager_most_recent_erorr;
+
                 /** "Add Nym" Dialog **/
                 int mc_nymmanager_addnym_dialog_already_init;
                 int mc_nymmanager_addnym_dialog_advanced_showing;
@@ -241,6 +244,15 @@ private:
 
                         //Button (create nym)
                         QPushButton * mc_nym_manager_addnym_create_nym_btn;
+
+                /** "Remove Nym Dialog **/
+                int mc_nymmanager_removenym_dialog_already_init;
+                QDialog * mc_nym_manager_removenym_dialog;
+                    //Grid layout
+                    QGridLayout * mc_nym_manager_removenym_gridlayout;
+
+                        //Label (header)
+                        QLabel * mc_nym_manager_removenym_header;
 
 
                 /** Nym Manger Slot locks **/
@@ -360,6 +372,14 @@ private:
                                         QPushButton * mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_confirm;
 
 
+            //Deposit
+                int mc_deposit_already_init;
+                QDialog * mc_deposit_dialog;
+                    //Gridlayout
+                    QGridLayout * mc_deposit_gridlayout;
+
+                        //
+
     /**           **
      ** Functions **
      **           **/
@@ -392,10 +412,15 @@ private:
                 //As Voucher
                 void mc_withdraw_asvoucher_dialog();
 
+
+            //Deposit
+                void mc_deposit_show_dialog();
+
 private slots:
 
         //Nym Manager slots
             void mc_nymmanager_addnym_slot();
+            void mc_nymmanager_removenym_slot();
             void mc_nymmanager_dataChanged_slot(QModelIndex,QModelIndex);
 
                 //Add Nym Dialog slots
@@ -446,6 +471,11 @@ private slots:
                  void mc_withdraw_asvoucher_account_dropdown_highlighted_slot(int);
                  void mc_withdraw_asvoucher_confirm_amount_slot();
                  void mc_withdraw_asvoucher_cancel_amount_slot();
+
+
+            //Deposit
+                 void mc_deposit_slot();
+
 };
 
 #endif // MONEYCHANGER_H

@@ -16,6 +16,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 
     //Default nym
     default_nym_id = "";
+    default_nym_name = "";
 
     //Thread Related
     ot_worker_background = new ot_worker();
@@ -47,7 +48,9 @@ Moneychanger::Moneychanger(QWidget *parent)
         }
 
         //Ask OT what the display name of this nym is and store it for quick retrieval later on(mostly for "Default Nym" displaying" purposes")
-        default_nym_name =  QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(default_nym_id.toStdString()));
+        if(default_nym_id != ""){
+            default_nym_name =  QString::fromStdString(OTAPI_Wrap::GetNym_Name(default_nym_id.toStdString()));
+        }
 
     /* *** *** ***
      * Init Memory Trackers (there may be other int below than just memory trackers but generally there will be mostly memory trackers below)
@@ -74,6 +77,9 @@ Moneychanger::Moneychanger(QWidget *parent)
                 mc_nymmanager_addnym_dialog_already_init = 0;
                 mc_nymmanager_addnym_dialog_advanced_showing = 0;
 
+                //"Remove Nym" dialog
+                mc_nymmanager_removenym_dialog_already_init = 0;
+
             //Withdraw
                 //As Cash
                 mc_withdraw_ascash_dialog_already_init = 0;
@@ -82,6 +88,9 @@ Moneychanger::Moneychanger(QWidget *parent)
                 //As Voucher
                 mc_withdraw_asvoucher_dialog_already_init = 0;
                 mc_withdraw_asvoucher_confirm_dialog_already_init = 0;
+
+            //Deposit
+                mc_deposit_already_init = 0;
 
     //Init MC System Tray Icon
     mc_systrayIcon = new QSystemTrayIcon(this);
@@ -196,6 +205,8 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_systrayMenu_deposit = new QAction("Deposit", 0);
             mc_systrayMenu_deposit->setIcon(mc_systrayIcon_deposit);
             mc_systrayMenu->addAction(mc_systrayMenu_deposit);
+                //Connect button with re-action
+                connect(mc_systrayMenu_deposit, SIGNAL(triggered()), this, SLOT(mc_deposit_slot()));
 
 
             //Seperator
@@ -568,7 +579,7 @@ Moneychanger::~Moneychanger()
 
                         /** window properties **/
                             //Set window title
-                            mc_nym_manager_dialog->setWindowTitle("Pseudo-Nym Manager | Moneychanger");
+                            mc_nym_manager_dialog->setWindowTitle("Pseudonym Manager | Moneychanger");
 
                             //Set window on top
                             mc_nym_manager_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
@@ -578,14 +589,14 @@ Moneychanger::~Moneychanger()
                             mc_nym_manager_gridlayout = new QGridLayout(0);
                             mc_nym_manager_dialog->setLayout(mc_nym_manager_gridlayout);
 
-                            /* First Row in Address Book Grid */
+                            /* First Row in nym manager Grid */
                                 //Label (header)
                                 mc_nym_manager_label = new QLabel("<h3>Pseudo-Nym Manager</h3>", 0);
                                 mc_nym_manager_label->setAlignment(Qt::AlignRight);
                                 mc_nym_manager_gridlayout->addWidget(mc_nym_manager_label, 0,0, 1,2, Qt::AlignRight);
 
 
-                            /* Second Row in Address Book Grid */
+                            /* Second Row in nym manager Grid */
                                 /** First column in address book grid (left side) **/
                                     //Horizontal box (contains: List of pseudo nyms, add/remove buttons)
                                     mc_nym_manager_holder = new QWidget(0);
@@ -613,7 +624,7 @@ Moneychanger::~Moneychanger()
                                         mc_nym_manager_gridlayout->addWidget(mc_nym_manager_tableview, 1,0, 1,1);
 
 
-                                 /** Second column in address book grid (right side) **/
+                                 /** Second column in nym manager grid (right side) **/
                                     //Vertical box (contains: add/remove buttons)
                                     mc_nym_manager_addremove_btngroup_holder = new QWidget(0);
                                     mc_nym_manager_addremove_btngroup_vbox = new QVBoxLayout(0);
@@ -632,8 +643,13 @@ Moneychanger::~Moneychanger()
                                         mc_nym_manager_addremove_btngroup_removebtn = new QPushButton("Remove Nym", 0);
                                         mc_nym_manager_addremove_btngroup_removebtn->setStyleSheet("QPushButton{padding:0.5em;}");
                                         mc_nym_manager_addremove_btngroup_vbox->addWidget(mc_nym_manager_addremove_btngroup_removebtn, Qt::AlignTop);
+                                            //Connect the remove nym button with a re-action to it being "clicked"
+                                            connect(mc_nym_manager_addremove_btngroup_removebtn, SIGNAL(clicked()), this, SLOT(mc_nymmanager_removenym_slot()));
 
-
+                                /** Third column (Most revent error) **/
+                                    //Label
+                                        mc_nym_manager_most_recent_erorr = new QLabel("");
+                                        mc_nym_manager_gridlayout->addWidget(mc_nym_manager_most_recent_erorr, 2,0, 1,2, Qt::AlignHCenter);
 
                         /** show dialog **/
                             mc_nym_manager_dialog->show();
@@ -661,40 +677,40 @@ Moneychanger::~Moneychanger()
                         //Refresh the nym manager
                         /** Call OT for all information we need for this dialog **/
 
-                            QList<QVariant> account_list_id = QList<QVariant>();
-                            QList<QVariant> account_list_name = QList<QVariant>();
+                            QList<QVariant> nym_list_id = QList<QVariant>();
+                            QList<QVariant> nym_list_name = QList<QVariant>();
 
                             //Get account(s) information
-                            int32_t account_count = OTAPI_Wrap::GetAccountCount();
+                            int32_t nym_count = OTAPI_Wrap::GetNymCount();
 
-                            for(int a = 0; a < account_count; a++){
+                            for(int a = 0; a < nym_count; a++){
                                     //Get OT Account ID
-                                    QString OT_account_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(a));
+                                    QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::GetNym_ID(a));
 
                                     //Add to qlist
-                                    account_list_id.append(QVariant(OT_account_id));
+                                    nym_list_id.append(QVariant(OT_nym_id));
 
                                     //Get OT Account Name
-                                    QString OT_account_name = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(OTAPI_Wrap::GetAccountWallet_ID(a)));
+                                    QString OT_nym_name = QString::fromStdString(OTAPI_Wrap::GetNym_Name(OTAPI_Wrap::GetNym_ID(a)));
 
                                     //Add to qlist
-                                    account_list_name.append(QVariant(OT_account_name));
+                                    nym_list_name.append(QVariant(OT_nym_name));
 
                             }
 
                             //Add nym id and names to the manager list
-                            int total_nym_accounts = account_list_id.size();
+                            int total_nym_accounts = nym_list_id.size();
                             int row_index = 0;
                             for(int a = 0; a < total_nym_accounts; a++){
                                 //Add nym account name and id to the list.
 
                                 //Extract stuff for this row
-                                QString account_id = account_list_id.at(a).toString();
-                                QString account_name = account_list_name.at(a).toString();
+                                QString nym_id = nym_list_id.at(a).toString();
+                                QString nym_name = nym_list_name.at(a).toString();
 
                                 //Place extracted data into the table view
-                                QStandardItem * col_one = new QStandardItem(account_name);
-                                QStandardItem * col_two = new QStandardItem(account_id);
+                                QStandardItem * col_one = new QStandardItem(nym_name);
+                                QStandardItem * col_two = new QStandardItem(nym_id);
                                     //Column two is uneditable
                                     col_two->setEditable(0);
 
@@ -703,7 +719,7 @@ Moneychanger::~Moneychanger()
                                     col_three->setCheckable(1);
 
                                     //If this is the default pseudonym; if yes, mark as checked
-                                    if(default_nym_id == account_id){
+                                    if(default_nym_id == nym_id){
                                         col_three->setCheckState(Qt::Checked);
                                     }
 
@@ -1035,6 +1051,24 @@ Moneychanger::~Moneychanger()
             mc_nym_manager_addnym_dialog->resize(400, 290);
         }
 
+        void Moneychanger::mc_nymmanager_removenym_slot(){
+            //Init, then show; If already init, then just show
+            if(mc_nymmanager_removenym_dialog_already_init == 0){
+                mc_nym_manager_removenym_dialog = new QDialog(0);
+                mc_nym_manager_removenym_dialog->setWindowTitle("Remove Pseudonym | Moneychanger");
+                mc_nym_manager_removenym_dialog->setModal(1);
+                    //Grid layout
+                    mc_nym_manager_removenym_gridlayout = new QGridLayout(0);
+                    mc_nym_manager_removenym_dialog->setLayout(mc_nym_manager_removenym_gridlayout);
+
+                //Show remove nym dialog
+                    mc_nym_manager_removenym_dialog->show();
+            }else{
+                //Already init, just show.
+                    mc_nym_manager_removenym_dialog->show();
+            }
+        }
+
         void Moneychanger::mc_nymmanager_dataChanged_slot(QModelIndex topLeft, QModelIndex bottomRight){
             //Ignore triggers while "refreshing" the nym manager.
             if(mc_nymmanager_refreshing == 0 && mc_nymmanager_proccessing_dataChanged == 0){
@@ -1043,7 +1077,24 @@ Moneychanger::~Moneychanger()
 
                 /** Proccess the "Display Name" column **/
                 if(topLeft.column() == 0){
-                    qDebug() << "EDITING FIRST COLUMN";
+                    //Get the value (as std::string) of the nym id
+                    QStandardItem * nym_id_item = mc_nym_manager_tableview_itemmodel->item(topLeft.row(), 1);
+                    QString nym_id_string = nym_id_item->text();
+                    std::string nym_id = nym_id_string.toStdString();
+
+                    //Get the value (as std::string) of the newly set name of the nym id
+                    QVariant new_nym_name_variant = topLeft.data();
+                    QString new_nym_name_string = new_nym_name_variant.toString();
+                    std::string new_nym_name = new_nym_name_string.toStdString();
+                    qDebug() << nym_id_string;
+                    //Update the newly set display name for this nym in OT ( call ot for updating )
+                    bool setName_successfull = OTAPI_Wrap::SetNym_Name(nym_id, nym_id, new_nym_name);
+                    if(setName_successfull == true){
+                       //Do nothing (There is nothing that needs to be done)
+                    }else{
+                        //Setting of the display name for this nym failed, revert value visually, display recent error
+                        mc_nym_manager_most_recent_erorr->setText("<span style='color:#A80000'><b>Renaming that nym failed. (Error Code: 100)</b></span>");
+                    }
                 }
 
                 /** Proccess the "Default" column (if triggered) **/
@@ -1084,6 +1135,13 @@ Moneychanger::~Moneychanger()
                             //Update the checkbox item visually.
                             checkbox_model->setCheckState(Qt::Checked);
                             mc_nym_manager_tableview_itemmodel->setItem(a, 2, checkbox_model);
+
+                            //Update default nym at realtime memory backend
+                            default_nym_id = nym_id_string;
+                            default_nym_name = QString::fromStdString(OTAPI_Wrap::GetNym_Name(nym_id_string.toStdString()));
+                            mc_systrayMenu_nym_load_nym(default_nym_id, default_nym_name);
+
+
                         }
 
                     }
@@ -1537,3 +1595,37 @@ Moneychanger::~Moneychanger()
                 //Close the dialog/window
                 mc_systrayMenu_withdraw_asvoucher_confirm_dialog->hide();
             }
+
+
+
+
+
+
+            //Deposit Slots
+
+                /**
+                 ** Deposit menu button clicked
+                 **/
+                void Moneychanger::mc_deposit_slot(){
+                    mc_deposit_show_dialog();
+                }
+
+                /**
+                 ** Deposit dialog
+                 **/
+                void Moneychanger::mc_deposit_show_dialog(){
+                    if(mc_deposit_already_init == 0){
+                        //Init deposit, then show.
+                        mc_deposit_dialog = new QDialog(0);
+                        mc_deposit_dialog->setWindowTitle("Deposit | Moneychanger");
+                            //Gridlayout
+                            mc_deposit_gridlayout = new QGridLayout(0);
+                            mc_deposit_dialog->setLayout(mc_deposit_gridlayout);
+
+                        //Show
+                            mc_deposit_dialog->show();
+                    }else{
+                        //Show
+                    }
+                }
+
