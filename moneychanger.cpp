@@ -153,14 +153,20 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_systrayMenu->addSeparator();
 
             //Nym/Account section
-            mc_systrayMenu_nym = new QAction("Nym: Load Nym", 0);
+            mc_systrayMenu_nym = new QMenu("Nym: Load Nym", 0);
             mc_systrayMenu_nym->setIcon(mc_systrayIcon_nym);
-            mc_systrayMenu->addAction(mc_systrayMenu_nym);
-                //Connect the nym/account to a re-action upon "clicked"
-                connect(mc_systrayMenu_nym, SIGNAL(triggered()), this, SLOT(mc_defaultnym_slot()));
+            mc_systrayMenu->addMenu(mc_systrayMenu_nym);
+                //Add reaction to the "pseudonym" action.
+                connect(mc_systrayMenu_nym, SIGNAL(triggered(QAction*)), this, SLOT(mc_nymselection_triggered(QAction*)));
 
                 //Load "default" nym
-                mc_systrayMenu_nym_load_nym(default_nym_id, default_nym_name);
+                mc_systrayMenu_nym_setDefaultNym(default_nym_id, default_nym_name);
+
+                //Init nym submenu
+                    nym_list_id = new QList<QVariant>();
+                    nym_list_name = new QList<QVariant>();
+
+                    mc_systrayMenu_reload_nymlist();
 
             //Server section
             mc_systrayMenu_server = new QAction("Server: None", 0);
@@ -226,9 +232,18 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_systrayMenu->addSeparator();
 
             //Advanced
-            mc_systrayMenu_advanced = new QAction("Advanced", 0);
+            mc_systrayMenu_advanced = new QMenu("Advanced", 0);
             mc_systrayMenu_advanced->setIcon(mc_systrayIcon_advanced);
-            mc_systrayMenu->addAction(mc_systrayMenu_advanced);
+            mc_systrayMenu->addMenu(mc_systrayMenu_advanced);
+                //Advanced submenu
+                mc_systrayMenu_advanced_agreements = new QAction("Agreements", 0);
+                mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_agreements);
+
+                mc_systrayMenu_advanced_markets = new QAction("Markets", 0);
+                mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_markets);
+
+                mc_systrayMenu_advanced_settings = new QAction("Settings", 0);
+                mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_settings);
 
             //Seperator
             mc_systrayMenu->addSeparator();
@@ -609,15 +624,13 @@ Moneychanger::~Moneychanger()
                                         mc_nym_manager_tableview_itemmodel->setHorizontalHeaderItem(0, new QStandardItem(QString("Pseudonym Display Name")));
                                         mc_nym_manager_tableview_itemmodel->setHorizontalHeaderItem(1, new QStandardItem(QString("Pseudonym ID")));
                                         mc_nym_manager_tableview_itemmodel->setHorizontalHeaderItem(2, new QStandardItem(QString("Default")));
-                                        //mc_nym_manager_tableview_itemmodel->setHorizontalHeaderItem(3, new QStandardItem(QString("Backend DB ID")));
+
                                         //Connect tableviews' backend "dataChanged" signal to a re-action.
                                             connect(mc_nym_manager_tableview_itemmodel, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(mc_nymmanager_dataChanged_slot(QModelIndex,QModelIndex)));
 
                                         mc_nym_manager_tableview = new QTableView(0);
                                         mc_nym_manager_tableview->setSelectionMode(QAbstractItemView::SingleSelection);
                                         mc_nym_manager_tableview->setModel(mc_nym_manager_tableview_itemmodel);
-
-                                        //mc_nym_manager_tableview->hideColumn(3);
                                         mc_nym_manager_tableview->setColumnWidth(0, 175);
                                         mc_nym_manager_tableview->setColumnWidth(1, 150);
                                         mc_nym_manager_tableview->setColumnWidth(2, 75);
@@ -672,42 +685,22 @@ Moneychanger::~Moneychanger()
                         //remove all rows from the nym manager (so we can refresh any newly changed data)
                         mc_nym_manager_tableview_itemmodel->removeRows(0, mc_nym_manager_tableview_itemmodel->rowCount());
 
-                        //Get the default set nym (So we can have a "radio" form input "bubbled/checked" on the defualt nym)
-
                         //Refresh the nym manager
-                        /** Call OT for all information we need for this dialog **/
-
-                            QList<QVariant> nym_list_id = QList<QVariant>();
-                            QList<QVariant> nym_list_name = QList<QVariant>();
-
-                            //Get account(s) information
-                            int32_t nym_count = OTAPI_Wrap::GetNymCount();
-
-                            for(int a = 0; a < nym_count; a++){
-                                    //Get OT Account ID
-                                    QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::GetNym_ID(a));
-
-                                    //Add to qlist
-                                    nym_list_id.append(QVariant(OT_nym_id));
-
-                                    //Get OT Account Name
-                                    QString OT_nym_name = QString::fromStdString(OTAPI_Wrap::GetNym_Name(OTAPI_Wrap::GetNym_ID(a)));
-
-                                    //Add to qlist
-                                    nym_list_name.append(QVariant(OT_nym_name));
-
-                            }
+                            //Refresh nym list
+                            mc_systrayMenu_reload_nymlist();
 
                             //Add nym id and names to the manager list
-                            int total_nym_accounts = nym_list_id.size();
+                            int total_nym_accounts = nym_list_id->size();
+                            qDebug() << "total: " << total_nym_accounts;
                             int row_index = 0;
                             for(int a = 0; a < total_nym_accounts; a++){
                                 //Add nym account name and id to the list.
 
-                                //Extract stuff for this row
-                                QString nym_id = nym_list_id.at(a).toString();
-                                QString nym_name = nym_list_name.at(a).toString();
 
+                                //Extract stuff for this row
+                                QString nym_id = nym_list_id->at(a).toString();
+                                QString nym_name = nym_list_name->at(a).toString();
+                                qDebug() << "ADDING NYM ID: " << nym_id;
                                 //Place extracted data into the table view
                                 QStandardItem * col_one = new QStandardItem(nym_name);
                                 QStandardItem * col_two = new QStandardItem(nym_id);
@@ -729,8 +722,6 @@ Moneychanger::~Moneychanger()
 
                                 //Increment index
                                 row_index += 1;
-
-                                //Clear variables
                             }
                             /** Unflag as current refreshing **/
                             mc_nymmanager_refreshing = 0;
@@ -743,11 +734,75 @@ Moneychanger::~Moneychanger()
             }
 
 
-            void Moneychanger::mc_systrayMenu_nym_load_nym(QString nym_id, QString nym_name){
+            //This was mistakenly named nym_load_nym, should be set default nym
+            //Set Default Nym
+            void Moneychanger::mc_systrayMenu_nym_setDefaultNym(QString nym_id, QString nym_name){
+                //Set default nym internal memory
+                default_nym_id = nym_id;
+                default_nym_name = nym_name;
+
+                //SQL UPDATE default nym
+                QSqlQuery update_default_nym(addressbook_db);
+                update_default_nym.exec(QString("UPDATE `default_nym` SET `nym` = '%1'").arg(nym_id));
+
                 //Rename "NYM:" if a nym is loaded
                 if(nym_id != ""){
-                    mc_systrayMenu_nym->setText("Nym: "+nym_name);
+                    mc_systrayMenu_nym->setTitle("Nym: "+nym_name);
                 }
+            }
+
+            void Moneychanger::mc_systrayMenu_reload_nymlist(){
+                qDebug() << "RELOAD NYM LIST";
+                //Get account(s) information
+                int32_t nym_count_int32_t = OTAPI_Wrap::GetNymCount();
+                int nym_count = nym_count_int32_t;
+
+                QList<QAction*> action_list_to_nym_submenu = mc_systrayMenu_nym->actions();
+                //Remove all sub-menus from the systray
+                for(int a = action_list_to_nym_submenu.size(); a > 0; a--){
+                    qDebug() << "REOMVOING" << a;
+                    QPoint tmp_point = QPoint(a, 0);
+                    mc_systrayMenu_nym->removeAction(mc_systrayMenu_nym->actionAt(tmp_point));
+                }
+
+                //Add a "Manage pseudonym" action button (and connection)
+                QAction * manage_nyms = new QAction("Manage Pseudonyms", 0);
+                manage_nyms->setData(QVariant(QString("openmanager")));
+
+                mc_systrayMenu_nym->addAction(manage_nyms);
+
+                //Remove all nyms from the backend list
+                int tmp_nym_list_id_size = nym_list_id->size();
+                for(int a = 0; a < tmp_nym_list_id_size; a++){
+                    nym_list_id->removeAt(0);
+                }
+
+                int tmp_nym_list_name_size = nym_list_name->size();
+                for(int a = 0; a < tmp_nym_list_name_size; a++){
+                    nym_list_name->removeAt(0);
+                }
+
+
+                for(int a = 0; a < nym_count; a++){
+                        //Get OT Account ID
+                        QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::GetNym_ID(a));
+
+                        //Add to qlist
+                        nym_list_id->append(QVariant(OT_nym_id));
+
+                        //Get OT Account Name
+                        QString OT_nym_name = QString::fromStdString(OTAPI_Wrap::GetNym_Name(OTAPI_Wrap::GetNym_ID(a)));
+
+                        //Add to qlist
+                        nym_list_name->append(QVariant(OT_nym_name));
+
+                        //Append to submenu of nym
+                        QAction * next_nym_action = new QAction(mc_systrayIcon_nym, OT_nym_name, 0);
+                        next_nym_action->setData(QVariant(OT_nym_id));
+                        mc_systrayMenu_nym->addAction(next_nym_action);
+                }
+
+
             }
 
 
@@ -1126,20 +1181,14 @@ Moneychanger::~Moneychanger()
                                 QStandardItem * nym_id = mc_nym_manager_tableview_itemmodel->item(a, 1);
                                 QVariant nym_id_variant = nym_id->text();
                                 QString nym_id_string = nym_id_variant.toString();
-
-                                //SQL UPDATE default nym
-                                QSqlQuery update_default_nym(addressbook_db);
-                                update_default_nym.exec(QString("UPDATE `default_nym` SET `nym` = '%1'").arg(nym_id_string));
-                                qDebug() << update_default_nym.lastError();
-
+                                QString nym_name_string = QString::fromStdString(OTAPI_Wrap::GetNym_Name(nym_id_string.toStdString()));
                             //Update the checkbox item visually.
                             checkbox_model->setCheckState(Qt::Checked);
                             mc_nym_manager_tableview_itemmodel->setItem(a, 2, checkbox_model);
 
                             //Update default nym at realtime memory backend
-                            default_nym_id = nym_id_string;
-                            default_nym_name = QString::fromStdString(OTAPI_Wrap::GetNym_Name(nym_id_string.toStdString()));
-                            mc_systrayMenu_nym_load_nym(default_nym_id, default_nym_name);
+
+                            mc_systrayMenu_nym_setDefaultNym(nym_id_string, nym_name_string);
 
 
                         }
@@ -1319,11 +1368,32 @@ Moneychanger::~Moneychanger()
         }
 
 
-        //Default Nym
+        //Nym manager "clicked"
         void Moneychanger::mc_defaultnym_slot(){
             //The operator has requested to open the dialog to the "Nym Manager";
             mc_nymmanager_dialog();
         }
+
+            //Nym new default selected from systray
+            void Moneychanger::mc_nymselection_triggered(QAction*action_triggered){
+                //Check if the user wants to open the nym manager (or) select a different default nym
+                QString action_triggered_string = QVariant(action_triggered->data()).toString();
+                qDebug() << "NYM TRIGGERED" << action_triggered_string;
+                if(action_triggered_string == "openmanager"){
+                    //Open nym manager
+                    mc_defaultnym_slot();
+                }else{
+                    //Set new nym default
+                    QString action_triggered_string_nym_name = QVariant(action_triggered->text()).toString();
+                    mc_systrayMenu_nym_setDefaultNym(action_triggered_string, action_triggered_string_nym_name);
+
+                    //Refresh the nym manager (ONLY if it is open)
+                    /*if(mc_nym_manager_dialog->isVisible()){
+                        mc_nymmanager_dialog();
+                    }*/
+                }
+
+            }
 
 
         //Withdraw Slots
