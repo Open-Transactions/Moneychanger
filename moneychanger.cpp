@@ -156,6 +156,13 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_systrayMenu_nym = new QMenu("Nym: Load Nym", 0);
             mc_systrayMenu_nym->setIcon(mc_systrayIcon_nym);
             mc_systrayMenu->addMenu(mc_systrayMenu_nym);
+
+                //Add a "Manage pseudonym" action button (and connection)
+                QAction * manage_nyms = new QAction("Manage Pseudonyms", 0);
+                manage_nyms->setData(QVariant(QString("openmanager")));
+
+                mc_systrayMenu_nym->addAction(manage_nyms);
+
                 //Add reaction to the "pseudonym" action.
                 connect(mc_systrayMenu_nym, SIGNAL(triggered(QAction*)), this, SLOT(mc_nymselection_triggered(QAction*)));
 
@@ -686,8 +693,8 @@ Moneychanger::~Moneychanger()
                         mc_nym_manager_tableview_itemmodel->removeRows(0, mc_nym_manager_tableview_itemmodel->rowCount());
 
                         //Refresh the nym manager
-                            //Refresh nym list
-                            mc_systrayMenu_reload_nymlist();
+                            //Refresh nym list (can't be done, there is a glitch where if you open the nym manger dialog twice it does wierd things to the systray for nym menus )
+                            //mc_systrayMenu_reload_nymlist();
 
                             //Add nym id and names to the manager list
                             int total_nym_accounts = nym_list_id->size();
@@ -765,23 +772,16 @@ Moneychanger::~Moneychanger()
                     mc_systrayMenu_nym->removeAction(mc_systrayMenu_nym->actionAt(tmp_point));
                 }
 
-                //Add a "Manage pseudonym" action button (and connection)
-                QAction * manage_nyms = new QAction("Manage Pseudonyms", 0);
-                manage_nyms->setData(QVariant(QString("openmanager")));
-
-                mc_systrayMenu_nym->addAction(manage_nyms);
-
                 //Remove all nyms from the backend list
                 int tmp_nym_list_id_size = nym_list_id->size();
                 for(int a = 0; a < tmp_nym_list_id_size; a++){
-                    nym_list_id->removeAt(0);
+                    nym_list_id->removeLast();
                 }
 
                 int tmp_nym_list_name_size = nym_list_name->size();
                 for(int a = 0; a < tmp_nym_list_name_size; a++){
-                    nym_list_name->removeAt(0);
+                    nym_list_name->removeLast();
                 }
-
 
                 for(int a = 0; a < nym_count; a++){
                         //Get OT Account ID
@@ -809,29 +809,6 @@ Moneychanger::~Moneychanger()
         /** Withdraw **/
             //As Cash
             void Moneychanger::mc_withdraw_ascash_dialog(){
-                /** Call OT for all information we need for this dialog **/
-
-                    QList<QVariant> account_list_id = QList<QVariant>();
-                    QList<QVariant> account_list_name = QList<QVariant>();
-
-                    //Get account(s) information
-                    int32_t account_count = OTAPI_Wrap::GetAccountCount();
-
-                    for(int a = 0; a < account_count; a++){
-                            //Get OT Account ID
-                            QString OT_account_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(a));
-
-                            //Add to qlist
-                            account_list_id.append(QVariant(OT_account_id));
-
-                            //Get OT Account Name
-                            QString OT_account_name = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(OTAPI_Wrap::GetAccountWallet_ID(a)));
-
-                            //Add to qlist
-                            account_list_name.append(QVariant(OT_account_name));
-
-                    }
-
 
 
                 /** If the withdraw as cash dialog has already been init,
@@ -868,13 +845,6 @@ Moneychanger::~Moneychanger()
                                 mc_systrayMenu_withdraw_ascash_account_dropdown->setStyleSheet("QComboBox{padding:0.5em;}");
                                 mc_systrayMenu_withdraw_ascash_gridlayout->addWidget(mc_systrayMenu_withdraw_ascash_account_dropdown, 2, 0, 1, 1);
 
-                                    //Add items to account dropdown box
-                                    for(int a = 0; a < account_count; a++){
-                                        //Add to combobox
-                                            //Get OT Account ID
-                                            mc_systrayMenu_withdraw_ascash_account_dropdown->addItem(account_list_name.at(a).toString(), account_list_id.at(a).toString());
-                                    }
-
                                     //Make connection to "hovering over items" to showing their IDs above the combobox (for user clarity and backend id indexing)
                                     connect(mc_systrayMenu_withdraw_ascash_account_dropdown, SIGNAL(highlighted(int)), this, SLOT(mc_withdraw_ascash_account_dropdown_highlighted_slot(int)));
 
@@ -907,32 +877,21 @@ Moneychanger::~Moneychanger()
 
                 //Resize
                 mc_systrayMenu_withdraw_ascash_dialog->resize(400, 120);
+
+                /** Refresh dynamic lists **/
+                //remove all items from nym dropdown box
+                for(int a = 0; a <  mc_systrayMenu_withdraw_ascash_account_dropdown->count(); a++){
+                    mc_systrayMenu_withdraw_ascash_account_dropdown->removeItem(0);
+                }
+                for(int a = 0; a < nym_list_id->size(); a++){
+                    //Add to combobox
+                        //Get OT Account ID
+                        mc_systrayMenu_withdraw_ascash_account_dropdown->addItem(nym_list_name->at(a).toString(), nym_list_id->at(a).toString());
+                }
             }
 
         //As Voucher
             void Moneychanger::mc_withdraw_asvoucher_dialog(){
-                /** Call OT for all information we need for this dialog **/
-
-                    QList<QVariant> account_list_id = QList<QVariant>();
-                    QList<QVariant> account_list_name = QList<QVariant>();
-
-                    //Get account(s) information
-                    int32_t account_count = OTAPI_Wrap::GetAccountCount();
-
-                    for(int a = 0; a < account_count; a++){
-                            //Get OT Account ID
-                            QString OT_account_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(a));
-
-                            //Add to qlist
-                            account_list_id.append(QVariant(OT_account_id));
-
-                            //Get OT Account Name
-                            QString OT_account_name = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(OTAPI_Wrap::GetAccountWallet_ID(a)));
-
-                            //Add to qlist
-                            account_list_name.append(QVariant(OT_account_name));
-
-                    }
 
 
                     /** If the withdraw as voucher dialog has already been init,
@@ -968,13 +927,6 @@ Moneychanger::~Moneychanger()
 
                                     mc_systrayMenu_withdraw_asvoucher_account_dropdown->setStyleSheet("QComboBox{padding:0.5em;}");
                                     mc_systrayMenu_withdraw_asvoucher_gridlayout->addWidget(mc_systrayMenu_withdraw_asvoucher_account_dropdown, 2,0, 1,1);
-
-                                        //Add items to account dropdown box
-                                        for(int a = 0; a < account_count; a++){
-                                            //Add to combobox
-                                                //Get OT Account ID
-                                                mc_systrayMenu_withdraw_asvoucher_account_dropdown->addItem(account_list_name.at(a).toString(), account_list_id.at(a).toString());
-                                        }
 
                                         //Make connection to "hovering over items" to showing their IDs above the combobox (for user clarity and backend id indexing)
                                         connect(mc_systrayMenu_withdraw_asvoucher_account_dropdown, SIGNAL(highlighted(int)), this, SLOT(mc_withdraw_asvoucher_account_dropdown_highlighted_slot(int)));
@@ -1034,6 +986,19 @@ Moneychanger::~Moneychanger()
 
                     //Resize
                     mc_systrayMenu_withdraw_asvoucher_dialog->resize(400, 120);
+
+
+                    /** Refresh dynamic lists **/
+                    //remove all items from nym dropdown box
+                    for(int a = 0; a < mc_systrayMenu_withdraw_asvoucher_account_dropdown->count(); a++){
+                        mc_systrayMenu_withdraw_asvoucher_account_dropdown->removeItem(0);
+                    }
+
+                    for(int a = 0; a < nym_list_id->size(); a++){
+                        //Add to combobox
+                            //Get OT Account ID
+                            mc_systrayMenu_withdraw_asvoucher_account_dropdown->addItem(nym_list_name->at(a).toString(), nym_list_id->at(a).toString());
+                    }
             }
 
 
@@ -1692,10 +1657,25 @@ Moneychanger::~Moneychanger()
                             mc_deposit_gridlayout = new QGridLayout(0);
                             mc_deposit_dialog->setLayout(mc_deposit_gridlayout);
 
+                                //Label (header)
+                                mc_deposit_header_label = new QLabel("<h2>Deposit</h2>");
+                                mc_deposit_header_label->setAlignment(Qt::AlignRight);
+                                mc_deposit_gridlayout->addWidget(mc_deposit_header_label, 0,0, 1,1);
+
+                                //Combobox (choose deposit type)
+                                mc_deposit_deposit_type = new QComboBox(0);
+                                mc_deposit_gridlayout->addWidget(mc_deposit_deposit_type, 1,0, 1,1, Qt::AlignHCenter);
+                                mc_deposit_deposit_type->addItem("Deposit into an Account");
+                                mc_deposit_deposit_type->addItem("Deposit into your Purse");
+
                         //Show
                             mc_deposit_dialog->show();
                     }else{
                         //Show
+                            mc_deposit_dialog->show();
                     }
+
+                    //Resize
+                    mc_deposit_dialog->resize(600, 300);
                 }
 

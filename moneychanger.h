@@ -386,7 +386,11 @@ private:
                     //Gridlayout
                     QGridLayout * mc_deposit_gridlayout;
 
-                        //
+                        //header (label)
+                        QLabel * mc_deposit_header_label;
+
+                        //Dropdown box (combobox) (choose deposit type)
+                        QComboBox * mc_deposit_deposit_type;
 
     /**           **
      ** Functions **
