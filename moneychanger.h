@@ -6,7 +6,9 @@
 #include <QtSql>
 #include <QMenu>
 #include <QList>
+#include <QMutex>
 #include <QDebug>
+#include <QTimer>
 #include <QLabel>
 #include <QWidget>
 #include <QDialog>
@@ -19,7 +21,8 @@
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QPushButton>
- #include <QRadioButton>
+#include <QMutexLocker>
+#include <QRadioButton>
 #include <QSystemTrayIcon>
 #include <QCoreApplication>
 #include <QStandardItemModel>
@@ -29,6 +32,10 @@
 #include <opentxs/OT_ME.h>
 #include <opentxs/OTLog.h>
 
+#include "ot_worker.h"
+
+#include "MTRecordList.h"
+#include "MTRecord.h"
 
 class Moneychanger : public QWidget
 {
@@ -49,6 +56,8 @@ private:
      **           **/
         //Open Transaction
         OT_ME * ot_me;
+
+        ot_worker * ot_worker_background;
 
         //Sqlite database(s)
         QSqlDatabase addressbook_db;
@@ -121,7 +130,14 @@ private:
 
             QAction * mc_systrayMenu_overview;
 
-            QAction * mc_systrayMenu_nym;
+            QMenu * mc_systrayMenu_nym;
+                //pseudonym list (backend) [For nym list in the qmenu and the nym manager]
+                QList<QVariant> * nym_list_id;
+                QList<QVariant> * nym_list_name;
+
+                //pseudonym default selected (backend) [For saving the user supplied default, set from DB and user selections]
+                QString default_nym_id;
+                QString default_nym_name;
             QAction * mc_systrayMenu_server;
 
             QAction * mc_systrayMenu_goldaccount;
@@ -137,11 +153,47 @@ private:
             QAction * mc_systrayMenu_sendfunds;
             QAction * mc_systrayMenu_requestpayment;
 
-            QAction * mc_systrayMenu_advanced;
+            QMenu * mc_systrayMenu_advanced;
+                //Advanced submenu
+                QAction * mc_systrayMenu_advanced_agreements;
+                QAction * mc_systrayMenu_advanced_markets;
+                QAction * mc_systrayMenu_advanced_settings;
 
             QAction * mc_systrayMenu_bottomblank;
 
         //MC Systray Dialogs
+            /** Overview **/
+            int mc_overview_already_init;
+            QMutex mc_overview_refreshing_visuals_mutex;
+            QDialog * mc_overview_dialog_page;
+                //Grid layout
+                QGridLayout * mc_overview_gridlayout;
+                    //Header (label)
+                    QLabel * mc_overview_header_label;
+
+                    //Horizontal Two Pane(incoming/Outgoing) layout
+                    QWidget * mc_overview_vbox_twopane_holder;
+                    QVBoxLayout * mc_overview_vbox_twopane;
+                        //incoming (pane)
+                        QWidget * mc_overview_incoming_pane_holder;
+                        QVBoxLayout * mc_overview_incoming_pane;
+                            //Header (label)
+                            QLabel * mc_overview_incoming_header_label;
+
+                            //Table view
+                            QStandardItemModel * mc_overview_incoming_standarditemmodel;
+                            QTableView * mc_overview_incoming_tableview;
+
+                        //Outgoing Table View
+                        QWidget * mc_overview_outgoing_pane_holder;
+                        QVBoxLayout * mc_overview_outgoing_pane;
+                            //Header (label)
+                            QLabel * mc_overview_outgoing_header_label;
+
+                            //Tabel view
+                            QStandardItemModel * mc_overview_outgoing_standarditemmodel;
+                            QTableView * mc_overview_outgoing_tableview;
+
 
             /** Nym Manager **/
             int mc_nymmanager_already_init;
@@ -174,6 +226,9 @@ private:
                             //Remove nym button
                             QPushButton * mc_nym_manager_addremove_btngroup_removebtn;
 
+                    /** Third Row (most recent error) **/
+                        QLabel * mc_nym_manager_most_recent_erorr;
+
                 /** "Add Nym" Dialog **/
                 int mc_nymmanager_addnym_dialog_already_init;
                 int mc_nymmanager_addnym_dialog_advanced_showing;
@@ -197,6 +252,15 @@ private:
 
                         //Button (create nym)
                         QPushButton * mc_nym_manager_addnym_create_nym_btn;
+
+                /** "Remove Nym Dialog **/
+                int mc_nymmanager_removenym_dialog_already_init;
+                QDialog * mc_nym_manager_removenym_dialog;
+                    //Grid layout
+                    QGridLayout * mc_nym_manager_removenym_gridlayout;
+
+                        //Label (header)
+                        QLabel * mc_nym_manager_removenym_header;
 
 
                 /** Nym Manger Slot locks **/
@@ -316,6 +380,18 @@ private:
                                         QPushButton * mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_confirm;
 
 
+            //Deposit
+                int mc_deposit_already_init;
+                QDialog * mc_deposit_dialog;
+                    //Gridlayout
+                    QGridLayout * mc_deposit_gridlayout;
+
+                        //header (label)
+                        QLabel * mc_deposit_header_label;
+
+                        //Dropdown box (combobox) (choose deposit type)
+                        QComboBox * mc_deposit_deposit_type;
+
     /**           **
      ** Functions **
      **           **/
@@ -331,8 +407,18 @@ private:
 
         //Menu Dialog
 
+            //Overview
+            void mc_overview_dialog();
+                //Refresh visual
+                void mc_overview_dialog_refresh();
+
             //Default Nym
             void mc_nymmanager_dialog();
+                //Load nym
+                void mc_systrayMenu_nym_setDefaultNym(QString, QString);
+
+                //Reload nym list
+                void mc_systrayMenu_reload_nymlist();
 
             //Withdraw
                 //As Cash
@@ -341,13 +427,20 @@ private:
                 //As Voucher
                 void mc_withdraw_asvoucher_dialog();
 
+
+            //Deposit
+                void mc_deposit_show_dialog();
+
 private slots:
+
         //Nym Manager slots
             void mc_nymmanager_addnym_slot();
+            void mc_nymmanager_removenym_slot();
             void mc_nymmanager_dataChanged_slot(QModelIndex,QModelIndex);
 
                 //Add Nym Dialog slots
                 void mc_addnym_dialog_showadvanced_slot(QString);
+                void mc_addnym_dialog_createnym_slot();
 
 
         //Address Book slots
@@ -363,12 +456,20 @@ private slots:
             //When the operator has clicked the "Select and paste" button, we will detect what to paste and where to paste it into.
             void mc_addressbook_paste_selected_slot();
 
+
+
+
         //Systray Menu Slots
             //Shutdown
             void mc_shutdown_slot();
 
-            //Default Nym
+            //Overview
+            void mc_overview_slot();
+
+            //Nym
             void mc_defaultnym_slot();
+                //new default nym selected
+                void mc_nymselection_triggered(QAction*);
 
             //Withdraw
                 //As Cash
@@ -387,6 +488,11 @@ private slots:
                  void mc_withdraw_asvoucher_account_dropdown_highlighted_slot(int);
                  void mc_withdraw_asvoucher_confirm_amount_slot();
                  void mc_withdraw_asvoucher_cancel_amount_slot();
+
+
+            //Deposit
+                 void mc_deposit_slot();
+
 };
 
 #endif // MONEYCHANGER_H
