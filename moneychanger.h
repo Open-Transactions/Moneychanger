@@ -392,6 +392,16 @@ private:
                         //Dropdown box (combobox) (choose deposit type)
                         QComboBox * mc_deposit_deposit_type;
 
+                        /** Deposit into account **/
+                        QWidget * mc_deposit_account_widget;
+                        QHBoxLayout * mc_deposit_account_layout;
+                            //
+
+                        /** Deposit into purse **/
+                        QWidget * mc_deposit_purse_widget;
+                        QHBoxLayout * mc_deposit_purse_layout;
+                            //(header) Deposit into purse
+                            QLabel * mc_depsoit_purse_header_label;
     /**           **
      ** Functions **
      **           **/
@@ -430,6 +440,7 @@ private:
 
             //Deposit
                 void mc_deposit_show_dialog();
+
 
 private slots:
 
@@ -492,6 +503,9 @@ private slots:
 
             //Deposit
                  void mc_deposit_slot();
+
+                 //The user changed the "deposit type" switch open/available menu
+                 void mc_deposit_type_changed_slot(int);
 
 };
 

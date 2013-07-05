@@ -52,6 +52,10 @@ Moneychanger::Moneychanger(QWidget *parent)
             default_nym_name =  QString::fromStdString(OTAPI_Wrap::GetNym_Name(default_nym_id.toStdString()));
         }
 
+        //Ask OT for "cash account" information (might be just "Account" balance)
+        //Ask OT the purse information
+
+
     /* *** *** ***
      * Init Memory Trackers (there may be other int below than just memory trackers but generally there will be mostly memory trackers below)
      * Allows the program to boot with a low footprint -- keeps start times low no matter the program complexity;
@@ -1205,7 +1209,7 @@ Moneychanger::~Moneychanger()
             total_rows_in_table = mc_addressbook_tableview_itemmodel->rowCount();
 
             //Insert blank row
-            int blank_row_target_index = blank_row_target_index = total_rows_in_table;
+            int blank_row_target_index = total_rows_in_table;
             QStandardItem * blank_row_item = new QStandardItem("");
             mc_addressbook_tableview_itemmodel->setItem(blank_row_target_index,0,blank_row_item);
 
@@ -1352,10 +1356,10 @@ Moneychanger::~Moneychanger()
                     QString action_triggered_string_nym_name = QVariant(action_triggered->text()).toString();
                     mc_systrayMenu_nym_setDefaultNym(action_triggered_string, action_triggered_string_nym_name);
 
-                    //Refresh the nym manager (ONLY if it is open)
-                    /*if(mc_nym_manager_dialog->isVisible()){
+                    //Refresh the nym default selection in the nym manager (ONLY if it is open)
+                    if(mc_nym_manager_dialog->isVisible()){
                         mc_nymmanager_dialog();
-                    }*/
+                    }
                 }
 
             }
@@ -1664,9 +1668,33 @@ Moneychanger::~Moneychanger()
 
                                 //Combobox (choose deposit type)
                                 mc_deposit_deposit_type = new QComboBox(0);
+                                mc_deposit_deposit_type->setStyleSheet("QPushButton{padding:1em;}");
                                 mc_deposit_gridlayout->addWidget(mc_deposit_deposit_type, 1,0, 1,1, Qt::AlignHCenter);
-                                mc_deposit_deposit_type->addItem("Deposit into an Account");
-                                mc_deposit_deposit_type->addItem("Deposit into your Purse");
+                                mc_deposit_deposit_type->addItem("Deposit into an Account", QVariant(0));
+                                mc_deposit_deposit_type->addItem("Deposit into your Purse", QVariant(1));
+                                    //connect "update" to switching open depsoit account/purse screens.
+                                    connect(mc_deposit_deposit_type, SIGNAL(currentIndexChanged(int)), this, SLOT(mc_deposit_type_changed_slot(int)));
+
+                                /** Deposit into Account **/
+                                    mc_deposit_account_widget = new QWidget(0);
+                                    mc_deposit_account_layout = new QHBoxLayout(0);
+                                    mc_deposit_account_widget->setLayout(mc_deposit_account_layout);
+                                    mc_deposit_gridlayout->addWidget(mc_deposit_account_widget, 2,0, 1,1);
+
+                                /** Deposit into Purse **/
+                                    mc_deposit_purse_widget = new QWidget(0);
+                                    mc_deposit_purse_layout = new QHBoxLayout(0);
+                                    mc_deposit_purse_widget->setLayout(mc_deposit_purse_layout);
+                                    mc_deposit_gridlayout->addWidget(mc_deposit_purse_widget, 3,0, 1,1);
+                                        //Add to purse screen
+                                            //Header (Deposit to purse)
+                                            mc_depsoit_purse_header_label = new QLabel("<h3>Purse Deposit</h3>");
+                                            mc_deposit_purse_layout->addWidget(mc_depsoit_purse_header_label);
+
+                                    //Hide by default
+                                    mc_deposit_purse_widget->hide();
+
+
 
                         //Show
                             mc_deposit_dialog->show();
@@ -1679,3 +1707,9 @@ Moneychanger::~Moneychanger()
                     mc_deposit_dialog->resize(600, 300);
                 }
 
+
+
+                void Moneychanger::mc_deposit_type_changed_slot(int newIndex){
+                    /** 0 = Account; 1 = purse **/
+
+                }
