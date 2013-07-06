@@ -1,4 +1,3 @@
 Moneychanger
 ============
-
-A QT/C++ client for Open-Transactions.
+An intutive QT/C++ system tray client for Open-Transactions.
