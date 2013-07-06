@@ -18,6 +18,8 @@ Moneychanger::Moneychanger(QWidget *parent)
     default_nym_id = "";
     default_nym_name = "";
 
+    //Default server
+
     //Thread Related
     ot_worker_background = new ot_worker();
     ot_worker_background->mc_overview_ping();
@@ -32,24 +34,44 @@ Moneychanger::Moneychanger(QWidget *parent)
     bool db_opened = addressbook_db.open();
     qDebug() << "DB OPENED " << db_opened;
 
+        /** Default Nym **/
         //Query for default nym (So we know for setting later on -- Pseudonym manager)
         QSqlQuery default_nym_query(addressbook_db);
         default_nym_query.exec(QString("SELECT `nym` FROM `default_nym` LIMIT 0,1"));
         if(default_nym_query.size() == 0){
             QSqlQuery insert_blank_row(addressbook_db);
-            insert_blank_row.exec(QString("INSERT INTO `default_nym (`nym`) VALUES('')"));
-            insert_blank_row.first();
+            insert_blank_row.exec(QString("INSERT INTO `default_nym` (`nym`) VALUES('')"));
 
         }else{
             if(default_nym_query.next()){
                 QString default_nym_id_db = default_nym_query.value(0).toString();
                 default_nym_id = default_nym_id_db;
+
+                //Ask OT what the display name of this nym is and store it for quick retrieval later on(mostly for "Default Nym" displaying purposes)
+                if(default_nym_id != ""){
+                    default_nym_name =  QString::fromStdString(OTAPI_Wrap::GetNym_Name(default_nym_id.toStdString()));
+                }
             }
         }
 
-        //Ask OT what the display name of this nym is and store it for quick retrieval later on(mostly for "Default Nym" displaying" purposes")
-        if(default_nym_id != ""){
-            default_nym_name =  QString::fromStdString(OTAPI_Wrap::GetNym_Name(default_nym_id.toStdString()));
+        /** Default Server **/
+        //Query for the default server (So we know for setting later on -- Auto select server associations on later dialogs)
+        QSqlQuery default_server_query(addressbook_db);
+        default_server_query.exec(QString("SELECT `server` FROM `default_server` LIMIT 0,1"));
+        if(default_server_query.size() == 0){
+            QSqlQuery insert_blank_row(addressbook_db);
+            insert_blank_row.exec(QString("INSERT INTO `default_server` (`server`) VALUES(' ')"));
+
+        }else{
+            if(default_server_query.next()){
+                QString default_server_id_db = default_server_query.value(0).toString();
+                default_server_id = default_server_id_db;
+
+                //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
+                if(default_server_id != ""){
+                    default_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(default_server_id.toStdString()));
+                }
+            }
         }
 
         //Ask OT for "cash account" information (might be just "Account" balance)
@@ -164,7 +186,6 @@ Moneychanger::Moneychanger(QWidget *parent)
                 //Add a "Manage pseudonym" action button (and connection)
                 QAction * manage_nyms = new QAction("Manage Pseudonyms", 0);
                 manage_nyms->setData(QVariant(QString("openmanager")));
-
                 mc_systrayMenu_nym->addAction(manage_nyms);
 
                 //Add reaction to the "pseudonym" action.
@@ -180,10 +201,19 @@ Moneychanger::Moneychanger(QWidget *parent)
                     mc_systrayMenu_reload_nymlist();
 
             //Server section
-            mc_systrayMenu_server = new QAction("Server: None", 0);
+            mc_systrayMenu_server = new QMenu("Server: None", 0);
             mc_systrayMenu_server->setDisabled(1);
             mc_systrayMenu_server->setIcon(mc_systrayIcon_server);
-            mc_systrayMenu->addAction(mc_systrayMenu_server);
+            mc_systrayMenu->addMenu(mc_systrayMenu_server);
+
+                //Add a "Manage server" action button (and connection)
+                QAction * manage_servers = new QAction("Manage Servers", 0);
+                manage_servers->setData(QVariant(QString("openmanager")));
+                mc_systrayMenu_server->addAction(manage_servers);
+
+                //Add reaction to the "server selection" action
+
+
 
             //Seperator
             mc_systrayMenu->addSeparator();
@@ -282,8 +312,6 @@ Moneychanger::~Moneychanger()
         mc_systrayIcon->show();
 
         qDebug() << "BOOTING";
-
-        //OTAPI_Wrap::checkUser("tBy5mL14qSQXCJK7Uz3WlTOKRP9M0JZksA3Eg7EnnQ1", "T1Q3wZWgeTUoaUvn9m1lzIK5tn5wITlzxzrGNI8qtaV", "T1Q3wZWgeTUoaUvn9m1lzIK5tn5wITlzxzrGNI8qtaV");
     }
 
 /** ****** ****** ******   **
@@ -810,6 +838,16 @@ Moneychanger::~Moneychanger()
                 }
 
 
+            }
+
+
+
+
+        /** Server **/
+            void Moneychanger::mc_systrayMenu_server_setDefaultServer(QString server_id, QString server_name){
+                //Set default nym internal memory
+                default_server_id = server_id;
+                default_server_name = server_name;
             }
 
 

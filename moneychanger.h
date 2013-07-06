@@ -138,7 +138,14 @@ private:
                 //pseudonym default selected (backend) [For saving the user supplied default, set from DB and user selections]
                 QString default_nym_id;
                 QString default_nym_name;
-            QAction * mc_systrayMenu_server;
+            QMenu * mc_systrayMenu_server;
+                //server list (backend )
+                QList<QVariant> * server_list_id;
+                QList<QVariant> * server_list_name;
+
+                //server default selected (backend)
+                QString default_server_id;
+                QString default_server_name;
 
             QAction * mc_systrayMenu_goldaccount;
             QAction * mc_systrayMenu_goldcashpurse;
@@ -430,6 +437,10 @@ private:
 
                 //Reload nym list
                 void mc_systrayMenu_reload_nymlist();
+
+            //Default Server
+                //Load server
+                void mc_systrayMenu_server_setDefaultServer(QString, QString);
 
             //Withdraw
                 //As Cash
