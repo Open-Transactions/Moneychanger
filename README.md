@@ -2,4 +2,6 @@ Moneychanger
 ============
 An intutive QT/C++ system tray client for Open-Transactions.
 
-###Pre-requisites
+###Prerequisites for compiling & running.
+*QtCreator version 5+
+*
