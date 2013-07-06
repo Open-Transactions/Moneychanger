@@ -14,14 +14,15 @@ TEMPLATE = app
 DEPENDPATH += .
 SOURCES += main.cpp\
         moneychanger.cpp \
-    MTRecord.cpp \
-    MTRecordList.cpp \
-    ot_worker.cpp
+    src/ot_worker.cpp \
+    src/MTRecordList.cpp \
+    src/MTRecord.cpp
 
 HEADERS  += moneychanger.h \
-    MTRecordList.h \
-    MTRecord.h \
-    ot_worker.h
+    ot_worker.h \
+    src/ot_worker.h \
+    src/MTRecordList.h \
+    src/MTRecord.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 

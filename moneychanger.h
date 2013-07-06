@@ -32,10 +32,10 @@
 #include <opentxs/OT_ME.h>
 #include <opentxs/OTLog.h>
 
-#include "ot_worker.h"
+#include "src/ot_worker.h"
 
-#include "MTRecordList.h"
-#include "MTRecord.h"
+#include "src/MTRecordList.h"
+#include "src/MTRecord.h"
 
 class Moneychanger : public QWidget
 {
@@ -395,13 +395,14 @@ private:
                         /** Deposit into account **/
                         QWidget * mc_deposit_account_widget;
                         QHBoxLayout * mc_deposit_account_layout;
-                            //
+                            //(subheader) Deposit into account
+                            QLabel * mc_deposit_account_header_label;
 
                         /** Deposit into purse **/
                         QWidget * mc_deposit_purse_widget;
                         QHBoxLayout * mc_deposit_purse_layout;
                             //(header) Deposit into purse
-                            QLabel * mc_depsoit_purse_header_label;
+                            QLabel * mc_deposit_purse_header_label;
     /**           **
      ** Functions **
      **           **/

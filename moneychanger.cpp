@@ -1,5 +1,5 @@
 #include "moneychanger.h"
-#include "ot_worker.h"
+#include "src/ot_worker.h"
 
 #include "opentxs/OTAPI.h"
 #include "opentxs/OT_ME.h"
@@ -459,9 +459,6 @@ Moneychanger::~Moneychanger()
 
         /** Overview Dialog **/
             void Moneychanger::mc_overview_dialog(){
-                //Tell OT to repopulate
-                ot_worker_background->mc_overview_ping();
-
                 /** If the overview dialog has already been init
                  *  just show it, Other wise, init and show if this is
                  *  the first time.
@@ -543,7 +540,11 @@ Moneychanger::~Moneychanger()
                 mc_overview_dialog_page->resize(800, 400);
 
                 //Refresh visual data
-                mc_overview_dialog_refresh();
+                    //Tell OT to repopulate, and refresh backend.
+                    ot_worker_background->mc_overview_ping();
+
+                    //Now refresh the repopulated data visually
+                    mc_overview_dialog_refresh();
             }
 
             //Overview refresh function
@@ -556,6 +557,7 @@ Moneychanger::~Moneychanger()
 
                 //Clear all records (In the future we should have a scan for updates records mechinism for now we will go for a browser "refresh" all mechinism)
                 mc_overview_incoming_standarditemmodel->removeRows(0, mc_overview_incoming_standarditemmodel->rowCount(), QModelIndex());
+                mc_overview_outgoing_standarditemmodel->removeRows(0, mc_overview_outgoing_standarditemmodel->rowCount(), QModelIndex());
 
                 int total_records_to_visualize = current_list_copy.size();
                 for(int a = 0; a < total_records_to_visualize; a++){
@@ -579,6 +581,7 @@ Moneychanger::~Moneychanger()
                     // Does this record go to the outgoing or incomming tableview?
                         QVariant isOutgoing = temp_record_map["isoutgoing"];
                         bool isOutgoing_bool = isOutgoing.toBool();
+
                         if(isOutgoing_bool == false){
                             //Incomming
                             mc_overview_incoming_standarditemmodel->appendRow(new_row);
@@ -1357,9 +1360,13 @@ Moneychanger::~Moneychanger()
                     mc_systrayMenu_nym_setDefaultNym(action_triggered_string, action_triggered_string_nym_name);
 
                     //Refresh the nym default selection in the nym manager (ONLY if it is open)
-                    if(mc_nym_manager_dialog->isVisible()){
-                        mc_nymmanager_dialog();
-                    }
+                        //Check if nym manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
+                        if(mc_nymmanager_already_init == 1){
+                            //Refresh if the nym manager is currently open
+                            if(mc_nym_manager_dialog->isVisible()){
+                                mc_nymmanager_dialog();
+                            }
+                        }
                 }
 
             }
@@ -1659,18 +1666,31 @@ Moneychanger::~Moneychanger()
                         mc_deposit_dialog->setWindowTitle("Deposit | Moneychanger");
                             //Gridlayout
                             mc_deposit_gridlayout = new QGridLayout(0);
+                            mc_deposit_gridlayout->setColumnStretch(0, 1);
+                            mc_deposit_gridlayout->setColumnStretch(1,0);
                             mc_deposit_dialog->setLayout(mc_deposit_gridlayout);
 
                                 //Label (header)
-                                mc_deposit_header_label = new QLabel("<h2>Deposit</h2>");
+                                mc_deposit_header_label = new QLabel("<h1>Deposit</h1>");
                                 mc_deposit_header_label->setAlignment(Qt::AlignRight);
-                                mc_deposit_gridlayout->addWidget(mc_deposit_header_label, 0,0, 1,1);
+                                mc_deposit_gridlayout->addWidget(mc_deposit_header_label, 0,1, 1,1);
+                                    //Label ("Into Account") (subheader)
+                                    mc_deposit_account_header_label = new QLabel("<h3>Into Account</h3>");
+                                    mc_deposit_account_header_label->setAlignment(Qt::AlignRight);
+                                    mc_deposit_gridlayout->addWidget(mc_deposit_account_header_label, 1,1, 1,1);
+
+                                    //Label ("Into Purse") (subheader)
+                                    mc_deposit_purse_header_label = new QLabel("<h3>Into Purse</h3>");
+                                    mc_deposit_purse_header_label->setAlignment(Qt::AlignRight);
+                                    mc_deposit_gridlayout->addWidget(mc_deposit_purse_header_label, 1,1, 1,1);
+                                    mc_deposit_purse_header_label->hide();
+
 
                                 //Combobox (choose deposit type)
                                 mc_deposit_deposit_type = new QComboBox(0);
-                                mc_deposit_deposit_type->setStyleSheet("QPushButton{padding:1em;}");
-                                mc_deposit_gridlayout->addWidget(mc_deposit_deposit_type, 1,0, 1,1, Qt::AlignHCenter);
-                                mc_deposit_deposit_type->addItem("Deposit into an Account", QVariant(0));
+                                mc_deposit_deposit_type->setStyleSheet("QComboBox{padding:1em;}");
+                                mc_deposit_gridlayout->addWidget(mc_deposit_deposit_type, 0,0, 1,1, Qt::AlignHCenter);
+                                mc_deposit_deposit_type->addItem("Deposit into your Account", QVariant(0));
                                 mc_deposit_deposit_type->addItem("Deposit into your Purse", QVariant(1));
                                     //connect "update" to switching open depsoit account/purse screens.
                                     connect(mc_deposit_deposit_type, SIGNAL(currentIndexChanged(int)), this, SLOT(mc_deposit_type_changed_slot(int)));
@@ -1679,17 +1699,16 @@ Moneychanger::~Moneychanger()
                                     mc_deposit_account_widget = new QWidget(0);
                                     mc_deposit_account_layout = new QHBoxLayout(0);
                                     mc_deposit_account_widget->setLayout(mc_deposit_account_layout);
-                                    mc_deposit_gridlayout->addWidget(mc_deposit_account_widget, 2,0, 1,1);
+                                    mc_deposit_gridlayout->addWidget(mc_deposit_account_widget, 1,0, 1,1);
+                                        //Add to account screen
 
                                 /** Deposit into Purse **/
                                     mc_deposit_purse_widget = new QWidget(0);
                                     mc_deposit_purse_layout = new QHBoxLayout(0);
                                     mc_deposit_purse_widget->setLayout(mc_deposit_purse_layout);
-                                    mc_deposit_gridlayout->addWidget(mc_deposit_purse_widget, 3,0, 1,1);
+                                    mc_deposit_gridlayout->addWidget(mc_deposit_purse_widget, 1,0, 1,1);
                                         //Add to purse screen
-                                            //Header (Deposit to purse)
-                                            mc_depsoit_purse_header_label = new QLabel("<h3>Purse Deposit</h3>");
-                                            mc_deposit_purse_layout->addWidget(mc_depsoit_purse_header_label);
+
 
                                     //Hide by default
                                     mc_deposit_purse_widget->hide();
@@ -1711,5 +1730,21 @@ Moneychanger::~Moneychanger()
 
                 void Moneychanger::mc_deposit_type_changed_slot(int newIndex){
                     /** 0 = Account; 1 = purse **/
+                    if(newIndex == 0){
+                        //Show account, hide purse.
+                        mc_deposit_account_widget->show();
+                        mc_deposit_account_header_label->show();
 
+                        mc_deposit_purse_widget->hide();
+                        mc_deposit_purse_header_label->hide();
+
+                    }else if(newIndex == 1){
+                        //Hide account, show purse.
+                        mc_deposit_account_widget->hide();
+                        mc_deposit_account_header_label->hide();
+
+                        mc_deposit_purse_header_label->show();
+                        mc_deposit_purse_widget->show();
+
+                    }
                 }
