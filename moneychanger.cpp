@@ -63,13 +63,16 @@ Moneychanger::Moneychanger(QWidget *parent)
             insert_blank_row.exec(QString("INSERT INTO `default_server` (`server`) VALUES(' ')"));
 
         }else{
-            if(default_server_query.next()){
+            qDebug() << "DEFAULT SERVER LOADED FROM SQL";
+            if(default_server_query.first()){
                 QString default_server_id_db = default_server_query.value(0).toString();
                 default_server_id = default_server_id_db;
+                qDebug() << "SERVER ID " << default_server_id;
 
                 //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
                 if(default_server_id != ""){
                     default_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(default_server_id.toStdString()));
+                    qDebug() << "SERVER NAME " << default_server_name;
                 }
             }
         }
@@ -202,7 +205,6 @@ Moneychanger::Moneychanger(QWidget *parent)
 
             //Server section
             mc_systrayMenu_server = new QMenu("Server: None", 0);
-            mc_systrayMenu_server->setDisabled(1);
             mc_systrayMenu_server->setIcon(mc_systrayIcon_server);
             mc_systrayMenu->addMenu(mc_systrayMenu_server);
 
@@ -212,6 +214,17 @@ Moneychanger::Moneychanger(QWidget *parent)
                 mc_systrayMenu_server->addAction(manage_servers);
 
                 //Add reaction to the "server selection" action
+                connect(mc_systrayMenu_server, SIGNAL(triggered(QAction*)), this, SLOT(mc_serverselection_triggered(QAction*)));
+
+                //Load "default" server
+                mc_systrayMenu_server_setDefaultServer(default_server_id, default_server_name);
+
+                //Init server submenu
+                server_list_id = new QList<QVariant>();
+                server_list_name = new QList<QVariant>();
+
+                mc_systrayMenu_reload_serverlist();
+
 
 
 
@@ -795,12 +808,14 @@ Moneychanger::~Moneychanger()
 
             void Moneychanger::mc_systrayMenu_reload_nymlist(){
                 qDebug() << "RELOAD NYM LIST";
-                //Get account(s) information
+                //Count nyms
                 int32_t nym_count_int32_t = OTAPI_Wrap::GetNymCount();
                 int nym_count = nym_count_int32_t;
 
+                //Retrieve updated list of nym submenu actions list
                 QList<QAction*> action_list_to_nym_submenu = mc_systrayMenu_nym->actions();
-                //Remove all sub-menus from the systray
+
+                //Remove all sub-menus from the nym submenu
                 for(int a = action_list_to_nym_submenu.size(); a > 0; a--){
                     qDebug() << "REOMVOING" << a;
                     QPoint tmp_point = QPoint(a, 0);
@@ -808,16 +823,19 @@ Moneychanger::~Moneychanger()
                 }
 
                 //Remove all nyms from the backend list
-                int tmp_nym_list_id_size = nym_list_id->size();
-                for(int a = 0; a < tmp_nym_list_id_size; a++){
-                    nym_list_id->removeLast();
-                }
+                    //Remove ids from backend list
+                    int tmp_nym_list_id_size = nym_list_id->size();
+                    for(int a = 0; a < tmp_nym_list_id_size; a++){
+                        nym_list_id->removeLast();
+                    }
 
-                int tmp_nym_list_name_size = nym_list_name->size();
-                for(int a = 0; a < tmp_nym_list_name_size; a++){
-                    nym_list_name->removeLast();
-                }
+                    //Remove names from the backend list
+                    int tmp_nym_list_name_size = nym_list_name->size();
+                    for(int a = 0; a < tmp_nym_list_name_size; a++){
+                        nym_list_name->removeLast();
+                    }
 
+                //Add/append to the id + name lists
                 for(int a = 0; a < nym_count; a++){
                         //Get OT Account ID
                         QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::GetNym_ID(a));
@@ -845,9 +863,77 @@ Moneychanger::~Moneychanger()
 
         /** Server **/
             void Moneychanger::mc_systrayMenu_server_setDefaultServer(QString server_id, QString server_name){
-                //Set default nym internal memory
+                //Set default server internal memory
                 default_server_id = server_id;
                 default_server_name = server_name;
+
+                qDebug() << default_server_id;
+                qDebug() << default_server_name;
+
+                //SQL UPDATE default nym
+                QSqlQuery update_default_server(addressbook_db);
+                update_default_server.exec(QString("UPDATE `default_server` SET `server` = '%1'").arg(server_id));
+
+
+
+                //Update visuals
+                QString new_server_title = default_server_name;
+                if(new_server_title == "" || new_server_title == " "){
+                    new_server_title = "None Selected";
+                }
+
+                mc_systrayMenu_server->setTitle("Server: "+new_server_title);
+            }
+
+            void Moneychanger::mc_systrayMenu_reload_serverlist(){
+                qDebug() << "RELOAD SERVER LIST";
+                //Count server
+                int32_t server_count_int32_t = OTAPI_Wrap::GetServerCount();
+                int server_count = server_count_int32_t;
+
+                //Retrieve updated list of server submenu actions list
+                QList<QAction*> action_list_to_server_submenu = mc_systrayMenu_server->actions();
+
+                //Remove all sub-menus from the nym submenu
+                for(int a = action_list_to_server_submenu.size(); a > 0; a--){
+                    qDebug() << "REOMVOING" << a;
+                    QPoint tmp_point = QPoint(a, 0);
+                    mc_systrayMenu_server->removeAction(mc_systrayMenu_server->actionAt(tmp_point));
+                }
+
+                //Remove all nyms from the backend list
+                    //Remove ids from backend list
+                    int tmp_server_list_id_size = server_list_id->size();
+                    for(int a = 0; a < tmp_server_list_id_size; a++){
+                        server_list_id->removeLast();
+                    }
+
+                    //Remove names from the backend list
+                    int tmp_server_list_name_size = server_list_name->size();
+                    for(int a = 0; a < tmp_server_list_name_size; a++){
+                        server_list_name->removeLast();
+                    }
+
+
+                //Add/append to the id + name lists
+                for(int a = 0; a < server_count; a++){
+                        //Get OT Account ID
+                        QString OT_server_id = QString::fromStdString(OTAPI_Wrap::GetServer_ID(a));
+
+                        //Add to qlist
+                        server_list_id->append(QVariant(OT_server_id));
+
+                        //Get OT Account Name
+                        QString OT_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(OTAPI_Wrap::GetServer_ID(a)));
+
+                        //Add to qlist
+                        server_list_name->append(QVariant(OT_server_name));
+
+                        //Append to submenu of server
+                        QAction * next_server_action = new QAction(mc_systrayIcon_server, OT_server_name, 0);
+                        next_server_action->setData(QVariant(OT_server_id));
+                        mc_systrayMenu_server->addAction(next_server_action);
+                }
             }
 
 
@@ -1409,6 +1495,29 @@ Moneychanger::~Moneychanger()
 
             }
 
+        //Server Slots
+            void Moneychanger::mc_serverselection_triggered(QAction * action_triggered){
+                //Check if the user wants to open the nym manager (or) select a different default nym
+                QString action_triggered_string = QVariant(action_triggered->data()).toString();
+                qDebug() << "NYM TRIGGERED" << action_triggered_string;
+                if(action_triggered_string == "openmanager"){
+                    //Open server-list manager
+                    //mc_defaultnym_slot();
+                }else{
+                    //Set new server default
+                    QString action_triggered_string_server_name = QVariant(action_triggered->text()).toString();
+                    mc_systrayMenu_server_setDefaultServer(action_triggered_string, action_triggered_string_server_name);
+
+                    //Refresh the nym default selection in the nym manager (ONLY if it is open)
+                        //Check if nym manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
+                        /*if(mc_nymmanager_already_init == 1){
+                            //Refresh if the nym manager is currently open
+                            if(mc_nym_manager_dialog->isVisible()){
+                                mc_nymmanager_dialog();
+                            }
+                        }*/
+                }
+            }
 
         //Withdraw Slots
             /*

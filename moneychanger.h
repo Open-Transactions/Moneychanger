@@ -442,6 +442,9 @@ private:
                 //Load server
                 void mc_systrayMenu_server_setDefaultServer(QString, QString);
 
+                //Reload server list
+                void mc_systrayMenu_reload_serverlist();
+
             //Withdraw
                 //As Cash
                 void mc_withdraw_ascash_dialog();
@@ -493,6 +496,11 @@ private slots:
             void mc_defaultnym_slot();
                 //new default nym selected
                 void mc_nymselection_triggered(QAction*);
+
+            //Server
+            //void mc_defaultserver_slot();
+                //new default server selected
+                void mc_serverselection_triggered(QAction*);
 
             //Withdraw
                 //As Cash
