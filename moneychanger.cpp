@@ -67,12 +67,11 @@ Moneychanger::Moneychanger(QWidget *parent)
             if(default_server_query.first()){
                 QString default_server_id_db = default_server_query.value(0).toString();
                 default_server_id = default_server_id_db;
-                qDebug() << "SERVER ID " << default_server_id;
 
                 //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
                 if(default_server_id != ""){
                     default_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(default_server_id.toStdString()));
-                    qDebug() << "SERVER NAME " << default_server_name;
+
                 }
             }
         }
@@ -108,6 +107,9 @@ Moneychanger::Moneychanger(QWidget *parent)
 
                 //"Remove Nym" dialog
                 mc_nymmanager_removenym_dialog_already_init = 0;
+
+            //Server Manager
+                mc_servermanager_already_init = 0;
 
             //Withdraw
                 //As Cash
@@ -862,6 +864,49 @@ Moneychanger::~Moneychanger()
 
 
         /** Server **/
+            /** *********************************************
+             * @brief Moneychanger::mc_servermanager_dialog
+             * @info Will init & show the server list manager
+             ** *********************************************/
+            void Moneychanger::mc_servermanager_dialog(){
+                /** If the nym managerh dialog has already been init,
+                 *  just show it, Other wise, init and show if this is the
+                 *  first time.
+                 **/
+                /*if(mc_servermanager_already_init == 0){
+                    //Init
+                    //mc_servermanager_qdialog = new QDialog(0);
+                    //mc_servermanager_qdialog->setWindowTitle("Server List Manager | Moneychanger");
+                    //mc_servermanager_gridlayout = new QGridLayout(0);
+                    //mc_servermanager_gridlayout->setColumnStretch(1, 0);
+                    //mc_servermanager_qdialog->setLayout(mc_servermanager_gridlayout);
+
+                        //Header (Server List Manager)
+                        //mc_servermanager_header = new QLabel("<h2>Server-List Manager</h2>");
+                        //mc_servermanager_gridlayout->addWidget(mc_servermanager_header, 0,0, 1,2, Qt::AlignRight);
+
+                        //Tableview (Server List)
+                        //mc_servermanager_tableview = new QTableView(0);
+                        //mc_servermanager_tableview_itemmodel = new QStandardItemModel(0);
+                        //mc_servermanager_tableview->setModel(mc_servermanager_tableview_itemmodel);
+                        //mc_servermanager_gridlayout->addWidget(mc_servermanager_tableview, 1,0, 1,1);
+
+                    /** Flag already int **/
+                    //mc_servermanager_already_init = 1;
+
+                    //Show
+                    //mc_servermanager_qdialog->show();
+
+                    //Resize
+                    //mc_servermanager_qdialog->resize(500,300);
+
+                //}else{
+                    //Serverlist manager is already init, just show
+                    //mc_servermanager_qdialog->show();
+//                }
+
+            }
+
             void Moneychanger::mc_systrayMenu_server_setDefaultServer(QString server_id, QString server_name){
                 //Set default server internal memory
                 default_server_id = server_id;
@@ -1447,28 +1492,29 @@ Moneychanger::~Moneychanger()
 
     /* Systray menu slots */
 
-        //Shutdown
-        void Moneychanger::mc_shutdown_slot(){
-            //Disconnect all signals from callin class (probubly main) to this class
-            //Disconnect
-            QObject::disconnect(this);
-            //Close qt app (no need to deinit anything as of the time of this comment)
-            //TO DO: Check if the OT queue caller is still proccessing calls.... Then quit the app. (Also tell user that the OT is still calling other wise they might think it froze during OT calls)
-            qApp->quit();
-        }
+        //Shutdown slots
+            void Moneychanger::mc_shutdown_slot(){
+                //Disconnect all signals from callin class (probubly main) to this class
+                //Disconnect
+                QObject::disconnect(this);
+                //Close qt app (no need to deinit anything as of the time of this comment)
+                //TO DO: Check if the OT queue caller is still proccessing calls.... Then quit the app. (Also tell user that the OT is still calling other wise they might think it froze during OT calls)
+                qApp->quit();
+            }
 
-        //Overview
-        void Moneychanger::mc_overview_slot(){
-            //The operator has requested to open the dialog to the "Overview";
-            mc_overview_dialog();
-        }
+        //Overview slots
+            void Moneychanger::mc_overview_slot(){
+                //The operator has requested to open the dialog to the "Overview";
+                mc_overview_dialog();
+            }
 
 
-        //Nym manager "clicked"
-        void Moneychanger::mc_defaultnym_slot(){
-            //The operator has requested to open the dialog to the "Nym Manager";
-            mc_nymmanager_dialog();
-        }
+        //Default Nym slots
+            //Nym manager "clicked"
+            void Moneychanger::mc_defaultnym_slot(){
+                //The operator has requested to open the dialog to the "Nym Manager";
+                mc_nymmanager_dialog();
+            }
 
             //Nym new default selected from systray
             void Moneychanger::mc_nymselection_triggered(QAction*action_triggered){
@@ -1496,18 +1542,30 @@ Moneychanger::~Moneychanger()
             }
 
         //Server Slots
+            /** *****************************************
+             * @brief Moneychanger::mc_defaultserver_slot
+             * @info Universal call to opening the server list manager.
+             ** *****************************************/
+            void Moneychanger::mc_defaultserver_slot(){
+
+                mc_servermanager_dialog();
+            }
+
+
+
             void Moneychanger::mc_serverselection_triggered(QAction * action_triggered){
                 //Check if the user wants to open the nym manager (or) select a different default nym
                 QString action_triggered_string = QVariant(action_triggered->data()).toString();
-                qDebug() << "NYM TRIGGERED" << action_triggered_string;
+                qDebug() << "SERVER TRIGGERED" << action_triggered_string;
                 if(action_triggered_string == "openmanager"){
                     //Open server-list manager
-                    //mc_defaultnym_slot();
+                    mc_defaultserver_slot();
                 }else{
                     //Set new server default
                     QString action_triggered_string_server_name = QVariant(action_triggered->text()).toString();
                     mc_systrayMenu_server_setDefaultServer(action_triggered_string, action_triggered_string_server_name);
 
+                    /** *********** CODE BELOW SHOULD BE CHANGED FROM NYM TO SERVER ************ **/
                     //Refresh the nym default selection in the nym manager (ONLY if it is open)
                         //Check if nym manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
                         /*if(mc_nymmanager_already_init == 1){
@@ -1518,6 +1576,7 @@ Moneychanger::~Moneychanger()
                         }*/
                 }
             }
+
 
         //Withdraw Slots
             /*

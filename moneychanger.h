@@ -273,7 +273,29 @@ private:
                 /** Nym Manger Slot locks **/
                     int mc_nymmanager_proccessing_dataChanged;
 
-            //Withdraw
+            /** Server Manager **/
+                int mc_servermanager_already_init;
+                QDialog * mc_servermanager_qdialog;
+                    //Grid layout
+                    QGridLayout * mc_servermanager_gridlayout;
+
+                        /** First Row **/
+                            //Label (header) [server manager]
+                            QLabel * mc_servermanager_header;
+
+                        /** Second Row **/
+                            /*** Column One ***/
+                                //Table view
+                                QStandardItemModel * mc_servermanager_tableview_itemmodel;
+                                QTableView * mc_servermanager_tableview;
+
+                            /*** Column Two ***/
+                                /*QPushButton * mc_servermanager_btn_add_server;
+                                QPushButton * mc_servermanager_btn_remove_server;
+`                               */
+
+
+            /** Withdraw **/
                 //As Cash
                 int mc_withdraw_ascash_dialog_already_init;
                 QDialog * mc_systrayMenu_withdraw_ascash_dialog;
@@ -387,7 +409,7 @@ private:
                                         QPushButton * mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_confirm;
 
 
-            //Deposit
+            /** Deposit **/
                 int mc_deposit_already_init;
                 QDialog * mc_deposit_dialog;
                     //Gridlayout
@@ -439,6 +461,7 @@ private:
                 void mc_systrayMenu_reload_nymlist();
 
             //Default Server
+            void mc_servermanager_dialog();
                 //Load server
                 void mc_systrayMenu_server_setDefaultServer(QString, QString);
 
@@ -498,7 +521,7 @@ private slots:
                 void mc_nymselection_triggered(QAction*);
 
             //Server
-            //void mc_defaultserver_slot();
+            void mc_defaultserver_slot();
                 //new default server selected
                 void mc_serverselection_triggered(QAction*);
 
