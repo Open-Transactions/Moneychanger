@@ -290,9 +290,7 @@ private:
                                 QTableView * mc_servermanager_tableview;
 
                             /*** Column Two ***/
-                                /*QPushButton * mc_servermanager_btn_add_server;
                                 QPushButton * mc_servermanager_btn_remove_server;
-`                               */
 
 
             /** Withdraw **/
@@ -524,6 +522,9 @@ private slots:
             void mc_defaultserver_slot();
                 //new default server selected
                 void mc_serverselection_triggered(QAction*);
+
+                //request to remove a selected server from the serverlist manager
+                void mc_servermanager_request_remove_server_slot();
 
             //Withdraw
                 //As Cash

@@ -873,37 +873,94 @@ Moneychanger::~Moneychanger()
                  *  just show it, Other wise, init and show if this is the
                  *  first time.
                  **/
-                /*if(mc_servermanager_already_init == 0){
+                if(mc_servermanager_already_init == 0){
                     //Init
-                    //mc_servermanager_qdialog = new QDialog(0);
-                    //mc_servermanager_qdialog->setWindowTitle("Server List Manager | Moneychanger");
-                    //mc_servermanager_gridlayout = new QGridLayout(0);
-                    //mc_servermanager_gridlayout->setColumnStretch(1, 0);
-                    //mc_servermanager_qdialog->setLayout(mc_servermanager_gridlayout);
+                    mc_servermanager_qdialog = new QDialog(0);
+                    mc_servermanager_qdialog->setWindowTitle("Server List Manager | Moneychanger");
+                    mc_servermanager_gridlayout = new QGridLayout(0);
+                    mc_servermanager_gridlayout->setColumnStretch(1, 0);
+                    mc_servermanager_qdialog->setLayout(mc_servermanager_gridlayout);
 
+
+                        /** First Row (Takes up two columns) **/
                         //Header (Server List Manager)
-                        //mc_servermanager_header = new QLabel("<h2>Server-List Manager</h2>");
-                        //mc_servermanager_gridlayout->addWidget(mc_servermanager_header, 0,0, 1,2, Qt::AlignRight);
+                        mc_servermanager_header = new QLabel("<h2>Server-List Manager</h2>");
+                        mc_servermanager_gridlayout->addWidget(mc_servermanager_header, 0,0, 1,2, Qt::AlignRight);
 
-                        //Tableview (Server List)
-                        //mc_servermanager_tableview = new QTableView(0);
-                        //mc_servermanager_tableview_itemmodel = new QStandardItemModel(0);
-                        //mc_servermanager_tableview->setModel(mc_servermanager_tableview_itemmodel);
-                        //mc_servermanager_gridlayout->addWidget(mc_servermanager_tableview, 1,0, 1,1);
+                        /** Second Row **/
+                            //Column One
+                                //Tableview (Server List)
+                                mc_servermanager_tableview_itemmodel = new QStandardItemModel(0);
+                                mc_servermanager_tableview = new QTableView(0);
+                                mc_servermanager_tableview->setSelectionMode(QAbstractItemView::SingleSelection);
+                                mc_servermanager_tableview->setModel(mc_servermanager_tableview_itemmodel);
+
+                                mc_servermanager_tableview_itemmodel->setColumnCount(3);
+                                mc_servermanager_tableview_itemmodel->setHorizontalHeaderItem(0, new QStandardItem(QString("Display Name")));
+                                mc_servermanager_tableview_itemmodel->setHorizontalHeaderItem(1, new QStandardItem(QString("Server ID")));
+                                mc_servermanager_tableview_itemmodel->setHorizontalHeaderItem(2, new QStandardItem(QString("Default")));
+
+                                    //Add to grid
+                                    mc_servermanager_gridlayout->addWidget(mc_servermanager_tableview, 1,0, 1,1);
+
+                            //Column Two
+                                    mc_servermanager_btn_remove_server = new QPushButton("Remove Server", 0);
+                                    mc_servermanager_btn_remove_server->setStyleSheet("QPushButton{padding:0.5em;}");
+                                        //Make a "click" reaction to the remove server button
+                                    connect(mc_servermanager_btn_remove_server, SIGNAL(clicked()), this, SLOT(mc_servermanager_request_remove_server_slot()));
+
+                                    //Add to grid
+                                    mc_servermanager_gridlayout->addWidget(mc_servermanager_btn_remove_server, 1,1, 1,1, Qt::AlignTop);
 
                     /** Flag already int **/
-                    //mc_servermanager_already_init = 1;
+                    mc_servermanager_already_init = 1;
 
                     //Show
-                    //mc_servermanager_qdialog->show();
+                    mc_servermanager_qdialog->show();
 
                     //Resize
-                    //mc_servermanager_qdialog->resize(500,300);
+                    mc_servermanager_qdialog->resize(500,300);
 
-                //}else{
+                }else{
                     //Serverlist manager is already init, just show
-                    //mc_servermanager_qdialog->show();
-//                }
+                    mc_servermanager_qdialog->show();
+                }
+
+
+                /**
+                 ** Refresh server list data
+                 **/
+
+                //Remove all servers in the list
+                mc_servermanager_tableview_itemmodel->removeRows(0, mc_servermanager_tableview_itemmodel->rowCount(), QModelIndex());
+
+                //Add/Append/Refresh server list.
+                int row_index = 0;
+                int32_t serverlist_count = OTAPI_Wrap::GetServerCount();
+                for(int a = 0; a < serverlist_count; a++){
+                    std::string server_id =  OTAPI_Wrap::GetServer_ID(a);
+                    std::string server_name = OTAPI_Wrap::GetServer_Name(server_id);
+
+                    //Extract data
+                    QString server_name_string = QString::fromStdString(server_name);
+                    QString server_id_string = QString::fromStdString(server_id);
+
+                    //Place extracted data into the table view
+                    QStandardItem * col_one = new QStandardItem(server_name_string);
+                    QStandardItem * col_two = new QStandardItem(server_id_string);
+                    QStandardItem * col_three = new QStandardItem(0);
+                        //Set as checkbox
+                        col_three->setCheckable(1);
+
+                        //Check if this is the default server; If it is, then mark it as "Checked"
+                        if(server_id_string == default_server_id){
+                            col_three->setCheckState(Qt::Checked);
+                        }
+                    mc_servermanager_tableview_itemmodel->setItem(row_index, 0, col_one);
+                    mc_servermanager_tableview_itemmodel->setItem(row_index, 1, col_two);
+                    mc_servermanager_tableview_itemmodel->setItem(row_index, 2, col_three);
+                }
+
 
             }
 
@@ -1547,7 +1604,6 @@ Moneychanger::~Moneychanger()
              * @info Universal call to opening the server list manager.
              ** *****************************************/
             void Moneychanger::mc_defaultserver_slot(){
-
                 mc_servermanager_dialog();
             }
 
@@ -1575,6 +1631,48 @@ Moneychanger::~Moneychanger()
                             }
                         }*/
                 }
+            }
+
+
+            /**
+             * @brief Moneychanger::mc_servermanager_request_remove_server_slot
+             * @info This will attempt to remove the server from the loaded wallet,
+             *       At the moment only "one" server can be selected but the for loop is there for
+             *       future upgrades of such functionality.
+             **/
+            void Moneychanger::mc_servermanager_request_remove_server_slot(){
+                //Extract the currently selected server from the server-list.
+                QModelIndexList selected_indexes = mc_servermanager_tableview->selectionModel()->selectedIndexes();
+
+                for(int a = 0; a < selected_indexes.size(); a++){
+                    QModelIndex selected_index = selected_indexes.at(a);
+                    int selected_row = selected_index.row();
+
+                    //Get server id
+                    QModelIndex server_id_modelindex = mc_servermanager_tableview_itemmodel->index(selected_row, 1, QModelIndex());
+                    QVariant server_id_variant = server_id_modelindex.data();
+                    QString server_id_string = server_id_variant.toString();
+                    bool can_remove = OTAPI_Wrap::Wallet_CanRemoveServer(server_id_string.toStdString());
+
+                    if(can_remove == true){
+                        //Remove it
+                        OTAPI_Wrap::Wallet_RemoveServer(server_id_string.toStdString());
+                    }else{
+                        //Find out why it can't be removed and alert the user the reasoning.
+                            //Loop through nyms
+                            std::string server_id_std = server_id_string.toStdString();
+                            int num_nyms_registered_at_server = 0;
+                            int num_nyms = OTAPI_Wrap::GetNymCount();
+                            for(int b = 0; b < num_nyms; b++){
+                                bool nym_index_at_server = OTAPI_Wrap::IsNym_RegisteredAtServer(OTAPI_Wrap::GetNym_ID(b), server_id_std);
+                                if(nym_index_at_server == true){
+                                    num_nyms_registered_at_server += 1;
+                                }
+                            }
+                    }
+
+                }
+
             }
 
 
