@@ -11,6 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = moneychanger-qt
 TEMPLATE = app
 
+INCLUDEPATH+="/usr/local/include/"
 DEPENDPATH += .
 SOURCES += main.cpp\
         moneychanger.cpp \
