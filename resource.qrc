@@ -1,13 +1,20 @@
 <RCC>
     <qresource prefix="/icons">
-        <file alias="overview">icons/aperture_32x32.png</file>
-        <file alias="quit">icons/target_32x32.png</file>
-        <file alias="nym">icons/user_24x32.png</file>
-        <file alias="server">icons/layers_32x28.png</file>
-        <file alias="advanced">icons/fork_28x32.png</file>
-        <file alias="withdraw">icons/arrow_down_32x32.png</file>
-        <file alias="deposit">icons/lock_fill_24x32.png</file>
-        <file alias="addressbook">icons/book_alt_32x32.png</file>
-        <file alias="moneychanger">icons/HardDrive.png</file>
+        <file alias="quit">icons/quit.png</file>
+        <file alias="overview">icons/overview.png</file>
+        <file alias="addressbook">icons/addressbook.png</file>
+        <file alias="deposit">icons/deposit.png</file>
+        <file alias="withdraw">icons/withdraw.png</file>
+        <file alias="server">icons/server.png</file>
+        <file alias="nym">icons/nym.png</file>
+        <file alias="sendfunds">icons/sendfunds.png</file>
+        <file alias="requestpayment">icons/requestpayment.png</file>
+        <file alias="advanced">icons/advanced.png</file>
+        <file alias="purse">icons/purse.png</file>
+        <file alias="account">icons/account.png</file>
+        <file alias="agreements">icons/agreements.png</file>
+        <file alias="markets">icons/markets.png</file>
+        <file alias="settings">icons/settings.png</file>
+        <file alias="moneychanger">icons/moneychanger.png</file>
     </qresource>
 </RCC>

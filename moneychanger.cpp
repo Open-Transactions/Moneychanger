@@ -135,8 +135,8 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_systrayIcon_nym = QIcon(":/icons/nym");
             mc_systrayIcon_server = QIcon(":/icons/server");
 
-            mc_systrayIcon_goldaccount = QIcon(":/icons/goldaccount");
-            mc_systrayIcon_goldcashpurse = QIcon(":/icons/goldpurse");
+            mc_systrayIcon_goldaccount = QIcon(":/icons/account");
+            mc_systrayIcon_purse = QIcon(":/icons/purse");
 
             mc_systrayIcon_withdraw = QIcon(":/icons/withdraw");
             mc_systrayIcon_deposit = QIcon(":/icons/deposit");
@@ -145,6 +145,10 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_systrayIcon_requestpayment = QIcon(":/icons/requestpayment");
 
             mc_systrayIcon_advanced = QIcon(":/icons/advanced");
+                //Submenu
+                mc_systrayIcon_advanced_agreements = QIcon(":/icons/agreements");
+                mc_systrayIcon_advanced_markets = QIcon(":/icons/markets");
+                mc_systrayIcon_advanced_settings = QIcon(":/icons/settings");
 
     //MC System tray menu
     mc_systrayMenu = new QMenu(this);
@@ -238,10 +242,10 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_systrayMenu_goldaccount->setIcon(mc_systrayIcon_goldaccount);
             mc_systrayMenu->addAction(mc_systrayMenu_goldaccount);
 
-            //Gold cash purse wallet
-            mc_systrayMenu_goldcashpurse = new QAction("Gold Cash Purse: $40,000", 0);
-            mc_systrayMenu_goldcashpurse->setIcon(mc_systrayIcon_goldcashpurse);
-            mc_systrayMenu->addAction(mc_systrayMenu_goldcashpurse);
+            //purse wallet
+            mc_systrayMenu_purse = new QAction("Purse: $40,000", 0);
+            mc_systrayMenu_purse->setIcon(mc_systrayIcon_purse);
+            mc_systrayMenu->addAction(mc_systrayMenu_purse);
 
             //Seperator
             mc_systrayMenu->addSeparator();
@@ -292,13 +296,13 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_systrayMenu_advanced->setIcon(mc_systrayIcon_advanced);
             mc_systrayMenu->addMenu(mc_systrayMenu_advanced);
                 //Advanced submenu
-                mc_systrayMenu_advanced_agreements = new QAction("Agreements", 0);
+                mc_systrayMenu_advanced_agreements = new QAction(mc_systrayIcon_advanced_agreements, "Agreements", 0);
                 mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_agreements);
 
-                mc_systrayMenu_advanced_markets = new QAction("Markets", 0);
+                mc_systrayMenu_advanced_markets = new QAction(mc_systrayIcon_advanced_markets, "Markets", 0);
                 mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_markets);
 
-                mc_systrayMenu_advanced_settings = new QAction("Settings", 0);
+                mc_systrayMenu_advanced_settings = new QAction(mc_systrayIcon_advanced_settings, "Settings", 0);
                 mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_settings);
 
             //Seperator
@@ -519,51 +523,25 @@ Moneychanger::~Moneychanger()
                             mc_overview_header_label = new QLabel("<h3>Overview of Transactions</h3>", 0);
                             mc_overview_gridlayout->addWidget(mc_overview_header_label, 0,0, 1,1, Qt::AlignRight);
 
-                            //Vertical Layout Box
-                            mc_overview_vbox_twopane_holder = new QWidget(0);
-                            mc_overview_vbox_twopane = new QVBoxLayout(0);
-                            mc_overview_vbox_twopane_holder->setLayout(mc_overview_vbox_twopane);
-                            mc_overview_gridlayout->addWidget(mc_overview_vbox_twopane_holder, 1,0, 1,1);
+                            //in/Outgoing (Pane)
+                            mc_overview_inoutgoing_pane_holder = new QWidget(0);
+                            mc_overview_inoutgoing_pane = new QVBoxLayout(0);
+                            mc_overview_inoutgoing_pane_holder->setLayout(mc_overview_inoutgoing_pane);
+                            mc_overview_gridlayout->addWidget(mc_overview_inoutgoing_pane_holder, 1,0, 1,1);
 
-                                //incoming (Pane)
-                                mc_overview_incoming_pane_holder = new QWidget(0);
-                                mc_overview_incoming_pane = new QVBoxLayout(0);
-                                mc_overview_incoming_pane_holder->setLayout(mc_overview_incoming_pane);
-                                mc_overview_vbox_twopane->addWidget(mc_overview_incoming_pane_holder);
-                                    //Label (incoming header)
-                                    mc_overview_incoming_header_label = new QLabel("<b>Incoming</b>");
-                                    mc_overview_incoming_pane->addWidget(mc_overview_incoming_header_label);
+                                //Label (inOutgoing header)
+                                mc_overview_inoutgoing_header_label = new QLabel("<b>Outgoing</b>");
+                                mc_overview_inoutgoing_pane->addWidget(mc_overview_inoutgoing_header_label);
 
-                                    //Table view (incoming list)
-                                    mc_overview_incoming_standarditemmodel = new QStandardItemModel(0,4,0);
-                                    mc_overview_incoming_standarditemmodel->setHorizontalHeaderItem(0, new QStandardItem(QString("Account")));
-                                    mc_overview_incoming_standarditemmodel->setHorizontalHeaderItem(1, new QStandardItem(QString("Pseudonym")));
-                                    mc_overview_incoming_standarditemmodel->setHorizontalHeaderItem(2, new QStandardItem(QString("Asset ID")));
-                                    mc_overview_incoming_standarditemmodel->setHorizontalHeaderItem(3, new QStandardItem(QString("Date")));
-                                    mc_overview_incoming_tableview = new QTableView(0);
-                                    mc_overview_incoming_tableview->setModel(mc_overview_incoming_standarditemmodel);
-                                    mc_overview_incoming_pane->addWidget(mc_overview_incoming_tableview);
-
-
-                                //Outgoing (Pane)
-                                mc_overview_outgoing_pane_holder = new QWidget(0);
-                                mc_overview_outgoing_pane = new QVBoxLayout(0);
-                                mc_overview_outgoing_pane_holder->setLayout(mc_overview_outgoing_pane);
-                                mc_overview_vbox_twopane->addWidget(mc_overview_outgoing_pane_holder);
-
-                                    //Label (Outgoing header)
-                                    mc_overview_outgoing_header_label = new QLabel("<b>Outgoing</b>");
-                                    mc_overview_outgoing_pane->addWidget(mc_overview_outgoing_header_label);
-
-                                    //Table vivew (outgoing list)
-                                    mc_overview_outgoing_standarditemmodel = new QStandardItemModel(0,4,0);
-                                    mc_overview_outgoing_standarditemmodel->setHorizontalHeaderItem(0, new QStandardItem(QString("Account")));
-                                    mc_overview_outgoing_standarditemmodel->setHorizontalHeaderItem(1, new QStandardItem(QString("Pseudonym")));
-                                    mc_overview_outgoing_standarditemmodel->setHorizontalHeaderItem(2, new QStandardItem(QString("Asset ID")));
-                                    mc_overview_outgoing_standarditemmodel->setHorizontalHeaderItem(3, new QStandardItem(QString("Date")));
-                                    mc_overview_outgoing_tableview = new QTableView(0);
-                                    mc_overview_outgoing_tableview->setModel(mc_overview_outgoing_standarditemmodel);
-                                    mc_overview_outgoing_pane->addWidget(mc_overview_outgoing_tableview);
+                                //Table vivew (inoutgoing list)
+                                mc_overview_inoutgoing_standarditemmodel = new QStandardItemModel(0,4,0);
+                                mc_overview_inoutgoing_standarditemmodel->setHorizontalHeaderItem(0, new QStandardItem(QString("Account")));
+                                mc_overview_inoutgoing_standarditemmodel->setHorizontalHeaderItem(1, new QStandardItem(QString("Pseudonym")));
+                                mc_overview_inoutgoing_standarditemmodel->setHorizontalHeaderItem(2, new QStandardItem(QString("Asset ID")));
+                                mc_overview_inoutgoing_standarditemmodel->setHorizontalHeaderItem(3, new QStandardItem(QString("Date")));
+                                mc_overview_inoutgoing_tableview = new QTableView(0);
+                                mc_overview_inoutgoing_tableview->setModel(mc_overview_inoutgoing_standarditemmodel);
+                                mc_overview_inoutgoing_pane->addWidget(mc_overview_inoutgoing_tableview);
 
 
                         /** Flag Already Init **/
@@ -599,8 +577,7 @@ Moneychanger::~Moneychanger()
                 QList< QMap<QString,QVariant> > current_list_copy = ot_worker_background->mc_overview_get_currentlist();
 
                 //Clear all records (In the future we should have a scan for updates records mechinism for now we will go for a browser "refresh" all mechinism)
-                mc_overview_incoming_standarditemmodel->removeRows(0, mc_overview_incoming_standarditemmodel->rowCount(), QModelIndex());
-                mc_overview_outgoing_standarditemmodel->removeRows(0, mc_overview_outgoing_standarditemmodel->rowCount(), QModelIndex());
+                mc_overview_inoutgoing_standarditemmodel->removeRows(0, mc_overview_inoutgoing_standarditemmodel->rowCount(), QModelIndex());
 
                 int total_records_to_visualize = current_list_copy.size();
                 for(int a = 0; a < total_records_to_visualize; a++){
@@ -627,10 +604,10 @@ Moneychanger::~Moneychanger()
 
                         if(isOutgoing_bool == false){
                             //Incomming
-                            mc_overview_incoming_standarditemmodel->appendRow(new_row);
+                            mc_overview_inoutgoing_standarditemmodel->appendRow(new_row);
                         }else{
                             //Outgoing
-                            mc_overview_outgoing_standarditemmodel->appendRow(new_row);
+                            mc_overview_inoutgoing_standarditemmodel->appendRow(new_row);
                         }
                 }
 

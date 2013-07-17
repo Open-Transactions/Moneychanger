@@ -106,7 +106,7 @@ private:
             QIcon mc_systrayIcon_server;
 
             QIcon mc_systrayIcon_goldaccount;
-            QIcon mc_systrayIcon_goldcashpurse;
+            QIcon mc_systrayIcon_purse;
 
             QIcon mc_systrayIcon_withdraw;
             QIcon mc_systrayIcon_deposit;
@@ -115,7 +115,9 @@ private:
             QIcon mc_systrayIcon_requestpayment;
 
             QIcon mc_systrayIcon_advanced;
-
+                QIcon mc_systrayIcon_advanced_agreements;
+                QIcon mc_systrayIcon_advanced_markets;
+                QIcon mc_systrayIcon_advanced_settings;
 
 
 
@@ -148,7 +150,7 @@ private:
                 QString default_server_name;
 
             QAction * mc_systrayMenu_goldaccount;
-            QAction * mc_systrayMenu_goldcashpurse;
+            QAction * mc_systrayMenu_purse;
 
             QMenu * mc_systrayMenu_withdraw;
                 //Withdraw submenu
@@ -178,28 +180,15 @@ private:
                     //Header (label)
                     QLabel * mc_overview_header_label;
 
-                    //Horizontal Two Pane(incoming/Outgoing) layout
-                    QWidget * mc_overview_vbox_twopane_holder;
-                    QVBoxLayout * mc_overview_vbox_twopane;
-                        //incoming (pane)
-                        QWidget * mc_overview_incoming_pane_holder;
-                        QVBoxLayout * mc_overview_incoming_pane;
-                            //Header (label)
-                            QLabel * mc_overview_incoming_header_label;
+                    //In/out going pane (Table View)
+                    QWidget * mc_overview_inoutgoing_pane_holder;
+                    QVBoxLayout * mc_overview_inoutgoing_pane;
+                        //Header (label)
+                        QLabel * mc_overview_inoutgoing_header_label;
 
-                            //Table view
-                            QStandardItemModel * mc_overview_incoming_standarditemmodel;
-                            QTableView * mc_overview_incoming_tableview;
-
-                        //Outgoing Table View
-                        QWidget * mc_overview_outgoing_pane_holder;
-                        QVBoxLayout * mc_overview_outgoing_pane;
-                            //Header (label)
-                            QLabel * mc_overview_outgoing_header_label;
-
-                            //Tabel view
-                            QStandardItemModel * mc_overview_outgoing_standarditemmodel;
-                            QTableView * mc_overview_outgoing_tableview;
+                        //Tabel view
+                        QStandardItemModel * mc_overview_inoutgoing_standarditemmodel;
+                        QTableView * mc_overview_inoutgoing_tableview;
 
 
             /** Nym Manager **/
