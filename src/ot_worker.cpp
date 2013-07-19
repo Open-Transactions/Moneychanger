@@ -111,8 +111,10 @@ void ot_worker::mc_overview_ping(){
 }
 
 
+/**
+ ** Return the current overview_list (if not locked)
+ **/
 QList< QMap<QString, QVariant> > ot_worker::mc_overview_get_currentlist(){
-    //Return the current overview_list (if not locked)
 
     //Lock overview_list (Unlocks when function is returned)
     QMutexLocker overview_list_mutex_locker(&overview_list_mutex);
