@@ -106,7 +106,7 @@ private:
             QIcon mc_systrayIcon_server;
 
             QIcon mc_systrayIcon_goldaccount;
-            QIcon mc_systrayIcon_goldcashpurse;
+            QIcon mc_systrayIcon_purse;
 
             QIcon mc_systrayIcon_withdraw;
             QIcon mc_systrayIcon_deposit;
@@ -115,7 +115,9 @@ private:
             QIcon mc_systrayIcon_requestpayment;
 
             QIcon mc_systrayIcon_advanced;
-
+                QIcon mc_systrayIcon_advanced_agreements;
+                QIcon mc_systrayIcon_advanced_markets;
+                QIcon mc_systrayIcon_advanced_settings;
 
 
 
@@ -138,10 +140,17 @@ private:
                 //pseudonym default selected (backend) [For saving the user supplied default, set from DB and user selections]
                 QString default_nym_id;
                 QString default_nym_name;
-            QAction * mc_systrayMenu_server;
+            QMenu * mc_systrayMenu_server;
+                //server list (backend )
+                QList<QVariant> * server_list_id;
+                QList<QVariant> * server_list_name;
+
+                //server default selected (backend)
+                QString default_server_id;
+                QString default_server_name;
 
             QAction * mc_systrayMenu_goldaccount;
-            QAction * mc_systrayMenu_goldcashpurse;
+            QAction * mc_systrayMenu_purse;
 
             QMenu * mc_systrayMenu_withdraw;
                 //Withdraw submenu
@@ -171,28 +180,15 @@ private:
                     //Header (label)
                     QLabel * mc_overview_header_label;
 
-                    //Horizontal Two Pane(incoming/Outgoing) layout
-                    QWidget * mc_overview_vbox_twopane_holder;
-                    QVBoxLayout * mc_overview_vbox_twopane;
-                        //incoming (pane)
-                        QWidget * mc_overview_incoming_pane_holder;
-                        QVBoxLayout * mc_overview_incoming_pane;
-                            //Header (label)
-                            QLabel * mc_overview_incoming_header_label;
+                    //In/out going pane (Table View)
+                    QWidget * mc_overview_inoutgoing_pane_holder;
+                    QVBoxLayout * mc_overview_inoutgoing_pane;
+                        //Header (label)
+                        QLabel * mc_overview_inoutgoing_header_label;
 
-                            //Table view
-                            QStandardItemModel * mc_overview_incoming_standarditemmodel;
-                            QTableView * mc_overview_incoming_tableview;
-
-                        //Outgoing Table View
-                        QWidget * mc_overview_outgoing_pane_holder;
-                        QVBoxLayout * mc_overview_outgoing_pane;
-                            //Header (label)
-                            QLabel * mc_overview_outgoing_header_label;
-
-                            //Tabel view
-                            QStandardItemModel * mc_overview_outgoing_standarditemmodel;
-                            QTableView * mc_overview_outgoing_tableview;
+                        //Tabel view
+                        QStandardItemModel * mc_overview_inoutgoing_standarditemmodel;
+                        QTableView * mc_overview_inoutgoing_tableview;
 
 
             /** Nym Manager **/
@@ -266,7 +262,27 @@ private:
                 /** Nym Manger Slot locks **/
                     int mc_nymmanager_proccessing_dataChanged;
 
-            //Withdraw
+            /** Server Manager **/
+                int mc_servermanager_already_init;
+                QDialog * mc_servermanager_qdialog;
+                    //Grid layout
+                    QGridLayout * mc_servermanager_gridlayout;
+
+                        /** First Row **/
+                            //Label (header) [server manager]
+                            QLabel * mc_servermanager_header;
+
+                        /** Second Row **/
+                            /*** Column One ***/
+                                //Table view
+                                QStandardItemModel * mc_servermanager_tableview_itemmodel;
+                                QTableView * mc_servermanager_tableview;
+
+                            /*** Column Two ***/
+                                QPushButton * mc_servermanager_btn_remove_server;
+
+
+            /** Withdraw **/
                 //As Cash
                 int mc_withdraw_ascash_dialog_already_init;
                 QDialog * mc_systrayMenu_withdraw_ascash_dialog;
@@ -380,7 +396,7 @@ private:
                                         QPushButton * mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_confirm;
 
 
-            //Deposit
+            /** Deposit **/
                 int mc_deposit_already_init;
                 QDialog * mc_deposit_dialog;
                     //Gridlayout
@@ -392,6 +408,17 @@ private:
                         //Dropdown box (combobox) (choose deposit type)
                         QComboBox * mc_deposit_deposit_type;
 
+                        /** Deposit into account **/
+                        QWidget * mc_deposit_account_widget;
+                        QHBoxLayout * mc_deposit_account_layout;
+                            //(subheader) Deposit into account
+                            QLabel * mc_deposit_account_header_label;
+
+                        /** Deposit into purse **/
+                        QWidget * mc_deposit_purse_widget;
+                        QHBoxLayout * mc_deposit_purse_layout;
+                            //(header) Deposit into purse
+                            QLabel * mc_deposit_purse_header_label;
     /**           **
      ** Functions **
      **           **/
@@ -420,6 +447,14 @@ private:
                 //Reload nym list
                 void mc_systrayMenu_reload_nymlist();
 
+            //Default Server
+            void mc_servermanager_dialog();
+                //Load server
+                void mc_systrayMenu_server_setDefaultServer(QString, QString);
+
+                //Reload server list
+                void mc_systrayMenu_reload_serverlist();
+
             //Withdraw
                 //As Cash
                 void mc_withdraw_ascash_dialog();
@@ -430,6 +465,7 @@ private:
 
             //Deposit
                 void mc_deposit_show_dialog();
+
 
 private slots:
 
@@ -471,6 +507,14 @@ private slots:
                 //new default nym selected
                 void mc_nymselection_triggered(QAction*);
 
+            //Server
+            void mc_defaultserver_slot();
+                //new default server selected
+                void mc_serverselection_triggered(QAction*);
+
+                //request to remove a selected server from the serverlist manager
+                void mc_servermanager_request_remove_server_slot();
+
             //Withdraw
                 //As Cash
                  void mc_withdraw_ascash_slot();
@@ -492,6 +536,9 @@ private slots:
 
             //Deposit
                  void mc_deposit_slot();
+
+                 //The user changed the "deposit type" switch open/available menu
+                 void mc_deposit_type_changed_slot(int);
 
 };
 

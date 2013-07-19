@@ -11,20 +11,26 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = moneychanger-qt
 TEMPLATE = app
 
+INCLUDEPATH+="/usr/local/include/"
 DEPENDPATH += .
 SOURCES += main.cpp\
         moneychanger.cpp \
-    MTRecord.cpp \
+    ot_worker.cpp \
     MTRecordList.cpp \
-    ot_worker.cpp
+    MTRecord.cpp
 
 HEADERS  += moneychanger.h \
+    ot_worker.h \
+    ot_worker.h \
     MTRecordList.h \
-    MTRecord.h \
-    ot_worker.h
+    MTRecord.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 
+mac:{
+QT_CONFIG -= no-pkg-config
+LIBS += -lboost_system-mt -ldl
+}
 #LIBS += /usr/lib/libboost_thread.so.1.46.1 -ldl
 ##QMAKE_CXXFLAGS += -fPIC -DPIC --param ssp-buffer-size=4
 
