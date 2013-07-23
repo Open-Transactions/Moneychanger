@@ -315,6 +315,11 @@ Moneychanger::Moneychanger(QWidget *parent)
 
         //Set Skeleton to systrayIcon object code
         mc_systrayIcon->setContextMenu(mc_systrayMenu);
+
+
+        //TEMP CODE
+        mc_systrayIcon->showMessage(QString("Moneychanger"), QString("Moneychanger has successfully booted up!"));
+
 }
 
 Moneychanger::~Moneychanger()
@@ -530,18 +535,19 @@ Moneychanger::~Moneychanger()
                             mc_overview_gridlayout->addWidget(mc_overview_inoutgoing_pane_holder, 1,0, 1,1);
 
                                 //Label (inOutgoing header)
-                                mc_overview_inoutgoing_header_label = new QLabel("<b>Incomming & Outgoing</b>");
+                                mc_overview_inoutgoing_header_label = new QLabel("<b>Incoming & Outgoing Transactions</b>");
                                 mc_overview_inoutgoing_pane->addWidget(mc_overview_inoutgoing_header_label);
 
-                                //Table vivew (inoutgoing list)
-                                mc_overview_inoutgoing_standarditemmodel = new QStandardItemModel(0,4,0);
-                                mc_overview_inoutgoing_standarditemmodel->setHorizontalHeaderItem(0, new QStandardItem(QString("Account")));
-                                mc_overview_inoutgoing_standarditemmodel->setHorizontalHeaderItem(1, new QStandardItem(QString("Pseudonym")));
-                                mc_overview_inoutgoing_standarditemmodel->setHorizontalHeaderItem(2, new QStandardItem(QString("Asset ID")));
-                                mc_overview_inoutgoing_standarditemmodel->setHorizontalHeaderItem(3, new QStandardItem(QString("Date")));
-                                mc_overview_inoutgoing_tableview = new QTableView(0);
-                                mc_overview_inoutgoing_tableview->setModel(mc_overview_inoutgoing_standarditemmodel);
-                                mc_overview_inoutgoing_pane->addWidget(mc_overview_inoutgoing_tableview);
+                                //GridView (Lists of TX)
+                                mc_overview_inoutgoing_scroll = new QScrollArea;
+                                mc_overview_inoutgoing_gridview_widget = new QWidget(0);
+                                mc_overview_inoutgoing_gridview = new QGridLayout(0);
+                                mc_overview_inoutgoing_gridview_widget->setLayout(mc_overview_inoutgoing_gridview);
+                                mc_overview_inoutgoing_gridview->setGeometry(QRect(100,100,100,100));
+                                mc_overview_inoutgoing_scroll->setWidgetResizable(true);
+                                mc_overview_inoutgoing_scroll->setBackgroundRole(QPalette::Light);
+                                mc_overview_inoutgoing_scroll->setWidget(mc_overview_inoutgoing_gridview_widget);
+                                mc_overview_inoutgoing_pane->addWidget(mc_overview_inoutgoing_scroll);
 
 
                         /** Flag Already Init **/
@@ -577,14 +583,39 @@ Moneychanger::~Moneychanger()
                 QList< QMap<QString,QVariant> > current_list_copy = ot_worker_background->mc_overview_get_currentlist();
 
                 //Clear all records (In the future we should have a scan for updates records mechinism for now we will go for a browser "refresh" all mechinism)
-                mc_overview_inoutgoing_standarditemmodel->removeRows(0, mc_overview_inoutgoing_standarditemmodel->rowCount(), QModelIndex());
+                int items_in_inoutgoing_gridview = mc_overview_inoutgoing_gridview->rowCount();
+                for(int a = 0; a < items_in_inoutgoing_gridview; a++){
+                    QLayoutItem * item = mc_overview_inoutgoing_gridview->itemAtPosition(a, 0);
+                    
+                    //mc_overview_inoutgoing_gridview
+                }
 
                 int total_records_to_visualize = current_list_copy.size();
                 for(int a = 0; a < total_records_to_visualize; a++){
                     //Get map for this record
-                        QMap<QString, QVariant> temp_record_map = current_list_copy.at(a);
-                        QList<QStandardItem *> new_row;
+                        QMap<QString, QVariant> record_map = current_list_copy.at(a);
 
+                    //Append to transactions list in overview dialog.
+                        QWidget * row_widget = new QWidget(0);
+                        QGridLayout * row_widget_layout = new QGridLayout(0);
+                        row_widget->setLayout(row_widget_layout);
+
+                        //Render row.
+                            //Header of row
+                                QLabel * header_of_row = new QLabel(0);
+                                QString header_of_row_string = QString();
+                                header_of_row_string.append(QString(record_map["name"].toString()));
+
+                                header_of_row->setText(header_of_row_string);
+
+                                    //Append header to layout
+                                    row_widget_layout->addWidget(header_of_row, 0, 0, 1,1);
+
+                        /** Append information to the grid/visuals. **/
+                        mc_overview_inoutgoing_gridview->addWidget(row_widget, a,0, 1,1);
+
+                    //Search&Replace/Append Transactions in the overview dialog.
+                        /*
                         QStandardItem * account_id_item = new QStandardItem(QString(temp_record_map["accountId"].toString()));
                         new_row.append(account_id_item);
 
@@ -596,8 +627,7 @@ Moneychanger::~Moneychanger()
 
                         QStandardItem * date_item = new QStandardItem(QString(temp_record_map["date"].toString()));
                         new_row.append(date_item);
-
-                    mc_overview_inoutgoing_standarditemmodel->appendRow(new_row);
+                        */
                 }
 
             }
