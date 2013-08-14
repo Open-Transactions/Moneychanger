@@ -26,6 +26,7 @@
 #include <QSystemTrayIcon>
 #include <QCoreApplication>
 #include <QStandardItemModel>
+#include <QMessageBox>
 #include <QtSql/QtSql>
 
 #include <opentxs/OTAPI.h>

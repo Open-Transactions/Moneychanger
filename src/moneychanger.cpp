@@ -1392,7 +1392,8 @@ Moneychanger::~Moneychanger()
                 }
 
             }else{
-                qDebug() <<"nothing was selected to be removed -- display dialog/alert instead of this debug";
+                qDebug() <<"nothing was selected to be removed";
+                QMessageBox::information(this,"Moneychanger","Nothing selected to remove.");
             }
         }
 
@@ -1462,7 +1463,8 @@ Moneychanger::~Moneychanger()
                     mc_addressbook_dialog->hide();
                 }
             }else{
-                qDebug() << "nothing was selected to paste into the target area, display a message/alert instead of this debug msg.";
+                qDebug() << "nothing was selected to paste into the target area";
+                QMessageBox::information(this,"Moneychanger","Nothing selected to paste.");
             }
         }
 
@@ -1541,15 +1543,14 @@ Moneychanger::~Moneychanger()
                     QString action_triggered_string_server_name = QVariant(action_triggered->text()).toString();
                     mc_systrayMenu_server_setDefaultServer(action_triggered_string, action_triggered_string_server_name);
 
-                    /** *********** CODE BELOW SHOULD BE CHANGED FROM NYM TO SERVER ************ **/
-                    //Refresh the nym default selection in the nym manager (ONLY if it is open)
-                        //Check if nym manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
-                        /*if(mc_nymmanager_already_init == 1){
-                            //Refresh if the nym manager is currently open
-                            if(mc_nym_manager_dialog->isVisible()){
-                                mc_nymmanager_dialog();
+                    //Refresh the server default selection in the server manager (ONLY if it is open)
+                        //Check if server manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
+                        if(mc_servermanager_already_init == 1){
+                            //Refresh if the server manager is currently open
+                            if(mc_servermanager_qdialog->isVisible()){
+                                mc_servermanager_dialog();
                             }
-                        }*/
+                        }
                 }
             }
 
