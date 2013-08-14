@@ -1,4 +1,4 @@
-Moneychanger
+Moneychanger (System Tray Oriented)
 ============
-An intutive QT/C++ system tray client for Open-Transactions.
+An intuitive QT/C++ system tray client for Open-Transactions.
 

@@ -813,6 +813,13 @@ bool MTRecordList::Populate()
                                                            false,//IsReceipt
                                                            MTRecord::Instrument
                                                            ));
+                long lTransNum = 0;
+                theOutPayment.GetOpeningNum(lTransNum, theNymID);
+                // -------------------------------------------------
+                sp_Record->SetOtherNymID(str_outpmt_recipientID);
+                // -------------------------------------------------
+                sp_Record->SetTransactionNum(lTransNum);
+                sp_Record->SetContents(strOutpayment.Get());
                 m_contents.push_back(sp_Record);
             }
             else // the server for this outpayment is not on the list of servers we care about. Skip this outpayment.
@@ -888,12 +895,17 @@ bool MTRecordList::Populate()
                                                            str_date, // How do we get the date from a mail?
                                                            str_amount,
                                                            MTRecordList::s_message_type, // "message"
-                                                           true, //bIsPending=true since its in the incoming mail box.
+                                                           false, //bIsPending=false since its already received.
                                                            false, //bIsOutgoing=false. It's incoming mail, not outgoing mail.
-                                                           false,//IsRecord
-                                                           false,//IsReceipt
+                                                           false, //IsRecord
+                                                           false, //IsReceipt
                                                            MTRecord::Mail
-                                                           ));
+                                                           ));               
+                // -------------------------------------------------
+                sp_Record->SetOtherNymID(str_mail_senderID);
+                // -------------------------------------------------
+                const OTString strMail(OTAPI_Wrap::GetNym_MailContentsByIndex(str_nym_id, nCurrentMail));
+                sp_Record->SetContents(strMail.Get());
                 m_contents.push_back(sp_Record);
             }
         } // loop through incoming Mail.
@@ -965,10 +977,15 @@ bool MTRecordList::Populate()
                                                            MTRecordList::s_message_type, // "message"
                                                            false, //bIsPending=false since its already sent.
                                                            true,  //bIsOutgoing=true. It's OUTGOING mail.
-                                                           false,//IsRecord (it's not in the record box.)
-                                                           false,//IsReceipt
+                                                           false, //IsRecord (it's not in the record box.)
+                                                           false, //IsReceipt
                                                            MTRecord::Mail
                                                            ));
+                // -------------------------------------------------
+                sp_Record->SetOtherNymID(str_mail_recipientID);
+                // -------------------------------------------------
+                const OTString strOutmail(OTAPI_Wrap::GetNym_OutmailContentsByIndex(str_nym_id, nCurrentOutmail));
+                sp_Record->SetContents(strOutmail.Get());
                 m_contents.push_back(sp_Record);
             }
         } // loop through outgoing Mail.
@@ -1008,6 +1025,8 @@ bool MTRecordList::Populate()
                 OTLog::vOutput(0, "%s: Incoming payment: %d\n", __FUNCTION__, nIndex);
                 // ------------------------------------------------
                 std::string  str_name; // name of sender (since its in the payments inbox.)
+                std::string  str_sender_nym_id;
+                std::string  str_sender_acct_id;
 
                 if (false == pBoxTrans->IsAbbreviated())
                 {
@@ -1015,17 +1034,25 @@ bool MTRecordList::Populate()
                     
                     if (pBoxTrans->GetSenderUserIDForDisplay(theSenderID))
                     {
-                        const OTString    strSenderID  (theSenderID);
-                        const std::string str_sender_id(strSenderID.Get());
-                
-                        OTString strName(OTAPI_Wrap::GetNym_Name(str_sender_id)), strNameTemp;
+                        const OTString strSenderID(theSenderID);
+                        str_sender_nym_id = strSenderID.Get();
+                        
+                        OTString strName(OTAPI_Wrap::GetNym_Name(str_sender_nym_id)), strNameTemp;
                         
                         if (strName.Exists())
                             strNameTemp.Format("From: %s", strName.Get());
                         else
-                            strNameTemp.Format("From: %s", str_sender_id.c_str());
+                            strNameTemp.Format("From: %s", str_sender_nym_id.c_str());
                         
                         str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                    }
+                    
+                    theSenderID.Release();
+                    
+                    if (pBoxTrans->GetSenderAcctIDForDisplay(theSenderID))
+                    {
+                        const OTString strSenderID(theSenderID);
+                        str_sender_acct_id = strSenderID.Get();
                     }
                 }
                 // ------------------------------
@@ -1043,9 +1070,10 @@ bool MTRecordList::Populate()
                 const std::string * p_str_asset_type = &MTRecordList::s_blank; // <========== ASSET TYPE
                 const std::string * p_str_asset_name = &MTRecordList::s_blank; // asset type display name.
                 // ----------------------------------
-                std::string str_amount;  // <========== AMOUNT
-                std::string str_type;    // Instrument type.
-                
+                std::string str_amount;   // <========== AMOUNT
+                std::string str_type;     // Instrument type.
+                OTString    strContents; // Instrument contents.
+
                 if (pBoxTrans->IsAbbreviated())
                 {
                     str_type = pBoxTrans->GetTypeString(); // instrumentNotice, etc.
@@ -1089,6 +1117,8 @@ bool MTRecordList::Populate()
                     //
                     else if (pPayment->SetTempValues())
                     {
+                        pPayment->GetPaymentContents(strContents);
+                        // -----------------------------
                         OTIdentifier theAssetTypeID;
                         
                         if (pPayment->GetAssetTypeID(theAssetTypeID))
@@ -1150,10 +1180,23 @@ bool MTRecordList::Populate()
                                                            str_amount,
                                                            str_type, // pending, chequeReceipt, etc.
                                                            true,     // I believe all incoming "payment inbox" items are pending. (Cheques waiting to be cashed, smart contracts waiting to be signed, etc.)
-                                                           false,  // bIsOutgoing=false. (Since this is the payment INbox, nothing is outgoing...)
+                                                           false,    // bIsOutgoing=false. (Since this is the payment INbox, nothing is outgoing...)
                                                            false, //bIsRecord
                                                            false, //bIsReceipt
                                                            MTRecord::Instrument));
+                // -------------------------------------------------
+                if (!str_sender_nym_id.empty())
+                    sp_Record->SetOtherNymID(str_sender_nym_id);
+                // -------------------------------------------------
+                if (!str_sender_acct_id.empty())
+                    sp_Record->SetOtherAccountID(str_sender_acct_id);
+                // -------------------------------------------------
+                if (strContents.Exists())
+                    sp_Record->SetContents(strContents.Get());
+                // -------------------------------------------------                
+                sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
+                sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
+
                 m_contents.push_back(sp_Record);
                 // ------------------------------
 
@@ -1183,11 +1226,13 @@ bool MTRecordList::Populate()
                 OTLog::vOutput(0, "%s: Payment RECORD index: %d\n", __FUNCTION__, nIndex);
                 // ------------------------------------------------
                 std::string  str_name; // name of sender OR recipient (depending on whether it was originally incoming or outgoing.)
-                
+                std::string  str_other_nym_id;
+                std::string  str_other_acct_id;
+
                 if (false == pBoxTrans->IsAbbreviated())
                 {
-                    OTIdentifier theSenderID;
-                    OTIdentifier theRecipientID;
+                    OTIdentifier theSenderID,    theSenderAcctID;
+                    OTIdentifier theRecipientID, theRecipientAcctID;
                     
                     if (pBoxTrans->GetSenderUserIDForDisplay(theSenderID))
                     {
@@ -1215,7 +1260,14 @@ bool MTRecordList::Populate()
                                 else
                                     strNameTemp.Format("To: %s", str_recipient_id.c_str());
                                 
-                                str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                                str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                                str_other_nym_id = str_recipient_id;
+                                // -------------------------------------------
+                                if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
+                                {
+                                    const OTString strRecipientAcctID(theRecipientAcctID);
+                                    str_other_acct_id = strRecipientAcctID.Get();
+                                }
                             }
                         }
                         else // str_nym_id IS NOT str_sender_id. (Therefore we want sender.)
@@ -1228,7 +1280,14 @@ bool MTRecordList::Populate()
                             else
                                 strNameTemp.Format("From: %s", str_sender_id.c_str());
                             
-                            str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                            str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                            str_other_nym_id = str_sender_id;
+                            // -------------------------------------------
+                            if (pBoxTrans->GetSenderAcctIDForDisplay(theSenderAcctID))
+                            {
+                                const OTString strSenderAcctID(theSenderAcctID);
+                                str_other_acct_id = strSenderAcctID.Get();
+                            }
                         }
                     }
                     // In this block below, we already KNOW GetSenderUserIDForDisplay is EMPTY.
@@ -1251,7 +1310,14 @@ bool MTRecordList::Populate()
                             else
                                 strNameTemp.Format("To: %s", str_recipient_id.c_str());
                             
-                            str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                            str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                            str_other_nym_id = str_recipient_id;
+                            // -------------------------------------------
+                            if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
+                            {
+                                const OTString strRecipientAcctID(theRecipientAcctID);
+                                str_other_acct_id = strRecipientAcctID.Get();
+                            }
                         }
                     }
                 } // if not abbreviated.
@@ -1273,6 +1339,7 @@ bool MTRecordList::Populate()
                 // ----------------------------------
                 std::string str_amount;  // <========== AMOUNT
                 std::string str_type;    // Instrument type.
+                OTString    strContents; // Instrument contents.
                 
                 if (pBoxTrans->IsAbbreviated())
                 {
@@ -1313,29 +1380,36 @@ bool MTRecordList::Populate()
                     // We have pPayment, the instrument accompanying the receipt in the payments recordbox.
                     else if (pPayment->SetTempValues())
                     {
+                        pPayment->GetPaymentContents(strContents);
+                        // ------------------------------------
                         OTIdentifier theAccountID;
-                        if (bOutgoing && pPayment->GetSenderAcctID(theAccountID)) // Since Nym is ME, the Account must be MY acct.
-                        {                                            // (If this record was originally OUTgoing, then the SENDER's account is MY acct.)
-                            OTString strTemp(theAccountID);
-                            std::string str_outpmt_account = strTemp.Get(); // The accountID we found on the payment (only applies to outgoing payments.)
-                            // -----------------------------
-                            list_of_strings::iterator it_acct = std::find(m_accounts.begin(), m_accounts.end(), str_outpmt_account);
-                            // -----------------------------
-                            if (it_acct != m_accounts.end()) // Found it on the list of accounts we care about.
-                            {
-                                p_str_account = &(*it_acct);
-                            }
-                            else
-                            {
-                                // There was definitely an account on the instrument, and it definitely
-                                // did not match any of the accounts that we care about.
-                                // Therefore, skip.
-                                //
-                                OTLog::vOutput(0, "%s: Skipping 'sent payment' record. (We don't care about account %s)\n",
-                                               __FUNCTION__, str_outpmt_account.c_str());
-                                continue;
+                        
+                        if (bOutgoing)
+                        {
+                            if (pPayment->GetSenderAcctID(theAccountID)) // Since Nym is ME, the Account must be MY acct.
+                            {                                            // (If this record was originally OUTgoing, then the SENDER's account is MY acct.)
+                                OTString strTemp(theAccountID);
+                                std::string str_outpmt_account = strTemp.Get(); // The accountID we found on the payment (only applies to outgoing payments.)
+                                // -----------------------------
+                                list_of_strings::iterator it_acct = std::find(m_accounts.begin(), m_accounts.end(), str_outpmt_account);
+                                // -----------------------------
+                                if (it_acct != m_accounts.end()) // Found it on the list of accounts we care about.
+                                {
+                                    p_str_account = &(*it_acct);
+                                }
+                                else
+                                {
+                                    // There was definitely an account on the instrument, and it definitely
+                                    // did not match any of the accounts that we care about.
+                                    // Therefore, skip.
+                                    //
+                                    OTLog::vOutput(0, "%s: Skipping 'sent payment' record. (We don't care about account %s)\n",
+                                                   __FUNCTION__, str_outpmt_account.c_str());
+                                    continue;
+                                }
                             }
                         }
+                        // ------------------------------------------
                         // By this point, p_str_account is definitely set.
                         OT_ASSERT(NULL != p_str_account); // and it's either blank, or it's one of the accounts we care about.
                         // ---------------------------------------------------
@@ -1404,6 +1478,19 @@ bool MTRecordList::Populate()
                                                            true, //IsRecord
                                                            false,//IsReceipt,
                                                            MTRecord::Instrument));
+                // -------------------------------------------------
+                if (!str_other_nym_id.empty())
+                    sp_Record->SetOtherNymID(str_other_nym_id);
+                // -------------------------------------------------
+                if (!str_other_acct_id.empty())
+                    sp_Record->SetOtherAccountID(str_other_acct_id);
+                // -------------------------------------------------
+                if (strContents.Exists())
+                    sp_Record->SetContents(strContents.Get());
+                // -------------------------------------------------                
+                sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
+                sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
+
                 m_contents.push_back(sp_Record);
                 // ------------------------------
                 
@@ -1507,10 +1594,12 @@ bool MTRecordList::Populate()
             OTLog::vOutput(0, "%s: Inbox index: %d\n", __FUNCTION__, nInboxIndex);
             // ------------------------------------------------
             std::string  str_name; // name of sender (since its in the inbox.)
+            std::string  str_other_nym_id;
+            std::string  str_other_acct_id;
             
             if (false == pBoxTrans->IsAbbreviated())
             {
-                OTIdentifier theSenderID;
+                OTIdentifier theSenderID, theSenderAcctID;
                 
                 if (pBoxTrans->GetSenderUserIDForDisplay(theSenderID)) // NYM name.
                 {
@@ -1524,12 +1613,19 @@ bool MTRecordList::Populate()
                     else
                         strNameTemp.Format("From: %s", str_sender_id.c_str());
                     
-                    str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                    str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                    str_other_nym_id = str_sender_id;
+                    // ------------------------------------
+                    if (pBoxTrans->GetSenderAcctIDForDisplay(theSenderAcctID))
+                    {
+                        const OTString strSenderAcctID(theSenderAcctID);
+                        str_other_acct_id = strSenderAcctID.Get();
+                    }
                 }
-                else if (pBoxTrans->GetSenderAcctIDForDisplay(theSenderID)) // ACCOUNT name.
+                else if (pBoxTrans->GetSenderAcctIDForDisplay(theSenderAcctID)) // ACCOUNT name.
                 {
-                    const OTString    strSenderID  (theSenderID);
-                    const std::string str_sender_id(strSenderID.Get());
+                    const OTString    strSenderAcctID(theSenderAcctID);
+                    const std::string str_sender_id(strSenderAcctID.Get());
                     
                     OTString strName(OTAPI_Wrap::GetAccountWallet_Name(str_sender_id)), strNameTemp;
                     
@@ -1539,6 +1635,7 @@ bool MTRecordList::Populate()
                         strNameTemp.Format("From: %s", str_sender_id.c_str());
                     
                     str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                    str_other_acct_id = str_sender_id;
                 }
                 else
                 {
@@ -1602,6 +1699,15 @@ bool MTRecordList::Populate()
                                                        (OTTransaction::pending != pBoxTrans->GetType()), //IsReceipt,
                                                        (OTTransaction::pending == pBoxTrans->GetType()) ?
                                                             MTRecord::Transfer : MTRecord::Receipt ));
+            // -------------------------------------------------
+            if (!str_other_nym_id.empty())
+                sp_Record->SetOtherNymID(str_other_nym_id);
+            // -------------------------------------------------
+            if (!str_other_acct_id.empty())
+                sp_Record->SetOtherAccountID(str_other_acct_id);
+            // -------------------------------------------------
+            sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
+            sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
 
             m_contents.push_back(sp_Record);
         }
@@ -1630,10 +1736,12 @@ bool MTRecordList::Populate()
             OTLog::vOutput(0, "%s: Outbox index: %d\n", __FUNCTION__, nOutboxIndex);
             // ------------------------------------------------
             std::string  str_name; // name of recipient (since its in the outbox.)
-            
+            std::string  str_other_nym_id;
+            std::string  str_other_acct_id;
+
             if (false == pBoxTrans->IsAbbreviated())
             {
-                OTIdentifier theRecipientID;
+                OTIdentifier theRecipientID, theRecipientAcctID;
                 
                 if (pBoxTrans->GetRecipientUserIDForDisplay(theRecipientID))
                 {
@@ -1647,12 +1755,19 @@ bool MTRecordList::Populate()
                     else
                         strNameTemp.Format("To: %s", str_recipient_id.c_str());
                     
-                    str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                    str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                    str_other_nym_id = str_recipient_id;
+                    // ------------------------------------
+                    if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
+                    {
+                        const OTString strRecipientAcctID(theRecipientAcctID);
+                        str_other_acct_id = strRecipientAcctID.Get();
+                    }
                 }
-                else if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientID))
+                else if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
                 {
-                    const OTString    strRecipientID  (theRecipientID);
-                    const std::string str_recipient_id(strRecipientID.Get());
+                    const OTString    strRecipientAcctID(theRecipientAcctID);
+                    const std::string str_recipient_id(strRecipientAcctID.Get());
                     
                     OTString strName(OTAPI_Wrap::GetAccountWallet_Name(str_recipient_id)), strNameTemp;
                     
@@ -1661,7 +1776,8 @@ bool MTRecordList::Populate()
                     else
                         strNameTemp.Format("To: %s", str_recipient_id.c_str());
                     
-                    str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                    str_name          = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                    str_other_acct_id = str_recipient_id;
                 }
             }
             // ------------------------------
@@ -1714,6 +1830,16 @@ bool MTRecordList::Populate()
                                                        false, //IsReceipt
                                                        MTRecord::Transfer
                                                        ));
+            // -------------------------------------------------
+            if (!str_other_nym_id.empty())
+                sp_Record->SetOtherNymID(str_other_nym_id);
+            // -------------------------------------------------
+            if (!str_other_acct_id.empty())
+                sp_Record->SetOtherAccountID(str_other_acct_id);
+            // -------------------------------------------------
+            sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
+            sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
+
             m_contents.push_back(sp_Record);
         }
         // ------------------------------------------------
@@ -1743,11 +1869,13 @@ bool MTRecordList::Populate()
             bool bOutgoing = false;
             // ------------------------------
             std::string  str_name; // name of sender OR recipient (depending on whether it was originally incoming or outgoing.)
-            
+            std::string  str_other_nym_id;
+            std::string  str_other_acct_id;
+
             if (false == pBoxTrans->IsAbbreviated())
             {
-                OTIdentifier theSenderID;
-                OTIdentifier theRecipientID;
+                OTIdentifier theSenderID,    theSenderAcctID;
+                OTIdentifier theRecipientID, theRecipientAcctID;
                 
                 if (pBoxTrans->GetSenderUserIDForDisplay(theSenderID))
                 {
@@ -1775,7 +1903,14 @@ bool MTRecordList::Populate()
                             else
                                 strNameTemp.Format("To: %s", str_recipient_id.c_str());
                             
-                            str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                            str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                            str_other_nym_id = str_recipient_id;
+                            // ------------------------------------
+                            if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
+                            {
+                                const OTString strRecipientAcctID(theRecipientAcctID);
+                                str_other_acct_id = strRecipientAcctID.Get();
+                            }
                         }
                     }
                     else // str_nym_id IS NOT str_sender_id. (Therefore we want sender.)
@@ -1788,7 +1923,14 @@ bool MTRecordList::Populate()
                         else
                             strNameTemp.Format("From: %s", str_sender_id.c_str());
                         
-                        str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                        str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                        str_other_nym_id = str_sender_id;
+                        // ------------------------------------
+                        if (pBoxTrans->GetSenderAcctIDForDisplay(theSenderAcctID))
+                        {
+                            const OTString strSenderAcctID(theSenderAcctID);
+                            str_other_acct_id = strSenderAcctID.Get();
+                        }
                     }
                 }
                 // In this block below, we already KNOW GetSenderUserIDForDisplay is EMPTY.
@@ -1811,13 +1953,20 @@ bool MTRecordList::Populate()
                         else
                             strNameTemp.Format("To: %s", str_recipient_id.c_str());
                         
-                        str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                        str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                        str_other_nym_id = str_recipient_id;
+                        // ------------------------------------
+                        if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
+                        {
+                            const OTString strRecipientAcctID(theRecipientAcctID);
+                            str_other_acct_id = strRecipientAcctID.Get();
+                        }
                     }
                 }
-                else if (pBoxTrans->GetSenderAcctIDForDisplay(theSenderID))
+                else if (pBoxTrans->GetSenderAcctIDForDisplay(theSenderAcctID))
                 {
-                    const OTString    strSenderID  (theSenderID);
-                    const std::string str_sender_id(strSenderID.Get());
+                    const OTString    strSenderAcctID(theSenderAcctID);
+                    const std::string str_sender_id(strSenderAcctID.Get());
                     
                     // Usually, Nym is the RECIPIENT. Sometimes he's the sender.
                     // Either way, we want the OTHER ID (the other Nym) for display.
@@ -1828,10 +1977,10 @@ bool MTRecordList::Populate()
                     {
                         bOutgoing = true; // if Nym is the sender, then it must have been outgoing.
                         
-                        if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientID))
+                        if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
                         {
-                            const OTString strRecipientID(theRecipientID);
-                            const std::string str_recipient_id(strRecipientID.Get());
+                            const OTString strRecipientAcctID(theRecipientAcctID);
+                            const std::string str_recipient_id(strRecipientAcctID.Get());
                             
                             OTString strName(OTAPI_Wrap::GetAccountWallet_Name(str_recipient_id)), strNameTemp;
                             
@@ -1840,7 +1989,8 @@ bool MTRecordList::Populate()
                             else
                                 strNameTemp.Format("To: %s", str_recipient_id.c_str());
                             
-                            str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                            str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                            str_other_acct_id = str_recipient_id;
                         }
                     }
                     else // str_nym_id IS NOT str_sender_id. (Therefore we want sender.)
@@ -1853,15 +2003,16 @@ bool MTRecordList::Populate()
                         else
                             strNameTemp.Format("From: %s", str_sender_id.c_str());
                         
-                        str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                        str_name          = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                        str_other_acct_id = str_sender_id;
                     }
                 }
                 // In this block below, we already KNOW GetSenderAcctIDForDisplay is EMPTY.
                 // (So it's "recipient or bust.")
-                else if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientID))
+                else if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
                 {
-                    const OTString strRecipientID(theRecipientID);
-                    const std::string str_recipient_id(strRecipientID.Get());
+                    const OTString strRecipientAcctID(theRecipientAcctID);
+                    const std::string str_recipient_id(strRecipientAcctID.Get());
                     
                     if (0 != str_account_id.compare(str_recipient_id)) // str_account_id is NOT str_recipient_id. (Therefore we want str_recipient_id.)
                     {
@@ -1876,7 +2027,8 @@ bool MTRecordList::Populate()
                         else
                             strNameTemp.Format("To: %s", str_recipient_id.c_str());
                         
-                        str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                        str_name          = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                        str_other_acct_id = str_recipient_id;
                     }
                 }
             } // if not abbreviated.
@@ -1928,6 +2080,16 @@ bool MTRecordList::Populate()
                                                        pBoxTrans->GetType() != OTTransaction::pending, //IsReceipt
                                                        pBoxTrans->GetType() == OTTransaction::pending ?
                                                             MTRecord::Transfer : MTRecord::Receipt));
+            // -------------------------------------------------
+            if (!str_other_nym_id.empty())
+                sp_Record->SetOtherNymID(str_other_nym_id);
+            // -------------------------------------------------
+            if (!str_other_acct_id.empty())
+                sp_Record->SetOtherAccountID(str_other_acct_id);
+            // -------------------------------------------------
+            sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
+            sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
+            
             m_contents.push_back(sp_Record);
         }
         // ------------------------------------------------

@@ -585,9 +585,10 @@ Moneychanger::~Moneychanger()
                 //Clear all records (In the future we should have a scan for updates records mechinism for now we will go for a browser "refresh" all mechinism)
                 int items_in_inoutgoing_gridview = mc_overview_inoutgoing_gridview->rowCount();
                 for(int a = 0; a < items_in_inoutgoing_gridview; a++){
-                    QLayoutItem * item = mc_overview_inoutgoing_gridview->itemAtPosition(a, 0);
-                    
-                    //mc_overview_inoutgoing_gridview
+                    QLayoutItem * item = mc_overview_inoutgoing_gridview->takeAt(0);
+                    mc_overview_inoutgoing_gridview->removeItem(item);
+                    delete item;
+
                 }
 
                 int total_records_to_visualize = current_list_copy.size();
@@ -599,17 +600,72 @@ Moneychanger::~Moneychanger()
                         QWidget * row_widget = new QWidget(0);
                         QGridLayout * row_widget_layout = new QGridLayout(0);
                         row_widget->setLayout(row_widget_layout);
+                        row_widget->setStyleSheet("QWidget{background-color:#c0cad4;}");
 
                         //Render row.
                             //Header of row
+                                QString tx_name = QString(record_map["name"].toString());
+                                if(tx_name.trimmed() == ""){
+                                    //Tx has no name
+                                    tx_name.clear();
+                                    tx_name = "Transaction";
+                                }
+
                                 QLabel * header_of_row = new QLabel(0);
                                 QString header_of_row_string = QString();
-                                header_of_row_string.append(QString(record_map["name"].toString()));
+                                header_of_row_string.append(tx_name);
 
                                 header_of_row->setText(header_of_row_string);
 
                                     //Append header to layout
-                                    row_widget_layout->addWidget(header_of_row, 0, 0, 1,1);
+                                    row_widget_layout->addWidget(header_of_row, 0, 0, 1,1, Qt::AlignLeft);
+
+                            // Amount (with currency tla)
+                                    QLabel * currency_amount_label = new QLabel(0);
+                                    QString currency_amount = QString();
+                                    currency_amount.append(record_map["currencyTLA"].toString());
+                                    currency_amount.append(QString(" %1"));
+                                    currency_amount = currency_amount.arg(record_map["amount"].toString());
+
+                                    currency_amount_label->setText(currency_amount);
+
+                                    row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
+
+                            //Sub-info
+                                QWidget * row_content_container = new QWidget(0);
+                                QGridLayout * row_content_grid = new QGridLayout(0);
+                                row_content_container->setLayout(row_content_grid);
+                                row_widget_layout->addWidget(row_content_container, 1,0, 1,2);
+
+                                    /** Column one **/
+                                    //Date (sub-info)
+                                    QLabel * row_content_date_label = new QLabel(0);
+                                    QString row_content_date_label_string = QString();
+                                    row_content_date_label_string.append(QString(record_map["date"].toString()));
+                                    row_content_date_label->setText(row_content_date_label_string);
+                                    row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
+
+                                    /** Column two **/
+                                    //Status
+                                    QLabel * row_content_status_label = new QLabel(0);
+                                    QString row_content_status_string = QString();
+                                        //pending string info
+                                        if(record_map["ispending"].toInt() == 1){
+                                            row_content_status_string.append(QString("(pending) "));
+                                        }
+
+                                        //instrument type
+                                        row_content_status_string.append(QString("%1 ").arg(record_map["instrumentType"].toString()));
+
+                                        //record type
+                                        row_content_status_string.append(QString("%1 ").arg(record_map["recordType"].toString()));
+
+                                        //add string to label
+                                        row_content_status_label->setText(row_content_status_string);
+
+                                    //add to row_content grid
+                                    row_content_grid->addWidget(row_content_status_label, 0,1, 1,1, Qt::AlignRight);
+
 
                         /** Append information to the grid/visuals. **/
                         mc_overview_inoutgoing_gridview->addWidget(row_widget, a,0, 1,1);
