@@ -835,7 +835,7 @@ Moneychanger::~Moneychanger()
              * @info Will init & show the server list manager
              ** *********************************************/
             void Moneychanger::mc_servermanager_dialog(){
-                /** If the nym managerh dialog has already been init,
+                /** If the server list manager dialog has already been init,
                  *  just show it, Other wise, init and show if this is the
                  *  first time.
                  **/
