@@ -6,8 +6,6 @@
 //  Copyright (c) 2013 Monetas. All rights reserved.
 //
 
-
-
 #include <OTStorage.h>
 
 #include <OTString.h>
@@ -16,6 +14,7 @@
 #include <OTAccount.h>
 #include <OTLedger.h>
 #include <OTTransaction.h>
+#include <OTPaymentPlan.h>
 #include <OTWallet.h>
 #include <OTIdentifier.h>
 #include <OTPayment.h>
@@ -26,7 +25,7 @@
 
 #include <OTLog.h>
 
-#include "MTRecord.h"
+#include "MTRecord.hpp"
 
 
 const std::string Instrument_TypeStrings[] =
@@ -42,7 +41,7 @@ const std::string Instrument_TypeStrings[] =
     "payment plan",   // An OTCronItem-derived OTPaymentPlan, related to a recurring payment plan.
     "smart contract", // An OTCronItem-derived OTSmartContract, related to a smart contract.
     // ------------------
-    "purse",          // An OTContract-derived OTPurse containing a list of cash OTTokens.
+    "cash",           // An OTContract-derived OTPurse containing a list of cash OTTokens.
     // ------------------
     "ERROR_STATE"
 };
@@ -56,8 +55,8 @@ bool MTRecord::FormatAmount(std::string & str_output)
 {
     if (m_str_amount.empty() || m_str_asset_id.empty()) // Need these to do the formatting.
     {
-        OTLog::vOutput(0, "%s: Unable to format amount. Type: %s Amount: %s  Asset: %s",
-                       __FUNCTION__, m_str_type.c_str(), m_str_amount.c_str(), m_str_asset_id.c_str());
+//        OTLog::vOutput(0, "%s: Unable to format amount. Type: %s Amount: %s  Asset: %s",
+//                       __FUNCTION__, m_str_type.c_str(), m_str_amount.c_str(), m_str_asset_id.c_str());
         return false;
     }
     // -----------------------------------
@@ -66,38 +65,317 @@ bool MTRecord::FormatAmount(std::string & str_output)
     return (!str_output.empty());
 }
 // ---------------------------------------
+bool MTRecord::FormatShortMailDescription(std::string & str_output)
+{    
+    OTString strDescription;
+    
+    if (IsMail())
+    {
+        if (!HasContents())
+            strDescription.Set("(empty message)");
+        else
+        {
+            std::string str_contents = GetContents();
+            
+            if (str_contents.compare(0,8,"Subject:") == 0)
+            {
+                // Make the replacement.
+                str_contents.replace(0, 8, "");
+            }
+            // -----------------------------------
+            bool bTruncated = false;
+            
+            if (str_contents.size() > 30)
+            {
+                str_contents.erase(30, std::string::npos);
+                bTruncated = true;
+            }
+            // -----------------------------------
+            strDescription.Format("\"%s%s\"", OTString::trim(str_contents).c_str(),
+                                  bTruncated ? "..." : "");
+        }
+    }
+    // -----------------------------    
+    str_output = strDescription.Get();
+    // -----------------------------
+    return (!str_output.empty());
+}
+// ---------------------------------------
 bool MTRecord::FormatDescription(std::string & str_output)
 {
     OTString strDescription, strStatus, strKind;
     
     if (IsRecord())
-        strStatus = "(record)";
+    {
+        if (IsExpired())
+            strStatus = "(EXPIRED)"; // How to tell difference between instrument that processed successfully and THEN expired, versus one that expired before processing successfully? (See next comment.)
+        else if (IsInvoice())
+            strStatus = "(payment sent)";  // TODO: need an "invalid records" box for expired and canceled. Otherwise we may falsely assume "payment sent" when actually it expired. (We may also falsely assume payment expired when actually it was sent.) Solution is a new box.
+        else
+            strStatus = "";
+//          strStatus = "(record)";
+    }
     // -----------------------------
     else if (IsPending())
-        strStatus = "(pending)";
+    {
+        if (IsExpired())
+            strStatus = "(EXPIRED)";  
+        else if (IsInvoice())
+            strStatus = "(unpaid)";
+        else if (!IsCash())
+            strStatus = "(pending)";
+    }
     // -----------------------------
-    if (IsOutgoing())
-        strKind.Format("%s",
-                       IsPending() ? "outgoing " : "sent ");
-    else // incoming.
-        strKind.Format("%s",
-                       IsPending() ? "incoming " : (IsReceipt() ? "" : "received "));
+    if (IsCanceled())
+    {
+        strStatus = "(CANCELED)";
+        
+        if (IsOutgoing() || IsReceipt())
+            strKind.Format("%s", "sent ");
+    }
+    // -----------------------------
+    else
+    {
+        if (IsOutgoing())
+            strKind.Format("%s",
+                           ((IsPending() && !IsCash()) ? "outgoing " : "sent "));
+        else // incoming.
+            strKind.Format("%s",
+                           IsPending() ? "incoming " : (IsReceipt() ? "" : "received "));
+    }
+    // -----------------------------
+    OTString strTransNumForDisplay;
+    
+    if (!IsCash())
+        strTransNumForDisplay.Format(" #%ld", GetTransNumForDisplay());
     // -----------------------------
     if (IsRecord())
     {
-        if (MTRecord::Transfer == this->GetRecordType())
-            strDescription.Format("%s%s %s", strKind.Get(), "transfer", strStatus.Get());
+        if (this->IsTransfer())
+            strDescription.Format("%s%s%s %s", strKind.Get(), "transfer", strTransNumForDisplay.Get(), strStatus.Get());
+        else if (this->IsVoucher())
+            strDescription.Format("%s%s%s %s", strKind.Get(), "payment", strTransNumForDisplay.Get(), strStatus.Get());
+        else if (this->IsReceipt())
+        {
+            std::string str_instrument_type;
+            
+            if (0 == GetInstrumentType().compare("transferReceipt"))
+                str_instrument_type = "transfer";
+            else if (0 == GetInstrumentType().compare("finalReceipt"))
+                str_instrument_type = "final receipt (closed)";
+            else if (0 == GetInstrumentType().compare("chequeReceipt"))
+            {
+                const long lAmount = OTAPI_Wrap::It()->StringToLong(m_str_amount);
+                
+                // I paid OUT when this chequeReceipt came through. It must be a normal cheque that I wrote.
+                if (lAmount <= 0) // Notice less than OR EQUAL TO 0 -- that's because a canceled cheque has a 0 value.
+                    str_instrument_type = "cheque";
+                else // I GOT PAID when this chequeReceipt came through. It must be an invoice I wrote, that someone paid.
+                {
+                    if (IsCanceled())
+                        str_instrument_type = "invoice";
+                    else
+                        str_instrument_type = "invoice (payment received)";
+                }
+            }
+            else if (0 == GetInstrumentType().compare("voucherReceipt"))
+            {
+                str_instrument_type = "payment";
+            }
+            else if (0 == GetInstrumentType().compare("paymentReceipt"))
+            {
+                const long lAmount = OTAPI_Wrap::It()->StringToLong(m_str_amount);
+                
+                if (!IsCanceled() && (lAmount > 0))
+                    strKind.Set("received ");
+                
+                str_instrument_type = "recurring payment";
+            }
+            
+            strDescription.Format("%s%s%s %s", strKind.Get(), str_instrument_type.c_str(), strTransNumForDisplay.Get(), strStatus.Get());
+        }
         else
-            strDescription.Format("%s%s %s", strKind.Get(), GetInstrumentType().c_str(), strStatus.Get());
+            strDescription.Format("%s%s%s %s", strKind.Get(), GetInstrumentType().c_str(), strTransNumForDisplay.Get(), strStatus.Get());
     }
     else
     {
-        strDescription.Format("%s %s%s", strStatus.Get(), strKind.Get(), GetInstrumentType().c_str());
+        if (this->IsTransfer())
+            strDescription.Format("%s %s%s%s", strStatus.Get(), strKind.Get(), "transfer", strTransNumForDisplay.Get());
+        else if (this->IsVoucher())
+            strDescription.Format("%s %s%s%s", strStatus.Get(), strKind.Get(), "payment", strTransNumForDisplay.Get());
+        
+        else if (this->IsReceipt())
+        {
+            std::string str_instrument_type;
+            
+            if (0 == GetInstrumentType().compare("transferReceipt"))
+            {
+                if (IsCanceled())
+                    str_instrument_type = "transfer";
+                else
+                    str_instrument_type = "transfer (receipt)";
+            }
+            else if (0 == GetInstrumentType().compare("finalReceipt"))
+                str_instrument_type = "final receipt";
+            else if (0 == GetInstrumentType().compare("chequeReceipt"))
+            {
+                const long lAmount = OTAPI_Wrap::It()->StringToLong(m_str_amount);
+                
+                // I paid OUT when this chequeReceipt came through. It must be a normal cheque that I wrote.
+                if (lAmount <= 0) // Notice less than OR EQUAL TO 0 -- that's because a canceled cheque has a 0 value.
+                {
+                    if (IsCanceled())
+                        str_instrument_type = "cheque";
+                    else
+                        str_instrument_type = "cheque (receipt)";
+                }
+                else // I GOT PAID when this chequeReceipt came through. It must be an invoice I wrote, that someone paid.
+                {
+                    if (IsCanceled())
+                        str_instrument_type = "invoice";
+                    else
+                        str_instrument_type = "sent invoice (receipt: payment received)";
+                }
+            }
+            else if (0 == GetInstrumentType().compare("voucherReceipt"))
+            {
+                if (IsCanceled())
+                    str_instrument_type = "payment";
+                else
+                    str_instrument_type = "payment (receipt)";
+            }
+            else if (0 == GetInstrumentType().compare("paymentReceipt"))
+            {
+                const long lAmount = OTAPI_Wrap::It()->StringToLong(m_str_amount);
+                
+                if (!IsCanceled() && (lAmount > 0))
+                    strKind.Set("received ");
+                
+                str_instrument_type = "recurring payment (receipt)";
+            }
+            
+            strDescription.Format("%s %s%s%s", strStatus.Get(), strKind.Get(), str_instrument_type.c_str(), strTransNumForDisplay.Get());
+        }
+        else
+            strDescription.Format("%s %s%s%s", strStatus.Get(), strKind.Get(), GetInstrumentType().c_str(), strTransNumForDisplay.Get());
     }
     // -----------------------------
     str_output = strDescription.Get();
     // -----------------------------
     return (!str_output.empty());
+}
+// ---------------------------------------
+bool MTRecord::HasInitialPayment()
+{
+    if (!IsPaymentPlan())
+        return false;
+    
+    OTPaymentPlan  thePlan;
+    const OTString strPlan(GetContents().c_str());
+    
+    if (thePlan.LoadContractFromString(strPlan) &&
+        thePlan.HasInitialPayment())
+        return true;
+    return false;
+}
+
+bool MTRecord::HasPaymentPlan()
+{
+    if (!IsPaymentPlan())
+        return false;
+    
+    OTPaymentPlan  thePlan;
+    const OTString strPlan(GetContents().c_str());
+    
+    if (thePlan.LoadContractFromString(strPlan) &&
+        thePlan.HasPaymentPlan())
+        return true;
+    return false;
+}
+
+time_t MTRecord::GetInitialPaymentDate()
+{
+    if (!IsPaymentPlan())
+        return 0;
+    
+    OTPaymentPlan  thePlan;
+    const OTString strPlan(GetContents().c_str());
+    
+    if (thePlan.LoadContractFromString(strPlan) &&
+        thePlan.HasInitialPayment())
+        return thePlan.GetInitialPaymentDate();
+    return 0;
+}
+
+long MTRecord::GetInitialPaymentAmount()
+{
+    if (!IsPaymentPlan())
+        return 0;
+    
+    OTPaymentPlan  thePlan;
+    const OTString strPlan(GetContents().c_str());
+    
+    if (thePlan.LoadContractFromString(strPlan) &&
+        thePlan.HasInitialPayment())
+        return thePlan.GetInitialPaymentAmount();
+    return 0;
+}
+
+
+time_t MTRecord::GetPaymentPlanStartDate()
+{
+    if (!IsPaymentPlan())
+        return 0;
+    
+    OTPaymentPlan  thePlan;
+    const OTString strPlan(GetContents().c_str());
+    
+    if (thePlan.LoadContractFromString(strPlan) &&
+        thePlan.HasPaymentPlan())
+        return thePlan.GetPaymentPlanStartDate();
+    return 0;
+}
+
+time_t MTRecord::GetTimeBetweenPayments()
+{
+    if (!IsPaymentPlan())
+        return 0;
+    
+    OTPaymentPlan  thePlan;
+    const OTString strPlan(GetContents().c_str());
+    
+    if (thePlan.LoadContractFromString(strPlan) &&
+        thePlan.HasPaymentPlan())
+        return thePlan.GetTimeBetweenPayments();
+    return 0;
+}
+
+long MTRecord::GetPaymentPlanAmount()
+{
+    if (!IsPaymentPlan())
+        return 0;
+    
+    OTPaymentPlan  thePlan;
+    const OTString strPlan(GetContents().c_str());
+    
+    if (thePlan.LoadContractFromString(strPlan) &&
+        thePlan.HasPaymentPlan())
+        return thePlan.GetPaymentPlanAmount();
+    return 0;
+}
+
+int MTRecord::GetMaximumNoPayments()
+{
+    if (!IsPaymentPlan())
+        return 0;
+    
+    OTPaymentPlan  thePlan;
+    const OTString strPlan(GetContents().c_str());
+    
+    if (thePlan.LoadContractFromString(strPlan) &&
+        thePlan.HasPaymentPlan())
+        return thePlan.GetMaximumNoPayments();
+    return 0;
 }
 // ---------------------------------------
 MTRecord::MTRecordType MTRecord::GetRecordType() const { return m_RecordType; }
@@ -122,18 +400,25 @@ bool MTRecord::CanDeleteRecord() const
 //
 bool MTRecord::CanAcceptIncoming() const
 {
-    if (this->IsOutgoing())
-        return false;
+    // Commented out because a transferReceipt is in the inbox, but it represents an outgoing payment.
+//    if (this->IsOutgoing()) // If it's outgoing, then it's definitely not an incoming thing you can accept.
+//        return false;
 
-    if (false == this->IsPending())
+    if (this->IsRecord()) // Records must be archived or deleted, not accepted or discarded.
         return false;
     
-    if (this->IsMail())
+    if (this->IsExpired())
+        return false;
+    
+    if (this->IsReceipt()) // It's NOT a record... If it's a receipt, then yes, we can accept it.
+        return true;
+
+    if (this->IsMail()) // Can't "accept" mail, can only delete it.
         return false;
 
-    if (this->IsRecord()) // This may be superfluous given the above 'if' pending.
+    if (this->IsPending() && this->IsOutgoing()) // It's not a record, it's not a receipt. If it's pending, is it Outgoing pending? (Can only accept INCOMING pending, not outgoing.)
         return false;
-
+    
     return true;
 }
 // ---------------------------------------
@@ -144,7 +429,7 @@ bool MTRecord::CanDiscardIncoming() const
     if (this->IsOutgoing())
         return false;
 
-    if (false == this->IsPending())
+    if (!this->IsPending())
         return false;
     
     if (this->IsMail())
@@ -162,6 +447,23 @@ bool MTRecord::CanDiscardIncoming() const
     return true;
 }
 // ---------------------------------------
+bool MTRecord::CanDiscardOutgoingCash() const  // For OUTgoing cash. (No way to see if it's been accepted, so this lets you erase the record of sending it.)
+{
+    if (false == this->IsOutgoing())
+        return false;
+
+    if (false == this->IsPending())
+        return false;
+
+    if (false == this->IsCash())
+        return false;
+    
+    if (!(GetBoxIndex() >= 0))
+        return false;
+
+    return true;
+}
+// ---------------------------------------
 // For OUTgoing, pending (not-yet-accepted) instruments.
 //
 bool MTRecord::CanCancelOutgoing() const
@@ -169,6 +471,9 @@ bool MTRecord::CanCancelOutgoing() const
     if (false == this->IsOutgoing())
         return false;
     
+    if (this->IsCanceled()) // It's already canceled!
+        return false;
+
     if (false == this->IsPending())
         return false;
     
@@ -188,6 +493,14 @@ bool MTRecord::CanCancelOutgoing() const
 }
 
 // ***********************************************************
+
+bool MTRecord::DiscardOutgoingCash()
+{
+    if (!this->CanDiscardOutgoingCash())
+        return false;
+    // -----------------------------
+    return OTAPI_Wrap::Nym_RemoveOutpaymentsByIndex(m_str_nym_id, GetBoxIndex());
+}
 
 // For completed records (not pending.)
 //
@@ -538,71 +851,14 @@ bool MTRecord::DiscardIncoming()
     return true;
 }
 // --------------------------------------------
-bool MTRecord::IsTransfer() const { return (MTRecord::Transfer == m_RecordType); }
+bool MTRecord::IsTransfer()    const  { return (MTRecord::Transfer == m_RecordType); }
 // --------------------------------------------
-bool MTRecord::IsCheque() const
-{
-    if (!m_str_contents.empty())
-    {
-        OTString  strPayment(m_str_contents);
-        OTPayment thePayment(strPayment);
-        
-        if (thePayment.IsValid() && thePayment.SetTempValues())
-        {
-            if (OTPayment::CHEQUE == thePayment.GetType())
-                return true;
-        }
-    }
-    return false;
-}
-// --------------------------------------------
-bool MTRecord::IsVoucher() const
-{
-    if (!m_str_contents.empty())
-    {
-        OTString  strPayment(m_str_contents);
-        OTPayment thePayment(strPayment);
-        
-        if (thePayment.IsValid() && thePayment.SetTempValues())
-        {
-            if (OTPayment::VOUCHER == thePayment.GetType())
-                return true;
-        }
-    }
-    return false;
-}
-// --------------------------------------------
-bool MTRecord::IsContract() const
-{
-    if (!m_str_contents.empty())
-    {
-        OTString  strPayment(m_str_contents);
-        OTPayment thePayment(strPayment);
-        
-        if (thePayment.IsValid() && thePayment.SetTempValues())
-        {
-            if (OTPayment::SMART_CONTRACT == thePayment.GetType())
-                return true;
-        }
-    }
-    return false;    
-}
-// --------------------------------------------
-bool MTRecord::IsPaymentPlan() const
-{
-    if (!m_str_contents.empty())
-    {
-        OTString  strPayment(m_str_contents);
-        OTPayment thePayment(strPayment);
-        
-        if (thePayment.IsValid() && thePayment.SetTempValues())
-        {
-            if (OTPayment::PAYMENT_PLAN == thePayment.GetType())
-                return true;
-        }
-    }
-    return false;    
-}
+bool MTRecord::IsCash()        const  { return m_bIsCash;          }
+bool MTRecord::IsInvoice()     const  { return m_bIsInvoice;       }
+bool MTRecord::IsCheque()      const  { return m_bIsCheque;        }
+bool MTRecord::IsVoucher()     const  { return m_bIsVoucher;       }
+bool MTRecord::IsContract()    const  { return m_bIsSmartContract; }
+bool MTRecord::IsPaymentPlan() const  { return m_bIsPaymentPlan;   }
 // ---------------------------------------
 // For outgoing, pending (not-yet-accepted) instruments.
 //
@@ -624,13 +880,6 @@ bool MTRecord::CancelOutgoing(const std::string str_via_acct) // This can be bla
             
             const OTIdentifier theNymID(m_str_nym_id);
             // ------------------------------
-            if (0 == m_lTransactionNum)
-            {
-                OTLog::vError("%s: Error: Transaction number is 0, for outgoing payment for nym id (%s)\n",
-                              __FUNCTION__, m_str_nym_id.c_str());
-                return false;
-            }
-            // ------------------------------
             std::string str_using_acct;
 
             if (this->IsCheque())
@@ -646,6 +895,59 @@ bool MTRecord::CancelOutgoing(const std::string str_via_acct) // This can be bla
             {
                 OTLog::vError("%s: Error: Missing account ID (FAILURE)\n", __FUNCTION__);
                 return false;                
+            }
+            // ------------------------------
+            if (0 == m_lTransactionNum)
+            {
+                if (IsCash())
+                {
+                    // Maybe it's cash...
+                    std::string strOutpayment(OTAPI_Wrap::GetNym_OutpaymentsContentsByIndex(m_str_nym_id, GetBoxIndex()));
+                    
+                    if (strOutpayment.empty())
+                    {
+                        long lIndex = static_cast<long>(GetBoxIndex());
+                        OTLog::vError("%s: Error: Blank outpayment at index %ld\n", __FUNCTION__, lIndex);
+                        return false;
+                    }
+                    // ------------------------
+                    OTString  strPayment(strOutpayment);
+                    OTPayment thePayment(strPayment);
+                    
+                    if (!thePayment.IsValid() || !thePayment.SetTempValues())
+                    {
+                        long lIndex = static_cast<long>(GetBoxIndex());
+                        OTLog::vError("%s: Error: Invalid outpayment at index %ld\n", __FUNCTION__, lIndex);
+                        return false;
+                    }
+                    // ------------------------
+                    long lTransNum = 0;
+                    thePayment.GetOpeningNum(lTransNum, theNymID);
+                    // ------------------------
+                    if (0 == lTransNum) // Found it.
+                    {
+                        long lIndex = static_cast<long>(GetBoxIndex());
+                        OTString strIndices;
+                        strIndices.Format("%ld", lIndex);
+                        const std::string str_indices(strIndices.Get());
+                        // ---------------------------------
+                        OT_ME madeEasy;
+                        
+                        return madeEasy.cancel_outgoing_payments(m_str_nym_id, str_using_acct, str_indices);
+                    }
+                    else
+                    {
+                        OTLog::vError("%s: Error: Transaction number is non-zero (%ld), for cash outgoing payment for nym id (%s)\n",
+                                      __FUNCTION__, lTransNum, m_str_nym_id.c_str());
+                        return false;
+                    }
+                } // IsCash()
+                else
+                {
+                    OTLog::vError("%s: Error: Transaction number is 0, for non-cash outgoing payment for nym id (%s)\n",
+                                  __FUNCTION__, m_str_nym_id.c_str());
+                    return false;
+                }
             }
             // ---------------------------------------
             // Find the payment in the Nym's outpayments box that correlates to this MTRecord.
@@ -687,7 +989,8 @@ bool MTRecord::CancelOutgoing(const std::string str_via_acct) // This can be bla
                     
                     return madeEasy.cancel_outgoing_payments(m_str_nym_id, str_using_acct, str_indices);
                 }
-            }
+            } // for
+            // ---------------------------------------------------
         }
             break;
         // -----------------------------            
@@ -713,6 +1016,9 @@ long  MTRecord::GetTransNumForDisplay() const
 }
 void  MTRecord::SetTransNumForDisplay(long lTransNum) { m_lTransNumForDisplay = lTransNum; }
 // ---------------------------------------
+void  MTRecord::SetExpired()   { m_bIsExpired  = true; }
+void  MTRecord::SetCanceled()  { m_bIsCanceled = true; }
+// ---------------------------------------
 bool  MTRecord::IsMail()                          const { return MTRecord::Mail == this->GetRecordType(); }
 // ---------------------------------------
 bool  MTRecord::IsPending()                       const { return m_bIsPending;            }
@@ -720,6 +1026,10 @@ bool  MTRecord::IsOutgoing()                      const { return m_bIsOutgoing; 
 bool  MTRecord::IsRecord()                        const { return m_bIsRecord;             }
 bool  MTRecord::IsReceipt()                       const { return m_bIsReceipt;            }
 bool  MTRecord::HasContents()                     const { return !m_str_contents.empty(); }
+bool  MTRecord::HasMemo()                         const { return !m_str_memo.empty();     }
+// ---------------------------------------
+bool  MTRecord::IsExpired()                       const { return m_bIsExpired;            }
+bool  MTRecord::IsCanceled()                      const { return m_bIsCanceled;           }
 // ---------------------------------------
 const std::string & MTRecord::GetServerID()       const { return m_str_server_id;         }
 const std::string & MTRecord::GetAssetID()        const { return m_str_asset_id;          }
@@ -733,13 +1043,60 @@ const std::string & MTRecord::GetName()           const { return m_str_name;    
 const std::string & MTRecord::GetDate()           const { return m_str_date;              }
 const std::string & MTRecord::GetAmount()         const { return m_str_amount;            }
 const std::string & MTRecord::GetInstrumentType() const { return m_str_type;              }
+const std::string & MTRecord::GetMemo()           const { return m_str_memo;              }
 const std::string & MTRecord::GetContents()       const { return m_str_contents;          }
 // ---------------------------------------
-void  MTRecord::SetContents      (const std::string & str_contents) { m_str_contents         = str_contents; }
-void  MTRecord::SetOtherNymID    (const std::string & str_ID)       { m_str_other_nym_id     = str_ID;       }
-void  MTRecord::SetOtherAccountID(const std::string & str_ID)       { m_str_other_account_id = str_ID;       }
+int   MTRecord::GetBoxIndex() const         { return m_nBoxIndex;      }
+void  MTRecord::SetBoxIndex(int nBoxIndex)  { m_nBoxIndex = nBoxIndex; }
 // ---------------------------------------
-bool MTRecord::operator<(const MTRecord& rhs)     { return m_str_date < rhs.m_str_date; }
+void  MTRecord::SetMemo          (const std::string & str_memo) { m_str_memo             = str_memo; }
+void  MTRecord::SetOtherNymID    (const std::string & str_ID)   { m_str_other_nym_id     = str_ID;   }
+void  MTRecord::SetOtherAccountID(const std::string & str_ID)   { m_str_other_account_id = str_ID;   }
+// ---------------------------------------
+void  MTRecord::SetContents      (const std::string & str_contents)
+{
+    m_str_contents = str_contents;
+    
+    if (!m_str_contents.empty() && (MTRecord::Instrument == this->GetRecordType()))
+    {
+        OTString  strPayment(m_str_contents);
+        OTPayment thePayment(strPayment);
+        
+        if (thePayment.IsValid() && thePayment.SetTempValues())
+        {
+            switch (thePayment.GetType())
+            {
+                case OTPayment::PURSE:          m_bIsCash           = true;  break;
+                case OTPayment::CHEQUE:         m_bIsCheque         = true;  break;
+                case OTPayment::VOUCHER:        m_bIsVoucher        = true;  break;
+                case OTPayment::INVOICE:        m_bIsInvoice        = true;  break;
+                case OTPayment::PAYMENT_PLAN:   m_bIsPaymentPlan    = true;  break;
+                case OTPayment::SMART_CONTRACT: m_bIsSmartContract  = true;  break;
+
+                default:
+                    break;
+            }
+        }
+    }
+}
+// ---------------------------------------
+time_t MTRecord::GetValidFrom() { return m_ValidFrom; }
+// ---------------------------------------
+time_t MTRecord::GetValidTo()   { return m_ValidTo;   }
+// ---------------------------------------
+void MTRecord::SetDateRange(time_t tValidFrom, time_t tValidTo)
+{
+    m_ValidFrom = tValidFrom;
+    m_ValidTo   = tValidTo;
+    // ----------------------------------------------------------
+    time_t tCurrentTime = static_cast<time_t>(OTAPI_Wrap::GetTime());
+    // ----------------------------------------------------------
+    if ((tValidTo > 0) && (tCurrentTime > tValidTo) && !IsMail() && !IsRecord())
+        SetExpired();
+}
+// ---------------------------------------
+bool MTRecord::operator<(const MTRecord& rhs)
+{ return m_ValidFrom < rhs.m_ValidFrom; }
 // ---------------------------------------
 MTRecord::MTRecord(const std::string & str_server_id,
                    const std::string & str_asset_id,
@@ -755,6 +1112,9 @@ MTRecord::MTRecord(const std::string & str_server_id,
                    bool  bIsRecord,
                    bool  bIsReceipt,
                    MTRecordType eRecordType) :
+m_nBoxIndex(-1),
+m_ValidFrom(0),
+m_ValidTo(0),
 m_str_server_id(str_server_id),
 m_str_asset_id(str_asset_id),
 m_str_currency_tla(str_currency_tla),
@@ -771,6 +1131,14 @@ m_bIsPending(bIsPending),
 m_bIsOutgoing(bIsOutgoing),
 m_bIsRecord(bIsRecord),
 m_bIsReceipt(bIsReceipt),
+m_bIsPaymentPlan(false),
+m_bIsSmartContract(false),
+m_bIsVoucher(false),
+m_bIsCheque(false),
+m_bIsInvoice(false),
+m_bIsCash(false),
+m_bIsExpired(false),
+m_bIsCanceled(false),
 m_RecordType(eRecordType) { }
 // ---------------------------------------
 
