@@ -14,16 +14,15 @@ TEMPLATE = app
 INCLUDEPATH+="/usr/local/include/"
 DEPENDPATH += .
 SOURCES += main.cpp\
-        moneychanger.cpp \
-    ot_worker.cpp \
-    MTRecordList.cpp \
-    MTRecord.cpp
+           moneychanger.cpp \
+           ot_worker.cpp \
+           MTRecordList.cpp \
+           MTRecord.cpp
 
-HEADERS  += moneychanger.h \
-    ot_worker.h \
-    ot_worker.h \
-    MTRecordList.h \
-    MTRecord.h
+HEADERS += moneychanger.h \
+           ot_worker.h \
+           MTRecordList.h \
+           MTRecord.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 
@@ -60,5 +59,4 @@ unix: PKGCONFIG += chaiscript
 
 OTHER_FILES +=
 
-RESOURCES += \
-    resource.qrc
+RESOURCES += resource.qrc
