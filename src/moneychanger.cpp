@@ -552,26 +552,18 @@ Moneychanger::~Moneychanger()
 
                         /** Flag Already Init **/
                         mc_overview_already_init = 1;
-
-                   //Show it
-                        mc_overview_dialog_page->show();
-
-
-                }else{
-                    //Just show it
-                    mc_overview_dialog_page->show();
                 }
-
-
                 //Resize
                 mc_overview_dialog_page->resize(800, 400);
+                //Show
+                mc_overview_dialog_page->show();
 
                 //Refresh visual data
-                    //Tell OT to repopulate, and refresh backend.
-                    ot_worker_background->mc_overview_ping();
+                //Tell OT to repopulate, and refresh backend.
+                ot_worker_background->mc_overview_ping();
 
-                    //Now refresh the repopulated data visually
-                    mc_overview_dialog_refresh();
+                //Now refresh the repopulated data visually
+                mc_overview_dialog_refresh();
             }
 
             //Overview refresh function
@@ -772,17 +764,14 @@ Moneychanger::~Moneychanger()
                                     //Label
                                         mc_nym_manager_most_recent_erorr = new QLabel("");
                                         mc_nym_manager_gridlayout->addWidget(mc_nym_manager_most_recent_erorr, 2,0, 1,2, Qt::AlignHCenter);
-
-                        /** show dialog **/
-                            mc_nym_manager_dialog->show();
-
-
                     /** Flag as init **/
                         mc_nymmanager_already_init = 1;
-                }else{
-                    //The Nym Manager is already init, just show it
-                    mc_nym_manager_dialog->show();
                 }
+                /** ***
+                 ** Resize & Show
+                 **/
+                mc_nym_manager_dialog->resize(600, 300);
+                mc_nym_manager_dialog->show();
 
                 /** ***
                  ** Data Refresh/Fill Logic
@@ -834,12 +823,6 @@ Moneychanger::~Moneychanger()
                             }
                             /** Unflag as current refreshing **/
                             mc_nymmanager_refreshing = 0;
-
-                /** ***
-                 ** Resize the window.
-                 **/
-                mc_nym_manager_dialog->resize(600, 300);
-
             }
 
 
@@ -921,7 +904,7 @@ Moneychanger::~Moneychanger()
              * @info Will init & show the server list manager
              ** *********************************************/
             void Moneychanger::mc_servermanager_dialog(){
-                /** If the nym managerh dialog has already been init,
+                /** If the server list manager dialog has already been init,
                  *  just show it, Other wise, init and show if this is the
                  *  first time.
                  **/
@@ -966,18 +949,12 @@ Moneychanger::~Moneychanger()
 
                     /** Flag already int **/
                     mc_servermanager_already_init = 1;
-
-                    //Show
-                    mc_servermanager_qdialog->show();
-
-                    //Resize
-                    mc_servermanager_qdialog->resize(500,300);
-
-                }else{
-                    //Serverlist manager is already init, just show
-                    mc_servermanager_qdialog->show();
                 }
 
+                //Resize
+                mc_servermanager_qdialog->resize(500,300);
+                //Show
+                mc_servermanager_qdialog->show();
 
                 /**
                  ** Refresh server list data
@@ -1150,18 +1127,12 @@ Moneychanger::~Moneychanger()
 
                             /** Flag already init **/
                             mc_withdraw_ascash_dialog_already_init = 1;
-
-                       //Show
-                       mc_systrayMenu_withdraw_ascash_dialog->show();
-                       mc_systrayMenu_withdraw_ascash_dialog->activateWindow();
-                }else{
-                    //Show
-                    mc_systrayMenu_withdraw_ascash_dialog->show();
-                    mc_systrayMenu_withdraw_ascash_dialog->activateWindow();
                 }
-
                 //Resize
                 mc_systrayMenu_withdraw_ascash_dialog->resize(400, 120);
+                //Show
+                mc_systrayMenu_withdraw_ascash_dialog->show();
+                mc_systrayMenu_withdraw_ascash_dialog->activateWindow();
 
                 /** Refresh dynamic lists **/
                 //remove all items from nym dropdown box
@@ -1260,18 +1231,11 @@ Moneychanger::~Moneychanger()
 
                                 /** Flag as init **/
                                     mc_withdraw_asvoucher_dialog_already_init = 1;
-                        //Show
-                            mc_systrayMenu_withdraw_asvoucher_dialog->show();
-                            mc_systrayMenu_withdraw_asvoucher_dialog->setFocus();
-                    }else{
-                       //This dialog has already been init, just show it
-                        mc_systrayMenu_withdraw_asvoucher_dialog->show();
-                        mc_systrayMenu_withdraw_asvoucher_dialog->setFocus();
                     }
-
-                    //Resize
+                    //Resize & Show
                     mc_systrayMenu_withdraw_asvoucher_dialog->resize(400, 120);
-
+                    mc_systrayMenu_withdraw_asvoucher_dialog->show();
+                    mc_systrayMenu_withdraw_asvoucher_dialog->setFocus();
 
                     /** Refresh dynamic lists **/
                     //remove all items from nym dropdown box
@@ -1342,18 +1306,13 @@ Moneychanger::~Moneychanger()
                             //Connect create nym button with a re-action;
                             connect(mc_nym_manager_addnym_create_nym_btn, SIGNAL(clicked()), this, SLOT(mc_addnym_dialog_createnym_slot()));
 
-                //Show dialog.
-                mc_nym_manager_addnym_dialog->show();
-
                 /** Flag as already init **/
                 mc_nymmanager_addnym_dialog_already_init = 1;
-            }else{
-                //Show
-                mc_nym_manager_addnym_dialog->show();
             }
-
             //Resize
             mc_nym_manager_addnym_dialog->resize(400, 290);
+            //Show
+            mc_nym_manager_addnym_dialog->show();
         }
 
         void Moneychanger::mc_nymmanager_removenym_slot(){
@@ -1365,13 +1324,8 @@ Moneychanger::~Moneychanger()
                     //Grid layout
                     mc_nym_manager_removenym_gridlayout = new QGridLayout(0);
                     mc_nym_manager_removenym_dialog->setLayout(mc_nym_manager_removenym_gridlayout);
-
-                //Show remove nym dialog
-                    mc_nym_manager_removenym_dialog->show();
-            }else{
-                //Already init, just show.
-                    mc_nym_manager_removenym_dialog->show();
             }
+            mc_nym_manager_removenym_dialog->show();
         }
 
         void Moneychanger::mc_nymmanager_dataChanged_slot(QModelIndex topLeft, QModelIndex bottomRight){
@@ -1524,7 +1478,8 @@ Moneychanger::~Moneychanger()
                 }
 
             }else{
-                qDebug() <<"nothing was selected to be removed -- display dialog/alert instead of this debug";
+                qDebug() <<"nothing was selected to be removed";
+                QMessageBox::information(this,"Moneychanger","Nothing selected to remove.");
             }
         }
 
@@ -1594,7 +1549,8 @@ Moneychanger::~Moneychanger()
                     mc_addressbook_dialog->hide();
                 }
             }else{
-                qDebug() << "nothing was selected to paste into the target area, display a message/alert instead of this debug msg.";
+                qDebug() << "nothing was selected to paste into the target area";
+                QMessageBox::information(this,"Moneychanger","Nothing selected to paste.");
             }
         }
 
@@ -1673,15 +1629,14 @@ Moneychanger::~Moneychanger()
                     QString action_triggered_string_server_name = QVariant(action_triggered->text()).toString();
                     mc_systrayMenu_server_setDefaultServer(action_triggered_string, action_triggered_string_server_name);
 
-                    /** *********** CODE BELOW SHOULD BE CHANGED FROM NYM TO SERVER ************ **/
-                    //Refresh the nym default selection in the nym manager (ONLY if it is open)
-                        //Check if nym manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
-                        /*if(mc_nymmanager_already_init == 1){
-                            //Refresh if the nym manager is currently open
-                            if(mc_nym_manager_dialog->isVisible()){
-                                mc_nymmanager_dialog();
+                    //Refresh the server default selection in the server manager (ONLY if it is open)
+                        //Check if server manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
+                        if(mc_servermanager_already_init == 1){
+                            //Refresh if the server manager is currently open
+                            if(mc_servermanager_qdialog->isVisible()){
+                                mc_servermanager_dialog();
                             }
-                        }*/
+                        }
                 }
             }
 
@@ -2068,18 +2023,11 @@ Moneychanger::~Moneychanger()
 
                                     //Hide by default
                                     mc_deposit_purse_widget->hide();
-
-
-
-                        //Show
-                            mc_deposit_dialog->show();
-                    }else{
-                        //Show
-                            mc_deposit_dialog->show();
                     }
-
                     //Resize
                     mc_deposit_dialog->resize(600, 300);
+                    //Show
+                    mc_deposit_dialog->show();
                 }
 
 

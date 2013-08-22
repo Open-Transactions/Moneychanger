@@ -6,24 +6,24 @@
 //  Copyright (c) 2013 Monetas. All rights reserved.
 //
 
-#include <OTStorage.h>
+#include <opentxs/OTStorage.h>
 
-#include <OTString.h>
-#include <OTIdentifier.h>
-#include <OTASCIIArmor.h>
-#include <OTAccount.h>
-#include <OTLedger.h>
-#include <OTTransaction.h>
-#include <OTPaymentPlan.h>
-#include <OTWallet.h>
-#include <OTIdentifier.h>
-#include <OTPayment.h>
+#include <opentxs/OTString.h>
+#include <opentxs/OTIdentifier.h>
+#include <opentxs/OTASCIIArmor.h>
+#include <opentxs/OTAccount.h>
+#include <opentxs/OTLedger.h>
+#include <opentxs/OTTransaction.h>
+#include <opentxs/OTPaymentPlan.h>
+#include <opentxs/OTWallet.h>
+#include <opentxs/OTIdentifier.h>
+#include <opentxs/OTPayment.h>
 
-#include <OpenTransactions.h>
-#include <OTAPI.h>
-#include <OT_ME.h>
+#include <opentxs/OpenTransactions.h>
+#include <opentxs/OTAPI.h>
+#include <opentxs/OT_ME.h>
 
-#include <OTLog.h>
+#include <opentxs/OTLog.h>
 
 #include "MTRecord.hpp"
 

@@ -9,23 +9,23 @@
 
 #include <algorithm>
 
-#include <OTStorage.h>
+#include <opentxs/OTStorage.h>
 
-#include <OTString.h>
-#include <OTIdentifier.h>
-#include <OTASCIIArmor.h>
-#include <OTAccount.h>
-#include <OTWallet.h>
-#include <OTIdentifier.h>
-#include <OTPayment.h>
-#include <OTMessage.h>
-#include <OTLedger.h>
+#include <opentxs/OTString.h>
+#include <opentxs/OTIdentifier.h>
+#include <opentxs/OTASCIIArmor.h>
+#include <opentxs/OTAccount.h>
+#include <opentxs/OTWallet.h>
+#include <opentxs/OTIdentifier.h>
+#include <opentxs/OTPayment.h>
+#include <opentxs/OTMessage.h>
+#include <opentxs/OTLedger.h>
 
-#include <OpenTransactions.h>
-#include <OTAPI.h>
-#include <OT_ME.h>
+#include <opentxs/OpenTransactions.h>
+#include <opentxs/OTAPI.h>
+#include <opentxs/OT_ME.h>
 
-#include <OTLog.h>
+#include <opentxs/OTLog.h>
 
 
 #include "MTRecordList.hpp"
@@ -319,7 +319,8 @@ bool MTRecordList::PerformAutoAccept()
                 std::string str_amount;  // <========== AMOUNT
                 std::string str_type;    // Instrument type.
                 // ------------------------------------------------
-                OTPayment * pPayment = pInbox->GetInstrument(*pNym, nIndex);     // ===> Returns financial instrument by index.
+                OTPayment * pPayment = pInbox->GetInstrument(*pNym,
+                                                             nIndex);     // ===> Returns financial instrument by index.
                 OTCleanup<OTPayment> thePaymentAngel(pPayment);
                 // ------------------------------
                 if (NULL == pPayment) // then we treat it like it's abbreviated.

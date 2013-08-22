@@ -1,7 +1,6 @@
 #include "ot_worker.h"
 
-ot_worker::ot_worker(QObject *parent) :
-    QObject(parent)
+ot_worker::ot_worker(QObject *parent) : QObject(parent)
 {
     /** ** ** **
      ** Init MTList
