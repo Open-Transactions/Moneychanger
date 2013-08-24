@@ -25,6 +25,8 @@ const std::string & MTRecord_GetTypeString(int theType);
  
  */
 
+
+
 class MTRecord
 {
 public:

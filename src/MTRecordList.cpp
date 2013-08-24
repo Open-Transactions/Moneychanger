@@ -33,7 +33,6 @@
 
 
 
-
 //virtual
 std::string MTNameLookup::GetNymName(const std::string & str_id) const
 {

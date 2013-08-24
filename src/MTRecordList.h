@@ -91,7 +91,11 @@ public:
     int               size();
     weak_ptr_MTRecord GetRecord(int nIndex);
     // ------------------------------------------------
+
 };
+
+
+
 
 /*
  

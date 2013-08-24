@@ -22,7 +22,9 @@ SOURCES += main.cpp\
 HEADERS += moneychanger.h \
            ot_worker.h \
            MTRecordList.h \
-           MTRecord.h
+           MTRecord.h \
+    MTRecord.hpp \
+    MTRecordList.hpp
 
 DEFINES += "OT_ZMQ_MODE=1"
 
