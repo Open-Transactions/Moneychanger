@@ -85,8 +85,6 @@ int main(int argc, char *argv[])
     // This app relies on system tray capabilites;
     // Make sure the system has this capability before running
     //
-    QSystemTrayIcon::isSystemTrayAvailable();
-
     if (!QSystemTrayIcon::isSystemTrayAvailable())
     {
         /* ** ** **
@@ -116,7 +114,6 @@ int main(int argc, char *argv[])
          *Start the Moneychanger systray app
          */
         systray.bootTray();
-
     }
     // ----------------------------------------------------------------
     // Leave this here for now, it will help debugging.

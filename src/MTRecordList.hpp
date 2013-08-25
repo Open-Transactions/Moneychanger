@@ -21,7 +21,25 @@
 #include <tr1/memory>
 #endif
 
-#include "MTRecord.h"
+#include "MTRecord.hpp"
+
+
+class MTNameLookup
+{
+public:
+    virtual std::string GetNymName(const std::string & str_id) const;
+    virtual std::string GetAcctName(const std::string & str_id) const;
+};
+
+/*
+class MTNameLookupIPhone : public MTNameLookup
+{
+public:
+    virtual std::string GetNymName(const std::string & str_id) const;
+    virtual std::string GetAcctName(const std::string & str_id) const;
+};
+*/
+
 
 // -------------------------------------------------------------
 typedef std::tr1::weak_ptr  <MTRecord>       weak_ptr_MTRecord;
@@ -33,14 +51,18 @@ typedef std::list<std::string>                 list_of_strings;
 // -------------------------------------------------------------
 typedef std::map<std::string, std::string>     map_of_strings;
 
+
 class MTRecordList
 {
+    MTNameLookup           *  m_pLookup;
+    // ------------------------------------------------
     // Defaults to false. If you set it true, it will run a lot faster. (And give you less data.)
-    bool                      m_bRunFast; 
+    bool                      m_bRunFast;    
     // ------------------------------------------------
     bool                      m_bAutoAcceptCheques;   // Cheques and vouchers, NOT invoices.
     bool                      m_bAutoAcceptReceipts;
     bool                      m_bAutoAcceptTransfers;
+    bool                      m_bAutoAcceptCash;
     // ------------------------------------------------
     list_of_strings           m_servers;
      map_of_strings           m_assets;  // <asset_type_id, asset_name>
@@ -52,7 +74,8 @@ class MTRecordList
     static const std::string  s_blank;    
     static const std::string  s_message_type;
 public:
-    MTRecordList();
+    MTRecordList(MTNameLookup & theLookup);
+    ~MTRecordList();
     // ------------------------------------------------
     void SetFastMode() { m_bRunFast = true; }
     // ------------------------------------------------
@@ -78,7 +101,13 @@ public:
     void AcceptChequesAutomatically  (bool bVal=true);
     void AcceptReceiptsAutomatically (bool bVal=true);
     void AcceptTransfersAutomatically(bool bVal=true);
-    
+    void AcceptCashAutomatically     (bool bVal=true);
+  
+    bool DoesAcceptChequesAutomatically  ();
+    bool DoesAcceptReceiptsAutomatically ();
+    bool DoesAcceptTransfersAutomatically();
+    bool DoesAcceptCashAutomatically     ();
+  
     bool PerformAutoAccept(); // Before populating, process out any items we're supposed to accept automatically.
     // ------------------------------------------------
     // POPULATE:
@@ -91,11 +120,7 @@ public:
     int               size();
     weak_ptr_MTRecord GetRecord(int nIndex);
     // ------------------------------------------------
-
 };
-
-
-
 
 /*
  

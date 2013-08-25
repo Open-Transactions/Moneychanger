@@ -14,8 +14,16 @@
 #include <opentxs/OT_ME.h>
 #include <opentxs/OTLog.h>
 
-#include "MTRecordList.h"
-#include "MTRecord.h"
+#include "MTRecord.hpp"
+#include "MTRecordList.hpp"
+
+class MTNameLookupQT : public MTNameLookup{
+public:
+
+   // virtual std::string GetNymName(const std::string & str_id) const {}
+
+   // virtual std::string GetAcctName(const std::string & str_id) const {}
+};
 
 
 class ot_worker : public QObject
@@ -31,6 +39,7 @@ public:
             QMutex overview_list_mutex;
 
 private:
+    MTNameLookupQT lookup;
     MTRecordList list;
     QList< QMap<QString,QVariant> > * overview_list;
 
