@@ -426,6 +426,18 @@ private:
                         QHBoxLayout * mc_deposit_purse_layout;
                             //(header) Deposit into purse
                             QLabel * mc_deposit_purse_header_label;
+
+            /** Send Funds **/
+                int mc_sendfunds_already_init;
+                QDialog * mc_sendfunds_dialog;
+                    //Gridlayout
+                    QGridLayout * mc_sendfunds_gridlayout;
+
+                        //Send funds type selection (combobox)
+                        QComboBox * mc_sendfunds_sendtype_combobox;
+
+
+
     /**           **
      ** Functions **
      **           **/
@@ -472,6 +484,10 @@ private:
 
             //Deposit
                 void mc_deposit_show_dialog();
+
+
+            //Send funds
+                void mc_sendfunds_show_dialog();
 
 
 private slots:
@@ -546,6 +562,10 @@ private slots:
 
                  //The user changed the "deposit type" switch open/available menu
                  void mc_deposit_type_changed_slot(int);
+
+
+            //Send funds
+                 void mc_sendfunds_slot();
 
 };
 

@@ -105,6 +105,13 @@ void ot_worker::mc_overview_ping(){
                 record_map.insert("recordType", recordmt.GetRecordType());
                 record_map.insert("serverId", QString::fromStdString(recordmt.GetServerID()));
 
+                    //Special retrieval
+                        //Format Description
+                        std::string formatDescription_holder;
+                        recordmt.FormatDescription(formatDescription_holder);
+                        record_map.insert("formatDescription", QString::fromStdString(formatDescription_holder));
+
+
 
                 //Append
                 overview_list->append(record_map);

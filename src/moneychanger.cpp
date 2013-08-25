@@ -123,6 +123,9 @@ Moneychanger::Moneychanger(QWidget *parent)
             //Deposit
                 mc_deposit_already_init = 0;
 
+            //Send funds
+                mc_sendfunds_already_init = 0;
+
     //Init MC System Tray Icon
     mc_systrayIcon = new QSystemTrayIcon(this);
     mc_systrayIcon->setIcon(QIcon(":/icons/moneychanger"));
@@ -282,6 +285,8 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_systrayMenu_sendfunds = new QAction("Send Funds", 0);
             mc_systrayMenu_sendfunds->setIcon(mc_systrayIcon_sendfunds);
             mc_systrayMenu->addAction(mc_systrayMenu_sendfunds);
+                //Connect button with re-aciton
+                connect(mc_systrayMenu_sendfunds, SIGNAL(triggered()), this, SLOT(mc_sendfunds_slot()));
 
             //Request payment
             mc_systrayMenu_requestpayment = new QAction("Request Payment", 0);
@@ -316,9 +321,6 @@ Moneychanger::Moneychanger(QWidget *parent)
         //Set Skeleton to systrayIcon object code
         mc_systrayIcon->setContextMenu(mc_systrayMenu);
 
-
-        //TEMP CODE
-        mc_systrayIcon->showMessage(QString("Moneychanger"), QString("Moneychanger has successfully booted up!"));
 
 }
 
@@ -631,9 +633,13 @@ Moneychanger::~Moneychanger()
 
                                     /** Column one **/
                                     //Date (sub-info)
+                                        //Calc/convert date/times
+                                        QDateTime timestamp;
+                                        timestamp.setTime_t(record_map["date"].toInt());
+
                                     QLabel * row_content_date_label = new QLabel(0);
                                     QString row_content_date_label_string = QString();
-                                    row_content_date_label_string.append(QString(record_map["date"].toString()));
+                                    row_content_date_label_string.append(QString(timestamp.toString(Qt::SystemLocaleShortDate)));
                                     row_content_date_label->setText(row_content_date_label_string);
                                     row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
 
@@ -641,16 +647,7 @@ Moneychanger::~Moneychanger()
                                     //Status
                                     QLabel * row_content_status_label = new QLabel(0);
                                     QString row_content_status_string = QString();
-                                        //pending string info
-                                        if(record_map["ispending"].toInt() == 1){
-                                            row_content_status_string.append(QString("(pending) "));
-                                        }
-
-                                        //instrument type
-                                        row_content_status_string.append(QString("%1 ").arg(record_map["instrumentType"].toString()));
-
-                                        //record type
-                                        row_content_status_string.append(QString("%1 ").arg(record_map["recordType"].toString()));
+                                    row_content_status_string.append(record_map["formatDescription"].toString());
 
                                         //add string to label
                                         row_content_status_label->setText(row_content_status_string);
@@ -662,20 +659,6 @@ Moneychanger::~Moneychanger()
                         /** Append information to the grid/visuals. **/
                         mc_overview_inoutgoing_gridview->addWidget(row_widget, a,0, 1,1);
 
-                    //Search&Replace/Append Transactions in the overview dialog.
-                        /*
-                        QStandardItem * account_id_item = new QStandardItem(QString(temp_record_map["accountId"].toString()));
-                        new_row.append(account_id_item);
-
-                        QStandardItem * pseudonym_id_item = new QStandardItem(QString(temp_record_map["nymId"].toString()));
-                        new_row.append(pseudonym_id_item);
-
-                        QStandardItem * asset_id_item = new QStandardItem(QString(temp_record_map["assetId"].toString()));
-                        new_row.append(asset_id_item);
-
-                        QStandardItem * date_item = new QStandardItem(QString(temp_record_map["date"].toString()));
-                        new_row.append(date_item);
-                        */
                 }
 
             }
@@ -1967,6 +1950,7 @@ Moneychanger::~Moneychanger()
                     mc_deposit_show_dialog();
                 }
 
+
                 /**
                  ** Deposit dialog
                  **/
@@ -2051,4 +2035,37 @@ Moneychanger::~Moneychanger()
                         mc_deposit_purse_widget->show();
 
                     }
+                }
+
+        //Send Funds slots
+            /**
+             ** Send Funds Menu Button Clicked
+             **/
+                void Moneychanger::mc_sendfunds_slot(){
+                    mc_sendfunds_show_dialog();
+                }
+
+                void Moneychanger::mc_sendfunds_show_dialog(){
+                    if(mc_sendfunds_already_init == 0){
+                        mc_sendfunds_dialog = new QDialog(0);
+                        mc_sendfunds_gridlayout = new QGridLayout(0);
+                        mc_sendfunds_dialog->setLayout(mc_sendfunds_gridlayout);
+                            //Set window title
+                            mc_sendfunds_dialog->setWindowTitle("Send Funds | Moneychanger");
+
+                            //Content
+                                //Select sendfunds type
+                                mc_sendfunds_sendtype_combobox = new QComboBox(0);
+                                mc_sendfunds_sendtype_combobox->setStyleSheet("QComboBox{font-size:15pt;}");
+                                    //Add selection options
+                                    mc_sendfunds_sendtype_combobox->addItem("Write a Cheque");
+
+                                mc_sendfunds_gridlayout->addWidget(mc_sendfunds_sendtype_combobox, 0,0, 1,1, Qt::AlignHCenter);
+                    }
+
+                    //Resize
+                    mc_sendfunds_dialog->resize(500, 300);
+
+                    //Show
+                    mc_sendfunds_dialog->show();
                 }
