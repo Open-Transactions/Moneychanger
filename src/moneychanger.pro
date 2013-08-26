@@ -14,16 +14,17 @@ TEMPLATE = app
 INCLUDEPATH+="/usr/local/include/"
 DEPENDPATH += .
 SOURCES += main.cpp\
-        moneychanger.cpp \
-    ot_worker.cpp \
-    MTRecordList.cpp \
-    MTRecord.cpp
+           moneychanger.cpp \
+           ot_worker.cpp \
+           MTRecordList.cpp \
+           MTRecord.cpp
 
-HEADERS  += moneychanger.h \
-    ot_worker.h \
-    ot_worker.h \
-    MTRecordList.h \
-    MTRecord.h
+HEADERS += moneychanger.h \
+           ot_worker.h \
+           MTRecordList.h \
+           MTRecord.h \
+    MTRecord.hpp \
+    MTRecordList.hpp
 
 DEFINES += "OT_ZMQ_MODE=1"
 
@@ -31,7 +32,9 @@ mac:{
 QT_CONFIG -= no-pkg-config
 LIBS += -lboost_system-mt -ldl
 }
-#LIBS += /usr/lib/libboost_thread.so.1.46.1 -ldl
+
+unix:LIBS += /usr/lib/libboost_thread.so.1.49.0 -ldl
+
 ##QMAKE_CXXFLAGS += -fPIC -DPIC --param ssp-buffer-size=4
 
 # Set libraries and includes at end, to use platform-defined defaults if not overridden
@@ -58,7 +61,6 @@ unix: PKGCONFIG += opentxs
 
 unix: PKGCONFIG += chaiscript
 
-OTHER_FILES +=
+#OTHER_FILES +=
 
-RESOURCES += \
-    resource.qrc
+RESOURCES += resource.qrc

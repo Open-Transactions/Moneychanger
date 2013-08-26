@@ -18,6 +18,8 @@
 #include <QTextEdit>
 #include <QComboBox>
 #include <QTableView>
+#include <QScrollArea>
+#include <QLayoutItem>
 #include <QHBoxLayout>
 #include <QGridLayout>
 #include <QPushButton>
@@ -26,6 +28,7 @@
 #include <QSystemTrayIcon>
 #include <QCoreApplication>
 #include <QStandardItemModel>
+#include <QMessageBox>
 #include <QtSql/QtSql>
 
 #include <opentxs/OTAPI.h>
@@ -186,9 +189,13 @@ private:
                         //Header (label)
                         QLabel * mc_overview_inoutgoing_header_label;
 
-                        //Tabel view
-                        QStandardItemModel * mc_overview_inoutgoing_standarditemmodel;
-                        QTableView * mc_overview_inoutgoing_tableview;
+                        //Gridview of Transactionslist
+                        QScrollArea * mc_overview_inoutgoing_scroll;
+                        QWidget * mc_overview_inoutgoing_gridview_widget;
+                        QGridLayout * mc_overview_inoutgoing_gridview;
+
+                            //Tracking index <> MTRecordlist index
+                            QList<QVariant> mc_overview_index_of_tx;
 
 
             /** Nym Manager **/
@@ -419,6 +426,18 @@ private:
                         QHBoxLayout * mc_deposit_purse_layout;
                             //(header) Deposit into purse
                             QLabel * mc_deposit_purse_header_label;
+
+            /** Send Funds **/
+                int mc_sendfunds_already_init;
+                QDialog * mc_sendfunds_dialog;
+                    //Gridlayout
+                    QGridLayout * mc_sendfunds_gridlayout;
+
+                        //Send funds type selection (combobox)
+                        QComboBox * mc_sendfunds_sendtype_combobox;
+
+
+
     /**           **
      ** Functions **
      **           **/
@@ -465,6 +484,10 @@ private:
 
             //Deposit
                 void mc_deposit_show_dialog();
+
+
+            //Send funds
+                void mc_sendfunds_show_dialog();
 
 
 private slots:
@@ -539,6 +562,10 @@ private slots:
 
                  //The user changed the "deposit type" switch open/available menu
                  void mc_deposit_type_changed_slot(int);
+
+
+            //Send funds
+                 void mc_sendfunds_slot();
 
 };
 

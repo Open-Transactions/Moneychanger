@@ -123,6 +123,9 @@ Moneychanger::Moneychanger(QWidget *parent)
             //Deposit
                 mc_deposit_already_init = 0;
 
+            //Send funds
+                mc_sendfunds_already_init = 0;
+
     //Init MC System Tray Icon
     mc_systrayIcon = new QSystemTrayIcon(this);
     mc_systrayIcon->setIcon(QIcon(":/icons/moneychanger"));
@@ -282,6 +285,8 @@ Moneychanger::Moneychanger(QWidget *parent)
             mc_systrayMenu_sendfunds = new QAction("Send Funds", 0);
             mc_systrayMenu_sendfunds->setIcon(mc_systrayIcon_sendfunds);
             mc_systrayMenu->addAction(mc_systrayMenu_sendfunds);
+                //Connect button with re-aciton
+                connect(mc_systrayMenu_sendfunds, SIGNAL(triggered()), this, SLOT(mc_sendfunds_slot()));
 
             //Request payment
             mc_systrayMenu_requestpayment = new QAction("Request Payment", 0);
@@ -315,6 +320,8 @@ Moneychanger::Moneychanger(QWidget *parent)
 
         //Set Skeleton to systrayIcon object code
         mc_systrayIcon->setContextMenu(mc_systrayMenu);
+
+
 }
 
 Moneychanger::~Moneychanger()
@@ -530,42 +537,35 @@ Moneychanger::~Moneychanger()
                             mc_overview_gridlayout->addWidget(mc_overview_inoutgoing_pane_holder, 1,0, 1,1);
 
                                 //Label (inOutgoing header)
-                                mc_overview_inoutgoing_header_label = new QLabel("<b>Incomming & Outgoing</b>");
+                                mc_overview_inoutgoing_header_label = new QLabel("<b>Incoming & Outgoing Transactions</b>");
                                 mc_overview_inoutgoing_pane->addWidget(mc_overview_inoutgoing_header_label);
 
-                                //Table vivew (inoutgoing list)
-                                mc_overview_inoutgoing_standarditemmodel = new QStandardItemModel(0,4,0);
-                                mc_overview_inoutgoing_standarditemmodel->setHorizontalHeaderItem(0, new QStandardItem(QString("Account")));
-                                mc_overview_inoutgoing_standarditemmodel->setHorizontalHeaderItem(1, new QStandardItem(QString("Pseudonym")));
-                                mc_overview_inoutgoing_standarditemmodel->setHorizontalHeaderItem(2, new QStandardItem(QString("Asset ID")));
-                                mc_overview_inoutgoing_standarditemmodel->setHorizontalHeaderItem(3, new QStandardItem(QString("Date")));
-                                mc_overview_inoutgoing_tableview = new QTableView(0);
-                                mc_overview_inoutgoing_tableview->setModel(mc_overview_inoutgoing_standarditemmodel);
-                                mc_overview_inoutgoing_pane->addWidget(mc_overview_inoutgoing_tableview);
+                                //GridView (Lists of TX)
+                                mc_overview_inoutgoing_scroll = new QScrollArea;
+                                mc_overview_inoutgoing_gridview_widget = new QWidget(0);
+                                mc_overview_inoutgoing_gridview = new QGridLayout(0);
+                                mc_overview_inoutgoing_gridview_widget->setLayout(mc_overview_inoutgoing_gridview);
+                                mc_overview_inoutgoing_gridview->setGeometry(QRect(100,100,100,100));
+                                mc_overview_inoutgoing_scroll->setWidgetResizable(true);
+                                mc_overview_inoutgoing_scroll->setBackgroundRole(QPalette::Light);
+                                mc_overview_inoutgoing_scroll->setWidget(mc_overview_inoutgoing_gridview_widget);
+                                mc_overview_inoutgoing_pane->addWidget(mc_overview_inoutgoing_scroll);
 
 
                         /** Flag Already Init **/
                         mc_overview_already_init = 1;
-
-                   //Show it
-                        mc_overview_dialog_page->show();
-
-
-                }else{
-                    //Just show it
-                    mc_overview_dialog_page->show();
                 }
-
-
                 //Resize
                 mc_overview_dialog_page->resize(800, 400);
+                //Show
+                mc_overview_dialog_page->show();
 
                 //Refresh visual data
-                    //Tell OT to repopulate, and refresh backend.
-                    ot_worker_background->mc_overview_ping();
+                //Tell OT to repopulate, and refresh backend.
+                ot_worker_background->mc_overview_ping();
 
-                    //Now refresh the repopulated data visually
-                    mc_overview_dialog_refresh();
+                //Now refresh the repopulated data visually
+                mc_overview_dialog_refresh();
             }
 
             //Overview refresh function
@@ -577,27 +577,88 @@ Moneychanger::~Moneychanger()
                 QList< QMap<QString,QVariant> > current_list_copy = ot_worker_background->mc_overview_get_currentlist();
 
                 //Clear all records (In the future we should have a scan for updates records mechinism for now we will go for a browser "refresh" all mechinism)
-                mc_overview_inoutgoing_standarditemmodel->removeRows(0, mc_overview_inoutgoing_standarditemmodel->rowCount(), QModelIndex());
+                int items_in_inoutgoing_gridview = mc_overview_inoutgoing_gridview->rowCount();
+                for(int a = 0; a < items_in_inoutgoing_gridview; a++){
+                    QLayoutItem * item = mc_overview_inoutgoing_gridview->takeAt(0);
+                    mc_overview_inoutgoing_gridview->removeItem(item);
+                    delete item;
+
+                }
 
                 int total_records_to_visualize = current_list_copy.size();
                 for(int a = 0; a < total_records_to_visualize; a++){
                     //Get map for this record
-                        QMap<QString, QVariant> temp_record_map = current_list_copy.at(a);
-                        QList<QStandardItem *> new_row;
+                        QMap<QString, QVariant> record_map = current_list_copy.at(a);
 
-                        QStandardItem * account_id_item = new QStandardItem(QString(temp_record_map["accountId"].toString()));
-                        new_row.append(account_id_item);
+                    //Append to transactions list in overview dialog.
+                        QWidget * row_widget = new QWidget(0);
+                        QGridLayout * row_widget_layout = new QGridLayout(0);
+                        row_widget->setLayout(row_widget_layout);
+                        row_widget->setStyleSheet("QWidget{background-color:#c0cad4;}");
 
-                        QStandardItem * pseudonym_id_item = new QStandardItem(QString(temp_record_map["nymId"].toString()));
-                        new_row.append(pseudonym_id_item);
+                        //Render row.
+                            //Header of row
+                                QString tx_name = QString(record_map["name"].toString());
+                                if(tx_name.trimmed() == ""){
+                                    //Tx has no name
+                                    tx_name.clear();
+                                    tx_name = "Transaction";
+                                }
 
-                        QStandardItem * asset_id_item = new QStandardItem(QString(temp_record_map["assetId"].toString()));
-                        new_row.append(asset_id_item);
+                                QLabel * header_of_row = new QLabel(0);
+                                QString header_of_row_string = QString();
+                                header_of_row_string.append(tx_name);
 
-                        QStandardItem * date_item = new QStandardItem(QString(temp_record_map["date"].toString()));
-                        new_row.append(date_item);
+                                header_of_row->setText(header_of_row_string);
 
-                    mc_overview_inoutgoing_standarditemmodel->appendRow(new_row);
+                                    //Append header to layout
+                                    row_widget_layout->addWidget(header_of_row, 0, 0, 1,1, Qt::AlignLeft);
+
+                            // Amount (with currency tla)
+                                    QLabel * currency_amount_label = new QLabel(0);
+                                    QString currency_amount = QString();
+                                    currency_amount.append(record_map["currencyTLA"].toString());
+                                    currency_amount.append(QString(" %1"));
+                                    currency_amount = currency_amount.arg(record_map["amount"].toString());
+
+                                    currency_amount_label->setText(currency_amount);
+
+                                    row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
+
+                            //Sub-info
+                                QWidget * row_content_container = new QWidget(0);
+                                QGridLayout * row_content_grid = new QGridLayout(0);
+                                row_content_container->setLayout(row_content_grid);
+                                row_widget_layout->addWidget(row_content_container, 1,0, 1,2);
+
+                                    /** Column one **/
+                                    //Date (sub-info)
+                                        //Calc/convert date/times
+                                        QDateTime timestamp;
+                                        timestamp.setTime_t(record_map["date"].toInt());
+
+                                    QLabel * row_content_date_label = new QLabel(0);
+                                    QString row_content_date_label_string = QString();
+                                    row_content_date_label_string.append(QString(timestamp.toString(Qt::SystemLocaleShortDate)));
+                                    row_content_date_label->setText(row_content_date_label_string);
+                                    row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
+
+                                    /** Column two **/
+                                    //Status
+                                    QLabel * row_content_status_label = new QLabel(0);
+                                    QString row_content_status_string = QString();
+                                    row_content_status_string.append(record_map["formatDescription"].toString());
+
+                                        //add string to label
+                                        row_content_status_label->setText(row_content_status_string);
+
+                                    //add to row_content grid
+                                    row_content_grid->addWidget(row_content_status_label, 0,1, 1,1, Qt::AlignRight);
+
+
+                        /** Append information to the grid/visuals. **/
+                        mc_overview_inoutgoing_gridview->addWidget(row_widget, a,0, 1,1);
+
                 }
 
             }
@@ -686,17 +747,14 @@ Moneychanger::~Moneychanger()
                                     //Label
                                         mc_nym_manager_most_recent_erorr = new QLabel("");
                                         mc_nym_manager_gridlayout->addWidget(mc_nym_manager_most_recent_erorr, 2,0, 1,2, Qt::AlignHCenter);
-
-                        /** show dialog **/
-                            mc_nym_manager_dialog->show();
-
-
                     /** Flag as init **/
                         mc_nymmanager_already_init = 1;
-                }else{
-                    //The Nym Manager is already init, just show it
-                    mc_nym_manager_dialog->show();
                 }
+                /** ***
+                 ** Resize & Show
+                 **/
+                mc_nym_manager_dialog->resize(600, 300);
+                mc_nym_manager_dialog->show();
 
                 /** ***
                  ** Data Refresh/Fill Logic
@@ -748,12 +806,6 @@ Moneychanger::~Moneychanger()
                             }
                             /** Unflag as current refreshing **/
                             mc_nymmanager_refreshing = 0;
-
-                /** ***
-                 ** Resize the window.
-                 **/
-                mc_nym_manager_dialog->resize(600, 300);
-
             }
 
 
@@ -835,7 +887,7 @@ Moneychanger::~Moneychanger()
              * @info Will init & show the server list manager
              ** *********************************************/
             void Moneychanger::mc_servermanager_dialog(){
-                /** If the nym managerh dialog has already been init,
+                /** If the server list manager dialog has already been init,
                  *  just show it, Other wise, init and show if this is the
                  *  first time.
                  **/
@@ -880,18 +932,12 @@ Moneychanger::~Moneychanger()
 
                     /** Flag already int **/
                     mc_servermanager_already_init = 1;
-
-                    //Show
-                    mc_servermanager_qdialog->show();
-
-                    //Resize
-                    mc_servermanager_qdialog->resize(500,300);
-
-                }else{
-                    //Serverlist manager is already init, just show
-                    mc_servermanager_qdialog->show();
                 }
 
+                //Resize
+                mc_servermanager_qdialog->resize(500,300);
+                //Show
+                mc_servermanager_qdialog->show();
 
                 /**
                  ** Refresh server list data
@@ -1064,18 +1110,12 @@ Moneychanger::~Moneychanger()
 
                             /** Flag already init **/
                             mc_withdraw_ascash_dialog_already_init = 1;
-
-                       //Show
-                       mc_systrayMenu_withdraw_ascash_dialog->show();
-                       mc_systrayMenu_withdraw_ascash_dialog->activateWindow();
-                }else{
-                    //Show
-                    mc_systrayMenu_withdraw_ascash_dialog->show();
-                    mc_systrayMenu_withdraw_ascash_dialog->activateWindow();
                 }
-
                 //Resize
                 mc_systrayMenu_withdraw_ascash_dialog->resize(400, 120);
+                //Show
+                mc_systrayMenu_withdraw_ascash_dialog->show();
+                mc_systrayMenu_withdraw_ascash_dialog->activateWindow();
 
                 /** Refresh dynamic lists **/
                 //remove all items from nym dropdown box
@@ -1174,18 +1214,11 @@ Moneychanger::~Moneychanger()
 
                                 /** Flag as init **/
                                     mc_withdraw_asvoucher_dialog_already_init = 1;
-                        //Show
-                            mc_systrayMenu_withdraw_asvoucher_dialog->show();
-                            mc_systrayMenu_withdraw_asvoucher_dialog->setFocus();
-                    }else{
-                       //This dialog has already been init, just show it
-                        mc_systrayMenu_withdraw_asvoucher_dialog->show();
-                        mc_systrayMenu_withdraw_asvoucher_dialog->setFocus();
                     }
-
-                    //Resize
+                    //Resize & Show
                     mc_systrayMenu_withdraw_asvoucher_dialog->resize(400, 120);
-
+                    mc_systrayMenu_withdraw_asvoucher_dialog->show();
+                    mc_systrayMenu_withdraw_asvoucher_dialog->setFocus();
 
                     /** Refresh dynamic lists **/
                     //remove all items from nym dropdown box
@@ -1256,18 +1289,13 @@ Moneychanger::~Moneychanger()
                             //Connect create nym button with a re-action;
                             connect(mc_nym_manager_addnym_create_nym_btn, SIGNAL(clicked()), this, SLOT(mc_addnym_dialog_createnym_slot()));
 
-                //Show dialog.
-                mc_nym_manager_addnym_dialog->show();
-
                 /** Flag as already init **/
                 mc_nymmanager_addnym_dialog_already_init = 1;
-            }else{
-                //Show
-                mc_nym_manager_addnym_dialog->show();
             }
-
             //Resize
             mc_nym_manager_addnym_dialog->resize(400, 290);
+            //Show
+            mc_nym_manager_addnym_dialog->show();
         }
 
         void Moneychanger::mc_nymmanager_removenym_slot(){
@@ -1279,13 +1307,8 @@ Moneychanger::~Moneychanger()
                     //Grid layout
                     mc_nym_manager_removenym_gridlayout = new QGridLayout(0);
                     mc_nym_manager_removenym_dialog->setLayout(mc_nym_manager_removenym_gridlayout);
-
-                //Show remove nym dialog
-                    mc_nym_manager_removenym_dialog->show();
-            }else{
-                //Already init, just show.
-                    mc_nym_manager_removenym_dialog->show();
             }
+            mc_nym_manager_removenym_dialog->show();
         }
 
         void Moneychanger::mc_nymmanager_dataChanged_slot(QModelIndex topLeft, QModelIndex bottomRight){
@@ -1438,7 +1461,8 @@ Moneychanger::~Moneychanger()
                 }
 
             }else{
-                qDebug() <<"nothing was selected to be removed -- display dialog/alert instead of this debug";
+                qDebug() <<"nothing was selected to be removed";
+                QMessageBox::information(this,"Moneychanger","Nothing selected to remove.");
             }
         }
 
@@ -1508,7 +1532,8 @@ Moneychanger::~Moneychanger()
                     mc_addressbook_dialog->hide();
                 }
             }else{
-                qDebug() << "nothing was selected to paste into the target area, display a message/alert instead of this debug msg.";
+                qDebug() << "nothing was selected to paste into the target area";
+                QMessageBox::information(this,"Moneychanger","Nothing selected to paste.");
             }
         }
 
@@ -1587,15 +1612,14 @@ Moneychanger::~Moneychanger()
                     QString action_triggered_string_server_name = QVariant(action_triggered->text()).toString();
                     mc_systrayMenu_server_setDefaultServer(action_triggered_string, action_triggered_string_server_name);
 
-                    /** *********** CODE BELOW SHOULD BE CHANGED FROM NYM TO SERVER ************ **/
-                    //Refresh the nym default selection in the nym manager (ONLY if it is open)
-                        //Check if nym manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
-                        /*if(mc_nymmanager_already_init == 1){
-                            //Refresh if the nym manager is currently open
-                            if(mc_nym_manager_dialog->isVisible()){
-                                mc_nymmanager_dialog();
+                    //Refresh the server default selection in the server manager (ONLY if it is open)
+                        //Check if server manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
+                        if(mc_servermanager_already_init == 1){
+                            //Refresh if the server manager is currently open
+                            if(mc_servermanager_qdialog->isVisible()){
+                                mc_servermanager_dialog();
                             }
-                        }*/
+                        }
                 }
             }
 
@@ -1926,6 +1950,7 @@ Moneychanger::~Moneychanger()
                     mc_deposit_show_dialog();
                 }
 
+
                 /**
                  ** Deposit dialog
                  **/
@@ -1982,18 +2007,11 @@ Moneychanger::~Moneychanger()
 
                                     //Hide by default
                                     mc_deposit_purse_widget->hide();
-
-
-
-                        //Show
-                            mc_deposit_dialog->show();
-                    }else{
-                        //Show
-                            mc_deposit_dialog->show();
                     }
-
                     //Resize
                     mc_deposit_dialog->resize(600, 300);
+                    //Show
+                    mc_deposit_dialog->show();
                 }
 
 
@@ -2017,4 +2035,37 @@ Moneychanger::~Moneychanger()
                         mc_deposit_purse_widget->show();
 
                     }
+                }
+
+        //Send Funds slots
+            /**
+             ** Send Funds Menu Button Clicked
+             **/
+                void Moneychanger::mc_sendfunds_slot(){
+                    mc_sendfunds_show_dialog();
+                }
+
+                void Moneychanger::mc_sendfunds_show_dialog(){
+                    if(mc_sendfunds_already_init == 0){
+                        mc_sendfunds_dialog = new QDialog(0);
+                        mc_sendfunds_gridlayout = new QGridLayout(0);
+                        mc_sendfunds_dialog->setLayout(mc_sendfunds_gridlayout);
+                            //Set window title
+                            mc_sendfunds_dialog->setWindowTitle("Send Funds | Moneychanger");
+
+                            //Content
+                                //Select sendfunds type
+                                mc_sendfunds_sendtype_combobox = new QComboBox(0);
+                                mc_sendfunds_sendtype_combobox->setStyleSheet("QComboBox{font-size:15pt;}");
+                                    //Add selection options
+                                    mc_sendfunds_sendtype_combobox->addItem("Write a Cheque");
+
+                                mc_sendfunds_gridlayout->addWidget(mc_sendfunds_sendtype_combobox, 0,0, 1,1, Qt::AlignHCenter);
+                    }
+
+                    //Resize
+                    mc_sendfunds_dialog->resize(500, 300);
+
+                    //Show
+                    mc_sendfunds_dialog->show();
                 }
