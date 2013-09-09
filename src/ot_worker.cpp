@@ -90,12 +90,99 @@ void ot_worker::mc_overview_ping(){
             //Add to overview list
                 //Map of record
                 QMap<QString, QVariant> record_map = QMap<QString,QVariant>();
+
+                /*
+                bool  IsPending()     const;
+                bool  IsOutgoing()    const;
+                bool  IsRecord()      const;
+                bool  IsReceipt()     const;
+                bool  IsMail()        const;
+                bool  IsTransfer()    const;
+                bool  IsCheque()      const;
+                bool  IsInvoice()     const;
+                bool  IsVoucher()     const;
+                bool  IsContract()    const;
+                bool  IsPaymentPlan() const;
+                bool  IsCash()        const;
+                bool  HasContents()   const;
+                bool  HasMemo()       const;
+                // ---------------------------------------
+                bool  IsExpired()     const;
+                bool  IsCanceled()    const;
+
+                time_t GetValidFrom();
+                time_t GetValidTo();
+
+                bool  CanDeleteRecord()        const;  // For completed records (not pending.)
+                bool  CanAcceptIncoming()      const;  // For incoming, pending (not-yet-accepted) instruments.
+                bool  CanDiscardIncoming()     const;  // For INcoming, pending (not-yet-accepted) instruments.
+                bool  CanCancelOutgoing()      const;  // For OUTgoing, pending (not-yet-accepted) instruments.
+                bool  CanDiscardOutgoingCash() const;  // For OUTgoing cash. (No way to see if it's been accepted, so this lets you erase the record of sending it.)
+
+                int   GetBoxIndex() const;
+                long  GetTransactionNum() const;
+                long  GetTransNumForDisplay() const;
+
+    MTRecordType  GetRecordType() const;
+    // ---------------------------------------
+    const std::string & GetServerID()       const;
+    const std::string & GetAssetID()        const;
+    const std::string & GetCurrencyTLA()    const; // BTC, USD, etc.
+    const std::string & GetNymID()          const;
+    const std::string & GetAccountID()      const;
+    // ---------------------------------------
+    const std::string & GetOtherNymID()     const; // Could be sender OR recipient depending on whether incoming/outgoing.
+    const std::string & GetOtherAccountID() const; // Could be sender OR recipient depending on whether incoming/outgoing.
+    // ---------------------------------------
+    const std::string & GetName()           const;
+    const std::string & GetDate()           const;
+    const std::string & GetAmount()         const;
+    const std::string & GetInstrumentType() const;
+    const std::string & GetMemo()           const;
+    const std::string & GetContents()       const;
+
+    bool   HasInitialPayment();
+    bool   HasPaymentPlan();
+
+    time_t GetInitialPaymentDate();
+    time_t GetPaymentPlanStartDate();
+    time_t GetTimeBetweenPayments();
+
+    long   GetInitialPaymentAmount();
+    long   GetPaymentPlanAmount();
+
+    int    GetMaximumNoPayments();
+    // ---------------------------------------
+    bool  FormatAmount              (std::string & str_output);
+    bool  FormatDescription         (std::string & str_output);
+    bool  FormatShortMailDescription(std::string & str_output);
+    // ---------------------------------------
+
+                */
+
                 record_map.insert("isoutgoing", recordmt.IsOutgoing());
                 record_map.insert("ispending", recordmt.IsPending());
                 record_map.insert("isreceipt", recordmt.IsReceipt());
                 record_map.insert("isrecord", recordmt.IsRecord());
+                record_map.insert("ismail", recordmt.IsMail());
                 record_map.insert("accountId", QString::fromStdString(recordmt.GetAccountID()));
                 record_map.insert("amount", QString::fromStdString(recordmt.GetAmount()));
+
+                std::string str_formatted;
+                QString qstrAmount = QString("");
+                if (recordmt.FormatAmount(str_formatted))
+                    qstrAmount = QString(QString::fromStdString(str_formatted));
+                record_map.insert("formatAmount", qstrAmount);
+
+                if (recordmt.IsMail())
+                {
+                    std::string str_mail_desc;
+                    QString qstrDesc = QString("");
+                    if (recordmt.FormatShortMailDescription(str_mail_desc))
+                        qstrDesc = QString(QString::fromStdString(str_mail_desc));
+                    record_map.insert("shortMail", qstrDesc);
+                }
+
                 record_map.insert("assetId", QString::fromStdString(recordmt.GetAssetID()));
                 record_map.insert("currencyTLA", QString::fromStdString(recordmt.GetCurrencyTLA()));
                 record_map.insert("date", QString::fromStdString(recordmt.GetDate()));
