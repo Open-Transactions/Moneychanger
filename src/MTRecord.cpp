@@ -55,8 +55,8 @@ bool MTRecord::FormatAmount(std::string & str_output)
 {
     if (m_str_amount.empty() || m_str_asset_id.empty()) // Need these to do the formatting.
     {
-//        OTLog::vOutput(0, "%s: Unable to format amount. Type: %s Amount: %s  Asset: %s",
-//                       __FUNCTION__, m_str_type.c_str(), m_str_amount.c_str(), m_str_asset_id.c_str());
+        //        OTLog::vOutput(0, "%s: Unable to format amount. Type: %s Amount: %s  Asset: %s",
+        //                       __FUNCTION__, m_str_type.c_str(), m_str_amount.c_str(), m_str_asset_id.c_str());
         return false;
     }
     // -----------------------------------
@@ -66,7 +66,7 @@ bool MTRecord::FormatAmount(std::string & str_output)
 }
 // ---------------------------------------
 bool MTRecord::FormatShortMailDescription(std::string & str_output)
-{    
+{
     OTString strDescription;
     
     if (IsMail())
@@ -95,7 +95,7 @@ bool MTRecord::FormatShortMailDescription(std::string & str_output)
                                   bTruncated ? "..." : "");
         }
     }
-    // -----------------------------    
+    // -----------------------------
     str_output = strDescription.Get();
     // -----------------------------
     return (!str_output.empty());
@@ -113,13 +113,13 @@ bool MTRecord::FormatDescription(std::string & str_output)
             strStatus = "(payment sent)";  // TODO: need an "invalid records" box for expired and canceled. Otherwise we may falsely assume "payment sent" when actually it expired. (We may also falsely assume payment expired when actually it was sent.) Solution is a new box.
         else
             strStatus = "";
-//          strStatus = "(record)";
+        //          strStatus = "(record)";
     }
     // -----------------------------
     else if (IsPending())
     {
         if (IsExpired())
-            strStatus = "(EXPIRED)";  
+            strStatus = "(EXPIRED)";
         else if (IsInvoice())
             strStatus = "(unpaid)";
         else if (!IsCash())
@@ -389,10 +389,10 @@ bool MTRecord::CanDeleteRecord() const
     
     if (false == this->IsRecord())
         return false;
-
+    
     if (this->IsPending())  // This may be superfluous given the above 'if' statement.
         return false;
-
+    
     return true;
 }
 // ---------------------------------------
@@ -401,9 +401,9 @@ bool MTRecord::CanDeleteRecord() const
 bool MTRecord::CanAcceptIncoming() const
 {
     // Commented out because a transferReceipt is in the inbox, but it represents an outgoing payment.
-//    if (this->IsOutgoing()) // If it's outgoing, then it's definitely not an incoming thing you can accept.
-//        return false;
-
+    //    if (this->IsOutgoing()) // If it's outgoing, then it's definitely not an incoming thing you can accept.
+    //        return false;
+    
     if (this->IsRecord()) // Records must be archived or deleted, not accepted or discarded.
         return false;
     
@@ -412,10 +412,10 @@ bool MTRecord::CanAcceptIncoming() const
     
     if (this->IsReceipt()) // It's NOT a record... If it's a receipt, then yes, we can accept it.
         return true;
-
+    
     if (this->IsMail()) // Can't "accept" mail, can only delete it.
         return false;
-
+    
     if (this->IsPending() && this->IsOutgoing()) // It's not a record, it's not a receipt. If it's pending, is it Outgoing pending? (Can only accept INCOMING pending, not outgoing.)
         return false;
     
@@ -428,7 +428,7 @@ bool MTRecord::CanDiscardIncoming() const
 {
     if (this->IsOutgoing())
         return false;
-
+    
     if (!this->IsPending())
         return false;
     
@@ -451,16 +451,16 @@ bool MTRecord::CanDiscardOutgoingCash() const  // For OUTgoing cash. (No way to 
 {
     if (false == this->IsOutgoing())
         return false;
-
+    
     if (false == this->IsPending())
         return false;
-
+    
     if (false == this->IsCash())
         return false;
     
     if (!(GetBoxIndex() >= 0))
         return false;
-
+    
     return true;
 }
 // ---------------------------------------
@@ -473,7 +473,7 @@ bool MTRecord::CanCancelOutgoing() const
     
     if (this->IsCanceled()) // It's already canceled!
         return false;
-
+    
     if (false == this->IsPending())
         return false;
     
@@ -482,13 +482,13 @@ bool MTRecord::CanCancelOutgoing() const
     
     if (this->IsRecord()) // This may be superfluous given the above 'if' pending.
         return false;
-
+    
     if (this->IsReceipt()) // Receipts can't be canceled. (Probably superfluous.)
         return false;
-
+    
     if (MTRecord::Transfer == this->GetRecordType()) // All outgoing, pending instruments EXCEPT transfer can be canceled.
         return false;
-
+    
     return true;
 }
 
@@ -534,8 +534,8 @@ bool MTRecord::DeleteRecord()
     // ------------------------------
     switch (this->GetRecordType())
     {
-        // Delete from in-mail or out-mail.
-        //
+            // Delete from in-mail or out-mail.
+            //
         case MTRecord::Mail:
         {
             if (m_bIsOutgoing) // outgoing mail
@@ -567,12 +567,12 @@ bool MTRecord::DeleteRecord()
             return false;
         }
             break;
-        // --------------------------------------------
+            // --------------------------------------------
         case MTRecord::Transfer:   // Delete from asset account recordbox.
         case MTRecord::Receipt:    // Delete from asset account recordbox.
         case MTRecord::Instrument: // Delete from Nym's recordbox.
             break;
-        // --------------------------------------------            
+            // --------------------------------------------
         default:
             OTLog::vError("%s: Unexpected type: %s\n",
                           __FUNCTION__, this->GetInstrumentType().c_str());
@@ -590,8 +590,8 @@ bool MTRecord::DeleteRecord()
     }
     // ------------------------------
     const OTIdentifier  theServerID(m_str_server_id),
-                        theNymID(m_str_nym_id),
-                        theAcctID(str_using_account); // this last one sometimes contains NymID (see above.)
+    theNymID(m_str_nym_id),
+    theAcctID(str_using_account); // this last one sometimes contains NymID (see above.)
     
     OTLedger * pRecordbox = OTAPI_Wrap::OTAPI()->LoadRecordBox(theServerID, theNymID, theAcctID);
     OTCleanup<OTLedger> theRecordBoxAngel(pRecordbox);
@@ -600,7 +600,7 @@ bool MTRecord::DeleteRecord()
     {
         OTLog::vError("%s: Failed loading record box for server ID (%s) nymID (%s) accountID (%s)\n",
                       __FUNCTION__, m_str_server_id.c_str(), m_str_nym_id.c_str(), str_using_account.c_str());
-        return false; 
+        return false;
     }
     // ------------------------------------------
     // Find the receipt in the recordbox that correlates to this MTRecord.
@@ -626,12 +626,12 @@ bool MTRecord::AcceptIncomingTransferOrReceipt()
 {
     if (!this->CanAcceptIncoming())
         return false;
-
+    
     switch (this->GetRecordType())
     {
-        // --------------------------------------------            
-        // Accept transfer or receipt from asset account inbox.
-        //
+            // --------------------------------------------
+            // Accept transfer or receipt from asset account inbox.
+            //
         case MTRecord::Transfer:
         case MTRecord::Receipt:
         {
@@ -680,17 +680,17 @@ bool MTRecord::AcceptIncomingTransferOrReceipt()
             const std::string str_indices(strIndices.Get());
             
             OT_ME madeEasy;
-
+            
             return madeEasy.accept_inbox_items(m_str_account_id, 0, str_indices);
         }
-            break;            
-        // --------------------------------------------            
+            break;
+            // --------------------------------------------
         default:
             OTLog::vError("%s: Unexpected type: %s\n",
                           __FUNCTION__, this->GetInstrumentType().c_str());
             return false;
     }
-
+    
     return true;
 }
 // ---------------------------------------
@@ -700,12 +700,12 @@ bool MTRecord::AcceptIncomingInstrument(const std::string & str_into_acct)
 {
     if (!this->CanAcceptIncoming())
         return false;
-
+    
     switch (this->GetRecordType())
     {
-        // --------------------------------------------
-        // Accept from Nym's payments inbox.
-        //
+            // --------------------------------------------
+            // Accept from Nym's payments inbox.
+            //
         case MTRecord::Instrument:
         {
             if (m_str_server_id.empty() || m_str_nym_id.empty())
@@ -732,7 +732,7 @@ bool MTRecord::AcceptIncomingInstrument(const std::string & str_into_acct)
             {
                 OTLog::vError("%s: Error: Unable to load payment inbox for server id (%s), nym id (%s)\n",
                               __FUNCTION__, m_str_server_id.c_str(), m_str_nym_id.c_str());
-                return false;                
+                return false;
             }
             // ------------------------------------------
             // Find the payment therein that correlates to this MTRecord.
@@ -760,23 +760,23 @@ bool MTRecord::AcceptIncomingInstrument(const std::string & str_into_acct)
                 case 0:
                     OTLog::vOutput(0, "%s: This instrument was expired, so it was moved to the record box.\n", __FUNCTION__);
                     return true;
-                
+                    
                 case 1: // success
                     break;
-                // ----------------------------------
+                    // ----------------------------------
                 default:
                     OTLog::vError("%s: Error while trying to accept this instrument.\n", __FUNCTION__);
                     return false;
             } // switch
         } // case: instrument
             break;
-        // --------------------------------------------            
+            // --------------------------------------------
         default:
             OTLog::vError("%s: Unexpected type: %s\n",
                           __FUNCTION__, this->GetInstrumentType().c_str());
             return false;
     }
-
+    
     return true;
 }
 // ---------------------------------------
@@ -836,12 +836,12 @@ bool MTRecord::DiscardIncoming()
             const std::string str_indices(strIndices.Get());
             
             OT_ME madeEasy;
-
+            
             return madeEasy.discard_incoming_payments(m_str_server_id, m_str_nym_id, str_indices);
-
+            
         } // case: instrument
             break;
-        // --------------------------------------------
+            // --------------------------------------------
         default:
             OTLog::vError("%s: Unexpected type: %s\n",
                           __FUNCTION__, this->GetInstrumentType().c_str());
@@ -881,7 +881,7 @@ bool MTRecord::CancelOutgoing(const std::string str_via_acct) // This can be bla
             const OTIdentifier theNymID(m_str_nym_id);
             // ------------------------------
             std::string str_using_acct;
-
+            
             if (this->IsCheque())
             {
                 str_using_acct = m_str_account_id;
@@ -894,7 +894,7 @@ bool MTRecord::CancelOutgoing(const std::string str_via_acct) // This can be bla
             if (str_using_acct.empty())
             {
                 OTLog::vError("%s: Error: Missing account ID (FAILURE)\n", __FUNCTION__);
-                return false;                
+                return false;
             }
             // ------------------------------
             if (0 == m_lTransactionNum)
@@ -993,7 +993,7 @@ bool MTRecord::CancelOutgoing(const std::string str_via_acct) // This can be bla
             // ---------------------------------------------------
         }
             break;
-        // -----------------------------            
+            // -----------------------------
         default:
             OTLog::vError("%s: Unexpected type: %s\n",
                           __FUNCTION__, this->GetInstrumentType().c_str());
@@ -1072,7 +1072,7 @@ void  MTRecord::SetContents      (const std::string & str_contents)
                 case OTPayment::INVOICE:        m_bIsInvoice        = true;  break;
                 case OTPayment::PAYMENT_PLAN:   m_bIsPaymentPlan    = true;  break;
                 case OTPayment::SMART_CONTRACT: m_bIsSmartContract  = true;  break;
-
+                    
                 default:
                     break;
             }
