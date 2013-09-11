@@ -710,6 +710,10 @@ private:
     
     private slots:
     
+    // Mine
+    
+    void mc_market_slot();
+    
     //Nym Manager slots
     void mc_nymmanager_addnym_slot();
     void mc_nymmanager_removenym_slot();

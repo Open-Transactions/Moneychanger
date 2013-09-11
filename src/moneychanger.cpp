@@ -1,5 +1,6 @@
 #include "moneychanger.h"
 #include "ot_worker.h"
+#include "MarketWindow.h"
 
 #include "opentxs/OTAPI.h"
 #include "opentxs/OT_ME.h"
@@ -204,8 +205,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
     //Overview button
-    mc_systrayMenu_overview = new QAction("Transaction History", 0);
-    mc_systrayMenu_overview->setIcon(mc_systrayIcon_overview);
+    mc_systrayMenu_overview = new QAction(mc_systrayIcon_overview, "Transaction History", 0);
     mc_systrayMenu->addAction(mc_systrayMenu_overview);
     //Connect the Overview to a re-action when "clicked";
     connect(mc_systrayMenu_overview, SIGNAL(triggered()), this, SLOT(mc_overview_slot()));
@@ -214,15 +214,13 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
     //Send funds
-    mc_systrayMenu_sendfunds = new QAction("Send Funds...", 0);
-    mc_systrayMenu_sendfunds->setIcon(mc_systrayIcon_sendfunds);
+    mc_systrayMenu_sendfunds = new QAction(mc_systrayIcon_sendfunds, "Send Funds...", 0);
     mc_systrayMenu->addAction(mc_systrayMenu_sendfunds);
     //Connect button with re-aciton
     connect(mc_systrayMenu_sendfunds, SIGNAL(triggered()), this, SLOT(mc_sendfunds_slot()));
     // --------------------------------------------------------------
     //Request payment
-    mc_systrayMenu_requestfunds = new QAction("Request Payment...", 0);
-    mc_systrayMenu_requestfunds->setIcon(mc_systrayIcon_requestfunds);
+    mc_systrayMenu_requestfunds = new QAction(mc_systrayIcon_requestfunds, "Request Payment...", 0);
     mc_systrayMenu->addAction(mc_systrayMenu_requestfunds);
     connect(mc_systrayMenu_requestfunds, SIGNAL(triggered()), this, SLOT(mc_requestfunds_slot()));
     // --------------------------------------------------------------
@@ -295,8 +293,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     connect(mc_systrayMenu_withdraw_asvoucher, SIGNAL(triggered()), this, SLOT(mc_withdraw_asvoucher_slot()));
     // --------------------------------------------------------------
     //Deposit
-    mc_systrayMenu_deposit = new QAction("Deposit...", 0);
-    mc_systrayMenu_deposit->setIcon(mc_systrayIcon_deposit);
+    mc_systrayMenu_deposit = new QAction(mc_systrayIcon_deposit, "Deposit...", 0);
     mc_systrayMenu->addAction(mc_systrayMenu_deposit);
     //Connect button with re-action
     connect(mc_systrayMenu_deposit, SIGNAL(triggered()), this, SLOT(mc_deposit_slot()));
@@ -325,6 +322,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     
     mc_systrayMenu_advanced_markets = new QAction(mc_systrayIcon_advanced_markets, "Markets", 0);
     mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_markets);
+    connect(mc_systrayMenu_advanced_markets, SIGNAL(triggered()), this, SLOT(mc_market_slot()));
     mc_systrayMenu_advanced->addSeparator();
     
     mc_systrayMenu_advanced_settings = new QAction(mc_systrayIcon_advanced_settings, "Settings...", 0);
@@ -417,6 +415,19 @@ Moneychanger::~Moneychanger()
 
 /** ****** ****** ******  **
  ** Public Function/Calls **/
+
+// Mine
+
+void Moneychanger::mc_market_slot(){
+    
+    // This is a glaring memory leak, but it's only a temporary placeholder before I redo how windows are handled.
+    MarketWindow *market_window = new MarketWindow(this);
+    market_window->show();
+}
+
+// End Mine
+
+
 //start
 void Moneychanger::bootTray(){
     //Show systray
