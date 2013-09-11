@@ -46,49 +46,49 @@ std::string MTNameLookup::GetAcctName(const std::string & str_id) const
 }
 
 /*
-//virtual
-std::string MTNameLookupIPhone::GetNymName(const std::string & str_id) const
-{
-    std::string str_result;
-    
-    // ------------------------------------------------
-
-    // TODO: PUT YOUR CODE HERE THAT USES str_id TO LOOKUP THE NYM NAME INTO str_result.
-    // (from contact list.)
-    
-    // ------------------------------------------------
-
-    
-    if (str_result.empty()) // Not found? Call the parent version.
-    {
-        return this->MTNameLookup::GetNymName(str_id);
-    }
-    
-    return str_result;
-}
-
-//virtual
-std::string MTNameLookupIPhone::GetAcctName(const std::string & str_id) const
-{
-    std::string str_result;
-    
-    
-    // ------------------------------------------------
-    
-    // TODO MAHYAR: PUT YOUR CODE HERE THAT USES str_id TO LOOKUP THE NYM NAME INTO str_result.
-    // (from contact list.)
-
-    // ------------------------------------------------
-
-    
-    if (str_result.empty()) // Not found? Call the parent version.
-    {
-        return this->MTNameLookup::GetAcctName(str_id);
-    }
-    
-    return str_result;
-}
-*/
+ //virtual
+ std::string MTNameLookupIPhone::GetNymName(const std::string & str_id) const
+ {
+ std::string str_result;
+ 
+ // ------------------------------------------------
+ 
+ // TODO: PUT YOUR CODE HERE THAT USES str_id TO LOOKUP THE NYM NAME INTO str_result.
+ // (from contact list.)
+ 
+ // ------------------------------------------------
+ 
+ 
+ if (str_result.empty()) // Not found? Call the parent version.
+ {
+ return this->MTNameLookup::GetNymName(str_id);
+ }
+ 
+ return str_result;
+ }
+ 
+ //virtual
+ std::string MTNameLookupIPhone::GetAcctName(const std::string & str_id) const
+ {
+ std::string str_result;
+ 
+ 
+ // ------------------------------------------------
+ 
+ // TODO MAHYAR: PUT YOUR CODE HERE THAT USES str_id TO LOOKUP THE NYM NAME INTO str_result.
+ // (from contact list.)
+ 
+ // ------------------------------------------------
+ 
+ 
+ if (str_result.empty()) // Not found? Call the parent version.
+ {
+ return this->MTNameLookup::GetAcctName(str_id);
+ }
+ 
+ return str_result;
+ }
+ */
 
 
 // ------------------------------------------------
@@ -154,7 +154,7 @@ void MTRecordList::AddAssetID(const std::string str_id)
     // Name is dollars, fraction is cents, TLA is USD and
     // Symbol is $ (for example.) Here, we're grabbing the TLA.
     //
-    OTAssetContract * pAssetContract = pWallet->GetAssetContract(theAssetTypeID);    
+    OTAssetContract * pAssetContract = pWallet->GetAssetContract(theAssetTypeID);
     // ------------------------------------------------
     if (NULL != pAssetContract)
     {
@@ -233,15 +233,15 @@ void MTRecordList::ClearAccounts()
 
 
 
- void MTRecordList::AcceptChequesAutomatically  (bool bVal/*=true*/) { m_bAutoAcceptCheques   = bVal; }
- void MTRecordList::AcceptReceiptsAutomatically (bool bVal/*=true*/) { m_bAutoAcceptReceipts  = bVal; }
- void MTRecordList::AcceptTransfersAutomatically(bool bVal/*=true*/) { m_bAutoAcceptTransfers = bVal; }
- void MTRecordList::AcceptCashAutomatically     (bool bVal/*=true*/) { m_bAutoAcceptCash      = bVal; }
+void MTRecordList::AcceptChequesAutomatically  (bool bVal/*=true*/) { m_bAutoAcceptCheques   = bVal; }
+void MTRecordList::AcceptReceiptsAutomatically (bool bVal/*=true*/) { m_bAutoAcceptReceipts  = bVal; }
+void MTRecordList::AcceptTransfersAutomatically(bool bVal/*=true*/) { m_bAutoAcceptTransfers = bVal; }
+void MTRecordList::AcceptCashAutomatically     (bool bVal/*=true*/) { m_bAutoAcceptCash      = bVal; }
 
- bool MTRecordList::DoesAcceptChequesAutomatically  ()  { return m_bAutoAcceptCheques;   }
- bool MTRecordList::DoesAcceptReceiptsAutomatically ()  { return m_bAutoAcceptReceipts;  }
- bool MTRecordList::DoesAcceptTransfersAutomatically()  { return m_bAutoAcceptTransfers; }
- bool MTRecordList::DoesAcceptCashAutomatically     ()  { return m_bAutoAcceptCash;      }
+bool MTRecordList::DoesAcceptChequesAutomatically  ()  { return m_bAutoAcceptCheques;   }
+bool MTRecordList::DoesAcceptReceiptsAutomatically ()  { return m_bAutoAcceptReceipts;  }
+bool MTRecordList::DoesAcceptTransfersAutomatically()  { return m_bAutoAcceptTransfers; }
+bool MTRecordList::DoesAcceptCashAutomatically     ()  { return m_bAutoAcceptCash;      }
 
 typedef std::map<int32_t, OTPayment *> mapOfPayments;
 
@@ -298,7 +298,7 @@ bool MTRecordList::PerformAutoAccept()
             // either way.
             //
             OTLedger * pInbox = m_bRunFast ? OTAPI_Wrap::OTAPI()->LoadPaymentInboxNoVerify(theServerID, theNymID) :
-                                             OTAPI_Wrap::OTAPI()->LoadPaymentInbox        (theServerID, theNymID);
+            OTAPI_Wrap::OTAPI()->LoadPaymentInbox        (theServerID, theNymID);
             OTCleanup<OTLedger> theInboxAngel(pInbox);
             
             int32_t  nIndex = (-1);
@@ -368,7 +368,7 @@ bool MTRecordList::PerformAutoAccept()
                     // For now, we only accept cash, cheques and vouchers.
                     //
                     if ( (m_bAutoAcceptCheques && ((0 == str_type.compare("cheque")) || (0 == str_type.compare("voucher")))) ||
-                         (m_bAutoAcceptCash    &&  (0 == str_type.compare("cash"))))
+                        (m_bAutoAcceptCash    &&  (0 == str_type.compare("cash"))))
                     {
                         OTLog::vOutput(0, "%s: Adding to acceptance list: pending incoming %s.\n",
                                        __FUNCTION__, str_type.c_str());
@@ -429,7 +429,7 @@ bool MTRecordList::PerformAutoAccept()
                     if (str_asset_type_id.empty())
                     {
                         OTLog::vError("%s: Error: Failed while trying to get asset type ID from payment. (Skipping.)\n", __FUNCTION__);
-                        continue;   
+                        continue;
                     }
                     // -------------------------------------------
                     // pick an account to deposit the cheque into.
@@ -442,11 +442,11 @@ bool MTRecordList::PerformAutoAccept()
                         OT_ASSERT(NULL != pAccount);
                         // ------------------------------------------------
                         const OTIdentifier & theAcctNymID    = pAccount->GetUserID();
-//                      const OTIdentifier & theAcctServerID = pAccount->GetPurportedServerID();
+                        //                      const OTIdentifier & theAcctServerID = pAccount->GetPurportedServerID();
                         const OTIdentifier & theAcctAssetID  = pAccount->GetAssetTypeID();
                         // ------------------------------------------------
-//                      const OTString       strAcctNymID   (theAcctNymID);
-//                      const OTString       strAcctServerID(theAcctServerID);
+                        //                      const OTString       strAcctNymID   (theAcctNymID);
+                        //                      const OTString       strAcctServerID(theAcctServerID);
                         const OTString       strAcctAssetID (theAcctAssetID);
                         // ------------------------------------------------
                         // If the current account is owned by the Nym, AND it has the same asset type ID
@@ -469,7 +469,7 @@ bool MTRecordList::PerformAutoAccept()
                             switch (nReturn)
                             {
                                 case 0:
-                                    OTLog::vOutput(0, "%s: This instrument was expired, so it was moved to the record box.\n", __FUNCTION__);                                    
+                                    OTLog::vOutput(0, "%s: This instrument was expired, so it was moved to the record box.\n", __FUNCTION__);
                                 case 1: // success
                                     break;
                                     // ----------------------------------
@@ -547,7 +547,7 @@ bool MTRecordList::PerformAutoAccept()
         //
         list_of_strings::iterator it_nym    = std::find(m_nyms   .begin(),    m_nyms.end(),    str_nym_id);
         list_of_strings::iterator it_server = std::find(m_servers.begin(), m_servers.end(), str_server_id);
-         map_of_strings::iterator it_asset  = m_assets.find(str_asset_id);
+        map_of_strings::iterator it_asset  = m_assets.find(str_asset_id);
         // ------------------------------------------------
         if ((m_nyms.end() == it_nym) || (m_servers.end() == it_server) || (m_assets.end() == it_asset))
         {
@@ -572,7 +572,7 @@ bool MTRecordList::PerformAutoAccept()
         // return for FASTER PERFORMANCE, then call SetFastMode() before Populating.
         //
         OTLedger * pInbox = m_bRunFast ? OTAPI_Wrap::OTAPI()->LoadInboxNoVerify(theServerID, theNymID, theAccountID) :
-                                         OTAPI_Wrap::OTAPI()->LoadInbox        (theServerID, theNymID, theAccountID);
+        OTAPI_Wrap::OTAPI()->LoadInbox        (theServerID, theNymID, theAccountID);
         OTCleanup<OTLedger> theInboxAngel(pInbox);
         // ------------------------------------------------
         if (NULL == pInbox)
@@ -761,11 +761,11 @@ bool MTRecordList::Populate()
             OTLog::vOutput(0, "%s: Outpayment instrument: %d\n", __FUNCTION__, nCurrentOutpayment);
             // ------------------------------------------------
             const OTString strOutpayment(
-                OTAPI_Wrap::GetNym_OutpaymentsContentsByIndex(str_nym_id, nCurrentOutpayment));
+                                         OTAPI_Wrap::GetNym_OutpaymentsContentsByIndex(str_nym_id, nCurrentOutpayment));
             // ----------------------------------
             std::string str_memo;
             OTPayment   theOutPayment(strOutpayment);
-
+            
             if (!theOutPayment.IsValid() || !theOutPayment.SetTempValues())
             {
                 OTLog::vError("%s: Skipping: Unable to load outpayments instrument from string:\n%s\n",
@@ -826,7 +826,7 @@ bool MTRecordList::Populate()
             OTIdentifier theAccountID;
             const std::string * p_str_account = &MTRecordList::s_blank; // <========== ACCOUNT
             std::string str_outpmt_account; // The accountID we found on the payment (if we found anything.)
-                        
+            
             if (theOutPayment.GetSenderAcctIDForDisplay(theAccountID)) // Since Nym is ME, the Account must be MY acct.
             {                                             // (In Outpayments, the SENDER's account is MY acct.)
                 OTString strTemp(theAccountID);
@@ -842,7 +842,7 @@ bool MTRecordList::Populate()
                 // is definitely not one of my accounts -- so the voucher would end up getting
                 // skipped every single time.
                 //
-//              else if (OTPayment::VOUCHER != theOutPayment.GetType())
+                //              else if (OTPayment::VOUCHER != theOutPayment.GetType())
                 else
                 {
                     // There was definitely an account on the instrument, and it definitely
@@ -860,10 +860,10 @@ bool MTRecordList::Populate()
             // strOutpayment contains the actual outgoing payment instrument.
             //
             const std::string str_outpmt_server =
-                OTAPI_Wrap::GetNym_OutpaymentsServerIDByIndex(str_nym_id, nCurrentOutpayment);
+            OTAPI_Wrap::GetNym_OutpaymentsServerIDByIndex(str_nym_id, nCurrentOutpayment);
             // ----------------------------------
             const std::string str_outpmt_recipientID =
-                OTAPI_Wrap::GetNym_OutpaymentsRecipientIDByIndex(str_nym_id, nCurrentOutpayment);
+            OTAPI_Wrap::GetNym_OutpaymentsRecipientIDByIndex(str_nym_id, nCurrentOutpayment);
             // ----------------------------------
             // str_outpmt_server is the server for this outpayment.
             // But is that server on our list of servers that we care about?
@@ -871,7 +871,7 @@ bool MTRecordList::Populate()
             // Also, let's do the same for asset types.
             //
             list_of_strings::iterator it_server = std::find(m_servers.begin(), m_servers.end(), str_outpmt_server);
-
+            
             if (it_server != m_servers.end()) // Found the serverID on the list of servers we care about.
             {
                 // ---------------------------------------------------
@@ -887,7 +887,7 @@ bool MTRecordList::Populate()
                     strNameTemp.Format("To: %s", strName.Get());
                 else
                     strNameTemp.Format("To: %s", str_outpmt_recipientID.c_str());
-
+                
                 str_name = strNameTemp.Get();
                 // ---------------------------------------------------
                 OTString strMemo;
@@ -913,7 +913,7 @@ bool MTRecordList::Populate()
                 // Instrument type (cheque, voucher, etc)
                 //
                 int nType = static_cast<int> (theOutPayment.GetType());
-
+                
                 const std::string & str_type = MTRecord_GetTypeString(nType);
                 // ---------------------------------------------------
                 // CREATE A MTRecord AND POPULATE IT...
@@ -924,7 +924,7 @@ bool MTRecordList::Populate()
                 shared_ptr_MTRecord sp_Record(new MTRecord(*it_server,
                                                            *p_str_asset_type,
                                                            *p_str_asset_name,
-                                                            str_nym_id,    // This is the Nym WHOSE BOX IT IS.
+                                                           str_nym_id,    // This is the Nym WHOSE BOX IT IS.
                                                            *p_str_account, // This is the Nym's account according to the payment instrument, IF that account was found on our list of accounts we care about. Or it's blank if no account was found on the payment instrument.
                                                            // Everything above this line, it stores a reference to an external string.
                                                            // -----------------------------
@@ -973,10 +973,10 @@ bool MTRecordList::Populate()
             OT_ASSERT(NULL != pMsg);
             // ------------------------------------------------
             const std::string str_mail_server =
-                OTAPI_Wrap::GetNym_MailServerIDByIndex(str_nym_id, nCurrentMail);
+            OTAPI_Wrap::GetNym_MailServerIDByIndex(str_nym_id, nCurrentMail);
             // ----------------------------------
             const std::string str_mail_senderID =
-                OTAPI_Wrap::GetNym_MailSenderIDByIndex(str_nym_id, nCurrentMail);
+            OTAPI_Wrap::GetNym_MailSenderIDByIndex(str_nym_id, nCurrentMail);
             // ----------------------------------
             // str_mail_server is the server for this mail.
             // But is that server on our list of servers that we care about?
@@ -1005,9 +1005,9 @@ bool MTRecordList::Populate()
                 const std::string * p_str_asset_type = &MTRecordList::s_blank; // <========== ASSET TYPE
                 const std::string * p_str_asset_name = &MTRecordList::s_blank; // asset type display name.
                 const std::string * p_str_account    = &MTRecordList::s_blank; // <========== ACCOUNT
-
+                
                 std::string str_amount; // There IS NO amount, on mail. (So we leave this empty.)
-
+                
                 long lDate = pMsg->m_lTime;
                 OTString strDate;
                 strDate.Format("%ld", lDate);
@@ -1016,7 +1016,7 @@ bool MTRecordList::Populate()
                 // CREATE A MTRecord AND POPULATE IT...
                 //
                 OTLog::vOutput(0, "%s: ADDED: incoming mail.\n", __FUNCTION__);
-
+                
                 shared_ptr_MTRecord sp_Record(new MTRecord(*it_server,
                                                            *p_str_asset_type,
                                                            *p_str_asset_name,
@@ -1034,7 +1034,7 @@ bool MTRecordList::Populate()
                                                            false, //IsRecord
                                                            false, //IsReceipt
                                                            MTRecord::Mail
-                                                           ));               
+                                                           ));
                 // -------------------------------------------------
                 sp_Record->SetOtherNymID(str_mail_senderID);
                 // -------------------------------------------------
@@ -1060,10 +1060,10 @@ bool MTRecordList::Populate()
             OT_ASSERT(NULL != pMsg);
             // ------------------------------------------------
             const std::string str_mail_server =
-                OTAPI_Wrap::GetNym_OutmailServerIDByIndex(str_nym_id, nCurrentOutmail);
+            OTAPI_Wrap::GetNym_OutmailServerIDByIndex(str_nym_id, nCurrentOutmail);
             // ----------------------------------
             const std::string str_mail_recipientID =
-                OTAPI_Wrap::GetNym_OutmailRecipientIDByIndex(str_nym_id, nCurrentOutmail);
+            OTAPI_Wrap::GetNym_OutmailRecipientIDByIndex(str_nym_id, nCurrentOutmail);
             // ----------------------------------
             // str_mail_server is the server for this mail.
             // But is that server on our list of servers that we care about?
@@ -1103,7 +1103,7 @@ bool MTRecordList::Populate()
                 // CREATE A MTRecord AND POPULATE IT...
                 //
                 OTLog::vOutput(0, "%s: ADDED: sent mail.\n", __FUNCTION__);
-
+                
                 shared_ptr_MTRecord sp_Record(new MTRecord(*it_server,
                                                            *p_str_asset_type,
                                                            *p_str_asset_name,
@@ -1155,7 +1155,7 @@ bool MTRecordList::Populate()
             // either way.
             //
             OTLedger * pInbox = m_bRunFast ? OTAPI_Wrap::OTAPI()->LoadPaymentInboxNoVerify(theServerID, theNymID) :
-                                             OTAPI_Wrap::OTAPI()->LoadPaymentInbox        (theServerID, theNymID);
+            OTAPI_Wrap::OTAPI()->LoadPaymentInbox        (theServerID, theNymID);
             OTCleanup<OTLedger> theInboxAngel(pInbox);
             
             int32_t  nIndex = (-1);
@@ -1172,7 +1172,7 @@ bool MTRecordList::Populate()
                 std::string  str_name; // name of sender (since its in the payments inbox.)
                 std::string  str_sender_nym_id;
                 std::string  str_sender_acct_id;
-
+                
                 if (false == pBoxTrans->IsAbbreviated())
                 {
                     OTIdentifier theSenderID;
@@ -1183,7 +1183,7 @@ bool MTRecordList::Populate()
                         str_sender_nym_id = strSenderID.Get();
                         
                         OTString strName(m_pLookup->GetNymName(str_sender_nym_id)), strNameTemp;
-
+                        
                         if (strName.Exists())
                             strNameTemp.Format("From: %s", strName.Get());
                         else
@@ -1222,7 +1222,7 @@ bool MTRecordList::Populate()
                 std::string str_type;     // Instrument type.
                 std::string str_memo;
                 OTString    strContents; // Instrument contents.
-
+                
                 if (pBoxTrans->IsAbbreviated())
                 {
                     str_type = pBoxTrans->GetTypeString(); // instrumentNotice, etc.
@@ -1337,7 +1337,7 @@ bool MTRecordList::Populate()
                 // ------------------------------
                 OTLog::vOutput(0, "%s: ADDED: pending incoming payment (str_type: %s)\n",
                                __FUNCTION__, str_type.c_str());
-
+                
                 shared_ptr_MTRecord sp_Record(new MTRecord(*it_server,
                                                            *p_str_asset_type,
                                                            *p_str_asset_name,
@@ -1371,13 +1371,13 @@ bool MTRecordList::Populate()
                 // -------------------------------------------------
                 if (strContents.Exists())
                     sp_Record->SetContents(strContents.Get());
-                // -------------------------------------------------                
+                // -------------------------------------------------
                 sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
                 sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
-
+                
                 m_contents.push_back(sp_Record);
                 // ------------------------------
-
+                
             } // looping through inbox.
             else
                 OTLog::vOutput(0, "%s: Failed loading payments inbox. (Probably just doesn't exist yet.)\n", __FUNCTION__);
@@ -1388,7 +1388,7 @@ bool MTRecordList::Populate()
             // since it's the recordbox for the Nym.
             // OPTIMIZE FYI: m_bRunFast impacts run speed here.
             OTLedger * pRecordbox = m_bRunFast ? OTAPI_Wrap::OTAPI()->LoadRecordBoxNoVerify(theServerID, theNymID, theNymID) : // twice.
-                                                 OTAPI_Wrap::OTAPI()->LoadRecordBox        (theServerID, theNymID, theNymID);
+            OTAPI_Wrap::OTAPI()->LoadRecordBox        (theServerID, theNymID, theNymID);
             OTCleanup<OTLedger> theRecordBoxAngel(pRecordbox);
             
             // It loaded up, so let's loop through it.
@@ -1397,7 +1397,7 @@ bool MTRecordList::Populate()
                 OTTransaction * pBoxTrans = (*it).second;
                 OT_ASSERT(NULL != pBoxTrans);
                 // ------------------------------
-                bool bOutgoing = false;                
+                bool bOutgoing = false;
                 // ----------------------------------
                 ++nIndex; // 0 on first iteration.
                 // ------------------------------------------------
@@ -1406,7 +1406,7 @@ bool MTRecordList::Populate()
                 std::string  str_name; // name of sender OR recipient (depending on whether it was originally incoming or outgoing.)
                 std::string  str_other_nym_id;
                 std::string  str_other_acct_id;
-
+                
                 if (false == pBoxTrans->IsAbbreviated())
                 {
                     OTIdentifier theSenderID,    theSenderAcctID;
@@ -1432,7 +1432,7 @@ bool MTRecordList::Populate()
                                 const std::string str_recipient_id(strRecipientID.Get());
                                 
                                 OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
-
+                                
                                 if (strName.Exists())
                                     strNameTemp.Format("To: %s", strName.Get());
                                 else
@@ -1452,7 +1452,7 @@ bool MTRecordList::Populate()
                         {    // In this case, some OTHER Nym is the sender, so it must have been incoming. (And bOutgoing is already false.)
                             
                             OTString strName(m_pLookup->GetNymName(str_sender_id)), strNameTemp;
-
+                            
                             if (strName.Exists())
                                 strNameTemp.Format("From: %s", strName.Get());
                             else
@@ -1482,7 +1482,7 @@ bool MTRecordList::Populate()
                             bOutgoing = true;
                             
                             OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
-
+                            
                             if (strName.Exists())
                                 strNameTemp.Format("To: %s", strName.Get());
                             else
@@ -1610,7 +1610,7 @@ bool MTRecordList::Populate()
                             // can decrypt the payload and return the value. But since we already have the payload decrypted here
                             // (we already have the cheque loaded up here) we can just grab the senderAcctID directly from the cheque.
                             // That's why this is here -- because this is where we KNOW we have the account ID -- so we grab it.
-                            // 
+                            //
                             if (str_other_acct_id.empty() && (pPayment->GetSenderAcctIDForDisplay(theAccountID)))
                             {
                                 OTString strTemp(theAccountID);
@@ -1674,7 +1674,7 @@ bool MTRecordList::Populate()
                 // ------------------------------
                 OTLog::vOutput(0, "%s: ADDED: Payment record %s (str_type: %s)\n",
                                __FUNCTION__, bOutgoing ? "(sent)" : "(received)", str_type.c_str());
-
+                
                 shared_ptr_MTRecord sp_Record(new MTRecord(*it_server,
                                                            *p_str_asset_type,
                                                            *p_str_asset_name,
@@ -1708,10 +1708,10 @@ bool MTRecordList::Populate()
                 // -------------------------------------------------
                 if (strContents.Exists())
                     sp_Record->SetContents(strContents.Get());
-                // -------------------------------------------------                
+                // -------------------------------------------------
                 sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
                 sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
-
+                
                 m_contents.push_back(sp_Record);
                 // ------------------------------
                 
@@ -1719,7 +1719,7 @@ bool MTRecordList::Populate()
             else
                 OTLog::vOutput(0, "%s: Failed loading payments record box. (Probably just doesn't exist yet.)\n", __FUNCTION__);
             // ------------------------------------------------
-
+            
             // ------------------------------------------------
             // EXPIRED RECORDS:
             nIndex = (-1);
@@ -1727,7 +1727,7 @@ bool MTRecordList::Populate()
             // Also loop through its expired record box.
             // OPTIMIZE FYI: m_bRunFast impacts run speed here.
             OTLedger * pExpiredbox = m_bRunFast ? OTAPI_Wrap::OTAPI()->LoadExpiredBoxNoVerify(theServerID, theNymID) :
-                                                  OTAPI_Wrap::OTAPI()->LoadExpiredBox        (theServerID, theNymID);
+            OTAPI_Wrap::OTAPI()->LoadExpiredBox        (theServerID, theNymID);
             OTCleanup<OTLedger> theExpiredBoxAngel(pExpiredbox);
             
             // It loaded up, so let's loop through it.
@@ -1736,7 +1736,7 @@ bool MTRecordList::Populate()
                 OTTransaction * pBoxTrans = (*it).second;
                 OT_ASSERT(NULL != pBoxTrans);
                 // ------------------------------
-                bool bOutgoing = false;                
+                bool bOutgoing = false;
                 // ----------------------------------
                 ++nIndex; // 0 on first iteration.
                 // ------------------------------------------------
@@ -1745,7 +1745,7 @@ bool MTRecordList::Populate()
                 std::string  str_name; // name of sender OR recipient (depending on whether it was originally incoming or outgoing.)
                 std::string  str_other_nym_id;
                 std::string  str_other_acct_id;
-
+                
                 if (false == pBoxTrans->IsAbbreviated())
                 {
                     OTIdentifier theSenderID,    theSenderAcctID;
@@ -1771,7 +1771,7 @@ bool MTRecordList::Populate()
                                 const std::string str_recipient_id(strRecipientID.Get());
                                 
                                 OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
-
+                                
                                 if (strName.Exists())
                                     strNameTemp.Format("To: %s", strName.Get());
                                 else
@@ -1791,7 +1791,7 @@ bool MTRecordList::Populate()
                         {    // In this case, some OTHER Nym is the sender, so it must have been incoming. (And bOutgoing is already false.)
                             
                             OTString strName(m_pLookup->GetNymName(str_sender_id)), strNameTemp;
-
+                            
                             if (strName.Exists())
                                 strNameTemp.Format("From: %s", strName.Get());
                             else
@@ -1821,7 +1821,7 @@ bool MTRecordList::Populate()
                             bOutgoing = true;
                             
                             OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
-
+                            
                             if (strName.Exists())
                                 strNameTemp.Format("To: %s", strName.Get());
                             else
@@ -1949,7 +1949,7 @@ bool MTRecordList::Populate()
                             // can decrypt the payload and return the value. But since we already have the payload decrypted here
                             // (we already have the cheque loaded up here) we can just grab the senderAcctID directly from the cheque.
                             // That's why this is here -- because this is where we KNOW we have the account ID -- so we grab it.
-                            // 
+                            //
                             if (str_other_acct_id.empty() && (pPayment->GetSenderAcctIDForDisplay(theAccountID)))
                             {
                                 OTString strTemp(theAccountID);
@@ -2013,7 +2013,7 @@ bool MTRecordList::Populate()
                 // ------------------------------
                 OTLog::vOutput(0, "%s: ADDED: Expired payment record %s (str_type: %s)\n",
                                __FUNCTION__, bOutgoing ? "(sent)" : "(received)", str_type.c_str());
-
+                
                 shared_ptr_MTRecord sp_Record(new MTRecord(*it_server,
                                                            *p_str_asset_type,
                                                            *p_str_asset_name,
@@ -2049,10 +2049,10 @@ bool MTRecordList::Populate()
                 // -------------------------------------------------
                 if (strContents.Exists())
                     sp_Record->SetContents(strContents.Get());
-                // -------------------------------------------------                
+                // -------------------------------------------------
                 sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
                 sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
-
+                
                 m_contents.push_back(sp_Record);
                 // ------------------------------
                 
@@ -2060,7 +2060,7 @@ bool MTRecordList::Populate()
             else
                 OTLog::vOutput(0, "%s: Failed loading expired payments box. (Probably just doesn't exist yet.)\n", __FUNCTION__);
             // ------------------------------------------------
-
+            
         } // Loop through servers for each Nym.
         
     } // Loop through Nyms.
@@ -2112,7 +2112,7 @@ bool MTRecordList::Populate()
         //
         list_of_strings::iterator it_nym    = std::find(m_nyms.begin(),    m_nyms.end(),    str_nym_id);
         list_of_strings::iterator it_server = std::find(m_servers.begin(), m_servers.end(), str_server_id);
-         map_of_strings::iterator it_asset  = m_assets.find(str_asset_id);
+        map_of_strings::iterator it_asset  = m_assets.find(str_asset_id);
         // ------------------------------------------------
         if ((m_nyms.end() == it_nym) || (m_servers.end() == it_server) || (m_assets.end() == it_asset))
         {
@@ -2137,7 +2137,7 @@ bool MTRecordList::Populate()
         // return for FASTER PERFORMANCE, then call SetFastMode() before Populating.
         //
         OTLedger * pInbox = m_bRunFast ? OTAPI_Wrap::OTAPI()->LoadInboxNoVerify(theServerID, theNymID, theAccountID) :
-                                         OTAPI_Wrap::OTAPI()->LoadInbox        (theServerID, theNymID, theAccountID);
+        OTAPI_Wrap::OTAPI()->LoadInbox        (theServerID, theNymID, theAccountID);
         OTCleanup<OTLedger> theInboxAngel(pInbox);
         
         // ------------------------------------------------
@@ -2172,10 +2172,10 @@ bool MTRecordList::Populate()
                 if (OTTransaction::pending == pBoxTrans->GetType())
                 {
                     // NOTE: REMOVE THE BELOW CODE. (Found a better way, above this block.)
-//                    const OTString strBoxTrans(*pBoxTrans);
-//                    
-//                    if (strBoxTrans.Exists())
-//                        str_memo = OTAPI_Wrap::Pending_GetNote(*pstr_server_id, *pstr_nym_id, str_account_id, strBoxTrans.Get());
+                    //                    const OTString strBoxTrans(*pBoxTrans);
+                    //
+                    //                    if (strBoxTrans.Exists())
+                    //                        str_memo = OTAPI_Wrap::Pending_GetNote(*pstr_server_id, *pstr_nym_id, str_account_id, strBoxTrans.Get());
                     // ------------------------------
                     OTIdentifier theSenderID, theSenderAcctID;
                     
@@ -2306,7 +2306,7 @@ bool MTRecordList::Populate()
                            __FUNCTION__,
                            (OTTransaction::pending == pBoxTrans->GetType()) ? "pending transfer" : "receipt",
                            str_type.c_str());
-
+            
             shared_ptr_MTRecord sp_Record(new MTRecord(*pstr_server_id,
                                                        *pstr_asset_id,
                                                        *pstr_asset_name,
@@ -2324,7 +2324,7 @@ bool MTRecordList::Populate()
                                                        false, //IsRecord
                                                        (OTTransaction::pending != pBoxTrans->GetType()), //IsReceipt,
                                                        (OTTransaction::pending == pBoxTrans->GetType()) ?
-                                                            MTRecord::Transfer : MTRecord::Receipt ));
+                                                       MTRecord::Transfer : MTRecord::Receipt ));
             // -------------------------------------------------
             sp_Record->SetDateRange(tValidFrom, tValidTo);
             // -------------------------------------------------
@@ -2344,7 +2344,7 @@ bool MTRecordList::Populate()
             // -------------------------------------------------
             sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
             sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
-
+            
             m_contents.push_back(sp_Record);
         }
         // ------------------------------------------------
@@ -2354,7 +2354,7 @@ bool MTRecordList::Populate()
         // return for FASTER PERFORMANCE, then call SetFastMode() before running Populate.
         //
         OTLedger * pOutbox = m_bRunFast ? OTAPI_Wrap::OTAPI()->LoadOutboxNoVerify(theServerID, theNymID, theAccountID) :
-                                          OTAPI_Wrap::OTAPI()->LoadOutbox        (theServerID, theNymID, theAccountID);
+        OTAPI_Wrap::OTAPI()->LoadOutbox        (theServerID, theNymID, theAccountID);
         OTCleanup<OTLedger> theOutboxAngel(pOutbox);
         
         // It loaded up, so let's loop through it.
@@ -2375,7 +2375,7 @@ bool MTRecordList::Populate()
             std::string  str_other_nym_id;
             std::string  str_other_acct_id;
             std::string  str_memo;
-
+            
             if (false == pBoxTrans->IsAbbreviated())
             {
                 OTIdentifier theRecipientID, theRecipientAcctID;
@@ -2386,7 +2386,7 @@ bool MTRecordList::Populate()
                     const std::string str_recipient_id(strRecipientID.Get());
                     
                     OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
-
+                    
                     if (strName.Exists())
                         strNameTemp.Format("To: %s", strName.Get());
                     else
@@ -2407,7 +2407,7 @@ bool MTRecordList::Populate()
                     const std::string str_recipient_id(strRecipientAcctID.Get());
                     
                     OTString strName(m_pLookup->GetAcctName(str_recipient_id)), strNameTemp;
-
+                    
                     if (strName.Exists())
                         strNameTemp.Format("To: %s", strName.Get());
                     else
@@ -2423,12 +2423,12 @@ bool MTRecordList::Populate()
                     
                     if (pBoxTrans->GetMemo(strMemo))
                         str_memo = strMemo.Get();
-
+                    
                     // DELETE THE BELOW CODE (replaced by above code.)
-//                    const OTString strBoxTrans(*pBoxTrans);
-//                    
-//                    if (strBoxTrans.Exists())
-//                        str_memo = OTAPI_Wrap::Pending_GetNote(*pstr_server_id, *pstr_nym_id, str_account_id, strBoxTrans.Get());
+                    //                    const OTString strBoxTrans(*pBoxTrans);
+                    //
+                    //                    if (strBoxTrans.Exists())
+                    //                        str_memo = OTAPI_Wrap::Pending_GetNote(*pstr_server_id, *pstr_nym_id, str_account_id, strBoxTrans.Get());
                 }
             }
             // ------------------------------
@@ -2468,7 +2468,7 @@ bool MTRecordList::Populate()
             // ------------------------------
             OTLog::vOutput(0, "%s: ADDED: %s outgoing transfer (str_type: %s).\n", __FUNCTION__,
                            (OTTransaction::pending == pBoxTrans->GetType()) ? "pending" : "ERROR", str_type.c_str());
-
+            
             shared_ptr_MTRecord sp_Record(new MTRecord(*pstr_server_id,
                                                        *pstr_asset_id,
                                                        *pstr_asset_name,
@@ -2503,7 +2503,7 @@ bool MTRecordList::Populate()
             // -------------------------------------------------
             sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
             sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
-
+            
             m_contents.push_back(sp_Record);
         }
         // ------------------------------------------------
@@ -2516,7 +2516,7 @@ bool MTRecordList::Populate()
         // return for FASTER PERFORMANCE, then call SetFastMode() before Populating.
         //
         OTLedger * pRecordbox = m_bRunFast ? OTAPI_Wrap::OTAPI()->LoadRecordBoxNoVerify(theServerID, theNymID, theAccountID) :
-                                             OTAPI_Wrap::OTAPI()->LoadRecordBox        (theServerID, theNymID, theAccountID);
+        OTAPI_Wrap::OTAPI()->LoadRecordBox        (theServerID, theNymID, theAccountID);
         OTCleanup<OTLedger> theRecordBoxAngel(pRecordbox);
         
         // It loaded up, so let's loop through it.
@@ -2537,7 +2537,7 @@ bool MTRecordList::Populate()
             std::string  str_other_nym_id;
             std::string  str_other_acct_id;
             std::string  str_memo;
-
+            
             if (false == pBoxTrans->IsAbbreviated())
             {
                 OTIdentifier theSenderID,    theSenderAcctID;
@@ -2563,7 +2563,7 @@ bool MTRecordList::Populate()
                             const std::string str_recipient_id(strRecipientID.Get());
                             
                             OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
-
+                            
                             if (strName.Exists())
                                 strNameTemp.Format("To: %s", strName.Get());
                             else
@@ -2583,7 +2583,7 @@ bool MTRecordList::Populate()
                     {    // In this case, some OTHER Nym is the sender, so it must have been incoming. (And bOutgoing is already false.)
                         
                         OTString strName(m_pLookup->GetNymName(str_sender_id)), strNameTemp;
-
+                        
                         if (strName.Exists())
                             strNameTemp.Format("From: %s", strName.Get());
                         else
@@ -2613,7 +2613,7 @@ bool MTRecordList::Populate()
                         bOutgoing = true;
                         
                         OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
-
+                        
                         if (strName.Exists())
                             strNameTemp.Format("To: %s", strName.Get());
                         else
@@ -2649,7 +2649,7 @@ bool MTRecordList::Populate()
                             const std::string str_recipient_id(strRecipientAcctID.Get());
                             
                             OTString strName(m_pLookup->GetAcctName(str_recipient_id)), strNameTemp;
-
+                            
                             if (strName.Exists())
                                 strNameTemp.Format("To: %s", strName.Get());
                             else
@@ -2663,7 +2663,7 @@ bool MTRecordList::Populate()
                     {    // In this case, some OTHER Nym is the sender, so it must have been incoming. (And bOutgoing is already false.)
                         
                         OTString strName(m_pLookup->GetAcctName(str_sender_id)), strNameTemp;
-
+                        
                         if (strName.Exists())
                             strNameTemp.Format("From: %s", strName.Get());
                         else
@@ -2687,7 +2687,7 @@ bool MTRecordList::Populate()
                         bOutgoing = true;
                         
                         OTString strName(m_pLookup->GetAcctName(str_recipient_id)), strNameTemp;
-
+                        
                         if (strName.Exists())
                             strNameTemp.Format("To: %s", strName.Get());
                         else
@@ -2704,7 +2704,7 @@ bool MTRecordList::Populate()
                 
                 if (pBoxTrans->GetMemo(strMemo))
                     str_memo = strMemo.Get();
-
+                
             } // if not abbreviated.
             // ------------------------------
             bCanceled = pBoxTrans->IsCancelled();
@@ -2749,7 +2749,7 @@ bool MTRecordList::Populate()
                            //
                            (pBoxTrans->GetType() != OTTransaction::pending) ? "" : (bOutgoing ? "sent" : "received"),
                            str_type.c_str());
-
+            
             shared_ptr_MTRecord sp_Record(new MTRecord(*pstr_server_id,
                                                        *pstr_asset_id,
                                                        *pstr_asset_name,
@@ -2767,7 +2767,7 @@ bool MTRecordList::Populate()
                                                        true, //IsRecord
                                                        pBoxTrans->GetType() != OTTransaction::pending, //IsReceipt
                                                        pBoxTrans->GetType() == OTTransaction::pending ?
-                                                            MTRecord::Transfer : MTRecord::Receipt));
+                                                       MTRecord::Transfer : MTRecord::Receipt));
             // -------------------------------------------------
             if (bCanceled)
                 sp_Record->SetCanceled();
@@ -2791,7 +2791,7 @@ bool MTRecordList::Populate()
             m_contents.push_back(sp_Record);
         }
         // ------------------------------------------------
-
+        
     } // loop through the accounts.
 	// ------------------------------------------------
     // SORT the vector.
@@ -2808,14 +2808,14 @@ bool MTRecordList::Populate()
 // ------------------------------------------------
 
 MTRecordList::MTRecordList(MTNameLookup & theLookup) :
-    m_pLookup(&theLookup),
-    m_bRunFast(false),
-    m_bAutoAcceptCheques  (false),
-    m_bAutoAcceptReceipts (false),
-    m_bAutoAcceptTransfers(false),
-    m_bAutoAcceptCash     (false)
+m_pLookup(&theLookup),
+m_bRunFast(false),
+m_bAutoAcceptCheques  (false),
+m_bAutoAcceptReceipts (false),
+m_bAutoAcceptTransfers(false),
+m_bAutoAcceptCash     (false)
 {
-
+    
 }
 
 
