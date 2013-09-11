@@ -33,7 +33,7 @@ QT_CONFIG -= no-pkg-config
 LIBS += -lboost_system-mt -ldl
 }
 
-unix:LIBS += /usr/lib/libboost_thread.a -ldl
+unix:LIBS += /usr/local/lib/libboost_thread-mt.a -ldl
 
 ##QMAKE_CXXFLAGS += -fPIC -DPIC --param ssp-buffer-size=4
 
