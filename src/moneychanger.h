@@ -51,6 +51,9 @@ public:
     
     /** Start **/
     void bootTray();
+
+    /** Interfaces **/
+    ot_worker * get_ot_worker_background(){return ot_worker_background;};
     
 private:
     // ------------------------------------------------
@@ -192,7 +195,7 @@ private:
     // ---------------------------------------------------------
     //MC Systray Dialogs
     /** Overview **/
-    int mc_overview_already_init;
+    bool mc_overview_already_init;
     QMutex mc_overview_refreshing_visuals_mutex;
     QDialog * mc_overview_dialog_page;
     //Grid layout
