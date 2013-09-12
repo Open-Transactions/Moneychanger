@@ -2,6 +2,7 @@
 #include "ot_worker.h"
 #include "MarketWindow.h"
 #include "overviewwindow.h"
+#include "DBHandler.h"
 
 #include "opentxs/OTAPI.h"
 #include "opentxs/OT_ME.h"
@@ -29,55 +30,12 @@ Moneychanger::Moneychanger(QWidget *parent)
     //OT Related
     ot_me = new OT_ME();
     
-    //SQLite databases
-    addressbook_db = QSqlDatabase::addDatabase("QSQLITE", "addressBook");
-    addressbook_db.setDatabaseName("./db/mc_db");
-    qDebug() << addressbook_db.lastError();
-    bool db_opened = addressbook_db.open();
-    qDebug() << "DB OPENED " << db_opened;
-    
-    /** Default Nym **/
-    //Query for default nym (So we know for setting later on -- Pseudonym manager)
-    QSqlQuery default_nym_query(addressbook_db);
-    default_nym_query.exec(QString("SELECT `nym` FROM `default_nym` LIMIT 0,1"));
-    if(default_nym_query.size() == 0){
-        QSqlQuery insert_blank_row(addressbook_db);
-        insert_blank_row.exec(QString("INSERT INTO `default_nym` (`nym`) VALUES('')"));
-        
-    }else{
-        if(default_nym_query.next()){
-            QString default_nym_id_db = default_nym_query.value(0).toString();
-            default_nym_id = default_nym_id_db;
-            
-            //Ask OT what the display name of this nym is and store it for quick retrieval later on(mostly for "Default Nym" displaying purposes)
-            if(default_nym_id != ""){
-                default_nym_name =  QString::fromStdString(OTAPI_Wrap::GetNym_Name(default_nym_id.toStdString()));
-            }
-        }
-    }
-    
-    /** Default Server **/
-    //Query for the default server (So we know for setting later on -- Auto select server associations on later dialogs)
-    QSqlQuery default_server_query(addressbook_db);
-    default_server_query.exec(QString("SELECT `server` FROM `default_server` LIMIT 0,1"));
-    if(default_server_query.size() == 0){
-        QSqlQuery insert_blank_row(addressbook_db);
-        insert_blank_row.exec(QString("INSERT INTO `default_server` (`server`) VALUES(' ')"));
-        
-    }else{
-        qDebug() << "DEFAULT SERVER LOADED FROM SQL";
-        if(default_server_query.first()){
-            QString default_server_id_db = default_server_query.value(0).toString();
-            default_server_id = default_server_id_db;
-            
-            //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
-            if(default_server_id != ""){
-                default_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(default_server_id.toStdString()));
-                
-            }
-        }
-    }
-    
+    //SQLite database
+
+   qDebug() << "Starting DBHandler";
+   DBHandler::getInstance();
+   qDebug() << "End Handler";
+
     //Ask OT for "cash account" information (might be just "Account" balance)
     //Ask OT the purse information
     

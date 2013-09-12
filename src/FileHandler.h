@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QString>
 #include <QFile>
+#include <QDebug>
 
 
 /* GUI string messages. */
