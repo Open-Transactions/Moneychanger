@@ -150,22 +150,36 @@ int DBHandler::querySize(QString run)
     QMutexLocker locker(&dbMutex);
 
     int size;
-    bool error = false;
+    bool noerror = false;
     QSqlQuery query(db);
     
     if(db.isOpen())
     {
-        error = query.exec(run);
-        size = query.size();
-        if(!error)
+        noerror = query.exec(run);
+        //size = query.size();
+        // sqlite doesn't support size.
+        int recCount = 0;
+        while( query.next() )
+        {
+            recCount++;
+        }
+        size = recCount;
+        
+        if(noerror)
             return size;
         else
+        {
+            qDebug() << "Error at query Size";
             return -1;
+        }
     }
     
     // Return -1 on Error
     else
+    {
+        qDebug() << "Error at query Size";
         return -1;
+    }
     
 }
 
@@ -182,6 +196,7 @@ bool DBHandler::isNext(QString run)
     {
         isnext = query.exec(run);
         isnext = query.next();
+        
         if(isnext)
             return true;
         else
@@ -192,7 +207,7 @@ bool DBHandler::isNext(QString run)
     
 }
 
-QString DBHandler::queryString(QString run, int value)
+QString DBHandler::queryString(QString run, int value, int at)
 {
     QMutexLocker locker(&dbMutex);
     
@@ -204,8 +219,10 @@ QString DBHandler::queryString(QString run, int value)
     if(db.isOpen())
     {
         noerror = query.exec(run);
+        noerror = query.next();
+        noerror = query.seek(at);
         queryResult = query.value(value).toString();
-        if(noerror)
+        if(!noerror)
             return queryResult;
         else
             return "";
