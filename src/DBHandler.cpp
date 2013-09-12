@@ -89,6 +89,8 @@ bool DBHandler::dbRemove()
  */
 bool DBHandler::dbCreateInstance()
 {
+    QMutexLocker locker(&dbMutex);
+
     bool error = false;
 
     QSqlQuery query(db);
@@ -100,10 +102,15 @@ bool DBHandler::dbCreateInstance()
         QString address_book_create = "CREATE TABLE address_book (id INTEGER PRIMARY KEY, nym_id TEXT, nym_display_name TEXT)";
         QString default_nym_create = "CREATE TABLE default_nym (nym TEXT)";
         QString default_server_create = "CREATE TABLE default_server (server TEXT)";
+        QString default_asset_create = "CREATE TABLE default_asset (asset TEXT)";
+        QString default_account_create = "CREATE TABLE default_account (account TEXT)";
+
         
         error = query.exec(address_book_create);
         error = query.exec(default_nym_create);
         error = query.exec(default_server_create);
+        error = query.exec(default_asset_create);
+        error = query.exec(default_account_create);
         
         if(!error)
         {
@@ -229,4 +236,170 @@ QString DBHandler::queryString(QString run, int value, int at)
     }
     else
         return "";
+}
+
+QVariant DBHandler::AddressBookInsertNym(QString nym_id_string, QString nym_display_name_string)
+{
+    QMutexLocker locker(&dbMutex);
+
+    QString queryResult;
+
+    QSqlQuery query(db);
+    
+    if(db.isOpen())
+    {
+        if(query.exec(QString("INSERT INTO `address_book` (`id`, `nym_id`, `nym_display_name`) VALUES(NULL, '%1', '%2')").arg(nym_id_string).arg(nym_display_name_string)))
+            return query.lastInsertId();
+        else
+        {
+            qDebug() << "AddressBookInsertNym Error";
+            return -1;
+        }
+    }
+    else
+    {
+        qDebug() << "AddressBookInsertNym Error";
+        return -1;
+    }
+}
+
+
+bool DBHandler::AddressBookUpdateNym(QString nym_id_string, QString nym_display_name_string, QString index_id_string)
+{
+    QMutexLocker locker(&dbMutex);
+    
+    QString queryResult;
+    
+    QSqlQuery query(db);
+    
+    if(db.isOpen())
+    {
+        return query.exec(QString("UPDATE `address_book` SET `nym_id` = '%1', `nym_display_name` = '%2' WHERE `id` = %3").arg(nym_id_string).arg(nym_display_name_string).arg(index_id_string));
+
+    }
+    else
+    {
+        qDebug() << "AddressBookUpdateNym Error";
+        return false;
+    }
+    
+}
+
+bool DBHandler::AddressBookRemoveID(int ID)
+{
+    QMutexLocker locker(&dbMutex);
+    
+    QString queryResult;
+    
+    QSqlQuery query(db);
+    if(db.isOpen())
+    {
+        return query.exec(QString("DELETE FROM `address_book` WHERE `id` = %1").arg(ID));
+        
+    }
+    else
+    {
+        qDebug() << "AddressBookRemoveID Error";
+        return false;
+    }
+    
+}
+
+
+bool DBHandler::AddressBookUpdateDefaultNym(QString ID)
+{
+    QMutexLocker locker(&dbMutex);
+    
+    QString queryResult;
+    
+    QSqlQuery query(db);
+    if(db.isOpen())
+    {
+        if(query.exec(QString("UPDATE `default_nym` SET `nym` = '%1'").arg(ID)))
+            return true;
+        else
+        {
+            qDebug() << "AddressBookUpdateDefaultNym Error";
+            return false;
+        }
+    }
+    else
+    {
+        qDebug() << "AddressBookUpdateDefaultNym Error";
+        return false;
+    }
+    
+}
+
+bool DBHandler::AddressBookUpdateDefaultAsset(QString ID)
+{
+    QMutexLocker locker(&dbMutex);
+    
+    QString queryResult;
+    
+    QSqlQuery query(db);
+    if(db.isOpen())
+    {
+        if(query.exec(QString("UPDATE `default_asset` SET `asset` = '%1'").arg(ID)))
+            return true;
+        else
+        {
+            qDebug() << "AddressBookUpdateDefaultAsset Error";
+            return false;
+        }
+    }
+    else
+    {
+        qDebug() << "AddressBookUpdateDefaultAsset Error";
+        return false;
+    }
+}
+
+bool DBHandler::AddressBookUpdateDefaultAccount(QString ID)
+{
+    QMutexLocker locker(&dbMutex);
+    
+    QString queryResult;
+    
+    QSqlQuery query(db);
+    if(db.isOpen())
+    {
+        if(query.exec(QString("UPDATE `default_account` SET `account` = '%1'").arg(ID)))
+            return true;
+        else
+        {
+            qDebug() << "AddressBookUpdateDefaultAccount Error";
+            return false;
+        }
+    }
+    else
+    {
+        qDebug() << "AddressBookUpdateDefaultAccount Error";
+        return false;
+    }
+}
+
+
+bool DBHandler::AddressBookUpdateDefaultServer(QString ID)
+{
+    QMutexLocker locker(&dbMutex);
+    
+    QString queryResult;
+    
+    QSqlQuery query(db);
+    if(db.isOpen())
+    {
+        if(query.exec(QString("UPDATE `default_server` SET `server` = '%1'").arg(ID)))
+            return true;
+        else
+        {
+            qDebug() << "AddressBookUpdateDefaultServer Error";
+            return false;
+        }
+    }
+    else
+    {
+        qDebug() << "AddressBookUpdateDefaultServer Error";
+        return false;
+    }
 }
