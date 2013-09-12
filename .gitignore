@@ -24,3 +24,5 @@ Makefile
 *.build
 *.xcodeproj
 *.app
+build-*
+*.autosave
