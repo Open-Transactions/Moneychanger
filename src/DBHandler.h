@@ -9,6 +9,7 @@
 #include <QCoreApplication>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QSqlError>
 
 #include "filehandler.h"
 
@@ -59,7 +60,7 @@ class DBHandler
     bool runQuery(QString run);
     int querySize(QString run);
     bool isNext(QString run);
-    QString queryString(QString run, int value);
+    QString queryString(QString run, int value, int at=0);
 
     ~DBHandler();
 };

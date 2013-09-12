@@ -33,41 +33,40 @@ Moneychanger::Moneychanger(QWidget *parent)
     //SQLite database
     // This can be moved very easily into a different class
     // Which I will inevitably end up doing.
-    qDebug() << "Starting DBHandler";
-    DBHandler::getInstance();
-    qDebug() << "DBHandler Initialized";
-    
     /** Default Nym **/
     qDebug() << "Setting up Nym table";
     if(DBHandler::getInstance()->querySize("SELECT `nym` FROM `default_nym` LIMIT 0,1") == 0){
         DBHandler::getInstance()->runQuery("INSERT INTO `default_nym` (`nym`) VALUES('')"); // Blank Row
     }
     else{
-        qDebug() << "Default Nym loaded from SQL";
         if(DBHandler::getInstance()->isNext("SELECT `nym` FROM `default_nym` LIMIT 0,1")){
-            default_nym_id = DBHandler::getInstance()->queryString("SELECT `nym` FROM `default_nym` LIMIT 0,1", 0);
+            default_nym_id = DBHandler::getInstance()->queryString("SELECT `nym` FROM `default_nym` LIMIT 0,1", 0, 0);
         }
         //Ask OT what the display name of this nym is and store it for quick retrieval later on(mostly for "Default Nym" displaying purposes)
         if(default_nym_id != ""){
             default_nym_name =  QString::fromStdString(OTAPI_Wrap::GetNym_Name(default_nym_id.toStdString()));
         }
+        else
+            qDebug() << "Default Nym loaded from SQL";
+
     }
     
     /** Default Server **/
     //Query for the default server (So we know for setting later on -- Auto select server associations on later dialogs)
     if(DBHandler::getInstance()->querySize("SELECT `server` FROM `default_server` LIMIT 0,1") == 0){
-        DBHandler::getInstance()->runQuery("INSERT INTO `default_server` (`server`) VALUES(' ')"); // Blank Row
+        DBHandler::getInstance()->runQuery("INSERT INTO `default_server` (`server`) VALUES('')"); // Blank Row
     }
     else{
         if(DBHandler::getInstance()->runQuery("SELECT `server` FROM `default_server` LIMIT 0,1")){
-            default_server_id = DBHandler::getInstance()->queryString("SELECT `server` FROM `default_server` LIMIT 0,1", 0);
-            qDebug() << "DEFAULT SERVER LOADED FROM SQL";
+            default_server_id = DBHandler::getInstance()->queryString("SELECT `server` FROM `default_server` LIMIT 0,1", 0, 0);
         }
         //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
         if(default_server_id != ""){
             default_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(default_server_id.toStdString()));
-            
         }
+        else
+            qDebug() << "DEFAULT SERVER LOADED FROM SQL";
+
     }
     qDebug() << "Database Populated";
     
