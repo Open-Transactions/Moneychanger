@@ -28,3 +28,4 @@ build-*
 *.autosave
 Debug*
 Release*
+mc_db
