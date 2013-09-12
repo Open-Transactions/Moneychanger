@@ -89,7 +89,7 @@ bool DBHandler::dbRemove()
  */
 bool DBHandler::dbCreateInstance()
 {
-    bool ret = false;
+    bool error = false;
 
     QSqlQuery query(db);
 
@@ -101,11 +101,11 @@ bool DBHandler::dbCreateInstance()
         QString default_nym_create = "CREATE TABLE default_nym (nym TEXT)";
         QString default_server_create = "CREATE TABLE default_server (server TEXT)";
         
-        ret = query.exec(address_book_create);
-        ret = query.exec(default_nym_create);
-        ret = query.exec(default_server_create);
+        error = query.exec(address_book_create);
+        error = query.exec(default_nym_create);
+        error = query.exec(default_server_create);
         
-        if(!ret)
+        if(!error)
         {
             qDebug() << dbConnectErrorStr + " " + dbCreationStr;
             FileHandler rm;
@@ -115,10 +115,101 @@ bool DBHandler::dbCreateInstance()
         else
             qDebug() << "Database " + dbFileNameStr + " created.";
     }
-    return ret;
+    return error;
 }
 
 bool DBHandler::isConnected()
 {
     return db.isOpen();
+}
+
+bool DBHandler::runQuery(QString run)
+{
+    QMutexLocker locker(&dbMutex);
+    
+    bool error = false;
+    
+    QSqlQuery query(db);
+    
+    if(db.isOpen())
+    {
+        error = query.exec(run);
+        if(error)
+            return true;
+        else
+            return false;
+    }
+    else
+        return error;
+    
+}
+
+
+int DBHandler::querySize(QString run)
+{
+    QMutexLocker locker(&dbMutex);
+
+    int size;
+    bool error = false;
+    QSqlQuery query(db);
+    
+    if(db.isOpen())
+    {
+        error = query.exec(run);
+        size = query.size();
+        if(!error)
+            return size;
+        else
+            return -1;
+    }
+    
+    // Return -1 on Error
+    else
+        return -1;
+    
+}
+
+
+bool DBHandler::isNext(QString run)
+{
+    QMutexLocker locker(&dbMutex);
+    
+    bool isnext = false;
+    
+    QSqlQuery query(db);
+    
+    if(db.isOpen())
+    {
+        isnext = query.exec(run);
+        isnext = query.next();
+        if(isnext)
+            return true;
+        else
+            return false;
+    }
+    else
+        return isnext;
+    
+}
+
+QString DBHandler::queryString(QString run, int value)
+{
+    QMutexLocker locker(&dbMutex);
+    
+    bool noerror = false;
+    QString queryResult;
+    
+    QSqlQuery query(db);
+    
+    if(db.isOpen())
+    {
+        noerror = query.exec(run);
+        queryResult = query.value(value).toString();
+        if(noerror)
+            return queryResult;
+        else
+            return "";
+    }
+    else
+        return "";
 }

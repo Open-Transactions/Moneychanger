@@ -26,3 +26,5 @@ Makefile
 *.app
 build-*
 *.autosave
+Debug*
+Release*

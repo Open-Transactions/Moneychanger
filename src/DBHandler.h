@@ -7,6 +7,8 @@
 #include <QSqlQuery>
 #include <QProgressDialog>
 #include <QCoreApplication>
+#include <QMutex>
+#include <QMutexLocker>
 
 #include "filehandler.h"
 
@@ -42,16 +44,23 @@ class DBHandler
 
     QSqlDatabase db;
     FileHandler dbFile;
-
-  public:
-    static DBHandler * getInstance();
-
+    QMutex dbMutex;
+    
     bool dbConnect();
     bool isConnected();
     bool dbDisconnect();
     bool isDbExist();
     bool dbRemove();
     bool dbCreateInstance();
+
+  public:
+    static DBHandler * getInstance();
+    
+    bool runQuery(QString run);
+    int querySize(QString run);
+    bool isNext(QString run);
+    QString queryString(QString run, int value);
+
     ~DBHandler();
 };
 
