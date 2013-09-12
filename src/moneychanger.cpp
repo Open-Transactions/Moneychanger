@@ -461,7 +461,10 @@ void Moneychanger::mc_addressbook_show(QString paste_selection_to){
     if(mc_addressbook_already_init == 0){
         //Init address book, then show
         mc_addressbook_dialog = new QDialog(0);
-        mc_addressbook_dialog->setModal(1); //(Nice effect; Dims all windows except the address book and makes the address book on top upon showing
+        
+        //(Nice effect; Dims all windows except the address book and makes the address book on top upon showing
+        //mc_addressbook_dialog->setModal(1);
+        mc_addressbook_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
         mc_addressbook_dialog->setWindowTitle("Address Book | Moneychanger");
         
         //Set layout
