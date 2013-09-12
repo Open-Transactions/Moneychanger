@@ -217,7 +217,8 @@ Moneychanger::Moneychanger(QWidget *parent)
     //Request payment
     mc_systrayMenu_requestfunds = new QAction(mc_systrayIcon_requestfunds, "Request Payment...", 0);
     mc_systrayMenu->addAction(mc_systrayMenu_requestfunds);
-    connect(mc_systrayMenu_requestfunds, SIGNAL(triggered()), this, SLOT(mc_requestfunds_slot()));
+    // Currently causes a crash , likely due to malformed Dialog construction.
+    //connect(mc_systrayMenu_requestfunds, SIGNAL(triggered()), this, SLOT(mc_requestfunds_slot()));
     // --------------------------------------------------------------
     //Separator
     mc_systrayMenu->addSeparator();
@@ -463,8 +464,8 @@ void Moneychanger::mc_addressbook_show(QString paste_selection_to){
         mc_addressbook_dialog = new QDialog(0);
         
         //(Nice effect; Dims all windows except the address book and makes the address book on top upon showing
-        //mc_addressbook_dialog->setModal(1);
-        mc_addressbook_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
+        mc_addressbook_dialog->setModal(1);
+        //mc_addressbook_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
         mc_addressbook_dialog->setWindowTitle("Address Book | Moneychanger");
         
         //Set layout
@@ -632,7 +633,7 @@ void Moneychanger::mc_nymmanager_dialog(){
         mc_nym_manager_dialog->setWindowTitle("Nym Manager | Moneychanger");
         
         //Set window on top
-        mc_nym_manager_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
+        //mc_nym_manager_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
         
         /** layout and content **/
         //Grid layout
@@ -845,7 +846,7 @@ void Moneychanger::mc_assetmanager_dialog(){
         mc_asset_manager_dialog->setWindowTitle("Asset Contracts | Moneychanger");
         
         //Set window on top
-        mc_asset_manager_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
+        //mc_asset_manager_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
         
         /** layout and content **/
         //Grid layout
@@ -1058,7 +1059,7 @@ void Moneychanger::mc_accountmanager_dialog(){
         mc_account_manager_dialog->setWindowTitle("Account Manager | Moneychanger");
         
         //Set window on top
-        mc_account_manager_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
+        //mc_account_manager_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
         
         /** layout and content **/
         //Grid layout
@@ -1449,7 +1450,7 @@ void Moneychanger::mc_withdraw_ascash_dialog(){
         /** window properties **/
         //Set window title
         mc_systrayMenu_withdraw_ascash_dialog->setWindowTitle("Withdraw as Cash | Moneychanger");
-        mc_systrayMenu_withdraw_ascash_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
+        //mc_systrayMenu_withdraw_ascash_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
         
         /** layout and content **/
         //Grid layout
@@ -1527,7 +1528,7 @@ void Moneychanger::mc_withdraw_asvoucher_dialog(){
         /** window properties **/
         //Set window title
         mc_systrayMenu_withdraw_asvoucher_dialog->setWindowTitle("Withdraw as Voucher | Moneychanger");
-        mc_systrayMenu_withdraw_asvoucher_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
+        //mc_systrayMenu_withdraw_asvoucher_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
         
         /** layout and content **/
         //Grid layout Input
@@ -1629,6 +1630,7 @@ void Moneychanger::mc_nymmanager_addnym_slot(){
     if(mc_nymmanager_addnym_dialog_already_init == 0){
         //Init, then show.
         mc_nym_manager_addnym_dialog = new QDialog(0);
+        //mc_nym_manager_addnym_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
         mc_nym_manager_addnym_dialog->setWindowTitle("Add Pseudonym | Moneychanger");
         mc_nym_manager_addnym_dialog->setModal(1);
         
@@ -2932,7 +2934,7 @@ void Moneychanger::mc_withdraw_asvoucher_confirm_amount_dialog_slot(){
         mc_systrayMenu_withdraw_asvoucher_confirm_dialog = new QDialog(0);
         //Set window properties
         mc_systrayMenu_withdraw_asvoucher_confirm_dialog->setWindowTitle("Confirm Amount | Withdraw as Voucher | Moneychanger");
-        mc_systrayMenu_withdraw_asvoucher_confirm_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
+        //mc_systrayMenu_withdraw_asvoucher_confirm_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
         
         //Attach layout
         mc_systrayMenu_withdraw_asvoucher_confirm_gridlayout = new QGridLayout(0);
