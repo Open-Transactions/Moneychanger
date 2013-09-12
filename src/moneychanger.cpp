@@ -33,6 +33,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     //SQLite database
     // This can be moved very easily into a different class
     // Which I will inevitably end up doing.
+    
     /** Default Nym **/
     qDebug() << "Setting up Nym table";
     if(DBHandler::getInstance()->querySize("SELECT `nym` FROM `default_nym` LIMIT 0,1") == 0){
@@ -560,16 +561,15 @@ void Moneychanger::mc_addressbook_show(QString paste_selection_to){
     //remove all rows from the address book (so we can refresh any newly changed data)
     mc_addressbook_tableview_itemmodel->removeRows(0, mc_addressbook_tableview_itemmodel->rowCount());
     
-    QSqlQuery mc_addressbook_query(addressbook_db);
-    mc_addressbook_query.exec(QString("SELECT `id`, `nym_display_name`, `nym_id` FROM `address_book`"));
-    qDebug() << "DB QUERY LAST ERROR: " << mc_addressbook_query.lastError();
     //Add Rows of data to the backend of the table view (QStandardItemModel)
-    int row_index = 0;
-    while(mc_addressbook_query.next()){
+    int row_index = 0; 
+    //while(mc_addressbook_query.next()){
+    for(int x=0; x < DBHandler::getInstance()->querySize("SELECT `id`, `nym_display_name`, `nym_id` FROM `address_book`"); x++)
+    {
         //Extract data
-        QString addressbook_row_id = mc_addressbook_query.value(0).toString();
-        QString addressbook_row_nym_display_name = mc_addressbook_query.value(1).toString();
-        QString addressbook_row_nym_id = mc_addressbook_query.value(2).toString();
+        QString addressbook_row_id = DBHandler::getInstance()->queryString("SELECT `id`, `nym_display_name`, `nym_id` FROM `address_book`", 0, x);
+        QString addressbook_row_nym_display_name = DBHandler::getInstance()->queryString("SELECT `id`, `nym_display_name`, `nym_id` FROM `address_book`", 1, x);
+        QString addressbook_row_nym_id = DBHandler::getInstance()->queryString("SELECT `id`, `nym_display_name`, `nym_id` FROM `address_book`", 2, x);
         
         //Place extracted data into the table view
         QStandardItem * col_one = new QStandardItem(addressbook_row_nym_display_name);
@@ -765,8 +765,7 @@ void Moneychanger::mc_systrayMenu_nym_setDefaultNym(QString nym_id, QString nym_
     default_nym_name = nym_name;
     
     //SQL UPDATE default nym
-    QSqlQuery update_default_nym(addressbook_db);
-    update_default_nym.exec(QString("UPDATE `default_nym` SET `nym` = '%1'").arg(nym_id));
+    DBHandler::getInstance()->AddressBookUpdateDefaultNym(nym_id);
     
     //Rename "NYM:" if a nym is loaded
     if(nym_id != ""){
@@ -979,8 +978,7 @@ void Moneychanger::mc_systrayMenu_asset_setDefaultAsset(QString asset_id, QStrin
     default_asset_name = asset_name;
     
     //SQL UPDATE default asset
-    QSqlQuery update_default_asset(addressbook_db);
-    update_default_asset.exec(QString("UPDATE `default_asset` SET `asset` = '%1'").arg(asset_id));
+    DBHandler::getInstance()->AddressBookUpdateDefaultAsset(asset_id);
     
     //Rename "ASSET:" if a asset is loaded
     if(asset_id != ""){
@@ -1193,8 +1191,7 @@ void Moneychanger::mc_systrayMenu_account_setDefaultAccount(QString account_id, 
     default_account_name = account_name;
     
     //SQL UPDATE default account
-    QSqlQuery update_default_account(addressbook_db);
-    update_default_account.exec(QString("UPDATE `default_account` SET `account` = '%1'").arg(account_id));
+    DBHandler::getInstance()->AddressBookUpdateDefaultAccount(account_id);
     
     //Rename "ACCOUNT:" if a account is loaded
     if(account_id != ""){
@@ -1370,8 +1367,7 @@ void Moneychanger::mc_systrayMenu_server_setDefaultServer(QString server_id, QSt
     qDebug() << default_server_name;
     
     //SQL UPDATE default server
-    QSqlQuery update_default_server(addressbook_db);
-    update_default_server.exec(QString("UPDATE `default_server` SET `server` = '%1'").arg(server_id));
+    DBHandler::getInstance()->AddressBookUpdateDefaultServer(default_server_id);
     
     //Update visuals
     QString new_server_title = default_server_name;
@@ -2378,9 +2374,8 @@ void Moneychanger::mc_addressbook_confirm_remove_contact_slot(){
             QVariant db_id_variant = mc_addressbook_tableview_itemmodel->data(db_id_model);
             int db_id = db_id_variant.toInt();
             //Delete data from the database/storage.
-            QSqlQuery mc_addressbook_delete_row(addressbook_db);
-            mc_addressbook_delete_row.exec(QString("DELETE FROM `address_book` WHERE `id` = %1").arg(db_id));
-            
+            DBHandler::getInstance()->AddressBookRemoveID(db_id);
+
             //Delete data from the visuals.
             mc_addressbook_tableview_itemmodel->removeRow(data_row_model.row());
             
@@ -2420,16 +2415,13 @@ void Moneychanger::mc_addressbook_dataChanged_slot(QModelIndex topLeft, QModelIn
         if(index_id == 0){
             //Before inserting, check if any data has been entered in
             if(nym_display_name_string != "" || nym_id_string != ""){
-                QSqlQuery mc_addressbook_insert_query(addressbook_db);
-                mc_addressbook_insert_query.exec(QString("INSERT INTO `address_book` (`id`, `nym_id`, `nym_display_name`) VALUES(NULL, '%1', '%2')").arg(nym_id_string).arg(nym_display_name_string));
                 //Get last insert id (This is so we can attribute the visual with a DB id.
                 //Set the associated visual data with the row id from the database/storage index.
-                mc_addressbook_tableview_itemmodel->setData(index, mc_addressbook_insert_query.lastInsertId());
+                mc_addressbook_tableview_itemmodel->setData(index, DBHandler::getInstance()->AddressBookInsertNym(nym_id_string, nym_display_name_string));
             }
         }else{
             //Update
-            QSqlQuery mc_addressbook_insert_query(addressbook_db);
-            mc_addressbook_insert_query.exec(QString("UPDATE `address_book` SET `nym_id` = '%1', `nym_display_name` = '%2' WHERE `id` = %3").arg(nym_id_string).arg(nym_display_name_string).arg(index_id_string));
+            DBHandler::getInstance()->AddressBookUpdateNym(nym_id_string, nym_display_name_string, index_id_string);
         }
     }
 }

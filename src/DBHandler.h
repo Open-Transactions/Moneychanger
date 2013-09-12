@@ -10,6 +10,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QSqlError>
+#include <QVariant>
 
 #include "filehandler.h"
 
@@ -61,6 +62,15 @@ class DBHandler
     int querySize(QString run);
     bool isNext(QString run);
     QString queryString(QString run, int value, int at=0);
+    QVariant AddressBookInsertNym(QString nym_id_string, QString nym_display_name_string);
+    bool AddressBookUpdateNym(QString nym_id_string, QString nym_display_name_string, QString index_id_string);
+    bool AddressBookRemoveID(int ID);
+    bool AddressBookUpdateDefaultNym(QString ID);
+    bool AddressBookUpdateDefaultAsset(QString ID);
+    bool AddressBookUpdateDefaultAccount(QString ID);
+    bool AddressBookUpdateDefaultServer(QString ID);
+
+
 
     ~DBHandler();
 };
