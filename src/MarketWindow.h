@@ -1,24 +1,30 @@
-//
-//  MarketWindow.h
-//  moneychanger-qt
-//
-//  Created by Jonathan Rumion on 9/11/13.
-//
-//
-
-#ifndef __moneychanger_qt__MarketWindow__
-#define __moneychanger_qt__MarketWindow__
+#ifndef MARKETWINDOW_H
+#define MARKETWINDOW_H
 
 #include <QDialog>
-#include <QPushButton>
-#include <QtGui>
+#include <QAbstractButton>
 
 
-class MarketWindow : public QDialog {
+namespace Ui {
+class MarketWindow;
+}
+
+class MarketWindow : public QDialog
+{
     Q_OBJECT
+
 public:
-    MarketWindow( QWidget *parent );
+    explicit MarketWindow(QWidget *parent = 0);
+    ~MarketWindow();
+
+private slots:
+
+    void on_pushButton_clicked();
+
+    void on_pushButton_2_clicked();
+
+private:
+    Ui::MarketWindow *ui;
 };
 
-
-#endif /* defined(__moneychanger_qt__MarketWindow__) */
+#endif // MARKETWINDOW_H

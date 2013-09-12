@@ -18,7 +18,7 @@ SOURCES += main.cpp\
            ot_worker.cpp \
            MTRecordList.cpp \
            MTRecord.cpp \
-           MarketWindow.cpp
+    marketwindow.cpp
 
 HEADERS += moneychanger.h \
            ot_worker.h \
@@ -26,7 +26,7 @@ HEADERS += moneychanger.h \
            MTRecord.h \
     MTRecord.hpp \
     MTRecordList.hpp \
-    MarketWindow.h
+    marketwindow.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 
@@ -66,3 +66,8 @@ unix: PKGCONFIG += chaiscript
 #OTHER_FILES +=
 
 RESOURCES += resource.qrc
+
+OTHER_FILES +=
+
+FORMS += \
+    marketwindow.ui
