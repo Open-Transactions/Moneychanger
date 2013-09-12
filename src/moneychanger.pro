@@ -19,7 +19,8 @@ SOURCES += main.cpp\
            MTRecordList.cpp \
            MTRecord.cpp \
     marketwindow.cpp \
-    overviewwindow.cpp
+    overviewwindow.cpp \
+    FileHandler.cpp
 
 HEADERS += moneychanger.h \
            ot_worker.h \
@@ -28,7 +29,8 @@ HEADERS += moneychanger.h \
     MTRecord.hpp \
     MTRecordList.hpp \
     marketwindow.h \
-    overviewwindow.h
+    overviewwindow.h \
+    FileHandler.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 
