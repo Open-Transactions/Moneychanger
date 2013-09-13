@@ -17,14 +17,22 @@ SOURCES += main.cpp\
            moneychanger.cpp \
            ot_worker.cpp \
            MTRecordList.cpp \
-           MTRecord.cpp
+           MTRecord.cpp \
+    marketwindow.cpp \
+    overviewwindow.cpp \
+    FileHandler.cpp \
+    DBHandler.cpp
 
 HEADERS += moneychanger.h \
            ot_worker.h \
            MTRecordList.h \
            MTRecord.h \
     MTRecord.hpp \
-    MTRecordList.hpp
+    MTRecordList.hpp \
+    marketwindow.h \
+    overviewwindow.h \
+    FileHandler.h \
+    DBHandler.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 
@@ -33,7 +41,7 @@ QT_CONFIG -= no-pkg-config
 LIBS += -lboost_system-mt -ldl
 }
 
-unix:LIBS += /usr/lib/libboost_thread.so.1.49.0 -ldl
+unix:LIBS += /usr/local/lib/libboost_thread-mt.a -ldl
 
 ##QMAKE_CXXFLAGS += -fPIC -DPIC --param ssp-buffer-size=4
 
@@ -64,3 +72,8 @@ unix: PKGCONFIG += chaiscript
 #OTHER_FILES +=
 
 RESOURCES += resource.qrc
+
+OTHER_FILES +=
+
+FORMS += \
+    marketwindow.ui
