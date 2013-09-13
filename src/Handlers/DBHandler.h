@@ -19,7 +19,7 @@
  * Note that the filename path assignment is going to need to be fixed.
  */
 static const QString dbDriverStr = "QSQLITE";
-static const QString dbFileNameStr = "/db/mc_db";
+static const QString dbFileNameStr = "/mc_db"; // Changed this from db/mc_db due to directory not existing.
 static const QString dbConnNameStr = "addressBook";
 
 static const int PBAR_MAX_STEPS =7;

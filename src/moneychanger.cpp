@@ -1,8 +1,8 @@
 #include "moneychanger.h"
 #include "ot_worker.h"
-#include "MarketWindow.h"
-#include "overviewwindow.h"
-#include "DBHandler.h"
+#include "Widgets/MarketWindow.h"
+#include "Widgets/overviewwindow.h"
+#include "Handlers/DBHandler.h"
 
 #include "opentxs/OTAPI.h"
 #include "opentxs/OT_ME.h"
