@@ -29,3 +29,4 @@ build-*
 Debug*
 Release*
 mc_db
+ui_*
