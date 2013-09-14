@@ -1,7 +1,7 @@
 #include "accountmanagerwindow.h"
 
 AccountManagerWindow::AccountManagerWindow(QWidget *parent) :
-    QWidget(parent)
+QWidget(parent)
 {
     
     
@@ -29,6 +29,7 @@ void AccountManagerWindow::dialog(){
         
         //The account Manager has not been init yet; Init, then show it.
         mc_account_manager_dialog = new QDialog(0);
+        mc_account_manager_dialog->installEventFilter(this);
         
         /** window properties **/
         //Set window title
@@ -379,4 +380,33 @@ void AccountManagerWindow::request_remove_account_slot(){
         
     }
     
+}
+
+
+
+// This event filter catches Esc key and Close events
+// So that they get cleaned up in the parentWidget appropriately.
+// Note that this won't work if the parentWidget isn't of
+// Type Moneychanger, but this can be modified so that Esc events are
+// Discarded (Don't do this if the Widget is Modal!)
+
+bool AccountManagerWindow::eventFilter(QObject *obj, QEvent *event){
+    
+    if (event->type() == QEvent::Close) {
+        //QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        qDebug() << "Caught Account Manager Window Close Filter";
+        ((Moneychanger *)parentWidget())->close_accountmanager_dialog();
+        return true;
+    } else if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if(keyEvent->key() == Qt::Key_Escape){
+            ((Moneychanger *)parentWidget())->close_accountmanager_dialog();
+            qDebug() << "Caught Account Manager Window Close Filter";
+            return true;
+        }
+        return true;
+    }else {
+        // standard event processing
+        return QObject::eventFilter(obj, event);
+    }
 }

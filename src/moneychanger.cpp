@@ -5,7 +5,6 @@
 #include "Widgets/addressbookwindow.h"
 #include "Widgets/nymmanagerwindow.h"
 #include "Widgets/assetmanagerwindow.h"
-#include "accountmanagerwindow.h"
 #include "Handlers/DBHandler.h"
 
 #include "opentxs/OTAPI.h"
@@ -663,20 +662,18 @@ void Moneychanger::mc_defaultasset_slot(){
 
 /** Account Manager **/
 void Moneychanger::mc_accountmanager_dialog(){
-    // TODO
-    /*
-     
-     I need to figure out how to best handle keeping only one instance of a window open at a time.
-     I'll probably go with a singleton class.
-     
-     */
-    //if(!mc_accountmanager_already_init){
-        AccountManagerWindow *accountmanagerwindow = new AccountManagerWindow(this);
-       // accountmanagerwindow->setAttribute(Qt::WA_DeleteOnClose);
+    if(!mc_accountmanager_already_init){
+        accountmanagerwindow = new AccountManagerWindow(this);
+        accountmanagerwindow->setAttribute(Qt::WA_DeleteOnClose);
         accountmanagerwindow->dialog();
-      //  mc_accountmanager_already_init = true;
-    //}
-};
+        mc_accountmanager_already_init = true;
+    }
+}
+
+void Moneychanger::close_accountmanager_dialog(){
+    delete accountmanagerwindow;
+    mc_accountmanager_already_init = false;
+}
 
 //Default Account slots
 //Account manager "clicked"

@@ -11,6 +11,9 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QDialog>
+#include <QObject>
+#include <QEvent>
+#include <QKeyEvent>
 
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
@@ -23,7 +26,7 @@ class AccountManagerWindow : public QWidget
     Q_OBJECT
 public:
     explicit AccountManagerWindow(QWidget *parent = 0);
-    ~AccountManagerWindow(){((Moneychanger *)parentWidget())->close_accountmanager_dialog();};
+    ~AccountManagerWindow(){};
     void dialog();
     
 private:
@@ -93,6 +96,10 @@ private:
     /** Account Manger Slot locks **/
     int mc_accountmanager_proccessing_dataChanged;
     // ------------------------------------------------
+    
+protected:
+    
+    bool eventFilter(QObject *obj, QEvent *event);
 
 signals:
 

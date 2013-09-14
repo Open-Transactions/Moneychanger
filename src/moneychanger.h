@@ -40,6 +40,11 @@
 #include "MTRecordList.h"
 #include "MTRecord.h"
 
+#include "Widgets/accountmanagerwindow.h"
+
+class AccountManagerWindow;
+
+
 class Moneychanger : public QWidget
 {
     Q_OBJECT
@@ -79,7 +84,7 @@ public:
 
     // Set Systray Account Value
     void set_systrayMenu_account_setDefaultAccount(QString, QString);
-    void close_accountmanager_dialog(){mc_accountmanager_already_init = false;};
+    void close_accountmanager_dialog();
     
 private:
     // ------------------------------------------------
@@ -100,6 +105,9 @@ private:
     bool mc_accountmanager_already_init;
     
     void nymmanager_dialog();
+    
+    
+    AccountManagerWindow * accountmanagerwindow;
 
     // ------------------------------------------------
     //MC Systray icon

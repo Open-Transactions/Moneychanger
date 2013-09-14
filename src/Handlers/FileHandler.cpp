@@ -3,30 +3,30 @@
 
 bool FileHandler::removeFile(QString fileName)
 {
-    bool ret = false;
-    ret = QFile::remove(fileName);
+    bool error = false;
+    error = QFile::remove(fileName);
     
-    if(ret == false)
+    if(error == false)
     {
         qDebug() << fileHandlerstr + " " + fileNotRemovedStr;
-        return ret;
+        return error;
     }
     
     qDebug() << fileHandlerstr + " " + fileRemovedStr;
-    return ret;
+    return error;
     
 }
 
 
 bool FileHandler::isFileExist(QString fileName)
 {
-    bool ret= false;
-    ret = QFile::exists(fileName);
+    bool error = false;
+    error = QFile::exists(fileName);
     
-    if(ret == false)
+    if(error == false)
     {
         qDebug() << fileHandlerstr + " " + fileNotExistStr;
-        return ret;
+        return error;
     }
-    return ret;
+    return error;
 }
