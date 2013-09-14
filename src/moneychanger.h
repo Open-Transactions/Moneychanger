@@ -41,8 +41,10 @@
 #include "MTRecord.h"
 
 #include "Widgets/accountmanagerwindow.h"
+#include "Widgets/servermanagerwindow.h"
 
 class AccountManagerWindow;
+class ServerManagerWindow;
 
 
 class Moneychanger : public QWidget
@@ -75,6 +77,11 @@ public:
     QString get_account_id_at(int a){return account_list_id->at(a).toString();}
     QString get_account_name_at(int a){return account_list_name->at(a).toString();}
     
+    QString get_default_server_id(){return default_server_id;};
+    int get_server_list_id_size(){return server_list_id->size();};
+    QString get_server_id_at(int a){return server_list_id->at(a).toString();}
+    QString get_server_name_at(int a){return server_list_name->at(a).toString();}
+    
     void set_systrayMenu_withdraw_asvoucher_nym_input(QString input){mc_systrayMenu_withdraw_asvoucher_nym_input->setText(input);};
     // Set Systray Nym Value
     void set_systrayMenu_nym_setDefaultNym(QString, QString);
@@ -85,6 +92,10 @@ public:
     // Set Systray Account Value
     void set_systrayMenu_account_setDefaultAccount(QString, QString);
     void close_accountmanager_dialog();
+    
+    // Set Systray Server Value
+    void set_systrayMenu_server_setDefaultServer(QString, QString);
+    void close_servermanager_dialog();
     
 private:
     // ------------------------------------------------
@@ -103,11 +114,13 @@ private:
     bool mc_nymmanager_already_init;
     bool mc_assetmanager_already_init;
     bool mc_accountmanager_already_init;
+    bool mc_servermanager_already_init;
     
     void nymmanager_dialog();
     
     
     AccountManagerWindow * accountmanagerwindow;
+    ServerManagerWindow * servermanagerwindow;
 
     // ------------------------------------------------
     //MC Systray icon
@@ -227,77 +240,6 @@ private:
     QList<QVariant> mc_overview_index_of_tx;
     // ------------------------------------------------
 
-    /** Server Manager **/
-    int mc_servermanager_already_init;
-    int mc_servermanager_refreshing;
-    
-    QDialog * mc_server_manager_dialog;
-    //Grid layout
-    QGridLayout * mc_server_manager_gridlayout;
-    
-    /** First row **/
-    //Label (server Manager Header)
-    QLabel * mc_server_manager_label;
-    
-    /** Second Row **/
-    //Horizontal holder (List of servers; Add/Remove server button)
-    QWidget     * mc_server_manager_holder;
-    QHBoxLayout * mc_server_manager_hbox;
-    
-    //Tableview/item model for server list.
-    QStandardItemModel * mc_server_manager_tableview_itemmodel;
-    QTableView         * mc_server_manager_tableview;
-    
-    //Vertical holder (add/remove server buttons)
-    QWidget     * mc_server_manager_addremove_btngroup_holder;
-    QVBoxLayout * mc_server_manager_addremove_btngroup_vbox;
-    
-    //Add server button
-    QPushButton * mc_server_manager_addremove_btngroup_addbtn;
-    
-    //Remove server button
-    QPushButton * mc_server_manager_addremove_btngroup_removebtn;
-    
-    /** Third Row (most recent error) **/
-    QLabel * mc_server_manager_most_recent_erorr;
-    // ------------------------------------------------
-    /** "Add server" Dialog **/
-    int mc_servermanager_addserver_dialog_already_init;
-    int mc_servermanager_addserver_dialog_advanced_showing;
-    
-    QDialog * mc_server_manager_addserver_dialog;
-    //Grid layout
-    QGridLayout * mc_server_manager_addserver_gridlayout;
-    //Label (header)
-    QLabel * mc_server_manager_addserver_header;
-    
-    //Label (Toggle Advanced Options Label/Button)
-    QLabel * mc_server_manager_addserver_subheader_toggleadvanced_options_label;
-    
-    //Label (instructions)
-    QLabel * mc_server_manager_addserver_subheader_instructions;
-    
-    //Label (choose source)
-    QLabel * mc_server_manager_addserver_choosesource_label;
-    
-    //Combobox (choose source)
-    QComboBox * mc_server_manager_addserver_choosesource_answer_selection;
-    
-    //Button (create server)
-    QPushButton * mc_server_manager_addserver_create_server_btn;
-    // ------------------------------------------------
-    /** "Remove server Dialog **/
-    int mc_servermanager_removeserver_dialog_already_init;
-    QDialog * mc_server_manager_removeserver_dialog;
-    //Grid layout
-    QGridLayout * mc_server_manager_removeserver_gridlayout;
-    
-    //Label (header)
-    QLabel * mc_server_manager_removeserver_header;
-    // ------------------------------------------------
-    /** server Manger Slot locks **/
-    int mc_servermanager_proccessing_dataChanged;
-    // ------------------------------------------------
     /** Withdraw **/
     //As Cash
     int mc_withdraw_ascash_dialog_already_init;
@@ -475,8 +417,6 @@ private:
     // ------------------------------------------------
     //Default Server
     void mc_servermanager_dialog();
-    //Load server
-    void mc_systrayMenu_server_setDefaultServer(QString, QString);
     
     //Reload server list
     void mc_systrayMenu_reload_serverlist();
@@ -515,15 +455,7 @@ private slots:
     // Market Slot
     void mc_market_slot();
 
-    // ------------------------------------------------
-    //Server Manager slots
-    void mc_servermanager_addserver_slot();
-    void mc_servermanager_removeserver_slot();
-    void mc_servermanager_dataChanged_slot(QModelIndex,QModelIndex);
-    
-    //Add server Dialog slots
-    void mc_addserver_dialog_showadvanced_slot(QString);
-    void mc_addserver_dialog_createserver_slot();
+
 
     // ------------------------------------------------
     //Systray Menu Slots
@@ -544,8 +476,7 @@ private slots:
     //new default server selected
     void mc_serverselection_triggered(QAction*);
     
-    //request to remove a selected server from the serverlist manager
-    void mc_servermanager_request_remove_server_slot();
+
     // ------------------------------------------------
     //Asset
     void mc_defaultasset_slot();
