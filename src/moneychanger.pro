@@ -78,4 +78,4 @@ RESOURCES += resource.qrc
 OTHER_FILES +=
 
 FORMS += \
-    marketwindow.ui
+    UI/marketwindow.ui

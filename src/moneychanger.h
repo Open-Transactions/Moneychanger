@@ -55,6 +55,8 @@ public:
     /** Interfaces **/
     ot_worker * get_ot_worker_background(){return ot_worker_background;};
     
+    void set_systrayMenu_withdraw_asvoucher_nym_input(QString input){mc_systrayMenu_withdraw_asvoucher_nym_input->setText(input);};
+    
 private:
     // ------------------------------------------------
     /**           **
@@ -65,41 +67,10 @@ private:
     
     ot_worker * ot_worker_background;
     
-    //Sqlite database(s)
-    QSqlDatabase addressbook_db;
+    // Already initialized bool's
     
-    //MC Address book
-    int mc_addressbook_already_init;
-    int mc_addressbook_refreshing;
-    QString mc_addressbook_paste_into;
-    
-    //Dialog
-    QDialog * mc_addressbook_dialog;
-    QGridLayout * mc_addressbook_gridlayout;
-    
-    /** Top (Spans 2 columns) **/
-    //Label
-    QLabel * mc_addressbook_label;
-    
-    /** Left side (column 1) **/
-    //Table view
-    QStandardItemModel * mc_addressbook_tableview_itemmodel;
-    QTableView * mc_addressbook_tableview;
-    
-    /** Right side (column 2) **/
-    //Button Group
-    QWidget * mc_addressbook_addremove_btngroup_widget;
-    QVBoxLayout * mc_addressbook_addremove_btngroup_holder;
-    
-    //Add contact
-    QPushButton * mc_addressbook_addremove_add_btn;
-    
-    //Remove contact
-    QPushButton * mc_addressbook_addremove_remove_btn;
-    
-    /** Bottom (Spans 2 columns) **/
-    //Button
-    QPushButton * mc_addressbook_select_nym_for_paste_btn;
+    bool mc_addressbook_already_init;
+
     // ------------------------------------------------
     //MC Systray icon
     QSystemTrayIcon * mc_systrayIcon;
@@ -651,8 +622,7 @@ private:
     
     //Address Book Dialog
     //Show address book
-    void mc_addressbook_show();
-    void mc_addressbook_show(QString);
+    void mc_addressbook_show(QString text);
     
     //Add contact to address book
     void mc_addressbook_addblankrow(); //Adds a blank editable row for the user to add a contact with
@@ -752,19 +722,7 @@ private:
     //Add account Dialog slots
     void mc_addaccount_dialog_showadvanced_slot(QString);
     void mc_addaccount_dialog_createaccount_slot();
-    // ------------------------------------------------
-    //Address Book slots
-    //Create a new blank editable address book row
-    void mc_addressbook_addblankrow_slot();
     
-    //Remove contact from address book
-    void mc_addressbook_confirm_remove_contact_slot();
-    
-    //When the operator is done editing a data row, sync it with the database
-    void mc_addressbook_dataChanged_slot(QModelIndex,QModelIndex);
-    
-    //When the operator has clicked the "Select and paste" button, we will detect what to paste and where to paste it into.
-    void mc_addressbook_paste_selected_slot();
     // ------------------------------------------------
     //Systray Menu Slots
     //Shutdown

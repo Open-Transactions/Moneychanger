@@ -11,6 +11,7 @@
 #include <QVariant>
 #include <QDialog>
 
+
 class OverviewWindow : public QWidget
 {
     Q_OBJECT
