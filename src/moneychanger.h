@@ -42,9 +42,11 @@
 
 #include "Widgets/accountmanagerwindow.h"
 #include "Widgets/servermanagerwindow.h"
+#include "Widgets/withdrawascashwindow.h"
 
 class AccountManagerWindow;
 class ServerManagerWindow;
+class WithdrawAsCashWindow;
 
 
 class Moneychanger : public QWidget
@@ -97,6 +99,9 @@ public:
     void set_systrayMenu_server_setDefaultServer(QString, QString);
     void close_servermanager_dialog();
     
+    // OT Interface Functions
+    std::string ot_withdraw_cash(std::string selected_server_id_string, std::string nym_id, std::string selected_account_id_string, int amount_to_withdraw_int){return ot_me->withdraw_cash(selected_server_id_string, nym_id, selected_account_id_string, amount_to_withdraw_int);};
+    
 private:
     // ------------------------------------------------
     /**           **
@@ -115,12 +120,14 @@ private:
     bool mc_assetmanager_already_init;
     bool mc_accountmanager_already_init;
     bool mc_servermanager_already_init;
+    bool mc_withdraw_ascash_already_init;
     
     void nymmanager_dialog();
     
     
     AccountManagerWindow * accountmanagerwindow;
     ServerManagerWindow * servermanagerwindow;
+    WithdrawAsCashWindow * withdrawascashwindow;
 
     // ------------------------------------------------
     //MC Systray icon
@@ -240,54 +247,6 @@ private:
     QList<QVariant> mc_overview_index_of_tx;
     // ------------------------------------------------
 
-    /** Withdraw **/
-    //As Cash
-    int mc_withdraw_ascash_dialog_already_init;
-    QDialog * mc_systrayMenu_withdraw_ascash_dialog;
-    //Grid layout
-    QGridLayout * mc_systrayMenu_withdraw_ascash_gridlayout;
-    
-    //Withdraw (as cash) header label
-    QLabel * mc_systrayMenu_withdraw_ascash_header_label;
-    
-    //Account Id (label)
-    QLabel * mc_systrayMenu_withdraw_ascash_accountid_label;
-    
-    //Account Name (Dropdown box)
-    QComboBox * mc_systrayMenu_withdraw_ascash_account_dropdown;
-    
-    //Amount (in integer for now)
-    QLineEdit * mc_systrayMenu_withdraw_ascash_amount_input;
-    
-    //Activate withdraw button
-    QPushButton * mc_systrayMenu_withdraw_ascash_button;
-    
-    //Withdraw as cash confirmation
-    int mc_withdraw_ascash_confirm_dialog_already_init;
-    QDialog * mc_systrayMenu_withdraw_ascash_confirm_dialog;
-    
-    //Grid layout
-    QGridLayout * mc_systrayMenu_withdraw_ascash_confirm_gridlayout;
-    
-    //Label
-    QLabel * mc_systrayMenu_withdraw_ascash_confirm_label;
-    
-    //Label (Amount)
-    QLabel * mc_systrayMenu_withdraw_ascash_confirm_amount_label;
-    
-    //Backend (Amount)
-    int withdraw_ascash_confirm_amount_int;
-    
-    //Confirm/Cancel horizontal layout
-    QWidget * mc_systrayMenu_withdraw_ascash_confirm_amount_confirm_cancel_widget;
-    QHBoxLayout * mc_systrayMenu_withdraw_ascash_confirm_amount_confirm_cancel_layout;
-    
-    //Cancel amount (button)
-    QPushButton * mc_systrayMenu_withdraw_ascash_confirm_amount_btn_cancel;
-    
-    //Confirm amount (button)
-    QPushButton * mc_systrayMenu_withdraw_ascash_confirm_amount_btn_confirm;
-    // ------------------------------------------------
     //As Voucher
     int mc_withdraw_asvoucher_dialog_already_init;
     QDialog * mc_systrayMenu_withdraw_asvoucher_dialog;
@@ -492,11 +451,6 @@ private slots:
     //Withdraw
     //As Cash
     void mc_withdraw_ascash_slot();
-    void mc_withdraw_ascash_confirm_amount_dialog_slot();
-    
-    void mc_withdraw_ascash_account_dropdown_highlighted_slot(int);
-    void mc_withdraw_ascash_confirm_amount_slot();
-    void mc_withdraw_ascash_cancel_amount_slot();
     
     //As Voucher
     void mc_withdraw_asvoucher_slot();
