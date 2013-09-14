@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     Widgets/overviewwindow.cpp \
     Handlers/FileHandler.cpp \
     Handlers/DBHandler.cpp \
-    Widgets/addressbookwindow.cpp
+    Widgets/addressbookwindow.cpp \
+    Widgets/nymmanagerwindow.cpp
 
 HEADERS += moneychanger.h \
            ot_worker.h \
@@ -34,7 +35,8 @@ HEADERS += moneychanger.h \
     Widgets/overviewwindow.h \
     Handlers/FileHandler.h \
     Handlers/DBHandler.h \
-    Widgets/addressbookwindow.h
+    Widgets/addressbookwindow.h \
+    Widgets/nymmanagerwindow.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 

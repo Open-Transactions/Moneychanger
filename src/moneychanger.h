@@ -55,7 +55,14 @@ public:
     /** Interfaces **/
     ot_worker * get_ot_worker_background(){return ot_worker_background;};
     
+    QString get_default_nym_id(){return default_nym_id;};
+    int get_nym_list_id_size(){return nym_list_id->size();};
+    QString get_nym_id_at(int a){return nym_list_id->at(a).toString();}
+    QString get_nym_name_at(int a){return nym_list_name->at(a).toString();}
+    
     void set_systrayMenu_withdraw_asvoucher_nym_input(QString input){mc_systrayMenu_withdraw_asvoucher_nym_input->setText(input);};
+    //Load nym
+    void set_systrayMenu_nym_setDefaultNym(QString, QString);
     
 private:
     // ------------------------------------------------
@@ -69,7 +76,11 @@ private:
     
     // Already initialized bool's
     
+    bool mc_market_window_already_init;
     bool mc_addressbook_already_init;
+    bool mc_nymmanager_already_init;
+    
+    void nymmanager_dialog();
 
     // ------------------------------------------------
     //MC Systray icon
@@ -187,76 +198,6 @@ private:
     
     //Tracking index <> MTRecordlist index
     QList<QVariant> mc_overview_index_of_tx;
-    // ------------------------------------------------
-    /** Nym Manager **/
-    int mc_nymmanager_already_init;
-    int mc_nymmanager_refreshing;
-    
-    QDialog * mc_nym_manager_dialog;
-    //Grid layout
-    QGridLayout * mc_nym_manager_gridlayout;
-    
-    /** First row **/
-    //Label (Nym Manager Header)
-    QLabel * mc_nym_manager_label;
-    
-    /** Second Row **/
-    //Horizontal holder (List of nyms; Add/Remove nym button)
-    QWidget * mc_nym_manager_holder;
-    QHBoxLayout * mc_nym_manager_hbox;
-    
-    //Tableview/item model for pseudo nym list.
-    QStandardItemModel * mc_nym_manager_tableview_itemmodel;
-    QTableView * mc_nym_manager_tableview;
-    
-    //Vertical holder (add/remove nym buttons)
-    QWidget * mc_nym_manager_addremove_btngroup_holder;
-    QVBoxLayout * mc_nym_manager_addremove_btngroup_vbox;
-    
-    //Add nym button
-    QPushButton * mc_nym_manager_addremove_btngroup_addbtn;
-    
-    //Remove nym button
-    QPushButton * mc_nym_manager_addremove_btngroup_removebtn;
-    
-    /** Third Row (most recent error) **/
-    QLabel * mc_nym_manager_most_recent_erorr;
-    // ------------------------------------------------
-    /** "Add Nym" Dialog **/
-    int mc_nymmanager_addnym_dialog_already_init;
-    int mc_nymmanager_addnym_dialog_advanced_showing;
-    QDialog * mc_nym_manager_addnym_dialog;
-    //Grid layout
-    QGridLayout * mc_nym_manager_addnym_gridlayout;
-    //Label (header)
-    QLabel * mc_nym_manager_addnym_header;
-    
-    //Label (Toggle Advanced Options Label/Button)
-    QLabel * mc_nym_manager_addnym_subheader_toggleadvanced_options_label;
-    
-    //Label (instructions)
-    QLabel * mc_nym_manager_addnym_subheader_instructions;
-    
-    //Label (choose source)
-    QLabel * mc_nym_manager_addnym_choosesource_label;
-    
-    //Combobox (choose source)
-    QComboBox * mc_nym_manager_addnym_choosesource_answer_selection;
-    
-    //Button (create nym)
-    QPushButton * mc_nym_manager_addnym_create_nym_btn;
-    // ------------------------------------------------
-    /** "Remove Nym Dialog **/
-    int mc_nymmanager_removenym_dialog_already_init;
-    QDialog * mc_nym_manager_removenym_dialog;
-    //Grid layout
-    QGridLayout * mc_nym_manager_removenym_gridlayout;
-    
-    //Label (header)
-    QLabel * mc_nym_manager_removenym_header;
-    // ------------------------------------------------
-    /** Nym Manger Slot locks **/
-    int mc_nymmanager_proccessing_dataChanged;
     // ------------------------------------------------
     /** Asset Manager **/
     int mc_assetmanager_already_init;
@@ -636,8 +577,6 @@ private:
     // ------------------------------------------------
     //Default Nym
     void mc_nymmanager_dialog();
-    //Load nym
-    void mc_systrayMenu_nym_setDefaultNym(QString, QString);
     
     //Reload nym list
     void mc_systrayMenu_reload_nymlist();
@@ -683,18 +622,9 @@ private:
     
     private slots:
     
-    // Mine
-    
+    // Market Slot
     void mc_market_slot();
-    
-    //Nym Manager slots
-    void mc_nymmanager_addnym_slot();
-    void mc_nymmanager_removenym_slot();
-    void mc_nymmanager_dataChanged_slot(QModelIndex,QModelIndex);
-    
-    //Add Nym Dialog slots
-    void mc_addnym_dialog_showadvanced_slot(QString);
-    void mc_addnym_dialog_createnym_slot();
+
     // ------------------------------------------------
     //Server Manager slots
     void mc_servermanager_addserver_slot();
@@ -736,8 +666,6 @@ private:
     //new default nym selected
     void mc_nymselection_triggered(QAction*);
     
-    //request to remove a selected server from the serverlist manager
-    void mc_nymmanager_request_remove_nym_slot();
     // ------------------------------------------------
     //Server
     void mc_defaultserver_slot();
