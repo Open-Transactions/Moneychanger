@@ -65,13 +65,21 @@ public:
     QString get_asset_id_at(int a){return asset_list_id->at(a).toString();}
     QString get_asset_name_at(int a){return asset_list_name->at(a).toString();}
     
+    QString get_default_account_id(){return default_account_id;};
+    int get_account_list_id_size(){return account_list_id->size();};
+    QString get_account_id_at(int a){return account_list_id->at(a).toString();}
+    QString get_account_name_at(int a){return account_list_name->at(a).toString();}
+    
     void set_systrayMenu_withdraw_asvoucher_nym_input(QString input){mc_systrayMenu_withdraw_asvoucher_nym_input->setText(input);};
     // Set Systray Nym Value
     void set_systrayMenu_nym_setDefaultNym(QString, QString);
     
-    //Set Systray Asset Value
+    // Set Systray Asset Value
     void set_systrayMenu_asset_setDefaultAsset(QString, QString);
 
+    // Set Systray Account Value
+    void set_systrayMenu_account_setDefaultAccount(QString, QString);
+    void close_accountmanager_dialog(){mc_accountmanager_already_init = false;};
     
 private:
     // ------------------------------------------------
@@ -89,6 +97,7 @@ private:
     bool mc_addressbook_already_init;
     bool mc_nymmanager_already_init;
     bool mc_assetmanager_already_init;
+    bool mc_accountmanager_already_init;
     
     void nymmanager_dialog();
 
@@ -209,71 +218,7 @@ private:
     //Tracking index <> MTRecordlist index
     QList<QVariant> mc_overview_index_of_tx;
     // ------------------------------------------------
-    /** Account Manager **/
-    int mc_accountmanager_already_init;
-    int mc_accountmanager_refreshing;
-    
-    QDialog * mc_account_manager_dialog;
-    //Grid layout
-    QGridLayout * mc_account_manager_gridlayout;
-    
-    /** First row **/
-    //Label (Account Manager Header)
-    QLabel * mc_account_manager_label;
-    
-    /** Second Row **/
-    //Horizontal holder (List of accounts; Add/Remove account button)
-    QWidget     * mc_account_manager_holder;
-    QHBoxLayout * mc_account_manager_hbox;
-    
-    //Tableview/item model for account list.
-    QStandardItemModel * mc_account_manager_tableview_itemmodel;
-    QTableView         * mc_account_manager_tableview;
-    
-    //Vertical holder (add/remove account buttons)
-    QWidget     * mc_account_manager_addremove_btngroup_holder;
-    QVBoxLayout * mc_account_manager_addremove_btngroup_vbox;
-    
-    //Add account button
-    QPushButton * mc_account_manager_addremove_btngroup_addbtn;
-    
-    //Remove account button
-    QPushButton * mc_account_manager_addremove_btngroup_removebtn;
-    
-    /** Third Row (most recent error) **/
-    QLabel * mc_account_manager_most_recent_erorr;
-    // ------------------------------------------------
-    /** "Add Account" Dialog **/
-    int mc_accountmanager_addaccount_dialog_already_init;
-    int mc_accountmanager_addaccount_dialog_advanced_showing;
-    
-    QDialog * mc_account_manager_addaccount_dialog;
-    //Grid layout
-    QGridLayout * mc_account_manager_addaccount_gridlayout;
-    //Label (header)
-    QLabel * mc_account_manager_addaccount_header;
-    
-    //Label (Toggle Advanced Options Label/Button)
-    QLabel * mc_account_manager_addaccount_subheader_toggleadvanced_options_label;
-    
-    //Label (instructions)
-    QLabel * mc_account_manager_addaccount_subheader_instructions;
-    
-    //Button (create account)
-    QPushButton * mc_account_manager_addaccount_create_account_btn;
-    // ------------------------------------------------
-    /** "Remove Account Dialog **/
-    int mc_accountmanager_removeaccount_dialog_already_init;
-    QDialog * mc_account_manager_removeaccount_dialog;
-    //Grid layout
-    QGridLayout * mc_account_manager_removeaccount_gridlayout;
-    
-    //Label (header)
-    QLabel * mc_account_manager_removeaccount_header;
-    // ------------------------------------------------
-    /** Account Manger Slot locks **/
-    int mc_accountmanager_proccessing_dataChanged;
-    // ------------------------------------------------
+
     /** Server Manager **/
     int mc_servermanager_already_init;
     int mc_servermanager_refreshing;
@@ -537,7 +482,7 @@ private:
     //Default Account
     void mc_accountmanager_dialog();
     //Load account
-    void mc_systrayMenu_account_setDefaultAccount(QString, QString);
+
     
     //Reload account list
     void mc_systrayMenu_reload_accountlist();
@@ -571,16 +516,7 @@ private slots:
     //Add server Dialog slots
     void mc_addserver_dialog_showadvanced_slot(QString);
     void mc_addserver_dialog_createserver_slot();
-    // ------------------------------------------------
-    //Account Manager slots
-    void mc_accountmanager_addaccount_slot();
-    void mc_accountmanager_removeaccount_slot();
-    void mc_accountmanager_dataChanged_slot(QModelIndex,QModelIndex);
-    
-    //Add account Dialog slots
-    void mc_addaccount_dialog_showadvanced_slot(QString);
-    void mc_addaccount_dialog_createaccount_slot();
-    
+
     // ------------------------------------------------
     //Systray Menu Slots
     //Shutdown
@@ -613,8 +549,6 @@ private slots:
     //new default account selected
     void mc_accountselection_triggered(QAction*);
     
-    //request to remove a selected account from the accountlist manager
-    void mc_accountmanager_request_remove_account_slot();
     // ------------------------------------------------
     //Withdraw
     //As Cash
