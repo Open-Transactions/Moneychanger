@@ -4,6 +4,7 @@
 #include "Widgets/overviewwindow.h"
 #include "Widgets/addressbookwindow.h"
 #include "Widgets/nymmanagerwindow.h"
+#include "Widgets/assetmanagerwindow.h"
 #include "Handlers/DBHandler.h"
 
 #include "opentxs/OTAPI.h"
@@ -85,14 +86,15 @@ Moneychanger::Moneychanger(QWidget *parent)
      * Also prevents HTTP requests from overloading or spamming the operators device by only allowing one window of that request;
      * *** *** ***/
     
+    //Menu
     //Address Book
     mc_addressbook_already_init = false;
-    
-    //Menu
     //Overview
     mc_overview_already_init = false;
     // Nym Manager
     mc_nymmanager_already_init = false;
+    // Asset Manager
+    mc_assetmanager_already_init = false;
     
     //Server Manager
     mc_servermanager_already_init = 0;
@@ -106,17 +108,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     //"Remove server" dialog
     mc_servermanager_removeserver_dialog_already_init = 0;
     
-    //Asset Manager
-    mc_assetmanager_already_init = 0;
-    mc_assetmanager_refreshing = 0;
-    mc_assetmanager_proccessing_dataChanged = 0;
-    
-    //"Add asset" dialog
-    mc_assetmanager_addasset_dialog_already_init = 0;
-    mc_assetmanager_addasset_dialog_advanced_showing = 0;
-    
-    //"Remove asset" dialog
-    mc_assetmanager_removeasset_dialog_already_init = 0;
+
     
     //Account Manager
     mc_accountmanager_already_init = 0;
@@ -251,7 +243,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     connect(mc_systrayMenu_asset, SIGNAL(triggered(QAction*)), this, SLOT(mc_assetselection_triggered(QAction*)));
     
     //Load "default" asset type
-    mc_systrayMenu_asset_setDefaultAsset(default_asset_id, default_asset_name);
+    set_systrayMenu_asset_setDefaultAsset(default_asset_id, default_asset_name);
     
     //Init asset submenu
     asset_list_id   = new QList<QVariant>();
@@ -426,7 +418,13 @@ void Moneychanger::mc_overview_dialog(){
         mc_overview_already_init = true;
     }
 }
-// End Overview Dialog
+
+//Overview slots
+void Moneychanger::mc_overview_slot(){
+    //The operator has requested to open the dialog to the "Overview";
+    mc_overview_dialog();
+}
+// End Overview 
 
 // Market Window
 void Moneychanger::mc_market_slot(){
@@ -453,7 +451,7 @@ void Moneychanger::mc_addressbook_show(QString text){
 }
 // End Address Book
 
-//Set Default Nym
+/**  Nym Manager **/
 void Moneychanger::set_systrayMenu_nym_setDefaultNym(QString nym_id, QString nym_name){
     //Set default nym internal memory
     default_nym_id = nym_id;
@@ -468,7 +466,6 @@ void Moneychanger::set_systrayMenu_nym_setDefaultNym(QString nym_id, QString nym
     }
 }
 
-
 void Moneychanger::mc_nymmanager_dialog(){
     
     if(!mc_nymmanager_already_init){
@@ -478,7 +475,6 @@ void Moneychanger::mc_nymmanager_dialog(){
         mc_overview_already_init = true;
     }
 }
-
 
 void Moneychanger::mc_systrayMenu_reload_nymlist(){
     qDebug() << "RELOAD NYM LIST";
@@ -531,158 +527,52 @@ void Moneychanger::mc_systrayMenu_reload_nymlist(){
     
     
 }
-// End Nym Manager Dialog
 
-
-// ----------------------------------------------------------------------
-/** Asset Manager Dialog **/
-void Moneychanger::mc_assetmanager_dialog(){
-    
-    /** If the asset manager dialog has already been init,
-     *  just show it, Other wise, init and show if this is the
-     *  first time.
-     **/
-    if(mc_assetmanager_already_init == 0){
-        
-        //The asset Manager has not been init yet; Init, then show it.
-        mc_asset_manager_dialog = new QDialog(0);
-        
-        /** window properties **/
-        //Set window title
-        mc_asset_manager_dialog->setWindowTitle("Asset Contracts | Moneychanger");
-        
-        //Set window on top
-        //mc_asset_manager_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
-        
-        /** layout and content **/
-        //Grid layout
-        mc_asset_manager_gridlayout = new QGridLayout(0);
-        mc_asset_manager_dialog->setLayout(mc_asset_manager_gridlayout);
-        
-        /* First Row in asset manager Grid */
-        //Label (header)
-        mc_asset_manager_label = new QLabel("<h3>Asset Contracts</h3>", 0);
-        mc_asset_manager_label->setAlignment(Qt::AlignRight);
-        mc_asset_manager_gridlayout->addWidget(mc_asset_manager_label, 0,0, 1,2, Qt::AlignRight);
-        
-        
-        /* Second Row in asset manager Grid */
-        /** First column in address book grid (left side) **/
-        //Horizontal box (contains: List of assets, add/remove buttons)
-        mc_asset_manager_holder = new QWidget(0);
-        mc_asset_manager_hbox = new QHBoxLayout(0);
-        mc_asset_manager_holder->setLayout(mc_asset_manager_hbox);
-        mc_asset_manager_gridlayout->addWidget(mc_asset_manager_holder);
-        
-        //Table View (backend and visual init)
-        mc_asset_manager_tableview_itemmodel = new QStandardItemModel(0,3,0);
-        mc_asset_manager_tableview_itemmodel->setHorizontalHeaderItem(0, new QStandardItem(QString("Asset Display Name")));
-        mc_asset_manager_tableview_itemmodel->setHorizontalHeaderItem(1, new QStandardItem(QString("Asset ID")));
-        mc_asset_manager_tableview_itemmodel->setHorizontalHeaderItem(2, new QStandardItem(QString("Default")));
-        
-        //Connect tableviews' backend "dataChanged" signal to a re-action.
-        connect(mc_asset_manager_tableview_itemmodel, SIGNAL(dataChanged(QModelIndex,QModelIndex)), this, SLOT(mc_assetmanager_dataChanged_slot(QModelIndex,QModelIndex)));
-        
-        mc_asset_manager_tableview = new QTableView(0);
-        mc_asset_manager_tableview->setSelectionMode(QAbstractItemView::SingleSelection);
-        mc_asset_manager_tableview->setModel(mc_asset_manager_tableview_itemmodel);
-        mc_asset_manager_tableview->setColumnWidth(0, 175);
-        mc_asset_manager_tableview->setColumnWidth(1, 150);
-        mc_asset_manager_tableview->setColumnWidth(2, 75);
-        mc_asset_manager_gridlayout->addWidget(mc_asset_manager_tableview, 1,0, 1,1);
-        
-        
-        /** Second column in asset manager grid (right side) **/
-        //Vertical box (contains: add/remove buttons)
-        mc_asset_manager_addremove_btngroup_holder = new QWidget(0);
-        mc_asset_manager_addremove_btngroup_vbox = new QVBoxLayout(0);
-        mc_asset_manager_addremove_btngroup_holder->setLayout(mc_asset_manager_addremove_btngroup_vbox);
-        mc_asset_manager_addremove_btngroup_vbox->setAlignment(Qt::AlignTop);
-        mc_asset_manager_gridlayout->addWidget(mc_asset_manager_addremove_btngroup_holder, 1,1, 1,1);
-        
-        //"Add asset" button
-        mc_asset_manager_addremove_btngroup_addbtn = new QPushButton("Add Asset Contract", 0);
-        mc_asset_manager_addremove_btngroup_addbtn->setStyleSheet("QPushButton{padding:0.5em;}");
-        mc_asset_manager_addremove_btngroup_vbox->addWidget(mc_asset_manager_addremove_btngroup_addbtn, Qt::AlignTop);
-        //Connect the add asset button with a re-action to it being "clicked"
-        connect(mc_asset_manager_addremove_btngroup_addbtn, SIGNAL(clicked()), this, SLOT(mc_assetmanager_addasset_slot()));
-        
-        //"Remove asset" button
-        mc_asset_manager_addremove_btngroup_removebtn = new QPushButton("Remove Asset Contract", 0);
-        mc_asset_manager_addremove_btngroup_removebtn->setStyleSheet("QPushButton{padding:0.5em;}");
-        mc_asset_manager_addremove_btngroup_vbox->addWidget(mc_asset_manager_addremove_btngroup_removebtn, Qt::AlignTop);
-        //Connect the remove asset button with a re-action to it being "clicked"
-        connect(mc_asset_manager_addremove_btngroup_removebtn, SIGNAL(clicked()), this, SLOT(mc_assetmanager_removeasset_slot()));
-        
-        /** Third column (Most revent error) **/
-        //Label
-        mc_asset_manager_most_recent_erorr = new QLabel("");
-        mc_asset_manager_gridlayout->addWidget(mc_asset_manager_most_recent_erorr, 2,0, 1,2, Qt::AlignHCenter);
-        /** Flag as init **/
-        mc_assetmanager_already_init = 1;
-    }
-    /** ***
-     ** Resize & Show
-     **/
-    mc_asset_manager_dialog->resize(600, 300);
-    mc_asset_manager_dialog->show();
-    
-    /** ***
-     ** Data Refresh/Fill Logic
-     **/
-    //Refresh asset manger list
-    /** Flag Refreshing asset Manger **/
-    mc_assetmanager_refreshing = 1;
-    
-    //remove all rows from the asset manager (so we can refresh any newly changed data)
-    mc_asset_manager_tableview_itemmodel->removeRows(0, mc_asset_manager_tableview_itemmodel->rowCount());
-    
-    //Refresh the asset manager
-    //Refresh asset list (can't be done, there is a glitch where if you open the asset manger dialog twice it does wierd things to the systray for asset menus )
-    //mc_systrayMenu_reload_assetlist();
-    
-    //Add asset id and names to the manager list
-    int total_assets = asset_list_id->size();
-    qDebug() << "total: " << total_assets;
-    int row_index = 0;
-    for(int a = 0; a < total_assets; a++){
-        //Add asset account name and id to the list.
-        
-        
-        //Extract stuff for this row
-        QString asset_id = asset_list_id->at(a).toString();
-        QString asset_name = asset_list_name->at(a).toString();
-        qDebug() << "ADDING asset ID: " << asset_id;
-        //Place extracted data into the table view
-        QStandardItem * col_one = new QStandardItem(asset_name);
-        QStandardItem * col_two = new QStandardItem(asset_id);
-        //Column two is uneditable
-        col_two->setEditable(0);
-        
-        QStandardItem * col_three = new QStandardItem();
-        //Column three is a checkmark, we need to set some options in this case.
-        col_three->setCheckable(1);
-        
-        //If this is the default asset type; if yes, mark as checked
-        if(default_asset_id == asset_id){
-            col_three->setCheckState(Qt::Checked);
-        }
-        
-        mc_asset_manager_tableview_itemmodel->setItem(row_index, 0, col_one);
-        mc_asset_manager_tableview_itemmodel->setItem(row_index, 1, col_two);
-        mc_asset_manager_tableview_itemmodel->setItem(row_index, 2, col_three);
-        
-        //Increment index
-        row_index += 1;
-    }
-    /** Unflag as current refreshing **/
-    mc_assetmanager_refreshing = 0;
+//Nym manager "clicked"
+void Moneychanger::mc_defaultnym_slot(){
+    //The operator has requested to open the dialog to the "Nym Manager";
+    mc_nymmanager_dialog();
 }
 
+//Nym new default selected from systray
+void Moneychanger::mc_nymselection_triggered(QAction*action_triggered){
+    //Check if the user wants to open the nym manager (or) select a different default nym
+    QString action_triggered_string = QVariant(action_triggered->data()).toString();
+    qDebug() << "NYM TRIGGERED" << action_triggered_string;
+    if(action_triggered_string == "openmanager"){
+        //Open nym manager
+        mc_defaultnym_slot();
+    }else{
+        //Set new nym default
+        QString action_triggered_string_nym_name = QVariant(action_triggered->text()).toString();
+        set_systrayMenu_nym_setDefaultNym(action_triggered_string, action_triggered_string_nym_name);
+        
+        //Refresh the nym default selection in the nym manager (ONLY if it is open)
+        //Check if nym manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
+        if(!mc_nymmanager_already_init){
+            //Refresh if the nym manager is currently open
+            if(mc_nymmanager_already_init){
+                mc_nymmanager_dialog();
+            }
+        }
+    }
+    
+}
+// End Nym Manager
+
+/** Asset Manager **/
+void Moneychanger::mc_assetmanager_dialog(){
+    if(!mc_assetmanager_already_init){
+        AssetManagerWindow *assetmanagerwindow = new AssetManagerWindow(this);
+        assetmanagerwindow->setAttribute(Qt::WA_DeleteOnClose);
+        assetmanagerwindow->dialog();
+        mc_assetmanager_already_init = true;
+    }
+}
 
 //This was mistakenly named asset_load_asset, should be set default asset
 //Set Default asset
-void Moneychanger::mc_systrayMenu_asset_setDefaultAsset(QString asset_id, QString asset_name){
+void Moneychanger::set_systrayMenu_asset_setDefaultAsset(QString asset_id, QString asset_name){
     //Set default asset internal memory
     default_asset_id = asset_id;
     default_asset_name = asset_name;
@@ -747,6 +637,41 @@ void Moneychanger::mc_systrayMenu_reload_assetlist(){
     
     
 }
+
+//Asset new default selected from systray
+void Moneychanger::mc_assetselection_triggered(QAction*action_triggered){
+    //Check if the user wants to open the asset manager (or) select a different default asset
+    QString action_triggered_string = QVariant(action_triggered->data()).toString();
+    qDebug() << "asset TRIGGERED" << action_triggered_string;
+    if(action_triggered_string == "openmanager"){
+        //Open asset manager
+        mc_defaultasset_slot();
+    }else{
+        //Set new asset default
+        QString action_triggered_string_asset_name = QVariant(action_triggered->text()).toString();
+        set_systrayMenu_asset_setDefaultAsset(action_triggered_string, action_triggered_string_asset_name);
+        
+        //Refresh the asset default selection in the asset manager (ONLY if it is open)
+        //Check if asset manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
+        if(mc_assetmanager_already_init == 1){
+            //Refresh if the asset manager is currently open
+            if(mc_assetmanager_already_init){
+                mc_assetmanager_dialog();
+            }
+        }
+    }
+    
+}
+
+//Default Asset slots
+//Asset manager "clicked"
+void Moneychanger::mc_defaultasset_slot(){
+    //The operator has requested to open the dialog to the "Asset Manager";
+    mc_assetmanager_dialog();
+}
+
+// End Asset Manager
+
 // ----------------------------------------------------------------------
 /** account Manager Dialog **/
 void Moneychanger::mc_accountmanager_dialog(){
@@ -1329,186 +1254,6 @@ void Moneychanger::mc_withdraw_asvoucher_dialog(){
 /** ****** ****** ****** **
  ** Private Slots        **/
 
-// ---------------------------------------------------------
-// ASSET TYPE
-void Moneychanger::mc_assetmanager_addasset_slot(){
-    //Decide if we should init and show, or just show
-    if(mc_assetmanager_addasset_dialog_already_init == 0){
-        //Init, then show.
-        mc_asset_manager_addasset_dialog = new QDialog(0);
-        mc_asset_manager_addasset_dialog->setWindowTitle("Add Asset Contract | Moneychanger");
-        mc_asset_manager_addasset_dialog->setModal(1);
-        
-        //Gridlayout
-        mc_asset_manager_addasset_gridlayout = new QGridLayout(0);
-        mc_asset_manager_addasset_dialog->setLayout(mc_asset_manager_addasset_gridlayout);
-        
-        //Label (header)
-        mc_asset_manager_addasset_header = new QLabel("<h2>Add Asset Contract</h2>",0);
-        mc_asset_manager_addasset_gridlayout->addWidget(mc_asset_manager_addasset_header, 0,0, 1,1, Qt::AlignRight);
-        
-        //Label (Show Advanced Option(s)) (Also a button/connection)
-        mc_asset_manager_addasset_subheader_toggleadvanced_options_label = new QLabel("<a href='#'>Advanced Option(s)</a>", 0);
-        mc_asset_manager_addasset_gridlayout->addWidget(mc_asset_manager_addasset_subheader_toggleadvanced_options_label, 1,0, 1,1, Qt::AlignRight);
-        //Connect with a re-action
-        connect(mc_asset_manager_addasset_subheader_toggleadvanced_options_label, SIGNAL(linkActivated(QString)), this, SLOT(mc_addasset_dialog_showadvanced_slot(QString)));
-        
-        
-        //Label (instructions)
-        mc_asset_manager_addasset_subheader_instructions = new QLabel("Below are some options that will help determine how your Asset will be added.");
-        mc_asset_manager_addasset_subheader_instructions->setWordWrap(1);
-        mc_asset_manager_addasset_subheader_instructions->setStyleSheet("QLabel{padding:0.5em;}");
-        mc_asset_manager_addasset_gridlayout->addWidget(mc_asset_manager_addasset_subheader_instructions, 2,0, 1,1);
-        
-        //Label (Choose Source Question)
-        mc_asset_manager_addasset_choosesource_label = new QLabel("<h3>Enter the Asset Contract</h3>");
-        mc_asset_manager_addasset_choosesource_label->setStyleSheet("QLabel{padding:1em;}");
-        mc_asset_manager_addasset_gridlayout->addWidget(mc_asset_manager_addasset_choosesource_label, 3,0, 1,1);
-        
-        //Combobox (Dropdown box: Choose Source)
-        mc_asset_manager_addasset_choosesource_answer_selection = new QComboBox(0);
-        mc_asset_manager_addasset_choosesource_answer_selection->addItem("Namecoin");
-        mc_asset_manager_addasset_choosesource_answer_selection->addItem("No-Source");
-        mc_asset_manager_addasset_choosesource_answer_selection->setCurrentIndex(1);
-        mc_asset_manager_addasset_choosesource_answer_selection->setStyleSheet("QComboBox{padding:0.5em;}");
-        mc_asset_manager_addasset_gridlayout->addWidget(mc_asset_manager_addasset_choosesource_answer_selection, 4,0, 1,1);
-        
-        //Create asset (button)
-        mc_asset_manager_addasset_create_asset_btn = new QPushButton("Add an Asset Contract", 0);
-        mc_asset_manager_addasset_create_asset_btn->setStyleSheet("QPushButton{padding:1em;}");
-        mc_asset_manager_addasset_gridlayout->addWidget(mc_asset_manager_addasset_create_asset_btn, 5,0, 1,1, Qt::AlignHCenter);
-        //Connect create asset button with a re-action;
-        connect(mc_asset_manager_addasset_create_asset_btn, SIGNAL(clicked()), this, SLOT(mc_addasset_dialog_createasset_slot()));
-        
-        /** Flag as already init **/
-        mc_assetmanager_addasset_dialog_already_init = 1;
-    }
-    //Resize
-    mc_asset_manager_addasset_dialog->resize(400, 290);
-    //Show
-    mc_asset_manager_addasset_dialog->show();
-}
-
-void Moneychanger::mc_assetmanager_removeasset_slot(){
-    //Init, then show; If already init, then just show
-    if(mc_assetmanager_removeasset_dialog_already_init == 0){
-        mc_asset_manager_removeasset_dialog = new QDialog(0);
-        mc_asset_manager_removeasset_dialog->setWindowTitle("Remove Asset Contract | Moneychanger");
-        mc_asset_manager_removeasset_dialog->setModal(1);
-        //Grid layout
-        mc_asset_manager_removeasset_gridlayout = new QGridLayout(0);
-        mc_asset_manager_removeasset_dialog->setLayout(mc_asset_manager_removeasset_gridlayout);
-    }
-    mc_asset_manager_removeasset_dialog->show();
-}
-
-void Moneychanger::mc_assetmanager_dataChanged_slot(QModelIndex topLeft, QModelIndex bottomRight){
-    //Ignore triggers while "refreshing" the asset manager.
-    if(mc_assetmanager_refreshing == 0 && mc_assetmanager_proccessing_dataChanged == 0){
-        /** Flag Proccessing dataChanged **/
-        mc_assetmanager_proccessing_dataChanged = 1;
-        
-        /** Proccess the "Display Name" column **/
-        if(topLeft.column() == 0){
-            //Get the value (as std::string) of the asset id
-            QStandardItem * asset_id_item = mc_asset_manager_tableview_itemmodel->item(topLeft.row(), 1);
-            QString asset_id_string = asset_id_item->text();
-            std::string asset_id = asset_id_string.toStdString();
-            
-            //Get the value (as std::string) of the newly set name of the asset id
-            QVariant new_asset_name_variant = topLeft.data();
-            QString new_asset_name_string = new_asset_name_variant.toString();
-            std::string new_asset_name = new_asset_name_string.toStdString();
-            qDebug() << asset_id_string;
-            //Update the newly set display name for this asset in OT ( call ot for updating )
-            bool setName_successfull = OTAPI_Wrap::SetAssetType_Name(asset_id, new_asset_name);
-            if(setName_successfull == true){
-                //Do nothing (There is nothing that needs to be done)
-            }else{
-                //Setting of the display name for this asset failed, revert value visually, display recent error
-                mc_asset_manager_most_recent_erorr->setText("<span style='color:#A80000'><b>Renaming that asset failed. (Error Code: 100)</b></span>");
-            }
-        }
-        
-        /** Proccess the "Default" column (if triggered) **/
-        if(topLeft.column() == 2){
-            //The (default) 2 column has checked(or unchecked) a box, (uncheck all checkboxes, except the newly selected one)
-            int total_checkboxes = mc_asset_manager_tableview_itemmodel->rowCount();
-            
-            //Uncheck all boxes (always checkMarked the triggered box)
-            for(int a = 0; a < total_checkboxes; a++){
-                
-                //Check if this is a checkbox we should checkmark
-                if(a != topLeft.row()){
-                    
-                    //Get checkbox item
-                    QStandardItem * checkbox_model = mc_asset_manager_tableview_itemmodel->item(a, 2);
-                    
-                    //Update the checkbox item at the backend.
-                    checkbox_model->setCheckState(Qt::Unchecked);
-                    
-                    //Update the checkbox item visually.
-                    mc_asset_manager_tableview_itemmodel->setItem(a, 2, checkbox_model);
-                }else if(a == topLeft.row()){
-                    
-                    //Get checkbox item
-                    QStandardItem * checkbox_model = mc_asset_manager_tableview_itemmodel->item(a, 2);
-                    
-                    //Update the checkbox item at the backend.
-                    //Get asset id we are targeting to update.
-                    QStandardItem * asset_id = mc_asset_manager_tableview_itemmodel->item(a, 1);
-                    QVariant asset_id_variant = asset_id->text();
-                    QString asset_id_string = asset_id_variant.toString();
-                    QString asset_name_string = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(asset_id_string.toStdString()));
-                    //Update the checkbox item visually.
-                    checkbox_model->setCheckState(Qt::Checked);
-                    mc_asset_manager_tableview_itemmodel->setItem(a, 2, checkbox_model);
-                    
-                    //Update default asset at realtime memory backend
-                    
-                    mc_systrayMenu_asset_setDefaultAsset(asset_id_string, asset_name_string);
-                    
-                    
-                }
-                
-            }
-            
-        }
-        
-        /** Unflag Proccessing Data Changed **/
-        mc_assetmanager_proccessing_dataChanged = 0;
-    }
-}
-
-
-/**** ****
- **** asset Manager -> Add asset Dialog (Private Slots)
- **** ****/
-void Moneychanger::mc_addasset_dialog_showadvanced_slot(QString link_href){
-    //If advanced options are already showing, hide, if they are hidden, show them.
-    if(mc_assetmanager_addasset_dialog_advanced_showing == 0){
-        //Show advanced options.
-        //Show the Bits option
-        
-    }else if(mc_assetmanager_addasset_dialog_advanced_showing == 1){
-        //Hide advanced options.
-        //Hide the Bits option
-    }
-}
-
-
-void Moneychanger::mc_addasset_dialog_createasset_slot(){
-    //            std::string pseudonym = OTAPI_Wrap::CreateNym(1024, "", "");
-    //            QString new_pseudonym = QString::fromStdString(pseudonym);
-    QString new_asset;
-    
-    //Success if non null
-    if(new_asset != ""){
-        
-    }else{
-        //Failed to create asset type
-    }
-}
 
 // ---------------------------------------------------------
 // SERVER
@@ -1883,76 +1628,9 @@ void Moneychanger::mc_shutdown_slot(){
     qApp->quit();
 }
 
-//Overview slots
-void Moneychanger::mc_overview_slot(){
-    //The operator has requested to open the dialog to the "Overview";
-    mc_overview_dialog();
-}
 
 
-//Default Nym slots
-//Nym manager "clicked"
-void Moneychanger::mc_defaultnym_slot(){
-    //The operator has requested to open the dialog to the "Nym Manager";
-    mc_nymmanager_dialog();
-}
 
-//Nym new default selected from systray
-void Moneychanger::mc_nymselection_triggered(QAction*action_triggered){
-    //Check if the user wants to open the nym manager (or) select a different default nym
-    QString action_triggered_string = QVariant(action_triggered->data()).toString();
-    qDebug() << "NYM TRIGGERED" << action_triggered_string;
-    if(action_triggered_string == "openmanager"){
-        //Open nym manager
-        mc_defaultnym_slot();
-    }else{
-        //Set new nym default
-        QString action_triggered_string_nym_name = QVariant(action_triggered->text()).toString();
-        set_systrayMenu_nym_setDefaultNym(action_triggered_string, action_triggered_string_nym_name);
-        
-        //Refresh the nym default selection in the nym manager (ONLY if it is open)
-        //Check if nym manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
-        if(!mc_nymmanager_already_init){
-            //Refresh if the nym manager is currently open
-            if(mc_nymmanager_already_init){
-                mc_nymmanager_dialog();
-            }
-        }
-    }
-    
-}
-
-//Default Asset slots
-//Asset manager "clicked"
-void Moneychanger::mc_defaultasset_slot(){
-    //The operator has requested to open the dialog to the "Asset Manager";
-    mc_assetmanager_dialog();
-}
-
-//Asset new default selected from systray
-void Moneychanger::mc_assetselection_triggered(QAction*action_triggered){
-    //Check if the user wants to open the asset manager (or) select a different default asset
-    QString action_triggered_string = QVariant(action_triggered->data()).toString();
-    qDebug() << "asset TRIGGERED" << action_triggered_string;
-    if(action_triggered_string == "openmanager"){
-        //Open asset manager
-        mc_defaultasset_slot();
-    }else{
-        //Set new asset default
-        QString action_triggered_string_asset_name = QVariant(action_triggered->text()).toString();
-        mc_systrayMenu_asset_setDefaultAsset(action_triggered_string, action_triggered_string_asset_name);
-        
-        //Refresh the asset default selection in the asset manager (ONLY if it is open)
-        //Check if asset manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
-        if(mc_assetmanager_already_init == 1){
-            //Refresh if the asset manager is currently open
-            if(mc_asset_manager_dialog->isVisible()){
-                mc_assetmanager_dialog();
-            }
-        }
-    }
-    
-}
 
 //Default Account slots
 //Account manager "clicked"
@@ -2056,42 +1734,6 @@ void Moneychanger::mc_servermanager_request_remove_server_slot(){
                     num_nyms_registered_at_server += 1;
                 }
             }
-        }
-        
-    }
-    
-}
-
-
-void Moneychanger::mc_assetmanager_request_remove_asset_slot(){
-    //Extract the currently selected asset from the asset-list.
-    QModelIndexList selected_indexes = mc_asset_manager_tableview->selectionModel()->selectedIndexes();
-    
-    for(int a = 0; a < selected_indexes.size(); a++){
-        QModelIndex selected_index = selected_indexes.at(a);
-        int selected_row = selected_index.row();
-        
-        //Get asset id
-        QModelIndex asset_id_modelindex = mc_asset_manager_tableview_itemmodel->index(selected_row, 1, QModelIndex());
-        QVariant asset_id_variant = asset_id_modelindex.data();
-        QString asset_id_string = asset_id_variant.toString();
-        bool can_remove = OTAPI_Wrap::Wallet_CanRemoveAssetType(asset_id_string.toStdString());
-        
-        if(can_remove == true){
-            //Remove it
-            OTAPI_Wrap::Wallet_RemoveAssetType(asset_id_string.toStdString());
-        }else{
-            //Find out why it can't be removed and alert the user the reasoning.
-            //Loop through nyms
-            //                        std::string asset_id_std = asset_id_string.toStdString();
-            //                        int num_nyms_registered_at_asset = 0;
-            //                        int num_nyms = OTAPI_Wrap::GetNymCount();
-            //                        for(int b = 0; b < num_nyms; b++){
-            //                            bool nym_index_at_asset = OTAPI_Wrap::IsNym_RegisteredAtAsset(OTAPI_Wrap::GetNym_ID(b), asset_id_std);
-            //                            if(nym_index_at_asset == true){
-            //                                num_nyms_registered_at_asset += 1;
-            //                            }
-            //                        }
         }
         
     }
@@ -2406,10 +2048,6 @@ void Moneychanger::mc_withdraw_asvoucher_cancel_amount_slot(){
 }
 
 
-
-
-
-
 //Deposit Slots
 
 /**
@@ -2482,8 +2120,6 @@ void Moneychanger::mc_deposit_show_dialog(){
     //Show
     mc_deposit_dialog->show();
 }
-
-
 
 void Moneychanger::mc_deposit_type_changed_slot(int newIndex){
     /** 0 = Account; 1 = purse **/
