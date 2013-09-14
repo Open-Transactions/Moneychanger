@@ -389,6 +389,13 @@ void AccountManagerWindow::request_remove_account_slot(){
 // Note that this won't work if the parentWidget isn't of
 // Type Moneychanger, but this can be modified so that Esc events are
 // Discarded (Don't do this if the Widget is Modal!)
+/*
+ 
+ if(e->key() != Qt::Key_Escape)
+ QDialog::keyPressEvent(e);
+ else {;}
+
+ */
 
 bool AccountManagerWindow::eventFilter(QObject *obj, QEvent *event){
     

@@ -670,6 +670,7 @@ void Moneychanger::mc_accountmanager_dialog(){
     }
 }
 
+// Our public interface for closing the account manager
 void Moneychanger::close_accountmanager_dialog(){
     delete accountmanagerwindow;
     mc_accountmanager_already_init = false;
@@ -706,7 +707,6 @@ void Moneychanger::mc_accountselection_triggered(QAction*action_triggered){
     }
     
 }
-
 
 //This was mistakenly named account_load_account, should be set default account
 //Set Default account
@@ -788,8 +788,9 @@ void Moneychanger::mc_systrayMenu_reload_accountlist(){
     
     
 }
-// ----------------------------------------------------------------------
-/** Server **/
+
+
+/** Server Manager **/
 /** *********************************************
  * @brief Moneychanger::mc_servermanager_dialog
  * @info Will init & show the server list manager
@@ -954,6 +955,259 @@ void Moneychanger::mc_systrayMenu_reload_serverlist(){
     }
 }
 
+// ---------------------------------------------------------
+// SERVER
+void Moneychanger::mc_servermanager_addserver_slot(){
+    //Decide if we should init and show, or just show
+    if(mc_servermanager_addserver_dialog_already_init == 0){
+        //Init, then show.
+        mc_server_manager_addserver_dialog = new QDialog(0);
+        mc_server_manager_addserver_dialog->setWindowTitle("Add Server Contract | Moneychanger");
+        mc_server_manager_addserver_dialog->setModal(1);
+        
+        //Gridlayout
+        mc_server_manager_addserver_gridlayout = new QGridLayout(0);
+        mc_server_manager_addserver_dialog->setLayout(mc_server_manager_addserver_gridlayout);
+        
+        //Label (header)
+        mc_server_manager_addserver_header = new QLabel("<h2>Add Server Contract</h2>",0);
+        mc_server_manager_addserver_gridlayout->addWidget(mc_server_manager_addserver_header, 0,0, 1,1, Qt::AlignRight);
+        
+        //Label (Show Advanced Option(s)) (Also a button/connection)
+        mc_server_manager_addserver_subheader_toggleadvanced_options_label = new QLabel("<a href='#'>Advanced Option(s)</a>", 0);
+        mc_server_manager_addserver_gridlayout->addWidget(mc_server_manager_addserver_subheader_toggleadvanced_options_label, 1,0, 1,1, Qt::AlignRight);
+        //Connect with a re-action
+        connect(mc_server_manager_addserver_subheader_toggleadvanced_options_label, SIGNAL(linkActivated(QString)), this, SLOT(mc_addserver_dialog_showadvanced_slot(QString)));
+        
+        
+        //Label (instructions)
+        mc_server_manager_addserver_subheader_instructions = new QLabel("Below are some options that will help determine how your server will be added.");
+        mc_server_manager_addserver_subheader_instructions->setWordWrap(1);
+        mc_server_manager_addserver_subheader_instructions->setStyleSheet("QLabel{padding:0.5em;}");
+        mc_server_manager_addserver_gridlayout->addWidget(mc_server_manager_addserver_subheader_instructions, 2,0, 1,1);
+        
+        //Label (Choose Source Question)
+        //                    mc_server_manager_addserver_choosesource_label = new QLabel("<h3>Enter the Server Contract</h3>");
+        //                    mc_server_manager_addserver_choosesource_label->setStyleSheet("QLabel{padding:1em;}");
+        //                    mc_server_manager_addserver_gridlayout->addWidget(mc_server_manager_addserver_choosesource_label, 3,0, 1,1);
+        
+        //                    //Combobox (Dropdown box: Choose Source)
+        //                    mc_server_manager_addserver_choosesource_answer_selection = new QComboBox(0);
+        //                    mc_server_manager_addserver_choosesource_answer_selection->addItem("Namecoin");
+        //                    mc_server_manager_addserver_choosesource_answer_selection->addItem("No-Source");
+        //                    mc_server_manager_addserver_choosesource_answer_selection->setCurrentIndex(1);
+        //                    mc_server_manager_addserver_choosesource_answer_selection->setStyleSheet("QComboBox{padding:0.5em;}");
+        //                    mc_server_manager_addserver_gridlayout->addWidget(mc_server_manager_addserver_choosesource_answer_selection, 4,0, 1,1);
+        
+        //Create server (button)
+        mc_server_manager_addserver_create_server_btn = new QPushButton("Add a Server Contract", 0);
+        mc_server_manager_addserver_create_server_btn->setStyleSheet("QPushButton{padding:1em;}");
+        mc_server_manager_addserver_gridlayout->addWidget(mc_server_manager_addserver_create_server_btn, 5,0, 1,1, Qt::AlignHCenter);
+        //Connect create server button with a re-action;
+        connect(mc_server_manager_addserver_create_server_btn, SIGNAL(clicked()), this, SLOT(mc_addserver_dialog_createserver_slot()));
+        
+        /** Flag as already init **/
+        mc_servermanager_addserver_dialog_already_init = 1;
+    }
+    //Resize
+    mc_server_manager_addserver_dialog->resize(400, 290);
+    //Show
+    mc_server_manager_addserver_dialog->show();
+}
+
+void Moneychanger::mc_servermanager_removeserver_slot(){
+    //Init, then show; If already init, then just show
+    if(mc_servermanager_removeserver_dialog_already_init == 0){
+        mc_server_manager_removeserver_dialog = new QDialog(0);
+        mc_server_manager_removeserver_dialog->setWindowTitle("Remove Server Contract | Moneychanger");
+        mc_server_manager_removeserver_dialog->setModal(1);
+        //Grid layout
+        mc_server_manager_removeserver_gridlayout = new QGridLayout(0);
+        mc_server_manager_removeserver_dialog->setLayout(mc_server_manager_removeserver_gridlayout);
+    }
+    mc_server_manager_removeserver_dialog->show();
+}
+
+void Moneychanger::mc_servermanager_dataChanged_slot(QModelIndex topLeft, QModelIndex bottomRight){
+    //Ignore triggers while "refreshing" the server manager.
+    if(mc_servermanager_refreshing == 0 && mc_servermanager_proccessing_dataChanged == 0){
+        /** Flag Proccessing dataChanged **/
+        mc_servermanager_proccessing_dataChanged = 1;
+        
+        /** Proccess the "Display Name" column **/
+        if(topLeft.column() == 0){
+            //Get the value (as std::string) of the server id
+            QStandardItem * server_id_item = mc_server_manager_tableview_itemmodel->item(topLeft.row(), 1);
+            QString server_id_string = server_id_item->text();
+            std::string server_id = server_id_string.toStdString();
+            
+            //Get the value (as std::string) of the newly set name of the server id
+            QVariant new_server_name_variant = topLeft.data();
+            QString new_server_name_string = new_server_name_variant.toString();
+            std::string new_server_name = new_server_name_string.toStdString();
+            qDebug() << server_id_string;
+            //Update the newly set display name for this server in OT ( call ot for updating )
+            bool setName_successfull = OTAPI_Wrap::SetServer_Name(server_id, new_server_name);
+            if(setName_successfull == true){
+                //Do nothing (There is nothing that needs to be done)
+            }else{
+                //Setting of the display name for this server failed, revert value visually, display recent error
+                mc_server_manager_most_recent_erorr->setText("<span style='color:#A80000'><b>Renaming that server failed. (Error Code: 100)</b></span>");
+            }
+        }
+        
+        /** Proccess the "Default" column (if triggered) **/
+        if(topLeft.column() == 2){
+            //The (default) 2 column has checked(or unchecked) a box, (uncheck all checkboxes, except the newly selected one)
+            int total_checkboxes = mc_server_manager_tableview_itemmodel->rowCount();
+            
+            //Uncheck all boxes (always checkMarked the triggered box)
+            for(int a = 0; a < total_checkboxes; a++){
+                
+                //Check if this is a checkbox we should checkmark
+                if(a != topLeft.row()){
+                    
+                    //Get checkbox item
+                    QStandardItem * checkbox_model = mc_server_manager_tableview_itemmodel->item(a, 2);
+                    
+                    //Update the checkbox item at the backend.
+                    checkbox_model->setCheckState(Qt::Unchecked);
+                    
+                    //Update the checkbox item visually.
+                    mc_server_manager_tableview_itemmodel->setItem(a, 2, checkbox_model);
+                }else if(a == topLeft.row()){
+                    
+                    //Get checkbox item
+                    QStandardItem * checkbox_model = mc_server_manager_tableview_itemmodel->item(a, 2);
+                    
+                    //Update the checkbox item at the backend.
+                    //Get server id we are targeting to update.
+                    QStandardItem * server_id = mc_server_manager_tableview_itemmodel->item(a, 1);
+                    QVariant server_id_variant = server_id->text();
+                    QString server_id_string = server_id_variant.toString();
+                    QString server_name_string = QString::fromStdString(OTAPI_Wrap::GetServer_Name(server_id_string.toStdString()));
+                    //Update the checkbox item visually.
+                    checkbox_model->setCheckState(Qt::Checked);
+                    mc_server_manager_tableview_itemmodel->setItem(a, 2, checkbox_model);
+                    
+                    //Update default server at realtime memory backend
+                    
+                    mc_systrayMenu_server_setDefaultServer(server_id_string, server_name_string);
+                    
+                    
+                }
+                
+            }
+            
+        }
+        
+        /** Unflag Proccessing Data Changed **/
+        mc_servermanager_proccessing_dataChanged = 0;
+    }
+}
+
+/**** ****
+ **** server Manager -> Add server Dialog (Private Slots)
+ **** ****/
+void Moneychanger::mc_addserver_dialog_showadvanced_slot(QString link_href){
+    //If advanced options are already showing, hide, if they are hidden, show them.
+    if(mc_servermanager_addserver_dialog_advanced_showing == 0){
+        //Show advanced options.
+        //Show the Bits option
+        
+    }else if(mc_servermanager_addserver_dialog_advanced_showing == 1){
+        //Hide advanced options.
+        //Hide the Bits option
+    }
+}
+
+void Moneychanger::mc_addserver_dialog_createserver_slot(){
+    //            std::string pseudonym = OTAPI_Wrap::CreateNym(1024, "", "");
+    //            QString new_pseudonym = QString::fromStdString(pseudonym);
+    QString new_server;
+    
+    //Success if non null
+    if(new_server != ""){
+        
+    }else{
+        //Failed to create server type
+    }
+}
+
+//Server Slots
+/** *****************************************
+ * @brief Moneychanger::mc_defaultserver_slot
+ * @info Universal call to opening the server list manager.
+ ** *****************************************/
+void Moneychanger::mc_defaultserver_slot(){
+    mc_servermanager_dialog();
+}
+
+void Moneychanger::mc_serverselection_triggered(QAction * action_triggered){
+    //Check if the user wants to open the nym manager (or) select a different default nym
+    QString action_triggered_string = QVariant(action_triggered->data()).toString();
+    qDebug() << "SERVER TRIGGERED" << action_triggered_string;
+    if(action_triggered_string == "openmanager"){
+        //Open server-list manager
+        mc_defaultserver_slot();
+    }else{
+        //Set new server default
+        QString action_triggered_string_server_name = QVariant(action_triggered->text()).toString();
+        mc_systrayMenu_server_setDefaultServer(action_triggered_string, action_triggered_string_server_name);
+        
+        //Refresh the server default selection in the server manager (ONLY if it is open)
+        //Check if server manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
+        if(mc_servermanager_already_init == 1){
+            //Refresh if the server manager is currently open
+            if(mc_server_manager_dialog->isVisible()){
+                mc_servermanager_dialog();
+            }
+        }
+    }
+}
+
+/**
+ * @brief Moneychanger::mc_servermanager_request_remove_server_slot
+ * @info This will attempt to remove the server from the loaded wallet,
+ *       At the moment only "one" server can be selected but the for loop is there for
+ *       future upgrades of such functionality.
+ **/
+void Moneychanger::mc_servermanager_request_remove_server_slot(){
+    //Extract the currently selected server from the server-list.
+    QModelIndexList selected_indexes = mc_server_manager_tableview->selectionModel()->selectedIndexes();
+    
+    for(int a = 0; a < selected_indexes.size(); a++){
+        QModelIndex selected_index = selected_indexes.at(a);
+        int selected_row = selected_index.row();
+        
+        //Get server id
+        QModelIndex server_id_modelindex = mc_server_manager_tableview_itemmodel->index(selected_row, 1, QModelIndex());
+        QVariant server_id_variant = server_id_modelindex.data();
+        QString server_id_string = server_id_variant.toString();
+        bool can_remove = OTAPI_Wrap::Wallet_CanRemoveServer(server_id_string.toStdString());
+        
+        if(can_remove == true){
+            //Remove it
+            OTAPI_Wrap::Wallet_RemoveServer(server_id_string.toStdString());
+        }else{
+            //Find out why it can't be removed and alert the user the reasoning.
+            //Loop through nyms
+            std::string server_id_std = server_id_string.toStdString();
+            int num_nyms_registered_at_server = 0;
+            int num_nyms = OTAPI_Wrap::GetNymCount();
+            for(int b = 0; b < num_nyms; b++){
+                bool nym_index_at_server = OTAPI_Wrap::IsNym_RegisteredAtServer(OTAPI_Wrap::GetNym_ID(b), server_id_std);
+                if(nym_index_at_server == true){
+                    num_nyms_registered_at_server += 1;
+                }
+            }
+        }
+        
+    }
+    
+}
+
+// End Server Manager
 
 /** Withdraw **/
 //As Cash
@@ -1139,292 +1393,10 @@ void Moneychanger::mc_withdraw_asvoucher_dialog(){
     }
 }
 
-
-
-/** ****** ****** ****** **
- ** Private Slots        **/
-
-
-// ---------------------------------------------------------
-// SERVER
-void Moneychanger::mc_servermanager_addserver_slot(){
-    //Decide if we should init and show, or just show
-    if(mc_servermanager_addserver_dialog_already_init == 0){
-        //Init, then show.
-        mc_server_manager_addserver_dialog = new QDialog(0);
-        mc_server_manager_addserver_dialog->setWindowTitle("Add Server Contract | Moneychanger");
-        mc_server_manager_addserver_dialog->setModal(1);
-        
-        //Gridlayout
-        mc_server_manager_addserver_gridlayout = new QGridLayout(0);
-        mc_server_manager_addserver_dialog->setLayout(mc_server_manager_addserver_gridlayout);
-        
-        //Label (header)
-        mc_server_manager_addserver_header = new QLabel("<h2>Add Server Contract</h2>",0);
-        mc_server_manager_addserver_gridlayout->addWidget(mc_server_manager_addserver_header, 0,0, 1,1, Qt::AlignRight);
-        
-        //Label (Show Advanced Option(s)) (Also a button/connection)
-        mc_server_manager_addserver_subheader_toggleadvanced_options_label = new QLabel("<a href='#'>Advanced Option(s)</a>", 0);
-        mc_server_manager_addserver_gridlayout->addWidget(mc_server_manager_addserver_subheader_toggleadvanced_options_label, 1,0, 1,1, Qt::AlignRight);
-        //Connect with a re-action
-        connect(mc_server_manager_addserver_subheader_toggleadvanced_options_label, SIGNAL(linkActivated(QString)), this, SLOT(mc_addserver_dialog_showadvanced_slot(QString)));
-        
-        
-        //Label (instructions)
-        mc_server_manager_addserver_subheader_instructions = new QLabel("Below are some options that will help determine how your server will be added.");
-        mc_server_manager_addserver_subheader_instructions->setWordWrap(1);
-        mc_server_manager_addserver_subheader_instructions->setStyleSheet("QLabel{padding:0.5em;}");
-        mc_server_manager_addserver_gridlayout->addWidget(mc_server_manager_addserver_subheader_instructions, 2,0, 1,1);
-        
-        //Label (Choose Source Question)
-        //                    mc_server_manager_addserver_choosesource_label = new QLabel("<h3>Enter the Server Contract</h3>");
-        //                    mc_server_manager_addserver_choosesource_label->setStyleSheet("QLabel{padding:1em;}");
-        //                    mc_server_manager_addserver_gridlayout->addWidget(mc_server_manager_addserver_choosesource_label, 3,0, 1,1);
-        
-        //                    //Combobox (Dropdown box: Choose Source)
-        //                    mc_server_manager_addserver_choosesource_answer_selection = new QComboBox(0);
-        //                    mc_server_manager_addserver_choosesource_answer_selection->addItem("Namecoin");
-        //                    mc_server_manager_addserver_choosesource_answer_selection->addItem("No-Source");
-        //                    mc_server_manager_addserver_choosesource_answer_selection->setCurrentIndex(1);
-        //                    mc_server_manager_addserver_choosesource_answer_selection->setStyleSheet("QComboBox{padding:0.5em;}");
-        //                    mc_server_manager_addserver_gridlayout->addWidget(mc_server_manager_addserver_choosesource_answer_selection, 4,0, 1,1);
-        
-        //Create server (button)
-        mc_server_manager_addserver_create_server_btn = new QPushButton("Add a Server Contract", 0);
-        mc_server_manager_addserver_create_server_btn->setStyleSheet("QPushButton{padding:1em;}");
-        mc_server_manager_addserver_gridlayout->addWidget(mc_server_manager_addserver_create_server_btn, 5,0, 1,1, Qt::AlignHCenter);
-        //Connect create server button with a re-action;
-        connect(mc_server_manager_addserver_create_server_btn, SIGNAL(clicked()), this, SLOT(mc_addserver_dialog_createserver_slot()));
-        
-        /** Flag as already init **/
-        mc_servermanager_addserver_dialog_already_init = 1;
-    }
-    //Resize
-    mc_server_manager_addserver_dialog->resize(400, 290);
-    //Show
-    mc_server_manager_addserver_dialog->show();
-}
-
-void Moneychanger::mc_servermanager_removeserver_slot(){
-    //Init, then show; If already init, then just show
-    if(mc_servermanager_removeserver_dialog_already_init == 0){
-        mc_server_manager_removeserver_dialog = new QDialog(0);
-        mc_server_manager_removeserver_dialog->setWindowTitle("Remove Server Contract | Moneychanger");
-        mc_server_manager_removeserver_dialog->setModal(1);
-        //Grid layout
-        mc_server_manager_removeserver_gridlayout = new QGridLayout(0);
-        mc_server_manager_removeserver_dialog->setLayout(mc_server_manager_removeserver_gridlayout);
-    }
-    mc_server_manager_removeserver_dialog->show();
-}
-
-void Moneychanger::mc_servermanager_dataChanged_slot(QModelIndex topLeft, QModelIndex bottomRight){
-    //Ignore triggers while "refreshing" the server manager.
-    if(mc_servermanager_refreshing == 0 && mc_servermanager_proccessing_dataChanged == 0){
-        /** Flag Proccessing dataChanged **/
-        mc_servermanager_proccessing_dataChanged = 1;
-        
-        /** Proccess the "Display Name" column **/
-        if(topLeft.column() == 0){
-            //Get the value (as std::string) of the server id
-            QStandardItem * server_id_item = mc_server_manager_tableview_itemmodel->item(topLeft.row(), 1);
-            QString server_id_string = server_id_item->text();
-            std::string server_id = server_id_string.toStdString();
-            
-            //Get the value (as std::string) of the newly set name of the server id
-            QVariant new_server_name_variant = topLeft.data();
-            QString new_server_name_string = new_server_name_variant.toString();
-            std::string new_server_name = new_server_name_string.toStdString();
-            qDebug() << server_id_string;
-            //Update the newly set display name for this server in OT ( call ot for updating )
-            bool setName_successfull = OTAPI_Wrap::SetServer_Name(server_id, new_server_name);
-            if(setName_successfull == true){
-                //Do nothing (There is nothing that needs to be done)
-            }else{
-                //Setting of the display name for this server failed, revert value visually, display recent error
-                mc_server_manager_most_recent_erorr->setText("<span style='color:#A80000'><b>Renaming that server failed. (Error Code: 100)</b></span>");
-            }
-        }
-        
-        /** Proccess the "Default" column (if triggered) **/
-        if(topLeft.column() == 2){
-            //The (default) 2 column has checked(or unchecked) a box, (uncheck all checkboxes, except the newly selected one)
-            int total_checkboxes = mc_server_manager_tableview_itemmodel->rowCount();
-            
-            //Uncheck all boxes (always checkMarked the triggered box)
-            for(int a = 0; a < total_checkboxes; a++){
-                
-                //Check if this is a checkbox we should checkmark
-                if(a != topLeft.row()){
-                    
-                    //Get checkbox item
-                    QStandardItem * checkbox_model = mc_server_manager_tableview_itemmodel->item(a, 2);
-                    
-                    //Update the checkbox item at the backend.
-                    checkbox_model->setCheckState(Qt::Unchecked);
-                    
-                    //Update the checkbox item visually.
-                    mc_server_manager_tableview_itemmodel->setItem(a, 2, checkbox_model);
-                }else if(a == topLeft.row()){
-                    
-                    //Get checkbox item
-                    QStandardItem * checkbox_model = mc_server_manager_tableview_itemmodel->item(a, 2);
-                    
-                    //Update the checkbox item at the backend.
-                    //Get server id we are targeting to update.
-                    QStandardItem * server_id = mc_server_manager_tableview_itemmodel->item(a, 1);
-                    QVariant server_id_variant = server_id->text();
-                    QString server_id_string = server_id_variant.toString();
-                    QString server_name_string = QString::fromStdString(OTAPI_Wrap::GetServer_Name(server_id_string.toStdString()));
-                    //Update the checkbox item visually.
-                    checkbox_model->setCheckState(Qt::Checked);
-                    mc_server_manager_tableview_itemmodel->setItem(a, 2, checkbox_model);
-                    
-                    //Update default server at realtime memory backend
-                    
-                    mc_systrayMenu_server_setDefaultServer(server_id_string, server_name_string);
-                    
-                    
-                }
-                
-            }
-            
-        }
-        
-        /** Unflag Proccessing Data Changed **/
-        mc_servermanager_proccessing_dataChanged = 0;
-    }
-}
-
-
-/**** ****
- **** server Manager -> Add server Dialog (Private Slots)
- **** ****/
-void Moneychanger::mc_addserver_dialog_showadvanced_slot(QString link_href){
-    //If advanced options are already showing, hide, if they are hidden, show them.
-    if(mc_servermanager_addserver_dialog_advanced_showing == 0){
-        //Show advanced options.
-        //Show the Bits option
-        
-    }else if(mc_servermanager_addserver_dialog_advanced_showing == 1){
-        //Hide advanced options.
-        //Hide the Bits option
-    }
-}
-
-
-void Moneychanger::mc_addserver_dialog_createserver_slot(){
-    //            std::string pseudonym = OTAPI_Wrap::CreateNym(1024, "", "");
-    //            QString new_pseudonym = QString::fromStdString(pseudonym);
-    QString new_server;
-    
-    //Success if non null
-    if(new_server != ""){
-        
-    }else{
-        //Failed to create server type
-    }
-}
-
-
-
-/* Systray menu slots */
-
-//Shutdown slots
-void Moneychanger::mc_shutdown_slot(){
-    //Disconnect all signals from callin class (probubly main) to this class
-    //Disconnect
-    QObject::disconnect(this);
-    //Close qt app (no need to deinit anything as of the time of this comment)
-    //TO DO: Check if the OT queue caller is still proccessing calls.... Then quit the app. (Also tell user that the OT is still calling other wise they might think it froze during OT calls)
-    qApp->quit();
-}
-
-
-//Server Slots
-/** *****************************************
- * @brief Moneychanger::mc_defaultserver_slot
- * @info Universal call to opening the server list manager.
- ** *****************************************/
-void Moneychanger::mc_defaultserver_slot(){
-    mc_servermanager_dialog();
-}
-
-
-
-void Moneychanger::mc_serverselection_triggered(QAction * action_triggered){
-    //Check if the user wants to open the nym manager (or) select a different default nym
-    QString action_triggered_string = QVariant(action_triggered->data()).toString();
-    qDebug() << "SERVER TRIGGERED" << action_triggered_string;
-    if(action_triggered_string == "openmanager"){
-        //Open server-list manager
-        mc_defaultserver_slot();
-    }else{
-        //Set new server default
-        QString action_triggered_string_server_name = QVariant(action_triggered->text()).toString();
-        mc_systrayMenu_server_setDefaultServer(action_triggered_string, action_triggered_string_server_name);
-        
-        //Refresh the server default selection in the server manager (ONLY if it is open)
-        //Check if server manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
-        if(mc_servermanager_already_init == 1){
-            //Refresh if the server manager is currently open
-            if(mc_server_manager_dialog->isVisible()){
-                mc_servermanager_dialog();
-            }
-        }
-    }
-}
-
-
-/**
- * @brief Moneychanger::mc_servermanager_request_remove_server_slot
- * @info This will attempt to remove the server from the loaded wallet,
- *       At the moment only "one" server can be selected but the for loop is there for
- *       future upgrades of such functionality.
- **/
-void Moneychanger::mc_servermanager_request_remove_server_slot(){
-    //Extract the currently selected server from the server-list.
-    QModelIndexList selected_indexes = mc_server_manager_tableview->selectionModel()->selectedIndexes();
-    
-    for(int a = 0; a < selected_indexes.size(); a++){
-        QModelIndex selected_index = selected_indexes.at(a);
-        int selected_row = selected_index.row();
-        
-        //Get server id
-        QModelIndex server_id_modelindex = mc_server_manager_tableview_itemmodel->index(selected_row, 1, QModelIndex());
-        QVariant server_id_variant = server_id_modelindex.data();
-        QString server_id_string = server_id_variant.toString();
-        bool can_remove = OTAPI_Wrap::Wallet_CanRemoveServer(server_id_string.toStdString());
-        
-        if(can_remove == true){
-            //Remove it
-            OTAPI_Wrap::Wallet_RemoveServer(server_id_string.toStdString());
-        }else{
-            //Find out why it can't be removed and alert the user the reasoning.
-            //Loop through nyms
-            std::string server_id_std = server_id_string.toStdString();
-            int num_nyms_registered_at_server = 0;
-            int num_nyms = OTAPI_Wrap::GetNymCount();
-            for(int b = 0; b < num_nyms; b++){
-                bool nym_index_at_server = OTAPI_Wrap::IsNym_RegisteredAtServer(OTAPI_Wrap::GetNym_ID(b), server_id_std);
-                if(nym_index_at_server == true){
-                    num_nyms_registered_at_server += 1;
-                }
-            }
-        }
-        
-    }
-    
-}
-
-
-
-
 //Withdraw Slots
 /*
  ** AS CASH SLOTS()
  */
-
 
 /** Open the dialog window **/
 void Moneychanger::mc_withdraw_ascash_slot(){
@@ -1550,7 +1522,6 @@ void Moneychanger::mc_withdraw_ascash_cancel_amount_slot(){
     mc_systrayMenu_withdraw_ascash_confirm_dialog->hide();
 }
 
-
 /*
  ** AS VOUCHER SLOTS()
  */
@@ -1569,13 +1540,11 @@ void Moneychanger::mc_withdraw_asvoucher_account_dropdown_highlighted_slot(int d
     mc_systrayMenu_withdraw_asvoucher_accountid_label->setText(mc_systrayMenu_withdraw_asvoucher_account_dropdown->itemData(dropdown_index).toString());
 }
 
-
 //This will show the address book, the opened address book will be set to paste in recipient nym ids if/when selecting a nymid in the addressbook.
 void Moneychanger::mc_withdraw_asvoucher_show_addressbook_slot(){
     //Show address book
     mc_addressbook_show("withdraw_as_voucher");
 }
-
 
 /**
  ** Button from dialog window has been activated;
@@ -1653,7 +1622,6 @@ void Moneychanger::mc_withdraw_asvoucher_confirm_amount_dialog_slot(){
     }
 }
 
-
 //This is activated when the user clicks "Confirm amount"
 void Moneychanger::mc_withdraw_asvoucher_confirm_amount_slot(){
     //Close the dialog/window
@@ -1690,6 +1658,9 @@ void Moneychanger::mc_withdraw_asvoucher_cancel_amount_slot(){
     mc_systrayMenu_withdraw_asvoucher_confirm_dialog->hide();
 }
 
+// End Withdraw
+
+/** Deposit **/
 
 //Deposit Slots
 
@@ -1699,7 +1670,6 @@ void Moneychanger::mc_withdraw_asvoucher_cancel_amount_slot(){
 void Moneychanger::mc_deposit_slot(){
     mc_deposit_show_dialog();
 }
-
 
 /**
  ** Deposit dialog
@@ -1849,3 +1819,23 @@ void Moneychanger::mc_requestfunds_show_dialog(){
     //Show
     mc_requestfunds_dialog->show();
 }
+
+// End Deposit
+
+
+/* Systray */
+
+//Shutdown slots
+void Moneychanger::mc_shutdown_slot(){
+    //Disconnect all signals from callin class (probubly main) to this class
+    //Disconnect
+    QObject::disconnect(this);
+    //Close qt app (no need to deinit anything as of the time of this comment)
+    //TO DO: Check if the OT queue caller is still proccessing calls.... Then quit the app. (Also tell user that the OT is still calling other wise they might think it froze during OT calls)
+    qApp->quit();
+}
+
+// End Systray
+
+
+

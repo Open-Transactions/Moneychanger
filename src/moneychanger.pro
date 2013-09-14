@@ -25,7 +25,13 @@ SOURCES += main.cpp\
     Widgets/addressbookwindow.cpp \
     Widgets/nymmanagerwindow.cpp \
     Widgets/assetmanagerwindow.cpp \
-    Widgets/accountmanagerwindow.cpp
+    Widgets/accountmanagerwindow.cpp \
+    Widgets/servermanagerwindow.cpp \
+    Widgets/withdrawascashwindow.cpp \
+    Widgets/withdrawasvoucherwindow.cpp \
+    Widgets/depositwindow.cpp \
+    Widgets/sendfundswindow.cpp \
+    Widgets/requestfundswindow.cpp
 
 HEADERS += moneychanger.h \
            ot_worker.h \
@@ -40,7 +46,13 @@ HEADERS += moneychanger.h \
     Widgets/addressbookwindow.h \
     Widgets/nymmanagerwindow.h \
     Widgets/assetmanagerwindow.h \
-    Widgets/accountmanagerwindow.h
+    Widgets/accountmanagerwindow.h \
+    Widgets/servermanagerwindow.h \
+    Widgets/withdrawascashwindow.h \
+    Widgets/withdrawasvoucherwindow.h \
+    Widgets/depositwindow.h \
+    Widgets/sendfundswindow.h \
+    Widgets/requestfundswindow.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 
