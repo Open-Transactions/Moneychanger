@@ -1,4 +1,4 @@
-#include "marketwindow.h"
+#include "MarketWindow.h"
 #include "ui_marketwindow.h"
 
 MarketWindow::MarketWindow(QWidget *parent) :
