@@ -57,11 +57,20 @@ HEADERS += moneychanger.h \
 DEFINES += "OT_ZMQ_MODE=1"
 
 mac:{
-QT_CONFIG -= no-pkg-config
-LIBS += -lboost_system-mt -ldl
+	QT_CONFIG -= no-pkg-config
+	LIBS += -lboost_system-mt -lboost_thread-mt -ldl
 }
 
-unix:LIBS += /usr/local/lib/libboost_thread-mt.a -ldl
+
+linux:{
+	BITSIZE = $$system(getconf LONG_BIT)
+	if (contains(BITSIZE, 64)) {
+		LIBS += /usr/lib64/libboost_thread.so -ldl
+	}
+	if (contains(BITSIZE, 32)) {
+		LIBS += /usr/lib/libboost_thread.so -ldl
+	}
+}
 
 ##QMAKE_CXXFLAGS += -fPIC -DPIC --param ssp-buffer-size=4
 
