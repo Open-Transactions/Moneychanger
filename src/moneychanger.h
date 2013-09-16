@@ -148,6 +148,7 @@ private:
     bool mc_withdraw_ascash_already_init;
     bool mc_withdraw_asvoucher_already_init;
     bool mc_deposit_already_init;
+    bool mc_sendfunds_already_init;
     
     void nymmanager_dialog();
     
@@ -281,17 +282,13 @@ private:
 
     // ------------------------------------------------
     /** Send Funds **/
-    int mc_sendfunds_already_init;
     int mc_requestfunds_already_init;
-    QDialog * mc_sendfunds_dialog;
     QDialog * mc_requestfunds_dialog;
     
     //Gridlayout
-    QGridLayout * mc_sendfunds_gridlayout;
     QGridLayout * mc_requestfunds_gridlayout;
     
     //Send funds type selection (combobox)
-    QComboBox * mc_sendfunds_sendtype_combobox;
     QComboBox * mc_requestfunds_sendtype_combobox;
     
     // ------------------------------------------------

@@ -99,9 +99,8 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_withdraw_asvoucher_already_init = false;
     //Deposit
     mc_deposit_already_init = false;
-    
     //Send funds
-    mc_sendfunds_already_init = 0;
+    mc_sendfunds_already_init = false;
     
     //Init MC System Tray Icon
     mc_systrayIcon = new QSystemTrayIcon(this);
@@ -960,45 +959,26 @@ void Moneychanger::mc_deposit_slot(){
 
 /** Send Funds **/
 
-void Moneychanger::mc_sendfunds_slot(){
-    mc_sendfunds_show_dialog();
+void Moneychanger::mc_sendfunds_show_dialog(){
+    
+    if(!mc_sendfunds_already_init){
+        sendfundswindow = new SendFundsWindow(this);
+        sendfundswindow->setAttribute(Qt::WA_DeleteOnClose);
+        sendfundswindow->dialog();
+        mc_sendfunds_already_init = true;
+    }
+    else
+        sendfundswindow->show();
+
 }
 
-void Moneychanger::mc_sendfunds_show_dialog(){
-    if(mc_sendfunds_already_init == 0){
-        mc_sendfunds_dialog = new QDialog(0);
-        mc_sendfunds_gridlayout = new QGridLayout(0);
-        mc_sendfunds_dialog->setLayout(mc_sendfunds_gridlayout);
-        //Set window title
-        mc_sendfunds_dialog->setWindowTitle("Send Funds | Moneychanger");
-        
-        //Content
-        //Select sendfunds type
-        mc_sendfunds_sendtype_combobox = new QComboBox(0);
-        mc_sendfunds_sendtype_combobox->setStyleSheet("QComboBox{font-size:15pt;}");
-        //Add selection options
-        mc_sendfunds_sendtype_combobox->addItem("Send a Payment");
-        mc_sendfunds_sendtype_combobox->addItem("Send a Cheque");
-        mc_sendfunds_sendtype_combobox->addItem("Send Cash");
-        mc_sendfunds_sendtype_combobox->addItem("Send an Account Transfer");
-        
-        mc_sendfunds_gridlayout->addWidget(mc_sendfunds_sendtype_combobox, 0,0, 1,1, Qt::AlignHCenter);
-    }
-    
-    //Resize
-    mc_sendfunds_dialog->resize(500, 300);
-    
-    //Show
-    mc_sendfunds_dialog->show();
+void Moneychanger::mc_sendfunds_slot(){
+    mc_sendfunds_show_dialog();
 }
 
 // End Send Funds
 
 /** Request Funds **/
-
-void Moneychanger::mc_requestfunds_slot(){
-    mc_requestfunds_show_dialog();
-}
 
 void Moneychanger::mc_requestfunds_show_dialog(){
     if(mc_requestfunds_already_init == 0){
@@ -1023,6 +1003,10 @@ void Moneychanger::mc_requestfunds_show_dialog(){
     
     //Show
     mc_requestfunds_dialog->show();
+}
+
+void Moneychanger::mc_requestfunds_slot(){
+    mc_requestfunds_show_dialog();
 }
 
 // End Request Funds
