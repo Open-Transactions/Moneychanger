@@ -21,6 +21,9 @@ void OverviewWindow::dialog()
         mc_overview_dialog_page = new QDialog(0);
         mc_overview_dialog_page->setWindowFlags(Qt::WindowStaysOnTopHint);
         mc_overview_dialog_page->setWindowTitle("Overview | Moneychanger");
+        
+        mc_overview_dialog_page->installEventFilter(this);
+
         //Grid Layout
         mc_overview_gridlayout = new QGridLayout(0);
         mc_overview_dialog_page->setLayout(mc_overview_gridlayout);
@@ -181,4 +184,37 @@ void OverviewWindow::refresh(){
 
     }
 
+}
+
+
+
+// This event filter catches Esc key and Close events
+// So that they get cleaned up in the parentWidget appropriately.
+// Note that this won't work if the parentWidget isn't of
+// Type Moneychanger, but this can be modified so that Esc events are
+// Discarded (Don't do this if the Widget is Modal!)
+/*
+ 
+ if(e->key() != Qt::Key_Escape)
+ QDialog::keyPressEvent(e);
+ else {;}
+ 
+ */
+
+bool OverviewWindow::eventFilter(QObject *obj, QEvent *event){
+    
+    if (event->type() == QEvent::Close) {
+        ((Moneychanger *)parentWidget())->close_overview_dialog();
+        return true;
+    } else if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if(keyEvent->key() == Qt::Key_Escape){
+            mc_overview_dialog_page->close(); // This is caught by this same filter.
+            return true;
+        }
+        return true;
+    }else {
+        // standard event processing
+        return QObject::eventFilter(obj, event);
+    }
 }

@@ -50,7 +50,11 @@ private:
 
 signals:
 
-public slots:
+private slots:
+    
+protected:
+    
+    bool eventFilter(QObject *obj, QEvent *event);
 
 };
 

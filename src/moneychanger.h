@@ -53,6 +53,7 @@
 #include "Widgets/requestfundswindow.h"
 #include "Widgets/sendfundswindow.h"
 
+class OverviewWindow;
 class AddressBookWindow;
 class AccountManagerWindow;
 class ServerManagerWindow;
@@ -116,6 +117,9 @@ public:
     
     // Set Systray Server Value
     void set_systrayMenu_server_setDefaultServer(QString, QString);
+    
+    // Close Dialogs
+    void close_overview_dialog();
     void close_servermanager_dialog();
     
 
@@ -136,7 +140,7 @@ private:
     
     ot_worker * ot_worker_background;
     
-    // Already initialized bool's
+    // Booleans for tracking initialization
     
     bool mc_overview_already_init;
     bool mc_market_window_already_init;
@@ -153,6 +157,7 @@ private:
     
     void nymmanager_dialog();
     
+    OverviewWindow * overviewwindow;
     AddressBookWindow * addressbookwindow;
     AccountManagerWindow * accountmanagerwindow;
     ServerManagerWindow * servermanagerwindow;

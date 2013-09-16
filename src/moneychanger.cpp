@@ -1,3 +1,18 @@
+/*
+ *  MoneyChanger
+ *  moneychanger.cpp
+ *
+ *  File organized as follows:
+ *  
+ *      /-- Constructor (Lengthy)--/
+ *      /-- Destructor --/
+ *
+ *      /-- Systray Functions --/
+ *
+ *      /-- Menu Dialog Functions --/
+ *
+ */
+
 #include "moneychanger.h"
 #include "ot_worker.h"
 
@@ -7,8 +22,9 @@
 #include "opentxs/OT_ME.h"
 
 /**
- ** Constructor & Destructor
+ * Constructor & Destructor
  **/
+
 Moneychanger::Moneychanger(QWidget *parent)
 : QWidget(parent)
 {
@@ -352,12 +368,21 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon->setContextMenu(mc_systrayMenu);
 }
 
+
 Moneychanger::~Moneychanger()
 {
     
 }
 
-//start
+
+
+
+
+/** 
+ * Systray 
+ **/
+
+// Startup
 void Moneychanger::bootTray(){
     //Show systray
     mc_systrayIcon->show();
@@ -365,48 +390,92 @@ void Moneychanger::bootTray(){
     qDebug() << "BOOTING";
 }
 
-/** ****** ****** ******  **
- ** Public Function/Calls **/
 
-
-/** ****** ****** ******   **
- ** Private Function/Calls **/
-
-/* **
- * Menu Dialog Related Calls
- */
-
-/** Overview Dialog **/
-void Moneychanger::mc_overview_dialog(){
-    if(!mc_overview_already_init){
-        OverviewWindow *overview = new OverviewWindow(this);
-        overview->setAttribute(Qt::WA_DeleteOnClose);
-        overview->dialog();
-        mc_overview_already_init = true;
-    }
+// Shutdown
+void Moneychanger::mc_shutdown_slot(){
+    //Disconnect all signals from callin class (probubly main) to this class
+    //Disconnect
+    QObject::disconnect(this);
+    //Close qt app (no need to deinit anything as of the time of this comment)
+    //TO DO: Check if the OT queue caller is still proccessing calls.... Then quit the app. (Also tell user that the OT is still calling other wise they might think it froze during OT calls)
+    qApp->quit();
 }
+
+// End Systray
+
+
+
+
+
+
+
+/****
+ *
+ * Menu Dialog Related Calls
+ *
+ * First you'll want to create a class for the dialog window you want to display.
+ * Then you'll want to follow one of the dialog examples below to see how the startup should happen.
+ *
+ ****
+ *
+ * Remember that you'll need to define a close public function here in Moneychanger, and the accompanying
+ * QEvent Handler for the class in question.
+ *
+ ****
+ * 
+ * At a minimum, a Window needs three Functions to operate in the Systray:
+ * 
+ *  1) Startup Slot to connect to Moneychanger Buttons (mc_classname_slot)
+ *  2) Dialog Function to launch the Window (mc_classname_dialog)
+ *  3) A Function to handled the Close Event Handlers (close_classname_dialog)
+ *
+ * If you're confused, take a look at the window functions defined below :-)
+ * (NOTE) : Some of these may not be fully complete yet, this is a work in progress.
+ *
+ * Try to keep everything you add for your windows organized and grouped below by Window Class.
+ *
+ ****/
+
+
+
+/** 
+ * Overview Window 
+ **/
 
 //Overview slots
 void Moneychanger::mc_overview_slot(){
     //The operator has requested to open the dialog to the "Overview";
     mc_overview_dialog();
 }
-// End Overview 
 
-// Market Window
-void Moneychanger::mc_market_slot(){
-    
-    // This is a glaring memory leak, but it's only a temporary placeholder before I redo how windows are handled.
-    if(!mc_market_window_already_init){
-        MarketWindow *market_window = new MarketWindow(this);
-        market_window->setAttribute(Qt::WA_DeleteOnClose);
-        market_window->show();
-        mc_market_window_already_init = true;
+void Moneychanger::mc_overview_dialog(){
+    if(!mc_overview_already_init){
+        overviewwindow = new OverviewWindow(this);
+        overviewwindow->setAttribute(Qt::WA_DeleteOnClose);
+        overviewwindow->dialog();
+        mc_overview_already_init = true;
+        qDebug() << "Overview Opened";
     }
 }
-// End Market Window
 
-/** Address Book **/
+void Moneychanger::close_overview_dialog(){
+    delete overviewwindow;
+    mc_overview_already_init = false;
+    qDebug() << "Overview Closed";
+}
+
+// End Overview
+
+
+
+
+
+
+
+/** 
+ * Address Book 
+ **/
+
 void Moneychanger::mc_addressbook_show(QString text){
     //The caller dosen't wish to have the address book paste to anything (they just want to see/manage the address book), just call blank.    
     if(!mc_addressbook_already_init){
@@ -418,9 +487,35 @@ void Moneychanger::mc_addressbook_show(QString text){
     else
         addressbookwindow->show(text);
 }
+
 // End Address Book
 
-/**  Nym Manager **/
+
+
+
+
+
+/**  
+ * Nym Manager 
+ **/
+
+//Nym manager "clicked"
+void Moneychanger::mc_defaultnym_slot(){
+    //The operator has requested to open the dialog to the "Nym Manager";
+    mc_nymmanager_dialog();
+}
+
+void Moneychanger::mc_nymmanager_dialog(){
+    
+    if(!mc_nymmanager_already_init){
+        NymManagerWindow *nymmanagerwindow = new NymManagerWindow(this);
+        nymmanagerwindow->setAttribute(Qt::WA_DeleteOnClose);
+        nymmanagerwindow->dialog();
+        mc_overview_already_init = true;
+    }
+}
+
+//Additional Nym Manager Functions
 void Moneychanger::set_systrayMenu_nym_setDefaultNym(QString nym_id, QString nym_name){
     //Set default nym internal memory
     default_nym_id = nym_id;
@@ -432,16 +527,6 @@ void Moneychanger::set_systrayMenu_nym_setDefaultNym(QString nym_id, QString nym
     //Rename "NYM:" if a nym is loaded
     if(nym_id != ""){
         mc_systrayMenu_nym->setTitle("Nym: "+nym_name);
-    }
-}
-
-void Moneychanger::mc_nymmanager_dialog(){
-    
-    if(!mc_nymmanager_already_init){
-        NymManagerWindow *nymmanagerwindow = new NymManagerWindow(this);
-        nymmanagerwindow->setAttribute(Qt::WA_DeleteOnClose);
-        nymmanagerwindow->dialog();
-        mc_overview_already_init = true;
     }
 }
 
@@ -497,12 +582,6 @@ void Moneychanger::mc_systrayMenu_reload_nymlist(){
     
 }
 
-//Nym manager "clicked"
-void Moneychanger::mc_defaultnym_slot(){
-    //The operator has requested to open the dialog to the "Nym Manager";
-    mc_nymmanager_dialog();
-}
-
 //Nym new default selected from systray
 void Moneychanger::mc_nymselection_triggered(QAction*action_triggered){
     //Check if the user wants to open the nym manager (or) select a different default nym
@@ -527,9 +606,25 @@ void Moneychanger::mc_nymselection_triggered(QAction*action_triggered){
     }
     
 }
+
 // End Nym Manager
 
-/** Asset Manager **/
+
+
+
+
+
+
+/** 
+ * Asset Manager 
+ **/
+
+//Asset manager "clicked"
+void Moneychanger::mc_defaultasset_slot(){
+    //The operator has requested to open the dialog to the "Asset Manager";
+    mc_assetmanager_dialog();
+}
+
 void Moneychanger::mc_assetmanager_dialog(){
     if(!mc_assetmanager_already_init){
         AssetManagerWindow *assetmanagerwindow = new AssetManagerWindow(this);
@@ -538,6 +633,8 @@ void Moneychanger::mc_assetmanager_dialog(){
         mc_assetmanager_already_init = true;
     }
 }
+
+//Additional Asset slots
 
 //This was mistakenly named asset_load_asset, should be set default asset
 //Set Default asset
@@ -632,15 +729,24 @@ void Moneychanger::mc_assetselection_triggered(QAction*action_triggered){
     
 }
 
-//Default Asset slots
-//Asset manager "clicked"
-void Moneychanger::mc_defaultasset_slot(){
-    //The operator has requested to open the dialog to the "Asset Manager";
-    mc_assetmanager_dialog();
-}
 // End Asset Manager
 
-/** Account Manager **/
+
+
+
+
+
+
+/** 
+ * Account Manager 
+ **/
+
+//Account manager "clicked"
+void Moneychanger::mc_defaultaccount_slot(){
+    //The operator has requested to open the dialog to the "account Manager";
+    mc_accountmanager_dialog();
+}
+
 void Moneychanger::mc_accountmanager_dialog(){
     if(!mc_accountmanager_already_init){
         accountmanagerwindow = new AccountManagerWindow(this);
@@ -656,14 +762,9 @@ void Moneychanger::close_accountmanager_dialog(){
     mc_accountmanager_already_init = false;
 }
 
-//Default Account slots
-//Account manager "clicked"
-void Moneychanger::mc_defaultaccount_slot(){
-    //The operator has requested to open the dialog to the "account Manager";
-    mc_accountmanager_dialog();
-}
+//Account Manager Additional Functions
 
-//account new default selected from systray
+//Account new default selected from systray
 void Moneychanger::mc_accountselection_triggered(QAction*action_triggered){
     //Check if the user wants to open the account manager (or) select a different default account
     QString action_triggered_string = QVariant(action_triggered->data()).toString();
@@ -688,7 +789,6 @@ void Moneychanger::mc_accountselection_triggered(QAction*action_triggered){
     
 }
 
-//This was mistakenly named account_load_account, should be set default account
 //Set Default account
 void Moneychanger::set_systrayMenu_account_setDefaultAccount(QString account_id, QString account_name){
     //Set default account internal memory
@@ -769,12 +869,22 @@ void Moneychanger::mc_systrayMenu_reload_accountlist(){
     
 }
 
+// End Account Manager
 
-/** Server Manager **/
-/** *********************************************
- * @brief Moneychanger::mc_servermanager_dialog
- * @info Will init & show the server list manager
- ** *********************************************/
+
+
+
+
+
+
+/** 
+ * Server Manager 
+ **/
+
+void Moneychanger::mc_defaultserver_slot(){
+    mc_servermanager_dialog();
+}
+
 void Moneychanger::mc_servermanager_dialog(){
     if(!mc_servermanager_already_init){
         servermanagerwindow = new ServerManagerWindow(this);
@@ -861,9 +971,6 @@ void Moneychanger::mc_systrayMenu_reload_serverlist(){
 }
 
 //Server Slots
-void Moneychanger::mc_defaultserver_slot(){
-    mc_servermanager_dialog();
-}
 
 void Moneychanger::mc_serverselection_triggered(QAction * action_triggered){
     //Check if the user wants to open the nym manager (or) select a different default nym
@@ -889,9 +996,23 @@ void Moneychanger::mc_serverselection_triggered(QAction * action_triggered){
 }
 // End Server Manager
 
-/** Withdraw **/
 
-//As Cash
+
+
+
+
+/** 
+ * Withdraw 
+ **/
+
+//--- As Cash ---//
+void Moneychanger::mc_withdraw_ascash_slot(){
+    //The operator has requested to open the dialog to withdraw as cash.
+    mc_withdraw_ascash_dialog();
+}
+
+//Open the WithdrawAsCash dialog window
+
 void Moneychanger::mc_withdraw_ascash_dialog(){
     if(!mc_withdraw_ascash_already_init){
         withdrawascashwindow = new WithdrawAsCashWindow(this);
@@ -901,13 +1022,18 @@ void Moneychanger::mc_withdraw_ascash_dialog(){
     }
 };
 
-/** Open the WithdrawAsCash dialog window **/
-void Moneychanger::mc_withdraw_ascash_slot(){
+
+
+
+//--- As Voucher ---//
+
+void Moneychanger::mc_withdraw_asvoucher_slot(){
     //The operator has requested to open the dialog to withdraw as cash.
-    mc_withdraw_ascash_dialog();
+    mc_withdraw_asvoucher_dialog();
 }
 
-//As Voucher
+// Open the WithdrawAsVoucher dialog window
+
 void Moneychanger::mc_withdraw_asvoucher_dialog(){
     
     if(!mc_withdraw_asvoucher_already_init){
@@ -921,12 +1047,6 @@ void Moneychanger::mc_withdraw_asvoucher_dialog(){
     
 }
 
-/** Open the WithdrawAsVoucher dialog window **/
-void Moneychanger::mc_withdraw_asvoucher_slot(){
-    //The operator has requested to open the dialog to withdraw as cash.
-    mc_withdraw_asvoucher_dialog();
-}
-
 void Moneychanger::set_systrayMenu_withdraw_asvoucher_nym_input(QString input){
     
     if(!mc_withdraw_asvoucher_already_init){
@@ -936,9 +1056,21 @@ void Moneychanger::set_systrayMenu_withdraw_asvoucher_nym_input(QString input){
     else
         withdrawasvoucherwindow->set_systrayMenu_withdraw_asvoucher_nym_input_text(input);
 }
+
 // End Withdrawals
 
-/** Deposit **/
+
+
+
+
+
+/** 
+ * Deposit 
+ **/
+
+void Moneychanger::mc_deposit_slot(){
+    mc_deposit_show_dialog();
+}
 
 void Moneychanger::mc_deposit_show_dialog(){
     
@@ -952,14 +1084,20 @@ void Moneychanger::mc_deposit_show_dialog(){
         depositwindow->show();
 }
 
-void Moneychanger::mc_deposit_slot(){
-    mc_deposit_show_dialog();
-}
-
 // End Deposit
 
 
-/** Send Funds **/
+
+
+
+
+/** 
+ * Send Funds 
+ **/
+
+void Moneychanger::mc_sendfunds_slot(){
+    mc_sendfunds_show_dialog();
+}
 
 void Moneychanger::mc_sendfunds_show_dialog(){
     
@@ -974,13 +1112,20 @@ void Moneychanger::mc_sendfunds_show_dialog(){
 
 }
 
-void Moneychanger::mc_sendfunds_slot(){
-    mc_sendfunds_show_dialog();
-}
-
 // End Send Funds
 
-/** Request Funds **/
+
+
+
+
+
+/** 
+ * Request Funds 
+ **/
+
+void Moneychanger::mc_requestfunds_slot(){
+    mc_requestfunds_show_dialog();
+}
 
 void Moneychanger::mc_requestfunds_show_dialog(){
     
@@ -995,25 +1140,31 @@ void Moneychanger::mc_requestfunds_show_dialog(){
     
 }
 
-void Moneychanger::mc_requestfunds_slot(){
-    mc_requestfunds_show_dialog();
-}
-
 // End Request Funds
 
-/* Systray */
 
-//Shutdown slots
-void Moneychanger::mc_shutdown_slot(){
-    //Disconnect all signals from callin class (probubly main) to this class
-    //Disconnect
-    QObject::disconnect(this);
-    //Close qt app (no need to deinit anything as of the time of this comment)
-    //TO DO: Check if the OT queue caller is still proccessing calls.... Then quit the app. (Also tell user that the OT is still calling other wise they might think it froze during OT calls)
-    qApp->quit();
+
+
+
+
+
+/**
+ * Market Window
+ **/
+
+void Moneychanger::mc_market_slot(){
+    
+    // This is a glaring memory leak, but it's only a temporary placeholder before I redo how windows are handled.
+    if(!mc_market_window_already_init){
+        MarketWindow *market_window = new MarketWindow(this);
+        market_window->setAttribute(Qt::WA_DeleteOnClose);
+        market_window->show();
+        mc_market_window_already_init = true;
+    }
 }
 
-// End Systray
+// End Market Window
+
 
 
 
