@@ -1144,7 +1144,7 @@ void Moneychanger::close_deposit_dialog(){
  **/
 
 void Moneychanger::mc_sendfunds_slot(){
-    mc_sendfunds_show_dialog();
+    // mc_sendfunds_show_dialog();  // This is throwing a seg fault, need to investigate
 }
 
 void Moneychanger::mc_sendfunds_show_dialog(){

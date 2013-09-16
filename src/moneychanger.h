@@ -171,7 +171,6 @@ private:
      **/
     
     OT_ME * ot_me;
-    
     ot_worker * ot_worker_background;
     
     
