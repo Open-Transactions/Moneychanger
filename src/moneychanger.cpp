@@ -101,6 +101,8 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_deposit_already_init = false;
     //Send funds
     mc_sendfunds_already_init = false;
+    //Request Funds
+    mc_requestfunds_already_init = false;
     
     //Init MC System Tray Icon
     mc_systrayIcon = new QSystemTrayIcon(this);
@@ -165,7 +167,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayMenu_requestfunds = new QAction(mc_systrayIcon_requestfunds, "Request Payment...", 0);
     mc_systrayMenu->addAction(mc_systrayMenu_requestfunds);
     // Currently causes a crash , likely due to malformed Dialog construction.
-    //connect(mc_systrayMenu_requestfunds, SIGNAL(triggered()), this, SLOT(mc_requestfunds_slot()));
+    connect(mc_systrayMenu_requestfunds, SIGNAL(triggered()), this, SLOT(mc_requestfunds_slot()));
     // --------------------------------------------------------------
     //Separator
     mc_systrayMenu->addSeparator();
@@ -981,28 +983,16 @@ void Moneychanger::mc_sendfunds_slot(){
 /** Request Funds **/
 
 void Moneychanger::mc_requestfunds_show_dialog(){
-    if(mc_requestfunds_already_init == 0){
-        mc_requestfunds_dialog = new QDialog(0);
-        mc_requestfunds_gridlayout = new QGridLayout(0);
-        mc_requestfunds_dialog->setLayout(mc_requestfunds_gridlayout);
-        //Set window title
-        mc_requestfunds_dialog->setWindowTitle("Request Funds | Moneychanger");
-        
-        //Content
-        //                                //Select requestfunds type
-        //                                mc_requestfunds_requesttype_combobox = new QComboBox(0);
-        //                                mc_requestfunds_requesttype_combobox->setStyleSheet("QComboBox{font-size:15pt;}");
-        //                                    //Add selection options
-        //                                    mc_requestfunds_requesttype_combobox->addItem("Write a Cheque");
-        
-        //                                mc_requestfunds_gridlayout->addWidget(mc_requestfunds_requesttype_combobox, 0,0, 1,1, Qt::AlignHCenter);
+    
+    if(!mc_requestfunds_already_init){
+        requestfundswindow = new RequestFundsWindow(this);
+        requestfundswindow->setAttribute(Qt::WA_DeleteOnClose);
+        requestfundswindow->dialog();
+        mc_requestfunds_already_init = true;
     }
+    else
+        requestfundswindow->show();
     
-    //Resize
-    mc_requestfunds_dialog->resize(500, 300);
-    
-    //Show
-    mc_requestfunds_dialog->show();
 }
 
 void Moneychanger::mc_requestfunds_slot(){

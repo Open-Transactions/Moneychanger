@@ -2,16 +2,34 @@
 #define REQUESTFUNDSWINDOW_H
 
 #include <QWidget>
+#include <QDialog>
+#include <QGridLayout>
+#include <QDebug>
+#include <QComboBox>
+
 
 class RequestFundsWindow : public QWidget
 {
     Q_OBJECT
 public:
     explicit RequestFundsWindow(QWidget *parent = 0);
+    void dialog();
+    
+private:
+    
+    bool mc_requestfunds_already_init;
+    
+    QDialog * mc_requestfunds_dialog;
+    
+    //Gridlayout
+    QGridLayout * mc_requestfunds_gridlayout;
+    
+    //Send funds type selection (combobox)
+    QComboBox * mc_requestfunds_sendtype_combobox;
 
 signals:
 
-public slots:
+private slots:
 
 };
 
