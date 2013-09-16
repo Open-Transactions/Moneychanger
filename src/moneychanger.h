@@ -40,13 +40,27 @@
 #include "MTRecordList.h"
 #include "MTRecord.h"
 
+#include "Widgets/MarketWindow.h"
+#include "Widgets/overviewwindow.h"
+#include "Widgets/addressbookwindow.h"
+#include "Widgets/nymmanagerwindow.h"
+#include "Widgets/assetmanagerwindow.h"
 #include "Widgets/accountmanagerwindow.h"
 #include "Widgets/servermanagerwindow.h"
 #include "Widgets/withdrawascashwindow.h"
+#include "Widgets/withdrawasvoucherwindow.h"
+#include "Widgets/depositwindow.h"
+#include "Widgets/requestfundswindow.h"
+#include "Widgets/sendfundswindow.h"
 
+class AddressBookWindow;
 class AccountManagerWindow;
 class ServerManagerWindow;
 class WithdrawAsCashWindow;
+class WithdrawAsVoucherWindow;
+class DepositWindow;
+class RequestFundsWindow;
+class SendFundsWindow;
 
 
 class Moneychanger : public QWidget
@@ -63,6 +77,11 @@ public:
 
     /** Interfaces **/
     ot_worker * get_ot_worker_background(){return ot_worker_background;};
+    
+    //Address Book Dialog
+    //Show address book
+    void mc_addressbook_show(QString text);
+
     
     QString get_default_nym_id(){return default_nym_id;};
     int get_nym_list_id_size(){return nym_list_id->size();};
@@ -84,7 +103,7 @@ public:
     QString get_server_id_at(int a){return server_list_id->at(a).toString();}
     QString get_server_name_at(int a){return server_list_name->at(a).toString();}
     
-    void set_systrayMenu_withdraw_asvoucher_nym_input(QString input){mc_systrayMenu_withdraw_asvoucher_nym_input->setText(input);};
+    void set_systrayMenu_withdraw_asvoucher_nym_input(QString input);
     // Set Systray Nym Value
     void set_systrayMenu_nym_setDefaultNym(QString, QString);
     
@@ -99,8 +118,13 @@ public:
     void set_systrayMenu_server_setDefaultServer(QString, QString);
     void close_servermanager_dialog();
     
+
+
+    
     // OT Interface Functions
+    // These should probably be moved to the main class file.
     std::string ot_withdraw_cash(std::string selected_server_id_string, std::string nym_id, std::string selected_account_id_string, int amount_to_withdraw_int){return ot_me->withdraw_cash(selected_server_id_string, nym_id, selected_account_id_string, amount_to_withdraw_int);};
+    std::string ot_withdraw_voucher(std::string selected_server_id_string, std::string nym_id, std::string selected_account_id_string, std::string recip_nym_string, std::string memo_string, int amount_to_withdraw_int){return ot_me->withdraw_voucher(selected_server_id_string, nym_id, selected_account_id_string, recip_nym_string, memo_string, amount_to_withdraw_int);};
     
 private:
     // ------------------------------------------------
@@ -114,6 +138,7 @@ private:
     
     // Already initialized bool's
     
+    bool mc_overview_already_init;
     bool mc_market_window_already_init;
     bool mc_addressbook_already_init;
     bool mc_nymmanager_already_init;
@@ -121,13 +146,18 @@ private:
     bool mc_accountmanager_already_init;
     bool mc_servermanager_already_init;
     bool mc_withdraw_ascash_already_init;
+    bool mc_withdraw_asvoucher_already_init;
     
     void nymmanager_dialog();
     
-    
+    AddressBookWindow * addressbookwindow;
     AccountManagerWindow * accountmanagerwindow;
     ServerManagerWindow * servermanagerwindow;
     WithdrawAsCashWindow * withdrawascashwindow;
+    WithdrawAsVoucherWindow * withdrawasvoucherwindow;
+    DepositWindow * depositwindow;
+    RequestFundsWindow * requestfundswindow;
+    SendFundsWindow * sendfundswindow;
 
     // ------------------------------------------------
     //MC Systray icon
@@ -224,7 +254,6 @@ private:
     // ---------------------------------------------------------
     //MC Systray Dialogs
     /** Overview **/
-    bool mc_overview_already_init;
     QMutex mc_overview_refreshing_visuals_mutex;
     QDialog * mc_overview_dialog_page;
     //Grid layout
@@ -247,69 +276,6 @@ private:
     QList<QVariant> mc_overview_index_of_tx;
     // ------------------------------------------------
 
-    //As Voucher
-    int mc_withdraw_asvoucher_dialog_already_init;
-    QDialog * mc_systrayMenu_withdraw_asvoucher_dialog;
-    //Grid layout
-    QGridLayout * mc_systrayMenu_withdraw_asvoucher_gridlayout;
-    //Withdraw (as voucher) header label
-    QLabel * mc_systrayMenu_withdraw_asvoucher_header_label;
-    
-    //Account Id (label)
-    QLabel * mc_systrayMenu_withdraw_asvoucher_accountid_label;
-    
-    //Account Name (Dropdown box)
-    QComboBox * mc_systrayMenu_withdraw_asvoucher_account_dropdown;
-    
-    //Nym ID (input)
-    //Horitzontal Layout for Nym ID Input
-    QWidget * mc_systrayMenu_withdraw_asvoucher_nym_holder;
-    QHBoxLayout * mc_systrayMenu_withdraw_asvoucher_nym_hbox;
-    
-    //Nym Id (type/paste input)
-    QLineEdit * mc_systrayMenu_withdraw_asvoucher_nym_input;
-    
-    //Address book (button as Icon)
-    QIcon mc_systrayMenu_withdraw_asvoucher_nym_addressbook_icon;
-    QPushButton * mc_systrayMenu_withdraw_asvoucher_nym_addressbook_btn;
-    
-    //QR Code Scanner (button as Icon)
-    //TODO ^^
-    
-    //Amount (in integer for now)
-    QLineEdit * mc_systrayMenu_withdraw_asvoucher_amount_input;
-    
-    //Memo (Text box)
-    QTextEdit * mc_systrayMenu_withdraw_asvoucher_memo_input;
-    
-    //Activate withdraw button
-    QPushButton * mc_systrayMenu_withdraw_asvoucher_button;
-    
-    //Withdraw as Voucher confirmation
-    int mc_withdraw_asvoucher_confirm_dialog_already_init;
-    QDialog * mc_systrayMenu_withdraw_asvoucher_confirm_dialog;
-    
-    //Grid layout
-    QGridLayout * mc_systrayMenu_withdraw_asvoucher_confirm_gridlayout;
-    
-    //Label
-    QLabel * mc_systrayMenu_withdraw_asvoucher_confirm_label;
-    
-    //Label (Amount)
-    QLabel * mc_systrayMenu_withdraw_asvoucher_confirm_amount_label;
-    
-    //Backend (Amount)
-    int withdraw_asvoucher_confirm_amount_int;
-    
-    //Confirm/cancel horizontal layout
-    QWidget * mc_systrayMenu_withdraw_asvoucher_confirm_amount_confirm_cancel_widget;
-    QHBoxLayout * mc_systrayMenu_withdraw_asvoucher_confirm_amount_confirm_cancel_layout;
-    
-    //Cancel amount (button)
-    QPushButton * mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_cancel;
-    
-    //Confirm amount (button)
-    QPushButton * mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_confirm;
     // ------------------------------------------------
     /** Deposit **/
     int mc_deposit_already_init;
@@ -353,13 +319,8 @@ private:
     /**           **
      ** Functions **
      **           **/
-    
-    //Address Book Dialog
-    //Show address book
-    void mc_addressbook_show(QString text);
-    
-    //Add contact to address book
-    void mc_addressbook_addblankrow(); //Adds a blank editable row for the user to add a contact with
+
+
     // ------------------------------------------------
     //Menu Dialog
     
@@ -454,12 +415,7 @@ private slots:
     
     //As Voucher
     void mc_withdraw_asvoucher_slot();
-    void mc_withdraw_asvoucher_show_addressbook_slot();
-    void mc_withdraw_asvoucher_confirm_amount_dialog_slot();
-    
-    void mc_withdraw_asvoucher_account_dropdown_highlighted_slot(int);
-    void mc_withdraw_asvoucher_confirm_amount_slot();
-    void mc_withdraw_asvoucher_cancel_amount_slot();
+
     // ------------------------------------------------
     //Deposit
     void mc_deposit_slot();
