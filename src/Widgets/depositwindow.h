@@ -7,7 +7,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QComboBox>
-#include <QHboxLayout>
+#include <QHBoxLayout>
 
 #include "moneychanger.h"
 
