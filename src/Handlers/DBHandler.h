@@ -12,7 +12,7 @@
 #include <QSqlError>
 #include <QVariant>
 
-#include "filehandler.h"
+#include "FileHandler.h"
 
 /*
  * declare DB driver and filename.
