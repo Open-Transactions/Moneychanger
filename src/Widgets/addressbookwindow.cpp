@@ -37,6 +37,8 @@ void AddressBookWindow::show(QString paste_selection_to){
         //Init address book, then show
         dialog = new QDialog(0);
         
+        dialog->installEventFilter(this);
+
         //(Nice effect; Dims all windows except the address book and makes the address book on top upon showing
         dialog->setModal(1);
         //mc_addressbook_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
@@ -292,5 +294,24 @@ void AddressBookWindow::dataChanged_slot(QModelIndex topLeft, QModelIndex bottom
             //Update
             DBHandler::getInstance()->AddressBookUpdateNym(nym_id_string, nym_display_name_string, index_id_string);
         }
+    }
+}
+
+
+bool AddressBookWindow::eventFilter(QObject *obj, QEvent *event){
+    
+    if (event->type() == QEvent::Close) {
+        ((Moneychanger *)parentWidget())->close_addressbook();
+        return true;
+    } else if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if(keyEvent->key() == Qt::Key_Escape){
+            dialog->close(); // This is caught by this same filter.
+            return true;
+        }
+        return true;
+    }else {
+        // standard event processing
+        return QObject::eventFilter(obj, event);
     }
 }

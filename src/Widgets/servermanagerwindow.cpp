@@ -26,6 +26,7 @@ void ServerManagerWindow::dialog(){
         //Init
         mc_server_manager_dialog = new QDialog(0);
         mc_server_manager_dialog->setWindowTitle("Server Manager | Moneychanger");
+        mc_server_manager_dialog->installEventFilter(this);
         mc_server_manager_gridlayout = new QGridLayout(0);
         mc_server_manager_gridlayout->setColumnStretch(1, 0);
         mc_server_manager_dialog->setLayout(mc_server_manager_gridlayout);
@@ -348,15 +349,12 @@ void ServerManagerWindow::request_remove_server_slot(){
 bool ServerManagerWindow::eventFilter(QObject *obj, QEvent *event){
     
     if (event->type() == QEvent::Close) {
-        //QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        qDebug() << "Caught Server Manager Window Close Filter";
         ((Moneychanger *)parentWidget())->close_servermanager_dialog();
         return true;
     } else if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
         if(keyEvent->key() == Qt::Key_Escape){
-            ((Moneychanger *)parentWidget())->close_servermanager_dialog();
-            qDebug() << "Caught Server Manager Window Close Filter";
+            mc_server_manager_dialog->close();
             return true;
         }
         return true;

@@ -96,10 +96,7 @@ private:
     /** Account Manger Slot locks **/
     int mc_accountmanager_proccessing_dataChanged;
     // ------------------------------------------------
-    
-protected:
-    
-    bool eventFilter(QObject *obj, QEvent *event);
+
 
 signals:
 
@@ -118,6 +115,9 @@ private slots:
     void request_remove_account_slot();
 
     
+protected:
+    
+    bool eventFilter(QObject *obj, QEvent *event);
 
 };
 

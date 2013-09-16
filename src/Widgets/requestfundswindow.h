@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QComboBox>
 
+#include "moneychanger.h"
 
 class RequestFundsWindow : public QWidget
 {
@@ -30,6 +31,10 @@ private:
 signals:
 
 private slots:
+    
+protected:
+    
+    bool eventFilter(QObject *obj, QEvent *event);
 
 };
 

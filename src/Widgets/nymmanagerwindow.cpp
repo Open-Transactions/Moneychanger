@@ -29,6 +29,8 @@ void NymManagerWindow::dialog(){
         //The Nym Manager has not been init yet; Init, then show it.
         mc_nym_manager_dialog = new QDialog(0);
         
+        mc_nym_manager_dialog->installEventFilter(this);
+        
         /** window properties **/
         //Set window title
         mc_nym_manager_dialog->setWindowTitle("Nym Manager | Moneychanger");
@@ -378,5 +380,24 @@ void NymManagerWindow::request_remove_nym_slot(){
         
     }
     
+}
+
+
+bool NymManagerWindow::eventFilter(QObject *obj, QEvent *event){
+    
+    if (event->type() == QEvent::Close) {
+        ((Moneychanger *)parentWidget())->close_nymmanager_dialog();
+        return true;
+    } else if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if(keyEvent->key() == Qt::Key_Escape){
+            mc_nym_manager_dialog->close();
+            return true;
+        }
+        return true;
+    }else {
+        // standard event processing
+        return QObject::eventFilter(obj, event);
+    }
 }
 

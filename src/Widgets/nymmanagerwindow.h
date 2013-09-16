@@ -101,6 +101,10 @@ private slots:
     void addnym_dialog_showadvanced_slot(QString link_href);
     void addnym_dialog_createnym_slot();
     void request_remove_nym_slot();
+    
+protected:
+    
+    bool eventFilter(QObject *obj, QEvent *event);
 
 };
 

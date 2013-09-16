@@ -456,6 +456,7 @@ void Moneychanger::mc_overview_dialog(){
         mc_overview_already_init = true;
         qDebug() << "Overview Opened";
     }
+    overviewwindow->show();
 }
 
 void Moneychanger::close_overview_dialog(){
@@ -483,10 +484,18 @@ void Moneychanger::mc_addressbook_show(QString text){
         addressbookwindow->setAttribute(Qt::WA_DeleteOnClose);
         addressbookwindow->show(text);
         mc_overview_already_init = true;
+        qDebug() << "Address Book Opened";
     }
     else
         addressbookwindow->show(text);
 }
+
+void Moneychanger::close_addressbook(){
+    delete addressbookwindow;
+    mc_overview_already_init = false;
+    qDebug() << "Address Book Closed";
+}
+
 
 // End Address Book
 
@@ -508,11 +517,18 @@ void Moneychanger::mc_defaultnym_slot(){
 void Moneychanger::mc_nymmanager_dialog(){
     
     if(!mc_nymmanager_already_init){
-        NymManagerWindow *nymmanagerwindow = new NymManagerWindow(this);
+        nymmanagerwindow = new NymManagerWindow(this);
         nymmanagerwindow->setAttribute(Qt::WA_DeleteOnClose);
         nymmanagerwindow->dialog();
         mc_overview_already_init = true;
     }
+}
+
+void Moneychanger::close_nymmanager_dialog(){
+    delete nymmanagerwindow;
+    mc_overview_already_init = false;
+    qDebug() << "Nym Manager Closed";
+    
 }
 
 //Additional Nym Manager Functions
@@ -627,11 +643,18 @@ void Moneychanger::mc_defaultasset_slot(){
 
 void Moneychanger::mc_assetmanager_dialog(){
     if(!mc_assetmanager_already_init){
-        AssetManagerWindow *assetmanagerwindow = new AssetManagerWindow(this);
+        assetmanagerwindow = new AssetManagerWindow(this);
         assetmanagerwindow->setAttribute(Qt::WA_DeleteOnClose);
         assetmanagerwindow->dialog();
         mc_assetmanager_already_init = true;
     }
+}
+
+void Moneychanger::close_assetmanager_dialog(){
+    delete assetmanagerwindow;
+    mc_assetmanager_already_init = false;
+    qDebug() << "Asset Manager Closed";
+    
 }
 
 //Additional Asset slots
@@ -760,6 +783,8 @@ void Moneychanger::mc_accountmanager_dialog(){
 void Moneychanger::close_accountmanager_dialog(){
     delete accountmanagerwindow;
     mc_accountmanager_already_init = false;
+    qDebug() << "Account Manager Closed";
+
 }
 
 //Account Manager Additional Functions
@@ -891,12 +916,15 @@ void Moneychanger::mc_servermanager_dialog(){
         servermanagerwindow->setAttribute(Qt::WA_DeleteOnClose);
         servermanagerwindow->dialog();
         mc_servermanager_already_init = true;
+        qDebug() << "Server Manager Opened";
     }
 }
 
 void Moneychanger::close_servermanager_dialog(){
     delete servermanagerwindow;
     mc_servermanager_already_init = false;
+    qDebug() << "Server Manager Closed";
+
 }
 
 void Moneychanger::set_systrayMenu_server_setDefaultServer(QString server_id, QString server_name){
@@ -1022,6 +1050,12 @@ void Moneychanger::mc_withdraw_ascash_dialog(){
     }
 };
 
+void Moneychanger::close_withdrawascash_dialog(){
+    delete withdrawascashwindow;
+    mc_withdraw_ascash_already_init = false;
+    qDebug() << "Withdraw As Cash Closed";
+    
+}
 
 
 
@@ -1044,6 +1078,13 @@ void Moneychanger::mc_withdraw_asvoucher_dialog(){
     }
     else
         withdrawasvoucherwindow->show();
+    
+}
+
+void Moneychanger::close_withdrawasvoucher_dialog(){
+    delete withdrawasvoucherwindow;
+    mc_withdraw_asvoucher_already_init = false;
+    qDebug() << "Withdraw As Voucher Closed";
     
 }
 
@@ -1084,6 +1125,13 @@ void Moneychanger::mc_deposit_show_dialog(){
         depositwindow->show();
 }
 
+void Moneychanger::close_deposit_dialog(){
+    delete depositwindow;
+    mc_deposit_already_init = false;
+    qDebug() << "Deposit Window Closed";
+    
+}
+
 // End Deposit
 
 
@@ -1110,6 +1158,13 @@ void Moneychanger::mc_sendfunds_show_dialog(){
     else
         sendfundswindow->show();
 
+}
+
+void Moneychanger::close_sendfunds_dialog(){
+    delete sendfundswindow;
+    mc_sendfunds_already_init = false;
+    qDebug() << "Send Funds Window Closed";
+    
 }
 
 // End Send Funds
@@ -1140,6 +1195,14 @@ void Moneychanger::mc_requestfunds_show_dialog(){
     
 }
 
+void Moneychanger::close_requestfunds_dialog(){
+    delete requestfundswindow;
+    mc_requestfunds_already_init = false;
+    qDebug() << "Request Funds Window Closed";
+    
+}
+
+
 // End Request Funds
 
 
@@ -1156,11 +1219,18 @@ void Moneychanger::mc_market_slot(){
     
     // This is a glaring memory leak, but it's only a temporary placeholder before I redo how windows are handled.
     if(!mc_market_window_already_init){
-        MarketWindow *market_window = new MarketWindow(this);
+        market_window = new MarketWindow(this);
         market_window->setAttribute(Qt::WA_DeleteOnClose);
         market_window->show();
         mc_market_window_already_init = true;
     }
+}
+
+void Moneychanger::close_market_dialog(){
+    delete market_window;
+    mc_market_window_already_init = false;
+    qDebug() << "Market Window Closed";
+    
 }
 
 // End Market Window

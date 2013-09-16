@@ -7,6 +7,8 @@
 #include <QGridLayout>
 #include <QDialog>
 
+#include "moneychanger.h"
+
 class SendFundsWindow : public QWidget
 {
     Q_OBJECT
@@ -26,6 +28,10 @@ private:
 signals:
 
 private slots:
+    
+protected:
+    
+    bool eventFilter(QObject *obj, QEvent *event);
 
 };
 

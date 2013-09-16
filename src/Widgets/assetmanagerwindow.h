@@ -113,6 +113,10 @@ private slots:
     void dialog_showadvanced_slot(QString link_href);
     void request_remove_asset_slot();
     void addasset_dialog_createasset_slot();
+    
+protected:
+    
+    bool eventFilter(QObject *obj, QEvent *event);
 
 };
 

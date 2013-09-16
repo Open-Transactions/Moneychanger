@@ -11,6 +11,7 @@ void DepositWindow::dialog(){
         //Init deposit, then show.
         mc_deposit_dialog = new QDialog(0);
         mc_deposit_dialog->setWindowTitle("Deposit | Moneychanger");
+        mc_deposit_dialog->installEventFilter(this);
         //Gridlayout
         mc_deposit_gridlayout = new QGridLayout(0);
         mc_deposit_gridlayout->setColumnStretch(0, 1);
@@ -85,5 +86,24 @@ void DepositWindow::mc_deposit_type_changed_slot(int newIndex){
         mc_deposit_purse_header_label->show();
         mc_deposit_purse_widget->show();
         
+    }
+}
+
+
+bool DepositWindow::eventFilter(QObject *obj, QEvent *event){
+    
+    if (event->type() == QEvent::Close) {
+        ((Moneychanger *)parentWidget())->close_deposit_dialog();
+        return true;
+    } else if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if(keyEvent->key() == Qt::Key_Escape){
+            mc_deposit_dialog->close();
+            return true;
+        }
+        return true;
+    }else {
+        // standard event processing
+        return QObject::eventFilter(obj, event);
     }
 }

@@ -3,6 +3,10 @@
 
 #include <QDialog>
 #include <QAbstractButton>
+#include <QEvent>
+#include <QKeyEvent>
+
+#include "moneychanger.h"
 
 
 namespace Ui {
@@ -25,6 +29,11 @@ private slots:
 
 private:
     Ui::MarketWindow *ui;
+    
+protected:
+    
+    bool eventFilter(QObject *obj, QEvent *event);
+    
 };
 
 #endif // MARKETWINDOW_H

@@ -80,6 +80,9 @@ private slots:
     void mc_withdraw_ascash_cancel_amount_slot();
     void mc_withdraw_ascash_account_dropdown_highlighted_slot(int);
 
+protected:
+    
+    bool eventFilter(QObject *obj, QEvent *event);
 
 };
 

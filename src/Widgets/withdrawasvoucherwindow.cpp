@@ -26,6 +26,7 @@ void WithdrawAsVoucherWindow::dialog(){
         //Init, then show
         //Init
         mc_systrayMenu_withdraw_asvoucher_dialog = new QDialog(0);
+        mc_systrayMenu_withdraw_asvoucher_dialog->installEventFilter(this);
         /** window properties **/
         //Set window title
         mc_systrayMenu_withdraw_asvoucher_dialog->setWindowTitle("Withdraw as Voucher | Moneychanger");
@@ -246,4 +247,24 @@ void WithdrawAsVoucherWindow::mc_withdraw_asvoucher_cancel_amount_slot(){
 void WithdrawAsVoucherWindow::set_withdraw_asvoucher_account_dropdown_highlighted_slot(int dropdown_index){
     //Change Account ID label to the highlighted(bymouse) dropdown index.
     mc_systrayMenu_withdraw_asvoucher_accountid_label->setText(mc_systrayMenu_withdraw_asvoucher_account_dropdown->itemData(dropdown_index).toString());
+}
+
+
+
+bool WithdrawAsVoucherWindow::eventFilter(QObject *obj, QEvent *event){
+    
+    if (event->type() == QEvent::Close) {
+        ((Moneychanger *)parentWidget())->close_withdrawasvoucher_dialog();
+        return true;
+    } else if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if(keyEvent->key() == Qt::Key_Escape){
+            mc_systrayMenu_withdraw_asvoucher_dialog->close();
+            return true;
+        }
+        return true;
+    }else {
+        // standard event processing
+        return QObject::eventFilter(obj, event);
+    }
 }

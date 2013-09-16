@@ -13,6 +13,7 @@ void SendFundsWindow::dialog(){
     
     if(mc_sendfunds_already_init == 0){
         mc_sendfunds_dialog = new QDialog(0);
+        mc_sendfunds_dialog->installEventFilter(this);
         mc_sendfunds_gridlayout = new QGridLayout(0);
         mc_sendfunds_dialog->setLayout(mc_sendfunds_gridlayout);
         //Set window title
@@ -36,4 +37,24 @@ void SendFundsWindow::dialog(){
     
     //Show
     mc_sendfunds_dialog->show();
+}
+
+
+
+bool SendFundsWindow::eventFilter(QObject *obj, QEvent *event){
+    
+    if (event->type() == QEvent::Close) {
+        ((Moneychanger *)parentWidget())->close_sendfunds_dialog();
+        return true;
+    } else if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if(keyEvent->key() == Qt::Key_Escape){
+            mc_sendfunds_dialog->close();
+            return true;
+        }
+        return true;
+    }else {
+        // standard event processing
+        return QObject::eventFilter(obj, event);
+    }
 }

@@ -9,6 +9,8 @@
 #include <QComboBox>
 #include <QHboxLayout>
 
+#include "moneychanger.h"
+
 class DepositWindow : public QWidget
 {
     Q_OBJECT
@@ -50,6 +52,10 @@ private slots:
     
     //The user changed the "deposit type" switch open/available menu
     void mc_deposit_type_changed_slot(int);
+    
+protected:
+    
+    bool eventFilter(QObject *obj, QEvent *event);
 
 };
 

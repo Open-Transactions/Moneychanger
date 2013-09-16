@@ -52,6 +52,12 @@ public slots:
     void addblankrow_slot();
     void confirm_remove_contact_slot();
     void dataChanged_slot(QModelIndex topLeft, QModelIndex bottomRight);
+    
+    
+protected:
+    
+    bool eventFilter(QObject *obj, QEvent *event);
+
 
     
 };

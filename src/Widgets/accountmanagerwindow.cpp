@@ -400,15 +400,12 @@ void AccountManagerWindow::request_remove_account_slot(){
 bool AccountManagerWindow::eventFilter(QObject *obj, QEvent *event){
     
     if (event->type() == QEvent::Close) {
-        //QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        qDebug() << "Caught Account Manager Window Close Filter";
         ((Moneychanger *)parentWidget())->close_accountmanager_dialog();
         return true;
     } else if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
         if(keyEvent->key() == Qt::Key_Escape){
-            ((Moneychanger *)parentWidget())->close_accountmanager_dialog();
-            qDebug() << "Caught Account Manager Window Close Filter";
+            mc_account_manager_dialog->close();
             return true;
         }
         return true;

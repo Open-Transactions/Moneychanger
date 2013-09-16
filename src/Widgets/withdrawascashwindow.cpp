@@ -22,6 +22,7 @@ void WithdrawAsCashWindow::dialog(){
             //Init, then show
             //Init
             mc_systrayMenu_withdraw_ascash_dialog = new QDialog(0);
+            mc_systrayMenu_withdraw_ascash_dialog->installEventFilter(this);
             /** window properties **/
             //Set window title
             mc_systrayMenu_withdraw_ascash_dialog->setWindowTitle("Withdraw as Cash | Moneychanger");
@@ -210,3 +211,24 @@ void WithdrawAsCashWindow::mc_withdraw_ascash_account_dropdown_highlighted_slot(
     //Change Account ID label to the highlighted(bymouse) dropdown index.
     mc_systrayMenu_withdraw_ascash_accountid_label->setText(mc_systrayMenu_withdraw_ascash_account_dropdown->itemData(dropdown_index).toString());
 }
+
+
+
+bool WithdrawAsCashWindow::eventFilter(QObject *obj, QEvent *event){
+    
+    if (event->type() == QEvent::Close) {
+        ((Moneychanger *)parentWidget())->close_withdrawascash_dialog();
+        return true;
+    } else if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if(keyEvent->key() == Qt::Key_Escape){
+            mc_systrayMenu_withdraw_ascash_dialog->close();
+            return true;
+        }
+        return true;
+    }else {
+        // standard event processing
+        return QObject::eventFilter(obj, event);
+    }
+}
+

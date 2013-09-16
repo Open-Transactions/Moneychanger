@@ -30,6 +30,7 @@ void AssetManagerWindow::dialog(){
         //The asset Manager has not been init yet; Init, then show it.
         mc_asset_manager_dialog = new QDialog(0);
         
+        mc_asset_manager_dialog->installEventFilter(this);
         /** window properties **/
         //Set window title
         mc_asset_manager_dialog->setWindowTitle("Asset Contracts | Moneychanger");
@@ -384,5 +385,25 @@ void AssetManagerWindow::addasset_dialog_createasset_slot(){
         //Failed to create asset type
     }
 }
+
+
+bool AssetManagerWindow::eventFilter(QObject *obj, QEvent *event){
+    
+    if (event->type() == QEvent::Close) {
+        ((Moneychanger *)parentWidget())->close_assetmanager_dialog();
+        return true;
+    } else if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if(keyEvent->key() == Qt::Key_Escape){
+            mc_asset_manager_dialog->close();
+            return true;
+        }
+        return true;
+    }else {
+        // standard event processing
+        return QObject::eventFilter(obj, event);
+    }
+}
+
 
 

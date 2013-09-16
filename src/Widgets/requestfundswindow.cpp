@@ -11,6 +11,7 @@ void RequestFundsWindow::dialog(){
     
     if(!mc_requestfunds_already_init){
         mc_requestfunds_dialog = new QDialog(0);
+        mc_requestfunds_dialog->installEventFilter(this);
         mc_requestfunds_gridlayout = new QGridLayout(0);
         mc_requestfunds_dialog->setLayout(mc_requestfunds_gridlayout);
         //Set window title
@@ -31,4 +32,23 @@ void RequestFundsWindow::dialog(){
     
     //Show
     mc_requestfunds_dialog->show();
+}
+
+
+bool RequestFundsWindow::eventFilter(QObject *obj, QEvent *event){
+    
+    if (event->type() == QEvent::Close) {
+        ((Moneychanger *)parentWidget())->close_requestfunds_dialog();
+        return true;
+    } else if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if(keyEvent->key() == Qt::Key_Escape){
+            mc_requestfunds_dialog->close();
+            return true;
+        }
+        return true;
+    }else {
+        // standard event processing
+        return QObject::eventFilter(obj, event);
+    }
 }
