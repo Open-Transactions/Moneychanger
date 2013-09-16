@@ -97,10 +97,8 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_withdraw_ascash_already_init = false;
     // Withdraw as Voucher
     mc_withdraw_asvoucher_already_init = false;
-
-    
     //Deposit
-    mc_deposit_already_init = 0;
+    mc_deposit_already_init = false;
     
     //Send funds
     mc_sendfunds_already_init = 0;
@@ -862,10 +860,6 @@ void Moneychanger::mc_systrayMenu_reload_serverlist(){
 }
 
 //Server Slots
-/** *****************************************
- * @brief Moneychanger::mc_defaultserver_slot
- * @info Universal call to opening the server list manager.
- ** *****************************************/
 void Moneychanger::mc_defaultserver_slot(){
     mc_servermanager_dialog();
 }
@@ -895,6 +889,7 @@ void Moneychanger::mc_serverselection_triggered(QAction * action_triggered){
 // End Server Manager
 
 /** Withdraw **/
+
 //As Cash
 void Moneychanger::mc_withdraw_ascash_dialog(){
     if(!mc_withdraw_ascash_already_init){
@@ -905,7 +900,7 @@ void Moneychanger::mc_withdraw_ascash_dialog(){
     }
 };
 
-/** Open the dialog window **/
+/** Open the WithdrawAsCash dialog window **/
 void Moneychanger::mc_withdraw_ascash_slot(){
     //The operator has requested to open the dialog to withdraw as cash.
     mc_withdraw_ascash_dialog();
@@ -920,10 +915,12 @@ void Moneychanger::mc_withdraw_asvoucher_dialog(){
         withdrawasvoucherwindow->dialog();
         mc_withdraw_asvoucher_already_init = true;
     }
+    else
+        withdrawasvoucherwindow->show();
     
 }
 
-/** Open a new dialog window **/
+/** Open the WithdrawAsVoucher dialog window **/
 void Moneychanger::mc_withdraw_asvoucher_slot(){
     //The operator has requested to open the dialog to withdraw as cash.
     mc_withdraw_asvoucher_dialog();
@@ -938,115 +935,33 @@ void Moneychanger::set_systrayMenu_withdraw_asvoucher_nym_input(QString input){
     else
         withdrawasvoucherwindow->set_systrayMenu_withdraw_asvoucher_nym_input_text(input);
 }
-
-// End Withdraw
+// End Withdrawals
 
 /** Deposit **/
 
-//Deposit Slots
-
-/**
- ** Deposit dialog
- **/
 void Moneychanger::mc_deposit_show_dialog(){
-    if(mc_deposit_already_init == 0){
-        //Init deposit, then show.
-        mc_deposit_dialog = new QDialog(0);
-        mc_deposit_dialog->setWindowTitle("Deposit | Moneychanger");
-        //Gridlayout
-        mc_deposit_gridlayout = new QGridLayout(0);
-        mc_deposit_gridlayout->setColumnStretch(0, 1);
-        mc_deposit_gridlayout->setColumnStretch(1,0);
-        mc_deposit_dialog->setLayout(mc_deposit_gridlayout);
-        
-        //Label (header)
-        mc_deposit_header_label = new QLabel("<h1>Deposit</h1>");
-        mc_deposit_header_label->setAlignment(Qt::AlignRight);
-        mc_deposit_gridlayout->addWidget(mc_deposit_header_label, 0,1, 1,1);
-        //Label ("Into Account") (subheader)
-        mc_deposit_account_header_label = new QLabel("<h3>Into Account</h3>");
-        mc_deposit_account_header_label->setAlignment(Qt::AlignRight);
-        mc_deposit_gridlayout->addWidget(mc_deposit_account_header_label, 1,1, 1,1);
-        
-        //Label ("Into Purse") (subheader)
-        mc_deposit_purse_header_label = new QLabel("<h3>Into Purse</h3>");
-        mc_deposit_purse_header_label->setAlignment(Qt::AlignRight);
-        mc_deposit_gridlayout->addWidget(mc_deposit_purse_header_label, 1,1, 1,1);
-        mc_deposit_purse_header_label->hide();
-        
-        
-        //Combobox (choose deposit type)
-        mc_deposit_deposit_type = new QComboBox(0);
-        mc_deposit_deposit_type->setStyleSheet("QComboBox{padding:1em;}");
-        mc_deposit_gridlayout->addWidget(mc_deposit_deposit_type, 0,0, 1,1, Qt::AlignHCenter);
-        mc_deposit_deposit_type->addItem("Deposit into your Account", QVariant(0));
-        mc_deposit_deposit_type->addItem("Deposit into your Purse", QVariant(1));
-        //connect "update" to switching open depsoit account/purse screens.
-        connect(mc_deposit_deposit_type, SIGNAL(currentIndexChanged(int)), this, SLOT(mc_deposit_type_changed_slot(int)));
-        
-        /** Deposit into Account **/
-        mc_deposit_account_widget = new QWidget(0);
-        mc_deposit_account_layout = new QHBoxLayout(0);
-        mc_deposit_account_widget->setLayout(mc_deposit_account_layout);
-        mc_deposit_gridlayout->addWidget(mc_deposit_account_widget, 1,0, 1,1);
-        //Add to account screen
-        
-        /** Deposit into Purse **/
-        mc_deposit_purse_widget = new QWidget(0);
-        mc_deposit_purse_layout = new QHBoxLayout(0);
-        mc_deposit_purse_widget->setLayout(mc_deposit_purse_layout);
-        mc_deposit_gridlayout->addWidget(mc_deposit_purse_widget, 1,0, 1,1);
-        //Add to purse screen
-        
-        
-        //Hide by default
-        mc_deposit_purse_widget->hide();
+    
+    if(!mc_deposit_already_init){
+        depositwindow = new DepositWindow(this);
+        depositwindow->setAttribute(Qt::WA_DeleteOnClose);
+        depositwindow->dialog();
+        mc_deposit_already_init = true;
     }
-    //Resize
-    mc_deposit_dialog->resize(600, 300);
-    //Show
-    mc_deposit_dialog->show();
+    else
+        depositwindow->show();
 }
 
-/**
- ** Deposit menu button clicked
- **/
 void Moneychanger::mc_deposit_slot(){
     mc_deposit_show_dialog();
 }
 
+// End Deposit
 
-void Moneychanger::mc_deposit_type_changed_slot(int newIndex){
-    /** 0 = Account; 1 = purse **/
-    if(newIndex == 0){
-        //Show account, hide purse.
-        mc_deposit_account_widget->show();
-        mc_deposit_account_header_label->show();
-        
-        mc_deposit_purse_widget->hide();
-        mc_deposit_purse_header_label->hide();
-        
-    }else if(newIndex == 1){
-        //Hide account, show purse.
-        mc_deposit_account_widget->hide();
-        mc_deposit_account_header_label->hide();
-        
-        mc_deposit_purse_header_label->show();
-        mc_deposit_purse_widget->show();
-        
-    }
-}
 
-//Send Funds slots
-/**
- ** Send Funds Menu Button Clicked
- **/
+/** Send Funds **/
+
 void Moneychanger::mc_sendfunds_slot(){
     mc_sendfunds_show_dialog();
-}
-
-void Moneychanger::mc_requestfunds_slot(){
-    mc_requestfunds_show_dialog();
 }
 
 void Moneychanger::mc_sendfunds_show_dialog(){
@@ -1077,6 +992,14 @@ void Moneychanger::mc_sendfunds_show_dialog(){
     mc_sendfunds_dialog->show();
 }
 
+// End Send Funds
+
+/** Request Funds **/
+
+void Moneychanger::mc_requestfunds_slot(){
+    mc_requestfunds_show_dialog();
+}
+
 void Moneychanger::mc_requestfunds_show_dialog(){
     if(mc_requestfunds_already_init == 0){
         mc_requestfunds_dialog = new QDialog(0);
@@ -1102,8 +1025,7 @@ void Moneychanger::mc_requestfunds_show_dialog(){
     mc_requestfunds_dialog->show();
 }
 
-// End Deposit
-
+// End Request Funds
 
 /* Systray */
 

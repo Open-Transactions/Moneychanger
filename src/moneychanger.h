@@ -147,6 +147,7 @@ private:
     bool mc_servermanager_already_init;
     bool mc_withdraw_ascash_already_init;
     bool mc_withdraw_asvoucher_already_init;
+    bool mc_deposit_already_init;
     
     void nymmanager_dialog();
     
@@ -277,29 +278,7 @@ private:
     // ------------------------------------------------
 
     // ------------------------------------------------
-    /** Deposit **/
-    int mc_deposit_already_init;
-    QDialog * mc_deposit_dialog;
-    //Gridlayout
-    QGridLayout * mc_deposit_gridlayout;
-    
-    //header (label)
-    QLabel * mc_deposit_header_label;
-    
-    //Dropdown box (combobox) (choose deposit type)
-    QComboBox * mc_deposit_deposit_type;
-    
-    /** Deposit into account **/
-    QWidget * mc_deposit_account_widget;
-    QHBoxLayout * mc_deposit_account_layout;
-    //(subheader) Deposit into account
-    QLabel * mc_deposit_account_header_label;
-    
-    /** Deposit into purse **/
-    QWidget * mc_deposit_purse_widget;
-    QHBoxLayout * mc_deposit_purse_layout;
-    //(header) Deposit into purse
-    QLabel * mc_deposit_purse_header_label;
+
     // ------------------------------------------------
     /** Send Funds **/
     int mc_sendfunds_already_init;
@@ -419,9 +398,7 @@ private slots:
     // ------------------------------------------------
     //Deposit
     void mc_deposit_slot();
-    
-    //The user changed the "deposit type" switch open/available menu
-    void mc_deposit_type_changed_slot(int);
+
     // ------------------------------------------------
     //Send /Request funds
     void mc_sendfunds_slot();
