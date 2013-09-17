@@ -18,6 +18,18 @@ moc_*.cpp
 qrc_*.cpp
 Makefile
 *-build-*
+*.pbxproj
+*.plist
+*.mak
+*.build
+*.xcodeproj
+*.app
+build-*
+*.autosave
+Debug*
+Release*
+mc_db
+ui_*
 
-
-
+#text editor backup files
+*~
