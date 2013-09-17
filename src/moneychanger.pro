@@ -18,7 +18,7 @@ SOURCES += main.cpp\
            ot_worker.cpp \
            MTRecordList.cpp \
            MTRecord.cpp \
-    Widgets/marketwindow.cpp \
+    Widgets/MarketWindow.cpp \
     Widgets/overviewwindow.cpp \
     Handlers/FileHandler.cpp \
     Handlers/DBHandler.cpp \
