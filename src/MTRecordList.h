@@ -36,20 +36,20 @@ typedef std::map<std::string, std::string>     map_of_strings;
 class MTRecordList
 {
     // Defaults to false. If you set it true, it will run a lot faster. (And give you less data.)
-    bool                      m_bRunFast; 
+    bool                      m_bRunFast;
     // ------------------------------------------------
     bool                      m_bAutoAcceptCheques;   // Cheques and vouchers, NOT invoices.
     bool                      m_bAutoAcceptReceipts;
     bool                      m_bAutoAcceptTransfers;
     // ------------------------------------------------
     list_of_strings           m_servers;
-     map_of_strings           m_assets;  // <asset_type_id, asset_name>
+    map_of_strings           m_assets;  // <asset_type_id, asset_name>
     list_of_strings           m_accounts;
     list_of_strings           m_nyms;
     // ------------------------------------------------
     vec_MTRecordList          m_contents;
     // ------------------------------------------------
-    static const std::string  s_blank;    
+    static const std::string  s_blank;
     static const std::string  s_message_type;
 public:
     MTRecordList();
@@ -65,15 +65,15 @@ public:
     void SetAssetID(const std::string str_id);  // Etc.
     void AddAssetID(const std::string str_id);
     void ClearAssets(); // Also clears m_contents
-
+    
     void SetNymID(const std::string str_id);
     void AddNymID(const std::string str_id);
     void ClearNyms(); // Also clears m_contents
-
+    
     void SetAccountID(const std::string str_id);
     void AddAccountID(const std::string str_id);
     void ClearAccounts(); // Also clears m_contents
-
+    
     // ------------------------------------------------
     void AcceptChequesAutomatically  (bool bVal=true);
     void AcceptReceiptsAutomatically (bool bVal=true);
@@ -91,7 +91,7 @@ public:
     int               size();
     weak_ptr_MTRecord GetRecord(int nIndex);
     // ------------------------------------------------
-
+    
 };
 
 
@@ -123,13 +123,13 @@ public:
  
  if (!sp)
  {
-    // It's NULL -- this means MTRecordList got re-populated.
-    // (Which means the list control on the UI needs to get
-    // re-populated with fresh pointers.)
+ // It's NULL -- this means MTRecordList got re-populated.
+ // (Which means the list control on the UI needs to get
+ // re-populated with fresh pointers.)
  }
  else // Pointer is good
  {
-    pRecord->GetName();  // Etc.
+ pRecord->GetName();  // Etc.
  }
  
  
