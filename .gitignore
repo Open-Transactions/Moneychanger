@@ -30,3 +30,6 @@ Debug*
 Release*
 mc_db
 ui_*
+
+#text editor backup files
+*~
