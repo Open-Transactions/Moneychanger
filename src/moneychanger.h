@@ -395,8 +395,9 @@ private:
     
     //Company submenu
     QMenu * mc_systrayMenu_company;
+    QMenu * mc_systrayMenu_company_create;
 
-    QAction * mc_systrayMenu_company_createinsurancecompany;
+    QAction * mc_systrayMenu_company_create_insurance;
 
     //Advanced submenu
     QMenu * mc_systrayMenu_advanced;
