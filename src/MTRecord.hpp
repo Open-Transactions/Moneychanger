@@ -47,43 +47,43 @@ private:
     const std::string & m_str_nym_id;
     const std::string & m_str_account_id;
     // ---------------------------------------
-          std::string   m_str_other_nym_id;
-          std::string   m_str_other_account_id;
+    std::string   m_str_other_nym_id;
+    std::string   m_str_other_account_id;
     // ---------------------------------------
-          std::string   m_str_name;
-          std::string   m_str_date;
-          std::string   m_str_amount;
-          std::string   m_str_type;
-          std::string   m_str_memo;
+    std::string   m_str_name;
+    std::string   m_str_date;
+    std::string   m_str_amount;
+    std::string   m_str_type;
+    std::string   m_str_memo;
     // ---------------------------------------
     // Contains payment instrument or mail message (or nothing, if not applicable.)
     //
-          std::string   m_str_contents;
+    std::string   m_str_contents;
     // ---------------------------------------
     // Contains transaction number of actual receipt in inbox,
     // or payment inbox, or record box. (If outpayment, contains
     // transaction number on outgoing instrument.)
     //
-          long          m_lTransactionNum;
-          long          m_lTransNumForDisplay;
+    long          m_lTransactionNum;
+    long          m_lTransNumForDisplay;
     // ---------------------------------------
-          bool          m_bIsPending;
-          bool          m_bIsOutgoing;
-          bool          m_bIsRecord;  // record box (closed, finished, historical only.)
-          bool          m_bIsReceipt; // It's a receipt, not a payment.
+    bool          m_bIsPending;
+    bool          m_bIsOutgoing;
+    bool          m_bIsRecord;  // record box (closed, finished, historical only.)
+    bool          m_bIsReceipt; // It's a receipt, not a payment.
     // ---------------------------------------
-          bool          m_bIsPaymentPlan;
-          bool          m_bIsSmartContract;
-          bool          m_bIsVoucher;
-          bool          m_bIsCheque;
-          bool          m_bIsInvoice;
-          bool          m_bIsCash;
+    bool          m_bIsPaymentPlan;
+    bool          m_bIsSmartContract;
+    bool          m_bIsVoucher;
+    bool          m_bIsCheque;
+    bool          m_bIsInvoice;
+    bool          m_bIsCash;
     // ---------------------------------------
-          bool          m_bIsExpired;
-          bool          m_bIsCanceled;
+    bool          m_bIsExpired;
+    bool          m_bIsCanceled;
     // ---------------------------------------
     MTRecordType        m_RecordType;
-    // ---------------------------------------    
+    // ---------------------------------------
     bool  AcceptIncomingTransferOrReceipt();
 public:
     // ---------------------------------------
@@ -168,7 +168,7 @@ public:
     time_t GetInitialPaymentDate();
     time_t GetPaymentPlanStartDate();
     time_t GetTimeBetweenPayments();
-
+    
     long   GetInitialPaymentAmount();
     long   GetPaymentPlanAmount();
     
@@ -199,5 +199,5 @@ public:
 };
 
 
-    
+
 #endif /* defined(__OTClient__MTRecord__) */

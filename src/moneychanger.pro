@@ -17,23 +17,54 @@ SOURCES += main.cpp\
            moneychanger.cpp \
            ot_worker.cpp \
            MTRecordList.cpp \
-           MTRecord.cpp
+           MTRecord.cpp \
+    Widgets/MarketWindow.cpp \
+    Widgets/overviewwindow.cpp \
+    Handlers/FileHandler.cpp \
+    Handlers/DBHandler.cpp \
+    Widgets/addressbookwindow.cpp \
+    Widgets/nymmanagerwindow.cpp \
+    Widgets/assetmanagerwindow.cpp \
+    Widgets/accountmanagerwindow.cpp \
+    Widgets/servermanagerwindow.cpp \
+    Widgets/withdrawascashwindow.cpp \
+    Widgets/withdrawasvoucherwindow.cpp \
+    Widgets/depositwindow.cpp \
+    Widgets/sendfundswindow.cpp \
+    Widgets/requestfundswindow.cpp
 
 HEADERS += moneychanger.h \
            ot_worker.h \
            MTRecordList.h \
            MTRecord.h \
     MTRecord.hpp \
-    MTRecordList.hpp
+    MTRecordList.hpp \
+    Widgets/marketwindow.h \
+    Widgets/overviewwindow.h \
+    Handlers/FileHandler.h \
+    Handlers/DBHandler.h \
+    Widgets/addressbookwindow.h \
+    Widgets/nymmanagerwindow.h \
+    Widgets/assetmanagerwindow.h \
+    Widgets/accountmanagerwindow.h \
+    Widgets/servermanagerwindow.h \
+    Widgets/withdrawascashwindow.h \
+    Widgets/withdrawasvoucherwindow.h \
+    Widgets/depositwindow.h \
+    Widgets/sendfundswindow.h \
+    Widgets/requestfundswindow.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 
 mac:{
-QT_CONFIG -= no-pkg-config
-LIBS += -lboost_system-mt -ldl
+	QT_CONFIG -= no-pkg-config
+	LIBS += -lboost_system-mt -lboost_thread-mt -ldl
 }
 
-unix:LIBS += /usr/lib/libboost_thread.so.1.49.0 -ldl
+
+linux:{
+	LIBS += -lboost_system -lboost_thread -ldl
+}
 
 ##QMAKE_CXXFLAGS += -fPIC -DPIC --param ssp-buffer-size=4
 
@@ -64,3 +95,8 @@ unix: PKGCONFIG += chaiscript
 #OTHER_FILES +=
 
 RESOURCES += resource.qrc
+
+OTHER_FILES +=
+
+FORMS += \
+    UI/marketwindow.ui
