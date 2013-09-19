@@ -52,8 +52,7 @@
 #include "Widgets/depositwindow.h"
 #include "Widgets/requestfundswindow.h"
 #include "Widgets/sendfundswindow.h"
-
-#include "ui_createinsurancecompany.h"
+#include "Widgets/createinsurancecompany.h"
 
 class OverviewWindow;
 class AddressBookWindow;

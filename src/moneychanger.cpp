@@ -1249,7 +1249,7 @@ void Moneychanger::mc_createinsurancecompany_slot(){
 
 void Moneychanger::mc_createinsurancecompany_dialog(){
     if(!mc_createinsurancecompany_already_init){
-        createinsurancecompany_window = new createinsurancecompany(this);
+        createinsurancecompany_window = new CreateInsuranceCompany(this);
         createinsurancecompany_window->setAttribute(Qt::WA_DeleteOnClose);
         createinsurancecompany_window->dialog();
         mc_createinsurancecompany_already_init = true;
