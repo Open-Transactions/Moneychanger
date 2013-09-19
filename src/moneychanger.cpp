@@ -1251,15 +1251,14 @@ void Moneychanger::mc_createinsurancecompany_dialog(){
     if(!mc_createinsurancecompany_already_init){
         createinsurancecompany_window = new CreateInsuranceCompany(this);
         createinsurancecompany_window->setAttribute(Qt::WA_DeleteOnClose);
-        createinsurancecompany_window->dialog();
+        createinsurancecompany_window->show();
         mc_createinsurancecompany_already_init = true;
         qDebug() << "createinsurancecompany Opened";
     }
-    createinsurancecompany->show();
 }
 
 void Moneychanger::close_createinsurancecompany_dialog(){
-    delete createinsurancecompany;
+    delete createinsurancecompany_window;
     mc_createinsurancecompany_already_init = false;
     qDebug() << "createinsurancecompany Closed";
 }

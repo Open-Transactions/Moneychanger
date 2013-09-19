@@ -1,26 +1,27 @@
-#ifndef CREATEINSURANCECOMPANY_H
-#define CREATEINSURANCECOMPANY_H
+#ifndef CreateInsuranceCompany_H
+#define CreateInsuranceCompany_H
 
 #include <QWizard>
+#include "moneychanger.h"
 
 namespace Ui {
-class createinsurancecompany;
+class CreateInsuranceCompany;
 }
 
-class createinsurancecompany : public QWizard
+class CreateInsuranceCompany : public QWizard
 {
     Q_OBJECT
 
 public:
-    explicit createinsurancecompany(QWidget *parent = 0);
-    ~createinsurancecompany();
+    explicit CreateInsuranceCompany(QWidget *parent = 0);
+    ~CreateInsuranceCompany();
 
 private:
-    Ui::createinsurancecompany *ui;
+    Ui::CreateInsuranceCompany *ui;
 
 protected:
 
     bool eventFilter(QObject *obj, QEvent *event);
 };
 
-#endif // CREATEINSURANCECOMPANY_H
+#endif // CreateInsuranceCompany_H

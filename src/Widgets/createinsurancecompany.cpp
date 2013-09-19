@@ -1,22 +1,22 @@
 #include "createinsurancecompany.h"
 #include "ui_createinsurancecompany.h"
 
-createinsurancecompany::createinsurancecompany(QWidget *parent) :
+CreateInsuranceCompany::CreateInsuranceCompany(QWidget *parent) :
     QWizard(parent),
-    ui(new Ui::createinsurancecompany)
+    ui(new Ui::CreateInsuranceCompany)
 {
     ui->setupUi(this);
 }
 
-createinsurancecompany::~createinsurancecompany()
+CreateInsuranceCompany::~CreateInsuranceCompany()
 {
     delete ui;
 }
 
-bool createinsurancecompany::eventFilter(QObject *obj, QEvent *event){
+bool CreateInsuranceCompany::eventFilter(QObject *obj, QEvent *event){
 
     if (event->type() == QEvent::Close) {
-        ((createinsurancecompany *)parentWidget())->close_createinsurancecompany_dialog();
+        ((Moneychanger *)parentWidget())->close_createinsurancecompany_dialog();
         return true;
     } else if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);

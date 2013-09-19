@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>createinsurancecompany</class>
- <widget class="QWizard" name="createinsurancecompany">
+ <class>CreateInsuranceCompany</class>
+ <widget class="QWizard" name="CreateInsuranceCompany">
   <property name="geometry">
    <rect>
     <x>0</x>
