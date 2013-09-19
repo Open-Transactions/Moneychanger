@@ -393,7 +393,11 @@ private:
     QAction * mc_systrayMenu_requestfunds;
     // ---------------------------------------------------------
     
-    
+    //Company submenu
+    QMenu * mc_systrayMenu_company;
+
+    QAction * mc_systrayMenu_company_createinsurancecompany;
+
     //Advanced submenu
     QMenu * mc_systrayMenu_advanced;
 

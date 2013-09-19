@@ -274,6 +274,18 @@ Moneychanger::Moneychanger(QWidget *parent)
     //Separator
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
+
+    //Company
+    mc_systrayMenu_company = new QMenu("Company", 0);
+    mc_systrayMenu->addMenu(mc_systrayMenu_company);
+    //Company submenu
+    mc_systrayMenu_company_createinsurancecompany = new QAction(mc_systrayIcon_advanced_agreements, "Create Insurance Company", 0);
+    mc_systrayMenu_company->addAction(mc_systrayMenu_company_createinsurancecompany);
+    connect(mc_systrayMenu_company_createinsurancecompany, SIGNAL(triggered()), this, SLOT(mc_createinsurancecompany_slot()));
+
+    //Separator1
+    mc_systrayMenu->addSeparator();
+    // --------------------------------------------------------------
     //Advanced
     mc_systrayMenu_advanced = new QMenu("Advanced", 0);
     mc_systrayMenu_advanced->setIcon(mc_systrayIcon_advanced);
