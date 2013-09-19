@@ -102,4 +102,4 @@ OTHER_FILES +=
 
 FORMS += \
     UI/marketwindow.ui \
-    Widgets/createinsurancecompany.ui
+    UI/createinsurancecompany.ui
