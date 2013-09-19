@@ -119,7 +119,9 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_sendfunds_already_init = false;
     //Request Funds
     mc_requestfunds_already_init = false;
-    
+    //Create Insurance Company
+    mc_createinsurancecompany_already_init = false;
+
     //Init MC System Tray Icon
     mc_systrayIcon = new QSystemTrayIcon(this);
     mc_systrayIcon->setIcon(QIcon(":/icons/moneychanger"));
@@ -1236,5 +1238,28 @@ void Moneychanger::close_market_dialog(){
 // End Market Window
 
 
+/**
+ * Create insurance company wizard
+ **/
 
+void Moneychanger::mc_createinsurancecompany_slot(){
+    //The operator has requested to open the create insurance company wizard;
+    mc_createinsurancecompany_dialog();
+}
 
+void Moneychanger::mc_createinsurancecompany_dialog(){
+    if(!mc_createinsurancecompany_already_init){
+        createinsurancecompany_window = new createinsurancecompany(this);
+        createinsurancecompany_window->setAttribute(Qt::WA_DeleteOnClose);
+        createinsurancecompany_window->dialog();
+        mc_createinsurancecompany_already_init = true;
+        qDebug() << "createinsurancecompany Opened";
+    }
+    createinsurancecompany->show();
+}
+
+void Moneychanger::close_createinsurancecompany_dialog(){
+    delete createinsurancecompany;
+    mc_createinsurancecompany_already_init = false;
+    qDebug() << "createinsurancecompany Closed";
+}

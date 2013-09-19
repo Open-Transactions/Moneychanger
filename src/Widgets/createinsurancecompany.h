@@ -17,6 +17,10 @@ public:
 
 private:
     Ui::createinsurancecompany *ui;
+
+protected:
+
+    bool eventFilter(QObject *obj, QEvent *event);
 };
 
 #endif // CREATEINSURANCECOMPANY_H

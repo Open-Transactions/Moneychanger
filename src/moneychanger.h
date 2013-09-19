@@ -53,6 +53,8 @@
 #include "Widgets/requestfundswindow.h"
 #include "Widgets/sendfundswindow.h"
 
+#include "ui_createinsurancecompany.h"
+
 class OverviewWindow;
 class AddressBookWindow;
 class NymManagerWindow;
@@ -65,6 +67,7 @@ class DepositWindow;
 class RequestFundsWindow;
 class SendFundsWindow;
 class MarketWindow;
+class CreateInsuranceCompany;
 
 
 class Moneychanger : public QWidget
@@ -97,6 +100,7 @@ public:
     void close_sendfunds_dialog();
     void close_requestfunds_dialog();
     void close_market_dialog();
+    void close_createinsurancecompany_dialog();
     
     //Show address book
     void mc_addressbook_show(QString text);
@@ -191,7 +195,8 @@ private:
     bool mc_deposit_already_init;
     bool mc_sendfunds_already_init;
     bool mc_requestfunds_already_init;
-    
+    bool mc_createinsurancecompany_already_init;
+
     
     
     /**
@@ -210,7 +215,7 @@ private:
     RequestFundsWindow * requestfundswindow;
     SendFundsWindow * sendfundswindow;
     MarketWindow * market_window;
-    
+    CreateInsuranceCompany * createinsurancecompany_window;
     
     
     
@@ -269,7 +274,10 @@ private:
     void mc_requestfunds_show_dialog();
     // ------------------------------------------------
     
-    
+    //Create Insurance Company
+    void mc_createinsurancecompany_dialog();
+    // ------------------------------------------------
+
     
     /**
      * Variables For Various Pieces of Account Information
@@ -464,6 +472,9 @@ private slots:
     // Market Slot
     void mc_market_slot();
     
+    // Create Insurance Company Slot
+    void mc_createinsurancecompany_slot();
+
 };
 
 #endif // MONEYCHANGER_H
