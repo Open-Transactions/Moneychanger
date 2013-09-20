@@ -39,7 +39,7 @@ void OverviewWindow::dialog()
         mc_overview_gridlayout->addWidget(mc_overview_inoutgoing_pane_holder, 1,0, 1,1);
 
         //Label (inOutgoing header)
-        //                              mc_overview_inoutgoing_header_label = new QLabel("<b>Incoming & Outgoing Transactions</b>");
+//      mc_overview_inoutgoing_header_label = new QLabel("<b>Incoming & Outgoing Transactions</b>");
         mc_overview_inoutgoing_header_label = new QLabel;
         mc_overview_inoutgoing_pane->addWidget(mc_overview_inoutgoing_header_label);
 
@@ -47,7 +47,10 @@ void OverviewWindow::dialog()
         mc_overview_inoutgoing_scroll = new QScrollArea;
         mc_overview_inoutgoing_gridview_widget = new QWidget(0);
         mc_overview_inoutgoing_gridview = new QGridLayout(0);
+
         mc_overview_inoutgoing_gridview_widget->setLayout(mc_overview_inoutgoing_gridview);
+//        mc_overview_inoutgoing_gridview_widget->setMaximumHeight(50);
+
         mc_overview_inoutgoing_gridview->setGeometry(QRect(100,100,100,100));
         mc_overview_inoutgoing_scroll->setWidgetResizable(true);
         mc_overview_inoutgoing_scroll->setBackgroundRole(QPalette::Light);
@@ -72,8 +75,8 @@ void OverviewWindow::dialog()
 }
 
 //Overview refresh function
-void OverviewWindow::refresh(){
-
+void OverviewWindow::refresh()
+{
     //(Lock the overview dialog refreshing mechinism until finished)
     QMutexLocker overview_refresh_locker(&mc_overview_refreshing_visuals_mutex);
 
@@ -86,10 +89,10 @@ void OverviewWindow::refresh(){
         QLayoutItem * item = mc_overview_inoutgoing_gridview->takeAt(0);
         mc_overview_inoutgoing_gridview->removeItem(item);
         delete item;
-
     }
-
+    // -------------------------------------------------------
     int total_records_to_visualize = current_list_copy.size();
+
     for(int a = 0; a < total_records_to_visualize; a++){
         //Get map for this record
         QMap<QString, QVariant> record_map = current_list_copy.at(a);
@@ -97,6 +100,10 @@ void OverviewWindow::refresh(){
         //Append to transactions list in overview dialog.
         QWidget * row_widget = new QWidget(0);
         QGridLayout * row_widget_layout = new QGridLayout(0);
+
+        row_widget_layout->setSpacing(4);
+        row_widget_layout->setContentsMargins(10, 4, 10, 4);
+
         row_widget->setLayout(row_widget_layout);
         row_widget->setStyleSheet("QWidget{background-color:#c0cad4;}");
 
@@ -115,6 +122,8 @@ void OverviewWindow::refresh(){
 
         header_of_row->setText(header_of_row_string);
 
+//        header_of_row->setMaximumHeight(25);
+
         //Append header to layout
         row_widget_layout->addWidget(header_of_row, 0, 0, 1,1, Qt::AlignLeft);
 
@@ -132,9 +141,9 @@ void OverviewWindow::refresh(){
         }
         else
             currency_amount.append(record_map["formatAmount"].toString());
-        //                                    currency_amount.append(record_map["currencyTLA"].toString());
-        //                                    currency_amount.append(QString(" %1"));
-        //                                    currency_amount = currency_amount.arg(record_map["amount"].toString());
+//          currency_amount.append(record_map["currencyTLA"].toString());
+//          currency_amount.append(QString(" %1"));
+//          currency_amount = currency_amount.arg(record_map["amount"].toString());
 
         if (record_map["isoutgoing"].toBool() || (record_map["amount"].toInt() < 0))
             currency_amount_label->setStyleSheet("QLabel { color : red; }");
@@ -142,12 +151,20 @@ void OverviewWindow::refresh(){
             currency_amount_label->setStyleSheet("QLabel { color : green; }");
 
         currency_amount_label->setText(currency_amount);
+
         row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
 
         //Sub-info
         QWidget * row_content_container = new QWidget(0);
         QGridLayout * row_content_grid = new QGridLayout(0);
+
+// left top right bottom
+
+        row_content_grid->setSpacing(4);
+        row_content_grid->setContentsMargins(10, 4, 10, 4);
+
         row_content_container->setLayout(row_content_grid);
+
         row_widget_layout->addWidget(row_content_container, 1,0, 1,2);
 
         /** Column one **/
@@ -160,6 +177,7 @@ void OverviewWindow::refresh(){
         QString row_content_date_label_string = QString();
         row_content_date_label_string.append(QString(timestamp.toString(Qt::SystemLocaleShortDate)));
         row_content_date_label->setText(row_content_date_label_string);
+
         row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
 
         /** Column two **/
@@ -167,9 +185,9 @@ void OverviewWindow::refresh(){
         QLabel * row_content_status_label = new QLabel(0);
         QString row_content_status_string = QString();
 
-        //                                    if (record_map["ismail"].toBool())
-        //                                        row_content_status_string.append(record_map["shortMail"].toString());
-        //                                    else
+//      if (record_map["ismail"].toBool())
+//         row_content_status_string.append(record_map["shortMail"].toString());
+//      else
         row_content_status_string.append(record_map["formatDescription"].toString());
 
         //add string to label
@@ -178,6 +196,8 @@ void OverviewWindow::refresh(){
         //add to row_content grid
         row_content_grid->addWidget(row_content_status_label, 0,1, 1,1, Qt::AlignRight);
 
+
+//      row_widget->setMaximumHeight(200);
 
         /** Append information to the grid/visuals. **/
         mc_overview_inoutgoing_gridview->addWidget(row_widget, a,0, 1,1);

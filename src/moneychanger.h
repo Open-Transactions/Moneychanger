@@ -42,6 +42,7 @@
 
 #include "Widgets/MarketWindow.h"
 #include "Widgets/overviewwindow.h"
+#include "Widgets/mthome.h"
 #include "Widgets/addressbookwindow.h"
 #include "Widgets/nymmanagerwindow.h"
 #include "Widgets/assetmanagerwindow.h"
@@ -54,6 +55,7 @@
 #include "Widgets/sendfundswindow.h"
 
 class OverviewWindow;
+class MTHome;
 class AddressBookWindow;
 class NymManagerWindow;
 class AssetManagerWindow;
@@ -199,6 +201,7 @@ private:
      **/
     
     OverviewWindow * overviewwindow;
+    MTHome * homewindow;
     AddressBookWindow * addressbookwindow;
     NymManagerWindow * nymmanagerwindow;
     AssetManagerWindow * assetmanagerwindow;

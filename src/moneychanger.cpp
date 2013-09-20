@@ -450,17 +450,25 @@ void Moneychanger::mc_overview_slot(){
 
 void Moneychanger::mc_overview_dialog(){
     if(!mc_overview_already_init){
+
+//        homewindow = new MTHome(this);
+//        homewindow->setAttribute(Qt::WA_DeleteOnClose);
+
         overviewwindow = new OverviewWindow(this);
         overviewwindow->setAttribute(Qt::WA_DeleteOnClose);
         overviewwindow->dialog();
+
+
         mc_overview_already_init = true;
         qDebug() << "Overview Opened";
     }
     overviewwindow->show();
+//    homewindow->show();
 }
 
 void Moneychanger::close_overview_dialog(){
     delete overviewwindow;
+//    delete homewindow;
     mc_overview_already_init = false;
     qDebug() << "Overview Closed";
 }
