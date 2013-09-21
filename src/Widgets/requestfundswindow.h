@@ -18,15 +18,15 @@ public:
     
 private:
     
-    bool mc_requestfunds_already_init;
+    bool already_init;
     
-    QDialog * mc_requestfunds_dialog;
+    QDialog * requestfunds_dialog;
     
     //Gridlayout
-    QGridLayout * mc_requestfunds_gridlayout;
+    QGridLayout * requestfunds_gridlayout;
     
     //Send funds type selection (combobox)
-    QComboBox * mc_requestfunds_sendtype_combobox;
+    QComboBox * requestfunds_sendtype_combobox;
 
 signals:
 

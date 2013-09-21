@@ -4,8 +4,7 @@ WithdrawAsCashWindow::WithdrawAsCashWindow(QWidget *parent) :
     QWidget(parent)
 {
     
-    //Withdraw
-    //As Cash
+    // Booleans initialized
     already_init = false;
     withdraw_ascash_confirm_dialog_already_init = false;
     
