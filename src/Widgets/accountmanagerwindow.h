@@ -32,69 +32,69 @@ public:
 private:
     
     /** Account Manager **/
-    bool mc_accountmanager_already_init;
-    bool mc_accountmanager_refreshing;
+    bool already_init;
+    bool refreshing;
     
-    QDialog * mc_account_manager_dialog;
+    QDialog * account_manager_dialog;
     //Grid layout
-    QGridLayout * mc_account_manager_gridlayout;
+    QGridLayout * account_manager_gridlayout;
     
     /** First row **/
     //Label (Account Manager Header)
-    QLabel * mc_account_manager_label;
+    QLabel * account_manager_label;
     
     /** Second Row **/
     //Horizontal holder (List of accounts; Add/Remove account button)
-    QWidget     * mc_account_manager_holder;
-    QHBoxLayout * mc_account_manager_hbox;
+    QWidget     * account_manager_holder;
+    QHBoxLayout * account_manager_hbox;
     
     //Tableview/item model for account list.
-    QStandardItemModel * mc_account_manager_tableview_itemmodel;
-    QTableView         * mc_account_manager_tableview;
+    QStandardItemModel * account_manager_tableview_itemmodel;
+    QTableView         * account_manager_tableview;
     
     //Vertical holder (add/remove account buttons)
-    QWidget     * mc_account_manager_addremove_btngroup_holder;
-    QVBoxLayout * mc_account_manager_addremove_btngroup_vbox;
+    QWidget     * account_manager_addremove_btngroup_holder;
+    QVBoxLayout * account_manager_addremove_btngroup_vbox;
     
     //Add account button
-    QPushButton * mc_account_manager_addremove_btngroup_addbtn;
+    QPushButton * account_manager_addremove_btngroup_addbtn;
     
     //Remove account button
-    QPushButton * mc_account_manager_addremove_btngroup_removebtn;
+    QPushButton * account_manager_addremove_btngroup_removebtn;
     
     /** Third Row (most recent error) **/
-    QLabel * mc_account_manager_most_recent_erorr;
+    QLabel * account_manager_most_recent_erorr;
     // ------------------------------------------------
     /** "Add Account" Dialog **/
-    int mc_accountmanager_addaccount_dialog_already_init;
-    int mc_accountmanager_addaccount_dialog_advanced_showing;
+    bool accountmanager_addaccount_dialog_already_init;
+    bool accountmanager_addaccount_dialog_advanced_showing;
     
-    QDialog * mc_account_manager_addaccount_dialog;
+    QDialog * account_manager_addaccount_dialog;
     //Grid layout
-    QGridLayout * mc_account_manager_addaccount_gridlayout;
+    QGridLayout * account_manager_addaccount_gridlayout;
     //Label (header)
-    QLabel * mc_account_manager_addaccount_header;
+    QLabel * account_manager_addaccount_header;
     
     //Label (Toggle Advanced Options Label/Button)
-    QLabel * mc_account_manager_addaccount_subheader_toggleadvanced_options_label;
+    QLabel * account_manager_addaccount_subheader_toggleadvanced_options_label;
     
     //Label (instructions)
-    QLabel * mc_account_manager_addaccount_subheader_instructions;
+    QLabel * account_manager_addaccount_subheader_instructions;
     
     //Button (create account)
-    QPushButton * mc_account_manager_addaccount_create_account_btn;
+    QPushButton * account_manager_addaccount_create_account_btn;
     // ------------------------------------------------
     /** "Remove Account Dialog **/
-    int mc_accountmanager_removeaccount_dialog_already_init;
-    QDialog * mc_account_manager_removeaccount_dialog;
+    bool account_manager_removeaccount_dialog_already_init;
+    QDialog * account_manager_removeaccount_dialog;
     //Grid layout
-    QGridLayout * mc_account_manager_removeaccount_gridlayout;
+    QGridLayout * account_manager_removeaccount_gridlayout;
     
     //Label (header)
-    QLabel * mc_account_manager_removeaccount_header;
+    QLabel * account_manager_removeaccount_header;
     // ------------------------------------------------
     /** Account Manger Slot locks **/
-    int mc_accountmanager_proccessing_dataChanged;
+    bool account_manager_proccessing_dataChanged;
     // ------------------------------------------------
 
 
