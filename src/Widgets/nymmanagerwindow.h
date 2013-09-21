@@ -27,67 +27,63 @@ public:
     void dialog();
     
 private:
-    
+        
+    //Nym Manager
     bool already_init;
     bool refreshing;
-    bool proccessing_dataChanged;
-    
-    //Nym Manager
-    bool mc_nymmanager_already_init;
-    bool mc_nymmanager_refreshing;
     
     /** Nym Manger Slot locks **/
-    bool mc_nymmanager_proccessing_dataChanged;
+    bool proccessing_dataChanged;
     
     //"Add Nym" dialog
-    bool mc_nymmanager_addnym_dialog_already_init;
-    bool mc_nymmanager_addnym_dialog_advanced_showing;
+    bool addnym_dialog_already_init;
+    bool addnym_dialog_advanced_showing;
     
     //"Remove Nym" dialog
-    bool mc_nymmanager_removenym_dialog_already_init;
+    bool removenym_dialog_already_init;
     
-    QDialog * mc_nym_manager_dialog;
-    QGridLayout * mc_nym_manager_gridlayout;
-    QLabel * mc_nym_manager_label;
-    QWidget * mc_nym_manager_holder;
-    QHBoxLayout * mc_nym_manager_hbox;
-    QStandardItemModel * mc_nym_manager_tableview_itemmodel;
-    QTableView * mc_nym_manager_tableview;
-    QWidget * mc_nym_manager_addremove_btngroup_holder;
-    QVBoxLayout * mc_nym_manager_addremove_btngroup_vbox;
-    QPushButton * mc_nym_manager_addremove_btngroup_addbtn;
-    QPushButton * mc_nym_manager_addremove_btngroup_removebtn;
+    QDialog * nym_manager_dialog;
+    QGridLayout * nym_manager_gridlayout;
+    QLabel * nym_manager_label;
+    QWidget * nym_manager_holder;
+    QHBoxLayout * nym_manager_hbox;
+    QStandardItemModel * nym_manager_tableview_itemmodel;
+    QTableView * nym_manager_tableview;
+    QWidget * nym_manager_addremove_btngroup_holder;
+    QVBoxLayout * nym_manager_addremove_btngroup_vbox;
+    QPushButton * nym_manager_addremove_btngroup_addbtn;
+    QPushButton * nym_manager_addremove_btngroup_removebtn;
     QLabel * mc_nym_manager_most_recent_erorr;
     
     /** "Add Nym" Dialog **/
 
-    QDialog * mc_nym_manager_addnym_dialog;
+    QDialog * nym_manager_addnym_dialog;
     //Grid layout
-    QGridLayout * mc_nym_manager_addnym_gridlayout;
+    QGridLayout * nym_manager_addnym_gridlayout;
     //Label (header)
-    QLabel * mc_nym_manager_addnym_header;
+    QLabel * nym_manager_addnym_header;
     
     //Label (Toggle Advanced Options Label/Button)
-    QLabel * mc_nym_manager_addnym_subheader_toggleadvanced_options_label;
+    QLabel * nym_manager_addnym_subheader_toggleadvanced_options_label;
     
     //Label (instructions)
-    QLabel * mc_nym_manager_addnym_subheader_instructions;
+    QLabel * nym_manager_addnym_subheader_instructions;
     
     //Label (choose source)
-    QLabel * mc_nym_manager_addnym_choosesource_label;
+    QLabel * nym_manager_addnym_choosesource_label;
     
     //Combobox (choose source)
-    QComboBox * mc_nym_manager_addnym_choosesource_answer_selection;
+    QComboBox * nym_manager_addnym_choosesource_answer_selection;
     
     //Button (create nym)
-    QPushButton * mc_nym_manager_addnym_create_nym_btn;
+    QPushButton * nym_manager_addnym_create_nym_btn;
     // ------------------------------------------------
-    QDialog * mc_nym_manager_removenym_dialog;
+    QDialog * nym_manager_removenym_dialog;
     //Grid layout
-    QGridLayout * mc_nym_manager_removenym_gridlayout;
+    QGridLayout * nym_manager_removenym_gridlayout;
     
     //Label (header)
-    QLabel * mc_nym_manager_removenym_header;
+    QLabel * nym_manager_removenym_header;
 
     // ------------------------------------------------
 
@@ -95,9 +91,9 @@ signals:
 
 private slots:
     
-    void nymmanager_addnym_slot();
-    void nymmanager_removenym_slot();
-    void nymmanager_dataChanged_slot(QModelIndex topLeft, QModelIndex bottomRight);
+    void addnym_slot();
+    void removenym_slot();
+    void dataChanged_slot(QModelIndex topLeft, QModelIndex bottomRight);
     void addnym_dialog_showadvanced_slot(QString link_href);
     void addnym_dialog_createnym_slot();
     void request_remove_nym_slot();
