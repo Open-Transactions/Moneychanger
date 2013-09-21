@@ -31,75 +31,75 @@ public:
 private:
         
     /** Server Manager **/
-    int mc_servermanager_already_init;
-    int mc_servermanager_refreshing;
+    bool already_init;
+    bool refreshing;
     
-    QDialog * mc_server_manager_dialog;
+    QDialog * server_manager_dialog;
     //Grid layout
-    QGridLayout * mc_server_manager_gridlayout;
+    QGridLayout * server_manager_gridlayout;
     
     /** First row **/
     //Label (server Manager Header)
-    QLabel * mc_server_manager_label;
+    QLabel * server_manager_label;
     
     /** Second Row **/
     //Horizontal holder (List of servers; Add/Remove server button)
-    QWidget     * mc_server_manager_holder;
-    QHBoxLayout * mc_server_manager_hbox;
+    QWidget     * server_manager_holder;
+    QHBoxLayout * server_manager_hbox;
     
     //Tableview/item model for server list.
-    QStandardItemModel * mc_server_manager_tableview_itemmodel;
-    QTableView         * mc_server_manager_tableview;
+    QStandardItemModel * server_manager_tableview_itemmodel;
+    QTableView         * server_manager_tableview;
     
     //Vertical holder (add/remove server buttons)
-    QWidget     * mc_server_manager_addremove_btngroup_holder;
-    QVBoxLayout * mc_server_manager_addremove_btngroup_vbox;
+    QWidget     * server_manager_addremove_btngroup_holder;
+    QVBoxLayout * server_manager_addremove_btngroup_vbox;
     
     //Add server button
-    QPushButton * mc_server_manager_addremove_btngroup_addbtn;
+    QPushButton * server_manager_addremove_btngroup_addbtn;
     
     //Remove server button
-    QPushButton * mc_server_manager_addremove_btngroup_removebtn;
+    QPushButton * server_manager_addremove_btngroup_removebtn;
     
     /** Third Row (most recent error) **/
-    QLabel * mc_server_manager_most_recent_erorr;
+    QLabel * server_manager_most_recent_erorr;
     // ------------------------------------------------
     /** "Add server" Dialog **/
-    int mc_servermanager_addserver_dialog_already_init;
-    int mc_servermanager_addserver_dialog_advanced_showing;
+    bool server_manager_addserver_dialog_already_init;
+    bool server_manager_addserver_dialog_advanced_showing;
     
-    QDialog * mc_server_manager_addserver_dialog;
+    QDialog * server_manager_addserver_dialog;
     //Grid layout
-    QGridLayout * mc_server_manager_addserver_gridlayout;
+    QGridLayout * server_manager_addserver_gridlayout;
     //Label (header)
-    QLabel * mc_server_manager_addserver_header;
+    QLabel * server_manager_addserver_header;
     
     //Label (Toggle Advanced Options Label/Button)
-    QLabel * mc_server_manager_addserver_subheader_toggleadvanced_options_label;
+    QLabel * server_manager_addserver_subheader_toggleadvanced_options_label;
     
     //Label (instructions)
-    QLabel * mc_server_manager_addserver_subheader_instructions;
+    QLabel * server_manager_addserver_subheader_instructions;
     
     //Label (choose source)
-    QLabel * mc_server_manager_addserver_choosesource_label;
+    QLabel * server_manager_addserver_choosesource_label;
     
     //Combobox (choose source)
-    QComboBox * mc_server_manager_addserver_choosesource_answer_selection;
+    QComboBox * server_manager_addserver_choosesource_answer_selection;
     
     //Button (create server)
-    QPushButton * mc_server_manager_addserver_create_server_btn;
+    QPushButton * server_manager_addserver_create_server_btn;
     // ------------------------------------------------
     /** "Remove server Dialog **/
-    int mc_servermanager_removeserver_dialog_already_init;
-    QDialog * mc_server_manager_removeserver_dialog;
+    bool server_manager_removeserver_dialog_already_init;
+    QDialog * server_manager_removeserver_dialog;
     //Grid layout
-    QGridLayout * mc_server_manager_removeserver_gridlayout;
+    QGridLayout * server_manager_removeserver_gridlayout;
     
     //Label (header)
-    QLabel * mc_server_manager_removeserver_header;
+    QLabel * server_manager_removeserver_header;
     // ------------------------------------------------
     /** server Manger Slot locks **/
-    int mc_servermanager_proccessing_dataChanged;
+    bool server_manager_proccessing_dataChanged;
     // ------------------------------------------------
 
 signals:

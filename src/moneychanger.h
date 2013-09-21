@@ -188,7 +188,7 @@ private:
     bool mc_nymmanager_already_init;
     bool mc_assetmanager_already_init;
     bool mc_accountmanager_already_init;
-    bool mc_servermanager_already_init;
+    bool already_init;
     bool mc_withdraw_ascash_already_init;
     bool mc_withdraw_asvoucher_already_init;
     bool mc_deposit_already_init;

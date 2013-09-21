@@ -108,7 +108,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     // Asset Manager
     mc_assetmanager_already_init = false;
     // Server Manager
-    mc_servermanager_already_init = false;
+    already_init = false;
     // Withdraw as cash
     mc_withdraw_ascash_already_init = false;
     // Withdraw as Voucher
@@ -928,18 +928,18 @@ void Moneychanger::mc_defaultserver_slot(){
 }
 
 void Moneychanger::mc_servermanager_dialog(){
-    if(!mc_servermanager_already_init){
+    if(!already_init){
         servermanagerwindow = new ServerManagerWindow(this);
         servermanagerwindow->setAttribute(Qt::WA_DeleteOnClose);
         servermanagerwindow->dialog();
-        mc_servermanager_already_init = true;
+        already_init = true;
         qDebug() << "Server Manager Opened";
     }
 }
 
 void Moneychanger::close_servermanager_dialog(){
     delete servermanagerwindow;
-    mc_servermanager_already_init = false;
+    already_init = false;
     qDebug() << "Server Manager Closed";
 
 }
@@ -1031,7 +1031,7 @@ void Moneychanger::mc_serverselection_triggered(QAction * action_triggered){
         
         //Refresh the server default selection in the server manager (ONLY if it is open)
         //Check if server manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
-        if(mc_servermanager_already_init == 1){
+        if(already_init == 1){
             //Refresh if the server manager is currently open
             if(servermanagerwindow->isVisible()){
                 mc_servermanager_dialog();
