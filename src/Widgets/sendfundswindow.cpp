@@ -4,39 +4,41 @@ SendFundsWindow::SendFundsWindow(QWidget *parent) :
     QWidget(parent)
 {
     
-    mc_sendfunds_dialog = false;
+    already_init = false;
+
 }
 
 
 
 void SendFundsWindow::dialog(){
     
-    if(mc_sendfunds_already_init == 0){
-        mc_sendfunds_dialog = new QDialog(0);
-        mc_sendfunds_dialog->installEventFilter(this);
-        mc_sendfunds_gridlayout = new QGridLayout(0);
-        mc_sendfunds_dialog->setLayout(mc_sendfunds_gridlayout);
+    if(!already_init){
+        sendfunds_dialog = new QDialog(0);
+        sendfunds_dialog->installEventFilter(this);
+        sendfunds_gridlayout = new QGridLayout(0);
+        sendfunds_dialog->setLayout(sendfunds_gridlayout);
         //Set window title
-        mc_sendfunds_dialog->setWindowTitle("Send Funds | Moneychanger");
+        sendfunds_dialog->setWindowTitle("Send Funds | Moneychanger");
         
         //Content
         //Select sendfunds type
-        mc_sendfunds_sendtype_combobox = new QComboBox(0);
-        mc_sendfunds_sendtype_combobox->setStyleSheet("QComboBox{font-size:15pt;}");
+        sendfunds_sendtype_combobox = new QComboBox(0);
+        sendfunds_sendtype_combobox->setStyleSheet("QComboBox{font-size:15pt;}");
         //Add selection options
-        mc_sendfunds_sendtype_combobox->addItem("Send a Payment");
-        mc_sendfunds_sendtype_combobox->addItem("Send a Cheque");
-        mc_sendfunds_sendtype_combobox->addItem("Send Cash");
-        mc_sendfunds_sendtype_combobox->addItem("Send an Account Transfer");
+        sendfunds_sendtype_combobox->addItem("Send a Payment");
+        sendfunds_sendtype_combobox->addItem("Send a Cheque");
+        sendfunds_sendtype_combobox->addItem("Send Cash");
+        sendfunds_sendtype_combobox->addItem("Send an Account Transfer");
         
-        mc_sendfunds_gridlayout->addWidget(mc_sendfunds_sendtype_combobox, 0,0, 1,1, Qt::AlignHCenter);
+        sendfunds_gridlayout->addWidget(sendfunds_sendtype_combobox, 0,0, 1,1, Qt::AlignHCenter);
+        already_init = true;
     }
     
     //Resize
-    mc_sendfunds_dialog->resize(500, 300);
+    sendfunds_dialog->resize(500, 300);
     
     //Show
-    mc_sendfunds_dialog->show();
+    sendfunds_dialog->show();
 }
 
 
@@ -49,7 +51,7 @@ bool SendFundsWindow::eventFilter(QObject *obj, QEvent *event){
     } else if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
         if(keyEvent->key() == Qt::Key_Escape){
-            mc_sendfunds_dialog->close();
+            sendfunds_dialog->close();
             return true;
         }
         return true;

@@ -23,51 +23,51 @@ public:
 private:
     /** Withdraw **/
     //As Cash
-    int mc_withdraw_ascash_dialog_already_init;
-    QDialog * mc_systrayMenu_withdraw_ascash_dialog;
+    bool already_init;
+    QDialog * withdraw_ascash_dialog;
     //Grid layout
-    QGridLayout * mc_systrayMenu_withdraw_ascash_gridlayout;
+    QGridLayout * withdraw_ascash_gridlayout;
     
     //Withdraw (as cash) header label
-    QLabel * mc_systrayMenu_withdraw_ascash_header_label;
+    QLabel * withdraw_ascash_header_label;
     
     //Account Id (label)
-    QLabel * mc_systrayMenu_withdraw_ascash_accountid_label;
+    QLabel * withdraw_ascash_accountid_label;
     
     //Account Name (Dropdown box)
-    QComboBox * mc_systrayMenu_withdraw_ascash_account_dropdown;
+    QComboBox * withdraw_ascash_account_dropdown;
     
     //Amount (in integer for now)
-    QLineEdit * mc_systrayMenu_withdraw_ascash_amount_input;
+    QLineEdit * withdraw_ascash_amount_input;
     
     //Activate withdraw button
-    QPushButton * mc_systrayMenu_withdraw_ascash_button;
+    QPushButton * withdraw_ascash_button;
     
     //Withdraw as cash confirmation
-    int mc_withdraw_ascash_confirm_dialog_already_init;
-    QDialog * mc_systrayMenu_withdraw_ascash_confirm_dialog;
+    bool withdraw_ascash_confirm_dialog_already_init;
+    QDialog * withdraw_ascash_confirm_dialog;
     
     //Grid layout
-    QGridLayout * mc_systrayMenu_withdraw_ascash_confirm_gridlayout;
+    QGridLayout * withdraw_ascash_confirm_gridlayout;
     
     //Label
-    QLabel * mc_systrayMenu_withdraw_ascash_confirm_label;
+    QLabel * withdraw_ascash_confirm_label;
     
     //Label (Amount)
-    QLabel * mc_systrayMenu_withdraw_ascash_confirm_amount_label;
+    QLabel * withdraw_ascash_confirm_amount_label;
     
     //Backend (Amount)
-    int withdraw_ascash_confirm_amount_int;
+    bool withdraw_ascash_confirm_amount_int;
     
     //Confirm/Cancel horizontal layout
-    QWidget * mc_systrayMenu_withdraw_ascash_confirm_amount_confirm_cancel_widget;
-    QHBoxLayout * mc_systrayMenu_withdraw_ascash_confirm_amount_confirm_cancel_layout;
+    QWidget * withdraw_ascash_confirm_amount_confirm_cancel_widget;
+    QHBoxLayout * withdraw_ascash_confirm_amount_confirm_cancel_layout;
     
     //Cancel amount (button)
-    QPushButton * mc_systrayMenu_withdraw_ascash_confirm_amount_btn_cancel;
+    QPushButton * withdraw_ascash_confirm_amount_btn_cancel;
     
     //Confirm amount (button)
-    QPushButton * mc_systrayMenu_withdraw_ascash_confirm_amount_btn_confirm;
+    QPushButton * withdraw_ascash_confirm_amount_btn_confirm;
     // ------------------------------------------------
 
 
@@ -75,10 +75,10 @@ signals:
 
 private slots:
     
-    void mc_withdraw_ascash_confirm_amount_dialog_slot();
-    void mc_withdraw_ascash_confirm_amount_slot();
-    void mc_withdraw_ascash_cancel_amount_slot();
-    void mc_withdraw_ascash_account_dropdown_highlighted_slot(int);
+    void withdraw_ascash_confirm_amount_dialog_slot();
+    void withdraw_ascash_confirm_amount_slot();
+    void withdraw_ascash_cancel_amount_slot();
+    void withdraw_ascash_account_dropdown_highlighted_slot(int);
 
 protected:
     

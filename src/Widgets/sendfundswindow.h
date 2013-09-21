@@ -18,11 +18,11 @@ public:
     
 private:
     
-    bool mc_sendfunds_already_init;
+    bool already_init;
     
-    QDialog * mc_sendfunds_dialog;
-    QGridLayout * mc_sendfunds_gridlayout;
-    QComboBox * mc_sendfunds_sendtype_combobox;
+    QDialog * sendfunds_dialog;
+    QGridLayout * sendfunds_gridlayout;
+    QComboBox * sendfunds_sendtype_combobox;
 
 
 signals:

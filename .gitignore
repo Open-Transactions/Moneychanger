@@ -33,3 +33,8 @@ ui_*
 
 #text editor backup files
 *~
+
+# KDevelop files
+*.kdev4
+src/moneychanger-qt
+
