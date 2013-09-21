@@ -33,7 +33,9 @@ SOURCES += main.cpp\
     Widgets/sendfundswindow.cpp \
     Widgets/requestfundswindow.cpp \
     Widgets/mthomedetail.cpp \
-    Widgets/mthome.cpp
+    Widgets/mthome.cpp \ 
+    Widgets/createinsurancecompany.cpp
+
 
 HEADERS += moneychanger.h \
            ot_worker.h \
@@ -56,7 +58,9 @@ HEADERS += moneychanger.h \
     Widgets/sendfundswindow.h \
     Widgets/requestfundswindow.h \
     Widgets/mthomedetail.h \
-    Widgets/mthome.h
+    Widgets/mthome.h \ 
+    Widgets/createinsurancecompany.h
+
 
 DEFINES += "OT_ZMQ_MODE=1"
 
@@ -104,5 +108,6 @@ OTHER_FILES +=
 
 FORMS += \
     UI/marketwindow.ui \
-    Widgets/mthomedetail.ui \
-    Widgets/mthome.ui
+    UI/mthomedetail.ui \
+    UI/mthome.ui \ 
+    UI/createinsurancecompany.ui
