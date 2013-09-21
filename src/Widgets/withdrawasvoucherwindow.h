@@ -29,85 +29,85 @@ public:
     
     void dialog();
     
-    void set_systrayMenu_withdraw_asvoucher_nym_input_text(QString input){mc_systrayMenu_withdraw_asvoucher_nym_input->setText(input);};
+    void set_systrayMenu_withdraw_asvoucher_nym_input_text(QString input){withdraw_asvoucher_nym_input->setText(input);};
 
 private:
     
-    bool mc_withdraw_asvoucher_dialog_already_init;
-    bool mc_withdraw_asvoucher_confirm_dialog_already_init;
+    bool already_init;
+    bool confirm_dialog_already_init;
     
-    QDialog * mc_systrayMenu_withdraw_asvoucher_dialog;
+    QDialog * withdraw_asvoucher_dialog;
     //Grid layout
-    QGridLayout * mc_systrayMenu_withdraw_asvoucher_gridlayout;
+    QGridLayout * withdraw_asvoucher_gridlayout;
     //Withdraw (as voucher) header label
-    QLabel * mc_systrayMenu_withdraw_asvoucher_header_label;
+    QLabel * withdraw_asvoucher_header_label;
     
     //Account Id (label)
-    QLabel * mc_systrayMenu_withdraw_asvoucher_accountid_label;
+    QLabel * withdraw_asvoucher_accountid_label;
     
     //Account Name (Dropdown box)
-    QComboBox * mc_systrayMenu_withdraw_asvoucher_account_dropdown;
+    QComboBox * withdraw_asvoucher_account_dropdown;
     
     //Nym ID (input)
     //Horitzontal Layout for Nym ID Input
-    QWidget * mc_systrayMenu_withdraw_asvoucher_nym_holder;
-    QHBoxLayout * mc_systrayMenu_withdraw_asvoucher_nym_hbox;
+    QWidget * withdraw_asvoucher_nym_holder;
+    QHBoxLayout * withdraw_asvoucher_nym_hbox;
     
     //Address book (button as Icon)
-    QIcon mc_systrayMenu_withdraw_asvoucher_nym_addressbook_icon;
-    QPushButton * mc_systrayMenu_withdraw_asvoucher_nym_addressbook_btn;
+    QIcon withdraw_asvoucher_nym_addressbook_icon;
+    QPushButton * withdraw_asvoucher_nym_addressbook_btn;
     
     //QR Code Scanner (button as Icon)
     //TODO ^^
     
     //Amount (in integer for now)
-    QLineEdit * mc_systrayMenu_withdraw_asvoucher_amount_input;
+    QLineEdit * withdraw_asvoucher_amount_input;
     
     //Memo (Text box)
-    QTextEdit * mc_systrayMenu_withdraw_asvoucher_memo_input;
+    QTextEdit * withdraw_asvoucher_memo_input;
     
     //Activate withdraw button
-    QPushButton * mc_systrayMenu_withdraw_asvoucher_button;
+    QPushButton * withdraw_asvoucher_button;
     
     //Nym Id (type/paste input)
-    QLineEdit * mc_systrayMenu_withdraw_asvoucher_nym_input;
+    QLineEdit * withdraw_asvoucher_nym_input;
     
     //Withdraw as Voucher confirmation
 
-    QDialog * mc_systrayMenu_withdraw_asvoucher_confirm_dialog;
+    QDialog * withdraw_asvoucher_confirm_dialog;
     
     //Grid layout
-    QGridLayout * mc_systrayMenu_withdraw_asvoucher_confirm_gridlayout;
+    QGridLayout * withdraw_asvoucher_confirm_gridlayout;
     
     //Label
-    QLabel * mc_systrayMenu_withdraw_asvoucher_confirm_label;
+    QLabel * withdraw_asvoucher_confirm_label;
     
     //Label (Amount)
-    QLabel * mc_systrayMenu_withdraw_asvoucher_confirm_amount_label;
+    QLabel * withdraw_asvoucher_confirm_amount_label;
     
     //Backend (Amount)
     int withdraw_asvoucher_confirm_amount_int;
     
     //Confirm/cancel horizontal layout
-    QWidget * mc_systrayMenu_withdraw_asvoucher_confirm_amount_confirm_cancel_widget;
-    QHBoxLayout * mc_systrayMenu_withdraw_asvoucher_confirm_amount_confirm_cancel_layout;
+    QWidget * withdraw_asvoucher_confirm_amount_confirm_cancel_widget;
+    QHBoxLayout * withdraw_asvoucher_confirm_amount_confirm_cancel_layout;
     
     //Cancel amount (button)
-    QPushButton * mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_cancel;
+    QPushButton * withdraw_asvoucher_confirm_amount_btn_cancel;
     
     //Confirm amount (button)
-    QPushButton * mc_systrayMenu_withdraw_asvoucher_confirm_amount_btn_confirm;
+    QPushButton * withdraw_asvoucher_confirm_amount_btn_confirm;
 
     
 signals:
 
 private slots:
     
-    void mc_withdraw_asvoucher_show_addressbook_slot();
-    void mc_withdraw_asvoucher_confirm_amount_dialog_slot();
-    void set_withdraw_asvoucher_account_dropdown_highlighted_slot(int);
-    void mc_withdraw_asvoucher_confirm_amount_slot();
-    void mc_withdraw_asvoucher_cancel_amount_slot();
+    void show_addressbook_slot();
+    void confirm_amount_dialog_slot();
+    void account_dropdown_highlighted_slot(int);
+    void confirm_amount_slot();
+    void cancel_amount_slot();
     
 protected:
     
