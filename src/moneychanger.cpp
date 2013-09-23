@@ -32,12 +32,6 @@ Moneychanger::Moneychanger(QWidget *parent)
      ** Init variables *
      **/
     
-    //Default nym
-    default_nym_id = "";
-    default_nym_name = "";
-    
-    //Default server
-    
     //Thread Related
     ot_worker_background = new ot_worker();
     ot_worker_background->mc_overview_ping();
@@ -51,39 +45,100 @@ Moneychanger::Moneychanger(QWidget *parent)
     
     /** Default Nym **/
     qDebug() << "Setting up Nym table";
-    if(DBHandler::getInstance()->querySize("SELECT `nym` FROM `default_nym` LIMIT 0,1") == 0){
-        DBHandler::getInstance()->runQuery("INSERT INTO `default_nym` (`nym`) VALUES('')"); // Blank Row
+    if (DBHandler::getInstance()->querySize("SELECT `nym` FROM `default_nym` WHERE `default_id`='1' LIMIT 0,1") == 0)
+    {
+        qDebug() << "Default Nym wasn't set in the database. Inserting blank record...";
+        DBHandler::getInstance()->runQuery("INSERT INTO `default_nym` (`default_id`,`nym`) VALUES('1','')"); // Blank Row
     }
-    else{
-        if(DBHandler::getInstance()->isNext("SELECT `nym` FROM `default_nym` LIMIT 0,1")){
-            default_nym_id = DBHandler::getInstance()->queryString("SELECT `nym` FROM `default_nym` LIMIT 0,1", 0, 0);
+    else
+    {
+        if (DBHandler::getInstance()->isNext("SELECT `nym` FROM `default_nym` WHERE `default_id`='1' LIMIT 0,1"))
+        {
+            default_nym_id = DBHandler::getInstance()->queryString("SELECT `nym` FROM `default_nym` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
+        // -------------------------------------------------
         //Ask OT what the display name of this nym is and store it for quick retrieval later on(mostly for "Default Nym" displaying purposes)
-        if(default_nym_id != ""){
+        if (!default_nym_id.isEmpty())
+        {
             default_nym_name =  QString::fromStdString(OTAPI_Wrap::GetNym_Name(default_nym_id.toStdString()));
         }
         else
-            qDebug() << "Default Nym loaded from SQL";
-
+            qDebug() << "Error loading DEFAULT NYM from SQL";
     }
     
     /** Default Server **/
     //Query for the default server (So we know for setting later on -- Auto select server associations on later dialogs)
-    if(DBHandler::getInstance()->querySize("SELECT `server` FROM `default_server` LIMIT 0,1") == 0){
-        DBHandler::getInstance()->runQuery("INSERT INTO `default_server` (`server`) VALUES('')"); // Blank Row
+    if (DBHandler::getInstance()->querySize("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1") == 0)
+    {
+        qDebug() << "Default Server wasn't set in the database. Inserting blank record...";
+        DBHandler::getInstance()->runQuery("INSERT INTO `default_server` (`default_id`, `server`) VALUES('1','')"); // Blank Row
     }
-    else{
-        if(DBHandler::getInstance()->runQuery("SELECT `server` FROM `default_server` LIMIT 0,1")){
-            default_server_id = DBHandler::getInstance()->queryString("SELECT `server` FROM `default_server` LIMIT 0,1", 0, 0);
+    else
+    {
+        if (DBHandler::getInstance()->runQuery("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1"))
+        {
+            default_server_id = DBHandler::getInstance()->queryString("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
+        // ---------------------------------------------
         //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
-        if(default_server_id != ""){
+        if (!default_server_id.isEmpty())
+        {
             default_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(default_server_id.toStdString()));
         }
         else
-            qDebug() << "DEFAULT SERVER LOADED FROM SQL";
-
+            qDebug() << "Error loading DEFAULT SERVER from SQL";
     }
+
+
+    /** Default Asset Type **/
+    //Query for the default asset (So we know for setting later on -- Auto select asset associations on later dialogs)
+    if (DBHandler::getInstance()->querySize("SELECT `asset` FROM `default_asset` WHERE `default_id`='1' LIMIT 0,1") == 0)
+    {
+        qDebug() << "Default Asset Type wasn't set in the database. Inserting blank record...";
+        DBHandler::getInstance()->runQuery("INSERT INTO `default_asset` (`default_id`,`asset`) VALUES('1','')"); // Blank Row
+    }
+    else
+    {
+        if (DBHandler::getInstance()->runQuery("SELECT `asset` FROM `default_asset` WHERE `default_id`='1' LIMIT 0,1"))
+        {
+            default_asset_id = DBHandler::getInstance()->queryString("SELECT `asset` FROM `default_asset` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
+        }
+        // ------------------------------
+        //Ask OT what the display name of this asset type is and store it for a quick retrieval later on(mostly for "Default Asset" displaying purposes)
+        if (!default_asset_id.isEmpty())
+        {
+            default_asset_name = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(default_asset_id.toStdString()));
+        }
+        else
+            qDebug() << "Error loading DEFAULT ASSET from SQL";
+    }
+
+    /** Default Account **/
+    //Query for the default account (So we know for setting later on -- Auto select account associations on later dialogs)
+    if (DBHandler::getInstance()->querySize("SELECT `account` FROM `default_account` WHERE `default_id`='1' LIMIT 0,1") == 0)
+    {
+        qDebug() << "Default Account wasn't set in the database. Inserting blank record...";
+
+        DBHandler::getInstance()->runQuery("INSERT INTO `default_account` (`default_id`,`account`) VALUES('1','')"); // Blank Row
+    }
+    else
+    {
+        if (DBHandler::getInstance()->runQuery("SELECT `account` FROM `default_account` WHERE `default_id`='1' LIMIT 0,1"))
+        {
+            default_account_id = DBHandler::getInstance()->queryString("SELECT `account` FROM `default_account` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
+        }
+        // --------------------------------------------------
+        //Ask OT what the display name of this account is and store it for a quick retrieval later on(mostly for "Default Account" displaying purposes)
+        if (!default_account_id.isEmpty())
+        {
+            default_account_name = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(default_account_id.toStdString()));
+        }
+        else
+            qDebug() << "Error loading DEFAULT ACCOUNT from SQL";
+    }
+
+
+
     qDebug() << "Database Populated";
     
     
@@ -277,13 +332,14 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayMenu_advanced->setIcon(mc_systrayIcon_advanced);
     mc_systrayMenu->addMenu(mc_systrayMenu_advanced);
     //Advanced submenu
-    
-    mc_systrayMenu_advanced_agreements = new QAction(mc_systrayIcon_advanced_agreements, "Agreements", 0);
-    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_agreements);
-    
+        
     mc_systrayMenu_advanced_markets = new QAction(mc_systrayIcon_advanced_markets, "Markets", 0);
     mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_markets);
     connect(mc_systrayMenu_advanced_markets, SIGNAL(triggered()), this, SLOT(mc_market_slot()));
+
+    mc_systrayMenu_advanced_agreements = new QAction(mc_systrayIcon_advanced_agreements, "Agreements", 0);
+    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_agreements);
+
     mc_systrayMenu_advanced->addSeparator();
     
     mc_systrayMenu_advanced_settings = new QAction(mc_systrayIcon_advanced_settings, "Settings...", 0);
@@ -383,11 +439,12 @@ Moneychanger::~Moneychanger()
  **/
 
 // Startup
-void Moneychanger::bootTray(){
+void Moneychanger::bootTray()
+{
     //Show systray
     mc_systrayIcon->show();
     
-    qDebug() << "BOOTING";
+//    qDebug() << "BOOTING";
 }
 
 
@@ -555,8 +612,9 @@ void Moneychanger::set_systrayMenu_nym_setDefaultNym(QString nym_id, QString nym
     }
 }
 
-void Moneychanger::mc_systrayMenu_reload_nymlist(){
-    qDebug() << "RELOAD NYM LIST";
+void Moneychanger::mc_systrayMenu_reload_nymlist()
+{
+//    qDebug() << "RELOAD NYM LIST";
     //Count nyms
     int32_t nym_count_int32_t = OTAPI_Wrap::GetNymCount();
     int nym_count = nym_count_int32_t;
@@ -566,7 +624,7 @@ void Moneychanger::mc_systrayMenu_reload_nymlist(){
     
     //Remove all sub-menus from the nym submenu
     for(int a = action_list_to_nym_submenu.size(); a > 0; a--){
-        qDebug() << "REMOVING" << a;
+//        qDebug() << "REMOVING" << a;
         QPoint tmp_point = QPoint(a, 0);
         mc_systrayMenu_nym->removeAction(mc_systrayMenu_nym->actionAt(tmp_point));
     }
@@ -684,8 +742,9 @@ void Moneychanger::set_systrayMenu_asset_setDefaultAsset(QString asset_id, QStri
     }
 }
 
-void Moneychanger::mc_systrayMenu_reload_assetlist(){
-    qDebug() << "RELOAD asset LIST";
+void Moneychanger::mc_systrayMenu_reload_assetlist()
+{
+//    qDebug() << "RELOAD asset LIST";
     //Count assets
     int32_t asset_count_int32_t = OTAPI_Wrap::GetAssetTypeCount();
     int asset_count = asset_count_int32_t;
@@ -694,8 +753,9 @@ void Moneychanger::mc_systrayMenu_reload_assetlist(){
     QList<QAction*> action_list_to_asset_submenu = mc_systrayMenu_asset->actions();
     
     //Remove all sub-menus from the asset submenu
-    for(int a = action_list_to_asset_submenu.size(); a > 0; a--){
-        qDebug() << "REMOVING" << a;
+    for(int a = action_list_to_asset_submenu.size(); a > 0; a--)
+    {
+//        qDebug() << "REMOVING" << a;
         QPoint tmp_point = QPoint(a, 0);
         mc_systrayMenu_asset->removeAction(mc_systrayMenu_asset->actionAt(tmp_point));
     }
@@ -851,8 +911,9 @@ void Moneychanger::set_systrayMenu_account_setDefaultAccount(QString account_id,
     }
 }
 
-void Moneychanger::mc_systrayMenu_reload_accountlist(){
-    qDebug() << "RELOAD account LIST";
+void Moneychanger::mc_systrayMenu_reload_accountlist()
+{
+//    qDebug() << "RELOAD account LIST";
     //Count accounts
     int32_t account_count_int32_t = OTAPI_Wrap::GetAccountCount();
     int account_count = account_count_int32_t;
@@ -861,8 +922,9 @@ void Moneychanger::mc_systrayMenu_reload_accountlist(){
     QList<QAction*> action_list_to_account_submenu = mc_systrayMenu_account->actions();
     
     //Remove all sub-menus from the account submenu
-    for(int a = action_list_to_account_submenu.size(); a > 0; a--){
-        qDebug() << "REMOVING" << a;
+    for(int a = action_list_to_account_submenu.size(); a > 0; a--)
+    {
+//        qDebug() << "REMOVING" << a;
         QPoint tmp_point = QPoint(a, 0);
         mc_systrayMenu_account->removeAction(mc_systrayMenu_account->actionAt(tmp_point));
     }
@@ -956,8 +1018,9 @@ void Moneychanger::set_systrayMenu_server_setDefaultServer(QString server_id, QS
     mc_systrayMenu_server->setTitle("Server: "+new_server_title);
 }
 
-void Moneychanger::mc_systrayMenu_reload_serverlist(){
-    qDebug() << "RELOAD SERVER LIST";
+void Moneychanger::mc_systrayMenu_reload_serverlist()
+{
+//    qDebug() << "RELOAD SERVER LIST";
     //Count server
     int32_t server_count_int32_t = OTAPI_Wrap::GetServerCount();
     int server_count = server_count_int32_t;
@@ -967,7 +1030,7 @@ void Moneychanger::mc_systrayMenu_reload_serverlist(){
     
     //Remove all sub-menus from the server submenu
     for(int a = action_list_to_server_submenu.size(); a > 0; a--){
-        qDebug() << "REMOVING" << a;
+//        qDebug() << "REMOVING" << a;
         QPoint tmp_point = QPoint(a, 0);
         mc_systrayMenu_server->removeAction(mc_systrayMenu_server->actionAt(tmp_point));
     }

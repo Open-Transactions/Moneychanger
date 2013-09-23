@@ -16,5 +16,14 @@
         <file alias="markets">icons/markets.png</file>
         <file alias="settings">icons/settings.png</file>
         <file alias="moneychanger">icons/moneychanger.png</file>
+        <file>icons/user.png</file>
+        <file>icons/home.png</file>
+        <file>icons/qrcode_scan.png</file>
+        <file>icons/qrcode.png</file>
+        <file>icons/request.png</file>
+        <file>icons/send.png</file>
+        <file>icons/refresh.png</file>
+        <file>icons/padlock_open.png</file>
+        <file>icons/lock.png</file>
     </qresource>
 </RCC>

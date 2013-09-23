@@ -37,8 +37,8 @@
 
 #include "ot_worker.h"
 
-#include "MTRecordList.h"
-#include "MTRecord.h"
+#include "MTRecordList.hpp"
+#include "MTRecord.hpp"
 
 #include "Widgets/MarketWindow.h"
 #include "Widgets/overviewwindow.h"

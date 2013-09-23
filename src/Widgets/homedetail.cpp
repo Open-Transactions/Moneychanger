@@ -5,7 +5,11 @@
 #include <QVBoxLayout>
 #include <QPlainTextEdit>
 #include <QGridLayout>
+#include <QToolButton>
+#include <QIcon>
+#include <QPixmap>
 #include <QDateTime>
+#include <QLabel>
 
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
@@ -20,6 +24,8 @@ MTHomeDetail::MTHomeDetail(QWidget *parent) :
     ui(new Ui::MTHomeDetail)
 {
     ui->setupUi(this);
+
+    this->setContentsMargins(0, 0, 0, 0);
 }
 
 MTHomeDetail::~MTHomeDetail()
@@ -41,6 +47,7 @@ MTHomeDetail::~MTHomeDetail()
     delete ui;
 }
 
+//static
 void MTHomeDetail::clearLayout(QLayout* pLayout)
 {
     if ( NULL == pLayout)
@@ -59,10 +66,66 @@ void MTHomeDetail::clearLayout(QLayout* pLayout)
 }
 
 
+
+
 //static
-QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt)
+QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt, bool bExternal/*=true*/)
 {
-    // -------------------------------------------
+    TransactionTableViewCellType cellType = (recordmt.IsOutgoing() ?
+                                                 // -------------------------------------------------
+                                                 (recordmt.IsPending() ?
+                                                      TransactionTableViewCellTypeOutgoing :  // outgoing
+                                                      TransactionTableViewCellTypeSent) :     // sent
+                                                 // -------------------------------------------------
+                                                 (recordmt.IsPending() ?
+                                                      TransactionTableViewCellTypeIncoming :  // incoming
+                                                      TransactionTableViewCellTypeReceived)); // received
+    // --------------------------------------------------------------------------------------------
+    // For invoices and invoice receipts.
+    //
+    if (recordmt.IsInvoice() || recordmt.IsPaymentPlan() ||
+        ((0 == recordmt.GetInstrumentType().compare("chequeReceipt")) &&
+         (( recordmt.IsOutgoing() && (OTAPI_Wrap::It()->StringToLong(recordmt.GetAmount()) > 0)) ||
+          (!recordmt.IsOutgoing() && (OTAPI_Wrap::It()->StringToLong(recordmt.GetAmount()) < 0)))
+         ))
+        cellType = (recordmt.IsOutgoing() ?
+                    (recordmt.IsPending() ?
+                     TransactionTableViewCellTypeIncoming  : // outgoing
+                     TransactionTableViewCellTypeReceived) : // sent
+                    // -------------------------------------------------
+                    (recordmt.IsPending() ?
+                     TransactionTableViewCellTypeOutgoing  : // incoming
+                     TransactionTableViewCellTypeSent));     // received
+    // --------------------------------------------------------------------------------------------
+    std::string str_desc;
+    // ---------------------------------------
+    if (recordmt.IsMail())
+        recordmt.FormatShortMailDescription(str_desc);
+    else
+        recordmt.FormatDescription(str_desc);
+    // ---------------------------------------
+    QString strColor("black");
+
+    switch (cellType)
+    {
+        case TransactionTableViewCellTypeReceived:
+            strColor = QString("green");
+            break;
+        case TransactionTableViewCellTypeSent:
+            strColor = QString("red");
+            break;
+        case TransactionTableViewCellTypeIncoming:
+            strColor = QString("LightGreen");
+            break;
+        case TransactionTableViewCellTypeOutgoing:
+            strColor = QString("Crimson");
+            break;
+        default:
+            qDebug() << "CELL TYPE: " << cellType;
+            assert("Expected all cell types to be handled for color.");
+            break;
+    }
+    // --------------------------------------------------------------------------------------------
     //Append to transactions list in overview dialog.
     QWidget * row_widget = new QWidget;
     QGridLayout * row_widget_layout = new QGridLayout;
@@ -95,34 +158,61 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt)
     // -------------------------------------------
     // Amount (with currency tla)
     QLabel * currency_amount_label = new QLabel;
-    QString currency_amount = QString("");
+    QString currency_amount;
 
-    if (recordmt.IsMail())
+    currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(strColor));
+    // ----------------------------------------------------------------
+    bool bLabelAdded = false;
+
+    std::string str_formatted;
+    bool bFormatted = false;
+
+    if (!recordmt.IsMail())
+        bFormatted = recordmt.FormatAmount(str_formatted);
+    // ----------------------------------------
+    if (bFormatted && !str_formatted.empty())
+        currency_amount = QString::fromStdString(str_formatted);
+    else if (recordmt.IsMail())
     {
         if (recordmt.IsOutgoing())
-            currency_amount.append("sent message");
+            currency_amount = QString("sent msg");
         else
-            currency_amount.append("message");
-    }
-    else
-    {
-        std::string str_formatted;
-        QString qstrAmount = QString("");
-        if (recordmt.FormatAmount(str_formatted))
-            qstrAmount = QString(QString::fromStdString(str_formatted));
-        currency_amount.append(qstrAmount);
-    }
-    // ----------------------------------------------------------------
-    long lAmount = OTAPI_Wrap::StringToLong(recordmt.GetAmount());
+            currency_amount = QString("message");
+        // ------------------------------------------
+        if (!bExternal)
+        {
+//            QToolButton *buttonLock  = new QToolButton;
+            // ----------------------------------------------------------------
+            QPixmap pixmapLock    (":/icons/icons/lock.png");
+            // ----------------------------------------------------------------
+//            QIcon lockButtonIcon    (pixmapLock);
+            // ----------------------------------------------------------------
+//          buttonLock->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+//            buttonLock->setAutoRaise(true);
+//            buttonLock->setIcon(lockButtonIcon);
+//          buttonLock->setIconSize(QSize(32,32));
+//          buttonLock->setText("Send");
+            // ----------------------------------------------------------------
+            QLabel * pLockLabel = new QLabel;
+            pLockLabel->setPixmap(pixmapLock);
 
-    if (recordmt.IsOutgoing() || (lAmount < 0))
-        currency_amount_label->setStyleSheet("QLabel { color : red; }");
+            QHBoxLayout * pLabelLayout = new QHBoxLayout;
+
+            pLabelLayout->addWidget(pLockLabel);
+            pLabelLayout->addWidget(currency_amount_label);
+
+            row_widget_layout->addLayout(pLabelLayout, 0, 1, 1,1, Qt::AlignRight);
+
+            bLabelAdded = true;
+        }
+    }
     else
-        currency_amount_label->setStyleSheet("QLabel { color : green; }");
+        currency_amount = QString("");
     // ----------------------------------------------------------------
     currency_amount_label->setText(currency_amount);
     // ----------------------------------------------------------------
-    row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
+    if (!bLabelAdded)
+        row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
     // -------------------------------------------
     //Sub-info
     QWidget * row_content_container = new QWidget;
@@ -131,7 +221,7 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt)
     // left top right bottom
 
     row_content_grid->setSpacing(4);
-    row_content_grid->setContentsMargins(10, 4, 10, 4);
+    row_content_grid->setContentsMargins(3, 4, 3, 4);
 
     row_content_container->setLayout(row_content_grid);
 
@@ -149,6 +239,8 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt)
     QLabel * row_content_date_label = new QLabel;
     QString row_content_date_label_string;
     row_content_date_label_string.append(QString(timestamp.toString(Qt::SystemLocaleShortDate)));
+
+    row_content_date_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
     row_content_date_label->setText(row_content_date_label_string);
 
     row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
@@ -158,17 +250,14 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt)
     QLabel * row_content_status_label = new QLabel;
     QString row_content_status_string;
 
-//      if (record_map["ismail"].toBool())
-//         row_content_status_string.append(record_map["shortMail"].toString());
-//      else
-//          row_content_status_string.append(record_map["formatDescription"].toString());
-
-    std::string formatDescription_holder;
-    recordmt.FormatDescription(formatDescription_holder);
-
-    row_content_status_string.append(QString::fromStdString(formatDescription_holder));
+    row_content_status_string.append(QString::fromStdString(str_desc));
     // -------------------------------------------
     //add string to label
+    row_content_status_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
+    row_content_status_label->setWordWrap(false);
+    row_content_status_string.replace("\r\n"," ");
+    row_content_status_string.replace("\n\r"," ");
+    row_content_status_string.replace("\n",  " ");
     row_content_status_label->setText(row_content_status_string);
 
     //add to row_content grid
@@ -185,18 +274,35 @@ void SetHeight (QPlainTextEdit* edit, int nRows)
   edit -> setFixedHeight  (nRows * RowHeight) ;
 }
 
+
+void increment_cell(int & nCurrentRow, int & nCurrentColumn)
+{
+    if (nCurrentColumn == 1)
+    {
+        nCurrentColumn++;
+        return;
+    }
+    // ------------------------
+    else
+    {
+        nCurrentColumn--;
+        nCurrentRow++;
+    }
+}
+
 void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 {
     // --------------------------------------------------
     if (NULL != m_pDetailLayout)
     {
-        this->clearLayout(m_pDetailLayout);
+        MTHomeDetail::clearLayout(m_pDetailLayout);
         delete m_pDetailLayout;
         m_pDetailLayout = NULL;
     }
     // --------------------------------------------------
     m_pDetailLayout = new QGridLayout;
     m_pDetailLayout->setAlignment(Qt::AlignTop);
+    m_pDetailLayout->setContentsMargins(0, 0, 0, 0);
     // --------------------------------------------------
     weak_ptr_MTRecord   weakRecord = theList.GetRecord(nRow);
     shared_ptr_MTRecord record     = weakRecord.lock();
@@ -215,11 +321,11 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
     // --------------------------------------------------
     // Add the header widget for this detail.
     //
-    QWidget * pHeader = MTHomeDetail::CreateDetailHeaderWidget(recordmt);
+    QWidget * pHeader = MTHomeDetail::CreateDetailHeaderWidget(recordmt, false);
 
     if (NULL != pHeader)
-    {
-        m_pDetailLayout->addWidget(pHeader, nCurrentRow, nCurrentColumn);
+    {            
+        m_pDetailLayout->addWidget(pHeader, nCurrentRow, nCurrentColumn, 1, 2);
         m_pDetailLayout->setAlignment(pHeader, Qt::AlignTop);
         nCurrentRow++;
     }
@@ -235,14 +341,30 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 
         sec->setPlainText(strMemo);
         sec->setReadOnly(true);
+        // -----------------------------------------
+        QHBoxLayout * pHLayout = new QHBoxLayout;
+        QLabel * labelMemo = new QLabel(QString("Memo: "));
 
-        m_pDetailLayout->addWidget(sec, nCurrentRow, nCurrentColumn);
-        m_pDetailLayout->setAlignment(sec, Qt::AlignTop);
+        pHLayout->addWidget(labelMemo);
+        pHLayout->addWidget(sec);
+
+        pHLayout->setAlignment(labelMemo, Qt::AlignLeft);
+        pHLayout->setAlignment(sec, Qt::AlignTop);
+        // -----------------------------------------
+//      m_pDetailLayout->addWidget(sec, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->addLayout(pHLayout, nCurrentRow, nCurrentColumn, 1, 2);
+        m_pDetailLayout->setAlignment(pHLayout, Qt::AlignTop);
 
         SetHeight (sec, 2);
 
         nCurrentRow++;
     }
+    // --------------------------------------------------
+
+
+
+
+
     // --------------------------------------------------
     QString viewDetails = QString("");
 
@@ -260,7 +382,8 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
     m_pDetailLayout->addWidget(contactButton, nCurrentRow, nCurrentColumn);
     m_pDetailLayout->setAlignment(contactButton, Qt::AlignTop);
 
-    nCurrentRow++;
+    increment_cell(nCurrentRow, nCurrentColumn);
+//  nCurrentRow++;
 
     // -------------------------------------------
 
@@ -292,7 +415,8 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         m_pDetailLayout->addWidget(deleteButton, nCurrentRow, nCurrentColumn);
         m_pDetailLayout->setAlignment(deleteButton, Qt::AlignTop);
 
-        nCurrentRow++;
+        increment_cell(nCurrentRow, nCurrentColumn);
+    //  nCurrentRow++;
 
 
         /*
@@ -379,7 +503,8 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         m_pDetailLayout->addWidget(acceptButton, nCurrentRow, nCurrentColumn);
         m_pDetailLayout->setAlignment(acceptButton, Qt::AlignTop);
 
-        nCurrentRow++;
+        increment_cell(nCurrentRow, nCurrentColumn);
+    //  nCurrentRow++;
 
 
         /*
@@ -484,7 +609,8 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         m_pDetailLayout->addWidget(cancelButton, nCurrentRow, nCurrentColumn);
         m_pDetailLayout->setAlignment(cancelButton, Qt::AlignTop);
 
-        nCurrentRow++;
+        increment_cell(nCurrentRow, nCurrentColumn);
+    //  nCurrentRow++;
 
 
         /*
@@ -551,7 +677,8 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         m_pDetailLayout->addWidget(discardButton, nCurrentRow, nCurrentColumn);
         m_pDetailLayout->setAlignment(discardButton, Qt::AlignTop);
 
-        nCurrentRow++;
+        increment_cell(nCurrentRow, nCurrentColumn);
+    //  nCurrentRow++;
 
 
         /*
@@ -589,7 +716,8 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         m_pDetailLayout->addWidget(discardButton, nCurrentRow, nCurrentColumn);
         m_pDetailLayout->setAlignment(discardButton, Qt::AlignTop);
 
-        nCurrentRow++;
+        increment_cell(nCurrentRow, nCurrentColumn);
+    //  nCurrentRow++;
 
 
         /*
@@ -617,7 +745,8 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         m_pDetailLayout->addWidget(msgButton, nCurrentRow, nCurrentColumn);
         m_pDetailLayout->setAlignment(msgButton, Qt::AlignTop);
 
-        nCurrentRow++;
+        increment_cell(nCurrentRow, nCurrentColumn);
+    //  nCurrentRow++;
 
 
         /*
@@ -649,6 +778,30 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         */
     }
     // ----------------------------------
+
+
+
+    if (nCurrentColumn > 1)
+    {
+        nCurrentColumn = 1;
+        nCurrentRow++;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // ----------------------------------
     // TRANSACTION IDs DISPLAYED HERE
 
 //    ActionSection *act = [ActionSection sectionWithName:QString("Actions") andActions:actions];
@@ -662,7 +815,19 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 //                                idSec,
 //                                ]];
     // ----------------------------------
+    QTabWidget * pTabWidget  = new QTabWidget;
+    QWidget    * pTab1Widget = new QWidget;
+    QWidget    * pTab2Widget = NULL;
 
+    pTab1Widget->setLayout(m_pDetailLayout);
+
+    pTabWidget->addTab(pTab1Widget, QString("Details"));
+
+
+    pTabWidget->setContentsMargins(5, 5, 5, 5);
+    pTab1Widget->setContentsMargins(5, 5, 5, 5);
+
+    // ----------------------------------
     if (record->HasContents())
     {
         QPlainTextEdit *sec = new QPlainTextEdit;
@@ -671,20 +836,57 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 
         sec->setPlainText(strContents);
         sec->setReadOnly(true);
+        // -------------------------------
+
+        // -------------------------------
+        QVBoxLayout * pvBox = NULL;
+
+        if (record->IsMail())
+        {
+            m_pDetailLayout->addWidget   (sec, nCurrentRow++, nCurrentColumn, 1, 2);
+            m_pDetailLayout->setAlignment(sec, Qt::AlignTop);
+//            sec->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+//            SetHeight (sec, 10);
+        }
+        else
+        {
+            pvBox       = new QVBoxLayout;
+            pTab2Widget = new QWidget;
+
+            QLabel * pLabelContents = new QLabel(QString("Raw Contents:"));
+
+            pvBox->setAlignment(Qt::AlignTop);
+
+//            sec->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+            pvBox->addWidget   (pLabelContents); // stretch = 1
+            pvBox->setAlignment(pLabelContents, Qt::AlignTop);
+
+            pvBox->addWidget   (sec); // stretch = 10
+            pvBox->setAlignment(sec, Qt::AlignTop);
+
+//            SetHeight (sec, 100);
+
+            pTab2Widget->setContentsMargins(0, 0, 0, 0);
+            pTab2Widget->setLayout(pvBox);
+
+            pTabWidget->addTab(pTab2Widget, QString("Contents"));
+        }
+        // -------------------------------
 
 //        if (record->IsMail())
 //        {
-//            m_pDetailLayout->insertWidget(2, sec, 1); // So the mail contents appear above all the IDs.
+//            pvBox->insertWidget(2, sec, 1); // So the mail contents appear above all the IDs.
 //        }
 //        else
 //        {
-            m_pDetailLayout->addWidget(sec, nCurrentRow, nCurrentColumn);
-            m_pDetailLayout->setAlignment(sec, Qt::AlignTop);
 
-            nCurrentRow++;
+
 
 //        }
-    }
+    }    
+
 
     // ----------------------------------
 /*
@@ -763,5 +965,29 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
     // -----------------------------------------------
 
 
+    this->m_pDetailLayout = new QGridLayout;
+
+    this->m_pDetailLayout->addWidget(pTabWidget);
+
+    m_pDetailLayout->setContentsMargins(0,0,0,0);
+    pTabWidget->setTabPosition(QTabWidget::South);
+
     this->setLayout(m_pDetailLayout);
+
+//    this->setLayout(m_pDetailLayout);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

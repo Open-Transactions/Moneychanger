@@ -95,16 +95,16 @@ bool DBHandler::dbCreateInstance()
 
     QSqlQuery query(db);
 
-    if(db.isOpen())
+    if (db.isOpen())
     {
         qDebug() << "Creating Tables";
 
         QString address_book_create = "CREATE TABLE address_book (id INTEGER PRIMARY KEY, nym_id TEXT, nym_display_name TEXT)";
         // --------------------------------------------
-        QString default_nym_create = "CREATE TABLE default_nym (nym TEXT)";
-        QString default_server_create = "CREATE TABLE default_server (server TEXT)";
-        QString default_asset_create = "CREATE TABLE default_asset (asset TEXT)";
-        QString default_account_create = "CREATE TABLE default_account (account TEXT)";
+        QString default_nym_create = "CREATE TABLE default_nym (default_id INTEGER PRIMARY KEY, nym TEXT)";
+        QString default_server_create = "CREATE TABLE default_server (default_id INTEGER PRIMARY KEY, server TEXT)";
+        QString default_asset_create = "CREATE TABLE default_asset (default_id INTEGER PRIMARY KEY, asset TEXT)";
+        QString default_account_create = "CREATE TABLE default_account (default_id INTEGER PRIMARY KEY, account TEXT)";
         // --------------------------------------------
         QString create_contact = "CREATE TABLE contact(contact_id INTEGER PRIMARY KEY, contact_display_name TEXT)";
         QString create_nym     = "CREATE TABLE nym(nym_id TEXT PRIMARY KEY, contact_id INTEGER, nym_display_name)";
@@ -154,7 +154,11 @@ bool DBHandler::runQuery(QString run)
         if(error)
             return true;
         else
+        {
+            qDebug() << "runQuery: QSqlQuery::lastError: " << query.lastError().text();
+
             return false;
+        }
     }
     else
         return error;
@@ -166,7 +170,7 @@ int DBHandler::querySize(QString run)
 {
     QMutexLocker locker(&dbMutex);
 
-    int size;
+    int size = 0;
     bool noerror = false;
     QSqlQuery query(db);
     
@@ -186,7 +190,8 @@ int DBHandler::querySize(QString run)
             return size;
         else
         {
-            qDebug() << "Error at query Size";
+            qDebug() << "Error at query Size: query.exec returned false: " << run;
+            qDebug() << "QSqlQuery::lastError: " << query.lastError().text();
             return -1;
         }
     }
@@ -194,7 +199,7 @@ int DBHandler::querySize(QString run)
     // Return -1 on Error
     else
     {
-        qDebug() << "Error at query Size";
+        qDebug() << "Error at query Size: database not even open.";
         return -1;
     }
     
@@ -209,7 +214,7 @@ bool DBHandler::isNext(QString run)
     
     QSqlQuery query(db);
     
-    if(db.isOpen())
+    if (db.isOpen())
     {
         isnext = query.exec(run);
         isnext = query.next();
@@ -239,10 +244,14 @@ int DBHandler::queryInt(QString run, int value, int at)
         noerror = query.next();
         noerror = query.seek(at);
         queryResult = query.value(value).toInt();
-        if(!noerror)
+
+        if (noerror)
             return queryResult;
         else
+        {
+            qDebug() << "queryInt: QSqlQuery::lastError: " << query.lastError().text();
             return 0;
+        }
     }
     else
         return 0;
@@ -264,10 +273,15 @@ QString DBHandler::queryString(QString run, int value, int at)
         noerror = query.next();
         noerror = query.seek(at);
         queryResult = query.value(value).toString();
-        if(!noerror)
+
+        if (noerror)
             return queryResult;
         else
+        {
+            qDebug() << "queryString: QSqlQuery::lastError: " << query.lastError().text();
+
             return "";
+        }
     }
     else
         return "";
@@ -326,9 +340,9 @@ QVariant DBHandler::AddressBookInsertNym(QString nym_id_string, QString nym_disp
 
     QSqlQuery query(db);
     
-    if(db.isOpen())
+    if (db.isOpen())
     {
-        if(query.exec(QString("INSERT INTO `address_book` (`id`, `nym_id`, `nym_display_name`) VALUES(NULL, '%1', '%2')").arg(nym_id_string).arg(nym_display_name_string)))
+        if (query.exec(QString("INSERT INTO `address_book` (`id`, `nym_id`, `nym_display_name`) VALUES(NULL, '%1', '%2')").arg(nym_id_string).arg(nym_display_name_string)))
             return query.lastInsertId();
         else
         {
@@ -352,9 +366,9 @@ bool DBHandler::AddressBookUpdateNym(QString nym_id_string, QString nym_display_
     
     QSqlQuery query(db);
     
-    if(db.isOpen())
+    if (db.isOpen())
     {
-        return query.exec(QString("UPDATE `address_book` SET `nym_id` = '%1', `nym_display_name` = '%2' WHERE `id` = %3").arg(nym_id_string).arg(nym_display_name_string).arg(index_id_string));
+        return query.exec(QString("UPDATE `address_book` SET `nym_id` = '%1', `nym_display_name` = '%2' WHERE `id`='%3'").arg(nym_id_string).arg(nym_display_name_string).arg(index_id_string));
 
     }
     else
@@ -372,9 +386,10 @@ bool DBHandler::AddressBookRemoveID(int ID)
     QString queryResult;
     
     QSqlQuery query(db);
-    if(db.isOpen())
+
+    if (db.isOpen())
     {
-        return query.exec(QString("DELETE FROM `address_book` WHERE `id` = %1").arg(ID));
+        return query.exec(QString("DELETE FROM `address_book` WHERE `id` = '%1'").arg(ID));
         
     }
     else
@@ -393,13 +408,15 @@ bool DBHandler::AddressBookUpdateDefaultNym(QString ID)
     QString queryResult;
     
     QSqlQuery query(db);
-    if(db.isOpen())
+
+    if (db.isOpen())
     {
-        if(query.exec(QString("UPDATE `default_nym` SET `nym` = '%1'").arg(ID)))
+        if(query.exec(QString("UPDATE `default_nym` SET `nym` = '%1' WHERE `default_id`='1'").arg(ID)))
             return true;
         else
         {
             qDebug() << "AddressBookUpdateDefaultNym Error";
+            qDebug() << "QSqlQuery::lastError: " << query.lastError().text();
             return false;
         }
     }
@@ -418,13 +435,15 @@ bool DBHandler::AddressBookUpdateDefaultAsset(QString ID)
     QString queryResult;
     
     QSqlQuery query(db);
-    if(db.isOpen())
+
+    if (db.isOpen())
     {
-        if(query.exec(QString("UPDATE `default_asset` SET `asset` = '%1'").arg(ID)))
+        if(query.exec(QString("UPDATE `default_asset` SET `asset` = '%1' WHERE `default_id`='1'").arg(ID)))
             return true;
         else
         {
             qDebug() << "AddressBookUpdateDefaultAsset Error";
+            qDebug() << "QSqlQuery::lastError: " << query.lastError().text();
             return false;
         }
     }
@@ -442,13 +461,15 @@ bool DBHandler::AddressBookUpdateDefaultAccount(QString ID)
     QString queryResult;
     
     QSqlQuery query(db);
-    if(db.isOpen())
+
+    if (db.isOpen())
     {
-        if(query.exec(QString("UPDATE `default_account` SET `account` = '%1'").arg(ID)))
+        if(query.exec(QString("UPDATE `default_account` SET `account` = '%1' WHERE `default_id`='1'").arg(ID)))
             return true;
         else
         {
             qDebug() << "AddressBookUpdateDefaultAccount Error";
+            qDebug() << "QSqlQuery::lastError: " << query.lastError().text();
             return false;
         }
     }
@@ -467,13 +488,15 @@ bool DBHandler::AddressBookUpdateDefaultServer(QString ID)
     QString queryResult;
     
     QSqlQuery query(db);
-    if(db.isOpen())
+
+    if (db.isOpen())
     {
-        if(query.exec(QString("UPDATE `default_server` SET `server` = '%1'").arg(ID)))
+        if(query.exec(QString("UPDATE `default_server` SET `server` = '%1' WHERE `default_id`='1'").arg(ID)))
             return true;
         else
         {
             qDebug() << "AddressBookUpdateDefaultServer Error";
+            qDebug() << "QSqlQuery::lastError: " << query.lastError().text();
             return false;
         }
     }

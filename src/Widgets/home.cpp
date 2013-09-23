@@ -1,5 +1,7 @@
 #include <QApplication>
 #include <QMessageBox>
+#include <QPushButton>
+#include <QToolButton>
 #include <QScrollArea>
 #include <QDebug>
 
@@ -11,7 +13,7 @@
 
 #include "homedetail.h"
 
-#include "ot_worker.h"
+#include "Handlers/contacthandler.h"
 
 
 MTHome::MTHome(QWidget *parent) :
@@ -19,6 +21,7 @@ MTHome::MTHome(QWidget *parent) :
     already_init(false),
     m_pDetailPane(NULL),
     m_pDetailLayout(NULL),
+    m_pHeaderLayout(NULL),
     m_list(*(new MTNameLookupQT)),
     ui(new Ui::MTHome)
 {
@@ -31,7 +34,7 @@ MTHome::~MTHome()
 {
     delete m_pDetailPane;
     delete m_pDetailLayout;
-
+    delete m_pHeaderLayout;
     delete ui;
 }
 
@@ -67,18 +70,30 @@ void MTHome::dialog()
         ui->tableWidget->setColumnCount(2);
         ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
         // -------------------------------------------
-        ui->tableWidget->horizontalHeader()->resizeSection(0, 3);
+        ui->tableWidget->horizontalHeader()->resizeSection(0, 5);
         // -------------------------------------------
         ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
         ui->tableWidget->verticalHeader()->setDefaultSectionSize(60);
         ui->tableWidget->verticalHeader()->hide();
         ui->tableWidget->horizontalHeader()->hide();
         // -------------------------------------------
+        ui->tableWidget->setContentsMargins(10,0,0,0);
+        // -------------------------------------------
         m_pDetailPane = new MTHomeDetail;
         m_pDetailLayout = new QVBoxLayout;
         m_pDetailLayout->addWidget(m_pDetailPane);
 
-        ui->frame->setLayout(m_pDetailLayout);
+        m_pDetailPane  ->setContentsMargins(1,1,1,1);
+        m_pDetailLayout->setContentsMargins(1,1,1,1);
+
+//        ui->widget->setFrameStyle(QFrame::NoFrame);
+//        ui->widget->setLineWidth(0);
+//        ui->widget->setMidLineWidth(0);
+
+        ui->widget->setContentsMargins(1,1,1,1);
+
+        ui->widget->setLayout(m_pDetailLayout);
+
         // -------------------------------------------
 
         setupRecordList();
@@ -93,8 +108,26 @@ void MTHome::dialog()
     //Tell OT to repopulate, and refresh backend.
 //    ((Moneychanger*)parentWidget())->get_ot_worker_background()->mc_overview_ping();
 
+    RefreshUserBar();
+
     //Now refresh the repopulated data visually
     RefreshRecords();
+
+    if (ui->tableWidget->rowCount() > 0)
+    {
+        ui->tableWidget->setCurrentCell(0, 1);
+    }
+    // -------------------------------------------
+    // These appear to do nothing so far, at least on Mac:
+//    raise();
+//    activateWindow();
+}
+
+
+void MTHome::on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn)
+{
+    m_pDetailPane->refresh(row, m_list);
+
 }
 
 void MTHome::setupRecordList()
@@ -138,15 +171,188 @@ void MTHome::setupRecordList()
     m_list.AcceptTransfersAutomatically(true);
 }
 
-void MTHome::on_tableWidget_cellClicked(int row, int column)
-{
-    m_pDetailPane->refresh(row, m_list);
-}
+
+
 
 
 void MTHome::RefreshUserBar()
 {
+    // --------------------------------------------------
+    if (NULL != m_pHeaderLayout)
+    {
+        MTHomeDetail::clearLayout(m_pHeaderLayout);
+        delete m_pHeaderLayout;
+        m_pHeaderLayout = NULL;
+    }
+    // --------------------------------------------------
+    m_pHeaderLayout = new QGridLayout;
+    m_pHeaderLayout->setAlignment(Qt::AlignTop);
+    // --------------------------------------------------
+    QWidget * pUserBar = this->CreateUserBarWidget();
 
+    if (NULL != pUserBar)
+    {
+        m_pHeaderLayout->addWidget(pUserBar);
+    }
+    // --------------------------------------------------
+    ui->headerFrame->setLayout(m_pHeaderLayout);
+}
+
+
+QWidget * MTHome::CreateUserBarWidget()
+{
+    //Append to transactions list in overview dialog.
+    QWidget * row_widget = new QWidget;
+    QGridLayout * row_widget_layout = new QGridLayout;
+
+    row_widget_layout->setSpacing(12);
+    row_widget_layout->setContentsMargins(12, 3, 8, 3);
+
+    row_widget->setLayout(row_widget_layout);
+    row_widget->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");
+    // -------------------------------------------
+    //Render row.
+    //Header of row
+    QString tx_name = QString("My Acct        <small><font color=grey>(US Dollars)</font></small>");
+
+    if(tx_name.trimmed() == "")
+    {
+        //Tx has no name
+        tx_name.clear();
+        tx_name = "Transaction";
+    }
+
+    QLabel * header_of_row = new QLabel;
+    QString header_of_row_string = QString("");
+    header_of_row_string.append(tx_name);
+
+    header_of_row->setStyleSheet("QLabel { font-weight: bold; font-size:18pt; }");
+    header_of_row->setText(header_of_row_string);
+
+    //Append header to layout
+    row_widget_layout->addWidget(header_of_row, 0, 0, 1,1, Qt::AlignLeft);
+    // -------------------------------------------
+
+
+    // ----------------------------------------------------------------
+//    QIcon(":/icons/request");
+//    QIcon(":/icons/user");
+//    QIcon(":/icons/refresh");
+    // ----------------------------------------------------------------
+//    // Amount (with currency tla)
+    // ----------------------------------------------------------------
+    QLabel * currency_amount_label = new QLabel;
+    QString currency_amount = QString("");
+    // ----------------------------------------------------------------
+//    long lAmount = OTAPI_Wrap::StringToLong(recordmt.GetAmount());
+
+//    if (recordmt.IsOutgoing() || (lAmount < 0))
+//        currency_amount_label->setStyleSheet("QLabel { color : red; }");
+//    else
+//        currency_amount_label->setStyleSheet("QLabel { color : green; }");
+    // ----------------------------------------------------------------
+    currency_amount_label->setStyleSheet("QLabel { color : grey; }");
+    currency_amount_label->setText(currency_amount);
+    // ----------------------------------------------------------------
+    QToolButton *buttonSend     = new QToolButton;
+    QToolButton *buttonRequest  = new QToolButton;
+    QToolButton *buttonContacts = new QToolButton;
+    QToolButton *buttonRefresh  = new QToolButton;
+    // ----------------------------------------------------------------
+    QPixmap pixmapSend    (":/icons/icons/send.png");
+    QPixmap pixmapRequest (":/icons/icons/request.png");
+    QPixmap pixmapContacts(":/icons/icons/user.png");
+    QPixmap pixmapRefresh (":/icons/icons/refresh.png");
+    // ----------------------------------------------------------------
+    QIcon sendButtonIcon    (pixmapSend);
+    QIcon requestButtonIcon (pixmapRequest);
+    QIcon contactsButtonIcon(pixmapContacts);
+    QIcon refreshButtonIcon (pixmapRefresh);
+    // ----------------------------------------------------------------
+    buttonSend->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    buttonSend->setAutoRaise(true);
+    buttonSend->setIcon(sendButtonIcon);
+    buttonSend->setIconSize(pixmapSend.rect().size());
+    buttonSend->setText("Send");
+    // ----------------------------------------------------------------
+    buttonRequest->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    buttonRequest->setAutoRaise(true);
+    buttonRequest->setIcon(requestButtonIcon);
+    buttonRequest->setIconSize(pixmapRequest.rect().size());
+    buttonRequest->setText("Request");
+    // ----------------------------------------------------------------
+    buttonContacts->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    buttonContacts->setAutoRaise(true);
+    buttonContacts->setIcon(contactsButtonIcon);
+    buttonContacts->setIconSize(pixmapContacts.rect().size());
+    buttonContacts->setText("Contacts");
+    // ----------------------------------------------------------------
+    buttonRefresh->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    buttonRefresh->setAutoRaise(true);
+    buttonRefresh->setIcon(refreshButtonIcon);
+//    buttonRefresh->setIconSize(pixmapRefresh.rect().size());
+    buttonRefresh->setIconSize(pixmapContacts.rect().size());
+    buttonRefresh->setText("Refresh");
+    // ----------------------------------------------------------------
+    QHBoxLayout * pButtonLayout = new QHBoxLayout;
+
+    pButtonLayout->addWidget(currency_amount_label);
+    pButtonLayout->addWidget(buttonSend);
+    pButtonLayout->addWidget(buttonRequest);
+    pButtonLayout->addWidget(buttonContacts);
+    pButtonLayout->addWidget(buttonRefresh);
+    // ----------------------------------------------------------------
+    row_widget_layout->addLayout(pButtonLayout, 0, 1, 1,1, Qt::AlignRight);
+//    row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
+    // -------------------------------------------
+
+
+
+
+    // -------------------------------------------
+    //Sub-info
+    QWidget * row_content_container = new QWidget;
+    QGridLayout * row_content_grid = new QGridLayout;
+
+    // left top right bottom
+
+    row_content_grid->setSpacing(4);
+    row_content_grid->setContentsMargins(3, 4, 3, 4);
+
+    row_content_container->setLayout(row_content_grid);
+
+    row_widget_layout->addWidget(row_content_container, 1,0, 1,2);
+    // -------------------------------------------
+    // Column one
+    //Date (sub-info)
+    //Calc/convert date/times
+    QLabel * row_content_date_label = new QLabel("Available: ");
+    QString row_content_date_label_string("<font color=grey>Available:</font> $50.93 (+ $167.23 in cash)");
+//    row_content_date_label_string.append(QString(timestamp.toString(Qt::SystemLocaleShortDate)));
+
+//    row_content_date_label->setStyleSheet("QLabel { color : grey; }");
+    row_content_date_label->setText(row_content_date_label_string);
+
+    row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
+    // -------------------------------------------
+    // Column two
+    //Status
+//    QLabel * row_content_status_label = new QLabel;
+//    QString row_content_status_string;
+//
+//    std::string formatDescription_holder("DESCRIPTION");
+////    recordmt.FormatDescription(formatDescription_holder);
+//
+//    row_content_status_string.append(QString::fromStdString(formatDescription_holder));
+//    // -------------------------------------------
+//    //add string to label
+//    row_content_status_label->setStyleSheet("QLabel { color : grey; }");
+//    row_content_status_label->setText(row_content_status_string);
+
+//    //add to row_content grid
+//    row_content_grid->addWidget(row_content_status_label, 0,1, 1,1, Qt::AlignRight);
+    // -------------------------------------------
+    return row_widget;
 }
 
 

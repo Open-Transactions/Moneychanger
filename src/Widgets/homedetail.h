@@ -14,6 +14,13 @@ namespace Ui {
 class MTHomeDetail;
 }
 
+enum TransactionTableViewCellType {
+    TransactionTableViewCellTypeSent,
+    TransactionTableViewCellTypeOutgoing,
+    TransactionTableViewCellTypeReceived,
+    TransactionTableViewCellTypeIncoming
+};
+
 class MTHomeDetail : public QWidget
 {
     Q_OBJECT
@@ -23,9 +30,10 @@ public:
     ~MTHomeDetail();
     
     void refresh(int nRow, MTRecordList & theList);
-    void clearLayout(QLayout* pLayout);
 
-    static QWidget * CreateDetailHeaderWidget(MTRecord & recordmt);
+    static void clearLayout(QLayout* pLayout);
+
+    static QWidget * CreateDetailHeaderWidget(MTRecord & recordmt, bool bExternal=true);
 
 private:
     shared_ptr_MTRecord m_record;

@@ -6,58 +6,65 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>986</width>
-    <height>767</height>
+    <width>783</width>
+    <height>508</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Transaction History</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="9,12">
+    <layout class="QVBoxLayout" name="verticalLayout">
      <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
+      <enum>QLayout::SetNoConstraint</enum>
      </property>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,10">
-       <property name="spacing">
-        <number>-1</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <item>
-        <widget class="QWidget" name="balanceLabel" native="true">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>50</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTableWidget" name="tableWidget">
-         <property name="minimumSize">
-          <size>
-           <width>400</width>
-           <height>0</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="QFrame" name="frame">
+      <widget class="QFrame" name="headerFrame">
        <property name="frameShape">
         <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
        </property>
+       <zorder></zorder>
       </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="4,6">
+       <property name="leftMargin">
+        <number>8</number>
+       </property>
+       <item>
+        <widget class="QTableWidget" name="tableWidget">
+         <property name="minimumSize">
+          <size>
+           <width>250</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Transactions</string>
+         </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::SingleSelection</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="widget" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Transaction Details</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>

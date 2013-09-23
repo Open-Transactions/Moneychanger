@@ -69,6 +69,7 @@ class DBHandler
 
     bool AddressBookUpdateNym(QString nym_id_string, QString nym_display_name_string, QString index_id_string);
     bool AddressBookRemoveID(int ID);
+
     bool AddressBookUpdateDefaultNym(QString ID);
     bool AddressBookUpdateDefaultAsset(QString ID);
     bool AddressBookUpdateDefaultAccount(QString ID);

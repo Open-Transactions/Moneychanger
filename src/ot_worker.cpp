@@ -1,20 +1,9 @@
+
 #include "ot_worker.h"
 
+#include "Handlers/contacthandler.h"
 
-
-std::string MTNameLookupQT::GetNymName(const std::string & str_id) const
-{
-    return "";
-}
-
-std::string MTNameLookupQT::GetAcctName(const std::string & str_id) const
-{
-    return "";
-}
-
-
-
-ot_worker::ot_worker(QObject *parent) : QObject(parent), list(lookup)
+ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookupQT))
 {
     /** ** ** **
      ** Init MTList

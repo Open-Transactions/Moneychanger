@@ -35,12 +35,15 @@ private:
 
     void RefreshUserBar();
 
+    QWidget * CreateUserBarWidget();
+
     /** Overview **/
     bool already_init;
     QMutex mc_overview_refreshing_visuals_mutex;
     // ------------------------------------------------
     MTHomeDetail * m_pDetailPane;
     QVBoxLayout  * m_pDetailLayout;
+    QGridLayout  * m_pHeaderLayout;
     // ------------------------------------------------
     MTRecordList   m_list;
 
@@ -50,8 +53,9 @@ public:
     
     void dialog();
 
+
 private slots:
-    void on_tableWidget_cellClicked(int row, int column);
+    void on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn);
 
 private:
     Ui::MTHome *ui;

@@ -32,14 +32,12 @@ SOURCES += main.cpp\
     Widgets/depositwindow.cpp \
     Widgets/sendfundswindow.cpp \
     Widgets/requestfundswindow.cpp \
-    Handlers/contacthandler.cpp \
     Widgets/home.cpp \
-    Widgets/homedetail.cpp
+    Widgets/homedetail.cpp \
+    Handlers/contacthandler.cpp
 
 HEADERS += moneychanger.h \
            ot_worker.h \
-           MTRecordList.h \
-           MTRecord.h \
     MTRecord.hpp \
     MTRecordList.hpp \
     Widgets/marketwindow.h \
@@ -56,9 +54,9 @@ HEADERS += moneychanger.h \
     Widgets/depositwindow.h \
     Widgets/sendfundswindow.h \
     Widgets/requestfundswindow.h \
-    Handlers/contacthandler.h \
     Widgets/home.h \
-    Widgets/homedetail.h
+    Widgets/homedetail.h \
+    Handlers/contacthandler.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 
