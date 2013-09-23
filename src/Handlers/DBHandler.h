@@ -61,8 +61,12 @@ class DBHandler
     bool runQuery(QString run);
     int querySize(QString run);
     bool isNext(QString run);
+
+    int queryInt(QString run, int value, int at=0);
     QString queryString(QString run, int value, int at=0);
+
     QVariant AddressBookInsertNym(QString nym_id_string, QString nym_display_name_string);
+
     bool AddressBookUpdateNym(QString nym_id_string, QString nym_display_name_string, QString index_id_string);
     bool AddressBookRemoveID(int ID);
     bool AddressBookUpdateDefaultNym(QString ID);

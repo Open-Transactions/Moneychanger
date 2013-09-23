@@ -42,7 +42,7 @@
 
 #include "Widgets/MarketWindow.h"
 #include "Widgets/overviewwindow.h"
-#include "Widgets/mthome.h"
+#include "Widgets/home.h"
 #include "Widgets/addressbookwindow.h"
 #include "Widgets/nymmanagerwindow.h"
 #include "Widgets/assetmanagerwindow.h"

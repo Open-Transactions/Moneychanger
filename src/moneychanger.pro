@@ -32,8 +32,9 @@ SOURCES += main.cpp\
     Widgets/depositwindow.cpp \
     Widgets/sendfundswindow.cpp \
     Widgets/requestfundswindow.cpp \
-    Widgets/mthomedetail.cpp \
-    Widgets/mthome.cpp
+    Handlers/contacthandler.cpp \
+    Widgets/home.cpp \
+    Widgets/homedetail.cpp
 
 HEADERS += moneychanger.h \
            ot_worker.h \
@@ -55,12 +56,14 @@ HEADERS += moneychanger.h \
     Widgets/depositwindow.h \
     Widgets/sendfundswindow.h \
     Widgets/requestfundswindow.h \
-    Widgets/mthomedetail.h \
-    Widgets/mthome.h
+    Handlers/contacthandler.h \
+    Widgets/home.h \
+    Widgets/homedetail.h
 
 DEFINES += "OT_ZMQ_MODE=1"
 
 mac:{
+    QMAKE_CXXFLAGS -= -fstack-check
 	QT_CONFIG -= no-pkg-config
 	LIBS += -lboost_system-mt -lboost_thread-mt -ldl
 }
@@ -104,5 +107,5 @@ OTHER_FILES +=
 
 FORMS += \
     UI/marketwindow.ui \
-    Widgets/mthomedetail.ui \
-    Widgets/mthome.ui
+    Widgets/home.ui \
+    Widgets/homedetail.ui

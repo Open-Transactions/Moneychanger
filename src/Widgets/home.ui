@@ -28,7 +28,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QWidget" name="widget" native="true">
+        <widget class="QWidget" name="balanceLabel" native="true">
          <property name="minimumSize">
           <size>
            <width>0</width>
@@ -38,11 +38,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QTableView" name="tableView">
-         <property name="maximumSize">
+        <widget class="QTableWidget" name="tableWidget">
+         <property name="minimumSize">
           <size>
-           <width>16777215</width>
-           <height>16777215</height>
+           <width>400</width>
+           <height>0</height>
           </size>
          </property>
         </widget>

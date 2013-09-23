@@ -17,12 +17,12 @@
 #include "MTRecord.hpp"
 #include "MTRecordList.hpp"
 
-class MTNameLookupQT : public MTNameLookup{
+class MTNameLookupQT : public MTNameLookup
+{
 public:
+    virtual std::string GetNymName(const std::string & str_id) const;
     
-    // virtual std::string GetNymName(const std::string & str_id) const {}
-    
-    // virtual std::string GetAcctName(const std::string & str_id) const {}
+    virtual std::string GetAcctName(const std::string & str_id) const;
 };
 
 
