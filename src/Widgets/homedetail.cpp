@@ -1,4 +1,5 @@
 
+#include <QMessageBox>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QDebug>
@@ -18,12 +19,17 @@
 #include "homedetail.h"
 #include "ui_homedetail.h"
 
+#include "dlgchooser.h"
+
+
 MTHomeDetail::MTHomeDetail(QWidget *parent) :
     QWidget(parent),
     m_pDetailLayout(NULL),
     ui(new Ui::MTHomeDetail)
 {
     ui->setupUi(this);
+
+    this->installEventFilter(this);
 
     this->setContentsMargins(0, 0, 0, 0);
 }
@@ -46,6 +52,57 @@ MTHomeDetail::~MTHomeDetail()
     // --------------------------------------------------
     delete ui;
 }
+
+bool MTHomeDetail::eventFilter(QObject *obj, QEvent *event){
+
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if(keyEvent->key() == Qt::Key_Escape){
+            close(); // This is caught by this same filter.
+            return true;
+        }
+        return true;
+    }else {
+        // standard event processing
+        return QObject::eventFilter(obj, event);
+    }
+}
+
+
+void MTHomeDetail::on_contactButton_clicked(bool checked /*=false*/)
+{
+    DlgChooser * pChooser = new DlgChooser(this);
+    pChooser->setAttribute(Qt::WA_DeleteOnClose);
+
+
+    mapIDName & the_map = pChooser->m_map;
+
+    the_map.insert(QString("ID1"), QString("NAME1"));
+    the_map.insert(QString("ID2"), QString("NAME2"));
+    the_map.insert(QString("ID3"), QString("NAME3"));
+    the_map.insert(QString("ID4"), QString("NAME4"));
+    the_map.insert(QString("ID5"), QString("NAME5"));
+    the_map.insert(QString("ID6"), QString("NAME6"));
+
+//    pChooser->activateWindow();
+//    pChooser->show();
+
+    pChooser->exec();
+
+    //    pChooser->raise();
+
+//    QMessageBox::StandardButton reply;
+//    reply = QMessageBox::question(this, "Test", "Quit?",
+//                                  QMessageBox::Yes|QMessageBox::No);
+//    if (reply == QMessageBox::Yes) {
+//      qDebug() << "Yes was clicked";
+//      QApplication::quit();
+//    } else {
+//      qDebug() << "Yes was *not* clicked";
+//    }
+}
+
+
 
 //static
 void MTHomeDetail::clearLayout(QLayout* pLayout)
@@ -184,14 +241,6 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt, bool bExte
 //            QToolButton *buttonLock  = new QToolButton;
             // ----------------------------------------------------------------
             QPixmap pixmapLock    (":/icons/icons/lock.png");
-            // ----------------------------------------------------------------
-//            QIcon lockButtonIcon    (pixmapLock);
-            // ----------------------------------------------------------------
-//          buttonLock->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-//            buttonLock->setAutoRaise(true);
-//            buttonLock->setIcon(lockButtonIcon);
-//          buttonLock->setIconSize(QSize(32,32));
-//          buttonLock->setText("Send");
             // ----------------------------------------------------------------
             QLabel * pLockLabel = new QLabel;
             pLockLabel->setPixmap(pixmapLock);
@@ -388,6 +437,8 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
     // -------------------------------------------
 
 
+    connect(contactButton, SIGNAL(clicked()), this, SLOT(on_contactButton_clicked()));
+//                   [=]() { contactButton->setText("bonjour"); });
     /*
 
     NSMutableArray* actions = [NSMutableArray arrayWithObject:[SectionAction actionWithName:actionName icon:nil block:^(UIViewController* vc) {

@@ -35,6 +35,12 @@ public:
 
     static QWidget * CreateDetailHeaderWidget(MTRecord & recordmt, bool bExternal=true);
 
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+
+private slots:
+    void on_contactButton_clicked(bool checked = false);
+
 private:
     shared_ptr_MTRecord m_record;
     QGridLayout * m_pDetailLayout;

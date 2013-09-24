@@ -35,7 +35,8 @@ SOURCES += main.cpp\
     Widgets/home.cpp \
     Widgets/homedetail.cpp \
     Handlers/contacthandler.cpp \
-    Widgets/createinsurancecompany.cpp
+    Widgets/createinsurancecompany.cpp \
+    Widgets/dlgchooser.cpp
 
 
 HEADERS += moneychanger.h \
@@ -59,7 +60,8 @@ HEADERS += moneychanger.h \
     Widgets/home.h \
     Widgets/homedetail.h \
     Handlers/contacthandler.h \
-    Widgets/createinsurancecompany.h
+    Widgets/createinsurancecompany.h \
+    Widgets/dlgchooser.h
 
 
 DEFINES += "OT_ZMQ_MODE=1"
@@ -68,6 +70,23 @@ mac:{
     QMAKE_CXXFLAGS -= -fstack-check
 	QT_CONFIG -= no-pkg-config
 	LIBS += -lboost_system-mt -lboost_thread-mt -ldl
+
+    # -------------------------------------------
+    # Un-comment this block to use C++11.
+    #
+    # Comment-out this block to deactivate C++11
+    #
+	# QT_CONFIG += -spec macx-clang-libc++
+    # LIBS += -stdlib=libc++
+    # CONFIG += c++11
+    # QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++ -std=c++11
+    #
+    # -------------------------------------------
+
+
+# Stuff that didn't work.
+#    QMAKE_CXXFLAGS += -spec macx-clang-libc++  # apparently this doesn't really exist.
+#    CXXFLAGS += -std=c++0x // apparently the qmake version of this above is the one I'm supposed to use, not this...
 }
 
 
@@ -111,5 +130,6 @@ FORMS += \
     UI/marketwindow.ui \
     Widgets/home.ui \
     Widgets/homedetail.ui \ 
-    UI/createinsurancecompany.ui
+    UI/createinsurancecompany.ui \
+    Widgets/dlgchooser.ui
 

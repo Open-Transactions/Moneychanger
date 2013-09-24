@@ -17,9 +17,12 @@
 
 #ifdef _WIN32
 #include <memory>
+#elif __GXX_EXPERIMENTAL_CXX0X__ || __cplusplus >= 201103L
+#include <memory>
 #else
 #include <tr1/memory>
 #endif
+
 
 #include "MTRecord.hpp"
 
@@ -43,11 +46,18 @@ public:
  };
  */
 
-
+#if __GXX_EXPERIMENTAL_CXX0X__ || __cplusplus >= 201103L
+// -------------------------------------------------------------
+typedef std::weak_ptr  <MTRecord>       weak_ptr_MTRecord;
+typedef std::shared_ptr<MTRecord>     shared_ptr_MTRecord;
+// -------------------------------------------------------------
+#else
 // -------------------------------------------------------------
 typedef std::tr1::weak_ptr  <MTRecord>       weak_ptr_MTRecord;
 typedef std::tr1::shared_ptr<MTRecord>     shared_ptr_MTRecord;
 // -------------------------------------------------------------
+#endif
+
 typedef std::vector<shared_ptr_MTRecord>      vec_MTRecordList;
 // -------------------------------------------------------------
 typedef std::list<std::string>                 list_of_strings;
