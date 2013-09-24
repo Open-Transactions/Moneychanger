@@ -110,6 +110,6 @@ OTHER_FILES +=
 FORMS += \
     UI/marketwindow.ui \
     Widgets/home.ui \
-    Widgets/homedetail.ui
+    Widgets/homedetail.ui \ 
     UI/createinsurancecompany.ui
 
