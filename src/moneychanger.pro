@@ -34,7 +34,7 @@ SOURCES += main.cpp\
     Widgets/requestfundswindow.cpp \
     Widgets/home.cpp \
     Widgets/homedetail.cpp \
-    Handlers/contacthandler.cpp
+    Handlers/contacthandler.cpp \
     Widgets/createinsurancecompany.cpp
 
 
@@ -58,7 +58,7 @@ HEADERS += moneychanger.h \
     Widgets/requestfundswindow.h \
     Widgets/home.h \
     Widgets/homedetail.h \
-    Handlers/contacthandler.h
+    Handlers/contacthandler.h \
     Widgets/createinsurancecompany.h
 
 

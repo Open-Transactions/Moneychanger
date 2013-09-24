@@ -68,7 +68,7 @@ class DepositWindow;
 class RequestFundsWindow;
 class SendFundsWindow;
 class MarketWindow;
-//class CreateInsuranceCompany;
+class CreateInsuranceCompany;
 
 
 class Moneychanger : public QWidget
@@ -217,7 +217,7 @@ private:
     RequestFundsWindow * requestfundswindow;
     SendFundsWindow * sendfundswindow;
     MarketWindow * market_window;
-//    CreateInsuranceCompany * createinsurancecompany_window;
+    CreateInsuranceCompany * createinsurancecompany_window;
     
     
     

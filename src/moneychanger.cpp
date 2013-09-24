@@ -1335,17 +1335,17 @@ void Moneychanger::mc_createinsurancecompany_slot(){
 }
 
 void Moneychanger::mc_createinsurancecompany_dialog(){
-//    if(!mc_createinsurancecompany_already_init){
-//        createinsurancecompany_window = new CreateInsuranceCompany(this);
-//        createinsurancecompany_window->setAttribute(Qt::WA_DeleteOnClose);
-//        createinsurancecompany_window->show();
-//        mc_createinsurancecompany_already_init = true;
-//        qDebug() << "Create Insurance Company Window Opened";
-//    }
+    if(!mc_createinsurancecompany_already_init){
+        createinsurancecompany_window = new CreateInsuranceCompany(this);
+        createinsurancecompany_window->setAttribute(Qt::WA_DeleteOnClose);
+        createinsurancecompany_window->show();
+        mc_createinsurancecompany_already_init = true;
+        qDebug() << "Create Insurance Company Window Opened";
+    }
 }
 
 void Moneychanger::close_createinsurancecompany_dialog(){
-//    delete createinsurancecompany_window;
-//    mc_createinsurancecompany_already_init = false;
-//    qDebug() << "Create Insurance Company Window Closed";
+    delete createinsurancecompany_window;
+    mc_createinsurancecompany_already_init = false;
+    qDebug() << "Create Insurance Company Window Closed";
 }
