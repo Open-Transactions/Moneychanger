@@ -35,6 +35,8 @@ SOURCES += main.cpp\
     Widgets/home.cpp \
     Widgets/homedetail.cpp \
     Handlers/contacthandler.cpp
+    Widgets/createinsurancecompany.cpp
+
 
 HEADERS += moneychanger.h \
            ot_worker.h \
@@ -57,6 +59,8 @@ HEADERS += moneychanger.h \
     Widgets/home.h \
     Widgets/homedetail.h \
     Handlers/contacthandler.h
+    Widgets/createinsurancecompany.h
+
 
 DEFINES += "OT_ZMQ_MODE=1"
 
@@ -107,3 +111,5 @@ FORMS += \
     UI/marketwindow.ui \
     Widgets/home.ui \
     Widgets/homedetail.ui
+    UI/createinsurancecompany.ui
+

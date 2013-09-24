@@ -31,75 +31,75 @@ public:
 private:
     
     /** Asset Manager **/
-    int mc_assetmanager_already_init;
-    int mc_assetmanager_refreshing;
+    bool already_init;
+    bool refreshing;
     
-    QDialog * mc_asset_manager_dialog;
+    QDialog * asset_manager_dialog;
     //Grid layout
-    QGridLayout * mc_asset_manager_gridlayout;
+    QGridLayout * asset_manager_gridlayout;
     
     /** First row **/
     //Label (Asset Manager Header)
-    QLabel * mc_asset_manager_label;
+    QLabel * asset_manager_label;
     
     /** Second Row **/
     //Horizontal holder (List of asset contracts; Add/Remove asset button)
-    QWidget     * mc_asset_manager_holder;
-    QHBoxLayout * mc_asset_manager_hbox;
+    QWidget     * asset_manager_holder;
+    QHBoxLayout * asset_manager_hbox;
     
     //Tableview/item model for asset list.
-    QStandardItemModel * mc_asset_manager_tableview_itemmodel;
-    QTableView         * mc_asset_manager_tableview;
+    QStandardItemModel * asset_manager_tableview_itemmodel;
+    QTableView         * asset_manager_tableview;
     
     //Vertical holder (add/remove asset buttons)
-    QWidget * mc_asset_manager_addremove_btngroup_holder;
-    QVBoxLayout * mc_asset_manager_addremove_btngroup_vbox;
+    QWidget * asset_manager_addremove_btngroup_holder;
+    QVBoxLayout * asset_manager_addremove_btngroup_vbox;
     
     //Add asset button
-    QPushButton * mc_asset_manager_addremove_btngroup_addbtn;
+    QPushButton * asset_manager_addremove_btngroup_addbtn;
     
     //Remove asset button
-    QPushButton * mc_asset_manager_addremove_btngroup_removebtn;
+    QPushButton * asset_manager_addremove_btngroup_removebtn;
     
     /** Third Row (most recent error) **/
-    QLabel * mc_asset_manager_most_recent_erorr;
+    QLabel * asset_manager_most_recent_erorr;
     // ------------------------------------------------
     /** "Add Asset" Dialog **/
-    bool mc_assetmanager_addasset_dialog_already_init;
-    bool mc_assetmanager_addasset_dialog_advanced_showing;
+    bool addasset_dialog_already_init;
+    bool addasset_dialog_advanced_showing;
     
-    QDialog * mc_asset_manager_addasset_dialog;
+    QDialog * asset_manager_addasset_dialog;
     //Grid layout
-    QGridLayout * mc_asset_manager_addasset_gridlayout;
+    QGridLayout * asset_manager_addasset_gridlayout;
     //Label (header)
-    QLabel * mc_asset_manager_addasset_header;
+    QLabel * asset_manager_addasset_header;
     
     //Label (Toggle Advanced Options Label/Button)
-    QLabel * mc_asset_manager_addasset_subheader_toggleadvanced_options_label;
+    QLabel * asset_manager_addasset_subheader_toggleadvanced_options_label;
     
     //Label (instructions)
-    QLabel * mc_asset_manager_addasset_subheader_instructions;
+    QLabel * asset_manager_addasset_subheader_instructions;
     
     //Label (choose source)
-    QLabel * mc_asset_manager_addasset_choosesource_label;
+    QLabel * asset_manager_addasset_choosesource_label;
     
     //Combobox (choose source)
-    QComboBox * mc_asset_manager_addasset_choosesource_answer_selection;
+    QComboBox * asset_manager_addasset_choosesource_answer_selection;
     
     //Button (create asset)
-    QPushButton * mc_asset_manager_addasset_create_asset_btn;
+    QPushButton * asset_manager_addasset_create_asset_btn;
     // ------------------------------------------------
     /** "Remove Asset Dialog **/
-    bool mc_assetmanager_removeasset_dialog_already_init;
-    QDialog * mc_asset_manager_removeasset_dialog;
+    bool assetmanager_removeasset_dialog_already_init;
+    QDialog * asset_manager_removeasset_dialog;
     //Grid layout
-    QGridLayout * mc_asset_manager_removeasset_gridlayout;
+    QGridLayout * asset_manager_removeasset_gridlayout;
     
     //Label (header)
-    QLabel * mc_asset_manager_removeasset_header;
+    QLabel * asset_manager_removeasset_header;
     // ------------------------------------------------
     /** Asset Manger Slot locks **/
-    bool mc_assetmanager_proccessing_dataChanged;
+    bool assetmanager_proccessing_dataChanged;
     // ------------------------------------------------
 
 
