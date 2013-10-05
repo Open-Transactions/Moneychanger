@@ -331,18 +331,8 @@ Moneychanger::Moneychanger(QWidget *parent)
     // --------------------------------------------------------------
 
     //Company
-    mc_systrayMenu_company = new QMenu("Company", 0);
-    mc_systrayMenu->addMenu(mc_systrayMenu_company);
-    //Company submenu
-    mc_systrayMenu_company_create = new QMenu("Create", 0);
-    mc_systrayMenu_company->addMenu(mc_systrayMenu_company_create);
-    //Create submenu
-    mc_systrayMenu_company_create_insurance = new QAction(mc_systrayIcon_advanced_agreements, "Insurance Company", 0);
-    mc_systrayMenu_company_create->addAction(mc_systrayMenu_company_create_insurance);
-    connect(mc_systrayMenu_company_create_insurance, SIGNAL(triggered()), this, SLOT(mc_createinsurancecompany_slot()));
-
-    //Separator1
-    mc_systrayMenu->addSeparator();
+//    mc_systrayMenu_company = new QMenu("Company", 0);
+//    mc_systrayMenu->addMenu(mc_systrayMenu_company);
     // --------------------------------------------------------------
     //Advanced
     mc_systrayMenu_advanced = new QMenu("Advanced", 0);
@@ -357,6 +347,43 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayMenu_advanced_agreements = new QAction(mc_systrayIcon_advanced_agreements, "Agreements", 0);
     mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_agreements);
 
+    // ------------------------------------------------
+
+    mc_systrayMenu_advanced_corporations = new QMenu("Corporations", 0);
+    mc_systrayMenu_advanced->addMenu(mc_systrayMenu_advanced_corporations);
+
+    // Corporations submenu
+    mc_systrayMenu_company_create = new QMenu("Create", 0);
+    mc_systrayMenu_advanced_corporations->addMenu(mc_systrayMenu_company_create);
+
+    // Create insurance company action on submenu
+    mc_systrayMenu_company_create_insurance = new QAction(mc_systrayIcon_advanced_agreements, "Insurance Company", 0);
+    mc_systrayMenu_company_create->addAction(mc_systrayMenu_company_create_insurance);
+    connect(mc_systrayMenu_company_create_insurance, SIGNAL(triggered()), this, SLOT(mc_createinsurancecompany_slot()));
+    // --------------------------------------------------------------
+    //Separator
+    mc_systrayMenu_advanced->addSeparator();
+    // --------------------------------------------------------------
+    // Bazaar
+
+    mc_systrayMenu_advanced_bazaar = new QMenu("Bazaar", 0);
+    mc_systrayMenu_advanced->addMenu(mc_systrayMenu_advanced_bazaar);
+
+    // Bazaar actions
+    mc_systrayMenu_bazaar_search = new QAction(mc_systrayIcon_advanced_agreements, "Search Listings", 0);
+    mc_systrayMenu_advanced_bazaar->addAction(mc_systrayMenu_bazaar_search);
+//  connect(mc_systrayMenu_bazaar_search, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
+
+    mc_systrayMenu_bazaar_post = new QAction(mc_systrayIcon_advanced_agreements, "Post an Ad", 0);
+    mc_systrayMenu_advanced_bazaar->addAction(mc_systrayMenu_bazaar_post);
+//  connect(mc_systrayMenu_bazaar_post, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
+
+    mc_systrayMenu_bazaar_orders = new QAction(mc_systrayIcon_advanced_agreements, "Orders", 0);
+    mc_systrayMenu_advanced_bazaar->addAction(mc_systrayMenu_bazaar_orders);
+//  connect(mc_systrayMenu_bazaar_orders, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
+
+    // -------------------------------------------------
+    // Settings
     mc_systrayMenu_advanced->addSeparator();
     
     mc_systrayMenu_advanced_settings = new QAction(mc_systrayIcon_advanced_settings, "Settings...", 0);

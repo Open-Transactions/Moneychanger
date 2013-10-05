@@ -24,6 +24,11 @@ DlgChooser::~DlgChooser()
 }
 
 
+void DlgChooser::SetPreSelected(QString strSelected)
+{
+    m_PreSelected = strSelected;
+}
+
 
 //virtual
 void DlgChooser::showEvent(QShowEvent * event)
@@ -56,7 +61,8 @@ void DlgChooser::showEvent(QShowEvent * event)
 //                    QSizePolicy::Expanding,
 //                    QSizePolicy::Expanding);
 
-
+        int nPreselectedIndex = -1;
+        // --------------------------------
         int nIndex = -1;
         for (mapIDName::iterator ii = m_map.begin(); ii != m_map.end(); ii++)
         {
@@ -66,6 +72,9 @@ void DlgChooser::showEvent(QShowEvent * event)
             // -------------------------------------
             QString qstrID    = ii.key();
             QString qstrValue = ii.value();
+            // -------------------------------------
+            if (!m_PreSelected.isEmpty() && (m_PreSelected == qstrID))
+                nPreselectedIndex = nIndex;
             // -------------------------------------
             QWidget     * row_widget        = new QWidget;
             QGridLayout * row_widget_layout = new QGridLayout;
@@ -155,8 +164,17 @@ void DlgChooser::showEvent(QShowEvent * event)
         // ------------------------
         if (ui->tableWidget->rowCount() > 0)
         {
-            qDebug() << "SETTING current row to 0 on the tableWidget.";
-            ui->tableWidget->setCurrentCell(0, 1);
+
+            if (nPreselectedIndex > (-1))
+            {
+                qDebug() << QString("SETTING current row to %1 on the tableWidget.").arg(nPreselectedIndex);
+                ui->tableWidget->setCurrentCell(nPreselectedIndex, 1);
+            }
+            else
+            {
+                qDebug() << "SETTING current row to 0 on the tableWidget.";
+                ui->tableWidget->setCurrentCell(0, 1);
+            }
         }
     } // first run.
 
@@ -217,6 +235,11 @@ void DlgChooser::on_tableWidget_currentCellChanged(int currentRow, int currentCo
     ui->pushButton->setEnabled(false);
 }
 
+
+void DlgChooser::on_cancelButton_clicked()
+{
+    QDialog::reject();
+}
 
 void DlgChooser::on_pushButton_clicked()
 {

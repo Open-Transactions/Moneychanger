@@ -19,18 +19,24 @@ public:
     explicit DlgChooser(QWidget *parent = 0);
     ~DlgChooser();
     
+    void SetPreSelected(QString strSelected);
+
     int         m_nCurrentRow;
     QString     m_qstrCurrentID;
     QString     m_qstrCurrentName;
     mapIDName   m_map; // qstr/qstr for id/name
 
 protected:
+
+    QString     m_PreSelected;
+
     virtual void showEvent(QShowEvent * event);
     bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
     void on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
     void on_pushButton_clicked();
+    void on_cancelButton_clicked();
     void on_tableWidget_cellDoubleClicked(int row, int column);
 
 private:

@@ -71,10 +71,10 @@ bool MTHomeDetail::eventFilter(QObject *obj, QEvent *event){
 
 void MTHomeDetail::on_contactButton_clicked(bool checked /*=false*/)
 {
+    // -----------------------------------------------
     DlgChooser * pChooser = new DlgChooser(this);
     pChooser->setAttribute(Qt::WA_DeleteOnClose);
-
-
+    // -----------------------------------------------
     mapIDName & the_map = pChooser->m_map;
 
     the_map.insert(QString("ID1"), QString("NAME1"));
@@ -83,23 +83,17 @@ void MTHomeDetail::on_contactButton_clicked(bool checked /*=false*/)
     the_map.insert(QString("ID4"), QString("NAME4"));
     the_map.insert(QString("ID5"), QString("NAME5"));
     the_map.insert(QString("ID6"), QString("NAME6"));
-
-//    pChooser->activateWindow();
-//    pChooser->show();
-
-    pChooser->exec();
-
-    //    pChooser->raise();
-
-//    QMessageBox::StandardButton reply;
-//    reply = QMessageBox::question(this, "Test", "Quit?",
-//                                  QMessageBox::Yes|QMessageBox::No);
-//    if (reply == QMessageBox::Yes) {
-//      qDebug() << "Yes was clicked";
-//      QApplication::quit();
-//    } else {
-//      qDebug() << "Yes was *not* clicked";
-//    }
+    // -----------------------------------------------
+    pChooser->SetPreSelected("ID4");
+    // -----------------------------------------------
+    pChooser->setWindowTitle("You must choose wisely.");
+    // -----------------------------------------------
+    if (pChooser->exec() == QDialog::Accepted) {
+        qDebug() << QString("SELECT was clicked for ID: %1").arg(pChooser->m_qstrCurrentID);
+    } else {
+      qDebug() << "CANCEL was clicked";
+    }
+    // -----------------------------------------------
 }
 
 

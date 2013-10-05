@@ -335,6 +335,8 @@ private:
     QIcon mc_systrayIcon_advanced_markets;
     QIcon mc_systrayIcon_advanced_settings;
     
+    QIcon mc_systrayIcon_advanced_corporations;
+    QIcon mc_systrayIcon_advanced_bazaar;
     // ------------------------------------------------
     
     
@@ -397,9 +399,7 @@ private:
     // ---------------------------------------------------------
     
     //Company submenu
-    QMenu * mc_systrayMenu_company;
-    QMenu * mc_systrayMenu_company_create;
-
+    QMenu   * mc_systrayMenu_company_create;
     QAction * mc_systrayMenu_company_create_insurance;
 
     //Advanced submenu
@@ -408,9 +408,14 @@ private:
     QAction * mc_systrayMenu_advanced_agreements;
     QAction * mc_systrayMenu_advanced_markets;
     QAction * mc_systrayMenu_advanced_settings;
+    QMenu   * mc_systrayMenu_advanced_corporations;
+    QMenu   * mc_systrayMenu_advanced_bazaar;
+
+    // Bazaar
+    QAction * mc_systrayMenu_bazaar_search;
+    QAction * mc_systrayMenu_bazaar_post;
+    QAction * mc_systrayMenu_bazaar_orders;
     // ---------------------------------------------------------
-    
-    
     QAction * mc_systrayMenu_bottomblank;
     // ---------------------------------------------------------
     
