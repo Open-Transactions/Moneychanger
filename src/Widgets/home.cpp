@@ -23,6 +23,7 @@ MTHome::MTHome(QWidget *parent) :
     m_pDetailLayout(NULL),
     m_pHeaderLayout(NULL),
     m_list(*(new MTNameLookupQT)),
+    m_bNeedRefresh(false),
     ui(new Ui::MTHome)
 {
     ui->setupUi(this);
@@ -80,15 +81,13 @@ void MTHome::dialog()
         ui->tableWidget->setContentsMargins(10,0,0,0);
         // -------------------------------------------
         m_pDetailPane = new MTHomeDetail;
+        m_pDetailPane->SetHomePointer(*this);
+        // -------------------------------------------
         m_pDetailLayout = new QVBoxLayout;
         m_pDetailLayout->addWidget(m_pDetailPane);
 
         m_pDetailPane  ->setContentsMargins(1,1,1,1);
         m_pDetailLayout->setContentsMargins(1,1,1,1);
-
-//        ui->widget->setFrameStyle(QFrame::NoFrame);
-//        ui->widget->setLineWidth(0);
-//        ui->widget->setMidLineWidth(0);
 
         ui->widget->setContentsMargins(1,1,1,1);
 
@@ -118,9 +117,8 @@ void MTHome::dialog()
         ui->tableWidget->setCurrentCell(0, 1);
     }
     // -------------------------------------------
-    // These appear to do nothing so far, at least on Mac:
-//    raise();
-//    activateWindow();
+    show();
+    setFocus();
 }
 
 
@@ -168,7 +166,7 @@ void MTHome::setupRecordList()
     // ----------------------------------------------------
     m_list.AcceptChequesAutomatically  (true);
     m_list.AcceptReceiptsAutomatically (true);
-    m_list.AcceptTransfersAutomatically(true);
+    m_list.AcceptTransfersAutomatically(false);
 }
 
 
@@ -198,6 +196,13 @@ void MTHome::RefreshUserBar()
     ui->headerFrame->setLayout(m_pHeaderLayout);
 }
 
+
+void MTHome::SetNeedRefresh()
+{
+    m_bNeedRefresh = true;
+
+    RefreshUserBar();
+}
 
 QWidget * MTHome::CreateUserBarWidget()
 {
@@ -293,6 +298,9 @@ QWidget * MTHome::CreateUserBarWidget()
 //    buttonRefresh->setIconSize(pixmapRefresh.rect().size());
     buttonRefresh->setIconSize(pixmapContacts.rect().size());
     buttonRefresh->setText("Refresh");
+
+    if (m_bNeedRefresh)
+        buttonRefresh->setStyleSheet("color: red");
     // ----------------------------------------------------------------
     QHBoxLayout * pButtonLayout = new QHBoxLayout;
 
@@ -360,6 +368,8 @@ void MTHome::RefreshRecords()
 {
     //(Lock the overview dialog refreshing mechinism until finished)
     QMutexLocker overview_refresh_locker(&mc_overview_refreshing_visuals_mutex);
+    // -------------------------------------------------------
+    m_bNeedRefresh = false;
     // -------------------------------------------------------
     m_list.Populate();
     int listSize       = m_list.size();

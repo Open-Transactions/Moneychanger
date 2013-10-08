@@ -54,9 +54,11 @@
 #include "Widgets/requestfundswindow.h"
 #include "Widgets/sendfundswindow.h"
 #include "Widgets/createinsurancecompany.h"
+#include "Widgets/detailedit.h"
 
 class OverviewWindow;
 class MTHome;
+class MTDetailEdit;
 class AddressBookWindow;
 class NymManagerWindow;
 class AssetManagerWindow;
@@ -92,6 +94,7 @@ public:
     // Close Dialog Functions
     void close_overview_dialog();
     void close_addressbook();
+    void close_accountmanager_dialog();
     void close_nymmanager_dialog();
     void close_servermanager_dialog();
     void close_assetmanager_dialog();
@@ -106,7 +109,10 @@ public:
     //Show address book
     void mc_addressbook_show(QString text);
     
-    
+    void new_compose_dialog();
+    void new_send_dialog();
+    void new_request_dialog();
+
     
     /**
      * Functions for setting Systray Values
@@ -122,7 +128,6 @@ public:
     
     // Set Systray Account Value
     void set_systrayMenu_account_setDefaultAccount(QString, QString);
-    void close_accountmanager_dialog();
     
     // Set Systray Server Value
     void set_systrayMenu_server_setDefaultServer(QString, QString);
@@ -190,7 +195,7 @@ private:
     bool mc_nymmanager_already_init;
     bool mc_assetmanager_already_init;
     bool mc_accountmanager_already_init;
-    bool already_init;
+    bool mc_servermanager_already_init;
     bool mc_withdraw_ascash_already_init;
     bool mc_withdraw_asvoucher_already_init;
     bool mc_deposit_already_init;
@@ -207,6 +212,7 @@ private:
     OverviewWindow * overviewwindow;
     MTHome * homewindow;
     AddressBookWindow * addressbookwindow;
+    MTDetailEdit      * contactswindow;
     NymManagerWindow * nymmanagerwindow;
     AssetManagerWindow * assetmanagerwindow;
     AccountManagerWindow * accountmanagerwindow;
@@ -218,8 +224,8 @@ private:
     SendFundsWindow * sendfundswindow;
     MarketWindow * market_window;
     CreateInsuranceCompany * createinsurancecompany_window;
-    
-    
+        
+
     
     /**
      * Menu Dialogs

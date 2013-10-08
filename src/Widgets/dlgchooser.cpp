@@ -7,6 +7,7 @@
 #include "dlgchooser.h"
 #include "ui_dlgchooser.h"
 
+
 DlgChooser::DlgChooser(QWidget *parent) :
     QDialog(parent),
     m_bFirstRun(true),
@@ -33,8 +34,6 @@ void DlgChooser::SetPreSelected(QString strSelected)
 //virtual
 void DlgChooser::showEvent(QShowEvent * event)
 {
-
-
     if (m_bFirstRun)
     {
         m_bFirstRun = false;
@@ -164,7 +163,6 @@ void DlgChooser::showEvent(QShowEvent * event)
         // ------------------------
         if (ui->tableWidget->rowCount() > 0)
         {
-
             if (nPreselectedIndex > (-1))
             {
                 qDebug() << QString("SETTING current row to %1 on the tableWidget.").arg(nPreselectedIndex);
@@ -187,8 +185,8 @@ void DlgChooser::showEvent(QShowEvent * event)
 
 }
 
-bool DlgChooser::eventFilter(QObject *obj, QEvent *event){
-
+bool DlgChooser::eventFilter(QObject *obj, QEvent *event)
+{
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
         if(keyEvent->key() == Qt::Key_Escape){
@@ -235,6 +233,10 @@ void DlgChooser::on_tableWidget_currentCellChanged(int currentRow, int currentCo
     ui->pushButton->setEnabled(false);
 }
 
+void DlgChooser::on_tableWidget_cellDoubleClicked(int row, int column)
+{
+    this->on_pushButton_clicked();
+}
 
 void DlgChooser::on_cancelButton_clicked()
 {
@@ -246,7 +248,4 @@ void DlgChooser::on_pushButton_clicked()
     QDialog::accept();
 }
 
-void DlgChooser::on_tableWidget_cellDoubleClicked(int row, int column)
-{
-    this->on_pushButton_clicked();
-}
+

@@ -57,6 +57,9 @@ public:
   bool GetServers(mapIDName & theMap, QString filterByNym);
   bool GetAccounts(mapIDName & theMap, QString filterByNym, QString filterByServer, QString filterByAsset);
 
+  bool GetContacts(mapIDName & theMap);
+  bool GetNyms(mapIDName & theMap, int nFilterByContact);
+
   public:
     ~MTContactHandler();
 };

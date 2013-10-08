@@ -6,8 +6,10 @@ DepositWindow::DepositWindow(QWidget *parent) :
     already_init = false;
 }
 
-void DepositWindow::dialog(){
-    if(!already_init){
+void DepositWindow::dialog()
+{
+    if (!already_init)
+    {
         //Init deposit, then show.
         deposit_dialog = new QDialog(0);
         deposit_dialog->setWindowTitle("Deposit | Moneychanger");
@@ -69,7 +71,8 @@ void DepositWindow::dialog(){
 }
 
 
-void DepositWindow::deposit_type_changed_slot(int newIndex){
+void DepositWindow::deposit_type_changed_slot(int newIndex)
+{
     /** 0 = Account; 1 = purse **/
     if(newIndex == 0){
         //Show account, hide purse.

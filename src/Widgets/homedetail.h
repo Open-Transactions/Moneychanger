@@ -14,6 +14,8 @@ namespace Ui {
 class MTHomeDetail;
 }
 
+class MTHome;
+
 enum TransactionTableViewCellType {
     TransactionTableViewCellTypeSent,
     TransactionTableViewCellTypeOutgoing,
@@ -35,15 +37,24 @@ public:
 
     static QWidget * CreateDetailHeaderWidget(MTRecord & recordmt, bool bExternal=true);
 
+    void SetHomePointer(MTHome & theHome);
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
     void on_contactButton_clicked(bool checked = false);
+    void on_deleteButton_clicked(bool checked = false);
+    void on_acceptButton_clicked(bool checked = false);
+    void on_cancelButton_clicked(bool checked = false);
+    void on_discardOutgoingButton_clicked(bool checked = false);
+    void on_discardIncomingButton_clicked(bool checked = false);
+    void on_msgButton_clicked(bool checked = false);
 
 private:
     shared_ptr_MTRecord m_record;
     QGridLayout * m_pDetailLayout;
+    MTHome * m_pHome;
 
 private:
     Ui::MTHomeDetail *ui;

@@ -19,14 +19,14 @@ QWidget(parent)
     
 }
 
-void AccountManagerWindow::dialog(){
-    
+void AccountManagerWindow::dialog()
+{
     /** If the account manager dialog has already been init,
      *  just show it, Other wise, init and show if this is the
      *  first time.
      **/
-    if(!already_init){
-        
+    if (!already_init)
+    {
         //The account Manager has not been init yet; Init, then show it.
         account_manager_dialog = new QDialog(0);
         account_manager_dialog->installEventFilter(this);
@@ -167,9 +167,11 @@ void AccountManagerWindow::dialog(){
 
 // ---------------------------------------------------------
 // ACCOUNTS
-void AccountManagerWindow::addaccount_slot(){
+void AccountManagerWindow::addaccount_slot()
+{
     //Decide if we should init and show, or just show
-    if(!accountmanager_addaccount_dialog_already_init){
+    if (!accountmanager_addaccount_dialog_already_init)
+    {
         //Init, then show.
         account_manager_addaccount_dialog = new QDialog(0);
         account_manager_addaccount_dialog->setWindowTitle("Add Account | Moneychanger");
@@ -197,17 +199,17 @@ void AccountManagerWindow::addaccount_slot(){
         account_manager_addaccount_gridlayout->addWidget(account_manager_addaccount_subheader_instructions, 2,0, 1,1);
         
         //Label (Choose Source Question)
-        //                    mc_account_manager_addaccount_choosesource_label = new QLabel("<h3>Choose the source of the Account</h3>");
-        //                    mc_account_manager_addaccount_choosesource_label->setStyleSheet("QLabel{padding:1em;}");
-        //                    account_manager_addaccount_gridlayout->addWidget(mc_account_manager_addaccount_choosesource_label, 3,0, 1,1);
-        
-        //                    //Combobox (Dropdown box: Choose Source)
-        //                    mc_account_manager_addaccount_choosesource_answer_selection = new QComboBox(0);
-        //                    mc_account_manager_addaccount_choosesource_answer_selection->addItem("Namecoin");
-        //                    mc_account_manager_addaccount_choosesource_answer_selection->addItem("No-Source");
-        //                    mc_account_manager_addaccount_choosesource_answer_selection->setCurrentIndex(1);
-        //                    mc_account_manager_addaccount_choosesource_answer_selection->setStyleSheet("QComboBox{padding:0.5em;}");
-        //                    account_manager_addaccount_gridlayout->addWidget(mc_account_manager_addaccount_choosesource_answer_selection, 4,0, 1,1);
+//        mc_account_manager_addaccount_choosesource_label = new QLabel("<h3>Choose the source of the Account</h3>");
+//        mc_account_manager_addaccount_choosesource_label->setStyleSheet("QLabel{padding:1em;}");
+//        account_manager_addaccount_gridlayout->addWidget(mc_account_manager_addaccount_choosesource_label, 3,0, 1,1);
+
+//        //Combobox (Dropdown box: Choose Source)
+//        mc_account_manager_addaccount_choosesource_answer_selection = new QComboBox(0);
+//        mc_account_manager_addaccount_choosesource_answer_selection->addItem("Namecoin");
+//        mc_account_manager_addaccount_choosesource_answer_selection->addItem("No-Source");
+//        mc_account_manager_addaccount_choosesource_answer_selection->setCurrentIndex(1);
+//        mc_account_manager_addaccount_choosesource_answer_selection->setStyleSheet("QComboBox{padding:0.5em;}");
+//        account_manager_addaccount_gridlayout->addWidget(mc_account_manager_addaccount_choosesource_answer_selection, 4,0, 1,1);
         
         //Create account (button)
         account_manager_addaccount_create_account_btn = new QPushButton("Create a new Account", 0);
@@ -225,9 +227,11 @@ void AccountManagerWindow::addaccount_slot(){
     account_manager_addaccount_dialog->show();
 }
 
-void AccountManagerWindow::removeaccount_slot(){
+void AccountManagerWindow::removeaccount_slot()
+{
     //Init, then show; If already init, then just show
-    if(!account_manager_removeaccount_dialog_already_init){
+    if (!account_manager_removeaccount_dialog_already_init)
+    {
         account_manager_removeaccount_dialog = new QDialog(0);
         account_manager_removeaccount_dialog->setWindowTitle("Remove Account | Moneychanger");
         account_manager_removeaccount_dialog->setModal(1);
@@ -397,8 +401,8 @@ void AccountManagerWindow::request_remove_account_slot(){
 
  */
 
-bool AccountManagerWindow::eventFilter(QObject *obj, QEvent *event){
-    
+bool AccountManagerWindow::eventFilter(QObject *obj, QEvent *event)
+{
     if (event->type() == QEvent::Close) {
         ((Moneychanger *)parentWidget())->close_accountmanager_dialog();
         return true;

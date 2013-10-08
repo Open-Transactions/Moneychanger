@@ -30,9 +30,7 @@ private:
     /** Functions **/
 
     void RefreshRecords();
-
     void setupRecordList();
-
     void RefreshUserBar();
 
     QWidget * CreateUserBarWidget();
@@ -46,6 +44,8 @@ private:
     QGridLayout  * m_pHeaderLayout;
     // ------------------------------------------------
     MTRecordList   m_list;
+    // ------------------------------------------------
+    bool    m_bNeedRefresh;
 
 public:
     explicit MTHome(QWidget *parent = 0);
@@ -53,6 +53,7 @@ public:
     
     void dialog();
 
+    void SetNeedRefresh();
 
 private slots:
     void on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn);

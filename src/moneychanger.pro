@@ -36,7 +36,12 @@ SOURCES += main.cpp\
     Widgets/homedetail.cpp \
     Handlers/contacthandler.cpp \
     Widgets/createinsurancecompany.cpp \
-    Widgets/dlgchooser.cpp
+    Widgets/dlgchooser.cpp \
+    Widgets/compose.cpp \
+    Widgets/overridecursor.cpp \
+    Widgets/detailedit.cpp \
+    Widgets/editdetails.cpp \
+    Widgets/contactdetails.cpp
 
 
 HEADERS += moneychanger.h \
@@ -61,7 +66,12 @@ HEADERS += moneychanger.h \
     Widgets/homedetail.h \
     Handlers/contacthandler.h \
     Widgets/createinsurancecompany.h \
-    Widgets/dlgchooser.h
+    Widgets/dlgchooser.h \
+    Widgets/compose.h \
+    Widgets/overridecursor.h \
+    Widgets/detailedit.h \
+    Widgets/editdetails.h \
+    Widgets/contactdetails.h
 
 
 DEFINES += "OT_ZMQ_MODE=1"
@@ -131,5 +141,9 @@ FORMS += \
     Widgets/home.ui \
     Widgets/homedetail.ui \ 
     UI/createinsurancecompany.ui \
-    Widgets/dlgchooser.ui
+    Widgets/dlgchooser.ui \
+    Widgets/compose.ui \
+    Widgets/detailedit.ui \
+    Widgets/editdetails.ui \
+    Widgets/contactdetails.ui
 

@@ -11,81 +11,81 @@ WithdrawAsCashWindow::WithdrawAsCashWindow(QWidget *parent) :
 }
 
 
-void WithdrawAsCashWindow::dialog(){
-    {
-        /** If the withdraw as cash dialog has already been init,
-         *  just show it, Other wise, init and show if this is the
-         *  first time.
-         **/
-        if(!already_init){
-            //Init, then show
-            //Init
-            withdraw_ascash_dialog = new QDialog(0);
-            withdraw_ascash_dialog->installEventFilter(this);
-            /** window properties **/
-            //Set window title
-            withdraw_ascash_dialog->setWindowTitle("Withdraw as Cash | Moneychanger");
-            //withdraw_ascash_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
-            
-            /** layout and content **/
-            //Grid layout
-            withdraw_ascash_gridlayout = new QGridLayout(0);
-            withdraw_ascash_dialog->setLayout(withdraw_ascash_gridlayout);
-            
-            //Withdraw As Cash (header label)
-            withdraw_ascash_header_label = new QLabel("<h3>Withdraw as Cash</h3>", 0);
-            withdraw_ascash_header_label->setAlignment(Qt::AlignRight);
-            withdraw_ascash_gridlayout->addWidget(withdraw_ascash_header_label, 0, 0, 1, 1);
-            
-            //Account ID (label) Note: Value is set when the dropdown box is selected and/or highlighted
-            withdraw_ascash_accountid_label = new QLabel("", 0);
-            withdraw_ascash_accountid_label->setStyleSheet("QLabel{padding:0.5em;}");
-            withdraw_ascash_accountid_label->setAlignment(Qt::AlignHCenter);
-            withdraw_ascash_gridlayout->addWidget(withdraw_ascash_accountid_label, 1, 0, 1, 1);
-            
-            //Account Dropdown (combobox)
-            withdraw_ascash_account_dropdown = new QComboBox(0);
-            withdraw_ascash_account_dropdown->setStyleSheet("QComboBox{padding:0.5em;}");
-            withdraw_ascash_gridlayout->addWidget(withdraw_ascash_account_dropdown, 2, 0, 1, 1);
-            
-            //Make connection to "hovering over items" to showing their IDs above the combobox (for user clarity and backend id indexing)
-            connect(withdraw_ascash_account_dropdown, SIGNAL(highlighted(int)), this, SLOT(withdraw_ascash_account_dropdown_highlighted_slot(int)));
-            
-            //Amount Instructions
-            //TODO ^^
-            
-            //Amount Input
-            withdraw_ascash_amount_input = new QLineEdit;
-            withdraw_ascash_amount_input->setPlaceholderText("Amount");
-            withdraw_ascash_amount_input->setStyleSheet("QLineEdit{padding:0.5em;}");
-            withdraw_ascash_gridlayout->addWidget(withdraw_ascash_amount_input, 3, 0, 1, 1);
-            
-            //Withdraw Button
-            withdraw_ascash_button = new QPushButton("Withdraw as Cash");
-            withdraw_ascash_button->setStyleSheet("QPushButton{padding:0.5em;}");
-            withdraw_ascash_gridlayout->addWidget(withdraw_ascash_button, 4, 0, 1, 1);
-            //Connect button with re-action
-            connect(withdraw_ascash_button, SIGNAL(pressed()), this, SLOT(withdraw_ascash_confirm_amount_dialog_slot()));
-            
-            /** Flag already init **/
-            already_init = true;
-        }
-        //Resize
-        withdraw_ascash_dialog->resize(400, 120);
-        //Show
-        withdraw_ascash_dialog->show();
-        withdraw_ascash_dialog->activateWindow();
-        
-        /** Refresh dynamic lists **/
-        //remove all items from nym dropdown box
-        while (withdraw_ascash_account_dropdown->count() > 0)
-            withdraw_ascash_account_dropdown->removeItem(0);
-        
-        for(int a = 0; a < ((Moneychanger *)parentWidget())->get_nym_list_id_size(); a++){
-            //Add to combobox
-            //Get OT Account ID
-            withdraw_ascash_account_dropdown->addItem(((Moneychanger *)parentWidget())->get_account_name_at(a), ((Moneychanger *)parentWidget())->get_account_id_at(a));
-        }
+void WithdrawAsCashWindow::dialog()
+{
+    /** If the withdraw as cash dialog has already been init,
+     *  just show it, Other wise, init and show if this is the
+     *  first time.
+     **/
+    if(!already_init){
+        //Init, then show
+        //Init
+        withdraw_ascash_dialog = new QDialog(0);
+        withdraw_ascash_dialog->installEventFilter(this);
+        /** window properties **/
+        //Set window title
+        withdraw_ascash_dialog->setWindowTitle("Withdraw as Cash | Moneychanger");
+        //withdraw_ascash_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
+
+        /** layout and content **/
+        //Grid layout
+        withdraw_ascash_gridlayout = new QGridLayout(0);
+        withdraw_ascash_dialog->setLayout(withdraw_ascash_gridlayout);
+
+        //Withdraw As Cash (header label)
+        withdraw_ascash_header_label = new QLabel("<h3>Withdraw as Cash</h3>", 0);
+        withdraw_ascash_header_label->setAlignment(Qt::AlignRight);
+        withdraw_ascash_gridlayout->addWidget(withdraw_ascash_header_label, 0, 0, 1, 1);
+
+        //Account ID (label) Note: Value is set when the dropdown box is selected and/or highlighted
+        withdraw_ascash_accountid_label = new QLabel("", 0);
+        withdraw_ascash_accountid_label->setStyleSheet("QLabel{padding:0.5em;}");
+        withdraw_ascash_accountid_label->setAlignment(Qt::AlignHCenter);
+        withdraw_ascash_gridlayout->addWidget(withdraw_ascash_accountid_label, 1, 0, 1, 1);
+
+        //Account Dropdown (combobox)
+        withdraw_ascash_account_dropdown = new QComboBox(0);
+        withdraw_ascash_account_dropdown->setStyleSheet("QComboBox{padding:0.5em;}");
+        withdraw_ascash_gridlayout->addWidget(withdraw_ascash_account_dropdown, 2, 0, 1, 1);
+
+        //Make connection to "hovering over items" to showing their IDs above the combobox (for user clarity and backend id indexing)
+        connect(withdraw_ascash_account_dropdown, SIGNAL(highlighted(int)), this, SLOT(withdraw_ascash_account_dropdown_highlighted_slot(int)));
+
+        //Amount Instructions
+        //TODO ^^
+
+        //Amount Input
+        withdraw_ascash_amount_input = new QLineEdit;
+        withdraw_ascash_amount_input->setPlaceholderText("Amount");
+        withdraw_ascash_amount_input->setStyleSheet("QLineEdit{padding:0.5em;}");
+        withdraw_ascash_gridlayout->addWidget(withdraw_ascash_amount_input, 3, 0, 1, 1);
+
+        //Withdraw Button
+        withdraw_ascash_button = new QPushButton("Withdraw as Cash");
+        withdraw_ascash_button->setStyleSheet("QPushButton{padding:0.5em;}");
+        withdraw_ascash_gridlayout->addWidget(withdraw_ascash_button, 4, 0, 1, 1);
+        //Connect button with re-action
+        connect(withdraw_ascash_button, SIGNAL(pressed()), this, SLOT(withdraw_ascash_confirm_amount_dialog_slot()));
+
+        /** Flag already init **/
+        already_init = true;
+    }
+
+    //Resize
+    withdraw_ascash_dialog->resize(400, 120);
+    //Show
+    withdraw_ascash_dialog->show();
+//    withdraw_ascash_dialog->activateWindow();
+
+    /** Refresh dynamic lists **/
+    //remove all items from nym dropdown box
+    while (withdraw_ascash_account_dropdown->count() > 0)
+        withdraw_ascash_account_dropdown->removeItem(0);
+
+    for(int a = 0; a < ((Moneychanger *)parentWidget())->get_nym_list_id_size(); a++){
+        //Add to combobox
+        //Get OT Account ID
+        withdraw_ascash_account_dropdown->addItem(((Moneychanger *)parentWidget())->get_account_name_at(a), ((Moneychanger *)parentWidget())->get_account_id_at(a));
     }
 }
 

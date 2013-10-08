@@ -1,4 +1,5 @@
 
+#include <QObject>
 #include <QMessageBox>
 #include <QVBoxLayout>
 #include <QPushButton>
@@ -19,12 +20,24 @@
 #include "homedetail.h"
 #include "ui_homedetail.h"
 
-#include "dlgchooser.h"
+#include "compose.h"
+#include "overridecursor.h"
+
+#include "home.h"
+
+
+
+void MTHomeDetail::SetHomePointer(MTHome & theHome)
+{
+    m_pHome = &theHome;
+}
+
 
 
 MTHomeDetail::MTHomeDetail(QWidget *parent) :
     QWidget(parent),
     m_pDetailLayout(NULL),
+    m_pHome(NULL),
     ui(new Ui::MTHomeDetail)
 {
     ui->setupUi(this);
@@ -53,8 +66,8 @@ MTHomeDetail::~MTHomeDetail()
     delete ui;
 }
 
-bool MTHomeDetail::eventFilter(QObject *obj, QEvent *event){
-
+bool MTHomeDetail::eventFilter(QObject *obj, QEvent *event)
+{
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
         if(keyEvent->key() == Qt::Key_Escape){
@@ -71,31 +84,325 @@ bool MTHomeDetail::eventFilter(QObject *obj, QEvent *event){
 
 void MTHomeDetail::on_contactButton_clicked(bool checked /*=false*/)
 {
-    // -----------------------------------------------
-    DlgChooser * pChooser = new DlgChooser(this);
-    pChooser->setAttribute(Qt::WA_DeleteOnClose);
-    // -----------------------------------------------
-    mapIDName & the_map = pChooser->m_map;
+    qDebug() << "Contact button clicked.";
 
-    the_map.insert(QString("ID1"), QString("NAME1"));
-    the_map.insert(QString("ID2"), QString("NAME2"));
-    the_map.insert(QString("ID3"), QString("NAME3"));
-    the_map.insert(QString("ID4"), QString("NAME4"));
-    the_map.insert(QString("ID5"), QString("NAME5"));
-    the_map.insert(QString("ID6"), QString("NAME6"));
-    // -----------------------------------------------
-    pChooser->SetPreSelected("ID4");
-    // -----------------------------------------------
-    pChooser->setWindowTitle("You must choose wisely.");
-    // -----------------------------------------------
-    if (pChooser->exec() == QDialog::Accepted) {
-        qDebug() << QString("SELECT was clicked for ID: %1").arg(pChooser->m_qstrCurrentID);
-    } else {
-      qDebug() << "CANCEL was clicked";
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+
     }
-    // -----------------------------------------------
+    /*
+
+    NSMutableArray* actions = [NSMutableArray arrayWithObject:[SectionAction actionWithName:actionName icon:nil block:^(UIViewController* vc) {
+        ContactEditorViewController *editor = [[ContactEditorViewController alloc] initWithNibName:nil bundle:nil];
+        SimpleContact *cnt = existingContact;
+        if (!cnt) {
+          cnt = [SimpleContact newContact];
+          cnt.nymId = nymId;
+          cnt.accountId = acctId;
+        }
+        editor.contact = cnt;
+        self.shouldResetRecordOnView = true; //They can possibly delete the contact on view, so we always have to reset.
+        [self.navigationController pushViewController:editor animated:YES];
+    }]];
+    */
+
+
+
 }
 
+void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
+{
+    qDebug() << "Delete button clicked.";
+
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+
+    }
+
+    /*
+    [actions addObject:[SectionAction actionWithName:(record->IsMail() ? @"Archive this Message" : @"Archive this Record") icon:nil block:^(UIViewController* vc)
+    {
+        bool (^actionBlock)() = ^bool{return false;};
+
+        NSString *msg = @"Deletion Failed.";
+        UIAlertView *fail = [[UIAlertView alloc] initWithTitle:nil message:msg delegate:nil
+                                             cancelButtonTitle:@"OK" otherButtonTitles:nil];
+
+        actionBlock = ^bool {
+            bool bSuccess = record->DeleteRecord();
+
+            if (bSuccess)
+            {
+                self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
+                [self.navigationController popViewControllerAnimated:YES];
+            }
+            return bSuccess;
+        };
+        [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:@"Archiving..." withFailureAlert:fail];
+    }]];
+    */
+
+}
+
+void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
+{
+    qDebug() << "Accept button clicked.";
+
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+        // -------------------------------------------------
+        const bool bIsTransfer = (recordmt.GetRecordType() == MTRecord::Transfer);
+        const bool bIsReceipt  = (recordmt.GetRecordType() == MTRecord::Receipt);
+        // -------------------------------------------------
+        if (bIsTransfer)
+        {
+            bool bSuccess = false;
+            {
+                MTOverrideCursor theSpinner;
+
+                bSuccess = recordmt.AcceptIncomingTransfer();
+            }
+
+            if (!bSuccess)
+            {
+                QMessageBox::warning(this, QString("Transaction failure"), QString("Failed accepting this transfer."));
+            }
+            else
+            {
+                // todo: refresh the main list, or at least change the color of the refresh button.
+
+                if (NULL != m_pHome)
+                    m_pHome->SetNeedRefresh();
+            }
+        }
+        // -------------------------------------------------
+
+    }
+
+    /*
+    [actions addObject:[SectionAction actionWithName:nameString icon:nil block:^(UIViewController* vc)
+    {
+        bool (^actionBlock)() = ^bool{return false;};
+
+        NSString *msg = QString("Transaction Failed.");
+        UIAlertView *fail = [[UIAlertView alloc] initWithTitle:nil message:msg delegate:nil
+                                             cancelButtonTitle:QString("OK") otherButtonTitles:nil];
+
+        if (bIsTransfer)
+        {
+            actionBlock = ^bool {
+                bool bSuccess = record->AcceptIncomingTransfer();
+
+                if (bSuccess)
+                {
+                    self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
+                    [self.navigationController popViewControllerAnimated:YES];
+                }
+                return bSuccess;
+            };
+            [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
+        }
+        else if (bIsReceipt)
+        {
+            actionBlock = ^bool {
+                bool bSuccess = record->AcceptIncomingReceipt();
+
+                if (bSuccess)
+                {
+                    self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
+                    [self.navigationController popViewControllerAnimated:YES];
+                }
+                return bSuccess;
+            };
+            [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
+        }
+        else if (record->GetRecordType() == MTRecord::Instrument) {  // TODO: filter these accounts by serverID and asset type ID.
+            ContractPickerViewController *picker = [ContractPickerViewController pickerWithTitle:QString("Account")
+                                                                                      dataSource:[AccountContractList instance]];
+            picker.cancelButtonEnabled = YES;
+            picker.callback = ^(ContractPickerViewController* vc, id<ContractWrapper> contract) {
+
+                bool (^actionBlock)() = ^bool{return false;};
+
+                if (contract) {
+                    actionBlock = ^bool {
+                        bool bSuccess = record->AcceptIncomingInstrument(contract.contractId.UTF8String);
+
+                        if (bSuccess)
+                        {
+                            self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
+                            [self.navigationController popViewControllerAnimated:YES];
+                        }
+                        return bSuccess;
+                    };
+                    [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
+                }
+                [vc dismissModalViewControllerAnimated:YES];
+            };
+            [vc presentModalViewController:picker animated:YES];
+        }
+        //TODO do a refresh vs a pop
+
+    }]];
+    */
+
+}
+
+void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
+{
+    qDebug() << "Cancel button clicked.";
+
+
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+
+    }
+
+
+    /*
+    [actions addObject:[SectionAction actionWithName:cancelString icon:nil block:^(UIViewController* vc) {
+        bool (^actionBlock)() = ^bool{return false;};
+
+        actionBlock = ^bool {
+
+            if (record->IsCash())
+            {
+                ContractPickerViewController *picker = [ContractPickerViewController pickerWithTitle:QString("Account") // TODO: filter these accounts by serverID and asset type ID.
+                                                                                          dataSource:[AccountContractList instance]];
+                picker.cancelButtonEnabled = YES;
+                picker.callback = ^(ContractPickerViewController* vc, id<ContractWrapper> contract) {
+
+                    bool (^actionBlock)() = ^bool{return false;};
+
+                    if (contract) {
+                        actionBlock = ^bool {
+                            OT_ME madeEasy;
+                            bool bInnerSuccess = false;
+                            if (1 == madeEasy.deposit_cash(record->GetServerID(), record->GetNymID(), contract.contractId.UTF8String, record->GetContents()))
+                            {
+                                bInnerSuccess = true;
+                                record->DiscardOutgoingCash();
+                                self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
+                                [self.navigationController popViewControllerAnimated:YES];
+                            }
+                            return bInnerSuccess;
+                        };
+                        [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
+                    }
+                    [vc dismissModalViewControllerAnimated:YES];
+                };
+                [vc presentModalViewController:picker animated:YES];
+            }
+            else
+            {
+                bool bSuccess = record->CancelOutgoing(record->GetAccountID());
+
+                if (bSuccess)
+                {
+                    self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
+                    [self.navigationController popViewControllerAnimated:YES];
+                }
+                return bSuccess;
+            }
+
+            return true;
+        };
+
+        [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
+
+    }]];
+    */
+
+}
+
+void MTHomeDetail::on_discardOutgoingButton_clicked(bool checked /*=false*/)
+{
+    qDebug() << "Discard Outgoing button clicked.";
+
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+
+    }
+    /*
+    [actions addObject:[SectionAction actionWithName:discardString icon:nil block:^(UIViewController* vc) {
+        record->DiscardOutgoingCash();
+
+        self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
+        [self.navigationController popViewControllerAnimated:YES];
+    }]];
+    */
+
+}
+
+void MTHomeDetail::on_discardIncomingButton_clicked(bool checked /*=false*/)
+{
+    qDebug() << "Discard Incoming button clicked.";
+
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+
+    }
+
+    /*
+    [actions addObject:[SectionAction actionWithName:discardString icon:nil block:^(UIViewController* vc) {
+        record->DiscardIncoming();
+
+        self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
+        [self.navigationController popViewControllerAnimated:YES];
+    }]];
+    */
+
+}
+
+void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
+{
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+
+
+        MTCompose * compose_window = new MTCompose;
+        compose_window->setAttribute(Qt::WA_DeleteOnClose);
+        compose_window->dialog();
+        compose_window->show();
+    }
+
+
+    /*
+        // Display the SendMailViewController here.
+        //
+        SendMailViewController *send_mail_control = [[SendMailViewController alloc] initWithNibName:nil bundle:nil];
+
+        // Pre-fill the recipient here.
+//            send_mail_control.record = record;
+        send_mail_control.nymID = QString(record->GetOtherNymID().c_str());
+
+
+        // NOTE: You will need to lookup the CONTACT for the appropriate recipient,
+        // since the sendMail page uses a Contact for a recipient.
+        // (And what if there IS no contact for that Nym??)
+
+        // Use this call to get the Nym Name:
+        //std::string MTNameLookupIPhone::GetNymName(const std::string & str_id) const
+
+        // But what if I don't need the Nym Name? What if I need the actual Contact?
+
+        // Anyway, once you are able to lookup the contact for the appropriate recipient,
+        // that means you should also be able to lookup the contact when displaying any
+        // transaction detail, so you can remove the "Add as contact" button IN CASES
+        // WHERE THE CONTACT ALREADY EXISTS.
+
+        [self.navigationController pushViewController:send_mail_control animated:YES];
+    }]];
+    */
+
+}
 
 
 //static
@@ -426,30 +733,8 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
     m_pDetailLayout->setAlignment(contactButton, Qt::AlignTop);
 
     increment_cell(nCurrentRow, nCurrentColumn);
-//  nCurrentRow++;
-
     // -------------------------------------------
-
-
     connect(contactButton, SIGNAL(clicked()), this, SLOT(on_contactButton_clicked()));
-//                   [=]() { contactButton->setText("bonjour"); });
-    /*
-
-    NSMutableArray* actions = [NSMutableArray arrayWithObject:[SectionAction actionWithName:actionName icon:nil block:^(UIViewController* vc) {
-        ContactEditorViewController *editor = [[ContactEditorViewController alloc] initWithNibName:nil bundle:nil];
-        SimpleContact *cnt = existingContact;
-        if (!cnt) {
-          cnt = [SimpleContact newContact];
-          cnt.nymId = nymId;
-          cnt.accountId = acctId;
-        }
-        editor.contact = cnt;
-        self.shouldResetRecordOnView = true; //They can possibly delete the contact on view, so we always have to reset.
-        [self.navigationController pushViewController:editor animated:YES];
-    }]];
-    */
-
-
 
     // --------------------------------------------------
     if (record->CanDeleteRecord())
@@ -461,31 +746,10 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         m_pDetailLayout->setAlignment(deleteButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
-    //  nCurrentRow++;
+        // -------------------------------------------
+        connect(deleteButton, SIGNAL(clicked()), this, SLOT(on_deleteButton_clicked()));
 
 
-        /*
-        [actions addObject:[SectionAction actionWithName:(record->IsMail() ? @"Archive this Message" : @"Archive this Record") icon:nil block:^(UIViewController* vc)
-        {
-            bool (^actionBlock)() = ^bool{return false;};
-
-            NSString *msg = @"Deletion Failed.";
-            UIAlertView *fail = [[UIAlertView alloc] initWithTitle:nil message:msg delegate:nil
-                                                 cancelButtonTitle:@"OK" otherButtonTitles:nil];
-
-            actionBlock = ^bool {
-                bool bSuccess = record->DeleteRecord();
-
-                if (bSuccess)
-                {
-                    self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                    [self.navigationController popViewControllerAnimated:YES];
-                }
-                return bSuccess;
-            };
-            [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:@"Archiving..." withFailureAlert:fail];
-        }]];
-        */
     }
     // --------------------------------------------------
 
@@ -549,75 +813,9 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         m_pDetailLayout->setAlignment(acceptButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
-    //  nCurrentRow++;
 
+        connect(acceptButton, SIGNAL(clicked()), this, SLOT(on_acceptButton_clicked()));
 
-        /*
-        [actions addObject:[SectionAction actionWithName:nameString icon:nil block:^(UIViewController* vc)
-        {
-            bool (^actionBlock)() = ^bool{return false;};
-
-            NSString *msg = QString("Transaction Failed.");
-            UIAlertView *fail = [[UIAlertView alloc] initWithTitle:nil message:msg delegate:nil
-                                                 cancelButtonTitle:QString("OK") otherButtonTitles:nil];
-
-            if (bIsTransfer)
-            {
-                actionBlock = ^bool {
-                    bool bSuccess = record->AcceptIncomingTransfer();
-
-                    if (bSuccess)
-                    {
-                        self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                        [self.navigationController popViewControllerAnimated:YES];
-                    }
-                    return bSuccess;
-                };
-                [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
-            }
-            else if (bIsReceipt)
-            {
-                actionBlock = ^bool {
-                    bool bSuccess = record->AcceptIncomingReceipt();
-
-                    if (bSuccess)
-                    {
-                        self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                        [self.navigationController popViewControllerAnimated:YES];
-                    }
-                    return bSuccess;
-                };
-                [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
-            }
-            else if (record->GetRecordType() == MTRecord::Instrument) {  // TODO: filter these accounts by serverID and asset type ID.
-                ContractPickerViewController *picker = [ContractPickerViewController pickerWithTitle:QString("Account")
-                                                                                          dataSource:[AccountContractList instance]];
-                picker.cancelButtonEnabled = YES;
-                picker.callback = ^(ContractPickerViewController* vc, id<ContractWrapper> contract) {
-
-                    bool (^actionBlock)() = ^bool{return false;};
-
-                    if (contract) {
-                        actionBlock = ^bool {
-                            bool bSuccess = record->AcceptIncomingInstrument(contract.contractId.UTF8String);
-
-                            if (bSuccess)
-                            {
-                                self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                                [self.navigationController popViewControllerAnimated:YES];
-                            }
-                            return bSuccess;
-                        };
-                        [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
-                    }
-                    [vc dismissModalViewControllerAnimated:YES];
-                };
-                [vc presentModalViewController:picker animated:YES];
-            }
-            //TODO do a refresh vs a pop
-
-        }]];
-        */
     }
 
     if (record->CanCancelOutgoing())
@@ -655,85 +853,25 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         m_pDetailLayout->setAlignment(cancelButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
-    //  nCurrentRow++;
 
+        connect(cancelButton, SIGNAL(clicked()), this, SLOT(on_cancelButton_clicked()));
 
-        /*
-        [actions addObject:[SectionAction actionWithName:cancelString icon:nil block:^(UIViewController* vc) {
-            bool (^actionBlock)() = ^bool{return false;};
-
-            actionBlock = ^bool {
-
-                if (record->IsCash())
-                {
-                    ContractPickerViewController *picker = [ContractPickerViewController pickerWithTitle:QString("Account") // TODO: filter these accounts by serverID and asset type ID.
-                                                                                              dataSource:[AccountContractList instance]];
-                    picker.cancelButtonEnabled = YES;
-                    picker.callback = ^(ContractPickerViewController* vc, id<ContractWrapper> contract) {
-
-                        bool (^actionBlock)() = ^bool{return false;};
-
-                        if (contract) {
-                            actionBlock = ^bool {
-                                OT_ME madeEasy;
-                                bool bInnerSuccess = false;
-                                if (1 == madeEasy.deposit_cash(record->GetServerID(), record->GetNymID(), contract.contractId.UTF8String, record->GetContents()))
-                                {
-                                    bInnerSuccess = true;
-                                    record->DiscardOutgoingCash();
-                                    self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                                    [self.navigationController popViewControllerAnimated:YES];
-                                }
-                                return bInnerSuccess;
-                            };
-                            [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
-                        }
-                        [vc dismissModalViewControllerAnimated:YES];
-                    };
-                    [vc presentModalViewController:picker animated:YES];
-                }
-                else
-                {
-                    bool bSuccess = record->CancelOutgoing(record->GetAccountID());
-
-                    if (bSuccess)
-                    {
-                        self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                        [self.navigationController popViewControllerAnimated:YES];
-                    }
-                    return bSuccess;
-                }
-
-                return true;
-            };
-
-            [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
-
-        }]];
-        */
     }
 
     if (record->CanDiscardOutgoingCash())
     {
         QString discardString = QString("Discard this Sent Cash");
 
-        QPushButton * discardButton = new QPushButton(discardString);
+        QPushButton * discardOutgoingButton = new QPushButton(discardString);
 
-        m_pDetailLayout->addWidget(discardButton, nCurrentRow, nCurrentColumn);
-        m_pDetailLayout->setAlignment(discardButton, Qt::AlignTop);
+        m_pDetailLayout->addWidget(discardOutgoingButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->setAlignment(discardOutgoingButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
-    //  nCurrentRow++;
+
+        connect(discardOutgoingButton, SIGNAL(clicked()), this, SLOT(on_discardOutgoingButton_clicked()));
 
 
-        /*
-        [actions addObject:[SectionAction actionWithName:discardString icon:nil block:^(UIViewController* vc) {
-            record->DiscardOutgoingCash();
-
-            self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-            [self.navigationController popViewControllerAnimated:YES];
-        }]];
-        */
     }
 
     if (record->CanDiscardIncoming())
@@ -756,23 +894,15 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
             discardString = QString("Discard this Payment");
 
 
-        QPushButton * discardButton = new QPushButton(discardString);
+        QPushButton * discardIncomingButton = new QPushButton(discardString);
 
-        m_pDetailLayout->addWidget(discardButton, nCurrentRow, nCurrentColumn);
-        m_pDetailLayout->setAlignment(discardButton, Qt::AlignTop);
+        m_pDetailLayout->addWidget(discardIncomingButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->setAlignment(discardIncomingButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
-    //  nCurrentRow++;
 
+        connect(discardIncomingButton, SIGNAL(clicked()), this, SLOT(on_discardIncomingButton_clicked()));
 
-        /*
-        [actions addObject:[SectionAction actionWithName:discardString icon:nil block:^(UIViewController* vc) {
-            record->DiscardIncoming();
-
-            self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-            [self.navigationController popViewControllerAnimated:YES];
-        }]];
-        */
     }
 
     if (!(record->GetOtherNymID().empty()))
@@ -791,36 +921,9 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         m_pDetailLayout->setAlignment(msgButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
-    //  nCurrentRow++;
 
+        connect(msgButton, SIGNAL(clicked()), this, SLOT(on_msgButton_clicked()));
 
-        /*
-            // Display the SendMailViewController here.
-            //
-            SendMailViewController *send_mail_control = [[SendMailViewController alloc] initWithNibName:nil bundle:nil];
-
-            // Pre-fill the recipient here.
-//            send_mail_control.record = record;
-            send_mail_control.nymID = QString(record->GetOtherNymID().c_str());
-
-
-            // NOTE: You will need to lookup the CONTACT for the appropriate recipient,
-            // since the sendMail page uses a Contact for a recipient.
-            // (And what if there IS no contact for that Nym??)
-
-            // Use this call to get the Nym Name:
-            //std::string MTNameLookupIPhone::GetNymName(const std::string & str_id) const
-
-            // But what if I don't need the Nym Name? What if I need the actual Contact?
-
-            // Anyway, once you are able to lookup the contact for the appropriate recipient,
-            // that means you should also be able to lookup the contact when displaying any
-            // transaction detail, so you can remove the "Add as contact" button IN CASES
-            // WHERE THE CONTACT ALREADY EXISTS.
-
-            [self.navigationController pushViewController:send_mail_control animated:YES];
-        }]];
-        */
     }
     // ----------------------------------
 

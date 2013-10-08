@@ -126,6 +126,73 @@ bool MTContactHandler::GetServers(mapIDName & theMap, QString filterByNym)
     return bFoundAny;
 }
 
+// ---------------------------------------------------------------------
+
+// The contact ID (unlike all the other IDs) is an int instead of a string.
+// Therefore we just convert it to a string and return it in a map in the same
+// format as all the others.
+// (FYI.)
+//
+bool MTContactHandler::GetContacts(mapIDName & theMap)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_select = QString("SELECT * FROM contact");
+
+    bool bFoundAny = false;
+    int  nRows     = DBHandler::getInstance()->querySize(str_select);
+
+    for(int ii=0; ii < nRows; ii++)
+    {
+        int     contact_id   = DBHandler::getInstance()->queryInt   (str_select, 0, ii);
+        QString contact_name = DBHandler::getInstance()->queryString(str_select, 1, ii);
+
+        if (contact_id > 0)
+        {
+             bFoundAny = true;
+
+             QString str_contact_id;
+             str_contact_id = QString("%1").arg(contact_id);
+
+            // At this point we have the contact ID (in string form) *and* the contact name.
+            // So we can add them to our map...
+            theMap.insert(str_contact_id, contact_name);
+        }
+    }
+    // ---------------------------------------------------------------------
+    return bFoundAny;
+}
+
+// ---------------------------------------------------------------------
+
+bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_select = QString("SELECT (`nym_id`, `nym_display_name`) FROM `nym` WHERE `contact_id`='%1'").arg(nFilterByContact);
+
+    bool bFoundAny = false;
+    int  nRows     = DBHandler::getInstance()->querySize(str_select);
+
+    for(int ii=0; ii < nRows; ii++)
+    {
+        QString nym_id   = DBHandler::getInstance()->queryString(str_select, 0, ii);
+        QString nym_name = DBHandler::getInstance()->queryString(str_select, 1, ii);
+
+        if (!nym_id.isEmpty())
+        {
+            bFoundAny = true;
+
+            // At this point we have the nym ID *and* the nym name.
+            // So we can add them to our map...
+            theMap.insert(nym_id, nym_name);
+        }
+    }
+    // ---------------------------------------------------------------------
+    return bFoundAny;
+}
+
+// ---------------------------------------------------------------------
 
 //QString create_contact = "CREATE TABLE contact(contact_id INTEGER PRIMARY KEY, contact_display_name TEXT)";
 //QString create_nym     = "CREATE TABLE nym(nym_id TEXT PRIMARY KEY, contact_id INTEGER, nym_display_name)";
