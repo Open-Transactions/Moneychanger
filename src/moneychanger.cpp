@@ -628,26 +628,26 @@ void Moneychanger::close_overview_dialog()
  * Address Book 
  **/
 
-void Moneychanger::mc_addressbook_show(QString text)
+void Moneychanger::mc_addressbook_show(QString text) // text may contain a "pre-selected" Contact ID (an integer in string form.)
 {
     // The caller dosen't wish to have the address book paste to anything
     // (they just want to see/manage the address book), just call blank.
     //
     if (!mc_addressbook_already_init)
     {
-//      addressbookwindow = new AddressBookWindow(this);
-        contactswindow    = new MTDetailEdit(this);
-
-        MTContactHandler::getInstance()->GetContacts(contactswindow->m_map);
+        contactswindow = new MTDetailEdit(this);
 
         mc_addressbook_already_init = true;
         qDebug() << "Address Book Opened";
     }
     // -------------------------------------
+    contactswindow->m_map.clear();
+    // -------------------------------------
+    MTContactHandler::getInstance()->GetContacts(contactswindow->m_map);
+    // -------------------------------------
+    contactswindow->SetPreSelected(text);
+    // -------------------------------------
     contactswindow->dialog(MTDetailEdit::DetailEditTypeContact);
-    contactswindow->show();
-    contactswindow->setFocus();
-//  addressbookwindow->show(text);
 }
 
 void Moneychanger::close_addressbook()

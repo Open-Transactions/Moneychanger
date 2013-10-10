@@ -11,7 +11,7 @@ class MTEditDetails;
 }
 
 class MTDetailEdit;
-
+// -----------------------------------------
 class MTEditDetails : public QWidget
 {
     Q_OBJECT
@@ -21,6 +21,7 @@ public:
     virtual ~MTEditDetails();
 
     virtual void refresh(QString strID, QString strName)=0;
+    virtual void DeleteButtonClicked()=0;
 
     static QWidget * CreateDetailHeaderWidget(QString strID, QString strName, bool bExternal=true);
 
@@ -34,7 +35,7 @@ private slots:
 //    void on_deleteButton_clicked(bool checked = false);
 //    void on_acceptButton_clicked(bool checked = false);
 
-private:
+protected:
     MTDetailEdit * m_pOwner;
 
 private:

@@ -121,7 +121,7 @@ void WithdrawAsVoucherWindow::dialog()
 //This will show the address book, the opened address book will be set to paste in recipient nym ids if/when selecting a nymid in the addressbook.
 void WithdrawAsVoucherWindow::show_addressbook_slot(){
     //Show address book
-    ((Moneychanger *)parentWidget())->mc_addressbook_show("withdraw_as_voucher");
+    ((Moneychanger *)parentWidget())->mc_addressbook_show(QString(""));
 }
 
 /**

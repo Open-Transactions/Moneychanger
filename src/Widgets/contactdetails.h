@@ -16,6 +16,10 @@ public:
     virtual ~MTContactDetails();
 
     virtual void refresh(QString strID, QString strName);
+    virtual void DeleteButtonClicked();
+
+private slots:
+    void on_lineEditName_editingFinished();
 
 private:
     Ui::MTContactDetails *ui;

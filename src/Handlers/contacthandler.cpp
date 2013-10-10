@@ -9,7 +9,9 @@
 
 
 
-std::string MTNameLookupQT::GetNymName(const std::string & str_id) const
+
+std::string MTNameLookupQT::GetNymName(const std::string & str_id,
+                                       const std::string * p_server_id/*=NULL*/) const
 {
     std::string str_result("");
     // ------------------------
@@ -21,10 +23,14 @@ std::string MTNameLookupQT::GetNymName(const std::string & str_id) const
 
         if (!contact_name.isEmpty())
             str_result = contact_name.toStdString();
+        // -----------------------------------------------
+        if ((NULL != p_server_id) && !p_server_id->empty())
+            MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
+                                                                   QString::fromStdString(*p_server_id));
     }
     // ------------------------
-    else
-        str_result = this->MTNameLookup::GetNymName(str_id);
+    if (str_result.empty())
+        str_result = this->MTNameLookup::GetNymName(str_id, p_server_id);
     // ------------------------
     return str_result;
 }
@@ -48,7 +54,7 @@ std::string MTNameLookupQT::GetAcctName(const std::string & str_id,
             str_result = contact_name.toStdString();
     }
     // ------------------------
-    else
+    if (str_result.empty())
         str_result = this->MTNameLookup::GetAcctName(str_id, p_nym_id, p_server_id, p_asset_id);
     // ------------------------
     return str_result;
@@ -73,6 +79,32 @@ MTContactHandler * MTContactHandler::getInstance()
         _instance = new MTContactHandler;
     }
     return _instance;
+}
+
+
+
+bool MTContactHandler::ContactExists(int nContactID)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_select = QString("SELECT * FROM `contact` WHERE `contact_id`='%1' LIMIT 0,1").arg(nContactID);
+
+    int nRows = DBHandler::getInstance()->querySize(str_select);
+
+    return (nRows > 0);
+}
+
+
+
+bool MTContactHandler::DeleteContact(int nContactID)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_delete_nym     = QString("DELETE FROM `nym` WHERE `contact_id`='%1'").arg(nContactID);
+    QString str_delete_contact = QString("DELETE FROM `contact` WHERE `contact_id`='%1'").arg(nContactID);
+
+    return (DBHandler::getInstance()->runQuery(str_delete_nym) &&
+            DBHandler::getInstance()->runQuery(str_delete_contact));
 }
 
 
@@ -314,6 +346,8 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString ser
     //
     QString str_select = QString("SELECT `contact_id` FROM `nym` WHERE `nym_id`='%1'").arg(nym_id_string);
 
+    qDebug() << QString("Running query: %1").arg(str_select);
+
     int  nRows      = DBHandler::getInstance()->querySize(str_select);
     bool bNymExists = false;
 
@@ -336,6 +370,9 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString ser
         QString str_insert_contact = QString("INSERT INTO `contact` "
                                              "(`contact_id`) "
                                              "VALUES(NULL)");
+
+        qDebug() << QString("Running query: %1").arg(str_insert_contact);
+
         DBHandler::getInstance()->runQuery(str_insert_contact);
         // ----------------------------------------
         nContactID = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `contact`", 0, 0);
@@ -347,12 +384,16 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString ser
     {
         QString str_insert_nym;
 
+        // todo: add "upsert" code to consolidate to a single sql statement, if possible.
+
         if (!bNymExists)
             str_insert_nym = QString("INSERT INTO `nym` "
                                      "(`nym_id`, `contact_id`) "
                                      "VALUES('%1', '%2')").arg(nym_id_string).arg(nContactID);
         else if (bHadToCreateContact)
             str_insert_nym = QString("UPDATE `nym` SET `contact_id`='%1' WHERE `nym_id`='%2'").arg(nContactID).arg(nym_id_string);
+
+        qDebug() << QString("Running query: %1").arg(str_insert_nym);
 
         DBHandler::getInstance()->runQuery(str_insert_nym);
     }
@@ -362,7 +403,7 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString ser
     //
     if (!server_id_string.isEmpty())
     {
-        QString str_select_server = QString("SELECT `server_id` FROM `nym_server` WHERE `nym_id`='%1'' AND `server_id`='%2'' LIMIT 0,1").arg(nym_id_string).arg(server_id_string);
+        QString str_select_server = QString("SELECT `server_id` FROM `nym_server` WHERE `nym_id`='%1' AND `server_id`='%2' LIMIT 0,1").arg(nym_id_string).arg(server_id_string);
         int nRowsServer = DBHandler::getInstance()->querySize(str_select_server);
 
         if (0 == nRowsServer) // It wasn't already there. (Add it.)
@@ -370,6 +411,9 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString ser
             QString str_insert_server = QString("INSERT INTO `nym_server` "
                                                 "(`nym_id`, `server_id`) "
                                                 "VALUES('%1', '%2')").arg(nym_id_string).arg(server_id_string);
+
+            qDebug() << QString("Running query: %1").arg(str_insert_server);
+
             DBHandler::getInstance()->runQuery(str_insert_server);
         }
     }
@@ -425,7 +469,7 @@ QString MTContactHandler::GetContactName(int nContactID)
 {
     QMutexLocker locker(&m_Mutex);
 
-    QString str_select = QString("SELECT `contact_display_name` FROM `contact` WHERE `contact_id`='%1'' LIMIT 0,1").arg(nContactID);
+    QString str_select = QString("SELECT `contact_display_name` FROM `contact` WHERE `contact_id`='%1' LIMIT 0,1").arg(nContactID);
 
     int nRows = DBHandler::getInstance()->querySize(str_select);
 
@@ -493,11 +537,11 @@ int MTContactHandler::FindContactIDByAcctID(QString acct_id_string,
 
     int nContactID = 0;
 
-    QString str_select = QString("SELECT `nym.contact_id` "
-                                 "FROM `nym_account` "
-                                 "INNER JOIN `nym` "
-                                 "ON `nym_account.nym_id`=`nym.nym_id` "
-                                 "WHERE `nym_account.account_id`='%1'").arg(acct_id_string);
+    QString str_select = QString("SELECT `contact_id` "
+                                 "FROM `nym` "
+                                 "INNER JOIN `nym_account` "
+                                 "ON nym_account.nym_id=nym.nym_id "
+                                 "WHERE nym_account.account_id='%1'").arg(acct_id_string);
 
     int nRows = DBHandler::getInstance()->querySize(str_select);
 
@@ -551,9 +595,9 @@ int MTContactHandler::FindContactIDByAcctID(QString acct_id_string,
     QString final_server_id = server_id_string;
     QString final_nym_id    = nym_id_string;
     // ---------------------------------
-    QString str_select_acct = QString("SELECT (`server_id`, `asset_id`, `nym_id`) "
+    QString str_select_acct = QString("SELECT * "
                                       "FROM `nym_account` "
-                                      "WHERE `account_id`='%1'").arg(acct_id_string);
+                                      "WHERE account_id='%1'").arg(acct_id_string);
 
     int nRowsAcct = DBHandler::getInstance()->querySize(str_select_acct);
 
@@ -563,8 +607,9 @@ int MTContactHandler::FindContactIDByAcctID(QString acct_id_string,
         //
         if (!server_id_string.isEmpty() || !asset_id_string.isEmpty() || !nym_id_string.isEmpty())
         {
-            QString existing_server_id = DBHandler::getInstance()->queryString(str_select_acct, 0, 0);
-            QString existing_asset_id  = DBHandler::getInstance()->queryString(str_select_acct, 1, 0);
+      //    QString create_account = "CREATE TABLE nym_account(account_id TEXT PRIMARY KEY, server_id TEXT, nym_id TEXT, asset_id TEXT, account_display_name TEXT)";
+            QString existing_server_id = DBHandler::getInstance()->queryString(str_select_acct, 1, 0);
+            QString existing_asset_id  = DBHandler::getInstance()->queryString(str_select_acct, 3, 0);
             QString existing_nym_id    = DBHandler::getInstance()->queryString(str_select_acct, 2, 0);
 
             // Here we're just making sure we don't run an update unless we've
@@ -603,7 +648,7 @@ int MTContactHandler::FindContactIDByAcctID(QString acct_id_string,
     //
     if (!final_nym_id.isEmpty())
     {
-        QString str_select_nym = QString("SELECT `contact_id` FROM `nym` WHERE `nym_id`='%1'' LIMIT 0,1").arg(final_nym_id);
+        QString str_select_nym = QString("SELECT `contact_id` FROM `nym` WHERE `nym_id`='%1' LIMIT 0,1").arg(final_nym_id);
 
         int nRowsNym = DBHandler::getInstance()->querySize(str_select_nym);
 
@@ -629,10 +674,19 @@ int MTContactHandler::FindContactIDByAcctID(QString acct_id_string,
         //
         else
         {
+            // How to "Upsert":
+//          INSERT OR IGNORE INTO players (user_name, age) VALUES ("steven", 32);
+//          UPDATE players SET user_name="steven", age=32 WHERE user_name="steven";
+
             QString str_insert_nym = QString("INSERT INTO `nym` "
                                              "(`nym_id`) "
                                              "VALUES('%1')").arg(final_nym_id);
             DBHandler::getInstance()->runQuery(str_insert_nym);
+            // -----------------------------------------------
+//            QString str_update_nym = QString("UPDATE `nym` "
+//                                             "(`nym_id`) "
+//                                             "VALUES('%1')").arg(final_nym_id);
+//            DBHandler::getInstance()->runQuery(str_update_nym);
         }
         // ---------------------------------------------------------------------
         // Finally, do the same actions found in NotifyOfNymServerPair, only if final_server_id

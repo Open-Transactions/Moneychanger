@@ -92,11 +92,8 @@ void MTHome::dialog()
         ui->widget->setContentsMargins(1,1,1,1);
 
         ui->widget->setLayout(m_pDetailLayout);
-
         // -------------------------------------------
-
         setupRecordList();
-
         // -------------------------------------------
 
         /** Flag Already Init **/
@@ -224,7 +221,7 @@ QWidget * MTHome::CreateUserBarWidget()
     {
         //Tx has no name
         tx_name.clear();
-        tx_name = "Transaction";
+        tx_name = "(Acct Goes Here)";
     }
 
     QLabel * header_of_row = new QLabel;

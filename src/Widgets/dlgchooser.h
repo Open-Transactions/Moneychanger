@@ -34,9 +34,10 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
-    void on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
     void on_pushButton_clicked();
     void on_cancelButton_clicked();
+
+    void on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
     void on_tableWidget_cellDoubleClicked(int row, int column);
 
 private:

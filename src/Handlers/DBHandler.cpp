@@ -162,7 +162,6 @@ bool DBHandler::runQuery(QString run)
     }
     else
         return error;
-    
 }
 
 
@@ -390,14 +389,12 @@ bool DBHandler::AddressBookRemoveID(int ID)
     if (db.isOpen())
     {
         return query.exec(QString("DELETE FROM `address_book` WHERE `id` = '%1'").arg(ID));
-        
     }
     else
     {
         qDebug() << "AddressBookRemoveID Error";
         return false;
     }
-    
 }
 
 

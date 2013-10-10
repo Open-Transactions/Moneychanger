@@ -36,6 +36,9 @@ public:
 
     void dialog(DetailEditType theType);
 
+    void RefreshRecords();
+
+    // --------------------------------
     int         m_nCurrentRow;
     QString     m_qstrCurrentID;
     QString     m_qstrCurrentName;
@@ -47,15 +50,15 @@ protected:
     MTEditDetails * m_pDetailPane;
     QVBoxLayout   * m_pDetailLayout;
 
-//    virtual void showEvent(QShowEvent * event);
+//  virtual void showEvent(QShowEvent * event);
     bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
     void on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
 
-private:
-    void RefreshRecords();
+    void on_deleteButton_clicked();
 
+private:
     DetailEditType m_Type;
 
     Ui::MTDetailEdit *ui;

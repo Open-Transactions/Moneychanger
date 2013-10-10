@@ -30,7 +30,9 @@
 class MTNameLookup
 {
 public:
-    virtual std::string GetNymName(const std::string & str_id) const;
+    virtual std::string GetNymName(const std::string & str_id,
+                                   const std::string * p_server_id=NULL) const;
+
     virtual std::string GetAcctName(const std::string & str_id,
                                     const std::string * p_nym_id=NULL,
                                     const std::string * p_server_id=NULL,
@@ -78,7 +80,7 @@ class MTRecordList
     bool                      m_bAutoAcceptCash;
     // ------------------------------------------------
     list_of_strings           m_servers;
-    map_of_strings           m_assets;  // <asset_type_id, asset_name>
+     map_of_strings           m_assets;  // <asset_type_id, asset_name>
     list_of_strings           m_accounts;
     list_of_strings           m_nyms;
     // ------------------------------------------------

@@ -64,7 +64,7 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
     // -------------------------------------------
     //Render row.
     //Header of row
-//    QString tx_name = QString("Name goes here");
+//  QString tx_name = QString("Name goes here");
     QString tx_name = strName;
 
     if(tx_name.trimmed() == "")

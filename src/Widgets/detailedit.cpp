@@ -84,10 +84,12 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType)
 //            delete ui->widget->layout();
 
         ui->widget->setLayout(m_pDetailLayout);
-        // -------------------------------------------
-        RefreshRecords();
-        // -------------------------------------------
     } // first run.
+    // -------------------------------------------
+    RefreshRecords();
+    // -------------------------------------------
+    show();
+    setFocus();
 }
 
 
@@ -134,6 +136,8 @@ void MTDetailEdit::RefreshRecords()
         // -------------------------------------
         QString qstrID    = ii.key();
         QString qstrValue = ii.value();
+
+        qDebug() << QString("MTDetailEdit::RefreshRecords: Name: %1, ID: %2").arg(qstrValue, qstrID);
         // -------------------------------------
         if (!m_PreSelected.isEmpty() && (m_PreSelected == qstrID))
             nPreselectedIndex = nIndex;
@@ -148,7 +152,7 @@ void MTDetailEdit::RefreshRecords()
     // ------------------------
     if (ui->tableWidget->rowCount() > 0)
     {
-        if (nPreselectedIndex > (-1))
+        if ((nPreselectedIndex > (-1)) && (nPreselectedIndex < ui->tableWidget->rowCount()))
         {
             qDebug() << QString("SETTING current row to %1 on the tableWidget.").arg(nPreselectedIndex);
             ui->tableWidget->setCurrentCell(nPreselectedIndex, 1);
@@ -161,6 +165,12 @@ void MTDetailEdit::RefreshRecords()
     }
 }
 
+
+void MTDetailEdit::on_deleteButton_clicked()
+{
+    if (!m_qstrCurrentID.isEmpty() && (NULL != m_pDetailPane))
+        m_pDetailPane->DeleteButtonClicked();
+}
 
 void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
 {

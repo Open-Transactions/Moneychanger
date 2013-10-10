@@ -41,7 +41,8 @@ SOURCES += main.cpp\
     Widgets/overridecursor.cpp \
     Widgets/detailedit.cpp \
     Widgets/editdetails.cpp \
-    Widgets/contactdetails.cpp
+    Widgets/contactdetails.cpp \
+    UI/getstringdialog.cpp
 
 
 HEADERS += moneychanger.h \
@@ -71,7 +72,8 @@ HEADERS += moneychanger.h \
     Widgets/overridecursor.h \
     Widgets/detailedit.h \
     Widgets/editdetails.h \
-    Widgets/contactdetails.h
+    Widgets/contactdetails.h \
+    UI/getstringdialog.h
 
 
 DEFINES += "OT_ZMQ_MODE=1"
@@ -145,5 +147,6 @@ FORMS += \
     Widgets/compose.ui \
     Widgets/detailedit.ui \
     Widgets/editdetails.ui \
-    Widgets/contactdetails.ui
+    Widgets/contactdetails.ui \
+    UI/getstringdialog.ui
 
