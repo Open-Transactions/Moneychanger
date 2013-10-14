@@ -1,6 +1,9 @@
 
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
+
+#include <opentxs/OTStorage.h>
+#include <opentxs/OTASCIIArmor.h>
 #include <opentxs/OTLog.h>
 
 #include "contacthandler.h"
@@ -181,11 +184,22 @@ bool MTContactHandler::GetContacts(mapIDName & theMap)
 
         if (contact_id > 0)
         {
-             bFoundAny = true;
+            bFoundAny = true;
 
-             QString str_contact_id;
-             str_contact_id = QString("%1").arg(contact_id);
+            QString str_contact_id;
+            str_contact_id = QString("%1").arg(contact_id);
 
+            if (!contact_name.isEmpty())
+            {
+//                qDebug() << QString("About to decode name: %1").arg(contact_name);
+
+                //Decode base64.
+                OTASCIIArmor ascName;
+                ascName.Set(contact_name.toStdString().c_str());
+                OTString strName(ascName);
+                contact_name = QString(strName.Get());
+            }
+            // --------------------------------------------------
             // At this point we have the contact ID (in string form) *and* the contact name.
             // So we can add them to our map...
             theMap.insert(str_contact_id, contact_name);
@@ -215,6 +229,16 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact)
         {
             bFoundAny = true;
 
+            if (!nym_name.isEmpty())
+            {
+//                qDebug() << QString("About to decode name: %1").arg(nym_name);
+                //Decode base64.
+                OTASCIIArmor ascName;
+                ascName.Set(nym_name.toStdString().c_str());
+                OTString strName(ascName);
+                nym_name = QString(strName.Get());
+            }
+            // ----------------------------
             // At this point we have the nym ID *and* the nym name.
             // So we can add them to our map...
             theMap.insert(nym_id, nym_name);
@@ -225,11 +249,6 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact)
 }
 
 // ---------------------------------------------------------------------
-
-//QString create_contact = "CREATE TABLE contact(contact_id INTEGER PRIMARY KEY, contact_display_name TEXT)";
-//QString create_nym     = "CREATE TABLE nym(nym_id TEXT PRIMARY KEY, contact_id INTEGER, nym_display_name)";
-//QString create_server  = "CREATE TABLE nym_server(nym_id TEXT, server_id TEXT, PRIMARY KEY(nym_id, server_id))";
-//QString create_account = "CREATE TABLE nym_account(account_id TEXT PRIMARY KEY, server_id TEXT, nym_id TEXT, asset_id TEXT, account_display_name TEXT)";
 
 bool MTContactHandler::GetAccounts(mapIDName & theMap, QString filterByNym, QString filterByServer, QString filterByAsset)
 {
@@ -269,7 +288,7 @@ bool MTContactHandler::GetAccounts(mapIDName & theMap, QString filterByNym, QStr
         }
         else // subsequent iterations.
         {
-            strParams += QString(" AND %1=%2").arg(strKey).arg(strValue);
+            strParams += QString(" AND `%1`='%2'").arg(strKey).arg(strValue);
         }
         // ----------------------------------
         parameters.remove(strKey);
@@ -291,6 +310,17 @@ bool MTContactHandler::GetAccounts(mapIDName & theMap, QString filterByNym, QStr
         QString account_nym_id = DBHandler::getInstance()->queryString(str_select, 1, ii);
         QString display_name   = DBHandler::getInstance()->queryString(str_select, 2, ii);
 
+        if (!display_name.isEmpty())
+        {
+//            qDebug() << QString("About to decode name: %1").arg(display_name);
+
+            //Decode base64.
+            OTASCIIArmor ascName;
+            ascName.Set(display_name.toStdString().c_str());
+            OTString strName(ascName);
+            display_name = QString(strName.Get());
+        }
+        //---------------------------------------------------
         if (!account_id.isEmpty()) // Account ID is present.
         {
             if (display_name.isEmpty()) // Display name isn't.
@@ -391,7 +421,7 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString ser
                                      "(`nym_id`, `contact_id`) "
                                      "VALUES('%1', '%2')").arg(nym_id_string).arg(nContactID);
         else if (bHadToCreateContact)
-            str_insert_nym = QString("UPDATE `nym` SET `contact_id`='%1' WHERE `nym_id`='%2'").arg(nContactID).arg(nym_id_string);
+            str_insert_nym = QString("UPDATE nym SET contact_id='%1' WHERE nym_id='%2'").arg(nContactID).arg(nym_id_string);
 
         qDebug() << QString("Running query: %1").arg(str_insert_nym);
 
@@ -478,6 +508,17 @@ QString MTContactHandler::GetContactName(int nContactID)
         //Extract data
         QString contact_name = DBHandler::getInstance()->queryString(str_select, 0, ii);
 
+        if (!contact_name.isEmpty())
+        {
+//            qDebug() << QString("About to decode name: %1").arg(contact_name);
+
+            //Decode base64.
+            OTASCIIArmor ascName;
+            ascName.Set(contact_name.toStdString().c_str());
+            OTString strName(ascName);
+            contact_name = QString(strName.Get());
+        }
+        //---------------------------------------------------
         return contact_name; // In practice there should only be one row.
     }
 
@@ -488,7 +529,19 @@ bool MTContactHandler::SetContactName(int nContactID, QString contact_name_strin
 {
     QMutexLocker locker(&m_Mutex);
 
-    QString str_update = QString("UPDATE `contact` SET `contact_display_name`='%1' WHERE `contact_id`='%2'").arg(contact_name_string).arg(nContactID);
+    QString encoded_name("");
+
+    if (!contact_name_string.isEmpty())
+    {
+//        qDebug() << QString("About to encode name: %1").arg(contact_name_string);
+
+        //encode
+        OTString     strName(contact_name_string.toStdString());
+        OTASCIIArmor ascName(strName);
+        encoded_name = QString(ascName.Get());
+    }
+    // ------------------------------------------
+    QString str_update = QString("UPDATE `contact` SET `contact_display_name`='%1' WHERE `contact_id`='%2'").arg(encoded_name).arg(nContactID);
 
     return DBHandler::getInstance()->runQuery(str_update);
 }
@@ -607,7 +660,8 @@ int MTContactHandler::FindContactIDByAcctID(QString acct_id_string,
         //
         if (!server_id_string.isEmpty() || !asset_id_string.isEmpty() || !nym_id_string.isEmpty())
         {
-      //    QString create_account = "CREATE TABLE nym_account(account_id TEXT PRIMARY KEY, server_id TEXT, nym_id TEXT, asset_id TEXT, account_display_name TEXT)";
+      //    nym_account(account_id TEXT PRIMARY KEY, server_id TEXT, nym_id TEXT, asset_id TEXT,
+      //                account_display_name TEXT)";
             QString existing_server_id = DBHandler::getInstance()->queryString(str_select_acct, 1, 0);
             QString existing_asset_id  = DBHandler::getInstance()->queryString(str_select_acct, 3, 0);
             QString existing_nym_id    = DBHandler::getInstance()->queryString(str_select_acct, 2, 0);

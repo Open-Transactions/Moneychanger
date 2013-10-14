@@ -151,11 +151,13 @@ bool DBHandler::runQuery(QString run)
     if(db.isOpen())
     {
         error = query.exec(run);
+
         if(error)
             return true;
         else
         {
             qDebug() << "runQuery: QSqlQuery::lastError: " << query.lastError().text();
+            qDebug() << QString("THE QUERY (that caused the error): %1").arg(run);
 
             return false;
         }

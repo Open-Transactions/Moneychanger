@@ -742,7 +742,7 @@ void increment_cell(int & nCurrentRow, int & nCurrentColumn)
 
 void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 {
-    qDebug() << QString("MTHomeDetail::refresh: nRow: %1").arg(nRow);
+//    qDebug() << QString("MTHomeDetail::refresh: nRow: %1").arg(nRow);
 
     if ((nRow >= 0) && (nRow < theList.size()))
     {
@@ -761,7 +761,7 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         refresh(recordmt);
     }
     else
-        qDebug() << QString("MTHomeDetail::refresh: nRow is out of bounds. (Max size is %1.)").arg(theList.size());
+        qDebug() << QString("MTHomeDetail::refresh: nRow %1 is out of bounds. (Max size is %2.)").arg(nRow).arg(theList.size());
 }
 
 void MTHomeDetail::refresh(MTRecord & recordmt)
