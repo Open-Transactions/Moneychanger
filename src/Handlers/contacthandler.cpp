@@ -111,6 +111,54 @@ bool MTContactHandler::DeleteContact(int nContactID)
 }
 
 
+
+bool MTContactHandler::AddNymToExistingContact(int nContactID, QString nym_id_string)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    // Todo security: Make sure we don't need to encode the NymID here to prevent a SQL injection vulnerability...
+
+    if ((nContactID > 0) && !nym_id_string.isEmpty())
+    {
+
+        // First, see if a contact already exists for this Nym, and if so,
+        // save its ID and return at the bottom.
+        //
+        QString str_select = QString("SELECT `contact_id` FROM `nym` WHERE `nym_id`='%1'").arg(nym_id_string);
+
+        qDebug() << QString("Running query: %1").arg(str_select);
+
+        int  nRows      = DBHandler::getInstance()->querySize(str_select);
+        bool bNymExists = false;
+
+        for(int ii=0; ii < nRows; ii++)
+        {
+            bNymExists = true; // Whether the contact ID was good or not, the Nym itself DOES exist.
+            break; // In practice there should only be one row.
+        }
+        // ----------------------------------------
+        QString str_insert_nym;
+
+        if (!bNymExists)
+            str_insert_nym = QString("INSERT INTO `nym` "
+                                     "(`nym_id`, `contact_id`) "
+                                     "VALUES('%1', '%2')").arg(nym_id_string).arg(nContactID);
+//      else if (bHadToCreateContact)
+        else
+            str_insert_nym = QString("UPDATE nym SET contact_id='%1' WHERE nym_id='%2'").arg(nContactID).arg(nym_id_string);
+
+        if (!str_insert_nym.isEmpty())
+        {
+            qDebug() << QString("Running query: %1").arg(str_insert_nym);
+
+            return DBHandler::getInstance()->runQuery(str_insert_nym);
+        }
+    }
+
+    return false;
+}
+
+
 //resume
 
 // TODO:
@@ -211,11 +259,11 @@ bool MTContactHandler::GetContacts(mapIDName & theMap)
 
 // ---------------------------------------------------------------------
 
-bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact)
+bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact) //resume
 {
     QMutexLocker locker(&m_Mutex);
 
-    QString str_select = QString("SELECT (`nym_id`, `nym_display_name`) FROM `nym` WHERE `contact_id`='%1'").arg(nFilterByContact);
+    QString str_select = QString("SELECT * FROM `nym` WHERE `contact_id`='%1' LIMIT 0,1").arg(nFilterByContact);
 
     bool bFoundAny = false;
     int  nRows     = DBHandler::getInstance()->querySize(str_select);
@@ -223,7 +271,7 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact)
     for(int ii=0; ii < nRows; ii++)
     {
         QString nym_id   = DBHandler::getInstance()->queryString(str_select, 0, ii);
-        QString nym_name = DBHandler::getInstance()->queryString(str_select, 1, ii);
+        QString nym_name = DBHandler::getInstance()->queryString(str_select, 2, ii);
 
         if (!nym_id.isEmpty())
         {
@@ -296,7 +344,7 @@ bool MTContactHandler::GetAccounts(mapIDName & theMap, QString filterByNym, QStr
     // ---------------------------------
     // Construct the SELECT statement and append the WHERE clause.
     //
-    QString str_select = QString("SELECT (`account_id`, `nym_id`, `account_display_name`) FROM `nym_account`");
+    QString str_select = QString("SELECT * FROM `nym_account`");
 
     if (!strParams.isEmpty())
         str_select += strParams;
@@ -307,8 +355,8 @@ bool MTContactHandler::GetAccounts(mapIDName & theMap, QString filterByNym, QStr
     for(int ii=0; ii < nRows; ii++)
     {
         QString account_id     = DBHandler::getInstance()->queryString(str_select, 0, ii);
-        QString account_nym_id = DBHandler::getInstance()->queryString(str_select, 1, ii);
-        QString display_name   = DBHandler::getInstance()->queryString(str_select, 2, ii);
+        QString account_nym_id = DBHandler::getInstance()->queryString(str_select, 2, ii);
+        QString display_name   = DBHandler::getInstance()->queryString(str_select, 4, ii);
 
         if (!display_name.isEmpty())
         {
@@ -420,12 +468,16 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString ser
             str_insert_nym = QString("INSERT INTO `nym` "
                                      "(`nym_id`, `contact_id`) "
                                      "VALUES('%1', '%2')").arg(nym_id_string).arg(nContactID);
-        else if (bHadToCreateContact)
+//      else if (bHadToCreateContact)
+        else
             str_insert_nym = QString("UPDATE nym SET contact_id='%1' WHERE nym_id='%2'").arg(nContactID).arg(nym_id_string);
 
-        qDebug() << QString("Running query: %1").arg(str_insert_nym);
+        if (!str_insert_nym.isEmpty())
+        {
+            qDebug() << QString("Running query: %1").arg(str_insert_nym);
 
-        DBHandler::getInstance()->runQuery(str_insert_nym);
+            DBHandler::getInstance()->runQuery(str_insert_nym);
+        }
     }
     // ---------------------------------------------------------------------
     // Finally, do the same actions found in NotifyOfNymServerPair, only if server_id_string
@@ -510,7 +562,7 @@ QString MTContactHandler::GetContactName(int nContactID)
 
         if (!contact_name.isEmpty())
         {
-//            qDebug() << QString("About to decode name: %1").arg(contact_name);
+//          qDebug() << QString("About to decode name: %1").arg(contact_name);
 
             //Decode base64.
             OTASCIIArmor ascName;

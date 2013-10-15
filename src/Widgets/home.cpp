@@ -106,6 +106,8 @@ void MTHome::dialog()
 
     RefreshUserBar();
 
+    m_list.Populate();
+
     //Now refresh the repopulated data visually
     RefreshRecords();
 
@@ -122,7 +124,6 @@ void MTHome::dialog()
 void MTHome::on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn)
 {
     m_pDetailPane->refresh(row, m_list);
-
 }
 
 void MTHome::setupRecordList()
@@ -360,6 +361,42 @@ QWidget * MTHome::CreateUserBarWidget()
     return row_widget;
 }
 
+void MTHome::OnDeletedRecord()
+{
+    int nRowCount    = ui->tableWidget->rowCount();
+    int nCurrentRow  = ui->tableWidget->currentRow();
+
+    if ((nRowCount > 0) && (nCurrentRow >= 0))
+    {
+        bool bRemoved = m_list.RemoveRecord(nCurrentRow);
+
+        if (bRemoved)
+        {
+            qDebug() << QString("Removed record at index %1.").arg(nCurrentRow);
+            // -----------------------------------------
+            // We do this because the individual records keep track of their index inside their box.
+            // Once a record is deleted, all the others now have bad indices, and must be reloaded.
+            //
+            m_list.Populate();
+
+            RefreshRecords();
+            // -----------------------------------------
+            if ((nCurrentRow >= 0) && (nCurrentRow < ui->tableWidget->rowCount()))
+            {
+                ui->tableWidget->setCurrentCell(nCurrentRow, 1);
+            }
+            else if (ui->tableWidget->rowCount() > 0)
+            {
+                ui->tableWidget->setCurrentCell((ui->tableWidget->rowCount() - 1), 1);
+            }
+            else
+                qDebug() << QString("Apparently there are zero rows in the tableWidget.");
+            // -----------------------------------------
+        }
+        else
+            qDebug() << QString("Failure removing MTRecord at index %1.").arg(nCurrentRow);
+    }
+}
 
 void MTHome::RefreshRecords()
 {
@@ -368,7 +405,6 @@ void MTHome::RefreshRecords()
     // -------------------------------------------------------
     m_bNeedRefresh = false;
     // -------------------------------------------------------
-    m_list.Populate();
     int listSize       = m_list.size();
     // -------------------------------------------------------
     int nTotalRecords  = listSize;

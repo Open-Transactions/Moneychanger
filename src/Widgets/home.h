@@ -55,6 +55,8 @@ public:
 
     void SetNeedRefresh();
 
+    void OnDeletedRecord();
+
 private slots:
     void on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn);
 

@@ -659,6 +659,14 @@ bool MTRecordList::PerformAutoAccept()
 
 
 
+
+
+bool compare_records (shared_ptr_MTRecord i, shared_ptr_MTRecord j)
+{
+    return i->operator<(*j);
+}
+
+
 // ***************************************************
 // POPULATE:
 
@@ -2790,10 +2798,12 @@ bool MTRecordList::Populate()
     // The question is, would doing that be any faster than just sorting it here?
     // (Possibly not, but I'm not sure. Re-visit later.)
     //
-    std::sort(m_contents.begin(), m_contents.end());  // Todo optimize: any faster sorting algorithms?
+    std::sort (m_contents.begin(), m_contents.end(), compare_records); // Todo optimize: any faster sorting algorithms?
     // ------------------------------------------------
     return true;
 }
+
+
 // ------------------------------------------------
 
 MTRecordList::MTRecordList(MTNameLookup & theLookup) :
@@ -2833,6 +2843,13 @@ int MTRecordList::size()
     return m_contents.size();
 }
 
+
+bool MTRecordList::RemoveRecord(int nIndex)
+{
+    OT_ASSERT((nIndex >= 0) && (nIndex < m_contents.size()));
+    m_contents.erase(m_contents.begin()+nIndex);
+    return true;
+}
 
 weak_ptr_MTRecord MTRecordList::GetRecord(int nIndex)
 {

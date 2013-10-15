@@ -56,6 +56,7 @@ protected:
 private slots:
     void on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
 
+    void on_addButton_clicked();
     void on_deleteButton_clicked();
 
 private:

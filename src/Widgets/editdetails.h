@@ -21,6 +21,7 @@ public:
     virtual ~MTEditDetails();
 
     virtual void refresh(QString strID, QString strName)=0;
+    virtual void AddButtonClicked()=0;
     virtual void DeleteButtonClicked()=0;
 
     static QWidget * CreateDetailHeaderWidget(QString strID, QString strName, bool bExternal=true);

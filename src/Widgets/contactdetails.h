@@ -16,6 +16,7 @@ public:
     virtual ~MTContactDetails();
 
     virtual void refresh(QString strID, QString strName);
+    virtual void AddButtonClicked();
     virtual void DeleteButtonClicked();
 
 private slots:

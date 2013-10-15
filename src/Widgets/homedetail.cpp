@@ -12,6 +12,7 @@
 #include <QPixmap>
 #include <QDateTime>
 #include <QLabel>
+#include <QString>
 
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
@@ -26,6 +27,7 @@
 #include "home.h"
 
 #include "UI/getstringdialog.h"
+#include "Widgets/dlgchooser.h"
 
 #include "Handlers/contacthandler.h"
 
@@ -92,28 +94,11 @@ void MTHomeDetail::on_viewContactButton_clicked(bool checked /*=false*/)
 {
     qDebug() << "View Existing Contact button clicked.";
 
-    if (m_record)
+    if (m_record && (NULL != m_pHome) && (m_nContactID > 0))
     {
 //      MTRecord & recordmt = *m_record;
-
         ((Moneychanger *)(m_pHome->parentWidget()))->mc_addressbook_show(QString("%1").arg(m_nContactID));
     }
-    /*
-
-    NSMutableArray* actions = [NSMutableArray arrayWithObject:[SectionAction actionWithName:actionName icon:nil block:^(UIViewController* vc) {
-        ContactEditorViewController *editor = [[ContactEditorViewController alloc] initWithNibName:nil bundle:nil];
-        SimpleContact *cnt = existingContact;
-        if (!cnt) {
-          cnt = [SimpleContact newContact];
-          cnt.nymId = nymId;
-          cnt.accountId = acctId;
-        }
-        editor.contact = cnt;
-        self.shouldResetRecordOnView = true; //They can possibly delete the contact on view, so we always have to reset.
-        [self.navigationController pushViewController:editor animated:YES];
-    }]];
-    */
-
 }
 
 void MTHomeDetail::on_addContactButton_clicked(bool checked /*=false*/)
@@ -139,33 +124,42 @@ void MTHomeDetail::on_addContactButton_clicked(bool checked /*=false*/)
 
             if (!str_nym_id.empty())
             {
-                nContactID = MTContactHandler::getInstance()->CreateContactBasedOnNym(QString::fromStdString(str_nym_id),
-                                                                                      QString::fromStdString(str_server_id));
+                QString nymID     = QString::fromStdString(str_nym_id);
+                QString serverID  = QString::fromStdString(str_server_id);
+                QString assetID   = QString::fromStdString(str_asset_id);
+                QString accountID = QString::fromStdString(str_acct_id);
+                // --------------------------------------------------
+                nContactID = MTContactHandler::getInstance()->CreateContactBasedOnNym(nymID, serverID);
                 // --------------------------------------------------
                 if (!str_acct_id.empty())
                 {
-                    int nAcctContactID = MTContactHandler::getInstance()->FindContactIDByAcctID(QString::fromStdString(str_acct_id),
-                                                                                                QString::fromStdString(str_nym_id),
-                                                                                                QString::fromStdString(str_server_id),
-                                                                                                QString::fromStdString(str_asset_id));
+                    int nAcctContactID = MTContactHandler::getInstance()->FindContactIDByAcctID(accountID, nymID, serverID, assetID);
+
                     if (!(nContactID > 0))
-                        nAcctContactID = nContactID;
+                        nContactID = nAcctContactID;
                 }
                 else if (!str_server_id.empty())
-                    MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_nym_id),
-                                                                           QString::fromStdString(str_server_id));
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(nymID, serverID);
                 // --------------------------------------------------
                 if (nContactID > 0)
                 {
                     MTContactHandler::getInstance()->SetContactName(nContactID, strNewContactName);
-
-                    // TODO: Pop up a dialog here displaying the details for this contact.
-                    // Or perhaps just display the normal contacts dialog, with the new contact
-                    // being the one selected.
+                    // ---------------------------------
+                    m_nContactID = nContactID;
                     // ---------------------------------
                     // Refresh the detail page.
                     //
                     refresh(recordmt);
+                    // ---------------------------------
+                    // Display the normal contacts dialog, with the new contact
+                    // being the one selected.
+                    //
+                    if (NULL != m_pHome)
+                    {
+                        m_pHome->SetNeedRefresh();
+
+                        ((Moneychanger *)(m_pHome->parentWidget()))->mc_addressbook_show(QString("%1").arg(m_nContactID));
+                    }
                 }
             }
             else
@@ -183,30 +177,91 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
     {
         MTRecord & recordmt = *m_record;
 
-//        bool MTContactHandler::ContactExists(int nContactID);
+        const std::string str_acct_id    = recordmt.GetOtherAccountID();
+        const std::string str_nym_id     = recordmt.GetOtherNymID();
+        const std::string str_server_id  = recordmt.GetServerID();
+        const std::string str_asset_id   = recordmt.GetAssetID();
+        // --------------------------------------------------
+        if (str_nym_id.empty())
+        {
+            QMessageBox::warning(this, QString("Failure"), QString("Sorry, but this record has no NymID."));
+            return;
+        }
+        // else...
+        //
+        QString nymID     = QString::fromStdString(str_nym_id);
+        QString serverID  = QString::fromStdString(str_server_id);
+        QString assetID   = QString::fromStdString(str_asset_id);
+        QString accountID = QString::fromStdString(str_acct_id);
 
+        if (MTContactHandler::getInstance()->ContactExists(nymID.toInt()))
+        {
+            QMessageBox::warning(this, QString("Strange"),
+                                 QString("Strange: NymID %1 already belongs to an existing contact.").arg(nymID));
+            return;
+        }
+        // --------------------------------------------------------------------
         // Pop up a Contact selection box. The user chooses an existing contact.
         // If OK (vs Cancel) then add the Nym / Acct to the existing contact selected.
         //
+        DlgChooser theChooser(this);
+        // -----------------------------------------------
+        mapIDName & the_map = theChooser.m_map;
+        MTContactHandler::getInstance()->GetContacts(the_map);
+        // -----------------------------------------------
+        theChooser.setWindowTitle("Choose an Existing Contact");
+        // -----------------------------------------------
+        if (theChooser.exec() == QDialog::Accepted)
+        {
+            QString strContactID = theChooser.GetCurrentID();
 
+            qDebug() << QString("SELECT was clicked for ID: %1").arg(strContactID);
 
-        // (Then pop up a message box displaying result, success/failure.)
-    }
-    /*
-    NSMutableArray* actions = [NSMutableArray arrayWithObject:[SectionAction actionWithName:actionName icon:nil block:^(UIViewController* vc) {
-        ContactEditorViewController *editor = [[ContactEditorViewController alloc] initWithNibName:nil bundle:nil];
-        SimpleContact *cnt = existingContact;
-        if (!cnt) {
-          cnt = [SimpleContact newContact];
-          cnt.nymId = nymId;
-          cnt.accountId = acctId;
+            int nContactID = strContactID.isEmpty() ? 0 : strContactID.toInt();
+
+            if (nContactID > 0)
+            {
+                bool bAdded = MTContactHandler::getInstance()->AddNymToExistingContact(nContactID, nymID);
+
+                if (!bAdded)
+                {
+                    QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactID));
+                    QMessageBox::warning(this, QString("Failure"), QString("Failed while trying to add NymID %1 to existing contact '%2' with contact ID: %3").
+                                         arg(nymID).arg(strContactName).arg(nContactID));
+                    return;
+                }
+                // --------------------------------------
+                // else...
+                //
+                if (!str_acct_id.empty())
+                    //int nAcctContactID =
+                    MTContactHandler::getInstance()->FindContactIDByAcctID(accountID, nymID, serverID, assetID);
+                else if (!str_server_id.empty())
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(nymID, serverID);
+                // --------------------------------------------------
+                m_nContactID = nContactID;
+                // ---------------------------------
+                // Refresh the detail page.
+                //
+                refresh(recordmt);
+                // ---------------------------------
+                // Display the normal contacts dialog, with the new contact
+                // being the one selected.
+                //
+                if (NULL != m_pHome)
+                {
+                    m_pHome->SetNeedRefresh();
+
+                    ((Moneychanger *)(m_pHome->parentWidget()))->mc_addressbook_show(QString("%1").arg(m_nContactID));
+                }
+                // ---------------------------------
+            } // nContactID > 0
         }
-        editor.contact = cnt;
-        self.shouldResetRecordOnView = true; //They can possibly delete the contact on view, so we always have to reset.
-        [self.navigationController pushViewController:editor animated:YES];
-    }]];
-    */
-
+        else
+        {
+          qDebug() << "CANCEL was clicked";
+        }
+    }
 }
 
 
@@ -217,34 +272,33 @@ void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
     if (m_record)
     {
         MTRecord & recordmt = *m_record;
+        // -----------------------------------
+        bool bSuccess = recordmt.DeleteRecord();
 
-
+        if (bSuccess)
+        {
+            if (NULL != m_pHome)
+                m_pHome->OnDeletedRecord();
+            else
+                qDebug() << QString("Error: m_pHome was NULL.");
+        }
     }
-
-    /*
-    [actions addObject:[SectionAction actionWithName:(record->IsMail() ? @"Archive this Message" : @"Archive this Record") icon:nil block:^(UIViewController* vc)
-    {
-        bool (^actionBlock)() = ^bool{return false;};
-
-        NSString *msg = @"Deletion Failed.";
-        UIAlertView *fail = [[UIAlertView alloc] initWithTitle:nil message:msg delegate:nil
-                                             cancelButtonTitle:@"OK" otherButtonTitles:nil];
-
-        actionBlock = ^bool {
-            bool bSuccess = record->DeleteRecord();
-
-            if (bSuccess)
-            {
-                self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                [self.navigationController popViewControllerAnimated:YES];
-            }
-            return bSuccess;
-        };
-        [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:@"Archiving..." withFailureAlert:fail];
-    }]];
-    */
-
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
 {
@@ -465,12 +519,28 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
     if (m_record)
     {
         MTRecord & recordmt = *m_record;
-
-
+        // --------------------------------------------------
+        const std::string str_my_nym_id    = recordmt.GetNymID();
+        const std::string str_other_nym_id = recordmt.GetOtherNymID();
+        const std::string str_server_id    = recordmt.GetServerID();
+        // --------------------------------------------------
+        QString myNymID    = QString::fromStdString(str_my_nym_id);
+        QString otherNymID = QString::fromStdString(str_other_nym_id);
+        QString serverID   = QString::fromStdString(str_server_id);
+        // --------------------------------------------------
         MTCompose * compose_window = new MTCompose;
         compose_window->setAttribute(Qt::WA_DeleteOnClose);
+        // --------------------------------------------------
+        compose_window->setInitialSenderNym   (myNymID);
+        compose_window->setInitialRecipientNym(otherNymID);
+        compose_window->setInitialServer      (serverID);
+
+        // Todo: set subject, if one is available.
+
+        // --------------------------------------------------
         compose_window->dialog();
         compose_window->show();
+        // --------------------------------------------------
     }
 
 
@@ -760,8 +830,8 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         // --------------------------------------------------
         refresh(recordmt);
     }
-    else
-        qDebug() << QString("MTHomeDetail::refresh: nRow %1 is out of bounds. (Max size is %2.)").arg(nRow).arg(theList.size());
+//    else
+//        qDebug() << QString("MTHomeDetail::refresh: nRow %1 is out of bounds. (Max size is %2.)").arg(nRow).arg(theList.size());
 }
 
 void MTHomeDetail::refresh(MTRecord & recordmt)
@@ -797,23 +867,19 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     {
         QPlainTextEdit *sec = new QPlainTextEdit;
 
+//        const std::string str_acct_id    = recordmt.GetOtherAccountID();
+//        const std::string str_nym_id     = recordmt.GetOtherNymID();
+//        const std::string str_server_id  = recordmt.GetServerID();
+//        const std::string str_asset_id   = recordmt.GetAssetID();
+//
+//        QString strMemo = QString("AcctID: %1 NymID: %2 ServerID: %3 AssetID: %4").
+//                arg(QString::fromStdString(str_acct_id)).
+//                arg(QString::fromStdString(str_nym_id)).
+//                arg(QString::fromStdString(str_server_id)).
+//                arg(QString::fromStdString(str_asset_id));
 
 
-        // TODO RESUME
-        const std::string str_acct_id    = recordmt.GetOtherAccountID();
-        const std::string str_nym_id     = recordmt.GetOtherNymID();
-        const std::string str_server_id  = recordmt.GetServerID();
-        const std::string str_asset_id   = recordmt.GetAssetID();
-
-
-        QString strMemo = QString("AcctID: %1 NymID: %2 ServerID: %3 AssetID: %4").
-                arg(QString::fromStdString(str_acct_id)).
-                arg(QString::fromStdString(str_nym_id)).
-                arg(QString::fromStdString(str_server_id)).
-                arg(QString::fromStdString(str_asset_id));
-
-
-//        QString strMemo = QString(recordmt.GetMemo().c_str());
+        QString strMemo = QString(recordmt.GetMemo().c_str());
 
         sec->setPlainText(strMemo);
         sec->setReadOnly(true);
@@ -897,7 +963,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
         // If the contact didn't already exist, we don't just have "add new contact"
         // but also "add to existing contact."
         //
-        QPushButton * existingContactButton = new QPushButton(QString("Add to Existing Contact"));
+        QPushButton * existingContactButton = new QPushButton(QString("Add to an Existing Contact"));
 
         m_pDetailLayout->addWidget(existingContactButton, nCurrentRow, nCurrentColumn);
         m_pDetailLayout->setAlignment(existingContactButton, Qt::AlignTop);
@@ -1279,18 +1345,13 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     }
 */
     // -----------------------------------------------
-
-
     this->m_pDetailLayout = new QGridLayout;
-
     this->m_pDetailLayout->addWidget(pTabWidget);
 
     m_pDetailLayout->setContentsMargins(0,0,0,0);
     pTabWidget->setTabPosition(QTabWidget::South);
 
     this->setLayout(m_pDetailLayout);
-
-//    this->setLayout(m_pDetailLayout);
 }
 
 

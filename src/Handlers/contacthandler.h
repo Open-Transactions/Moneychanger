@@ -55,6 +55,8 @@ public:
 
   int  CreateContactBasedOnNym(QString nym_id_string, QString server_id_string=QString(""));
 
+  bool AddNymToExistingContact(int nContactID, QString nym_id_string);
+
   bool ContactExists(int nContactID);
   bool DeleteContact(int nContactID);
 

@@ -166,6 +166,12 @@ void MTDetailEdit::RefreshRecords()
 }
 
 
+void MTDetailEdit::on_addButton_clicked()
+{
+    if (!m_qstrCurrentID.isEmpty() && (NULL != m_pDetailPane))
+        m_pDetailPane->AddButtonClicked();
+}
+
 void MTDetailEdit::on_deleteButton_clicked()
 {
     if (!m_qstrCurrentID.isEmpty() && (NULL != m_pDetailPane))
@@ -189,7 +195,6 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
                 m_qstrCurrentID   = ii.key();
                 m_qstrCurrentName = ii.value();
 
-                ui->editButton->setEnabled(true);
                 ui->deleteButton->setEnabled(true);
 
                 qDebug() << "SETTING current row to " << nIndex << " on the tableWidget.";
@@ -205,7 +210,6 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
     m_qstrCurrentID   = QString("");
     m_qstrCurrentName = QString("");
 
-    ui->editButton->setEnabled(false);
     ui->deleteButton->setEnabled(false);
     // -------------------------------------
 }

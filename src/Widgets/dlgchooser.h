@@ -19,6 +19,8 @@ public:
     explicit DlgChooser(QWidget *parent = 0);
     ~DlgChooser();
     
+    QString GetCurrentID() const { return m_qstrCurrentID; }
+
     void SetPreSelected(QString strSelected);
 
     int         m_nCurrentRow;

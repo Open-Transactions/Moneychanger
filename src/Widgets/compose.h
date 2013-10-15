@@ -11,10 +11,20 @@ class MTCompose : public QWidget
 {
     Q_OBJECT
     
+    QString m_senderNymId;
+    QString m_recipientNymId;
+    QString m_serverId;
+    QString m_subject;
+
 public:
     explicit MTCompose(QWidget *parent = 0);
     ~MTCompose();
     
+    void setInitialSenderNym(QString nymId)    { m_senderNymId    = nymId;    }
+    void setInitialRecipientNym(QString nymId) { m_recipientNymId = nymId;    }
+    void setInitialServer(QString serverId)    { m_serverId       = serverId; }
+    void setInitialSubject(QString subject)    { m_subject        = subject;  }
+
     void dialog();
 
 protected:
@@ -23,11 +33,8 @@ protected:
 
 private slots:
     void on_toButton_clicked();
-
     void on_fromButton_clicked();
-
     void on_serverButton_clicked();
-
     void on_sendButton_clicked();
 
     void on_subjectEdit_textChanged(const QString &arg1);

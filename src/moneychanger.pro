@@ -42,7 +42,9 @@ SOURCES += main.cpp\
     Widgets/detailedit.cpp \
     Widgets/editdetails.cpp \
     Widgets/contactdetails.cpp \
-    UI/getstringdialog.cpp
+    UI/getstringdialog.cpp \
+    Widgets/identifierwidget.cpp \
+    UI/dlgnewcontact.cpp
 
 
 HEADERS += moneychanger.h \
@@ -73,13 +75,14 @@ HEADERS += moneychanger.h \
     Widgets/detailedit.h \
     Widgets/editdetails.h \
     Widgets/contactdetails.h \
-    UI/getstringdialog.h
+    UI/getstringdialog.h \
+    Widgets/identifierwidget.h \
+    UI/dlgnewcontact.h
 
 
 DEFINES += "OT_ZMQ_MODE=1"
 
 mac:{
-    QMAKE_CXXFLAGS -= -fstack-check
 	QT_CONFIG -= no-pkg-config
 	LIBS += -lboost_system-mt -lboost_thread-mt -ldl
 
@@ -148,5 +151,7 @@ FORMS += \
     Widgets/detailedit.ui \
     Widgets/editdetails.ui \
     Widgets/contactdetails.ui \
-    UI/getstringdialog.ui
+    UI/getstringdialog.ui \
+    Widgets/identifierwidget.ui \
+    UI/dlgnewcontact.ui
 
