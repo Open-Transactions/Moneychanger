@@ -89,7 +89,8 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
 
     currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(strColor));
     // ----------------------------------------------------------------
-    currency_amount = QString("amount goes here");
+//  currency_amount = QString("amount goes here");
+    currency_amount = QString("");
     // ----------------------------------------------------------------
     currency_amount_label->setText(currency_amount);
     // ----------------------------------------------------------------
@@ -121,7 +122,8 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
     row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
     // -------------------------------------------
     // Column two
-    std::string str_desc("Description goes here");
+    std::string str_desc("");
+//  std::string str_desc("Description goes here");
     // ---------------------------------------
     //Status
     QLabel * row_content_status_label = new QLabel;

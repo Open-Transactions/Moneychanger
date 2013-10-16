@@ -46,7 +46,7 @@ private:
     MTRecordList   m_list;
     // ------------------------------------------------
     bool    m_bNeedRefresh;
-
+    // ------------------------------------------------
 public:
     explicit MTHome(QWidget *parent = 0);
     ~MTHome();
@@ -59,6 +59,9 @@ public:
 
 private slots:
     void on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn);
+
+    void on_refreshButton_clicked();
+    void on_contactsButton_clicked();
 
 private:
     Ui::MTHome *ui;

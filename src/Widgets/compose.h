@@ -16,6 +16,8 @@ class MTCompose : public QWidget
     QString m_serverId;
     QString m_subject;
 
+    bool m_bSent;
+
 public:
     explicit MTCompose(QWidget *parent = 0);
     ~MTCompose();
@@ -26,6 +28,8 @@ public:
     void setInitialSubject(QString subject)    { m_subject        = subject;  }
 
     void dialog();
+
+    bool sendMessage(QString body, QString fromNymId, QString toNymId, QString atServerID, QString subject);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

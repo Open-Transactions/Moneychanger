@@ -100,7 +100,8 @@ void DlgChooser::showEvent(QShowEvent * event)
             // -------------------------------------------
             // Amount (with currency tla)
             QLabel * currency_amount_label = new QLabel;
-            QString currency_amount = QString("AMOUNT");
+//          QString currency_amount = QString("AMOUNT");
+            QString currency_amount = QString("");
 
             currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(QString("red")));
             // ----------------------------------------------------------------
@@ -145,7 +146,8 @@ void DlgChooser::showEvent(QShowEvent * event)
             QLabel * row_content_status_label = new QLabel;
             QString row_content_status_string;
 
-            row_content_status_string.append(QString("DESCRIPTION"));
+//          row_content_status_string.append(QString("DESCRIPTION"));
+            row_content_status_string.append(QString(""));
             // -------------------------------------------
             //add string to label
             row_content_status_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");

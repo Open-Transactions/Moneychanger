@@ -85,7 +85,8 @@ public:
     /** Start **/
     void bootTray();
 
-    
+    void downloadAccountData();
+
     
     /** 
      * Interfaces 
@@ -139,23 +140,23 @@ public:
      * Functions for pulling account information out of locally constructed lists.
      **/
     
-    QString get_default_nym_id(){return default_nym_id;};
-    int get_nym_list_id_size(){return nym_list_id->size();};
+    QString get_default_nym_id(){return default_nym_id;}
+    int get_nym_list_id_size(){return nym_list_id->size();}
     QString get_nym_id_at(int a){return nym_list_id->at(a).toString();}
     QString get_nym_name_at(int a){return nym_list_name->at(a).toString();}
     
-    QString get_default_asset_id(){return default_asset_id;};
-    int get_asset_list_id_size(){return asset_list_id->size();};
+    QString get_default_asset_id(){return default_asset_id;}
+    int get_asset_list_id_size(){return asset_list_id->size();}
     QString get_asset_id_at(int a){return asset_list_id->at(a).toString();}
     QString get_asset_name_at(int a){return asset_list_name->at(a).toString();}
     
-    QString get_default_account_id(){return default_account_id;};
-    int get_account_list_id_size(){return account_list_id->size();};
+    QString get_default_account_id(){return default_account_id;}
+    int get_account_list_id_size(){return account_list_id->size();}
     QString get_account_id_at(int a){return account_list_id->at(a).toString();}
     QString get_account_name_at(int a){return account_list_name->at(a).toString();}
     
-    QString get_default_server_id(){return default_server_id;};
-    int get_server_list_id_size(){return server_list_id->size();};
+    QString get_default_server_id(){return default_server_id;}
+    int get_server_list_id_size(){return server_list_id->size();}
     QString get_server_id_at(int a){return server_list_id->at(a).toString();}
     QString get_server_name_at(int a){return server_list_name->at(a).toString();}
     

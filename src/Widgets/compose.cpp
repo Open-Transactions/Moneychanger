@@ -11,42 +11,278 @@
 #include "dlgchooser.h"
 
 #include "Handlers/contacthandler.h"
+#include "Handlers/DBHandler.h"
+
+#include "overridecursor.h"
 
 
+
+
+// ----------------------------------------------------------------------
+bool MTCompose::sendMessage(QString body, QString fromNymId, QString toNymId, QString atServerID, QString subject)
+{
+    if (fromNymId.isEmpty())
+    {
+        qDebug() << "Cannot send a message from an empty nym id, aborting.";
+        return false;
+    }
+    // ----------------------------------------------------
+    if (toNymId.isEmpty())
+    {
+        qDebug() << "Cannot send a message to an empty nym id, aborting.";
+        return false;
+    }
+    // ----------------------------------------------------
+    if (subject.isEmpty())
+        subject = QString("From the desktop client. (Empty subject.)");
+    // ----------------------------------------------------
+    if (body.isEmpty())
+        body = QString("From the desktop client. (Empty message body.)");
+    // ----------------------------------------------------
+    std::string str_serverId  (atServerID.toStdString());
+    std::string str_fromNymId (fromNymId.toStdString());
+    std::string str_toNymId   (toNymId.toStdString());
+    // ----------------------------------------------------
+    qDebug() << QString("Initiating sendMessage:\n Server:'%1'\n FromNym:'%2'\n ToNym:'%3'\n Subject:'%4'\n Body:'%5'").
+                arg(atServerID).arg(fromNymId).arg(toNymId).arg(subject).arg(body);
+    // ----------------------------------------------------
+    QString contents = QString("Subject: %1\n\n%2").arg(subject).arg(body);
+    // ----------------------------------------------------
+    OT_ME madeEasy;
+
+    std::string strResponse = madeEasy.send_user_msg(str_serverId, str_fromNymId, str_toNymId, contents.toStdString());
+    int32_t nReturnVal = madeEasy.VerifyMessageSuccess(strResponse);
+
+    if (1 != nReturnVal)
+    {
+        qDebug() << "send_message: Failed.";
+        return false;
+    }
+    qDebug() << "Success in send_message!";
+    m_bSent = true;
+    // ---------------------------------------------------------
+    return m_bSent;
+}
+
+
+void MTCompose::on_sendButton_clicked()
+{
+    // Send message and then close dialog. Use progress bar.
+    // -----------------------------------------------------------------
+    if (m_recipientNymId.isEmpty())
+    {
+        QMessageBox::warning(this, QString("Message Has No Recipient"),
+                             QString("Please choose a recipient for this message, before sending."));
+        return;
+    }
+    // -----------------------------------------------------------------
+    if (m_senderNymId.isEmpty())
+    {
+        QMessageBox::warning(this, QString("Message Has No Sender"),
+                             QString("Please choose a sender for this message, before sending."));
+        return;
+    }
+    // -----------------------------------------------------------------
+    if (m_serverId.isEmpty())
+    {
+        QMessageBox::warning(this, QString("Message Has No Server"),
+                             QString("Before sending, please choose a server for this message to be sent through."));
+        return;
+    }
+    // -----------------------------------------------------------------
+    if (ui->subjectEdit->text().isEmpty())
+    {
+        QMessageBox::StandardButton reply;
+
+        reply = QMessageBox::question(this, "", "This message has a blank subject. Are you sure you want to send?",
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No)
+          return;
+    }
+    // -----------------------------------------------------------------
+    if (ui->contentsEdit->toPlainText().isEmpty())
+    {
+        QMessageBox::StandardButton reply;
+
+        reply = QMessageBox::question(this, "", "The message contents are blank. Are you sure you want to send?",
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No)
+          return;
+    }
+    // -----------------------------------------------------------------
+    // Actually send the message here.
+    //
+    QString subject     = ui->subjectEdit->text();
+    QString body        = ui->contentsEdit->toPlainText();
+    QString fromNymId   = m_senderNymId;
+    QString toNymId     = m_recipientNymId;
+    QString atServerID  = m_serverId;
+
+    bool bSent = false;
+    {
+        MTOverrideCursor theSpinner;
+
+        bSent = this->sendMessage(body, fromNymId, toNymId, atServerID, subject);
+    }
+    // -----------------------------------------------------------------
+    if (!bSent)
+        QMessageBox::warning(this, QString("Failed Sending"),
+                             QString("Failed trying to send the message."));
+    else
+        this->close();
+    // -----------------------------------------------------------------
+}
+
+
+
+
+
+void MTCompose::on_serverButton_clicked()
+{
+    // Select from servers in local wallet filtered by both Nyms.
+    //
+    DlgChooser theChooser(this);
+    mapIDName & the_map = theChooser.m_map;
+    // -----------------------------------------------
+    mapIDName map_recipientServers;
+
+    // If server ID is explicitly set, then we may know about a server that the contact
+    // record DOESN'T know about. Therefore we only do this block if the server ID ISN'T
+    // set (where we filter it based on the known servers for a given Nym.)
+    //
+    if (m_serverId.isEmpty() && !m_recipientNymId.isEmpty())
+    {
+        if (MTContactHandler::getInstance()->GetServers(map_recipientServers, m_recipientNymId))
+        {
+            the_map = map_recipientServers;
+            // ------------------------------
+            if (DBHandler::getInstance()->runQuery("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1"))
+            {
+                QString default_server_id = DBHandler::getInstance()->queryString("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
+
+                if (!default_server_id.isEmpty())
+                {
+                    mapIDName::iterator it_server = the_map.find(default_server_id);
+
+                    if (it_server != the_map.end())
+                        theChooser.SetPreSelected(default_server_id);
+                }
+            }
+        }
+    }
+    // -----------------------------------------------
+    if (the_map.size() < 1)
+    {
+        const int32_t server_count = OTAPI_Wrap::GetServerCount();
+        // -----------------------------------------------
+        for(int32_t ii = 0; ii < server_count; ++ii)
+        {
+            //Get OT Server ID
+            //
+            QString OT_server_id = QString::fromStdString(OTAPI_Wrap::GetServer_ID(ii));
+            QString OT_server_name("");
+            // -----------------------------------------------
+            if (!OT_server_id.isEmpty())
+            {
+                if (!m_serverId.isEmpty() && (OT_server_id == m_serverId))
+                    theChooser.SetPreSelected(m_serverId);
+                // -----------------------------------------------
+                OT_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(OT_server_id.toStdString()));
+                // -----------------------------------------------
+                the_map.insert(OT_server_id, OT_server_name);
+            }
+        }
+    }
+    // -----------------------------------------------
+    theChooser.setWindowTitle("Select an OT Server");
+    // -----------------------------------------------
+    if (theChooser.exec() == QDialog::Accepted)
+    {
+        qDebug() << QString("SELECT was clicked for ServerID: %1").arg(theChooser.m_qstrCurrentID);
+
+        if (!theChooser.m_qstrCurrentID.isEmpty())
+        {
+            m_serverId = theChooser.m_qstrCurrentID;
+            // -----------------------------------------
+            if (theChooser.m_qstrCurrentName.isEmpty())
+                ui->serverButton->setText(QString("(This server has a blank name)"));
+            else
+                ui->serverButton->setText(theChooser.m_qstrCurrentName);
+            // -----------------------------------------
+            return;
+        }
+    }
+    else
+    {
+      qDebug() << "CANCEL was clicked";
+    }
+    // -----------------------------------------------
+    m_serverId = QString("");
+    ui->serverButton->setText("<Click to choose an OT Server>");
+}
 
 void MTCompose::on_fromButton_clicked()
 {
     // Select from Nyms in local wallet.
-
-    // -----------------------------------------------
+    //
     DlgChooser theChooser(this);
     // -----------------------------------------------
     mapIDName & the_map = theChooser.m_map;
 
-
-
-
-
-    the_map.insert(QString("ID1"), QString("NAME1"));
-    the_map.insert(QString("ID2"), QString("NAME2"));
-    the_map.insert(QString("ID3"), QString("NAME3"));
-    the_map.insert(QString("ID4"), QString("NAME4"));
-    the_map.insert(QString("ID5"), QString("NAME5"));
-    the_map.insert(QString("ID6"), QString("NAME6"));
+    bool bFoundDefault = false;
     // -----------------------------------------------
-    theChooser.SetPreSelected("ID4");
+    const int32_t nym_count = OTAPI_Wrap::GetNymCount();
     // -----------------------------------------------
-    theChooser.setWindowTitle("Choose the Sender Nym");
+    for(int32_t ii = 0; ii < nym_count; ++ii)
+    {
+        //Get OT Nym ID
+        QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::GetNym_ID(ii));
+        QString OT_nym_name("");
+        // -----------------------------------------------
+        if (!OT_nym_id.isEmpty())
+        {
+            if (!m_senderNymId.isEmpty() && (OT_nym_id == m_senderNymId))
+                bFoundDefault = true;
+            // -----------------------------------------------
+            MTNameLookupQT theLookup;
+
+            OT_nym_name = QString::fromStdString(theLookup.GetNymName(OT_nym_id.toStdString()));
+            // -----------------------------------------------
+            the_map.insert(OT_nym_id, OT_nym_name);
+        }
+     }
     // -----------------------------------------------
-    if (theChooser.exec() == QDialog::Accepted) {
-        qDebug() << QString("SELECT was clicked for ID: %1").arg(theChooser.m_qstrCurrentID);
-    } else {
+    if (bFoundDefault && !m_senderNymId.isEmpty())
+        theChooser.SetPreSelected(m_senderNymId);
+    // -----------------------------------------------
+    theChooser.setWindowTitle("Choose your Sender identity");
+    // -----------------------------------------------
+    if (theChooser.exec() == QDialog::Accepted)
+    {
+        qDebug() << QString("SELECT was clicked for NymID: %1").arg(theChooser.m_qstrCurrentID);
+
+        if (!theChooser.m_qstrCurrentID.isEmpty())
+        {
+            m_senderNymId = theChooser.m_qstrCurrentID;
+            // -----------------------------------------
+            if (theChooser.m_qstrCurrentName.isEmpty())
+                ui->fromButton->setText(QString(""));
+            else
+                ui->fromButton->setText(theChooser.m_qstrCurrentName);
+            // -----------------------------------------
+            return;
+        }
+    }
+    else
+    {
       qDebug() << "CANCEL was clicked";
     }
     // -----------------------------------------------
-
-
+    m_senderNymId = QString("");
+    ui->fromButton->setText("<Click to choose Sender>");
 }
+
+
 
 void MTCompose::on_toButton_clicked()
 {
@@ -165,26 +401,8 @@ void MTCompose::on_toButton_clicked()
     // -----------------------------------------------
 }
 
-void MTCompose::on_serverButton_clicked()
-{
-    // Select from servers in local wallet filtered by both Nyms.
-}
 
-void MTCompose::on_sendButton_clicked()
-{
-    // Send message and then close dialog. Use progress bar.
 
-    if (m_recipientNymId.isEmpty())
-    {
-        QMessageBox::warning(this, QString("Message Has No Recipient"),
-                             QString("Please choose a recipient for this message, before sending."));
-        return;
-    }
-    // -----------------------------------------------------------------
-
-    // TODO: Actually send the message here.
-
-}
 
 void MTCompose::dialog()
 {
@@ -312,6 +530,8 @@ void MTCompose::dialog()
             QString qstrTempSubject = m_subject;
 
             ui->subjectEdit->setText(qstrTempSubject);
+            // -----------------------
+            this->setWindowTitle(QString("Compose: %1").arg(qstrTempSubject));
         }
         // -------------------------------------------
 
@@ -329,13 +549,14 @@ void MTCompose::closeEvent(QCloseEvent *event)
     // Pop up a Yes/No dialog to confirm the cancellation of this message.
     // (ONLY if the subject or contents fields contain text.)
     //
-    if (!ui->contentsEdit->toPlainText().isEmpty() || !ui->subjectEdit->text().isEmpty())
+    if (!m_bSent && !ui->contentsEdit->toPlainText().isEmpty())
     {
         QMessageBox::StandardButton reply;
 
         reply = QMessageBox::question(this, "", "Are you sure you want to cancel this message?",
                                       QMessageBox::Yes|QMessageBox::No);
-        if (reply != QMessageBox::Yes) {
+        if (reply != QMessageBox::Yes)
+        {
           event->ignore();
           return;
         }
@@ -347,6 +568,7 @@ void MTCompose::closeEvent(QCloseEvent *event)
 MTCompose::MTCompose(QWidget *parent) :
     QWidget(parent, Qt::Window),
     already_init(false),
+    m_bSent(false),
     ui(new Ui::MTCompose)
 {
     ui->setupUi(this);

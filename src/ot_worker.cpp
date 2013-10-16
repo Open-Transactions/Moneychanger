@@ -48,6 +48,7 @@ ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookup
 }
 
 
+
 void ot_worker::mc_overview_ping(){
     //Lock overview_list (Unlocks when function is returned)
     QMutexLocker overview_list_mutex_locker(&overview_list_mutex);

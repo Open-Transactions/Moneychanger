@@ -80,9 +80,6 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType)
 
         ui->widget->setContentsMargins(1,1,1,1);
 
-//        if (NULL != ui->widget->layout())
-//            delete ui->widget->layout();
-
         ui->widget->setLayout(m_pDetailLayout);
     } // first run.
     // -------------------------------------------

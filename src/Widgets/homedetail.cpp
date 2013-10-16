@@ -534,15 +534,21 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
         compose_window->setInitialSenderNym   (myNymID);
         compose_window->setInitialRecipientNym(otherNymID);
         compose_window->setInitialServer      (serverID);
+        // ---------------------------------------
+        // Set subject, if one is available.
+        std::string str_desc;
 
-        // Todo: set subject, if one is available.
-
+        if (recordmt.IsMail())
+            recordmt.FormatShortMailDescription(str_desc);
+        else
+            recordmt.FormatDescription(str_desc);
+        // ---------------------------------------
+        compose_window->setInitialSubject(QString::fromStdString(str_desc));
         // --------------------------------------------------
         compose_window->dialog();
         compose_window->show();
         // --------------------------------------------------
     }
-
 
     /*
         // Display the SendMailViewController here.
@@ -1225,9 +1231,12 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
         if (recordmt.IsMail())
         {
-            m_pDetailLayout->addWidget   (sec, nCurrentRow++, nCurrentColumn, 1, 2);
+//          m_pDetailLayout->addWidget   (sec, nCurrentRow++, nCurrentColumn, 1, 2);
+//          m_pDetailLayout->addWidget   (sec, nCurrentRow++, nCurrentColumn, -1, -1);
+            m_pDetailLayout->addWidget   (sec, nCurrentRow++, nCurrentColumn, -1, 2);
             m_pDetailLayout->setAlignment(sec, Qt::AlignTop);
-//            sec->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+            sec->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 //            SetHeight (sec, 10);
         }
@@ -1240,7 +1249,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
             pvBox->setAlignment(Qt::AlignTop);
 
-//            sec->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+//          sec->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
             pvBox->addWidget   (pLabelContents); // stretch = 1
             pvBox->setAlignment(pLabelContents, Qt::AlignTop);
@@ -1248,7 +1257,9 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
             pvBox->addWidget   (sec); // stretch = 10
             pvBox->setAlignment(sec, Qt::AlignTop);
 
-//            SetHeight (sec, 100);
+            sec->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+//          SetHeight (sec, 100);
 
             pTab2Widget->setContentsMargins(0, 0, 0, 0);
             pTab2Widget->setLayout(pvBox);
@@ -1345,10 +1356,10 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     }
 */
     // -----------------------------------------------
-    this->m_pDetailLayout = new QGridLayout;
-    this->m_pDetailLayout->addWidget(pTabWidget);
+//    this->m_pDetailLayout = new QGridLayout;
+//    this->m_pDetailLayout->addWidget(pTabWidget);
 
-    m_pDetailLayout->setContentsMargins(0,0,0,0);
+//    m_pDetailLayout->setContentsMargins(0,0,0,0);
     pTabWidget->setTabPosition(QTabWidget::South);
 
     this->setLayout(m_pDetailLayout);

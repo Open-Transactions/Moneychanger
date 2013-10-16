@@ -15,6 +15,8 @@
 
 #include "Handlers/contacthandler.h"
 
+#include "overridecursor.h"
+
 
 MTHome::MTHome(QWidget *parent) :
     QWidget(parent, Qt::Window),
@@ -94,27 +96,26 @@ void MTHome::dialog()
         ui->widget->setLayout(m_pDetailLayout);
         // -------------------------------------------
         setupRecordList();
-        // -------------------------------------------
-
+        // ------------------------
         /** Flag Already Init **/
         already_init = true;
     }
+    // -------------------------------------------
+    MTOverrideCursor theSpinner;
 
     //Refresh visual data
     //Tell OT to repopulate, and refresh backend.
 //    ((Moneychanger*)parentWidget())->get_ot_worker_background()->mc_overview_ping();
 
-    RefreshUserBar();
-
     m_list.Populate();
-
+    // -------------------------------------------
+    RefreshUserBar();
+    // -------------------------------------------
     //Now refresh the repopulated data visually
     RefreshRecords();
-
+    // -------------------------------------------
     if (ui->tableWidget->rowCount() > 0)
-    {
         ui->tableWidget->setCurrentCell(0, 1);
-    }
     // -------------------------------------------
     show();
     setFocus();
@@ -201,6 +202,65 @@ void MTHome::SetNeedRefresh()
 
     RefreshUserBar();
 }
+
+
+void MTHome::on_refreshButton_clicked()
+{
+    int nRowCount    = ui->tableWidget->rowCount();
+    int nCurrentRow  = ui->tableWidget->currentRow();
+
+//  bool bRefreshed = ;// PULL THE DATA FROM THE SERVER HERE.
+    bool bRefreshed = true;
+
+    if (bRefreshed)
+    {
+        MTOverrideCursor theSpinner;
+        // -----------------------------------------
+        qDebug() << QString("Refreshed records.");
+        // -----------------------------------------
+        ((Moneychanger *)(this->parentWidget()))->downloadAccountData();
+        // -----------------------------------------
+        m_list.Populate();
+        // -----------------------------------------
+        RefreshUserBar();
+        // -------------------------------------------
+        RefreshRecords();
+        // -----------------------------------------
+        if (nCurrentRow >= 0)
+        {
+            if (nCurrentRow < ui->tableWidget->rowCount())
+            {
+                ui->tableWidget->setCurrentCell(nCurrentRow, 1);
+                on_tableWidget_currentCellChanged(nCurrentRow, 1, 0, 0);
+            }
+            // ------------------------------------------------
+            else if (ui->tableWidget->rowCount() > 0)
+            {
+                ui->tableWidget->setCurrentCell((ui->tableWidget->rowCount() - 1), 1);
+                on_tableWidget_currentCellChanged((ui->tableWidget->rowCount() - 1), 1, 0, 0);
+            }
+            // ------------------------------------------------
+            else
+                qDebug() << QString("Apparently there are zero rows in the tableWidget.");
+            // ------------------------------------------------
+        }
+        // ------------------------------------------------
+        else if (ui->tableWidget->rowCount() > 0)
+        {
+            ui->tableWidget->setCurrentCell(0, 1);
+            on_tableWidget_currentCellChanged(0, 1, 0, 0);
+        }
+        // -----------------------------------------
+    }
+    else
+        qDebug() << QString("Failure removing MTRecord at index %1.").arg(nCurrentRow);
+}
+
+void MTHome::on_contactsButton_clicked()
+{
+    ((Moneychanger *)(this->parentWidget()))->mc_addressbook_show(QString(""));
+}
+
 
 QWidget * MTHome::CreateUserBarWidget()
 {
@@ -312,8 +372,8 @@ QWidget * MTHome::CreateUserBarWidget()
 //    row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
     // -------------------------------------------
 
-
-
+    connect(buttonRefresh, SIGNAL(clicked()),  this, SLOT(on_refreshButton_clicked()));
+    connect(buttonContacts, SIGNAL(clicked()), this, SLOT(on_contactsButton_clicked()));
 
     // -------------------------------------------
     //Sub-info

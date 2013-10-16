@@ -646,6 +646,7 @@ void Moneychanger::mc_addressbook_show(QString text) // text may contain a "pre-
     MTContactHandler::getInstance()->GetContacts(contactswindow->m_map);
     // -------------------------------------
     contactswindow->SetPreSelected(text);
+    contactswindow->setWindowTitle("Contacts");
     // -------------------------------------
     contactswindow->dialog(MTDetailEdit::DetailEditTypeContact);
 }
@@ -792,6 +793,116 @@ void Moneychanger::mc_nymselection_triggered(QAction*action_triggered){
 }
 
 // End Nym Manager
+
+
+
+
+
+
+//QString get_default_server_id(){return default_server_id;}
+
+//int get_server_list_id_size(){return server_list_id->size();}
+
+//QString get_server_id_at(int a){return server_list_id->at(a).toString();}
+
+void Moneychanger::downloadAccountData()
+{
+    //Also refreshes/initializes client data
+
+    OT_ME madeEasy;
+
+    if ((get_server_list_id_size() > 0) && (get_asset_list_id_size() > 0) )
+    {
+        std::string defaultServerId(get_default_server_id().toStdString());
+        // ----------------------------------------------------------------
+        if (defaultServerId.empty())
+        {
+            defaultServerId = get_server_id_at(0).toStdString();
+            DBHandler::getInstance()->AddressBookUpdateDefaultServer(QString::fromStdString(defaultServerId));
+        }
+        // ----------------------------------------------------------------
+        int nymCount = OTAPI_Wrap::GetNymCount();
+
+        if (0 == nymCount) //resume
+        {
+            qDebug() << "Making 'Me' Nym";
+
+            std::string strSource(""), strAlt("");
+
+            std::string newNymId = madeEasy.create_pseudonym(1024, strSource, strAlt);
+
+            if (!newNymId.empty())
+            {
+                OTAPI_Wrap::SetNym_Name(newNymId, newNymId, "Me");
+                DBHandler::getInstance()->AddressBookUpdateDefaultNym(QString::fromStdString(newNymId));
+                qDebug() << "Finished Making Nym";
+            }
+        }
+        // ----------------------------------------------------------------
+        std::string defaultNymID(get_default_nym_id().toStdString());
+        // ----------------------------------------------------------------
+        if (!defaultNymID.empty() && !defaultServerId.empty())
+        {
+            bool isReg = OTAPI_Wrap::IsNym_RegisteredAtServer(defaultNymID, defaultServerId);
+
+            if (!isReg)
+            {
+                std::string response = madeEasy.register_nym(defaultServerId, defaultNymID);
+                qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
+            }
+            madeEasy.retrieve_nym(defaultServerId, defaultNymID, true);
+        }
+        // ----------------------------------------------------------------
+        std::string defaultAssetId (get_default_asset_id().toStdString());
+        // ----------------------------------------------------------------
+        if (defaultAssetId.empty())
+        {
+            defaultAssetId = get_asset_id_at(0).toStdString();
+            DBHandler::getInstance()->AddressBookUpdateDefaultAsset(QString::fromStdString(defaultAssetId));
+        }
+        // ----------------------------------------------------------------
+        int accountCount = OTAPI_Wrap::GetAccountCount();
+
+        qDebug() << QString("Account Count: %1").arg(accountCount);
+
+        if (0 == accountCount)
+        {
+            if (!defaultNymID.empty() && !defaultServerId.empty() && !defaultAssetId.empty())
+            {
+                std::string response = madeEasy.create_asset_acct(defaultServerId, defaultNymID, defaultAssetId);
+                qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
+
+                accountCount = OTAPI_Wrap::GetAccountCount();
+
+                if (accountCount > 0)
+                {
+                    std::string accountID = OTAPI_Wrap::GetAccountWallet_ID(0);
+                    OTAPI_Wrap::SetAccountWallet_Name(accountID, defaultNymID, "My Acct");
+
+                    DBHandler::getInstance()->AddressBookUpdateDefaultAccount(QString::fromStdString(accountID));
+                }
+            }
+        }
+        // ----------------------------------------------------------------
+        for (int i = 0; i < accountCount; i++)
+        {
+            std::string accountId = OTAPI_Wrap::GetAccountWallet_ID(i);
+            std::string acctNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountId);
+            std::string acctSvrID = OTAPI_Wrap::GetAccountWallet_ServerID(accountId);
+
+            madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
+
+            std::string statAccount = madeEasy.stat_asset_account(accountId);
+            qDebug() << QString("statAccount: %1").arg(QString::fromStdString(statAccount));
+        }
+        // ----------------------------------------------------------------
+    }
+    else
+    {
+        qDebug() << QString("%1: Not at least 1 server contract and 1 asset contract registered, doing nothing.").arg(__FUNCTION__);
+    }
+}
+
 
 
 
