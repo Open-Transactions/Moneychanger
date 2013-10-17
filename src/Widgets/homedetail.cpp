@@ -816,6 +816,11 @@ void increment_cell(int & nCurrentRow, int & nCurrentColumn)
     }
 }
 
+
+
+
+
+
 void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 {
 //    qDebug() << QString("MTHomeDetail::refresh: nRow: %1").arg(nRow);
@@ -839,6 +844,20 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 //    else
 //        qDebug() << QString("MTHomeDetail::refresh: nRow %1 is out of bounds. (Max size is %2.)").arg(nRow).arg(theList.size());
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void MTHomeDetail::refresh(MTRecord & recordmt)
 {
@@ -864,6 +883,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
     if (NULL != pHeader)
     {            
+        pHeader->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
         m_pDetailLayout->addWidget(pHeader, nCurrentRow, nCurrentColumn, 1, 2);
         m_pDetailLayout->setAlignment(pHeader, Qt::AlignTop);
         nCurrentRow++;
@@ -899,7 +919,6 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
         pHLayout->setAlignment(labelMemo, Qt::AlignLeft);
         pHLayout->setAlignment(sec, Qt::AlignTop);
         // -----------------------------------------
-//      m_pDetailLayout->addWidget(sec, nCurrentRow, nCurrentColumn);
         m_pDetailLayout->addLayout(pHLayout, nCurrentRow, nCurrentColumn, 1, 2);
         m_pDetailLayout->setAlignment(pHLayout, Qt::AlignTop);
 
@@ -948,7 +967,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
         // --------------------------------------------------
         QPushButton * viewContactButton = new QPushButton(viewDetails);
 
-        m_pDetailLayout->addWidget(viewContactButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->addWidget(viewContactButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(viewContactButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
@@ -959,7 +978,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     {
         QPushButton * addContactButton = new QPushButton(QString("Add as Contact"));
 
-        m_pDetailLayout->addWidget(addContactButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->addWidget(addContactButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(addContactButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
@@ -971,7 +990,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
         //
         QPushButton * existingContactButton = new QPushButton(QString("Add to an Existing Contact"));
 
-        m_pDetailLayout->addWidget(existingContactButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->addWidget(existingContactButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(existingContactButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
@@ -984,7 +1003,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
         QString deleteActionName = recordmt.IsMail() ? QString("Archive this Message") : QString("Archive this Record");
         QPushButton * deleteButton = new QPushButton(deleteActionName);
 
-        m_pDetailLayout->addWidget(deleteButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->addWidget(deleteButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(deleteButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
@@ -1049,7 +1068,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
         QPushButton * acceptButton = new QPushButton(nameString);
 
-        m_pDetailLayout->addWidget(acceptButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->addWidget(acceptButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(acceptButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
@@ -1089,7 +1108,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
         QPushButton * cancelButton = new QPushButton(cancelString);
 
-        m_pDetailLayout->addWidget(cancelButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->addWidget(cancelButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(cancelButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
@@ -1104,7 +1123,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
         QPushButton * discardOutgoingButton = new QPushButton(discardString);
 
-        m_pDetailLayout->addWidget(discardOutgoingButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->addWidget(discardOutgoingButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(discardOutgoingButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
@@ -1136,7 +1155,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
         QPushButton * discardIncomingButton = new QPushButton(discardString);
 
-        m_pDetailLayout->addWidget(discardIncomingButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->addWidget(discardIncomingButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(discardIncomingButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
@@ -1157,7 +1176,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
         QPushButton * msgButton = new QPushButton(((recordmt.IsMail() && !recordmt.IsOutgoing()) ? QString("Reply to this Message") : msgUser));
 
-        m_pDetailLayout->addWidget(msgButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->addWidget(msgButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(msgButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
@@ -1165,31 +1184,15 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
         connect(msgButton, SIGNAL(clicked()), this, SLOT(on_msgButton_clicked()));
 
     }
+
     // ----------------------------------
-
-
-
     if (nCurrentColumn > 1)
     {
         nCurrentColumn = 1;
         nCurrentRow++;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // ----------------------------------
+
     // TRANSACTION IDs DISPLAYED HERE
 
 //    ActionSection *act = [ActionSection sectionWithName:QString("Actions") andActions:actions];
@@ -1207,14 +1210,13 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     QWidget    * pTab1Widget = new QWidget;
     QWidget    * pTab2Widget = NULL;
 
-    pTab1Widget->setLayout(m_pDetailLayout);
-
-    pTabWidget->addTab(pTab1Widget, QString("Details"));
-
+    pTabWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    pTab1Widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     pTabWidget->setContentsMargins(5, 5, 5, 5);
     pTab1Widget->setContentsMargins(5, 5, 5, 5);
 
+    pTabWidget->addTab(pTab1Widget, QString("Details"));
     // ----------------------------------
     if (recordmt.HasContents())
     {
@@ -1224,6 +1226,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
         sec->setPlainText(strContents);
         sec->setReadOnly(true);
+        sec->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
         // -------------------------------
 
         // -------------------------------
@@ -1231,35 +1234,17 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
         if (recordmt.IsMail())
         {
-//          m_pDetailLayout->addWidget   (sec, nCurrentRow++, nCurrentColumn, 1, 2);
-//          m_pDetailLayout->addWidget   (sec, nCurrentRow++, nCurrentColumn, -1, -1);
-            m_pDetailLayout->addWidget   (sec, nCurrentRow++, nCurrentColumn, -1, 2);
-            m_pDetailLayout->setAlignment(sec, Qt::AlignTop);
-
-            sec->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-//            SetHeight (sec, 10);
+            m_pDetailLayout->addWidget(sec, nCurrentRow++, nCurrentColumn, 1, 2);
         }
         else
         {
             pvBox       = new QVBoxLayout;
             pTab2Widget = new QWidget;
-
             QLabel * pLabelContents = new QLabel(QString("Raw Contents:"));
 
             pvBox->setAlignment(Qt::AlignTop);
-
-//          sec->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-            pvBox->addWidget   (pLabelContents); // stretch = 1
-            pvBox->setAlignment(pLabelContents, Qt::AlignTop);
-
-            pvBox->addWidget   (sec); // stretch = 10
-            pvBox->setAlignment(sec, Qt::AlignTop);
-
-            sec->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-//          SetHeight (sec, 100);
+            pvBox->addWidget   (pLabelContents);
+            pvBox->addWidget   (sec);
 
             pTab2Widget->setContentsMargins(0, 0, 0, 0);
             pTab2Widget->setLayout(pvBox);
@@ -1267,21 +1252,22 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
             pTabWidget->addTab(pTab2Widget, QString("Contents"));
         }
         // -------------------------------
-
-//        if (recordmt.IsMail())
-//        {
-//            pvBox->insertWidget(2, sec, 1); // So the mail contents appear above all the IDs.
-//        }
-//        else
-//        {
-
-
-
-//        }
     }    
 
 
+    pTab1Widget->setLayout(m_pDetailLayout);
+
+    // -----------------------------------------------
+    this->m_pDetailLayout = new QGridLayout;
+    this->m_pDetailLayout->addWidget(pTabWidget);
+
+    m_pDetailLayout->setContentsMargins(0,0,0,0);
+    pTabWidget->setTabPosition(QTabWidget::South);
+
+    this->setLayout(m_pDetailLayout);
+
     // ----------------------------------
+
 /*
     if (recordmt.IsPaymentPlan())
     {
@@ -1355,14 +1341,6 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
         }
     }
 */
-    // -----------------------------------------------
-//    this->m_pDetailLayout = new QGridLayout;
-//    this->m_pDetailLayout->addWidget(pTabWidget);
-
-//    m_pDetailLayout->setContentsMargins(0,0,0,0);
-    pTabWidget->setTabPosition(QTabWidget::South);
-
-    this->setLayout(m_pDetailLayout);
 }
 
 
