@@ -21,6 +21,9 @@
 
 #include "Widgets/detailedit.h"
 
+#include "Widgets/senddlg.h"
+#include "Widgets/requestdlg.h"
+
 #include "opentxs/OTAPI.h"
 #include "opentxs/OT_ME.h"
 
@@ -782,11 +785,9 @@ void Moneychanger::mc_nymselection_triggered(QAction*action_triggered){
         
         //Refresh the nym default selection in the nym manager (ONLY if it is open)
         //Check if nym manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
-        if(mc_nymmanager_already_init){
-            //Refresh if the nym manager is currently open
-            if(mc_nymmanager_already_init){
-                mc_nymmanager_dialog();
-            }
+        if (mc_nymmanager_already_init)
+        {
+            mc_nymmanager_dialog();
         }
     }
     
@@ -823,7 +824,7 @@ void Moneychanger::downloadAccountData()
         // ----------------------------------------------------------------
         int nymCount = OTAPI_Wrap::GetNymCount();
 
-        if (0 == nymCount) //resume
+        if (0 == nymCount)
         {
             qDebug() << "Making 'Me' Nym";
 
@@ -1081,26 +1082,36 @@ void Moneychanger::close_accountmanager_dialog()
 //Account Manager Additional Functions
 
 //Account new default selected from systray
-void Moneychanger::mc_accountselection_triggered(QAction*action_triggered){
+void Moneychanger::mc_accountselection_triggered(QAction*action_triggered)
+{
     //Check if the user wants to open the account manager (or) select a different default account
     QString action_triggered_string = QVariant(action_triggered->data()).toString();
     qDebug() << "account TRIGGERED" << action_triggered_string;
-    if(action_triggered_string == "openmanager"){
+
+    if(action_triggered_string == "openmanager")
+    {
         //Open account manager
         mc_defaultaccount_slot();
-    }else{
+    }
+    else
+    {
         //Set new account default
         QString action_triggered_string_account_name = QVariant(action_triggered->text()).toString();
         set_systrayMenu_account_setDefaultAccount(action_triggered_string, action_triggered_string_account_name);
-        
+        // ------------------------------
         //Refresh the account default selection in the account manager (ONLY if it is open)
         //Check if account manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
-        if(mc_accountmanager_already_init){
-            //Refresh if the account manager is currently open
-            if(mc_accountmanager_already_init){
-                mc_accountmanager_dialog();
-            }
+        //
+        if (mc_accountmanager_already_init)
+        {
+            mc_accountmanager_dialog();
         }
+        // ------------------------------
+        if (mc_overview_already_init)
+        {
+            mc_overview_dialog();
+        }
+        // ------------------------------
     }
     
 }
@@ -1457,30 +1468,45 @@ void Moneychanger::new_request_dialog() {}
  * Send Funds 
  **/
 
-void Moneychanger::mc_sendfunds_slot(){
-    mc_sendfunds_show_dialog();  // This is throwing a seg fault, need to investigate
+void Moneychanger::mc_sendfunds_slot()
+{
+    mc_sendfunds_show_dialog();
 }
 
-void Moneychanger::mc_sendfunds_show_dialog(){
-    
-    if (!mc_sendfunds_already_init)
-    {
-        sendfundswindow = new SendFundsWindow(this);
-        mc_sendfunds_already_init = true;
-    }
-    // ------------------------------------
-    sendfundswindow->dialog();
+void Moneychanger::mc_sendfunds_show_dialog()
+{
+//    if (!mc_sendfunds_already_init)
+//    {
+//        sendfundswindow = new SendFundsWindow(this);
+//        mc_sendfunds_already_init = true;
+//    }
+//    // ------------------------------------
+//    sendfundswindow->dialog();
+
+    // --------------------------------------------------
+    MTSendDlg * send_window = new MTSendDlg;
+    send_window->setAttribute(Qt::WA_DeleteOnClose);
+    // --------------------------------------------------
+    QString qstr_acct_id = this->get_default_account_id();
+
+    if (!qstr_acct_id.isEmpty())
+        send_window->setInitialMyAcct(qstr_acct_id);
+    // ---------------------------------------
+    send_window->dialog();
+    send_window->show();
+    // --------------------------------------------------
 }
 
 void Moneychanger::close_sendfunds_dialog()
 {
-    delete sendfundswindow;
-    sendfundswindow = NULL;
-    mc_sendfunds_already_init = false;
-    qDebug() << "Send Funds Window Closed";    
+//    delete sendfundswindow;
+//    sendfundswindow = NULL;
+//    mc_sendfunds_already_init = false;
+//    qDebug() << "Send Funds Window Closed";
 }
 
 // End Send Funds
+
 
 
 
@@ -1491,27 +1517,41 @@ void Moneychanger::close_sendfunds_dialog()
  * Request Funds 
  **/
 
-void Moneychanger::mc_requestfunds_slot(){
+void Moneychanger::mc_requestfunds_slot()
+{
     mc_requestfunds_show_dialog();
 }
 
-void Moneychanger::mc_requestfunds_show_dialog(){
-    
-    if(!mc_requestfunds_already_init)
-    {
-        requestfundswindow = new RequestFundsWindow(this);
-        mc_requestfunds_already_init = true;
-    }
-    // ------------------------------------
-    requestfundswindow->dialog();
+void Moneychanger::mc_requestfunds_show_dialog()
+{
+//    if (!mc_requestfunds_already_init)
+//    {
+//        requestfundswindow = new RequestFundsWindow(this);
+//        mc_requestfunds_already_init = true;
+//    }
+//    // ------------------------------------
+//    requestfundswindow->dialog();
+
+    // --------------------------------------------------
+    MTRequestDlg * request_window = new MTRequestDlg;
+    request_window->setAttribute(Qt::WA_DeleteOnClose);
+    // --------------------------------------------------
+    QString qstr_acct_id = this->get_default_account_id();
+
+    if (!qstr_acct_id.isEmpty())
+        request_window->setInitialMyAcct(qstr_acct_id);
+    // ---------------------------------------
+    request_window->dialog();
+    request_window->show();
+    // --------------------------------------------------
 }
 
 void Moneychanger::close_requestfunds_dialog()
 {
-    delete requestfundswindow;
-    requestfundswindow = NULL;
-    mc_requestfunds_already_init = false;
-    qDebug() << "Request Funds Window Closed";
+//    delete requestfundswindow;
+//    requestfundswindow = NULL;
+//    mc_requestfunds_already_init = false;
+//    qDebug() << "Request Funds Window Closed";
 }
 
 

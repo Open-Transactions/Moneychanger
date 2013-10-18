@@ -44,7 +44,9 @@ SOURCES += main.cpp\
     Widgets/contactdetails.cpp \
     UI/getstringdialog.cpp \
     Widgets/identifierwidget.cpp \
-    UI/dlgnewcontact.cpp
+    UI/dlgnewcontact.cpp \
+    Widgets/senddlg.cpp \
+    Widgets/requestdlg.cpp
 
 
 HEADERS += moneychanger.h \
@@ -77,7 +79,9 @@ HEADERS += moneychanger.h \
     Widgets/contactdetails.h \
     UI/getstringdialog.h \
     Widgets/identifierwidget.h \
-    UI/dlgnewcontact.h
+    UI/dlgnewcontact.h \
+    Widgets/senddlg.h \
+    Widgets/requestdlg.h
 
 
 DEFINES += "OT_ZMQ_MODE=1"
@@ -153,5 +157,7 @@ FORMS += \
     Widgets/contactdetails.ui \
     UI/getstringdialog.ui \
     Widgets/identifierwidget.ui \
-    UI/dlgnewcontact.ui
+    UI/dlgnewcontact.ui \
+    Widgets/senddlg.ui \
+    Widgets/requestdlg.ui
 

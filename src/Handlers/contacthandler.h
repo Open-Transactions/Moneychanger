@@ -10,6 +10,9 @@
 #include "MTRecordList.hpp"
 
 
+#define DEFAULT_CHEQUE_EXPIRATION 60*60*24*30 // 2592000 seconds == 30 days
+
+
 
 class MTNameLookupQT : public MTNameLookup
 {

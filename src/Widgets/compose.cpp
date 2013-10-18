@@ -126,7 +126,7 @@ void MTCompose::on_sendButton_clicked()
     }
     // -----------------------------------------------------------------
     if (!bSent)
-        QMessageBox::warning(this, QString("Failed Sending"),
+        QMessageBox::warning(this, QString("Failed Sending Message"),
                              QString("Failed trying to send the message."));
     else
         this->close();
@@ -521,7 +521,8 @@ void MTCompose::dialog()
         {
             QString qstrRe = m_subject.left(4);
 
-            if (qstrRe.toLower() != QString("re: "))
+            if ((qstrRe.toLower() != QString("re: ")) &&
+                (qstrRe.toLower() != QString("\"re:")))
             {
                 QString strTemp = QString("re: %1").arg(m_subject);
                 m_subject = strTemp;
@@ -536,6 +537,7 @@ void MTCompose::dialog()
         // -------------------------------------------
 
 
+        ui->contentsEdit->setFocus();
 
 
         /** Flag Already Init **/
