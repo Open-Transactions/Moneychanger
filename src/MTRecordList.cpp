@@ -38,6 +38,9 @@
 std::string MTNameLookup::GetNymName(const std::string & str_id,
                                      const std::string * p_server_id/*=NULL*/) const
 {
+    if (str_id.empty())
+        return "";
+
     return OTAPI_Wrap::GetNym_Name(str_id);
 }
 
@@ -47,6 +50,9 @@ std::string MTNameLookup::GetAcctName(const std::string & str_id,
                                       const std::string * p_server_id/*=NULL*/,
                                       const std::string * p_asset_id/*=NULL*/) const
 {
+    if (str_id.empty())
+        return "";
+
     return OTAPI_Wrap::GetAccountWallet_Name(str_id);
 }
 
@@ -2726,14 +2732,21 @@ bool MTRecordList::Populate()
             if (0 == lAmount)
                 lAmount = pBoxTrans->GetReceiptAmount();
             // ------------------------------------------
+            const std::string str_type(pBoxTrans->GetTypeString()); // pending, chequeReceipt, etc.
+            // ------------------------------
             if (0 != lAmount)
             {
+
+                if (bOutgoing && (0 == str_type.compare("transferReceipt")) && (lAmount > 0))
+                    lAmount *= (-1);
+                else if (!bOutgoing && (0 == str_type.compare("transferReceipt")) && (lAmount < 0))
+                    lAmount *= (-1);
+
                 OTString strTemp;
                 strTemp.Format("%ld", lAmount);
                 str_amount = strTemp.Get();
+
             }
-            // ------------------------------
-            const std::string str_type(pBoxTrans->GetTypeString()); // pending, chequeReceipt, etc.
             // ------------------------------
             OTLog::vOutput(0, "%s: ADDED: %s (asset account) record (str_type: %s)\n",
                            __FUNCTION__,

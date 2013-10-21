@@ -18,22 +18,24 @@ std::string MTNameLookupQT::GetNymName(const std::string & str_id,
 {
     std::string str_result("");
     // ------------------------
-    int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID(QString::fromStdString(str_id));
-
-    if (nContactID > 0)
-    {
-        QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
-
-        if (!contact_name.isEmpty())
-            str_result = contact_name.toStdString();
-        // -----------------------------------------------
-        if ((NULL != p_server_id) && !p_server_id->empty())
-            MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
-                                                                   QString::fromStdString(*p_server_id));
-    }
+    str_result = this->MTNameLookup::GetNymName(str_id, p_server_id);
     // ------------------------
     if (str_result.empty())
-        str_result = this->MTNameLookup::GetNymName(str_id, p_server_id);
+    {
+        int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID(QString::fromStdString(str_id));
+
+        if (nContactID > 0)
+        {
+            QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
+
+            if (!contact_name.isEmpty())
+                str_result = contact_name.toStdString();
+            // -----------------------------------------------
+            if ((NULL != p_server_id) && !p_server_id->empty())
+                MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
+                                                                       QString::fromStdString(*p_server_id));
+        }
+    }
     // ------------------------
     return str_result;
 }
@@ -45,20 +47,22 @@ std::string MTNameLookupQT::GetAcctName(const std::string & str_id,
 {
     std::string str_result("");
     // ------------------------
-    int nContactID = MTContactHandler::getInstance()->FindContactIDByAcctID(QString::fromStdString(str_id),
-                                                                            (NULL == p_nym_id)    ? QString("") : QString::fromStdString(*p_nym_id),
-                                                                            (NULL == p_server_id) ? QString("") : QString::fromStdString(*p_server_id),
-                                                                            (NULL == p_asset_id)  ? QString("") : QString::fromStdString(*p_asset_id));
-    if (nContactID > 0)
-    {
-        QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
-
-        if (!contact_name.isEmpty())
-            str_result = contact_name.toStdString();
-    }
+    str_result = this->MTNameLookup::GetAcctName(str_id, p_nym_id, p_server_id, p_asset_id);
     // ------------------------
     if (str_result.empty())
-        str_result = this->MTNameLookup::GetAcctName(str_id, p_nym_id, p_server_id, p_asset_id);
+    {
+        int nContactID = MTContactHandler::getInstance()->FindContactIDByAcctID(QString::fromStdString(str_id),
+                                                                                (NULL == p_nym_id)    ? QString("") : QString::fromStdString(*p_nym_id),
+                                                                                (NULL == p_server_id) ? QString("") : QString::fromStdString(*p_server_id),
+                                                                                (NULL == p_asset_id)  ? QString("") : QString::fromStdString(*p_asset_id));
+        if (nContactID > 0)
+        {
+            QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
+
+            if (!contact_name.isEmpty())
+                str_result = contact_name.toStdString();
+        }
+    }
     // ------------------------
     return str_result;
 }

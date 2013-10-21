@@ -76,14 +76,19 @@ MTHomeDetail::~MTHomeDetail()
 
 bool MTHomeDetail::eventFilter(QObject *obj, QEvent *event)
 {
-    if (event->type() == QEvent::KeyPress) {
+    if (event->type() == QEvent::KeyPress)
+    {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if(keyEvent->key() == Qt::Key_Escape){
+
+        if (keyEvent->key() == Qt::Key_Escape)
+        {
             close(); // This is caught by this same filter.
             return true;
         }
         return true;
-    }else {
+    }
+    else
+    {
         // standard event processing
         return QObject::eventFilter(obj, event);
     }
@@ -95,10 +100,7 @@ void MTHomeDetail::on_viewContactButton_clicked(bool checked /*=false*/)
     qDebug() << "View Existing Contact button clicked.";
 
     if (m_record && (NULL != m_pHome) && (m_nContactID > 0))
-    {
-//      MTRecord & recordmt = *m_record;
         ((Moneychanger *)(m_pHome->parentWidget()))->mc_addressbook_show(QString("%1").arg(m_nContactID));
-    }
 }
 
 void MTHomeDetail::on_addContactButton_clicked(bool checked /*=false*/)
@@ -268,7 +270,14 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
 void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
 {
     qDebug() << "Delete button clicked.";
+    // --------------------------------
+    QMessageBox::StandardButton reply;
 
+    reply = QMessageBox::question(this, "", "Are you sure you want to archive this record?",
+                                  QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::No)
+      return;
+    // --------------------------------
     if (m_record)
     {
         MTRecord & recordmt = *m_record;
@@ -287,15 +296,178 @@ void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
 
 
 
+QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
+{
+    // -----------------------------------------
+    const std::string str_record_asset  = recordmt.GetAssetID();
+    const std::string str_record_nym    = recordmt.GetNymID();
+    const std::string str_record_server = recordmt.GetServerID();
+    // -----------------------------------------
+    QString qstr_record_asset  = QString::fromStdString(str_record_asset);
+    QString qstr_record_nym    = QString::fromStdString(str_record_nym);
+    QString qstr_record_server = QString::fromStdString(str_record_server);
+    // -----------------------------------------
+    std::string str_acct_id;
+    std::string str_acct_nym;
+    std::string str_acct_server;
+    std::string str_acct_asset;
 
+    QString qstr_acct_id,
+            qstr_acct_nym,
+            qstr_acct_server,
+            qstr_acct_asset;
 
+    if (NULL != m_pHome)
+        qstr_acct_id = ((Moneychanger *)(m_pHome->parentWidget()))->get_default_account_id();
+    // -----------------------------------
+    // If there's a default account, and it has the same asset ID
+    // as the record (and server ID and NymID) then accept the instrument
+    // using the default account.
+    //
+    // BUT -- if the default account has the wrong asset ID, or
+    // if there is no default account, then we need to pop up a
+    // list of accounts owned by the same Nym, and filtered by
+    // the server and asset ID from this record.
+    //
+    // We'll also need some sort of option to create an account
+    // on the spot, if at least one doesn't exist matching that
+    // criteria.
+    //
+    if (!qstr_acct_id.isEmpty()) // There IS a default account...
+    {
+        // Need to make sure the default account has the right server ID, NymID,
+        // asset ID, to accept the current record. Otherwise we need to ask the
+        // user to choose an account (the same as if there had been no default
+        // account in the first place.)
+        // -----------------------------------
+        str_acct_id      = qstr_acct_id.toStdString();
+        str_acct_nym     = OTAPI_Wrap::It()->GetAccountWallet_NymID      (str_acct_id);
+        str_acct_server  = OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
+        str_acct_asset   = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+        // -----------------------------------
+        qstr_acct_nym    = QString::fromStdString(str_acct_nym);
+        qstr_acct_server = QString::fromStdString(str_acct_server);
+        qstr_acct_asset  = QString::fromStdString(str_acct_asset);
+        // -----------------------------------
+        if ((qstr_record_nym    != qstr_acct_nym)    ||
+            (qstr_record_server != qstr_acct_server) ||
+            (qstr_record_asset  != qstr_acct_asset) )
+        {
+            // There's a default account, but it's got the wrong Asset type, or the
+            // wrong server, etc, for it to accept this record. Therefore we have to
+            // ask the user to select an account, just the same as if no default account
+            // had been set at all.
+            //
+            str_acct_id      = "";
+            str_acct_nym     = "";
+            str_acct_server  = "";
+            str_acct_asset   = "";
+            // ------------------
+            qstr_acct_id     = QString("");
+            qstr_acct_nym    = QString("");
+            qstr_acct_server = QString("");
+            qstr_acct_asset  = QString("");
+            // ------------------
+        }
+    }
+    // -----------------------------------
+    // By this point, there's definitely no default account, or if it
+    // was, its IDs were all wrong. Therefore we have to ask the user
+    // to choose an account by hand.
+    //
+    if (qstr_acct_id.isEmpty())
+    {
+        DlgChooser theChooser(this);
+        // -----------------------------------------------
+        mapIDName & the_map = theChooser.m_map;
+        // -----------------------------------------------
+        const int32_t acct_count = OTAPI_Wrap::GetAccountCount();
+        // -----------------------------------------------
+        for (int32_t ii = 0; ii < acct_count; ++ii)
+        {
+            //Get OT Acct ID
+            QString OT_acct_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(ii));
+            QString OT_acct_name("");
+            // -----------------------------------------------
+            if (!OT_acct_id.isEmpty()) // Should never be empty.
+            {
+                qstr_acct_id     = OT_acct_id;
+                // -----------------------------------
+                str_acct_id      = qstr_acct_id.toStdString();
+                str_acct_nym     = OTAPI_Wrap::It()->GetAccountWallet_NymID      (str_acct_id);
+                str_acct_server  = OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
+                str_acct_asset   = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+                // -----------------------------------
+                qstr_acct_nym    = QString::fromStdString(str_acct_nym);
+                qstr_acct_server = QString::fromStdString(str_acct_server);
+                qstr_acct_asset  = QString::fromStdString(str_acct_asset);
+                // -----------------------------------------------
+                if ((qstr_record_nym    == qstr_acct_nym)    &&
+                    (qstr_record_server == qstr_acct_server) &&
+                    (qstr_record_asset  == qstr_acct_asset) )
+                {
+                    MTNameLookupQT theLookup;
 
+                    OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString()));
+                    // -----------------------------------------------
+                    the_map.insert(OT_acct_id, OT_acct_name);
+                }
+                // -----------------------------------------------
+                str_acct_id      = "";
+                str_acct_nym     = "";
+                str_acct_server  = "";
+                str_acct_asset   = "";
+                // ------------------
+                qstr_acct_id     = QString("");
+                qstr_acct_nym    = QString("");
+                qstr_acct_server = QString("");
+                qstr_acct_asset  = QString("");
+                // -----------------------------------------------
+            }
+        } // for
+        // -----------------------------------------------
+        // At this point, the_map contains a list of accounts that could be
+        // used to accept the record. At this point we could just pop up the
+        // chooser and let the user pick one of those accounts.
+        //
+        // BUT -- what if the list is empty? In that case, the user doesn't
+        // have an appropriate account. In which case one needs to be created...
+        //
+        //
+        if (0 == the_map.size())
+        {
+            QMessageBox::warning(this, QString("No Matching Accounts"),
+                                 QString("There are no existing accounts with the proper asset type, server, and nym. "
+                                         "In the future, this is where you would be given the option to create "
+                                         "one. (Someday.) In the meantime, just create one and then try again."));
+            return QString("");
+        }
+        else if (1 == the_map.size())
+        {
+            // If there's only one account that could be appropriate, then we just
+            // go with that account.
+            //
+            mapIDName::iterator it_map = the_map.begin();
+            qstr_acct_id = it_map.key();
+        }
+        else // There are multiple matching accounts, so we ask the user to choose one.
+        {
+            // -----------------------------------------------
+            theChooser.setWindowTitle("Select an Asset Account");
+            // -----------------------------------------------
+            if (theChooser.exec() == QDialog::Accepted)
+            {
+                qDebug() << QString("SELECT was clicked for AcctID: %1").arg(theChooser.m_qstrCurrentID);
 
-
-
-
-
-
+                if (!theChooser.m_qstrCurrentID.isEmpty())
+                    qstr_acct_id = theChooser.m_qstrCurrentID;
+            }
+            // (else the user cancelled.)
+        }
+    }
+    // ----------------------------------
+    return qstr_acct_id;
+}
 
 
 
@@ -316,162 +488,189 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
             bool bSuccess = false;
             {
                 MTOverrideCursor theSpinner;
-
+                // -----------------------------------------
                 bSuccess = recordmt.AcceptIncomingTransfer();
             }
-
+            // -----------------------------------------
             if (!bSuccess)
             {
                 QMessageBox::warning(this, QString("Transaction failure"), QString("Failed accepting this transfer."));
             }
             else
             {
-                // todo: refresh the main list, or at least change the color of the refresh button.
-
+                // Refresh the main list, or at least change the color of the refresh button.
+                //
                 if (NULL != m_pHome)
                     m_pHome->SetNeedRefresh();
             }
         }
         // -------------------------------------------------
-
-    }
-
-    /*
-    [actions addObject:[SectionAction actionWithName:nameString icon:nil block:^(UIViewController* vc)
-    {
-        bool (^actionBlock)() = ^bool{return false;};
-
-        NSString *msg = QString("Transaction Failed.");
-        UIAlertView *fail = [[UIAlertView alloc] initWithTitle:nil message:msg delegate:nil
-                                             cancelButtonTitle:QString("OK") otherButtonTitles:nil];
-
-        if (bIsTransfer)
-        {
-            actionBlock = ^bool {
-                bool bSuccess = record->AcceptIncomingTransfer();
-
-                if (bSuccess)
-                {
-                    self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                    [self.navigationController popViewControllerAnimated:YES];
-                }
-                return bSuccess;
-            };
-            [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
-        }
         else if (bIsReceipt)
         {
-            actionBlock = ^bool {
-                bool bSuccess = record->AcceptIncomingReceipt();
+            bool bSuccess = false;
+            {
+                MTOverrideCursor theSpinner;
+                // -----------------------------------------
+                bSuccess = recordmt.AcceptIncomingReceipt();
+            }
+            // -----------------------------------------
+            if (!bSuccess)
+            {
+                QMessageBox::warning(this, QString("Transaction failure"), QString("Failed accepting this receipt."));
+            }
+            else
+            {
+                // Refresh the main list, or at least change the color of the refresh button.
+                //
+                if (NULL != m_pHome)
+                    m_pHome->SetNeedRefresh();
+            }
+        }
+        // -------------------------------------------------
+        else if (MTRecord::Instrument == recordmt.GetRecordType())
+        {
+            // --------------------------------
+            if (recordmt.IsInvoice())
+            {
+                QMessageBox::StandardButton reply;
 
-                if (bSuccess)
+                reply = QMessageBox::question(this, "", "Are you sure you want to pay this invoice?",
+                                              QMessageBox::Yes|QMessageBox::No);
+                if (reply == QMessageBox::No)
+                    return;
+            }
+            // --------------------------------
+            QString qstr_acct_id = FindAppropriateDepositAccount(recordmt);
+            // -----------------------------------
+            // At this point we likely have the account ID, and if so, it's definitely
+            // got the right asset type, server, etc. Therefore it's time to accept the
+            // instrument.
+            //
+            if (!qstr_acct_id.isEmpty())
+            {
+                bool bSuccess = false;
                 {
-                    self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                    [self.navigationController popViewControllerAnimated:YES];
+                    MTOverrideCursor theSpinner;
+                    // -----------------------------------------
+                    bSuccess = recordmt.AcceptIncomingInstrument(qstr_acct_id.toStdString());
                 }
-                return bSuccess;
-            };
-            [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
-        }
-        else if (record->GetRecordType() == MTRecord::Instrument) {  // TODO: filter these accounts by serverID and asset type ID.
-            ContractPickerViewController *picker = [ContractPickerViewController pickerWithTitle:QString("Account")
-                                                                                      dataSource:[AccountContractList instance]];
-            picker.cancelButtonEnabled = YES;
-            picker.callback = ^(ContractPickerViewController* vc, id<ContractWrapper> contract) {
-
-                bool (^actionBlock)() = ^bool{return false;};
-
-                if (contract) {
-                    actionBlock = ^bool {
-                        bool bSuccess = record->AcceptIncomingInstrument(contract.contractId.UTF8String);
-
-                        if (bSuccess)
-                        {
-                            self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                            [self.navigationController popViewControllerAnimated:YES];
-                        }
-                        return bSuccess;
-                    };
-                    [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
+                // -----------------------------------------
+                if (!bSuccess)
+                {
+                    QMessageBox::warning(this, QString("Transaction failure"), QString("Failed accepting this instrument."));
                 }
-                [vc dismissModalViewControllerAnimated:YES];
-            };
-            [vc presentModalViewController:picker animated:YES];
-        }
-        //TODO do a refresh vs a pop
-
-    }]];
-    */
-
+                else
+                {
+                    // Refresh the main list, or at least change the color of the refresh button.
+                    //
+                    if (NULL != m_pHome)
+                        m_pHome->SetNeedRefresh();
+                }
+            }
+        } // record type == instrument.
+        // -------------------------------------------------
+    }
 }
+
 
 void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
 {
     qDebug() << "Cancel button clicked.";
 
-
     if (m_record)
     {
         MTRecord & recordmt = *m_record;
+        // ---------------------------------------
+        if (recordmt.IsCash())
+        {
+            QMessageBox::StandardButton reply;
 
-    }
-
-
-    /*
-    [actions addObject:[SectionAction actionWithName:cancelString icon:nil block:^(UIViewController* vc) {
-        bool (^actionBlock)() = ^bool{return false;};
-
-        actionBlock = ^bool {
-
-            if (record->IsCash())
+            reply = QMessageBox::question(this, "",
+                                          "This will prevent the original recipient from depositing the cash. "
+                                          "(And FYI, this action will fail, if he has already deposited it.) "
+                                          "Are you sure you want to recover this cash?",
+                                          QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::No)
+                return;
+            // -----------------------------------
+            QString qstr_acct_id = FindAppropriateDepositAccount(recordmt);
+            // -----------------------------------
+            // At this point we likely have the account ID, and if so, it's definitely
+            // got the right asset type, server, etc. Therefore it's time to accept the
+            // instrument.
+            //
+            if (!qstr_acct_id.isEmpty())
             {
-                ContractPickerViewController *picker = [ContractPickerViewController pickerWithTitle:QString("Account") // TODO: filter these accounts by serverID and asset type ID.
-                                                                                          dataSource:[AccountContractList instance]];
-                picker.cancelButtonEnabled = YES;
-                picker.callback = ^(ContractPickerViewController* vc, id<ContractWrapper> contract) {
+                bool bSuccess = false;
+                {
+                    MTOverrideCursor theSpinner;
+                    // -----------------------------------------
+                    OT_ME madeEasy;
 
-                    bool (^actionBlock)() = ^bool{return false;};
-
-                    if (contract) {
-                        actionBlock = ^bool {
-                            OT_ME madeEasy;
-                            bool bInnerSuccess = false;
-                            if (1 == madeEasy.deposit_cash(record->GetServerID(), record->GetNymID(), contract.contractId.UTF8String, record->GetContents()))
-                            {
-                                bInnerSuccess = true;
-                                record->DiscardOutgoingCash();
-                                self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                                [self.navigationController popViewControllerAnimated:YES];
-                            }
-                            return bInnerSuccess;
-                        };
-                        [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
+                    if (1 == madeEasy.deposit_cash(recordmt.GetServerID(), recordmt.GetNymID(),
+                                                   qstr_acct_id.toStdString(), recordmt.GetContents()))
+                    {
+                        bSuccess = true;
+                        recordmt.DiscardOutgoingCash();
                     }
-                    [vc dismissModalViewControllerAnimated:YES];
-                };
-                [vc presentModalViewController:picker animated:YES];
+                }
+                // -----------------------------------------
+                if (!bSuccess)
+                {
+                    QMessageBox::warning(this, QString("Recovery failure"),
+                                         QString("Failed recovering this outgoing cash. "
+                                                 "(Perhaps the recipient already deposited it?)"));
+                }
+                else
+                {
+                    // Refresh the main list, or at least change the color of the refresh button.
+                    //
+                    if (NULL != m_pHome)
+                    {
+                        m_pHome->SetNeedRefresh();
+                        m_pHome->OnDeletedRecord();
+                    }
+                }
+            } // qstr_acct_id not empty.
+        } // record is cash
+        // ----------------------------------------
+        else // record is not cash (it's some other outgoing instrument, such as a cheque.)
+        {
+            QMessageBox::StandardButton reply;
+
+            reply = QMessageBox::question(this, "",
+                                          "This will prevent the original recipient from exercising this instrument. "
+                                          "(And FYI, this action will fail if he's already done so.) "
+                                          "Are you sure you want to cancel?",
+                                          QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::No)
+                return;
+            // ----------------------------------------
+            bool bSuccess = false;
+            {
+                MTOverrideCursor theSpinner;
+                // -----------------------------------------
+                bSuccess = recordmt.CancelOutgoing(recordmt.GetAccountID());
+            }
+            // -----------------------------------------
+            if (!bSuccess)
+            {
+                QMessageBox::warning(this, QString("Cancellation failure"),
+                                     QString("Failed canceling this outgoing instrument."));
             }
             else
             {
-                bool bSuccess = record->CancelOutgoing(record->GetAccountID());
-
-                if (bSuccess)
-                {
-                    self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                    [self.navigationController popViewControllerAnimated:YES];
-                }
-                return bSuccess;
+                // Refresh the main list, or at least change the color of the refresh button.
+                //
+                if (NULL != m_pHome)
+                    m_pHome->SetNeedRefresh();
             }
-
-            return true;
-        };
-
-        [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
-
-    }]];
-    */
-
+        } // not cash
+        // ----------------------------------------
+    } // if m_record not NULL.
 }
+
+
 
 void MTHomeDetail::on_discardOutgoingButton_clicked(bool checked /*=false*/)
 {
@@ -480,18 +679,44 @@ void MTHomeDetail::on_discardOutgoingButton_clicked(bool checked /*=false*/)
     if (m_record)
     {
         MTRecord & recordmt = *m_record;
+        // ---------------------------------------
+        QMessageBox::StandardButton reply;
 
+        reply = QMessageBox::question(this, "",
+                                      "This will prevent you from recovering this cash in the future. "
+                                      "(And FYI, once the cash expires, this record will be discarded automatically anyway.) "
+                                      "Are you sure you want to discard this record of sent cash?",
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No)
+            return;
+        // ----------------------------------------
+        bool bSuccess = false;
+        {
+            MTOverrideCursor theSpinner;
+            // -----------------------------------------
+            bSuccess = recordmt.DiscardOutgoingCash();
+        }
+        // -----------------------------------------
+        if (!bSuccess)
+        {
+            QMessageBox::warning(this, QString("Discard failure"),
+                                 QString("Failed discarding this sent cash."));
+        }
+        else
+        {
+            // Refresh the main list, or at least change the color of the refresh button.
+            //
+            if (NULL != m_pHome)
+            {
+                m_pHome->SetNeedRefresh();
+                m_pHome->OnDeletedRecord();
+            }
+        }
+        // ----------------------------------
     }
-    /*
-    [actions addObject:[SectionAction actionWithName:discardString icon:nil block:^(UIViewController* vc) {
-        record->DiscardOutgoingCash();
-
-        self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-        [self.navigationController popViewControllerAnimated:YES];
-    }]];
-    */
-
 }
+
+
 
 void MTHomeDetail::on_discardIncomingButton_clicked(bool checked /*=false*/)
 {
@@ -500,19 +725,44 @@ void MTHomeDetail::on_discardIncomingButton_clicked(bool checked /*=false*/)
     if (m_record)
     {
         MTRecord & recordmt = *m_record;
+        // ---------------------------------------
+        QMessageBox::StandardButton reply;
 
+        QString qstr_instrument = recordmt.IsInvoice() ? QString("invoice") : QString("instrument");
+
+        reply = QMessageBox::question(this, "",
+                                      QString("Are you sure you want to discard this incoming %1?").arg(qstr_instrument),
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No)
+            return;
+        // ----------------------------------------
+        bool bSuccess = false;
+        {
+            MTOverrideCursor theSpinner;
+            // -------------------------------------
+            bSuccess = recordmt.DiscardIncoming();
+        }
+        // -----------------------------------------
+        if (!bSuccess)
+        {
+            QMessageBox::warning(this, QString("Discard failure"),
+                                 QString("Failed discarding this incoming %1.").arg(qstr_instrument));
+        }
+        else
+        {
+            // Refresh the main list, or at least change the color of the refresh button.
+            //
+            if (NULL != m_pHome)
+            {
+                m_pHome->SetNeedRefresh();
+                m_pHome->OnDeletedRecord();
+            }
+        }
+        // ----------------------------------
     }
-
-    /*
-    [actions addObject:[SectionAction actionWithName:discardString icon:nil block:^(UIViewController* vc) {
-        record->DiscardIncoming();
-
-        self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-        [self.navigationController popViewControllerAnimated:YES];
-    }]];
-    */
-
 }
+
+
 
 void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
 {
@@ -549,35 +799,6 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
         compose_window->show();
         // --------------------------------------------------
     }
-
-    /*
-        // Display the SendMailViewController here.
-        //
-        SendMailViewController *send_mail_control = [[SendMailViewController alloc] initWithNibName:nil bundle:nil];
-
-        // Pre-fill the recipient here.
-//            send_mail_control.record = record;
-        send_mail_control.nymID = QString(record->GetOtherNymID().c_str());
-
-
-        // NOTE: You will need to lookup the CONTACT for the appropriate recipient,
-        // since the sendMail page uses a Contact for a recipient.
-        // (And what if there IS no contact for that Nym??)
-
-        // Use this call to get the Nym Name:
-        //std::string MTNameLookupIPhone::GetNymName(const std::string & str_id) const
-
-        // But what if I don't need the Nym Name? What if I need the actual Contact?
-
-        // Anyway, once you are able to lookup the contact for the appropriate recipient,
-        // that means you should also be able to lookup the contact when displaying any
-        // transaction detail, so you can remove the "Add as contact" button IN CASES
-        // WHERE THE CONTACT ALREADY EXISTS.
-
-        [self.navigationController pushViewController:send_mail_control animated:YES];
-    }]];
-    */
-
 }
 
 
@@ -598,8 +819,6 @@ void MTHomeDetail::clearLayout(QLayout* pLayout)
         delete pItemAt;
     }
 }
-
-
 
 
 //static
@@ -795,9 +1014,9 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt, bool bExte
 
 void SetHeight (QPlainTextEdit* edit, int nRows)
 {
-  QFontMetrics m (edit -> font()) ;
-  int RowHeight = m.lineSpacing() ;
-  edit -> setFixedHeight  (nRows * RowHeight) ;
+    QFontMetrics m (edit -> font()) ;
+    int RowHeight = m.lineSpacing() ;
+    edit -> setFixedHeight  (nRows * RowHeight) ;
 }
 
 
@@ -817,13 +1036,9 @@ void increment_cell(int & nCurrentRow, int & nCurrentColumn)
 }
 
 
-
-
-
-
 void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 {
-//    qDebug() << QString("MTHomeDetail::refresh: nRow: %1").arg(nRow);
+//  qDebug() << QString("MTHomeDetail::refresh: nRow: %1").arg(nRow);
 
     if ((nRow >= 0) && (nRow < theList.size()))
     {
@@ -841,25 +1056,14 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         // --------------------------------------------------
         refresh(recordmt);
     }
-//    else
-//        qDebug() << QString("MTHomeDetail::refresh: nRow %1 is out of bounds. (Max size is %2.)").arg(nRow).arg(theList.size());
+//  else
+//      qDebug() << QString("MTHomeDetail::refresh: nRow %1 is out of bounds. (Max size is %2.)").arg(nRow).arg(theList.size());
+    else
+        RecreateLayout(); // This blanks out the detail side.
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-void MTHomeDetail::refresh(MTRecord & recordmt)
+void MTHomeDetail::RecreateLayout()
 {
     m_nContactID = 0;
     // --------------------------------------------------
@@ -873,6 +1077,14 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     m_pDetailLayout = new QGridLayout;
     m_pDetailLayout->setAlignment(Qt::AlignTop);
     m_pDetailLayout->setContentsMargins(0, 0, 0, 0);
+    // --------------------------------------------------
+}
+
+
+void MTHomeDetail::refresh(MTRecord & recordmt)
+{
+    // --------------------------------------------------
+    RecreateLayout();
     // --------------------------------------------------
     int nCurrentRow = 0;
     int nCurrentColumn = 1;

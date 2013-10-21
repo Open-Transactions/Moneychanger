@@ -60,6 +60,9 @@ private:
     QGridLayout * m_pDetailLayout;
     MTHome * m_pHome;
 
+    QString FindAppropriateDepositAccount(MTRecord & recordmt);
+    void    RecreateLayout();
+
 private:
     Ui::MTHomeDetail *ui;
 };

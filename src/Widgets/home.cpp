@@ -383,7 +383,7 @@ QWidget * MTHome::CreateUserBarWidget()
     // -------------------------------------------
     if (qstr_acct_id.isEmpty())
     {
-        qstr_acct_name   = QString("(Default Account Isn't Set Yet')");
+        qstr_acct_name   = QString("(Default Account Isn't Set Yet)");
         // -----------------------------------
         qstr_acct_nym    = ((Moneychanger *)(this->parentWidget()))->get_default_nym_id();
         qstr_acct_server = ((Moneychanger *)(this->parentWidget()))->get_default_server_id();
@@ -490,7 +490,10 @@ QWidget * MTHome::CreateUserBarWidget()
     buttonRefresh->setText("Refresh");
 
     if (m_bNeedRefresh)
+    {
         buttonRefresh->setStyleSheet("color: red");
+        m_bNeedRefresh = false;
+    }
     // ----------------------------------------------------------------
     QHBoxLayout * pButtonLayout = new QHBoxLayout;
 
