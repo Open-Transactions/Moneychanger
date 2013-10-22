@@ -151,18 +151,19 @@ bool DBHandler::runQuery(QString run)
     if(db.isOpen())
     {
         error = query.exec(run);
+
         if(error)
             return true;
         else
         {
             qDebug() << "runQuery: QSqlQuery::lastError: " << query.lastError().text();
+            qDebug() << QString("THE QUERY (that caused the error): %1").arg(run);
 
             return false;
         }
     }
     else
         return error;
-    
 }
 
 
@@ -390,14 +391,12 @@ bool DBHandler::AddressBookRemoveID(int ID)
     if (db.isOpen())
     {
         return query.exec(QString("DELETE FROM `address_book` WHERE `id` = '%1'").arg(ID));
-        
     }
     else
     {
         qDebug() << "AddressBookRemoveID Error";
         return false;
     }
-    
 }
 
 

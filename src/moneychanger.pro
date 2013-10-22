@@ -35,7 +35,18 @@ SOURCES += main.cpp\
     Widgets/home.cpp \
     Widgets/homedetail.cpp \
     Handlers/contacthandler.cpp \
-    Widgets/createinsurancecompany.cpp
+    Widgets/createinsurancecompany.cpp \
+    Widgets/dlgchooser.cpp \
+    Widgets/compose.cpp \
+    Widgets/overridecursor.cpp \
+    Widgets/detailedit.cpp \
+    Widgets/editdetails.cpp \
+    Widgets/contactdetails.cpp \
+    UI/getstringdialog.cpp \
+    Widgets/identifierwidget.cpp \
+    UI/dlgnewcontact.cpp \
+    Widgets/senddlg.cpp \
+    Widgets/requestdlg.cpp
 
 
 HEADERS += moneychanger.h \
@@ -59,15 +70,42 @@ HEADERS += moneychanger.h \
     Widgets/home.h \
     Widgets/homedetail.h \
     Handlers/contacthandler.h \
-    Widgets/createinsurancecompany.h
+    Widgets/createinsurancecompany.h \
+    Widgets/dlgchooser.h \
+    Widgets/compose.h \
+    Widgets/overridecursor.h \
+    Widgets/detailedit.h \
+    Widgets/editdetails.h \
+    Widgets/contactdetails.h \
+    UI/getstringdialog.h \
+    Widgets/identifierwidget.h \
+    UI/dlgnewcontact.h \
+    Widgets/senddlg.h \
+    Widgets/requestdlg.h
 
 
 DEFINES += "OT_ZMQ_MODE=1"
 
 mac:{
-    QMAKE_CXXFLAGS -= -fstack-check
 	QT_CONFIG -= no-pkg-config
 	LIBS += -lboost_system-mt -lboost_thread-mt -ldl
+
+    # -------------------------------------------
+    # Un-comment this block to use C++11.
+    #
+    # Comment-out this block to deactivate C++11
+    #
+	# QT_CONFIG += -spec macx-clang-libc++
+    # LIBS += -stdlib=libc++
+    # CONFIG += c++11
+    # QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++ -std=c++11
+    #
+    # -------------------------------------------
+
+
+# Stuff that didn't work.
+#    QMAKE_CXXFLAGS += -spec macx-clang-libc++  # apparently this doesn't really exist.
+#    CXXFLAGS += -std=c++0x // apparently the qmake version of this above is the one I'm supposed to use, not this...
 }
 
 
@@ -111,5 +149,15 @@ FORMS += \
     UI/marketwindow.ui \
     Widgets/home.ui \
     Widgets/homedetail.ui \ 
-    UI/createinsurancecompany.ui
+    UI/createinsurancecompany.ui \
+    Widgets/dlgchooser.ui \
+    Widgets/compose.ui \
+    Widgets/detailedit.ui \
+    Widgets/editdetails.ui \
+    Widgets/contactdetails.ui \
+    UI/getstringdialog.ui \
+    Widgets/identifierwidget.ui \
+    UI/dlgnewcontact.ui \
+    Widgets/senddlg.ui \
+    Widgets/requestdlg.ui
 

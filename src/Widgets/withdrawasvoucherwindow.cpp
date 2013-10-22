@@ -11,14 +11,14 @@ WithdrawAsVoucherWindow::WithdrawAsVoucherWindow(QWidget *parent) :
 }
 
 
-void WithdrawAsVoucherWindow::dialog(){
-    
-    
+void WithdrawAsVoucherWindow::dialog()
+{
     /** If the withdraw as voucher dialog has already been init,
      *  just show it, Other wise, init and show if this is the
      *  first time.
      **/
-    if(!already_init){
+    if (!already_init)
+    {
         //Init, then show
         //Init
         withdraw_asvoucher_dialog = new QDialog(0);
@@ -121,7 +121,7 @@ void WithdrawAsVoucherWindow::dialog(){
 //This will show the address book, the opened address book will be set to paste in recipient nym ids if/when selecting a nymid in the addressbook.
 void WithdrawAsVoucherWindow::show_addressbook_slot(){
     //Show address book
-    ((Moneychanger *)parentWidget())->mc_addressbook_show("withdraw_as_voucher");
+    ((Moneychanger *)parentWidget())->mc_addressbook_show(QString(""));
 }
 
 /**
@@ -189,15 +189,11 @@ void WithdrawAsVoucherWindow::confirm_amount_dialog_slot(){
         
         /** Flag already init **/
         confirm_dialog_already_init = true;
-        
-        //Show
-        withdraw_asvoucher_confirm_dialog->show();
-        withdraw_asvoucher_confirm_dialog->setFocus();
-    }else{
-        //Show
-        withdraw_asvoucher_confirm_dialog->show();
-        withdraw_asvoucher_confirm_dialog->setFocus();
     }
+
+    //Show
+    withdraw_asvoucher_confirm_dialog->show();
+    withdraw_asvoucher_confirm_dialog->setFocus();
 }
 
 //This is activated when the user clicks "Confirm amount"

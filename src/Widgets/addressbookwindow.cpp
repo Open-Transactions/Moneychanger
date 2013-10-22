@@ -14,14 +14,16 @@ AddressBookWindow::AddressBookWindow(QWidget *parent) :
  */
 /** Show Address Book **/
 //Dummy Call
-void AddressBookWindow::show(){
+void AddressBookWindow::show()
+{
     //The caller dosen't wish to have the address book paste to anything (they just want to see/manage the address book), just call blank.
     show("");
 }
 
 
 //This will show the addressbook (and paste the selection accordingly if set)
-void AddressBookWindow::show(QString paste_selection_to){
+void AddressBookWindow::show(QString paste_selection_to)
+{
     /** Order of Operations
      *Initialize
      *Paste Selection Logic
@@ -33,7 +35,8 @@ void AddressBookWindow::show(QString paste_selection_to){
      ** Initialize Address Book and/or just show
      **/
     //Check if address book has been init before.
-    if(already_init == 0){
+    if (already_init == 0)
+    {
         //Init address book, then show
         dialog = new QDialog(0);
         
@@ -104,18 +107,14 @@ void AddressBookWindow::show(QString paste_selection_to){
         gridlayout->addWidget(select_nym_for_paste_btn, 2,0, 1,2, Qt::AlignHCenter);
         //Connect the "select" button with a re-action
         connect(select_nym_for_paste_btn, SIGNAL(clicked()), this, SLOT(paste_selected_slot()));
-        //Show dialog
-        dialog->show();
-        dialog->activateWindow();
         
         /** Flag already init **/
         already_init = 1;
-        
-    }else{
-        //Address book already init, show it!
-        dialog->show();
-        dialog->activateWindow();
     }
+
+    //Show dialog
+    dialog->show();
+//    dialog->activateWindow();
     
     /** ***
      ** Paste Selection Logic
