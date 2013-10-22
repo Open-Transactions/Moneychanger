@@ -1,4 +1,6 @@
 
+#include <QObject>
+#include <QMessageBox>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QDebug>
@@ -10,6 +12,7 @@
 #include <QPixmap>
 #include <QDateTime>
 #include <QLabel>
+#include <QString>
 
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
@@ -18,12 +21,36 @@
 #include "homedetail.h"
 #include "ui_homedetail.h"
 
+#include "compose.h"
+#include "overridecursor.h"
+
+#include "home.h"
+
+#include "UI/getstringdialog.h"
+#include "Widgets/dlgchooser.h"
+
+#include "Handlers/contacthandler.h"
+
+#include "moneychanger.h"
+
+
+void MTHomeDetail::SetHomePointer(MTHome & theHome)
+{
+    m_pHome = &theHome;
+}
+
+
+
 MTHomeDetail::MTHomeDetail(QWidget *parent) :
     QWidget(parent),
+    m_nContactID(0),
     m_pDetailLayout(NULL),
+    m_pHome(NULL),
     ui(new Ui::MTHomeDetail)
 {
     ui->setupUi(this);
+
+    this->installEventFilter(this);
 
     this->setContentsMargins(0, 0, 0, 0);
 }
@@ -47,6 +74,734 @@ MTHomeDetail::~MTHomeDetail()
     delete ui;
 }
 
+bool MTHomeDetail::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress)
+    {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+
+        if (keyEvent->key() == Qt::Key_Escape)
+        {
+            close(); // This is caught by this same filter.
+            return true;
+        }
+        return true;
+    }
+    else
+    {
+        // standard event processing
+        return QObject::eventFilter(obj, event);
+    }
+}
+
+
+void MTHomeDetail::on_viewContactButton_clicked(bool checked /*=false*/)
+{
+    qDebug() << "View Existing Contact button clicked.";
+
+    if (m_record && (NULL != m_pHome) && (m_nContactID > 0))
+        ((Moneychanger *)(m_pHome->parentWidget()))->mc_addressbook_show(QString("%1").arg(m_nContactID));
+}
+
+void MTHomeDetail::on_addContactButton_clicked(bool checked /*=false*/)
+{
+    qDebug() << "Add New Contact button clicked.";
+
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+        // --------------------------------------------------
+        MTGetStringDialog nameDlg(this);
+
+        if (QDialog::Accepted == nameDlg.exec())
+        {
+            QString strNewContactName = nameDlg.GetOutputString();
+            // --------------------------------------------------
+            const std::string str_acct_id    = recordmt.GetOtherAccountID();
+            const std::string str_nym_id     = recordmt.GetOtherNymID();
+            const std::string str_server_id  = recordmt.GetServerID();
+            const std::string str_asset_id   = recordmt.GetAssetID();
+            // --------------------------------------------------
+            int nContactID = 0;
+
+            if (!str_nym_id.empty())
+            {
+                QString nymID     = QString::fromStdString(str_nym_id);
+                QString serverID  = QString::fromStdString(str_server_id);
+                QString assetID   = QString::fromStdString(str_asset_id);
+                QString accountID = QString::fromStdString(str_acct_id);
+                // --------------------------------------------------
+                nContactID = MTContactHandler::getInstance()->CreateContactBasedOnNym(nymID, serverID);
+                // --------------------------------------------------
+                if (!str_acct_id.empty())
+                {
+                    int nAcctContactID = MTContactHandler::getInstance()->FindContactIDByAcctID(accountID, nymID, serverID, assetID);
+
+                    if (!(nContactID > 0))
+                        nContactID = nAcctContactID;
+                }
+                else if (!str_server_id.empty())
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(nymID, serverID);
+                // --------------------------------------------------
+                if (nContactID > 0)
+                {
+                    MTContactHandler::getInstance()->SetContactName(nContactID, strNewContactName);
+                    // ---------------------------------
+                    m_nContactID = nContactID;
+                    // ---------------------------------
+                    // Refresh the detail page.
+                    //
+                    refresh(recordmt);
+                    // ---------------------------------
+                    // Display the normal contacts dialog, with the new contact
+                    // being the one selected.
+                    //
+                    if (NULL != m_pHome)
+                    {
+                        m_pHome->SetNeedRefresh();
+
+                        ((Moneychanger *)(m_pHome->parentWidget()))->mc_addressbook_show(QString("%1").arg(m_nContactID));
+                    }
+                }
+            }
+            else
+                qDebug() << "Warning: Failed adding a contact, since there was no NymID for this record.";
+        } // accepted. ("OK" clicked on dialog.)
+        // --------------------------------------------------
+    }
+}
+
+void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
+{
+    qDebug() << "Add to Existing Contact button clicked.";
+
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+
+        const std::string str_acct_id    = recordmt.GetOtherAccountID();
+        const std::string str_nym_id     = recordmt.GetOtherNymID();
+        const std::string str_server_id  = recordmt.GetServerID();
+        const std::string str_asset_id   = recordmt.GetAssetID();
+        // --------------------------------------------------
+        if (str_nym_id.empty())
+        {
+            QMessageBox::warning(this, QString("Failure"), QString("Sorry, but this record has no NymID."));
+            return;
+        }
+        // else...
+        //
+        QString nymID     = QString::fromStdString(str_nym_id);
+        QString serverID  = QString::fromStdString(str_server_id);
+        QString assetID   = QString::fromStdString(str_asset_id);
+        QString accountID = QString::fromStdString(str_acct_id);
+
+        if (MTContactHandler::getInstance()->ContactExists(nymID.toInt()))
+        {
+            QMessageBox::warning(this, QString("Strange"),
+                                 QString("Strange: NymID %1 already belongs to an existing contact.").arg(nymID));
+            return;
+        }
+        // --------------------------------------------------------------------
+        // Pop up a Contact selection box. The user chooses an existing contact.
+        // If OK (vs Cancel) then add the Nym / Acct to the existing contact selected.
+        //
+        DlgChooser theChooser(this);
+        // -----------------------------------------------
+        mapIDName & the_map = theChooser.m_map;
+        MTContactHandler::getInstance()->GetContacts(the_map);
+        // -----------------------------------------------
+        theChooser.setWindowTitle("Choose an Existing Contact");
+        // -----------------------------------------------
+        if (theChooser.exec() == QDialog::Accepted)
+        {
+            QString strContactID = theChooser.GetCurrentID();
+
+            qDebug() << QString("SELECT was clicked for ID: %1").arg(strContactID);
+
+            int nContactID = strContactID.isEmpty() ? 0 : strContactID.toInt();
+
+            if (nContactID > 0)
+            {
+                bool bAdded = MTContactHandler::getInstance()->AddNymToExistingContact(nContactID, nymID);
+
+                if (!bAdded)
+                {
+                    QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactID));
+                    QMessageBox::warning(this, QString("Failure"), QString("Failed while trying to add NymID %1 to existing contact '%2' with contact ID: %3").
+                                         arg(nymID).arg(strContactName).arg(nContactID));
+                    return;
+                }
+                // --------------------------------------
+                // else...
+                //
+                if (!str_acct_id.empty())
+                    //int nAcctContactID =
+                    MTContactHandler::getInstance()->FindContactIDByAcctID(accountID, nymID, serverID, assetID);
+                else if (!str_server_id.empty())
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(nymID, serverID);
+                // --------------------------------------------------
+                m_nContactID = nContactID;
+                // ---------------------------------
+                // Refresh the detail page.
+                //
+                refresh(recordmt);
+                // ---------------------------------
+                // Display the normal contacts dialog, with the new contact
+                // being the one selected.
+                //
+                if (NULL != m_pHome)
+                {
+                    m_pHome->SetNeedRefresh();
+
+                    ((Moneychanger *)(m_pHome->parentWidget()))->mc_addressbook_show(QString("%1").arg(m_nContactID));
+                }
+                // ---------------------------------
+            } // nContactID > 0
+        }
+        else
+        {
+          qDebug() << "CANCEL was clicked";
+        }
+    }
+}
+
+
+void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
+{
+    qDebug() << "Delete button clicked.";
+    // --------------------------------
+    QMessageBox::StandardButton reply;
+
+    reply = QMessageBox::question(this, "", "Are you sure you want to archive this record?",
+                                  QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::No)
+      return;
+    // --------------------------------
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+        // -----------------------------------
+        bool bSuccess = recordmt.DeleteRecord();
+
+        if (bSuccess)
+        {
+            if (NULL != m_pHome)
+                m_pHome->OnDeletedRecord();
+            else
+                qDebug() << QString("Error: m_pHome was NULL.");
+        }
+    }
+}
+
+
+
+QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
+{
+    // -----------------------------------------
+    const std::string str_record_asset  = recordmt.GetAssetID();
+    const std::string str_record_nym    = recordmt.GetNymID();
+    const std::string str_record_server = recordmt.GetServerID();
+    // -----------------------------------------
+    QString qstr_record_asset  = QString::fromStdString(str_record_asset);
+    QString qstr_record_nym    = QString::fromStdString(str_record_nym);
+    QString qstr_record_server = QString::fromStdString(str_record_server);
+    // -----------------------------------------
+    std::string str_acct_id;
+    std::string str_acct_nym;
+    std::string str_acct_server;
+    std::string str_acct_asset;
+
+    QString qstr_acct_id,
+            qstr_acct_nym,
+            qstr_acct_server,
+            qstr_acct_asset;
+
+    if (NULL != m_pHome)
+        qstr_acct_id = ((Moneychanger *)(m_pHome->parentWidget()))->get_default_account_id();
+    // -----------------------------------
+    // If there's a default account, and it has the same asset ID
+    // as the record (and server ID and NymID) then accept the instrument
+    // using the default account.
+    //
+    // BUT -- if the default account has the wrong asset ID, or
+    // if there is no default account, then we need to pop up a
+    // list of accounts owned by the same Nym, and filtered by
+    // the server and asset ID from this record.
+    //
+    // We'll also need some sort of option to create an account
+    // on the spot, if at least one doesn't exist matching that
+    // criteria.
+    //
+    if (!qstr_acct_id.isEmpty()) // There IS a default account...
+    {
+        // Need to make sure the default account has the right server ID, NymID,
+        // asset ID, to accept the current record. Otherwise we need to ask the
+        // user to choose an account (the same as if there had been no default
+        // account in the first place.)
+        // -----------------------------------
+        str_acct_id      = qstr_acct_id.toStdString();
+        str_acct_nym     = OTAPI_Wrap::It()->GetAccountWallet_NymID      (str_acct_id);
+        str_acct_server  = OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
+        str_acct_asset   = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+        // -----------------------------------
+        qstr_acct_nym    = QString::fromStdString(str_acct_nym);
+        qstr_acct_server = QString::fromStdString(str_acct_server);
+        qstr_acct_asset  = QString::fromStdString(str_acct_asset);
+        // -----------------------------------
+        if ((qstr_record_nym    != qstr_acct_nym)    ||
+            (qstr_record_server != qstr_acct_server) ||
+            (qstr_record_asset  != qstr_acct_asset) )
+        {
+            // There's a default account, but it's got the wrong Asset type, or the
+            // wrong server, etc, for it to accept this record. Therefore we have to
+            // ask the user to select an account, just the same as if no default account
+            // had been set at all.
+            //
+            str_acct_id      = "";
+            str_acct_nym     = "";
+            str_acct_server  = "";
+            str_acct_asset   = "";
+            // ------------------
+            qstr_acct_id     = QString("");
+            qstr_acct_nym    = QString("");
+            qstr_acct_server = QString("");
+            qstr_acct_asset  = QString("");
+            // ------------------
+        }
+    }
+    // -----------------------------------
+    // By this point, there's definitely no default account, or if it
+    // was, its IDs were all wrong. Therefore we have to ask the user
+    // to choose an account by hand.
+    //
+    if (qstr_acct_id.isEmpty())
+    {
+        DlgChooser theChooser(this);
+        // -----------------------------------------------
+        mapIDName & the_map = theChooser.m_map;
+        // -----------------------------------------------
+        const int32_t acct_count = OTAPI_Wrap::GetAccountCount();
+        // -----------------------------------------------
+        for (int32_t ii = 0; ii < acct_count; ++ii)
+        {
+            //Get OT Acct ID
+            QString OT_acct_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(ii));
+            QString OT_acct_name("");
+            // -----------------------------------------------
+            if (!OT_acct_id.isEmpty()) // Should never be empty.
+            {
+                qstr_acct_id     = OT_acct_id;
+                // -----------------------------------
+                str_acct_id      = qstr_acct_id.toStdString();
+                str_acct_nym     = OTAPI_Wrap::It()->GetAccountWallet_NymID      (str_acct_id);
+                str_acct_server  = OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
+                str_acct_asset   = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+                // -----------------------------------
+                qstr_acct_nym    = QString::fromStdString(str_acct_nym);
+                qstr_acct_server = QString::fromStdString(str_acct_server);
+                qstr_acct_asset  = QString::fromStdString(str_acct_asset);
+                // -----------------------------------------------
+                if ((qstr_record_nym    == qstr_acct_nym)    &&
+                    (qstr_record_server == qstr_acct_server) &&
+                    (qstr_record_asset  == qstr_acct_asset) )
+                {
+                    MTNameLookupQT theLookup;
+
+                    OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString()));
+                    // -----------------------------------------------
+                    the_map.insert(OT_acct_id, OT_acct_name);
+                }
+                // -----------------------------------------------
+                str_acct_id      = "";
+                str_acct_nym     = "";
+                str_acct_server  = "";
+                str_acct_asset   = "";
+                // ------------------
+                qstr_acct_id     = QString("");
+                qstr_acct_nym    = QString("");
+                qstr_acct_server = QString("");
+                qstr_acct_asset  = QString("");
+                // -----------------------------------------------
+            }
+        } // for
+        // -----------------------------------------------
+        // At this point, the_map contains a list of accounts that could be
+        // used to accept the record. At this point we could just pop up the
+        // chooser and let the user pick one of those accounts.
+        //
+        // BUT -- what if the list is empty? In that case, the user doesn't
+        // have an appropriate account. In which case one needs to be created...
+        //
+        //
+        if (0 == the_map.size())
+        {
+            QMessageBox::warning(this, QString("No Matching Accounts"),
+                                 QString("There are no existing accounts with the proper asset type, server, and nym. "
+                                         "In the future, this is where you would be given the option to create "
+                                         "one. (Someday.) In the meantime, just create one and then try again."));
+            return QString("");
+        }
+        else if (1 == the_map.size())
+        {
+            // If there's only one account that could be appropriate, then we just
+            // go with that account.
+            //
+            mapIDName::iterator it_map = the_map.begin();
+            qstr_acct_id = it_map.key();
+        }
+        else // There are multiple matching accounts, so we ask the user to choose one.
+        {
+            // -----------------------------------------------
+            theChooser.setWindowTitle("Select an Asset Account");
+            // -----------------------------------------------
+            if (theChooser.exec() == QDialog::Accepted)
+            {
+                qDebug() << QString("SELECT was clicked for AcctID: %1").arg(theChooser.m_qstrCurrentID);
+
+                if (!theChooser.m_qstrCurrentID.isEmpty())
+                    qstr_acct_id = theChooser.m_qstrCurrentID;
+            }
+            // (else the user cancelled.)
+        }
+    }
+    // ----------------------------------
+    return qstr_acct_id;
+}
+
+
+
+
+void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
+{
+    qDebug() << "Accept button clicked.";
+
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+        // -------------------------------------------------
+        const bool bIsTransfer = (recordmt.GetRecordType() == MTRecord::Transfer);
+        const bool bIsReceipt  = (recordmt.GetRecordType() == MTRecord::Receipt);
+        // -------------------------------------------------
+        if (bIsTransfer)
+        {
+            bool bSuccess = false;
+            {
+                MTOverrideCursor theSpinner;
+                // -----------------------------------------
+                bSuccess = recordmt.AcceptIncomingTransfer();
+            }
+            // -----------------------------------------
+            if (!bSuccess)
+            {
+                QMessageBox::warning(this, QString("Transaction failure"), QString("Failed accepting this transfer."));
+            }
+            else
+            {
+                // Refresh the main list, or at least change the color of the refresh button.
+                //
+                if (NULL != m_pHome)
+                    m_pHome->SetNeedRefresh();
+            }
+        }
+        // -------------------------------------------------
+        else if (bIsReceipt)
+        {
+            bool bSuccess = false;
+            {
+                MTOverrideCursor theSpinner;
+                // -----------------------------------------
+                bSuccess = recordmt.AcceptIncomingReceipt();
+            }
+            // -----------------------------------------
+            if (!bSuccess)
+            {
+                QMessageBox::warning(this, QString("Transaction failure"), QString("Failed accepting this receipt."));
+            }
+            else
+            {
+                // Refresh the main list, or at least change the color of the refresh button.
+                //
+                if (NULL != m_pHome)
+                    m_pHome->SetNeedRefresh();
+            }
+        }
+        // -------------------------------------------------
+        else if (MTRecord::Instrument == recordmt.GetRecordType())
+        {
+            // --------------------------------
+            if (recordmt.IsInvoice())
+            {
+                QMessageBox::StandardButton reply;
+
+                reply = QMessageBox::question(this, "", "Are you sure you want to pay this invoice?",
+                                              QMessageBox::Yes|QMessageBox::No);
+                if (reply == QMessageBox::No)
+                    return;
+            }
+            // --------------------------------
+            QString qstr_acct_id = FindAppropriateDepositAccount(recordmt);
+            // -----------------------------------
+            // At this point we likely have the account ID, and if so, it's definitely
+            // got the right asset type, server, etc. Therefore it's time to accept the
+            // instrument.
+            //
+            if (!qstr_acct_id.isEmpty())
+            {
+                bool bSuccess = false;
+                {
+                    MTOverrideCursor theSpinner;
+                    // -----------------------------------------
+                    bSuccess = recordmt.AcceptIncomingInstrument(qstr_acct_id.toStdString());
+                }
+                // -----------------------------------------
+                if (!bSuccess)
+                {
+                    QMessageBox::warning(this, QString("Transaction failure"), QString("Failed accepting this instrument."));
+                }
+                else
+                {
+                    // Refresh the main list, or at least change the color of the refresh button.
+                    //
+                    if (NULL != m_pHome)
+                        m_pHome->SetNeedRefresh();
+                }
+            }
+        } // record type == instrument.
+        // -------------------------------------------------
+    }
+}
+
+
+void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
+{
+    qDebug() << "Cancel button clicked.";
+
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+        // ---------------------------------------
+        if (recordmt.IsCash())
+        {
+            QMessageBox::StandardButton reply;
+
+            reply = QMessageBox::question(this, "",
+                                          "This will prevent the original recipient from depositing the cash. "
+                                          "(And FYI, this action will fail, if he has already deposited it.) "
+                                          "Are you sure you want to recover this cash?",
+                                          QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::No)
+                return;
+            // -----------------------------------
+            QString qstr_acct_id = FindAppropriateDepositAccount(recordmt);
+            // -----------------------------------
+            // At this point we likely have the account ID, and if so, it's definitely
+            // got the right asset type, server, etc. Therefore it's time to accept the
+            // instrument.
+            //
+            if (!qstr_acct_id.isEmpty())
+            {
+                bool bSuccess = false;
+                {
+                    MTOverrideCursor theSpinner;
+                    // -----------------------------------------
+                    OT_ME madeEasy;
+
+                    if (1 == madeEasy.deposit_cash(recordmt.GetServerID(), recordmt.GetNymID(),
+                                                   qstr_acct_id.toStdString(), recordmt.GetContents()))
+                    {
+                        bSuccess = true;
+                        recordmt.DiscardOutgoingCash();
+                    }
+                }
+                // -----------------------------------------
+                if (!bSuccess)
+                {
+                    QMessageBox::warning(this, QString("Recovery failure"),
+                                         QString("Failed recovering this outgoing cash. "
+                                                 "(Perhaps the recipient already deposited it?)"));
+                }
+                else
+                {
+                    // Refresh the main list, or at least change the color of the refresh button.
+                    //
+                    if (NULL != m_pHome)
+                    {
+                        m_pHome->SetNeedRefresh();
+                        m_pHome->OnDeletedRecord();
+                    }
+                }
+            } // qstr_acct_id not empty.
+        } // record is cash
+        // ----------------------------------------
+        else // record is not cash (it's some other outgoing instrument, such as a cheque.)
+        {
+            QMessageBox::StandardButton reply;
+
+            reply = QMessageBox::question(this, "",
+                                          "This will prevent the original recipient from exercising this instrument. "
+                                          "(And FYI, this action will fail if he's already done so.) "
+                                          "Are you sure you want to cancel?",
+                                          QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::No)
+                return;
+            // ----------------------------------------
+            bool bSuccess = false;
+            {
+                MTOverrideCursor theSpinner;
+                // -----------------------------------------
+                bSuccess = recordmt.CancelOutgoing(recordmt.GetAccountID());
+            }
+            // -----------------------------------------
+            if (!bSuccess)
+            {
+                QMessageBox::warning(this, QString("Cancellation failure"),
+                                     QString("Failed canceling this outgoing instrument."));
+            }
+            else
+            {
+                // Refresh the main list, or at least change the color of the refresh button.
+                //
+                if (NULL != m_pHome)
+                    m_pHome->SetNeedRefresh();
+            }
+        } // not cash
+        // ----------------------------------------
+    } // if m_record not NULL.
+}
+
+
+
+void MTHomeDetail::on_discardOutgoingButton_clicked(bool checked /*=false*/)
+{
+    qDebug() << "Discard Outgoing button clicked.";
+
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+        // ---------------------------------------
+        QMessageBox::StandardButton reply;
+
+        reply = QMessageBox::question(this, "",
+                                      "This will prevent you from recovering this cash in the future. "
+                                      "(And FYI, once the cash expires, this record will be discarded automatically anyway.) "
+                                      "Are you sure you want to discard this record of sent cash?",
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No)
+            return;
+        // ----------------------------------------
+        bool bSuccess = false;
+        {
+            MTOverrideCursor theSpinner;
+            // -----------------------------------------
+            bSuccess = recordmt.DiscardOutgoingCash();
+        }
+        // -----------------------------------------
+        if (!bSuccess)
+        {
+            QMessageBox::warning(this, QString("Discard failure"),
+                                 QString("Failed discarding this sent cash."));
+        }
+        else
+        {
+            // Refresh the main list, or at least change the color of the refresh button.
+            //
+            if (NULL != m_pHome)
+            {
+                m_pHome->SetNeedRefresh();
+                m_pHome->OnDeletedRecord();
+            }
+        }
+        // ----------------------------------
+    }
+}
+
+
+
+void MTHomeDetail::on_discardIncomingButton_clicked(bool checked /*=false*/)
+{
+    qDebug() << "Discard Incoming button clicked.";
+
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+        // ---------------------------------------
+        QMessageBox::StandardButton reply;
+
+        QString qstr_instrument = recordmt.IsInvoice() ? QString("invoice") : QString("instrument");
+
+        reply = QMessageBox::question(this, "",
+                                      QString("Are you sure you want to discard this incoming %1?").arg(qstr_instrument),
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::No)
+            return;
+        // ----------------------------------------
+        bool bSuccess = false;
+        {
+            MTOverrideCursor theSpinner;
+            // -------------------------------------
+            bSuccess = recordmt.DiscardIncoming();
+        }
+        // -----------------------------------------
+        if (!bSuccess)
+        {
+            QMessageBox::warning(this, QString("Discard failure"),
+                                 QString("Failed discarding this incoming %1.").arg(qstr_instrument));
+        }
+        else
+        {
+            // Refresh the main list, or at least change the color of the refresh button.
+            //
+            if (NULL != m_pHome)
+            {
+                m_pHome->SetNeedRefresh();
+                m_pHome->OnDeletedRecord();
+            }
+        }
+        // ----------------------------------
+    }
+}
+
+
+
+void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
+{
+    if (m_record)
+    {
+        MTRecord & recordmt = *m_record;
+        // --------------------------------------------------
+        const std::string str_my_nym_id    = recordmt.GetNymID();
+        const std::string str_other_nym_id = recordmt.GetOtherNymID();
+        const std::string str_server_id    = recordmt.GetServerID();
+        // --------------------------------------------------
+        QString myNymID    = QString::fromStdString(str_my_nym_id);
+        QString otherNymID = QString::fromStdString(str_other_nym_id);
+        QString serverID   = QString::fromStdString(str_server_id);
+        // --------------------------------------------------
+        MTCompose * compose_window = new MTCompose;
+        compose_window->setAttribute(Qt::WA_DeleteOnClose);
+        // --------------------------------------------------
+        compose_window->setInitialSenderNym   (myNymID);
+        compose_window->setInitialRecipientNym(otherNymID);
+        compose_window->setInitialServer      (serverID);
+        // ---------------------------------------
+        // Set subject, if one is available.
+        std::string str_desc;
+
+        if (recordmt.IsMail())
+            recordmt.FormatShortMailDescription(str_desc);
+        else
+            recordmt.FormatDescription(str_desc);
+        // ---------------------------------------
+        compose_window->setInitialSubject(QString::fromStdString(str_desc));
+        // --------------------------------------------------
+        compose_window->dialog();
+        compose_window->show();
+        // --------------------------------------------------
+    }
+}
+
+
 //static
 void MTHomeDetail::clearLayout(QLayout* pLayout)
 {
@@ -64,8 +819,6 @@ void MTHomeDetail::clearLayout(QLayout* pLayout)
         delete pItemAt;
     }
 }
-
-
 
 
 //static
@@ -185,14 +938,6 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt, bool bExte
             // ----------------------------------------------------------------
             QPixmap pixmapLock    (":/icons/icons/lock.png");
             // ----------------------------------------------------------------
-//            QIcon lockButtonIcon    (pixmapLock);
-            // ----------------------------------------------------------------
-//          buttonLock->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-//            buttonLock->setAutoRaise(true);
-//            buttonLock->setIcon(lockButtonIcon);
-//          buttonLock->setIconSize(QSize(32,32));
-//          buttonLock->setText("Send");
-            // ----------------------------------------------------------------
             QLabel * pLockLabel = new QLabel;
             pLockLabel->setPixmap(pixmapLock);
 
@@ -269,9 +1014,9 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt, bool bExte
 
 void SetHeight (QPlainTextEdit* edit, int nRows)
 {
-  QFontMetrics m (edit -> font()) ;
-  int RowHeight = m.lineSpacing() ;
-  edit -> setFixedHeight  (nRows * RowHeight) ;
+    QFontMetrics m (edit -> font()) ;
+    int RowHeight = m.lineSpacing() ;
+    edit -> setFixedHeight  (nRows * RowHeight) ;
 }
 
 
@@ -290,8 +1035,37 @@ void increment_cell(int & nCurrentRow, int & nCurrentColumn)
     }
 }
 
+
 void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 {
+//  qDebug() << QString("MTHomeDetail::refresh: nRow: %1").arg(nRow);
+
+    if ((nRow >= 0) && (nRow < theList.size()))
+    {
+        weak_ptr_MTRecord   weakRecord = theList.GetRecord(nRow);
+        shared_ptr_MTRecord record     = weakRecord.lock();
+
+        if (weakRecord.expired())
+        {
+            this->setLayout(m_pDetailLayout);
+            return;
+        }
+        // --------------------------------------------------
+        m_record = record;
+        MTRecord & recordmt = *record;
+        // --------------------------------------------------
+        refresh(recordmt);
+    }
+//  else
+//      qDebug() << QString("MTHomeDetail::refresh: nRow %1 is out of bounds. (Max size is %2.)").arg(nRow).arg(theList.size());
+    else
+        RecreateLayout(); // This blanks out the detail side.
+}
+
+
+void MTHomeDetail::RecreateLayout()
+{
+    m_nContactID = 0;
     // --------------------------------------------------
     if (NULL != m_pDetailLayout)
     {
@@ -304,17 +1078,13 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
     m_pDetailLayout->setAlignment(Qt::AlignTop);
     m_pDetailLayout->setContentsMargins(0, 0, 0, 0);
     // --------------------------------------------------
-    weak_ptr_MTRecord   weakRecord = theList.GetRecord(nRow);
-    shared_ptr_MTRecord record     = weakRecord.lock();
+}
 
-    if (weakRecord.expired())
-    {
-        this->setLayout(m_pDetailLayout);
-        return;
-    }
+
+void MTHomeDetail::refresh(MTRecord & recordmt)
+{
     // --------------------------------------------------
-    m_record = record;
-    MTRecord & recordmt = *record;
+    RecreateLayout();
     // --------------------------------------------------
     int nCurrentRow = 0;
     int nCurrentColumn = 1;
@@ -325,19 +1095,29 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 
     if (NULL != pHeader)
     {            
+        pHeader->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
         m_pDetailLayout->addWidget(pHeader, nCurrentRow, nCurrentColumn, 1, 2);
         m_pDetailLayout->setAlignment(pHeader, Qt::AlignTop);
         nCurrentRow++;
     }
     // --------------------------------------------------
-    QString nymId  = QString(record->GetOtherNymID().c_str());
-    QString acctId = QString(record->GetOtherAccountID().c_str());
-    // --------------------------------------------------
-    if (record->HasMemo())
+    if (recordmt.HasMemo())
     {
         QPlainTextEdit *sec = new QPlainTextEdit;
 
-        QString strMemo = QString(record->GetMemo().c_str());
+//        const std::string str_acct_id    = recordmt.GetOtherAccountID();
+//        const std::string str_nym_id     = recordmt.GetOtherNymID();
+//        const std::string str_server_id  = recordmt.GetServerID();
+//        const std::string str_asset_id   = recordmt.GetAssetID();
+//
+//        QString strMemo = QString("AcctID: %1 NymID: %2 ServerID: %3 AssetID: %4").
+//                arg(QString::fromStdString(str_acct_id)).
+//                arg(QString::fromStdString(str_nym_id)).
+//                arg(QString::fromStdString(str_server_id)).
+//                arg(QString::fromStdString(str_asset_id));
+
+
+        QString strMemo = QString(recordmt.GetMemo().c_str());
 
         sec->setPlainText(strMemo);
         sec->setReadOnly(true);
@@ -351,7 +1131,6 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         pHLayout->setAlignment(labelMemo, Qt::AlignLeft);
         pHLayout->setAlignment(sec, Qt::AlignTop);
         // -----------------------------------------
-//      m_pDetailLayout->addWidget(sec, nCurrentRow, nCurrentColumn);
         m_pDetailLayout->addLayout(pHLayout, nCurrentRow, nCurrentColumn, 1, 2);
         m_pDetailLayout->setAlignment(pHLayout, Qt::AlignTop);
 
@@ -365,129 +1144,130 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 
 
 
-    // --------------------------------------------------
+    // *************************************************************
     QString viewDetails = QString("");
 
-    if (record->IsReceipt() || record->IsOutgoing())
+    if (recordmt.IsReceipt() || recordmt.IsOutgoing())
         viewDetails = QString("View Recipient Details");
     else
         viewDetails = QString("View Sender Details");
     // --------------------------------------------------
-//    SimpleContact *existingContact = [SimpleContact contactWithNymId:nymId andAccountId:acctId];
-    bool bExistingContact = false;
+    const std::string str_acct_id    = recordmt.GetOtherAccountID();
+    const std::string str_nym_id     = recordmt.GetOtherNymID();
+    const std::string str_server_id  = recordmt.GetServerID();
+    const std::string str_asset_id   = recordmt.GetAssetID();
 
-    QString contactActionName = bExistingContact ? viewDetails : QString("Add as Contact");
-    QPushButton * contactButton = new QPushButton(contactActionName);
-
-    m_pDetailLayout->addWidget(contactButton, nCurrentRow, nCurrentColumn);
-    m_pDetailLayout->setAlignment(contactButton, Qt::AlignTop);
-
-    increment_cell(nCurrentRow, nCurrentColumn);
-//  nCurrentRow++;
-
-    // -------------------------------------------
-
-
-    /*
-
-    NSMutableArray* actions = [NSMutableArray arrayWithObject:[SectionAction actionWithName:actionName icon:nil block:^(UIViewController* vc) {
-        ContactEditorViewController *editor = [[ContactEditorViewController alloc] initWithNibName:nil bundle:nil];
-        SimpleContact *cnt = existingContact;
-        if (!cnt) {
-          cnt = [SimpleContact newContact];
-          cnt.nymId = nymId;
-          cnt.accountId = acctId;
-        }
-        editor.contact = cnt;
-        self.shouldResetRecordOnView = true; //They can possibly delete the contact on view, so we always have to reset.
-        [self.navigationController pushViewController:editor animated:YES];
-    }]];
-    */
-
-
-
+    if (!str_nym_id.empty() && !str_server_id.empty())
+        MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_nym_id),
+                                                               QString::fromStdString(str_server_id));
     // --------------------------------------------------
-    if (record->CanDeleteRecord())
+    int nContactID = 0;
+
+    if (!str_acct_id.empty())
+        nContactID = MTContactHandler::getInstance()->FindContactIDByAcctID(QString::fromStdString(str_acct_id),
+                                                                            QString::fromStdString(str_nym_id),
+                                                                            QString::fromStdString(str_server_id),
+                                                                            QString::fromStdString(str_asset_id));
+    if (!(nContactID > 0) && !str_nym_id.empty())
+        nContactID = MTContactHandler::getInstance()->FindContactIDByNymID (QString::fromStdString(str_nym_id));
+    // --------------------------------------------------
+    bool bExistingContact = (nContactID > 0);
+
+    if (bExistingContact)
     {
-        QString deleteActionName = record->IsMail() ? QString("Archive this Message") : QString("Archive this Record");
+        m_nContactID = nContactID;
+        // --------------------------------------------------
+        QPushButton * viewContactButton = new QPushButton(viewDetails);
+
+        m_pDetailLayout->addWidget(viewContactButton, nCurrentRow, nCurrentColumn,1,1);
+        m_pDetailLayout->setAlignment(viewContactButton, Qt::AlignTop);
+
+        increment_cell(nCurrentRow, nCurrentColumn);
+        // -------------------------------------------
+        connect(viewContactButton, SIGNAL(clicked()), this, SLOT(on_viewContactButton_clicked()));
+    }
+    else if (!str_nym_id.empty())
+    {
+        QPushButton * addContactButton = new QPushButton(QString("Add as Contact"));
+
+        m_pDetailLayout->addWidget(addContactButton, nCurrentRow, nCurrentColumn,1,1);
+        m_pDetailLayout->setAlignment(addContactButton, Qt::AlignTop);
+
+        increment_cell(nCurrentRow, nCurrentColumn);
+        // -------------------------------------------
+        connect(addContactButton, SIGNAL(clicked()), this, SLOT(on_addContactButton_clicked()));
+        // --------------------------------------------------
+        // If the contact didn't already exist, we don't just have "add new contact"
+        // but also "add to existing contact."
+        //
+        QPushButton * existingContactButton = new QPushButton(QString("Add to an Existing Contact"));
+
+        m_pDetailLayout->addWidget(existingContactButton, nCurrentRow, nCurrentColumn,1,1);
+        m_pDetailLayout->setAlignment(existingContactButton, Qt::AlignTop);
+
+        increment_cell(nCurrentRow, nCurrentColumn);
+        // ----------------------------------
+        connect(existingContactButton, SIGNAL(clicked()), this, SLOT(on_existingContactButton_clicked()));
+    }
+    // *************************************************************
+    if (recordmt.CanDeleteRecord())
+    {
+        QString deleteActionName = recordmt.IsMail() ? QString("Archive this Message") : QString("Archive this Record");
         QPushButton * deleteButton = new QPushButton(deleteActionName);
 
-        m_pDetailLayout->addWidget(deleteButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->addWidget(deleteButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(deleteButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
-    //  nCurrentRow++;
-
-
-        /*
-        [actions addObject:[SectionAction actionWithName:(record->IsMail() ? @"Archive this Message" : @"Archive this Record") icon:nil block:^(UIViewController* vc)
-        {
-            bool (^actionBlock)() = ^bool{return false;};
-
-            NSString *msg = @"Deletion Failed.";
-            UIAlertView *fail = [[UIAlertView alloc] initWithTitle:nil message:msg delegate:nil
-                                                 cancelButtonTitle:@"OK" otherButtonTitles:nil];
-
-            actionBlock = ^bool {
-                bool bSuccess = record->DeleteRecord();
-
-                if (bSuccess)
-                {
-                    self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                    [self.navigationController popViewControllerAnimated:YES];
-                }
-                return bSuccess;
-            };
-            [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:@"Archiving..." withFailureAlert:fail];
-        }]];
-        */
+        // -------------------------------------------
+        connect(deleteButton, SIGNAL(clicked()), this, SLOT(on_deleteButton_clicked()));
     }
     // --------------------------------------------------
 
-    if (record->CanAcceptIncoming())
+    if (recordmt.CanAcceptIncoming())
     {
-        const bool bIsTransfer = (record->GetRecordType() == MTRecord::Transfer);
-        const bool bIsReceipt  = (record->GetRecordType() == MTRecord::Receipt);
+        const bool bIsTransfer = (recordmt.GetRecordType() == MTRecord::Transfer);
+        const bool bIsReceipt  = (recordmt.GetRecordType() == MTRecord::Receipt);
 
         QString nameString;
         QString actionString;
 
-        if (record->IsTransfer())
+        if (recordmt.IsTransfer())
         {
             nameString = QString("Accept this Transfer");
             actionString = QString("Accepting...");
         }
-        else if (record->IsReceipt())
+        else if (recordmt.IsReceipt())
         {
             nameString = QString("Accept this Receipt");
             actionString = QString("Accepting...");
         }
-        else if (record->IsInvoice())
+        else if (recordmt.IsInvoice())
         {
             nameString = QString("Pay this Invoice");
             actionString = QString("Paying...");
         }
-        else if (record->IsPaymentPlan())
+        else if (recordmt.IsPaymentPlan())
         {
             nameString = QString("Activate this Payment Plan");
             actionString = QString("Activating...");
         }
-        else if (record->IsContract())
+        else if (recordmt.IsContract())
         {
             nameString = QString("Sign this Smart Contract");
             actionString = QString("Signing...");
         }
-        else if (record->IsCash())
+        else if (recordmt.IsCash())
         {
             nameString = QString("Deposit this Cash");
             actionString = QString("Depositing...");
         }
-        else if (record->IsCheque())
+        else if (recordmt.IsCheque())
         {
             nameString = QString("Deposit this Cheque");
             actionString = QString("Depositing...");
         }
-        else if (record->IsVoucher())
+        else if (recordmt.IsVoucher())
         {
             nameString = QString("Accept this Payment");
             actionString = QString("Accepting...");
@@ -500,82 +1280,16 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 
         QPushButton * acceptButton = new QPushButton(nameString);
 
-        m_pDetailLayout->addWidget(acceptButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->addWidget(acceptButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(acceptButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
-    //  nCurrentRow++;
 
+        connect(acceptButton, SIGNAL(clicked()), this, SLOT(on_acceptButton_clicked()));
 
-        /*
-        [actions addObject:[SectionAction actionWithName:nameString icon:nil block:^(UIViewController* vc)
-        {
-            bool (^actionBlock)() = ^bool{return false;};
-
-            NSString *msg = QString("Transaction Failed.");
-            UIAlertView *fail = [[UIAlertView alloc] initWithTitle:nil message:msg delegate:nil
-                                                 cancelButtonTitle:QString("OK") otherButtonTitles:nil];
-
-            if (bIsTransfer)
-            {
-                actionBlock = ^bool {
-                    bool bSuccess = record->AcceptIncomingTransfer();
-
-                    if (bSuccess)
-                    {
-                        self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                        [self.navigationController popViewControllerAnimated:YES];
-                    }
-                    return bSuccess;
-                };
-                [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
-            }
-            else if (bIsReceipt)
-            {
-                actionBlock = ^bool {
-                    bool bSuccess = record->AcceptIncomingReceipt();
-
-                    if (bSuccess)
-                    {
-                        self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                        [self.navigationController popViewControllerAnimated:YES];
-                    }
-                    return bSuccess;
-                };
-                [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
-            }
-            else if (record->GetRecordType() == MTRecord::Instrument) {  // TODO: filter these accounts by serverID and asset type ID.
-                ContractPickerViewController *picker = [ContractPickerViewController pickerWithTitle:QString("Account")
-                                                                                          dataSource:[AccountContractList instance]];
-                picker.cancelButtonEnabled = YES;
-                picker.callback = ^(ContractPickerViewController* vc, id<ContractWrapper> contract) {
-
-                    bool (^actionBlock)() = ^bool{return false;};
-
-                    if (contract) {
-                        actionBlock = ^bool {
-                            bool bSuccess = record->AcceptIncomingInstrument(contract.contractId.UTF8String);
-
-                            if (bSuccess)
-                            {
-                                self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                                [self.navigationController popViewControllerAnimated:YES];
-                            }
-                            return bSuccess;
-                        };
-                        [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
-                    }
-                    [vc dismissModalViewControllerAnimated:YES];
-                };
-                [vc presentModalViewController:picker animated:YES];
-            }
-            //TODO do a refresh vs a pop
-
-        }]];
-        */
     }
 
-    if (record->CanCancelOutgoing())
+    if (recordmt.CanCancelOutgoing())
     {
         QString msg = QString("Cancellation Failed. Perhaps recipient had already accepted it?");
 //        UIAlertView *fail = [[UIAlertView alloc] initWithTitle:nil message:msg delegate:nil
@@ -584,21 +1298,21 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         QString cancelString;
         QString actionString = QString("Canceling...");
 
-        if (record->IsInvoice())
+        if (recordmt.IsInvoice())
             cancelString = QString("Cancel this Invoice");
-        else if (record->IsPaymentPlan())
+        else if (recordmt.IsPaymentPlan())
             cancelString = QString("Cancel this Payment Plan");
-        else if (record->IsContract())
+        else if (recordmt.IsContract())
             cancelString = QString("Cancel this Smart Contract");
-        else if (record->IsCash())
+        else if (recordmt.IsCash())
         {
             cancelString = QString("Recover this Cash");
             actionString = QString("Recovering...");
             msg = QString("Recovery Failed. Perhaps recipient had already accepted it?");
         }
-        else if (record->IsCheque())
+        else if (recordmt.IsCheque())
             cancelString = QString("Cancel this Cheque");
-        else if (record->IsVoucher())
+        else if (recordmt.IsVoucher())
             cancelString = QString("Cancel this Payment");
         else
             cancelString = QString("Cancel this Payment");
@@ -606,202 +1320,91 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 
         QPushButton * cancelButton = new QPushButton(cancelString);
 
-        m_pDetailLayout->addWidget(cancelButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->addWidget(cancelButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(cancelButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
-    //  nCurrentRow++;
 
+        connect(cancelButton, SIGNAL(clicked()), this, SLOT(on_cancelButton_clicked()));
 
-        /*
-        [actions addObject:[SectionAction actionWithName:cancelString icon:nil block:^(UIViewController* vc) {
-            bool (^actionBlock)() = ^bool{return false;};
-
-            actionBlock = ^bool {
-
-                if (record->IsCash())
-                {
-                    ContractPickerViewController *picker = [ContractPickerViewController pickerWithTitle:QString("Account") // TODO: filter these accounts by serverID and asset type ID.
-                                                                                              dataSource:[AccountContractList instance]];
-                    picker.cancelButtonEnabled = YES;
-                    picker.callback = ^(ContractPickerViewController* vc, id<ContractWrapper> contract) {
-
-                        bool (^actionBlock)() = ^bool{return false;};
-
-                        if (contract) {
-                            actionBlock = ^bool {
-                                OT_ME madeEasy;
-                                bool bInnerSuccess = false;
-                                if (1 == madeEasy.deposit_cash(record->GetServerID(), record->GetNymID(), contract.contractId.UTF8String, record->GetContents()))
-                                {
-                                    bInnerSuccess = true;
-                                    record->DiscardOutgoingCash();
-                                    self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                                    [self.navigationController popViewControllerAnimated:YES];
-                                }
-                                return bInnerSuccess;
-                            };
-                            [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
-                        }
-                        [vc dismissModalViewControllerAnimated:YES];
-                    };
-                    [vc presentModalViewController:picker animated:YES];
-                }
-                else
-                {
-                    bool bSuccess = record->CancelOutgoing(record->GetAccountID());
-
-                    if (bSuccess)
-                    {
-                        self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-                        [self.navigationController popViewControllerAnimated:YES];
-                    }
-                    return bSuccess;
-                }
-
-                return true;
-            };
-
-            [LoadingView fallibleReloadAction:actionBlock inView:self.view withText:actionString withFailureAlert:fail];
-
-        }]];
-        */
     }
 
-    if (record->CanDiscardOutgoingCash())
+    if (recordmt.CanDiscardOutgoingCash())
     {
         QString discardString = QString("Discard this Sent Cash");
 
-        QPushButton * discardButton = new QPushButton(discardString);
+        QPushButton * discardOutgoingButton = new QPushButton(discardString);
 
-        m_pDetailLayout->addWidget(discardButton, nCurrentRow, nCurrentColumn);
-        m_pDetailLayout->setAlignment(discardButton, Qt::AlignTop);
+        m_pDetailLayout->addWidget(discardOutgoingButton, nCurrentRow, nCurrentColumn,1,1);
+        m_pDetailLayout->setAlignment(discardOutgoingButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
-    //  nCurrentRow++;
+
+        connect(discardOutgoingButton, SIGNAL(clicked()), this, SLOT(on_discardOutgoingButton_clicked()));
 
 
-        /*
-        [actions addObject:[SectionAction actionWithName:discardString icon:nil block:^(UIViewController* vc) {
-            record->DiscardOutgoingCash();
-
-            self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-            [self.navigationController popViewControllerAnimated:YES];
-        }]];
-        */
     }
 
-    if (record->CanDiscardIncoming())
+    if (recordmt.CanDiscardIncoming())
     {
         QString discardString;
 
-        if (record->IsInvoice())
+        if (recordmt.IsInvoice())
             discardString = QString("Discard this Invoice");
-        else if (record->IsPaymentPlan())
+        else if (recordmt.IsPaymentPlan())
             discardString = QString("Discard this Payment Plan");
-        else if (record->IsContract())
+        else if (recordmt.IsContract())
             discardString = QString("Discard this Smart Contract");
-        else if (record->IsCash())
+        else if (recordmt.IsCash())
             discardString = QString("Discard this Cash");
-        else if (record->IsCheque())
+        else if (recordmt.IsCheque())
             discardString = QString("Discard this Cheque");
-        else if (record->IsVoucher())
+        else if (recordmt.IsVoucher())
             discardString = QString("Discard this Payment");
         else
             discardString = QString("Discard this Payment");
 
 
-        QPushButton * discardButton = new QPushButton(discardString);
+        QPushButton * discardIncomingButton = new QPushButton(discardString);
 
-        m_pDetailLayout->addWidget(discardButton, nCurrentRow, nCurrentColumn);
-        m_pDetailLayout->setAlignment(discardButton, Qt::AlignTop);
+        m_pDetailLayout->addWidget(discardIncomingButton, nCurrentRow, nCurrentColumn,1,1);
+        m_pDetailLayout->setAlignment(discardIncomingButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
-    //  nCurrentRow++;
 
+        connect(discardIncomingButton, SIGNAL(clicked()), this, SLOT(on_discardIncomingButton_clicked()));
 
-        /*
-        [actions addObject:[SectionAction actionWithName:discardString icon:nil block:^(UIViewController* vc) {
-            record->DiscardIncoming();
-
-            self.navigationController.navigationItem.rightBarButtonItem.tintColor = [UIColor redColor];
-            [self.navigationController popViewControllerAnimated:YES];
-        }]];
-        */
     }
 
-    if (!(record->GetOtherNymID().empty()))
+    if (!(recordmt.GetOtherNymID().empty()))
     {
         QString msgUser;
 
-        if (record->IsReceipt() || record->IsOutgoing())
+        if (recordmt.IsReceipt() || recordmt.IsOutgoing())
             msgUser = QString("Message the Recipient");
         else
             msgUser = QString("Message the Sender");
 
 
-        QPushButton * msgButton = new QPushButton(((record->IsMail() && !record->IsOutgoing()) ? QString("Reply to this Message") : msgUser));
+        QPushButton * msgButton = new QPushButton(((recordmt.IsMail() && !recordmt.IsOutgoing()) ? QString("Reply to this Message") : msgUser));
 
-        m_pDetailLayout->addWidget(msgButton, nCurrentRow, nCurrentColumn);
+        m_pDetailLayout->addWidget(msgButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(msgButton, Qt::AlignTop);
 
         increment_cell(nCurrentRow, nCurrentColumn);
-    //  nCurrentRow++;
 
+        connect(msgButton, SIGNAL(clicked()), this, SLOT(on_msgButton_clicked()));
 
-        /*
-            // Display the SendMailViewController here.
-            //
-            SendMailViewController *send_mail_control = [[SendMailViewController alloc] initWithNibName:nil bundle:nil];
-
-            // Pre-fill the recipient here.
-//            send_mail_control.record = record;
-            send_mail_control.nymID = QString(record->GetOtherNymID().c_str());
-
-
-            // NOTE: You will need to lookup the CONTACT for the appropriate recipient,
-            // since the sendMail page uses a Contact for a recipient.
-            // (And what if there IS no contact for that Nym??)
-
-            // Use this call to get the Nym Name:
-            //std::string MTNameLookupIPhone::GetNymName(const std::string & str_id) const
-
-            // But what if I don't need the Nym Name? What if I need the actual Contact?
-
-            // Anyway, once you are able to lookup the contact for the appropriate recipient,
-            // that means you should also be able to lookup the contact when displaying any
-            // transaction detail, so you can remove the "Add as contact" button IN CASES
-            // WHERE THE CONTACT ALREADY EXISTS.
-
-            [self.navigationController pushViewController:send_mail_control animated:YES];
-        }]];
-        */
     }
+
     // ----------------------------------
-
-
-
     if (nCurrentColumn > 1)
     {
         nCurrentColumn = 1;
         nCurrentRow++;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // ----------------------------------
+
     // TRANSACTION IDs DISPLAYED HERE
 
 //    ActionSection *act = [ActionSection sectionWithName:QString("Actions") andActions:actions];
@@ -819,54 +1422,41 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
     QWidget    * pTab1Widget = new QWidget;
     QWidget    * pTab2Widget = NULL;
 
-    pTab1Widget->setLayout(m_pDetailLayout);
-
-    pTabWidget->addTab(pTab1Widget, QString("Details"));
-
+    pTabWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    pTab1Widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     pTabWidget->setContentsMargins(5, 5, 5, 5);
     pTab1Widget->setContentsMargins(5, 5, 5, 5);
 
+    pTabWidget->addTab(pTab1Widget, QString("Details"));
     // ----------------------------------
-    if (record->HasContents())
+    if (recordmt.HasContents())
     {
         QPlainTextEdit *sec = new QPlainTextEdit;
 
-        QString strContents = QString(record->GetContents().c_str());
+        QString strContents = QString(recordmt.GetContents().c_str());
 
         sec->setPlainText(strContents);
         sec->setReadOnly(true);
+        sec->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
         // -------------------------------
 
         // -------------------------------
         QVBoxLayout * pvBox = NULL;
 
-        if (record->IsMail())
+        if (recordmt.IsMail())
         {
-            m_pDetailLayout->addWidget   (sec, nCurrentRow++, nCurrentColumn, 1, 2);
-            m_pDetailLayout->setAlignment(sec, Qt::AlignTop);
-//            sec->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-//            SetHeight (sec, 10);
+            m_pDetailLayout->addWidget(sec, nCurrentRow++, nCurrentColumn, 1, 2);
         }
         else
         {
             pvBox       = new QVBoxLayout;
             pTab2Widget = new QWidget;
-
             QLabel * pLabelContents = new QLabel(QString("Raw Contents:"));
 
             pvBox->setAlignment(Qt::AlignTop);
-
-//            sec->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-            pvBox->addWidget   (pLabelContents); // stretch = 1
-            pvBox->setAlignment(pLabelContents, Qt::AlignTop);
-
-            pvBox->addWidget   (sec); // stretch = 10
-            pvBox->setAlignment(sec, Qt::AlignTop);
-
-//            SetHeight (sec, 100);
+            pvBox->addWidget   (pLabelContents);
+            pvBox->addWidget   (sec);
 
             pTab2Widget->setContentsMargins(0, 0, 0, 0);
             pTab2Widget->setLayout(pvBox);
@@ -874,27 +1464,28 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
             pTabWidget->addTab(pTab2Widget, QString("Contents"));
         }
         // -------------------------------
-
-//        if (record->IsMail())
-//        {
-//            pvBox->insertWidget(2, sec, 1); // So the mail contents appear above all the IDs.
-//        }
-//        else
-//        {
-
-
-
-//        }
     }    
 
 
+    pTab1Widget->setLayout(m_pDetailLayout);
+
+    // -----------------------------------------------
+    this->m_pDetailLayout = new QGridLayout;
+    this->m_pDetailLayout->addWidget(pTabWidget);
+
+    m_pDetailLayout->setContentsMargins(0,0,0,0);
+    pTabWidget->setTabPosition(QTabWidget::South);
+
+    this->setLayout(m_pDetailLayout);
+
     // ----------------------------------
+
 /*
-    if (record->IsPaymentPlan())
+    if (recordmt.IsPaymentPlan())
     {
-        if (record->HasInitialPayment() || record->HasPaymentPlan())
+        if (recordmt.HasInitialPayment() || recordmt.HasPaymentPlan())
         {
-            std::string str_asset_name = OTAPI_Wrap::GetAssetType_Name(record->GetAssetID().c_str());
+            std::string str_asset_name = OTAPI_Wrap::GetAssetType_Name(recordmt.GetAssetID().c_str());
             // ---------------------------------
             std::stringstream sss;
             sss << "Payments use the currency: " << str_asset_name << "\n";
@@ -906,29 +1497,29 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
             formatter = [[NSDateFormatter alloc] init];
             [formatter setDateFormat:QString("dd-MM-yyyy HH:mm")];
 
-            if (record->HasInitialPayment())
+            if (recordmt.HasInitialPayment())
             {
-                date = [NSDate dateWithTimeIntervalSince1970:record->GetInitialPaymentDate()];
+                date = [NSDate dateWithTimeIntervalSince1970:recordmt.GetInitialPaymentDate()];
                 dateString = [formatter stringFromDate:[NSDate date]];
 
-                long        lAmount    = record->GetInitialPaymentAmount();
-                std::string str_output = OTAPI_Wrap::It()->FormatAmount(record->GetAssetID().c_str(),
+                long        lAmount    = recordmt.GetInitialPaymentAmount();
+                std::string str_output = OTAPI_Wrap::It()->FormatAmount(recordmt.GetAssetID().c_str(),
                                                                         static_cast<int64_t>(lAmount));
                 sss << "Initial payment of " << str_output << " due: " << dateString.UTF8String << "\n";
             }
             // -----------------------------------------------
-            if (record->HasPaymentPlan())
+            if (recordmt.HasPaymentPlan())
             {
                 // ----------------------------------------------------------------
-                date = [NSDate dateWithTimeIntervalSince1970:record->GetPaymentPlanStartDate()];
+                date = [NSDate dateWithTimeIntervalSince1970:recordmt.GetPaymentPlanStartDate()];
                 dateString = [formatter stringFromDate:[NSDate date]];
 
-                long        lAmount    = record->GetPaymentPlanAmount();
-                std::string str_output = OTAPI_Wrap::It()->FormatAmount(record->GetAssetID().c_str(),
+                long        lAmount    = recordmt.GetPaymentPlanAmount();
+                std::string str_output = OTAPI_Wrap::It()->FormatAmount(recordmt.GetAssetID().c_str(),
                                                                         static_cast<int64_t>(lAmount));
                 sss << "Recurring payments of " << str_output << " begin: " << dateString.UTF8String << " ";
                 // ----------------------------------------------------------------
-                NSDate *date2 = [NSDate dateWithTimeIntervalSince1970:(record->GetPaymentPlanStartDate() + record->GetTimeBetweenPayments())];
+                NSDate *date2 = [NSDate dateWithTimeIntervalSince1970:(recordmt.GetPaymentPlanStartDate() + recordmt.GetTimeBetweenPayments())];
                 NSCalendar *calendar = [NSCalendar currentCalendar];
                 NSUInteger calendarUnits = NSDayCalendarUnit;
                 NSDateComponents *dateComponents = [calendar components:calendarUnits fromDate:date toDate:date2 options:0];
@@ -946,8 +1537,8 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
                 // -----------------------------------------------------------------
                 sss << strInterval.UTF8String << "\n";
                 // -----------------------------------------------------------------
-                if (record->GetMaximumNoPayments() > 0)
-                    sss << "The maximum number of payments is: " << record->GetMaximumNoPayments() << "\n";
+                if (recordmt.GetMaximumNoPayments() > 0)
+                    sss << "The maximum number of payments is: " << recordmt.GetMaximumNoPayments() << "\n";
                 // -----------------------------------------------------------------
 //todo:         inline const time_t &	GetPaymentPlanLength()	 const	{ return m_tPaymentPlanLength; }
             }
@@ -962,19 +1553,6 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
         }
     }
 */
-    // -----------------------------------------------
-
-
-    this->m_pDetailLayout = new QGridLayout;
-
-    this->m_pDetailLayout->addWidget(pTabWidget);
-
-    m_pDetailLayout->setContentsMargins(0,0,0,0);
-    pTabWidget->setTabPosition(QTabWidget::South);
-
-    this->setLayout(m_pDetailLayout);
-
-//    this->setLayout(m_pDetailLayout);
 }
 
 

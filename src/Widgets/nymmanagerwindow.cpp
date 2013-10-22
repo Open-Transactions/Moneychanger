@@ -24,8 +24,8 @@ void NymManagerWindow::dialog(){
      *  just show it, Other wise, init and show if this is the
      *  first time.
      **/
-    if(already_init == 0){
-        
+    if (already_init == 0)
+    {
         //The Nym Manager has not been init yet; Init, then show it.
         nym_manager_dialog = new QDialog(0);
         

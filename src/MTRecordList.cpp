@@ -35,8 +35,12 @@
 
 
 //virtual
-std::string MTNameLookup::GetNymName(const std::string & str_id) const
+std::string MTNameLookup::GetNymName(const std::string & str_id,
+                                     const std::string * p_server_id/*=NULL*/) const
 {
+    if (str_id.empty())
+        return "";
+
     return OTAPI_Wrap::GetNym_Name(str_id);
 }
 
@@ -46,53 +50,11 @@ std::string MTNameLookup::GetAcctName(const std::string & str_id,
                                       const std::string * p_server_id/*=NULL*/,
                                       const std::string * p_asset_id/*=NULL*/) const
 {
+    if (str_id.empty())
+        return "";
+
     return OTAPI_Wrap::GetAccountWallet_Name(str_id);
 }
-
-/*
-//virtual
-std::string MTNameLookupIPhone::GetNymName(const std::string & str_id) const
-{
-    std::string str_result;
-
-    // ------------------------------------------------
-
-    // TODO: PUT YOUR CODE HERE THAT USES str_id TO LOOKUP THE NYM NAME INTO str_result.
-    // (from contact list.)
-
-    // ------------------------------------------------
-
-
-    if (str_result.empty()) // Not found? Call the parent version.
-    {
-        return this->MTNameLookup::GetNymName(str_id);
-    }
-
-    return str_result;
-}
-
-//virtual
-std::string MTNameLookupIPhone::GetAcctName(const std::string & str_id) const
-{
-    std::string str_result;
-
-
-    // ------------------------------------------------
-
-    // TODO MAHYAR: PUT YOUR CODE HERE THAT USES str_id TO LOOKUP THE NYM NAME INTO str_result.
-    // (from contact list.)
-
-    // ------------------------------------------------
-
-
-    if (str_result.empty()) // Not found? Call the parent version.
-    {
-        return this->MTNameLookup::GetAcctName(str_id);
-    }
-
-    return str_result;
-}
-*/
 
 
 // ------------------------------------------------
@@ -703,6 +665,14 @@ bool MTRecordList::PerformAutoAccept()
 
 
 
+
+
+bool compare_records (shared_ptr_MTRecord i, shared_ptr_MTRecord j)
+{
+    return i->operator<(*j);
+}
+
+
 // ***************************************************
 // POPULATE:
 
@@ -884,7 +854,7 @@ bool MTRecordList::Populate()
                 // and add the Nym's name as the second item in the map's pair.
                 // (Just like I already did with the asset type.)
                 //
-                OTString strName(m_pLookup->GetNymName(str_outpmt_recipientID)), strNameTemp;
+                OTString strName(m_pLookup->GetNymName(str_outpmt_recipientID, &(*it_server))), strNameTemp;
                 std::string  str_name;
 
                 if (strName.Exists())
@@ -996,7 +966,7 @@ bool MTRecordList::Populate()
                 // and add the Nym's name as the second item in the map's pair.
                 // (Just like I already did with the asset type.)
                 //
-                OTString strName(m_pLookup->GetNymName(str_mail_senderID)), strNameTemp;
+                OTString strName(m_pLookup->GetNymName(str_mail_senderID, &(*it_server))), strNameTemp;
                 std::string  str_name;
 
                 if (strName.Exists())
@@ -1083,7 +1053,7 @@ bool MTRecordList::Populate()
                 // and add the Nym's name as the second item in the map's pair.
                 // (Just like I already did with the asset type.)
                 //
-                OTString strName(m_pLookup->GetNymName(str_mail_recipientID)), strNameTemp;
+                OTString strName(m_pLookup->GetNymName(str_mail_recipientID, &(*it_server))), strNameTemp;
                 std::string  str_name;
 
                 if (strName.Exists())
@@ -1186,7 +1156,7 @@ bool MTRecordList::Populate()
                         const OTString strSenderID(theSenderID);
                         str_sender_nym_id = strSenderID.Get();
 
-                        OTString strName(m_pLookup->GetNymName(str_sender_nym_id)), strNameTemp;
+                        OTString strName(m_pLookup->GetNymName(str_sender_nym_id, &(*it_server))), strNameTemp;
 
                         if (strName.Exists())
                             strNameTemp.Format("<font color='grey'>From:</font> %s", strName.Get());
@@ -1435,7 +1405,7 @@ bool MTRecordList::Populate()
                                 const OTString strRecipientID(theRecipientID);
                                 const std::string str_recipient_id(strRecipientID.Get());
 
-                                OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
+                                OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                                 if (strName.Exists())
                                     strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
@@ -1455,7 +1425,7 @@ bool MTRecordList::Populate()
                         else // str_nym_id IS NOT str_sender_id. (Therefore we want sender.)
                         {    // In this case, some OTHER Nym is the sender, so it must have been incoming. (And bOutgoing is already false.)
 
-                            OTString strName(m_pLookup->GetNymName(str_sender_id)), strNameTemp;
+                            OTString strName(m_pLookup->GetNymName(str_sender_id, &(*it_server))), strNameTemp;
 
                             if (strName.Exists())
                                 strNameTemp.Format("<font color='grey'>From:</font> %s", strName.Get());
@@ -1485,7 +1455,7 @@ bool MTRecordList::Populate()
                             // (Therefore it must be outgoing.)
                             bOutgoing = true;
 
-                            OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
+                            OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                             if (strName.Exists())
                                 strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
@@ -1774,7 +1744,7 @@ bool MTRecordList::Populate()
                                 const OTString strRecipientID(theRecipientID);
                                 const std::string str_recipient_id(strRecipientID.Get());
 
-                                OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
+                                OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                                 if (strName.Exists())
                                     strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
@@ -1794,7 +1764,7 @@ bool MTRecordList::Populate()
                         else // str_nym_id IS NOT str_sender_id. (Therefore we want sender.)
                         {    // In this case, some OTHER Nym is the sender, so it must have been incoming. (And bOutgoing is already false.)
 
-                            OTString strName(m_pLookup->GetNymName(str_sender_id)), strNameTemp;
+                            OTString strName(m_pLookup->GetNymName(str_sender_id, &(*it_server))), strNameTemp;
 
                             if (strName.Exists())
                                 strNameTemp.Format("<font color='grey'>From:</font> %s", strName.Get());
@@ -1824,7 +1794,7 @@ bool MTRecordList::Populate()
                             // (Therefore it must be outgoing.)
                             bOutgoing = true;
 
-                            OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
+                            OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                             if (strName.Exists())
                                 strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
@@ -2188,7 +2158,7 @@ bool MTRecordList::Populate()
                         const OTString    strSenderID  (theSenderID);
                         const std::string str_sender_id(strSenderID.Get());
 
-                        OTString strName(m_pLookup->GetNymName(str_sender_id)), strNameTemp;
+                        OTString strName(m_pLookup->GetNymName(str_sender_id, &(*it_server))), strNameTemp;
 
                         if (strName.Exists())
                             strNameTemp.Format("<font color='grey'>From:</font> %s", strName.Get());
@@ -2218,7 +2188,7 @@ bool MTRecordList::Populate()
                                                                 NULL, // nym ID if known
                                                                 pstr_server_id, // server ID if known.
                                                                 pstr_asset_id)), // asset ID if known.
-                                strNameTemp;
+                                 strNameTemp;
 
                         if (strName.Exists())
                             strNameTemp.Format("<font color='grey'>From:</font> %s", strName.Get());
@@ -2250,7 +2220,7 @@ bool MTRecordList::Populate()
                         const OTString    strRecipientID  (theRecipientID);
                         const std::string str_recipient_id(strRecipientID.Get());
 
-                        OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
+                        OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                         if (strName.Exists())
                             strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
@@ -2402,7 +2372,7 @@ bool MTRecordList::Populate()
                     const OTString    strRecipientID  (theRecipientID);
                     const std::string str_recipient_id(strRecipientID.Get());
 
-                    OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
+                    OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                     if (strName.Exists())
                         strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
@@ -2583,7 +2553,7 @@ bool MTRecordList::Populate()
                             const OTString strRecipientID(theRecipientID);
                             const std::string str_recipient_id(strRecipientID.Get());
 
-                            OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
+                            OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                             if (strName.Exists())
                                 strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
@@ -2603,7 +2573,7 @@ bool MTRecordList::Populate()
                     else // str_nym_id IS NOT str_sender_id. (Therefore we want sender.)
                     {    // In this case, some OTHER Nym is the sender, so it must have been incoming. (And bOutgoing is already false.)
 
-                        OTString strName(m_pLookup->GetNymName(str_sender_id)), strNameTemp;
+                        OTString strName(m_pLookup->GetNymName(str_sender_id, &(*it_server))), strNameTemp;
 
                         if (strName.Exists())
                             strNameTemp.Format("<font color='grey'>From:</font> %s", strName.Get());
@@ -2633,7 +2603,7 @@ bool MTRecordList::Populate()
                         // (Therefore it must be outgoing.)
                         bOutgoing = true;
 
-                        OTString strName(m_pLookup->GetNymName(str_recipient_id)), strNameTemp;
+                        OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                         if (strName.Exists())
                             strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
@@ -2762,14 +2732,21 @@ bool MTRecordList::Populate()
             if (0 == lAmount)
                 lAmount = pBoxTrans->GetReceiptAmount();
             // ------------------------------------------
+            const std::string str_type(pBoxTrans->GetTypeString()); // pending, chequeReceipt, etc.
+            // ------------------------------
             if (0 != lAmount)
             {
+
+                if (bOutgoing && (0 == str_type.compare("transferReceipt")) && (lAmount > 0))
+                    lAmount *= (-1);
+                else if (!bOutgoing && (0 == str_type.compare("transferReceipt")) && (lAmount < 0))
+                    lAmount *= (-1);
+
                 OTString strTemp;
                 strTemp.Format("%ld", lAmount);
                 str_amount = strTemp.Get();
+
             }
-            // ------------------------------
-            const std::string str_type(pBoxTrans->GetTypeString()); // pending, chequeReceipt, etc.
             // ------------------------------
             OTLog::vOutput(0, "%s: ADDED: %s (asset account) record (str_type: %s)\n",
                            __FUNCTION__,
@@ -2834,10 +2811,12 @@ bool MTRecordList::Populate()
     // The question is, would doing that be any faster than just sorting it here?
     // (Possibly not, but I'm not sure. Re-visit later.)
     //
-    std::sort(m_contents.begin(), m_contents.end());  // Todo optimize: any faster sorting algorithms?
+    std::sort (m_contents.begin(), m_contents.end(), compare_records); // Todo optimize: any faster sorting algorithms?
     // ------------------------------------------------
     return true;
 }
+
+
 // ------------------------------------------------
 
 MTRecordList::MTRecordList(MTNameLookup & theLookup) :
@@ -2877,6 +2856,13 @@ int MTRecordList::size()
     return m_contents.size();
 }
 
+
+bool MTRecordList::RemoveRecord(int nIndex)
+{
+    OT_ASSERT((nIndex >= 0) && (nIndex < m_contents.size()));
+    m_contents.erase(m_contents.begin()+nIndex);
+    return true;
+}
 
 weak_ptr_MTRecord MTRecordList::GetRecord(int nIndex)
 {

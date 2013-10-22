@@ -54,9 +54,11 @@
 #include "Widgets/requestfundswindow.h"
 #include "Widgets/sendfundswindow.h"
 #include "Widgets/createinsurancecompany.h"
+#include "Widgets/detailedit.h"
 
 class OverviewWindow;
 class MTHome;
+class MTDetailEdit;
 class AddressBookWindow;
 class NymManagerWindow;
 class AssetManagerWindow;
@@ -83,7 +85,8 @@ public:
     /** Start **/
     void bootTray();
 
-    
+    void downloadAccountData();
+
     
     /** 
      * Interfaces 
@@ -92,6 +95,7 @@ public:
     // Close Dialog Functions
     void close_overview_dialog();
     void close_addressbook();
+    void close_accountmanager_dialog();
     void close_nymmanager_dialog();
     void close_servermanager_dialog();
     void close_assetmanager_dialog();
@@ -106,7 +110,10 @@ public:
     //Show address book
     void mc_addressbook_show(QString text);
     
-    
+    void new_compose_dialog();
+    void new_send_dialog();
+    void new_request_dialog();
+
     
     /**
      * Functions for setting Systray Values
@@ -122,7 +129,6 @@ public:
     
     // Set Systray Account Value
     void set_systrayMenu_account_setDefaultAccount(QString, QString);
-    void close_accountmanager_dialog();
     
     // Set Systray Server Value
     void set_systrayMenu_server_setDefaultServer(QString, QString);
@@ -134,23 +140,23 @@ public:
      * Functions for pulling account information out of locally constructed lists.
      **/
     
-    QString get_default_nym_id(){return default_nym_id;};
-    int get_nym_list_id_size(){return nym_list_id->size();};
+    QString get_default_nym_id(){return default_nym_id;}
+    int get_nym_list_id_size(){return nym_list_id->size();}
     QString get_nym_id_at(int a){return nym_list_id->at(a).toString();}
     QString get_nym_name_at(int a){return nym_list_name->at(a).toString();}
     
-    QString get_default_asset_id(){return default_asset_id;};
-    int get_asset_list_id_size(){return asset_list_id->size();};
+    QString get_default_asset_id(){return default_asset_id;}
+    int get_asset_list_id_size(){return asset_list_id->size();}
     QString get_asset_id_at(int a){return asset_list_id->at(a).toString();}
     QString get_asset_name_at(int a){return asset_list_name->at(a).toString();}
     
-    QString get_default_account_id(){return default_account_id;};
-    int get_account_list_id_size(){return account_list_id->size();};
+    QString get_default_account_id(){return default_account_id;}
+    int get_account_list_id_size(){return account_list_id->size();}
     QString get_account_id_at(int a){return account_list_id->at(a).toString();}
     QString get_account_name_at(int a){return account_list_name->at(a).toString();}
     
-    QString get_default_server_id(){return default_server_id;};
-    int get_server_list_id_size(){return server_list_id->size();};
+    QString get_default_server_id(){return default_server_id;}
+    int get_server_list_id_size(){return server_list_id->size();}
     QString get_server_id_at(int a){return server_list_id->at(a).toString();}
     QString get_server_name_at(int a){return server_list_name->at(a).toString();}
     
@@ -190,7 +196,7 @@ private:
     bool mc_nymmanager_already_init;
     bool mc_assetmanager_already_init;
     bool mc_accountmanager_already_init;
-    bool already_init;
+    bool mc_servermanager_already_init;
     bool mc_withdraw_ascash_already_init;
     bool mc_withdraw_asvoucher_already_init;
     bool mc_deposit_already_init;
@@ -207,6 +213,7 @@ private:
     OverviewWindow * overviewwindow;
     MTHome * homewindow;
     AddressBookWindow * addressbookwindow;
+    MTDetailEdit      * contactswindow;
     NymManagerWindow * nymmanagerwindow;
     AssetManagerWindow * assetmanagerwindow;
     AccountManagerWindow * accountmanagerwindow;
@@ -218,8 +225,8 @@ private:
     SendFundsWindow * sendfundswindow;
     MarketWindow * market_window;
     CreateInsuranceCompany * createinsurancecompany_window;
-    
-    
+        
+
     
     /**
      * Menu Dialogs
@@ -335,6 +342,8 @@ private:
     QIcon mc_systrayIcon_advanced_markets;
     QIcon mc_systrayIcon_advanced_settings;
     
+    QIcon mc_systrayIcon_advanced_corporations;
+    QIcon mc_systrayIcon_advanced_bazaar;
     // ------------------------------------------------
     
     
@@ -397,9 +406,7 @@ private:
     // ---------------------------------------------------------
     
     //Company submenu
-    QMenu * mc_systrayMenu_company;
-    QMenu * mc_systrayMenu_company_create;
-
+    QMenu   * mc_systrayMenu_company_create;
     QAction * mc_systrayMenu_company_create_insurance;
 
     //Advanced submenu
@@ -408,9 +415,14 @@ private:
     QAction * mc_systrayMenu_advanced_agreements;
     QAction * mc_systrayMenu_advanced_markets;
     QAction * mc_systrayMenu_advanced_settings;
+    QMenu   * mc_systrayMenu_advanced_corporations;
+    QMenu   * mc_systrayMenu_advanced_bazaar;
+
+    // Bazaar
+    QAction * mc_systrayMenu_bazaar_search;
+    QAction * mc_systrayMenu_bazaar_post;
+    QAction * mc_systrayMenu_bazaar_orders;
     // ---------------------------------------------------------
-    
-    
     QAction * mc_systrayMenu_bottomblank;
     // ---------------------------------------------------------
     

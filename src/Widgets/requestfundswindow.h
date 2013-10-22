@@ -21,11 +21,7 @@ private:
     bool already_init;
     
     QDialog * requestfunds_dialog;
-    
-    //Gridlayout
     QGridLayout * requestfunds_gridlayout;
-    
-    //Send funds type selection (combobox)
     QComboBox * requestfunds_sendtype_combobox;
 
 signals:

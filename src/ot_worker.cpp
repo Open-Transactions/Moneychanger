@@ -41,11 +41,12 @@ ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookup
     // ----------------------------------------------------
     list.AcceptChequesAutomatically  (true);
     list.AcceptReceiptsAutomatically (true);
-    list.AcceptTransfersAutomatically(true);
+    list.AcceptTransfersAutomatically(false);
     
     //Populate
     list.Populate();
 }
+
 
 
 void ot_worker::mc_overview_ping(){

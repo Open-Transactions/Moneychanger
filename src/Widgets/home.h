@@ -30,9 +30,7 @@ private:
     /** Functions **/
 
     void RefreshRecords();
-
     void setupRecordList();
-
     void RefreshUserBar();
 
     QWidget * CreateUserBarWidget();
@@ -46,16 +44,32 @@ private:
     QGridLayout  * m_pHeaderLayout;
     // ------------------------------------------------
     MTRecordList   m_list;
-
+    // ------------------------------------------------
+    bool    m_bNeedRefresh;
+    // ------------------------------------------------
 public:
     explicit MTHome(QWidget *parent = 0);
     ~MTHome();
     
     void dialog();
 
+    void SetNeedRefresh();
+    void RefreshAll();
+
+    void OnDeletedRecord();
+
+    QString shortAcctBalance(QString qstr_acct_id, QString qstr_asset_id);
+    QString cashBalance     (QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id);
+    int64_t rawCashBalance  (QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id);
 
 private slots:
     void on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn);
+
+    void on_refreshButton_clicked();
+    void on_contactsButton_clicked();
+
+    void on_sendButton_clicked();
+    void on_requestButton_clicked();
 
 private:
     Ui::MTHome *ui;

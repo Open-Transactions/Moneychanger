@@ -10,11 +10,15 @@
 #include "MTRecordList.hpp"
 
 
+#define DEFAULT_CHEQUE_EXPIRATION 60*60*24*30 // 2592000 seconds == 30 days
+
+
 
 class MTNameLookupQT : public MTNameLookup
 {
 public:
-    virtual std::string GetNymName(const std::string & str_id) const;
+    virtual std::string GetNymName(const std::string & str_id,
+                                   const std::string * p_server_id=NULL) const;
 
     virtual std::string GetAcctName(const std::string & str_id,
                                     const std::string * p_nym_id=NULL,
@@ -52,10 +56,18 @@ public:
 
   void NotifyOfNymServerPair(QString nym_id_string, QString server_id_string);
 
-  int CreateContactBasedOnNym(QString nym_id_string, QString server_id_string=QString(""));
+  int  CreateContactBasedOnNym(QString nym_id_string, QString server_id_string=QString(""));
+
+  bool AddNymToExistingContact(int nContactID, QString nym_id_string);
+
+  bool ContactExists(int nContactID);
+  bool DeleteContact(int nContactID);
 
   bool GetServers(mapIDName & theMap, QString filterByNym);
   bool GetAccounts(mapIDName & theMap, QString filterByNym, QString filterByServer, QString filterByAsset);
+
+  bool GetContacts(mapIDName & theMap);
+  bool GetNyms(mapIDName & theMap, int nFilterByContact);
 
   public:
     ~MTContactHandler();

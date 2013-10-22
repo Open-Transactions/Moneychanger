@@ -17,9 +17,12 @@
 
 #ifdef _WIN32
 #include <memory>
+#elif __GXX_EXPERIMENTAL_CXX0X__ || __cplusplus >= 201103L
+#include <memory>
 #else
 #include <tr1/memory>
 #endif
+
 
 #include "MTRecord.hpp"
 
@@ -27,7 +30,9 @@
 class MTNameLookup
 {
 public:
-    virtual std::string GetNymName(const std::string & str_id) const;
+    virtual std::string GetNymName(const std::string & str_id,
+                                   const std::string * p_server_id=NULL) const;
+
     virtual std::string GetAcctName(const std::string & str_id,
                                     const std::string * p_nym_id=NULL,
                                     const std::string * p_server_id=NULL,
@@ -43,11 +48,18 @@ public:
  };
  */
 
-
+#if __GXX_EXPERIMENTAL_CXX0X__ || __cplusplus >= 201103L
+// -------------------------------------------------------------
+typedef std::weak_ptr  <MTRecord>       weak_ptr_MTRecord;
+typedef std::shared_ptr<MTRecord>     shared_ptr_MTRecord;
+// -------------------------------------------------------------
+#else
 // -------------------------------------------------------------
 typedef std::tr1::weak_ptr  <MTRecord>       weak_ptr_MTRecord;
 typedef std::tr1::shared_ptr<MTRecord>     shared_ptr_MTRecord;
 // -------------------------------------------------------------
+#endif
+
 typedef std::vector<shared_ptr_MTRecord>      vec_MTRecordList;
 // -------------------------------------------------------------
 typedef std::list<std::string>                 list_of_strings;
@@ -68,7 +80,7 @@ class MTRecordList
     bool                      m_bAutoAcceptCash;
     // ------------------------------------------------
     list_of_strings           m_servers;
-    map_of_strings           m_assets;  // <asset_type_id, asset_name>
+     map_of_strings           m_assets;  // <asset_type_id, asset_name>
     list_of_strings           m_accounts;
     list_of_strings           m_nyms;
     // ------------------------------------------------
@@ -122,6 +134,7 @@ public:
     //
     int               size();
     weak_ptr_MTRecord GetRecord(int nIndex);
+    bool              RemoveRecord(int nIndex);
     // ------------------------------------------------
 };
 

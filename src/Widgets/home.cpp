@@ -15,6 +15,11 @@
 
 #include "Handlers/contacthandler.h"
 
+#include "overridecursor.h"
+
+#include "Widgets/senddlg.h"
+#include "Widgets/requestdlg.h"
+
 
 MTHome::MTHome(QWidget *parent) :
     QWidget(parent, Qt::Window),
@@ -23,6 +28,7 @@ MTHome::MTHome(QWidget *parent) :
     m_pDetailLayout(NULL),
     m_pHeaderLayout(NULL),
     m_list(*(new MTNameLookupQT)),
+    m_bNeedRefresh(false),
     ui(new Ui::MTHome)
 {
     ui->setupUi(this);
@@ -80,54 +86,38 @@ void MTHome::dialog()
         ui->tableWidget->setContentsMargins(10,0,0,0);
         // -------------------------------------------
         m_pDetailPane = new MTHomeDetail;
+        m_pDetailPane->SetHomePointer(*this);
+        // -------------------------------------------
         m_pDetailLayout = new QVBoxLayout;
         m_pDetailLayout->addWidget(m_pDetailPane);
 
         m_pDetailPane  ->setContentsMargins(1,1,1,1);
         m_pDetailLayout->setContentsMargins(1,1,1,1);
 
-//        ui->widget->setFrameStyle(QFrame::NoFrame);
-//        ui->widget->setLineWidth(0);
-//        ui->widget->setMidLineWidth(0);
-
         ui->widget->setContentsMargins(1,1,1,1);
 
         ui->widget->setLayout(m_pDetailLayout);
-
         // -------------------------------------------
-
         setupRecordList();
-
-        // -------------------------------------------
-
+        // ------------------------
         /** Flag Already Init **/
         already_init = true;
     }
-
+    // -------------------------------------------
     //Refresh visual data
     //Tell OT to repopulate, and refresh backend.
 //    ((Moneychanger*)parentWidget())->get_ot_worker_background()->mc_overview_ping();
-
-    RefreshUserBar();
-
-    //Now refresh the repopulated data visually
-    RefreshRecords();
-
-    if (ui->tableWidget->rowCount() > 0)
-    {
-        ui->tableWidget->setCurrentCell(0, 1);
-    }
     // -------------------------------------------
-    // These appear to do nothing so far, at least on Mac:
-//    raise();
-//    activateWindow();
+    RefreshAll();
+
+    show();
+    setFocus();
 }
 
 
 void MTHome::on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn)
 {
     m_pDetailPane->refresh(row, m_list);
-
 }
 
 void MTHome::setupRecordList()
@@ -168,7 +158,7 @@ void MTHome::setupRecordList()
     // ----------------------------------------------------
     m_list.AcceptChequesAutomatically  (true);
     m_list.AcceptReceiptsAutomatically (true);
-    m_list.AcceptTransfersAutomatically(true);
+    m_list.AcceptTransfersAutomatically(false);
 }
 
 
@@ -199,6 +189,176 @@ void MTHome::RefreshUserBar()
 }
 
 
+void MTHome::SetNeedRefresh()
+{
+    m_bNeedRefresh = true;
+
+    RefreshUserBar();
+}
+
+void MTHome::RefreshAll()
+{
+    int nRowCount    = ui->tableWidget->rowCount();
+    int nCurrentRow  = ui->tableWidget->currentRow();
+
+//  bool bRefreshed = ;// PULL THE DATA FROM THE SERVER HERE.
+    bool bRefreshed = true;
+
+    if (bRefreshed)
+    {
+        // -----------------------------------------
+        qDebug() << QString("Refreshing records from local storage.");
+        // -----------------------------------------
+        m_list.Populate();
+        // -----------------------------------------
+        RefreshUserBar();
+        // -------------------------------------------
+        RefreshRecords();
+        // -----------------------------------------
+        if (nCurrentRow >= 0)
+        {
+            if (nCurrentRow < ui->tableWidget->rowCount())
+            {
+                ui->tableWidget->setCurrentCell(nCurrentRow, 1);
+                on_tableWidget_currentCellChanged(nCurrentRow, 1, 0, 0);
+            }
+            // ------------------------------------------------
+            else if (ui->tableWidget->rowCount() > 0)
+            {
+                ui->tableWidget->setCurrentCell((ui->tableWidget->rowCount() - 1), 1);
+                on_tableWidget_currentCellChanged((ui->tableWidget->rowCount() - 1), 1, 0, 0);
+            }
+            // ------------------------------------------------
+            else
+                qDebug() << QString("Apparently there are zero rows in the tableWidget.");
+            // ------------------------------------------------
+        }
+        // ------------------------------------------------
+        else if (ui->tableWidget->rowCount() > 0)
+        {
+            ui->tableWidget->setCurrentCell(0, 1);
+            on_tableWidget_currentCellChanged(0, 1, 0, 0);
+        }
+        // -----------------------------------------
+    }
+    else
+        qDebug() << QString("Failure removing MTRecord at index %1.").arg(nCurrentRow);
+}
+
+
+void MTHome::on_refreshButton_clicked()
+{
+    // ------------------------------------------------------
+    {
+        MTOverrideCursor theSpinner;
+        // -----------------------------------------
+        qDebug() << QString("Refreshing records from transaction servers.");
+        // -----------------------------------------
+        ((Moneychanger *)(this->parentWidget()))->downloadAccountData();
+    }
+    // ------------------------------------------------------
+    RefreshAll();
+}
+
+
+void MTHome::on_contactsButton_clicked()
+{
+    ((Moneychanger *)(this->parentWidget()))->mc_addressbook_show(QString(""));
+}
+
+
+void MTHome::on_sendButton_clicked()
+{
+    // --------------------------------------------------
+    MTSendDlg * send_window = new MTSendDlg;
+    send_window->setAttribute(Qt::WA_DeleteOnClose);
+    // --------------------------------------------------
+    QString qstr_acct_id = ((Moneychanger *)(this->parentWidget()))->get_default_account_id();
+
+    if (!qstr_acct_id.isEmpty())
+        send_window->setInitialMyAcct(qstr_acct_id);
+    // ---------------------------------------
+    send_window->dialog();
+    send_window->show();
+    // --------------------------------------------------
+}
+
+void MTHome::on_requestButton_clicked()
+{
+    // --------------------------------------------------
+    MTRequestDlg * request_window = new MTRequestDlg;
+    request_window->setAttribute(Qt::WA_DeleteOnClose);
+    // --------------------------------------------------
+    QString qstr_acct_id = ((Moneychanger *)(this->parentWidget()))->get_default_account_id();
+
+    if (!qstr_acct_id.isEmpty())
+        request_window->setInitialMyAcct(qstr_acct_id);
+    // ---------------------------------------
+    request_window->dialog();
+    request_window->show();
+    // --------------------------------------------------
+}
+
+
+
+QString MTHome::cashBalance(QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id)
+{
+    int64_t     balance      = 0;
+    QString     return_value = QString("");
+    std::string str_output;
+
+    balance    = this->rawCashBalance(qstr_server_id, qstr_asset_id, qstr_nym_id);
+    str_output = OTAPI_Wrap::It()->FormatAmount(qstr_asset_id.toStdString(), balance);
+
+    if (!str_output.empty())
+        return_value = QString::fromStdString(str_output);
+
+    return return_value;
+}
+
+
+int64_t MTHome::rawCashBalance(QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id)
+{
+    int64_t balance = 0;
+
+    std::string serverId(qstr_server_id.toStdString());
+    std::string assetId (qstr_asset_id.toStdString());
+    std::string nymId   (qstr_nym_id.toStdString());
+
+    std::string str_purse = OTAPI_Wrap::LoadPurse(serverId, assetId, nymId);
+
+    if (!str_purse.empty())
+    {
+        int64_t temp_balance = OTAPI_Wrap::Purse_GetTotalValue(serverId, assetId, str_purse);
+
+        if (temp_balance >= 0)
+            balance = temp_balance;
+    }
+
+    return balance;
+}
+
+
+
+QString MTHome::shortAcctBalance(QString qstr_acct_id, QString qstr_asset_id)
+{
+    int64_t      balance    = OTAPI_Wrap::GetAccountWallet_Balance(qstr_acct_id.toStdString());
+    std::string  assetId(qstr_asset_id.toStdString());
+    std::string  str_output = OTAPI_Wrap::It()->FormatAmount(assetId, balance);
+    std::string  str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(assetId);
+
+    QString return_value = QString("");
+
+    if (!str_output.empty())
+        return_value = QString::fromStdString(str_output);
+    else
+        return_value = QString("%1 %2").arg(balance).arg(QString::fromStdString(str_asset_name));
+
+    return return_value;
+}
+
+
+
 QWidget * MTHome::CreateUserBarWidget()
 {
     //Append to transactions list in overview dialog.
@@ -213,15 +373,50 @@ QWidget * MTHome::CreateUserBarWidget()
     // -------------------------------------------
     //Render row.
     //Header of row
-    QString tx_name = QString("My Acct        <small><font color=grey>(US Dollars)</font></small>");
-
+    //
+    QString qstr_acct_nym,
+            qstr_acct_server,
+            qstr_acct_asset;
+    // -------------------------------------------
+    QString qstr_acct_name;
+    QString qstr_acct_id = ((Moneychanger *)(this->parentWidget()))->get_default_account_id();
+    // -------------------------------------------
+    if (qstr_acct_id.isEmpty())
+    {
+        qstr_acct_name   = QString("(Default Account Isn't Set Yet)");
+        // -----------------------------------
+        qstr_acct_nym    = ((Moneychanger *)(this->parentWidget()))->get_default_nym_id();
+        qstr_acct_server = ((Moneychanger *)(this->parentWidget()))->get_default_server_id();
+        qstr_acct_asset  = ((Moneychanger *)(this->parentWidget()))->get_default_asset_id();
+    }
+    else
+    {
+        std::string str_acct_id     = qstr_acct_id.toStdString();
+        std::string str_acct_nym    = OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
+        std::string str_acct_server = OTAPI_Wrap::It()->GetAccountWallet_ServerID(str_acct_id);
+        std::string str_acct_asset  = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+        // -----------------------------------
+        qstr_acct_nym    = QString::fromStdString(str_acct_nym);
+        qstr_acct_server = QString::fromStdString(str_acct_server);
+        qstr_acct_asset  = QString::fromStdString(str_acct_asset);
+        // -----------------------------------
+        std::string str_acct_name  = OTAPI_Wrap::It()->GetAccountWallet_Name(str_acct_id);
+        std::string str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(str_acct_asset);
+        // -----------------------------------
+        qstr_acct_name = QString("%1        <small><font color=grey>(%2)</font></small>").
+                arg(QString::fromStdString(str_acct_name)).arg(QString::fromStdString(str_asset_name));
+    }
+    // -------------------------------------------
+//  QString   tx_name = QString("My Acct        <small><font color=grey>(US Dollars)</font></small>");
+    QString & tx_name = qstr_acct_name;
+    // -------------------------------------------
     if(tx_name.trimmed() == "")
     {
         //Tx has no name
         tx_name.clear();
-        tx_name = "Transaction";
+        tx_name = "(Account Name is Blank)";
     }
-
+    // -------------------------------------------
     QLabel * header_of_row = new QLabel;
     QString header_of_row_string = QString("");
     header_of_row_string.append(tx_name);
@@ -293,6 +488,12 @@ QWidget * MTHome::CreateUserBarWidget()
 //    buttonRefresh->setIconSize(pixmapRefresh.rect().size());
     buttonRefresh->setIconSize(pixmapContacts.rect().size());
     buttonRefresh->setText("Refresh");
+
+    if (m_bNeedRefresh)
+    {
+        buttonRefresh->setStyleSheet("color: red");
+        m_bNeedRefresh = false;
+    }
     // ----------------------------------------------------------------
     QHBoxLayout * pButtonLayout = new QHBoxLayout;
 
@@ -306,8 +507,10 @@ QWidget * MTHome::CreateUserBarWidget()
 //    row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
     // -------------------------------------------
 
-
-
+    connect(buttonRefresh,  SIGNAL(clicked()),  this, SLOT(on_refreshButton_clicked()));
+    connect(buttonContacts, SIGNAL(clicked()),  this, SLOT(on_contactsButton_clicked()));
+    connect(buttonSend,     SIGNAL(clicked()),  this, SLOT(on_sendButton_clicked()));
+    connect(buttonRequest,  SIGNAL(clicked()),  this, SLOT(on_requestButton_clicked()));
 
     // -------------------------------------------
     //Sub-info
@@ -326,11 +529,27 @@ QWidget * MTHome::CreateUserBarWidget()
     // Column one
     //Date (sub-info)
     //Calc/convert date/times
-    QLabel * row_content_date_label = new QLabel("Available: ");
-    QString row_content_date_label_string("<font color=grey>Available:</font> $50.93 (+ $167.23 in cash)");
-//    row_content_date_label_string.append(QString(timestamp.toString(Qt::SystemLocaleShortDate)));
+    //
+    QLabel * row_content_date_label = new QLabel("<font color=grey>Available:</font> (no account selected)");
+//  QString  row_content_date_label_string("<font color=grey>Available:</font> $50.93 (+ $167.23 in cash)");
+    // ---------------------------------------------
+    QString  row_content_date_label_string = QString("");
 
-//    row_content_date_label->setStyleSheet("QLabel { color : grey; }");
+    if (!qstr_acct_id.isEmpty())
+    {
+        row_content_date_label_string = QString("<font color=grey>Available:</font> %1").arg(shortAcctBalance(qstr_acct_id, qstr_acct_asset));
+    }
+    // --------------------------------------------
+    if (!qstr_acct_nym.isEmpty() && !qstr_acct_server.isEmpty() && !qstr_acct_asset.isEmpty())
+    {
+        int64_t  raw_cash_balance = this->rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
+
+        if (raw_cash_balance > 0)
+            row_content_date_label_string += QString(" (+ %1 in cash)").arg(cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym));
+    }
+    // ---------------------------------------------------------------
+//  row_content_date_label_string.append(QString(timestamp.toString(Qt::SystemLocaleShortDate)));
+//  row_content_date_label->setStyleSheet("QLabel { color : grey; }");
     row_content_date_label->setText(row_content_date_label_string);
 
     row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
@@ -355,13 +574,50 @@ QWidget * MTHome::CreateUserBarWidget()
     return row_widget;
 }
 
+void MTHome::OnDeletedRecord()
+{
+    int nRowCount    = ui->tableWidget->rowCount();
+    int nCurrentRow  = ui->tableWidget->currentRow();
+
+    if ((nRowCount > 0) && (nCurrentRow >= 0))
+    {
+        bool bRemoved = m_list.RemoveRecord(nCurrentRow);
+
+        if (bRemoved)
+        {
+            qDebug() << QString("Removed record at index %1.").arg(nCurrentRow);
+            // -----------------------------------------
+            // We do this because the individual records keep track of their index inside their box.
+            // Once a record is deleted, all the others now have bad indices, and must be reloaded.
+            //
+            m_list.Populate();
+
+            RefreshRecords();
+            // -----------------------------------------
+            if ((nCurrentRow >= 0) && (nCurrentRow < ui->tableWidget->rowCount()))
+            {
+                ui->tableWidget->setCurrentCell(nCurrentRow, 1);
+            }
+            else if (ui->tableWidget->rowCount() > 0)
+            {
+                ui->tableWidget->setCurrentCell((ui->tableWidget->rowCount() - 1), 1);
+            }
+            else
+                qDebug() << QString("Apparently there are zero rows in the tableWidget.");
+            // -----------------------------------------
+        }
+        else
+            qDebug() << QString("Failure removing MTRecord at index %1.").arg(nCurrentRow);
+    }
+}
 
 void MTHome::RefreshRecords()
 {
     //(Lock the overview dialog refreshing mechinism until finished)
     QMutexLocker overview_refresh_locker(&mc_overview_refreshing_visuals_mutex);
     // -------------------------------------------------------
-    m_list.Populate();
+    m_bNeedRefresh = false;
+    // -------------------------------------------------------
     int listSize       = m_list.size();
     // -------------------------------------------------------
     int nTotalRecords  = listSize;

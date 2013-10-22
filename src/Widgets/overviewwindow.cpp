@@ -16,7 +16,8 @@ void OverviewWindow::dialog()
      *  just show it, Other wise, init and show if this is
      *  the first time.
      **/
-    if(!already_init){
+    if(!already_init)
+    {
         //The overview dialog has not been init yet; Init, then show it.
         mc_overview_dialog_page = new QDialog(0);
         mc_overview_dialog_page->setWindowFlags(Qt::WindowStaysOnTopHint);

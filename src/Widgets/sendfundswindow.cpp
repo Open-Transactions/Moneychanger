@@ -1,18 +1,17 @@
 #include "sendfundswindow.h"
 
 SendFundsWindow::SendFundsWindow(QWidget *parent) :
-    QWidget(parent)
+    QWidget(parent), already_init(false), sendfunds_dialog(NULL), sendfunds_gridlayout(NULL), sendfunds_sendtype_combobox(NULL)
 {
     
-    already_init = false;
-
 }
 
 
 
-void SendFundsWindow::dialog(){
-    
-    if(!already_init){
+void SendFundsWindow::dialog()
+{
+    if (!already_init)
+    {
         sendfunds_dialog = new QDialog(0);
         sendfunds_dialog->installEventFilter(this);
         sendfunds_gridlayout = new QGridLayout(0);
@@ -39,12 +38,13 @@ void SendFundsWindow::dialog(){
     
     //Show
     sendfunds_dialog->show();
+    sendfunds_dialog->setFocus();
 }
 
 
 
-bool SendFundsWindow::eventFilter(QObject *obj, QEvent *event){
-    
+bool SendFundsWindow::eventFilter(QObject *obj, QEvent *event)
+{
     if (event->type() == QEvent::Close) {
         ((Moneychanger *)parentWidget())->close_sendfunds_dialog();
         return true;
