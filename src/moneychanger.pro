@@ -11,6 +11,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = moneychanger-qt
 TEMPLATE = app
 
+QMAKE_CXXFLAGS += -std=c++11
+QMAKE_LIBS += -lnmcrpc -ljsoncpp -lcurl
+
 INCLUDEPATH+="/usr/local/include/"
 DEPENDPATH += .
 SOURCES += main.cpp\
@@ -18,6 +21,7 @@ SOURCES += main.cpp\
            ot_worker.cpp \
            MTRecordList.cpp \
            MTRecord.cpp \
+           Namecoin.cpp \
     Widgets/MarketWindow.cpp \
     Widgets/overviewwindow.cpp \
     Handlers/FileHandler.cpp \
@@ -53,6 +57,7 @@ HEADERS += moneychanger.h \
            ot_worker.h \
     MTRecord.hpp \
     MTRecordList.hpp \
+    Namecoin.hpp \
     Widgets/marketwindow.h \
     Widgets/overviewwindow.h \
     Handlers/FileHandler.h \
