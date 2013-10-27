@@ -25,7 +25,7 @@
 #include <iostream>
 
 /** Namespace used for Namecoin credentials.  */
-const std::string NMC_NS = "id";
+const std::string NMC_NS = "ot";
 
 /* ************************************************************************** */
 /* NMC_Verifier.  */
