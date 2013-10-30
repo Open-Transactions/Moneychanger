@@ -1,7 +1,9 @@
 #ifndef DETAILEDIT_H
 #define DETAILEDIT_H
 
+#include <QList>
 #include <QWidget>
+#include <QTabWidget>
 #include <QVBoxLayout>
 
 #include "Handlers/contacthandler.h"
@@ -49,7 +51,9 @@ protected:
 
     MTEditDetails * m_pDetailPane;
     QVBoxLayout   * m_pDetailLayout;
-
+    // ----------------------------------
+    QTabWidget    * m_pTabWidget;
+    // ----------------------------------
 //  virtual void showEvent(QShowEvent * event);
     bool eventFilter(QObject *obj, QEvent *event);
 

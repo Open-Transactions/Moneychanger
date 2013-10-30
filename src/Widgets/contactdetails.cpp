@@ -19,6 +19,8 @@ MTContactDetails::MTContactDetails(QWidget *parent) :
 {
     ui->setupUi(this);
     this->setContentsMargins(0, 0, 0, 0);
+
+    ui->lineEditID->setStyleSheet("QLineEdit { background-color: lightgray }");
 }
 
 MTContactDetails::~MTContactDetails()
@@ -53,7 +55,7 @@ void MTContactDetails::AddButtonClicked()
     {
         QString nymID = theNewContact.GetId();
 
-        qDebug() << QString("MTContactDetails::AddButtonClicked: OKAY was clicked. Value: %1").arg(nymID);
+//      qDebug() << QString("MTContactDetails::AddButtonClicked: OKAY was clicked. Value: %1").arg(nymID);
 
         //resume
         // TODO: Use the NymID we just obtained (theNewContact.GetId()) to create a new Contact.
@@ -92,9 +94,11 @@ void MTContactDetails::AddButtonClicked()
             m_pOwner->SetPreSelected(qstrContactID);
             m_pOwner->RefreshRecords();
         }
-    } else {
-      qDebug() << "MTContactDetails::AddButtonClicked: CANCEL was clicked";
     }
+//    else
+//    {
+//      qDebug() << "MTContactDetails::AddButtonClicked: CANCEL was clicked";
+//    }
     // -----------------------------------------------
 }
 
@@ -102,6 +106,9 @@ void MTContactDetails::AddButtonClicked()
 void MTContactDetails::refresh(QString strID, QString strName)
 {
     qDebug() << "MTContactDetails::refresh";
+
+    if (NULL == ui)
+        return;
 
     ui->lineEditID  ->setText(strID);
     ui->lineEditName->setText(strName);
@@ -161,6 +168,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
     }
     // --------------------------------------------
     ui->plainTextEdit->setPlainText(strDetails);
+    // --------------------------------------------
 }
 
 
@@ -181,6 +189,8 @@ void MTContactDetails::on_lineEditName_editingFinished()
         {
             m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
             m_pOwner->m_map.insert(m_pOwner->m_qstrCurrentID, ui->lineEditName->text());
+
+            m_pOwner->SetPreSelected(m_pOwner->m_qstrCurrentID);
 
             m_pOwner->RefreshRecords();
         }

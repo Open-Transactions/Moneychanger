@@ -31,8 +31,8 @@
 #include "MTRecordList.hpp"
 
 
-
-
+#define MC_UI_TEXT_TO "<font color='grey'>To:</font> %s"
+#define MC_UI_TEXT_FROM "<font color='grey'>From:</font> %s"
 
 //virtual
 std::string MTNameLookup::GetNymName(const std::string & str_id,
@@ -858,9 +858,9 @@ bool MTRecordList::Populate()
                 std::string  str_name;
 
                 if (strName.Exists())
-                    strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
+                    strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                 else
-                    strNameTemp.Format("<font color='grey'>To:</font> %s", str_outpmt_recipientID.c_str());
+                    strNameTemp.Format(MC_UI_TEXT_TO, str_outpmt_recipientID.c_str());
 
                 str_name = strNameTemp.Get();
                 // ---------------------------------------------------
@@ -970,9 +970,9 @@ bool MTRecordList::Populate()
                 std::string  str_name;
 
                 if (strName.Exists())
-                    strNameTemp.Format("<font color='grey'>From:</font> %s", strName.Get());
+                    strNameTemp.Format(MC_UI_TEXT_FROM, strName.Get());
                 else
-                    strNameTemp.Format("<font color='grey'>From:</font> %s", str_mail_senderID.c_str());
+                    strNameTemp.Format(MC_UI_TEXT_FROM, str_mail_senderID.c_str());
 
                 str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
                 // ---------------------------------------------------
@@ -1057,9 +1057,9 @@ bool MTRecordList::Populate()
                 std::string  str_name;
 
                 if (strName.Exists())
-                    strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
+                    strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                 else
-                    strNameTemp.Format("<font color='grey'>To:</font> %s", str_mail_recipientID.c_str());
+                    strNameTemp.Format(MC_UI_TEXT_TO, str_mail_recipientID.c_str());
 
                 str_name = strNameTemp.Get();
                 // ---------------------------------------------------
@@ -1159,9 +1159,9 @@ bool MTRecordList::Populate()
                         OTString strName(m_pLookup->GetNymName(str_sender_nym_id, &(*it_server))), strNameTemp;
 
                         if (strName.Exists())
-                            strNameTemp.Format("<font color='grey'>From:</font> %s", strName.Get());
+                            strNameTemp.Format(MC_UI_TEXT_FROM, strName.Get());
                         else
-                            strNameTemp.Format("<font color='grey'>From:</font> %s", str_sender_nym_id.c_str());
+                            strNameTemp.Format(MC_UI_TEXT_FROM, str_sender_nym_id.c_str());
 
                         str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
                     }
@@ -1408,9 +1408,9 @@ bool MTRecordList::Populate()
                                 OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                                 if (strName.Exists())
-                                    strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
+                                    strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                                 else
-                                    strNameTemp.Format("<font color='grey'>To:</font> %s", str_recipient_id.c_str());
+                                    strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
 
                                 str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
                                 str_other_nym_id = str_recipient_id;
@@ -1428,9 +1428,9 @@ bool MTRecordList::Populate()
                             OTString strName(m_pLookup->GetNymName(str_sender_id, &(*it_server))), strNameTemp;
 
                             if (strName.Exists())
-                                strNameTemp.Format("<font color='grey'>From:</font> %s", strName.Get());
+                                strNameTemp.Format(MC_UI_TEXT_FROM, strName.Get());
                             else
-                                strNameTemp.Format("<font color='grey'>From:</font> %s", str_sender_id.c_str());
+                                strNameTemp.Format(MC_UI_TEXT_FROM, str_sender_id.c_str());
 
                             str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
                             str_other_nym_id = str_sender_id;
@@ -1458,9 +1458,9 @@ bool MTRecordList::Populate()
                             OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                             if (strName.Exists())
-                                strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
+                                strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                             else
-                                strNameTemp.Format("<font color='grey'>To:</font> %s", str_recipient_id.c_str());
+                                strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
 
                             str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
                             str_other_nym_id = str_recipient_id;
@@ -1747,9 +1747,9 @@ bool MTRecordList::Populate()
                                 OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                                 if (strName.Exists())
-                                    strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
+                                    strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                                 else
-                                    strNameTemp.Format("<font color='grey'>To:</font> %s", str_recipient_id.c_str());
+                                    strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
 
                                 str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
                                 str_other_nym_id = str_recipient_id;
@@ -1767,9 +1767,9 @@ bool MTRecordList::Populate()
                             OTString strName(m_pLookup->GetNymName(str_sender_id, &(*it_server))), strNameTemp;
 
                             if (strName.Exists())
-                                strNameTemp.Format("<font color='grey'>From:</font> %s", strName.Get());
+                                strNameTemp.Format(MC_UI_TEXT_FROM, strName.Get());
                             else
-                                strNameTemp.Format("<font color='grey'>From:</font> %s", str_sender_id.c_str());
+                                strNameTemp.Format(MC_UI_TEXT_FROM, str_sender_id.c_str());
 
                             str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
                             str_other_nym_id = str_sender_id;
@@ -1797,9 +1797,9 @@ bool MTRecordList::Populate()
                             OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                             if (strName.Exists())
-                                strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
+                                strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                             else
-                                strNameTemp.Format("<font color='grey'>To:</font> %s", str_recipient_id.c_str());
+                                strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
 
                             str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
                             str_other_nym_id = str_recipient_id;
@@ -2153,29 +2153,14 @@ bool MTRecordList::Populate()
                     // ------------------------------
                     OTIdentifier theSenderID, theSenderAcctID;
 
-                    if (pBoxTrans->GetSenderUserIDForDisplay(theSenderID)) // NYM name.
+                    if (pBoxTrans->GetSenderAcctIDForDisplay(theSenderAcctID)) // ACCOUNT name.
                     {
-                        const OTString    strSenderID  (theSenderID);
-                        const std::string str_sender_id(strSenderID.Get());
-
-                        OTString strName(m_pLookup->GetNymName(str_sender_id, &(*it_server))), strNameTemp;
-
-                        if (strName.Exists())
-                            strNameTemp.Format("<font color='grey'>From:</font> %s", strName.Get());
-                        else
-                            strNameTemp.Format("<font color='grey'>From:</font> %s", str_sender_id.c_str());
-
-                        str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
-                        str_other_nym_id = str_sender_id;
-                        // ------------------------------------
-                        if (pBoxTrans->GetSenderAcctIDForDisplay(theSenderAcctID))
+                        if (pBoxTrans->GetSenderUserIDForDisplay(theSenderID))
                         {
-                            const OTString strSenderAcctID(theSenderAcctID);
-                            str_other_acct_id = strSenderAcctID.Get();
+                            const OTString strSenderID(theSenderID);
+                            str_other_nym_id = strSenderID.Get();
                         }
-                    }
-                    else if (pBoxTrans->GetSenderAcctIDForDisplay(theSenderAcctID)) // ACCOUNT name.
-                    {
+                        // ------------------------------------
                         const OTString    strSenderAcctID(theSenderAcctID);
                         const std::string str_sender_id(strSenderAcctID.Get());
 
@@ -2184,6 +2169,8 @@ bool MTRecordList::Populate()
 //                                                              const std::string * p_server_id/*=NULL*/,
 //                                                              const std::string * p_asset_id/*=NULL*/) const
 
+                        str_other_acct_id = str_sender_id;
+
                         OTString strName(m_pLookup->GetAcctName(str_sender_id,
                                                                 NULL, // nym ID if known
                                                                 pstr_server_id, // server ID if known.
@@ -2191,12 +2178,41 @@ bool MTRecordList::Populate()
                                  strNameTemp;
 
                         if (strName.Exists())
-                            strNameTemp.Format("<font color='grey'>From:</font> %s", strName.Get());
-                        else
-                            strNameTemp.Format("<font color='grey'>From:</font> %s", str_sender_id.c_str());
+                        {
+                            strNameTemp.Format(MC_UI_TEXT_FROM, strName.Get());
+                            str_name = strNameTemp.Get();
+                        }
+                        else if (!str_other_nym_id.empty())
+                        {
+                            OTString strNymName(m_pLookup->GetNymName(str_other_nym_id, &(*it_server))), strNymNameTemp;
 
-                        str_name = strNameTemp.Get(); // Todo: lookup the name in address book also.
-                        str_other_acct_id = str_sender_id;
+                            if (strNymName.Exists())
+                            {
+                                strNymNameTemp.Format(MC_UI_TEXT_FROM, strNymName.Get());
+                                str_name = strNameTemp.Get();
+                            }
+                        }
+                        // ---------------------------------------
+                        if (str_name.empty())
+                        {
+                            strNameTemp.Format(MC_UI_TEXT_FROM, str_sender_id.c_str());
+                            str_name = strNameTemp.Get();
+                        }
+                    }
+                    else if (pBoxTrans->GetSenderUserIDForDisplay(theSenderID)) // NYM name.
+                    {
+                        const OTString    strSenderID  (theSenderID);
+                        const std::string str_sender_id(strSenderID.Get());
+
+                        OTString strName(m_pLookup->GetNymName(str_sender_id, &(*it_server))), strNameTemp;
+
+                        if (strName.Exists())
+                            strNameTemp.Format(MC_UI_TEXT_FROM, strName.Get());
+                        else
+                            strNameTemp.Format(MC_UI_TEXT_FROM, str_sender_id.c_str());
+
+                        str_name         = strNameTemp.Get();
+                        str_other_nym_id = str_sender_id;
                     }
                     else
                     {
@@ -2223,9 +2239,9 @@ bool MTRecordList::Populate()
                         OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                         if (strName.Exists())
-                            strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
+                            strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                         else
-                            strNameTemp.Format("<font color='grey'>To:</font> %s", str_recipient_id.c_str());
+                            strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
 
                         str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
                         str_other_nym_id = str_recipient_id;
@@ -2248,9 +2264,9 @@ bool MTRecordList::Populate()
                                 strNameTemp;
 
                         if (strName.Exists())
-                            strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
+                            strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                         else
-                            strNameTemp.Format("<font color='grey'>To:</font> %s", str_recipient_id.c_str());
+                            strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
 
                         str_name          = strNameTemp.Get(); // Todo: lookup the name in address book also.
                         str_other_acct_id = str_recipient_id;
@@ -2375,9 +2391,9 @@ bool MTRecordList::Populate()
                     OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                     if (strName.Exists())
-                        strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
+                        strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                     else
-                        strNameTemp.Format("<font color='grey'>To:</font> %s", str_recipient_id.c_str());
+                        strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
 
                     str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
                     str_other_nym_id = str_recipient_id;
@@ -2400,9 +2416,9 @@ bool MTRecordList::Populate()
                             strNameTemp;
 
                     if (strName.Exists())
-                        strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
+                        strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                     else
-                        strNameTemp.Format("<font color='grey'>To:</font> %s", str_recipient_id.c_str());
+                        strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
 
                     str_name          = strNameTemp.Get(); // Todo: lookup the name in address book also.
                     str_other_acct_id = str_recipient_id;
@@ -2534,7 +2550,121 @@ bool MTRecordList::Populate()
                 OTIdentifier theSenderID,    theSenderAcctID;
                 OTIdentifier theRecipientID, theRecipientAcctID;
 
-                if (pBoxTrans->GetSenderUserIDForDisplay(theSenderID))
+                if (pBoxTrans->GetSenderAcctIDForDisplay(theSenderAcctID))
+                {
+                    const OTString    strSenderAcctID(theSenderAcctID);
+                    const std::string str_sender_id(strSenderAcctID.Get());
+
+                    // Usually, Nym is the RECIPIENT. Sometimes he's the sender.
+                    // Either way, we want the OTHER ID (the other Nym) for display.
+                    // So here, if Nym's CLEARLY the sender, then we want the RECIPIENT.
+                    // Whereas if Nym were the recipient, then we'd want the SENDER. (For display.)
+                    //
+                    if (0 == str_account_id.compare(str_sender_id)) // str_account_id IS str_sender_id. (Therefore we want recipient.)
+                    {
+                        bOutgoing = true; // if Nym is the sender, then it must have been outgoing.
+
+                        if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
+                        {
+                            const OTString strRecipientAcctID(theRecipientAcctID);
+                            const std::string str_recipient_id(strRecipientAcctID.Get());
+
+                            OTString strName(m_pLookup->GetAcctName(str_recipient_id,
+                                                                    NULL, // nym ID if known
+                                                                    pstr_server_id, // server ID if known.
+                                                                    pstr_asset_id)), // asset ID if known.
+                                    strNameTemp;
+
+                            if (strName.Exists())
+                                strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
+                            else
+                                strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
+
+                            str_name         = strNameTemp.Get();
+                            str_other_acct_id = str_recipient_id;
+                        }
+                        // -----------------------------------------
+                        if (pBoxTrans->GetRecipientUserIDForDisplay(theRecipientID))
+                        {
+                            const OTString strRecipientID(theRecipientID);
+                            const std::string str_recipient_id(strRecipientID.Get());
+
+                            str_other_nym_id = str_recipient_id;
+
+                            if (str_name.empty())
+                            {
+                                OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
+
+                                if (strName.Exists())
+                                    strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
+                                else
+                                    strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
+
+                                str_name = strNameTemp.Get();
+                            }
+                        }
+                    }
+                    else // str_nym_id IS NOT str_sender_id. (Therefore we want sender.)
+                    {    // In this case, some OTHER Nym is the sender, so it must have been incoming. (And bOutgoing is already false.)
+
+                        OTString strName(m_pLookup->GetAcctName(str_sender_id,
+                                                                NULL, // nym ID if known
+                                                                pstr_server_id, // server ID if known.
+                                                                pstr_asset_id)), // asset ID if known.
+                                strNameTemp;
+
+                        if (strName.Exists())
+                            strNameTemp.Format(MC_UI_TEXT_FROM, strName.Get());
+                        else
+                            strNameTemp.Format(MC_UI_TEXT_FROM, str_sender_id.c_str());
+
+                        str_name          = strNameTemp.Get();
+                        str_other_acct_id = str_sender_id;
+                        // ------------------------------------
+                        if (pBoxTrans->GetSenderUserIDForDisplay(theSenderID))
+                        {
+                            const OTString strSenderID(theSenderID);
+                            str_other_nym_id = strSenderID.Get();
+                        }
+                    }
+                }
+                // In this block below, we already KNOW GetSenderAcctIDForDisplay is EMPTY.
+                // (So it's "recipient or bust.")
+                else if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
+                {
+                    const OTString strRecipientAcctID(theRecipientAcctID);
+                    const std::string str_recipient_id(strRecipientAcctID.Get());
+
+                    if (0 != str_account_id.compare(str_recipient_id)) // str_account_id is NOT str_recipient_id. (Therefore we want str_recipient_id.)
+                    {
+                        // If Nym is not the recipient, then he must be the sender.
+                        // (Therefore it must be outgoing.)
+                        bOutgoing = true;
+
+                        OTString strName(m_pLookup->GetAcctName(str_recipient_id,
+                                                                NULL, // nym ID if known
+                                                                pstr_server_id, // server ID if known.
+                                                                pstr_asset_id)), // asset ID if known.
+                                strNameTemp;
+
+                        if (strName.Exists())
+                            strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
+                        else
+                            strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
+
+                        str_name          = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                        str_other_acct_id = str_recipient_id;
+                        // --------------------------------------------------------
+                        if (pBoxTrans->GetRecipientUserIDForDisplay(theRecipientID))
+                        {
+                            const OTString strRecipientID(theRecipientID);
+                            const std::string str_recipient_user_id(strRecipientID.Get());
+
+                            str_other_nym_id = str_recipient_user_id;
+                        }
+                    }
+                }
+                else if (pBoxTrans->GetSenderUserIDForDisplay(theSenderID))
                 {
                     const OTString    strSenderID  (theSenderID);
                     const std::string str_sender_id(strSenderID.Get());
@@ -2556,11 +2686,11 @@ bool MTRecordList::Populate()
                             OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                             if (strName.Exists())
-                                strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
+                                strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                             else
-                                strNameTemp.Format("<font color='grey'>To:</font> %s", str_recipient_id.c_str());
+                                strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
 
-                            str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
+                            str_name         = strNameTemp.Get();
                             str_other_nym_id = str_recipient_id;
                             // ------------------------------------
                             if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
@@ -2576,9 +2706,9 @@ bool MTRecordList::Populate()
                         OTString strName(m_pLookup->GetNymName(str_sender_id, &(*it_server))), strNameTemp;
 
                         if (strName.Exists())
-                            strNameTemp.Format("<font color='grey'>From:</font> %s", strName.Get());
+                            strNameTemp.Format(MC_UI_TEXT_FROM, strName.Get());
                         else
-                            strNameTemp.Format("<font color='grey'>From:</font> %s", str_sender_id.c_str());
+                            strNameTemp.Format(MC_UI_TEXT_FROM, str_sender_id.c_str());
 
                         str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
                         str_other_nym_id = str_sender_id;
@@ -2606,9 +2736,9 @@ bool MTRecordList::Populate()
                         OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
 
                         if (strName.Exists())
-                            strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
+                            strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                         else
-                            strNameTemp.Format("<font color='grey'>To:</font> %s", str_recipient_id.c_str());
+                            strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
 
                         str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
                         str_other_nym_id = str_recipient_id;
@@ -2618,86 +2748,6 @@ bool MTRecordList::Populate()
                             const OTString strRecipientAcctID(theRecipientAcctID);
                             str_other_acct_id = strRecipientAcctID.Get();
                         }
-                    }
-                }
-                else if (pBoxTrans->GetSenderAcctIDForDisplay(theSenderAcctID))
-                {
-                    const OTString    strSenderAcctID(theSenderAcctID);
-                    const std::string str_sender_id(strSenderAcctID.Get());
-
-                    // Usually, Nym is the RECIPIENT. Sometimes he's the sender.
-                    // Either way, we want the OTHER ID (the other Nym) for display.
-                    // So here, if Nym's CLEARLY the sender, then we want the RECIPIENT.
-                    // Whereas if Nym were the recipient, then we'd want the SENDER. (For display.)
-                    //
-                    if (0 == str_account_id.compare(str_sender_id)) // str_account_id IS str_sender_id. (Therefore we want recipient.)
-                    {
-                        bOutgoing = true; // if Nym is the sender, then it must have been outgoing.
-
-                        if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
-                        {
-                            const OTString strRecipientAcctID(theRecipientAcctID);
-                            const std::string str_recipient_id(strRecipientAcctID.Get());
-
-                            OTString strName(m_pLookup->GetAcctName(str_recipient_id,
-                                                                    NULL, // nym ID if known
-                                                                    pstr_server_id, // server ID if known.
-                                                                    pstr_asset_id)), // asset ID if known.
-                                    strNameTemp;
-
-                            if (strName.Exists())
-                                strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
-                            else
-                                strNameTemp.Format("<font color='grey'>To:</font> %s", str_recipient_id.c_str());
-
-                            str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
-                            str_other_acct_id = str_recipient_id;
-                        }
-                    }
-                    else // str_nym_id IS NOT str_sender_id. (Therefore we want sender.)
-                    {    // In this case, some OTHER Nym is the sender, so it must have been incoming. (And bOutgoing is already false.)
-
-                        OTString strName(m_pLookup->GetAcctName(str_sender_id,
-                                                                NULL, // nym ID if known
-                                                                pstr_server_id, // server ID if known.
-                                                                pstr_asset_id)), // asset ID if known.
-                                strNameTemp;
-
-                        if (strName.Exists())
-                            strNameTemp.Format("<font color='grey'>From:</font> %s", strName.Get());
-                        else
-                            strNameTemp.Format("<font color='grey'>From:</font> %s", str_sender_id.c_str());
-
-                        str_name          = strNameTemp.Get(); // Todo: lookup the name in address book also.
-                        str_other_acct_id = str_sender_id;
-                    }
-                }
-                // In this block below, we already KNOW GetSenderAcctIDForDisplay is EMPTY.
-                // (So it's "recipient or bust.")
-                else if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
-                {
-                    const OTString strRecipientAcctID(theRecipientAcctID);
-                    const std::string str_recipient_id(strRecipientAcctID.Get());
-
-                    if (0 != str_account_id.compare(str_recipient_id)) // str_account_id is NOT str_recipient_id. (Therefore we want str_recipient_id.)
-                    {
-                        // If Nym is not the recipient, then he must be the sender.
-                        // (Therefore it must be outgoing.)
-                        bOutgoing = true;
-
-                        OTString strName(m_pLookup->GetAcctName(str_recipient_id,
-                                                                NULL, // nym ID if known
-                                                                pstr_server_id, // server ID if known.
-                                                                pstr_asset_id)), // asset ID if known.
-                                strNameTemp;
-
-                        if (strName.Exists())
-                            strNameTemp.Format("<font color='grey'>To:</font> %s", strName.Get());
-                        else
-                            strNameTemp.Format("<font color='grey'>To:</font> %s", str_recipient_id.c_str());
-
-                        str_name          = strNameTemp.Get(); // Todo: lookup the name in address book also.
-                        str_other_acct_id = str_recipient_id;
                     }
                 }
                 // ---------------------
@@ -2734,13 +2784,24 @@ bool MTRecordList::Populate()
             // ------------------------------------------
             const std::string str_type(pBoxTrans->GetTypeString()); // pending, chequeReceipt, etc.
             // ------------------------------
+            if (0 == str_type.compare("transferReceipt"))
+                bOutgoing = true; // only the sender of a transfer will have a transferReceipt.
+            else if (0 == str_type.compare("pending"))
+                bOutgoing = false; // only the recipient of a transfer will have a pending in his recordbox.
+            // ------------------------------
             if (0 != lAmount)
             {
 
-                if (bOutgoing && (0 == str_type.compare("transferReceipt")) && (lAmount > 0))
-                    lAmount *= (-1);
-                else if (!bOutgoing && (0 == str_type.compare("transferReceipt")) && (lAmount < 0))
-                    lAmount *= (-1);
+//                if (lAmount < 0)
+//                    bOutgoing = true;
+//                else
+//                    bOutgoing = false;
+
+                // A transfer receipt ALWAYS represents an outgoing transfer.
+                // If the amount is over 0, we want to display it as a negative
+                // since it represents money LEAVING my account.
+//                if ((0 == str_type.compare("transferReceipt")) && (lAmount > 0))
+//                    lAmount *= (-1);
 
                 OTString strTemp;
                 strTemp.Format("%ld", lAmount);

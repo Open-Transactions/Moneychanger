@@ -1,3 +1,4 @@
+#include <QDebug>
 #include <QLabel>
 #include <QEvent>
 #include <QKeyEvent>
@@ -10,12 +11,13 @@
 MTEditDetails::MTEditDetails(QWidget *parent) :
     QWidget(parent),
     m_pOwner(NULL)
-//    ui(new Ui::MTEditDetails)
+//  ui(new Ui::MTEditDetails)
 {
-//    ui->setupUi(this);
+//  ui->setupUi(this);
+
     this->installEventFilter(this);
 
-//    this->setContentsMargins(0, 0, 0, 0);
+//  this->setContentsMargins(0, 0, 0, 0);
 }
 
 MTEditDetails::~MTEditDetails()
@@ -31,24 +33,78 @@ void MTEditDetails::SetOwnerPointer(MTDetailEdit & theOwner)
 
 bool MTEditDetails::eventFilter(QObject *obj, QEvent *event)
 {
-    if (event->type() == QEvent::KeyPress) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if(keyEvent->key() == Qt::Key_Escape){
-            close(); // This is caught by this same filter.
-            return true;
-        }
-        return true;
-    }else {
+//    if (event->type() == QEvent::KeyPress)
+//    {
+//        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+
+//        if (keyEvent->key() == Qt::Key_Escape)
+//        {
+//            close(); // This is caught by this same filter.
+//            return true;
+//        }
+//        return true;
+//    }
+//    else
+    {
         // standard event processing
         return QObject::eventFilter(obj, event);
     }
 }
 
 
-
+// ----------------------------------
+//virtual
+int MTEditDetails::GetCustomTabCount()
+{
+    return 0;
+}
+// ----------------------------------
+//virtual
+QWidget * MTEditDetails::CreateCustomTab(int nTab)
+{
+    const int nCustomTabCount = this->GetCustomTabCount();
+    // -----------------------------
+    if ((nTab < 0) || (nTab >= nCustomTabCount))
+        return NULL; // out of bounds.
+    // -----------------------------
+    QWidget * pReturnValue = NULL;
+    // -----------------------------
+    switch (nTab)
+    {
+    default:
+        qDebug() << "Unexpected: MTEditDetails::CreateCustomTab was called instead of overridden version of same method.";
+        return NULL;
+    }
+    // -----------------------------
+    return pReturnValue;
+}
+// ---------------------------------
+//virtual
+QString  MTEditDetails::GetCustomTabName(int nTab)
+{
+    const int nCustomTabCount = this->GetCustomTabCount();
+    // -----------------------------
+    if ((nTab < 0) || (nTab >= nCustomTabCount))
+        return QString(""); // out of bounds.
+    // -----------------------------
+    QString qstrReturnValue("");
+    // -----------------------------
+    switch (nTab)
+    {
+    default:
+        qDebug() << "Unexpected: MTEditDetails::GetCustomTabName was called instead of overridden version of same method.";
+        return QString("");
+    }
+    // -----------------------------
+    return qstrReturnValue;
+}
+// ----------------------------------
 
 //static
-QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName, bool bExternal/*=true*/)
+QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName,
+                                                  QString strAmount/*=QString("")*/,
+                                                  QString strStatus/*=QString("")*/,
+                                                  bool bExternal/*=true*/)
 {
     QString strColor("black");
     // ---------------------------------------
@@ -90,7 +146,7 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
     currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(strColor));
     // ----------------------------------------------------------------
 //  currency_amount = QString("amount goes here");
-    currency_amount = QString("");
+    currency_amount = strAmount;
     // ----------------------------------------------------------------
     currency_amount_label->setText(currency_amount);
     // ----------------------------------------------------------------
@@ -113,7 +169,7 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
 
 
     QLabel * row_content_date_label = new QLabel;
-//    QString row_content_date_label_string("Date goes here");
+//  QString row_content_date_label_string("Date goes here");
     QString row_content_date_label_string(strID);
 
     row_content_date_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
@@ -122,7 +178,7 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
     row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
     // -------------------------------------------
     // Column two
-    std::string str_desc("");
+    std::string str_desc = strStatus.toStdString();
 //  std::string str_desc("Description goes here");
     // ---------------------------------------
     //Status
