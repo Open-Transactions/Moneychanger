@@ -2,6 +2,7 @@
 #define MTHOMEDETAIL_H
 
 #include <QWidget>
+#include <QLineEdit>
 
 #include "MTRecord.hpp"
 #include "MTRecordList.hpp"
@@ -59,6 +60,22 @@ private:
     shared_ptr_MTRecord m_record;
     QGridLayout * m_pDetailLayout;
     MTHome * m_pHome;
+
+    QLineEdit * m_pLineEdit_Nym_ID;
+    QLineEdit * m_pLineEdit_OtherNym_ID;
+    QLineEdit * m_pLineEdit_Acct_ID;
+    QLineEdit * m_pLineEdit_OtherAcct_ID;
+    QLineEdit * m_pLineEdit_Server_ID;
+    QLineEdit * m_pLineEdit_AssetType_ID;
+
+    QLineEdit * m_pLineEdit_Nym_Name;
+    QLineEdit * m_pLineEdit_OtherNym_Name;
+    QLineEdit * m_pLineEdit_Acct_Name;
+    QLineEdit * m_pLineEdit_OtherAcct_Name;
+    QLineEdit * m_pLineEdit_Server_Name;
+    QLineEdit * m_pLineEdit_AssetType_Name;
+
+    void FavorLeftSideForIDs();
 
     QString FindAppropriateDepositAccount(MTRecord & recordmt);
     void    RecreateLayout();

@@ -22,11 +22,6 @@ SOURCES += main.cpp\
     Widgets/overviewwindow.cpp \
     Handlers/FileHandler.cpp \
     Handlers/DBHandler.cpp \
-    Widgets/addressbookwindow.cpp \
-    Widgets/nymmanagerwindow.cpp \
-    Widgets/assetmanagerwindow.cpp \
-    Widgets/accountmanagerwindow.cpp \
-    Widgets/servermanagerwindow.cpp \
     Widgets/withdrawascashwindow.cpp \
     Widgets/withdrawasvoucherwindow.cpp \
     Widgets/depositwindow.cpp \
@@ -46,7 +41,11 @@ SOURCES += main.cpp\
     Widgets/identifierwidget.cpp \
     UI/dlgnewcontact.cpp \
     Widgets/senddlg.cpp \
-    Widgets/requestdlg.cpp
+    Widgets/requestdlg.cpp \
+    Widgets/nymdetails.cpp \
+    Widgets/serverdetails.cpp \
+    Widgets/assetdetails.cpp \
+    Widgets/accountdetails.cpp
 
 
 HEADERS += moneychanger.h \
@@ -57,11 +56,6 @@ HEADERS += moneychanger.h \
     Widgets/overviewwindow.h \
     Handlers/FileHandler.h \
     Handlers/DBHandler.h \
-    Widgets/addressbookwindow.h \
-    Widgets/nymmanagerwindow.h \
-    Widgets/assetmanagerwindow.h \
-    Widgets/accountmanagerwindow.h \
-    Widgets/servermanagerwindow.h \
     Widgets/withdrawascashwindow.h \
     Widgets/withdrawasvoucherwindow.h \
     Widgets/depositwindow.h \
@@ -81,7 +75,11 @@ HEADERS += moneychanger.h \
     Widgets/identifierwidget.h \
     UI/dlgnewcontact.h \
     Widgets/senddlg.h \
-    Widgets/requestdlg.h
+    Widgets/requestdlg.h \
+    Widgets/nymdetails.h \
+    Widgets/serverdetails.h \
+    Widgets/assetdetails.h \
+    Widgets/accountdetails.h
 
 
 DEFINES += "OT_ZMQ_MODE=1"
@@ -159,5 +157,9 @@ FORMS += \
     Widgets/identifierwidget.ui \
     UI/dlgnewcontact.ui \
     Widgets/senddlg.ui \
-    Widgets/requestdlg.ui
+    Widgets/requestdlg.ui \
+    Widgets/nymdetails.ui \
+    Widgets/serverdetails.ui \
+    Widgets/assetdetails.ui \
+    Widgets/accountdetails.ui
 

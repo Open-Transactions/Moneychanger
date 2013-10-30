@@ -46,6 +46,18 @@ MTHomeDetail::MTHomeDetail(QWidget *parent) :
     m_nContactID(0),
     m_pDetailLayout(NULL),
     m_pHome(NULL),
+    m_pLineEdit_Nym_ID(NULL),
+    m_pLineEdit_OtherNym_ID(NULL),
+    m_pLineEdit_Acct_ID(NULL),
+    m_pLineEdit_OtherAcct_ID(NULL),
+    m_pLineEdit_Server_ID(NULL),
+    m_pLineEdit_AssetType_ID(NULL),
+    m_pLineEdit_Nym_Name(NULL),
+    m_pLineEdit_OtherNym_Name(NULL),
+    m_pLineEdit_Acct_Name(NULL),
+    m_pLineEdit_OtherAcct_Name(NULL),
+    m_pLineEdit_Server_Name(NULL),
+    m_pLineEdit_AssetType_Name(NULL),
     ui(new Ui::MTHomeDetail)
 {
     ui->setupUi(this);
@@ -74,6 +86,26 @@ MTHomeDetail::~MTHomeDetail()
     delete ui;
 }
 
+void MTHomeDetail::FavorLeftSideForIDs()
+{
+    if (NULL != m_pLineEdit_Nym_ID)         m_pLineEdit_Nym_ID->home(false);
+    if (NULL != m_pLineEdit_OtherNym_ID)    m_pLineEdit_OtherNym_ID->home(false);
+    if (NULL != m_pLineEdit_Acct_ID)        m_pLineEdit_Acct_ID->home(false);
+    if (NULL != m_pLineEdit_OtherAcct_ID)   m_pLineEdit_OtherAcct_ID->home(false);
+    if (NULL != m_pLineEdit_Server_ID)      m_pLineEdit_Server_ID->home(false);
+    if (NULL != m_pLineEdit_AssetType_ID)   m_pLineEdit_AssetType_ID->home(false);
+    // --------------------------------------------------------------------
+    if (NULL != m_pLineEdit_Nym_Name)       m_pLineEdit_Nym_Name->home(false);
+    if (NULL != m_pLineEdit_OtherNym_Name)  m_pLineEdit_OtherNym_Name->home(false);
+    if (NULL != m_pLineEdit_Acct_Name)      m_pLineEdit_Acct_Name->home(false);
+    if (NULL != m_pLineEdit_OtherAcct_Name) m_pLineEdit_OtherAcct_Name->home(false);
+    if (NULL != m_pLineEdit_Server_Name)    m_pLineEdit_Server_Name->home(false);
+    if (NULL != m_pLineEdit_AssetType_Name) m_pLineEdit_AssetType_Name->home(false);
+}
+
+//if (QResizeEvent *resizeEvent = static_cast<QResizeEvent*>(event))
+//somesize.setWidth(width);
+
 bool MTHomeDetail::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress)
@@ -86,6 +118,13 @@ bool MTHomeDetail::eventFilter(QObject *obj, QEvent *event)
             return true;
         }
         return true;
+    }
+    else if (event->type() == QEvent::Resize)
+    {
+        // This insures that the left-most part of the IDs and Names
+        // remains visible during all resize events.
+        //
+        FavorLeftSideForIDs();
     }
     else
     {
@@ -1078,6 +1117,18 @@ void MTHomeDetail::RecreateLayout()
     m_pDetailLayout->setAlignment(Qt::AlignTop);
     m_pDetailLayout->setContentsMargins(0, 0, 0, 0);
     // --------------------------------------------------
+    m_pLineEdit_Nym_ID          = NULL;
+    m_pLineEdit_OtherNym_ID     = NULL;
+    m_pLineEdit_Acct_ID         = NULL;
+    m_pLineEdit_OtherAcct_ID    = NULL;
+    m_pLineEdit_Server_ID       = NULL;
+    m_pLineEdit_AssetType_ID    = NULL;
+    m_pLineEdit_Nym_Name        = NULL;
+    m_pLineEdit_OtherNym_Name   = NULL;
+    m_pLineEdit_Acct_Name       = NULL;
+    m_pLineEdit_OtherAcct_Name  = NULL;
+    m_pLineEdit_Server_Name     = NULL;
+    m_pLineEdit_AssetType_Name  = NULL;
 }
 
 
@@ -1404,8 +1455,197 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
         nCurrentRow++;
     }
     // ----------------------------------
-
     // TRANSACTION IDs DISPLAYED HERE
+
+    QString qstr_NymID       = QString::fromStdString(recordmt.GetNymID());
+    QString qstr_OtherNymID  = QString::fromStdString(recordmt.GetOtherNymID());
+    QString qstr_AccountID   = QString::fromStdString(recordmt.GetAccountID());
+    QString qstr_OtherAcctID = QString::fromStdString(recordmt.GetOtherAccountID());
+    QString qstr_ServerID    = QString::fromStdString(recordmt.GetServerID());
+    QString qstr_AssetTypeID = QString::fromStdString(recordmt.GetAssetID());
+
+    QString qstr_OtherType;
+
+    if (recordmt.IsReceipt() || recordmt.IsOutgoing())
+        qstr_OtherType = QString("Recipient");
+    else
+        qstr_OtherType = QString("Sender");
+
+    QGridLayout * pGridLayout = new QGridLayout;
+    int nGridRow = 0;
+
+    pGridLayout->setColumnMinimumWidth(0, 75);
+    pGridLayout->setColumnMinimumWidth(1, 75);
+
+    pGridLayout->setColumnStretch(1, 2);
+    pGridLayout->setColumnStretch(2, 5);
+
+    pGridLayout->setAlignment(Qt::AlignTop);
+
+//    {
+//        QString qstr_Type = QString::fromStdString(recordmt.GetInstrumentType());
+
+//        QLabel    * pLabel    = new QLabel(QString("Type: "));
+//        QLineEdit * pLineEdit = new QLineEdit(QString(qstr_Type));
+//        pLineEdit->setReadOnly(true);
+//        pGridLayout->addWidget(pLabel,    nGridRow,   0);
+//        pGridLayout->addWidget(pLineEdit, nGridRow++, 1);
+//    }
+
+    if (!qstr_NymID.isEmpty())
+    {
+        QLabel    * pLabel    = new QLabel(QString("My Nym: "));
+
+        MTNameLookupQT theLookup;
+        QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_NymID.toStdString()));
+
+        m_pLineEdit_Nym_ID          = new QLineEdit(qstr_NymID);
+        m_pLineEdit_Nym_Name        = new QLineEdit(qstr_name);
+
+        m_pLineEdit_Nym_ID->setReadOnly(true);
+        m_pLineEdit_Nym_Name->setReadOnly(true);
+
+        m_pLineEdit_Nym_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
+        m_pLineEdit_Nym_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+        pGridLayout->addWidget(pLabel, nGridRow,   0);
+        pGridLayout->addWidget(m_pLineEdit_Nym_Name, nGridRow,   1);
+        pGridLayout->addWidget(m_pLineEdit_Nym_ID, nGridRow++, 2);
+    }
+
+    if (!qstr_OtherNymID.isEmpty())
+    {
+        QLabel    * pLabel    = new QLabel(QString("%1 Nym: ").arg(qstr_OtherType));
+
+        MTNameLookupQT theLookup;
+        QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_OtherNymID.toStdString()));
+
+        m_pLineEdit_OtherNym_ID     = new QLineEdit(qstr_OtherNymID);
+        m_pLineEdit_OtherNym_Name   = new QLineEdit(qstr_name);
+
+        m_pLineEdit_OtherNym_ID->setReadOnly(true);
+        m_pLineEdit_OtherNym_Name->setReadOnly(true);
+
+        m_pLineEdit_OtherNym_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
+        m_pLineEdit_OtherNym_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+        pGridLayout->addWidget(pLabel,    nGridRow,   0);
+        pGridLayout->addWidget(m_pLineEdit_OtherNym_Name,    nGridRow,   1);
+        pGridLayout->addWidget(m_pLineEdit_OtherNym_ID, nGridRow++, 2);
+    }
+
+    if (!qstr_AccountID.isEmpty())
+    {
+        QLabel    * pLabel    = new QLabel(QString("My Account: "));
+
+        MTNameLookupQT theLookup;
+        QString qstr_name = QString::fromStdString(theLookup.GetAcctName(qstr_AccountID.toStdString()));
+
+        m_pLineEdit_Acct_ID         = new QLineEdit(qstr_AccountID);
+        m_pLineEdit_Acct_Name       = new QLineEdit(qstr_name);
+
+        m_pLineEdit_Acct_ID->setReadOnly(true);
+        m_pLineEdit_Acct_Name->setReadOnly(true);
+
+        m_pLineEdit_Acct_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
+        m_pLineEdit_Acct_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+        pGridLayout->addWidget(pLabel,    nGridRow,   0);
+        pGridLayout->addWidget(m_pLineEdit_Acct_Name,    nGridRow,   1);
+        pGridLayout->addWidget(m_pLineEdit_Acct_ID, nGridRow++, 2);
+    }
+
+    if (!qstr_OtherAcctID.isEmpty())
+    {
+        QLabel    * pLabel    = new QLabel(QString("%1 Account: ").arg(qstr_OtherType));
+
+        MTNameLookupQT theLookup;
+        QString qstr_name = QString::fromStdString(theLookup.GetAcctName(qstr_OtherAcctID.toStdString()));
+
+        m_pLineEdit_OtherAcct_ID    = new QLineEdit(qstr_OtherAcctID);
+        m_pLineEdit_OtherAcct_Name  = new QLineEdit(qstr_name);
+
+        m_pLineEdit_OtherAcct_ID->setReadOnly(true);
+        m_pLineEdit_OtherAcct_Name->setReadOnly(true);
+
+        m_pLineEdit_OtherAcct_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
+        m_pLineEdit_OtherAcct_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+        pGridLayout->addWidget(pLabel,    nGridRow,   0);
+        pGridLayout->addWidget(m_pLineEdit_OtherAcct_Name,    nGridRow,   1);
+        pGridLayout->addWidget(m_pLineEdit_OtherAcct_ID, nGridRow++, 2);
+    }
+
+    if (!qstr_ServerID.isEmpty())
+    {
+        QLabel    * pLabel    = new QLabel(QString("Server: "));
+
+        QString qstr_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(qstr_ServerID.toStdString()));
+
+        m_pLineEdit_Server_ID       = new QLineEdit(qstr_ServerID);
+        m_pLineEdit_Server_Name     = new QLineEdit(qstr_name);
+
+        m_pLineEdit_Server_ID->setReadOnly(true);
+        m_pLineEdit_Server_Name->setReadOnly(true);
+
+        m_pLineEdit_Server_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
+        m_pLineEdit_Server_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+        pGridLayout->addWidget(pLabel,    nGridRow,   0);
+        pGridLayout->addWidget(m_pLineEdit_Server_Name,    nGridRow,   1);
+        pGridLayout->addWidget(m_pLineEdit_Server_ID, nGridRow++, 2);
+    }
+
+    if (!qstr_AssetTypeID.isEmpty())
+    {
+        QLabel    * pLabel    = new QLabel(QString("Asset Type: "));
+
+        QString qstr_name = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(qstr_AssetTypeID.toStdString()));
+
+        m_pLineEdit_AssetType_ID    = new QLineEdit(qstr_AssetTypeID);
+        m_pLineEdit_AssetType_Name  = new QLineEdit(qstr_name);
+
+        m_pLineEdit_AssetType_ID->setReadOnly(true);
+        m_pLineEdit_AssetType_Name->setReadOnly(true);
+
+        m_pLineEdit_AssetType_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
+        m_pLineEdit_AssetType_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+        pGridLayout->addWidget(pLabel, nGridRow, 0);
+        pGridLayout->addWidget(m_pLineEdit_AssetType_Name, nGridRow, 1);
+        pGridLayout->addWidget(m_pLineEdit_AssetType_ID, nGridRow++, 2);
+    }
+    // ----------------------------------
+    FavorLeftSideForIDs();
+    // ----------------------------------
+    QTabWidget * pTabWidget  = new QTabWidget;
+    QWidget    * pTab1Widget = new QWidget;
+    QWidget    * pTab2Widget = NULL;
+    QWidget    * pTab3Widget = NULL;
+
+    pTabWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    pTab1Widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    pTabWidget->setContentsMargins(5, 5, 5, 5);
+    pTab1Widget->setContentsMargins(5, 5, 5, 5);
+
+    pTabWidget->addTab(pTab1Widget, QString("Details"));
+    // ----------------------------------
+    if (pGridLayout->count() > 0)
+    {
+        pTab3Widget = new QWidget;
+
+        pTab3Widget->setContentsMargins(0, 0, 0, 0);
+        pTab3Widget->setLayout(pGridLayout);
+
+        pTabWidget->addTab(pTab3Widget, QString("IDs"));
+//      m_pDetailLayout->addLayout(pGridLayout, nCurrentRow++, nCurrentColumn, 1, 2, Qt::AlignBottom);
+    }
+    else
+    {
+        delete pGridLayout;
+        pGridLayout = NULL;
+    }
 
 //    ActionSection *act = [ActionSection sectionWithName:QString("Actions") andActions:actions];
 //    act.defaultAlignment = (UITextAlignment) UITextAlignmentLeft;
@@ -1417,18 +1657,6 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 //                                act,
 //                                idSec,
 //                                ]];
-    // ----------------------------------
-    QTabWidget * pTabWidget  = new QTabWidget;
-    QWidget    * pTab1Widget = new QWidget;
-    QWidget    * pTab2Widget = NULL;
-
-    pTabWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    pTab1Widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-    pTabWidget->setContentsMargins(5, 5, 5, 5);
-    pTab1Widget->setContentsMargins(5, 5, 5, 5);
-
-    pTabWidget->addTab(pTab1Widget, QString("Details"));
     // ----------------------------------
     if (recordmt.HasContents())
     {

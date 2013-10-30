@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MTContactDetails</class>
- <widget class="MTEditDetails" name="MTContactDetails">
+ <class>MTNymDetails</class>
+ <widget class="MTEditDetails" name="MTNymDetails">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>426</width>
-    <height>292</height>
+    <width>336</width>
+    <height>346</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -25,7 +19,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="labelID">
        <property name="text">
-        <string>Contact ID:</string>
+        <string>Nym ID:</string>
        </property>
       </widget>
      </item>
@@ -68,31 +62,17 @@
     </layout>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-     <item>
-      <widget class="QLabel" name="labelNameContents">
-       <property name="text">
-        <string>Known IDs:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPlainTextEdit" name="plainTextEdit">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>
