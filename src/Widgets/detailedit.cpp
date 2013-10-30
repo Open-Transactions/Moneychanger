@@ -4,7 +4,12 @@
 #include "ui_detailedit.h"
 
 #include "editdetails.h"
+
 #include "contactdetails.h"
+#include "nymdetails.h"
+#include "serverdetails.h"
+#include "assetdetails.h"
+#include "accountdetails.h"
 
 #include "moneychanger.h"
 
@@ -57,15 +62,11 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType)
 
         switch (m_Type)
         {
-        case MTDetailEdit::DetailEditTypeContact:
-        case MTDetailEdit::DetailEditTypeNym:
-        case MTDetailEdit::DetailEditTypeServer:
-        case MTDetailEdit::DetailEditTypeAsset:
-        case MTDetailEdit::DetailEditTypeAccount:
-
-            m_pDetailPane = new MTContactDetails;
-            break;
-
+        case MTDetailEdit::DetailEditTypeNym:     m_pDetailPane = new MTNymDetails;     break;
+        case MTDetailEdit::DetailEditTypeContact: m_pDetailPane = new MTContactDetails; break;
+        case MTDetailEdit::DetailEditTypeServer:  m_pDetailPane = new MTServerDetails;  break;
+        case MTDetailEdit::DetailEditTypeAsset:   m_pDetailPane = new MTAssetDetails;   break;
+        case MTDetailEdit::DetailEditTypeAccount: m_pDetailPane = new MTAccountDetails; break;
         default:
             qDebug() << "MTDetailEdit::dialog: MTDetailEdit::DetailEditTypeError";
         }

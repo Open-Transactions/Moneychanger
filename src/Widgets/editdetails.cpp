@@ -10,12 +10,13 @@
 MTEditDetails::MTEditDetails(QWidget *parent) :
     QWidget(parent),
     m_pOwner(NULL)
-//    ui(new Ui::MTEditDetails)
+//  ui(new Ui::MTEditDetails)
 {
-//    ui->setupUi(this);
+//  ui->setupUi(this);
+
     this->installEventFilter(this);
 
-//    this->setContentsMargins(0, 0, 0, 0);
+//  this->setContentsMargins(0, 0, 0, 0);
 }
 
 MTEditDetails::~MTEditDetails()
@@ -31,14 +32,19 @@ void MTEditDetails::SetOwnerPointer(MTDetailEdit & theOwner)
 
 bool MTEditDetails::eventFilter(QObject *obj, QEvent *event)
 {
-    if (event->type() == QEvent::KeyPress) {
+    if (event->type() == QEvent::KeyPress)
+    {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if(keyEvent->key() == Qt::Key_Escape){
+
+        if (keyEvent->key() == Qt::Key_Escape)
+        {
             close(); // This is caught by this same filter.
             return true;
         }
         return true;
-    }else {
+    }
+    else
+    {
         // standard event processing
         return QObject::eventFilter(obj, event);
     }
