@@ -40,7 +40,7 @@
 #include "MTRecordList.hpp"
 #include "MTRecord.hpp"
 
-#include "Widgets/MarketWindow.h"
+#include "Widgets/marketwindow.h"
 #include "Widgets/overviewwindow.h"
 #include "Widgets/home.h"
 #include "Widgets/withdrawascashwindow.h"

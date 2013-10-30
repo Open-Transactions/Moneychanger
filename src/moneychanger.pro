@@ -55,7 +55,7 @@ SOURCES += main.cpp\
     Handlers/FileHandler.cpp \
     Handlers/DBHandler.cpp \
     Handlers/contacthandler.cpp \
-    Widgets/MarketWindow.cpp \
+    Widgets/marketwindow.cpp \
     Widgets/overviewwindow.cpp \
     Widgets/withdrawascashwindow.cpp \
     Widgets/withdrawasvoucherwindow.cpp \

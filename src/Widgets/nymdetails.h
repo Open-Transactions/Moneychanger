@@ -1,7 +1,7 @@
 #ifndef NYMDETAILS_H
 #define NYMDETAILS_H
 
-#include <QPlainTextEdit.h>
+#include <QPlainTextEdit>
 
 #include "editdetails.h"
 
