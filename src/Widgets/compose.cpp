@@ -34,10 +34,10 @@ bool MTCompose::sendMessage(QString body, QString fromNymId, QString toNymId, QS
     }
     // ----------------------------------------------------
     if (subject.isEmpty())
-        subject = QString("From the desktop client. (Empty subject.)");
+        subject = tr("From the desktop client. (Empty subject.)");
     // ----------------------------------------------------
     if (body.isEmpty())
-        body = QString("From the desktop client. (Empty message body.)");
+        body = tr("From the desktop client. (Empty message body.)");
     // ----------------------------------------------------
     std::string str_serverId  (atServerID.toStdString());
     std::string str_fromNymId (fromNymId.toStdString());
@@ -46,7 +46,7 @@ bool MTCompose::sendMessage(QString body, QString fromNymId, QString toNymId, QS
     qDebug() << QString("Initiating sendMessage:\n Server:'%1'\n FromNym:'%2'\n ToNym:'%3'\n Subject:'%4'\n Body:'%5'").
                 arg(atServerID).arg(fromNymId).arg(toNymId).arg(subject).arg(body);
     // ----------------------------------------------------
-    QString contents = QString("Subject: %1\n\n%2").arg(subject).arg(body);
+    QString contents = tr("Subject: %1\n\n%2").arg(subject).arg(body);
     // ----------------------------------------------------
     OT_ME madeEasy;
 
@@ -71,22 +71,22 @@ void MTCompose::on_sendButton_clicked()
     // -----------------------------------------------------------------
     if (m_recipientNymId.isEmpty())
     {
-        QMessageBox::warning(this, QString("Message Has No Recipient"),
-                             QString("Please choose a recipient for this message, before sending."));
+        QMessageBox::warning(this, tr("Message Has No Recipient"),
+                             tr("Please choose a recipient for this message, before sending."));
         return;
     }
     // -----------------------------------------------------------------
     if (m_senderNymId.isEmpty())
     {
-        QMessageBox::warning(this, QString("Message Has No Sender"),
-                             QString("Please choose a sender for this message, before sending."));
+        QMessageBox::warning(this, tr("Message Has No Sender"),
+                             tr("Please choose a sender for this message, before sending."));
         return;
     }
     // -----------------------------------------------------------------
     if (m_serverId.isEmpty())
     {
-        QMessageBox::warning(this, QString("Message Has No Server"),
-                             QString("Before sending, please choose a server for this message to be sent through."));
+        QMessageBox::warning(this, tr("Message Has No Server"),
+                             tr("Before sending, please choose a server for this message to be sent through."));
         return;
     }
     // -----------------------------------------------------------------
@@ -94,7 +94,7 @@ void MTCompose::on_sendButton_clicked()
     {
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, "", "This message has a blank subject. Are you sure you want to send?",
+        reply = QMessageBox::question(this, "", tr("This message has a blank subject. Are you sure you want to send?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::No)
           return;
@@ -104,7 +104,7 @@ void MTCompose::on_sendButton_clicked()
     {
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, "", "The message contents are blank. Are you sure you want to send?",
+        reply = QMessageBox::question(this, "", tr("The message contents are blank. Are you sure you want to send?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::No)
           return;
@@ -126,8 +126,8 @@ void MTCompose::on_sendButton_clicked()
     }
     // -----------------------------------------------------------------
     if (!bSent)
-        QMessageBox::warning(this, QString("Failed Sending Message"),
-                             QString("Failed trying to send the message."));
+        QMessageBox::warning(this, tr("Failed Sending Message"),
+                             tr("Failed trying to send the message."));
     else
         this->close();
     // -----------------------------------------------------------------
@@ -205,7 +205,7 @@ void MTCompose::on_serverButton_clicked()
             m_serverId = theChooser.m_qstrCurrentID;
             // -----------------------------------------
             if (theChooser.m_qstrCurrentName.isEmpty())
-                ui->serverButton->setText(QString("(This server has a blank name)"));
+                ui->serverButton->setText(tr("(This server has a blank name)"));
             else
                 ui->serverButton->setText(theChooser.m_qstrCurrentName);
             // -----------------------------------------
@@ -218,7 +218,7 @@ void MTCompose::on_serverButton_clicked()
     }
     // -----------------------------------------------
     m_serverId = QString("");
-    ui->serverButton->setText("<Click to choose an OT Server>");
+    ui->serverButton->setText(tr("<Click to choose an OT Server>"));
 }
 
 void MTCompose::on_fromButton_clicked()
@@ -255,7 +255,7 @@ void MTCompose::on_fromButton_clicked()
     if (bFoundDefault && !m_senderNymId.isEmpty())
         theChooser.SetPreSelected(m_senderNymId);
     // -----------------------------------------------
-    theChooser.setWindowTitle("Choose your Sender identity");
+    theChooser.setWindowTitle(tr("Choose your Sender identity"));
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
@@ -279,7 +279,7 @@ void MTCompose::on_fromButton_clicked()
     }
     // -----------------------------------------------
     m_senderNymId = QString("");
-    ui->fromButton->setText("<Click to choose Sender>");
+    ui->fromButton->setText(tr("<Click to choose Sender>"));
 }
 
 
@@ -328,7 +328,7 @@ void MTCompose::on_toButton_clicked()
             {
                 qstrContactName  = QString("");
                 m_recipientNymId = QString("");
-                ui->toButton->setText("<Click to Choose Recipient>");
+                ui->toButton->setText(tr("<Click to Choose Recipient>"));
                 return;
             }
             // else...
@@ -336,7 +336,7 @@ void MTCompose::on_toButton_clicked()
             qstrContactName = MTContactHandler::getInstance()->GetContactName(nSelectedContactID);
 
             if (qstrContactName.isEmpty())
-                ui->toButton->setText("(Contact has a blank name)");
+                ui->toButton->setText(tr("(Contact has a blank name)"));
             else
                 ui->toButton->setText(qstrContactName);
             // ---------------------------------------------
@@ -360,10 +360,10 @@ void MTCompose::on_toButton_clicked()
                     else
                     {
                         m_recipientNymId = QString("");
-                        ui->toButton->setText("<Click to Choose Recipient>");
+                        ui->toButton->setText(tr("<Click to Choose Recipient>"));
                         // -------------------------------------
-                        QMessageBox::warning(this, QString("Contact has no known identities"),
-                                             QString("Sorry, Contact '%1' has no known NymIDs (to send messages to.)").arg(qstrContactName));
+                        QMessageBox::warning(this, tr("Contact has no known identities"),
+                                             tr("Sorry, Contact '%1' has no known NymIDs (to send messages to.)").arg(qstrContactName));
                         return;
                     }
                 }
@@ -371,24 +371,24 @@ void MTCompose::on_toButton_clicked()
                 {
                     DlgChooser theNymChooser(this);
                     theNymChooser.m_map = theNymMap;
-                    theNymChooser.setWindowTitle("Recipient has multiple Nyms. (Please choose one.)");
+                    theNymChooser.setWindowTitle(tr("Recipient has multiple Nyms. (Please choose one.)"));
                     // -----------------------------------------------
                     if (theNymChooser.exec() == QDialog::Accepted)
                         m_recipientNymId = theNymChooser.m_qstrCurrentID;
                     else // User must have cancelled.
                     {
                         m_recipientNymId = QString("");
-                        ui->toButton->setText("<Click to Choose Recipient>");
+                        ui->toButton->setText(tr("<Click to Choose Recipient>"));
                     }
                 }
             }
             else // No nyms found for this ContactID.
             {
                 m_recipientNymId = QString("");
-                ui->toButton->setText("<Click to Choose Recipient>");
+                ui->toButton->setText(tr("<Click to Choose Recipient>"));
                 // -------------------------------------
-                QMessageBox::warning(this, QString("Contact has no known identities"),
-                                     QString("Sorry, Contact '%1' has no known NymIDs (to send messages to.)").arg(qstrContactName));
+                QMessageBox::warning(this, tr("Contact has no known identities"),
+                                     tr("Sorry, Contact '%1' has no known NymIDs (to send messages to.)").arg(qstrContactName));
                 return;
             }
             // --------------------------------
@@ -410,7 +410,7 @@ void MTCompose::dialog()
 
     if (!already_init)
     {
-        this->setWindowTitle("Compose: (no subject)");
+        this->setWindowTitle(tr("Compose: (no subject)"));
 
         QString style_sheet = "QPushButton{border: none; border-style: outset; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa);}"
                 "QPushButton:pressed {border: 1px solid black; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa); }"
@@ -463,7 +463,7 @@ void MTCompose::dialog()
         if (str_sender_name.empty())
         {
             m_senderNymId = QString("");
-            ui->fromButton->setText(QString("<Click to Choose Sender>"));
+            ui->fromButton->setText(tr("<Click to Choose Sender>"));
         }
         else
             ui->fromButton->setText(QString::fromStdString(str_sender_name));
@@ -486,7 +486,7 @@ void MTCompose::dialog()
         if (str_recipient_name.empty())
         {
             m_recipientNymId = QString("");
-            ui->toButton->setText("<Click to Choose Recipient>");
+            ui->toButton->setText(tr("<Click to Choose Recipient>"));
         }
         else
             ui->toButton->setText(QString::fromStdString(str_recipient_name));
@@ -507,7 +507,7 @@ void MTCompose::dialog()
         if (str_server_name.empty())
         {
             m_serverId = QString("");
-            ui->serverButton->setText(QString("<Click to Choose Server>"));
+            ui->serverButton->setText(tr("<Click to Choose Server>"));
         }
         else
             ui->serverButton->setText(QString::fromStdString(str_server_name));
@@ -521,10 +521,11 @@ void MTCompose::dialog()
         {
             QString qstrRe = m_subject.left(4);
 
-            if ((qstrRe.toLower() != QString("re: ")) &&
-                (qstrRe.toLower() != QString("\"re:")))
+            if ((qstrRe.toLower() != tr("re: ")) &&
+                (qstrRe.toLower() != QString("\%1").arg(tr("re:")))
+               )
             {
-                QString strTemp = QString("re: %1").arg(m_subject);
+                QString strTemp = tr("re: %1").arg(m_subject);
                 m_subject = strTemp;
             }
             // -----------------------
@@ -532,7 +533,7 @@ void MTCompose::dialog()
 
             ui->subjectEdit->setText(qstrTempSubject);
             // -----------------------
-            this->setWindowTitle(QString("Compose: %1").arg(qstrTempSubject));
+            this->setWindowTitle(tr("Compose: %1").arg(qstrTempSubject));
         }
         // -------------------------------------------
 
@@ -555,7 +556,7 @@ void MTCompose::closeEvent(QCloseEvent *event)
     {
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, "", "Are you sure you want to cancel this message?",
+        reply = QMessageBox::question(this, "", tr("Are you sure you want to cancel this message?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply != QMessageBox::Yes)
         {
@@ -604,11 +605,11 @@ void MTCompose::on_subjectEdit_textChanged(const QString &arg1)
     if (arg1.isEmpty())
     {
         m_subject = QString("");
-        this->setWindowTitle(QString("Compose: (no subject)"));
+        this->setWindowTitle(tr("Compose: (no subject)"));
     }
     else
     {
         m_subject = arg1;
-        this->setWindowTitle(QString("Compose: %1").arg(arg1));
+        this->setWindowTitle(tr("Compose: %1").arg(arg1));
     }
 }

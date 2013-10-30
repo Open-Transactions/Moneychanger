@@ -109,7 +109,7 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString fromAcctId, QS
     }
     // ------------------------------------------------------------
     if (note.isEmpty())
-        note = QString("From the Qt systray app.");
+        note = tr("From the Qt systray app.");
     // ------------------------------------------------------------
     std::string str_toNymId   (toNymId   .toStdString());
     std::string str_fromAcctId(fromAcctId.toStdString());
@@ -185,7 +185,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
         return false;
     }
     if (note.isEmpty())
-        note = QString("From the desktop systray app.");
+        note = tr("From the desktop systray app.");
     // ------------------------------------------------------------
     std::string str_toNymId   (toNymId   .toStdString());
     std::string str_fromAcctId(fromAcctId.toStdString());
@@ -367,7 +367,7 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
     // Also of course, in the case of invoices, your account balance is irrelevant
     // since an invoice can only increase your balance, not decrease it.
     if (note.isEmpty())
-        note = QString("From the Qt systray app.");
+        note = tr("From the Qt systray app.");
     // ------------------------------------------------------------
     std::string str_toNymId   (toNymId   .toStdString());
     std::string str_fromAcctId(fromAcctId.toStdString());
@@ -457,7 +457,7 @@ bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
     }
     // ----------------------------------------------------
     if (memo.isEmpty())
-        memo = QString("From the desktop client. (Empty memo.)");
+        memo = tr("From the desktop client. (Empty memo.)");
     // ----------------------------------------------------
     if (qstr_amount.isEmpty())
         qstr_amount = QString("0");
@@ -521,16 +521,16 @@ void MTSendDlg::on_sendButton_clicked()
     // To:
     if (m_hisNymId.isEmpty())
     {
-        QMessageBox::warning(this, QString("No Recipient Selected"),
-                             QString("Please choose a recipient for these funds, before sending."));
+        QMessageBox::warning(this, tr("No Recipient Selected"),
+                             tr("Please choose a recipient for these funds, before sending."));
         return;
     }
     // -----------------------------------------------------------------
     // From:
     if (m_myAcctId.isEmpty())
     {
-        QMessageBox::warning(this, QString("No Sender Account Selected"),
-                             QString("Please choose an account where the funds will come out of."));
+        QMessageBox::warning(this, tr("No Sender Account Selected"),
+                             tr("Please choose an account where the funds will come out of."));
         return;
     }
     // -----------------------------------------------------------------
@@ -539,7 +539,7 @@ void MTSendDlg::on_sendButton_clicked()
     {
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, "", "The memo is blank. Are you sure you want to send?",
+        reply = QMessageBox::question(this, "", tr("The memo is blank. Are you sure you want to send?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::No)
           return;
@@ -548,8 +548,8 @@ void MTSendDlg::on_sendButton_clicked()
     // Amount:
     if (ui->amountEdit->text().isEmpty())
     {
-        QMessageBox::warning(this, QString("Amount is Empty"),
-                             QString("Please enter the amount you wish to send."));
+        QMessageBox::warning(this, tr("Amount is Empty"),
+                             tr("Please enter the amount you wish to send."));
         return;
     }
     // -----------------------------------------------------------------
@@ -575,8 +575,8 @@ void MTSendDlg::on_sendButton_clicked()
     }
     // -----------------------------------------------------------------
     if (!bSent)
-        QMessageBox::warning(this, QString("Failed Sending Funds"),
-                             QString("Failed trying to send funds."));
+        QMessageBox::warning(this, tr("Failed Sending Funds"),
+                             tr("Failed trying to send funds."));
     else
         this->close();
     // -----------------------------------------------------------------
@@ -613,7 +613,7 @@ QString MTSendDlg::FormDisplayLabelForAcctButton(QString qstr_acct_id, QString q
         int64_t  raw_cash_balance = this->rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
 
         if (raw_cash_balance > 0)
-            from_button_text += QString(" + %1 in cash").arg(cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym));
+            from_button_text += tr(" + %1 in cash").arg(cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym));
     }
     // --------------------------------------------
     from_button_text += QString(")");
@@ -657,7 +657,7 @@ void MTSendDlg::on_fromButton_clicked()
     if (bFoundDefault && !m_myAcctId.isEmpty())
         theChooser.SetPreSelected(m_myAcctId);
     // -----------------------------------------------
-    theChooser.setWindowTitle("Select the Source Account");
+    theChooser.setWindowTitle(tr("Select the Source Account"));
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
@@ -688,7 +688,7 @@ void MTSendDlg::on_fromButton_clicked()
     }
     // -----------------------------------------------
     m_myAcctId = QString("");
-    ui->fromButton->setText("<Click to choose Account>");
+    ui->fromButton->setText(tr("<Click to choose Account>"));
 }
 
 
@@ -714,7 +714,7 @@ void MTSendDlg::on_toButton_clicked()
         }
     }
     // -----------------------------------------------
-    theChooser.setWindowTitle("Choose the Recipient");
+    theChooser.setWindowTitle(tr("Choose the Recipient"));
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
@@ -737,7 +737,7 @@ void MTSendDlg::on_toButton_clicked()
             {
                 qstrContactName  = QString("");
                 m_hisNymId = QString("");
-                ui->toButton->setText("<Click to Choose Recipient>");
+                ui->toButton->setText(tr("<Click to Choose Recipient>"));
                 return;
             }
             // else...
@@ -745,7 +745,7 @@ void MTSendDlg::on_toButton_clicked()
             qstrContactName = MTContactHandler::getInstance()->GetContactName(nSelectedContactID);
 
             if (qstrContactName.isEmpty())
-                ui->toButton->setText("(Contact has a blank name)");
+                ui->toButton->setText(tr("(Contact has a blank name)"));
             else
                 ui->toButton->setText(qstrContactName);
             // ---------------------------------------------
@@ -769,10 +769,10 @@ void MTSendDlg::on_toButton_clicked()
                     else
                     {
                         m_hisNymId = QString("");
-                        ui->toButton->setText("<Click to Choose Recipient>");
+                        ui->toButton->setText(tr("<Click to Choose Recipient>"));
                         // -------------------------------------
-                        QMessageBox::warning(this, QString("Contact has no known identities"),
-                                             QString("Sorry, Contact '%1' has no known NymIDs (to send funds to.)").arg(qstrContactName));
+                        QMessageBox::warning(this, tr("Contact has no known identities"),
+                                             tr("Sorry, Contact '%1' has no known NymIDs (to send funds to.)").arg(qstrContactName));
                         return;
                     }
                 }
@@ -780,24 +780,24 @@ void MTSendDlg::on_toButton_clicked()
                 {
                     DlgChooser theNymChooser(this);
                     theNymChooser.m_map = theNymMap;
-                    theNymChooser.setWindowTitle("Recipient has multiple Nyms. (Please choose one.)");
+                    theNymChooser.setWindowTitle(tr("Recipient has multiple Nyms. (Please choose one.)"));
                     // -----------------------------------------------
                     if (theNymChooser.exec() == QDialog::Accepted)
                         m_hisNymId = theNymChooser.m_qstrCurrentID;
                     else // User must have cancelled.
                     {
                         m_hisNymId = QString("");
-                        ui->toButton->setText("<Click to Choose Recipient>");
+                        ui->toButton->setText(tr("<Click to Choose Recipient>"));
                     }
                 }
             }
             else // No nyms found for this ContactID.
             {
                 m_hisNymId = QString("");
-                ui->toButton->setText("<Click to Choose Recipient>");
+                ui->toButton->setText(tr("<Click to Choose Recipient>"));
                 // -------------------------------------
-                QMessageBox::warning(this, QString("Contact has no known identities"),
-                                     QString("Sorry, Contact '%1' has no known NymIDs (to send funds to.)").arg(qstrContactName));
+                QMessageBox::warning(this, tr("Contact has no known identities"),
+                                     tr("Sorry, Contact '%1' has no known NymIDs (to send funds to.)").arg(qstrContactName));
                 return;
             }
             // --------------------------------
@@ -819,7 +819,7 @@ void MTSendDlg::dialog()
 
     if (!already_init)
     {
-        this->setWindowTitle("Send Funds");
+        this->setWindowTitle(tr("Send Funds"));
 
         QString style_sheet = "QPushButton{border: none; border-style: outset; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa);}"
                 "QPushButton:pressed {border: 1px solid black; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa); }"
@@ -847,7 +847,7 @@ void MTSendDlg::dialog()
         if (str_my_name.empty())
         {
             m_myAcctId = QString("");
-            ui->fromButton->setText(QString("<Click to Select Account>"));
+            ui->fromButton->setText(tr("<Click to Select Account>"));
         }
         else
         {
@@ -874,7 +874,7 @@ void MTSendDlg::dialog()
         if (str_his_name.empty())
         {
             m_hisNymId = QString("");
-            ui->toButton->setText("<Click to Choose Recipient>");
+            ui->toButton->setText(tr("<Click to Choose Recipient>"));
         }
         else
             ui->toButton->setText(QString::fromStdString(str_his_name));
@@ -888,7 +888,7 @@ void MTSendDlg::dialog()
             QString qstrTemp = m_memo;
             ui->memoEdit->setText(qstrTemp);
             // -----------------------
-            this->setWindowTitle(QString("Send Funds | Memo: %1").arg(qstrTemp));
+            this->setWindowTitle(tr("Send Funds | Memo: %1").arg(qstrTemp));
         }
         // -------------------------------------------
 
@@ -943,12 +943,12 @@ void MTSendDlg::on_memoEdit_textChanged(const QString &arg1)
     if (arg1.isEmpty())
     {
         m_memo = QString("");
-        this->setWindowTitle(QString("Send Funds"));
+        this->setWindowTitle(tr("Send Funds"));
     }
     else
     {
         m_memo = arg1;
-        this->setWindowTitle(QString("Send Funds | Memo: %1").arg(arg1));
+        this->setWindowTitle(tr("Send Funds | Memo: %1").arg(arg1));
     }
 }
 
@@ -982,7 +982,7 @@ void MTSendDlg::closeEvent(QCloseEvent *event)
     {
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, "", "Close without sending?",
+        reply = QMessageBox::question(this, "", tr("Close without sending?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply != QMessageBox::Yes)
         {

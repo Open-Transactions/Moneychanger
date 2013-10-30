@@ -395,7 +395,7 @@ QWidget * MTHome::CreateUserBarWidget()
     // -------------------------------------------
     if (qstr_acct_id.isEmpty())
     {
-        qstr_acct_name   = QString("(Default Account Isn't Set Yet)");
+        qstr_acct_name   = tr("(Default Account Isn't Set Yet)");
         // -----------------------------------
         qstr_acct_nym    = ((Moneychanger *)(this->parentWidget()))->get_default_nym_id();
         qstr_acct_server = ((Moneychanger *)(this->parentWidget()))->get_default_server_id();
@@ -419,14 +419,14 @@ QWidget * MTHome::CreateUserBarWidget()
                 arg(QString::fromStdString(str_acct_name)).arg(QString::fromStdString(str_asset_name));
     }
     // -------------------------------------------
-//  QString   tx_name = QString("My Acct        <small><font color=grey>(US Dollars)</font></small>");
+//  QString   tx_name = tr("My Acct        <small><font color=grey>(US Dollars)</font></small>");
     QString & tx_name = qstr_acct_name;
     // -------------------------------------------
     if(tx_name.trimmed() == "")
     {
         //Tx has no name
         tx_name.clear();
-        tx_name = "(Account Name is Blank)";
+        tx_name = tr("(Account Name is Blank)");
     }
     // -------------------------------------------
     QLabel * header_of_row = new QLabel;
@@ -480,26 +480,26 @@ QWidget * MTHome::CreateUserBarWidget()
     buttonSend->setAutoRaise(true);
     buttonSend->setIcon(sendButtonIcon);
     buttonSend->setIconSize(pixmapSend.rect().size());
-    buttonSend->setText("Send");
+    buttonSend->setText(tr("Send"));
     // ----------------------------------------------------------------
     buttonRequest->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     buttonRequest->setAutoRaise(true);
     buttonRequest->setIcon(requestButtonIcon);
     buttonRequest->setIconSize(pixmapRequest.rect().size());
-    buttonRequest->setText("Request");
+    buttonRequest->setText(tr("Request"));
     // ----------------------------------------------------------------
     buttonContacts->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     buttonContacts->setAutoRaise(true);
     buttonContacts->setIcon(contactsButtonIcon);
     buttonContacts->setIconSize(pixmapContacts.rect().size());
-    buttonContacts->setText("Contacts");
+    buttonContacts->setText(tr("Contacts"));
     // ----------------------------------------------------------------
     buttonRefresh->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     buttonRefresh->setAutoRaise(true);
     buttonRefresh->setIcon(refreshButtonIcon);
 //    buttonRefresh->setIconSize(pixmapRefresh.rect().size());
     buttonRefresh->setIconSize(pixmapContacts.rect().size());
-    buttonRefresh->setText("Refresh");
+    buttonRefresh->setText(tr("Refresh"));
 
     if (m_bNeedRefresh)
     {
@@ -542,14 +542,14 @@ QWidget * MTHome::CreateUserBarWidget()
     //Date (sub-info)
     //Calc/convert date/times
     //
-    QLabel * row_content_date_label = new QLabel("<font color=grey>Available:</font> (no account selected)");
+    QLabel * row_content_date_label = new QLabel(QString("<font color=grey>%1</font> %2").arg(tr("Available:")).arg(tr("no account selected")));
 //  QString  row_content_date_label_string("<font color=grey>Available:</font> $50.93 (+ $167.23 in cash)");
     // ---------------------------------------------
     QString  row_content_date_label_string = QString("");
 
     if (!qstr_acct_id.isEmpty())
     {
-        row_content_date_label_string = QString("<font color=grey>Available:</font> %1").arg(MTHome::shortAcctBalance(qstr_acct_id, qstr_acct_asset));
+        row_content_date_label_string = QString("<font color=grey>%1</font> %2").arg(tr("Available:")).arg(MTHome::shortAcctBalance(qstr_acct_id, qstr_acct_asset));
     }
     // --------------------------------------------
     if (!qstr_acct_nym.isEmpty() && !qstr_acct_server.isEmpty() && !qstr_acct_asset.isEmpty())
@@ -557,7 +557,7 @@ QWidget * MTHome::CreateUserBarWidget()
         int64_t  raw_cash_balance = this->rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
 
         if (raw_cash_balance > 0)
-            row_content_date_label_string += QString(" (+ %1 in cash)").arg(cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym));
+            row_content_date_label_string += QString(" (+ %1 in cash)").arg(cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym)).arg(tr(" in cash"));
     }
     // ---------------------------------------------------------------
 //  row_content_date_label_string.append(QString(timestamp.toString(Qt::SystemLocaleShortDate)));

@@ -17,7 +17,7 @@ void RequestFundsWindow::dialog()
         requestfunds_gridlayout = new QGridLayout(0);
         requestfunds_dialog->setLayout(requestfunds_gridlayout);
         //Set window title
-        requestfunds_dialog->setWindowTitle("Request Payment | Moneychanger");
+        requestfunds_dialog->setWindowTitle(tr("Request Payment | Moneychanger"));
         
         //Content
 //        //Select requestfunds type

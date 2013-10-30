@@ -24,7 +24,7 @@ void WithdrawAsCashWindow::dialog()
         withdraw_ascash_dialog->installEventFilter(this);
         /** window properties **/
         //Set window title
-        withdraw_ascash_dialog->setWindowTitle("Withdraw as Cash | Moneychanger");
+        withdraw_ascash_dialog->setWindowTitle(tr("Withdraw as Cash | Moneychanger"));
         //withdraw_ascash_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
 
         /** layout and content **/
@@ -33,7 +33,7 @@ void WithdrawAsCashWindow::dialog()
         withdraw_ascash_dialog->setLayout(withdraw_ascash_gridlayout);
 
         //Withdraw As Cash (header label)
-        withdraw_ascash_header_label = new QLabel("<h3>Withdraw as Cash</h3>", 0);
+        withdraw_ascash_header_label = new QLabel(QString("<h3>%1</h3>").arg(tr("Withdraw as Cash")), 0);
         withdraw_ascash_header_label->setAlignment(Qt::AlignRight);
         withdraw_ascash_gridlayout->addWidget(withdraw_ascash_header_label, 0, 0, 1, 1);
 
@@ -56,12 +56,12 @@ void WithdrawAsCashWindow::dialog()
 
         //Amount Input
         withdraw_ascash_amount_input = new QLineEdit;
-        withdraw_ascash_amount_input->setPlaceholderText("Amount");
+        withdraw_ascash_amount_input->setPlaceholderText(tr("Amount"));
         withdraw_ascash_amount_input->setStyleSheet("QLineEdit{padding:0.5em;}");
         withdraw_ascash_gridlayout->addWidget(withdraw_ascash_amount_input, 3, 0, 1, 1);
 
         //Withdraw Button
-        withdraw_ascash_button = new QPushButton("Withdraw as Cash");
+        withdraw_ascash_button = new QPushButton(tr("Withdraw as Cash"));
         withdraw_ascash_button->setStyleSheet("QPushButton{padding:0.5em;}");
         withdraw_ascash_gridlayout->addWidget(withdraw_ascash_button, 4, 0, 1, 1);
         //Connect button with re-action
@@ -110,7 +110,7 @@ void WithdrawAsCashWindow::withdraw_ascash_confirm_amount_dialog_slot(){
         withdraw_ascash_confirm_dialog->setLayout(withdraw_ascash_confirm_gridlayout);
         
         //Ask the operator to confirm the amount requested
-        withdraw_ascash_confirm_label = new QLabel("Please confirm the amount to withdraw.");
+        withdraw_ascash_confirm_label = new QLabel(tr("Please confirm the amount to withdraw."));
         withdraw_ascash_confirm_gridlayout->addWidget(withdraw_ascash_confirm_label, 0,0, 1,1);
         
         //Label (Amount)
@@ -132,13 +132,13 @@ void WithdrawAsCashWindow::withdraw_ascash_confirm_amount_dialog_slot(){
         withdraw_ascash_confirm_gridlayout->addWidget(withdraw_ascash_confirm_amount_confirm_cancel_widget, 3, 0, 1, 1);
         
         //Button (Cancel amount)
-        withdraw_ascash_confirm_amount_btn_cancel = new QPushButton("Cancel Amount", 0);
+        withdraw_ascash_confirm_amount_btn_cancel = new QPushButton(tr("Cancel Amount"), 0);
         withdraw_ascash_confirm_amount_confirm_cancel_layout->addWidget(withdraw_ascash_confirm_amount_btn_cancel);
         //Connect the cancel button with a re-action
         connect(withdraw_ascash_confirm_amount_btn_cancel, SIGNAL(clicked()), this, SLOT(withdraw_ascash_cancel_amount_slot()));
         
         //Button (Confirm amount)
-        withdraw_ascash_confirm_amount_btn_confirm = new QPushButton("Confirm Amount", 0);
+        withdraw_ascash_confirm_amount_btn_confirm = new QPushButton(tr("Confirm Amount"), 0);
         withdraw_ascash_confirm_amount_confirm_cancel_layout->addWidget(withdraw_ascash_confirm_amount_btn_confirm);
         //Connect the Confirm button with a re-action
         connect(withdraw_ascash_confirm_amount_btn_confirm, SIGNAL(clicked()), this, SLOT(withdraw_ascash_confirm_amount_slot()));
