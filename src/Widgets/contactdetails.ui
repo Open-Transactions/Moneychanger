@@ -100,7 +100,7 @@
   <customwidget>
    <class>MTEditDetails</class>
    <extends>QWidget</extends>
-   <header>mteditdetails.h</header>
+   <header>editdetails.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
