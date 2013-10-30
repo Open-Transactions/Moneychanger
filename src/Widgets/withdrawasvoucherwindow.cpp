@@ -25,7 +25,7 @@ void WithdrawAsVoucherWindow::dialog()
         withdraw_asvoucher_dialog->installEventFilter(this);
         /** window properties **/
         //Set window title
-        withdraw_asvoucher_dialog->setWindowTitle("Withdraw as Voucher | Moneychanger");
+        withdraw_asvoucher_dialog->setWindowTitle(tr("Withdraw as Voucher | Moneychanger"));
         //withdraw_asvoucher_dialog->setWindowFlags(Qt::WindowStaysOnTopHint);
         
         /** layout and content **/
@@ -34,7 +34,7 @@ void WithdrawAsVoucherWindow::dialog()
         withdraw_asvoucher_dialog->setLayout(withdraw_asvoucher_gridlayout);
         
         //Label (withdraw as voucher)
-        withdraw_asvoucher_header_label = new QLabel("<h3>Withdraw as Voucher</h3>", 0);
+        withdraw_asvoucher_header_label = new QLabel(QString("<h3>%1</h3>").arg(tr("Withdraw as Voucher")), 0);
         withdraw_asvoucher_header_label->setAlignment(Qt::AlignRight);
         withdraw_asvoucher_gridlayout->addWidget(withdraw_asvoucher_header_label, 0,0, 1,1);
         
@@ -62,7 +62,7 @@ void WithdrawAsVoucherWindow::dialog()
         
         //Nym ID (Paste input)
         withdraw_asvoucher_nym_input = new QLineEdit;
-        withdraw_asvoucher_nym_input->setPlaceholderText("Recipient Nym Id");
+        withdraw_asvoucher_nym_input->setPlaceholderText(tr("Recipient Nym Id"));
         withdraw_asvoucher_nym_input->setStyleSheet("QLineEdit{padding:0.5em;}");
         withdraw_asvoucher_nym_hbox->addWidget(withdraw_asvoucher_nym_input);
         
@@ -81,16 +81,16 @@ void WithdrawAsVoucherWindow::dialog()
         
         //Amount input
         withdraw_asvoucher_amount_input = new QLineEdit;
-        withdraw_asvoucher_amount_input->setPlaceholderText("Amount as Integer");
+        withdraw_asvoucher_amount_input->setPlaceholderText(tr("Amount as Integer"));
         withdraw_asvoucher_amount_input->setStyleSheet("QLineEdit{padding:0.5em;}");
         withdraw_asvoucher_gridlayout->addWidget(withdraw_asvoucher_amount_input, 4,0, 1,1);
         
         //Memo input box
-        withdraw_asvoucher_memo_input = new QTextEdit("Memo", 0);
+        withdraw_asvoucher_memo_input = new QTextEdit(tr("Memo"), 0);
         withdraw_asvoucher_gridlayout->addWidget(withdraw_asvoucher_memo_input, 5,0, 1,1);
         
         //Withdraw Button
-        withdraw_asvoucher_button = new QPushButton("Withdraw as Voucher");
+        withdraw_asvoucher_button = new QPushButton(tr("Withdraw as Voucher"));
         withdraw_asvoucher_button->setStyleSheet("QPushButton{padding:1em;}");
         withdraw_asvoucher_gridlayout->addWidget(withdraw_asvoucher_button, 6,0, 1,1);
         //Connect button with re-action
@@ -149,7 +149,7 @@ void WithdrawAsVoucherWindow::confirm_amount_dialog_slot(){
         
         //Ask the operator to confirm the amount
         //Ask Label
-        withdraw_asvoucher_confirm_label = new QLabel("<h3>Please confirm the amount to withdraw.</h3>", 0);
+        withdraw_asvoucher_confirm_label = new QLabel(QString("<h3>%1</h3>").arg(tr("Please confirm the amount to withdraw.")), 0);
         withdraw_asvoucher_confirm_label->setAlignment(Qt::AlignRight);
         withdraw_asvoucher_confirm_gridlayout->addWidget(withdraw_asvoucher_confirm_label, 0,0, 1,1);
         
@@ -175,13 +175,13 @@ void WithdrawAsVoucherWindow::confirm_amount_dialog_slot(){
         
         
         //Button (Cancel amount)
-        withdraw_asvoucher_confirm_amount_btn_cancel = new QPushButton("Cancel Amount", 0);
+        withdraw_asvoucher_confirm_amount_btn_cancel = new QPushButton(tr("Cancel Amount"), 0);
         withdraw_asvoucher_confirm_amount_confirm_cancel_layout->addWidget(withdraw_asvoucher_confirm_amount_btn_cancel);
         //Connect the cancel button with a re-action
         connect(withdraw_asvoucher_confirm_amount_btn_cancel, SIGNAL(clicked()), this, SLOT(cancel_amount_slot()));
         
         //Button (Confirm amount)
-        withdraw_asvoucher_confirm_amount_btn_confirm = new QPushButton("Confirm Amount", 0);
+        withdraw_asvoucher_confirm_amount_btn_confirm = new QPushButton(tr("Confirm Amount"), 0);
         withdraw_asvoucher_confirm_amount_confirm_cancel_layout->addWidget(withdraw_asvoucher_confirm_amount_btn_confirm);
         //Connect the Confirm button with a re-action
         connect(withdraw_asvoucher_confirm_amount_btn_confirm, SIGNAL(clicked()), this, SLOT(confirm_amount_slot()));

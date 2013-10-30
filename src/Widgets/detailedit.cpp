@@ -73,7 +73,7 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType)
         pTab1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         pTab1->setContentsMargins(5, 5, 5, 5);
         // ----------------------------------
-        m_pTabWidget->addTab(pTab1, QString("Details"));
+        m_pTabWidget->addTab(pTab1, tr("Details"));
         // -------------------------------------------
         // Instantiate m_pDetailPane to one of various types.
         //

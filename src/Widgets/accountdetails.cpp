@@ -115,7 +115,7 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
         pGridLayout->setAlignment(Qt::AlignTop);
         // -----------------------------------------------------------
         {
-            QLabel    * pLabel          = new QLabel(QString("Account Name: "));
+            QLabel    * pLabel          = new QLabel(tr("Account Name: "));
 
             m_pLineEdit_Acct_ID         = new QLineEdit;
             m_pLineEdit_Acct_Name       = new QLineEdit;
@@ -132,7 +132,7 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
         }
         // -----------------------------------------------------------
         {
-            QLabel    * pLabel          = new QLabel(QString("Asset Type: "));
+            QLabel    * pLabel          = new QLabel(tr("Asset Type: "));
 
             m_pLineEdit_AssetType_ID    = new QLineEdit;
             m_pLineEdit_AssetType_Name  = new QLineEdit;
@@ -149,7 +149,7 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
         }
         // -----------------------------------------------------------
         {
-            QLabel    * pLabel          = new QLabel(QString("Owner Nym: "));
+            QLabel    * pLabel          = new QLabel(tr("Owner Nym: "));
 
             m_pLineEdit_Nym_ID          = new QLineEdit;
             m_pLineEdit_Nym_Name        = new QLineEdit;
@@ -166,7 +166,7 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
         }
         // -----------------------------------------------------------
         {
-            QLabel    * pLabel          = new QLabel(QString("Server: "));
+            QLabel    * pLabel          = new QLabel(tr("Server: "));
 
             m_pLineEdit_Server_ID       = new QLineEdit;
             m_pLineEdit_Server_Name     = new QLineEdit;
@@ -202,7 +202,7 @@ QString  MTAccountDetails::GetCustomTabName(int nTab)
     const int nCustomTabCount = this->GetCustomTabCount();
     // -----------------------------
     if ((nTab < 0) || (nTab >= nCustomTabCount))
-        return QString(""); // out of bounds.
+        return tr(""); // out of bounds.
     // -----------------------------
     QString qstrReturnValue("");
     // -----------------------------
@@ -212,7 +212,7 @@ QString  MTAccountDetails::GetCustomTabName(int nTab)
 
     default:
         qDebug() << QString("Unexpected: MTAccountDetails::GetCustomTabName was called with bad index: %1").arg(nTab);
-        return QString("");
+        return tr("");
     }
     // -----------------------------
     return qstrReturnValue;
@@ -325,8 +325,8 @@ void MTAccountDetails::DeleteButtonClicked()
 
         if (!bCanRemove)
         {
-            QMessageBox::warning(this, QString("Account Cannot Be Deleted"),
-                                 QString("This Account cannot be deleted yet, since it probably doesn't have a zero balance, "
+            QMessageBox::warning(this, tr("Account Cannot Be Deleted"),
+                                 tr("This Account cannot be deleted yet, since it probably doesn't have a zero balance, "
                                          "and probably still has outstanding receipts. (This is where, in the future, "
                                          "you will be given the option to automatically close-out all that stuff and thus delete "
                                          "this Account.)"));
@@ -335,7 +335,7 @@ void MTAccountDetails::DeleteButtonClicked()
         // ----------------------------------------------------
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, "", "Are you sure you want to delete this Account?",
+        reply = QMessageBox::question(this, "", tr("Are you sure you want to delete this Account?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
@@ -352,8 +352,8 @@ void MTAccountDetails::DeleteButtonClicked()
                 m_pOwner->RefreshRecords();
             }
             else
-                QMessageBox::warning(this, QString("Failure Deleting Account"),
-                                     QString("Failed trying to delete this Account."));
+                QMessageBox::warning(this, tr("Failure Deleting Account"),
+                                     tr("Failed trying to delete this Account."));
         }
     }
     // ----------------------------------------------------

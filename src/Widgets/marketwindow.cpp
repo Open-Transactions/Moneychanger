@@ -16,7 +16,7 @@ MarketWindow::~MarketWindow()
 
 void MarketWindow::on_pushButton_clicked()
 {
-    ui->textEdit->setText("Test Success!");
+    ui->textEdit->setText(tr("Test Success!"));
 }
 
 void MarketWindow::on_pushButton_2_clicked()

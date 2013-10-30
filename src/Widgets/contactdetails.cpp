@@ -49,7 +49,7 @@ void MTContactDetails::AddButtonClicked()
     // -----------------------------------------------
     MTDlgNewContact theNewContact(this);
     // -----------------------------------------------
-    theNewContact.setWindowTitle("Create New Contact");
+    theNewContact.setWindowTitle(tr("Create New Contact"));
     // -----------------------------------------------
     if (theNewContact.exec() == QDialog::Accepted)
     {
@@ -68,8 +68,8 @@ void MTContactDetails::AddButtonClicked()
             {
                 QString contactName = MTContactHandler::getInstance()->GetContactName(nExisting);
 
-                QMessageBox::warning(this, QString("Contact Already Exists"),
-                                     QString("Contact '%1' already exists with NymID: %2").arg(contactName).arg(nymID));
+                QMessageBox::warning(this, tr("Contact Already Exists"),
+                                     tr("Contact '%1' already exists with NymID: %2").arg(contactName).arg(nymID));
                 return;
             }
             // -------------------------------------------------------
@@ -79,8 +79,8 @@ void MTContactDetails::AddButtonClicked()
 
             if (nContact <= 0)
             {
-                QMessageBox::warning(this, QString("Failed creating contact"),
-                                     QString("Failed trying to create contact for NymID: %1").arg(nymID));
+                QMessageBox::warning(this, tr("Failed creating contact"),
+                                     tr("Failed trying to create contact for NymID: %1").arg(nymID));
                 return;
             }
             // -------------------------------------------------------
@@ -122,7 +122,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
 
         if (MTContactHandler::getInstance()->GetNyms(theNymMap, nContactID))
         {
-            strDetails += QString("Nyms:\n");
+            strDetails += tr("Nyms:\n");
 
             for (mapIDName::iterator ii = theNymMap.begin(); ii != theNymMap.end(); ii++)
             {
@@ -135,7 +135,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
 
                 if (MTContactHandler::getInstance()->GetServers(theServerMap, qstrNymID))
                 {
-                    strDetails += QString("Found on servers:\n");
+                    strDetails += tr("Found on servers:\n");
 
                     for (mapIDName::iterator iii = theServerMap.begin(); iii != theServerMap.end(); iii++)
                     {
@@ -148,7 +148,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
 
                         if (MTContactHandler::getInstance()->GetAccounts(theAccountMap, qstrNymID, qstrServerID, QString("")))
                         {
-                            strDetails += QString("Where he owns the accounts:\n");
+                            strDetails += tr("Where he owns the accounts:\n");
 
                             for (mapIDName::iterator iiii = theAccountMap.begin(); iiii != theAccountMap.end(); iiii++)
                             {

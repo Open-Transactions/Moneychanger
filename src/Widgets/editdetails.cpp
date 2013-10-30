@@ -120,7 +120,7 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
     // -------------------------------------------
     //Render row.
     //Header of row
-//  QString tx_name = QString("Name goes here");
+//  QString tx_name = tr("Name goes here");
     QString tx_name = strName;
 
     if(tx_name.trimmed() == "")
@@ -145,7 +145,7 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
 
     currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(strColor));
     // ----------------------------------------------------------------
-//  currency_amount = QString("amount goes here");
+//  currency_amount = tr("amount goes here");
     currency_amount = strAmount;
     // ----------------------------------------------------------------
     currency_amount_label->setText(currency_amount);
@@ -169,7 +169,7 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
 
 
     QLabel * row_content_date_label = new QLabel;
-//  QString row_content_date_label_string("Date goes here");
+//  QString row_content_date_label_string(tr("Date goes here"));
     QString row_content_date_label_string(strID);
 
     row_content_date_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
@@ -179,7 +179,7 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
     // -------------------------------------------
     // Column two
     std::string str_desc = strStatus.toStdString();
-//  std::string str_desc("Description goes here");
+//  std::string str_desc(tr("Description goes here"));
     // ---------------------------------------
     //Status
     QLabel * row_content_status_label = new QLabel;

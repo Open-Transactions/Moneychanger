@@ -60,7 +60,7 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
         // -------------------------------
         QVBoxLayout * pvBox = new QVBoxLayout;
 
-        QLabel * pLabelContents = new QLabel(QString("Raw State of Nym:"));
+        QLabel * pLabelContents = new QLabel(tr("Raw State of Nym:"));
 
         pvBox->setAlignment(Qt::AlignTop);
         pvBox->addWidget   (pLabelContents);
@@ -177,8 +177,8 @@ void MTNymDetails::DeleteButtonClicked()
 
         if (!bCanRemove)
         {
-            QMessageBox::warning(this, QString("Nym Cannot Be Deleted"),
-                                 QString("This Nym cannot be deleted yet, since it's already been registered on at least one "
+            QMessageBox::warning(this, tr("Nym Cannot Be Deleted"),
+                                 tr("This Nym cannot be deleted yet, since it's already been registered on at least one "
                                          "server, and perhaps even owns an asset account or two. (This is where, in the future, "
                                          "you will be given the option to automatically delete all that stuff and thus delete "
                                          "this Nym.)"));
@@ -199,8 +199,8 @@ void MTNymDetails::DeleteButtonClicked()
                 m_pOwner->RefreshRecords();
             }
             else
-                QMessageBox::warning(this, QString("Failure Deleting Nym"),
-                                     QString("Failed trying to delete this Nym."));
+                QMessageBox::warning(this, tr("Failure Deleting Nym"),
+                                     tr("Failed trying to delete this Nym."));
         }
     }
     // ----------------------------------------------------
