@@ -5,6 +5,8 @@
 
 #include "editdetails.h"
 
+#include "home.h"
+
 #include "contactdetails.h"
 #include "nymdetails.h"
 #include "serverdetails.h"
@@ -19,6 +21,7 @@ MTDetailEdit::MTDetailEdit(QWidget *parent) :
     m_nCurrentRow(-1),
     m_pDetailPane(NULL),
     m_pDetailLayout(NULL),
+    m_pTabWidget(NULL),
     m_Type(MTDetailEdit::DetailEditTypeError),
     ui(new Ui::MTDetailEdit)
 {
@@ -29,11 +32,13 @@ MTDetailEdit::MTDetailEdit(QWidget *parent) :
 
 MTDetailEdit::~MTDetailEdit()
 {
-    delete m_pDetailPane;
-    delete m_pDetailLayout;
+//    delete m_pDetailPane;
+//    delete m_pDetailLayout;
 
     delete ui;
 }
+
+
 
 
 void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType)
@@ -57,7 +62,21 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType)
         ui->tableWidget->setSizePolicy(
                     QSizePolicy::Expanding,
                     QSizePolicy::Expanding);
+        // ----------------------------------
+        m_pTabWidget  = new QTabWidget;
+        // ----------------------------------
+        m_pTabWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        m_pTabWidget->setContentsMargins(5, 5, 5, 5);
+        // ----------------------------------
+        QWidget * pTab1 = new QWidget;
+        // ----------------------------------
+        pTab1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        pTab1->setContentsMargins(5, 5, 5, 5);
+        // ----------------------------------
+        m_pTabWidget->addTab(pTab1, QString("Details"));
         // -------------------------------------------
+        // Instantiate m_pDetailPane to one of various types.
+        //
         m_Type = theType;
 
         switch (m_Type)
@@ -69,6 +88,7 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType)
         case MTDetailEdit::DetailEditTypeAccount: m_pDetailPane = new MTAccountDetails; break;
         default:
             qDebug() << "MTDetailEdit::dialog: MTDetailEdit::DetailEditTypeError";
+            return;
         }
         // -------------------------------------------
         m_pDetailPane->SetOwnerPointer(*this);
@@ -78,10 +98,42 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType)
 
         m_pDetailPane  ->setContentsMargins(1,1,1,1);
         m_pDetailLayout->setContentsMargins(1,1,1,1);
+        // ----------------------------------
 
+        pTab1->setLayout(m_pDetailLayout);
+
+        // ----------------------------------
+        int nCustomTabCount = m_pDetailPane->GetCustomTabCount();
+
+        if (nCustomTabCount > 0)
+        {
+            for (int ii = 0; ii < nCustomTabCount; ii++)
+            {
+                QWidget * pTab = m_pDetailPane->CreateCustomTab(ii);
+                // ----------------------------------
+                if (NULL != pTab)
+                {
+                    pTab->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+                    pTab->setContentsMargins(5, 5, 5, 5);
+
+                    QString qstrTabName = m_pDetailPane->GetCustomTabName(ii);
+
+                    m_pTabWidget->addTab(pTab, qstrTabName);
+                }
+                // ----------------------------------
+            }
+        }
+        // -----------------------------------------------
+        QGridLayout * pGridLayout = new QGridLayout;
+        pGridLayout->addWidget(m_pTabWidget);
+
+        pGridLayout->setContentsMargins(0,0,0,0);
+        m_pTabWidget->setTabPosition(QTabWidget::South);
+        // ----------------------------------
         ui->widget->setContentsMargins(1,1,1,1);
-
-        ui->widget->setLayout(m_pDetailLayout);
+        // ----------------------------------
+        ui->widget->setLayout(pGridLayout);
+        // ----------------------------------
     } // first run.
     // -------------------------------------------
     RefreshRecords();
@@ -140,7 +192,44 @@ void MTDetailEdit::RefreshRecords()
         if (!m_PreSelected.isEmpty() && (m_PreSelected == qstrID))
             nPreselectedIndex = nIndex;
         // -------------------------------------
-        QWidget * pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue);
+        QWidget * pWidget = NULL;
+
+        // -------------------------------------------
+        switch (m_Type)
+        {
+        case MTDetailEdit::DetailEditTypeContact:
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue);
+            break;
+
+        case MTDetailEdit::DetailEditTypeNym:
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue);
+            break;
+
+        case MTDetailEdit::DetailEditTypeServer:
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue);
+            break;
+
+        case MTDetailEdit::DetailEditTypeAsset:
+        {
+            // Not exposed yet through API. Todo.
+//            QString qstrCurrencySymbol =
+
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue);
+            break;
+        }
+
+        case MTDetailEdit::DetailEditTypeAccount:
+        {
+            QString qstrAmount = MTHome::shortAcctBalance(qstrID);
+
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, qstrAmount);
+            break;
+        }
+
+        default:
+            qDebug() << "MTDetailEdit::RefreshRecords: MTDetailEdit::DetailEditTypeError";
+            return;
+        }
         // -------------------------------------------
         if (NULL != pWidget)
             ui->tableWidget->setCellWidget( nIndex, 1, pWidget );

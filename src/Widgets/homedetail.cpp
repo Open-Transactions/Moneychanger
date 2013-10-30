@@ -1482,16 +1482,6 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
     pGridLayout->setAlignment(Qt::AlignTop);
 
-//    {
-//        QString qstr_Type = QString::fromStdString(recordmt.GetInstrumentType());
-
-//        QLabel    * pLabel    = new QLabel(QString("Type: "));
-//        QLineEdit * pLineEdit = new QLineEdit(QString(qstr_Type));
-//        pLineEdit->setReadOnly(true);
-//        pGridLayout->addWidget(pLabel,    nGridRow,   0);
-//        pGridLayout->addWidget(pLineEdit, nGridRow++, 1);
-//    }
-
     if (!qstr_NymID.isEmpty())
     {
         QLabel    * pLabel    = new QLabel(QString("My Nym: "));
@@ -1705,7 +1695,6 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     pTabWidget->setTabPosition(QTabWidget::South);
 
     this->setLayout(m_pDetailLayout);
-
     // ----------------------------------
 
 /*

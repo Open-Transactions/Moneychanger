@@ -9,6 +9,8 @@
 #include "senddlg.h"
 #include "ui_senddlg.h"
 
+#include "home.h"
+
 #include "dlgchooser.h"
 
 #include "Handlers/contacthandler.h"
@@ -71,22 +73,22 @@ QString MTSendDlg::cashBalance(QString qstr_server_id, QString qstr_asset_id, QS
 // ----------------------------------------------------------------------
 
 
-QString MTSendDlg::shortAcctBalance(QString qstr_acct_id, QString qstr_asset_id)
-{
-    int64_t      balance    = OTAPI_Wrap::GetAccountWallet_Balance(qstr_acct_id.toStdString());
-    std::string  assetId(qstr_asset_id.toStdString());
-    std::string  str_output = OTAPI_Wrap::It()->FormatAmount(assetId, balance);
-    std::string  str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(assetId);
-
-    QString return_value = QString("");
-
-    if (!str_output.empty())
-        return_value = QString::fromStdString(str_output);
-    else
-        return_value = QString("%1 %2").arg(balance).arg(QString::fromStdString(str_asset_name));
-
-    return return_value;
-}
+//QString MTSendDlg::shortAcctBalance(QString qstr_acct_id, QString qstr_asset_id)
+//{
+//    int64_t      balance    = OTAPI_Wrap::GetAccountWallet_Balance(qstr_acct_id.toStdString());
+//    std::string  assetId(qstr_asset_id.toStdString());
+//    std::string  str_output = OTAPI_Wrap::It()->FormatAmount(assetId, balance);
+//    std::string  str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(assetId);
+//
+//    QString return_value = QString("");
+//
+//    if (!str_output.empty())
+//        return_value = QString::fromStdString(str_output);
+//    else
+//        return_value = QString("%1 %2").arg(balance).arg(QString::fromStdString(str_asset_name));
+//
+//    return return_value;
+//}
 
 
 // ----------------------------------------------------------------------
@@ -604,7 +606,7 @@ QString MTSendDlg::FormDisplayLabelForAcctButton(QString qstr_acct_id, QString q
     // -----------------------------------
     from_button_text = QString("%1 (%2").
             arg(display_name).
-            arg(shortAcctBalance(qstr_acct_id, qstr_acct_asset));
+            arg(MTHome::shortAcctBalance(qstr_acct_id, qstr_acct_asset));
     // --------------------------------------------
     if (!qstr_acct_nym.isEmpty() && !qstr_acct_server.isEmpty() && !qstr_acct_asset.isEmpty())
     {
