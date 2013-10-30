@@ -174,7 +174,7 @@ void MTAssetDetails::AddButtonClicked()
 //virtual
 void MTAssetDetails::refresh(QString strID, QString strName)
 {
-//  qDebug() << "MTNymDetails::refresh";
+//  qDebug() << "MTAssetDetails::refresh";
 
     if (NULL != ui)
     {

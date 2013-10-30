@@ -58,9 +58,9 @@ public:
 
     void OnDeletedRecord();
 
-    QString shortAcctBalance(QString qstr_acct_id, QString qstr_asset_id);
-    QString cashBalance     (QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id);
-    int64_t rawCashBalance  (QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id);
+    static QString shortAcctBalance(QString qstr_acct_id,   QString qstr_asset_id=QString(""));
+           QString cashBalance     (QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id);
+           int64_t rawCashBalance  (QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id);
 
 private slots:
     void on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn);

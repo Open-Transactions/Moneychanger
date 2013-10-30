@@ -976,7 +976,7 @@ void Moneychanger::mc_assetmanager_dialog()
         the_map.insert(OT_id, OT_name);
     } // for
     // -------------------------------------
-    assetswindow->setWindowTitle("Asset Contracts");
+    assetswindow->setWindowTitle("Asset Types");
     // -------------------------------------
     assetswindow->dialog(MTDetailEdit::DetailEditTypeAsset);
 }
@@ -1142,7 +1142,7 @@ void Moneychanger::mc_accountmanager_dialog()
         the_map.insert(OT_id, OT_name);
     } // for
     // -------------------------------------
-    accountswindow->setWindowTitle("Asset Accounts");
+    accountswindow->setWindowTitle("Accounts");
     // -------------------------------------
     accountswindow->dialog(MTDetailEdit::DetailEditTypeAccount);
 }

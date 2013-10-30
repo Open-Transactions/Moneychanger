@@ -24,9 +24,20 @@ public:
     virtual void AddButtonClicked()=0;
     virtual void DeleteButtonClicked()=0;
 
-    static QWidget * CreateDetailHeaderWidget(QString strID, QString strName, bool bExternal=true);
+    static QWidget * CreateDetailHeaderWidget(QString strID, QString strName,
+                                              QString strAmount=QString(""),
+                                              QString strStatus=QString(""),
+                                              bool bExternal=true);
 
     void SetOwnerPointer(MTDetailEdit & theOwner);
+
+    // ----------------------------------
+    // Only used on construction (aka when dialog() is called for first time.)
+    //
+    virtual int       GetCustomTabCount();
+    virtual QWidget * CreateCustomTab (int nTab);
+    virtual QString   GetCustomTabName(int nTab);
+    // ----------------------------------
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

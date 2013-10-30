@@ -15,6 +15,7 @@
 
 MTNymDetails::MTNymDetails(QWidget *parent) :
     MTEditDetails(parent),
+    m_pPlainTextEdit(NULL),
     ui(new Ui::MTNymDetails)
 {
     ui->setupUi(this);
@@ -30,6 +31,100 @@ MTNymDetails::~MTNymDetails()
 {
     delete ui;
 }
+
+// ----------------------------------
+//virtual
+int MTNymDetails::GetCustomTabCount()
+{
+    return 1;
+}
+// ----------------------------------
+//virtual
+QWidget * MTNymDetails::CreateCustomTab(int nTab)
+{
+    const int nCustomTabCount = this->GetCustomTabCount();
+    // -----------------------------
+    if ((nTab < 0) || (nTab >= nCustomTabCount))
+        return NULL; // out of bounds.
+    // -----------------------------
+    QWidget * pReturnValue = NULL;
+    // -----------------------------
+    switch (nTab)
+    {
+    case 0:
+    {
+        m_pPlainTextEdit = new QPlainTextEdit;
+
+        m_pPlainTextEdit->setReadOnly(true);
+        m_pPlainTextEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+        // -------------------------------
+        QVBoxLayout * pvBox = new QVBoxLayout;
+
+        QLabel * pLabelContents = new QLabel(QString("Raw State of Nym:"));
+
+        pvBox->setAlignment(Qt::AlignTop);
+        pvBox->addWidget   (pLabelContents);
+        pvBox->addWidget   (m_pPlainTextEdit);
+        // -------------------------------
+        pReturnValue = new QWidget;
+        pReturnValue->setContentsMargins(0, 0, 0, 0);
+        pReturnValue->setLayout(pvBox);
+    }
+        break;
+
+    default:
+        qDebug() << QString("Unexpected: MTNymDetails::CreateCustomTab was called with bad index: %1").arg(nTab);
+        return NULL;
+    }
+    // -----------------------------
+    return pReturnValue;
+}
+// ---------------------------------
+//virtual
+QString  MTNymDetails::GetCustomTabName(int nTab)
+{
+    const int nCustomTabCount = this->GetCustomTabCount();
+    // -----------------------------
+    if ((nTab < 0) || (nTab >= nCustomTabCount))
+        return QString(""); // out of bounds.
+    // -----------------------------
+    QString qstrReturnValue("");
+    // -----------------------------
+    switch (nTab)
+    {
+    case 0:  qstrReturnValue = "State";  break;
+
+    default:
+        qDebug() << QString("Unexpected: MTNymDetails::GetCustomTabName was called with bad index: %1").arg(nTab);
+        return QString("");
+    }
+    // -----------------------------
+    return qstrReturnValue;
+}
+// ------------------------------------------------------
+
+//virtual
+void MTNymDetails::refresh(QString strID, QString strName)
+{
+//  qDebug() << "MTNymDetails::refresh";
+
+    if (NULL != ui)
+    {
+        ui->lineEditID  ->setText(strID);
+        ui->lineEditName->setText(strName);
+
+        FavorLeftSideForIDs();
+        // --------------------------
+        if (NULL != m_pPlainTextEdit)
+        {
+            QString strContents = QString::fromStdString(OTAPI_Wrap::GetNym_Stats(strID.toStdString()));
+
+            m_pPlainTextEdit->setPlainText(strContents);
+        }
+        // --------------------------
+    }
+}
+
 
 // ------------------------------------------------------
 
@@ -176,21 +271,6 @@ void MTNymDetails::AddButtonClicked()
 //    }
 }
 
-// ------------------------------------------------------
-
-//virtual
-void MTNymDetails::refresh(QString strID, QString strName)
-{
-//  qDebug() << "MTNymDetails::refresh";
-    
-    if (NULL != ui)
-    {
-        ui->lineEditID  ->setText(strID);
-        ui->lineEditName->setText(strName);
-
-        FavorLeftSideForIDs();
-    }
-}
 
 // ------------------------------------------------------
 
