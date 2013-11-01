@@ -4,69 +4,26 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql
-
+TEMPLATE    = app
+TARGET      = moneychanger-qt
+#VERSION     =
+INCLUDEPATH+= Handlers UI Widgets
+QT         += core gui sql
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = moneychanger-qt
-TEMPLATE = app
+DEFINES    += "OT_ZMQ_MODE=1"
 
-QMAKE_CXXFLAGS += -std=c++11
-QMAKE_LIBS += -lnmcrpc -ljsoncpp -lcurl
-
-INCLUDEPATH+="/usr/local/include/"
-DEPENDPATH += .
-SOURCES += main.cpp\
-           moneychanger.cpp \
-           ot_worker.cpp \
-           MTRecordList.cpp \
-           MTRecord.cpp \
-           Namecoin.cpp \
-    Widgets/MarketWindow.cpp \
-    Widgets/overviewwindow.cpp \
-    Handlers/FileHandler.cpp \
-    Handlers/DBHandler.cpp \
-    Widgets/addressbookwindow.cpp \
-    Widgets/nymmanagerwindow.cpp \
-    Widgets/assetmanagerwindow.cpp \
-    Widgets/accountmanagerwindow.cpp \
-    Widgets/servermanagerwindow.cpp \
-    Widgets/withdrawascashwindow.cpp \
-    Widgets/withdrawasvoucherwindow.cpp \
-    Widgets/depositwindow.cpp \
-    Widgets/sendfundswindow.cpp \
-    Widgets/requestfundswindow.cpp \
-    Widgets/home.cpp \
-    Widgets/homedetail.cpp \
-    Handlers/contacthandler.cpp \
-    Widgets/createinsurancecompany.cpp \
-    Widgets/dlgchooser.cpp \
-    Widgets/compose.cpp \
-    Widgets/overridecursor.cpp \
-    Widgets/detailedit.cpp \
-    Widgets/editdetails.cpp \
-    Widgets/contactdetails.cpp \
-    UI/getstringdialog.cpp \
-    Widgets/identifierwidget.cpp \
-    UI/dlgnewcontact.cpp \
-    Widgets/senddlg.cpp \
-    Widgets/requestdlg.cpp
-
-
+DEPENDPATH += Handlers UI Widgets
 HEADERS += moneychanger.h \
            ot_worker.h \
     MTRecord.hpp \
     MTRecordList.hpp \
     Namecoin.hpp \
-    Widgets/marketwindow.h \
-    Widgets/overviewwindow.h \
+    Handlers/contacthandler.h \
     Handlers/FileHandler.h \
     Handlers/DBHandler.h \
-    Widgets/addressbookwindow.h \
-    Widgets/nymmanagerwindow.h \
-    Widgets/assetmanagerwindow.h \
-    Widgets/accountmanagerwindow.h \
-    Widgets/servermanagerwindow.h \
+    Widgets/marketwindow.h \
+    Widgets/overviewwindow.h \
     Widgets/withdrawascashwindow.h \
     Widgets/withdrawasvoucherwindow.h \
     Widgets/depositwindow.h \
@@ -74,7 +31,6 @@ HEADERS += moneychanger.h \
     Widgets/requestfundswindow.h \
     Widgets/home.h \
     Widgets/homedetail.h \
-    Handlers/contacthandler.h \
     Widgets/createinsurancecompany.h \
     Widgets/dlgchooser.h \
     Widgets/compose.h \
@@ -82,14 +38,75 @@ HEADERS += moneychanger.h \
     Widgets/detailedit.h \
     Widgets/editdetails.h \
     Widgets/contactdetails.h \
-    UI/getstringdialog.h \
     Widgets/identifierwidget.h \
-    UI/dlgnewcontact.h \
     Widgets/senddlg.h \
-    Widgets/requestdlg.h
+    Widgets/requestdlg.h \
+    Widgets/nymdetails.h \
+    Widgets/serverdetails.h \
+    Widgets/assetdetails.h \
+    Widgets/accountdetails.h \
+    UI/getstringdialog.h \
+    UI/dlgnewcontact.h
 
+QMAKE_CXXFLAGS += -std=c++11
+QMAKE_LIBS += -lnmcrpc -ljsoncpp -lcurl
 
-DEFINES += "OT_ZMQ_MODE=1"
+SOURCES += main.cpp\
+           moneychanger.cpp \
+           ot_worker.cpp \
+           MTRecordList.cpp \
+           MTRecord.cpp \
+           Namecoin.cpp \
+    Handlers/FileHandler.cpp \
+    Handlers/DBHandler.cpp \
+    Handlers/contacthandler.cpp \
+    Widgets/marketwindow.cpp \
+    Widgets/overviewwindow.cpp \
+    Widgets/withdrawascashwindow.cpp \
+    Widgets/withdrawasvoucherwindow.cpp \
+    Widgets/depositwindow.cpp \
+    Widgets/sendfundswindow.cpp \
+    Widgets/requestfundswindow.cpp \
+    Widgets/home.cpp \
+    Widgets/homedetail.cpp \
+    Widgets/createinsurancecompany.cpp \
+    Widgets/dlgchooser.cpp \
+    Widgets/compose.cpp \
+    Widgets/overridecursor.cpp \
+    Widgets/detailedit.cpp \
+    Widgets/editdetails.cpp \
+    Widgets/contactdetails.cpp \
+    Widgets/identifierwidget.cpp \
+    Widgets/senddlg.cpp \
+    Widgets/requestdlg.cpp \
+    Widgets/nymdetails.cpp \
+    Widgets/serverdetails.cpp \
+    Widgets/assetdetails.cpp \
+    Widgets/accountdetails.cpp \
+    UI/dlgnewcontact.cpp \
+    UI/getstringdialog.cpp
+
+RESOURCES += resource.qrc
+
+FORMS += \
+    Widgets/home.ui \
+    Widgets/homedetail.ui \
+    Widgets/dlgchooser.ui \
+    Widgets/compose.ui \
+    Widgets/detailedit.ui \
+    Widgets/editdetails.ui \
+    Widgets/contactdetails.ui \
+    Widgets/identifierwidget.ui \
+    Widgets/senddlg.ui \
+    Widgets/requestdlg.ui \
+    Widgets/nymdetails.ui \
+    Widgets/serverdetails.ui \
+    Widgets/assetdetails.ui \
+    Widgets/accountdetails.ui \
+    UI/dlgnewcontact.ui \
+    UI/marketwindow.ui \
+    UI/createinsurancecompany.ui \
+    UI/getstringdialog.ui
 
 mac:{
 	QT_CONFIG -= no-pkg-config
@@ -113,12 +130,9 @@ mac:{
 #    CXXFLAGS += -std=c++0x // apparently the qmake version of this above is the one I'm supposed to use, not this...
 }
 
-
 linux:{
-	LIBS += -lboost_system -lboost_thread -ldl
+	LIBS += -ldl
 }
-
-##QMAKE_CXXFLAGS += -fPIC -DPIC --param ssp-buffer-size=4
 
 # Set libraries and includes at end, to use platform-defined defaults if not overridden
 
@@ -145,24 +159,4 @@ unix: PKGCONFIG += opentxs
 unix: PKGCONFIG += chaiscript
 
 #OTHER_FILES +=
-
-RESOURCES += resource.qrc
-
-OTHER_FILES +=
-
-FORMS += \
-    UI/marketwindow.ui \
-    Widgets/home.ui \
-    Widgets/homedetail.ui \ 
-    UI/createinsurancecompany.ui \
-    Widgets/dlgchooser.ui \
-    Widgets/compose.ui \
-    Widgets/detailedit.ui \
-    Widgets/editdetails.ui \
-    Widgets/contactdetails.ui \
-    UI/getstringdialog.ui \
-    Widgets/identifierwidget.ui \
-    UI/dlgnewcontact.ui \
-    Widgets/senddlg.ui \
-    Widgets/requestdlg.ui
 

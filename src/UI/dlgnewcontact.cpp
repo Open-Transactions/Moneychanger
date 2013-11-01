@@ -46,7 +46,7 @@ void MTDlgNewContact::showEvent(QShowEvent * event)
 
         ui->frame->setLayout(m_pIdLayout);
         // --------------------------------------------------
-        m_pIdWidget->SetLabel("Paste or Scan QR Code: ");
+        m_pIdWidget->SetLabel(tr("Paste or Scan QR Code: "));
     } // first run.
     // -------------------------------------
     // call inherited method

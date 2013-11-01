@@ -40,14 +40,9 @@
 #include "MTRecordList.hpp"
 #include "MTRecord.hpp"
 
-#include "Widgets/MarketWindow.h"
+#include "Widgets/marketwindow.h"
 #include "Widgets/overviewwindow.h"
 #include "Widgets/home.h"
-#include "Widgets/addressbookwindow.h"
-#include "Widgets/nymmanagerwindow.h"
-#include "Widgets/assetmanagerwindow.h"
-#include "Widgets/accountmanagerwindow.h"
-#include "Widgets/servermanagerwindow.h"
 #include "Widgets/withdrawascashwindow.h"
 #include "Widgets/withdrawasvoucherwindow.h"
 #include "Widgets/depositwindow.h"
@@ -59,11 +54,7 @@
 class OverviewWindow;
 class MTHome;
 class MTDetailEdit;
-class AddressBookWindow;
-class NymManagerWindow;
-class AssetManagerWindow;
-class AccountManagerWindow;
-class ServerManagerWindow;
+
 class WithdrawAsCashWindow;
 class WithdrawAsVoucherWindow;
 class DepositWindow;
@@ -212,19 +203,20 @@ private:
     
     OverviewWindow * overviewwindow;
     MTHome * homewindow;
-    AddressBookWindow * addressbookwindow;
+
     MTDetailEdit      * contactswindow;
-    NymManagerWindow * nymmanagerwindow;
-    AssetManagerWindow * assetmanagerwindow;
-    AccountManagerWindow * accountmanagerwindow;
-    ServerManagerWindow * servermanagerwindow;
-    WithdrawAsCashWindow * withdrawascashwindow;
+    MTDetailEdit      * nymswindow;
+    MTDetailEdit      * serverswindow;
+    MTDetailEdit      * assetswindow;
+    MTDetailEdit      * accountswindow;
+
+    WithdrawAsCashWindow    * withdrawascashwindow;
     WithdrawAsVoucherWindow * withdrawasvoucherwindow;
-    DepositWindow * depositwindow;
-    RequestFundsWindow * requestfundswindow;
-    SendFundsWindow * sendfundswindow;
-    MarketWindow * market_window;
-    CreateInsuranceCompany * createinsurancecompany_window;
+    DepositWindow           * depositwindow;
+    RequestFundsWindow      * requestfundswindow;
+    SendFundsWindow         * sendfundswindow;
+    MarketWindow            * market_window;
+    CreateInsuranceCompany  * createinsurancecompany_window;
         
 
     

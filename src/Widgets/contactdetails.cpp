@@ -19,6 +19,8 @@ MTContactDetails::MTContactDetails(QWidget *parent) :
 {
     ui->setupUi(this);
     this->setContentsMargins(0, 0, 0, 0);
+
+    ui->lineEditID->setStyleSheet("QLineEdit { background-color: lightgray }");
 }
 
 MTContactDetails::~MTContactDetails()
@@ -47,13 +49,13 @@ void MTContactDetails::AddButtonClicked()
     // -----------------------------------------------
     MTDlgNewContact theNewContact(this);
     // -----------------------------------------------
-    theNewContact.setWindowTitle("Create New Contact");
+    theNewContact.setWindowTitle(tr("Create New Contact"));
     // -----------------------------------------------
     if (theNewContact.exec() == QDialog::Accepted)
     {
         QString nymID = theNewContact.GetId();
 
-        qDebug() << QString("MTContactDetails::AddButtonClicked: OKAY was clicked. Value: %1").arg(nymID);
+//      qDebug() << QString("MTContactDetails::AddButtonClicked: OKAY was clicked. Value: %1").arg(nymID);
 
         //resume
         // TODO: Use the NymID we just obtained (theNewContact.GetId()) to create a new Contact.
@@ -66,8 +68,8 @@ void MTContactDetails::AddButtonClicked()
             {
                 QString contactName = MTContactHandler::getInstance()->GetContactName(nExisting);
 
-                QMessageBox::warning(this, QString("Contact Already Exists"),
-                                     QString("Contact '%1' already exists with NymID: %2").arg(contactName).arg(nymID));
+                QMessageBox::warning(this, tr("Contact Already Exists"),
+                                     tr("Contact '%1' already exists with NymID: %2").arg(contactName).arg(nymID));
                 return;
             }
             // -------------------------------------------------------
@@ -77,8 +79,8 @@ void MTContactDetails::AddButtonClicked()
 
             if (nContact <= 0)
             {
-                QMessageBox::warning(this, QString("Failed creating contact"),
-                                     QString("Failed trying to create contact for NymID: %1").arg(nymID));
+                QMessageBox::warning(this, tr("Failed creating contact"),
+                                     tr("Failed trying to create contact for NymID: %1").arg(nymID));
                 return;
             }
             // -------------------------------------------------------
@@ -92,9 +94,11 @@ void MTContactDetails::AddButtonClicked()
             m_pOwner->SetPreSelected(qstrContactID);
             m_pOwner->RefreshRecords();
         }
-    } else {
-      qDebug() << "MTContactDetails::AddButtonClicked: CANCEL was clicked";
     }
+//    else
+//    {
+//      qDebug() << "MTContactDetails::AddButtonClicked: CANCEL was clicked";
+//    }
     // -----------------------------------------------
 }
 
@@ -102,6 +106,9 @@ void MTContactDetails::AddButtonClicked()
 void MTContactDetails::refresh(QString strID, QString strName)
 {
     qDebug() << "MTContactDetails::refresh";
+
+    if (NULL == ui)
+        return;
 
     ui->lineEditID  ->setText(strID);
     ui->lineEditName->setText(strName);
@@ -115,7 +122,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
 
         if (MTContactHandler::getInstance()->GetNyms(theNymMap, nContactID))
         {
-            strDetails += QString("Nyms:\n");
+            strDetails += tr("Nyms:\n");
 
             for (mapIDName::iterator ii = theNymMap.begin(); ii != theNymMap.end(); ii++)
             {
@@ -128,7 +135,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
 
                 if (MTContactHandler::getInstance()->GetServers(theServerMap, qstrNymID))
                 {
-                    strDetails += QString("Found on servers:\n");
+                    strDetails += tr("Found on servers:\n");
 
                     for (mapIDName::iterator iii = theServerMap.begin(); iii != theServerMap.end(); iii++)
                     {
@@ -141,7 +148,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
 
                         if (MTContactHandler::getInstance()->GetAccounts(theAccountMap, qstrNymID, qstrServerID, QString("")))
                         {
-                            strDetails += QString("Where he owns the accounts:\n");
+                            strDetails += tr("Where he owns the accounts:\n");
 
                             for (mapIDName::iterator iiii = theAccountMap.begin(); iiii != theAccountMap.end(); iiii++)
                             {
@@ -161,6 +168,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
     }
     // --------------------------------------------
     ui->plainTextEdit->setPlainText(strDetails);
+    // --------------------------------------------
 }
 
 
@@ -181,6 +189,8 @@ void MTContactDetails::on_lineEditName_editingFinished()
         {
             m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
             m_pOwner->m_map.insert(m_pOwner->m_qstrCurrentID, ui->lineEditName->text());
+
+            m_pOwner->SetPreSelected(m_pOwner->m_qstrCurrentID);
 
             m_pOwner->RefreshRecords();
         }

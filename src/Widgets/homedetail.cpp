@@ -46,6 +46,18 @@ MTHomeDetail::MTHomeDetail(QWidget *parent) :
     m_nContactID(0),
     m_pDetailLayout(NULL),
     m_pHome(NULL),
+    m_pLineEdit_Nym_ID(NULL),
+    m_pLineEdit_OtherNym_ID(NULL),
+    m_pLineEdit_Acct_ID(NULL),
+    m_pLineEdit_OtherAcct_ID(NULL),
+    m_pLineEdit_Server_ID(NULL),
+    m_pLineEdit_AssetType_ID(NULL),
+    m_pLineEdit_Nym_Name(NULL),
+    m_pLineEdit_OtherNym_Name(NULL),
+    m_pLineEdit_Acct_Name(NULL),
+    m_pLineEdit_OtherAcct_Name(NULL),
+    m_pLineEdit_Server_Name(NULL),
+    m_pLineEdit_AssetType_Name(NULL),
     ui(new Ui::MTHomeDetail)
 {
     ui->setupUi(this);
@@ -74,6 +86,26 @@ MTHomeDetail::~MTHomeDetail()
     delete ui;
 }
 
+void MTHomeDetail::FavorLeftSideForIDs()
+{
+    if (NULL != m_pLineEdit_Nym_ID)         m_pLineEdit_Nym_ID->home(false);
+    if (NULL != m_pLineEdit_OtherNym_ID)    m_pLineEdit_OtherNym_ID->home(false);
+    if (NULL != m_pLineEdit_Acct_ID)        m_pLineEdit_Acct_ID->home(false);
+    if (NULL != m_pLineEdit_OtherAcct_ID)   m_pLineEdit_OtherAcct_ID->home(false);
+    if (NULL != m_pLineEdit_Server_ID)      m_pLineEdit_Server_ID->home(false);
+    if (NULL != m_pLineEdit_AssetType_ID)   m_pLineEdit_AssetType_ID->home(false);
+    // --------------------------------------------------------------------
+    if (NULL != m_pLineEdit_Nym_Name)       m_pLineEdit_Nym_Name->home(false);
+    if (NULL != m_pLineEdit_OtherNym_Name)  m_pLineEdit_OtherNym_Name->home(false);
+    if (NULL != m_pLineEdit_Acct_Name)      m_pLineEdit_Acct_Name->home(false);
+    if (NULL != m_pLineEdit_OtherAcct_Name) m_pLineEdit_OtherAcct_Name->home(false);
+    if (NULL != m_pLineEdit_Server_Name)    m_pLineEdit_Server_Name->home(false);
+    if (NULL != m_pLineEdit_AssetType_Name) m_pLineEdit_AssetType_Name->home(false);
+}
+
+//if (QResizeEvent *resizeEvent = static_cast<QResizeEvent*>(event))
+//somesize.setWidth(width);
+
 bool MTHomeDetail::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress)
@@ -86,6 +118,13 @@ bool MTHomeDetail::eventFilter(QObject *obj, QEvent *event)
             return true;
         }
         return true;
+    }
+    else if (event->type() == QEvent::Resize)
+    {
+        // This insures that the left-most part of the IDs and Names
+        // remains visible during all resize events.
+        //
+        FavorLeftSideForIDs();
     }
     else
     {
@@ -186,7 +225,7 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
         // --------------------------------------------------
         if (str_nym_id.empty())
         {
-            QMessageBox::warning(this, QString("Failure"), QString("Sorry, but this record has no NymID."));
+            QMessageBox::warning(this, tr("Failure"), tr("Sorry, but this record has no NymID."));
             return;
         }
         // else...
@@ -198,8 +237,8 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
 
         if (MTContactHandler::getInstance()->ContactExists(nymID.toInt()))
         {
-            QMessageBox::warning(this, QString("Strange"),
-                                 QString("Strange: NymID %1 already belongs to an existing contact.").arg(nymID));
+            QMessageBox::warning(this, tr("Strange"),
+                                 tr("Strange: NymID %1 already belongs to an existing contact.").arg(nymID));
             return;
         }
         // --------------------------------------------------------------------
@@ -211,7 +250,7 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
         mapIDName & the_map = theChooser.m_map;
         MTContactHandler::getInstance()->GetContacts(the_map);
         // -----------------------------------------------
-        theChooser.setWindowTitle("Choose an Existing Contact");
+        theChooser.setWindowTitle(tr("Choose an Existing Contact"));
         // -----------------------------------------------
         if (theChooser.exec() == QDialog::Accepted)
         {
@@ -228,7 +267,7 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
                 if (!bAdded)
                 {
                     QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactID));
-                    QMessageBox::warning(this, QString("Failure"), QString("Failed while trying to add NymID %1 to existing contact '%2' with contact ID: %3").
+                    QMessageBox::warning(this, tr("Failure"), QString("Failed while trying to add NymID %1 to existing contact '%2' with contact ID: %3").
                                          arg(nymID).arg(strContactName).arg(nContactID));
                     return;
                 }
@@ -273,7 +312,7 @@ void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
     // --------------------------------
     QMessageBox::StandardButton reply;
 
-    reply = QMessageBox::question(this, "", "Are you sure you want to archive this record?",
+    reply = QMessageBox::question(this, "", tr("Are you sure you want to archive this record?"),
                                   QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::No)
       return;
@@ -436,8 +475,8 @@ QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
         //
         if (0 == the_map.size())
         {
-            QMessageBox::warning(this, QString("No Matching Accounts"),
-                                 QString("There are no existing accounts with the proper asset type, server, and nym. "
+            QMessageBox::warning(this, tr("No Matching Accounts"),
+                                 tr("There are no existing accounts with the proper asset type, server, and nym. "
                                          "In the future, this is where you would be given the option to create "
                                          "one. (Someday.) In the meantime, just create one and then try again."));
             return QString("");
@@ -494,7 +533,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
             // -----------------------------------------
             if (!bSuccess)
             {
-                QMessageBox::warning(this, QString("Transaction failure"), QString("Failed accepting this transfer."));
+                QMessageBox::warning(this, tr("Transaction failure"), tr("Failed accepting this transfer."));
             }
             else
             {
@@ -516,7 +555,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
             // -----------------------------------------
             if (!bSuccess)
             {
-                QMessageBox::warning(this, QString("Transaction failure"), QString("Failed accepting this receipt."));
+                QMessageBox::warning(this, tr("Transaction failure"), tr("Failed accepting this receipt."));
             }
             else
             {
@@ -534,7 +573,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
             {
                 QMessageBox::StandardButton reply;
 
-                reply = QMessageBox::question(this, "", "Are you sure you want to pay this invoice?",
+                reply = QMessageBox::question(this, "", tr("Are you sure you want to pay this invoice?"),
                                               QMessageBox::Yes|QMessageBox::No);
                 if (reply == QMessageBox::No)
                     return;
@@ -557,7 +596,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
                 // -----------------------------------------
                 if (!bSuccess)
                 {
-                    QMessageBox::warning(this, QString("Transaction failure"), QString("Failed accepting this instrument."));
+                    QMessageBox::warning(this, tr("Transaction failure"), tr("Failed accepting this instrument."));
                 }
                 else
                 {
@@ -586,9 +625,9 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
             QMessageBox::StandardButton reply;
 
             reply = QMessageBox::question(this, "",
-                                          "This will prevent the original recipient from depositing the cash. "
+                                          tr("This will prevent the original recipient from depositing the cash. "
                                           "(And FYI, this action will fail, if he has already deposited it.) "
-                                          "Are you sure you want to recover this cash?",
+                                          "Are you sure you want to recover this cash?"),
                                           QMessageBox::Yes|QMessageBox::No);
             if (reply == QMessageBox::No)
                 return;
@@ -617,8 +656,8 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
                 // -----------------------------------------
                 if (!bSuccess)
                 {
-                    QMessageBox::warning(this, QString("Recovery failure"),
-                                         QString("Failed recovering this outgoing cash. "
+                    QMessageBox::warning(this, tr("Recovery failure"),
+                                         tr("Failed recovering this outgoing cash. "
                                                  "(Perhaps the recipient already deposited it?)"));
                 }
                 else
@@ -639,9 +678,9 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
             QMessageBox::StandardButton reply;
 
             reply = QMessageBox::question(this, "",
-                                          "This will prevent the original recipient from exercising this instrument. "
+                                          tr("This will prevent the original recipient from exercising this instrument. "
                                           "(And FYI, this action will fail if he's already done so.) "
-                                          "Are you sure you want to cancel?",
+                                          "Are you sure you want to cancel?"),
                                           QMessageBox::Yes|QMessageBox::No);
             if (reply == QMessageBox::No)
                 return;
@@ -655,8 +694,8 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
             // -----------------------------------------
             if (!bSuccess)
             {
-                QMessageBox::warning(this, QString("Cancellation failure"),
-                                     QString("Failed canceling this outgoing instrument."));
+                QMessageBox::warning(this, tr("Cancellation failure"),
+                                     tr("Failed canceling this outgoing instrument."));
             }
             else
             {
@@ -683,9 +722,9 @@ void MTHomeDetail::on_discardOutgoingButton_clicked(bool checked /*=false*/)
         QMessageBox::StandardButton reply;
 
         reply = QMessageBox::question(this, "",
-                                      "This will prevent you from recovering this cash in the future. "
+                                      tr("This will prevent you from recovering this cash in the future. "
                                       "(And FYI, once the cash expires, this record will be discarded automatically anyway.) "
-                                      "Are you sure you want to discard this record of sent cash?",
+                                      "Are you sure you want to discard this record of sent cash?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::No)
             return;
@@ -699,8 +738,8 @@ void MTHomeDetail::on_discardOutgoingButton_clicked(bool checked /*=false*/)
         // -----------------------------------------
         if (!bSuccess)
         {
-            QMessageBox::warning(this, QString("Discard failure"),
-                                 QString("Failed discarding this sent cash."));
+            QMessageBox::warning(this, tr("Discard failure"),
+                                 tr("Failed discarding this sent cash."));
         }
         else
         {
@@ -728,10 +767,10 @@ void MTHomeDetail::on_discardIncomingButton_clicked(bool checked /*=false*/)
         // ---------------------------------------
         QMessageBox::StandardButton reply;
 
-        QString qstr_instrument = recordmt.IsInvoice() ? QString("invoice") : QString("instrument");
+        QString qstr_instrument = recordmt.IsInvoice() ? tr("invoice") : tr("instrument");
 
         reply = QMessageBox::question(this, "",
-                                      QString("Are you sure you want to discard this incoming %1?").arg(qstr_instrument),
+                                      tr("Are you sure you want to discard this incoming %1?").arg(qstr_instrument),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::No)
             return;
@@ -745,8 +784,8 @@ void MTHomeDetail::on_discardIncomingButton_clicked(bool checked /*=false*/)
         // -----------------------------------------
         if (!bSuccess)
         {
-            QMessageBox::warning(this, QString("Discard failure"),
-                                 QString("Failed discarding this incoming %1.").arg(qstr_instrument));
+            QMessageBox::warning(this, tr("Discard failure"),
+                                 tr("Failed discarding this incoming %1.").arg(qstr_instrument));
         }
         else
         {
@@ -928,9 +967,9 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt, bool bExte
     else if (recordmt.IsMail())
     {
         if (recordmt.IsOutgoing())
-            currency_amount = QString("sent msg");
+            currency_amount = tr("sent msg");
         else
-            currency_amount = QString("message");
+            currency_amount = tr("message");
         // ------------------------------------------
         if (!bExternal)
         {
@@ -1078,6 +1117,18 @@ void MTHomeDetail::RecreateLayout()
     m_pDetailLayout->setAlignment(Qt::AlignTop);
     m_pDetailLayout->setContentsMargins(0, 0, 0, 0);
     // --------------------------------------------------
+    m_pLineEdit_Nym_ID          = NULL;
+    m_pLineEdit_OtherNym_ID     = NULL;
+    m_pLineEdit_Acct_ID         = NULL;
+    m_pLineEdit_OtherAcct_ID    = NULL;
+    m_pLineEdit_Server_ID       = NULL;
+    m_pLineEdit_AssetType_ID    = NULL;
+    m_pLineEdit_Nym_Name        = NULL;
+    m_pLineEdit_OtherNym_Name   = NULL;
+    m_pLineEdit_Acct_Name       = NULL;
+    m_pLineEdit_OtherAcct_Name  = NULL;
+    m_pLineEdit_Server_Name     = NULL;
+    m_pLineEdit_AssetType_Name  = NULL;
 }
 
 
@@ -1148,9 +1199,9 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     QString viewDetails = QString("");
 
     if (recordmt.IsReceipt() || recordmt.IsOutgoing())
-        viewDetails = QString("View Recipient Details");
+        viewDetails = tr("View Recipient Details");
     else
-        viewDetails = QString("View Sender Details");
+        viewDetails = tr("View Sender Details");
     // --------------------------------------------------
     const std::string str_acct_id    = recordmt.GetOtherAccountID();
     const std::string str_nym_id     = recordmt.GetOtherNymID();
@@ -1188,7 +1239,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     }
     else if (!str_nym_id.empty())
     {
-        QPushButton * addContactButton = new QPushButton(QString("Add as Contact"));
+        QPushButton * addContactButton = new QPushButton(tr("Add as Contact"));
 
         m_pDetailLayout->addWidget(addContactButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(addContactButton, Qt::AlignTop);
@@ -1200,7 +1251,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
         // If the contact didn't already exist, we don't just have "add new contact"
         // but also "add to existing contact."
         //
-        QPushButton * existingContactButton = new QPushButton(QString("Add to an Existing Contact"));
+        QPushButton * existingContactButton = new QPushButton(tr("Add to an Existing Contact"));
 
         m_pDetailLayout->addWidget(existingContactButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(existingContactButton, Qt::AlignTop);
@@ -1212,7 +1263,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     // *************************************************************
     if (recordmt.CanDeleteRecord())
     {
-        QString deleteActionName = recordmt.IsMail() ? QString("Archive this Message") : QString("Archive this Record");
+        QString deleteActionName = recordmt.IsMail() ? tr("Archive this Message") : tr("Archive this Record");
         QPushButton * deleteButton = new QPushButton(deleteActionName);
 
         m_pDetailLayout->addWidget(deleteButton, nCurrentRow, nCurrentColumn,1,1);
@@ -1234,48 +1285,48 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
         if (recordmt.IsTransfer())
         {
-            nameString = QString("Accept this Transfer");
-            actionString = QString("Accepting...");
+            nameString = tr("Accept this Transfer");
+            actionString = tr("Accepting...");
         }
         else if (recordmt.IsReceipt())
         {
-            nameString = QString("Accept this Receipt");
-            actionString = QString("Accepting...");
+            nameString = tr("Accept this Receipt");
+            actionString = tr("Accepting...");
         }
         else if (recordmt.IsInvoice())
         {
-            nameString = QString("Pay this Invoice");
-            actionString = QString("Paying...");
+            nameString = tr("Pay this Invoice");
+            actionString = tr("Paying...");
         }
         else if (recordmt.IsPaymentPlan())
         {
-            nameString = QString("Activate this Payment Plan");
-            actionString = QString("Activating...");
+            nameString = tr("Activate this Payment Plan");
+            actionString = tr("Activating...");
         }
         else if (recordmt.IsContract())
         {
-            nameString = QString("Sign this Smart Contract");
-            actionString = QString("Signing...");
+            nameString = tr("Sign this Smart Contract");
+            actionString = tr("Signing...");
         }
         else if (recordmt.IsCash())
         {
-            nameString = QString("Deposit this Cash");
-            actionString = QString("Depositing...");
+            nameString = tr("Deposit this Cash");
+            actionString = tr("Depositing...");
         }
         else if (recordmt.IsCheque())
         {
-            nameString = QString("Deposit this Cheque");
-            actionString = QString("Depositing...");
+            nameString = tr("Deposit this Cheque");
+            actionString = tr("Depositing...");
         }
         else if (recordmt.IsVoucher())
         {
-            nameString = QString("Accept this Payment");
-            actionString = QString("Accepting...");
+            nameString = tr("Accept this Payment");
+            actionString = tr("Accepting...");
         }
         else
         {
-            nameString = QString("Deposit this Payment");
-            actionString = QString("Depositing...");
+            nameString = tr("Deposit this Payment");
+            actionString = tr("Depositing...");
         }
 
         QPushButton * acceptButton = new QPushButton(nameString);
@@ -1291,31 +1342,31 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
     if (recordmt.CanCancelOutgoing())
     {
-        QString msg = QString("Cancellation Failed. Perhaps recipient had already accepted it?");
+        QString msg = tr("Cancellation Failed. Perhaps recipient had already accepted it?");
 //        UIAlertView *fail = [[UIAlertView alloc] initWithTitle:nil message:msg delegate:nil
 //                                             cancelButtonTitle:QString("OK") otherButtonTitles:nil];
 
         QString cancelString;
-        QString actionString = QString("Canceling...");
+        QString actionString = tr("Canceling...");
 
         if (recordmt.IsInvoice())
-            cancelString = QString("Cancel this Invoice");
+            cancelString = tr("Cancel this Invoice");
         else if (recordmt.IsPaymentPlan())
-            cancelString = QString("Cancel this Payment Plan");
+            cancelString = tr("Cancel this Payment Plan");
         else if (recordmt.IsContract())
-            cancelString = QString("Cancel this Smart Contract");
+            cancelString = tr("Cancel this Smart Contract");
         else if (recordmt.IsCash())
         {
-            cancelString = QString("Recover this Cash");
-            actionString = QString("Recovering...");
-            msg = QString("Recovery Failed. Perhaps recipient had already accepted it?");
+            cancelString = tr("Recover this Cash");
+            actionString = tr("Recovering...");
+            msg = tr("Recovery Failed. Perhaps recipient had already accepted it?");
         }
         else if (recordmt.IsCheque())
-            cancelString = QString("Cancel this Cheque");
+            cancelString = tr("Cancel this Cheque");
         else if (recordmt.IsVoucher())
-            cancelString = QString("Cancel this Payment");
+            cancelString = tr("Cancel this Payment");
         else
-            cancelString = QString("Cancel this Payment");
+            cancelString = tr("Cancel this Payment");
 
 
         QPushButton * cancelButton = new QPushButton(cancelString);
@@ -1331,7 +1382,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
     if (recordmt.CanDiscardOutgoingCash())
     {
-        QString discardString = QString("Discard this Sent Cash");
+        QString discardString = tr("Discard this Sent Cash");
 
         QPushButton * discardOutgoingButton = new QPushButton(discardString);
 
@@ -1350,19 +1401,19 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
         QString discardString;
 
         if (recordmt.IsInvoice())
-            discardString = QString("Discard this Invoice");
+            discardString = tr("Discard this Invoice");
         else if (recordmt.IsPaymentPlan())
-            discardString = QString("Discard this Payment Plan");
+            discardString = tr("Discard this Payment Plan");
         else if (recordmt.IsContract())
-            discardString = QString("Discard this Smart Contract");
+            discardString = tr("Discard this Smart Contract");
         else if (recordmt.IsCash())
-            discardString = QString("Discard this Cash");
+            discardString = tr("Discard this Cash");
         else if (recordmt.IsCheque())
-            discardString = QString("Discard this Cheque");
+            discardString = tr("Discard this Cheque");
         else if (recordmt.IsVoucher())
-            discardString = QString("Discard this Payment");
+            discardString = tr("Discard this Payment");
         else
-            discardString = QString("Discard this Payment");
+            discardString = tr("Discard this Payment");
 
 
         QPushButton * discardIncomingButton = new QPushButton(discardString);
@@ -1381,12 +1432,12 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
         QString msgUser;
 
         if (recordmt.IsReceipt() || recordmt.IsOutgoing())
-            msgUser = QString("Message the Recipient");
+            msgUser = tr("Message the Recipient");
         else
-            msgUser = QString("Message the Sender");
+            msgUser = tr("Message the Sender");
 
 
-        QPushButton * msgButton = new QPushButton(((recordmt.IsMail() && !recordmt.IsOutgoing()) ? QString("Reply to this Message") : msgUser));
+        QPushButton * msgButton = new QPushButton(((recordmt.IsMail() && !recordmt.IsOutgoing()) ? tr("Reply to this Message") : msgUser));
 
         m_pDetailLayout->addWidget(msgButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(msgButton, Qt::AlignTop);
@@ -1404,8 +1455,187 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
         nCurrentRow++;
     }
     // ----------------------------------
-
     // TRANSACTION IDs DISPLAYED HERE
+
+    QString qstr_NymID       = QString::fromStdString(recordmt.GetNymID());
+    QString qstr_OtherNymID  = QString::fromStdString(recordmt.GetOtherNymID());
+    QString qstr_AccountID   = QString::fromStdString(recordmt.GetAccountID());
+    QString qstr_OtherAcctID = QString::fromStdString(recordmt.GetOtherAccountID());
+    QString qstr_ServerID    = QString::fromStdString(recordmt.GetServerID());
+    QString qstr_AssetTypeID = QString::fromStdString(recordmt.GetAssetID());
+
+    QString qstr_OtherType;
+
+    if (recordmt.IsReceipt() || recordmt.IsOutgoing())
+        qstr_OtherType = tr("Recipient");
+    else
+        qstr_OtherType = tr("Sender");
+
+    QGridLayout * pGridLayout = new QGridLayout;
+    int nGridRow = 0;
+
+    pGridLayout->setColumnMinimumWidth(0, 75);
+    pGridLayout->setColumnMinimumWidth(1, 75);
+
+    pGridLayout->setColumnStretch(1, 2);
+    pGridLayout->setColumnStretch(2, 5);
+
+    pGridLayout->setAlignment(Qt::AlignTop);
+
+    if (!qstr_NymID.isEmpty())
+    {
+        QLabel    * pLabel    = new QLabel(tr("My Nym: "));
+
+        MTNameLookupQT theLookup;
+        QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_NymID.toStdString()));
+
+        m_pLineEdit_Nym_ID          = new QLineEdit(qstr_NymID);
+        m_pLineEdit_Nym_Name        = new QLineEdit(qstr_name);
+
+        m_pLineEdit_Nym_ID->setReadOnly(true);
+        m_pLineEdit_Nym_Name->setReadOnly(true);
+
+        m_pLineEdit_Nym_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
+        m_pLineEdit_Nym_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+        pGridLayout->addWidget(pLabel, nGridRow,   0);
+        pGridLayout->addWidget(m_pLineEdit_Nym_Name, nGridRow,   1);
+        pGridLayout->addWidget(m_pLineEdit_Nym_ID, nGridRow++, 2);
+    }
+
+    if (!qstr_OtherNymID.isEmpty())
+    {
+        QLabel    * pLabel    = new QLabel(tr("%1 Nym: ").arg(qstr_OtherType));
+
+        MTNameLookupQT theLookup;
+        QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_OtherNymID.toStdString()));
+
+        m_pLineEdit_OtherNym_ID     = new QLineEdit(qstr_OtherNymID);
+        m_pLineEdit_OtherNym_Name   = new QLineEdit(qstr_name);
+
+        m_pLineEdit_OtherNym_ID->setReadOnly(true);
+        m_pLineEdit_OtherNym_Name->setReadOnly(true);
+
+        m_pLineEdit_OtherNym_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
+        m_pLineEdit_OtherNym_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+        pGridLayout->addWidget(pLabel,    nGridRow,   0);
+        pGridLayout->addWidget(m_pLineEdit_OtherNym_Name,    nGridRow,   1);
+        pGridLayout->addWidget(m_pLineEdit_OtherNym_ID, nGridRow++, 2);
+    }
+
+    if (!qstr_AccountID.isEmpty())
+    {
+        QLabel    * pLabel    = new QLabel(tr("My Account: "));
+
+        MTNameLookupQT theLookup;
+        QString qstr_name = QString::fromStdString(theLookup.GetAcctName(qstr_AccountID.toStdString()));
+
+        m_pLineEdit_Acct_ID         = new QLineEdit(qstr_AccountID);
+        m_pLineEdit_Acct_Name       = new QLineEdit(qstr_name);
+
+        m_pLineEdit_Acct_ID->setReadOnly(true);
+        m_pLineEdit_Acct_Name->setReadOnly(true);
+
+        m_pLineEdit_Acct_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
+        m_pLineEdit_Acct_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+        pGridLayout->addWidget(pLabel,    nGridRow,   0);
+        pGridLayout->addWidget(m_pLineEdit_Acct_Name,    nGridRow,   1);
+        pGridLayout->addWidget(m_pLineEdit_Acct_ID, nGridRow++, 2);
+    }
+
+    if (!qstr_OtherAcctID.isEmpty())
+    {
+        QLabel    * pLabel    = new QLabel(tr("%1 Account: ").arg(qstr_OtherType));
+
+        MTNameLookupQT theLookup;
+        QString qstr_name = QString::fromStdString(theLookup.GetAcctName(qstr_OtherAcctID.toStdString()));
+
+        m_pLineEdit_OtherAcct_ID    = new QLineEdit(qstr_OtherAcctID);
+        m_pLineEdit_OtherAcct_Name  = new QLineEdit(qstr_name);
+
+        m_pLineEdit_OtherAcct_ID->setReadOnly(true);
+        m_pLineEdit_OtherAcct_Name->setReadOnly(true);
+
+        m_pLineEdit_OtherAcct_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
+        m_pLineEdit_OtherAcct_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+        pGridLayout->addWidget(pLabel,    nGridRow,   0);
+        pGridLayout->addWidget(m_pLineEdit_OtherAcct_Name,    nGridRow,   1);
+        pGridLayout->addWidget(m_pLineEdit_OtherAcct_ID, nGridRow++, 2);
+    }
+
+    if (!qstr_ServerID.isEmpty())
+    {
+        QLabel    * pLabel    = new QLabel(tr("Server: "));
+
+        QString qstr_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(qstr_ServerID.toStdString()));
+
+        m_pLineEdit_Server_ID       = new QLineEdit(qstr_ServerID);
+        m_pLineEdit_Server_Name     = new QLineEdit(qstr_name);
+
+        m_pLineEdit_Server_ID->setReadOnly(true);
+        m_pLineEdit_Server_Name->setReadOnly(true);
+
+        m_pLineEdit_Server_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
+        m_pLineEdit_Server_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+        pGridLayout->addWidget(pLabel,    nGridRow,   0);
+        pGridLayout->addWidget(m_pLineEdit_Server_Name,    nGridRow,   1);
+        pGridLayout->addWidget(m_pLineEdit_Server_ID, nGridRow++, 2);
+    }
+
+    if (!qstr_AssetTypeID.isEmpty())
+    {
+        QLabel    * pLabel    = new QLabel(tr("Asset Type: "));
+
+        QString qstr_name = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(qstr_AssetTypeID.toStdString()));
+
+        m_pLineEdit_AssetType_ID    = new QLineEdit(qstr_AssetTypeID);
+        m_pLineEdit_AssetType_Name  = new QLineEdit(qstr_name);
+
+        m_pLineEdit_AssetType_ID->setReadOnly(true);
+        m_pLineEdit_AssetType_Name->setReadOnly(true);
+
+        m_pLineEdit_AssetType_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
+        m_pLineEdit_AssetType_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+        pGridLayout->addWidget(pLabel, nGridRow, 0);
+        pGridLayout->addWidget(m_pLineEdit_AssetType_Name, nGridRow, 1);
+        pGridLayout->addWidget(m_pLineEdit_AssetType_ID, nGridRow++, 2);
+    }
+    // ----------------------------------
+    FavorLeftSideForIDs();
+    // ----------------------------------
+    QTabWidget * pTabWidget  = new QTabWidget;
+    QWidget    * pTab1Widget = new QWidget;
+    QWidget    * pTab2Widget = NULL;
+    QWidget    * pTab3Widget = NULL;
+
+    pTabWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    pTab1Widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    pTabWidget->setContentsMargins(5, 5, 5, 5);
+    pTab1Widget->setContentsMargins(5, 5, 5, 5);
+
+    pTabWidget->addTab(pTab1Widget, tr("Details"));
+    // ----------------------------------
+    if (pGridLayout->count() > 0)
+    {
+        pTab3Widget = new QWidget;
+
+        pTab3Widget->setContentsMargins(0, 0, 0, 0);
+        pTab3Widget->setLayout(pGridLayout);
+
+        pTabWidget->addTab(pTab3Widget, tr("IDs"));
+//      m_pDetailLayout->addLayout(pGridLayout, nCurrentRow++, nCurrentColumn, 1, 2, Qt::AlignBottom);
+    }
+    else
+    {
+        delete pGridLayout;
+        pGridLayout = NULL;
+    }
 
 //    ActionSection *act = [ActionSection sectionWithName:QString("Actions") andActions:actions];
 //    act.defaultAlignment = (UITextAlignment) UITextAlignmentLeft;
@@ -1417,18 +1647,6 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 //                                act,
 //                                idSec,
 //                                ]];
-    // ----------------------------------
-    QTabWidget * pTabWidget  = new QTabWidget;
-    QWidget    * pTab1Widget = new QWidget;
-    QWidget    * pTab2Widget = NULL;
-
-    pTabWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    pTab1Widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-    pTabWidget->setContentsMargins(5, 5, 5, 5);
-    pTab1Widget->setContentsMargins(5, 5, 5, 5);
-
-    pTabWidget->addTab(pTab1Widget, QString("Details"));
     // ----------------------------------
     if (recordmt.HasContents())
     {
@@ -1452,7 +1670,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
         {
             pvBox       = new QVBoxLayout;
             pTab2Widget = new QWidget;
-            QLabel * pLabelContents = new QLabel(QString("Raw Contents:"));
+            QLabel * pLabelContents = new QLabel(tr("Raw Contents:"));
 
             pvBox->setAlignment(Qt::AlignTop);
             pvBox->addWidget   (pLabelContents);
@@ -1461,7 +1679,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
             pTab2Widget->setContentsMargins(0, 0, 0, 0);
             pTab2Widget->setLayout(pvBox);
 
-            pTabWidget->addTab(pTab2Widget, QString("Contents"));
+            pTabWidget->addTab(pTab2Widget, tr("Contents"));
         }
         // -------------------------------
     }    
@@ -1477,7 +1695,6 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     pTabWidget->setTabPosition(QTabWidget::South);
 
     this->setLayout(m_pDetailLayout);
-
     // ----------------------------------
 
 /*

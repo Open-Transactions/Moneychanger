@@ -146,7 +146,7 @@ bool MTRequestDlg::requestFunds(QString memo, QString qstr_amount)
     }
     // ----------------------------------------------------
     if (memo.isEmpty())
-        memo = QString("From the desktop client. (Empty memo.)");
+        memo = tr("From the desktop client. (Empty memo.)");
     // ----------------------------------------------------
     if (qstr_amount.isEmpty())
         qstr_amount = QString("0");
@@ -193,16 +193,16 @@ void MTRequestDlg::on_requestButton_clicked()
     // From:
     if (m_hisNymId.isEmpty())
     {
-        QMessageBox::warning(this, QString("No Invoicee"),
-                             QString("Please choose an invoicee for the request."));
+        QMessageBox::warning(this, tr("No Invoicee"),
+                             tr("Please choose an invoicee for the request."));
         return;
     }
     // -----------------------------------------------------------------
     // To:
     if (m_myAcctId.isEmpty())
     {
-        QMessageBox::warning(this, QString("No Payee Account"),
-                             QString("Please choose an account to receive the funds into."));
+        QMessageBox::warning(this, tr("No Payee Account"),
+                             tr("Please choose an account to receive the funds into."));
         return;
     }
     // -----------------------------------------------------------------
@@ -211,7 +211,7 @@ void MTRequestDlg::on_requestButton_clicked()
     {
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, "", "The memo is blank. Are you sure you want to request?",
+        reply = QMessageBox::question(this, "", tr("The memo is blank. Are you sure you want to request?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::No)
           return;
@@ -220,8 +220,8 @@ void MTRequestDlg::on_requestButton_clicked()
     // Amount:
     if (ui->amountEdit->text().isEmpty())
     {
-        QMessageBox::warning(this, QString("Amount is Empty"),
-                             QString("Please enter the amount you wish to request."));
+        QMessageBox::warning(this, tr("Amount is Empty"),
+                             tr("Please enter the amount you wish to request."));
         return;
     }
     // -----------------------------------------------------------------
@@ -247,8 +247,8 @@ void MTRequestDlg::on_requestButton_clicked()
     }
     // -----------------------------------------------------------------
     if (!bSent)
-        QMessageBox::warning(this, QString("Failed Requesting Funds"),
-                             QString("Failed trying to send invoice."));
+        QMessageBox::warning(this, tr("Failed Requesting Funds"),
+                             tr("Failed trying to send invoice."));
     else
         this->close();
     // -----------------------------------------------------------------
@@ -292,7 +292,7 @@ void MTRequestDlg::on_toButton_clicked()
     if (bFoundDefault && !m_myAcctId.isEmpty())
         theChooser.SetPreSelected(m_myAcctId);
     // -----------------------------------------------
-    theChooser.setWindowTitle("Select your Payee Account");
+    theChooser.setWindowTitle(tr("Select your Payee Account"));
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
@@ -316,7 +316,7 @@ void MTRequestDlg::on_toButton_clicked()
     }
     // -----------------------------------------------
     m_myAcctId = QString("");
-    ui->toButton->setText("<Click to choose Account>");
+    ui->toButton->setText(tr("<Click to choose Account>"));
 }
 
 
@@ -342,7 +342,7 @@ void MTRequestDlg::on_fromButton_clicked()
         }
     }
     // -----------------------------------------------
-    theChooser.setWindowTitle("Choose the Invoicee");
+    theChooser.setWindowTitle(tr("Choose the Invoicee"));
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
@@ -365,7 +365,7 @@ void MTRequestDlg::on_fromButton_clicked()
             {
                 qstrContactName  = QString("");
                 m_hisNymId = QString("");
-                ui->fromButton->setText("<Click to Choose Invoicee>");
+                ui->fromButton->setText(tr("<Click to Choose Invoicee>"));
                 return;
             }
             // else...
@@ -373,7 +373,7 @@ void MTRequestDlg::on_fromButton_clicked()
             qstrContactName = MTContactHandler::getInstance()->GetContactName(nSelectedContactID);
 
             if (qstrContactName.isEmpty())
-                ui->fromButton->setText("(Contact has a blank name)");
+                ui->fromButton->setText(tr("(Contact has a blank name)"));
             else
                 ui->fromButton->setText(qstrContactName);
             // ---------------------------------------------
@@ -397,10 +397,10 @@ void MTRequestDlg::on_fromButton_clicked()
                     else
                     {
                         m_hisNymId = QString("");
-                        ui->fromButton->setText("<Click to Choose Invoicee>");
+                        ui->fromButton->setText(tr("<Click to Choose Invoicee>"));
                         // -------------------------------------
-                        QMessageBox::warning(this, QString("Contact has no known identities"),
-                                             QString("Sorry, Contact '%1' has no known NymIDs (to request funds from.)").arg(qstrContactName));
+                        QMessageBox::warning(this, tr("Contact has no known identities"),
+                                             tr("Sorry, Contact '%1' has no known NymIDs (to request funds from.)").arg(qstrContactName));
                         return;
                     }
                 }
@@ -408,24 +408,24 @@ void MTRequestDlg::on_fromButton_clicked()
                 {
                     DlgChooser theNymChooser(this);
                     theNymChooser.m_map = theNymMap;
-                    theNymChooser.setWindowTitle("Invoicee has multiple Nyms. (Please choose one.)");
+                    theNymChooser.setWindowTitle(tr("Invoicee has multiple Nyms. (Please choose one.)"));
                     // -----------------------------------------------
                     if (theNymChooser.exec() == QDialog::Accepted)
                         m_hisNymId = theNymChooser.m_qstrCurrentID;
                     else // User must have cancelled.
                     {
                         m_hisNymId = QString("");
-                        ui->fromButton->setText("<Click to Choose Invoicee>");
+                        ui->fromButton->setText(tr("<Click to Choose Invoicee>"));
                     }
                 }
             }
             else // No nyms found for this ContactID.
             {
                 m_hisNymId = QString("");
-                ui->fromButton->setText("<Click to Choose Invoicee>");
+                ui->fromButton->setText(tr("<Click to Choose Invoicee>"));
                 // -------------------------------------
-                QMessageBox::warning(this, QString("Contact has no known identities"),
-                                     QString("Sorry, Contact '%1' has no known NymIDs (to request funds from.)").arg(qstrContactName));
+                QMessageBox::warning(this, tr("Contact has no known identities"),
+                                     tr("Sorry, Contact '%1' has no known NymIDs (to request funds from.)").arg(qstrContactName));
                 return;
             }
             // --------------------------------
@@ -447,7 +447,7 @@ void MTRequestDlg::dialog()
 
     if (!already_init)
     {
-        this->setWindowTitle("Request Funds");
+        this->setWindowTitle(tr("Request Funds"));
 
         QString style_sheet = "QPushButton{border: none; border-style: outset; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa);}"
                 "QPushButton:pressed {border: 1px solid black; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa); }"
@@ -475,7 +475,7 @@ void MTRequestDlg::dialog()
         if (str_my_name.empty())
         {
             m_myAcctId = QString("");
-            ui->toButton->setText(QString("<Click to Select Payee Account>"));
+            ui->toButton->setText(tr("<Click to Select Payee Account>"));
         }
         else
             ui->toButton->setText(QString::fromStdString(str_my_name));
@@ -498,7 +498,7 @@ void MTRequestDlg::dialog()
         if (str_his_name.empty())
         {
             m_hisNymId = QString("");
-            ui->fromButton->setText("<Click to Choose Invoicee>");
+            ui->fromButton->setText(tr("<Click to Choose Invoicee>"));
         }
         else
             ui->fromButton->setText(QString::fromStdString(str_his_name));
@@ -512,7 +512,7 @@ void MTRequestDlg::dialog()
             QString qstrTemp = m_memo;
             ui->memoEdit->setText(qstrTemp);
             // -----------------------
-            this->setWindowTitle(QString("Request Funds | Memo: %1").arg(qstrTemp));
+            this->setWindowTitle(QString("%1 %2").arg(tr("Request Funds | Memo:")).arg(qstrTemp));
         }
         // -------------------------------------------
 
@@ -567,12 +567,12 @@ void MTRequestDlg::on_memoEdit_textChanged(const QString &arg1)
     if (arg1.isEmpty())
     {
         m_memo = QString("");
-        this->setWindowTitle(QString("Request Funds"));
+        this->setWindowTitle(tr("Request Funds"));
     }
     else
     {
         m_memo = arg1;
-        this->setWindowTitle(QString("Request Funds | Memo: %1").arg(arg1));
+        this->setWindowTitle(QString("%1 %2").arg(tr("Request Funds | Memo:")).arg(arg1));
     }
 }
 
@@ -606,7 +606,7 @@ void MTRequestDlg::closeEvent(QCloseEvent *event)
     {
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, "", "Close without requesting funds?",
+        reply = QMessageBox::question(this, "", tr("Close without requesting funds?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply != QMessageBox::Yes)
         {

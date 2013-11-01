@@ -12,7 +12,7 @@ void DepositWindow::dialog()
     {
         //Init deposit, then show.
         deposit_dialog = new QDialog(0);
-        deposit_dialog->setWindowTitle("Deposit | Moneychanger");
+        deposit_dialog->setWindowTitle(tr("Deposit | Moneychanger"));
         deposit_dialog->installEventFilter(this);
         //Gridlayout
         deposit_gridlayout = new QGridLayout(0);
@@ -21,16 +21,16 @@ void DepositWindow::dialog()
         deposit_dialog->setLayout(deposit_gridlayout);
         
         //Label (header)
-        deposit_header_label = new QLabel("<h1>Deposit</h1>");
+        deposit_header_label = new QLabel(QString("<h1>%1</h1>").arg(tr("Deposit")));
         deposit_header_label->setAlignment(Qt::AlignRight);
         deposit_gridlayout->addWidget(deposit_header_label, 0,1, 1,1);
         //Label ("Into Account") (subheader)
-        deposit_account_header_label = new QLabel("<h3>Into Account</h3>");
+        deposit_account_header_label = new QLabel(QString("<h3>%1</h3>").arg(tr("Into Account")));
         deposit_account_header_label->setAlignment(Qt::AlignRight);
         deposit_gridlayout->addWidget(deposit_account_header_label, 1,1, 1,1);
         
         //Label ("Into Purse") (subheader)
-        deposit_purse_header_label = new QLabel("<h3>Into Purse</h3>");
+        deposit_purse_header_label = new QLabel(QString("<h3>%1</h3>").arg(tr("Into Purse")));
         deposit_purse_header_label->setAlignment(Qt::AlignRight);
         deposit_gridlayout->addWidget(deposit_purse_header_label, 1,1, 1,1);
         deposit_purse_header_label->hide();
@@ -40,8 +40,8 @@ void DepositWindow::dialog()
         deposit_type = new QComboBox(0);
         deposit_type->setStyleSheet("QComboBox{padding:1em;}");
         deposit_gridlayout->addWidget(deposit_type, 0,0, 1,1, Qt::AlignHCenter);
-        deposit_type->addItem("Deposit into your Account", QVariant(0));
-        deposit_type->addItem("Deposit into your Purse", QVariant(1));
+        deposit_type->addItem(tr("Deposit into your Account"), QVariant(0));
+        deposit_type->addItem(tr("Deposit into your Purse"), QVariant(1));
         //connect "update" to switching open depsoit account/purse screens.
         connect(deposit_type, SIGNAL(currentIndexChanged(int)), this, SLOT(deposit_type_changed_slot(int)));
         
