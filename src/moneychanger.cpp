@@ -62,6 +62,7 @@ Moneychanger::Moneychanger(QWidget *parent)
   sendfundswindow(NULL),
   market_window(NULL),
   createinsurancecompany_window(NULL),
+  settingswindow(NULL),
   nym_list_id(NULL),
   nym_list_name(NULL),
   mc_systrayMenu_server(NULL),
@@ -437,6 +438,8 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayMenu_advanced_settings = new QAction(mc_systrayIcon_advanced_settings, tr("Settings..."), 0);
     mc_systrayMenu_advanced_settings->setMenuRole(QAction::NoRole);
     mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_settings);
+    connect(mc_systrayMenu_advanced_settings, SIGNAL(triggered()), this, SLOT(mc_settings_slot()));
+
     // --------------------------------------------------------------
     //Separator
     mc_systrayMenu_advanced->addSeparator();
@@ -1732,3 +1735,30 @@ void Moneychanger::close_createinsurancecompany_dialog()
     mc_createinsurancecompany_already_init = false;
     qDebug() << "Create Insurance Company Window Closed";
 }
+
+/**
+ * (Advantced ->) Settings Window
+ **/
+
+void Moneychanger::mc_settings_slot()
+{
+    // This is a glaring memory leak, but it's only a temporary placeholder before I redo how windows are handled.
+    if(!mc_settings_already_init)
+    {
+        settingswindow = new Settings();
+//        market_window->setAttribute(Qt::WA_DeleteOnClose);
+        mc_settings_already_init = true;
+    }
+    // ------------------------------------
+    settingswindow->show();
+}
+
+void Moneychanger::close_settings_dialog()
+{
+    delete settingswindow;
+    settingswindow = NULL;
+    mc_settings_already_init = false;
+    qDebug() << "Settings Window Closed";
+}
+
+// End Settings Window
