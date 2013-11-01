@@ -76,15 +76,15 @@ void MTServerDetails::DeleteButtonClicked()
 
         if (!bCanRemove)
         {
-            QMessageBox::warning(this, QString("Server Cannot Be Deleted"),
-                                 QString("This Server cannot be deleted yet, since you probably have Nyms registered there. "
+            QMessageBox::warning(this, tr("Server Cannot Be Deleted"),
+                                 tr("This Server cannot be deleted yet, since you probably have Nyms registered there. "
                                          "(This is where, in the future, you'd be given the option to automatically delete those Nyms.)"));
             return;
         }
         // ----------------------------------------------------
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, "", "Are you sure you want to remove this Server Contract?",
+        reply = QMessageBox::question(this, "", tr("Are you sure you want to remove this Server Contract?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
@@ -96,8 +96,8 @@ void MTServerDetails::DeleteButtonClicked()
                 m_pOwner->RefreshRecords();
             }
             else
-                QMessageBox::warning(this, QString("Failure Removing Server Contract"),
-                                     QString("Failed trying to remove this Server Contract."));
+                QMessageBox::warning(this, tr("Failure Removing Server Contract"),
+                                     tr("Failed trying to remove this Server Contract."));
         }
     }
     // ----------------------------------------------------

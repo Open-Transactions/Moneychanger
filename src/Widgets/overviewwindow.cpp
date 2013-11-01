@@ -21,7 +21,7 @@ void OverviewWindow::dialog()
         //The overview dialog has not been init yet; Init, then show it.
         mc_overview_dialog_page = new QDialog(0);
         mc_overview_dialog_page->setWindowFlags(Qt::WindowStaysOnTopHint);
-        mc_overview_dialog_page->setWindowTitle("Overview | Moneychanger");
+        mc_overview_dialog_page->setWindowTitle(tr("Overview | Moneychanger"));
         
         mc_overview_dialog_page->installEventFilter(this);
 
@@ -30,7 +30,7 @@ void OverviewWindow::dialog()
         mc_overview_dialog_page->setLayout(mc_overview_gridlayout);
 
         //Label (header)
-        mc_overview_header_label = new QLabel("<h3>Overview of Transactions</h3>", 0);
+        mc_overview_header_label = new QLabel(QString("<h3>%1</h3>").arg(tr("Overview of Transactions")), 0);
         mc_overview_gridlayout->addWidget(mc_overview_header_label, 0,0, 1,1, Qt::AlignRight);
 
         //in/Outgoing (Pane)
@@ -40,7 +40,7 @@ void OverviewWindow::dialog()
         mc_overview_gridlayout->addWidget(mc_overview_inoutgoing_pane_holder, 1,0, 1,1);
 
         //Label (inOutgoing header)
-//      mc_overview_inoutgoing_header_label = new QLabel("<b>Incoming & Outgoing Transactions</b>");
+//      mc_overview_inoutgoing_header_label = new QLabel(tr("<b>Incoming & Outgoing Transactions</b>"));
         mc_overview_inoutgoing_header_label = new QLabel;
         mc_overview_inoutgoing_pane->addWidget(mc_overview_inoutgoing_header_label);
 

@@ -76,8 +76,8 @@ void MTAssetDetails::DeleteButtonClicked()
 
         if (!bCanRemove)
         {
-            QMessageBox::warning(this, QString("Asset Contract Cannot Be Removed"),
-                                 QString("This Asset Contract cannot be removed, since you probably have already created accounts "
+            QMessageBox::warning(this, tr("Asset Contract Cannot Be Removed"),
+                                 tr("This Asset Contract cannot be removed, since you probably have already created accounts "
                                          "using this asset type. (This is where, in the future, you would be given the option "
                                          "to automatically delete those accounts, and remove this asset contract along with them.)"));
             return;
@@ -85,7 +85,7 @@ void MTAssetDetails::DeleteButtonClicked()
         // ----------------------------------------------------
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, "", "Are you sure you want to delete this Asset Contract?",
+        reply = QMessageBox::question(this, "", tr("Are you sure you want to delete this Asset Contract?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
@@ -97,8 +97,8 @@ void MTAssetDetails::DeleteButtonClicked()
                 m_pOwner->RefreshRecords();
             }
             else
-                QMessageBox::warning(this, QString("Failure Removing Asset Contract"),
-                                     QString("Failed trying to remove this Asset Contract."));
+                QMessageBox::warning(this, tr("Failure Removing Asset Contract"),
+                                     tr("Failed trying to remove this Asset Contract."));
         }
     }
     // ----------------------------------------------------
