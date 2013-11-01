@@ -5,6 +5,7 @@
 
 #include <QDir>
 #include <QMessageBox>
+#include <QLocale>
 
 Settings::Settings(QWidget *parent) :
     QWidget(parent),
@@ -22,10 +23,11 @@ Settings::Settings(QWidget *parent) :
     foreach(translationName, translationFiles)
     {
         translationName.chop(3);
-        ui->comboBoxLanguage->addItem(translationName);
+        QLocale nativTranslation(translationName);
+        ui->comboBoxLanguage->addItem(nativTranslation.nativeLanguageName(),translationName);
     }
 
-    ui->comboBoxLanguage->setCurrentIndex(ui->comboBoxLanguage->findText(language));
+    ui->comboBoxLanguage->setCurrentIndex(ui->comboBoxLanguage->findData(language));
 
 }
 
@@ -36,15 +38,19 @@ Settings::~Settings()
 
 void Settings::showEvent (QShowEvent * event)
 {
-    ui->comboBoxLanguage->setCurrentIndex(ui->comboBoxLanguage->findText(language));
+    ui->comboBoxLanguage->setCurrentIndex(ui->comboBoxLanguage->findData(language));
 }
 
 void Settings::on_pushButtonSave_clicked()
 {
-    if(language != ui->comboBoxLanguage->currentText())
+    qDebug() << ui->comboBoxLanguage->itemData(ui->comboBoxLanguage->currentIndex()).toString();
+    if(language != ui->comboBoxLanguage->itemData(ui->comboBoxLanguage->currentIndex()).toString())
     {
-        language = ui->comboBoxLanguage->currentText();
-        DBHandler::getInstance()->runQuery(QString("UPDATE `settings` SET `setting`='language', `parameter1`= '%1' WHERE `setting`='language'").arg(language));
+        language = ui->comboBoxLanguage->itemData(ui->comboBoxLanguage->currentIndex()).toString();
+        DBHandler::getInstance()->runQuery(
+                                            QString("UPDATE `settings` SET `setting`='language', `parameter1`= '%1' WHERE `setting`='language'")
+                                            .arg(language)
+                                          );
         QMessageBox::information(this, "Settings saved","The language change will take effect after a restart of Moneychanger.");
     }
     hide();
