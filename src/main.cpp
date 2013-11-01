@@ -7,6 +7,7 @@
 #include <QLabel>
 
 #include "moneychanger.h"
+#include "translation.h"
 
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
@@ -63,6 +64,11 @@ int main(int argc, char *argv[])
     //Init qApp
     QApplication a(argc, argv);  // <====== THIRD constructor (they are destroyed in reverse order.)
     
+    //Set language
+    Translation appTranslation;
+    QTranslator translator;
+    appTranslation.updateLanguage(a, translator);
+
     //Config qApp
     QApplication::setQuitOnLastWindowClosed(false);
     // ----------------------------------------

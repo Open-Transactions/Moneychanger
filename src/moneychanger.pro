@@ -45,7 +45,9 @@ HEADERS += moneychanger.h \
     Widgets/assetdetails.h \
     Widgets/accountdetails.h \
     UI/getstringdialog.h \
-    UI/dlgnewcontact.h
+    UI/dlgnewcontact.h \
+    translation.h \
+    Widgets/settings.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -79,7 +81,9 @@ SOURCES += main.cpp\
     Widgets/assetdetails.cpp \
     Widgets/accountdetails.cpp \
     UI/dlgnewcontact.cpp \
-    UI/getstringdialog.cpp
+    UI/getstringdialog.cpp \
+    translation.cpp \
+    Widgets/settings.cpp
 
 RESOURCES += resource.qrc
 
@@ -101,7 +105,8 @@ FORMS += \
     UI/dlgnewcontact.ui \
     UI/marketwindow.ui \
     UI/createinsurancecompany.ui \
-    UI/getstringdialog.ui
+    UI/getstringdialog.ui \
+    Widgets/settings.ui
 
 mac:{
 	QT_CONFIG -= no-pkg-config
@@ -155,3 +160,5 @@ unix: PKGCONFIG += chaiscript
 
 #OTHER_FILES +=
 
+TRANSLATIONS += Translations/en_US.ts \
+                Translations/de_DE.ts
