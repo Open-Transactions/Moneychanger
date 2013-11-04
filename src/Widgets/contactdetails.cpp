@@ -13,8 +13,8 @@
 
 
 
-MTContactDetails::MTContactDetails(QWidget *parent) :
-    MTEditDetails(parent),
+MTContactDetails::MTContactDetails(QWidget *parent, MTDetailEdit & theOwner) :
+    MTEditDetails(parent, theOwner),
     ui(new Ui::MTContactDetails)
 {
     ui->setupUi(this);
@@ -101,6 +101,16 @@ void MTContactDetails::AddButtonClicked()
 //    }
     // -----------------------------------------------
 }
+
+
+void MTContactDetails::ClearContents()
+{
+    ui->lineEditID  ->setText("");
+    ui->lineEditName->setText("");
+
+    ui->plainTextEdit->setPlainText("");
+}
+
 
 //virtual
 void MTContactDetails::refresh(QString strID, QString strName)

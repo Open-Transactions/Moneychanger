@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MTPageNym_AltLocation</class>
+ <widget class="QWizardPage" name="MTPageNym_AltLocation">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>259</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>WizardPage</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Alternate Location:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="lineEditLocation">
+     <property name="placeholderText">
+      <string>(Just Leave This Blank)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QLabel" name="labelExplanation">
+     <property name="text">
+      <string>Optional. This is some place (usually a URL) where others can download your credentials. For example, if you have revoked your old credentials, you can post the new ones at the alternate location, and other users will be able to find them there.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QLabel" name="labelExplanation_2">
+     <property name="text">
+      <string>The Alternate Location is NOT authoritative -- any credentials found there must still verify to your Nym ID. Also, a valid new credential will verify properly, regardless of whether or not a copy of it can be found at the Alternate Location.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

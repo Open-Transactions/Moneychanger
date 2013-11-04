@@ -328,7 +328,7 @@ void MTCompose::on_toButton_clicked()
             {
                 qstrContactName  = QString("");
                 m_recipientNymId = QString("");
-                ui->toButton->setText(tr("<Click to Choose Recipient>"));
+                ui->toButton->setText(tr("<Click to choose Recipient>"));
                 return;
             }
             // else...
@@ -360,7 +360,7 @@ void MTCompose::on_toButton_clicked()
                     else
                     {
                         m_recipientNymId = QString("");
-                        ui->toButton->setText(tr("<Click to Choose Recipient>"));
+                        ui->toButton->setText(tr("<Click to choose Recipient>"));
                         // -------------------------------------
                         QMessageBox::warning(this, tr("Contact has no known identities"),
                                              tr("Sorry, Contact '%1' has no known NymIDs (to send messages to.)").arg(qstrContactName));
@@ -378,14 +378,14 @@ void MTCompose::on_toButton_clicked()
                     else // User must have cancelled.
                     {
                         m_recipientNymId = QString("");
-                        ui->toButton->setText(tr("<Click to Choose Recipient>"));
+                        ui->toButton->setText(tr("<Click to choose Recipient>"));
                     }
                 }
             }
             else // No nyms found for this ContactID.
             {
                 m_recipientNymId = QString("");
-                ui->toButton->setText(tr("<Click to Choose Recipient>"));
+                ui->toButton->setText(tr("<Click to choose Recipient>"));
                 // -------------------------------------
                 QMessageBox::warning(this, tr("Contact has no known identities"),
                                      tr("Sorry, Contact '%1' has no known NymIDs (to send messages to.)").arg(qstrContactName));
@@ -463,7 +463,7 @@ void MTCompose::dialog()
         if (str_sender_name.empty())
         {
             m_senderNymId = QString("");
-            ui->fromButton->setText(tr("<Click to Choose Sender>"));
+            ui->fromButton->setText(tr("<Click to choose Sender>"));
         }
         else
             ui->fromButton->setText(QString::fromStdString(str_sender_name));
@@ -486,7 +486,7 @@ void MTCompose::dialog()
         if (str_recipient_name.empty())
         {
             m_recipientNymId = QString("");
-            ui->toButton->setText(tr("<Click to Choose Recipient>"));
+            ui->toButton->setText(tr("<Click to choose Recipient>"));
         }
         else
             ui->toButton->setText(QString::fromStdString(str_recipient_name));
@@ -507,7 +507,7 @@ void MTCompose::dialog()
         if (str_server_name.empty())
         {
             m_serverId = QString("");
-            ui->serverButton->setText(tr("<Click to Choose Server>"));
+            ui->serverButton->setText(tr("<Click to choose Server>"));
         }
         else
             ui->serverButton->setText(QString::fromStdString(str_server_name));

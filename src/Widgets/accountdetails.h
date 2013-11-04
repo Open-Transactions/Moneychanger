@@ -15,13 +15,14 @@ class MTAccountDetails : public MTEditDetails
     Q_OBJECT
     
 public:
-    explicit MTAccountDetails(QWidget *parent = 0);
+    explicit MTAccountDetails(QWidget *parent, MTDetailEdit & theOwner);
     ~MTAccountDetails();
     
     virtual void refresh(QString strID, QString strName);
     virtual void AddButtonClicked();
     virtual void DeleteButtonClicked();
 
+    virtual void ClearContents();
     // ----------------------------------
     // Only used on construction (aka when dialog() is called for first time.)
     //
