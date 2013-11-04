@@ -8,7 +8,7 @@ TEMPLATE    = app
 TARGET      = moneychanger-qt
 #VERSION     =
 INCLUDEPATH+= Handlers UI Widgets
-QT         += core gui sql network
+QT         += core gui sql network 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 DEFINES    += "OT_ZMQ_MODE=1"
