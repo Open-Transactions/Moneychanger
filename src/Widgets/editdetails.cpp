@@ -8,9 +8,10 @@
 
 #include "detailedit.h"
 
-MTEditDetails::MTEditDetails(QWidget *parent) :
+MTEditDetails::MTEditDetails(QWidget *parent, MTDetailEdit & theOwner) :
     QWidget(parent),
-    m_pOwner(NULL)
+    m_pOwner(&theOwner),
+    m_pMoneychanger(m_pOwner->GetMoneychanger())
 //  ui(new Ui::MTEditDetails)
 {
 //  ui->setupUi(this);

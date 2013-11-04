@@ -9,12 +9,16 @@
 
 #include "home.h"
 
+#include "moneychanger.h"
+
+#include "wizardaddaccount.h"
+
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
 
 
-MTAccountDetails::MTAccountDetails(QWidget *parent) :
-    MTEditDetails(parent),
+MTAccountDetails::MTAccountDetails(QWidget *parent, MTDetailEdit & theOwner) :
+    MTEditDetails(parent, theOwner),
     m_pLineEdit_Acct_ID(NULL),
     m_pLineEdit_Nym_ID(NULL),
     m_pLineEdit_Server_ID(NULL),
@@ -49,6 +53,26 @@ MTAccountDetails::MTAccountDetails(QWidget *parent) :
 MTAccountDetails::~MTAccountDetails()
 {
     delete ui;
+}
+
+void MTAccountDetails::ClearContents()
+{
+    ui->lineEditName->setText("");
+    ui->lineEditServer->setText("");
+    ui->lineEditAsset->setText("");
+    ui->lineEditNym->setText("");
+
+    m_pLineEdit_Acct_ID  ->setText("");
+    m_pLineEdit_Acct_Name->setText("");
+
+    m_pLineEdit_Nym_ID  ->setText("");
+    m_pLineEdit_Nym_Name->setText("");
+
+    m_pLineEdit_Server_ID  ->setText("");
+    m_pLineEdit_Server_Name->setText("");
+
+    m_pLineEdit_AssetType_ID  ->setText("");
+    m_pLineEdit_AssetType_Name->setText("");
 }
 
 void MTAccountDetails::FavorLeftSideForIDs()
@@ -350,6 +374,10 @@ void MTAccountDetails::DeleteButtonClicked()
             {
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 m_pOwner->RefreshRecords();
+                // ------------------------------------------------
+                if (NULL != m_pMoneychanger)
+                    m_pMoneychanger->SetupMainMenu();
+                // ------------------------------------------------
             }
             else
                 QMessageBox::warning(this, tr("Failure Deleting Account"),
@@ -365,63 +393,116 @@ void MTAccountDetails::DeleteButtonClicked()
 //virtual
 void MTAccountDetails::AddButtonClicked()
 {
-    // TODO:
+    MTWizardAddAccount theWizard(this, *m_pMoneychanger);
 
-//    // -----------------------------------------------
-//    MTDlgNewContact theNewContact(this);
-//    // -----------------------------------------------
-//    theNewContact.setWindowTitle("Create New Nym");
-//    // -----------------------------------------------
-//    if (theNewContact.exec() == QDialog::Accepted)
-//    {
-//        QString nymID = theNewContact.GetId();
-//
-//        qDebug() << QString("MTContactDetails::AddButtonClicked: OKAY was clicked. Value: %1").arg(nymID);
-//
-//        //resume
-//        // TODO: Use the NymID we just obtained (theNewContact.GetId()) to create a new Contact.
-//
-//        if (!nymID.isEmpty())
-//        {
-//            int nExisting = MTContactHandler::getInstance()->FindContactIDByNymID(nymID);
-//
-//            if (nExisting > 0)
-//            {
-//                QString contactName = MTContactHandler::getInstance()->GetContactName(nExisting);
-//
-//                QMessageBox::warning(this, QString("Contact Already Exists"),
-//                                     QString("Contact '%1' already exists with NymID: %2").arg(contactName).arg(nymID));
-//                return;
-//            }
-//            // -------------------------------------------------------
-//            //else (a contact doesn't already exist for that NymID)
-//            //
-//            int nContact  = MTContactHandler::getInstance()->CreateContactBasedOnNym(nymID);
-//
-//            if (nContact <= 0)
-//            {
-//                QMessageBox::warning(this, QString("Failed creating contact"),
-//                                     QString("Failed trying to create contact for NymID: %1").arg(nymID));
-//                return;
-//            }
-//            // -------------------------------------------------------
-//            // else (Successfully created the new Contact...)
-//            // Now let's add this contact to the Map, and refresh the dialog,
-//            // and then set the new contact as the current one.
-//            //
-//            QString qstrContactID = QString("%1").arg(nContact);
-//
-//            m_pOwner->m_map.insert(qstrContactID, QString("")); // Blank name. (To start.)
-//            m_pOwner->SetPreSelected(qstrContactID);
-//            m_pOwner->RefreshRecords();
-//        }
-//    }
+    theWizard.setWindowTitle(tr("Create Account"));
 
+    if (QDialog::Accepted == theWizard.exec())
+    {
+        QString qstrName     = theWizard.field("Name") .toString();
+        QString qstrAssetID  = theWizard.field("AssetID") .toString();
+        QString qstrNymID    = theWizard.field("NymID")   .toString();
+        QString qstrServerID = theWizard.field("ServerID").toString();
+        // ---------------------------------------------------
+        QString qstrAssetName  = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(qstrAssetID .toStdString()));
+        QString qstrNymName    = QString::fromStdString(OTAPI_Wrap::GetNym_Name      (qstrNymID   .toStdString()));
+        QString qstrServerName = QString::fromStdString(OTAPI_Wrap::GetServer_Name   (qstrServerID.toStdString()));
+        // ---------------------------------------------------
+        QMessageBox::information(this, tr("Confirm Create Account"), QString("%1: '%2' %3: %4 %5: %6 %7: %8").arg(tr("Confirm Create Account: Name")).
+                                 arg(qstrName).arg(tr("Asset")).arg(qstrAssetName).arg(tr("Nym")).arg(qstrNymName).arg(tr("Server")).arg(qstrServerName));
+        // ---------------------------------------------------
+        // NOTE: theWizard won't allow each page to finish unless the ID is provided.
+        // (Therefore we don't have to check here to see if any of the IDs are empty.)
 
-//    else
-//    {
-//        qDebug() << "MTContactDetails::AddButtonClicked: CANCEL was clicked";
-//    }
+        // ------------------------------
+        // First make sure the Nym is registered at the server, and if not, register him.
+        //
+        bool bIsRegiseredAtServer = OTAPI_Wrap::IsNym_RegisteredAtServer(qstrNymID.toStdString(),
+                                                                         qstrServerID.toStdString());
+        if (!bIsRegiseredAtServer)
+        {
+            OT_ME madeEasy;
+
+            // If the Nym's not registered at the server, then register him first.
+            //
+            std::string strResponse = madeEasy.register_nym(qstrServerID.toStdString(),
+                                                            qstrNymID   .toStdString()); // This also does getRequest internally, if success.
+            int32_t nSuccess        = madeEasy.VerifyMessageSuccess(strResponse);
+
+            // -1 is error,
+            //  0 is reply received: failure
+            //  1 is reply received: success
+            //
+            switch (nSuccess)
+            {
+            case (1):
+                {
+                    bIsRegiseredAtServer = true;
+                    break; // SUCCESS
+                }
+            case (0):
+                {
+                    QMessageBox::warning(this, tr("Failed Registration"),
+                        tr("Failed while trying to register Nym at Server."));
+                    return;
+                }
+            default:
+                {
+                    QMessageBox::warning(this, tr("Error in Registration"),
+                        tr("Error while trying to register Nym at Server."));
+                    return;
+                }
+            }
+        }
+        // --------------------------
+        // Send the request.
+        // (Create Account here...)
+        //
+        OT_ME madeEasy;
+
+        // Send the 'create_asset_acct' message to the server.
+        //
+        std::string strResponse	= madeEasy.create_asset_acct(qstrServerID.toStdString(),
+                                                             qstrNymID   .toStdString(),
+                                                             qstrAssetID .toStdString());
+        // -1 error, 0 failure, 1 success.
+        //
+        if (1 != madeEasy.VerifyMessageSuccess(strResponse))
+        {
+            QMessageBox::warning(this, tr("Failed Creating Account"),
+                tr("Failed trying to create Account at Server."));
+            return;
+        }
+        // ------------------------------------------------------
+        // Get the ID of the new account.
+        //
+        QString qstrID = QString::fromStdString(OTAPI_Wrap::Message_GetNewAcctID(strResponse));
+
+        if (qstrID.isEmpty())
+        {
+            QMessageBox::warning(this, tr("Failed Getting new Account ID"),
+                                 tr("Failed trying to get the new account's ID from the server response."));
+            return;
+        }
+        // ------------------------------------------------------
+        // Set the Name of the new account.
+        //
+        //bool bNameSet =
+                OTAPI_Wrap::SetAccountWallet_Name(qstrID   .toStdString(),
+                                                  qstrNymID.toStdString(),
+                                                  qstrName .toStdString());
+        // -----------------------------------------------
+        QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Creating Account! Name")).
+                                 arg(qstrName).arg(tr("ID")).arg(qstrID));
+        // ----------
+        m_pOwner->m_map.insert(qstrID, qstrName);
+        m_pOwner->SetPreSelected(qstrID);
+        m_pOwner->RefreshRecords();
+        // ------------------------------------------------
+        if (NULL != m_pMoneychanger)
+            m_pMoneychanger->SetupMainMenu();
+        // ------------------------------------------------
+    }
 }
 
 

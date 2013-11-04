@@ -183,8 +183,6 @@ void DlgChooser::showEvent(QShowEvent * event)
     // call inherited method
     //
     QDialog::showEvent(event);
-
-
 }
 
 bool DlgChooser::eventFilter(QObject *obj, QEvent *event)

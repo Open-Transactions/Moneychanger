@@ -183,6 +183,8 @@ private:
      * Booleans for tracking initialization
      **/
     
+    bool mc_overall_init;
+
     bool mc_overview_already_init;
     bool mc_market_window_already_init;
     bool mc_addressbook_already_init;
@@ -222,8 +224,27 @@ private:
     CreateInsuranceCompany  * createinsurancecompany_window;
     Settings                * settingswindow;
         
+public:
+    void SetupMainMenu();
 
-    
+    void mc_nymmanager_dialog();
+    void mc_servermanager_dialog();
+    void mc_assetmanager_dialog();
+
+private:
+    void SetupAssetMenu();
+    void SetupServerMenu();
+    void SetupNymMenu();
+    void SetupAccountMenu();
+    // ------------------------------------------------
+    void ClearAssetMenu();
+    void ClearServerMenu();
+    void ClearNymMenu();
+    void ClearAccountMenu();
+    // ------------------------------------------------
+    void ClearMainMenu();
+
+private:
     /**
      * Menu Dialogs
      **/
@@ -236,19 +257,22 @@ private:
     // ------------------------------------------------
     
     //Default Nym
-    void mc_nymmanager_dialog();
+//  void mc_nymmanager_dialog();
+
     //Reload nym list
     void mc_systrayMenu_reload_nymlist();
     // ------------------------------------------------
     
     //Default Server
-    void mc_servermanager_dialog();
+//  void mc_servermanager_dialog();
+
     //Reload server list
     void mc_systrayMenu_reload_serverlist();
     // ------------------------------------------------
     
     //Default Asset
-    void mc_assetmanager_dialog();
+//  void mc_assetmanager_dialog();
+
     //Reload asset list
     void mc_systrayMenu_reload_assetlist();
     // ------------------------------------------------

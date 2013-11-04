@@ -35,6 +35,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 : QWidget(parent),
   ot_me(NULL),
   ot_worker_background(NULL),
+  mc_overall_init(NULL),
   mc_overview_already_init(false),
   mc_market_window_already_init(false),
   mc_addressbook_already_init(false),
@@ -131,13 +132,18 @@ Moneychanger::Moneychanger(QWidget *parent)
             default_nym_id = DBHandler::getInstance()->queryString("SELECT `nym` FROM `default_nym` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
         // -------------------------------------------------
-        //Ask OT what the display name of this nym is and store it for quick retrieval later on(mostly for "Default Nym" displaying purposes)
-        if (!default_nym_id.isEmpty())
-        {
-            default_nym_name =  QString::fromStdString(OTAPI_Wrap::GetNym_Name(default_nym_id.toStdString()));
-        }
-        else
-            qDebug() << "Error loading DEFAULT NYM from SQL";
+//        if (default_nym_id.isEmpty() && (OTAPI_Wrap::GetNymCount() > 0))
+//        {
+//            default_nym_id = QString::fromStdString(OTAPI_Wrap::GetNym_ID(0));
+//        }
+//        // -------------------------------------------------
+//        //Ask OT what the display name of this nym is and store it for quick retrieval later on(mostly for "Default Nym" displaying purposes)
+//        if (!default_nym_id.isEmpty())
+//        {
+//            default_nym_name =  QString::fromStdString(OTAPI_Wrap::GetNym_Name(default_nym_id.toStdString()));
+//        }
+//        else
+//            qDebug() << "Error loading DEFAULT NYM from SQL";
     }
     
     /** Default Server **/
@@ -153,14 +159,19 @@ Moneychanger::Moneychanger(QWidget *parent)
         {
             default_server_id = DBHandler::getInstance()->queryString("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
-        // ---------------------------------------------
-        //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
-        if (!default_server_id.isEmpty())
-        {
-            default_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(default_server_id.toStdString()));
-        }
-        else
-            qDebug() << "Error loading DEFAULT SERVER from SQL";
+        // -------------------------------------------------
+//        if (default_server_id.isEmpty() && (OTAPI_Wrap::GetServerCount() > 0))
+//        {
+//            default_server_id = QString::fromStdString(OTAPI_Wrap::GetServer_ID(0));
+//        }
+//        // -------------------------------------------------
+//        //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
+//        if (!default_server_id.isEmpty())
+//        {
+//            default_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(default_server_id.toStdString()));
+//        }
+//        else
+//            qDebug() << "Error loading DEFAULT SERVER from SQL";
     }
 
 
@@ -177,14 +188,19 @@ Moneychanger::Moneychanger(QWidget *parent)
         {
             default_asset_id = DBHandler::getInstance()->queryString("SELECT `asset` FROM `default_asset` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
-        // ------------------------------
-        //Ask OT what the display name of this asset type is and store it for a quick retrieval later on(mostly for "Default Asset" displaying purposes)
-        if (!default_asset_id.isEmpty())
-        {
-            default_asset_name = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(default_asset_id.toStdString()));
-        }
-        else
-            qDebug() << "Error loading DEFAULT ASSET from SQL";
+        // -------------------------------------------------
+//        if (default_asset_id.isEmpty() && (OTAPI_Wrap::GetAssetTypeCount() > 0))
+//        {
+//            default_asset_id = QString::fromStdString(OTAPI_Wrap::GetAssetType_ID(0));
+//        }
+//        // -------------------------------------------------
+//        //Ask OT what the display name of this asset type is and store it for a quick retrieval later on(mostly for "Default Asset" displaying purposes)
+//        if (!default_asset_id.isEmpty())
+//        {
+//            default_asset_name = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(default_asset_id.toStdString()));
+//        }
+//        else
+//            qDebug() << "Error loading DEFAULT ASSET from SQL";
     }
 
     /** Default Account **/
@@ -201,14 +217,19 @@ Moneychanger::Moneychanger(QWidget *parent)
         {
             default_account_id = DBHandler::getInstance()->queryString("SELECT `account` FROM `default_account` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
-        // --------------------------------------------------
-        //Ask OT what the display name of this account is and store it for a quick retrieval later on(mostly for "Default Account" displaying purposes)
-        if (!default_account_id.isEmpty())
-        {
-            default_account_name = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(default_account_id.toStdString()));
-        }
-        else
-            qDebug() << "Error loading DEFAULT ACCOUNT from SQL";
+        // -------------------------------------------------
+//        if (default_account_id.isEmpty() && (OTAPI_Wrap::GetAccountCount() > 0))
+//        {
+//            default_account_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(0));
+//        }
+//        // -------------------------------------------------
+//        //Ask OT what the display name of this account is and store it for a quick retrieval later on(mostly for "Default Account" displaying purposes)
+//        if (!default_account_id.isEmpty())
+//        {
+//            default_account_name = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(default_account_id.toStdString()));
+//        }
+//        else
+//            qDebug() << "Error loading DEFAULT ACCOUNT from SQL";
     }
 
 
@@ -216,6 +237,8 @@ Moneychanger::Moneychanger(QWidget *parent)
     qDebug() << "Database Populated";
     
     
+    // ----------------------------------------------------------------------------
+
     //Ask OT for "cash account" information (might be just "Account" balance)
     //Ask OT the purse information
     
@@ -254,9 +277,128 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon_advanced_markets = QIcon(":/icons/markets");
     mc_systrayIcon_advanced_settings = QIcon(":/icons/settings");
     
+
+
+    // ----------------------------------------------------------------------------
+
+    mc_overall_init = true;
+
+    SetupMainMenu();
+
+}
+
+
+Moneychanger::~Moneychanger()
+{
+    ClearMainMenu();
+}
+
+
+void Moneychanger::ClearAssetMenu()
+{
+    // --------------------------------------------------
+    if (NULL != mc_systrayMenu_asset)
+    {
+        delete mc_systrayMenu_asset;
+        mc_systrayMenu_asset = NULL;
+    }
+    // --------------------------------------------------
+    if (NULL != asset_list_id)
+    {
+        delete asset_list_id;
+        asset_list_id = NULL;
+    }
+
+    if (NULL != asset_list_name)
+    {
+        delete asset_list_name;
+        asset_list_name = NULL;
+    }
+    // --------------------------------------------------
+}
+
+void Moneychanger::ClearServerMenu()
+{
+    // --------------------------------------------------
+    if (NULL != mc_systrayMenu_server)
+    {
+        delete mc_systrayMenu_server;
+        mc_systrayMenu_server = NULL;
+    }
+    // --------------------------------------------------
+    if (NULL != server_list_id)
+    {
+        delete server_list_id;
+        server_list_id = NULL;
+    }
+
+    if (NULL != server_list_name)
+    {
+        delete server_list_name;
+        server_list_name = NULL;
+    }
+    // --------------------------------------------------
+}
+
+void Moneychanger::ClearNymMenu()
+{
+    // --------------------------------------------------
+    if (NULL != mc_systrayMenu_nym)
+    {
+        delete mc_systrayMenu_nym;
+        mc_systrayMenu_nym = NULL;
+    }
+    // --------------------------------------------------
+    if (NULL != nym_list_id)
+    {
+        delete nym_list_id;
+        nym_list_id = NULL;
+    }
+
+    if (NULL != nym_list_name)
+    {
+        delete nym_list_name;
+        nym_list_name = NULL;
+    }
+    // --------------------------------------------------
+}
+
+
+void Moneychanger::ClearAccountMenu()
+{
+    // --------------------------------------------------
+    if (NULL != mc_systrayMenu_account)
+    {
+        delete mc_systrayMenu_account;
+        mc_systrayMenu_account = NULL;
+    }
+    // --------------------------------------------------
+    if (NULL != account_list_id)
+    {
+        delete account_list_id;
+        account_list_id = NULL;
+    }
+
+    if (NULL != account_list_name)
+    {
+        delete account_list_name;
+        account_list_name = NULL;
+    }
+    // --------------------------------------------------
+}
+
+void Moneychanger::SetupMainMenu()
+{
+    if (!mc_overall_init)
+        return;
+
+    ClearMainMenu();
+
+    // -----------------------------------
+
     //MC System tray menu
     mc_systrayMenu = new QMenu(this);
-    
+
     //Init Skeleton of system tray menu
     //App name
     mc_systrayMenu_headertext = new QAction(tr("Moneychanger"), 0);
@@ -296,50 +438,10 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
     //Account section
-    mc_systrayMenu_account = new QMenu(tr("Set Default Account..."), 0);
-    mc_systrayMenu_account->setIcon(mc_systrayIcon_goldaccount);
-    mc_systrayMenu->addMenu(mc_systrayMenu_account);
-    
-    //Add a "Manage accounts" action button (and connection)
-    QAction * manage_accounts = new QAction(tr("Manage Accounts..."), 0);
-    manage_accounts->setData(QVariant(QString("openmanager")));
-    mc_systrayMenu_account->addAction(manage_accounts);
-    mc_systrayMenu_account->addSeparator();
-    
-    //Add reaction to the "account" action.
-    connect(mc_systrayMenu_account, SIGNAL(triggered(QAction*)), this, SLOT(mc_accountselection_triggered(QAction*)));
-    
-    //Load "default" account
-    set_systrayMenu_account_setDefaultAccount(default_account_id, default_account_name);
-    
-    //Init account submenu
-    account_list_id   = new QList<QVariant>();
-    account_list_name = new QList<QVariant>();
-    
-    mc_systrayMenu_reload_accountlist();
+    SetupAccountMenu();
     // --------------------------------------------------------------
     //Asset section
-    mc_systrayMenu_asset = new QMenu(tr("Set Default Asset Type..."), 0);
-    mc_systrayMenu_asset->setIcon(mc_systrayIcon_purse);
-    mc_systrayMenu->addMenu(mc_systrayMenu_asset);
-    
-    //Add a "Manage asset types" action button (and connection)
-    QAction * manage_assets = new QAction(tr("Manage Asset Contracts..."), 0);
-    manage_assets->setData(QVariant(QString("openmanager")));
-    mc_systrayMenu_asset->addAction(manage_assets);
-    mc_systrayMenu_asset->addSeparator();
-    
-    //Add reaction to the "asset" action.
-    connect(mc_systrayMenu_asset, SIGNAL(triggered(QAction*)), this, SLOT(mc_assetselection_triggered(QAction*)));
-    
-    //Load "default" asset type
-    set_systrayMenu_asset_setDefaultAsset(default_asset_id, default_asset_name);
-    
-    //Init asset submenu
-    asset_list_id   = new QList<QVariant>();
-    asset_list_name = new QList<QVariant>();
-    
-    mc_systrayMenu_reload_assetlist();
+    SetupAssetMenu();
     // --------------------------------------------------------------
     //Separator
     mc_systrayMenu->addSeparator();
@@ -353,7 +455,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayMenu_withdraw->addAction(mc_systrayMenu_withdraw_ascash);
     //Connect Button with re-action
     connect(mc_systrayMenu_withdraw_ascash, SIGNAL(triggered()), this, SLOT(mc_withdraw_ascash_slot()));
-    
+
     //(Withdraw) as Voucher
     mc_systrayMenu_withdraw_asvoucher = new QAction(tr("As Voucher"), 0);
     mc_systrayMenu_withdraw->addAction(mc_systrayMenu_withdraw_asvoucher);
@@ -389,7 +491,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayMenu_advanced->setIcon(mc_systrayIcon_advanced);
     mc_systrayMenu->addMenu(mc_systrayMenu_advanced);
     //Advanced submenu
-        
+
     mc_systrayMenu_advanced_markets = new QAction(mc_systrayIcon_advanced_markets, tr("Markets"), 0);
     mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_markets);
     connect(mc_systrayMenu_advanced_markets, SIGNAL(triggered()), this, SLOT(mc_market_slot()));
@@ -434,7 +536,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayMenu_advanced->addSeparator();
     // -------------------------------------------------
     // Settings
-    
+
     mc_systrayMenu_advanced_settings = new QAction(mc_systrayIcon_advanced_settings, tr("Settings..."), 0);
     mc_systrayMenu_advanced_settings->setMenuRole(QAction::NoRole);
     mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_settings);
@@ -444,60 +546,21 @@ Moneychanger::Moneychanger(QWidget *parent)
     //Separator
     mc_systrayMenu_advanced->addSeparator();
     // --------------------------------------------------------------
-    
+
     // TODO: If the default isn't set, then choose the first one and select it.
-    
+
     // TODO: If there isn't even ONE to select, then this menu item should say "Create Nym..." with no sub-menu.
-    
+
     // TODO: When booting up, if there is already a default server and asset id, but no nyms exist, create a default nym.
-    
+
     // TODO: When booting up, if there is already a default nym, but no accounts exist, create a default account.
-    
+
+    // --------------------------------------------------------------
     //Nym section
-    mc_systrayMenu_nym = new QMenu("Set Default Nym...", 0);
-    mc_systrayMenu_nym->setIcon(mc_systrayIcon_nym);
-    mc_systrayMenu_advanced->addMenu(mc_systrayMenu_nym);
-    
-    //Add a "Manage pseudonym" action button (and connection)
-    QAction * manage_nyms = new QAction(tr("Manage Nyms..."), 0);
-    manage_nyms->setData(QVariant(QString("openmanager")));
-    mc_systrayMenu_nym->addAction(manage_nyms);
-    mc_systrayMenu_nym->addSeparator();
-    
-    //Add reaction to the "pseudonym" action.
-    connect(mc_systrayMenu_nym, SIGNAL(triggered(QAction*)), this, SLOT(mc_nymselection_triggered(QAction*)));
-    
-    //Load "default" nym
-    set_systrayMenu_nym_setDefaultNym(default_nym_id, default_nym_name);
-    
-    //Init nym submenu
-    nym_list_id = new QList<QVariant>();
-    nym_list_name = new QList<QVariant>();
-    
-    mc_systrayMenu_reload_nymlist();
+    SetupNymMenu();
     // --------------------------------------------------------------
     //Server section
-    mc_systrayMenu_server = new QMenu(tr("Set Default Server..."), 0);
-    mc_systrayMenu_server->setIcon(mc_systrayIcon_server);
-    mc_systrayMenu_advanced->addMenu(mc_systrayMenu_server);
-    
-    //Add a "Manage server" action button (and connection)
-    QAction * manage_servers = new QAction(tr("Manage Servers..."), 0);
-    manage_servers->setData(QVariant(QString("openmanager")));
-    mc_systrayMenu_server->addAction(manage_servers);
-    mc_systrayMenu_server->addSeparator();
-    
-    //Add reaction to the "server selection" action
-    connect(mc_systrayMenu_server, SIGNAL(triggered(QAction*)), this, SLOT(mc_serverselection_triggered(QAction*)));
-    
-    //Load "default" server
-    set_systrayMenu_server_setDefaultServer(default_server_id, default_server_name);
-    
-    //Init server submenu
-    server_list_id = new QList<QVariant>();
-    server_list_name = new QList<QVariant>();
-    
-    mc_systrayMenu_reload_serverlist();
+    SetupServerMenu();
     // --------------------------------------------------------------
     //Separator
     mc_systrayMenu->addSeparator();
@@ -516,13 +579,289 @@ Moneychanger::Moneychanger(QWidget *parent)
     //            mc_systrayMenu->addAction(mc_systrayMenu_bottomblank);
     // --------------------------------------------------------------
     //Set Skeleton to systrayIcon object code
+    //
     mc_systrayIcon->setContextMenu(mc_systrayMenu);
 }
 
-
-Moneychanger::~Moneychanger()
+void Moneychanger::ClearMainMenu()
 {
-    
+    if (NULL != mc_systrayMenu_headertext)
+    {
+        delete mc_systrayMenu_headertext;
+        mc_systrayMenu_headertext = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_overview)
+    {
+        delete mc_systrayMenu_overview;
+        mc_systrayMenu_overview = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_sendfunds)
+    {
+        delete mc_systrayMenu_sendfunds;
+        mc_systrayMenu_sendfunds = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_requestfunds)
+    {
+        delete mc_systrayMenu_requestfunds;
+        mc_systrayMenu_requestfunds = NULL;
+    }
+    // --------------------------------------------------------------
+    ClearAccountMenu();
+    ClearAssetMenu();
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_withdraw)
+    {
+        delete mc_systrayMenu_withdraw;
+        mc_systrayMenu_withdraw = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_withdraw_ascash)
+    {
+        delete mc_systrayMenu_withdraw_ascash;
+        mc_systrayMenu_withdraw_ascash = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_withdraw_asvoucher)
+    {
+        delete mc_systrayMenu_withdraw_asvoucher;
+        mc_systrayMenu_withdraw_asvoucher = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_deposit)
+    {
+        delete mc_systrayMenu_deposit;
+        mc_systrayMenu_deposit = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_advanced)
+    {
+        delete mc_systrayMenu_advanced;
+        mc_systrayMenu_advanced = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_advanced_agreements)
+    {
+        delete mc_systrayMenu_advanced_agreements;
+        mc_systrayMenu_advanced_agreements = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_advanced_corporations)
+    {
+        delete mc_systrayMenu_advanced_corporations;
+        mc_systrayMenu_advanced_corporations = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_company_create)
+    {
+        delete mc_systrayMenu_company_create;
+        mc_systrayMenu_company_create = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_company_create_insurance)
+    {
+        delete mc_systrayMenu_company_create_insurance;
+        mc_systrayMenu_company_create_insurance = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_advanced_bazaar)
+    {
+        delete mc_systrayMenu_advanced_bazaar;
+        mc_systrayMenu_advanced_bazaar = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_bazaar_search)
+    {
+        delete mc_systrayMenu_bazaar_search;
+        mc_systrayMenu_bazaar_search = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_bazaar_post)
+    {
+        delete mc_systrayMenu_bazaar_post;
+        mc_systrayMenu_bazaar_post = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_bazaar_orders)
+    {
+        delete mc_systrayMenu_bazaar_orders;
+        mc_systrayMenu_bazaar_orders = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_advanced_settings)
+    {
+        delete mc_systrayMenu_advanced_settings;
+        mc_systrayMenu_advanced_settings = NULL;
+    }
+    // --------------------------------------------------------------
+    ClearNymMenu();
+    // --------------------------------------------------------------
+    ClearServerMenu();
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu_shutdown)
+    {
+        delete mc_systrayMenu_shutdown;
+        mc_systrayMenu_shutdown = NULL;
+    }
+    // --------------------------------------------------------------
+    if (NULL != mc_systrayMenu)
+    {
+        delete mc_systrayMenu;
+        mc_systrayMenu = NULL;
+    }
+    // --------------------------------------------------------------
+}
+
+void Moneychanger::SetupAssetMenu()
+{
+    mc_systrayMenu_asset = new QMenu(tr("Set Default Asset Type..."), 0);
+    mc_systrayMenu_asset->setIcon(mc_systrayIcon_purse);
+    mc_systrayMenu->addMenu(mc_systrayMenu_asset);
+    // --------------------------------------------------
+
+    //Add a "Manage asset types" action button (and connection)
+    QAction * manage_assets = new QAction(tr("Manage Asset Contracts..."), 0);
+    manage_assets->setData(QVariant(QString("openmanager")));
+
+    mc_systrayMenu_asset->addAction(manage_assets);
+    mc_systrayMenu_asset->addSeparator();
+
+    //Add reaction to the "asset" action.
+    connect(mc_systrayMenu_asset, SIGNAL(triggered(QAction*)), this, SLOT(mc_assetselection_triggered(QAction*)));
+
+    // -------------------------------------------------
+    if (default_asset_id.isEmpty() && (OTAPI_Wrap::GetAssetTypeCount() > 0))
+    {
+        default_asset_id = QString::fromStdString(OTAPI_Wrap::GetAssetType_ID(0));
+    }
+    // -------------------------------------------------
+    if (!default_asset_id.isEmpty())
+    {
+        default_asset_name = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(default_asset_id.toStdString()));
+    }
+    // -------------------------------------------------
+    //Load "default" asset type
+    set_systrayMenu_asset_setDefaultAsset(default_asset_id, default_asset_name);
+
+    //Init asset submenu
+    asset_list_id   = new QList<QVariant>();
+    asset_list_name = new QList<QVariant>();
+    // ------------------------------------------
+    mc_systrayMenu_reload_assetlist();
+}
+
+void Moneychanger::SetupServerMenu()
+{
+    mc_systrayMenu_server = new QMenu(tr("Set Default Server..."), 0);
+    mc_systrayMenu_server->setIcon(mc_systrayIcon_server);
+    mc_systrayMenu_advanced->addMenu(mc_systrayMenu_server);
+    // --------------------------------------------------
+
+    //Add a "Manage Servers" action button (and connection)
+    QAction * manage_servers = new QAction(tr("Manage Servers..."), 0);
+    manage_servers->setData(QVariant(QString("openmanager")));
+
+    mc_systrayMenu_server->addAction(manage_servers);
+    mc_systrayMenu_server->addSeparator();
+
+    //Add reaction to the "server" action.
+    connect(mc_systrayMenu_server, SIGNAL(triggered(QAction*)), this, SLOT(mc_serverselection_triggered(QAction*)));
+
+    // -------------------------------------------------
+    if (default_server_id.isEmpty() && (OTAPI_Wrap::GetServerCount() > 0))
+    {
+        default_server_id = QString::fromStdString(OTAPI_Wrap::GetServer_ID(0));
+    }
+    // -------------------------------------------------
+    //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
+    if (!default_server_id.isEmpty())
+    {
+        default_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(default_server_id.toStdString()));
+    }
+    // -------------------------------------------------
+    //Load "default" server
+    set_systrayMenu_server_setDefaultServer(default_server_id, default_server_name);
+
+    //Init server submenu
+    server_list_id   = new QList<QVariant>();
+    server_list_name = new QList<QVariant>();
+    // ------------------------------------------
+    mc_systrayMenu_reload_serverlist();
+}
+
+void Moneychanger::SetupNymMenu()
+{
+    mc_systrayMenu_nym = new QMenu("Set Default Nym...", 0);
+    mc_systrayMenu_nym->setIcon(mc_systrayIcon_nym);
+    mc_systrayMenu_advanced->addMenu(mc_systrayMenu_nym);
+
+    //Add a "Manage pseudonym" action button (and connection)
+    QAction * manage_nyms = new QAction(tr("Manage Nyms..."), 0);
+    manage_nyms->setData(QVariant(QString("openmanager")));
+    mc_systrayMenu_nym->addAction(manage_nyms);
+    mc_systrayMenu_nym->addSeparator();
+
+    //Add reaction to the "pseudonym" action.
+    connect(mc_systrayMenu_nym, SIGNAL(triggered(QAction*)), this, SLOT(mc_nymselection_triggered(QAction*)));
+
+    // -------------------------------------------------
+    if (default_nym_id.isEmpty() && (OTAPI_Wrap::GetNymCount() > 0))
+    {
+        default_nym_id = QString::fromStdString(OTAPI_Wrap::GetNym_ID(0));
+    }
+    // -------------------------------------------------
+    //Ask OT what the display name of this nym is and store it for quick retrieval later on(mostly for "Default Nym" displaying purposes)
+    if (!default_nym_id.isEmpty())
+    {
+        default_nym_name =  QString::fromStdString(OTAPI_Wrap::GetNym_Name(default_nym_id.toStdString()));
+    }
+    // -------------------------------------------------
+    //Load "default" nym
+    set_systrayMenu_nym_setDefaultNym(default_nym_id, default_nym_name);
+
+    //Init nym submenu
+    nym_list_id = new QList<QVariant>();
+    nym_list_name = new QList<QVariant>();
+    // ------------------------------------------
+    mc_systrayMenu_reload_nymlist();
+}
+
+void Moneychanger::SetupAccountMenu()
+{
+    mc_systrayMenu_account = new QMenu(tr("Set Default Account..."), 0);
+    mc_systrayMenu_account->setIcon(mc_systrayIcon_goldaccount);
+    mc_systrayMenu->addMenu(mc_systrayMenu_account);
+
+    //Add a "Manage accounts" action button (and connection)
+    QAction * manage_accounts = new QAction(tr("Manage Accounts..."), 0);
+    manage_accounts->setData(QVariant(QString("openmanager")));
+    mc_systrayMenu_account->addAction(manage_accounts);
+    mc_systrayMenu_account->addSeparator();
+
+    //Add reaction to the "account" action.
+    connect(mc_systrayMenu_account, SIGNAL(triggered(QAction*)), this, SLOT(mc_accountselection_triggered(QAction*)));
+    // -------------------------------------------------
+    if (default_account_id.isEmpty() && (OTAPI_Wrap::GetAccountCount() > 0))
+    {
+        default_account_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(0));
+    }
+    // -------------------------------------------------
+    //Ask OT what the display name of this account is and store it for a quick retrieval later on(mostly for "Default Account" displaying purposes)
+    if (!default_account_id.isEmpty())
+    {
+        default_account_name = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(default_account_id.toStdString()));
+    }
+    // -------------------------------------------------
+    //Load "default" account
+    set_systrayMenu_account_setDefaultAccount(default_account_id, default_account_name);
+
+    //Init account submenu
+    account_list_id   = new QList<QVariant>();
+    account_list_name = new QList<QVariant>();
+    // ------------------------------------------
+    mc_systrayMenu_reload_accountlist();
 }
 
 
@@ -640,7 +979,7 @@ void Moneychanger::mc_addressbook_show(QString text) // text may contain a "pre-
     //
     if (!mc_addressbook_already_init)
     {
-        contactswindow = new MTDetailEdit(this);
+        contactswindow = new MTDetailEdit(this, *this);
 
         mc_addressbook_already_init = true;
         qDebug() << "Address Book Opened";
@@ -688,7 +1027,8 @@ void Moneychanger::mc_nymmanager_dialog()
     // -------------------------------------
     if (!mc_nymmanager_already_init)
     {
-        nymswindow = new MTDetailEdit(this);
+        nymswindow = new MTDetailEdit(this, *this);
+
         mc_nymmanager_already_init = true;
         qDebug() << "Nym Manager Opened";
     }
@@ -744,36 +1084,10 @@ void Moneychanger::set_systrayMenu_nym_setDefaultNym(QString nym_id, QString nym
 void Moneychanger::mc_systrayMenu_reload_nymlist()
 {
 //  qDebug() << "RELOAD NYM LIST";
-
+    // --------------------------------------------------------
     //Count nyms
     int32_t nym_count = OTAPI_Wrap::GetNymCount();
-    
-    //Retrieve updated list of nym submenu actions list
-    QList<QAction*> action_list_to_nym_submenu = mc_systrayMenu_nym->actions();
-    
-    //Remove all sub-menus from the nym submenu
-    for (int a = action_list_to_nym_submenu.size(); a > 0; a--)
-    {
-//      qDebug() << "REMOVING" << a;
-        QPoint tmp_point = QPoint(a, 0);
-        mc_systrayMenu_nym->removeAction(mc_systrayMenu_nym->actionAt(tmp_point));
-    }
-    
-    //Remove all nyms from the backend list
-    //Remove ids from backend list
-    int tmp_nym_list_id_size = nym_list_id->size();
-    for (int a = 0; a < tmp_nym_list_id_size; a++)
-    {
-        nym_list_id->removeLast();
-    }
-    
-    //Remove names from the backend list
-    int tmp_nym_list_name_size = nym_list_name->size();
-    for (int a = 0; a < tmp_nym_list_name_size; a++)
-    {
-        nym_list_name->removeLast();
-    }
-    
+
     //Add/append to the id + name lists
     for (int32_t a = 0; a < nym_count; a++)
     {
@@ -793,6 +1107,7 @@ void Moneychanger::mc_systrayMenu_reload_nymlist()
         QAction * next_nym_action = new QAction(mc_systrayIcon_nym, OT_nym_name, 0);
         next_nym_action->setData(QVariant(OT_nym_id));
         mc_systrayMenu_nym->addAction(next_nym_action);
+
     } // for
 }
 
@@ -960,7 +1275,8 @@ void Moneychanger::mc_assetmanager_dialog()
     // -------------------------------------
     if (!mc_assetmanager_already_init)
     {
-        assetswindow = new MTDetailEdit(this);
+        assetswindow = new MTDetailEdit(this, *this);
+
         mc_assetmanager_already_init = true;
         qDebug() << "Asset Manager Opened";
     }
@@ -1024,45 +1340,22 @@ void Moneychanger::set_systrayMenu_asset_setDefaultAsset(QString asset_id, QStri
 
 void Moneychanger::mc_systrayMenu_reload_assetlist()
 {
-//    qDebug() << "RELOAD asset LIST";
-    //Count assets
-    int32_t asset_count_int32_t = OTAPI_Wrap::GetAssetTypeCount();
-    int asset_count = asset_count_int32_t;
-    
-    //Retrieve updated list of asset submenu actions list
-    QList<QAction*> action_list_to_asset_submenu = mc_systrayMenu_asset->actions();
-    
-    //Remove all sub-menus from the asset submenu
-    for(int a = action_list_to_asset_submenu.size(); a > 0; a--)
-    {
-//        qDebug() << "REMOVING" << a;
-        QPoint tmp_point = QPoint(a, 0);
-        mc_systrayMenu_asset->removeAction(mc_systrayMenu_asset->actionAt(tmp_point));
-    }
-    
-    //Remove all assets from the backend list
-    //Remove ids from backend list
-    int tmp_asset_list_id_size = asset_list_id->size();
-    for(int a = 0; a < tmp_asset_list_id_size; a++){
-        asset_list_id->removeLast();
-    }
-    
-    //Remove names from the backend list
-    int tmp_asset_list_name_size = asset_list_name->size();
-    for(int a = 0; a < tmp_asset_list_name_size; a++){
-        asset_list_name->removeLast();
-    }
-    
+//  qDebug() << "RELOAD asset LIST";
+    // -------------------------------------------
     //Add/append to the id + name lists
-    for(int a = 0; a < asset_count; a++){
+    //
+    int32_t asset_count = OTAPI_Wrap::GetAssetTypeCount();
+
+    for (int aa = 0; aa < asset_count; aa++)
+    {
         //Get OT Account ID
-        QString OT_asset_id = QString::fromStdString(OTAPI_Wrap::GetAssetType_ID(a));
+        QString OT_asset_id = QString::fromStdString(OTAPI_Wrap::GetAssetType_ID(aa));
         
         //Add to qlist
         asset_list_id->append(QVariant(OT_asset_id));
         
         //Get OT Account Name
-        QString OT_asset_name = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(OTAPI_Wrap::GetAssetType_ID(a)));
+        QString OT_asset_name = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(OT_asset_id.toStdString()));
         
         //Add to qlist
         asset_list_name->append(QVariant(OT_asset_name));
@@ -1072,12 +1365,11 @@ void Moneychanger::mc_systrayMenu_reload_assetlist()
         next_asset_action->setData(QVariant(OT_asset_id));
         mc_systrayMenu_asset->addAction(next_asset_action);
     }
-    
-    
 }
 
 //Asset new default selected from systray
-void Moneychanger::mc_assetselection_triggered(QAction*action_triggered){
+void Moneychanger::mc_assetselection_triggered(QAction*action_triggered)
+{
     //Check if the user wants to open the asset manager (or) select a different default asset
     QString action_triggered_string = QVariant(action_triggered->data()).toString();
     qDebug() << "asset TRIGGERED" << action_triggered_string;
@@ -1126,7 +1418,8 @@ void Moneychanger::mc_accountmanager_dialog()
     // -------------------------------------
     if (!mc_accountmanager_already_init)
     {
-        accountswindow = new MTDetailEdit(this);
+        accountswindow = new MTDetailEdit(this, *this);
+
         mc_accountmanager_already_init = true;
         qDebug() << "Account Manager Opened";
     }
@@ -1201,7 +1494,8 @@ void Moneychanger::mc_accountselection_triggered(QAction*action_triggered)
 }
 
 //Set Default account
-void Moneychanger::set_systrayMenu_account_setDefaultAccount(QString account_id, QString account_name){
+void Moneychanger::set_systrayMenu_account_setDefaultAccount(QString account_id, QString account_name)
+{
     //Set default account internal memory
     default_account_id = account_id;
     default_account_name = account_name;
@@ -1210,7 +1504,8 @@ void Moneychanger::set_systrayMenu_account_setDefaultAccount(QString account_id,
     DBHandler::getInstance()->AddressBookUpdateDefaultAccount(account_id);
     
     //Rename "ACCOUNT:" if a account is loaded
-    if(account_id != ""){
+    if (account_id != "")
+    {
         QString result = tr("Account: ") + account_name;
         
         int64_t     lBalance = OTAPI_Wrap::GetAccountWallet_Balance(account_id.toStdString());
@@ -1230,45 +1525,22 @@ void Moneychanger::set_systrayMenu_account_setDefaultAccount(QString account_id,
 
 void Moneychanger::mc_systrayMenu_reload_accountlist()
 {
-//    qDebug() << "RELOAD account LIST";
-    //Count accounts
-    int32_t account_count_int32_t = OTAPI_Wrap::GetAccountCount();
-    int account_count = account_count_int32_t;
-    
-    //Retrieve updated list of account submenu actions list
-    QList<QAction*> action_list_to_account_submenu = mc_systrayMenu_account->actions();
-    
-    //Remove all sub-menus from the account submenu
-    for(int a = action_list_to_account_submenu.size(); a > 0; a--)
-    {
-//        qDebug() << "REMOVING" << a;
-        QPoint tmp_point = QPoint(a, 0);
-        mc_systrayMenu_account->removeAction(mc_systrayMenu_account->actionAt(tmp_point));
-    }
-    
-    //Remove all accounts from the backend list
-    //Remove ids from backend list
-    int tmp_account_list_id_size = account_list_id->size();
-    for(int a = 0; a < tmp_account_list_id_size; a++){
-        account_list_id->removeLast();
-    }
-    
-    //Remove names from the backend list
-    int tmp_account_list_name_size = account_list_name->size();
-    for(int a = 0; a < tmp_account_list_name_size; a++){
-        account_list_name->removeLast();
-    }
-    
+//  qDebug() << "RELOAD account LIST";
+    // ---------------------------------------------
     //Add/append to the id + name lists
-    for(int a = 0; a < account_count; a++){
+    //
+    int32_t account_count = OTAPI_Wrap::GetAccountCount();
+
+    for (int aa = 0; aa < account_count; aa++)
+    {
         //Get OT Account ID
-        QString OT_account_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(a));
+        QString OT_account_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(aa));
         
         //Add to qlist
         account_list_id->append(QVariant(OT_account_id));
         
         //Get OT Account Name
-        QString OT_account_name = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(OTAPI_Wrap::GetAccountWallet_ID(a)));
+        QString OT_account_name = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(OT_account_id.toStdString()));
         
         //Add to qlist
         account_list_name->append(QVariant(OT_account_name));
@@ -1278,8 +1550,6 @@ void Moneychanger::mc_systrayMenu_reload_accountlist()
         next_account_action->setData(QVariant(OT_account_id));
         mc_systrayMenu_account->addAction(next_account_action);
     }
-    
-    
 }
 
 // End Account Manager
@@ -1305,7 +1575,8 @@ void Moneychanger::mc_servermanager_dialog()
     // -------------------------------------
     if (!mc_servermanager_already_init)
     {
-        serverswindow = new MTDetailEdit(this);
+        serverswindow = new MTDetailEdit(this, *this);
+
         mc_servermanager_already_init = true;
         qDebug() << "Server Manager Opened";
     }
@@ -1369,45 +1640,22 @@ void Moneychanger::set_systrayMenu_server_setDefaultServer(QString server_id, QS
 
 void Moneychanger::mc_systrayMenu_reload_serverlist()
 {
-//    qDebug() << "RELOAD SERVER LIST";
-    //Count server
-    int32_t server_count_int32_t = OTAPI_Wrap::GetServerCount();
-    int server_count = server_count_int32_t;
-    
-    //Retrieve updated list of server submenu actions list
-    QList<QAction*> action_list_to_server_submenu = mc_systrayMenu_server->actions();
-    
-    //Remove all sub-menus from the server submenu
-    for(int a = action_list_to_server_submenu.size(); a > 0; a--){
-//        qDebug() << "REMOVING" << a;
-        QPoint tmp_point = QPoint(a, 0);
-        mc_systrayMenu_server->removeAction(mc_systrayMenu_server->actionAt(tmp_point));
-    }
-    
-    //Remove all servers from the backend list
-    //Remove ids from backend list
-    int tmp_server_list_id_size = server_list_id->size();
-    for(int a = 0; a < tmp_server_list_id_size; a++){
-        server_list_id->removeLast();
-    }
-    
-    //Remove names from the backend list
-    int tmp_server_list_name_size = server_list_name->size();
-    for(int a = 0; a < tmp_server_list_name_size; a++){
-        server_list_name->removeLast();
-    }
-    
-    
+//  qDebug() << "RELOAD SERVER LIST";
+    // -----------------------------------------------
     //Add/append to the id + name lists
-    for(int a = 0; a < server_count; a++){
+    //
+    int32_t server_count = OTAPI_Wrap::GetServerCount();
+
+    for (int32_t aa = 0; aa < server_count; aa++)
+    {
         //Get OT server ID
-        QString OT_server_id = QString::fromStdString(OTAPI_Wrap::GetServer_ID(a));
+        QString OT_server_id = QString::fromStdString(OTAPI_Wrap::GetServer_ID(aa));
         
         //Add to qlist
         server_list_id->append(QVariant(OT_server_id));
         
         //Get OT server Name
-        QString OT_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(OTAPI_Wrap::GetServer_ID(a)));
+        QString OT_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(OT_server_id.toStdString()));
         
         //Add to qlist
         server_list_name->append(QVariant(OT_server_name));
@@ -1471,7 +1719,7 @@ void Moneychanger::mc_withdraw_ascash_dialog()
     if (!mc_withdraw_ascash_already_init)
     {
         withdrawascashwindow = new WithdrawAsCashWindow(this);
-//        withdrawascashwindow->setAttribute(Qt::WA_DeleteOnClose);
+//      withdrawascashwindow->setAttribute(Qt::WA_DeleteOnClose);
         mc_withdraw_ascash_already_init = true;
     }
     // ------------------------------------
@@ -1504,7 +1752,7 @@ void Moneychanger::mc_withdraw_asvoucher_dialog()
     if (!mc_withdraw_asvoucher_already_init)
     {
         withdrawasvoucherwindow = new WithdrawAsVoucherWindow(this);
-//        withdrawasvoucherwindow->setAttribute(Qt::WA_DeleteOnClose);
+//      withdrawasvoucherwindow->setAttribute(Qt::WA_DeleteOnClose);
         mc_withdraw_asvoucher_already_init = true;
     }
     // ------------------------------------
@@ -1523,7 +1771,8 @@ void Moneychanger::close_withdrawasvoucher_dialog()
 void Moneychanger::set_systrayMenu_withdraw_asvoucher_nym_input(QString input)
 {
     
-    if(!mc_withdraw_asvoucher_already_init){
+    if(!mc_withdraw_asvoucher_already_init)
+    {
         mc_withdraw_asvoucher_dialog();
         set_systrayMenu_withdraw_asvoucher_nym_input(input);
     }
