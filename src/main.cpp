@@ -73,7 +73,8 @@ int main(int argc, char *argv[])
     }
     // ----------------------------------------
     //Init qApp
-
+    
+//    qDebug() << QApplication::libraryPaths();
     MTApplicationMC theApplication(argc, argv);  // <====== THIRD constructor (they are destroyed in reverse order.)
     theApplication.setQuitOnLastWindowClosed(false);
 //  QApplication:: setQuitOnLastWindowClosed(false);
