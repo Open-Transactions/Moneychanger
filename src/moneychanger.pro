@@ -157,30 +157,26 @@ FORMS += \
     UI/dlgpassword.ui \
     UI/dlgpasswordconfirm.ui
 
-
 mac:{
+
+	OS_VERSION = $$system(uname -r)
+        
 	QT_CONFIG -= no-pkg-config
-	LIBS += -lboost_system -lboost_thread -ldl
+        !contains(OS_VERSION, 13.0.0):LIBS += -lboost_system-mt -lboost_thread-mt -ldl
+
+	contains(OS_VERSION, 13.0.0):LIBS += -lboost_system -lboost_thread -ldl
 
     # -------------------------------------------
-    # Un-comment this block to use C++11.
-    #
-    # Comment-out this block to deactivate C++11
     # NOTE: This is necessary on Mac OSX Mavericks (10.9)
     #	Because libc++ is now chosen by default over libstdc++
     #   And your dependencies will have to be rebuilt with similar options.
     #
-     QT_CONFIG += -spec macx-clang-libc++
-     LIBS += -stdlib=libc++
-     CONFIG += c++11
-     QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++ -std=c++11
+	contains(OS_VERSION, 13.0.0):QT_CONFIG += -spec macx-clang-libc++
+	contains(OS_VERSION, 13.0.0):LIBS += -stdlib=libc++
+	contains(OS_VERSION, 13.0.0):CONFIG += c++11
+	contains(OS_VERSION, 13.0.0):QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++ -std=c++11
     #
     # -------------------------------------------
-
-
-# Stuff that didn't work.
-#    QMAKE_CXXFLAGS += -spec macx-clang-libc++  # apparently this doesn't really exist.
-#    CXXFLAGS += -std=c++0x // apparently the qmake version of this above is the one I'm supposed to use, not this...
 }
 
 linux:{
