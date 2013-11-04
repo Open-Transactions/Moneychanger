@@ -103,19 +103,23 @@ FORMS += \
     UI/createinsurancecompany.ui \
     UI/getstringdialog.ui
 
+
 mac:{
 	QT_CONFIG -= no-pkg-config
-	LIBS += -lboost_system-mt -lboost_thread-mt -ldl
+	LIBS += -lboost_system -lboost_thread -ldl
 
     # -------------------------------------------
     # Un-comment this block to use C++11.
     #
     # Comment-out this block to deactivate C++11
+    # NOTE: This is necessary on Mac OSX Mavericks (10.9)
+    #	Because libc++ is now chosen by default over libstdc++
+    #   And your dependencies will have to be rebuilt with similar options.
     #
-	# QT_CONFIG += -spec macx-clang-libc++
-    # LIBS += -stdlib=libc++
-    # CONFIG += c++11
-    # QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++ -std=c++11
+     QT_CONFIG += -spec macx-clang-libc++
+     LIBS += -stdlib=libc++
+     CONFIG += c++11
+     QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++ -std=c++11
     #
     # -------------------------------------------
 
