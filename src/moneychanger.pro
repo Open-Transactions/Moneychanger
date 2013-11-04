@@ -8,7 +8,7 @@ TEMPLATE    = app
 TARGET      = moneychanger-qt
 #VERSION     =
 INCLUDEPATH+= Handlers UI Widgets
-QT         += core gui sql
+QT         += core gui sql network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 DEFINES    += "OT_ZMQ_MODE=1"
@@ -45,7 +45,26 @@ HEADERS += moneychanger.h \
     Widgets/assetdetails.h \
     Widgets/accountdetails.h \
     UI/getstringdialog.h \
-    UI/dlgnewcontact.h
+    UI/dlgnewcontact.h \
+    Widgets/pageaddcontract.h \
+    Widgets/wizardaddcontract.h \
+    Widgets/pageimportcontract.h \
+    Widgets/pagecreatecontract.h \
+    filedownloader.h \
+    Widgets/wizardaddaccount.h \
+    Widgets/pageacct_asset.h \
+    Widgets/pageacct_server.h \
+    Widgets/pageacct_nym.h \
+    Widgets/pageacct_name.h \
+    Widgets/wizardaddnym.h \
+    Widgets/pagenym_authority.h \
+    Widgets/pagenym_keysize.h \
+    Widgets/pagenym_source.h \
+    Widgets/pagenym_altlocation.h \
+    passwordcallback.h \
+    UI/dlgpassword.h \
+    UI/dlgpasswordconfirm.h \
+    applicationmc.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -79,7 +98,26 @@ SOURCES += main.cpp\
     Widgets/assetdetails.cpp \
     Widgets/accountdetails.cpp \
     UI/dlgnewcontact.cpp \
-    UI/getstringdialog.cpp
+    UI/getstringdialog.cpp \
+    Widgets/pageaddcontract.cpp \
+    Widgets/wizardaddcontract.cpp \
+    Widgets/pageimportcontract.cpp \
+    Widgets/pagecreatecontract.cpp \
+    filedownloader.cpp \
+    Widgets/wizardaddaccount.cpp \
+    Widgets/pageacct_asset.cpp \
+    Widgets/pageacct_server.cpp \
+    Widgets/pageacct_nym.cpp \
+    Widgets/pageacct_name.cpp \
+    Widgets/wizardaddnym.cpp \
+    Widgets/pagenym_authority.cpp \
+    Widgets/pagenym_keysize.cpp \
+    Widgets/pagenym_source.cpp \
+    Widgets/pagenym_altlocation.cpp \
+    passwordcallback.cpp \
+    UI/dlgpassword.cpp \
+    UI/dlgpasswordconfirm.cpp \
+    applicationmc.cpp
 
 RESOURCES += resource.qrc
 
@@ -101,7 +139,23 @@ FORMS += \
     UI/dlgnewcontact.ui \
     UI/marketwindow.ui \
     UI/createinsurancecompany.ui \
-    UI/getstringdialog.ui
+    UI/getstringdialog.ui \
+    Widgets/pageaddcontract.ui \
+    Widgets/wizardaddcontract.ui \
+    Widgets/pageimportcontract.ui \
+    Widgets/pagecreatecontract.ui \
+    Widgets/wizardaddaccount.ui \
+    Widgets/pageacct_asset.ui \
+    Widgets/pageacct_server.ui \
+    Widgets/pageacct_nym.ui \
+    Widgets/pageacct_name.ui \
+    Widgets/wizardaddnym.ui \
+    Widgets/pagenym_authority.ui \
+    Widgets/pagenym_keysize.ui \
+    Widgets/pagenym_source.ui \
+    Widgets/pagenym_altlocation.ui \
+    UI/dlgpassword.ui \
+    UI/dlgpasswordconfirm.ui
 
 mac:{
 	QT_CONFIG -= no-pkg-config

@@ -14,7 +14,7 @@ class MTNymDetails : public MTEditDetails
     Q_OBJECT
     
 public:
-    explicit MTNymDetails(QWidget *parent = 0);
+    explicit MTNymDetails(QWidget *parent, MTDetailEdit & theOwner);
     ~MTNymDetails();
     
     virtual void refresh(QString strID, QString strName);
@@ -28,6 +28,8 @@ public:
     virtual QWidget * CreateCustomTab (int nTab);
     virtual QString   GetCustomTabName(int nTab);
     // ----------------------------------
+
+    virtual void ClearContents();
 
 private:
     QPlainTextEdit * m_pPlainTextEdit;

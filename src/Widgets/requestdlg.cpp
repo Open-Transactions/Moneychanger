@@ -365,7 +365,7 @@ void MTRequestDlg::on_fromButton_clicked()
             {
                 qstrContactName  = QString("");
                 m_hisNymId = QString("");
-                ui->fromButton->setText(tr("<Click to Choose Invoicee>"));
+                ui->fromButton->setText(tr("<Click to choose Invoicee>"));
                 return;
             }
             // else...
@@ -397,7 +397,7 @@ void MTRequestDlg::on_fromButton_clicked()
                     else
                     {
                         m_hisNymId = QString("");
-                        ui->fromButton->setText(tr("<Click to Choose Invoicee>"));
+                        ui->fromButton->setText(tr("<Click to choose Invoicee>"));
                         // -------------------------------------
                         QMessageBox::warning(this, tr("Contact has no known identities"),
                                              tr("Sorry, Contact '%1' has no known NymIDs (to request funds from.)").arg(qstrContactName));
@@ -415,14 +415,14 @@ void MTRequestDlg::on_fromButton_clicked()
                     else // User must have cancelled.
                     {
                         m_hisNymId = QString("");
-                        ui->fromButton->setText(tr("<Click to Choose Invoicee>"));
+                        ui->fromButton->setText(tr("<Click to choose Invoicee>"));
                     }
                 }
             }
             else // No nyms found for this ContactID.
             {
                 m_hisNymId = QString("");
-                ui->fromButton->setText(tr("<Click to Choose Invoicee>"));
+                ui->fromButton->setText(tr("<Click to choose Invoicee>"));
                 // -------------------------------------
                 QMessageBox::warning(this, tr("Contact has no known identities"),
                                      tr("Sorry, Contact '%1' has no known NymIDs (to request funds from.)").arg(qstrContactName));
@@ -498,7 +498,7 @@ void MTRequestDlg::dialog()
         if (str_his_name.empty())
         {
             m_hisNymId = QString("");
-            ui->fromButton->setText(tr("<Click to Choose Invoicee>"));
+            ui->fromButton->setText(tr("<Click to choose Invoicee>"));
         }
         else
             ui->fromButton->setText(QString::fromStdString(str_his_name));

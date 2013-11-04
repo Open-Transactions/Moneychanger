@@ -14,6 +14,7 @@ class MTDetailEdit;
 
 class MTEditDetails;
 
+class Moneychanger;
 
 class MTDetailEdit : public QWidget
 {
@@ -31,12 +32,12 @@ public:
         DetailEditTypeAccount
     };
 
-    explicit MTDetailEdit(QWidget *parent = 0);
+    explicit MTDetailEdit(QWidget *parent, Moneychanger & theMC);
     ~MTDetailEdit();
 
     void SetPreSelected(QString strSelected);
 
-    void dialog(DetailEditType theType);
+    void dialog(DetailEditType theType, bool bIsModal=false);
 
     void RefreshRecords();
 
@@ -54,8 +55,9 @@ protected:
     // ----------------------------------
     QTabWidget    * m_pTabWidget;
     // ----------------------------------
-//  virtual void showEvent(QShowEvent * event);
     bool eventFilter(QObject *obj, QEvent *event);
+
+    virtual void showEvent(QShowEvent * event);
 
 private slots:
     void on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
@@ -63,7 +65,12 @@ private slots:
     void on_addButton_clicked();
     void on_deleteButton_clicked();
 
+public:
+    Moneychanger * GetMoneychanger();
+
 private:
+    Moneychanger * m_pMoneychanger;
+
     DetailEditType m_Type;
 
     Ui::MTDetailEdit *ui;
