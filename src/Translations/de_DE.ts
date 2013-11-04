@@ -238,49 +238,134 @@
         <translation>Konto Name:</translation>
     </message>
     <message>
-        <location filename="../Widgets/accountdetails.cpp" line="118"/>
+        <location filename="../Widgets/accountdetails.cpp" line="142"/>
         <source>Account Name: </source>
         <translation>Konto Name:</translation>
     </message>
     <message>
-        <location filename="../Widgets/accountdetails.cpp" line="135"/>
+        <location filename="../Widgets/accountdetails.cpp" line="159"/>
         <source>Asset Type: </source>
         <translation>Anlageklasse:</translation>
     </message>
     <message>
-        <location filename="../Widgets/accountdetails.cpp" line="152"/>
+        <location filename="../Widgets/accountdetails.cpp" line="176"/>
         <source>Owner Nym: </source>
         <translation>Eingetümer Nym:</translation>
     </message>
     <message>
-        <location filename="../Widgets/accountdetails.cpp" line="169"/>
+        <location filename="../Widgets/accountdetails.cpp" line="193"/>
         <source>Server: </source>
         <translation>Server:</translation>
     </message>
     <message>
-        <location filename="../Widgets/accountdetails.cpp" line="328"/>
+        <location filename="../Widgets/accountdetails.cpp" line="352"/>
         <source>Account Cannot Be Deleted</source>
         <translation>Konto kann nicht gelöscht werden</translation>
     </message>
     <message>
-        <location filename="../Widgets/accountdetails.cpp" line="329"/>
+        <location filename="../Widgets/accountdetails.cpp" line="353"/>
         <source>This Account cannot be deleted yet, since it probably doesn&apos;t have a zero balance, and probably still has outstanding receipts. (This is where, in the future, you will be given the option to automatically close-out all that stuff and thus delete this Account.)</source>
         <translation>Dieses Konto kann nicht gelöscht werden, da es vermutlich noch Guthaben beinhaltet oder ausstehnde Rechnungen hat. </translation>
     </message>
     <message>
-        <location filename="../Widgets/accountdetails.cpp" line="338"/>
+        <location filename="../Widgets/accountdetails.cpp" line="362"/>
         <source>Are you sure you want to delete this Account?</source>
         <translation>Sind Sie sicher das sie dieses Konto löschen möchten?</translation>
     </message>
     <message>
-        <location filename="../Widgets/accountdetails.cpp" line="355"/>
+        <location filename="../Widgets/accountdetails.cpp" line="383"/>
         <source>Failure Deleting Account</source>
         <translation>Löschen des Kontos fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../Widgets/accountdetails.cpp" line="356"/>
+        <location filename="../Widgets/accountdetails.cpp" line="384"/>
         <source>Failed trying to delete this Account.</source>
         <translation>Löschen des Konto fehlgeschlagen.</translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="398"/>
+        <source>Create Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="411"/>
+        <source>Confirm Create Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="411"/>
+        <source>Confirm Create Account: Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="412"/>
+        <source>Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="412"/>
+        <source>Nym</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="412"/>
+        <source>Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="445"/>
+        <source>Failed Registration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="446"/>
+        <source>Failed while trying to register Nym at Server.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="451"/>
+        <source>Error in Registration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="452"/>
+        <source>Error while trying to register Nym at Server.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="472"/>
+        <source>Failed Creating Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="473"/>
+        <source>Failed trying to create Account at Server.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="483"/>
+        <source>Failed Getting new Account ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="484"/>
+        <source>Failed trying to get the new account&apos;s ID from the server response.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="495"/>
+        <source>Success!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="495"/>
+        <source>Success Creating Account! Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/accountdetails.cpp" line="496"/>
+        <source>ID</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -301,28 +386,138 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/assetdetails.cpp" line="79"/>
+        <location filename="../Widgets/assetdetails.cpp" line="93"/>
         <source>Asset Contract Cannot Be Removed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/assetdetails.cpp" line="80"/>
+        <location filename="../Widgets/assetdetails.cpp" line="94"/>
         <source>This Asset Contract cannot be removed, since you probably have already created accounts using this asset type. (This is where, in the future, you would be given the option to automatically delete those accounts, and remove this asset contract along with them.)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/assetdetails.cpp" line="88"/>
+        <location filename="../Widgets/assetdetails.cpp" line="102"/>
         <source>Are you sure you want to delete this Asset Contract?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/assetdetails.cpp" line="100"/>
+        <location filename="../Widgets/assetdetails.cpp" line="118"/>
         <source>Failure Removing Asset Contract</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/assetdetails.cpp" line="101"/>
+        <location filename="../Widgets/assetdetails.cpp" line="119"/>
         <source>Failed trying to remove this Asset Contract.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="134"/>
+        <source>File at URL Was Empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="135"/>
+        <source>File at specified URL was apparently empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="148"/>
+        <source>Contract is Empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="149"/>
+        <source>Failed importing: contract is empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="157"/>
+        <source>Failed Calculating Contract ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="158"/>
+        <source>Failed trying to calculate this contract&apos;s ID. Perhaps the &apos;contract&apos; is malformed?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="179"/>
+        <source>Failed Importing Asset Contract</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="180"/>
+        <source>Failed trying to import contract. Is it already in the wallet?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="186"/>
+        <source>Success!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="186"/>
+        <source>Success Importing Asset Contract! Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="187"/>
+        <source>ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="206"/>
+        <source>Add Asset Contract</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="230"/>
+        <source>URL is Empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="231"/>
+        <source>No URL was provided.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="255"/>
+        <source>Filename is Empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="256"/>
+        <source>No filename was provided.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="273"/>
+        <source>File Was Empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="274"/>
+        <source>File was apparently empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="281"/>
+        <source>Failed Reading File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="282"/>
+        <source>Failed trying to read file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="295"/>
+        <source>Empty Contract</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/assetdetails.cpp" line="296"/>
+        <source>Failure Importing: Contract is Empty.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -442,6 +637,7 @@
     </message>
     <message>
         <location filename="../Widgets/compose.cpp" line="282"/>
+        <location filename="../Widgets/compose.cpp" line="466"/>
         <source>&lt;Click to choose Sender&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -451,7 +647,12 @@
         <location filename="../Widgets/compose.cpp" line="381"/>
         <location filename="../Widgets/compose.cpp" line="388"/>
         <location filename="../Widgets/compose.cpp" line="489"/>
-        <source>&lt;Click to Choose Recipient&gt;</source>
+        <source>&lt;Click to choose Recipient&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/compose.cpp" line="510"/>
+        <source>&lt;Click to choose Server&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -480,16 +681,6 @@
         <location filename="../Widgets/compose.cpp" line="413"/>
         <location filename="../Widgets/compose.cpp" line="608"/>
         <source>Compose: (no subject)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Widgets/compose.cpp" line="466"/>
-        <source>&lt;Click to Choose Sender&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../Widgets/compose.cpp" line="510"/>
-        <source>&lt;Click to Choose Server&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -567,19 +758,19 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/contactdetails.cpp" line="125"/>
+        <location filename="../Widgets/contactdetails.cpp" line="135"/>
         <source>Nyms:
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/contactdetails.cpp" line="138"/>
+        <location filename="../Widgets/contactdetails.cpp" line="148"/>
         <source>Found on servers:
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/contactdetails.cpp" line="151"/>
+        <location filename="../Widgets/contactdetails.cpp" line="161"/>
         <source>Where he owns the accounts:
 </source>
         <translation type="unfinished"></translation>
@@ -603,7 +794,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/detailedit.cpp" line="76"/>
+        <location filename="../Widgets/detailedit.cpp" line="74"/>
         <source>Details</source>
         <translation type="unfinished"></translation>
     </message>
@@ -618,6 +809,47 @@
     <message>
         <location filename="../UI/dlgnewcontact.cpp" line="49"/>
         <source>Paste or Scan QR Code: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MTDlgPassword</name>
+    <message>
+        <location filename="../UI/dlgpassword.ui" line="14"/>
+        <source>Dialog</source>
+        <translation type="unfinished">Dialog</translation>
+    </message>
+    <message>
+        <location filename="../UI/dlgpassword.ui" line="20"/>
+        <source>Display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/dlgpassword.ui" line="30"/>
+        <source>Enter Passphrase:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MTDlgPasswordConfirm</name>
+    <message>
+        <location filename="../UI/dlgpasswordconfirm.ui" line="14"/>
+        <source>Dialog</source>
+        <translation type="unfinished">Dialog</translation>
+    </message>
+    <message>
+        <location filename="../UI/dlgpasswordconfirm.ui" line="20"/>
+        <source>Display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/dlgpasswordconfirm.ui" line="30"/>
+        <source>Enter Passphrase:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../UI/dlgpasswordconfirm.ui" line="44"/>
+        <source>Confirm Passphrase:</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -660,48 +892,48 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/home.cpp" line="398"/>
+        <location filename="../Widgets/home.cpp" line="403"/>
         <source>(Default Account Isn&apos;t Set Yet)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/home.cpp" line="429"/>
+        <location filename="../Widgets/home.cpp" line="438"/>
         <source>(Account Name is Blank)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/home.cpp" line="483"/>
+        <location filename="../Widgets/home.cpp" line="492"/>
         <source>Send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/home.cpp" line="489"/>
+        <location filename="../Widgets/home.cpp" line="498"/>
         <source>Request</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/home.cpp" line="495"/>
+        <location filename="../Widgets/home.cpp" line="504"/>
         <source>Contacts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/home.cpp" line="502"/>
+        <location filename="../Widgets/home.cpp" line="511"/>
         <source>Refresh</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/home.cpp" line="545"/>
-        <location filename="../Widgets/home.cpp" line="552"/>
+        <location filename="../Widgets/home.cpp" line="554"/>
+        <location filename="../Widgets/home.cpp" line="561"/>
         <source>Available:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/home.cpp" line="545"/>
+        <location filename="../Widgets/home.cpp" line="554"/>
         <source>no account selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/home.cpp" line="560"/>
+        <location filename="../Widgets/home.cpp" line="569"/>
         <source> in cash</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1155,28 +1387,392 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/nymdetails.cpp" line="63"/>
+        <location filename="../Widgets/nymdetails.cpp" line="68"/>
         <source>Raw State of Nym:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/nymdetails.cpp" line="180"/>
+        <location filename="../Widgets/nymdetails.cpp" line="192"/>
         <source>Nym Cannot Be Deleted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/nymdetails.cpp" line="181"/>
+        <location filename="../Widgets/nymdetails.cpp" line="193"/>
         <source>This Nym cannot be deleted yet, since it&apos;s already been registered on at least one server, and perhaps even owns an asset account or two. (This is where, in the future, you will be given the option to automatically delete all that stuff and thus delete this Nym.)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/nymdetails.cpp" line="202"/>
+        <location filename="../Widgets/nymdetails.cpp" line="218"/>
         <source>Failure Deleting Nym</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/nymdetails.cpp" line="203"/>
+        <location filename="../Widgets/nymdetails.cpp" line="219"/>
         <source>Failed trying to delete this Nym.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/nymdetails.cpp" line="233"/>
+        <source>Create Nym (a.k.a. Create Identity)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/nymdetails.cpp" line="263"/>
+        <source>Error in keysize selection. Using default</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/nymdetails.cpp" line="286"/>
+        <source>Failed Creating Nym</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/nymdetails.cpp" line="287"/>
+        <source>Failed trying to create Nym.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/nymdetails.cpp" line="300"/>
+        <source>Success!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/nymdetails.cpp" line="300"/>
+        <source>Success Creating Nym! Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/nymdetails.cpp" line="301"/>
+        <source>ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MTPageAcct_Asset</name>
+    <message>
+        <location filename="../Widgets/pageacct_asset.ui" line="14"/>
+        <source>WizardPage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_asset.ui" line="33"/>
+        <source>Choose the Asset Type (dollars, Bitcoin, etc):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_asset.ui" line="56"/>
+        <source>Manage...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_asset.cpp" line="89"/>
+        <source>Select the Asset Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_asset.cpp" line="114"/>
+        <location filename="../Widgets/pageacct_asset.cpp" line="166"/>
+        <location filename="../Widgets/pageacct_asset.cpp" line="241"/>
+        <source>Click to choose Asset Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_asset.cpp" line="218"/>
+        <source>Manage Asset Types</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MTPageAcct_Name</name>
+    <message>
+        <location filename="../Widgets/pageacct_name.ui" line="14"/>
+        <source>WizardPage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_name.ui" line="20"/>
+        <source>Choose a Name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MTPageAcct_Nym</name>
+    <message>
+        <location filename="../Widgets/pageacct_nym.ui" line="14"/>
+        <source>WizardPage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_nym.ui" line="20"/>
+        <source>Choose the Nym who will own your new Account:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_nym.ui" line="43"/>
+        <source>Manage...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_nym.cpp" line="88"/>
+        <source>Select the Owner Nym</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_nym.cpp" line="113"/>
+        <location filename="../Widgets/pageacct_nym.cpp" line="165"/>
+        <location filename="../Widgets/pageacct_nym.cpp" line="240"/>
+        <source>Click to choose Nym</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_nym.cpp" line="217"/>
+        <source>Manage Nyms (Identities)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MTPageAcct_Server</name>
+    <message>
+        <location filename="../Widgets/pageacct_server.ui" line="14"/>
+        <source>WizardPage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_server.ui" line="20"/>
+        <source>Choose the Server:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_server.ui" line="43"/>
+        <source>Manage...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_server.cpp" line="89"/>
+        <source>Select the Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_server.cpp" line="114"/>
+        <location filename="../Widgets/pageacct_server.cpp" line="166"/>
+        <location filename="../Widgets/pageacct_server.cpp" line="241"/>
+        <source>Click to choose Server</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageacct_server.cpp" line="218"/>
+        <source>Manage Servers</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MTPageAddContract</name>
+    <message>
+        <location filename="../Widgets/pageaddcontract.ui" line="14"/>
+        <source>WizardPage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageaddcontract.ui" line="20"/>
+        <source>Import an Existing Contract</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageaddcontract.ui" line="30"/>
+        <source>Import a pre-existing contract into the wallet.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageaddcontract.ui" line="59"/>
+        <source>Create a New Contract</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageaddcontract.ui" line="72"/>
+        <source>Create a new contract from scratch.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MTPageCreateContract</name>
+    <message>
+        <location filename="../Widgets/pagecreatecontract.ui" line="14"/>
+        <source>WizardPage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagecreatecontract.ui" line="26"/>
+        <source>Put &quot;Create Contract&quot; stuff here.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MTPageImportContract</name>
+    <message>
+        <location filename="../Widgets/pageimportcontract.ui" line="14"/>
+        <source>WizardPage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageimportcontract.ui" line="20"/>
+        <source>Import from URL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageimportcontract.ui" line="47"/>
+        <source>Import from File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageimportcontract.ui" line="64"/>
+        <source>Select...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageimportcontract.ui" line="84"/>
+        <source>Paste Contract</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageimportcontract.cpp" line="60"/>
+        <source>Import Contract</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pageimportcontract.cpp" line="62"/>
+        <source>Contracts (*.otc)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MTPageNym_AltLocation</name>
+    <message>
+        <location filename="../Widgets/pagenym_altlocation.ui" line="14"/>
+        <source>WizardPage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_altlocation.ui" line="20"/>
+        <source>Alternate Location:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_altlocation.ui" line="27"/>
+        <source>(Just Leave This Blank)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_altlocation.ui" line="34"/>
+        <source>Optional. This is some place (usually a URL) where others can download your credentials. For example, if you have revoked your old credentials, you can post the new ones at the alternate location, and other users will be able to find them there.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_altlocation.ui" line="44"/>
+        <source>The Alternate Location is NOT authoritative -- any credentials found there must still verify to your Nym ID. Also, a valid new credential will verify properly, regardless of whether or not a copy of it can be found at the Alternate Location.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MTPageNym_Authority</name>
+    <message>
+        <location filename="../Widgets/pagenym_authority.ui" line="14"/>
+        <source>WizardPage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_authority.ui" line="20"/>
+        <source>Select the Authority for your Nym:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_authority.ui" line="43"/>
+        <source>Self-Signed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_authority.ui" line="48"/>
+        <source>Namecoin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_authority.ui" line="53"/>
+        <source>Legacy CA</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_authority.ui" line="61"/>
+        <source>NOTE: Only &apos;Self-Signed&apos; is currently operational.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MTPageNym_Keysize</name>
+    <message>
+        <location filename="../Widgets/pagenym_keysize.ui" line="14"/>
+        <source>WizardPage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_keysize.ui" line="20"/>
+        <source>Keysize:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_keysize.ui" line="31"/>
+        <source>1024</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_keysize.ui" line="36"/>
+        <source>2048</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_keysize.ui" line="41"/>
+        <source>4096</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_keysize.ui" line="49"/>
+        <source>NOTE:   Only 1024 has been tested.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MTPageNym_Source</name>
+    <message>
+        <location filename="../Widgets/pagenym_source.ui" line="14"/>
+        <source>WizardPage</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_source.ui" line="20"/>
+        <source>Source Label:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_source.ui" line="30"/>
+        <source>Explanation Label</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_source.cpp" line="25"/>
+        <source>Namecoin Address:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_source.cpp" line="26"/>
+        <source>Enter the Namecoin address that will be authoritative over this identity.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_source.cpp" line="30"/>
+        <source>DN info:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/pagenym_source.cpp" line="31"/>
+        <source>Enter the DN info that uniquely identifies you on your x.509 certificate.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1290,7 +1886,7 @@
         <location filename="../Widgets/requestdlg.cpp" line="418"/>
         <location filename="../Widgets/requestdlg.cpp" line="425"/>
         <location filename="../Widgets/requestdlg.cpp" line="501"/>
-        <source>&lt;Click to Choose Invoicee&gt;</source>
+        <source>&lt;Click to choose Invoicee&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1468,7 +2064,7 @@
         <location filename="../Widgets/senddlg.cpp" line="790"/>
         <location filename="../Widgets/senddlg.cpp" line="797"/>
         <location filename="../Widgets/senddlg.cpp" line="877"/>
-        <source>&lt;Click to Choose Recipient&gt;</source>
+        <source>&lt;Click to choose Recipient&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1528,29 +2124,163 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/serverdetails.cpp" line="79"/>
+        <location filename="../Widgets/serverdetails.cpp" line="93"/>
         <source>Server Cannot Be Deleted</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/serverdetails.cpp" line="80"/>
+        <location filename="../Widgets/serverdetails.cpp" line="94"/>
         <source>This Server cannot be deleted yet, since you probably have Nyms registered there. (This is where, in the future, you&apos;d be given the option to automatically delete those Nyms.)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/serverdetails.cpp" line="87"/>
+        <location filename="../Widgets/serverdetails.cpp" line="101"/>
         <source>Are you sure you want to remove this Server Contract?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/serverdetails.cpp" line="99"/>
+        <location filename="../Widgets/serverdetails.cpp" line="117"/>
         <source>Failure Removing Server Contract</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Widgets/serverdetails.cpp" line="100"/>
+        <location filename="../Widgets/serverdetails.cpp" line="118"/>
         <source>Failed trying to remove this Server Contract.</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="133"/>
+        <source>File at URL Was Empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="134"/>
+        <source>File at specified URL was apparently empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="147"/>
+        <source>Contract is Empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="148"/>
+        <source>Failed importing: contract is empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="156"/>
+        <source>Failed Calculating Contract ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="157"/>
+        <source>Failed trying to calculate this contract&apos;s ID. Perhaps the &apos;contract&apos; is malformed?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="178"/>
+        <source>Failed Importing Server Contract</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="179"/>
+        <source>Failed trying to import contract. Is it already in the wallet?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="185"/>
+        <source>Success!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="185"/>
+        <source>Success Importing Server Contract! Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="186"/>
+        <source>ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="205"/>
+        <source>Add Server Contract</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="229"/>
+        <source>URL is Empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="230"/>
+        <source>No URL was provided.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="254"/>
+        <source>Filename is Empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="255"/>
+        <source>No filename was provided.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="272"/>
+        <source>File Was Empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="273"/>
+        <source>File was apparently empty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="280"/>
+        <source>Failed Reading File</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="281"/>
+        <source>Failed trying to read file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="294"/>
+        <source>Empty Contract</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Widgets/serverdetails.cpp" line="295"/>
+        <source>Failure Importing: Contract is Empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MTWizardAddAccount</name>
+    <message>
+        <location filename="../Widgets/wizardaddaccount.ui" line="14"/>
+        <source>Wizard</source>
+        <translation type="unfinished">Wizard</translation>
+    </message>
+</context>
+<context>
+    <name>MTWizardAddContract</name>
+    <message>
+        <location filename="../Widgets/wizardaddcontract.ui" line="14"/>
+        <source>Wizard</source>
+        <translation type="unfinished">Wizard</translation>
+    </message>
+</context>
+<context>
+    <name>MTWizardAddNym</name>
+    <message>
+        <location filename="../Widgets/wizardaddnym.ui" line="14"/>
+        <source>Wizard</source>
+        <translation type="unfinished">Wizard</translation>
     </message>
 </context>
 <context>
@@ -1588,192 +2318,192 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>Moneychanger</name>
     <message>
-        <location filename="../moneychanger.cpp" line="262"/>
+        <location filename="../moneychanger.cpp" line="404"/>
         <source>Moneychanger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="275"/>
+        <location filename="../moneychanger.cpp" line="417"/>
         <source>Transaction History</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="284"/>
+        <location filename="../moneychanger.cpp" line="426"/>
         <source>Send Funds...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="290"/>
+        <location filename="../moneychanger.cpp" line="432"/>
         <source>Request Payment...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="299"/>
+        <location filename="../moneychanger.cpp" line="833"/>
         <source>Set Default Account...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="304"/>
+        <location filename="../moneychanger.cpp" line="838"/>
         <source>Manage Accounts...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="322"/>
+        <location filename="../moneychanger.cpp" line="719"/>
         <source>Set Default Asset Type...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="327"/>
+        <location filename="../moneychanger.cpp" line="725"/>
         <source>Manage Asset Contracts...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="348"/>
+        <location filename="../moneychanger.cpp" line="450"/>
         <source>Withdraw</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="352"/>
+        <location filename="../moneychanger.cpp" line="454"/>
         <source>As Cash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="358"/>
+        <location filename="../moneychanger.cpp" line="460"/>
         <source>As Voucher</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="364"/>
+        <location filename="../moneychanger.cpp" line="466"/>
         <source>Deposit...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="393"/>
+        <location filename="../moneychanger.cpp" line="495"/>
         <source>Markets</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="397"/>
+        <location filename="../moneychanger.cpp" line="499"/>
         <source>Agreements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="404"/>
+        <location filename="../moneychanger.cpp" line="506"/>
         <source>Corporations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="408"/>
+        <location filename="../moneychanger.cpp" line="510"/>
         <source>Create</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="412"/>
+        <location filename="../moneychanger.cpp" line="514"/>
         <source>Insurance Company</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="417"/>
+        <location filename="../moneychanger.cpp" line="519"/>
         <source>Bazaar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="421"/>
+        <location filename="../moneychanger.cpp" line="523"/>
         <source>Search Listings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="425"/>
+        <location filename="../moneychanger.cpp" line="527"/>
         <source>Post an Ad</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="429"/>
+        <location filename="../moneychanger.cpp" line="531"/>
         <source>Orders</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="438"/>
+        <location filename="../moneychanger.cpp" line="540"/>
         <source>Settings...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="462"/>
+        <location filename="../moneychanger.cpp" line="801"/>
         <source>Manage Nyms...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="480"/>
+        <location filename="../moneychanger.cpp" line="757"/>
         <source>Set Default Server...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="485"/>
+        <location filename="../moneychanger.cpp" line="763"/>
         <source>Manage Servers...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="506"/>
+        <location filename="../moneychanger.cpp" line="569"/>
         <source>Quit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="654"/>
+        <location filename="../moneychanger.cpp" line="993"/>
         <source>Contacts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="710"/>
+        <location filename="../moneychanger.cpp" line="1050"/>
         <source>Nyms</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="740"/>
+        <location filename="../moneychanger.cpp" line="1080"/>
         <source>Nym: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="869"/>
+        <location filename="../moneychanger.cpp" line="1184"/>
         <source>Me</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="913"/>
+        <location filename="../moneychanger.cpp" line="1228"/>
         <source>My Acct</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="982"/>
+        <location filename="../moneychanger.cpp" line="1298"/>
         <source>Asset Types</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="1021"/>
+        <location filename="../moneychanger.cpp" line="1337"/>
         <source>Asset Type: </source>
         <translation type="unfinished">Anlageklasse:</translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="1148"/>
+        <location filename="../moneychanger.cpp" line="1441"/>
         <source>Accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="1214"/>
+        <location filename="../moneychanger.cpp" line="1509"/>
         <source>Account: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="1327"/>
+        <location filename="../moneychanger.cpp" line="1598"/>
         <source>Server Contracts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="1364"/>
+        <location filename="../moneychanger.cpp" line="1635"/>
         <source>Set Default...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../moneychanger.cpp" line="1367"/>
+        <location filename="../moneychanger.cpp" line="1638"/>
         <source>Server: </source>
         <translation type="unfinished">Server:</translation>
     </message>

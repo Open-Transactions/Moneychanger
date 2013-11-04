@@ -75,13 +75,13 @@ int main(int argc, char *argv[])
     // ----------------------------------------
     //Init qApp
 
+    MTApplicationMC theApplication(argc, argv);  // <====== THIRD constructor (they are destroyed in reverse order.)
+    theApplication.setQuitOnLastWindowClosed(false);
+
     //Set language
     Translation appTranslation;
     QTranslator translator;
-
-    MTApplicationMC theApplication(argc, argv);  // <====== THIRD constructor (they are destroyed in reverse order.)
-    theApplication.setQuitOnLastWindowClosed(false);
-    appTranslation.updateLanguage(a, translator);
+    appTranslation.updateLanguage(theApplication, translator);
 
     QTimer::singleShot(0, &theApplication, SLOT(appStarting()));
     // ----------------------------------------------------------------
