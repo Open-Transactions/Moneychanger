@@ -7,14 +7,19 @@
 
 #include "detailedit.h"
 
+
+#include "moneychanger.h"
+
+#include "wizardaddnym.h"
+
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
 
 
 // ------------------------------------------------------
 
-MTNymDetails::MTNymDetails(QWidget *parent) :
-    MTEditDetails(parent),
+MTNymDetails::MTNymDetails(QWidget *parent, MTDetailEdit & theOwner) :
+    MTEditDetails(parent, theOwner),
     m_pPlainTextEdit(NULL),
     ui(new Ui::MTNymDetails)
 {
@@ -125,6 +130,13 @@ void MTNymDetails::refresh(QString strID, QString strName)
     }
 }
 
+void MTNymDetails::ClearContents()
+{
+    ui->lineEditID  ->setText("");
+    ui->lineEditName->setText("");
+
+    m_pPlainTextEdit->setPlainText("");
+}
 
 // ------------------------------------------------------
 
@@ -197,6 +209,10 @@ void MTNymDetails::DeleteButtonClicked()
             {
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 m_pOwner->RefreshRecords();
+                // ------------------------------------------------
+                if (NULL != m_pMoneychanger)
+                    m_pMoneychanger->SetupMainMenu();
+                // ------------------------------------------------
             }
             else
                 QMessageBox::warning(this, tr("Failure Deleting Nym"),
@@ -212,63 +228,86 @@ void MTNymDetails::DeleteButtonClicked()
 //virtual
 void MTNymDetails::AddButtonClicked()
 {
-    // TODO:
-    
-//    // -----------------------------------------------
-//    MTDlgNewContact theNewContact(this);
-//    // -----------------------------------------------
-//    theNewContact.setWindowTitle("Create New Nym");
-//    // -----------------------------------------------
-//    if (theNewContact.exec() == QDialog::Accepted)
-//    {
-//        QString nymID = theNewContact.GetId();
-//        
-//        qDebug() << QString("MTContactDetails::AddButtonClicked: OKAY was clicked. Value: %1").arg(nymID);
-//        
-//        //resume
-//        // TODO: Use the NymID we just obtained (theNewContact.GetId()) to create a new Contact.
-//        
-//        if (!nymID.isEmpty())
-//        {
-//            int nExisting = MTContactHandler::getInstance()->FindContactIDByNymID(nymID);
-//            
-//            if (nExisting > 0)
-//            {
-//                QString contactName = MTContactHandler::getInstance()->GetContactName(nExisting);
-//                
-//                QMessageBox::warning(this, QString("Contact Already Exists"),
-//                                     QString("Contact '%1' already exists with NymID: %2").arg(contactName).arg(nymID));
-//                return;
-//            }
-//            // -------------------------------------------------------
-//            //else (a contact doesn't already exist for that NymID)
-//            //
-//            int nContact  = MTContactHandler::getInstance()->CreateContactBasedOnNym(nymID);
-//            
-//            if (nContact <= 0)
-//            {
-//                QMessageBox::warning(this, QString("Failed creating contact"),
-//                                     QString("Failed trying to create contact for NymID: %1").arg(nymID));
-//                return;
-//            }
-//            // -------------------------------------------------------
-//            // else (Successfully created the new Contact...)
-//            // Now let's add this contact to the Map, and refresh the dialog,
-//            // and then set the new contact as the current one.
-//            //
-//            QString qstrContactID = QString("%1").arg(nContact);
-//            
-//            m_pOwner->m_map.insert(qstrContactID, QString("")); // Blank name. (To start.)
-//            m_pOwner->SetPreSelected(qstrContactID);
-//            m_pOwner->RefreshRecords();
-//        }
-//    }
-    
-    
-//    else
-//    {
-//        qDebug() << "MTContactDetails::AddButtonClicked: CANCEL was clicked";
-//    }
+    MTWizardAddNym theWizard(this);
+
+    theWizard.setWindowTitle(tr("Create Nym (a.k.a. Create Identity)"));
+
+    if (QDialog::Accepted == theWizard.exec())
+    {
+        QString qstrName        = theWizard.field("Name")     .toString();
+        int     nKeysizeIndex   = theWizard.field("Keysize")  .toInt();
+        int     nAuthorityIndex = theWizard.field("Authority").toInt();
+        QString qstrSource      = theWizard.field("Source")   .toString();
+        QString qstrLocation    = theWizard.field("Location") .toString();
+        // ---------------------------------------------------
+        // NOTE: theWizard won't allow each page to finish unless the data is provided.
+        // (Therefore we don't have to check here to see if any of the data is empty.)
+
+        int32_t nKeybits = 1024;
+
+        switch (nKeysizeIndex)
+        {
+        case 0: // 1024
+            nKeybits = 1024;
+            break;
+
+        case 1: // 2048
+            nKeybits = 2048;
+            break;
+
+        case 2: // 4096
+            nKeybits = 4096;
+            break;
+
+        default:
+            qDebug() << QString("%1: %2").arg(tr("Error in keysize selection. Using default")).arg(nKeybits);
+            break;
+        }
+        // -------------------------------------------
+        std::string NYM_ID_SOURCE("");
+
+        if (0 != nAuthorityIndex) // Zero would be Self-Signed, which needs no source.
+            NYM_ID_SOURCE = qstrSource.toStdString();
+        // -------------------------------------------
+        std::string ALT_LOCATION("");
+
+        if (!qstrLocation.isEmpty())
+            ALT_LOCATION = qstrLocation.toStdString();
+        // -------------------------------------------
+
+        // Create Nym here...
+        //
+        OT_ME madeEasy;
+
+        std::string str_id = madeEasy.create_pseudonym(nKeybits, NYM_ID_SOURCE, ALT_LOCATION);
+
+        if (str_id.empty())
+        {
+            QMessageBox::warning(this, tr("Failed Creating Nym"),
+                tr("Failed trying to create Nym."));
+            return;
+        }
+        // ------------------------------------------------------
+        // Get the ID of the new nym.
+        //
+        QString qstrID = QString::fromStdString(str_id);
+        // ------------------------------------------------------
+        // Set the Name of the new Nym.
+        //
+        //bool bNameSet =
+                OTAPI_Wrap::SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
+        // -----------------------------------------------
+        QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Creating Nym! Name")).
+                                 arg(qstrName).arg(tr("ID")).arg(qstrID));
+        // ----------
+        m_pOwner->m_map.insert(qstrID, qstrName);
+        m_pOwner->SetPreSelected(qstrID);
+        m_pOwner->RefreshRecords();
+        // ------------------------------------------------
+        if (NULL != m_pMoneychanger)
+            m_pMoneychanger->SetupMainMenu();
+        // ------------------------------------------------
+    }
 }
 
 

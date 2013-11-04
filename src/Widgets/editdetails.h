@@ -11,18 +11,21 @@ class MTEditDetails;
 }
 
 class MTDetailEdit;
+class Moneychanger;
 // -----------------------------------------
 class MTEditDetails : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit MTEditDetails(QWidget *parent = 0);
+    explicit MTEditDetails(QWidget *parent, MTDetailEdit & theOwner);
     virtual ~MTEditDetails();
 
     virtual void refresh(QString strID, QString strName)=0;
     virtual void AddButtonClicked()=0;
     virtual void DeleteButtonClicked()=0;
+
+    virtual void ClearContents()=0;
 
     static QWidget * CreateDetailHeaderWidget(QString strID, QString strName,
                                               QString strAmount=QString(""),
@@ -49,6 +52,7 @@ private slots:
 
 protected:
     MTDetailEdit * m_pOwner;
+    Moneychanger * m_pMoneychanger;
 
 private:
 //    Ui::MTEditDetails *ui;
