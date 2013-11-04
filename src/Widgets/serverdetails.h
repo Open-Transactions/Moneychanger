@@ -3,6 +3,8 @@
 
 #include "editdetails.h"
 
+#include "filedownloader.h"
+
 namespace Ui {
 class MTServerDetails;
 }
@@ -12,15 +14,21 @@ class MTServerDetails : public MTEditDetails
     Q_OBJECT
     
 public:
-    explicit MTServerDetails(QWidget *parent = 0);
+    explicit MTServerDetails(QWidget *parent, MTDetailEdit & theOwner);
     ~MTServerDetails();
 
     virtual void refresh(QString strID, QString strName);
     virtual void AddButtonClicked();
     virtual void DeleteButtonClicked();
 
+    virtual void ClearContents();
+
+    void ImportContract(QString qstrContents);
+
 private slots:
     void on_lineEditName_editingFinished();
+
+    void DownloadedURL();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -28,6 +36,8 @@ protected:
     void FavorLeftSideForIDs();
 
 private:
+    FileDownloader * m_pDownloader;
+
     Ui::MTServerDetails *ui;
 };
 

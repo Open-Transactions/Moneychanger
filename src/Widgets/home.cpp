@@ -356,16 +356,21 @@ QString MTHome::shortAcctBalance(QString qstr_acct_id, QString qstr_asset_id/*=Q
     else
         assetId = OTAPI_Wrap::GetAccountWallet_AssetTypeID(acctID);
     // -------------------------------------------
-    std::string  str_output = OTAPI_Wrap::It()->FormatAmount(assetId, balance);
+    std::string  str_output;
 
-    if (!str_output.empty())
-        return_value = QString::fromStdString(str_output);
-    else
+    if (!assetId.empty())
     {
-        std::string  str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(assetId);
-        return_value = QString("%1 %2").arg(balance).arg(QString::fromStdString(str_asset_name));
-    }
+        str_output = OTAPI_Wrap::It()->FormatAmount(assetId, balance);
 
+        if (!str_output.empty())
+            return_value = QString::fromStdString(str_output);
+        else
+        {
+            std::string  str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(assetId);
+            return_value = QString("%1 %2").arg(balance).arg(QString::fromStdString(str_asset_name));
+        }
+    }
+    // -------------------------------------------
     return return_value;
 }
 
@@ -413,10 +418,14 @@ QWidget * MTHome::CreateUserBarWidget()
         qstr_acct_asset  = QString::fromStdString(str_acct_asset);
         // -----------------------------------
         std::string str_acct_name  = OTAPI_Wrap::It()->GetAccountWallet_Name(str_acct_id);
-        std::string str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(str_acct_asset);
-        // -----------------------------------
-        qstr_acct_name = QString("%1        <small><font color=grey>(%2)</font></small>").
-                arg(QString::fromStdString(str_acct_name)).arg(QString::fromStdString(str_asset_name));
+
+        if (!str_acct_asset.empty())
+        {
+            std::string str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(str_acct_asset);
+            // -----------------------------------
+            qstr_acct_name = QString("%1        <small><font color=grey>(%2)</font></small>").
+                    arg(QString::fromStdString(str_acct_name)).arg(QString::fromStdString(str_asset_name));
+        }
     }
     // -------------------------------------------
 //  QString   tx_name = tr("My Acct        <small><font color=grey>(US Dollars)</font></small>");
