@@ -15,19 +15,18 @@
 
 #include "moneychanger.h"
 
-MTDetailEdit::MTDetailEdit(QWidget *parent) :
+MTDetailEdit::MTDetailEdit(QWidget *parent, Moneychanger & theMC) :
     QWidget(parent, Qt::Window),
     m_bFirstRun(true),
     m_nCurrentRow(-1),
     m_pDetailPane(NULL),
     m_pDetailLayout(NULL),
     m_pTabWidget(NULL),
+    m_pMoneychanger(&theMC),
     m_Type(MTDetailEdit::DetailEditTypeError),
     ui(new Ui::MTDetailEdit)
 {
     ui->setupUi(this);
-
-    this->installEventFilter(this);
 }
 
 MTDetailEdit::~MTDetailEdit()
@@ -40,8 +39,7 @@ MTDetailEdit::~MTDetailEdit()
 
 
 
-
-void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType)
+void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType, bool bIsModal/*=false*/)
 {
     if (m_bFirstRun)
     {
@@ -81,11 +79,11 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType)
 
         switch (m_Type)
         {
-        case MTDetailEdit::DetailEditTypeNym:     m_pDetailPane = new MTNymDetails;     break;
-        case MTDetailEdit::DetailEditTypeContact: m_pDetailPane = new MTContactDetails; break;
-        case MTDetailEdit::DetailEditTypeServer:  m_pDetailPane = new MTServerDetails;  break;
-        case MTDetailEdit::DetailEditTypeAsset:   m_pDetailPane = new MTAssetDetails;   break;
-        case MTDetailEdit::DetailEditTypeAccount: m_pDetailPane = new MTAccountDetails; break;
+        case MTDetailEdit::DetailEditTypeNym:     m_pDetailPane = new MTNymDetails(this, *this);     break;
+        case MTDetailEdit::DetailEditTypeContact: m_pDetailPane = new MTContactDetails(this, *this); break;
+        case MTDetailEdit::DetailEditTypeServer:  m_pDetailPane = new MTServerDetails(this, *this);  break;
+        case MTDetailEdit::DetailEditTypeAsset:   m_pDetailPane = new MTAssetDetails(this, *this);   break;
+        case MTDetailEdit::DetailEditTypeAccount: m_pDetailPane = new MTAccountDetails(this, *this); break;
         default:
             qDebug() << "MTDetailEdit::dialog: MTDetailEdit::DetailEditTypeError";
             return;
@@ -138,10 +136,43 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType)
     // -------------------------------------------
     RefreshRecords();
     // -------------------------------------------
-    show();
-    setFocus();
+//    if (m_map.size() < 1)
+//        on_addButton_clicked();
+    // -------------------------------------------
+    if (bIsModal)
+    {
+        QDialog theDlg;
+        theDlg.setWindowTitle(this->windowTitle());
+//        theDlg.installEventFilter(this);
+
+        QVBoxLayout * pLayout = new QVBoxLayout;
+
+        pLayout->addWidget(this);
+
+        theDlg.setLayout(pLayout);
+        theDlg.setWindowFlags(Qt::Tool); // A hack so it will show the close button.
+        theDlg.exec();
+
+        pLayout->removeWidget(this);
+    }
+    else
+    {
+        this->installEventFilter(this);
+
+        show();
+        setFocus();
+    }
+    // -------------------------------------------
 }
 
+
+void MTDetailEdit::showEvent(QShowEvent * event)
+{
+    QWidget::showEvent(event);
+
+    if (m_map.size() < 1)
+        on_addButton_clicked();
+}
 
 //virtual
 //void MTDetailEdit::showEvent(QShowEvent * event)
@@ -250,12 +281,18 @@ void MTDetailEdit::RefreshRecords()
             ui->tableWidget->setCurrentCell(0, 1);
         }
     }
+    // ------------------------
+    else
+    {
+        ui->deleteButton->setEnabled(false);
+        m_pDetailPane->ClearContents();
+    }
 }
 
 
 void MTDetailEdit::on_addButton_clicked()
 {
-    if (!m_qstrCurrentID.isEmpty() && (NULL != m_pDetailPane))
+    if (NULL != m_pDetailPane)
         m_pDetailPane->AddButtonClicked();
 }
 
@@ -301,6 +338,7 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
     // -------------------------------------
 }
 
+Moneychanger * MTDetailEdit::GetMoneychanger() { return m_pMoneychanger; }
 
 void MTDetailEdit::SetPreSelected(QString strSelected)
 {
@@ -312,41 +350,54 @@ bool MTDetailEdit::eventFilter(QObject *obj, QEvent *event)\
     if (event->type() == QEvent::Close)
     {
         // -------------------------------------------
-        switch (m_Type)
+        Moneychanger * pMC = (Moneychanger *)this->parentWidget();
+
+        if ((m_pMoneychanger == pMC) && (m_pMoneychanger != NULL))
         {
-        case MTDetailEdit::DetailEditTypeContact:
-            ((Moneychanger *)parentWidget())->close_addressbook();
-            break;
+            switch (m_Type)
+            {
+            case MTDetailEdit::DetailEditTypeContact:
+                m_pMoneychanger->close_addressbook();
+                break;
 
-        case MTDetailEdit::DetailEditTypeNym:
-            ((Moneychanger *)parentWidget())->close_nymmanager_dialog();
-            break;
+            case MTDetailEdit::DetailEditTypeNym:
+                m_pMoneychanger->close_nymmanager_dialog();
+                break;
 
-        case MTDetailEdit::DetailEditTypeServer:
-            ((Moneychanger *)parentWidget())->close_servermanager_dialog();
-            break;
+            case MTDetailEdit::DetailEditTypeServer:
+                m_pMoneychanger->close_servermanager_dialog();
+                break;
 
-        case MTDetailEdit::DetailEditTypeAsset:
-            ((Moneychanger *)parentWidget())->close_assetmanager_dialog();
-            break;
+            case MTDetailEdit::DetailEditTypeAsset:
+                m_pMoneychanger->close_assetmanager_dialog();
+                break;
 
-        case MTDetailEdit::DetailEditTypeAccount:
-            ((Moneychanger *)parentWidget())->close_accountmanager_dialog();
-            break;
+            case MTDetailEdit::DetailEditTypeAccount:
+                m_pMoneychanger->close_accountmanager_dialog();
+                break;
 
-        default:
-            qDebug() << "MTDetailEdit::eventFilter: MTDetailEdit::DetailEditTypeError";
+            default:
+                qDebug() << "MTDetailEdit::eventFilter: MTDetailEdit::DetailEditTypeError";
+            }
+
+            return true;
         }
-        // -------------------------------------------
-        return true;
-    } else if (event->type() == QEvent::KeyPress) {
+    }
+    // -------------------------------------------
+    else if (event->type() == QEvent::KeyPress)
+    {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if(keyEvent->key() == Qt::Key_Escape){
+
+        if (keyEvent->key() == Qt::Key_Escape)
+        {
             close(); // This is caught by this same filter.
             return true;
         }
         return true;
-    }else {
+    }
+    // -------------------------------------------
+//  else
+    {
         // standard event processing
         return QObject::eventFilter(obj, event);
     }

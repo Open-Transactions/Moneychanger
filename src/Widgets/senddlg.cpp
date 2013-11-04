@@ -737,7 +737,7 @@ void MTSendDlg::on_toButton_clicked()
             {
                 qstrContactName  = QString("");
                 m_hisNymId = QString("");
-                ui->toButton->setText(tr("<Click to Choose Recipient>"));
+                ui->toButton->setText(tr("<Click to choose Recipient>"));
                 return;
             }
             // else...
@@ -769,7 +769,7 @@ void MTSendDlg::on_toButton_clicked()
                     else
                     {
                         m_hisNymId = QString("");
-                        ui->toButton->setText(tr("<Click to Choose Recipient>"));
+                        ui->toButton->setText(tr("<Click to choose Recipient>"));
                         // -------------------------------------
                         QMessageBox::warning(this, tr("Contact has no known identities"),
                                              tr("Sorry, Contact '%1' has no known NymIDs (to send funds to.)").arg(qstrContactName));
@@ -787,14 +787,14 @@ void MTSendDlg::on_toButton_clicked()
                     else // User must have cancelled.
                     {
                         m_hisNymId = QString("");
-                        ui->toButton->setText(tr("<Click to Choose Recipient>"));
+                        ui->toButton->setText(tr("<Click to choose Recipient>"));
                     }
                 }
             }
             else // No nyms found for this ContactID.
             {
                 m_hisNymId = QString("");
-                ui->toButton->setText(tr("<Click to Choose Recipient>"));
+                ui->toButton->setText(tr("<Click to choose Recipient>"));
                 // -------------------------------------
                 QMessageBox::warning(this, tr("Contact has no known identities"),
                                      tr("Sorry, Contact '%1' has no known NymIDs (to send funds to.)").arg(qstrContactName));
@@ -874,7 +874,7 @@ void MTSendDlg::dialog()
         if (str_his_name.empty())
         {
             m_hisNymId = QString("");
-            ui->toButton->setText(tr("<Click to Choose Recipient>"));
+            ui->toButton->setText(tr("<Click to choose Recipient>"));
         }
         else
             ui->toButton->setText(QString::fromStdString(str_his_name));
