@@ -50,6 +50,7 @@
 #include "Widgets/sendfundswindow.h"
 #include "Widgets/createinsurancecompany.h"
 #include "Widgets/detailedit.h"
+#include "Widgets/settings.h"
 
 class OverviewWindow;
 class MTHome;
@@ -97,6 +98,7 @@ public:
     void close_requestfunds_dialog();
     void close_market_dialog();
     void close_createinsurancecompany_dialog();
+    void close_settings_dialog();
     
     //Show address book
     void mc_addressbook_show(QString text);
@@ -196,6 +198,7 @@ private:
     bool mc_sendfunds_already_init;
     bool mc_requestfunds_already_init;
     bool mc_createinsurancecompany_already_init;
+    bool mc_settings_already_init;
 
     
     
@@ -219,6 +222,7 @@ private:
     SendFundsWindow         * sendfundswindow;
     MarketWindow            * market_window;
     CreateInsuranceCompany  * createinsurancecompany_window;
+    Settings                * settingswindow;
         
 public:
     void SetupMainMenu();
@@ -509,6 +513,9 @@ private slots:
     
     // Create Insurance Company Slot
     void mc_createinsurancecompany_slot();
+
+    //Settings
+    void mc_settings_slot();
 
 };
 

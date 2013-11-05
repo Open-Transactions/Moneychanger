@@ -8,7 +8,7 @@ TEMPLATE    = app
 TARGET      = moneychanger-qt
 #VERSION     =
 INCLUDEPATH+= Handlers UI Widgets
-QT         += core gui sql network 
+QT         += core gui sql network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 DEFINES    += "OT_ZMQ_MODE=1"
@@ -46,6 +46,8 @@ HEADERS += moneychanger.h \
     Widgets/accountdetails.h \
     UI/getstringdialog.h \
     UI/dlgnewcontact.h \
+    translation.h \
+    Widgets/settings.h\
     Widgets/pageaddcontract.h \
     Widgets/wizardaddcontract.h \
     Widgets/pageimportcontract.h \
@@ -99,6 +101,8 @@ SOURCES += main.cpp\
     Widgets/accountdetails.cpp \
     UI/dlgnewcontact.cpp \
     UI/getstringdialog.cpp \
+    translation.cpp \
+    Widgets/settings.cpp \
     Widgets/pageaddcontract.cpp \
     Widgets/wizardaddcontract.cpp \
     Widgets/pageimportcontract.cpp \
@@ -140,6 +144,7 @@ FORMS += \
     UI/marketwindow.ui \
     UI/createinsurancecompany.ui \
     UI/getstringdialog.ui \
+    Widgets/settings.ui \
     Widgets/pageaddcontract.ui \
     Widgets/wizardaddcontract.ui \
     Widgets/pageimportcontract.ui \
@@ -209,3 +214,5 @@ unix: PKGCONFIG += chaiscript
 
 #OTHER_FILES +=
 
+TRANSLATIONS += Translations/en_US.ts \
+                Translations/de_DE.ts

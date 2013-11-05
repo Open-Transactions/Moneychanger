@@ -1,0 +1,23 @@
+##################### Translations #####################
+## For translators:
+
+This tutorial describes how to create translations for Moneychanger (and Qt-Applications in general):
+http://qt-project.org/doc/qt-4.8/linguist-translators.html
+
+To add a new lanuage make a copy of Translations/en_US.ts to start from.
+If you have created a new file add it to moneychanger.pro in the section TRANSLATIONS or ask the maintainer.
+
+
+## For release manager:
+
+If some UI stuff has changed do:
+  lupdate moneychanger.pro -ts Translations/*
+Now handle the generated files to the translators.
+
+For new releases do
+  lrelease moneychanger.pro
+and add all the generated .qm-Files to the "translations"-folder in the install directory.
+
+More informations:
+http://qt-project.org/doc/qt-4.8/linguist-manager.html
+
