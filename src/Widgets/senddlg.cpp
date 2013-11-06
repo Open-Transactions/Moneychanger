@@ -613,10 +613,10 @@ QString MTSendDlg::FormDisplayLabelForAcctButton(QString qstr_acct_id, QString q
         int64_t  raw_cash_balance = this->rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
 
         if (raw_cash_balance > 0)
-            from_button_text += tr(" + %1 in cash").arg(cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym));
+            from_button_text += QString(" + %1 %2").arg(cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym)).arg(tr("in cash"));
     }
     // --------------------------------------------
-    from_button_text += QString(")");
+    from_button_text += QString( ")" );
     // -----------------------------------------
     return from_button_text;
 }

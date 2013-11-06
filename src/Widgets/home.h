@@ -65,6 +65,8 @@ public:
 private slots:
     void on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn);
 
+    void on_account_clicked();
+
     void on_refreshButton_clicked();
     void on_contactsButton_clicked();
 
