@@ -584,7 +584,7 @@ QWidget * MTHome::CreateUserBarWidget()
     buttonContacts->setAutoRaise(true);
     buttonContacts->setIcon(contactsButtonIcon);
     buttonContacts->setIconSize(pixmapContacts.rect().size());
-    buttonContacts->setText(tr("Manage Contacts"));
+    buttonContacts->setText(tr("Contacts"));
     // ----------------------------------------------------------------
     buttonRefresh->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     buttonRefresh->setAutoRaise(true);

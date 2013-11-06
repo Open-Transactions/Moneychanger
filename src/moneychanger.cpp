@@ -35,7 +35,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 : QWidget(parent),
   ot_me(NULL),
   ot_worker_background(NULL),
-  mc_overall_init(NULL),
+  mc_overall_init(false),
   mc_overview_already_init(false),
   mc_market_window_already_init(false),
   mc_addressbook_already_init(false),
@@ -1555,8 +1555,6 @@ void Moneychanger::set_systrayMenu_account_setDefaultAccount(QString account_id,
         
         int64_t     lBalance  = OTAPI_Wrap::GetAccountWallet_Balance    (account_id.toStdString());
         std::string strAsset  = OTAPI_Wrap::GetAccountWallet_AssetTypeID(account_id.toStdString());
-        std::string strNym    = OTAPI_Wrap::GetAccountWallet_NymID      (account_id.toStdString());
-        std::string strServer = OTAPI_Wrap::GetAccountWallet_ServerID   (account_id.toStdString());
         // ----------------------------------------------------------
         std::string str_amount;
         
@@ -1568,32 +1566,39 @@ void Moneychanger::set_systrayMenu_account_setDefaultAccount(QString account_id,
         
         mc_systrayMenu_account->setTitle(result);
         // -----------------------------------------------------------
-        if (!strAsset.empty())
-        {
-            std::string strAssetName = OTAPI_Wrap::GetAssetType_Name(strAsset);
 
-            if (!strAssetName.empty())
-                set_systrayMenu_account_setDefaultAsset(QString::fromStdString(strAsset),
-                                                        QString::fromStdString(strAssetName));
-        }
-        // -----------------------------------------------------------
-        if (!strNym.empty())
-        {
-            std::string strNymName = OTAPI_Wrap::GetNym_Name(strNym);
+//        if (mc_overall_init)
+//        {
+//            std::string strNym    = OTAPI_Wrap::GetAccountWallet_NymID      (account_id.toStdString());
+//            std::string strServer = OTAPI_Wrap::GetAccountWallet_ServerID   (account_id.toStdString());
+//            // -----------------------------------------------------------
+//            if (!strAsset.empty())
+//            {
+//                std::string strAssetName = OTAPI_Wrap::GetAssetType_Name(strAsset);
 
-            if (!strNymName.empty())
-                set_systrayMenu_account_setDefaultNym(QString::fromStdString(strNym),
-                                                      QString::fromStdString(strNymName));
-        }
-        // -----------------------------------------------------------
-        if (!strServer.empty())
-        {
-            std::string strServerName = OTAPI_Wrap::GetServer_Name(strServer);
+//                if (!strAssetName.empty())
+//                    set_systrayMenu_asset_setDefaultAsset(QString::fromStdString(strAsset),
+//                                                          QString::fromStdString(strAssetName));
+//            }
+//            // -----------------------------------------------------------
+//            if (!strNym.empty())
+//            {
+//                std::string strNymName = OTAPI_Wrap::GetNym_Name(strNym);
 
-            if (!strServerName.empty())
-                set_systrayMenu_account_setDefaultServer(QString::fromStdString(strServer),
-                                                         QString::fromStdString(strServerName));
-        }
+//                if (!strNymName.empty())
+//                    set_systrayMenu_nym_setDefaultNym(QString::fromStdString(strNym),
+//                                                      QString::fromStdString(strNymName));
+//            }
+//            // -----------------------------------------------------------
+//            if (!strServer.empty())
+//            {
+//                std::string strServerName = OTAPI_Wrap::GetServer_Name(strServer);
+
+//                if (!strServerName.empty())
+//                    set_systrayMenu_server_setDefaultServer(QString::fromStdString(strServer),
+//                                                            QString::fromStdString(strServerName));
+//            }
+//        }
         // -----------------------------------------------------------
     }
 }
