@@ -13,6 +13,8 @@
 
 #include "wizardaddaccount.h"
 
+#include "cashpurse.h"
+
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
 
@@ -28,12 +30,14 @@ MTAccountDetails::MTAccountDetails(QWidget *parent, MTDetailEdit & theOwner) :
     m_pLineEdit_Server_Name(NULL),
     m_pLineEdit_AssetType_Name(NULL),
     m_pHeaderWidget(NULL),
+    m_pHeaderWidget2(NULL),
+    m_pGridLayout(NULL),
+    m_pCashPurse(NULL),
     ui(new Ui::MTAccountDetails)
 {
     ui->setupUi(this);
     this->setContentsMargins(0, 0, 0, 0);
 //  this->installEventFilter(this); // NOTE: Successfully tested theory that the base class has already installed this.
-
 
     // ----------------------------------
     // Note: This is a placekeeper, so later on I can just erase
@@ -42,7 +46,7 @@ MTAccountDetails::MTAccountDetails(QWidget *parent, MTDetailEdit & theOwner) :
     m_pHeaderWidget  = new QWidget;
     ui->verticalLayout->insertWidget(0, m_pHeaderWidget);
     // ----------------------------------
-//    ui->lineEditID    ->setStyleSheet("QLineEdit { background-color: lightgray }");
+//  ui->lineEditID    ->setStyleSheet("QLineEdit { background-color: lightgray }");
     // ----------------------------------
     ui->lineEditServer->setStyleSheet("QLineEdit { background-color: lightgray }");
     ui->lineEditAsset ->setStyleSheet("QLineEdit { background-color: lightgray }");
@@ -73,6 +77,20 @@ void MTAccountDetails::ClearContents()
 
     m_pLineEdit_AssetType_ID  ->setText("");
     m_pLineEdit_AssetType_Name->setText("");
+    // ------------------------------------------
+    if (NULL != m_pHeaderWidget2)
+    {
+        m_pGridLayout->removeWidget(m_pHeaderWidget2);
+        delete m_pHeaderWidget2;
+        m_pHeaderWidget2 = NULL;
+    }
+    // ------------------------------------------
+    m_pHeaderWidget2  = new QWidget;
+    m_pGridLayout->addWidget(m_pHeaderWidget2, 0, 0, 2, 4, Qt::AlignTop);
+    // ------------------------------------------
+    if (NULL != m_pCashPurse)
+        m_pCashPurse->ClearContents();
+    // ------------------------------------------
 }
 
 void MTAccountDetails::FavorLeftSideForIDs()
@@ -110,7 +128,7 @@ void MTAccountDetails::FavorLeftSideForIDs()
 //virtual
 int MTAccountDetails::GetCustomTabCount()
 {
-    return 1;
+    return 2;
 }
 // ----------------------------------
 //virtual
@@ -125,18 +143,27 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
     // -----------------------------
     switch (nTab)
     {
-    case 0: // "IDs" tab
+    case 0: // "Cash Purse" tab
+        m_pCashPurse = new MTCashPurse;
+        pReturnValue = m_pCashPurse;
+        pReturnValue->setContentsMargins(0, 0, 0, 0);
+        break;
+
+    case 1: // "IDs" tab
     {
-        QGridLayout * pGridLayout = new QGridLayout;
-        int nGridRow = 0;
+        m_pGridLayout = new QGridLayout;
+        int nGridRow  = 0;
 
-        pGridLayout->setColumnMinimumWidth(0, 75);
-        pGridLayout->setColumnMinimumWidth(1, 75);
+        m_pGridLayout->setColumnMinimumWidth(0, 75);
+        m_pGridLayout->setColumnMinimumWidth(1, 75);
 
-        pGridLayout->setColumnStretch(1, 2);
-        pGridLayout->setColumnStretch(2, 5);
+        m_pGridLayout->setColumnStretch(1, 2);
+        m_pGridLayout->setColumnStretch(2, 5);
 
-        pGridLayout->setAlignment(Qt::AlignTop);
+        m_pGridLayout->setAlignment(Qt::AlignTop);
+        // -----------------------------------------------------------
+        m_pHeaderWidget2  = new QWidget;
+        m_pGridLayout->addWidget(m_pHeaderWidget2, nGridRow++, 0, 2, 4, Qt::AlignTop);
         // -----------------------------------------------------------
         {
             QLabel    * pLabel          = new QLabel(tr("Account Name: "));
@@ -150,9 +177,9 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
             m_pLineEdit_Acct_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
             m_pLineEdit_Acct_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
 
-            pGridLayout->addWidget(pLabel,    nGridRow,   0);
-            pGridLayout->addWidget(m_pLineEdit_Acct_Name,    nGridRow,   1);
-            pGridLayout->addWidget(m_pLineEdit_Acct_ID, nGridRow++, 2);
+            m_pGridLayout->addWidget(pLabel,    nGridRow,   0);
+            m_pGridLayout->addWidget(m_pLineEdit_Acct_Name,    nGridRow,   1);
+            m_pGridLayout->addWidget(m_pLineEdit_Acct_ID, nGridRow++, 2);
         }
         // -----------------------------------------------------------
         {
@@ -167,9 +194,9 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
             m_pLineEdit_AssetType_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
             m_pLineEdit_AssetType_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
 
-            pGridLayout->addWidget(pLabel, nGridRow, 0);
-            pGridLayout->addWidget(m_pLineEdit_AssetType_Name, nGridRow, 1);
-            pGridLayout->addWidget(m_pLineEdit_AssetType_ID, nGridRow++, 2);
+            m_pGridLayout->addWidget(pLabel, nGridRow, 0);
+            m_pGridLayout->addWidget(m_pLineEdit_AssetType_Name, nGridRow, 1);
+            m_pGridLayout->addWidget(m_pLineEdit_AssetType_ID, nGridRow++, 2);
         }
         // -----------------------------------------------------------
         {
@@ -184,9 +211,9 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
             m_pLineEdit_Nym_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
             m_pLineEdit_Nym_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
 
-            pGridLayout->addWidget(pLabel, nGridRow,   0);
-            pGridLayout->addWidget(m_pLineEdit_Nym_Name, nGridRow,   1);
-            pGridLayout->addWidget(m_pLineEdit_Nym_ID, nGridRow++, 2);
+            m_pGridLayout->addWidget(pLabel, nGridRow,   0);
+            m_pGridLayout->addWidget(m_pLineEdit_Nym_Name, nGridRow,   1);
+            m_pGridLayout->addWidget(m_pLineEdit_Nym_ID, nGridRow++, 2);
         }
         // -----------------------------------------------------------
         {
@@ -201,14 +228,14 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
             m_pLineEdit_Server_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
             m_pLineEdit_Server_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
 
-            pGridLayout->addWidget(pLabel,    nGridRow,   0);
-            pGridLayout->addWidget(m_pLineEdit_Server_Name,    nGridRow,   1);
-            pGridLayout->addWidget(m_pLineEdit_Server_ID, nGridRow++, 2);
+            m_pGridLayout->addWidget(pLabel,    nGridRow,   0);
+            m_pGridLayout->addWidget(m_pLineEdit_Server_Name,    nGridRow,   1);
+            m_pGridLayout->addWidget(m_pLineEdit_Server_ID, nGridRow++, 2);
         }
         // -----------------------------------------------------------
         pReturnValue = new QWidget;
         pReturnValue->setContentsMargins(0, 0, 0, 0);
-        pReturnValue->setLayout(pGridLayout);
+        pReturnValue->setLayout(m_pGridLayout);
     }
         break;
 
@@ -232,7 +259,8 @@ QString  MTAccountDetails::GetCustomTabName(int nTab)
     // -----------------------------
     switch (nTab)
     {
-    case 0:  qstrReturnValue = "IDs";  break;
+    case 0:  qstrReturnValue = tr("Cash Purse");  break;
+    case 1:  qstrReturnValue = tr("IDs");  break;
 
     default:
         qDebug() << QString("Unexpected: MTAccountDetails::GetCustomTabName was called with bad index: %1").arg(nTab);
@@ -287,11 +315,28 @@ void MTAccountDetails::refresh(QString strID, QString strName)
             ui->lineEditAsset ->setText(qstr_asset_name);
             ui->lineEditNym   ->setText(qstr_nym_name);
         }
-        // ----------------------------------
+        // -----------------------------------
+        // TAB: "CASH PURSE"
+        //
+        if (NULL != m_pCashPurse)
+            m_pCashPurse->refresh(strID, strName);
+        // -----------------------------------------------------------------------
         // TAB: "IDs"
         //
         if (NULL != m_pLineEdit_Acct_ID)
         {
+            QWidget * pHeaderWidget2  = MTEditDetails::CreateDetailHeaderWidget(strID, strName, qstrAmount);
+
+            if ((NULL != pHeaderWidget2) && (NULL != m_pHeaderWidget2))
+            {
+                m_pGridLayout->removeWidget(m_pHeaderWidget2);
+                delete m_pHeaderWidget2;
+                m_pHeaderWidget2 = NULL;
+            }
+
+            m_pGridLayout->addWidget(pHeaderWidget2, 0, 0, 2, 4, Qt::AlignTop);
+            m_pHeaderWidget2 = pHeaderWidget2;
+            // -------------------------------------------
             m_pLineEdit_Acct_ID->setText(strID);
             m_pLineEdit_Acct_Name->setText(strName);
             // ------------------------------------
@@ -333,6 +378,43 @@ bool MTAccountDetails::eventFilter(QObject *obj, QEvent *event)
         // Therefore I call the base class version here, since as it's overridden,
         // I don't expect it will otherwise ever get called.
 //    }
+}
+
+
+// ------------------------------------------------------
+
+
+void MTAccountDetails::on_toolButtonAsset_clicked()
+{
+    if (!m_pOwner->m_qstrCurrentID.isEmpty() && (NULL != m_pMoneychanger))
+    {
+        std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
+        // -------------------------------------------------------------------
+        QString qstr_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_AssetTypeID(str_acct_id));
+        m_pMoneychanger->mc_assetmanager_dialog(qstr_id);
+    }
+}
+
+void MTAccountDetails::on_toolButtonNym_clicked()
+{
+    if (!m_pOwner->m_qstrCurrentID.isEmpty() && (NULL != m_pMoneychanger))
+    {
+        std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
+        // -------------------------------------------------------------------
+        QString qstr_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_NymID(str_acct_id));
+        m_pMoneychanger->mc_nymmanager_dialog(qstr_id);
+    }
+}
+
+void MTAccountDetails::on_toolButtonServer_clicked()
+{
+    if (!m_pOwner->m_qstrCurrentID.isEmpty() && (NULL != m_pMoneychanger))
+    {
+        std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
+        // -------------------------------------------------------------------
+        QString qstr_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ServerID(str_acct_id));
+        m_pMoneychanger->mc_servermanager_dialog(qstr_id);
+    }
 }
 
 
@@ -532,6 +614,4 @@ void MTAccountDetails::on_lineEditName_editingFinished()
         }
     }
 }
-
-// ------------------------------------------------------
 

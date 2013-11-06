@@ -14,6 +14,7 @@ class DlgChooser : public QDialog
     Q_OBJECT
     
     bool m_bFirstRun;
+    bool m_bIsAccounts; // If we're showing a list of accounts, we display the balances.
 
 public:
     explicit DlgChooser(QWidget *parent = 0);
@@ -21,6 +22,7 @@ public:
     
     QString GetCurrentID() const { return m_qstrCurrentID; }
 
+    void SetIsAccounts(bool bAcct=true) { m_bIsAccounts = bAcct; }
     void SetPreSelected(QString strSelected);
 
     int         m_nCurrentRow;

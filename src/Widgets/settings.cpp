@@ -12,6 +12,10 @@ Settings::Settings(QWidget *parent) :
     ui(new Ui::Settings)
 {
     ui->setupUi(this);
+
+    // ----------------------------------------------
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+
     language = DBHandler::getInstance()->queryString("SELECT `parameter1` FROM `settings` WHERE `setting`='language'", 0, 0);
 
     QDir translationDir(TRANSLATIONS_DIRECOTRY);
@@ -28,7 +32,8 @@ Settings::Settings(QWidget *parent) :
     }
 
     ui->comboBoxLanguage->setCurrentIndex(ui->comboBoxLanguage->findData(language));
-
+#endif
+    // ----------------------------------------------
 }
 
 Settings::~Settings()
@@ -38,11 +43,20 @@ Settings::~Settings()
 
 void Settings::showEvent (QShowEvent * event)
 {
+    // ----------------------------------------------
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+
     ui->comboBoxLanguage->setCurrentIndex(ui->comboBoxLanguage->findData(language));
+
+#endif
+    // ----------------------------------------------
 }
 
 void Settings::on_pushButtonSave_clicked()
 {
+    // ----------------------------------------------
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+
     qDebug() << ui->comboBoxLanguage->itemData(ui->comboBoxLanguage->currentIndex()).toString();
     if(language != ui->comboBoxLanguage->itemData(ui->comboBoxLanguage->currentIndex()).toString())
     {
@@ -54,4 +68,6 @@ void Settings::on_pushButtonSave_clicked()
         QMessageBox::information(this, "Settings saved","The language change will take effect after a restart of Moneychanger.");
     }
     hide();
+#endif
+    // ----------------------------------------------
 }

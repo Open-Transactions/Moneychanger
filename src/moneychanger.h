@@ -227,9 +227,9 @@ private:
 public:
     void SetupMainMenu();
 
-    void mc_nymmanager_dialog();
-    void mc_servermanager_dialog();
-    void mc_assetmanager_dialog();
+    void mc_nymmanager_dialog   (QString qstrPresetID=QString(""));
+    void mc_servermanager_dialog(QString qstrPresetID=QString(""));
+    void mc_assetmanager_dialog (QString qstrPresetID=QString(""));
 
 private:
     void SetupAssetMenu();
@@ -278,7 +278,10 @@ private:
     // ------------------------------------------------
     
     //Default Account
-    void mc_accountmanager_dialog();
+public:
+    void mc_accountmanager_dialog(QString qstrAcctID=QString(""));
+
+private:
     //Reload account list
     void mc_systrayMenu_reload_accountlist();
     // ------------------------------------------------

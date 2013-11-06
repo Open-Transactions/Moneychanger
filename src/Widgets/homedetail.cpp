@@ -417,6 +417,7 @@ QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
     if (qstr_acct_id.isEmpty())
     {
         DlgChooser theChooser(this);
+        theChooser.SetIsAccounts();
         // -----------------------------------------------
         mapIDName & the_map = theChooser.m_map;
         // -----------------------------------------------
