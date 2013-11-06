@@ -7,10 +7,12 @@
 #include "dlgchooser.h"
 #include "ui_dlgchooser.h"
 
+#include "home.h"
 
 DlgChooser::DlgChooser(QWidget *parent) :
     QDialog(parent),
     m_bFirstRun(true),
+    m_bIsAccounts(false),
     m_nCurrentRow(-1),
     ui(new Ui::DlgChooser)
 {
@@ -23,6 +25,7 @@ DlgChooser::~DlgChooser()
 {
     delete ui;
 }
+
 
 
 void DlgChooser::SetPreSelected(QString strSelected)
@@ -103,7 +106,12 @@ void DlgChooser::showEvent(QShowEvent * event)
 //          QString currency_amount = tr("AMOUNT");
             QString currency_amount = QString("");
 
-            currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(QString("red")));
+            if (m_bIsAccounts)
+            {
+                currency_amount = MTHome::shortAcctBalance(qstrID);
+            }
+
+            currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(QString("black")));
             // ----------------------------------------------------------------
             currency_amount_label->setText(currency_amount);
             // ----------------------------------------------------------------

@@ -66,7 +66,8 @@ HEADERS += moneychanger.h \
     passwordcallback.h \
     UI/dlgpassword.h \
     UI/dlgpasswordconfirm.h \
-    applicationmc.h
+    applicationmc.h \
+    Widgets/cashpurse.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -121,7 +122,8 @@ SOURCES += main.cpp\
     passwordcallback.cpp \
     UI/dlgpassword.cpp \
     UI/dlgpasswordconfirm.cpp \
-    applicationmc.cpp
+    applicationmc.cpp \
+    Widgets/cashpurse.cpp
 
 RESOURCES += resource.qrc
 
@@ -160,7 +162,8 @@ FORMS += \
     Widgets/pagenym_source.ui \
     Widgets/pagenym_altlocation.ui \
     UI/dlgpassword.ui \
-    UI/dlgpasswordconfirm.ui
+    UI/dlgpasswordconfirm.ui \
+    Widgets/cashpurse.ui
 
 mac:{
 

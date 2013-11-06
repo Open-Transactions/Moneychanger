@@ -9,6 +9,7 @@
 #include "senddlg.h"
 #include "ui_senddlg.h"
 
+#include "moneychanger.h"
 #include "home.h"
 
 #include "dlgchooser.h"
@@ -18,77 +19,6 @@
 
 #include "overridecursor.h"
 
-
-
-
-
-int64_t MTSendDlg::rawAcctBalance()
-{
-    int64_t ret = m_myAcctId.isEmpty() ? 0 : OTAPI_Wrap::GetAccountWallet_Balance(m_myAcctId.toStdString());
-    return ret;
-}
-
-// ----------------------------------------------------------------------
-
-int64_t MTSendDlg::rawCashBalance(QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id)
-{
-    int64_t balance = 0;
-
-    std::string serverId(qstr_server_id.toStdString());
-    std::string assetId (qstr_asset_id.toStdString());
-    std::string nymId   (qstr_nym_id.toStdString());
-
-    std::string str_purse = OTAPI_Wrap::LoadPurse(serverId, assetId, nymId);
-
-    if (!str_purse.empty())
-    {
-        int64_t temp_balance = OTAPI_Wrap::Purse_GetTotalValue(serverId, assetId, str_purse);
-
-        if (temp_balance >= 0)
-            balance = temp_balance;
-    }
-
-    return balance;
-}
-
-
-// ----------------------------------------------------------------------
-
-QString MTSendDlg::cashBalance(QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id)
-{
-    int64_t     balance      = 0;
-    QString     return_value = QString("");
-    std::string str_output;
-
-    balance    = this->rawCashBalance(qstr_server_id, qstr_asset_id, qstr_nym_id);
-    str_output = OTAPI_Wrap::It()->FormatAmount(qstr_asset_id.toStdString(), balance);
-
-    if (!str_output.empty())
-        return_value = QString::fromStdString(str_output);
-
-    return return_value;
-}
-
-
-// ----------------------------------------------------------------------
-
-
-//QString MTSendDlg::shortAcctBalance(QString qstr_acct_id, QString qstr_asset_id)
-//{
-//    int64_t      balance    = OTAPI_Wrap::GetAccountWallet_Balance(qstr_acct_id.toStdString());
-//    std::string  assetId(qstr_asset_id.toStdString());
-//    std::string  str_output = OTAPI_Wrap::It()->FormatAmount(assetId, balance);
-//    std::string  str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(assetId);
-//
-//    QString return_value = QString("");
-//
-//    if (!str_output.empty())
-//        return_value = QString::fromStdString(str_output);
-//    else
-//        return_value = QString("%1 %2").arg(balance).arg(QString::fromStdString(str_asset_name));
-//
-//    return return_value;
-//}
 
 
 // ----------------------------------------------------------------------
@@ -127,10 +57,10 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString fromAcctId, QS
     // the server will be able to tell who the recipient is purely by timing
     // analysis, without having to break the Chaumian blinding.
     //
-    int64_t theCashBalance = rawCashBalance(QString::fromStdString(str_serverId),
-                                            QString::fromStdString(str_assetId),
-                                            QString::fromStdString(str_fromNymId));
-    int64_t theAcctBalance = rawAcctBalance();
+    int64_t theCashBalance = MTHome::rawCashBalance(QString::fromStdString(str_serverId),
+                                                    QString::fromStdString(str_assetId),
+                                                    QString::fromStdString(str_fromNymId));
+    int64_t theAcctBalance = MTHome::rawAcctBalance(this->m_myAcctId);
 
     if ((amount > theCashBalance) && (amount > (theAcctBalance + theCashBalance)))
     {
@@ -180,7 +110,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
         qDebug() << QString("Why send 0 (or less) units? Aborting send %1.").arg(nsChequeType);
         return false;
     }
-    if (amount > rawAcctBalance()) {
+    if (amount > MTHome::rawAcctBalance(m_myAcctId)) {
         qDebug() << QString("Aborting send %1: Amount is larger than account balance.").arg(nsChequeType);
         return false;
     }
@@ -249,13 +179,15 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
         // Notice how I can send an instrument to myself. This doesn't actually send anything --
         // it just puts a copy into my outpayments box for safe-keeping.
         //
-        madeEasy.send_user_payment(str_serverId, str_fromNymId, str_fromNymId, strVoucher);
+        OT_ME sendToSelf;
+        sendToSelf.send_user_payment(str_serverId, str_fromNymId, str_fromNymId, strVoucher);
     }
     // ---------------------------------------------------------
     // Download all the intermediary files (account balance, inbox, outbox, etc)
     // since they have probably changed from this operation.
     //
-    bool bRetrieved = madeEasy.retrieve_account(str_serverId, str_fromNymId, str_fromAcctId, true); //bForceDownload defaults to false.
+    OT_ME retrieveAcct;
+    bool bRetrieved = retrieveAcct.retrieve_account(str_serverId, str_fromNymId, str_fromAcctId, true); //bForceDownload defaults to false.
     qDebug() << QString("%1 retrieving intermediary files for account %2. (After withdraw voucher.)").
                 arg(bRetrieved ? QString("Success") : QString("Failed")).arg(str_fromAcctId.c_str());
     // ---------------------------------------------------------
@@ -264,8 +196,13 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     // in the outpayment box. (Even if it fails to send.)
     // That way the user can later cancel or re-send it.
     //
-    std::string  strSendResponse = madeEasy.send_user_payment(str_serverId, str_fromNymId, str_toNymId, strVoucher);
-    int32_t      nReturnVal      = madeEasy.VerifyMessageSuccess(strSendResponse);
+
+    //OTLog::vOutput(0, "Sending payment to NymID: %s\n", str_toNymId.c_str());
+
+    OT_ME sendPayment;
+
+    std::string  strSendResponse = sendPayment.send_user_payment(str_serverId, str_fromNymId, str_toNymId, strVoucher);
+    int32_t      nReturnVal      = sendPayment.VerifyMessageSuccess(strSendResponse);
 
     if (1 != nReturnVal)
         qDebug() << QString("send %1: Failed.").arg(nsChequeType);
@@ -553,7 +490,18 @@ void MTSendDlg::on_sendButton_clicked()
         return;
     }
     // -----------------------------------------------------------------
+    // Make sure I'm not sending to myself (since that will fail...)
+    //
+    std::string str_fromAcctId(m_myAcctId.toStdString());
+    QString     qstr_fromNymId(QString::fromStdString(OTAPI_Wrap::GetAccountWallet_NymID(str_fromAcctId)));
 
+    if (m_hisNymId == qstr_fromNymId)
+    {
+        QMessageBox::warning(this, tr("Cannot Send To Yourself"),
+                             tr("Sorry, but you cannot send to yourself. Please choose another recipient, or change the sending account."));
+        return;
+    }
+    // -----------------------------------------------------------------
     // TODO: We want an extra "ARE YOU SURE?" step to go right here, but likely it will
     // just be the passphrase dialog being FORCED to come up. But still, that means here
     // we'll have to set some kind of flag, probably, to force it to do that.
@@ -585,49 +533,12 @@ void MTSendDlg::on_sendButton_clicked()
 
 
 
-QString MTSendDlg::FormDisplayLabelForAcctButton(QString qstr_acct_id, QString qstr_display_name)
-{
-    QString display_name("");
-    QString from_button_text("");
-    // -----------------------------------------
-    if (qstr_display_name.isEmpty())
-        display_name = QString("");
-    else
-        display_name = qstr_display_name;
-    // -----------------------------------------
-    std::string str_acct_id     = qstr_acct_id.toStdString();
-    std::string str_acct_nym    = OTAPI_Wrap::It()->GetAccountWallet_NymID      (str_acct_id);
-    std::string str_acct_server = OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
-    std::string str_acct_asset  = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
-    // -----------------------------------------
-    QString qstr_acct_nym    = QString::fromStdString(str_acct_nym);
-    QString qstr_acct_server = QString::fromStdString(str_acct_server);
-    QString qstr_acct_asset  = QString::fromStdString(str_acct_asset);
-    // -----------------------------------
-    from_button_text = QString("%1 (%2").
-            arg(display_name).
-            arg(MTHome::shortAcctBalance(qstr_acct_id, qstr_acct_asset));
-    // --------------------------------------------
-    if (!qstr_acct_nym.isEmpty() && !qstr_acct_server.isEmpty() && !qstr_acct_asset.isEmpty())
-    {
-        int64_t  raw_cash_balance = this->rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
-
-        if (raw_cash_balance > 0)
-            from_button_text += tr(" + %1 in cash").arg(cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym));
-    }
-    // --------------------------------------------
-    from_button_text += QString(")");
-    // -----------------------------------------
-    return from_button_text;
-}
-
-
-
 void MTSendDlg::on_fromButton_clicked()
 {
     // Select from Accounts in local wallet.
     //
     DlgChooser theChooser(this);
+    theChooser.SetIsAccounts();
     // -----------------------------------------------
     mapIDName & the_map = theChooser.m_map;
 
@@ -675,7 +586,7 @@ void MTSendDlg::on_fromButton_clicked()
             else
                 display_name = theChooser.m_qstrCurrentName;
             // -----------------------------------------
-            from_button_text = FormDisplayLabelForAcctButton(m_myAcctId, display_name);
+            from_button_text = MTHome::FormDisplayLabelForAcctButton(m_myAcctId, display_name);
             // -----------------------------------------
             ui->fromButton->setText(from_button_text);
             // -----------------------------------------
@@ -691,6 +602,28 @@ void MTSendDlg::on_fromButton_clicked()
     ui->fromButton->setText(tr("<Click to choose Account>"));
 }
 
+
+
+
+void MTSendDlg::on_toolButtonManageAccts_clicked()
+{
+    m_pMoneychanger->mc_accountmanager_dialog(m_myAcctId);
+}
+
+void MTSendDlg::on_toolButton_clicked()
+{
+    QString qstrContactID("");
+    // ------------------------------------------------
+    if (!m_hisNymId.isEmpty())
+    {
+        int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID(m_hisNymId);
+
+        if (nContactID > 0)
+            qstrContactID = QString("%1").arg(nContactID);
+    }
+    // ------------------------------------------------
+    m_pMoneychanger->mc_addressbook_show(qstrContactID);
+}
 
 
 void MTSendDlg::on_toButton_clicked()
@@ -851,7 +784,7 @@ void MTSendDlg::dialog()
         }
         else
         {
-            QString from_button_text = FormDisplayLabelForAcctButton(m_myAcctId, QString::fromStdString(str_my_name));
+            QString from_button_text = MTHome::FormDisplayLabelForAcctButton(m_myAcctId, QString::fromStdString(str_my_name));
 
             ui->fromButton->setText(from_button_text);
         }
@@ -902,7 +835,6 @@ void MTSendDlg::dialog()
         }
         // -------------------------------------------
 
-
         ui->toButton->setFocus();
 
 
@@ -921,9 +853,10 @@ void MTSendDlg::dialog()
 
 
 
-MTSendDlg::MTSendDlg(QWidget *parent) :
+MTSendDlg::MTSendDlg(QWidget *parent, Moneychanger & theMC) :
     QWidget(parent, Qt::Window),
     already_init(false),
+    m_pMoneychanger(&theMC),
     m_bSent(false),
     ui(new Ui::MTSendDlg)
 {
@@ -993,3 +926,4 @@ void MTSendDlg::closeEvent(QCloseEvent *event)
     // -------------------------------------------
     QWidget::closeEvent(event);
 }
+

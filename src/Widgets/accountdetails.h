@@ -3,12 +3,15 @@
 
 #include <QWidget>
 #include <QLineEdit>
+#include <QGridLayout>
 
 #include "editdetails.h"
 
 namespace Ui {
 class MTAccountDetails;
 }
+
+class MTCashPurse;
 
 class MTAccountDetails : public MTEditDetails
 {
@@ -44,9 +47,20 @@ public:
 
 private:
     QWidget * m_pHeaderWidget;
+    QWidget * m_pHeaderWidget2;
+
+    QGridLayout * m_pGridLayout; // Used for tab 2.
+
+    MTCashPurse * m_pCashPurse; // Tab 3.
 
 private slots:
     void on_lineEditName_editingFinished();
+
+    void on_toolButtonAsset_clicked();
+
+    void on_toolButtonNym_clicked();
+
+    void on_toolButtonServer_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

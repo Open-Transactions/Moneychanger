@@ -417,6 +417,7 @@ QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
     if (qstr_acct_id.isEmpty())
     {
         DlgChooser theChooser(this);
+        theChooser.SetIsAccounts();
         // -----------------------------------------------
         mapIDName & the_map = theChooser.m_map;
         // -----------------------------------------------
@@ -1482,9 +1483,22 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
     pGridLayout->setAlignment(Qt::AlignTop);
 
+    pGridLayout->setContentsMargins(0,0,0,0);
+    // --------------------------------------------------
+    QWidget * pIDHeader = MTHomeDetail::CreateDetailHeaderWidget(recordmt, false);
+
+    if (NULL != pIDHeader)
+    {
+        pIDHeader->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+
+        pGridLayout->addWidget(pIDHeader, nGridRow++, 0, 1, 3);
+        pGridLayout->setAlignment(pIDHeader, Qt::AlignTop);
+    }
+    // --------------------------------------------------
+
     if (!qstr_NymID.isEmpty())
     {
-        QLabel    * pLabel    = new QLabel(tr("My Nym: "));
+        QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(tr("My")).arg(tr("Nym")) );
 
         MTNameLookupQT theLookup;
         QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_NymID.toStdString()));
@@ -1505,7 +1519,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
     if (!qstr_OtherNymID.isEmpty())
     {
-        QLabel    * pLabel    = new QLabel(tr("%1 Nym: ").arg(qstr_OtherType));
+        QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(qstr_OtherType).arg(tr("Nym")));
 
         MTNameLookupQT theLookup;
         QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_OtherNymID.toStdString()));
@@ -1526,7 +1540,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
     if (!qstr_AccountID.isEmpty())
     {
-        QLabel    * pLabel    = new QLabel(tr("My Account: "));
+        QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(tr("My")).arg(tr("Account")) );
 
         MTNameLookupQT theLookup;
         QString qstr_name = QString::fromStdString(theLookup.GetAcctName(qstr_AccountID.toStdString()));
@@ -1547,7 +1561,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
     if (!qstr_OtherAcctID.isEmpty())
     {
-        QLabel    * pLabel    = new QLabel(tr("%1 Account: ").arg(qstr_OtherType));
+        QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(qstr_OtherType).arg(tr("Acct")));
 
         MTNameLookupQT theLookup;
         QString qstr_name = QString::fromStdString(theLookup.GetAcctName(qstr_OtherAcctID.toStdString()));
@@ -1568,7 +1582,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
     if (!qstr_ServerID.isEmpty())
     {
-        QLabel    * pLabel    = new QLabel(tr("Server: "));
+        QLabel    * pLabel    = new QLabel(QString("%1: ").arg(tr("Server")));
 
         QString qstr_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(qstr_ServerID.toStdString()));
 
@@ -1588,7 +1602,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
     if (!qstr_AssetTypeID.isEmpty())
     {
-        QLabel    * pLabel    = new QLabel(tr("Asset Type: "));
+        QLabel    * pLabel    = new QLabel(QString("%1: ").arg(tr("Asset Type")));
 
         QString qstr_name = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(qstr_AssetTypeID.toStdString()));
 
@@ -1625,8 +1639,9 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     {
         pTab3Widget = new QWidget;
 
-        pTab3Widget->setContentsMargins(0, 0, 0, 0);
+        pTab3Widget->setContentsMargins(11, 5, 11, 5);
         pTab3Widget->setLayout(pGridLayout);
+        pTab3Widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
         pTabWidget->addTab(pTab3Widget, tr("IDs"));
 //      m_pDetailLayout->addLayout(pGridLayout, nCurrentRow++, nCurrentColumn, 1, 2, Qt::AlignBottom);
@@ -1670,11 +1685,26 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
         {
             pvBox       = new QVBoxLayout;
             pTab2Widget = new QWidget;
-            QLabel * pLabelContents = new QLabel(tr("Raw Contents:"));
+            QLabel * pLabelContents = new QLabel(QString("%1: ").arg(tr("Raw Contents")));
 
             pvBox->setAlignment(Qt::AlignTop);
+
+            // --------------------------------------------------
+            QWidget * pIDHeader2 = MTHomeDetail::CreateDetailHeaderWidget(recordmt, false);
+
+            if (NULL != pIDHeader2)
+            {
+                pIDHeader2->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+
+                pvBox->addWidget(pIDHeader2);
+//              pvBox->setAlignment(pIDHeader2, Qt::AlignTop);
+            }
+            // --------------------------------------------------
+
             pvBox->addWidget   (pLabelContents);
             pvBox->addWidget   (sec);
+
+            pvBox->setContentsMargins(11, 5, 11, 5);
 
             pTab2Widget->setContentsMargins(0, 0, 0, 0);
             pTab2Widget->setLayout(pvBox);
