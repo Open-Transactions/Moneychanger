@@ -1566,39 +1566,49 @@ void Moneychanger::set_systrayMenu_account_setDefaultAccount(QString account_id,
         
         mc_systrayMenu_account->setTitle(result);
         // -----------------------------------------------------------
+        std::string strNym    = OTAPI_Wrap::GetAccountWallet_NymID   (account_id.toStdString());
+        std::string strServer = OTAPI_Wrap::GetAccountWallet_ServerID(account_id.toStdString());
 
-//        if (mc_overall_init)
-//        {
-//            std::string strNym    = OTAPI_Wrap::GetAccountWallet_NymID      (account_id.toStdString());
-//            std::string strServer = OTAPI_Wrap::GetAccountWallet_ServerID   (account_id.toStdString());
-//            // -----------------------------------------------------------
-//            if (!strAsset.empty())
-//            {
-//                std::string strAssetName = OTAPI_Wrap::GetAssetType_Name(strAsset);
+        if (!strAsset.empty())
+            DBHandler::getInstance()->AddressBookUpdateDefaultAsset (QString::fromStdString(strAsset));
+        if (!strNym.empty())
+            DBHandler::getInstance()->AddressBookUpdateDefaultNym   (QString::fromStdString(strNym));
+        if (!strServer.empty())
+            DBHandler::getInstance()->AddressBookUpdateDefaultServer(QString::fromStdString(strServer));
 
-//                if (!strAssetName.empty())
-//                    set_systrayMenu_asset_setDefaultAsset(QString::fromStdString(strAsset),
-//                                                          QString::fromStdString(strAssetName));
-//            }
-//            // -----------------------------------------------------------
-//            if (!strNym.empty())
-//            {
-//                std::string strNymName = OTAPI_Wrap::GetNym_Name(strNym);
+        if (mc_overall_init)
+        {
+            // -----------------------------------------------------------
+            if (!strAsset.empty())
+            {
+                QString qstrAssetName = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(strAsset));
 
-//                if (!strNymName.empty())
-//                    set_systrayMenu_nym_setDefaultNym(QString::fromStdString(strNym),
-//                                                      QString::fromStdString(strNymName));
-//            }
-//            // -----------------------------------------------------------
-//            if (!strServer.empty())
-//            {
-//                std::string strServerName = OTAPI_Wrap::GetServer_Name(strServer);
+                if (!qstrAssetName.isEmpty() && (NULL != mc_systrayMenu_asset))
+                    mc_systrayMenu_asset->setTitle(tr("Asset Type: ")+qstrAssetName);
+//                  set_systrayMenu_asset_setDefaultAsset(QString::fromStdString(strAsset),
+//                                                        QString::fromStdString(strAssetName));
+            }
+            // -----------------------------------------------------------
+            if (!strNym.empty())
+            {
+                QString qstrNymName = QString::fromStdString(OTAPI_Wrap::GetNym_Name(strNym));
 
-//                if (!strServerName.empty())
-//                    set_systrayMenu_server_setDefaultServer(QString::fromStdString(strServer),
-//                                                            QString::fromStdString(strServerName));
-//            }
-//        }
+                if (!qstrNymName.isEmpty() && (NULL != mc_systrayMenu_nym))
+                    mc_systrayMenu_nym->setTitle(tr("Nym: ")+qstrNymName);
+//                  set_systrayMenu_nym_setDefaultNym(QString::fromStdString(strNym),
+//                                                    QString::fromStdString(strNymName));
+            }
+            // -----------------------------------------------------------
+            if (!strServer.empty())
+            {
+                QString qstrServerName = QString::fromStdString(OTAPI_Wrap::GetServer_Name(strServer));
+
+                if (!qstrServerName.isEmpty() && (NULL != mc_systrayMenu_server))
+                    mc_systrayMenu_server->setTitle(tr("Server: ")+qstrServerName);
+//                  set_systrayMenu_server_setDefaultServer(QString::fromStdString(strServer),
+//                                                          QString::fromStdString(strServerName));
+            }
+        }
         // -----------------------------------------------------------
     }
 }
