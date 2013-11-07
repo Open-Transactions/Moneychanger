@@ -21,17 +21,7 @@
 
 MTAccountDetails::MTAccountDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
-    m_pLineEdit_Acct_ID(NULL),
-    m_pLineEdit_Nym_ID(NULL),
-    m_pLineEdit_Server_ID(NULL),
-    m_pLineEdit_AssetType_ID(NULL),
-    m_pLineEdit_Acct_Name(NULL),
-    m_pLineEdit_Nym_Name(NULL),
-    m_pLineEdit_Server_Name(NULL),
-    m_pLineEdit_AssetType_Name(NULL),
     m_pHeaderWidget(NULL),
-    m_pHeaderWidget2(NULL),
-    m_pGridLayout(NULL),
     m_pCashPurse(NULL),
     ui(new Ui::MTAccountDetails)
 {
@@ -65,33 +55,12 @@ void MTAccountDetails::ClearContents()
     ui->lineEditServer->setText("");
     ui->lineEditAsset->setText("");
     ui->lineEditNym->setText("");
-
-    m_pLineEdit_Acct_ID  ->setText("");
-    m_pLineEdit_Acct_Name->setText("");
-
-    m_pLineEdit_Nym_ID  ->setText("");
-    m_pLineEdit_Nym_Name->setText("");
-
-    m_pLineEdit_Server_ID  ->setText("");
-    m_pLineEdit_Server_Name->setText("");
-
-    m_pLineEdit_AssetType_ID  ->setText("");
-    m_pLineEdit_AssetType_Name->setText("");
-    // ------------------------------------------
-    if (NULL != m_pHeaderWidget2)
-    {
-        m_pGridLayout->removeWidget(m_pHeaderWidget2);
-        delete m_pHeaderWidget2;
-        m_pHeaderWidget2 = NULL;
-    }
-    // ------------------------------------------
-    m_pHeaderWidget2  = new QWidget;
-    m_pGridLayout->addWidget(m_pHeaderWidget2, 0, 0, 2, 4, Qt::AlignTop);
     // ------------------------------------------
     if (NULL != m_pCashPurse)
         m_pCashPurse->ClearContents();
     // ------------------------------------------
 }
+
 
 void MTAccountDetails::FavorLeftSideForIDs()
 {
@@ -104,23 +73,6 @@ void MTAccountDetails::FavorLeftSideForIDs()
         ui->lineEditAsset ->home(false);
         ui->lineEditNym   ->home(false);
         // ----------------------------------
-        // TAB: "IDs"
-        //
-        if (NULL != m_pLineEdit_Acct_ID)
-        {
-            m_pLineEdit_Acct_ID->home(false);
-            m_pLineEdit_Acct_Name->home(false);
-            // ------------------------------------
-            m_pLineEdit_Nym_ID->home(false);
-            m_pLineEdit_Nym_Name->home(false);
-            // ------------------------------------
-            m_pLineEdit_Server_ID->home(false);
-            m_pLineEdit_Server_Name->home(false);
-            // ------------------------------------
-            m_pLineEdit_AssetType_ID->home(false);
-            m_pLineEdit_AssetType_Name->home(false);
-        }
-        // ------------------------------------
     }
 }
 
@@ -128,7 +80,7 @@ void MTAccountDetails::FavorLeftSideForIDs()
 //virtual
 int MTAccountDetails::GetCustomTabCount()
 {
-    return 2;
+    return 1;
 }
 // ----------------------------------
 //virtual
@@ -149,96 +101,6 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
         pReturnValue->setContentsMargins(0, 0, 0, 0);
         break;
 
-    case 1: // "IDs" tab
-    {
-        m_pGridLayout = new QGridLayout;
-        int nGridRow  = 0;
-
-        m_pGridLayout->setColumnMinimumWidth(0, 75);
-        m_pGridLayout->setColumnMinimumWidth(1, 75);
-
-        m_pGridLayout->setColumnStretch(1, 2);
-        m_pGridLayout->setColumnStretch(2, 5);
-
-        m_pGridLayout->setAlignment(Qt::AlignTop);
-        // -----------------------------------------------------------
-        m_pHeaderWidget2  = new QWidget;
-        m_pGridLayout->addWidget(m_pHeaderWidget2, nGridRow++, 0, 2, 4, Qt::AlignTop);
-        // -----------------------------------------------------------
-        {
-            QLabel    * pLabel          = new QLabel(tr("Account Name: "));
-
-            m_pLineEdit_Acct_ID         = new QLineEdit;
-            m_pLineEdit_Acct_Name       = new QLineEdit;
-
-            m_pLineEdit_Acct_ID->setReadOnly(true);
-            m_pLineEdit_Acct_Name->setReadOnly(true);
-
-            m_pLineEdit_Acct_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
-            m_pLineEdit_Acct_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
-
-            m_pGridLayout->addWidget(pLabel,    nGridRow,   0);
-            m_pGridLayout->addWidget(m_pLineEdit_Acct_Name,    nGridRow,   1);
-            m_pGridLayout->addWidget(m_pLineEdit_Acct_ID, nGridRow++, 2);
-        }
-        // -----------------------------------------------------------
-        {
-            QLabel    * pLabel          = new QLabel(tr("Asset Type: "));
-
-            m_pLineEdit_AssetType_ID    = new QLineEdit;
-            m_pLineEdit_AssetType_Name  = new QLineEdit;
-
-            m_pLineEdit_AssetType_ID->setReadOnly(true);
-            m_pLineEdit_AssetType_Name->setReadOnly(true);
-
-            m_pLineEdit_AssetType_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
-            m_pLineEdit_AssetType_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
-
-            m_pGridLayout->addWidget(pLabel, nGridRow, 0);
-            m_pGridLayout->addWidget(m_pLineEdit_AssetType_Name, nGridRow, 1);
-            m_pGridLayout->addWidget(m_pLineEdit_AssetType_ID, nGridRow++, 2);
-        }
-        // -----------------------------------------------------------
-        {
-            QLabel    * pLabel          = new QLabel(tr("Owner Nym: "));
-
-            m_pLineEdit_Nym_ID          = new QLineEdit;
-            m_pLineEdit_Nym_Name        = new QLineEdit;
-
-            m_pLineEdit_Nym_ID->setReadOnly(true);
-            m_pLineEdit_Nym_Name->setReadOnly(true);
-
-            m_pLineEdit_Nym_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
-            m_pLineEdit_Nym_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
-
-            m_pGridLayout->addWidget(pLabel, nGridRow,   0);
-            m_pGridLayout->addWidget(m_pLineEdit_Nym_Name, nGridRow,   1);
-            m_pGridLayout->addWidget(m_pLineEdit_Nym_ID, nGridRow++, 2);
-        }
-        // -----------------------------------------------------------
-        {
-            QLabel    * pLabel          = new QLabel(tr("Server: "));
-
-            m_pLineEdit_Server_ID       = new QLineEdit;
-            m_pLineEdit_Server_Name     = new QLineEdit;
-
-            m_pLineEdit_Server_ID->setReadOnly(true);
-            m_pLineEdit_Server_Name->setReadOnly(true);
-
-            m_pLineEdit_Server_ID->setStyleSheet("QLineEdit { background-color: lightgray }");
-            m_pLineEdit_Server_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
-
-            m_pGridLayout->addWidget(pLabel,    nGridRow,   0);
-            m_pGridLayout->addWidget(m_pLineEdit_Server_Name,    nGridRow,   1);
-            m_pGridLayout->addWidget(m_pLineEdit_Server_ID, nGridRow++, 2);
-        }
-        // -----------------------------------------------------------
-        pReturnValue = new QWidget;
-        pReturnValue->setContentsMargins(0, 0, 0, 0);
-        pReturnValue->setLayout(m_pGridLayout);
-    }
-        break;
-
     default:
         qDebug() << QString("Unexpected: MTAccountDetails::CreateCustomTab was called with bad index: %1").arg(nTab);
         return NULL;
@@ -246,6 +108,7 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
     // -----------------------------
     return pReturnValue;
 }
+
 // ---------------------------------
 //virtual
 QString  MTAccountDetails::GetCustomTabName(int nTab)
@@ -260,7 +123,6 @@ QString  MTAccountDetails::GetCustomTabName(int nTab)
     switch (nTab)
     {
     case 0:  qstrReturnValue = tr("Cash Purse");  break;
-    case 1:  qstrReturnValue = tr("IDs");  break;
 
     default:
         qDebug() << QString("Unexpected: MTAccountDetails::GetCustomTabName was called with bad index: %1").arg(nTab);
@@ -281,7 +143,7 @@ void MTAccountDetails::refresh(QString strID, QString strName)
     {
         QString qstrAmount = MTHome::shortAcctBalance(strID);
 
-        QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(strID, strName, qstrAmount);
+        QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(strID, strName, qstrAmount, "", false);
 
         if (NULL != m_pHeaderWidget)
         {
@@ -321,35 +183,6 @@ void MTAccountDetails::refresh(QString strID, QString strName)
         if (NULL != m_pCashPurse)
             m_pCashPurse->refresh(strID, strName);
         // -----------------------------------------------------------------------
-        // TAB: "IDs"
-        //
-        if (NULL != m_pLineEdit_Acct_ID)
-        {
-            QWidget * pHeaderWidget2  = MTEditDetails::CreateDetailHeaderWidget(strID, strName, qstrAmount);
-
-            if ((NULL != pHeaderWidget2) && (NULL != m_pHeaderWidget2))
-            {
-                m_pGridLayout->removeWidget(m_pHeaderWidget2);
-                delete m_pHeaderWidget2;
-                m_pHeaderWidget2 = NULL;
-            }
-
-            m_pGridLayout->addWidget(pHeaderWidget2, 0, 0, 2, 4, Qt::AlignTop);
-            m_pHeaderWidget2 = pHeaderWidget2;
-            // -------------------------------------------
-            m_pLineEdit_Acct_ID->setText(strID);
-            m_pLineEdit_Acct_Name->setText(strName);
-            // ------------------------------------
-            m_pLineEdit_Nym_ID->setText(qstr_nym_id);
-            m_pLineEdit_Nym_Name->setText(qstr_nym_name);
-            // ------------------------------------
-            m_pLineEdit_Server_ID->setText(qstr_server_id);
-            m_pLineEdit_Server_Name->setText(qstr_server_name);
-            // ------------------------------------
-            m_pLineEdit_AssetType_ID->setText(qstr_asset_id);
-            m_pLineEdit_AssetType_Name->setText(qstr_asset_name);
-        }
-        // ------------------------------------
         FavorLeftSideForIDs();
     }
 }
@@ -448,7 +281,7 @@ void MTAccountDetails::DeleteButtonClicked()
             // TODO: Need to use OT_ME to send a "delete account" message to the server.
             // Only if that is successful, do we set bSuccess here to true.
 
-//            bool bSuccess = OTAPI_Wrap::Wallet_RemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
+//          bool bSuccess = OTAPI_Wrap::Wallet_RemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
 
             bool bSuccess = false;
 
