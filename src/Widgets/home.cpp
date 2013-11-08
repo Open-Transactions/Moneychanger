@@ -499,14 +499,14 @@ QWidget * MTHome::CreateUserBarWidget()
         }
     }
     // -------------------------------------------
-    QString & tx_name = qstr_acct_name;
+    QString tx_name;
 
-    if (tx_name.trimmed() == "")
+    if (qstr_acct_name.trimmed() == "")
     {
-        //Tx has no name
-        tx_name.clear();
         tx_name = tr("(Account Name is Blank)");
     }
+    else
+        tx_name = qstr_acct_name;
     // -------------------------------------------
     QString header_of_row_string = QString("");
     header_of_row_string.append(tx_name);
@@ -514,7 +514,7 @@ QWidget * MTHome::CreateUserBarWidget()
     QToolButton * buttonAccount = new QToolButton;
 
     buttonAccount->setAutoRaise(true);
-    buttonAccount->setStyleSheet("QToolButton { font-weight: bold; font-size:18pt; }");
+    buttonAccount->setStyleSheet("QToolButton { font-weight: bold; margin-left: 0; font-size:18pt; }");
     buttonAccount->setText(header_of_row_string);
     // -------------------------------------------
     connect(buttonAccount, SIGNAL(clicked()), this, SLOT(on_account_clicked()));
@@ -526,8 +526,8 @@ QWidget * MTHome::CreateUserBarWidget()
     // ----------------------------------------------------------------
     QHBoxLayout * pAccountLayout = new QHBoxLayout;
 
-    pAccountLayout->setContentsMargins(0, 0, 0, 0);
-    pAccountLayout->setSpacing(0);
+//  pAccountLayout->setContentsMargins(10, 0, 0, 0);
+//  pAccountLayout->setSpacing(0);
 
     pAccountLayout->addWidget(buttonAccount);
     pAccountLayout->addWidget(asset_type);

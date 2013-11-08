@@ -15,6 +15,13 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <widget class="Line" name="line_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
       <widget class="QLabel" name="labelName">
@@ -39,6 +46,9 @@
      </item>
      <item row="1" column="1">
       <widget class="QLineEdit" name="lineEditAsset">
+       <property name="frame">
+        <bool>false</bool>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -51,7 +61,7 @@
        </property>
        <property name="icon">
         <iconset resource="../resource.qrc">
-         <normaloff>:/icons/purse</normaloff>:/icons/purse</iconset>
+         <normaloff>:/icons/icons/assets.png</normaloff>:/icons/icons/assets.png</iconset>
        </property>
       </widget>
      </item>
@@ -64,6 +74,9 @@
      </item>
      <item row="2" column="1">
       <widget class="QLineEdit" name="lineEditNym">
+       <property name="frame">
+        <bool>false</bool>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -89,6 +102,9 @@
      </item>
      <item row="3" column="1">
       <widget class="QLineEdit" name="lineEditServer">
+       <property name="frame">
+        <bool>false</bool>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -106,6 +122,38 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="pushButtonSend">
+       <property name="text">
+        <string>Send Funds</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonRequest">
+       <property name="text">
+        <string>Request Funds</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pushButtonMakeDefault">
+     <property name="text">
+      <string>Make Default Account</string>
+     </property>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">

@@ -2,6 +2,7 @@
 #include <QLabel>
 #include <QEvent>
 #include <QKeyEvent>
+#include <QSizePolicy>
 
 #include "editdetails.h"
 #include "ui_editdetails.h"
@@ -105,6 +106,7 @@ QString  MTEditDetails::GetCustomTabName(int nTab)
 QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName,
                                                   QString strAmount/*=QString("")*/,
                                                   QString strStatus/*=QString("")*/,
+                                                  QString strPixmap/*=QString("")*/,
                                                   bool bExternal/*=true*/)
 {
     QString strColor("black");
@@ -132,6 +134,10 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
     }
 
     QLabel * header_of_row = new QLabel;
+
+    if (!bExternal)
+        header_of_row->setStyleSheet(QString("QLabel { font-size: 18px }"));
+    // -----------------------------------------
     QString header_of_row_string = QString("");
     header_of_row_string.append(tx_name);
 
@@ -144,10 +150,18 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
     QLabel * currency_amount_label = new QLabel;
     QString currency_amount;
 
-    currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(strColor));
+    if (!bExternal)
+        currency_amount_label->setStyleSheet(QString("QLabel { color : %1; font-size: 18px }").arg(strColor));
+    else
+        currency_amount_label->setStyleSheet(QString("QLabel { color : %1; font-size: 16px }").arg(strColor));
     // ----------------------------------------------------------------
 //  currency_amount = tr("amount goes here");
-    currency_amount = strAmount;
+//  currency_amount = strAmount;
+
+    if (!bExternal)
+        currency_amount = QString("<small><font color=grey>%1:</font></small> %2").arg(tr("Balance")).arg(strAmount);
+    else
+        currency_amount = strAmount;
     // ----------------------------------------------------------------
     currency_amount_label->setText(currency_amount);
     // ----------------------------------------------------------------
@@ -199,6 +213,38 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
     //add to row_content grid
     row_content_grid->addWidget(row_content_status_label, 0,1, 1,1, Qt::AlignRight);
     // -------------------------------------------
-    return row_widget;
+
+    if (strPixmap.isEmpty())
+        return row_widget;
+
+    // -------------------------------------------
+    QWidget     * pOverall     = new QWidget;
+    QHBoxLayout * pFinalLayout = new QHBoxLayout;
+    // ----------------------------------------------------------------
+    QPixmap pixmap(strPixmap);
+//  QPixmap pixmap(":/icons/icons/user.png");
+    // ----------------------------------------------------------------
+    QLabel * pPixmapLabel = new QLabel;
+    pPixmapLabel->setPixmap(pixmap);
+    pPixmapLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    row_widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    if (bExternal)
+        pOverall->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    else
+        pOverall->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    // ----------------------------------------------------------------
+    pFinalLayout->setContentsMargins(3,0,0,0);
+    // ----------------------------------------------------------------
+    pFinalLayout->addWidget(pPixmapLabel);
+    pFinalLayout->addWidget(row_widget);
+    // ----------------------------------------------------------------
+    pOverall->setLayout(pFinalLayout);
+    // ----------------------------------------------------------------
+//    if (!bExternal)
+//        pOverall->setStyleSheet("QWidget#DetailHeader { border: 1px solid gray; }");
+
+    return pOverall;
 }
 

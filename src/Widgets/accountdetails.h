@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QGridLayout>
+#include <QString>
 
 #include "editdetails.h"
 
@@ -33,23 +34,9 @@ public:
     virtual QWidget * CreateCustomTab (int nTab);
     virtual QString   GetCustomTabName(int nTab);
     // ----------------------------------
-    // Tab page 2:
-    //
-    QLineEdit * m_pLineEdit_Acct_ID;
-    QLineEdit * m_pLineEdit_Nym_ID;
-    QLineEdit * m_pLineEdit_Server_ID;
-    QLineEdit * m_pLineEdit_AssetType_ID;
-
-    QLineEdit * m_pLineEdit_Acct_Name;
-    QLineEdit * m_pLineEdit_Nym_Name;
-    QLineEdit * m_pLineEdit_Server_Name;
-    QLineEdit * m_pLineEdit_AssetType_Name;
 
 private:
     QWidget * m_pHeaderWidget;
-    QWidget * m_pHeaderWidget2;
-
-    QGridLayout * m_pGridLayout; // Used for tab 2.
 
     MTCashPurse * m_pCashPurse; // Tab 3.
 
@@ -62,12 +49,19 @@ private slots:
 
     void on_toolButtonServer_clicked();
 
+    void on_pushButtonSend_clicked();
+
+    void on_pushButtonRequest_clicked();
+
+    void on_pushButtonMakeDefault_clicked();
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
     void FavorLeftSideForIDs();
 
 private:
+    QString m_qstrID;
     Ui::MTAccountDetails *ui;
 };
 

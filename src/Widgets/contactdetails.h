@@ -25,6 +25,8 @@ private slots:
     void on_lineEditName_editingFinished();
 
 private:
+    QWidget * m_pHeaderWidget;
+
     Ui::MTContactDetails *ui;
 };
 
