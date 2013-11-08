@@ -231,6 +231,8 @@ public:
     void mc_servermanager_dialog(QString qstrPresetID=QString(""));
     void mc_assetmanager_dialog (QString qstrPresetID=QString(""));
 
+    void mc_overview_dialog_refresh();
+
 private:
     void SetupAssetMenu();
     void SetupServerMenu();
@@ -253,7 +255,7 @@ private:
     //Overview
     void mc_overview_dialog();
     //Refresh visual
-    void mc_overview_dialog_refresh();
+//  void mc_overview_dialog_refresh();
     // ------------------------------------------------
     
     //Default Nym

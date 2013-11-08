@@ -2,19 +2,29 @@
 #include <QCheckBox>
 #include <QDateTime>
 #include <QMessageBox>
+#include <QStringList>
 
 #include "cashpurse.h"
 #include "ui_cashpurse.h"
 
+#include "overridecursor.h"
+
+#include "detailedit.h"
 #include "editdetails.h"
+
+#include "dlggetamount.h"
 
 #include "home.h"
 
+#include <opentxs/OTAPI.h>
+#include <opentxs/OT_ME.h>
 
-MTCashPurse::MTCashPurse(QWidget *parent) :
+
+MTCashPurse::MTCashPurse(QWidget *parent, MTDetailEdit & theOwner) :
     QWidget(parent),
     m_qstrAcctId(""),
     m_qstrAssetId(""),
+    m_pOwner(&theOwner),
     m_pHeaderWidget(NULL),
     ui(new Ui::MTCashPurse)
 {
@@ -61,7 +71,8 @@ void MTCashPurse::refresh(QString strID, QString strName)
 {
     if (NULL != ui)
     {
-        m_qstrAcctId = strID;
+        m_qstrAcctId   = strID;
+        m_qstrAcctName = strName;
         // ----------------------------------
         if (MTHome::rawAcctBalance(strID) > 0)
             ui->pushButtonWithdraw->setEnabled(true);
@@ -70,13 +81,15 @@ void MTCashPurse::refresh(QString strID, QString strName)
         // ----------------------------------
         ui->pushButtonDeposit ->setText(tr("Deposit Cash"));
         // ----------------------------------
-        QList<QString> selectedIDs;
-        int64_t        lAmount=0;
+        QStringList selectedIndices;
+        int64_t     lAmount=0;
 
-        int nNumberChecked = this->TallySelections(selectedIDs, lAmount);
+        int nNumberChecked = this->TallySelections(selectedIndices, lAmount);
         // ----------------------------------
         QString   qstrAmount    = MTHome::shortAcctBalance(strID);
-        QWidget * pHeaderWidget = MTEditDetails::CreateDetailHeaderWidget(strID, strName, qstrAmount, "", false);
+        QWidget * pHeaderWidget = MTEditDetails::CreateDetailHeaderWidget(strID, strName, qstrAmount, "", ":/icons/icons/vault.png", false);
+
+        pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
         if (NULL != m_pHeaderWidget)
         {
@@ -187,10 +200,10 @@ void MTCashPurse::refresh(QString strID, QString strName)
 
 void MTCashPurse::checkboxClicked(int state)
 {
-    QList<QString> selectedIDs;
+    QStringList selectedIndices;
     int64_t        lAmount=0;
 
-    int nNumberChecked = this->TallySelections(selectedIDs, lAmount);
+    int nNumberChecked = this->TallySelections(selectedIndices, lAmount);
 }
 
 void MTCashPurse::on_pushButtonWithdraw_clicked()
@@ -201,130 +214,116 @@ void MTCashPurse::on_pushButtonWithdraw_clicked()
         qDebug() << "MTCashPurse::on_pushButtonWithdraw_clicked: Strange: Acct ID or Asset ID was empty.";
         return;
     }
-
+    // ----------------------------------------------------------------
     std::string accountID = m_qstrAcctId.toStdString();
-    std::string assetID   = m_qstrAssetId.toStdString();
     // ----------------------------------------------------------------
     QString qstrReason(tr("How much cash would you like to withdraw?"));
     // ----------------------------------------------------------------
+    // Let's find out the withdrawal amount.
+    //
+    DlgGetAmount dlgAmount(this, m_qstrAcctId, m_qstrAssetId, qstrReason);
 
+    dlgAmount.setWindowTitle("Withdrawal Amount");
 
-
-    // ----------------------------------------------------------------
-    OT_ME madeEasy;
-
-    int32_t nWithdrawn = madeEasy.easy_withdraw_cash(accountID,
-                                      const int64_t        AMOUNT)
-
-
-
-
-
-    // ----------------------------------------
-    std::string nymID     = OTAPI_Wrap::It()->GetAccountWallet_NymID(accountID);
-    std::string serverID  = OTAPI_Wrap::It()->GetAccountWallet_ServerID(accountID);
-    // ----------------------------------------------------------------
-    if (nymID.empty() || serverID.empty())
-    {
-        qDebug() << "MTCashPurse::on_pushButtonWithdraw_clicked: Strange: Nym ID or Server ID was empty.";
+    if (dlgAmount.exec() != QDialog::Accepted)
         return;
-    }
     // ----------------------------------------------------------------
-
-
-
-
-
-    std::string serverResponseMessage;
-
-
-
-
-    // ----------------------------------------------------------------
-    // Make sure we actually have a copy of the asset contract.
+    // If we're in here, that means the person entered a valid (larger-than-zero)
+    // withdrawal amount, and then clicked "OK".
     //
-    std::string assetContract = OTAPI_Wrap::LoadAssetContract(assetID);
-    // ----------------------------------------------------------------
-    OT_ME madeEasy;
-
-    std::string assetContract = madeEasy.load_or_retrieve_contract(serverID, nymID, assetID);
-    // ----------------------------------------------------------------
-    if (assetContract.empty())
+    bool bSent = false;
     {
-        QMessageBox::warning(this, tr("Failed loading asset contract."),
-                             QString("%1: %2").arg(tr("Failed trying to load the asset contract")).arg(m_qstrAssetId));
-        return;
-    }
-    // ---------------------------------------------------------
-    // Download the public mintfile if it's not there (or if it's expired.)
-    // Also, load it up into memory as a string (just to make sure it works.)
-    // Then we can actually send the withdrawal transaction request. (Until
-    // then, why bother?)
-    //
-    std::string mintFile;
+        OT_ME   madeEasy;
+        int64_t lAmount = dlgAmount.GetAmount();
 
-    // expired or missing.
-    if (false == OTAPI_Wrap::Mint_IsStillGood(serverID, assetID))
+        MTOverrideCursor theSpinner;
+
+        bSent = (1 == madeEasy.easy_withdraw_cash(accountID, lAmount));
+    }
+    // -----------------------------------------------------------------
+    if (!bSent)
+        QMessageBox::warning(this, tr("Failed Withdrawing Cash"),
+                             tr("Failed trying to withdraw cash."));
+    else
     {
-        // ----------------------------------------
-        OTAPI_Func theRequest = new OTAPI_Func(OTAPI_Func.FT.GET_MINT, serverID, nymID, assetID);
-        String strResponse = OTAPI_Func.SendRequest(theRequest, "GET_MINT");
-
-        if (!Utility.VerifyStringVal(strResponse)) {
-            System.out.println("IN withdrawCash: OTAPI_Func.SendRequest(GET_MINT) failed. (I give up.) (Unable to get mint.)");
-            return false;
-        }
-        // ----------------------------------------
-        mintFile = OTAPI_Wrap::LoadMint(serverID, assetID);
-        if (!Utility.VerifyStringVal(mintFile)) {
-            System.out.println("OT_API_LoadMint returned null even after OT_API_getMint (I give up.) (Unable to find mint.)");
-            return false;
-        }
+        QMessageBox::information(this, tr("Success Withdrawing Cash"),
+                                tr("Success withdrawing cash!"));
+        // --------------------------------------------------------
+        m_pOwner->SetPreSelected(m_qstrAcctId);
+        m_pOwner->RefreshRecords();
     }
-    else // current mint IS available already on local storage (and not expired.)
-    {
-        mintFile = OTAPI_Wrap::LoadMint(serverID, assetID);
-        if (!Utility.VerifyStringVal(mintFile)) {
-            System.out.println("OT_API_LoadMint returned null even after successful OT_API_Mint_IsStillGood (I give up.) (Unable to find mint.)");
-            return false;
-        }
-    }
-    // ---------------------------------------------------
-    // By this point, the mintfile is DEFINITELY good (available, not null,
-    // not expired, and loaded up.) Now we know for a fact that when the API
-    // call is made to withdraw cash, that it will find the mint properly.
-    //
-    OTAPI_Func theRequest = new OTAPI_Func(OTAPI_Func.FT.WITHDRAW_CASH, serverID, nymID, accountID, amount);
-    String strResponse = OTAPI_Func.SendTransaction(theRequest, "WITHDRAW_CASH"); // <========================
-
-    if (!Utility.VerifyStringVal(strResponse)) {
-        System.out.println("OTAPI_Func.SendTransaction() failed, in withdrawCash.");
-        return false;
-    }
-    // --------------------------------------------------------------------------------------
-
-    return true;
+    // -----------------------------------------------------------------
 }
 
 
 
 void MTCashPurse::on_pushButtonDeposit_clicked()
 {
-    QList<QString> selectedIDs;
-    int64_t        lAmount=0;
+    QStringList selectedIndices;
+    int64_t     lAmount=0;
 
-    int nNumberChecked = this->TallySelections(selectedIDs, lAmount);
+    int nNumberChecked = this->TallySelections(selectedIndices, lAmount);
+    // ------------------------------------------------------------------
+    std::string str_acct_id     = m_qstrAcctId.toStdString();
+    std::string str_acct_nym    = OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
+    std::string str_acct_server = OTAPI_Wrap::It()->GetAccountWallet_ServerID(str_acct_id);
+    std::string str_acct_asset  = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+    // ------------------------------------------------------------------
+    QString qstrSelectedIndices = selectedIndices.join(","); // Create a comma-separated list of selected indices.
 
-    // TODO: perform the deposit!
+    // This "should never happen" since the deposit button is disabled
+    // when none of the cash indices are selected in the GUI.
+    //
+    if (qstrSelectedIndices.isEmpty())
+        return;
+    // ------------------------------------
+    std::string str_amount = OTAPI_Wrap::FormatAmount(str_acct_asset, lAmount);
+    // ------------------------------------
+    QMessageBox::StandardButton reply;
+
+    QString qstrQuestion = QString("%1 %2<br/>%3: %4 %5").arg(tr("Are you sure you wish to deposit")).
+                                                          arg(QString::fromStdString(str_amount)).
+                                                          arg(tr("into the account")).
+                                                          arg(m_qstrAcctName).arg(tr("?")); // Perhaps not all languages have the same question mark...
+
+    reply = QMessageBox::question(this, "Confirm Deposit", qstrQuestion,
+                                  QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::Yes)
+    {
+        bool bSent = false;
+        {
+            OT_ME            madeEasy;
+            MTOverrideCursor theSpinner;
+            std::string      str_selected_indices(qstrSelectedIndices.toStdString()); // (FYI, you can also use "all" for all indices.)
+
+            bSent = (1 == madeEasy.deposit_local_purse(str_acct_server, // <=======
+                                                       str_acct_nym,
+                                                       str_acct_id,
+                                                       str_selected_indices));
+        }
+        // -----------------------------------------------------------------
+        if (!bSent)
+            QMessageBox::warning(this, tr("Failed Depositing Cash"),
+                                 tr("Failed trying to deposit cash."));
+        else
+        {
+            QMessageBox::information(this, tr("Success Depositing Cash"),
+                                    tr("Success depositing cash!"));
+            // --------------------------------------------------------
+            m_pOwner->SetPreSelected(m_qstrAcctId);
+            m_pOwner->RefreshRecords();
+        }
+    }
+    // -----------------------------------------------------------------
 }
 
 
 // Returns the number that are selected. (If 5 boxes are checked, returns 5.)
 // Also returns selected IDs and total sum amount of those tokens.
 //
-int MTCashPurse::TallySelections(QList<QString> & selectedIDs, int64_t & lAmount)
+int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmount)
 {
-    selectedIDs.clear();
+    selectedIndices.clear();
     // -------------------------
     int64_t lSelectedAmount=0;
     int     nNumberSelected=0;
@@ -352,8 +351,9 @@ int MTCashPurse::TallySelections(QList<QString> & selectedIDs, int64_t & lAmount
                 if (NULL != pValueLabel)
                     lSelectedAmount += static_cast<int64_t>(pValueLabel->text().toLong());
                 // -------------------------
-                if (NULL != pIDLabel)
-                    selectedIDs.append(pIDLabel->text());
+                if (NULL != pIDLabel) // NOTE that we now attach the index here, instead of the ID.
+                    selectedIndices.append(QString("%1").arg(ii));
+//                  selectedIndices.append(pIDLabel->text());
                 // -------------------------
             }
         }
@@ -407,8 +407,9 @@ void MTCashPurse::ClearContents()
     ui->pushButtonDeposit ->setEnabled(false);
     ui->pushButtonWithdraw->setEnabled(false);
     // ----------------------------------
-    m_qstrAssetId = QString("");
-    m_qstrAcctId  = QString("");
+    m_qstrAssetId  = QString("");
+    m_qstrAcctId   = QString("");
+    m_qstrAcctName = QString("");
     // ----------------------------------
     ui->labelAssetType->setText(QString(""));
 }

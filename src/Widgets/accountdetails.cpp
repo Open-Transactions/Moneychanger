@@ -7,12 +7,18 @@
 
 #include "detailedit.h"
 
+#include "senddlg.h"
+#include "requestdlg.h"
+
 #include "home.h"
 
 #include "moneychanger.h"
 
 #include "wizardaddaccount.h"
 
+#include "overridecursor.h"
+
+#include "DBHandler.h"
 #include "cashpurse.h"
 
 #include <opentxs/OTAPI.h>
@@ -23,6 +29,7 @@ MTAccountDetails::MTAccountDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
     m_pHeaderWidget(NULL),
     m_pCashPurse(NULL),
+    m_qstrID(""),
     ui(new Ui::MTAccountDetails)
 {
     ui->setupUi(this);
@@ -59,6 +66,9 @@ void MTAccountDetails::ClearContents()
     if (NULL != m_pCashPurse)
         m_pCashPurse->ClearContents();
     // ------------------------------------------
+    ui->pushButtonMakeDefault->setEnabled(false);
+
+    m_qstrID = QString("");
 }
 
 
@@ -96,9 +106,12 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
     switch (nTab)
     {
     case 0: // "Cash Purse" tab
-        m_pCashPurse = new MTCashPurse;
-        pReturnValue = m_pCashPurse;
-        pReturnValue->setContentsMargins(0, 0, 0, 0);
+        if (NULL != m_pOwner)
+        {
+            m_pCashPurse = new MTCashPurse(NULL, *m_pOwner);
+            pReturnValue = m_pCashPurse;
+            pReturnValue->setContentsMargins(0, 0, 0, 0);
+        }
         break;
 
     default:
@@ -141,9 +154,13 @@ void MTAccountDetails::refresh(QString strID, QString strName)
 
     if (NULL != ui)
     {
+        m_qstrID = strID;
+        // -------------------------------------
         QString qstrAmount = MTHome::shortAcctBalance(strID);
 
-        QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(strID, strName, qstrAmount, "", false);
+        QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(strID, strName, qstrAmount, "", ":/icons/icons/vault.png", false);
+
+        pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
         if (NULL != m_pHeaderWidget)
         {
@@ -184,6 +201,16 @@ void MTAccountDetails::refresh(QString strID, QString strName)
             m_pCashPurse->refresh(strID, strName);
         // -----------------------------------------------------------------------
         FavorLeftSideForIDs();
+        // -----------------------------------------------------------------------
+        if (NULL != m_pMoneychanger)
+        {
+            QString qstr_default_acct_id = m_pMoneychanger->get_default_account_id();
+
+            if (strID == qstr_default_acct_id)
+                ui->pushButtonMakeDefault->setEnabled(false);
+            else
+                ui->pushButtonMakeDefault->setEnabled(true);
+        }
     }
 }
 
@@ -214,8 +241,57 @@ bool MTAccountDetails::eventFilter(QObject *obj, QEvent *event)
 }
 
 
+
 // ------------------------------------------------------
 
+void MTAccountDetails::on_pushButtonSend_clicked()
+{
+    if (!m_qstrID.isEmpty() && (NULL != m_pMoneychanger))
+    {
+        // --------------------------------------------------
+        MTSendDlg * send_window = new MTSendDlg(NULL, *m_pMoneychanger);
+        send_window->setAttribute(Qt::WA_DeleteOnClose);
+        // --------------------------------------------------
+        send_window->setInitialMyAcct(m_qstrID);
+        // ---------------------------------------
+        send_window->dialog();
+        send_window->show();
+    }
+    // --------------------------------------------------
+}
+
+// ------------------------------------------------------
+
+void MTAccountDetails::on_pushButtonRequest_clicked()
+{
+    if (!m_qstrID.isEmpty() && (NULL != m_pMoneychanger))
+    {
+        // --------------------------------------------------
+        MTRequestDlg * request_window = new MTRequestDlg(NULL, *m_pMoneychanger);
+        request_window->setAttribute(Qt::WA_DeleteOnClose);
+        // --------------------------------------------------
+        request_window->setInitialMyAcct(m_qstrID);
+        // ---------------------------------------
+        request_window->dialog();
+        request_window->show();
+    }
+    // --------------------------------------------------
+}
+
+// ------------------------------------------------------
+
+void MTAccountDetails::on_pushButtonMakeDefault_clicked()
+{
+    if ((NULL != m_pMoneychanger) && (NULL != m_pOwner) && !m_qstrID.isEmpty())
+    {
+        DBHandler::getInstance()->AddressBookUpdateDefaultAccount(m_qstrID);
+        m_pMoneychanger->SetupMainMenu();
+        ui->pushButtonMakeDefault->setEnabled(false);
+        m_pMoneychanger->mc_overview_dialog_refresh();
+    }
+}
+
+// ------------------------------------------------------
 
 void MTAccountDetails::on_toolButtonAsset_clicked()
 {
@@ -340,10 +416,14 @@ void MTAccountDetails::AddButtonClicked()
 
             // If the Nym's not registered at the server, then register him first.
             //
-            std::string strResponse = madeEasy.register_nym(qstrServerID.toStdString(),
-                                                            qstrNymID   .toStdString()); // This also does getRequest internally, if success.
-            int32_t nSuccess        = madeEasy.VerifyMessageSuccess(strResponse);
+            int32_t nSuccess = 0;
+            {
+                MTOverrideCursor theSpinner;
 
+                std::string strResponse = madeEasy.register_nym(qstrServerID.toStdString(),
+                                                                qstrNymID   .toStdString()); // This also does getRequest internally, if success.
+                nSuccess                = madeEasy.VerifyMessageSuccess(strResponse);
+            }
             // -1 is error,
             //  0 is reply received: failure
             //  1 is reply received: success
@@ -377,9 +457,14 @@ void MTAccountDetails::AddButtonClicked()
 
         // Send the 'create_asset_acct' message to the server.
         //
-        std::string strResponse	= madeEasy.create_asset_acct(qstrServerID.toStdString(),
-                                                             qstrNymID   .toStdString(),
-                                                             qstrAssetID .toStdString());
+        std::string strResponse;
+        {
+            MTOverrideCursor theSpinner;
+
+            strResponse = madeEasy.create_asset_acct(qstrServerID.toStdString(),
+                                                     qstrNymID   .toStdString(),
+                                                     qstrAssetID .toStdString());
+        }
         // -1 error, 0 failure, 1 success.
         //
         if (1 != madeEasy.VerifyMessageSuccess(strResponse))

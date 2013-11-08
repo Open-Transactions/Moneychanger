@@ -38,6 +38,8 @@ protected:
     FileDownloader * m_pDownloader;
 
 private:
+    QWidget * m_pHeaderWidget;
+
     Ui::MTAssetDetails *ui;
 };
 

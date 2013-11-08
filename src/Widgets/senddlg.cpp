@@ -86,7 +86,14 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString fromAcctId, QS
     // ------------------------------------------------------------
     OT_ME madeEasy;
 
-    return madeEasy.withdraw_and_send_cash(str_fromAcctId, str_toNymId, note.toStdString(), SignedAmount);
+    bool bReturnValue = false;
+    {
+        MTOverrideCursor theSpinner;
+
+        bReturnValue = madeEasy.withdraw_and_send_cash(str_fromAcctId, str_toNymId, note.toStdString(), SignedAmount);
+    }
+    // ------------------------------------------------------------
+    return bReturnValue;
 
     // NOTE: We don't retrieve the account files in the case of success, because the
     // above function already does all that internally.
@@ -131,8 +138,14 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     OT_ME madeEasy;
 
     std::string strAttempt  = "withdraw_voucher";
-    std::string strResponse = madeEasy.withdraw_voucher(str_serverId, str_fromNymId, str_fromAcctId,
-                                                        str_toNymId, note.toStdString(), SignedAmount);
+    std::string strResponse;
+
+    {
+        MTOverrideCursor theSpinner;
+
+        strResponse = madeEasy.withdraw_voucher(str_serverId, str_fromNymId, str_fromAcctId,
+                                                str_toNymId, note.toStdString(), SignedAmount);
+    }
 
     int32_t nInterpretReply = madeEasy.InterpretTransactionMsgReply(str_serverId, str_fromNymId, str_fromAcctId,
                                                                     strAttempt, strResponse);
@@ -333,7 +346,13 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
     // ------------------------------------------------------------
     OT_ME madeEasy;
 
-    std::string  strResponse = madeEasy.send_user_payment(str_serverId, str_fromNymId, str_toNymId, strCheque);
+    std::string  strResponse;
+    {
+        MTOverrideCursor theSpinner;
+
+        strResponse = madeEasy.send_user_payment(str_serverId, str_fromNymId, str_toNymId, strCheque);
+    }
+
     int32_t      nReturnVal  = madeEasy.VerifyMessageSuccess(strResponse);
 
     if (1 != nReturnVal)
@@ -423,17 +442,22 @@ bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
         return false;
     }
     // ----------------------------------------------------
+    QString qstrPaymentType("");
+
     switch (ui->comboBox->currentIndex())
     {
     case (0): // Payment ("Cashier's Cheque")
+        qstrPaymentType = tr("payment");
         m_bSent = sendCashierCheque(amount, toNymId, fromAcctId, memo);
         break;
 
     case (1): // Cheque
+        qstrPaymentType = tr("cheque");
         m_bSent = sendCheque(amount, toNymId, fromAcctId, memo);
         break;
 
     case (2): // Cash
+        qstrPaymentType = tr("cash");
         m_bSent = sendCash(amount, toNymId, fromAcctId, memo);
         break;
 
@@ -443,9 +467,15 @@ bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
     }
     // ----------------------------------------------------
     if (!m_bSent)
+    {
         qDebug() << "send funds: Failed.";
+        QMessageBox::warning(this, tr("Failure"), QString("%1 %2.").arg(tr("Failure trying to send")).arg(qstrPaymentType));
+    }
     else
+    {
         qDebug() << "Success in send funds!";
+        QMessageBox::information(this, tr("Success"), QString("%1 %2.").arg(tr("Success sending")).arg(qstrPaymentType));
+    }
     // ---------------------------------------------------------
     return m_bSent;
 }

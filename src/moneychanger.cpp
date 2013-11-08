@@ -24,6 +24,9 @@
 #include "Widgets/senddlg.h"
 #include "Widgets/requestdlg.h"
 
+#include "overridecursor.h"
+
+
 #include "opentxs/OTAPI.h"
 #include "opentxs/OT_ME.h"
 
@@ -259,11 +262,11 @@ Moneychanger::Moneychanger(QWidget *parent)
     
     mc_systrayIcon_overview = QIcon(":/icons/overview");
     
-    mc_systrayIcon_nym = QIcon(":/icons/nym");
+    mc_systrayIcon_nym = QIcon(":/icons/icons/identity_BW.png");
     mc_systrayIcon_server = QIcon(":/icons/server");
     
-    mc_systrayIcon_goldaccount = QIcon(":/icons/account");
-    mc_systrayIcon_purse = QIcon(":/icons/purse");
+    mc_systrayIcon_goldaccount = QIcon(":/icons/icons/safe_box.png");
+    mc_systrayIcon_purse = QIcon(":/icons/icons/assets.png");
     
     mc_systrayIcon_withdraw = QIcon(":/icons/withdraw");
     mc_systrayIcon_deposit = QIcon(":/icons/deposit");
@@ -483,26 +486,26 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
     //Withdraw
-    mc_systrayMenu_withdraw = new QMenu(tr("Withdraw"), 0);
-    mc_systrayMenu_withdraw->setIcon(mc_systrayIcon_withdraw);
-    mc_systrayMenu->addMenu(mc_systrayMenu_withdraw);
-    //(Withdraw) as Cash
-    mc_systrayMenu_withdraw_ascash = new QAction(tr("As Cash"),0);
-    mc_systrayMenu_withdraw->addAction(mc_systrayMenu_withdraw_ascash);
-    //Connect Button with re-action
-    connect(mc_systrayMenu_withdraw_ascash, SIGNAL(triggered()), this, SLOT(mc_withdraw_ascash_slot()));
+//    mc_systrayMenu_withdraw = new QMenu(tr("Withdraw"), 0);
+//    mc_systrayMenu_withdraw->setIcon(mc_systrayIcon_withdraw);
+//    mc_systrayMenu->addMenu(mc_systrayMenu_withdraw);
+//    //(Withdraw) as Cash
+//    mc_systrayMenu_withdraw_ascash = new QAction(tr("As Cash"),0);
+//    mc_systrayMenu_withdraw->addAction(mc_systrayMenu_withdraw_ascash);
+//    //Connect Button with re-action
+//    connect(mc_systrayMenu_withdraw_ascash, SIGNAL(triggered()), this, SLOT(mc_withdraw_ascash_slot()));
 
-    //(Withdraw) as Voucher
-    mc_systrayMenu_withdraw_asvoucher = new QAction(tr("As Voucher"), 0);
-    mc_systrayMenu_withdraw->addAction(mc_systrayMenu_withdraw_asvoucher);
-    //Connect Button with re-action
-    connect(mc_systrayMenu_withdraw_asvoucher, SIGNAL(triggered()), this, SLOT(mc_withdraw_asvoucher_slot()));
+//    //(Withdraw) as Voucher
+//    mc_systrayMenu_withdraw_asvoucher = new QAction(tr("As Voucher"), 0);
+//    mc_systrayMenu_withdraw->addAction(mc_systrayMenu_withdraw_asvoucher);
+//    //Connect Button with re-action
+//    connect(mc_systrayMenu_withdraw_asvoucher, SIGNAL(triggered()), this, SLOT(mc_withdraw_asvoucher_slot()));
     // --------------------------------------------------------------
     //Deposit
-    mc_systrayMenu_deposit = new QAction(mc_systrayIcon_deposit, tr("Deposit..."), 0);
-    mc_systrayMenu->addAction(mc_systrayMenu_deposit);
-    //Connect button with re-action
-    connect(mc_systrayMenu_deposit, SIGNAL(triggered()), this, SLOT(mc_deposit_slot()));
+//    mc_systrayMenu_deposit = new QAction(mc_systrayIcon_deposit, tr("Deposit..."), 0);
+//    mc_systrayMenu->addAction(mc_systrayMenu_deposit);
+//    //Connect button with re-action
+//    connect(mc_systrayMenu_deposit, SIGNAL(triggered()), this, SLOT(mc_deposit_slot()));
     // --------------------------------------------------------------
     //Gold account/cash purse/wallet
     //            mc_systrayMenu_goldaccount = new QAction("Gold Account: $60,000", 0);
@@ -947,9 +950,21 @@ void Moneychanger::mc_overview_slot()
     mc_overview_dialog();
 }
 
+void Moneychanger::mc_overview_dialog_refresh()
+{
+    if (mc_overview_already_init)
+    {
+        if (!homewindow->isHidden())
+        {
+            homewindow->SetNeedRefresh();
+            mc_overview_dialog();
+        }
+    }
+}
+
 void Moneychanger::mc_overview_dialog()
 {
-    if(!mc_overview_already_init)
+    if (!mc_overview_already_init)
     {
         homewindow = new MTHome(this);
         mc_overview_already_init = true;
@@ -1215,10 +1230,17 @@ void Moneychanger::downloadAccountData()
 
             if (!isReg)
             {
+                MTOverrideCursor theSpinner;
+
                 std::string response = madeEasy.register_nym(defaultServerId, defaultNymID);
                 qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
             }
-            madeEasy.retrieve_nym(defaultServerId, defaultNymID, true);
+
+            {
+                MTOverrideCursor theSpinner;
+
+                madeEasy.retrieve_nym(defaultServerId, defaultNymID, true);
+            }
         }
         // ----------------------------------------------------------------
         std::string defaultAssetId (get_default_asset_id().toStdString());
@@ -1237,7 +1259,11 @@ void Moneychanger::downloadAccountData()
         {
             if (!defaultNymID.empty() && !defaultServerId.empty() && !defaultAssetId.empty())
             {
-                std::string response = madeEasy.create_asset_acct(defaultServerId, defaultNymID, defaultAssetId);
+                std::string response;
+                {
+                    MTOverrideCursor theSpinner;
+                    response = madeEasy.create_asset_acct(defaultServerId, defaultNymID, defaultAssetId);
+                }
                 qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
 
                 accountCount = OTAPI_Wrap::GetAccountCount();
@@ -1258,7 +1284,10 @@ void Moneychanger::downloadAccountData()
             std::string acctNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountId);
             std::string acctSvrID = OTAPI_Wrap::GetAccountWallet_ServerID(accountId);
 
-            madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
+            {
+                MTOverrideCursor theSpinner;
+                madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
+            }
 
             std::string statAccount = madeEasy.stat_asset_account(accountId);
             qDebug() << QString("statAccount: %1").arg(QString::fromStdString(statAccount));
@@ -1270,6 +1299,7 @@ void Moneychanger::downloadAccountData()
         qDebug() << QString("%1: Not at least 1 server contract and 1 asset contract registered, doing nothing.").arg(__FUNCTION__);
     }
 }
+
 
 
 

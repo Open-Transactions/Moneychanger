@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QGridLayout>
+#include <QString>
 
 #include "editdetails.h"
 
@@ -48,12 +49,19 @@ private slots:
 
     void on_toolButtonServer_clicked();
 
+    void on_pushButtonSend_clicked();
+
+    void on_pushButtonRequest_clicked();
+
+    void on_pushButtonMakeDefault_clicked();
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
     void FavorLeftSideForIDs();
 
 private:
+    QString m_qstrID;
     Ui::MTAccountDetails *ui;
 };
 

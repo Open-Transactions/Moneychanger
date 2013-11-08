@@ -30,6 +30,7 @@ public:
     static QWidget * CreateDetailHeaderWidget(QString strID, QString strName,
                                               QString strAmount=QString(""),
                                               QString strStatus=QString(""),
+                                              QString strPixmap=QString(""),
                                               bool bExternal=true);
 
     void SetOwnerPointer(MTDetailEdit & theOwner);
@@ -50,7 +51,7 @@ private slots:
 //    void on_deleteButton_clicked(bool checked = false);
 //    void on_acceptButton_clicked(bool checked = false);
 
-protected:
+protected:    
     MTDetailEdit * m_pOwner;
     Moneychanger * m_pMoneychanger;
 

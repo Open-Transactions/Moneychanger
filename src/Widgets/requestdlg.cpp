@@ -83,7 +83,13 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString f
     // ------------------------------------------------------------
     OT_ME madeEasy;
 
-    std::string  strResponse = madeEasy.send_user_payment(str_serverId, str_fromNymId, str_toNymId, strCheque);
+    std::string  strResponse;
+    {
+        MTOverrideCursor theSpinner;
+
+        strResponse = madeEasy.send_user_payment(str_serverId, str_fromNymId, str_toNymId, strCheque);
+    }
+
     int32_t      nReturnVal  = madeEasy.VerifyMessageSuccess(strResponse);
 
     if (1 != nReturnVal)
