@@ -2347,7 +2347,10 @@ bool MTRecordList::Populate()
             // -------------------------------------------------
             sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
             sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
-
+            // -------------------------------------------------
+            const OTString strContents(*pBoxTrans);
+            sp_Record->SetContents(strContents.Get());
+            // -------------------------------------------------
             m_contents.push_back(sp_Record);
         }
         // ------------------------------------------------
@@ -2510,7 +2513,10 @@ bool MTRecordList::Populate()
             // -------------------------------------------------
             sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
             sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
-
+            // -------------------------------------------------
+            const OTString strContents(*pBoxTrans);
+            sp_Record->SetContents(strContents.Get());
+            // -------------------------------------------------
             m_contents.push_back(sp_Record);
         }
         // ------------------------------------------------
@@ -2858,7 +2864,10 @@ bool MTRecordList::Populate()
             // -------------------------------------------------
             sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
             sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
-
+            // -------------------------------------------------
+            const OTString strContents(*pBoxTrans);
+            sp_Record->SetContents(strContents.Get());
+            // -------------------------------------------------
             m_contents.push_back(sp_Record);
         }
         // ------------------------------------------------

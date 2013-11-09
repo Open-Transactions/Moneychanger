@@ -9,6 +9,7 @@
 #include "requestdlg.h"
 #include "ui_requestdlg.h"
 
+#include "moneychanger.h"
 #include "dlgchooser.h"
 
 #include "Handlers/contacthandler.h"
@@ -82,7 +83,13 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString f
     // ------------------------------------------------------------
     OT_ME madeEasy;
 
-    std::string  strResponse = madeEasy.send_user_payment(str_serverId, str_fromNymId, str_toNymId, strCheque);
+    std::string  strResponse;
+    {
+        MTOverrideCursor theSpinner;
+
+        strResponse = madeEasy.send_user_payment(str_serverId, str_fromNymId, str_toNymId, strCheque);
+    }
+
     int32_t      nReturnVal  = madeEasy.VerifyMessageSuccess(strResponse);
 
     if (1 != nReturnVal)
@@ -263,6 +270,7 @@ void MTRequestDlg::on_toButton_clicked()
     // Select from Accounts in local wallet.
     //
     DlgChooser theChooser(this);
+    theChooser.SetIsAccounts();
     // -----------------------------------------------
     mapIDName & the_map = theChooser.m_map;
 
@@ -300,12 +308,19 @@ void MTRequestDlg::on_toButton_clicked()
 
         if (!theChooser.m_qstrCurrentID.isEmpty())
         {
+            QString display_name("");
+            QString button_text("");
+            // -----------------------------------------
             m_myAcctId = theChooser.m_qstrCurrentID;
             // -----------------------------------------
             if (theChooser.m_qstrCurrentName.isEmpty())
-                ui->toButton->setText(QString(""));
+                display_name = QString("");
             else
-                ui->toButton->setText(theChooser.m_qstrCurrentName);
+                display_name = theChooser.m_qstrCurrentName;
+            // -----------------------------------------
+            button_text = MTHome::FormDisplayLabelForAcctButton(m_myAcctId, display_name);
+            // -----------------------------------------
+            ui->toButton->setText(button_text);
             // -----------------------------------------
             return;
         }
@@ -319,6 +334,28 @@ void MTRequestDlg::on_toButton_clicked()
     ui->toButton->setText(tr("<Click to choose Account>"));
 }
 
+
+
+void MTRequestDlg::on_toolButton_clicked()
+{
+    QString qstrContactID("");
+    // ------------------------------------------------
+    if (!m_hisNymId.isEmpty())
+    {
+        int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID(m_hisNymId);
+
+        if (nContactID > 0)
+            qstrContactID = QString("%1").arg(nContactID);
+    }
+    // ------------------------------------------------
+    m_pMoneychanger->mc_addressbook_show(qstrContactID);
+}
+
+
+void MTRequestDlg::on_toolButtonManageAccts_clicked()
+{
+    m_pMoneychanger->mc_accountmanager_dialog(m_myAcctId);
+}
 
 
 void MTRequestDlg::on_fromButton_clicked()
@@ -478,10 +515,11 @@ void MTRequestDlg::dialog()
             ui->toButton->setText(tr("<Click to Select Payee Account>"));
         }
         else
-            ui->toButton->setText(QString::fromStdString(str_my_name));
-        // -------------------------------------------
+        {
+            QString from_button_text = MTHome::FormDisplayLabelForAcctButton(m_myAcctId, QString::fromStdString(str_my_name));
 
-
+            ui->toButton->setText(from_button_text);
+        }
         // -------------------------------------------
         std::string str_his_name;
         // -------------------------------------------
@@ -545,9 +583,10 @@ void MTRequestDlg::dialog()
 
 
 
-MTRequestDlg::MTRequestDlg(QWidget *parent) :
+MTRequestDlg::MTRequestDlg(QWidget *parent, Moneychanger & theMC) :
     QWidget(parent, Qt::Window),
     already_init(false),
+    m_pMoneychanger(&theMC),
     m_bSent(false),
     ui(new Ui::MTRequestDlg)
 {
@@ -617,3 +656,4 @@ void MTRequestDlg::closeEvent(QCloseEvent *event)
     // -------------------------------------------
     QWidget::closeEvent(event);
 }
+

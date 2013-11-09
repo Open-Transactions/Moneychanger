@@ -37,12 +37,16 @@ private:
 private slots:
     void on_lineEditName_editingFinished();
 
+    void on_toolButton_clicked();
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
     void FavorLeftSideForIDs();
 
 private:
+    QWidget * m_pHeaderWidget;
+
     Ui::MTNymDetails *ui;
 };
 

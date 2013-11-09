@@ -20,6 +20,7 @@
 MTServerDetails::MTServerDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
     m_pDownloader(NULL),
+    m_pHeaderWidget(NULL),
     ui(new Ui::MTServerDetails)
 {
     ui->setupUi(this);
@@ -27,6 +28,13 @@ MTServerDetails::MTServerDetails(QWidget *parent, MTDetailEdit & theOwner) :
 //  this->installEventFilter(this); // NOTE: Successfully tested theory that the base class has already installed this.
 
     ui->lineEditID->setStyleSheet("QLineEdit { background-color: lightgray }");
+    // ----------------------------------
+    // Note: This is a placekeeper, so later on I can just erase
+    // the widget at 0 and replace it with the real header widget.
+    //
+    m_pHeaderWidget  = new QWidget;
+    ui->verticalLayout->insertWidget(0, m_pHeaderWidget);
+    // ----------------------------------
 }
 
 MTServerDetails::~MTServerDetails()
@@ -316,6 +324,19 @@ void MTServerDetails::refresh(QString strID, QString strName)
 
     if (NULL != ui)
     {
+        QWidget * pHeaderWidget = MTEditDetails::CreateDetailHeaderWidget(strID, strName, "", "", ":/icons/server", false);
+
+        pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
+
+        if (NULL != m_pHeaderWidget)
+        {
+            ui->verticalLayout->removeWidget(m_pHeaderWidget);
+            delete m_pHeaderWidget;
+            m_pHeaderWidget = NULL;
+        }
+        ui->verticalLayout->insertWidget(0, pHeaderWidget);
+        m_pHeaderWidget = pHeaderWidget;
+        // ----------------------------------
         ui->lineEditID  ->setText(strID);
         ui->lineEditName->setText(strName);
 

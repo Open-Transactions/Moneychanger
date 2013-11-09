@@ -50,14 +50,26 @@ bool MTCompose::sendMessage(QString body, QString fromNymId, QString toNymId, QS
     // ----------------------------------------------------
     OT_ME madeEasy;
 
-    std::string strResponse = madeEasy.send_user_msg(str_serverId, str_fromNymId, str_toNymId, contents.toStdString());
+    std::string strResponse;
+    {
+        MTOverrideCursor theSpinner;
+
+        strResponse = madeEasy.send_user_msg(str_serverId, str_fromNymId, str_toNymId, contents.toStdString());
+    }
+
     int32_t nReturnVal = madeEasy.VerifyMessageSuccess(strResponse);
 
     if (1 != nReturnVal)
     {
         qDebug() << "send_message: Failed.";
+
+        QMessageBox::warning(this, tr("Failure"), tr("Failure trying to send message."));
+
         return false;
     }
+
+    QMessageBox::information(this, tr("Success"), tr("Success sending message."));
+
     qDebug() << "Success in send_message!";
     m_bSent = true;
     // ---------------------------------------------------------
@@ -547,6 +559,28 @@ void MTCompose::dialog()
 
 }
 
+
+bool MTCompose::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress)
+    {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+
+        if (keyEvent->key() == Qt::Key_Escape)
+        {
+            close(); // This is caught by this same filter.
+            return true;
+        }
+        return true;
+    }
+    else
+    {
+        // standard event processing
+        return QObject::eventFilter(obj, event);
+    }
+}
+
+
 void MTCompose::closeEvent(QCloseEvent *event)
 {
     // Pop up a Yes/No dialog to confirm the cancellation of this message.
@@ -582,22 +616,6 @@ MTCompose::MTCompose(QWidget *parent) :
 MTCompose::~MTCompose()
 {
     delete ui;
-}
-
-bool MTCompose::eventFilter(QObject *obj, QEvent *event){
-
-    if (event->type() == QEvent::KeyPress) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if(keyEvent->key() == Qt::Key_Escape){
-            close(); // This is caught by this same filter.
-            return true;
-        }
-        return true;
-    }
-    else {
-        // standard event processing
-        return QObject::eventFilter(obj, event);
-    }
 }
 
 void MTCompose::on_subjectEdit_textChanged(const QString &arg1)

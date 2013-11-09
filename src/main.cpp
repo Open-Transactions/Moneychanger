@@ -8,6 +8,9 @@
 
 
 #include "moneychanger.h"
+#include "translation.h"
+
+#include "passwordcallback.h"
 
 #include "passwordcallback.h"
 
@@ -73,10 +76,13 @@ int main(int argc, char *argv[])
     }
     // ----------------------------------------
     //Init qApp
-
     MTApplicationMC theApplication(argc, argv);  // <====== THIRD constructor (they are destroyed in reverse order.)
     theApplication.setQuitOnLastWindowClosed(false);
-//  QApplication:: setQuitOnLastWindowClosed(false);
+
+    //Set language
+    Translation appTranslation;
+    QTranslator translator;
+    appTranslation.updateLanguage(theApplication, translator);
 
     QTimer::singleShot(0, &theApplication, SLOT(appStarting()));
     // ----------------------------------------------------------------

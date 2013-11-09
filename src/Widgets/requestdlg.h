@@ -7,6 +7,8 @@ namespace Ui {
 class MTRequestDlg;
 }
 
+class Moneychanger;
+
 class MTRequestDlg : public QWidget
 {
     Q_OBJECT
@@ -18,8 +20,10 @@ class MTRequestDlg : public QWidget
 
     bool m_bSent;
 
+    Moneychanger * m_pMoneychanger;
+
 public:
-    explicit MTRequestDlg(QWidget *parent = 0);
+    explicit MTRequestDlg(QWidget *parent, Moneychanger & theMC);
     ~MTRequestDlg();
 
     void setInitialHisNym (QString nymId)  { m_hisNymId  = nymId;  } // From:
@@ -46,6 +50,10 @@ private slots:
     void on_memoEdit_textChanged(const QString &arg1);
 
     void on_amountEdit_editingFinished();
+
+    void on_toolButton_clicked();
+
+    void on_toolButtonManageAccts_clicked();
 
 private:
     bool already_init;

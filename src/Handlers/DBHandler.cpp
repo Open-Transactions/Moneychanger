@@ -91,7 +91,7 @@ bool DBHandler::dbCreateInstance()
 {
     QMutexLocker locker(&dbMutex);
 
-    bool error = false;
+    int error = 0; // Number of SQL queries
 
     QSqlQuery query(db);
 
@@ -105,26 +105,28 @@ bool DBHandler::dbCreateInstance()
         QString default_server_create = "CREATE TABLE default_server (default_id INTEGER PRIMARY KEY, server TEXT)";
         QString default_asset_create = "CREATE TABLE default_asset (default_id INTEGER PRIMARY KEY, asset TEXT)";
         QString default_account_create = "CREATE TABLE default_account (default_id INTEGER PRIMARY KEY, account TEXT)";
+        QString settings = "CREATE TABLE settings (setting TEXT PRIMARY KEY, parameter1 TEXT)";
         // --------------------------------------------
         QString create_contact = "CREATE TABLE contact(contact_id INTEGER PRIMARY KEY, contact_display_name TEXT)";
         QString create_nym     = "CREATE TABLE nym(nym_id TEXT PRIMARY KEY, contact_id INTEGER, nym_display_name)";
         QString create_server  = "CREATE TABLE nym_server(nym_id TEXT, server_id TEXT, PRIMARY KEY(nym_id, server_id))";
         QString create_account = "CREATE TABLE nym_account(account_id TEXT PRIMARY KEY, server_id TEXT, nym_id TEXT, asset_id TEXT, account_display_name TEXT)";
         // --------------------------------------------
-        error = query.exec(address_book_create);
-        error = query.exec(default_nym_create);
-        error = query.exec(default_server_create);
-        error = query.exec(default_asset_create);
-        error = query.exec(default_account_create);
+        error += query.exec(address_book_create);
+        error += query.exec(default_nym_create);
+        error += query.exec(default_server_create);
+        error += query.exec(default_asset_create);
+        error += query.exec(default_account_create);
+        error += query.exec(settings);
         // --------------------------------------------
-        error = query.exec(create_contact);
-        error = query.exec(create_nym);
-        error = query.exec(create_server);
-        error = query.exec(create_account);
+        error += query.exec(create_contact);
+        error += query.exec(create_nym);
+        error += query.exec(create_server);
+        error += query.exec(create_account);
         // ------------------------------------------
-        if(!error)
+        if(error != 10)  //every querie passed?
         {
-            qDebug() << dbConnectErrorStr + " " + dbCreationStr;
+            qDebug() << "dbCreateInstance Error: " << dbConnectErrorStr + " " + dbCreationStr;
             FileHandler rm;
             db.close();
             rm.removeFile(QCoreApplication::applicationDirPath() + dbFileNameStr);

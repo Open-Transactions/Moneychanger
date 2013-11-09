@@ -1,10 +1,13 @@
 
 #include <QDebug>
 #include <QMessageBox>
+#include <QApplication>
+#include <QClipboard>
 
 #include "nymdetails.h"
 #include "ui_nymdetails.h"
 
+#include "overridecursor.h"
 #include "detailedit.h"
 
 
@@ -21,6 +24,7 @@
 MTNymDetails::MTNymDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
     m_pPlainTextEdit(NULL),
+    m_pHeaderWidget(NULL),
     ui(new Ui::MTNymDetails)
 {
     ui->setupUi(this);
@@ -28,6 +32,13 @@ MTNymDetails::MTNymDetails(QWidget *parent, MTDetailEdit & theOwner) :
 //  this->installEventFilter(this); // NOTE: Successfully tested theory that the base class has already installed this.
 
     ui->lineEditID->setStyleSheet("QLineEdit { background-color: lightgray }");
+    // ----------------------------------
+    // Note: This is a placekeeper, so later on I can just erase
+    // the widget at 0 and replace it with the real header widget.
+    //
+    m_pHeaderWidget  = new QWidget;
+    ui->verticalLayout->insertWidget(0, m_pHeaderWidget);
+    // ----------------------------------
 }
 
 // ------------------------------------------------------
@@ -36,6 +47,22 @@ MTNymDetails::~MTNymDetails()
 {
     delete ui;
 }
+
+
+void MTNymDetails::on_toolButton_clicked()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+
+    if (NULL != clipboard)
+    {
+        clipboard->setText(ui->lineEditID->text());
+
+        QMessageBox::information(this, tr("ID copied"), QString("%1:<br/>%2").
+                                 arg(tr("Copied Nym ID to the clipboard")).
+                                 arg(ui->lineEditID->text()));
+    }
+}
+
 
 // ----------------------------------
 //virtual
@@ -115,6 +142,19 @@ void MTNymDetails::refresh(QString strID, QString strName)
 
     if (NULL != ui)
     {
+        QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(strID, strName, "", "", ":/icons/icons/identity_BW.png", false);
+
+        pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
+
+        if (NULL != m_pHeaderWidget)
+        {
+            ui->verticalLayout->removeWidget(m_pHeaderWidget);
+            delete m_pHeaderWidget;
+            m_pHeaderWidget = NULL;
+        }
+        ui->verticalLayout->insertWidget(0, pHeaderWidget);
+        m_pHeaderWidget = pHeaderWidget;
+        // ----------------------------------
         ui->lineEditID  ->setText(strID);
         ui->lineEditName->setText(strName);
 
@@ -279,7 +319,12 @@ void MTNymDetails::AddButtonClicked()
         //
         OT_ME madeEasy;
 
-        std::string str_id = madeEasy.create_pseudonym(nKeybits, NYM_ID_SOURCE, ALT_LOCATION);
+        std::string str_id;
+        {
+            MTOverrideCursor theSpinner;
+
+            str_id = madeEasy.create_pseudonym(nKeybits, NYM_ID_SOURCE, ALT_LOCATION);
+        }
 
         if (str_id.empty())
         {
@@ -333,8 +378,6 @@ void MTNymDetails::on_lineEditName_editingFinished()
 }
 
 // ------------------------------------------------------
-
-
 
 
 
