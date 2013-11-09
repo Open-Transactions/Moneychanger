@@ -37,7 +37,7 @@ MTCashPurse::MTCashPurse(QWidget *parent, MTDetailEdit & theOwner) :
     ui->pushButtonWithdraw->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 
     ui->pushButtonDeposit ->setText(tr("Deposit Cash"));
-    ui->pushButtonWithdraw->setText(tr("Withdraw Cash"));
+    ui->pushButtonWithdraw->setText(tr("Withdraw Cash..."));
     // ------------------------------------
     ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
     ui->tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
