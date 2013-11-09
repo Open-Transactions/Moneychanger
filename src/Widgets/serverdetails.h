@@ -38,6 +38,8 @@ protected:
 private:
     FileDownloader * m_pDownloader;
 
+    QWidget * m_pHeaderWidget;
+
     Ui::MTServerDetails *ui;
 };
 

@@ -170,8 +170,8 @@ void MTDetailEdit::showEvent(QShowEvent * event)
 {
     QWidget::showEvent(event);
 
-    if (m_map.size() < 1)
-        on_addButton_clicked();
+//    if (m_map.size() < 1)
+//        on_addButton_clicked();
 }
 
 //virtual
@@ -229,15 +229,18 @@ void MTDetailEdit::RefreshRecords()
         switch (m_Type)
         {
         case MTDetailEdit::DetailEditTypeContact:
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue);
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "");
+//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "", ":/icons/icons/user.png");
             break;
 
         case MTDetailEdit::DetailEditTypeNym:
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue);
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "");
+//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "", ":/icons/icons/identity_BW.png");
             break;
 
         case MTDetailEdit::DetailEditTypeServer:
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue);
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "");
+//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "", ":/icons/server");
             break;
 
         case MTDetailEdit::DetailEditTypeAsset:
@@ -245,7 +248,8 @@ void MTDetailEdit::RefreshRecords()
             // Not exposed yet through API. Todo.
 //            QString qstrCurrencySymbol =
 
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue);
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "");
+//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "", ":/icons/icons/assets.png");
             break;
         }
 
@@ -253,7 +257,8 @@ void MTDetailEdit::RefreshRecords()
         {
             QString qstrAmount = MTHome::shortAcctBalance(qstrID);
 
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, qstrAmount);
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, qstrAmount, "");
+//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, qstrAmount, "", ":/icons/icons/vault.png");
             break;
         }
 

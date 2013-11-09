@@ -50,6 +50,7 @@
 #include "Widgets/sendfundswindow.h"
 #include "Widgets/createinsurancecompany.h"
 #include "Widgets/detailedit.h"
+#include "Widgets/settings.h"
 
 class OverviewWindow;
 class MTHome;
@@ -97,6 +98,7 @@ public:
     void close_requestfunds_dialog();
     void close_market_dialog();
     void close_createinsurancecompany_dialog();
+    void close_settings_dialog();
     
     //Show address book
     void mc_addressbook_show(QString text);
@@ -196,6 +198,7 @@ private:
     bool mc_sendfunds_already_init;
     bool mc_requestfunds_already_init;
     bool mc_createinsurancecompany_already_init;
+    bool mc_settings_already_init;
 
     
     
@@ -219,13 +222,16 @@ private:
     SendFundsWindow         * sendfundswindow;
     MarketWindow            * market_window;
     CreateInsuranceCompany  * createinsurancecompany_window;
+    Settings                * settingswindow;
         
 public:
     void SetupMainMenu();
 
-    void mc_nymmanager_dialog();
-    void mc_servermanager_dialog();
-    void mc_assetmanager_dialog();
+    void mc_nymmanager_dialog   (QString qstrPresetID=QString(""));
+    void mc_servermanager_dialog(QString qstrPresetID=QString(""));
+    void mc_assetmanager_dialog (QString qstrPresetID=QString(""));
+
+    void mc_overview_dialog_refresh();
 
 private:
     void SetupAssetMenu();
@@ -249,7 +255,7 @@ private:
     //Overview
     void mc_overview_dialog();
     //Refresh visual
-    void mc_overview_dialog_refresh();
+//  void mc_overview_dialog_refresh();
     // ------------------------------------------------
     
     //Default Nym
@@ -274,7 +280,10 @@ private:
     // ------------------------------------------------
     
     //Default Account
-    void mc_accountmanager_dialog();
+public:
+    void mc_accountmanager_dialog(QString qstrAcctID=QString(""));
+
+private:
     //Reload account list
     void mc_systrayMenu_reload_accountlist();
     // ------------------------------------------------
@@ -509,6 +518,9 @@ private slots:
     
     // Create Insurance Company Slot
     void mc_createinsurancecompany_slot();
+
+    //Settings
+    void mc_settings_slot();
 
 };
 

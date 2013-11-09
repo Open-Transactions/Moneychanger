@@ -7,6 +7,8 @@ namespace Ui {
 class MTSendDlg;
 }
 
+class Moneychanger;
+
 class MTSendDlg : public QWidget
 {
     Q_OBJECT
@@ -18,8 +20,10 @@ class MTSendDlg : public QWidget
 
     bool m_bSent;
 
+    Moneychanger * m_pMoneychanger;
+
 public:
-    explicit MTSendDlg(QWidget *parent = 0);
+    explicit MTSendDlg(QWidget *parent, Moneychanger & theMC);
     ~MTSendDlg();
 
     void setInitialHisNym (QString nymId)  { m_hisNymId  = nymId;  } // To:
@@ -49,8 +53,6 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
     void closeEvent(QCloseEvent *event);
 
-    QString FormDisplayLabelForAcctButton(QString qstr_acct_id, QString qstr_display_name);
-
 private slots:
     void on_toButton_clicked();
     void on_fromButton_clicked();
@@ -59,6 +61,10 @@ private slots:
     void on_memoEdit_textChanged(const QString &arg1);
 
     void on_amountEdit_editingFinished();
+
+    void on_toolButton_clicked();
+
+    void on_toolButtonManageAccts_clicked();
 
 private:
     bool already_init;

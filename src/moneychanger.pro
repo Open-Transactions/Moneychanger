@@ -46,6 +46,8 @@ HEADERS += moneychanger.h \
     Widgets/accountdetails.h \
     UI/getstringdialog.h \
     UI/dlgnewcontact.h \
+    translation.h \
+    Widgets/settings.h\
     Widgets/pageaddcontract.h \
     Widgets/wizardaddcontract.h \
     Widgets/pageimportcontract.h \
@@ -64,7 +66,9 @@ HEADERS += moneychanger.h \
     passwordcallback.h \
     UI/dlgpassword.h \
     UI/dlgpasswordconfirm.h \
-    applicationmc.h
+    applicationmc.h \
+    Widgets/cashpurse.h \
+    Widgets/dlggetamount.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -99,6 +103,8 @@ SOURCES += main.cpp\
     Widgets/accountdetails.cpp \
     UI/dlgnewcontact.cpp \
     UI/getstringdialog.cpp \
+    translation.cpp \
+    Widgets/settings.cpp \
     Widgets/pageaddcontract.cpp \
     Widgets/wizardaddcontract.cpp \
     Widgets/pageimportcontract.cpp \
@@ -117,7 +123,9 @@ SOURCES += main.cpp\
     passwordcallback.cpp \
     UI/dlgpassword.cpp \
     UI/dlgpasswordconfirm.cpp \
-    applicationmc.cpp
+    applicationmc.cpp \
+    Widgets/cashpurse.cpp \
+    Widgets/dlggetamount.cpp
 
 RESOURCES += resource.qrc
 
@@ -140,6 +148,7 @@ FORMS += \
     UI/marketwindow.ui \
     UI/createinsurancecompany.ui \
     UI/getstringdialog.ui \
+    Widgets/settings.ui \
     Widgets/pageaddcontract.ui \
     Widgets/wizardaddcontract.ui \
     Widgets/pageimportcontract.ui \
@@ -155,28 +164,30 @@ FORMS += \
     Widgets/pagenym_source.ui \
     Widgets/pagenym_altlocation.ui \
     UI/dlgpassword.ui \
-    UI/dlgpasswordconfirm.ui
+    UI/dlgpasswordconfirm.ui \
+    Widgets/cashpurse.ui \
+    Widgets/dlggetamount.ui
 
 mac:{
+
+	OS_VERSION = $$system(uname -r)
+        
 	QT_CONFIG -= no-pkg-config
-	LIBS += -lboost_system-mt -lboost_thread-mt -ldl
+        !contains(OS_VERSION, 13.0.0):LIBS += -lboost_system-mt -lboost_thread-mt -ldl
+
+	contains(OS_VERSION, 13.0.0):LIBS += -lboost_system -lboost_thread -ldl
 
     # -------------------------------------------
-    # Un-comment this block to use C++11.
+    # NOTE: This is necessary on Mac OSX Mavericks (10.9)
+    #	Because libc++ is now chosen by default over libstdc++
+    #   And your dependencies will have to be rebuilt with similar options.
     #
-    # Comment-out this block to deactivate C++11
-    #
-	# QT_CONFIG += -spec macx-clang-libc++
-    # LIBS += -stdlib=libc++
-    # CONFIG += c++11
-    # QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++ -std=c++11
+	contains(OS_VERSION, 13.0.0):QT_CONFIG += -spec macx-clang-libc++
+	contains(OS_VERSION, 13.0.0):LIBS += -stdlib=libc++
+	contains(OS_VERSION, 13.0.0):CONFIG += c++11
+	contains(OS_VERSION, 13.0.0):QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++ -std=c++11
     #
     # -------------------------------------------
-
-
-# Stuff that didn't work.
-#    QMAKE_CXXFLAGS += -spec macx-clang-libc++  # apparently this doesn't really exist.
-#    CXXFLAGS += -std=c++0x // apparently the qmake version of this above is the one I'm supposed to use, not this...
 }
 
 linux:{
@@ -209,3 +220,5 @@ unix: PKGCONFIG += chaiscript
 
 #OTHER_FILES +=
 
+TRANSLATIONS += Translations/en_US.ts \
+                Translations/de_DE.ts
