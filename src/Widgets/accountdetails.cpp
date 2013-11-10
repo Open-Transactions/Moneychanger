@@ -284,8 +284,8 @@ void MTAccountDetails::on_pushButtonMakeDefault_clicked()
 {
     if ((NULL != m_pMoneychanger) && (NULL != m_pOwner) && !m_qstrID.isEmpty())
     {
-        DBHandler::getInstance()->AddressBookUpdateDefaultAccount(m_qstrID);
-        m_pMoneychanger->SetupMainMenu();
+        std::string str_acct_name = OTAPI_Wrap::GetAccountWallet_Name(m_qstrID.toStdString());
+        m_pMoneychanger->set_systrayMenu_account_setDefaultAccount(m_qstrID, QString::fromStdString(str_acct_name));
         ui->pushButtonMakeDefault->setEnabled(false);
         m_pMoneychanger->mc_overview_dialog_refresh();
     }
