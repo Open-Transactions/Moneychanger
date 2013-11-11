@@ -256,6 +256,14 @@ void MTCashPurse::on_pushButtonWithdraw_clicked()
 }
 
 
+// -----------------------------------------------------------------
+
+void MTCashPurse::on_pushButtonExport_clicked()
+{
+
+}
+
+// -----------------------------------------------------------------
 
 void MTCashPurse::on_pushButtonDeposit_clicked()
 {
@@ -364,6 +372,7 @@ int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmoun
     if (nNumberSelected > 0)
     {
         ui->pushButtonDeposit->setEnabled(true);
+        ui->pushButtonExport ->setEnabled(true);
         // ---------------------------------------
         QString qstr_amount("");
 
@@ -378,6 +387,7 @@ int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmoun
     else
     {
         ui->pushButtonDeposit->setEnabled(false);
+        ui->pushButtonExport ->setEnabled(false);
 
         ui->pushButtonDeposit ->setText(tr("Deposit Cash"));
     }
@@ -405,6 +415,7 @@ void MTCashPurse::ClearContents()
     ui->pushButtonDeposit ->setText(tr("Deposit Cash"));
     // ----------------------------------
     ui->pushButtonDeposit ->setEnabled(false);
+    ui->pushButtonExport  ->setEnabled(false);
     ui->pushButtonWithdraw->setEnabled(false);
     // ----------------------------------
     m_qstrAssetId  = QString("");
