@@ -254,8 +254,6 @@ void MTHome::on_refreshButton_clicked()
         // -----------------------------------------
         qDebug() << QString("Refreshing records from transaction servers.");
         // -----------------------------------------
-//        ((Moneychanger *)(this->parentWidget()))->downloadAccountData();
-
         emit needToDownloadAccountData();
     }
     // ------------------------------------------------------
