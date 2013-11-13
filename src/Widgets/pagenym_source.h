@@ -17,6 +17,7 @@ public:
 
 protected:
     virtual void showEvent(QShowEvent * event);
+    virtual bool validatePage();
 
 private:
     Ui::MTPageNym_Source *ui;
