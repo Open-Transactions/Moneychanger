@@ -89,6 +89,9 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType, bool bIsModal/*=
             return;
         }
         // -------------------------------------------
+        connect(m_pDetailPane,   SIGNAL(DefaultAccountChanged(QString, QString)),
+                m_pMoneychanger, SLOT  (setDefaultAccount(QString, QString)));
+        // -------------------------------------------
         m_pDetailPane->SetOwnerPointer(*this);
         // -------------------------------------------
         m_pDetailLayout = new QVBoxLayout;

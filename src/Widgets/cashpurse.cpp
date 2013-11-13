@@ -4,6 +4,9 @@
 #include <QMessageBox>
 #include <QStringList>
 
+#include <opentxs/OTAPI.h>
+#include <opentxs/OT_ME.h>
+
 #include "cashpurse.h"
 #include "ui_cashpurse.h"
 
@@ -16,8 +19,9 @@
 
 #include "home.h"
 
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
+#include "UI/dlgexportcash.h"
+#include "UI/dlgexportedcash.h"
+#include "UI/dlgexportedtopass.h"
 
 
 MTCashPurse::MTCashPurse(QWidget *parent, MTDetailEdit & theOwner) :
@@ -256,6 +260,111 @@ void MTCashPurse::on_pushButtonWithdraw_clicked()
 }
 
 
+// -----------------------------------------------------------------
+
+void MTCashPurse::on_pushButtonExport_clicked()
+{
+    QStringList selectedIndices;
+    int64_t     lAmount=0;
+
+    int nNumberChecked = this->TallySelections(selectedIndices, lAmount);
+    // ------------------------------------------------------------------
+    std::string str_acct_id     = m_qstrAcctId.toStdString();
+    std::string str_acct_nym    = OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
+    std::string str_acct_server = OTAPI_Wrap::It()->GetAccountWallet_ServerID(str_acct_id);
+    std::string str_acct_asset  = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+    // ------------------------------------------------------------------
+    QString qstrSelectedIndices = selectedIndices.join(","); // Create a comma-separated list of selected indices.
+
+    // This "should never happen" since the export button is disabled
+    // when none of the cash indices are selected in the GUI.
+    //
+    if (qstrSelectedIndices.isEmpty())
+        return;
+    // ------------------------------------
+    std::string str_amount = OTAPI_Wrap::FormatAmount(str_acct_asset, lAmount);
+    // ------------------------------------
+    // Find out if they want it to be password-protected, and if not,
+    // find out who the recipient Nym is meant to be.
+    //
+    DlgExportCash dlgExport(this);
+
+    dlgExport.setWindowTitle("Export Cash");
+
+    if (dlgExport.exec() != QDialog::Accepted)
+        return;
+    // ----------------------------------------------------------------
+    // Now dlgExport can tell us whether the cash should be exported to a
+    // particular Nym, or whether it should be password-protected.
+    //
+    bool    bExportToPassphrase = dlgExport.IsExportToPassphrase();
+    QString qstrRecipNymID(""),
+            qstrRecipName(""),
+            qstrRecipientWarning(""),
+            qstrRemovedFromPurse = tr("WARNING: the cash will be removed from your purse!");
+    // ----------------------------------------------------------------
+    if (bExportToPassphrase)
+        qstrRecipientWarning = QString("%1.<br/><br/>%2").arg(tr("The cash will be exported to a passphrase")).arg(qstrRemovedFromPurse);
+    else
+    {
+        qstrRecipNymID       = dlgExport.GetHisNymID();
+        qstrRecipName        = dlgExport.GetHisName ();
+        // ---------------------------------------------
+        qstrRecipientWarning = QString("%1: '%2'<br/>%3: %4<br/><br/>%5").arg(tr("The cash will be exported to")).
+                arg(qstrRecipName).arg(tr("Using his NymID")).arg(qstrRecipNymID).arg(qstrRemovedFromPurse);
+    }
+    // ----------------------------------------------------------------
+    QMessageBox::StandardButton reply;
+
+    QString qstrQuestion = QString("%1 %2<br/>%3<br/><br/>%4").arg(tr("Are you sure you wish to export")).
+                                                          arg(QString::fromStdString(str_amount)).
+                                                          arg(tr("from your cash purse?")).
+                                                          arg(qstrRecipientWarning); // Perhaps not all languages have the same question mark...
+
+    reply = QMessageBox::question(this, "Confirm Export", qstrQuestion,
+                                  QMessageBox::Yes|QMessageBox::No);
+    // ------------------------------------
+    if (reply == QMessageBox::Yes)
+    {
+        OT_ME       madeEasy;
+        std::string str_selected_indices(qstrSelectedIndices.toStdString()); // (FYI, you can also use "all" for all indices.)
+
+        std::string str_exported,  // The exported cash, encrypted to recipient (or passphrase.)
+                    str_retained;  // The exported cash, encrypted to sender (just in case...)
+
+        str_exported = madeEasy.export_cash(str_acct_server,
+                                            str_acct_nym,
+                                            str_acct_asset,
+                                            qstrRecipNymID.toStdString(),
+                                            str_selected_indices,
+                                            bExportToPassphrase,
+                                            str_retained); // output
+        // ------------------------------------
+        if (str_exported.empty())
+            QMessageBox::warning(this, tr("Failed Exporting Cash"),
+                                 tr("Failed trying to export cash."));
+        else if (bExportToPassphrase)
+        {
+            DlgExportedToPass dlgExported(this, QString::fromStdString(str_exported));
+            dlgExported.exec();
+            // --------------------------------------------------------
+            m_pOwner->SetPreSelected(m_qstrAcctId);
+            m_pOwner->RefreshRecords();
+        }
+        else
+        {
+            DlgExportedCash dlgExported(this,
+                                        QString::fromStdString(str_exported),
+                                        QString::fromStdString(str_retained));
+            dlgExported.exec();
+            // --------------------------------------------------------
+            m_pOwner->SetPreSelected(m_qstrAcctId);
+            m_pOwner->RefreshRecords();
+        }
+    }
+}
+
+// -----------------------------------------------------------------
 
 void MTCashPurse::on_pushButtonDeposit_clicked()
 {
@@ -364,6 +473,7 @@ int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmoun
     if (nNumberSelected > 0)
     {
         ui->pushButtonDeposit->setEnabled(true);
+        ui->pushButtonExport ->setEnabled(true);
         // ---------------------------------------
         QString qstr_amount("");
 
@@ -378,6 +488,7 @@ int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmoun
     else
     {
         ui->pushButtonDeposit->setEnabled(false);
+        ui->pushButtonExport ->setEnabled(false);
 
         ui->pushButtonDeposit ->setText(tr("Deposit Cash"));
     }
@@ -405,6 +516,7 @@ void MTCashPurse::ClearContents()
     ui->pushButtonDeposit ->setText(tr("Deposit Cash"));
     // ----------------------------------
     ui->pushButtonDeposit ->setEnabled(false);
+    ui->pushButtonExport  ->setEnabled(false);
     ui->pushButtonWithdraw->setEnabled(false);
     // ----------------------------------
     m_qstrAssetId  = QString("");

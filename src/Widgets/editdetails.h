@@ -43,6 +43,9 @@ public:
     virtual QString   GetCustomTabName(int nTab);
     // ----------------------------------
 
+signals:
+    void DefaultAccountChanged(QString qstrID, QString qstrName);
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 

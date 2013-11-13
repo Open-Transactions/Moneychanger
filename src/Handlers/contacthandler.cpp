@@ -267,12 +267,13 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact) //resum
 {
     QMutexLocker locker(&m_Mutex);
 
-    QString str_select = QString("SELECT * FROM `nym` WHERE `contact_id`='%1' LIMIT 0,1").arg(nFilterByContact);
+    QString str_select = QString("SELECT * FROM `nym` WHERE `contact_id`='%1'").arg(nFilterByContact);
+//  QString str_select = QString("SELECT * FROM `nym` WHERE `contact_id`='%1' LIMIT 0,1").arg(nFilterByContact);
 
     bool bFoundAny = false;
     int  nRows     = DBHandler::getInstance()->querySize(str_select);
 
-    for(int ii=0; ii < nRows; ii++)
+    for (int ii=0; ii < nRows; ii++)
     {
         QString nym_id   = DBHandler::getInstance()->queryString(str_select, 0, ii);
         QString nym_name = DBHandler::getInstance()->queryString(str_select, 2, ii);
@@ -283,7 +284,7 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact) //resum
 
             if (!nym_name.isEmpty())
             {
-//                qDebug() << QString("About to decode name: %1").arg(nym_name);
+//              qDebug() << QString("About to decode name: %1").arg(nym_name);
                 //Decode base64.
                 OTASCIIArmor ascName;
                 ascName.Set(nym_name.toStdString().c_str());

@@ -34,6 +34,8 @@ private slots:
 
     void checkboxClicked(int state);
 
+    void on_pushButtonExport_clicked();
+
 private:
     QString   m_qstrAcctId;
     QString   m_qstrAssetId;
