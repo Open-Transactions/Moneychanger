@@ -137,7 +137,7 @@
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>Export</string>
+        <string>Export...</string>
        </property>
       </widget>
      </item>

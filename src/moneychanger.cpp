@@ -46,9 +46,6 @@ Moneychanger::Moneychanger(QWidget *parent)
   mc_assetmanager_already_init(false),
   mc_accountmanager_already_init(false),
   mc_servermanager_already_init(false),
-  mc_withdraw_ascash_already_init(false),
-  mc_withdraw_asvoucher_already_init(false),
-  mc_deposit_already_init(false),
   mc_sendfunds_already_init(false),
   mc_requestfunds_already_init(false),
   mc_createinsurancecompany_already_init(false),
@@ -59,9 +56,6 @@ Moneychanger::Moneychanger(QWidget *parent)
   serverswindow(NULL),
   assetswindow(NULL),
   accountswindow(NULL),
-  withdrawascashwindow(NULL),
-  withdrawasvoucherwindow(NULL),
-  depositwindow(NULL),
   requestfundswindow(NULL),
   sendfundswindow(NULL),
   market_window(NULL),
@@ -87,17 +81,14 @@ Moneychanger::Moneychanger(QWidget *parent)
   mc_systrayMenu_nym(NULL),
   mc_systrayMenu_goldaccount(NULL),
   mc_systrayMenu_purse(NULL),
-  mc_systrayMenu_withdraw(NULL),
-  mc_systrayMenu_withdraw_ascash(NULL),
-  mc_systrayMenu_withdraw_asvoucher(NULL),
-  mc_systrayMenu_deposit(NULL),
   mc_systrayMenu_sendfunds(NULL),
   mc_systrayMenu_requestfunds(NULL),
+  mc_systrayMenu_markets(NULL),
   mc_systrayMenu_company_create(NULL),
   mc_systrayMenu_company_create_insurance(NULL),
   mc_systrayMenu_advanced(NULL),
   mc_systrayMenu_advanced_agreements(NULL),
-  mc_systrayMenu_advanced_markets(NULL),
+  mc_systrayMenu_advanced_import(NULL),
   mc_systrayMenu_advanced_settings(NULL),
   mc_systrayMenu_advanced_corporations(NULL),
   mc_systrayMenu_advanced_bazaar(NULL),
@@ -268,16 +259,16 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon_goldaccount = QIcon(":/icons/icons/safe_box.png");
     mc_systrayIcon_purse = QIcon(":/icons/icons/assets.png");
     
-    mc_systrayIcon_withdraw = QIcon(":/icons/withdraw");
-    mc_systrayIcon_deposit = QIcon(":/icons/deposit");
-    
     mc_systrayIcon_sendfunds = QIcon(":/icons/sendfunds");
     mc_systrayIcon_requestfunds = QIcon(":/icons/requestpayment");
     
+    mc_systrayIcon_markets = QIcon(":/icons/markets");
+
     mc_systrayIcon_advanced = QIcon(":/icons/advanced");
+
     //Submenu
+    mc_systrayIcon_advanced_import = QIcon(":/icons/icons/request.png");
     mc_systrayIcon_advanced_agreements = QIcon(":/icons/agreements");
-    mc_systrayIcon_advanced_markets = QIcon(":/icons/markets");
     mc_systrayIcon_advanced_settings = QIcon(":/icons/settings");
     
 
@@ -485,27 +476,9 @@ void Moneychanger::SetupMainMenu()
     //Separator
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
-    //Withdraw
-//    mc_systrayMenu_withdraw = new QMenu(tr("Withdraw"), 0);
-//    mc_systrayMenu_withdraw->setIcon(mc_systrayIcon_withdraw);
-//    mc_systrayMenu->addMenu(mc_systrayMenu_withdraw);
-//    //(Withdraw) as Cash
-//    mc_systrayMenu_withdraw_ascash = new QAction(tr("As Cash"),0);
-//    mc_systrayMenu_withdraw->addAction(mc_systrayMenu_withdraw_ascash);
-//    //Connect Button with re-action
-//    connect(mc_systrayMenu_withdraw_ascash, SIGNAL(triggered()), this, SLOT(mc_withdraw_ascash_slot()));
-
-//    //(Withdraw) as Voucher
-//    mc_systrayMenu_withdraw_asvoucher = new QAction(tr("As Voucher"), 0);
-//    mc_systrayMenu_withdraw->addAction(mc_systrayMenu_withdraw_asvoucher);
-//    //Connect Button with re-action
-//    connect(mc_systrayMenu_withdraw_asvoucher, SIGNAL(triggered()), this, SLOT(mc_withdraw_asvoucher_slot()));
-    // --------------------------------------------------------------
-    //Deposit
-//    mc_systrayMenu_deposit = new QAction(mc_systrayIcon_deposit, tr("Deposit..."), 0);
-//    mc_systrayMenu->addAction(mc_systrayMenu_deposit);
-//    //Connect button with re-action
-//    connect(mc_systrayMenu_deposit, SIGNAL(triggered()), this, SLOT(mc_deposit_slot()));
+    mc_systrayMenu_markets = new QAction(mc_systrayIcon_markets, tr("Markets"), 0);
+    mc_systrayMenu->addAction(mc_systrayMenu_markets);
+    connect(mc_systrayMenu_markets, SIGNAL(triggered()), this, SLOT(mc_market_slot()));
     // --------------------------------------------------------------
     //Gold account/cash purse/wallet
     //            mc_systrayMenu_goldaccount = new QAction("Gold Account: $60,000", 0);
@@ -531,12 +504,13 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu->addMenu(mc_systrayMenu_advanced);
     //Advanced submenu
 
-    mc_systrayMenu_advanced_markets = new QAction(mc_systrayIcon_advanced_markets, tr("Markets"), 0);
-    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_markets);
-    connect(mc_systrayMenu_advanced_markets, SIGNAL(triggered()), this, SLOT(mc_market_slot()));
-
     mc_systrayMenu_advanced_agreements = new QAction(mc_systrayIcon_advanced_agreements, tr("Agreements"), 0);
     mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_agreements);
+    connect(mc_systrayMenu_advanced_agreements, SIGNAL(triggered()), this, SLOT(mc_agreement_slot()));
+
+    mc_systrayMenu_advanced_import = new QAction(mc_systrayIcon_advanced_import, tr("Import Cash..."), 0);
+    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_import);
+    connect(mc_systrayMenu_advanced_import, SIGNAL(triggered()), this, SLOT(mc_import_slot()));
     // --------------------------------------------------------------
     //Separator
     mc_systrayMenu_advanced->addSeparator();
@@ -651,30 +625,6 @@ void Moneychanger::ClearMainMenu()
     ClearAccountMenu();
     ClearAssetMenu();
     // --------------------------------------------------------------
-    if (NULL != mc_systrayMenu_withdraw)
-    {
-        delete mc_systrayMenu_withdraw;
-        mc_systrayMenu_withdraw = NULL;
-    }
-    // --------------------------------------------------------------
-    if (NULL != mc_systrayMenu_withdraw_ascash)
-    {
-        delete mc_systrayMenu_withdraw_ascash;
-        mc_systrayMenu_withdraw_ascash = NULL;
-    }
-    // --------------------------------------------------------------
-    if (NULL != mc_systrayMenu_withdraw_asvoucher)
-    {
-        delete mc_systrayMenu_withdraw_asvoucher;
-        mc_systrayMenu_withdraw_asvoucher = NULL;
-    }
-    // --------------------------------------------------------------
-    if (NULL != mc_systrayMenu_deposit)
-    {
-        delete mc_systrayMenu_deposit;
-        mc_systrayMenu_deposit = NULL;
-    }
-    // --------------------------------------------------------------
     if (NULL != mc_systrayMenu_advanced)
     {
         delete mc_systrayMenu_advanced;
@@ -781,7 +731,7 @@ void Moneychanger::SetupAssetMenu()
     }
     // -------------------------------------------------
     //Load "default" asset type
-    set_systrayMenu_asset_setDefaultAsset(default_asset_id, default_asset_name);
+    setDefaultAsset(default_asset_id, default_asset_name);
 
     //Init asset submenu
     asset_list_id   = new QList<QVariant>();
@@ -820,7 +770,7 @@ void Moneychanger::SetupServerMenu()
     }
     // -------------------------------------------------
     //Load "default" server
-    set_systrayMenu_server_setDefaultServer(default_server_id, default_server_name);
+    setDefaultServer(default_server_id, default_server_name);
 
     //Init server submenu
     server_list_id   = new QList<QVariant>();
@@ -857,7 +807,7 @@ void Moneychanger::SetupNymMenu()
     }
     // -------------------------------------------------
     //Load "default" nym
-    set_systrayMenu_nym_setDefaultNym(default_nym_id, default_nym_name);
+    setDefaultNym(default_nym_id, default_nym_name);
 
     //Init nym submenu
     nym_list_id = new QList<QVariant>();
@@ -893,7 +843,7 @@ void Moneychanger::SetupAccountMenu()
     }
     // -------------------------------------------------
     //Load "default" account
-    set_systrayMenu_account_setDefaultAccount(default_account_id, default_account_name);
+    setDefaultAccount(default_account_id, default_account_name);
 
     //Init account submenu
     account_list_id   = new QList<QVariant>();
@@ -968,6 +918,10 @@ void Moneychanger::mc_overview_dialog()
     {
         homewindow = new MTHome(this);
         mc_overview_already_init = true;
+
+        connect(homewindow, SIGNAL(needToDownloadAccountData()),
+                this,       SLOT(downloadAccountData()));
+
         qDebug() << "Overview Opened";
     }
     // ---------------------------------
@@ -1100,7 +1054,7 @@ void Moneychanger::close_nymmanager_dialog()
 }
 
 //Additional Nym Manager Functions
-void Moneychanger::set_systrayMenu_nym_setDefaultNym(QString nym_id, QString nym_name)
+void Moneychanger::setDefaultNym(QString nym_id, QString nym_name)
 {
     //Set default nym internal memory
     default_nym_id   = nym_id;
@@ -1163,7 +1117,7 @@ void Moneychanger::mc_nymselection_triggered(QAction*action_triggered)
     {
         //Set new nym default
         QString action_triggered_string_nym_name = QVariant(action_triggered->text()).toString();
-        set_systrayMenu_nym_setDefaultNym(action_triggered_string, action_triggered_string_nym_name);
+        setDefaultNym(action_triggered_string, action_triggered_string_nym_name);
         
         //Refresh the nym default selection in the nym manager (ONLY if it is open)
         //Check if nym manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
@@ -1386,7 +1340,7 @@ void Moneychanger::close_assetmanager_dialog()
 
 //This was mistakenly named asset_load_asset, should be set default asset
 //Set Default asset
-void Moneychanger::set_systrayMenu_asset_setDefaultAsset(QString asset_id, QString asset_name)
+void Moneychanger::setDefaultAsset(QString asset_id, QString asset_name)
 {
     //Set default asset internal memory
     default_asset_id = asset_id;
@@ -1442,15 +1396,12 @@ void Moneychanger::mc_assetselection_triggered(QAction*action_triggered)
     }else{
         //Set new asset default
         QString action_triggered_string_asset_name = QVariant(action_triggered->text()).toString();
-        set_systrayMenu_asset_setDefaultAsset(action_triggered_string, action_triggered_string_asset_name);
+        setDefaultAsset(action_triggered_string, action_triggered_string_asset_name);
         
-        //Refresh the asset default selection in the asset manager (ONLY if it is open)
-        //Check if asset manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
-        if(mc_assetmanager_already_init == 1){
-            //Refresh if the asset manager is currently open
-            if(mc_assetmanager_already_init){
-                mc_assetmanager_dialog();
-            }
+        //Refresh if the asset manager is currently open
+        if (mc_assetmanager_already_init)
+        {
+            mc_assetmanager_dialog();
         }
     }
     
@@ -1549,7 +1500,7 @@ void Moneychanger::mc_accountselection_triggered(QAction*action_triggered)
     {
         //Set new account default
         QString action_triggered_string_account_name = QVariant(action_triggered->text()).toString();
-        set_systrayMenu_account_setDefaultAccount(action_triggered_string, action_triggered_string_account_name);
+        setDefaultAccount(action_triggered_string, action_triggered_string_account_name);
         // ------------------------------
         //Refresh the account default selection in the account manager (ONLY if it is open)
         //Check if account manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
@@ -1559,17 +1510,14 @@ void Moneychanger::mc_accountselection_triggered(QAction*action_triggered)
             mc_accountmanager_dialog();
         }
         // ------------------------------
-        if (mc_overview_already_init)
-        {
-            mc_overview_dialog();
-        }
+        mc_overview_dialog_refresh();
         // ------------------------------
     }
     
 }
 
 //Set Default account
-void Moneychanger::set_systrayMenu_account_setDefaultAccount(QString account_id, QString account_name)
+void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
 {
     //Set default account internal memory
     default_account_id   = account_id;
@@ -1615,8 +1563,8 @@ void Moneychanger::set_systrayMenu_account_setDefaultAccount(QString account_id,
 
                 if (!qstrAssetName.isEmpty() && (NULL != mc_systrayMenu_asset))
                     mc_systrayMenu_asset->setTitle(tr("Asset Type: ")+qstrAssetName);
-//                  set_systrayMenu_asset_setDefaultAsset(QString::fromStdString(strAsset),
-//                                                        QString::fromStdString(strAssetName));
+//                  setDefaultAsset(QString::fromStdString(strAsset),
+//                                  QString::fromStdString(strAssetName));
             }
             // -----------------------------------------------------------
             if (!strNym.empty())
@@ -1625,8 +1573,8 @@ void Moneychanger::set_systrayMenu_account_setDefaultAccount(QString account_id,
 
                 if (!qstrNymName.isEmpty() && (NULL != mc_systrayMenu_nym))
                     mc_systrayMenu_nym->setTitle(tr("Nym: ")+qstrNymName);
-//                  set_systrayMenu_nym_setDefaultNym(QString::fromStdString(strNym),
-//                                                    QString::fromStdString(strNymName));
+//                  setDefaultNym(QString::fromStdString(strNym),
+//                                QString::fromStdString(strNymName));
             }
             // -----------------------------------------------------------
             if (!strServer.empty())
@@ -1635,9 +1583,11 @@ void Moneychanger::set_systrayMenu_account_setDefaultAccount(QString account_id,
 
                 if (!qstrServerName.isEmpty() && (NULL != mc_systrayMenu_server))
                     mc_systrayMenu_server->setTitle(tr("Server: ")+qstrServerName);
-//                  set_systrayMenu_server_setDefaultServer(QString::fromStdString(strServer),
-//                                                          QString::fromStdString(strServerName));
+//                  setDefaultServer(QString::fromStdString(strServer),
+//                                   QString::fromStdString(strServerName));
             }
+            // -----------------------------------------------------------
+            mc_overview_dialog_refresh();
         }
         // -----------------------------------------------------------
     }
@@ -1750,7 +1700,7 @@ void Moneychanger::close_servermanager_dialog()
 
 
 
-void Moneychanger::set_systrayMenu_server_setDefaultServer(QString server_id, QString server_name)
+void Moneychanger::setDefaultServer(QString server_id, QString server_name)
 {
     //Set default server internal memory
     default_server_id = server_id;
@@ -1812,7 +1762,7 @@ void Moneychanger::mc_serverselection_triggered(QAction * action_triggered){
     }else{
         //Set new server default
         QString action_triggered_string_server_name = QVariant(action_triggered->text()).toString();
-        set_systrayMenu_server_setDefaultServer(action_triggered_string, action_triggered_string_server_name);
+        setDefaultServer(action_triggered_string, action_triggered_string_server_name);
         
         //Refresh the server default selection in the server manager (ONLY if it is open)
         //Check if server manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
@@ -1830,136 +1780,6 @@ void Moneychanger::mc_serverselection_triggered(QAction * action_triggered){
 // End Server Manager
 
 
-
-
-
-
-/** 
- * Withdraw 
- **/
-
-//--- As Cash ---//
-void Moneychanger::mc_withdraw_ascash_slot()
-{
-    //The operator has requested to open the dialog to withdraw as cash.
-    mc_withdraw_ascash_dialog();
-}
-
-//Open the WithdrawAsCash dialog window
-
-void Moneychanger::mc_withdraw_ascash_dialog()
-{
-    if (!mc_withdraw_ascash_already_init)
-    {
-        withdrawascashwindow = new WithdrawAsCashWindow(this);
-//      withdrawascashwindow->setAttribute(Qt::WA_DeleteOnClose);
-        mc_withdraw_ascash_already_init = true;
-    }
-    // ------------------------------------
-    withdrawascashwindow->dialog();
-}
-
-void Moneychanger::close_withdrawascash_dialog()
-{
-    delete withdrawascashwindow;
-    withdrawascashwindow = NULL;
-    mc_withdraw_ascash_already_init = false;
-    qDebug() << "Withdraw As Cash Closed";
-}
-
-
-
-//--- As Voucher ---//
-
-void Moneychanger::mc_withdraw_asvoucher_slot()
-{
-    //The operator has requested to open the dialog to withdraw as cash.
-    mc_withdraw_asvoucher_dialog();
-}
-
-// Open the WithdrawAsVoucher dialog window
-
-void Moneychanger::mc_withdraw_asvoucher_dialog()
-{
-    
-    if (!mc_withdraw_asvoucher_already_init)
-    {
-        withdrawasvoucherwindow = new WithdrawAsVoucherWindow(this);
-//      withdrawasvoucherwindow->setAttribute(Qt::WA_DeleteOnClose);
-        mc_withdraw_asvoucher_already_init = true;
-    }
-    // ------------------------------------
-    withdrawasvoucherwindow->dialog();
-}
-
-void Moneychanger::close_withdrawasvoucher_dialog()
-{
-    delete withdrawasvoucherwindow;
-    withdrawasvoucherwindow = NULL;
-    mc_withdraw_asvoucher_already_init = false;
-    qDebug() << "Withdraw As Voucher Closed";
-    
-}
-
-void Moneychanger::set_systrayMenu_withdraw_asvoucher_nym_input(QString input)
-{
-    
-    if(!mc_withdraw_asvoucher_already_init)
-    {
-        mc_withdraw_asvoucher_dialog();
-        set_systrayMenu_withdraw_asvoucher_nym_input(input);
-    }
-    else
-        withdrawasvoucherwindow->set_systrayMenu_withdraw_asvoucher_nym_input_text(input);
-}
-
-// End Withdrawals
-
-
-
-
-
-
-/** 
- * Deposit 
- **/
-
-void Moneychanger::mc_deposit_slot(){
-    mc_deposit_show_dialog();
-}
-
-void Moneychanger::mc_deposit_show_dialog(){
-    
-    if (!mc_deposit_already_init)
-    {
-        depositwindow = new DepositWindow(this);
-//        depositwindow->setAttribute(Qt::WA_DeleteOnClose);
-        mc_deposit_already_init = true;
-    }
-    // ------------------------------------
-    depositwindow->dialog();
-}
-
-void Moneychanger::close_deposit_dialog()
-{
-    delete depositwindow;
-    depositwindow = NULL;
-    mc_deposit_already_init = false;
-    qDebug() << "Deposit Window Closed";
-}
-
-// End Deposit
-
-
-
-
-// resume todo
-
-void Moneychanger::new_compose_dialog() {}
-void Moneychanger::new_send_dialog() {}
-void Moneychanger::new_request_dialog() {}
-
-
 /** 
  * Send Funds 
  **/
@@ -1971,14 +1791,6 @@ void Moneychanger::mc_sendfunds_slot()
 
 void Moneychanger::mc_sendfunds_show_dialog()
 {
-//    if (!mc_sendfunds_already_init)
-//    {
-//        sendfundswindow = new SendFundsWindow(this);
-//        mc_sendfunds_already_init = true;
-//    }
-//    // ------------------------------------
-//    sendfundswindow->dialog();
-
     // --------------------------------------------------
     MTSendDlg * send_window = new MTSendDlg(NULL, *this);
     send_window->setAttribute(Qt::WA_DeleteOnClose);
@@ -2059,17 +1871,65 @@ void Moneychanger::close_requestfunds_dialog()
 
 
 
+
+
+/**
+ * Import Cash
+ **/
+
+void Moneychanger::mc_import_slot()
+{
+
+
+
+
+
+
+}
+
+
+
+
+
+
+/**
+ * Agreement Window
+ **/
+
+void Moneychanger::mc_agreement_slot()
+{
+//    if (!mc_agreement_window_already_init)
+//    {
+//        agreement_window = new AgreementWindow(this);
+//        mc_agreement_window_already_init = true;
+//    }
+//    // ------------------------------------
+//    agreement_window->show();
+}
+
+//void Moneychanger::close_agreement_dialog()
+//{
+//    delete agreement_window;
+//    agreement_window = NULL;
+//    mc_agreement_window_already_init = false;
+//    qDebug() << "Agreement Window Closed";
+//}
+
+// End Agreement Window
+
+
+
+
+
 /**
  * Market Window
  **/
 
 void Moneychanger::mc_market_slot()
 {
-    // This is a glaring memory leak, but it's only a temporary placeholder before I redo how windows are handled.
-    if(!mc_market_window_already_init)
+    if (!mc_market_window_already_init)
     {
         market_window = new MarketWindow(this);
-//        market_window->setAttribute(Qt::WA_DeleteOnClose);
         mc_market_window_already_init = true;
     }
     // ------------------------------------
@@ -2085,6 +1945,9 @@ void Moneychanger::close_market_dialog()
 }
 
 // End Market Window
+
+
+
 
 
 /**

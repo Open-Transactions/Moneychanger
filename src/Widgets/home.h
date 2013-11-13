@@ -65,6 +65,9 @@ public:
 
     static QString FormDisplayLabelForAcctButton(QString qstr_acct_id, QString qstr_display_name);
 
+signals:
+    void needToDownloadAccountData();
+
 private slots:
     void on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn);
 
