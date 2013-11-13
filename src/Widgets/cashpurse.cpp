@@ -358,6 +358,9 @@ void MTCashPurse::on_pushButtonExport_clicked()
                                         QString::fromStdString(str_retained));
             dlgExported.exec();
             // --------------------------------------------------------
+            ui->pushButtonDeposit ->setEnabled(false);
+            ui->pushButtonExport  ->setEnabled(false);
+            // --------------------------------------------------------
             m_pOwner->SetPreSelected(m_qstrAcctId);
             m_pOwner->RefreshRecords();
         }
@@ -418,6 +421,9 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
         {
             QMessageBox::information(this, tr("Success Depositing Cash"),
                                     tr("Success depositing cash!"));
+            // --------------------------------------------------------
+            ui->pushButtonDeposit ->setEnabled(false);
+            ui->pushButtonExport  ->setEnabled(false);
             // --------------------------------------------------------
             m_pOwner->SetPreSelected(m_qstrAcctId);
             m_pOwner->RefreshRecords();
