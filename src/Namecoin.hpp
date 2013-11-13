@@ -23,11 +23,68 @@
 
 #include <string>
 
+#include <nmcrpc/JsonRpc.hpp>
 #include <nmcrpc/NamecoinInterface.hpp>
-#include <nmcrpc/RpcSettings.hpp>
 
 /** Namespace used for Namecoin credentials.  */
 extern const std::string NMC_NS;
+
+/* ************************************************************************** */
+/* NMC_Interface.  */
+
+/**
+ * Utility class that can be instantiated to give access to the JSON-RPC
+ * connection and high-level Namecoin interface classes of libnmcrpc.
+ * The internal details (singletons / created for every use) are handled
+ * transparently.
+ */
+class NMC_Interface
+{
+
+private:
+
+  /** JSON-RPC interface used.  */
+  nmcrpc::JsonRpc* rpc;
+  /** High-level interface used.  */
+  nmcrpc::NamecoinInterface* nc;
+
+public:
+
+  /**
+   * Construct the object.
+   */
+  NMC_Interface ();
+
+  /**
+   * Destroy everything.
+   */
+  ~NMC_Interface ();
+
+  // No copying.
+  NMC_Interface (const NMC_Interface&) = delete;
+  NMC_Interface& operator= (const NMC_Interface&) = delete;
+
+  /**
+   * Get JSON-RPC connection.
+   * @return JSON-RPC connection that can be used.
+   */
+  inline nmcrpc::JsonRpc&
+  getJsonRpc ()
+  {
+    return *rpc;
+  }
+
+  /**
+   * Get high-level Namecoin interface.
+   * @return High-level Namecoin interface to be used.
+   */
+  inline nmcrpc::NamecoinInterface&
+  getNamecoin ()
+  {
+    return *nc;
+  }
+
+};
 
 /* ************************************************************************** */
 /* NMC_Verifier.  */

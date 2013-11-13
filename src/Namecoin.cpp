@@ -20,12 +20,40 @@
 
 #include "Namecoin.hpp"
 
-#include <nmcrpc/JsonRpc.hpp>
+#include <nmcrpc/RpcSettings.hpp>
 
+#include <cassert>
 #include <iostream>
 
 /** Namespace used for Namecoin credentials.  */
 const std::string NMC_NS = "ot";
+
+/* ************************************************************************** */
+/* NMC_Interface.  */
+
+/**
+ * Construct the object.
+ */
+NMC_Interface::NMC_Interface ()
+{
+  nmcrpc::RpcSettings settings;
+  settings.readDefaultConfig ();
+
+  rpc = new nmcrpc::JsonRpc (settings);
+  nc = new nmcrpc::NamecoinInterface (*rpc);
+}
+
+/**
+ * Destroy everything.
+ */
+NMC_Interface::~NMC_Interface ()
+{
+  assert (rpc);
+  assert (nc);
+
+  delete rpc;
+  delete nc;
+}
 
 /* ************************************************************************** */
 /* NMC_Verifier.  */
