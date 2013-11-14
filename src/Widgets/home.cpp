@@ -38,9 +38,6 @@ MTHome::MTHome(QWidget *parent) :
 
 MTHome::~MTHome()
 {
-    delete m_pDetailPane;
-    delete m_pDetailLayout;
-    delete m_pHeaderLayout;
     delete ui;
 }
 

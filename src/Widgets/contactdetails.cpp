@@ -16,11 +16,14 @@
 
 #include "UI/dlgnewcontact.h"
 
+#include "credentials.h"
+
 
 
 MTContactDetails::MTContactDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
     m_pPlainTextEdit(NULL),
+    m_pCredentials(NULL),
     m_pHeaderWidget(NULL),
     ui(new Ui::MTContactDetails)
 {
@@ -48,7 +51,7 @@ MTContactDetails::~MTContactDetails()
 //virtual
 int MTContactDetails::GetCustomTabCount()
 {
-    return 1;
+    return 2;
 }
 // ----------------------------------
 //virtual
@@ -63,7 +66,16 @@ QWidget * MTContactDetails::CreateCustomTab(int nTab)
     // -----------------------------
     switch (nTab)
     {
-    case 0:
+    case 0: // "Credentials" tab
+        if (NULL != m_pOwner)
+        {
+            m_pCredentials = new MTCredentials(NULL, *m_pOwner);
+            pReturnValue = m_pCredentials;
+            pReturnValue->setContentsMargins(0, 0, 0, 0);
+        }
+        break;
+
+    case 1: // "Known IDs" tab
     {
         m_pPlainTextEdit = new QPlainTextEdit;
 
@@ -104,7 +116,8 @@ QString  MTContactDetails::GetCustomTabName(int nTab)
     // -----------------------------
     switch (nTab)
     {
-    case 0:  qstrReturnValue = "Known IDs";  break;
+    case 0:  qstrReturnValue = "Credentials";  break;
+    case 1:  qstrReturnValue = "Known IDs";    break;
 
     default:
         qDebug() << QString("Unexpected: MTContactDetails::GetCustomTabName was called with bad index: %1").arg(nTab);
@@ -196,9 +209,10 @@ void MTContactDetails::ClearContents()
 {
     ui->lineEditID  ->setText("");
     ui->lineEditName->setText("");
-
-//    ui->plainTextEdit->setPlainText("");
-
+    // ------------------------------------------
+    if (NULL != m_pCredentials)
+        m_pCredentials->ClearContents();
+    // ------------------------------------------
     m_pPlainTextEdit->setPlainText("");
 }
 
@@ -229,7 +243,8 @@ void MTContactDetails::refresh(QString strID, QString strName)
 
     int nContactID = strID.toInt();
     // --------------------------------------------
-    QString strDetails;
+    QString     strDetails;
+    QStringList qstrlistNymIDs;
     // --------------------------------------------
     {
         mapIDName theNymMap;
@@ -242,6 +257,8 @@ void MTContactDetails::refresh(QString strID, QString strName)
             {
                 QString qstrNymID    = ii.key();
                 QString qstrNymValue = ii.value();
+                // -------------------------------------
+                qstrlistNymIDs.append(qstrNymID);
                 // -------------------------------------
                 strDetails += QString("%1\n").arg(qstrNymID);
                 // -------------------------------------
@@ -283,12 +300,20 @@ void MTContactDetails::refresh(QString strID, QString strName)
     // --------------------------------------------
 //    ui->plainTextEdit->setPlainText(strDetails);
     // --------------------------------------------
+    // TAB: "Known IDs"
+    //
     if (NULL != m_pPlainTextEdit)
     {
         m_pPlainTextEdit->setPlainText(strDetails);
     }
-    // --------------------------
-
+    // -----------------------------------
+    // TAB: "CREDENTIALS"
+    //
+    if (NULL != m_pCredentials)
+    {
+        m_pCredentials->refresh(qstrlistNymIDs);
+    }
+    // -----------------------------------------------------------------------
 }
 
 

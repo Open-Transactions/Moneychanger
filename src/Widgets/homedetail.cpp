@@ -79,8 +79,11 @@ MTHomeDetail::~MTHomeDetail()
         // a new layout -- we don't have to clear it on destruction.
         // (It already clears itself in that case.)
 
-        delete m_pDetailLayout;
-        m_pDetailLayout = NULL;
+        // NOTE: this->setLayout(m_pDetailLayout) is performed, which means
+        // that m_pDetailLayout is ALREADY deleted, when *this gets deleted.
+
+//        delete m_pDetailLayout;
+//        m_pDetailLayout = NULL;
     }
     // --------------------------------------------------
     delete ui;

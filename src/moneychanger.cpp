@@ -61,8 +61,6 @@ Moneychanger::Moneychanger(QWidget *parent)
   serverswindow(NULL),
   assetswindow(NULL),
   accountswindow(NULL),
-  requestfundswindow(NULL),
-  sendfundswindow(NULL),
   market_window(NULL),
   createinsurancecompany_window(NULL),
   settingswindow(NULL),
@@ -1772,14 +1770,6 @@ void Moneychanger::mc_requestfunds_slot()
 
 void Moneychanger::mc_requestfunds_show_dialog()
 {
-//    if (!mc_requestfunds_already_init)
-//    {
-//        requestfundswindow = new RequestFundsWindow(this);
-//        mc_requestfunds_already_init = true;
-//    }
-//    // ------------------------------------
-//    requestfundswindow->dialog();
-
     // --------------------------------------------------
     MTRequestDlg * request_window = new MTRequestDlg(NULL, *this);
     request_window->setAttribute(Qt::WA_DeleteOnClose);
@@ -1796,10 +1786,7 @@ void Moneychanger::mc_requestfunds_show_dialog()
 
 void Moneychanger::close_requestfunds_dialog()
 {
-//    delete requestfundswindow;
-//    requestfundswindow = NULL;
-//    mc_requestfunds_already_init = false;
-//    qDebug() << "Request Funds Window Closed";
+
 }
 
 
@@ -2129,10 +2116,7 @@ void Moneychanger::mc_sendfunds_show_dialog()
 
 void Moneychanger::close_sendfunds_dialog()
 {
-//    delete sendfundswindow;
-//    sendfundswindow = NULL;
-//    mc_sendfunds_already_init = false;
-//    qDebug() << "Send Funds Window Closed";
+
 }
 
 // End Send Funds
