@@ -21,6 +21,9 @@ protected:
 
 private:
     Ui::MTPageNym_Source *ui;
+
+private slots:
+    void getAddressClicked();
 };
 
 #endif // PAGENYM_SOURCE_H

@@ -24,8 +24,9 @@ void MTPageNym_Source::showEvent(QShowEvent * event)
     // -------------------------------
     int nAuthorityIndex = field("Authority").toInt();
 
-    // Default is no extra label.
+    // Default is no extra label and no button.
     ui->labelExtra->setText("");
+    ui->getAddress->setVisible(false);
 
     if (1 == nAuthorityIndex) // Namecoin
     {
@@ -34,8 +35,17 @@ void MTPageNym_Source::showEvent(QShowEvent * event)
 
         NMC_Interface nmc;
         std::string msg;
-        nmc.getNamecoin ().testConnection (msg);
+        const bool ok = nmc.getNamecoin ().testConnection (msg);
         ui->labelExtra->setText(msg.c_str ());
+
+        if (ok)
+        {
+            ui->getAddress->setVisible(true);
+            ui->getAddress->setText(tr("Get Address"));
+
+            connect(ui->getAddress, SIGNAL(clicked()),
+                    this, SLOT(getAddressClicked()));
+        }
     }
     else if (2 == nAuthorityIndex) // Legacy CA
     {
@@ -84,4 +94,13 @@ bool MTPageNym_Source::validatePage()
 MTPageNym_Source::~MTPageNym_Source()
 {
     delete ui;
+}
+
+void MTPageNym_Source::getAddressClicked()
+{
+  NMC_Interface nmc;
+  nmcrpc::NamecoinInterface::Address addr;
+  addr = nmc.getNamecoin().createAddress();
+
+  ui->lineEditSource->setText(addr.getAddress().c_str());
 }
