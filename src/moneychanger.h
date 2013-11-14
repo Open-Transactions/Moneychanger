@@ -41,26 +41,16 @@
 #include "MTRecord.hpp"
 
 #include "Widgets/marketwindow.h"
-#include "Widgets/overviewwindow.h"
 #include "Widgets/home.h"
-#include "Widgets/withdrawascashwindow.h"
-#include "Widgets/withdrawasvoucherwindow.h"
-#include "Widgets/depositwindow.h"
-#include "Widgets/requestfundswindow.h"
-#include "Widgets/sendfundswindow.h"
+
 #include "Widgets/createinsurancecompany.h"
+
 #include "Widgets/detailedit.h"
 #include "Widgets/settings.h"
 
-class OverviewWindow;
 class MTHome;
 class MTDetailEdit;
 
-class WithdrawAsCashWindow;
-class WithdrawAsVoucherWindow;
-class DepositWindow;
-class RequestFundsWindow;
-class SendFundsWindow;
 class MarketWindow;
 class CreateInsuranceCompany;
 
@@ -77,8 +67,6 @@ public:
     /** Start **/
     void bootTray();
 
-    void downloadAccountData();
-
     
     /** 
      * Interfaces 
@@ -91,9 +79,7 @@ public:
     void close_nymmanager_dialog();
     void close_servermanager_dialog();
     void close_assetmanager_dialog();
-    void close_withdrawascash_dialog();
-    void close_withdrawasvoucher_dialog();
-    void close_deposit_dialog();
+
     void close_sendfunds_dialog();
     void close_requestfunds_dialog();
     void close_market_dialog();
@@ -107,27 +93,33 @@ public:
     void new_send_dialog();
     void new_request_dialog();
 
-    
+signals:
+    void balancesChanged();
+
+public slots:
+
+    void onBalancesChanged();
+
+    void downloadAccountData();
+
     /**
      * Functions for setting Systray Values
      **/
     
     // Set Systray Nym Value
-    void set_systrayMenu_nym_setDefaultNym(QString, QString);
-    
-    void set_systrayMenu_withdraw_asvoucher_nym_input(QString input);
+    void setDefaultNym(QString, QString);
     
     // Set Systray Asset Value
-    void set_systrayMenu_asset_setDefaultAsset(QString, QString);
+    void setDefaultAsset(QString, QString);
     
     // Set Systray Account Value
-    void set_systrayMenu_account_setDefaultAccount(QString, QString);
+    void setDefaultAccount(QString, QString);
     
     // Set Systray Server Value
-    void set_systrayMenu_server_setDefaultServer(QString, QString);
+    void setDefaultServer(QString, QString);
     
     
-    
+public:
 
     /**
      * Functions for pulling account information out of locally constructed lists.
@@ -163,10 +155,7 @@ public:
      **/
     
     // These should probably be moved to the main class file.
-    ot_worker * get_ot_worker_background(){return ot_worker_background;}; // Should probably replace this soon.
-
-    std::string ot_withdraw_cash(std::string selected_server_id_string, std::string nym_id, std::string selected_account_id_string, int amount_to_withdraw_int){return ot_me->withdraw_cash(selected_server_id_string, nym_id, selected_account_id_string, amount_to_withdraw_int);};
-    std::string ot_withdraw_voucher(std::string selected_server_id_string, std::string nym_id, std::string selected_account_id_string, std::string recip_nym_string, std::string memo_string, int amount_to_withdraw_int){return ot_me->withdraw_voucher(selected_server_id_string, nym_id, selected_account_id_string, recip_nym_string, memo_string, amount_to_withdraw_int);};
+    ot_worker * get_ot_worker_background(){return ot_worker_background;} // Should probably replace this soon.
     
 private:
 
@@ -188,15 +177,15 @@ private:
     bool mc_overview_already_init;
     bool mc_market_window_already_init;
     bool mc_addressbook_already_init;
+
     bool mc_nymmanager_already_init;
     bool mc_assetmanager_already_init;
     bool mc_accountmanager_already_init;
     bool mc_servermanager_already_init;
-    bool mc_withdraw_ascash_already_init;
-    bool mc_withdraw_asvoucher_already_init;
-    bool mc_deposit_already_init;
+
     bool mc_sendfunds_already_init;
     bool mc_requestfunds_already_init;
+
     bool mc_createinsurancecompany_already_init;
     bool mc_settings_already_init;
 
@@ -206,7 +195,6 @@ private:
      * Window Classes
      **/
     
-    OverviewWindow * overviewwindow;
     MTHome * homewindow;
 
     MTDetailEdit      * contactswindow;
@@ -215,11 +203,6 @@ private:
     MTDetailEdit      * assetswindow;
     MTDetailEdit      * accountswindow;
 
-    WithdrawAsCashWindow    * withdrawascashwindow;
-    WithdrawAsVoucherWindow * withdrawasvoucherwindow;
-    DepositWindow           * depositwindow;
-    RequestFundsWindow      * requestfundswindow;
-    SendFundsWindow         * sendfundswindow;
     MarketWindow            * market_window;
     CreateInsuranceCompany  * createinsurancecompany_window;
     Settings                * settingswindow;
@@ -287,19 +270,6 @@ private:
     //Reload account list
     void mc_systrayMenu_reload_accountlist();
     // ------------------------------------------------
-    
-    //Withdraw As Cash
-    void mc_withdraw_ascash_dialog();
-    // ------------------------------------------------
-
-    //Withdraw As Voucher
-    void mc_withdraw_asvoucher_dialog();
-    // ------------------------------------------------
-    
-    //Deposit
-    void mc_deposit_show_dialog();
-    // ------------------------------------------------
-    
     //Send Funds
     void mc_sendfunds_show_dialog();    
     // ------------------------------------------------
@@ -356,15 +326,14 @@ private:
     QIcon mc_systrayIcon_goldaccount;
     QIcon mc_systrayIcon_purse;
     
-    QIcon mc_systrayIcon_withdraw;
-    QIcon mc_systrayIcon_deposit;
-    
     QIcon mc_systrayIcon_sendfunds;
     QIcon mc_systrayIcon_requestfunds;
     
+    QIcon mc_systrayIcon_markets;
+
     QIcon mc_systrayIcon_advanced;
     QIcon mc_systrayIcon_advanced_agreements;
-    QIcon mc_systrayIcon_advanced_markets;
+    QIcon mc_systrayIcon_advanced_import;
     QIcon mc_systrayIcon_advanced_settings;
     
     QIcon mc_systrayIcon_advanced_corporations;
@@ -407,29 +376,16 @@ private:
     QString default_account_id;
     QString default_account_name;
     // ---------------------------------------------------------
-
     QMenu * mc_systrayMenu_nym;
-    
     // ---------------------------------------------------------
-    
     QAction * mc_systrayMenu_goldaccount;
     QAction * mc_systrayMenu_purse;
-    // ---------------------------------------------------------
-    
-    //Withdraw submenu
-    QMenu * mc_systrayMenu_withdraw;
-    
-    QAction * mc_systrayMenu_withdraw_ascash;
-    QAction * mc_systrayMenu_withdraw_asvoucher;
-    // ---------------------------------------------------------
-    
-    QAction * mc_systrayMenu_deposit;
-    // ---------------------------------------------------------
-    
+    // ---------------------------------------------------------    
     QAction * mc_systrayMenu_sendfunds;
     QAction * mc_systrayMenu_requestfunds;
     // ---------------------------------------------------------
-    
+    QAction * mc_systrayMenu_markets;
+
     //Company submenu
     QMenu   * mc_systrayMenu_company_create;
     QAction * mc_systrayMenu_company_create_insurance;
@@ -438,7 +394,7 @@ private:
     QMenu * mc_systrayMenu_advanced;
 
     QAction * mc_systrayMenu_advanced_agreements;
-    QAction * mc_systrayMenu_advanced_markets;
+    QAction * mc_systrayMenu_advanced_import;
     QAction * mc_systrayMenu_advanced_settings;
     QMenu   * mc_systrayMenu_advanced_corporations;
     QMenu   * mc_systrayMenu_advanced_bazaar;
@@ -460,68 +416,30 @@ private slots:
     
     //Shutdown
     void mc_shutdown_slot();
-    
-    //Overview
-    void mc_overview_slot();
-    
-    
-    //Nym
-    void mc_defaultnym_slot();
-    
-    //new default nym selected
-    void mc_nymselection_triggered(QAction*);
-    
-    
-    //Server
-    void mc_defaultserver_slot();
-
-    //new default server selected
-    void mc_serverselection_triggered(QAction*);
-    
-
-    //Asset
-    void mc_defaultasset_slot();
-    
-    //new default asset selected
-    void mc_assetselection_triggered(QAction*);
-
-   
-    //Account
-    void mc_defaultaccount_slot();
-    
-    //new default account selected
-    void mc_accountselection_triggered(QAction*);
-    
-    
-    //Withdraw As Cash
-    void mc_withdraw_ascash_slot();
-    
-    
-    //Withdraw As Voucher
-    void mc_withdraw_asvoucher_slot();
-
-    
-    //Deposit
-    void mc_deposit_slot();
-
-   
-    //Send Funds
-    void mc_sendfunds_slot();
-    
-   
-    //Request Funds
-    void mc_requestfunds_slot();
-    
-    
-    // Market Slot
-    void mc_market_slot();
-    
-    // Create Insurance Company Slot
-    void mc_createinsurancecompany_slot();
-
-    //Settings
-    void mc_settings_slot();
-
+    // ---------------------------------------------------------------------------
+    void mc_overview_slot();                // Overview
+    // ---------------------------------------------------------------------------
+    void mc_defaultnym_slot();              // Nym
+    void mc_nymselection_triggered(QAction*); //new default nym selected
+    // ---------------------------------------------------------------------------
+    void mc_defaultserver_slot();           // Server
+    void mc_serverselection_triggered(QAction*); //new default server selected
+    // ---------------------------------------------------------------------------
+    void mc_defaultasset_slot();            // Asset
+    void mc_assetselection_triggered(QAction*);  //new default asset selected
+    // ---------------------------------------------------------------------------
+    void mc_defaultaccount_slot();          // Account
+    void mc_accountselection_triggered(QAction*); //new default account selected
+    // ---------------------------------------------------------------------------
+    void mc_sendfunds_slot();               // Send Funds
+    void mc_requestfunds_slot();            // Request Funds
+    void mc_market_slot();                  // Market Slot
+    void mc_agreement_slot();               // Agreements Slot
+    void mc_import_slot();                  // Import Slot
+    // ---------------------------------------------------------------------------
+    void mc_createinsurancecompany_slot();  // Create Insurance Company Slot
+    // ---------------------------------------------------------------------------
+    void mc_settings_slot();                //Settings
 };
 
 #endif // MONEYCHANGER_H

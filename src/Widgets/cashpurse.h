@@ -10,7 +10,6 @@ class MTCashPurse;
 }
 
 class QStringList;
-
 class MTDetailEdit;
 
 class MTCashPurse : public QWidget
@@ -27,12 +26,17 @@ public:
 
     int TallySelections(QStringList & selectedIndices, int64_t & lAmount);
 
+signals:
+    void balancesChanged(QString qstrAcct);
+
 private slots:
     void on_pushButtonWithdraw_clicked();
 
     void on_pushButtonDeposit_clicked();
 
     void checkboxClicked(int state);
+
+    void on_pushButtonExport_clicked();
 
 private:
     QString   m_qstrAcctId;

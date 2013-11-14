@@ -100,7 +100,7 @@ void MTPageAcct_Asset::on_pushButtonSelect_clicked()
             // -----------------------------------------
             if (qstr_default_id.isEmpty() && (NULL != pMoneychanger))
             {
-                pMoneychanger->set_systrayMenu_asset_setDefaultAsset(theChooser.m_qstrCurrentID, theChooser.m_qstrCurrentName);
+                pMoneychanger->setDefaultAsset(theChooser.m_qstrCurrentID, theChooser.m_qstrCurrentName);
             }
             // -----------------------------------------
             return;
@@ -175,7 +175,7 @@ void MTPageAcct_Asset::showEvent(QShowEvent * event)
             // ---------------------------
             if (qstr_default_id.isEmpty() && (NULL != pMoneychanger))
             {
-                pMoneychanger->set_systrayMenu_asset_setDefaultAsset(qstr_id, qstrName);
+                pMoneychanger->setDefaultAsset(qstr_id, qstrName);
             }
         }
         // -------------------------------------------

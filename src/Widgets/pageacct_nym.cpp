@@ -99,7 +99,7 @@ void MTPageAcct_Nym::on_pushButtonSelect_clicked()
             // -----------------------------------------
             if (qstr_default_id.isEmpty() && (NULL != pMoneychanger))
             {
-                pMoneychanger->set_systrayMenu_nym_setDefaultNym(theChooser.m_qstrCurrentID, theChooser.m_qstrCurrentName);
+                pMoneychanger->setDefaultNym(theChooser.m_qstrCurrentID, theChooser.m_qstrCurrentName);
             }
             // ----------------------------------------
             return;
@@ -174,7 +174,7 @@ void MTPageAcct_Nym::showEvent(QShowEvent * event)
             // ---------------------------
             if (qstr_default_id.isEmpty() && (NULL != pMoneychanger))
             {
-                pMoneychanger->set_systrayMenu_nym_setDefaultNym(qstr_id, qstrName);
+                pMoneychanger->setDefaultNym(qstr_id, qstrName);
             }
         }
         // -------------------------------------------

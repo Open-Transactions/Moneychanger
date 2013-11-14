@@ -38,9 +38,6 @@ MTHome::MTHome(QWidget *parent) :
 
 MTHome::~MTHome()
 {
-    delete m_pDetailPane;
-    delete m_pDetailLayout;
-    delete m_pHeaderLayout;
     delete ui;
 }
 
@@ -104,10 +101,6 @@ void MTHome::dialog()
         already_init = true;
     }
     // -------------------------------------------
-    //Refresh visual data
-    //Tell OT to repopulate, and refresh backend.
-//    ((Moneychanger*)parentWidget())->get_ot_worker_background()->mc_overview_ping();
-    // -------------------------------------------
     RefreshAll();
 
     show();
@@ -163,6 +156,11 @@ void MTHome::setupRecordList()
 
 
 
+
+void MTHome::onBalancesChanged()
+{
+    RefreshUserBar();
+}
 
 
 void MTHome::RefreshUserBar()
@@ -254,7 +252,7 @@ void MTHome::on_refreshButton_clicked()
         // -----------------------------------------
         qDebug() << QString("Refreshing records from transaction servers.");
         // -----------------------------------------
-        ((Moneychanger *)(this->parentWidget()))->downloadAccountData();
+        emit needToDownloadAccountData();
     }
     // ------------------------------------------------------
     RefreshAll();

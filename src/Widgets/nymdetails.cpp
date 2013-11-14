@@ -15,6 +15,8 @@
 
 #include "wizardaddnym.h"
 
+#include "credentials.h"
+
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
 
@@ -24,6 +26,7 @@
 MTNymDetails::MTNymDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
     m_pPlainTextEdit(NULL),
+    m_pCredentials(NULL),
     m_pHeaderWidget(NULL),
     ui(new Ui::MTNymDetails)
 {
@@ -68,7 +71,7 @@ void MTNymDetails::on_toolButton_clicked()
 //virtual
 int MTNymDetails::GetCustomTabCount()
 {
-    return 1;
+    return 2;
 }
 // ----------------------------------
 //virtual
@@ -83,7 +86,16 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
     // -----------------------------
     switch (nTab)
     {
-    case 0:
+    case 0: // "Credentials" tab
+        if (NULL != m_pOwner)
+        {
+            m_pCredentials = new MTCredentials(NULL, *m_pOwner);
+            pReturnValue = m_pCredentials;
+            pReturnValue->setContentsMargins(0, 0, 0, 0);
+        }
+        break;
+
+    case 1: // "State of Nym" tab
     {
         m_pPlainTextEdit = new QPlainTextEdit;
 
@@ -124,7 +136,8 @@ QString  MTNymDetails::GetCustomTabName(int nTab)
     // -----------------------------
     switch (nTab)
     {
-    case 0:  qstrReturnValue = "State";  break;
+    case 0:  qstrReturnValue = "Credentials";  break;
+    case 1:  qstrReturnValue = "State";        break;
 
     default:
         qDebug() << QString("Unexpected: MTNymDetails::GetCustomTabName was called with bad index: %1").arg(nTab);
@@ -140,7 +153,7 @@ void MTNymDetails::refresh(QString strID, QString strName)
 {
 //  qDebug() << "MTNymDetails::refresh";
 
-    if (NULL != ui)
+    if ((NULL != ui) && !strID.isEmpty())
     {
         QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(strID, strName, "", "", ":/icons/icons/identity_BW.png", false);
 
@@ -160,13 +173,25 @@ void MTNymDetails::refresh(QString strID, QString strName)
 
         FavorLeftSideForIDs();
         // --------------------------
+        // TAB: "Nym State"
+        //
         if (NULL != m_pPlainTextEdit)
         {
             QString strContents = QString::fromStdString(OTAPI_Wrap::GetNym_Stats(strID.toStdString()));
 
             m_pPlainTextEdit->setPlainText(strContents);
         }
-        // --------------------------
+        // -----------------------------------
+        // TAB: "CREDENTIALS"
+        //
+        if (NULL != m_pCredentials)
+        {
+            QStringList qstrlistNymIDs;
+            qstrlistNymIDs.append(strID);
+
+            m_pCredentials->refresh(qstrlistNymIDs);
+        }
+        // -----------------------------------------------------------------------
     }
 }
 
@@ -174,6 +199,11 @@ void MTNymDetails::ClearContents()
 {
     ui->lineEditID  ->setText("");
     ui->lineEditName->setText("");
+
+    // ------------------------------------------
+    if (NULL != m_pCredentials)
+        m_pCredentials->ClearContents();
+    // ------------------------------------------
 
     m_pPlainTextEdit->setPlainText("");
 }
@@ -319,12 +349,7 @@ void MTNymDetails::AddButtonClicked()
         //
         OT_ME madeEasy;
 
-        std::string str_id;
-        {
-            MTOverrideCursor theSpinner;
-
-            str_id = madeEasy.create_pseudonym(nKeybits, NYM_ID_SOURCE, ALT_LOCATION);
-        }
+        std::string str_id = madeEasy.create_pseudonym(nKeybits, NYM_ID_SOURCE, ALT_LOCATION);
 
         if (str_id.empty())
         {
