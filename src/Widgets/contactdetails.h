@@ -8,6 +8,7 @@ class MTContactDetails;
 }
 
 class QPlainTextEdit;
+class MTCredentials;
 
 class MTContactDetails : public MTEditDetails
 {
@@ -33,6 +34,8 @@ public:
 
 private:
     QPlainTextEdit * m_pPlainTextEdit;
+
+    MTCredentials  * m_pCredentials;
 
 private slots:
     void on_lineEditName_editingFinished();

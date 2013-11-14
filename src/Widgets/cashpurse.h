@@ -10,7 +10,6 @@ class MTCashPurse;
 }
 
 class QStringList;
-
 class MTDetailEdit;
 
 class MTCashPurse : public QWidget

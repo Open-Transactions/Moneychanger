@@ -75,7 +75,9 @@ MTCashPurse::MTCashPurse(QWidget *parent, MTDetailEdit & theOwner) :
 
 void MTCashPurse::refresh(QString strID, QString strName)
 {
-    if (NULL != ui)
+    ui->tableWidget->clearContents();
+    // -----------------------------------
+    if ((NULL != ui) && !strID.isEmpty())
     {
         m_qstrAcctId   = strID;
         m_qstrAcctName = strName;
@@ -129,8 +131,8 @@ void MTCashPurse::refresh(QString strID, QString strName)
                                       arg(MTHome::cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym)) );
         ui->labelAssetType->setText(QString("<font color=grey>%1</font>").arg(qstr_asset_name) );
         // -----------------------------------
-        ui->tableWidget->clearContents();
-        // -----------------------------------
+//        ui->tableWidget->clearContents();
+//        // -----------------------------------
         if (raw_cash_balance > 0)
         {
             // --------------------------------------

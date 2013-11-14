@@ -22,8 +22,6 @@ HEADERS += moneychanger.h \
     Handlers/FileHandler.h \
     Handlers/DBHandler.h \
     Widgets/marketwindow.h \
-    Widgets/sendfundswindow.h \
-    Widgets/requestfundswindow.h \
     Widgets/home.h \
     Widgets/homedetail.h \
     Widgets/createinsurancecompany.h \
@@ -68,7 +66,8 @@ HEADERS += moneychanger.h \
     UI/dlgexportcash.h \
     UI/dlgexportedcash.h \
     UI/dlgexportedtopass.h \
-    UI/dlgimport.h
+    UI/dlgimport.h \
+    Widgets/credentials.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -79,8 +78,6 @@ SOURCES += main.cpp\
     Handlers/DBHandler.cpp \
     Handlers/contacthandler.cpp \
     Widgets/marketwindow.cpp \
-    Widgets/sendfundswindow.cpp \
-    Widgets/requestfundswindow.cpp \
     Widgets/home.cpp \
     Widgets/homedetail.cpp \
     Widgets/createinsurancecompany.cpp \
@@ -125,7 +122,8 @@ SOURCES += main.cpp\
     UI/dlgexportcash.cpp \
     UI/dlgexportedcash.cpp \
     UI/dlgexportedtopass.cpp \
-    UI/dlgimport.cpp
+    UI/dlgimport.cpp \
+    Widgets/credentials.cpp
 
 RESOURCES += resource.qrc
 
@@ -170,7 +168,8 @@ FORMS += \
     UI/dlgexportcash.ui \
     UI/dlgexportedcash.ui \
     UI/dlgexportedtopass.ui \
-    UI/dlgimport.ui
+    UI/dlgimport.ui \
+    Widgets/credentials.ui
 
 mac:{
 

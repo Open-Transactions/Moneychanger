@@ -24,6 +24,8 @@ MTEditDetails::MTEditDetails(QWidget *parent, MTDetailEdit & theOwner) :
 
 MTEditDetails::~MTEditDetails()
 {
+    // Subclasses do this -- this base class has no ui.
+    //
 //    delete ui;
 }
 

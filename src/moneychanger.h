@@ -42,17 +42,15 @@
 
 #include "Widgets/marketwindow.h"
 #include "Widgets/home.h"
-#include "Widgets/requestfundswindow.h"
-#include "Widgets/sendfundswindow.h"
+
 #include "Widgets/createinsurancecompany.h"
+
 #include "Widgets/detailedit.h"
 #include "Widgets/settings.h"
 
 class MTHome;
 class MTDetailEdit;
 
-class RequestFundsWindow;
-class SendFundsWindow;
 class MarketWindow;
 class CreateInsuranceCompany;
 
@@ -205,8 +203,6 @@ private:
     MTDetailEdit      * assetswindow;
     MTDetailEdit      * accountswindow;
 
-    RequestFundsWindow      * requestfundswindow;
-    SendFundsWindow         * sendfundswindow;
     MarketWindow            * market_window;
     CreateInsuranceCompany  * createinsurancecompany_window;
     Settings                * settingswindow;

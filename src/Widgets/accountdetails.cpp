@@ -155,7 +155,7 @@ void MTAccountDetails::refresh(QString strID, QString strName)
 {
 //  qDebug() << "MTAccountDetails::refresh";
 
-    if (NULL != ui)
+    if (!strID.isEmpty() && (NULL != ui))
     {
         m_qstrID = strID;
         // -------------------------------------
