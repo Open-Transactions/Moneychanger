@@ -63,12 +63,8 @@ bool MTCompose::sendMessage(QString body, QString fromNymId, QString toNymId, QS
     {
         qDebug() << "send_message: Failed.";
 
-        QMessageBox::warning(this, tr("Failure"), tr("Failure trying to send message."));
-
         return false;
     }
-
-    QMessageBox::information(this, tr("Success"), tr("Success sending message."));
 
     qDebug() << "Success in send_message!";
     m_bSent = true;
@@ -130,18 +126,16 @@ void MTCompose::on_sendButton_clicked()
     QString toNymId     = m_recipientNymId;
     QString atServerID  = m_serverId;
 
-    bool bSent = false;
-    {
-        MTOverrideCursor theSpinner;
-
-        bSent = this->sendMessage(body, fromNymId, toNymId, atServerID, subject);
-    }
+    bool bSent = this->sendMessage(body, fromNymId, toNymId, atServerID, subject);
     // -----------------------------------------------------------------
     if (!bSent)
         QMessageBox::warning(this, tr("Failed Sending Message"),
                              tr("Failed trying to send the message."));
     else
+    {
+        QMessageBox::information(this, tr("Success"), tr("Success sending message."));
         this->close();
+    }
     // -----------------------------------------------------------------
 }
 

@@ -15,6 +15,8 @@
 
 #include "moneychanger.h"
 
+#include <OTLog.h>
+
 MTDetailEdit::MTDetailEdit(QWidget *parent, Moneychanger & theMC) :
     QWidget(parent, Qt::Window),
     m_bFirstRun(true),
@@ -37,6 +39,19 @@ MTDetailEdit::~MTDetailEdit()
     delete ui;
 }
 
+void MTDetailEdit::onBalancesChangedFromAbove()
+{
+    this->RefreshRecords();
+}
+
+
+void MTDetailEdit::onBalancesChangedFromBelow(QString qstrAcctID)
+{
+    m_PreSelected   = qstrAcctID;
+    m_qstrCurrentID = qstrAcctID;
+
+    emit balancesChanged();
+}
 
 
 void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType, bool bIsModal/*=false*/)
@@ -83,7 +98,20 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType, bool bIsModal/*=
         case MTDetailEdit::DetailEditTypeContact: m_pDetailPane = new MTContactDetails(this, *this); break;
         case MTDetailEdit::DetailEditTypeServer:  m_pDetailPane = new MTServerDetails(this, *this);  break;
         case MTDetailEdit::DetailEditTypeAsset:   m_pDetailPane = new MTAssetDetails(this, *this);   break;
-        case MTDetailEdit::DetailEditTypeAccount: m_pDetailPane = new MTAccountDetails(this, *this); break;
+
+        case MTDetailEdit::DetailEditTypeAccount:
+            m_pDetailPane = new MTAccountDetails(this, *this);
+            // -------------------------------------------
+            connect(m_pDetailPane,   SIGNAL(DefaultAccountChanged(QString, QString)),
+                    m_pMoneychanger, SLOT  (setDefaultAccount(QString, QString)));
+            // -------------------------------------------
+//            connect(m_pDetailPane,   SIGNAL(cashBalanceChanged()),
+//                    m_pMoneychanger, SLOT  (onCashBalanceChanged()));
+//            // -------------------------------------------
+//            connect(m_pDetailPane,   SIGNAL(acctBalanceChanged()),
+//                    m_pMoneychanger, SLOT  (onAcctBalanceChanged()));
+//            // -------------------------------------------
+            break;
         default:
             qDebug() << "MTDetailEdit::dialog: MTDetailEdit::DetailEditTypeError";
             return;
@@ -189,6 +217,9 @@ void MTDetailEdit::showEvent(QShowEvent * event)
 
 void MTDetailEdit::RefreshRecords()
 {
+    disconnect(ui->tableWidget, SIGNAL(currentCellChanged(int,int,int,int)),
+               this, SLOT(on_tableWidget_currentCellChanged(int,int,int,int)));
+    // ----------------------------------------------------------------------
     int mapSize = m_map.size();
     // -------------------------------------------------------
     int nTotalRecords = mapSize;
@@ -275,6 +306,11 @@ void MTDetailEdit::RefreshRecords()
     // ------------------------
     if (ui->tableWidget->rowCount() > 0)
     {
+        connect(ui->tableWidget, SIGNAL(currentCellChanged(int,int,int,int)),
+                this, SLOT(on_tableWidget_currentCellChanged(int,int,int,int)));
+
+        m_pTabWidget->setVisible(true);
+
         if ((nPreselectedIndex > (-1)) && (nPreselectedIndex < ui->tableWidget->rowCount()))
         {
             qDebug() << QString("SETTING current row to %1 on the tableWidget.").arg(nPreselectedIndex);
@@ -291,6 +327,7 @@ void MTDetailEdit::RefreshRecords()
     {
         ui->deleteButton->setEnabled(false);
         m_pDetailPane->ClearContents();
+        m_pTabWidget->setVisible(false);
     }
 }
 
@@ -313,13 +350,15 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
     // -------------------------------------
     if (m_nCurrentRow >= 0)
     {
+        m_pTabWidget->setVisible(true);
+
         int nIndex = -1;
 
         for (mapIDName::iterator ii = m_map.begin(); ii != m_map.end(); ii++)
         {
             ++nIndex; // 0 on first iteration.
             // -------------------------------------
-            if (nIndex == m_nCurrentRow)
+            if (nIndex == m_nCurrentRow) // ONLY HAPPENS ONCE
             {
                 m_qstrCurrentID   = ii.key();
                 m_qstrCurrentName = ii.value();
@@ -328,6 +367,8 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
 
                 qDebug() << "SETTING current row to " << nIndex << " on the tableWidget.";
                 // ----------------------------------------
+                m_PreSelected = m_qstrCurrentID;
+
                 m_pDetailPane->refresh(m_qstrCurrentID, m_qstrCurrentName);
                 // ----------------------------------------
                 return;
@@ -340,6 +381,8 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
     m_qstrCurrentName = QString("");
 
     ui->deleteButton->setEnabled(false);
+
+    m_pTabWidget->setVisible(false);
     // -------------------------------------
 }
 

@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QPlainTextEdit>
 
 #include "assetdetails.h"
 #include "ui_assetdetails.h"
@@ -18,6 +19,7 @@
 
 MTAssetDetails::MTAssetDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
+    m_pPlainTextEdit(NULL),
     m_pDownloader(NULL),
     m_pHeaderWidget(NULL),
     ui(new Ui::MTAssetDetails)
@@ -44,6 +46,78 @@ MTAssetDetails::~MTAssetDetails()
 
 
 
+// ----------------------------------
+//virtual
+int MTAssetDetails::GetCustomTabCount()
+{
+    return 1;
+}
+// ----------------------------------
+//virtual
+QWidget * MTAssetDetails::CreateCustomTab(int nTab)
+{
+    const int nCustomTabCount = this->GetCustomTabCount();
+    // -----------------------------
+    if ((nTab < 0) || (nTab >= nCustomTabCount))
+        return NULL; // out of bounds.
+    // -----------------------------
+    QWidget * pReturnValue = NULL;
+    // -----------------------------
+    switch (nTab)
+    {
+    case 0:
+    {
+        m_pPlainTextEdit = new QPlainTextEdit;
+
+        m_pPlainTextEdit->setReadOnly(true);
+        m_pPlainTextEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+        // -------------------------------
+        QVBoxLayout * pvBox = new QVBoxLayout;
+
+        QLabel * pLabelContents = new QLabel(tr("Asset Contract:"));
+
+        pvBox->setAlignment(Qt::AlignTop);
+        pvBox->addWidget   (pLabelContents);
+        pvBox->addWidget   (m_pPlainTextEdit);
+        // -------------------------------
+        pReturnValue = new QWidget;
+        pReturnValue->setContentsMargins(0, 0, 0, 0);
+        pReturnValue->setLayout(pvBox);
+    }
+        break;
+
+    default:
+        qDebug() << QString("Unexpected: MTAssetDetails::CreateCustomTab was called with bad index: %1").arg(nTab);
+        return NULL;
+    }
+    // -----------------------------
+    return pReturnValue;
+}
+// ---------------------------------
+//virtual
+QString  MTAssetDetails::GetCustomTabName(int nTab)
+{
+    const int nCustomTabCount = this->GetCustomTabCount();
+    // -----------------------------
+    if ((nTab < 0) || (nTab >= nCustomTabCount))
+        return QString(""); // out of bounds.
+    // -----------------------------
+    QString qstrReturnValue("");
+    // -----------------------------
+    switch (nTab)
+    {
+    case 0:  qstrReturnValue = "Asset Contract";  break;
+
+    default:
+        qDebug() << QString("Unexpected: MTAssetDetails::GetCustomTabName was called with bad index: %1").arg(nTab);
+        return QString("");
+    }
+    // -----------------------------
+    return qstrReturnValue;
+}
+// ------------------------------------------------------
+
+
 void MTAssetDetails::FavorLeftSideForIDs()
 {
     if (NULL != ui)
@@ -57,6 +131,8 @@ void MTAssetDetails::ClearContents()
 {
     ui->lineEditID  ->setText("");
     ui->lineEditName->setText("");
+
+    m_pPlainTextEdit->setPlainText("");
 }
 
 // ------------------------------------------------------
@@ -324,7 +400,7 @@ void MTAssetDetails::refresh(QString strID, QString strName)
 {
 //  qDebug() << "MTAssetDetails::refresh";
 
-    if (NULL != ui)
+    if (!strID.isEmpty() && (NULL != ui))
     {
         QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(strID, strName, "", "", ":/icons/icons/assets.png", false);
 
@@ -343,6 +419,14 @@ void MTAssetDetails::refresh(QString strID, QString strName)
         ui->lineEditName->setText(strName);
 
         FavorLeftSideForIDs();
+        // --------------------------
+        if (NULL != m_pPlainTextEdit)
+        {
+            QString strContents = QString::fromStdString(OTAPI_Wrap::LoadAssetContract(strID.toStdString()));
+
+            m_pPlainTextEdit->setPlainText(strContents);
+        }
+        // --------------------------
     }
 }
 

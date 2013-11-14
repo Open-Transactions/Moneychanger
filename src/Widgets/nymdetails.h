@@ -9,6 +9,8 @@ namespace Ui {
 class MTNymDetails;
 }
 
+class MTCredentials;
+
 class MTNymDetails : public MTEditDetails
 {
     Q_OBJECT
@@ -33,6 +35,8 @@ public:
 
 private:
     QPlainTextEdit * m_pPlainTextEdit;
+
+    MTCredentials  * m_pCredentials;
 
 private slots:
     void on_lineEditName_editingFinished();

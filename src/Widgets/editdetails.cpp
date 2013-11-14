@@ -24,6 +24,8 @@ MTEditDetails::MTEditDetails(QWidget *parent, MTDetailEdit & theOwner) :
 
 MTEditDetails::~MTEditDetails()
 {
+    // Subclasses do this -- this base class has no ui.
+    //
 //    delete ui;
 }
 
@@ -130,7 +132,7 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
     {
         //Tx has no name
         tx_name.clear();
-        tx_name = "Record";
+        tx_name = "";
     }
 
     QLabel * header_of_row = new QLabel;
@@ -158,7 +160,7 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
 //  currency_amount = tr("amount goes here");
 //  currency_amount = strAmount;
 
-    if (!bExternal)
+    if (!bExternal && !strAmount.isEmpty())
         currency_amount = QString("<small><font color=grey>%1:</font></small> %2").arg(tr("Balance")).arg(strAmount);
     else
         currency_amount = strAmount;

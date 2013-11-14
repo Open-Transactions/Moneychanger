@@ -111,6 +111,9 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
             m_pCashPurse = new MTCashPurse(NULL, *m_pOwner);
             pReturnValue = m_pCashPurse;
             pReturnValue->setContentsMargins(0, 0, 0, 0);
+
+            connect(m_pCashPurse, SIGNAL(balancesChanged(QString)),
+                    m_pOwner,     SLOT(onBalancesChangedFromBelow(QString)));
         }
         break;
 
@@ -152,7 +155,7 @@ void MTAccountDetails::refresh(QString strID, QString strName)
 {
 //  qDebug() << "MTAccountDetails::refresh";
 
-    if (NULL != ui)
+    if (!strID.isEmpty() && (NULL != ui))
     {
         m_qstrID = strID;
         // -------------------------------------
@@ -285,9 +288,9 @@ void MTAccountDetails::on_pushButtonMakeDefault_clicked()
     if ((NULL != m_pMoneychanger) && (NULL != m_pOwner) && !m_qstrID.isEmpty())
     {
         std::string str_acct_name = OTAPI_Wrap::GetAccountWallet_Name(m_qstrID.toStdString());
-        m_pMoneychanger->set_systrayMenu_account_setDefaultAccount(m_qstrID, QString::fromStdString(str_acct_name));
         ui->pushButtonMakeDefault->setEnabled(false);
-        m_pMoneychanger->mc_overview_dialog_refresh();
+        // --------------------------------------------------
+        emit DefaultAccountChanged(m_qstrID, QString::fromStdString(str_acct_name));
     }
 }
 

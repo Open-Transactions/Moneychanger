@@ -4,6 +4,9 @@
 #include <QMessageBox>
 #include <QStringList>
 
+#include <opentxs/OTAPI.h>
+#include <opentxs/OT_ME.h>
+
 #include "cashpurse.h"
 #include "ui_cashpurse.h"
 
@@ -16,8 +19,9 @@
 
 #include "home.h"
 
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
+#include "UI/dlgexportcash.h"
+#include "UI/dlgexportedcash.h"
+#include "UI/dlgexportedtopass.h"
 
 
 MTCashPurse::MTCashPurse(QWidget *parent, MTDetailEdit & theOwner) :
@@ -64,12 +68,16 @@ MTCashPurse::MTCashPurse(QWidget *parent, MTDetailEdit & theOwner) :
 
 //    QTableWidgetItem *newItem = new QTableWidgetItem(tr("%1").arg();
 //    ui->tableWidget->setItem(row, column, newItem);
+    // ------------------------------------
+
 }
 
 
 void MTCashPurse::refresh(QString strID, QString strName)
 {
-    if (NULL != ui)
+    ui->tableWidget->clearContents();
+    // -----------------------------------
+    if ((NULL != ui) && !strID.isEmpty())
     {
         m_qstrAcctId   = strID;
         m_qstrAcctName = strName;
@@ -123,8 +131,8 @@ void MTCashPurse::refresh(QString strID, QString strName)
                                       arg(MTHome::cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym)) );
         ui->labelAssetType->setText(QString("<font color=grey>%1</font>").arg(qstr_asset_name) );
         // -----------------------------------
-        ui->tableWidget->clearContents();
-        // -----------------------------------
+//        ui->tableWidget->clearContents();
+//        // -----------------------------------
         if (raw_cash_balance > 0)
         {
             // --------------------------------------
@@ -249,13 +257,136 @@ void MTCashPurse::on_pushButtonWithdraw_clicked()
         QMessageBox::information(this, tr("Success Withdrawing Cash"),
                                 tr("Success withdrawing cash!"));
         // --------------------------------------------------------
-        m_pOwner->SetPreSelected(m_qstrAcctId);
-        m_pOwner->RefreshRecords();
+        emit balancesChanged(m_qstrAcctId);
     }
     // -----------------------------------------------------------------
 }
 
 
+// -----------------------------------------------------------------
+
+void MTCashPurse::on_pushButtonExport_clicked()
+{
+    bool bSuccess = false;
+    QStringList selectedIndices;
+    int64_t     lAmount=0;
+
+    int nNumberChecked = this->TallySelections(selectedIndices, lAmount);
+    // ------------------------------------------------------------------
+    std::string str_acct_id     = m_qstrAcctId.toStdString();
+    std::string str_acct_nym    = OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
+    std::string str_acct_server = OTAPI_Wrap::It()->GetAccountWallet_ServerID(str_acct_id);
+    std::string str_acct_asset  = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+    // ------------------------------------------------------------------
+    QString qstrSelectedIndices = selectedIndices.join(","); // Create a comma-separated list of selected indices.
+
+    // This "should never happen" since the export button is disabled
+    // when none of the cash indices are selected in the GUI.
+    //
+    if (qstrSelectedIndices.isEmpty())
+        return;
+    // ------------------------------------
+    std::string str_amount = OTAPI_Wrap::FormatAmount(str_acct_asset, lAmount);
+    // ------------------------------------
+    // Find out if they want it to be password-protected, and if not,
+    // find out who the recipient Nym is meant to be.
+    //
+    DlgExportCash dlgExport(this);
+
+    dlgExport.setWindowTitle("Export Cash");
+
+    if (dlgExport.exec() != QDialog::Accepted)
+        return;
+    // ----------------------------------------------------------------
+    // Now dlgExport can tell us whether the cash should be exported to a
+    // particular Nym, or whether it should be password-protected.
+    //
+    bool    bExportToPassphrase = dlgExport.IsExportToPassphrase();
+    QString qstrRecipNymID(""),
+            qstrRecipName(""),
+            qstrRecipientWarning(""),
+            qstrRemovedFromPurse = tr("WARNING: the cash will be removed from your purse!");
+    // ----------------------------------------------------------------
+    if (bExportToPassphrase)
+        qstrRecipientWarning = QString("%1.<br/><br/>%2").arg(tr("The cash will be exported to a passphrase")).arg(qstrRemovedFromPurse);
+    else
+    {
+        qstrRecipNymID       = dlgExport.GetHisNymID();
+        qstrRecipName        = dlgExport.GetHisName ();
+        // ---------------------------------------------
+        qstrRecipientWarning = QString("%1: '%2'<br/>%3: %4<br/><br/>%5").arg(tr("The cash will be exported to")).
+                arg(qstrRecipName).arg(tr("Using his NymID")).arg(qstrRecipNymID).arg(qstrRemovedFromPurse);
+    }
+    // ----------------------------------------------------------------
+    QMessageBox::StandardButton reply;
+
+    QString qstrQuestion = QString("%1 %2<br/>%3<br/><br/>%4").arg(tr("Are you sure you wish to export")).
+                                                          arg(QString::fromStdString(str_amount)).
+                                                          arg(tr("from your cash purse?")).
+                                                          arg(qstrRecipientWarning); // Perhaps not all languages have the same question mark...
+
+    reply = QMessageBox::question(this, "Confirm Export", qstrQuestion,
+                                  QMessageBox::Yes|QMessageBox::No);
+    // ------------------------------------
+    if (reply == QMessageBox::Yes)
+    {
+        OT_ME       madeEasy;
+        std::string str_selected_indices(qstrSelectedIndices.toStdString()); // (FYI, you can also use "all" for all indices.)
+
+        std::string str_exported,  // The exported cash, encrypted to recipient (or passphrase.)
+                    str_retained;  // The exported cash, encrypted to sender (just in case...)
+
+        str_exported = madeEasy.export_cash(str_acct_server,
+                                            str_acct_nym,
+                                            str_acct_asset,
+                                            qstrRecipNymID.toStdString(),
+                                            str_selected_indices,
+                                            bExportToPassphrase,
+                                            str_retained); // output
+        // ------------------------------------
+        if (str_exported.empty())
+            QMessageBox::warning(this, tr("Failed Exporting Cash"),
+                                 tr("Failed trying to export cash."));
+        else if (bExportToPassphrase)
+        {
+            DlgExportedToPass dlgExported(this, QString::fromStdString(str_exported));
+            dlgExported.exec();
+            // --------------------------------------------------------
+            bSuccess = true;
+        }
+        else
+        {
+            DlgExportedCash dlgExported(this,
+                                        QString::fromStdString(str_exported),
+                                        QString::fromStdString(str_retained));
+            dlgExported.exec();
+            // --------------------------------------------------------
+            bSuccess = true;
+        }
+    }
+    // -----------------------------------
+    if (bSuccess)
+    {
+        for (int ii = 0; ii < ui->tableWidget->rowCount(); ii++)
+        {
+            QWidget * pWidget = ui->tableWidget->cellWidget(ii, 0);
+
+            if (NULL != pWidget)
+            {
+                QCheckBox * pCheckbox = pWidget->findChild<QCheckBox *>();
+
+                if ( (NULL != pCheckbox) && (Qt::Checked == pCheckbox->checkState()))
+                    pCheckbox->setChecked(false);
+            }
+        }
+        // --------------------------------------------------------
+        int nNumberSelected = this->TallySelections(selectedIndices, lAmount);
+        // --------------------------------------------------------
+        emit balancesChanged(m_qstrAcctId);
+    }
+}
+
+// -----------------------------------------------------------------
 
 void MTCashPurse::on_pushButtonDeposit_clicked()
 {
@@ -310,8 +441,22 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
             QMessageBox::information(this, tr("Success Depositing Cash"),
                                     tr("Success depositing cash!"));
             // --------------------------------------------------------
-            m_pOwner->SetPreSelected(m_qstrAcctId);
-            m_pOwner->RefreshRecords();
+            for (int ii = 0; ii < ui->tableWidget->rowCount(); ii++)
+            {
+                QWidget * pWidget = ui->tableWidget->cellWidget(ii, 0);
+
+                if (NULL != pWidget)
+                {
+                    QCheckBox * pCheckbox = pWidget->findChild<QCheckBox *>();
+
+                    if ( (NULL != pCheckbox) && (Qt::Checked == pCheckbox->checkState()))
+                        pCheckbox->setChecked(false);
+                }
+            }
+            // --------------------------------------------------------
+            int nNumberSelected = this->TallySelections(selectedIndices, lAmount);
+            // --------------------------------------------------------
+            emit balancesChanged(m_qstrAcctId);
         }
     }
     // -----------------------------------------------------------------
@@ -364,6 +509,7 @@ int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmoun
     if (nNumberSelected > 0)
     {
         ui->pushButtonDeposit->setEnabled(true);
+        ui->pushButtonExport ->setEnabled(true);
         // ---------------------------------------
         QString qstr_amount("");
 
@@ -378,6 +524,7 @@ int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmoun
     else
     {
         ui->pushButtonDeposit->setEnabled(false);
+        ui->pushButtonExport ->setEnabled(false);
 
         ui->pushButtonDeposit ->setText(tr("Deposit Cash"));
     }
@@ -405,6 +552,7 @@ void MTCashPurse::ClearContents()
     ui->pushButtonDeposit ->setText(tr("Deposit Cash"));
     // ----------------------------------
     ui->pushButtonDeposit ->setEnabled(false);
+    ui->pushButtonExport  ->setEnabled(false);
     ui->pushButtonWithdraw->setEnabled(false);
     // ----------------------------------
     m_qstrAssetId  = QString("");

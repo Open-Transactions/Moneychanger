@@ -139,7 +139,6 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
 
     std::string strAttempt  = "withdraw_voucher";
     std::string strResponse;
-
     {
         MTOverrideCursor theSpinner;
 
@@ -200,7 +199,12 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     // since they have probably changed from this operation.
     //
     OT_ME retrieveAcct;
-    bool bRetrieved = retrieveAcct.retrieve_account(str_serverId, str_fromNymId, str_fromAcctId, true); //bForceDownload defaults to false.
+    bool bRetrieved = false;
+    {
+        MTOverrideCursor theSpinner;
+
+        bRetrieved = retrieveAcct.retrieve_account(str_serverId, str_fromNymId, str_fromAcctId, true); //bForceDownload defaults to false.
+    }
     qDebug() << QString("%1 retrieving intermediary files for account %2. (After withdraw voucher.)").
                 arg(bRetrieved ? QString("Success") : QString("Failed")).arg(str_fromAcctId.c_str());
     // ---------------------------------------------------------
@@ -214,8 +218,14 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
 
     OT_ME sendPayment;
 
-    std::string  strSendResponse = sendPayment.send_user_payment(str_serverId, str_fromNymId, str_toNymId, strVoucher);
-    int32_t      nReturnVal      = sendPayment.VerifyMessageSuccess(strSendResponse);
+    std::string  strSendResponse;
+    {
+        MTOverrideCursor theSpinner;
+
+        strSendResponse = sendPayment.send_user_payment(str_serverId, str_fromNymId, str_toNymId, strVoucher);
+    }
+
+    int32_t nReturnVal = sendPayment.VerifyMessageSuccess(strSendResponse);
 
     if (1 != nReturnVal)
         qDebug() << QString("send %1: Failed.").arg(nsChequeType);
@@ -353,7 +363,7 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
         strResponse = madeEasy.send_user_payment(str_serverId, str_fromNymId, str_toNymId, strCheque);
     }
 
-    int32_t      nReturnVal  = madeEasy.VerifyMessageSuccess(strResponse);
+    int32_t nReturnVal  = madeEasy.VerifyMessageSuccess(strResponse);
 
     if (1 != nReturnVal)
         qDebug() << QString("send %1: failed.").arg(nsChequeType);
@@ -373,7 +383,7 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
 
 void MTSendDlg::on_amountEdit_editingFinished()
 {
-    if (!m_myAcctId.isEmpty())
+    if (!m_myAcctId.isEmpty() && !m_bSent)
     {
         std::string str_assetId(OTAPI_Wrap::GetAccountWallet_AssetTypeID(m_myAcctId.toStdString()));
         QString     amt = ui->amountEdit->text();
@@ -418,22 +428,17 @@ bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
     if (qstr_amount.isEmpty())
         qstr_amount = QString("0");
     // ----------------------------------------------------
-    int64_t amount = 0;
+    int64_t     amount = 0;
+    std::string str_assetId(OTAPI_Wrap::GetAccountWallet_AssetTypeID(fromAcctId.toStdString()));
 
-    if (!qstr_amount.isEmpty())
+    if (!str_assetId.empty())
     {
-        std::string str_assetId(OTAPI_Wrap::GetAccountWallet_AssetTypeID(fromAcctId.toStdString()));
-        QString     amt = qstr_amount;
+        std::string str_amount(qstr_amount.toStdString());
 
-        if (!amt.isEmpty() && !str_assetId.empty())
-        {
-            std::string str_temp(amt.toStdString());
+        if (std::string::npos == str_amount.find(".")) // not found
+            str_amount += '.';
 
-            if (std::string::npos == str_temp.find(".")) // not found
-                str_temp += '.';
-
-            amount = OTAPI_Wrap::It()->StringToAmount(str_assetId, str_temp);
-        }
+        amount = OTAPI_Wrap::It()->StringToAmount(str_assetId, str_amount);
     }
     // ----------------------------------------------------
     if (amount <= 0)
@@ -475,6 +480,8 @@ bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
     {
         qDebug() << "Success in send funds!";
         QMessageBox::information(this, tr("Success"), QString("%1 %2.").arg(tr("Success sending")).arg(qstrPaymentType));
+
+        emit balancesChanged();
     }
     // ---------------------------------------------------------
     return m_bSent;
@@ -532,32 +539,36 @@ void MTSendDlg::on_sendButton_clicked()
         return;
     }
     // -----------------------------------------------------------------
+
+    on_amountEdit_editingFinished();
+
+    // -----------------------------------------------------------------
     // TODO: We want an extra "ARE YOU SURE?" step to go right here, but likely it will
     // just be the passphrase dialog being FORCED to come up. But still, that means here
     // we'll have to set some kind of flag, probably, to force it to do that.
     //
     // NOTE: We'll want the "Are you sure" for the AMOUNT to display on that dialog.
     // (That is for security purposes.)
-
-    // -----------------------------------------------------------------
-    // Actually send the funds here.
     //
-    QString memo        = ui->memoEdit->text();
-    QString amount      = ui->amountEdit->text();
+    QMessageBox::StandardButton reply;
 
-    bool bSent = false;
+    reply = QMessageBox::question(this, "", QString("%1 '%2'<br/>%3").
+                                  arg(tr("The amount is")).arg(ui->amountEdit->text()).arg(tr("Send?")),
+                                  QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::Yes)
     {
-        MTOverrideCursor theSpinner;
+        // -----------------------------------------------------------------
+        // Actually send the funds here.
+        //
+        QString memo   = ui->memoEdit  ->text();
+        QString amount = ui->amountEdit->text();
 
-        bSent = this->sendFunds(memo, amount);
+        bool bSent = this->sendFunds(memo, amount);
+        // -----------------------------------------------------------------
+        if (bSent)
+            this->close();
+        // -----------------------------------------------------------------
     }
-    // -----------------------------------------------------------------
-    if (!bSent)
-        QMessageBox::warning(this, tr("Failed Sending Funds"),
-                             tr("Failed trying to send funds."));
-    else
-        this->close();
-    // -----------------------------------------------------------------
 }
 
 
@@ -885,9 +896,9 @@ void MTSendDlg::dialog()
 
 MTSendDlg::MTSendDlg(QWidget *parent, Moneychanger & theMC) :
     QWidget(parent, Qt::Window),
-    already_init(false),
-    m_pMoneychanger(&theMC),
     m_bSent(false),
+    m_pMoneychanger(&theMC),
+    already_init(false),
     ui(new Ui::MTSendDlg)
 {
     ui->setupUi(this);
