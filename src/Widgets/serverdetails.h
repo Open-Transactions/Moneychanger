@@ -9,6 +9,8 @@ namespace Ui {
 class MTServerDetails;
 }
 
+class QPlainTextEdit;
+
 class MTServerDetails : public MTEditDetails
 {
     Q_OBJECT
@@ -23,7 +25,18 @@ public:
 
     virtual void ClearContents();
 
+    // ----------------------------------
+    // Only used on construction (aka when dialog() is called for first time.)
+    //
+    virtual int       GetCustomTabCount();
+    virtual QWidget * CreateCustomTab (int nTab);
+    virtual QString   GetCustomTabName(int nTab);
+    // ----------------------------------
+
     void ImportContract(QString qstrContents);
+
+private:
+    QPlainTextEdit * m_pPlainTextEdit;
 
 private slots:
     void on_lineEditName_editingFinished();

@@ -13,6 +13,8 @@
  *
  */
 
+#include <QFile>
+
 #include "moneychanger.h"
 #include "ot_worker.h"
 
@@ -23,6 +25,10 @@
 
 #include "Widgets/senddlg.h"
 #include "Widgets/requestdlg.h"
+
+#include "Widgets/dlgchooser.h"
+
+#include "UI/dlgimport.h"
 
 #include "overridecursor.h"
 
@@ -49,7 +55,6 @@ Moneychanger::Moneychanger(QWidget *parent)
   mc_sendfunds_already_init(false),
   mc_requestfunds_already_init(false),
   mc_createinsurancecompany_already_init(false),
-  overviewwindow(NULL),
   homewindow(NULL),
   contactswindow(NULL),
   nymswindow(NULL),
@@ -102,8 +107,8 @@ Moneychanger::Moneychanger(QWidget *parent)
      **/
     
     //Thread Related
-    ot_worker_background = new ot_worker();
-    ot_worker_background->mc_overview_ping();
+//    ot_worker_background = new ot_worker();
+//    ot_worker_background->mc_overview_ping();
     
     //OT Related
     ot_me = new OT_ME();
@@ -307,7 +312,8 @@ void Moneychanger::bootTray()
 
 
 // Shutdown
-void Moneychanger::mc_shutdown_slot(){
+void Moneychanger::mc_shutdown_slot()
+{
     //Disconnect all signals from callin class (probubly main) to this class
     //Disconnect
     QObject::disconnect(this);
@@ -507,7 +513,10 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu_advanced_agreements = new QAction(mc_systrayIcon_advanced_agreements, tr("Agreements"), 0);
     mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_agreements);
     connect(mc_systrayMenu_advanced_agreements, SIGNAL(triggered()), this, SLOT(mc_agreement_slot()));
-
+    // --------------------------------------------------------------
+    //Separator
+    mc_systrayMenu_advanced->addSeparator();
+    // --------------------------------------------------------------
     mc_systrayMenu_advanced_import = new QAction(mc_systrayIcon_advanced_import, tr("Import Cash..."), 0);
     mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_import);
     connect(mc_systrayMenu_advanced_import, SIGNAL(triggered()), this, SLOT(mc_import_slot()));
@@ -886,57 +895,6 @@ void Moneychanger::SetupAccountMenu()
  * Try to keep everything you add for your windows organized and grouped below by Window Class.
  *
  ****/
-
-
-
-/** 
- * Overview Window 
- **/
-
-//Overview slots
-void Moneychanger::mc_overview_slot()
-{
-    //The operator has requested to open the dialog to the "Overview";
-    mc_overview_dialog();
-}
-
-void Moneychanger::mc_overview_dialog_refresh()
-{
-    if (mc_overview_already_init)
-    {
-        if (!homewindow->isHidden())
-        {
-            homewindow->SetNeedRefresh();
-            mc_overview_dialog();
-        }
-    }
-}
-
-void Moneychanger::mc_overview_dialog()
-{
-    if (!mc_overview_already_init)
-    {
-        homewindow = new MTHome(this);
-        mc_overview_already_init = true;
-
-        connect(homewindow, SIGNAL(needToDownloadAccountData()),
-                this,       SLOT(downloadAccountData()));
-
-        qDebug() << "Overview Opened";
-    }
-    // ---------------------------------
-    homewindow->dialog();
-}
-
-void Moneychanger::close_overview_dialog()
-{
-    delete homewindow;
-    homewindow = NULL;
-    mc_overview_already_init = false;
-    qDebug() << "Overview Closed";
-}
-
-// End Overview
 
 
 
@@ -1414,6 +1372,11 @@ void Moneychanger::mc_assetselection_triggered(QAction*action_triggered)
 
 
 
+void Moneychanger::onBalancesChanged()
+{
+    emit balancesChanged();
+}
+
 
 /** 
  * Account Manager 
@@ -1437,6 +1400,19 @@ void Moneychanger::mc_accountmanager_dialog(QString qstrAcctID/*=QString("")*/)
     if (!mc_accountmanager_already_init)
     {
         accountswindow = new MTDetailEdit(this, *this);
+
+        // When the accountswindow signal "balancesChanged" is triggered,
+        // it will call Moneychanger's "onBalancesChanged" function.
+        // (Which will trigger Moneychanger's "balancesChanged" signal.)
+        //
+        connect(accountswindow, SIGNAL(balancesChanged()),
+                this,           SLOT(onBalancesChanged()));
+
+        // When Moneychanger's signal "balancesChanged" is triggered,
+        // it will call accountswindow's "onBalancesChangedFromAbove" function.
+        //
+        connect(this,           SIGNAL(balancesChanged()),
+                accountswindow, SLOT(onBalancesChangedFromAbove()));
 
         mc_accountmanager_already_init = true;
         qDebug() << "Account Manager Opened";
@@ -1780,42 +1756,6 @@ void Moneychanger::mc_serverselection_triggered(QAction * action_triggered){
 // End Server Manager
 
 
-/** 
- * Send Funds 
- **/
-
-void Moneychanger::mc_sendfunds_slot()
-{
-    mc_sendfunds_show_dialog();
-}
-
-void Moneychanger::mc_sendfunds_show_dialog()
-{
-    // --------------------------------------------------
-    MTSendDlg * send_window = new MTSendDlg(NULL, *this);
-    send_window->setAttribute(Qt::WA_DeleteOnClose);
-    // --------------------------------------------------
-    QString qstr_acct_id = this->get_default_account_id();
-
-    if (!qstr_acct_id.isEmpty())
-        send_window->setInitialMyAcct(qstr_acct_id);
-    // ---------------------------------------
-    send_window->dialog();
-    send_window->show();
-    // --------------------------------------------------
-}
-
-void Moneychanger::close_sendfunds_dialog()
-{
-//    delete sendfundswindow;
-//    sendfundswindow = NULL;
-//    mc_sendfunds_already_init = false;
-//    qDebug() << "Send Funds Window Closed";
-}
-
-// End Send Funds
-
-
 
 
 
@@ -1879,13 +1819,378 @@ void Moneychanger::close_requestfunds_dialog()
 
 void Moneychanger::mc_import_slot()
 {
+    DlgImport dlgImport;
 
+    if (QDialog::Accepted != dlgImport.exec())
+        return;
+    // ----------------------------------------
+    QString qstrContents;
+    // ----------------------------------------
+    if (dlgImport.IsPasted()) // Pasted contents (not filename)
+        qstrContents = dlgImport.GetPasted(); // Dialog prohibits empty contents, so no need to check here.
+    // --------------------------------
+    else  // Filename
+    {
+        QString fileName = dlgImport.GetFilename(); // Dialog prohibits empty filename, so no need to check here.
+        // -----------------------------------------------
+        QFile   plainFile(fileName);
 
+        if (plainFile.open(QIODevice::ReadOnly))//| QIODevice::Text)) // Text flag translates /n/r to /n
+        {
+            QTextStream in(&plainFile); // Todo security: check filesize here and place a maximum size.
+            qstrContents = in.readAll();
 
+            plainFile.close();
+            // ----------------------------
+            if (qstrContents.isEmpty())
+            {
+                QMessageBox::warning(this, tr("File Was Empty"),
+                                     QString("%1: %2").arg(tr("File was apparently empty")).arg(fileName));
+                return;
+            }
+            // ----------------------------
+        }
+        else
+        {
+            QMessageBox::warning(this, tr("Failed Reading File"),
+                                 QString("%1: %2").arg(tr("Failed trying to read file")).arg(fileName));
+            return;
+        }
+    }
+    // --------------------------------
+    // By this point, we have the contents of the instrument,
+    // and we know they aren't empty.
+    //
+    std::string strInstrument = qstrContents.toStdString();
+    // ---------------------------------------------
+    std::string strType = OTAPI_Wrap::Instrmnt_GetType(strInstrument);
 
+    if (strType.empty())
+    {
+        QMessageBox::warning(this, tr("Indeterminate Instrument"),
+                             tr("Unable to determine instrument type. Are you sure this is a financial instrument?"));
+        return;
+    }
+    // -----------------------
+    std::string strServerID = OTAPI_Wrap::Instrmnt_GetServerID(strInstrument);
 
+    if (strServerID.empty())
+    {
+        QMessageBox::warning(this, tr("Indeterminate Server"),
+                             tr("Unable to determine server ID for this instrument. Are you sure it's properly formed?"));
+        return;
+    }
+    // -----------------------
+    std::string strAssetID = OTAPI_Wrap::Instrmnt_GetAssetID(strInstrument);
 
+    if (strAssetID.empty())
+    {
+        QMessageBox::warning(this, tr("Indeterminate Asset Type"),
+                             tr("Unable to determine asset ID for this instrument. Are you sure it's properly formed?"));
+        return;
+    }
+    // -----------------------
+    std::string strServerContract = OTAPI_Wrap::LoadServerContract(strServerID);
+
+    if (strServerContract.empty())
+    {
+        QMessageBox::warning(this, tr("No Server Contract Found"),
+                             QString("%1 '%2'<br/>%3").arg(tr("Unable to load the server contract for server ID")).
+                             arg(QString::fromStdString(strServerID)).arg(tr("Are you sure that server contract is even in your wallet?")));
+        return;
+    }
+    // -----------------------
+    std::string strAssetContract = OTAPI_Wrap::LoadAssetContract(strAssetID);
+
+    if (strAssetContract.empty())
+    {
+        QMessageBox::warning(this, tr("No Asset Contract Found"),
+                             QString("%1 '%2'<br/>%3").arg(tr("Unable to load the asset contract for asset ID")).
+                             arg(QString::fromStdString(strAssetID)).arg(tr("Are you sure that asset type is even in your wallet?")));
+        return;
+    }
+    // -----------------------
+    if (0 != strType.compare("PURSE"))
+    {
+        QMessageBox::warning(this, tr("Not a Purse"),
+                             QString("%1 '%2'<br/>%3").arg(tr("Expected a cash PURSE, but instead found a")).
+                             arg(QString::fromStdString(strType)).arg(tr("Currently, only cash PURSE is supported. (Sorry.)")));
+        return;
+    }
+    // -----------------------
+    // By this point, we know it's a purse, and we know it has Server
+    // and Asset IDs for contracts that are found in this wallet.
+    //
+    // Next, let's see if the purse is password-protected, and if not,
+    // let's see if the recipient Nym is named on the instrument. (He may not be.)
+    //
+    const bool  bHasPassword = OTAPI_Wrap::Purse_HasPassword(strServerID, strInstrument);
+    std::string strPurseOwner("");
+
+    if (!bHasPassword)
+    {
+        // If the purse isn't password-protected, then it's DEFINITELY encrypted to
+        // a specific Nym.
+        //
+        // The purse MAY include the NymID for this Nym, but it MAY also be blank, in
+        // which case the user will have to select a Nym to TRY.
+        //
+        strPurseOwner = OTAPI_Wrap::Instrmnt_GetRecipientUserID(strInstrument); // TRY and get the Nym ID (it may have been left blank.)
+
+        if (strPurseOwner.empty())
+        {
+            // Looks like it was left blank...
+            // (Meaning we need to ask the user to tell us which Nym it was.)
+            //
+            // Select from Nyms in local wallet.
+            //
+            DlgChooser theChooser(this, tr("The cash purse is encrypted to a specific Nym, "
+                                           "but that Nym isn't named on the purse. Therefore, you must select the intended Nym. "
+                                           "But choose wisely -- for if you pick the wrong Nym, the import will fail!"));
+            // -----------------------------------------------
+            mapIDName & the_map = theChooser.m_map;
+
+            bool bFoundDefault = false;
+            // -----------------------------------------------
+            const int32_t nym_count = OTAPI_Wrap::GetNymCount();
+            // -----------------------------------------------
+            for (int32_t ii = 0; ii < nym_count; ++ii)
+            {
+                //Get OT Nym ID
+                QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::GetNym_ID(ii));
+                QString OT_nym_name("");
+                // -----------------------------------------------
+                if (!OT_nym_id.isEmpty())
+                {
+                    if (!default_nym_id.isEmpty() && (OT_nym_id == default_nym_id))
+                        bFoundDefault = true;
+                    // -----------------------------------------------
+                    MTNameLookupQT theLookup;
+
+                    OT_nym_name = QString::fromStdString(theLookup.GetNymName(OT_nym_id.toStdString()));
+                    // -----------------------------------------------
+                    the_map.insert(OT_nym_id, OT_nym_name);
+                }
+             }
+            // -----------------------------------------------
+            if (bFoundDefault && !default_nym_id.isEmpty())
+                theChooser.SetPreSelected(default_nym_id);
+            // -----------------------------------------------
+            theChooser.setWindowTitle(tr("Choose Recipient Nym for Cash"));
+            // -----------------------------------------------
+            if (theChooser.exec() != QDialog::Accepted)
+                return;
+            else
+            {
+                if (theChooser.m_qstrCurrentID.isEmpty())
+                    return; // Should never happen.
+                // -----------------------------
+                strPurseOwner = theChooser.m_qstrCurrentID.toStdString();
+            }
+        } // if strPurseOwner is empty (above the user selects him then.)
+        // --------------------------------------
+        if (!OTAPI_Wrap::IsNym_RegisteredAtServer(strPurseOwner, strServerID))
+        {
+            QMessageBox::warning(this, tr("Nym Isn't Registered at Server"),
+                                 QString("%1 '%2'<br/>%3 '%4'<br/>%5").
+                                 arg(tr("The Nym with ID")).
+                                 arg(QString::fromStdString(strPurseOwner)).
+                                 arg(tr("isn't registered at the Server with ID")).
+                                 arg(QString::fromStdString(strServerID)).
+                                 arg(tr("Try using that nym to create an asset account on that server, and then try importing this cash again.")));
+            return;
+        }
+    } // If the purse is NOT password protected. (e.g. if the purse is encrypted to a specific Nym.)
+    // -----------------------------------------------------------------
+    // By this point, we know the purse is either password-protected, or that it's
+    // encrypted to a Nym who IS registered at the appropriate server.
+    //
+    // ---------------------------------------------
+    // DEPOSIT the cash to an ACCOUNT.
+    //
+    // We can't just import it to the wallet because the cash tokens aren't truly safe
+    // until they are redeemed. (Until then, the sender still has a copy of them.)
+    //
+    // Use OT_ME::deposit_cash (vs deposit_local_purse) since the cash is external.
+    // Otherwise if the deposit fails, OT will try to "re-import" them, even though
+    // they were never in the purse in the first place.
+    //
+    // This would, of course, mix up coins that the sender has a copy of, with coins
+    // that only I have a copy of -- which we don't want to do.
+    //
+    // Select from Accounts in local wallet.
+    //
+    DlgChooser theChooser(this);
+    theChooser.SetIsAccounts();
+    // -----------------------------------------------
+    mapIDName & the_map = theChooser.m_map;
+
+    bool bFoundDefault = false;
+    // -----------------------------------------------
+    const int32_t acct_count = OTAPI_Wrap::GetAccountCount();
+    // -----------------------------------------------
+    for (int32_t ii = 0; ii < acct_count; ++ii)
+    {
+        //Get OT Acct ID
+        QString OT_acct_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(ii));
+        QString OT_acct_name("");
+        // -----------------------------------------------
+        if (!OT_acct_id.isEmpty())
+        {
+            std::string str_acct_nym_id    = OTAPI_Wrap::GetAccountWallet_NymID      (OT_acct_id.toStdString());
+            std::string str_acct_asset_id  = OTAPI_Wrap::GetAccountWallet_AssetTypeID(OT_acct_id.toStdString());
+            std::string str_acct_server_id = OTAPI_Wrap::GetAccountWallet_ServerID   (OT_acct_id.toStdString());
+
+            if (!strPurseOwner.empty() && (0 != strPurseOwner.compare(str_acct_nym_id)))
+                continue;
+            if (0 != strAssetID.compare(str_acct_asset_id))
+                continue;
+            if (0 != strServerID.compare(str_acct_server_id))
+                continue;
+            // -----------------------------------------------
+            if (!default_account_id.isEmpty() && (OT_acct_id == default_account_id))
+                bFoundDefault = true;
+            // -----------------------------------------------
+            MTNameLookupQT theLookup;
+
+            OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString()));
+            // -----------------------------------------------
+            the_map.insert(OT_acct_id, OT_acct_name);
+        }
+     }
+    // -----------------------------------------------
+    if (the_map.size() < 1)
+    {
+        QMessageBox::warning(this, tr("No Matching Accounts"),
+                             tr("The Nym doesn't have any accounts of the appropriate asset type, "
+                                "on the appropriate server. Please create one and then try again."));
+        return;
+    }
+    // -----------------------------------------------
+    if (bFoundDefault && !default_account_id.isEmpty())
+        theChooser.SetPreSelected(default_account_id);
+    // -----------------------------------------------
+    theChooser.setWindowTitle(tr("Deposit Cash to Which Account?"));
+    // -----------------------------------------------
+    if (theChooser.exec() == QDialog::Accepted)
+    {
+        if (!theChooser.m_qstrCurrentID.isEmpty())
+        {
+            if (strPurseOwner.empty())
+                strPurseOwner = OTAPI_Wrap::GetAccountWallet_NymID(theChooser.m_qstrCurrentID.toStdString());
+            // -------------------------------------------
+            OT_ME madeEasy;
+//          const bool bImported = OTAPI_Wrap::Wallet_ImportPurse(strServerID, strAssetID, strPurseOwner, strInstrument);
+
+            if (1 == madeEasy.deposit_cash(strServerID, strPurseOwner,
+                                           theChooser.m_qstrCurrentID.toStdString(), // AcctID.
+                                           strInstrument))
+            {
+                QMessageBox::information(this, tr("Success"), tr("Success depositing cash purse."));
+                emit balancesChanged();
+            }
+            else
+                QMessageBox::warning(this, tr("Failed Import"), tr("Failed trying to deposit cash purse."));
+        }
+    }
 }
+
+// -----------------------------------------------
+
+
+
+/**
+ * Send Funds
+ **/
+
+void Moneychanger::mc_sendfunds_slot()
+{
+    mc_sendfunds_show_dialog();
+}
+
+void Moneychanger::mc_sendfunds_show_dialog()
+{
+    // --------------------------------------------------
+    MTSendDlg * send_window = new MTSendDlg(NULL, *this);
+    send_window->setAttribute(Qt::WA_DeleteOnClose);
+    // --------------------------------------------------
+    QString qstr_acct_id = this->get_default_account_id();
+
+    if (!qstr_acct_id.isEmpty())
+        send_window->setInitialMyAcct(qstr_acct_id);
+    // ---------------------------------------
+    connect(send_window, SIGNAL(balancesChanged()),
+            this,        SLOT  (onBalancesChanged()));
+    // ---------------------------------------
+    send_window->dialog();
+    send_window->show();
+    // --------------------------------------------------
+}
+
+void Moneychanger::close_sendfunds_dialog()
+{
+//    delete sendfundswindow;
+//    sendfundswindow = NULL;
+//    mc_sendfunds_already_init = false;
+//    qDebug() << "Send Funds Window Closed";
+}
+
+// End Send Funds
+
+
+
+/**
+ * Overview Window
+ **/
+
+//Overview slots
+void Moneychanger::mc_overview_slot()
+{
+    //The operator has requested to open the dialog to the "Overview";
+    mc_overview_dialog();
+}
+
+void Moneychanger::mc_overview_dialog_refresh()
+{
+    if (mc_overview_already_init)
+    {
+        if (!homewindow->isHidden())
+        {
+            homewindow->SetNeedRefresh();
+            mc_overview_dialog();
+        }
+    }
+}
+
+void Moneychanger::mc_overview_dialog()
+{
+    if (!mc_overview_already_init)
+    {
+        homewindow = new MTHome(this);
+        mc_overview_already_init = true;
+
+        connect(homewindow, SIGNAL(needToDownloadAccountData()),
+                this,       SLOT(downloadAccountData()));
+
+        connect(this,       SIGNAL(balancesChanged()),
+                homewindow, SLOT(onBalancesChanged()));
+
+        qDebug() << "Overview Opened";
+    }
+    // ---------------------------------
+    homewindow->dialog();
+}
+
+void Moneychanger::close_overview_dialog()
+{
+    delete homewindow;
+    homewindow = NULL;
+    mc_overview_already_init = false;
+    qDebug() << "Overview Closed";
+}
+
+// End Overview
+
 
 
 

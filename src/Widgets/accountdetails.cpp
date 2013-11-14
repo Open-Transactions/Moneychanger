@@ -111,6 +111,9 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
             m_pCashPurse = new MTCashPurse(NULL, *m_pOwner);
             pReturnValue = m_pCashPurse;
             pReturnValue->setContentsMargins(0, 0, 0, 0);
+
+            connect(m_pCashPurse, SIGNAL(balancesChanged(QString)),
+                    m_pOwner,     SLOT(onBalancesChangedFromBelow(QString)));
         }
         break;
 

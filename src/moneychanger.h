@@ -41,7 +41,6 @@
 #include "MTRecord.hpp"
 
 #include "Widgets/marketwindow.h"
-#include "Widgets/overviewwindow.h"
 #include "Widgets/home.h"
 #include "Widgets/requestfundswindow.h"
 #include "Widgets/sendfundswindow.h"
@@ -49,7 +48,6 @@
 #include "Widgets/detailedit.h"
 #include "Widgets/settings.h"
 
-class OverviewWindow;
 class MTHome;
 class MTDetailEdit;
 
@@ -97,7 +95,12 @@ public:
     void new_send_dialog();
     void new_request_dialog();
 
+signals:
+    void balancesChanged();
+
 public slots:
+
+    void onBalancesChanged();
 
     void downloadAccountData();
 
@@ -154,7 +157,7 @@ public:
      **/
     
     // These should probably be moved to the main class file.
-    ot_worker * get_ot_worker_background(){return ot_worker_background;}; // Should probably replace this soon.
+    ot_worker * get_ot_worker_background(){return ot_worker_background;} // Should probably replace this soon.
     
 private:
 
@@ -194,7 +197,6 @@ private:
      * Window Classes
      **/
     
-    OverviewWindow * overviewwindow;
     MTHome * homewindow;
 
     MTDetailEdit      * contactswindow;

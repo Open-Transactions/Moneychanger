@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QPlainTextEdit>
 
 #include "serverdetails.h"
 #include "ui_serverdetails.h"
@@ -19,6 +20,7 @@
 
 MTServerDetails::MTServerDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
+    m_pPlainTextEdit(NULL),
     m_pDownloader(NULL),
     m_pHeaderWidget(NULL),
     ui(new Ui::MTServerDetails)
@@ -42,6 +44,78 @@ MTServerDetails::~MTServerDetails()
     delete ui;
 }
 
+
+// ----------------------------------
+//virtual
+int MTServerDetails::GetCustomTabCount()
+{
+    return 1;
+}
+// ----------------------------------
+//virtual
+QWidget * MTServerDetails::CreateCustomTab(int nTab)
+{
+    const int nCustomTabCount = this->GetCustomTabCount();
+    // -----------------------------
+    if ((nTab < 0) || (nTab >= nCustomTabCount))
+        return NULL; // out of bounds.
+    // -----------------------------
+    QWidget * pReturnValue = NULL;
+    // -----------------------------
+    switch (nTab)
+    {
+    case 0:
+    {
+        m_pPlainTextEdit = new QPlainTextEdit;
+
+        m_pPlainTextEdit->setReadOnly(true);
+        m_pPlainTextEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+        // -------------------------------
+        QVBoxLayout * pvBox = new QVBoxLayout;
+
+        QLabel * pLabelContents = new QLabel(tr("Server Contract:"));
+
+        pvBox->setAlignment(Qt::AlignTop);
+        pvBox->addWidget   (pLabelContents);
+        pvBox->addWidget   (m_pPlainTextEdit);
+        // -------------------------------
+        pReturnValue = new QWidget;
+        pReturnValue->setContentsMargins(0, 0, 0, 0);
+        pReturnValue->setLayout(pvBox);
+    }
+        break;
+
+    default:
+        qDebug() << QString("Unexpected: MTServerDetails::CreateCustomTab was called with bad index: %1").arg(nTab);
+        return NULL;
+    }
+    // -----------------------------
+    return pReturnValue;
+}
+// ---------------------------------
+//virtual
+QString  MTServerDetails::GetCustomTabName(int nTab)
+{
+    const int nCustomTabCount = this->GetCustomTabCount();
+    // -----------------------------
+    if ((nTab < 0) || (nTab >= nCustomTabCount))
+        return QString(""); // out of bounds.
+    // -----------------------------
+    QString qstrReturnValue("");
+    // -----------------------------
+    switch (nTab)
+    {
+    case 0:  qstrReturnValue = "Server Contract";  break;
+
+    default:
+        qDebug() << QString("Unexpected: MTServerDetails::GetCustomTabName was called with bad index: %1").arg(nTab);
+        return QString("");
+    }
+    // -----------------------------
+    return qstrReturnValue;
+}
+// ------------------------------------------------------
+
 void MTServerDetails::FavorLeftSideForIDs()
 {
     if (NULL != ui)
@@ -55,6 +129,8 @@ void MTServerDetails::ClearContents()
 {
     ui->lineEditID  ->setText("");
     ui->lineEditName->setText("");
+
+    m_pPlainTextEdit->setPlainText("");
 }
 
 
@@ -322,7 +398,7 @@ void MTServerDetails::refresh(QString strID, QString strName)
 {
 //  qDebug() << "MTServerDetails::refresh";
 
-    if (NULL != ui)
+    if (!strID.isEmpty() && (NULL != ui))
     {
         QWidget * pHeaderWidget = MTEditDetails::CreateDetailHeaderWidget(strID, strName, "", "", ":/icons/server", false);
 
@@ -341,6 +417,14 @@ void MTServerDetails::refresh(QString strID, QString strName)
         ui->lineEditName->setText(strName);
 
         FavorLeftSideForIDs();
+        // --------------------------
+        if (NULL != m_pPlainTextEdit)
+        {
+            QString strContents = QString::fromStdString(OTAPI_Wrap::LoadServerContract(strID.toStdString()));
+
+            m_pPlainTextEdit->setPlainText(strContents);
+        }
+        // --------------------------
     }
 }
 

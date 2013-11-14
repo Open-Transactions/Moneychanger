@@ -47,6 +47,13 @@ public:
     QString     m_qstrCurrentName;
     mapIDName   m_map; // qstr/qstr for id/name
 
+signals:
+    void balancesChanged();
+
+public slots:
+    void onBalancesChangedFromAbove();
+    void onBalancesChangedFromBelow(QString qstrAcctID);
+
 protected:
     QString     m_PreSelected;
 

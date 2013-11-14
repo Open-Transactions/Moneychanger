@@ -22,7 +22,6 @@ HEADERS += moneychanger.h \
     Handlers/FileHandler.h \
     Handlers/DBHandler.h \
     Widgets/marketwindow.h \
-    Widgets/overviewwindow.h \
     Widgets/sendfundswindow.h \
     Widgets/requestfundswindow.h \
     Widgets/home.h \
@@ -68,7 +67,8 @@ HEADERS += moneychanger.h \
     Widgets/dlggetamount.h \
     UI/dlgexportcash.h \
     UI/dlgexportedcash.h \
-    UI/dlgexportedtopass.h
+    UI/dlgexportedtopass.h \
+    UI/dlgimport.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -79,7 +79,6 @@ SOURCES += main.cpp\
     Handlers/DBHandler.cpp \
     Handlers/contacthandler.cpp \
     Widgets/marketwindow.cpp \
-    Widgets/overviewwindow.cpp \
     Widgets/sendfundswindow.cpp \
     Widgets/requestfundswindow.cpp \
     Widgets/home.cpp \
@@ -125,7 +124,8 @@ SOURCES += main.cpp\
     Widgets/dlggetamount.cpp \
     UI/dlgexportcash.cpp \
     UI/dlgexportedcash.cpp \
-    UI/dlgexportedtopass.cpp
+    UI/dlgexportedtopass.cpp \
+    UI/dlgimport.cpp
 
 RESOURCES += resource.qrc
 
@@ -169,7 +169,8 @@ FORMS += \
     Widgets/dlggetamount.ui \
     UI/dlgexportcash.ui \
     UI/dlgexportedcash.ui \
-    UI/dlgexportedtopass.ui
+    UI/dlgexportedtopass.ui \
+    UI/dlgimport.ui
 
 mac:{
 

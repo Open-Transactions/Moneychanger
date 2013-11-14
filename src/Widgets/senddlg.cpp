@@ -480,6 +480,8 @@ bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
     {
         qDebug() << "Success in send funds!";
         QMessageBox::information(this, tr("Success"), QString("%1 %2.").arg(tr("Success sending")).arg(qstrPaymentType));
+
+        emit balancesChanged();
     }
     // ---------------------------------------------------------
     return m_bSent;

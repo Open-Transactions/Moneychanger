@@ -27,6 +27,9 @@ public:
 
     int TallySelections(QStringList & selectedIndices, int64_t & lAmount);
 
+signals:
+    void balancesChanged(QString qstrAcct);
+
 private slots:
     void on_pushButtonWithdraw_clicked();
 

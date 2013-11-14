@@ -104,10 +104,6 @@ void MTHome::dialog()
         already_init = true;
     }
     // -------------------------------------------
-    //Refresh visual data
-    //Tell OT to repopulate, and refresh backend.
-//    ((Moneychanger*)parentWidget())->get_ot_worker_background()->mc_overview_ping();
-    // -------------------------------------------
     RefreshAll();
 
     show();
@@ -163,6 +159,11 @@ void MTHome::setupRecordList()
 
 
 
+
+void MTHome::onBalancesChanged()
+{
+    RefreshUserBar();
+}
 
 
 void MTHome::RefreshUserBar()
