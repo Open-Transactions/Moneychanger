@@ -1,6 +1,11 @@
 
 #include <QDebug>
 #include <QMessageBox>
+#include <QPlainTextEdit>
+
+#include <opentxs/OTAPI.h>
+#include <opentxs/OT_ME.h>
+#include <opentxs/OTLog.h>
 
 #include "contactdetails.h"
 #include "ui_contactdetails.h"
@@ -15,6 +20,7 @@
 
 MTContactDetails::MTContactDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
+    m_pPlainTextEdit(NULL),
     m_pHeaderWidget(NULL),
     ui(new Ui::MTContactDetails)
 {
@@ -28,7 +34,7 @@ MTContactDetails::MTContactDetails(QWidget *parent, MTDetailEdit & theOwner) :
     // the widget at 0 and replace it with the real header widget.
     //
     m_pHeaderWidget  = new QWidget;
-    ui->verticalLayout_2->insertWidget(0, m_pHeaderWidget);
+    ui->verticalLayout->insertWidget(0, m_pHeaderWidget);
     // ----------------------------------
 }
 
@@ -36,6 +42,80 @@ MTContactDetails::~MTContactDetails()
 {
     delete ui;
 }
+
+
+// ----------------------------------
+//virtual
+int MTContactDetails::GetCustomTabCount()
+{
+    return 1;
+}
+// ----------------------------------
+//virtual
+QWidget * MTContactDetails::CreateCustomTab(int nTab)
+{
+    const int nCustomTabCount = this->GetCustomTabCount();
+    // -----------------------------
+    if ((nTab < 0) || (nTab >= nCustomTabCount))
+        return NULL; // out of bounds.
+    // -----------------------------
+    QWidget * pReturnValue = NULL;
+    // -----------------------------
+    switch (nTab)
+    {
+    case 0:
+    {
+        m_pPlainTextEdit = new QPlainTextEdit;
+
+        m_pPlainTextEdit->setReadOnly(true);
+        m_pPlainTextEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+        // -------------------------------
+        QVBoxLayout * pvBox = new QVBoxLayout;
+
+        QLabel * pLabelContents = new QLabel(tr("Known IDs:"));
+
+        pvBox->setAlignment(Qt::AlignTop);
+        pvBox->addWidget   (pLabelContents);
+        pvBox->addWidget   (m_pPlainTextEdit);
+        // -------------------------------
+        pReturnValue = new QWidget;
+        pReturnValue->setContentsMargins(0, 0, 0, 0);
+        pReturnValue->setLayout(pvBox);
+    }
+        break;
+
+    default:
+        qDebug() << QString("Unexpected: MTContactDetails::CreateCustomTab was called with bad index: %1").arg(nTab);
+        return NULL;
+    }
+    // -----------------------------
+    return pReturnValue;
+}
+// ---------------------------------
+//virtual
+QString  MTContactDetails::GetCustomTabName(int nTab)
+{
+    const int nCustomTabCount = this->GetCustomTabCount();
+    // -----------------------------
+    if ((nTab < 0) || (nTab >= nCustomTabCount))
+        return QString(""); // out of bounds.
+    // -----------------------------
+    QString qstrReturnValue("");
+    // -----------------------------
+    switch (nTab)
+    {
+    case 0:  qstrReturnValue = "Known IDs";  break;
+
+    default:
+        qDebug() << QString("Unexpected: MTContactDetails::GetCustomTabName was called with bad index: %1").arg(nTab);
+        return QString("");
+    }
+    // -----------------------------
+    return qstrReturnValue;
+}
+// ------------------------------------------------------
+
+
 
 //virtual
 void MTContactDetails::DeleteButtonClicked()
@@ -117,7 +197,9 @@ void MTContactDetails::ClearContents()
     ui->lineEditID  ->setText("");
     ui->lineEditName->setText("");
 
-    ui->plainTextEdit->setPlainText("");
+//    ui->plainTextEdit->setPlainText("");
+
+    m_pPlainTextEdit->setPlainText("");
 }
 
 
@@ -126,7 +208,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
 {
     qDebug() << "MTContactDetails::refresh";
 
-    if (NULL == ui)
+    if ((NULL == ui) || strID.isEmpty())
         return;
 
     QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(strID, strName, "", "", ":/icons/icons/user.png", false);
@@ -135,11 +217,11 @@ void MTContactDetails::refresh(QString strID, QString strName)
 
     if (NULL != m_pHeaderWidget)
     {
-        ui->verticalLayout_2->removeWidget(m_pHeaderWidget);
+        ui->verticalLayout->removeWidget(m_pHeaderWidget);
         delete m_pHeaderWidget;
         m_pHeaderWidget = NULL;
     }
-    ui->verticalLayout_2->insertWidget(0, pHeaderWidget);
+    ui->verticalLayout->insertWidget(0, pHeaderWidget);
     m_pHeaderWidget = pHeaderWidget;
     // ----------------------------------
     ui->lineEditID  ->setText(strID);
@@ -199,8 +281,14 @@ void MTContactDetails::refresh(QString strID, QString strName)
         } // got nyms
     }
     // --------------------------------------------
-    ui->plainTextEdit->setPlainText(strDetails);
+//    ui->plainTextEdit->setPlainText(strDetails);
     // --------------------------------------------
+    if (NULL != m_pPlainTextEdit)
+    {
+        m_pPlainTextEdit->setPlainText(strDetails);
+    }
+    // --------------------------
+
 }
 
 

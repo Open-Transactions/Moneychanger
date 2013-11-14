@@ -7,6 +7,8 @@ namespace Ui {
 class MTContactDetails;
 }
 
+class QPlainTextEdit;
+
 class MTContactDetails : public MTEditDetails
 {
     Q_OBJECT
@@ -19,7 +21,18 @@ public:
     virtual void AddButtonClicked();
     virtual void DeleteButtonClicked();
 
+    // ----------------------------------
+    // Only used on construction (aka when dialog() is called for first time.)
+    //
+    virtual int       GetCustomTabCount();
+    virtual QWidget * CreateCustomTab (int nTab);
+    virtual QString   GetCustomTabName(int nTab);
+    // ----------------------------------
+
     virtual void ClearContents();
+
+private:
+    QPlainTextEdit * m_pPlainTextEdit;
 
 private slots:
     void on_lineEditName_editingFinished();

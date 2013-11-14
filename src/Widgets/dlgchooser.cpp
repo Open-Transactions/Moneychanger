@@ -9,16 +9,25 @@
 
 #include "home.h"
 
-DlgChooser::DlgChooser(QWidget *parent) :
+DlgChooser::DlgChooser(QWidget *parent, QString qstrInstructions/*=QString("")*/) :
     QDialog(parent),
     m_bFirstRun(true),
     m_bIsAccounts(false),
+    m_qstrInstructions(qstrInstructions),
     m_nCurrentRow(-1),
     ui(new Ui::DlgChooser)
 {
     ui->setupUi(this);
 
     this->installEventFilter(this);
+
+    if (!m_qstrInstructions.isEmpty())
+    {
+        QLabel * pLabel = new QLabel(m_qstrInstructions);
+        pLabel->setWordWrap(true);
+
+        ui->verticalLayout->insertWidget(0, pLabel);
+    }
 }
 
 DlgChooser::~DlgChooser()
@@ -195,14 +204,19 @@ void DlgChooser::showEvent(QShowEvent * event)
 
 bool DlgChooser::eventFilter(QObject *obj, QEvent *event)
 {
-    if (event->type() == QEvent::KeyPress) {
+    if (event->type() == QEvent::KeyPress)
+    {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if(keyEvent->key() == Qt::Key_Escape){
+
+        if (keyEvent->key() == Qt::Key_Escape)
+        {
             close(); // This is caught by this same filter.
             return true;
         }
         return true;
-    }else {
+    }
+    else
+    {
         // standard event processing
         return QObject::eventFilter(obj, event);
     }

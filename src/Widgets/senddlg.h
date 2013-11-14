@@ -49,6 +49,9 @@ public:
 
 //  bool sendInvoice:(NSUInteger)amount toNymId:(NSString*)toNymId withNote:(NSString*)note;
 
+signals:
+    void balancesChanged();
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
     void closeEvent(QCloseEvent *event);

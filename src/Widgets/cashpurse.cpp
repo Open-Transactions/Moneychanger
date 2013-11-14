@@ -68,6 +68,8 @@ MTCashPurse::MTCashPurse(QWidget *parent, MTDetailEdit & theOwner) :
 
 //    QTableWidgetItem *newItem = new QTableWidgetItem(tr("%1").arg();
 //    ui->tableWidget->setItem(row, column, newItem);
+    // ------------------------------------
+
 }
 
 
@@ -253,8 +255,7 @@ void MTCashPurse::on_pushButtonWithdraw_clicked()
         QMessageBox::information(this, tr("Success Withdrawing Cash"),
                                 tr("Success withdrawing cash!"));
         // --------------------------------------------------------
-        m_pOwner->SetPreSelected(m_qstrAcctId);
-        m_pOwner->RefreshRecords();
+        emit balancesChanged(m_qstrAcctId);
     }
     // -----------------------------------------------------------------
 }
@@ -264,6 +265,7 @@ void MTCashPurse::on_pushButtonWithdraw_clicked()
 
 void MTCashPurse::on_pushButtonExport_clicked()
 {
+    bool bSuccess = false;
     QStringList selectedIndices;
     int64_t     lAmount=0;
 
@@ -348,8 +350,7 @@ void MTCashPurse::on_pushButtonExport_clicked()
             DlgExportedToPass dlgExported(this, QString::fromStdString(str_exported));
             dlgExported.exec();
             // --------------------------------------------------------
-            m_pOwner->SetPreSelected(m_qstrAcctId);
-            m_pOwner->RefreshRecords();
+            bSuccess = true;
         }
         else
         {
@@ -358,12 +359,28 @@ void MTCashPurse::on_pushButtonExport_clicked()
                                         QString::fromStdString(str_retained));
             dlgExported.exec();
             // --------------------------------------------------------
-            ui->pushButtonDeposit ->setEnabled(false);
-            ui->pushButtonExport  ->setEnabled(false);
-            // --------------------------------------------------------
-            m_pOwner->SetPreSelected(m_qstrAcctId);
-            m_pOwner->RefreshRecords();
+            bSuccess = true;
         }
+    }
+    // -----------------------------------
+    if (bSuccess)
+    {
+        for (int ii = 0; ii < ui->tableWidget->rowCount(); ii++)
+        {
+            QWidget * pWidget = ui->tableWidget->cellWidget(ii, 0);
+
+            if (NULL != pWidget)
+            {
+                QCheckBox * pCheckbox = pWidget->findChild<QCheckBox *>();
+
+                if ( (NULL != pCheckbox) && (Qt::Checked == pCheckbox->checkState()))
+                    pCheckbox->setChecked(false);
+            }
+        }
+        // --------------------------------------------------------
+        int nNumberSelected = this->TallySelections(selectedIndices, lAmount);
+        // --------------------------------------------------------
+        emit balancesChanged(m_qstrAcctId);
     }
 }
 
@@ -422,11 +439,22 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
             QMessageBox::information(this, tr("Success Depositing Cash"),
                                     tr("Success depositing cash!"));
             // --------------------------------------------------------
-            ui->pushButtonDeposit ->setEnabled(false);
-            ui->pushButtonExport  ->setEnabled(false);
+            for (int ii = 0; ii < ui->tableWidget->rowCount(); ii++)
+            {
+                QWidget * pWidget = ui->tableWidget->cellWidget(ii, 0);
+
+                if (NULL != pWidget)
+                {
+                    QCheckBox * pCheckbox = pWidget->findChild<QCheckBox *>();
+
+                    if ( (NULL != pCheckbox) && (Qt::Checked == pCheckbox->checkState()))
+                        pCheckbox->setChecked(false);
+                }
+            }
             // --------------------------------------------------------
-            m_pOwner->SetPreSelected(m_qstrAcctId);
-            m_pOwner->RefreshRecords();
+            int nNumberSelected = this->TallySelections(selectedIndices, lAmount);
+            // --------------------------------------------------------
+            emit balancesChanged(m_qstrAcctId);
         }
     }
     // -----------------------------------------------------------------
