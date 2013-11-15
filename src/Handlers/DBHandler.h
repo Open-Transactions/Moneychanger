@@ -65,6 +65,16 @@ class DBHandler
     int queryInt(QString run, int value, int at=0);
     QString queryString(QString run, int value, int at=0);
 
+    /**
+     * Run a query and for each returned record, execute a callback.  The
+     * callback is passed the QSqlRecord for each result.
+     * @param run The query to run.
+     * @param cb The callback function called.
+     * @return True in case of success.
+     */
+    template<typename T>
+      bool queryMultiple(QString run, T cb);
+
     QVariant AddressBookInsertNym(QString nym_id_string, QString nym_display_name_string);
 
     bool AddressBookUpdateNym(QString nym_id_string, QString nym_display_name_string, QString index_id_string);
@@ -79,5 +89,7 @@ class DBHandler
 
     ~DBHandler();
 };
+
+#include "DBHandler.tpp"
 
 #endif // DBHANDLER_H
