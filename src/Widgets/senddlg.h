@@ -1,6 +1,7 @@
 #ifndef SENDDLG_H
 #define SENDDLG_H
 
+#include <QPointer>
 #include <QWidget>
 
 namespace Ui {
@@ -20,7 +21,7 @@ class MTSendDlg : public QWidget
 
     bool m_bSent;
 
-    Moneychanger * m_pMoneychanger;
+    QPointer<Moneychanger> m_pMoneychanger;
 
 public:
     explicit MTSendDlg(QWidget *parent, Moneychanger & theMC);
@@ -57,6 +58,8 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private slots:
+    void onBalancesChanged();
+
     void on_toButton_clicked();
     void on_fromButton_clicked();
     void on_sendButton_clicked();

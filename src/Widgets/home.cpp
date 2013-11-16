@@ -3,6 +3,7 @@
 #include <QPushButton>
 #include <QToolButton>
 #include <QScrollArea>
+#include <QKeyEvent>
 #include <QDebug>
 
 
@@ -24,9 +25,6 @@
 MTHome::MTHome(QWidget *parent) :
     QWidget(parent, Qt::Window),
     already_init(false),
-    m_pDetailPane(NULL),
-    m_pDetailLayout(NULL),
-    m_pHeaderLayout(NULL),
     m_list(*(new MTNameLookupQT)),
     m_bNeedRefresh(false),
     ui(new Ui::MTHome)
@@ -43,17 +41,24 @@ MTHome::~MTHome()
 
 bool MTHome::eventFilter(QObject *obj, QEvent *event){
 
-    if (event->type() == QEvent::Close) {
+    if (event->type() == QEvent::Close)
+    {
         ((Moneychanger *)parentWidget())->close_overview_dialog();
         return true;
-    } else if (event->type() == QEvent::KeyPress) {
+    }
+    else if (event->type() == QEvent::KeyPress)
+    {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if(keyEvent->key() == Qt::Key_Escape){
+
+        if (keyEvent->key() == Qt::Key_Escape)
+        {
             close(); // This is caught by this same filter.
             return true;
         }
         return true;
-    }else {
+    }
+    else
+    {
         // standard event processing
         return QObject::eventFilter(obj, event);
     }
@@ -110,7 +115,8 @@ void MTHome::dialog()
 
 void MTHome::on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn)
 {
-    m_pDetailPane->refresh(row, m_list);
+    if (m_pDetailPane)
+        m_pDetailPane->refresh(row, m_list);
 }
 
 void MTHome::setupRecordList()
@@ -166,11 +172,20 @@ void MTHome::onBalancesChanged()
 void MTHome::RefreshUserBar()
 {
     // --------------------------------------------------
-    if (NULL != m_pHeaderLayout)
+    if (m_pHeaderLayout)
     {
         MTHomeDetail::clearLayout(m_pHeaderLayout);
-        delete m_pHeaderLayout;
-        m_pHeaderLayout = NULL;
+
+        QLayout * pLayout = m_pHeaderLayout.data();
+
+        m_pHeaderLayout.clear();
+
+        pLayout->disconnect();
+//        pLayout->deleteLater();
+
+        // ----------------------------
+
+        delete pLayout;
     }
     // --------------------------------------------------
     m_pHeaderLayout = new QGridLayout;
@@ -196,7 +211,7 @@ void MTHome::SetNeedRefresh()
 
 void MTHome::RefreshAll()
 {
-    int nRowCount    = ui->tableWidget->rowCount();
+//  int nRowCount    = ui->tableWidget->rowCount();
     int nCurrentRow  = ui->tableWidget->currentRow();
 
 //  bool bRefreshed = ;// PULL THE DATA FROM THE SERVER HERE.

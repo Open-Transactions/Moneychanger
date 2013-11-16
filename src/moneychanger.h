@@ -3,6 +3,7 @@
 
 
 #include <QMap>
+#include <QPointer>
 #include <QtSql>
 #include <QMenu>
 #include <QList>
@@ -35,15 +36,14 @@
 #include <opentxs/OT_ME.h>
 #include <opentxs/OTLog.h>
 
-#include "ot_worker.h"
-
 #include "MTRecordList.hpp"
 #include "MTRecord.hpp"
 
-#include "Widgets/marketwindow.h"
 #include "Widgets/home.h"
 
 #include "Widgets/createinsurancecompany.h"
+
+#include "UI/dlgmarkets.h"
 
 #include "Widgets/detailedit.h"
 #include "Widgets/settings.h"
@@ -51,7 +51,6 @@
 class MTHome;
 class MTDetailEdit;
 
-class MarketWindow;
 class CreateInsuranceCompany;
 
 
@@ -62,7 +61,7 @@ class Moneychanger : public QWidget
 public:
     /** Constructor & Destructor **/
     Moneychanger(QWidget *parent = 0);
-    ~Moneychanger();
+    virtual ~Moneychanger();
     
     /** Start **/
     void bootTray();
@@ -82,10 +81,16 @@ public:
 
     void close_sendfunds_dialog();
     void close_requestfunds_dialog();
+
     void close_market_dialog();
-    void close_createinsurancecompany_dialog();
+
+    void close_agreement_dialog();
+    void close_corporation_dialog();
+
     void close_settings_dialog();
-    
+
+    void close_createinsurancecompany_dialog();
+
     //Show address book
     void mc_addressbook_show(QString text);
     
@@ -154,18 +159,13 @@ public:
      * OT Interface Functions
      **/
     
-    // These should probably be moved to the main class file.
-    ot_worker * get_ot_worker_background(){return ot_worker_background;} // Should probably replace this soon.
     
 private:
 
     /**
      * Open Transaction Variables
      **/
-    
-    OT_ME * ot_me;
-    ot_worker * ot_worker_background;
-    
+        
     
     
     /**
@@ -189,23 +189,29 @@ private:
     bool mc_createinsurancecompany_already_init;
     bool mc_settings_already_init;
 
-    
+    bool mc_agreement_already_init;
+    bool mc_corporation_already_init;
+
     
     /**
      * Window Classes
      **/
     
-    MTHome * homewindow;
+    QPointer<MTHome> homewindow;
 
-    MTDetailEdit      * contactswindow;
-    MTDetailEdit      * nymswindow;
-    MTDetailEdit      * serverswindow;
-    MTDetailEdit      * assetswindow;
-    MTDetailEdit      * accountswindow;
+    QPointer<MTDetailEdit> contactswindow;
+    QPointer<MTDetailEdit> nymswindow;
+    QPointer<MTDetailEdit> serverswindow;
+    QPointer<MTDetailEdit> assetswindow;
+    QPointer<MTDetailEdit> accountswindow;
+    QPointer<MTDetailEdit> corporation_window;
+    QPointer<MTDetailEdit> agreement_window;
 
-    MarketWindow            * market_window;
-    CreateInsuranceCompany  * createinsurancecompany_window;
-    Settings                * settingswindow;
+    QPointer<DlgMarkets  > market_window;
+
+
+    QPointer<CreateInsuranceCompany> createinsurancecompany_window;
+    QPointer<Settings> settingswindow;
         
 public:
     void SetupMainMenu();
@@ -278,6 +284,12 @@ private:
     void mc_requestfunds_show_dialog();
     // ------------------------------------------------
     
+    void mc_market_dialog();
+
+    void mc_corporation_dialog();
+
+    void mc_agreement_dialog();
+
     //Create Insurance Company
     void mc_createinsurancecompany_dialog();
     // ------------------------------------------------
@@ -297,7 +309,7 @@ private:
     QString default_nym_name;
     // ---------------------------------------------------------
     
-    QMenu * mc_systrayMenu_server;
+    QPointer<QMenu> mc_systrayMenu_server;
     //server list (backend )
     QList<QVariant> * server_list_id;
     QList<QVariant> * server_list_name;
@@ -314,7 +326,7 @@ private:
      * Systray Icons
      **/
     
-    QSystemTrayIcon * mc_systrayIcon;
+    QPointer<QSystemTrayIcon> mc_systrayIcon;
     
     QIcon mc_systrayIcon_shutdown;
     
@@ -347,16 +359,16 @@ private:
      **/
     
     //Systray Menu Skeleton
-    QMenu * mc_systrayMenu;
+    QPointer<QMenu> mc_systrayMenu;
     
-    QAction * mc_systrayMenu_headertext;
-    QAction * mc_systrayMenu_aboveBlank;
-    QAction * mc_systrayMenu_shutdown;
-    QAction * mc_systrayMenu_overview;
+    QPointer<QAction> mc_systrayMenu_headertext;
+    QPointer<QAction> mc_systrayMenu_aboveBlank;
+    QPointer<QAction> mc_systrayMenu_shutdown;
+    QPointer<QAction> mc_systrayMenu_overview;
     // ---------------------------------------------------------
     
     //Asset type list (backend )
-    QMenu * mc_systrayMenu_asset;
+    QPointer<QMenu> mc_systrayMenu_asset;
 
     QList<QVariant> * asset_list_id;
     QList<QVariant> * asset_list_name;
@@ -367,7 +379,7 @@ private:
     // ---------------------------------------------------------
         
     //Account list (backend )
-    QMenu * mc_systrayMenu_account;
+    QPointer<QMenu> mc_systrayMenu_account;
 
     QList<QVariant> * account_list_id;
     QList<QVariant> * account_list_name;
@@ -376,35 +388,35 @@ private:
     QString default_account_id;
     QString default_account_name;
     // ---------------------------------------------------------
-    QMenu * mc_systrayMenu_nym;
+    QPointer<QMenu> mc_systrayMenu_nym;
     // ---------------------------------------------------------
-    QAction * mc_systrayMenu_goldaccount;
-    QAction * mc_systrayMenu_purse;
+    QPointer<QAction> mc_systrayMenu_goldaccount;
+    QPointer<QAction> mc_systrayMenu_purse;
     // ---------------------------------------------------------    
-    QAction * mc_systrayMenu_sendfunds;
-    QAction * mc_systrayMenu_requestfunds;
+    QPointer<QAction> mc_systrayMenu_sendfunds;
+    QPointer<QAction> mc_systrayMenu_requestfunds;
     // ---------------------------------------------------------
-    QAction * mc_systrayMenu_markets;
+    QPointer<QAction> mc_systrayMenu_markets;
 
     //Company submenu
-    QMenu   * mc_systrayMenu_company_create;
-    QAction * mc_systrayMenu_company_create_insurance;
+    QPointer<QMenu>   mc_systrayMenu_company_create;
+    QPointer<QAction> mc_systrayMenu_company_create_insurance;
 
     //Advanced submenu
-    QMenu * mc_systrayMenu_advanced;
+    QPointer<QMenu> mc_systrayMenu_advanced;
 
-    QAction * mc_systrayMenu_advanced_agreements;
-    QAction * mc_systrayMenu_advanced_import;
-    QAction * mc_systrayMenu_advanced_settings;
-    QMenu   * mc_systrayMenu_advanced_corporations;
-    QMenu   * mc_systrayMenu_advanced_bazaar;
+    QPointer<QAction> mc_systrayMenu_advanced_agreements;
+    QPointer<QAction> mc_systrayMenu_advanced_import;
+    QPointer<QAction> mc_systrayMenu_advanced_settings;
+    QPointer<QAction> mc_systrayMenu_advanced_corporations;
+    QPointer<QMenu>   mc_systrayMenu_advanced_bazaar;
 
     // Bazaar
-    QAction * mc_systrayMenu_bazaar_search;
-    QAction * mc_systrayMenu_bazaar_post;
-    QAction * mc_systrayMenu_bazaar_orders;
+    QPointer<QAction> mc_systrayMenu_bazaar_search;
+    QPointer<QAction> mc_systrayMenu_bazaar_post;
+    QPointer<QAction> mc_systrayMenu_bazaar_orders;
     // ---------------------------------------------------------
-    QAction * mc_systrayMenu_bottomblank;
+    QPointer<QAction> mc_systrayMenu_bottomblank;
     // ---------------------------------------------------------
     
     
@@ -435,6 +447,7 @@ private slots:
     void mc_requestfunds_slot();            // Request Funds
     void mc_market_slot();                  // Market Slot
     void mc_agreement_slot();               // Agreements Slot
+    void mc_corporation_slot();               // Agreements Slot
     void mc_import_slot();                  // Import Slot
     // ---------------------------------------------------------------------------
     void mc_createinsurancecompany_slot();  // Create Insurance Company Slot

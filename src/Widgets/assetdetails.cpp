@@ -19,9 +19,6 @@
 
 MTAssetDetails::MTAssetDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
-    m_pPlainTextEdit(NULL),
-    m_pDownloader(NULL),
-    m_pHeaderWidget(NULL),
     ui(new Ui::MTAssetDetails)
 {
     ui->setupUi(this);
@@ -67,6 +64,15 @@ QWidget * MTAssetDetails::CreateCustomTab(int nTab)
     {
     case 0:
     {
+        if (m_pPlainTextEdit)
+        {
+            m_pPlainTextEdit->setParent(NULL);
+            m_pPlainTextEdit->disconnect();
+            m_pPlainTextEdit->deleteLater();
+
+            m_pPlainTextEdit.clear();
+        }
+
         m_pPlainTextEdit = new QPlainTextEdit;
 
         m_pPlainTextEdit->setReadOnly(true);
@@ -132,7 +138,8 @@ void MTAssetDetails::ClearContents()
     ui->lineEditID  ->setText("");
     ui->lineEditName->setText("");
 
-    m_pPlainTextEdit->setPlainText("");
+    if (m_pPlainTextEdit)
+        m_pPlainTextEdit->setPlainText("");
 }
 
 // ------------------------------------------------------
@@ -195,7 +202,7 @@ void MTAssetDetails::DeleteButtonClicked()
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 m_pOwner->RefreshRecords();
                 // ------------------------------------------------
-                if (NULL != m_pMoneychanger)
+                if (m_pMoneychanger)
                     m_pMoneychanger->SetupMainMenu();
                 // ------------------------------------------------
             }
@@ -212,7 +219,10 @@ void MTAssetDetails::DeleteButtonClicked()
 
 void MTAssetDetails::DownloadedURL()
 {
-    QString qstrContents(m_pDownloader->downloadedData());
+    QString qstrContents;
+
+    if (m_pDownloader)
+        qstrContents = m_pDownloader->downloadedData();
     // ----------------------------
     if (qstrContents.isEmpty())
     {
@@ -275,7 +285,7 @@ void MTAssetDetails::ImportContract(QString qstrContents)
         m_pOwner->SetPreSelected(qstrContractID);
         m_pOwner->RefreshRecords();
         // ------------------------------------------------
-        if (NULL != m_pMoneychanger)
+        if (m_pMoneychanger)
             m_pMoneychanger->SetupMainMenu();
         // ------------------------------------------------
     } // if (!qstrContractID.isEmpty())
@@ -320,10 +330,10 @@ void MTAssetDetails::AddButtonClicked()
 
                 QUrl theURL(qstrURL);
                 // --------------------------------
-                if (NULL != m_pDownloader)
+                if (m_pDownloader)
                 {
-                    delete m_pDownloader;
-                    m_pDownloader = NULL;
+                    m_pDownloader->deleteLater();
+                    m_pDownloader.clear();
                 }
                 // --------------------------------
                 m_pDownloader = new FileDownloader(theURL, this);
@@ -406,11 +416,15 @@ void MTAssetDetails::refresh(QString strID, QString strName)
 
         pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
-        if (NULL != m_pHeaderWidget)
+        if (m_pHeaderWidget)
         {
             ui->verticalLayout->removeWidget(m_pHeaderWidget);
-            delete m_pHeaderWidget;
-            m_pHeaderWidget = NULL;
+
+            m_pHeaderWidget->setParent(NULL);
+            m_pHeaderWidget->disconnect();
+            m_pHeaderWidget->deleteLater();
+
+            m_pHeaderWidget.clear();
         }
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
@@ -420,7 +434,7 @@ void MTAssetDetails::refresh(QString strID, QString strName)
 
         FavorLeftSideForIDs();
         // --------------------------
-        if (NULL != m_pPlainTextEdit)
+        if (m_pPlainTextEdit)
         {
             QString strContents = QString::fromStdString(OTAPI_Wrap::LoadAssetContract(strID.toStdString()));
 

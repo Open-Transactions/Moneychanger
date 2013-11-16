@@ -17,17 +17,21 @@ bool SetupPasswordCallback(OTCaller & passwordCaller, OTCallback & passwordCallb
 
 
 MTApplicationMC::MTApplicationMC(int &argc, char **argv)
-    : QApplication(argc, argv),
-      m_pMoneychanger(NULL)
+    : QApplication(argc, argv)
 {
 
 }
 
 MTApplicationMC::~MTApplicationMC()
 {
-    if (NULL != m_pMoneychanger)
-        delete m_pMoneychanger;
-    m_pMoneychanger = NULL;
+    if (m_pMoneychanger)
+    {
+        m_pMoneychanger->setParent(NULL);
+        m_pMoneychanger->disconnect();
+        m_pMoneychanger->deleteLater();
+
+        m_pMoneychanger.clear();
+    }
 }
 
 void MTApplicationMC::appStarting()

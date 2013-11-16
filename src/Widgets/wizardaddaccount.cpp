@@ -1,6 +1,8 @@
 #include "wizardaddaccount.h"
 #include "ui_wizardaddaccount.h"
 
+#include "moneychanger.h"
+
 MTWizardAddAccount::MTWizardAddAccount(QWidget *parent, Moneychanger & theMC) :
     QWizard(parent),
     m_pMoneychanger(&theMC),
@@ -13,7 +15,7 @@ MTWizardAddAccount::MTWizardAddAccount(QWidget *parent, Moneychanger & theMC) :
 }
 
 
-Moneychanger * MTWizardAddAccount::GetMoneychanger() { return m_pMoneychanger; }
+Moneychanger * MTWizardAddAccount::GetMoneychanger() { return m_pMoneychanger ? m_pMoneychanger.data() : NULL; }
 
 MTWizardAddAccount::~MTWizardAddAccount()
 {

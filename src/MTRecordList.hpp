@@ -30,6 +30,8 @@
 class MTNameLookup
 {
 public:
+    virtual ~MTNameLookup() {}
+
     virtual std::string GetNymName(const std::string & str_id,
                                    const std::string * p_server_id=NULL) const;
 

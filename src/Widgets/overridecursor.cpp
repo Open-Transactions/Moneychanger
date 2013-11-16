@@ -37,6 +37,7 @@ bool MTOverrideCursor::eventFilter(QObject *obj, QEvent *event)
     case QEvent::MouseButtonDblClick:
     //...
     return true;
+    default: break;
     }
     return QObject::eventFilter( obj, event );
 }

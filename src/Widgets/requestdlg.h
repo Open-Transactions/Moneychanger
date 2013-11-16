@@ -1,6 +1,7 @@
 #ifndef REQUESTDLG_H
 #define REQUESTDLG_H
 
+#include <QPointer>
 #include <QWidget>
 
 namespace Ui {
@@ -20,7 +21,7 @@ class MTRequestDlg : public QWidget
 
     bool m_bSent;
 
-    Moneychanger * m_pMoneychanger;
+    QPointer<Moneychanger> m_pMoneychanger;
 
 public:
     explicit MTRequestDlg(QWidget *parent, Moneychanger & theMC);

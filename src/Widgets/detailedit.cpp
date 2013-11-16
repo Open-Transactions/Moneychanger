@@ -12,18 +12,23 @@
 #include "serverdetails.h"
 #include "assetdetails.h"
 #include "accountdetails.h"
+#include "agreementdetails.h"
+#include "corporationdetails.h"
+#include "marketdetails.h"
+#include "offerdetails.h"
 
 #include "moneychanger.h"
 
+#include <OTStorage.h>
 #include <OTLog.h>
 
 MTDetailEdit::MTDetailEdit(QWidget *parent, Moneychanger & theMC) :
     QWidget(parent, Qt::Window),
     m_bFirstRun(true),
     m_nCurrentRow(-1),
-    m_pDetailPane(NULL),
-    m_pDetailLayout(NULL),
-    m_pTabWidget(NULL),
+    m_pmapMarkets(NULL),
+    m_bEnableAdd(true),
+    m_bEnableDelete(true),
     m_pMoneychanger(&theMC),
     m_Type(MTDetailEdit::DetailEditTypeError),
     ui(new Ui::MTDetailEdit)
@@ -33,9 +38,6 @@ MTDetailEdit::MTDetailEdit(QWidget *parent, Moneychanger & theMC) :
 
 MTDetailEdit::~MTDetailEdit()
 {
-//    delete m_pDetailPane;
-//    delete m_pDetailLayout;
-
     delete ui;
 }
 
@@ -54,7 +56,59 @@ void MTDetailEdit::onBalancesChangedFromBelow(QString qstrAcctID)
 }
 
 
+
+// Use for widget that appears on a parent dialog.
+// (Use dialog() instead, to display this widget as a modeless or modal dialog.)
+//
+void MTDetailEdit::show_widget(MTDetailEdit::DetailEditType theType)
+{
+    FirstRun(theType); // This only does something the first time it's run. (Otherwise this does nothing.)
+    // -------------------------------------------
+    RefreshRecords();
+    // -------------------------------------------
+    // anything else? install event filter maybe?
+}
+
+
+// Use for modeless or modal dialogs.
+// (Use show_widget instead, if displaying this widget NOT as a dialog.)
+//
 void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType, bool bIsModal/*=false*/)
+{
+    FirstRun(theType); // This only does something the first time it's run. (Otherwise this does nothing.)
+    // -------------------------------------------
+    RefreshRecords();
+    // -------------------------------------------
+    if (bIsModal)
+    {
+        QDialog theDlg;
+        theDlg.setWindowTitle(this->windowTitle());
+//      theDlg.installEventFilter(this);
+
+        QVBoxLayout * pLayout = new QVBoxLayout;
+
+        pLayout->addWidget(this);
+
+        theDlg.setLayout(pLayout);
+        theDlg.setWindowFlags(Qt::Tool); // A hack so it will show the close button.
+        theDlg.exec();
+
+        pLayout->removeWidget(this);
+    }
+    else
+    {
+        this->installEventFilter(this);
+
+        show();
+        setFocus();
+    }
+    // -------------------------------------------
+}
+
+
+// This only does something the first time you run it.
+//
+void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
 {
     if (m_bFirstRun)
     {
@@ -94,10 +148,19 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType, bool bIsModal/*=
 
         switch (m_Type)
         {
-        case MTDetailEdit::DetailEditTypeNym:     m_pDetailPane = new MTNymDetails(this, *this);     break;
-        case MTDetailEdit::DetailEditTypeContact: m_pDetailPane = new MTContactDetails(this, *this); break;
-        case MTDetailEdit::DetailEditTypeServer:  m_pDetailPane = new MTServerDetails(this, *this);  break;
-        case MTDetailEdit::DetailEditTypeAsset:   m_pDetailPane = new MTAssetDetails(this, *this);   break;
+        case MTDetailEdit::DetailEditTypeNym:         m_pDetailPane = new MTNymDetails(this, *this);         break;
+        case MTDetailEdit::DetailEditTypeContact:     m_pDetailPane = new MTContactDetails(this, *this);     break;
+        case MTDetailEdit::DetailEditTypeServer:      m_pDetailPane = new MTServerDetails(this, *this);      break;
+        case MTDetailEdit::DetailEditTypeAsset:       m_pDetailPane = new MTAssetDetails(this, *this);       break;
+        case MTDetailEdit::DetailEditTypeOffer:       m_pDetailPane = new MTOfferDetails(this, *this);       break;
+        case MTDetailEdit::DetailEditTypeAgreement:   m_pDetailPane = new MTAgreementDetails(this, *this);   break;
+        case MTDetailEdit::DetailEditTypeCorporation: m_pDetailPane = new MTCorporationDetails(this, *this); break;
+
+        case MTDetailEdit::DetailEditTypeMarket:
+            EnableAdd   (false);
+            EnableDelete(false);
+            m_pDetailPane = new MTMarketDetails(this, *this);
+            break;
 
         case MTDetailEdit::DetailEditTypeAccount:
             m_pDetailPane = new MTAccountDetails(this, *this);
@@ -105,12 +168,6 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType, bool bIsModal/*=
             connect(m_pDetailPane,   SIGNAL(DefaultAccountChanged(QString, QString)),
                     m_pMoneychanger, SLOT  (setDefaultAccount(QString, QString)));
             // -------------------------------------------
-//            connect(m_pDetailPane,   SIGNAL(cashBalanceChanged()),
-//                    m_pMoneychanger, SLOT  (onCashBalanceChanged()));
-//            // -------------------------------------------
-//            connect(m_pDetailPane,   SIGNAL(acctBalanceChanged()),
-//                    m_pMoneychanger, SLOT  (onAcctBalanceChanged()));
-//            // -------------------------------------------
             break;
         default:
             qDebug() << "MTDetailEdit::dialog: MTDetailEdit::DetailEditTypeError";
@@ -160,37 +217,13 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType, bool bIsModal/*=
         // ----------------------------------
         ui->widget->setLayout(pGridLayout);
         // ----------------------------------
+        if (!m_bEnableAdd)
+            ui->addButton->setVisible(false);
+        // ----------------------------------
+        if (!m_bEnableDelete)
+            ui->deleteButton->setVisible(false);
+        // ----------------------------------
     } // first run.
-    // -------------------------------------------
-    RefreshRecords();
-    // -------------------------------------------
-//    if (m_map.size() < 1)
-//        on_addButton_clicked();
-    // -------------------------------------------
-    if (bIsModal)
-    {
-        QDialog theDlg;
-        theDlg.setWindowTitle(this->windowTitle());
-//        theDlg.installEventFilter(this);
-
-        QVBoxLayout * pLayout = new QVBoxLayout;
-
-        pLayout->addWidget(this);
-
-        theDlg.setLayout(pLayout);
-        theDlg.setWindowFlags(Qt::Tool); // A hack so it will show the close button.
-        theDlg.exec();
-
-        pLayout->removeWidget(this);
-    }
-    else
-    {
-        this->installEventFilter(this);
-
-        show();
-        setFocus();
-    }
-    // -------------------------------------------
 }
 
 
@@ -232,19 +265,58 @@ void MTDetailEdit::RefreshRecords()
         ui->tableWidget->removeRow(0); // Row 0.
 
         if (NULL != item)
+        {
             delete item;
+            item = NULL;
+        }
     }
     // -------------------------------------------------------
     ui->tableWidget->setRowCount(nTotalRecords);
     // -------------------------------------------------------
     int nPreselectedIndex = -1;
     // --------------------------------
+    QMap<QString, OTDB::MarketData *>::iterator it_markets;
+
+
+//    QMessageBox::information(this, "", QCoreApplication::applicationDirPath());
+
+    if (NULL != m_pmapMarkets)
+    {
+        it_markets = m_pmapMarkets->begin();
+
+
+
+
+        // TODO: Remove this (where I loop through m_pmapMarkets simultaneous to looping through m_map.)
+        //
+        // ALSO: Change m_pmapMarkets to use the same composite server/market ID as m_map uses (for markets anyway.)
+        //
+        // That way, whenever market details or offer details need to query the market data by a unique ID, they will
+        // be able to.
+        //
+        // The offer m_map also needs to use a composite ID: server/market/offer (comma separated.)
+        //
+        // Finish the markets / offers screens!
+
+
+    }
+    // ------------------------------------
     int nIndex = -1;
     for (mapIDName::iterator ii = m_map.begin(); ii != m_map.end(); ii++)
     {
         ++nIndex; // 0 on first iteration.
 
         qDebug() << "MTDetailEdit Iteration: " << nIndex;
+        // -------------------------------------
+        QString qstrMarketServerID(""), qstrMarketServerName("");
+        OTDB::MarketData * pMarketData = NULL;
+
+        if (NULL != m_pmapMarkets)
+        {
+            pMarketData          = it_markets.value();
+            qstrMarketServerID   = it_markets.key();
+            qstrMarketServerName = QString::fromStdString( OTAPI_Wrap::GetServer_Name(qstrMarketServerID.toStdString()) );
+        }
         // -------------------------------------
         QString qstrID    = ii.key();
         QString qstrValue = ii.value();
@@ -293,6 +365,22 @@ void MTDetailEdit::RefreshRecords()
             break;
         }
 
+        case MTDetailEdit::DetailEditTypeMarket: // mc_systrayIcon_markets
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, qstrMarketServerName, "");
+            break;
+
+        case MTDetailEdit::DetailEditTypeOffer:
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "");
+            break;
+
+        case MTDetailEdit::DetailEditTypeAgreement: //mc_systrayIcon_advanced_agreements
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "");
+            break;
+
+        case MTDetailEdit::DetailEditTypeCorporation://mc_systrayIcon_advanced_corporations
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "");
+            break;
+
         default:
             qDebug() << "MTDetailEdit::RefreshRecords: MTDetailEdit::DetailEditTypeError";
             return;
@@ -302,6 +390,11 @@ void MTDetailEdit::RefreshRecords()
             ui->tableWidget->setCellWidget( nIndex, 1, pWidget );
         else
             qDebug() << "Failed creating detail header widget in MTDetailEdit::RefreshRecords()";
+        // -------------------------------------------
+        if (NULL != m_pmapMarkets)
+        {
+            it_markets++;
+        }
     } // For loop
     // ------------------------
     if (ui->tableWidget->rowCount() > 0)
@@ -326,7 +419,10 @@ void MTDetailEdit::RefreshRecords()
     else
     {
         ui->deleteButton->setEnabled(false);
-        m_pDetailPane->ClearContents();
+
+        if (m_pDetailPane)
+            m_pDetailPane->ClearContents();
+
         m_pTabWidget->setVisible(false);
     }
 }
@@ -334,13 +430,13 @@ void MTDetailEdit::RefreshRecords()
 
 void MTDetailEdit::on_addButton_clicked()
 {
-    if (NULL != m_pDetailPane)
+    if (m_pDetailPane)
         m_pDetailPane->AddButtonClicked();
 }
 
 void MTDetailEdit::on_deleteButton_clicked()
 {
-    if (!m_qstrCurrentID.isEmpty() && (NULL != m_pDetailPane))
+    if (!m_qstrCurrentID.isEmpty() && (m_pDetailPane))
         m_pDetailPane->DeleteButtonClicked();
 }
 
@@ -369,7 +465,8 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
                 // ----------------------------------------
                 m_PreSelected = m_qstrCurrentID;
 
-                m_pDetailPane->refresh(m_qstrCurrentID, m_qstrCurrentName);
+                if (m_pDetailPane)
+                    m_pDetailPane->refresh(m_qstrCurrentID, m_qstrCurrentName);
                 // ----------------------------------------
                 return;
             }
@@ -386,7 +483,7 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
     // -------------------------------------
 }
 
-Moneychanger * MTDetailEdit::GetMoneychanger() { return m_pMoneychanger; }
+Moneychanger * MTDetailEdit::GetMoneychanger() { return m_pMoneychanger ? m_pMoneychanger.data() : NULL; }
 
 void MTDetailEdit::SetPreSelected(QString strSelected)
 {
@@ -400,7 +497,7 @@ bool MTDetailEdit::eventFilter(QObject *obj, QEvent *event)\
         // -------------------------------------------
         Moneychanger * pMC = (Moneychanger *)this->parentWidget();
 
-        if ((m_pMoneychanger == pMC) && (m_pMoneychanger != NULL))
+        if (m_pMoneychanger && (m_pMoneychanger.data() == pMC))
         {
             switch (m_Type)
             {
@@ -422,6 +519,14 @@ bool MTDetailEdit::eventFilter(QObject *obj, QEvent *event)\
 
             case MTDetailEdit::DetailEditTypeAccount:
                 m_pMoneychanger->close_accountmanager_dialog();
+                break;
+
+            case MTDetailEdit::DetailEditTypeAgreement:
+                m_pMoneychanger->close_agreement_dialog();
+                break;
+
+            case MTDetailEdit::DetailEditTypeCorporation:
+                m_pMoneychanger->close_corporation_dialog();
                 break;
 
             default:

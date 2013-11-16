@@ -181,7 +181,7 @@ void MTCompose::on_serverButton_clicked()
     {
         const int32_t server_count = OTAPI_Wrap::GetServerCount();
         // -----------------------------------------------
-        for(int32_t ii = 0; ii < server_count; ++ii)
+        for (int32_t ii = 0; ii < server_count; ++ii)
         {
             //Get OT Server ID
             //
@@ -239,7 +239,7 @@ void MTCompose::on_fromButton_clicked()
     // -----------------------------------------------
     const int32_t nym_count = OTAPI_Wrap::GetNymCount();
     // -----------------------------------------------
-    for(int32_t ii = 0; ii < nym_count; ++ii)
+    for (int32_t ii = 0; ii < nym_count; ++ii)
     {
         //Get OT Nym ID
         QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::GetNym_ID(ii));
@@ -598,8 +598,8 @@ void MTCompose::closeEvent(QCloseEvent *event)
 
 MTCompose::MTCompose(QWidget *parent) :
     QWidget(parent, Qt::Window),
-    already_init(false),
     m_bSent(false),
+    already_init(false),
     ui(new Ui::MTCompose)
 {
     ui->setupUi(this);

@@ -2,6 +2,9 @@
 #include <QDebug>
 #include <QMessageBox>
 
+#include <opentxs/OTAPI.h>
+#include <opentxs/OT_ME.h>
+
 #include "accountdetails.h"
 #include "ui_accountdetails.h"
 
@@ -21,14 +24,10 @@
 #include "DBHandler.h"
 #include "cashpurse.h"
 
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
 
 
 MTAccountDetails::MTAccountDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
-    m_pHeaderWidget(NULL),
-    m_pCashPurse(NULL),
     m_qstrID(""),
     ui(new Ui::MTAccountDetails)
 {
@@ -63,7 +62,7 @@ void MTAccountDetails::ClearContents()
     ui->lineEditAsset->setText("");
     ui->lineEditNym->setText("");
     // ------------------------------------------
-    if (NULL != m_pCashPurse)
+    if (m_pCashPurse)
         m_pCashPurse->ClearContents();
     // ------------------------------------------
     ui->pushButtonMakeDefault->setEnabled(false);
@@ -108,6 +107,14 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
     case 0: // "Cash Purse" tab
         if (NULL != m_pOwner)
         {
+            if (m_pCashPurse)
+            {
+                m_pCashPurse->setParent(NULL);
+                m_pCashPurse->disconnect();
+                m_pCashPurse->deleteLater();
+
+                m_pCashPurse.clear();
+            }
             m_pCashPurse = new MTCashPurse(NULL, *m_pOwner);
             pReturnValue = m_pCashPurse;
             pReturnValue->setContentsMargins(0, 0, 0, 0);
@@ -165,11 +172,15 @@ void MTAccountDetails::refresh(QString strID, QString strName)
 
         pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
-        if (NULL != m_pHeaderWidget)
+        if (m_pHeaderWidget)
         {
             ui->verticalLayout->removeWidget(m_pHeaderWidget);
-            delete m_pHeaderWidget;
-            m_pHeaderWidget = NULL;
+
+            m_pHeaderWidget->setParent(NULL);
+            m_pHeaderWidget->disconnect();
+            m_pHeaderWidget->deleteLater();
+
+            m_pHeaderWidget.clear();
         }
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
@@ -200,12 +211,12 @@ void MTAccountDetails::refresh(QString strID, QString strName)
         // -----------------------------------
         // TAB: "CASH PURSE"
         //
-        if (NULL != m_pCashPurse)
+        if (m_pCashPurse)
             m_pCashPurse->refresh(strID, strName);
         // -----------------------------------------------------------------------
         FavorLeftSideForIDs();
         // -----------------------------------------------------------------------
-        if (NULL != m_pMoneychanger)
+        if (m_pMoneychanger)
         {
             QString qstr_default_acct_id = m_pMoneychanger->get_default_account_id();
 
@@ -249,7 +260,7 @@ bool MTAccountDetails::eventFilter(QObject *obj, QEvent *event)
 
 void MTAccountDetails::on_pushButtonSend_clicked()
 {
-    if (!m_qstrID.isEmpty() && (NULL != m_pMoneychanger))
+    if (!m_qstrID.isEmpty() && (m_pMoneychanger))
     {
         // --------------------------------------------------
         MTSendDlg * send_window = new MTSendDlg(NULL, *m_pMoneychanger);
@@ -267,7 +278,7 @@ void MTAccountDetails::on_pushButtonSend_clicked()
 
 void MTAccountDetails::on_pushButtonRequest_clicked()
 {
-    if (!m_qstrID.isEmpty() && (NULL != m_pMoneychanger))
+    if (!m_qstrID.isEmpty() && (m_pMoneychanger))
     {
         // --------------------------------------------------
         MTRequestDlg * request_window = new MTRequestDlg(NULL, *m_pMoneychanger);
@@ -285,7 +296,7 @@ void MTAccountDetails::on_pushButtonRequest_clicked()
 
 void MTAccountDetails::on_pushButtonMakeDefault_clicked()
 {
-    if ((NULL != m_pMoneychanger) && (NULL != m_pOwner) && !m_qstrID.isEmpty())
+    if ((m_pMoneychanger) && (NULL != m_pOwner) && !m_qstrID.isEmpty())
     {
         std::string str_acct_name = OTAPI_Wrap::GetAccountWallet_Name(m_qstrID.toStdString());
         ui->pushButtonMakeDefault->setEnabled(false);
@@ -298,7 +309,7 @@ void MTAccountDetails::on_pushButtonMakeDefault_clicked()
 
 void MTAccountDetails::on_toolButtonAsset_clicked()
 {
-    if (!m_pOwner->m_qstrCurrentID.isEmpty() && (NULL != m_pMoneychanger))
+    if (!m_pOwner->m_qstrCurrentID.isEmpty() && (m_pMoneychanger))
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
@@ -309,7 +320,7 @@ void MTAccountDetails::on_toolButtonAsset_clicked()
 
 void MTAccountDetails::on_toolButtonNym_clicked()
 {
-    if (!m_pOwner->m_qstrCurrentID.isEmpty() && (NULL != m_pMoneychanger))
+    if (!m_pOwner->m_qstrCurrentID.isEmpty() && (m_pMoneychanger))
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
@@ -320,7 +331,7 @@ void MTAccountDetails::on_toolButtonNym_clicked()
 
 void MTAccountDetails::on_toolButtonServer_clicked()
 {
-    if (!m_pOwner->m_qstrCurrentID.isEmpty() && (NULL != m_pMoneychanger))
+    if (!m_pOwner->m_qstrCurrentID.isEmpty() && (m_pMoneychanger))
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
@@ -369,7 +380,7 @@ void MTAccountDetails::DeleteButtonClicked()
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 m_pOwner->RefreshRecords();
                 // ------------------------------------------------
-                if (NULL != m_pMoneychanger)
+                if (m_pMoneychanger)
                     m_pMoneychanger->SetupMainMenu();
                 // ------------------------------------------------
             }
@@ -502,7 +513,7 @@ void MTAccountDetails::AddButtonClicked()
         m_pOwner->SetPreSelected(qstrID);
         m_pOwner->RefreshRecords();
         // ------------------------------------------------
-        if (NULL != m_pMoneychanger)
+        if (m_pMoneychanger)
             m_pMoneychanger->SetupMainMenu();
         // ------------------------------------------------
     }

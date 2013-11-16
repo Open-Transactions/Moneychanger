@@ -2,6 +2,7 @@
 #define APPLICATIONMC_H
 
 #include <QtCore>
+#include <QPointer>
 #include <QtGui>
 #include <QApplication>
 
@@ -13,7 +14,7 @@ class MTApplicationMC : public QApplication
 {
     Q_OBJECT
 
-    Moneychanger * m_pMoneychanger;
+    QPointer<Moneychanger> m_pMoneychanger;
 
 public:
     MTApplicationMC(int &argc, char **argv);

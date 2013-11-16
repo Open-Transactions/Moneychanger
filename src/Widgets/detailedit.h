@@ -1,7 +1,8 @@
 #ifndef DETAILEDIT_H
 #define DETAILEDIT_H
 
-#include <QList>
+#include <QPointer>
+#include <QMap>
 #include <QWidget>
 #include <QTabWidget>
 #include <QVBoxLayout>
@@ -12,8 +13,11 @@ namespace Ui {
 class MTDetailEdit;
 }
 
-class MTEditDetails;
+namespace OTDB {
+class MarketData;
+}
 
+class MTEditDetails;
 class Moneychanger;
 
 class MTDetailEdit : public QWidget
@@ -29,7 +33,11 @@ public:
         DetailEditTypeNym,
         DetailEditTypeServer,
         DetailEditTypeAsset,
-        DetailEditTypeAccount
+        DetailEditTypeAccount,
+        DetailEditTypeMarket,
+        DetailEditTypeOffer,
+        DetailEditTypeAgreement,
+        DetailEditTypeCorporation
     };
 
     explicit MTDetailEdit(QWidget *parent, Moneychanger & theMC);
@@ -37,10 +45,20 @@ public:
 
     void SetPreSelected(QString strSelected);
 
+    void EnableAdd   (bool bEnabled) { m_bEnableAdd    = bEnabled; }
+    void EnableDelete(bool bEnabled) { m_bEnableDelete = bEnabled; }
+
+    void SetMarketMap(QMap<QString, OTDB::MarketData *> & theMap) { m_pmapMarkets = &theMap; }
+    // --------------------------------
+    // Use for modeless or modal dialogs.
     void dialog(DetailEditType theType, bool bIsModal=false);
 
+    // Use for widget that appears on a parent dialog.
+    void show_widget(DetailEditType theType);
+    // --------------------------------
+    void FirstRun(MTDetailEdit::DetailEditType theType); // This only does something the first time you run it.
+    // --------------------------------
     void RefreshRecords();
-
     // --------------------------------
     int         m_nCurrentRow;
     QString     m_qstrCurrentID;
@@ -55,12 +73,17 @@ public slots:
     void onBalancesChangedFromBelow(QString qstrAcctID);
 
 protected:
-    QString     m_PreSelected;
-
-    MTEditDetails * m_pDetailPane;
-    QVBoxLayout   * m_pDetailLayout;
+    QMap<QString, OTDB::MarketData *> * m_pmapMarkets; // do not delete. For reference only.
     // ----------------------------------
-    QTabWidget    * m_pTabWidget;
+    bool        m_bEnableAdd;
+    bool        m_bEnableDelete;
+    // ----------------------------------
+    QString     m_PreSelected;
+    // ----------------------------------
+    QPointer<MTEditDetails> m_pDetailPane;
+    QPointer<QVBoxLayout>   m_pDetailLayout;
+    // ----------------------------------
+    QPointer<QTabWidget>    m_pTabWidget;
     // ----------------------------------
     bool eventFilter(QObject *obj, QEvent *event);
 
@@ -76,7 +99,7 @@ public:
     Moneychanger * GetMoneychanger();
 
 private:
-    Moneychanger * m_pMoneychanger;
+    QPointer<Moneychanger> m_pMoneychanger;
 
     DetailEditType m_Type;
 
