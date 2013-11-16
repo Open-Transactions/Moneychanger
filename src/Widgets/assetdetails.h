@@ -1,6 +1,8 @@
 #ifndef ASSETDETAILS_H
 #define ASSETDETAILS_H
 
+#include <QPointer>
+
 #include "editdetails.h"
 
 #include "filedownloader.h"
@@ -36,7 +38,7 @@ public:
     void ImportContract(QString qstrContents);
 
 private:
-    QPlainTextEdit * m_pPlainTextEdit;
+    QPointer<QPlainTextEdit> m_pPlainTextEdit;
 
 private slots:
     void on_lineEditName_editingFinished();
@@ -48,10 +50,10 @@ protected:
 
     void FavorLeftSideForIDs();
 
-    FileDownloader * m_pDownloader;
+    QPointer<FileDownloader> m_pDownloader;
 
 private:
-    QWidget * m_pHeaderWidget;
+    QPointer<QWidget> m_pHeaderWidget;
 
     Ui::MTAssetDetails *ui;
 };

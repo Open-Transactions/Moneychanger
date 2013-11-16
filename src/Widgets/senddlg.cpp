@@ -480,12 +480,12 @@ bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
     {
         qDebug() << "Success in send funds!";
         QMessageBox::information(this, tr("Success"), QString("%1 %2.").arg(tr("Success sending")).arg(qstrPaymentType));
-
-        emit balancesChanged();
     }
     // ---------------------------------------------------------
     return m_bSent;
 }
+
+
 
 
 void MTSendDlg::on_sendButton_clicked()
@@ -566,11 +566,16 @@ void MTSendDlg::on_sendButton_clicked()
         bool bSent = this->sendFunds(memo, amount);
         // -----------------------------------------------------------------
         if (bSent)
-            this->close();
+            emit balancesChanged();
         // -----------------------------------------------------------------
     }
 }
 
+
+void MTSendDlg::onBalancesChanged()
+{
+    this->close();
+}
 
 
 
@@ -904,7 +909,10 @@ MTSendDlg::MTSendDlg(QWidget *parent, Moneychanger & theMC) :
     ui->setupUi(this);
 
     this->installEventFilter(this);
+
+    connect(this, SIGNAL(balancesChanged()), this, SLOT(onBalancesChanged()));
 }
+
 
 MTSendDlg::~MTSendDlg()
 {

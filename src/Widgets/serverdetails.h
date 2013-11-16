@@ -1,6 +1,8 @@
 #ifndef SERVERDETAILS_H
 #define SERVERDETAILS_H
 
+#include <QPointer>
+
 #include "editdetails.h"
 
 #include "filedownloader.h"
@@ -36,7 +38,7 @@ public:
     void ImportContract(QString qstrContents);
 
 private:
-    QPlainTextEdit * m_pPlainTextEdit;
+    QPointer<QPlainTextEdit> m_pPlainTextEdit;
 
 private slots:
     void on_lineEditName_editingFinished();
@@ -49,9 +51,8 @@ protected:
     void FavorLeftSideForIDs();
 
 private:
-    FileDownloader * m_pDownloader;
-
-    QWidget * m_pHeaderWidget;
+    QPointer<FileDownloader> m_pDownloader;
+    QPointer<QWidget>        m_pHeaderWidget;
 
     Ui::MTServerDetails *ui;
 };

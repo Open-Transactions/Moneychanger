@@ -1,6 +1,7 @@
 #ifndef WIZARDADDACCOUNT_H
 #define WIZARDADDACCOUNT_H
 
+#include <QPointer>
 #include <QWizard>
 
 namespace Ui {
@@ -20,7 +21,7 @@ public:
     Moneychanger * GetMoneychanger();
 
 private:
-    Moneychanger * m_pMoneychanger;
+    QPointer<Moneychanger> m_pMoneychanger;
 
     Ui::MTWizardAddAccount *ui;
 };

@@ -44,20 +44,6 @@ void MTHomeDetail::SetHomePointer(MTHome & theHome)
 MTHomeDetail::MTHomeDetail(QWidget *parent) :
     QWidget(parent),
     m_nContactID(0),
-    m_pDetailLayout(NULL),
-    m_pHome(NULL),
-    m_pLineEdit_Nym_ID(NULL),
-    m_pLineEdit_OtherNym_ID(NULL),
-    m_pLineEdit_Acct_ID(NULL),
-    m_pLineEdit_OtherAcct_ID(NULL),
-    m_pLineEdit_Server_ID(NULL),
-    m_pLineEdit_AssetType_ID(NULL),
-    m_pLineEdit_Nym_Name(NULL),
-    m_pLineEdit_OtherNym_Name(NULL),
-    m_pLineEdit_Acct_Name(NULL),
-    m_pLineEdit_OtherAcct_Name(NULL),
-    m_pLineEdit_Server_Name(NULL),
-    m_pLineEdit_AssetType_Name(NULL),
     ui(new Ui::MTHomeDetail)
 {
     ui->setupUi(this);
@@ -69,41 +55,24 @@ MTHomeDetail::MTHomeDetail(QWidget *parent) :
 
 MTHomeDetail::~MTHomeDetail()
 {
-    // --------------------------------------------------
-    if (NULL != m_pDetailLayout)
-    {
-//      this->clearLayout(m_pDetailLayout);
-
-        // The layout will already be cleared when it gets deleted.
-        // Therefore we only use clearLayout when replacing it with
-        // a new layout -- we don't have to clear it on destruction.
-        // (It already clears itself in that case.)
-
-        // NOTE: this->setLayout(m_pDetailLayout) is performed, which means
-        // that m_pDetailLayout is ALREADY deleted, when *this gets deleted.
-
-//        delete m_pDetailLayout;
-//        m_pDetailLayout = NULL;
-    }
-    // --------------------------------------------------
     delete ui;
 }
 
 void MTHomeDetail::FavorLeftSideForIDs()
 {
-    if (NULL != m_pLineEdit_Nym_ID)         m_pLineEdit_Nym_ID->home(false);
-    if (NULL != m_pLineEdit_OtherNym_ID)    m_pLineEdit_OtherNym_ID->home(false);
-    if (NULL != m_pLineEdit_Acct_ID)        m_pLineEdit_Acct_ID->home(false);
-    if (NULL != m_pLineEdit_OtherAcct_ID)   m_pLineEdit_OtherAcct_ID->home(false);
-    if (NULL != m_pLineEdit_Server_ID)      m_pLineEdit_Server_ID->home(false);
-    if (NULL != m_pLineEdit_AssetType_ID)   m_pLineEdit_AssetType_ID->home(false);
+    if (m_pLineEdit_Nym_ID)         m_pLineEdit_Nym_ID->home(false);
+    if (m_pLineEdit_OtherNym_ID)    m_pLineEdit_OtherNym_ID->home(false);
+    if (m_pLineEdit_Acct_ID)        m_pLineEdit_Acct_ID->home(false);
+    if (m_pLineEdit_OtherAcct_ID)   m_pLineEdit_OtherAcct_ID->home(false);
+    if (m_pLineEdit_Server_ID)      m_pLineEdit_Server_ID->home(false);
+    if (m_pLineEdit_AssetType_ID)   m_pLineEdit_AssetType_ID->home(false);
     // --------------------------------------------------------------------
-    if (NULL != m_pLineEdit_Nym_Name)       m_pLineEdit_Nym_Name->home(false);
-    if (NULL != m_pLineEdit_OtherNym_Name)  m_pLineEdit_OtherNym_Name->home(false);
-    if (NULL != m_pLineEdit_Acct_Name)      m_pLineEdit_Acct_Name->home(false);
-    if (NULL != m_pLineEdit_OtherAcct_Name) m_pLineEdit_OtherAcct_Name->home(false);
-    if (NULL != m_pLineEdit_Server_Name)    m_pLineEdit_Server_Name->home(false);
-    if (NULL != m_pLineEdit_AssetType_Name) m_pLineEdit_AssetType_Name->home(false);
+    if (m_pLineEdit_Nym_Name)       m_pLineEdit_Nym_Name->home(false);
+    if (m_pLineEdit_OtherNym_Name)  m_pLineEdit_OtherNym_Name->home(false);
+    if (m_pLineEdit_Acct_Name)      m_pLineEdit_Acct_Name->home(false);
+    if (m_pLineEdit_OtherAcct_Name) m_pLineEdit_OtherAcct_Name->home(false);
+    if (m_pLineEdit_Server_Name)    m_pLineEdit_Server_Name->home(false);
+    if (m_pLineEdit_AssetType_Name) m_pLineEdit_AssetType_Name->home(false);
 }
 
 //if (QResizeEvent *resizeEvent = static_cast<QResizeEvent*>(event))
@@ -129,11 +98,9 @@ bool MTHomeDetail::eventFilter(QObject *obj, QEvent *event)
         //
         FavorLeftSideForIDs();
     }
-    else
-    {
-        // standard event processing
-        return QObject::eventFilter(obj, event);
-    }
+
+    // standard event processing
+    return QObject::eventFilter(obj, event);
 }
 
 
@@ -141,7 +108,7 @@ void MTHomeDetail::on_viewContactButton_clicked(bool checked /*=false*/)
 {
     qDebug() << "View Existing Contact button clicked.";
 
-    if (m_record && (NULL != m_pHome) && (m_nContactID > 0))
+    if (m_record && (m_pHome) && (m_nContactID > 0))
         ((Moneychanger *)(m_pHome->parentWidget()))->mc_addressbook_show(QString("%1").arg(m_nContactID));
 }
 
@@ -198,7 +165,7 @@ void MTHomeDetail::on_addContactButton_clicked(bool checked /*=false*/)
                     // Display the normal contacts dialog, with the new contact
                     // being the one selected.
                     //
-                    if (NULL != m_pHome)
+                    if (m_pHome)
                     {
                         m_pHome->SetNeedRefresh();
 
@@ -292,7 +259,7 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
                 // Display the normal contacts dialog, with the new contact
                 // being the one selected.
                 //
-                if (NULL != m_pHome)
+                if (m_pHome)
                 {
                     m_pHome->SetNeedRefresh();
 
@@ -328,7 +295,7 @@ void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
 
         if (bSuccess)
         {
-            if (NULL != m_pHome)
+            if (m_pHome)
                 m_pHome->OnDeletedRecord();
             else
                 qDebug() << QString("Error: m_pHome was NULL.");
@@ -359,7 +326,7 @@ QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
             qstr_acct_server,
             qstr_acct_asset;
 
-    if (NULL != m_pHome)
+    if (m_pHome)
         qstr_acct_id = ((Moneychanger *)(m_pHome->parentWidget()))->get_default_account_id();
     // -----------------------------------
     // If there's a default account, and it has the same asset ID
@@ -543,7 +510,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
             {
                 // Refresh the main list, or at least change the color of the refresh button.
                 //
-                if (NULL != m_pHome)
+                if (m_pHome)
                     m_pHome->SetNeedRefresh();
             }
         }
@@ -565,7 +532,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
             {
                 // Refresh the main list, or at least change the color of the refresh button.
                 //
-                if (NULL != m_pHome)
+                if (m_pHome)
                     m_pHome->SetNeedRefresh();
             }
         }
@@ -606,7 +573,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
                 {
                     // Refresh the main list, or at least change the color of the refresh button.
                     //
-                    if (NULL != m_pHome)
+                    if (m_pHome)
                         m_pHome->SetNeedRefresh();
                 }
             }
@@ -668,7 +635,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
                 {
                     // Refresh the main list, or at least change the color of the refresh button.
                     //
-                    if (NULL != m_pHome)
+                    if (m_pHome)
                     {
                         m_pHome->SetNeedRefresh();
                         m_pHome->OnDeletedRecord();
@@ -705,7 +672,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
             {
                 // Refresh the main list, or at least change the color of the refresh button.
                 //
-                if (NULL != m_pHome)
+                if (m_pHome)
                     m_pHome->SetNeedRefresh();
             }
         } // not cash
@@ -749,7 +716,7 @@ void MTHomeDetail::on_discardOutgoingButton_clicked(bool checked /*=false*/)
         {
             // Refresh the main list, or at least change the color of the refresh button.
             //
-            if (NULL != m_pHome)
+            if (m_pHome)
             {
                 m_pHome->SetNeedRefresh();
                 m_pHome->OnDeletedRecord();
@@ -795,7 +762,7 @@ void MTHomeDetail::on_discardIncomingButton_clicked(bool checked /*=false*/)
         {
             // Refresh the main list, or at least change the color of the refresh button.
             //
-            if (NULL != m_pHome)
+            if (m_pHome)
             {
                 m_pHome->SetNeedRefresh();
                 m_pHome->OnDeletedRecord();
@@ -856,9 +823,14 @@ void MTHomeDetail::clearLayout(QLayout* pLayout)
     while ( ( pItemAt = pLayout->takeAt( 0 ) ) != NULL )
     {
         if (QWidget * childWidget = pItemAt->widget())
-            delete childWidget;
+        {
+            childWidget->setParent(NULL);
+            childWidget->disconnect();
+            childWidget->deleteLater();
+        }
         else if (QLayout* childLayout = pItemAt->layout())
             clearLayout(childLayout);
+        // -----------------------------------------
         delete pItemAt;
     }
 }
@@ -1110,29 +1082,36 @@ void MTHomeDetail::RecreateLayout()
 {
     m_nContactID = 0;
     // --------------------------------------------------
-    if (NULL != m_pDetailLayout)
+    if (m_pDetailLayout)
     {
         MTHomeDetail::clearLayout(m_pDetailLayout);
-        delete m_pDetailLayout;
-        m_pDetailLayout = NULL;
+
+        QLayout * pLayout = m_pDetailLayout.data();
+
+        m_pDetailLayout.clear();
+
+        pLayout->disconnect();
+//        pLayout->deleteLater();
+        // ----------------------------
+        delete pLayout;
     }
     // --------------------------------------------------
     m_pDetailLayout = new QGridLayout;
     m_pDetailLayout->setAlignment(Qt::AlignTop);
     m_pDetailLayout->setContentsMargins(0, 0, 0, 0);
     // --------------------------------------------------
-    m_pLineEdit_Nym_ID          = NULL;
-    m_pLineEdit_OtherNym_ID     = NULL;
-    m_pLineEdit_Acct_ID         = NULL;
-    m_pLineEdit_OtherAcct_ID    = NULL;
-    m_pLineEdit_Server_ID       = NULL;
-    m_pLineEdit_AssetType_ID    = NULL;
-    m_pLineEdit_Nym_Name        = NULL;
-    m_pLineEdit_OtherNym_Name   = NULL;
-    m_pLineEdit_Acct_Name       = NULL;
-    m_pLineEdit_OtherAcct_Name  = NULL;
-    m_pLineEdit_Server_Name     = NULL;
-    m_pLineEdit_AssetType_Name  = NULL;
+    m_pLineEdit_Nym_ID.clear();
+    m_pLineEdit_OtherNym_ID.clear();
+    m_pLineEdit_Acct_ID.clear();
+    m_pLineEdit_OtherAcct_ID.clear();
+    m_pLineEdit_Server_ID.clear();
+    m_pLineEdit_AssetType_ID.clear();
+    m_pLineEdit_Nym_Name.clear();
+    m_pLineEdit_OtherNym_Name.clear();
+    m_pLineEdit_Acct_Name.clear();
+    m_pLineEdit_OtherAcct_Name.clear();
+    m_pLineEdit_Server_Name.clear();
+    m_pLineEdit_AssetType_Name.clear();
 }
 
 
@@ -1281,8 +1260,8 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
 
     if (recordmt.CanAcceptIncoming())
     {
-        const bool bIsTransfer = (recordmt.GetRecordType() == MTRecord::Transfer);
-        const bool bIsReceipt  = (recordmt.GetRecordType() == MTRecord::Receipt);
+//      const bool bIsTransfer = (recordmt.GetRecordType() == MTRecord::Transfer);
+//      const bool bIsReceipt  = (recordmt.GetRecordType() == MTRecord::Receipt);
 
         QString nameString;
         QString actionString;
@@ -1651,7 +1630,9 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     }
     else
     {
-        delete pGridLayout;
+        pGridLayout->setParent(NULL);
+        pGridLayout->disconnect();
+        pGridLayout->deleteLater();
         pGridLayout = NULL;
     }
 

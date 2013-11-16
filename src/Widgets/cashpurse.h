@@ -1,6 +1,7 @@
 #ifndef CASHPURSE_H
 #define CASHPURSE_H
 
+#include <QPointer>
 #include <QTableWidgetItem>
 #include <QWidget>
 #include <QString>
@@ -43,8 +44,8 @@ private:
     QString   m_qstrAssetId;
     QString   m_qstrAcctName;
 
-    MTDetailEdit * m_pOwner;
-    QWidget      * m_pHeaderWidget;
+    QPointer<MTDetailEdit> m_pOwner;
+    QPointer<QWidget>      m_pHeaderWidget;
 
     Ui::MTCashPurse *ui;
 };

@@ -22,6 +22,7 @@
 #include <opentxs/OTAsymmetricKey.h>
 
 #include <opentxs/OTLog.h>
+#include <opentxs/OTPaths.h>
 
 #include "applicationmc.h"
 
@@ -86,6 +87,56 @@ int main(int argc, char *argv[])
 
     QTimer::singleShot(0, &theApplication, SLOT(appStarting()));
     // ----------------------------------------------------------------
+
+// ----------------------------------------------------------------
+// NOTE: What's this about?
+//
+// For the Mac version only (and ONLY for actual release dmg's) we
+// want the scripts folder to be found inside the application directory,
+// near the binary itself.
+//
+// This is because we get problems with the MacOS .dmg where especially on
+// Mavericks, the sandbox prevents us from opening the scripts (ot_commands.ot, etc)
+// which on UNIX systems, are normally found in /usr/local/lib/opentxs
+//
+// There are several solutions at play. First, we are eliminating the scripts entirely,
+// by converting them to C++. But in the meantime, until that's done, we have to live with
+// the scripts, so we are putting them in a place where the application CAN open them:
+// the application folder itself. That is, the "AppBinaryFolder".
+//
+// Here we use QCoreApplication::applicationDirPath() to get the application folder path,
+// and we tell OT to use that as the "AppBinaryFolder". OT doesn't use that variable except
+// in one place: when setting the Scripts directory -- and ONLY if the variable is set (and
+// we ARE setting it here below.)
+//
+// If the variable is set (and in this case, it is) then OT will use the AppBinaryFolder instead
+// of the PrefixPath, to prepend to the Scripts path. This will cause OT to look for the scripts
+// in the ApplicationDirPath/lib/opentxs folder instead of /usr/local/lib/opentxs
+//
+// Notice also we are checking the path to see if it contains "clang" and "build", and we only
+// set the AppBinaryFolder in the case where those substrings are both NOT found. That way this
+// fix will not impact developer builds, but only actual release DMGs.
+//
+// This fix assumes that the DMG contains, in the MacOS folder, next to moneychanger-qt and mc_db,
+// a folder "lib", which contains a folder "opentxs", which contains the scripts. If those files
+// are not placed there in the DMG, then this code would obviously cause OT to fail trying to load
+// its scripts.
+//
+#ifdef Q_OS_MAC
+    QString qstrAppDirPath = QCoreApplication::applicationDirPath();
+
+    if (!qstrAppDirPath.isEmpty())
+    {
+        int nIndexClang = qstrAppDirPath.indexOf("clang", 0);
+        int nIndexBuild = qstrAppDirPath.indexOf("build", 0);
+
+        if ((-1 == nIndexClang) && (-1 == nIndexBuild))
+            OTPaths::SetAppBinaryFolder(qstrAppDirPath.toStdString().c_str());
+    }
+//  QMessageBox::information(NULL, "", QString::fromStdString(std::string(OTPaths::ScriptsFolder().Get())));
+#endif
+// ----------------------------------------------------------------
+
     int nExec = theApplication.exec(); // <=== Here's where we run the QApplication...
     // ----------------------------------------------------------------
     OTLog::vOutput(0, "Finished executing the QApplication!\n(AppCleanup should occur "
