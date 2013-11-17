@@ -106,7 +106,7 @@ void MTCashPurse::refresh(QString strID, QString strName)
             m_pHeaderWidget->disconnect();
             m_pHeaderWidget->deleteLater();
 
-            m_pHeaderWidget.clear();
+            m_pHeaderWidget = NULL;
         }
         ui->verticalLayoutPage->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
@@ -550,7 +550,7 @@ void MTCashPurse::ClearContents()
         m_pHeaderWidget->disconnect();
         m_pHeaderWidget->deleteLater();
 
-        m_pHeaderWidget.clear();
+        m_pHeaderWidget = NULL;
     }
     // ----------------------------------
     m_pHeaderWidget = new QWidget;

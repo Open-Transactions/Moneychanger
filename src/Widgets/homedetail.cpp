@@ -109,7 +109,7 @@ void MTHomeDetail::on_viewContactButton_clicked(bool checked /*=false*/)
     qDebug() << "View Existing Contact button clicked.";
 
     if (m_record && (m_pHome) && (m_nContactID > 0))
-        ((Moneychanger *)(m_pHome->parentWidget()))->mc_addressbook_show(QString("%1").arg(m_nContactID));
+        Moneychanger::It()->mc_addressbook_show(QString("%1").arg(m_nContactID));
 }
 
 void MTHomeDetail::on_addContactButton_clicked(bool checked /*=false*/)
@@ -169,7 +169,7 @@ void MTHomeDetail::on_addContactButton_clicked(bool checked /*=false*/)
                     {
                         m_pHome->SetNeedRefresh();
 
-                        ((Moneychanger *)(m_pHome->parentWidget()))->mc_addressbook_show(QString("%1").arg(m_nContactID));
+                        Moneychanger::It()->mc_addressbook_show(QString("%1").arg(m_nContactID));
                     }
                 }
             }
@@ -263,7 +263,7 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
                 {
                     m_pHome->SetNeedRefresh();
 
-                    ((Moneychanger *)(m_pHome->parentWidget()))->mc_addressbook_show(QString("%1").arg(m_nContactID));
+                    Moneychanger::It()->mc_addressbook_show(QString("%1").arg(m_nContactID));
                 }
                 // ---------------------------------
             } // nContactID > 0
@@ -327,7 +327,7 @@ QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
             qstr_acct_asset;
 
     if (m_pHome)
-        qstr_acct_id = ((Moneychanger *)(m_pHome->parentWidget()))->get_default_account_id();
+        qstr_acct_id = Moneychanger::It()->get_default_account_id();
     // -----------------------------------
     // If there's a default account, and it has the same asset ID
     // as the record (and server ID and NymID) then accept the instrument
@@ -813,30 +813,6 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
 
 
 //static
-void MTHomeDetail::clearLayout(QLayout* pLayout)
-{
-    if ( NULL == pLayout)
-        return;
-    // -----------------------------------------------
-    QLayoutItem * pItemAt = NULL;
-
-    while ( ( pItemAt = pLayout->takeAt( 0 ) ) != NULL )
-    {
-        if (QWidget * childWidget = pItemAt->widget())
-        {
-            childWidget->setParent(NULL);
-            childWidget->disconnect();
-            childWidget->deleteLater();
-        }
-        else if (QLayout* childLayout = pItemAt->layout())
-            clearLayout(childLayout);
-        // -----------------------------------------
-        delete pItemAt;
-    }
-}
-
-
-//static
 QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt, bool bExternal/*=true*/)
 {
     TransactionTableViewCellType cellType = (recordmt.IsOutgoing() ?
@@ -1082,36 +1058,29 @@ void MTHomeDetail::RecreateLayout()
 {
     m_nContactID = 0;
     // --------------------------------------------------
-    if (m_pDetailLayout)
-    {
-        MTHomeDetail::clearLayout(m_pDetailLayout);
-
-        QLayout * pLayout = m_pDetailLayout.data();
-
-        m_pDetailLayout.clear();
-
-        pLayout->disconnect();
-//        pLayout->deleteLater();
-        // ----------------------------
-        delete pLayout;
-    }
+    // Clever way to clear the entire layout and delete all
+    // its widgets. Basically the ownership is switched to
+    // a temporary widget, which then passes out of scope.
+    //
+    if (layout())
+        QWidget().setLayout(layout());
     // --------------------------------------------------
     m_pDetailLayout = new QGridLayout;
     m_pDetailLayout->setAlignment(Qt::AlignTop);
     m_pDetailLayout->setContentsMargins(0, 0, 0, 0);
     // --------------------------------------------------
-    m_pLineEdit_Nym_ID.clear();
-    m_pLineEdit_OtherNym_ID.clear();
-    m_pLineEdit_Acct_ID.clear();
-    m_pLineEdit_OtherAcct_ID.clear();
-    m_pLineEdit_Server_ID.clear();
-    m_pLineEdit_AssetType_ID.clear();
-    m_pLineEdit_Nym_Name.clear();
-    m_pLineEdit_OtherNym_Name.clear();
-    m_pLineEdit_Acct_Name.clear();
-    m_pLineEdit_OtherAcct_Name.clear();
-    m_pLineEdit_Server_Name.clear();
-    m_pLineEdit_AssetType_Name.clear();
+    m_pLineEdit_Nym_ID = NULL;
+    m_pLineEdit_OtherNym_ID = NULL;
+    m_pLineEdit_Acct_ID = NULL;
+    m_pLineEdit_OtherAcct_ID = NULL;
+    m_pLineEdit_Server_ID = NULL;
+    m_pLineEdit_AssetType_ID = NULL;
+    m_pLineEdit_Nym_Name = NULL;
+    m_pLineEdit_OtherNym_Name = NULL;
+    m_pLineEdit_Acct_Name = NULL;
+    m_pLineEdit_OtherAcct_Name = NULL;
+    m_pLineEdit_Server_Name = NULL;
+    m_pLineEdit_AssetType_Name = NULL;
 }
 
 

@@ -8,21 +8,16 @@ namespace Ui {
 class MTWizardAddAccount;
 }
 
-class Moneychanger;
 
 class MTWizardAddAccount : public QWizard
 {
     Q_OBJECT
 
 public:
-    explicit MTWizardAddAccount(QWidget *parent, Moneychanger & theMC);
+    explicit MTWizardAddAccount(QWidget *parent);
     ~MTWizardAddAccount();
 
-    Moneychanger * GetMoneychanger();
-
 private:
-    QPointer<Moneychanger> m_pMoneychanger;
-
     Ui::MTWizardAddAccount *ui;
 };
 

@@ -57,7 +57,6 @@ private slots:
 
 protected:    
     QPointer<MTDetailEdit> m_pOwner;
-    QPointer<Moneychanger> m_pMoneychanger;
 
 private:
 //    Ui::MTEditDetails *ui;

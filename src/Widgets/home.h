@@ -71,6 +71,7 @@ signals:
 
 public slots:
     void onBalancesChanged();
+    void onAccountDataDownloaded();
 
 private slots:
     void on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn);

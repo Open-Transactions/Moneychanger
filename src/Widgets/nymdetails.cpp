@@ -92,7 +92,7 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
                 m_pCredentials->disconnect();
                 m_pCredentials->deleteLater();
 
-                m_pCredentials.clear();
+                m_pCredentials = NULL;
             }
             m_pCredentials = new MTCredentials(NULL, *m_pOwner);
             pReturnValue = m_pCredentials;
@@ -108,7 +108,7 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
             m_pPlainTextEdit->disconnect();
             m_pPlainTextEdit->deleteLater();
 
-            m_pPlainTextEdit.clear();
+            m_pPlainTextEdit = NULL;
         }
 
         m_pPlainTextEdit = new QPlainTextEdit;
@@ -297,8 +297,7 @@ void MTNymDetails::DeleteButtonClicked()
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 m_pOwner->RefreshRecords();
                 // ------------------------------------------------
-                if (m_pMoneychanger)
-                    m_pMoneychanger->SetupMainMenu();
+                Moneychanger::It()->SetupMainMenu();
                 // ------------------------------------------------
             }
             else
@@ -391,8 +390,7 @@ void MTNymDetails::AddButtonClicked()
         m_pOwner->SetPreSelected(qstrID);
         m_pOwner->RefreshRecords();
         // ------------------------------------------------
-        if (m_pMoneychanger)
-            m_pMoneychanger->SetupMainMenu();
+        Moneychanger::It()->SetupMainMenu();
         // ------------------------------------------------
     }
 }

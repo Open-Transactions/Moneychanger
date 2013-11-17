@@ -24,14 +24,6 @@ MTApplicationMC::MTApplicationMC(int &argc, char **argv)
 
 MTApplicationMC::~MTApplicationMC()
 {
-    if (m_pMoneychanger)
-    {
-        m_pMoneychanger->setParent(NULL);
-        m_pMoneychanger->disconnect();
-        m_pMoneychanger->deleteLater();
-
-        m_pMoneychanger.clear();
-    }
 }
 
 void MTApplicationMC::appStarting()
@@ -59,9 +51,9 @@ void MTApplicationMC::appStarting()
     // ----------------------------------------
     /** Init Moneychanger code (Start when necessary below) **/
 
-    m_pMoneychanger = new Moneychanger;
+    QPointer<Moneychanger> pMoneychanger = Moneychanger::It();
 
-    m_pMoneychanger->installEventFilter(m_pMoneychanger);
+    pMoneychanger->installEventFilter(pMoneychanger.data());
 
     /** Check Systray capabilities **/
     // This app relies on system tray capabilites;
@@ -95,7 +87,7 @@ void MTApplicationMC::appStarting()
         /* ** ** **
          *Start the Moneychanger systray app
          */
-        m_pMoneychanger->bootTray();
+        pMoneychanger->bootTray();
     }
 }
 

@@ -72,7 +72,7 @@ QWidget * MTContactDetails::CreateCustomTab(int nTab)
                 m_pCredentials->disconnect();
                 m_pCredentials->deleteLater();
 
-                m_pCredentials.clear();
+                m_pCredentials = NULL;
             }
             m_pCredentials = new MTCredentials(NULL, *m_pOwner);
             pReturnValue = m_pCredentials;
@@ -88,7 +88,7 @@ QWidget * MTContactDetails::CreateCustomTab(int nTab)
             m_pPlainTextEdit->disconnect();
             m_pPlainTextEdit->deleteLater();
 
-            m_pPlainTextEdit.clear();
+            m_pPlainTextEdit = NULL;
         }
         m_pPlainTextEdit = new QPlainTextEdit;
 
@@ -251,7 +251,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
         m_pHeaderWidget->disconnect();
         m_pHeaderWidget->deleteLater();
 
-        m_pHeaderWidget.clear();
+        m_pHeaderWidget = NULL;
     }
     ui->verticalLayout->insertWidget(0, pHeaderWidget);
     m_pHeaderWidget = pHeaderWidget;
