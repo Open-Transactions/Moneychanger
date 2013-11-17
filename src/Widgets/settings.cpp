@@ -8,7 +8,7 @@
 #include <QLocale>
 
 Settings::Settings(QWidget *parent) :
-    QWidget(parent),
+    QWidget(parent, Qt::Window),
     ui(new Ui::Settings)
 {
     ui->setupUi(this);

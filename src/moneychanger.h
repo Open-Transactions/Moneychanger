@@ -57,70 +57,34 @@ class CreateInsuranceCompany;
 class Moneychanger : public QWidget
 {
     Q_OBJECT
-    
-public:
+
+private:
     /** Constructor & Destructor **/
     Moneychanger(QWidget *parent = 0);
+public:
     virtual ~Moneychanger();
     
+    static Moneychanger * It(QWidget *parent = 0);
+
     /** Start **/
     void bootTray();
-
     
-    /** 
-     * Interfaces 
-     **/
-    
-    // Close Dialog Functions
-    void close_overview_dialog();
-    void close_addressbook();
-    void close_accountmanager_dialog();
-    void close_nymmanager_dialog();
-    void close_servermanager_dialog();
-    void close_assetmanager_dialog();
-
-    void close_sendfunds_dialog();
-    void close_requestfunds_dialog();
-
-    void close_market_dialog();
-
-    void close_agreement_dialog();
-    void close_corporation_dialog();
-
-    void close_settings_dialog();
-
-    void close_createinsurancecompany_dialog();
-
-    //Show address book
-    void mc_addressbook_show(QString text);
-    
-    void new_compose_dialog();
-    void new_send_dialog();
-    void new_request_dialog();
-
 signals:
     void balancesChanged();
+    void downloadedAccountData();
 
 public slots:
 
     void onBalancesChanged();
-
-    void downloadAccountData();
+    void onNeedToDownloadAccountData();
 
     /**
      * Functions for setting Systray Values
      **/
     
-    // Set Systray Nym Value
     void setDefaultNym(QString, QString);
-    
-    // Set Systray Asset Value
     void setDefaultAsset(QString, QString);
-    
-    // Set Systray Account Value
     void setDefaultAccount(QString, QString);
-    
-    // Set Systray Server Value
     void setDefaultServer(QString, QString);
     
     
@@ -150,48 +114,14 @@ public:
     QString get_server_id_at(int a){return server_list_id->at(a).toString();}
     QString get_server_name_at(int a){return server_list_name->at(a).toString();}
     
-
-
-
-
-    
-    /**
-     * OT Interface Functions
-     **/
-    
     
 private:
-
-    /**
-     * Open Transaction Variables
-     **/
-        
-    
     
     /**
      * Booleans for tracking initialization
      **/
     
     bool mc_overall_init;
-
-    bool mc_overview_already_init;
-    bool mc_market_window_already_init;
-    bool mc_addressbook_already_init;
-
-    bool mc_nymmanager_already_init;
-    bool mc_assetmanager_already_init;
-    bool mc_accountmanager_already_init;
-    bool mc_servermanager_already_init;
-
-    bool mc_sendfunds_already_init;
-    bool mc_requestfunds_already_init;
-
-    bool mc_createinsurancecompany_already_init;
-    bool mc_settings_already_init;
-
-    bool mc_agreement_already_init;
-    bool mc_corporation_already_init;
-
     
     /**
      * Window Classes
@@ -219,6 +149,9 @@ public:
     void mc_nymmanager_dialog   (QString qstrPresetID=QString(""));
     void mc_servermanager_dialog(QString qstrPresetID=QString(""));
     void mc_assetmanager_dialog (QString qstrPresetID=QString(""));
+    void mc_accountmanager_dialog(QString qstrAcctID=QString(""));
+
+    void mc_addressbook_show(QString text);
 
     void mc_overview_dialog_refresh();
 
@@ -228,12 +161,6 @@ private:
     void SetupNymMenu();
     void SetupAccountMenu();
     // ------------------------------------------------
-    void ClearAssetMenu();
-    void ClearServerMenu();
-    void ClearNymMenu();
-    void ClearAccountMenu();
-    // ------------------------------------------------
-    void ClearMainMenu();
 
 private:
     /**
@@ -241,86 +168,28 @@ private:
      **/
     
     
-    //Overview
     void mc_overview_dialog();
-    //Refresh visual
-//  void mc_overview_dialog_refresh();
     // ------------------------------------------------
-    
-    //Default Nym
-//  void mc_nymmanager_dialog();
-
-    //Reload nym list
-    void mc_systrayMenu_reload_nymlist();
-    // ------------------------------------------------
-    
-    //Default Server
-//  void mc_servermanager_dialog();
-
-    //Reload server list
-    void mc_systrayMenu_reload_serverlist();
-    // ------------------------------------------------
-    
-    //Default Asset
-//  void mc_assetmanager_dialog();
-
-    //Reload asset list
-    void mc_systrayMenu_reload_assetlist();
-    // ------------------------------------------------
-    
-    //Default Account
-public:
-    void mc_accountmanager_dialog(QString qstrAcctID=QString(""));
-
-private:
-    //Reload account list
-    void mc_systrayMenu_reload_accountlist();
-    // ------------------------------------------------
-    //Send Funds
     void mc_sendfunds_show_dialog();    
-    // ------------------------------------------------
-
-    //Request Funds
     void mc_requestfunds_show_dialog();
     // ------------------------------------------------
-    
     void mc_market_dialog();
-
     void mc_corporation_dialog();
-
     void mc_agreement_dialog();
-
-    //Create Insurance Company
     void mc_createinsurancecompany_dialog();
-    // ------------------------------------------------
-
-    
-    /**
-     * Variables For Various Pieces of Account Information
-     **/
-    
-    
-    //pseudonym list (backend) [For nym list in the qmenu and the nym manager]
+    // ------------------------------------------------    
     QList<QVariant> * nym_list_id;
     QList<QVariant> * nym_list_name;
-    
-    //pseudonym default selected (backend) [For saving the user supplied default, set from DB and user selections]
+    // ---------------------------------------------------------
     QString default_nym_id;
     QString default_nym_name;
     // ---------------------------------------------------------
-    
-    QPointer<QMenu> mc_systrayMenu_server;
-    //server list (backend )
     QList<QVariant> * server_list_id;
     QList<QVariant> * server_list_name;
-    
-    //server default selected (backend)
+    // ---------------------------------------------------------
     QString default_server_id;
     QString default_server_name;
     // ---------------------------------------------------------
-    
-    
-    
     
     /** 
      * Systray Icons
@@ -351,10 +220,7 @@ private:
     QIcon mc_systrayIcon_advanced_corporations;
     QIcon mc_systrayIcon_advanced_bazaar;
     // ------------------------------------------------
-    
-    
-    
-    /**  
+    /**
      * Systray menu
      **/
     
@@ -366,29 +232,24 @@ private:
     QPointer<QAction> mc_systrayMenu_shutdown;
     QPointer<QAction> mc_systrayMenu_overview;
     // ---------------------------------------------------------
-    
-    //Asset type list (backend )
     QPointer<QMenu> mc_systrayMenu_asset;
-
+    // ---------------------------------------------------------
     QList<QVariant> * asset_list_id;
     QList<QVariant> * asset_list_name;
-    
-    //Asset default selected (backend)
+    // ---------------------------------------------------------
     QString default_asset_id;
     QString default_asset_name;
-    // ---------------------------------------------------------
-        
-    //Account list (backend )
+    // ---------------------------------------------------------        
     QPointer<QMenu> mc_systrayMenu_account;
-
+    // ---------------------------------------------------------
     QList<QVariant> * account_list_id;
     QList<QVariant> * account_list_name;
-    
-    //Account default selected (backend)
+    // ---------------------------------------------------------
     QString default_account_id;
     QString default_account_name;
     // ---------------------------------------------------------
     QPointer<QMenu> mc_systrayMenu_nym;
+    QPointer<QMenu> mc_systrayMenu_server;
     // ---------------------------------------------------------
     QPointer<QAction> mc_systrayMenu_goldaccount;
     QPointer<QAction> mc_systrayMenu_purse;
@@ -397,11 +258,11 @@ private:
     QPointer<QAction> mc_systrayMenu_requestfunds;
     // ---------------------------------------------------------
     QPointer<QAction> mc_systrayMenu_markets;
-
+    // ---------------------------------------------------------
     //Company submenu
     QPointer<QMenu>   mc_systrayMenu_company_create;
     QPointer<QAction> mc_systrayMenu_company_create_insurance;
-
+    // ---------------------------------------------------------
     //Advanced submenu
     QPointer<QMenu> mc_systrayMenu_advanced;
 
@@ -410,7 +271,7 @@ private:
     QPointer<QAction> mc_systrayMenu_advanced_settings;
     QPointer<QAction> mc_systrayMenu_advanced_corporations;
     QPointer<QMenu>   mc_systrayMenu_advanced_bazaar;
-
+    // ---------------------------------------------------------
     // Bazaar
     QPointer<QAction> mc_systrayMenu_bazaar_search;
     QPointer<QAction> mc_systrayMenu_bazaar_post;

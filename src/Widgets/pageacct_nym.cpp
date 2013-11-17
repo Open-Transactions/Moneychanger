@@ -36,16 +36,10 @@ void MTPageAcct_Nym::on_pushButtonSelect_clicked()
     // -------------------------------------------
     QWizard            * pWizard           = this->wizard();
     MTWizardAddAccount * pWizardAddAccount = (MTWizardAddAccount *)pWizard;
-    Moneychanger       * pMoneychanger     = NULL;
     // -------------------------------------------
     if (NULL != pWizardAddAccount)
     {
-        pMoneychanger = pWizardAddAccount->GetMoneychanger();
-
-        if (NULL != pMoneychanger)
-        {
-            qstr_default_id = pMoneychanger->get_default_nym_id();
-        }
+        qstr_default_id = Moneychanger::It()->get_default_nym_id();
     }
     // -------------------------------------------
     QString qstr_current_id = ui->lineEditID->text();
@@ -97,9 +91,9 @@ void MTPageAcct_Nym::on_pushButtonSelect_clicked()
             // -----------------------------------------
             ui->pushButtonSelect->setText(theChooser.m_qstrCurrentName);
             // -----------------------------------------
-            if (qstr_default_id.isEmpty() && (NULL != pMoneychanger))
+            if (qstr_default_id.isEmpty())
             {
-                pMoneychanger->setDefaultNym(theChooser.m_qstrCurrentID, theChooser.m_qstrCurrentName);
+                Moneychanger::It()->setDefaultNym(theChooser.m_qstrCurrentID, theChooser.m_qstrCurrentName);
             }
             // ----------------------------------------
             return;
@@ -135,16 +129,10 @@ void MTPageAcct_Nym::showEvent(QShowEvent * event)
         // -------------------------------------------
         QWizard            * pWizard           = this->wizard();
         MTWizardAddAccount * pWizardAddAccount = (MTWizardAddAccount *)pWizard;
-        Moneychanger       * pMoneychanger     = NULL;
         // -------------------------------------------
         if (NULL != pWizardAddAccount)
         {
-            pMoneychanger = pWizardAddAccount->GetMoneychanger();
-
-            if (NULL != pMoneychanger)
-            {
-                qstr_default_id = pMoneychanger->get_default_nym_id();
-            }
+            qstr_default_id = Moneychanger::It()->get_default_nym_id();
         }
         // -------------------------------------------
         QString qstr_current_id = ui->lineEditID->text();
@@ -172,9 +160,9 @@ void MTPageAcct_Nym::showEvent(QShowEvent * event)
             ui->lineEditID->setText(qstr_id);
             ui->lineEditID->home(false);
             // ---------------------------
-            if (qstr_default_id.isEmpty() && (NULL != pMoneychanger))
+            if (qstr_default_id.isEmpty())
             {
-                pMoneychanger->setDefaultNym(qstr_id, qstrName);
+                Moneychanger::It()->setDefaultNym(qstr_id, qstrName);
             }
         }
         // -------------------------------------------
@@ -191,55 +179,50 @@ void MTPageAcct_Nym::on_pushButtonManage_clicked()
     // -------------------------------------------
     if (NULL != pWizardAddAccount)
     {
-        Moneychanger * pMoneychanger = pWizardAddAccount->GetMoneychanger();
+        MTDetailEdit * pWindow = new MTDetailEdit(this);
 
-        if (NULL != pMoneychanger)
+        pWindow->setAttribute(Qt::WA_DeleteOnClose);
+        // -------------------------------------
+        mapIDName & the_map = pWindow->m_map;
+        // -------------------------------------
+        the_map.clear();
+        // -------------------------------------
+        int32_t the_count = OTAPI_Wrap::GetNymCount();
+        bool    bStartingWithNone = (the_count < 1);
+
+        for (int32_t ii = 0; ii < the_count; ii++)
         {
-            MTDetailEdit * pWindow = new MTDetailEdit(this, *pMoneychanger);
+            QString OT_id   = QString::fromStdString(OTAPI_Wrap::GetNym_ID(ii));
+            QString OT_name = QString::fromStdString(OTAPI_Wrap::GetNym_Name(OT_id.toStdString()));
 
-            pWindow->setAttribute(Qt::WA_DeleteOnClose);
-            // -------------------------------------
-            mapIDName & the_map = pWindow->m_map;
-            // -------------------------------------
-            the_map.clear();
-            // -------------------------------------
-            int32_t the_count = OTAPI_Wrap::GetNymCount();
-            bool    bStartingWithNone = (the_count < 1);
+            the_map.insert(OT_id, OT_name);
+        } // for
+        // -------------------------------------
+        pWindow->setWindowTitle(tr("Manage Nyms (Identities)"));
+        // -------------------------------------
+        pWindow->dialog(MTDetailEdit::DetailEditTypeNym, true);
+        // -------------------------------------
+        if (bStartingWithNone && (OTAPI_Wrap::GetNymCount() > 0))
+        {
+            std::string str_id = OTAPI_Wrap::GetNym_ID(0);
 
-            for (int32_t ii = 0; ii < the_count; ii++)
+            if (!str_id.empty())
             {
-                QString OT_id   = QString::fromStdString(OTAPI_Wrap::GetNym_ID(ii));
-                QString OT_name = QString::fromStdString(OTAPI_Wrap::GetNym_Name(OT_id.toStdString()));
+                std::string str_name = OTAPI_Wrap::GetNym_Name(str_id);
 
-                the_map.insert(OT_id, OT_name);
-            } // for
-            // -------------------------------------
-            pWindow->setWindowTitle(tr("Manage Nyms (Identities)"));
-            // -------------------------------------
-            pWindow->dialog(MTDetailEdit::DetailEditTypeNym, true);
-            // -------------------------------------
-            if (bStartingWithNone && (OTAPI_Wrap::GetNymCount() > 0))
-            {
-                std::string str_id = OTAPI_Wrap::GetNym_ID(0);
-
-                if (!str_id.empty())
-                {
-                    std::string str_name = OTAPI_Wrap::GetNym_Name(str_id);
-
-                    if (str_name.empty())
-                        str_name = str_id;
-                    // --------------------------------
-                    ui->pushButtonSelect->setText(QString::fromStdString(str_name));
-                    ui->lineEditID->setText(QString::fromStdString(str_id));
-                    ui->lineEditID->home(false);
-                }
+                if (str_name.empty())
+                    str_name = str_id;
+                // --------------------------------
+                ui->pushButtonSelect->setText(QString::fromStdString(str_name));
+                ui->lineEditID->setText(QString::fromStdString(str_id));
+                ui->lineEditID->home(false);
             }
-            // -------------------------------------
-            else if (OTAPI_Wrap::GetNymCount() < 1)
-            {
-                ui->pushButtonSelect->setText(QString("<%1>").arg(tr("Click to choose Nym")));
-                ui->lineEditID->setText("");
-            }
+        }
+        // -------------------------------------
+        else if (OTAPI_Wrap::GetNymCount() < 1)
+        {
+            ui->pushButtonSelect->setText(QString("<%1>").arg(tr("Click to choose Nym")));
+            ui->lineEditID->setText("");
         }
     }
     // -------------------------------------------

@@ -15,10 +15,9 @@
 #include "detailedit.h"
 
 
-DlgMarkets::DlgMarkets(QWidget *parent, Moneychanger & theMC) :
+DlgMarkets::DlgMarkets(QWidget *parent) :
     QDialog(parent),
     m_bFirstRun(true),
-    m_pMoneychanger(&theMC),
     ui(new Ui::DlgMarkets)
 {
     ui->setupUi(this);
@@ -64,7 +63,7 @@ void DlgMarkets::FirstRun()
 
         // ******************************************************
         {
-        m_pMarketDetails = new MTDetailEdit(this, *m_pMoneychanger);
+        m_pMarketDetails = new MTDetailEdit(this);
 
         m_pMarketDetails->SetMarketMap(m_mapMarkets);
         // -------------------------------------
@@ -86,7 +85,7 @@ void DlgMarkets::FirstRun()
 
         // ******************************************************
         {
-        m_pOfferDetails = new MTDetailEdit(this, *m_pMoneychanger);
+        m_pOfferDetails = new MTDetailEdit(this);
         // -------------------------------------
         m_pOfferDetails->setWindowTitle(tr("Offers"));
         // -------------------------------------
@@ -112,8 +111,8 @@ void DlgMarkets::FirstRun()
         // starts changing the selection of the combo box, the new current selection
         // will go into these variables.
         //
-        m_nymId    = m_pMoneychanger->get_default_nym_id();
-        m_serverId = m_pMoneychanger->get_default_server_id();
+        m_nymId    = Moneychanger::It()->get_default_nym_id();
+        m_serverId = Moneychanger::It()->get_default_server_id();
 
     }
 }
@@ -445,20 +444,7 @@ void DlgMarkets::RefreshRecords()
 
 bool DlgMarkets::eventFilter(QObject *obj, QEvent *event)\
 {
-    if (event->type() == QEvent::Close)
-    {
-        // -------------------------------------------
-        Moneychanger * pMC = (Moneychanger *)this->parentWidget(); // todo cast
-
-        if ((NULL != m_pMoneychanger) && (m_pMoneychanger == pMC))
-        {
-            pMC->close_market_dialog();
-
-            return true;
-        }
-    }
-    // -------------------------------------------
-    else if (event->type() == QEvent::KeyPress)
+    if (event->type() == QEvent::KeyPress)
     {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 
@@ -470,11 +456,8 @@ bool DlgMarkets::eventFilter(QObject *obj, QEvent *event)\
         return true;
     }
     // -------------------------------------------
-//  else
-    {
-        // standard event processing
-        return QObject::eventFilter(obj, event);
-    }
+    // standard event processing
+    return QObject::eventFilter(obj, event);
 }
 
 DlgMarkets::~DlgMarkets()

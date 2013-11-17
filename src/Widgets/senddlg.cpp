@@ -653,7 +653,7 @@ void MTSendDlg::on_fromButton_clicked()
 
 void MTSendDlg::on_toolButtonManageAccts_clicked()
 {
-    m_pMoneychanger->mc_accountmanager_dialog(m_myAcctId);
+    Moneychanger::It()->mc_accountmanager_dialog(m_myAcctId);
 }
 
 void MTSendDlg::on_toolButton_clicked()
@@ -668,7 +668,7 @@ void MTSendDlg::on_toolButton_clicked()
             qstrContactID = QString("%1").arg(nContactID);
     }
     // ------------------------------------------------
-    m_pMoneychanger->mc_addressbook_show(qstrContactID);
+    Moneychanger::It()->mc_addressbook_show(qstrContactID);
 }
 
 
@@ -798,6 +798,9 @@ void MTSendDlg::dialog()
 
     if (!already_init)
     {
+        connect(this,               SIGNAL(balancesChanged()),
+                Moneychanger::It(), SLOT  (onBalancesChanged()));
+        // ---------------------------------------
         this->setWindowTitle(tr("Send Funds"));
 
         QString style_sheet = "QPushButton{border: none; border-style: outset; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa);}"
@@ -888,6 +891,7 @@ void MTSendDlg::dialog()
         already_init = true;
     }
 
+    show();
 }
 
 
@@ -899,10 +903,9 @@ void MTSendDlg::dialog()
 
 
 
-MTSendDlg::MTSendDlg(QWidget *parent, Moneychanger & theMC) :
+MTSendDlg::MTSendDlg(QWidget *parent) :
     QWidget(parent, Qt::Window),
     m_bSent(false),
-    m_pMoneychanger(&theMC),
     already_init(false),
     ui(new Ui::MTSendDlg)
 {

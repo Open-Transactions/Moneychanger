@@ -22,14 +22,13 @@
 #include <OTStorage.h>
 #include <OTLog.h>
 
-MTDetailEdit::MTDetailEdit(QWidget *parent, Moneychanger & theMC) :
+MTDetailEdit::MTDetailEdit(QWidget *parent) :
     QWidget(parent, Qt::Window),
     m_bFirstRun(true),
     m_nCurrentRow(-1),
     m_pmapMarkets(NULL),
     m_bEnableAdd(true),
     m_bEnableDelete(true),
-    m_pMoneychanger(&theMC),
     m_Type(MTDetailEdit::DetailEditTypeError),
     ui(new Ui::MTDetailEdit)
 {
@@ -165,8 +164,8 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         case MTDetailEdit::DetailEditTypeAccount:
             m_pDetailPane = new MTAccountDetails(this, *this);
             // -------------------------------------------
-            connect(m_pDetailPane,   SIGNAL(DefaultAccountChanged(QString, QString)),
-                    m_pMoneychanger, SLOT  (setDefaultAccount(QString, QString)));
+            connect(m_pDetailPane,      SIGNAL(DefaultAccountChanged(QString, QString)),
+                    Moneychanger::It(), SLOT  (setDefaultAccount(QString, QString)));
             // -------------------------------------------
             break;
         default:
@@ -483,7 +482,6 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
     // -------------------------------------
 }
 
-Moneychanger * MTDetailEdit::GetMoneychanger() { return m_pMoneychanger ? m_pMoneychanger.data() : NULL; }
 
 void MTDetailEdit::SetPreSelected(QString strSelected)
 {
@@ -492,52 +490,7 @@ void MTDetailEdit::SetPreSelected(QString strSelected)
 
 bool MTDetailEdit::eventFilter(QObject *obj, QEvent *event)\
 {
-    if (event->type() == QEvent::Close)
-    {
-        // -------------------------------------------
-        Moneychanger * pMC = (Moneychanger *)this->parentWidget();
-
-        if (m_pMoneychanger && (m_pMoneychanger.data() == pMC))
-        {
-            switch (m_Type)
-            {
-            case MTDetailEdit::DetailEditTypeContact:
-                m_pMoneychanger->close_addressbook();
-                break;
-
-            case MTDetailEdit::DetailEditTypeNym:
-                m_pMoneychanger->close_nymmanager_dialog();
-                break;
-
-            case MTDetailEdit::DetailEditTypeServer:
-                m_pMoneychanger->close_servermanager_dialog();
-                break;
-
-            case MTDetailEdit::DetailEditTypeAsset:
-                m_pMoneychanger->close_assetmanager_dialog();
-                break;
-
-            case MTDetailEdit::DetailEditTypeAccount:
-                m_pMoneychanger->close_accountmanager_dialog();
-                break;
-
-            case MTDetailEdit::DetailEditTypeAgreement:
-                m_pMoneychanger->close_agreement_dialog();
-                break;
-
-            case MTDetailEdit::DetailEditTypeCorporation:
-                m_pMoneychanger->close_corporation_dialog();
-                break;
-
-            default:
-                qDebug() << "MTDetailEdit::eventFilter: MTDetailEdit::DetailEditTypeError";
-            }
-
-            return true;
-        }
-    }
-    // -------------------------------------------
-    else if (event->type() == QEvent::KeyPress)
+    if (event->type() == QEvent::KeyPress)
     {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 
@@ -549,9 +502,6 @@ bool MTDetailEdit::eventFilter(QObject *obj, QEvent *event)\
         return true;
     }
     // -------------------------------------------
-//  else
-    {
-        // standard event processing
-        return QObject::eventFilter(obj, event);
-    }
+    // standard event processing
+    return QObject::eventFilter(obj, event);
 }

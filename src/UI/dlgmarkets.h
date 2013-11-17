@@ -22,7 +22,7 @@ class DlgMarkets : public QDialog
     Q_OBJECT
 
 public:
-    explicit DlgMarkets(QWidget *parent, Moneychanger & theMC);
+    explicit DlgMarkets(QWidget *parent);
     ~DlgMarkets();
 
     void FirstRun();
@@ -65,8 +65,6 @@ private:
 
     QPointer<MTDetailEdit> m_pMarketDetails;
     QPointer<MTDetailEdit> m_pOfferDetails;
-
-    QPointer<Moneychanger> m_pMoneychanger;
 
     Ui::DlgMarkets *ui;
 };

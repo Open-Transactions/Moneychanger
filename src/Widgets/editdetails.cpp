@@ -12,8 +12,7 @@
 
 MTEditDetails::MTEditDetails(QWidget *parent, MTDetailEdit & theOwner) :
     QWidget(parent),
-    m_pOwner(&theOwner),
-    m_pMoneychanger(theOwner.GetMoneychanger())
+    m_pOwner(&theOwner)
 //  ui(new Ui::MTEditDetails)
 {
 //  ui->setupUi(this);

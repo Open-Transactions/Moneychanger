@@ -353,13 +353,13 @@ void MTRequestDlg::on_toolButton_clicked()
             qstrContactID = QString("%1").arg(nContactID);
     }
     // ------------------------------------------------
-    m_pMoneychanger->mc_addressbook_show(qstrContactID);
+    Moneychanger::It()->mc_addressbook_show(qstrContactID);
 }
 
 
 void MTRequestDlg::on_toolButtonManageAccts_clicked()
 {
-    m_pMoneychanger->mc_accountmanager_dialog(m_myAcctId);
+    Moneychanger::It()->mc_accountmanager_dialog(m_myAcctId);
 }
 
 
@@ -577,6 +577,7 @@ void MTRequestDlg::dialog()
         already_init = true;
     }
 
+    show();
 }
 
 
@@ -588,10 +589,9 @@ void MTRequestDlg::dialog()
 
 
 
-MTRequestDlg::MTRequestDlg(QWidget *parent, Moneychanger & theMC) :
+MTRequestDlg::MTRequestDlg(QWidget *parent) :
     QWidget(parent, Qt::Window),
     m_bSent(false),
-    m_pMoneychanger(&theMC),
     already_init(false),
     ui(new Ui::MTRequestDlg)
 {

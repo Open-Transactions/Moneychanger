@@ -70,7 +70,7 @@ QWidget * MTAssetDetails::CreateCustomTab(int nTab)
             m_pPlainTextEdit->disconnect();
             m_pPlainTextEdit->deleteLater();
 
-            m_pPlainTextEdit.clear();
+            m_pPlainTextEdit = NULL;
         }
 
         m_pPlainTextEdit = new QPlainTextEdit;
@@ -202,8 +202,7 @@ void MTAssetDetails::DeleteButtonClicked()
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 m_pOwner->RefreshRecords();
                 // ------------------------------------------------
-                if (m_pMoneychanger)
-                    m_pMoneychanger->SetupMainMenu();
+                Moneychanger::It()->SetupMainMenu();
                 // ------------------------------------------------
             }
             else
@@ -285,8 +284,7 @@ void MTAssetDetails::ImportContract(QString qstrContents)
         m_pOwner->SetPreSelected(qstrContractID);
         m_pOwner->RefreshRecords();
         // ------------------------------------------------
-        if (m_pMoneychanger)
-            m_pMoneychanger->SetupMainMenu();
+        Moneychanger::It()->SetupMainMenu();
         // ------------------------------------------------
     } // if (!qstrContractID.isEmpty())
 }
@@ -333,7 +331,7 @@ void MTAssetDetails::AddButtonClicked()
                 if (m_pDownloader)
                 {
                     m_pDownloader->deleteLater();
-                    m_pDownloader.clear();
+                    m_pDownloader = NULL;
                 }
                 // --------------------------------
                 m_pDownloader = new FileDownloader(theURL, this);
@@ -424,7 +422,7 @@ void MTAssetDetails::refresh(QString strID, QString strName)
             m_pHeaderWidget->disconnect();
             m_pHeaderWidget->deleteLater();
 
-            m_pHeaderWidget.clear();
+            m_pHeaderWidget = NULL;
         }
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;

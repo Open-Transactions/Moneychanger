@@ -40,7 +40,7 @@ public:
         DetailEditTypeCorporation
     };
 
-    explicit MTDetailEdit(QWidget *parent, Moneychanger & theMC);
+    explicit MTDetailEdit(QWidget *parent);
     ~MTDetailEdit();
 
     void SetPreSelected(QString strSelected);
@@ -95,12 +95,7 @@ private slots:
     void on_addButton_clicked();
     void on_deleteButton_clicked();
 
-public:
-    Moneychanger * GetMoneychanger();
-
 private:
-    QPointer<Moneychanger> m_pMoneychanger;
-
     DetailEditType m_Type;
 
     Ui::MTDetailEdit *ui;

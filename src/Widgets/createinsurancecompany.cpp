@@ -17,12 +17,7 @@ CreateInsuranceCompany::~CreateInsuranceCompany()
 
 bool CreateInsuranceCompany::eventFilter(QObject *obj, QEvent *event){
 
-    if (event->type() == QEvent::Close)
-    {
-        ((Moneychanger *)parentWidget())->close_createinsurancecompany_dialog();
-        return true;
-    }
-    else if (event->type() == QEvent::KeyPress)
+    if (event->type() == QEvent::KeyPress)
     {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 

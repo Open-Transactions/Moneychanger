@@ -3,9 +3,8 @@
 
 #include "moneychanger.h"
 
-MTWizardAddAccount::MTWizardAddAccount(QWidget *parent, Moneychanger & theMC) :
+MTWizardAddAccount::MTWizardAddAccount(QWidget *parent) :
     QWizard(parent),
-    m_pMoneychanger(&theMC),
     ui(new Ui::MTWizardAddAccount)
 {
     ui->setupUi(this);
@@ -14,8 +13,6 @@ MTWizardAddAccount::MTWizardAddAccount(QWidget *parent, Moneychanger & theMC) :
     setOption(QWizard::CancelButtonOnLeft, true);
 }
 
-
-Moneychanger * MTWizardAddAccount::GetMoneychanger() { return m_pMoneychanger ? m_pMoneychanger.data() : NULL; }
 
 MTWizardAddAccount::~MTWizardAddAccount()
 {

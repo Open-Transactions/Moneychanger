@@ -8,8 +8,6 @@ namespace Ui {
 class MTRequestDlg;
 }
 
-class Moneychanger;
-
 class MTRequestDlg : public QWidget
 {
     Q_OBJECT
@@ -21,10 +19,8 @@ class MTRequestDlg : public QWidget
 
     bool m_bSent;
 
-    QPointer<Moneychanger> m_pMoneychanger;
-
 public:
-    explicit MTRequestDlg(QWidget *parent, Moneychanger & theMC);
+    explicit MTRequestDlg(QWidget *parent=0);
     ~MTRequestDlg();
 
     void setInitialHisNym (QString nymId)  { m_hisNymId  = nymId;  } // From:

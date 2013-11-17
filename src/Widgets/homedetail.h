@@ -36,7 +36,6 @@ public:
     void refresh(MTRecord & recordmt);
     void refresh(int nRow, MTRecordList & theList);
 
-    static void      clearLayout(QLayout* pLayout);
     static QWidget * CreateDetailHeaderWidget(MTRecord & recordmt, bool bExternal=true);
 
     void SetHomePointer(MTHome & theHome);

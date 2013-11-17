@@ -113,7 +113,7 @@ QWidget * MTAccountDetails::CreateCustomTab(int nTab)
                 m_pCashPurse->disconnect();
                 m_pCashPurse->deleteLater();
 
-                m_pCashPurse.clear();
+                m_pCashPurse = NULL;
             }
             m_pCashPurse = new MTCashPurse(NULL, *m_pOwner);
             pReturnValue = m_pCashPurse;
@@ -180,7 +180,7 @@ void MTAccountDetails::refresh(QString strID, QString strName)
             m_pHeaderWidget->disconnect();
             m_pHeaderWidget->deleteLater();
 
-            m_pHeaderWidget.clear();
+            m_pHeaderWidget = NULL;
         }
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
@@ -216,15 +216,12 @@ void MTAccountDetails::refresh(QString strID, QString strName)
         // -----------------------------------------------------------------------
         FavorLeftSideForIDs();
         // -----------------------------------------------------------------------
-        if (m_pMoneychanger)
-        {
-            QString qstr_default_acct_id = m_pMoneychanger->get_default_account_id();
+        QString qstr_default_acct_id = Moneychanger::It()->get_default_account_id();
 
-            if (strID == qstr_default_acct_id)
-                ui->pushButtonMakeDefault->setEnabled(false);
-            else
-                ui->pushButtonMakeDefault->setEnabled(true);
-        }
+        if (strID == qstr_default_acct_id)
+            ui->pushButtonMakeDefault->setEnabled(false);
+        else
+            ui->pushButtonMakeDefault->setEnabled(true);
     }
 }
 
@@ -260,16 +257,15 @@ bool MTAccountDetails::eventFilter(QObject *obj, QEvent *event)
 
 void MTAccountDetails::on_pushButtonSend_clicked()
 {
-    if (!m_qstrID.isEmpty() && (m_pMoneychanger))
+    if (!m_qstrID.isEmpty())
     {
         // --------------------------------------------------
-        MTSendDlg * send_window = new MTSendDlg(NULL, *m_pMoneychanger);
+        MTSendDlg * send_window = new MTSendDlg(NULL);
         send_window->setAttribute(Qt::WA_DeleteOnClose);
         // --------------------------------------------------
         send_window->setInitialMyAcct(m_qstrID);
         // ---------------------------------------
         send_window->dialog();
-        send_window->show();
     }
     // --------------------------------------------------
 }
@@ -278,16 +274,15 @@ void MTAccountDetails::on_pushButtonSend_clicked()
 
 void MTAccountDetails::on_pushButtonRequest_clicked()
 {
-    if (!m_qstrID.isEmpty() && (m_pMoneychanger))
+    if (!m_qstrID.isEmpty())
     {
         // --------------------------------------------------
-        MTRequestDlg * request_window = new MTRequestDlg(NULL, *m_pMoneychanger);
+        MTRequestDlg * request_window = new MTRequestDlg(NULL);
         request_window->setAttribute(Qt::WA_DeleteOnClose);
         // --------------------------------------------------
         request_window->setInitialMyAcct(m_qstrID);
         // ---------------------------------------
         request_window->dialog();
-        request_window->show();
     }
     // --------------------------------------------------
 }
@@ -296,7 +291,7 @@ void MTAccountDetails::on_pushButtonRequest_clicked()
 
 void MTAccountDetails::on_pushButtonMakeDefault_clicked()
 {
-    if ((m_pMoneychanger) && (NULL != m_pOwner) && !m_qstrID.isEmpty())
+    if ((NULL != m_pOwner) && !m_qstrID.isEmpty())
     {
         std::string str_acct_name = OTAPI_Wrap::GetAccountWallet_Name(m_qstrID.toStdString());
         ui->pushButtonMakeDefault->setEnabled(false);
@@ -309,34 +304,34 @@ void MTAccountDetails::on_pushButtonMakeDefault_clicked()
 
 void MTAccountDetails::on_toolButtonAsset_clicked()
 {
-    if (!m_pOwner->m_qstrCurrentID.isEmpty() && (m_pMoneychanger))
+    if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
         QString qstr_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_AssetTypeID(str_acct_id));
-        m_pMoneychanger->mc_assetmanager_dialog(qstr_id);
+        Moneychanger::It()->mc_assetmanager_dialog(qstr_id);
     }
 }
 
 void MTAccountDetails::on_toolButtonNym_clicked()
 {
-    if (!m_pOwner->m_qstrCurrentID.isEmpty() && (m_pMoneychanger))
+    if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
         QString qstr_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_NymID(str_acct_id));
-        m_pMoneychanger->mc_nymmanager_dialog(qstr_id);
+        Moneychanger::It()->mc_nymmanager_dialog(qstr_id);
     }
 }
 
 void MTAccountDetails::on_toolButtonServer_clicked()
 {
-    if (!m_pOwner->m_qstrCurrentID.isEmpty() && (m_pMoneychanger))
+    if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
         QString qstr_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ServerID(str_acct_id));
-        m_pMoneychanger->mc_servermanager_dialog(qstr_id);
+        Moneychanger::It()->mc_servermanager_dialog(qstr_id);
     }
 }
 
@@ -380,8 +375,7 @@ void MTAccountDetails::DeleteButtonClicked()
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 m_pOwner->RefreshRecords();
                 // ------------------------------------------------
-                if (m_pMoneychanger)
-                    m_pMoneychanger->SetupMainMenu();
+                Moneychanger::It()->SetupMainMenu();
                 // ------------------------------------------------
             }
             else
@@ -398,7 +392,7 @@ void MTAccountDetails::DeleteButtonClicked()
 //virtual
 void MTAccountDetails::AddButtonClicked()
 {
-    MTWizardAddAccount theWizard(this, *m_pMoneychanger);
+    MTWizardAddAccount theWizard(this);
 
     theWizard.setWindowTitle(tr("Create Account"));
 
@@ -513,8 +507,7 @@ void MTAccountDetails::AddButtonClicked()
         m_pOwner->SetPreSelected(qstrID);
         m_pOwner->RefreshRecords();
         // ------------------------------------------------
-        if (m_pMoneychanger)
-            m_pMoneychanger->SetupMainMenu();
+        Moneychanger::It()->SetupMainMenu();
         // ------------------------------------------------
     }
 }
