@@ -7,12 +7,12 @@
 #include "editdetails.h"
 #include "ui_editdetails.h"
 
+#include "moneychanger.h"
 #include "detailedit.h"
 
 MTEditDetails::MTEditDetails(QWidget *parent, MTDetailEdit & theOwner) :
     QWidget(parent),
-    m_pOwner(&theOwner),
-    m_pMoneychanger(m_pOwner->GetMoneychanger())
+    m_pOwner(&theOwner)
 //  ui(new Ui::MTEditDetails)
 {
 //  ui->setupUi(this);

@@ -1,27 +1,23 @@
 #ifndef WIZARDADDACCOUNT_H
 #define WIZARDADDACCOUNT_H
 
+#include <QPointer>
 #include <QWizard>
 
 namespace Ui {
 class MTWizardAddAccount;
 }
 
-class Moneychanger;
 
 class MTWizardAddAccount : public QWizard
 {
     Q_OBJECT
 
 public:
-    explicit MTWizardAddAccount(QWidget *parent, Moneychanger & theMC);
+    explicit MTWizardAddAccount(QWidget *parent);
     ~MTWizardAddAccount();
 
-    Moneychanger * GetMoneychanger();
-
 private:
-    Moneychanger * m_pMoneychanger;
-
     Ui::MTWizardAddAccount *ui;
 };
 

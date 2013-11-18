@@ -22,7 +22,6 @@ HEADERS += moneychanger.h \
     Handlers/contacthandler.h \
     Handlers/FileHandler.h \
     Handlers/DBHandler.h Handlers/DBHandler.tpp \
-    Widgets/marketwindow.h \
     Widgets/home.h \
     Widgets/homedetail.h \
     Widgets/createinsurancecompany.h \
@@ -68,7 +67,12 @@ HEADERS += moneychanger.h \
     UI/dlgexportedcash.h \
     UI/dlgexportedtopass.h \
     UI/dlgimport.h \
-    Widgets/credentials.h
+    Widgets/credentials.h \
+    UI/dlgmarkets.h \
+    Widgets/marketdetails.h \
+    Widgets/offerdetails.h \
+    Widgets/agreementdetails.h \
+    Widgets/corporationdetails.h
 
 QMAKE_CXXFLAGS += -std=c++11
 QMAKE_LIBS += -lnmcrpc -ljsoncpp -lcurl
@@ -82,7 +86,6 @@ SOURCES += main.cpp\
     Handlers/FileHandler.cpp \
     Handlers/DBHandler.cpp \
     Handlers/contacthandler.cpp \
-    Widgets/marketwindow.cpp \
     Widgets/home.cpp \
     Widgets/homedetail.cpp \
     Widgets/createinsurancecompany.cpp \
@@ -128,7 +131,12 @@ SOURCES += main.cpp\
     UI/dlgexportedcash.cpp \
     UI/dlgexportedtopass.cpp \
     UI/dlgimport.cpp \
-    Widgets/credentials.cpp
+    Widgets/credentials.cpp \
+    UI/dlgmarkets.cpp \
+    Widgets/marketdetails.cpp \
+    Widgets/offerdetails.cpp \
+    Widgets/agreementdetails.cpp \
+    Widgets/corporationdetails.cpp
 
 RESOURCES += resource.qrc
 
@@ -174,7 +182,12 @@ FORMS += \
     UI/dlgexportedcash.ui \
     UI/dlgexportedtopass.ui \
     UI/dlgimport.ui \
-    Widgets/credentials.ui
+    Widgets/credentials.ui \
+    UI/dlgmarkets.ui \
+    Widgets/marketdetails.ui \
+    Widgets/offerdetails.ui \
+    Widgets/agreementdetails.ui \
+    Widgets/corporationdetails.ui
 
 mac:{
 
@@ -201,6 +214,17 @@ mac:{
 linux:{
 	LIBS += -ldl
 }
+
+
+#QMAKE_CXXFLAGS_WARN_ON  = ""
+#QMAKE_CXXFLAGS_WARN_OFF = ""
+
+QMAKE_CFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
+QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
+
+#QMAKE_CXXFLAGS  -= -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
+#QMAKE_CXXFLAGS  += -Wno-unused-parameter -Wno-unused-function -Wno-unneeded-internal-declaration
+
 
 # Set libraries and includes at end, to use platform-defined defaults if not overridden
 

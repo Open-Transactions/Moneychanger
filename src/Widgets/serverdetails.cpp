@@ -20,9 +20,6 @@
 
 MTServerDetails::MTServerDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
-    m_pPlainTextEdit(NULL),
-    m_pDownloader(NULL),
-    m_pHeaderWidget(NULL),
     ui(new Ui::MTServerDetails)
 {
     ui->setupUi(this);
@@ -66,6 +63,15 @@ QWidget * MTServerDetails::CreateCustomTab(int nTab)
     {
     case 0:
     {
+        if (m_pPlainTextEdit)
+        {
+            m_pPlainTextEdit->setParent(NULL);
+            m_pPlainTextEdit->disconnect();
+            m_pPlainTextEdit->deleteLater();
+
+            m_pPlainTextEdit = NULL;
+        }
+
         m_pPlainTextEdit = new QPlainTextEdit;
 
         m_pPlainTextEdit->setReadOnly(true);
@@ -130,7 +136,8 @@ void MTServerDetails::ClearContents()
     ui->lineEditID  ->setText("");
     ui->lineEditName->setText("");
 
-    m_pPlainTextEdit->setPlainText("");
+    if (m_pPlainTextEdit)
+        m_pPlainTextEdit->setPlainText("");
 }
 
 
@@ -193,8 +200,7 @@ void MTServerDetails::DeleteButtonClicked()
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 m_pOwner->RefreshRecords();
                 // ------------------------------------------------
-                if (NULL != m_pMoneychanger)
-                    m_pMoneychanger->SetupMainMenu();
+                Moneychanger::It()->SetupMainMenu();
                 // ------------------------------------------------
             }
             else
@@ -273,8 +279,7 @@ void MTServerDetails::ImportContract(QString qstrContents)
         m_pOwner->SetPreSelected(qstrContractID);
         m_pOwner->RefreshRecords();
         // ------------------------------------------------
-        if (NULL != m_pMoneychanger)
-            m_pMoneychanger->SetupMainMenu();
+        Moneychanger::It()->SetupMainMenu();
         // ------------------------------------------------
     } // if (!qstrContractID.isEmpty())
 }
@@ -318,9 +323,12 @@ void MTServerDetails::AddButtonClicked()
 
                 QUrl theURL(qstrURL);
                 // --------------------------------
-                if (NULL != m_pDownloader)
+                if (m_pDownloader)
                 {
-                    delete m_pDownloader;
+                    m_pDownloader->setParent(NULL);
+                    m_pDownloader->disconnect();
+                    m_pDownloader->deleteLater();
+
                     m_pDownloader = NULL;
                 }
                 // --------------------------------
@@ -404,10 +412,14 @@ void MTServerDetails::refresh(QString strID, QString strName)
 
         pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
-        if (NULL != m_pHeaderWidget)
+        if (m_pHeaderWidget)
         {
             ui->verticalLayout->removeWidget(m_pHeaderWidget);
-            delete m_pHeaderWidget;
+
+            m_pHeaderWidget->setParent(NULL);
+            m_pHeaderWidget->disconnect();
+            m_pHeaderWidget->deleteLater();
+
             m_pHeaderWidget = NULL;
         }
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
@@ -418,10 +430,9 @@ void MTServerDetails::refresh(QString strID, QString strName)
 
         FavorLeftSideForIDs();
         // --------------------------
-        if (NULL != m_pPlainTextEdit)
+        if (m_pPlainTextEdit)
         {
             QString strContents = QString::fromStdString(OTAPI_Wrap::LoadServerContract(strID.toStdString()));
-
             m_pPlainTextEdit->setPlainText(strContents);
         }
         // --------------------------

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>MTAccountDetails</class>
- <widget class="QWidget" name="MTAccountDetails">
+ <widget class="MTEditDetails" name="MTAccountDetails">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -170,6 +170,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MTEditDetails</class>
+   <extends>QWidget</extends>
+   <header>editdetails.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../resource.qrc"/>
  </resources>

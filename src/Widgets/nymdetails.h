@@ -1,6 +1,7 @@
 #ifndef NYMDETAILS_H
 #define NYMDETAILS_H
 
+#include <QPointer>
 #include <QPlainTextEdit>
 
 #include "editdetails.h"
@@ -34,9 +35,8 @@ public:
     virtual void ClearContents();
 
 private:
-    QPlainTextEdit * m_pPlainTextEdit;
-
-    MTCredentials  * m_pCredentials;
+    QPointer<QPlainTextEdit> m_pPlainTextEdit;
+    QPointer<MTCredentials>  m_pCredentials;
 
 private slots:
     void on_lineEditName_editingFinished();
@@ -49,7 +49,7 @@ protected:
     void FavorLeftSideForIDs();
 
 private:
-    QWidget * m_pHeaderWidget;
+    QPointer<QWidget> m_pHeaderWidget;
 
     Ui::MTNymDetails *ui;
 };

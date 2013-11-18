@@ -1,13 +1,12 @@
 #ifndef REQUESTDLG_H
 #define REQUESTDLG_H
 
+#include <QPointer>
 #include <QWidget>
 
 namespace Ui {
 class MTRequestDlg;
 }
-
-class Moneychanger;
 
 class MTRequestDlg : public QWidget
 {
@@ -20,10 +19,8 @@ class MTRequestDlg : public QWidget
 
     bool m_bSent;
 
-    Moneychanger * m_pMoneychanger;
-
 public:
-    explicit MTRequestDlg(QWidget *parent, Moneychanger & theMC);
+    explicit MTRequestDlg(QWidget *parent=0);
     ~MTRequestDlg();
 
     void setInitialHisNym (QString nymId)  { m_hisNymId  = nymId;  } // From:

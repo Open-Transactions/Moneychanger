@@ -350,7 +350,7 @@ bool MTRecordList::PerformAutoAccept()
                 // ------------------------------
             } // looping through payments inbox.
             else
-                OTLog::vOutput(0, "%s: Failed loading payments inbox. (Probably just doesn't exist yet.)\n", __FUNCTION__);
+                OTLog::vOutput(1, "%s: Failed loading payments inbox. (Probably just doesn't exist yet.)\n", __FUNCTION__);
             // --------------------------------------------------------------------------
             // Above we compiled a list of purses, cheques / vouchers to accept.
             // If there are any on that list, then ACCEPT them here.
@@ -1354,7 +1354,7 @@ bool MTRecordList::Populate()
 
             } // looping through inbox.
             else
-                OTLog::vOutput(0, "%s: Failed loading payments inbox. (Probably just doesn't exist yet.)\n", __FUNCTION__);
+                OTLog::vOutput(1, "%s: Failed loading payments inbox. (Probably just doesn't exist yet.)\n", __FUNCTION__);
             // ------------------------------------------------
             nIndex = (-1);
 
@@ -1691,7 +1691,7 @@ bool MTRecordList::Populate()
 
             } // Loop through Recordbox
             else
-                OTLog::vOutput(0, "%s: Failed loading payments record box. (Probably just doesn't exist yet.)\n", __FUNCTION__);
+                OTLog::vOutput(1, "%s: Failed loading payments record box. (Probably just doesn't exist yet.)\n", __FUNCTION__);
             // ------------------------------------------------
 
             // ------------------------------------------------
@@ -2032,7 +2032,7 @@ bool MTRecordList::Populate()
 
             } // Loop through ExpiredBox
             else
-                OTLog::vOutput(0, "%s: Failed loading expired payments box. (Probably just doesn't exist yet.)\n", __FUNCTION__);
+                OTLog::vOutput(1, "%s: Failed loading expired payments box. (Probably just doesn't exist yet.)\n", __FUNCTION__);
             // ------------------------------------------------
 
         } // Loop through servers for each Nym.
@@ -2929,14 +2929,14 @@ int MTRecordList::size()
 
 bool MTRecordList::RemoveRecord(int nIndex)
 {
-    OT_ASSERT((nIndex >= 0) && (nIndex < m_contents.size()));
+    OT_ASSERT((nIndex >= 0) && (nIndex < static_cast<long>(m_contents.size())));
     m_contents.erase(m_contents.begin()+nIndex);
     return true;
 }
 
 weak_ptr_MTRecord MTRecordList::GetRecord(int nIndex)
 {
-    OT_ASSERT((nIndex >= 0) && (nIndex < m_contents.size()));
+    OT_ASSERT((nIndex >= 0) && (nIndex < static_cast<long>(m_contents.size())));
     weak_ptr_MTRecord wp_record(m_contents[nIndex]);
     return wp_record;
 }

@@ -2,6 +2,7 @@
 #define ACCOUNTDETAILS_H
 
 #include <QWidget>
+#include <QPointer>
 #include <QLineEdit>
 #include <QGridLayout>
 #include <QString>
@@ -36,9 +37,8 @@ public:
     // ----------------------------------
 
 private:
-    QWidget * m_pHeaderWidget;
-
-    MTCashPurse * m_pCashPurse; // Tab 3.
+    QPointer<QWidget>     m_pHeaderWidget;
+    QPointer<MTCashPurse> m_pCashPurse; // Tab 3.
 
 private slots:
     void on_lineEditName_editingFinished();

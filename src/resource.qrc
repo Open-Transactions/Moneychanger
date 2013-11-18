@@ -36,5 +36,6 @@
         <file>icons/vault.png</file>
         <file>icons/safe_box.png</file>
         <file>icons/safe.png</file>
+        <file>icons/buildings.png</file>
     </qresource>
 </RCC>

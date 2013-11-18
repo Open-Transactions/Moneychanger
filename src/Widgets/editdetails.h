@@ -1,6 +1,7 @@
 #ifndef EDITDETAILS_H
 #define EDITDETAILS_H
 
+#include <QPointer>
 #include <QWidget>
 #include <QGridLayout>
 
@@ -55,8 +56,7 @@ private slots:
 //    void on_acceptButton_clicked(bool checked = false);
 
 protected:    
-    MTDetailEdit * m_pOwner;
-    Moneychanger * m_pMoneychanger;
+    QPointer<MTDetailEdit> m_pOwner;
 
 private:
 //    Ui::MTEditDetails *ui;

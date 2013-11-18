@@ -1,13 +1,12 @@
 #ifndef SENDDLG_H
 #define SENDDLG_H
 
+#include <QPointer>
 #include <QWidget>
 
 namespace Ui {
 class MTSendDlg;
 }
-
-class Moneychanger;
 
 class MTSendDlg : public QWidget
 {
@@ -20,10 +19,8 @@ class MTSendDlg : public QWidget
 
     bool m_bSent;
 
-    Moneychanger * m_pMoneychanger;
-
 public:
-    explicit MTSendDlg(QWidget *parent, Moneychanger & theMC);
+    explicit MTSendDlg(QWidget *parent=0);
     ~MTSendDlg();
 
     void setInitialHisNym (QString nymId)  { m_hisNymId  = nymId;  } // To:
@@ -57,6 +54,8 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private slots:
+    void onBalancesChanged();
+
     void on_toButton_clicked();
     void on_fromButton_clicked();
     void on_sendButton_clicked();

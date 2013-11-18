@@ -1,6 +1,8 @@
 #ifndef CONTACTDETAILS_H
 #define CONTACTDETAILS_H
 
+#include <QPointer>
+
 #include "editdetails.h"
 
 namespace Ui {
@@ -33,15 +35,15 @@ public:
     virtual void ClearContents();
 
 private:
-    QPlainTextEdit * m_pPlainTextEdit;
+    QPointer<QPlainTextEdit> m_pPlainTextEdit;
 
-    MTCredentials  * m_pCredentials;
+    QPointer<MTCredentials> m_pCredentials;
 
 private slots:
     void on_lineEditName_editingFinished();
 
 private:
-    QWidget * m_pHeaderWidget;
+    QPointer<QWidget> m_pHeaderWidget;
 
     Ui::MTContactDetails *ui;
 };

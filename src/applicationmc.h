@@ -13,8 +13,6 @@ class MTApplicationMC : public QApplication
 {
     Q_OBJECT
 
-    Moneychanger * m_pMoneychanger;
-
 public:
     MTApplicationMC(int &argc, char **argv);
     virtual ~MTApplicationMC();
