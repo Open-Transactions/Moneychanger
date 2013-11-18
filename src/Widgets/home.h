@@ -1,6 +1,7 @@
 #ifndef MTHOME_H
 #define MTHOME_H
 
+#include <QPointer>
 #include <QWidget>
 #include <QLabel>
 #include <QMutex>
@@ -39,9 +40,9 @@ private:
     bool already_init;
     QMutex mc_overview_refreshing_visuals_mutex;
     // ------------------------------------------------
-    MTHomeDetail * m_pDetailPane;
-    QVBoxLayout  * m_pDetailLayout;
-    QGridLayout  * m_pHeaderLayout;
+    QPointer<MTHomeDetail>  m_pDetailPane;
+    QPointer<QVBoxLayout>   m_pDetailLayout;
+    QPointer<QGridLayout>   m_pHeaderLayout;
     // ------------------------------------------------
     MTRecordList   m_list;
     // ------------------------------------------------
@@ -70,6 +71,7 @@ signals:
 
 public slots:
     void onBalancesChanged();
+    void onAccountDataDownloaded();
 
 private slots:
     void on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn);

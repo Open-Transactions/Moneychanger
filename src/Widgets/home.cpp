@@ -3,6 +3,7 @@
 #include <QPushButton>
 #include <QToolButton>
 #include <QScrollArea>
+#include <QKeyEvent>
 #include <QDebug>
 
 
@@ -24,9 +25,6 @@
 MTHome::MTHome(QWidget *parent) :
     QWidget(parent, Qt::Window),
     already_init(false),
-    m_pDetailPane(NULL),
-    m_pDetailLayout(NULL),
-    m_pHeaderLayout(NULL),
     m_list(*(new MTNameLookupQT)),
     m_bNeedRefresh(false),
     ui(new Ui::MTHome)
@@ -41,22 +39,22 @@ MTHome::~MTHome()
     delete ui;
 }
 
-bool MTHome::eventFilter(QObject *obj, QEvent *event){
-
-    if (event->type() == QEvent::Close) {
-        ((Moneychanger *)parentWidget())->close_overview_dialog();
-        return true;
-    } else if (event->type() == QEvent::KeyPress) {
+bool MTHome::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress)
+    {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if(keyEvent->key() == Qt::Key_Escape){
+
+        if (keyEvent->key() == Qt::Key_Escape)
+        {
             close(); // This is caught by this same filter.
             return true;
         }
         return true;
-    }else {
-        // standard event processing
-        return QObject::eventFilter(obj, event);
     }
+
+    // standard event processing
+    return QObject::eventFilter(obj, event);
 }
 
 
@@ -110,7 +108,8 @@ void MTHome::dialog()
 
 void MTHome::on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn)
 {
-    m_pDetailPane->refresh(row, m_list);
+    if (m_pDetailPane)
+        m_pDetailPane->refresh(row, m_list);
 }
 
 void MTHome::setupRecordList()
@@ -166,12 +165,13 @@ void MTHome::onBalancesChanged()
 void MTHome::RefreshUserBar()
 {
     // --------------------------------------------------
-    if (NULL != m_pHeaderLayout)
-    {
-        MTHomeDetail::clearLayout(m_pHeaderLayout);
-        delete m_pHeaderLayout;
-        m_pHeaderLayout = NULL;
-    }
+    // Clever way to clear the entire layout and delete all
+    // its widgets. Basically the ownership is switched to
+    // a temporary widget, which then passes out of scope.
+    //
+    if (ui->headerFrame->layout())
+        QWidget().setLayout(ui->headerFrame->layout());
+
     // --------------------------------------------------
     m_pHeaderLayout = new QGridLayout;
     m_pHeaderLayout->setAlignment(Qt::AlignTop);
@@ -196,7 +196,7 @@ void MTHome::SetNeedRefresh()
 
 void MTHome::RefreshAll()
 {
-    int nRowCount    = ui->tableWidget->rowCount();
+//  int nRowCount    = ui->tableWidget->rowCount();
     int nCurrentRow  = ui->tableWidget->currentRow();
 
 //  bool bRefreshed = ;// PULL THE DATA FROM THE SERVER HERE.
@@ -246,58 +246,50 @@ void MTHome::RefreshAll()
 
 void MTHome::on_refreshButton_clicked()
 {
-    // ------------------------------------------------------
-    {
-        MTOverrideCursor theSpinner;
-        // -----------------------------------------
-        qDebug() << QString("Refreshing records from transaction servers.");
-        // -----------------------------------------
-        emit needToDownloadAccountData();
-    }
-    // ------------------------------------------------------
-    RefreshAll();
+    MTOverrideCursor theSpinner;
+    // -----------------------------------------
+    qDebug() << QString("Refreshing records from transaction servers.");
+    // -----------------------------------------
+    emit needToDownloadAccountData();
 }
 
 
+void MTHome::onAccountDataDownloaded()
+{
+    RefreshAll();
+}
+
 void MTHome::on_contactsButton_clicked()
 {
-    Moneychanger * pMoneychanger = ((Moneychanger *)(this->parentWidget()));
-    // --------------------------------------------------
-    pMoneychanger->mc_addressbook_show(QString(""));
+    Moneychanger::It()->mc_addressbook_show(QString(""));
 }
 
 
 void MTHome::on_sendButton_clicked()
 {
-    Moneychanger * pMoneychanger = ((Moneychanger *)(this->parentWidget()));
-    // --------------------------------------------------
-    MTSendDlg * send_window = new MTSendDlg(NULL, *pMoneychanger);
+    MTSendDlg * send_window = new MTSendDlg(NULL);
     send_window->setAttribute(Qt::WA_DeleteOnClose);
     // --------------------------------------------------
-    QString qstr_acct_id = pMoneychanger->get_default_account_id();
+    QString qstr_acct_id = Moneychanger::It()->get_default_account_id();
 
     if (!qstr_acct_id.isEmpty())
         send_window->setInitialMyAcct(qstr_acct_id);
     // ---------------------------------------
     send_window->dialog();
-    send_window->show();
     // --------------------------------------------------
 }
 
 void MTHome::on_requestButton_clicked()
 {
-    Moneychanger * pMoneychanger = ((Moneychanger *)(this->parentWidget()));
-    // --------------------------------------------------
-    MTRequestDlg * request_window = new MTRequestDlg(NULL, *pMoneychanger);
+    MTRequestDlg * request_window = new MTRequestDlg(NULL);
     request_window->setAttribute(Qt::WA_DeleteOnClose);
     // --------------------------------------------------
-    QString qstr_acct_id = pMoneychanger->get_default_account_id();
+    QString qstr_acct_id = Moneychanger::It()->get_default_account_id();
 
     if (!qstr_acct_id.isEmpty())
         request_window->setInitialMyAcct(qstr_acct_id);
     // ---------------------------------------
     request_window->dialog();
-    request_window->show();
     // --------------------------------------------------
 }
 
@@ -433,16 +425,12 @@ QString MTHome::FormDisplayLabelForAcctButton(QString qstr_acct_id, QString qstr
 
 void MTHome::on_account_clicked()
 {
-    Moneychanger * pMoneychanger = (Moneychanger *)(this->parentWidget());
-    // ----------------------------------------------
-    pMoneychanger->mc_accountmanager_dialog();
+    Moneychanger::It()->mc_accountmanager_dialog();
 }
 
 
 QWidget * MTHome::CreateUserBarWidget()
 {
-    Moneychanger * pMoneychanger = (Moneychanger *)(this->parentWidget());
-    // ----------------------------------------------
     //Append to transactions list in overview dialog.
     QWidget     * row_widget        = new QWidget;
     QGridLayout * row_widget_layout = new QGridLayout;
@@ -462,15 +450,15 @@ QWidget * MTHome::CreateUserBarWidget()
             qstr_acct_asset, qstr_acct_asset_name("");
     // -------------------------------------------
     QString qstr_acct_name("");
-    QString qstr_acct_id = pMoneychanger->get_default_account_id();
+    QString qstr_acct_id = Moneychanger::It()->get_default_account_id();
     // -------------------------------------------
     if (qstr_acct_id.isEmpty())
     {
         qstr_acct_name   = tr("(Default Account Isn't Set Yet)");
         // -----------------------------------
-        qstr_acct_nym    = pMoneychanger->get_default_nym_id();
-        qstr_acct_server = pMoneychanger->get_default_server_id();
-        qstr_acct_asset  = pMoneychanger->get_default_asset_id();
+        qstr_acct_nym    = Moneychanger::It()->get_default_nym_id();
+        qstr_acct_server = Moneychanger::It()->get_default_server_id();
+        qstr_acct_asset  = Moneychanger::It()->get_default_asset_id();
     }
     else
     {

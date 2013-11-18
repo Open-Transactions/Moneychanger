@@ -25,9 +25,6 @@
 
 MTNymDetails::MTNymDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
-    m_pPlainTextEdit(NULL),
-    m_pCredentials(NULL),
-    m_pHeaderWidget(NULL),
     ui(new Ui::MTNymDetails)
 {
     ui->setupUi(this);
@@ -87,8 +84,16 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
     switch (nTab)
     {
     case 0: // "Credentials" tab
-        if (NULL != m_pOwner)
+        if (m_pOwner)
         {
+            if (m_pCredentials)
+            {
+                m_pCredentials->setParent(NULL);
+                m_pCredentials->disconnect();
+                m_pCredentials->deleteLater();
+
+                m_pCredentials = NULL;
+            }
             m_pCredentials = new MTCredentials(NULL, *m_pOwner);
             pReturnValue = m_pCredentials;
             pReturnValue->setContentsMargins(0, 0, 0, 0);
@@ -97,6 +102,15 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
 
     case 1: // "State of Nym" tab
     {
+        if (m_pPlainTextEdit)
+        {
+            m_pPlainTextEdit->setParent(NULL);
+            m_pPlainTextEdit->disconnect();
+            m_pPlainTextEdit->deleteLater();
+
+            m_pPlainTextEdit = NULL;
+        }
+
         m_pPlainTextEdit = new QPlainTextEdit;
 
         m_pPlainTextEdit->setReadOnly(true);
@@ -159,10 +173,14 @@ void MTNymDetails::refresh(QString strID, QString strName)
 
         pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
-        if (NULL != m_pHeaderWidget)
+        if (m_pHeaderWidget)
         {
             ui->verticalLayout->removeWidget(m_pHeaderWidget);
-            delete m_pHeaderWidget;
+
+            m_pHeaderWidget->setParent(NULL);
+            m_pHeaderWidget->disconnect();
+            m_pHeaderWidget->deleteLater();
+
             m_pHeaderWidget = NULL;
         }
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
@@ -175,16 +193,15 @@ void MTNymDetails::refresh(QString strID, QString strName)
         // --------------------------
         // TAB: "Nym State"
         //
-        if (NULL != m_pPlainTextEdit)
+        if (m_pPlainTextEdit)
         {
             QString strContents = QString::fromStdString(OTAPI_Wrap::GetNym_Stats(strID.toStdString()));
-
             m_pPlainTextEdit->setPlainText(strContents);
         }
         // -----------------------------------
         // TAB: "CREDENTIALS"
         //
-        if (NULL != m_pCredentials)
+        if (m_pCredentials)
         {
             QStringList qstrlistNymIDs;
             qstrlistNymIDs.append(strID);
@@ -201,11 +218,11 @@ void MTNymDetails::ClearContents()
     ui->lineEditName->setText("");
 
     // ------------------------------------------
-    if (NULL != m_pCredentials)
+    if (m_pCredentials)
         m_pCredentials->ClearContents();
     // ------------------------------------------
-
-    m_pPlainTextEdit->setPlainText("");
+    if (m_pPlainTextEdit)
+        m_pPlainTextEdit->setPlainText("");
 }
 
 // ------------------------------------------------------
@@ -280,8 +297,7 @@ void MTNymDetails::DeleteButtonClicked()
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 m_pOwner->RefreshRecords();
                 // ------------------------------------------------
-                if (NULL != m_pMoneychanger)
-                    m_pMoneychanger->SetupMainMenu();
+                Moneychanger::It()->SetupMainMenu();
                 // ------------------------------------------------
             }
             else
@@ -374,8 +390,7 @@ void MTNymDetails::AddButtonClicked()
         m_pOwner->SetPreSelected(qstrID);
         m_pOwner->RefreshRecords();
         // ------------------------------------------------
-        if (NULL != m_pMoneychanger)
-            m_pMoneychanger->SetupMainMenu();
+        Moneychanger::It()->SetupMainMenu();
         // ------------------------------------------------
     }
 }

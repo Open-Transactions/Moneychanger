@@ -1,3 +1,5 @@
+#include <QKeyEvent>
+
 #include "createinsurancecompany.h"
 #include "ui_createinsurancecompany.h"
 
@@ -15,17 +17,19 @@ CreateInsuranceCompany::~CreateInsuranceCompany()
 
 bool CreateInsuranceCompany::eventFilter(QObject *obj, QEvent *event){
 
-    if (event->type() == QEvent::Close) {
-        ((Moneychanger *)parentWidget())->close_createinsurancecompany_dialog();
-        return true;
-    } else if (event->type() == QEvent::KeyPress) {
+    if (event->type() == QEvent::KeyPress)
+    {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if(keyEvent->key() == Qt::Key_Escape){
+
+        if (keyEvent->key() == Qt::Key_Escape)
+        {
             close(); // This is caught by this same filter.
             return true;
         }
         return true;
-    } else {
+    }
+    else
+    {
         // standard event processing
         return QObject::eventFilter(obj, event);
     }

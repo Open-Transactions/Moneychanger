@@ -29,7 +29,6 @@ MTCashPurse::MTCashPurse(QWidget *parent, MTDetailEdit & theOwner) :
     m_qstrAcctId(""),
     m_qstrAssetId(""),
     m_pOwner(&theOwner),
-    m_pHeaderWidget(NULL),
     ui(new Ui::MTCashPurse)
 {
     ui->setupUi(this);
@@ -99,10 +98,14 @@ void MTCashPurse::refresh(QString strID, QString strName)
 
         pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
-        if (NULL != m_pHeaderWidget)
+        if (m_pHeaderWidget)
         {
             ui->verticalLayoutPage->removeWidget(m_pHeaderWidget);
-            delete m_pHeaderWidget;
+
+            m_pHeaderWidget->setParent(NULL);
+            m_pHeaderWidget->disconnect();
+            m_pHeaderWidget->deleteLater();
+
             m_pHeaderWidget = NULL;
         }
         ui->verticalLayoutPage->insertWidget(0, pHeaderWidget);
@@ -539,10 +542,14 @@ void MTCashPurse::ClearContents()
     // ----------------------------------
     ui->labelCashBalance->setText("");
     // ----------------------------------
-    if (NULL != m_pHeaderWidget)
+    if (m_pHeaderWidget)
     {
         ui->verticalLayoutPage->removeWidget(m_pHeaderWidget);
-        delete m_pHeaderWidget;
+
+        m_pHeaderWidget->setParent(NULL);
+        m_pHeaderWidget->disconnect();
+        m_pHeaderWidget->deleteLater();
+
         m_pHeaderWidget = NULL;
     }
     // ----------------------------------
