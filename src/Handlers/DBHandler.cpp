@@ -1,6 +1,8 @@
 #include "DBHandler.h"
 #include <QDebug>
 
+#include <memory>
+
 DBHandler * DBHandler::_instance = NULL;
 
 DBHandler* DBHandler::getInstance()
@@ -112,6 +114,25 @@ bool DBHandler::dbCreateInstance()
         QString create_server  = "CREATE TABLE nym_server(nym_id TEXT, server_id TEXT, PRIMARY KEY(nym_id, server_id))";
         QString create_account = "CREATE TABLE nym_account(account_id TEXT PRIMARY KEY, server_id TEXT, nym_id TEXT, asset_id TEXT, account_display_name TEXT)";
         // --------------------------------------------
+        /* Keep track of Namecoin names registered for the purpose of
+           Moneychanger.  They are always related to a Nym and credential
+           hash, so those are kept here, too, so we can easily find
+           corresponding names (although the name itself depends on the
+           credential hash).  'active' is true if the name registration
+           process has been finished; if not, 'regData' contains the
+           JSON string describing the nmcrpc::NameRegistration object
+           of the ongoing registration.  'updateTx' contains the
+           transaction ID of the last name_update that has been issued,
+           mainly to keep track of still unconfirmed update transactions
+           (after the first confirmation, we can find it via the name).  */
+        QString create_nmc = "CREATE TABLE nmc_names"
+                             "  (name     TEXT PRIMARY KEY,"
+                             "   nym      TEXT,"
+                             "   cred     TEXT,"
+                             "   active   BOOLEAN,"
+                             "   regData  TEXT,"
+                             "   updateTx TEXT)";
+        // --------------------------------------------
         error += query.exec(address_book_create);
         error += query.exec(default_nym_create);
         error += query.exec(default_server_create);
@@ -123,8 +144,9 @@ bool DBHandler::dbCreateInstance()
         error += query.exec(create_nym);
         error += query.exec(create_server);
         error += query.exec(create_account);
+        error += query.exec(create_nmc);
         // ------------------------------------------
-        if(error != 10)  //every querie passed?
+        if(error != 11)  //every querie passed?
         {
             qDebug() << "dbCreateInstance Error: " << dbConnectErrorStr + " " + dbCreationStr;
             FileHandler rm;
@@ -142,7 +164,23 @@ bool DBHandler::isConnected()
     return db.isOpen();
 }
 
-bool DBHandler::runQuery(QString run)
+DBHandler::PreparedQuery* DBHandler::prepareQuery(const QString& run)
+{
+  return new PreparedQuery (db, run);
+}
+
+bool DBHandler::runQuery(PreparedQuery* query)
+{
+  std::unique_ptr<PreparedQuery> qu(query);
+
+  QMutexLocker locker(&dbMutex);
+  if (!db.isOpen ())
+    return false;
+
+  return qu->execute ();
+}
+
+bool DBHandler::runQuery(const QString& run)
 {
     QMutexLocker locker(&dbMutex);
     
@@ -506,4 +544,21 @@ bool DBHandler::AddressBookUpdateDefaultServer(QString ID)
         qDebug() << "AddressBookUpdateDefaultServer Error";
         return false;
     }
+}
+
+/* ************************************************************************** */
+
+bool
+DBHandler::PreparedQuery::execute ()
+{
+  const bool ok = query.exec ();
+  if (!ok)
+    {
+      qDebug () << "runQuery: QSqlQuery::lastError: "
+                << query.lastError ().text ();
+      qDebug () << QString("THE QUERY (that caused the error): %1").arg (queryStr);
+      return false;
+    }
+
+  return true;
 }

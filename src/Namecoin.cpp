@@ -20,10 +20,18 @@
 
 #include "Namecoin.hpp"
 
+#include "DBHandler.h"
+
 #include <nmcrpc/RpcSettings.hpp>
+
+#include <QDebug>
+#include <QSqlField>
+#include <QSqlRecord>
 
 #include <cassert>
 #include <iostream>
+#include <memory>
+#include <sstream>
 
 /** Namespace used for Namecoin credentials.  */
 const std::string NMC_NS = "ot";
@@ -53,6 +61,80 @@ NMC_Interface::~NMC_Interface ()
 
   delete rpc;
   delete nc;
+}
+
+/* ************************************************************************** */
+/* NMC_NameManager.  */
+
+/**
+ * Construct with NMC_Interface to take the connections from.  It also
+ * queries the database to fill in the pending registrations.
+ * @param nmc NMC_Interface instance to use.
+ */
+NMC_NameManager::NMC_NameManager (NMC_Interface& nmc)
+  : rpc(nmc.getJsonRpc ()), nc(nmc.getNamecoin ()),
+    pendingRegs()
+{
+  const QString query = "SELECT `regData` FROM `nmc_names`"
+                        " WHERE (`regData` IS NOT NULL) AND (NOT `active`)";
+
+  const auto addPendingReg = [this] (const QSqlRecord& rec)
+    {
+      nmcrpc::NameRegistration reg(rpc, nc);
+      const QString val = rec.field("regData").value ().toString ();
+      std::istringstream in(val.toStdString ());
+      in >> reg;
+      pendingRegs.push_back (reg);
+
+      qDebug () << "  " << QString(reg.getName ().c_str ());
+    };
+  qDebug () << "Loading pending name registrations:";
+  DBHandler::getInstance ()->queryMultiple (query, addPendingReg);
+}
+
+/**
+ * Start the name registration process of a new credential hash in the
+ * Namecoin blockchain.
+ * @param nym The Nym hash.
+ * @param cred The credential hash.
+ */
+void
+NMC_NameManager::startRegistration (const QString nym, const QString cred)
+{
+  qDebug () << "Registering " << nym << " with credentials " << cred
+            << " on the Namecoin blockchain.";
+
+  try
+    {
+      nmcrpc::NamecoinInterface::Name nm;
+      nm = nc.queryName (NMC_NS, cred.toStdString ());
+
+      nmcrpc::NameRegistration reg(rpc, nc);
+      reg.registerName (nm);
+      /* Don't yet set the value (with the Namecoin signature).  We have to
+         do a name_update anyway in order to send the name to its target
+         address.  */
+
+      std::ostringstream out;
+      out << reg;
+
+      const QString queryStr = "INSERT INTO `nmc_names`"
+                               "  (`name`, `nym`, `cred`, `active`, `regData`)"
+                               "  VALUES (:name, :nym, :cred, 0, :regData)";
+      std::unique_ptr<DBHandler::PreparedQuery> qu;
+      qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+      qu->bind (":name", nm.getName ().c_str ());
+      qu->bind (":nym", nym);
+      qu->bind (":cred", cred);
+      qu->bind (":regData", out.str ().c_str ());
+      DBHandler::getInstance ()->runQuery (qu.release ());
+
+      pendingRegs.push_back (reg);
+    }
+  catch (const std::exception& exc)
+    {
+      qDebug () << "Error: " << exc.what ();
+    }
 }
 
 /* ************************************************************************** */

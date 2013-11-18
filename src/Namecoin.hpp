@@ -21,10 +21,14 @@
 #ifndef MONEYCHANGER_NAMECOIN_HPP
 #define MONEYCHANGER_NAMECOIN_HPP
 
+#include <QString>
+
+#include <list>
 #include <string>
 
 #include <nmcrpc/JsonRpc.hpp>
 #include <nmcrpc/NamecoinInterface.hpp>
+#include <nmcrpc/NameRegistration.hpp>
 
 /** Namespace used for Namecoin credentials.  */
 extern const std::string NMC_NS;
@@ -83,6 +87,48 @@ public:
   {
     return *nc;
   }
+
+};
+
+/* ************************************************************************** */
+/* NMC_NameManager.  */
+
+/**
+ * Interface to the stored data about registered names as in the
+ * database's nmc_names table.  It also holds a list of all the
+ * nmcrpc::NameRegistration objects still in progress.
+ */
+class NMC_NameManager
+{
+
+private:
+
+  /** JsonRpc connection to be used.  */
+  nmcrpc::JsonRpc& rpc;
+  /** High-level Namecoin interface to be used.  */
+  nmcrpc::NamecoinInterface& nc;
+
+  /** Type for array of NameRegistration objects.  */
+  typedef std::list<nmcrpc::NameRegistration> regList;
+  /** List of pending name registrations.  */
+  regList pendingRegs;
+
+public:
+
+  /**
+   * Construct with NMC_Interface to take the connections from.  It also
+   * queries the database to fill in the pending registrations.
+   * @param nmc NMC_Interface instance to use.
+   */
+  explicit NMC_NameManager (NMC_Interface& nmc);
+
+  /**
+   * Start the name registration process of a new credential hash in the
+   * Namecoin blockchain.
+   * @param nym The Nym hash.
+   * @param cred The credential hash.
+   */
+  void startRegistration (const QString nym, const QString cred);
 
 };
 

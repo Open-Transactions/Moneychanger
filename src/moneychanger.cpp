@@ -44,6 +44,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 : QWidget(parent),
   ot_me(NULL),
   ot_worker_background(NULL),
+  nmc_names(NULL),
   mc_overall_init(false),
   mc_overview_already_init(false),
   mc_market_window_already_init(false),
@@ -110,6 +111,10 @@ Moneychanger::Moneychanger(QWidget *parent)
     
     //OT Related
     ot_me = new OT_ME();
+
+    /* Set up Namecoin name manager.  */
+    NMC_Interface nmc;
+    nmc_names = new NMC_NameManager (nmc);
     
     //SQLite database
     // This can be moved very easily into a different class
@@ -284,6 +289,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 
 Moneychanger::~Moneychanger()
 {
+    delete nmc_names;
     ClearMainMenu();
 }
 

@@ -9,7 +9,7 @@
  */
 template<typename T>
   bool
-  DBHandler::queryMultiple (QString run, T cb)
+  DBHandler::queryMultiple (const QString& run, T cb)
 {
   QMutexLocker locker(&dbMutex);
   QSqlQuery query(db);

@@ -57,8 +57,25 @@ class DBHandler
 
   public:
     static DBHandler * getInstance();
-    
-    bool runQuery(QString run);
+
+    class PreparedQuery;
+
+    /**
+     * Start a prepared query.
+     * @param run The template string including placeholders.
+     * @return A PreparedQuery object to be filled in.
+     */
+    PreparedQuery* prepareQuery(const QString& run);
+
+    bool runQuery(const QString& run);
+
+    /**
+     * Run a previously prepared query.  The memory of the query is freed.
+     * @param query The query, which is freed.
+     * @return True in case of success.
+     */
+    bool runQuery(PreparedQuery* query);
+
     int querySize(QString run);
     bool isNext(QString run);
 
@@ -73,7 +90,7 @@ class DBHandler
      * @return True in case of success.
      */
     template<typename T>
-      bool queryMultiple(QString run, T cb);
+      bool queryMultiple(const QString& run, T cb);
 
     QVariant AddressBookInsertNym(QString nym_id_string, QString nym_display_name_string);
 
@@ -88,6 +105,60 @@ class DBHandler
 
 
     ~DBHandler();
+};
+
+/**
+ * A prepared query.  This object is used to fill in template parameters
+ * before the query is executed by a DBHandler.
+ */
+class DBHandler::PreparedQuery
+{
+
+  private:
+    
+    friend class DBHandler;
+
+    /** The backing QSqlQuery object.  */
+    QSqlQuery query;
+    /** Query string for error messages.  */
+    QString queryStr;
+
+    /**
+     * Construct the query given the database.  This is private as it should
+     * be used from within DBHandler only, in the prepareQuery method.
+     * @param db QSqlDatabase used.
+     * @param run SQL template string.
+     */
+    inline PreparedQuery (QSqlDatabase& db, const QString& run)
+      : query(db), queryStr(run)
+    {
+      query.prepare (run);
+    }
+
+    // No copying.
+    PreparedQuery () = delete;
+    PreparedQuery (const PreparedQuery&) = delete;
+    PreparedQuery& operator= (const PreparedQuery&) = delete;
+
+    /**
+     * Execute the query.
+     * @return True in case of success.
+     */
+    bool execute ();
+
+  public:
+
+    /**
+     * Add a bound value.
+     * @param name Name of the value.
+     * @param val Value to set it to.
+     */
+    inline void
+    bind (const QString& name, const QVariant val)
+    {
+      query.bindValue (name, val);
+    }
+
 };
 
 #include "DBHandler.tpp"

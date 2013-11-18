@@ -21,7 +21,7 @@ HEADERS += moneychanger.h \
     Namecoin.hpp \
     Handlers/contacthandler.h \
     Handlers/FileHandler.h \
-    Handlers/DBHandler.h \
+    Handlers/DBHandler.h Handlers/DBHandler.tpp \
     Widgets/marketwindow.h \
     Widgets/home.h \
     Widgets/homedetail.h \

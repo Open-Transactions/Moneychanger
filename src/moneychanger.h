@@ -39,6 +39,7 @@
 
 #include "MTRecordList.hpp"
 #include "MTRecord.hpp"
+#include "Namecoin.hpp"
 
 #include "Widgets/marketwindow.h"
 #include "Widgets/home.h"
@@ -166,6 +167,8 @@ private:
     OT_ME * ot_me;
     ot_worker * ot_worker_background;
     
+    /** Namecoin name manager.  */
+    NMC_NameManager* nmc_names;
     
     
     /**
