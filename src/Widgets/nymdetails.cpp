@@ -181,7 +181,7 @@ void MTNymDetails::refresh(QString strID, QString strName)
             m_pHeaderWidget->disconnect();
             m_pHeaderWidget->deleteLater();
 
-            m_pHeaderWidget.clear();
+            m_pHeaderWidget = NULL;
         }
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
