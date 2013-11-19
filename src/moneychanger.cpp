@@ -54,6 +54,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 : QWidget(parent),
   nmc_names(NULL),
   mc_overall_init(false),
+  nmc_update_timer(NULL),
   nym_list_id(NULL),
   nym_list_name(NULL),
   server_list_id(NULL),
@@ -70,6 +71,12 @@ Moneychanger::Moneychanger(QWidget *parent)
     /* Set up Namecoin name manager.  */
     NMC_Interface nmc;
     nmc_names = new NMC_NameManager (nmc);
+
+    /* Set up the Namecoin update timer.  */
+    nmc_update_timer = new QTimer (this);
+    connect (nmc_update_timer, SIGNAL(timeout()),
+             this, SLOT(nmc_timer_event()));
+    nmc_update_timer->start (1000 * 60 * 10);
     
     //SQLite database
     // This can be moved very easily into a different class
@@ -243,6 +250,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 
 Moneychanger::~Moneychanger()
 {
+    delete nmc_update_timer;
     delete nmc_names;
 }
 
@@ -1926,6 +1934,15 @@ void Moneychanger::mc_settings_slot()
         settingswindow = new Settings(this);
     // ------------------------------------
     settingswindow->show();
+}
+
+
+/**
+ * Namecoin update timer event.
+ */
+void Moneychanger::nmc_timer_event()
+{
+  nmc_names->timerUpdate ();
 }
 
 

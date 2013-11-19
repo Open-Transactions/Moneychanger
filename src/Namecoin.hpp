@@ -130,6 +130,12 @@ public:
    */
   void startRegistration (const QString nym, const QString cred);
 
+  /**
+   * Slot called regularly by a timer that handles all name updates
+   * where appropriate.
+   */
+  void timerUpdate ();
+
 };
 
 /* ************************************************************************** */

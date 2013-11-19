@@ -137,6 +137,17 @@ NMC_NameManager::startRegistration (const QString nym, const QString cred)
     }
 }
 
+/**
+ * Slot called regularly by a timer that handles all name updates
+ * where appropriate.
+ */
+void
+NMC_NameManager::timerUpdate ()
+{
+  qDebug () << "Name Manager timer called";
+  /* FIXME: Add actual update action.  */
+}
+
 /* ************************************************************************** */
 /* NMC_Verifier.  */
 

@@ -126,6 +126,9 @@ private:
      **/
     
     bool mc_overall_init;
+
+    /** Timer used to update Namecoin names.  */
+    QTimer* nmc_update_timer;
     
     /**
      * Window Classes
@@ -286,6 +289,11 @@ private:
     
     
 private slots:
+
+    /**
+     * Namecoin update timer event.
+     */
+    void nmc_timer_event();
 
     /** 
      * Systray Menu Slots
