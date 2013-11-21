@@ -334,10 +334,8 @@ void DlgMarkets::RefreshMarkets()
 //
 void DlgMarkets::RefreshRecords()
 {
-    disconnect(ui->comboBoxServer, SIGNAL(currentIndexChanged(int)),
-               this, SLOT(on_comboBoxServer_currentIndexChanged(int)));
-    disconnect(ui->comboBoxNym,    SIGNAL(currentIndexChanged(int)),
-               this, SLOT(on_comboBoxNym_currentIndexChanged(int)));
+    ui->comboBoxServer->blockSignals(true);
+    ui->comboBoxNym   ->blockSignals(true);
     // ----------------------------
     m_mapServers.clear();
     m_mapNyms   .clear();
@@ -432,10 +430,8 @@ void DlgMarkets::RefreshRecords()
     else
         m_serverId = QString("");
     // -----------------------------------------------
-    connect(ui->comboBoxServer, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(on_comboBoxServer_currentIndexChanged(int)));
-    connect(ui->comboBoxNym,    SIGNAL(currentIndexChanged(int)),
-            this, SLOT(on_comboBoxNym_currentIndexChanged(int)));
+    ui->comboBoxServer->blockSignals(false);
+    ui->comboBoxNym   ->blockSignals(false);
     // -----------------------------------------------
 
     RefreshMarkets();

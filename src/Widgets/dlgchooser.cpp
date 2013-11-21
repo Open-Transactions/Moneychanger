@@ -224,6 +224,10 @@ bool DlgChooser::eventFilter(QObject *obj, QEvent *event)
 
 void DlgChooser::on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
 {
+    Q_UNUSED(currentColumn);
+    Q_UNUSED(previousRow);
+    Q_UNUSED(previousColumn);
+
     m_nCurrentRow = currentRow;
     // -------------------------------------
     if (m_nCurrentRow >= 0)
@@ -257,6 +261,9 @@ void DlgChooser::on_tableWidget_currentCellChanged(int currentRow, int currentCo
 
 void DlgChooser::on_tableWidget_cellDoubleClicked(int row, int column)
 {
+    Q_UNUSED(row);
+    Q_UNUSED(column);
+
     this->on_pushButton_clicked();
 }
 

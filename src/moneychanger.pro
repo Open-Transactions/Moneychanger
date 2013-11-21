@@ -253,7 +253,10 @@ unix: PKGCONFIG += opentxs
 
 unix: PKGCONFIG += chaiscript
 
+CONFIG += debug_and_release
+
 #OTHER_FILES +=
 
 TRANSLATIONS += Translations/en_US.ts \
                 Translations/de_DE.ts
+ 

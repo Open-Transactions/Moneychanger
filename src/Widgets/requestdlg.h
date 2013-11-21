@@ -35,6 +35,10 @@ public:
     bool sendInvoice        (int64_t amount, QString toNymId, QString fromAcctId, QString note);
     bool sendChequeLowLevel (int64_t amount, QString toNymId, QString fromAcctId, QString note, bool isInvoice);
 
+signals:
+    void ShowContact(QString);
+    void ShowAccount(QString);
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
     void closeEvent(QCloseEvent *event);

@@ -91,7 +91,8 @@ void MTCashPurse::refresh(QString strID, QString strName)
         QStringList selectedIndices;
         int64_t     lAmount=0;
 
-        int nNumberChecked = this->TallySelections(selectedIndices, lAmount);
+//      int nNumberChecked =
+                this->TallySelections(selectedIndices, lAmount);
         // ----------------------------------
         QString   qstrAmount    = MTHome::shortAcctBalance(strID);
         QWidget * pHeaderWidget = MTEditDetails::CreateDetailHeaderWidget(strID, strName, qstrAmount, "", ":/icons/icons/vault.png", false);
@@ -211,10 +212,13 @@ void MTCashPurse::refresh(QString strID, QString strName)
 
 void MTCashPurse::checkboxClicked(int state)
 {
+    Q_UNUSED(state);
+
     QStringList selectedIndices;
     int64_t        lAmount=0;
 
-    int nNumberChecked = this->TallySelections(selectedIndices, lAmount);
+    //int nNumberChecked =
+        this->TallySelections(selectedIndices, lAmount);
 }
 
 void MTCashPurse::on_pushButtonWithdraw_clicked()
@@ -274,7 +278,8 @@ void MTCashPurse::on_pushButtonExport_clicked()
     QStringList selectedIndices;
     int64_t     lAmount=0;
 
-    int nNumberChecked = this->TallySelections(selectedIndices, lAmount);
+    //int nNumberChecked =
+            this->TallySelections(selectedIndices, lAmount);
     // ------------------------------------------------------------------
     std::string str_acct_id     = m_qstrAcctId.toStdString();
     std::string str_acct_nym    = OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
@@ -383,7 +388,8 @@ void MTCashPurse::on_pushButtonExport_clicked()
             }
         }
         // --------------------------------------------------------
-        int nNumberSelected = this->TallySelections(selectedIndices, lAmount);
+        //int nNumberSelected =
+                this->TallySelections(selectedIndices, lAmount);
         // --------------------------------------------------------
         emit balancesChanged(m_qstrAcctId);
     }
@@ -396,7 +402,8 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
     QStringList selectedIndices;
     int64_t     lAmount=0;
 
-    int nNumberChecked = this->TallySelections(selectedIndices, lAmount);
+    //int nNumberChecked =
+            this->TallySelections(selectedIndices, lAmount);
     // ------------------------------------------------------------------
     std::string str_acct_id     = m_qstrAcctId.toStdString();
     std::string str_acct_nym    = OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
@@ -457,7 +464,8 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
                 }
             }
             // --------------------------------------------------------
-            int nNumberSelected = this->TallySelections(selectedIndices, lAmount);
+            //int nNumberSelected =
+                    this->TallySelections(selectedIndices, lAmount);
             // --------------------------------------------------------
             emit balancesChanged(m_qstrAcctId);
         }
@@ -538,6 +546,8 @@ int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmoun
 
 void MTCashPurse::ClearContents()
 {
+    this->blockSignals(true);
+    // ----------------------------------
     ui->tableWidget->clearContents();
     // ----------------------------------
     ui->labelCashBalance->setText("");
@@ -567,6 +577,8 @@ void MTCashPurse::ClearContents()
     m_qstrAcctName = QString("");
     // ----------------------------------
     ui->labelAssetType->setText(QString(""));
+    // ----------------------------------
+    this->blockSignals(false);
 }
 
 

@@ -33,15 +33,26 @@ public:
     explicit MTHomeDetail(QWidget *parent = 0);
     ~MTHomeDetail();
     
-    void refresh(MTRecord & recordmt);
-    void refresh(int nRow, MTRecordList & theList);
-
     static QWidget * CreateDetailHeaderWidget(MTRecord & recordmt, bool bExternal=true);
 
     void SetHomePointer(MTHome & theHome);
 
+signals:
+    void balanceChanged();
+    void accountDataDownloaded();
+    void setRefreshBtnRed();
+    void refreshUserBar();
+    void recordDeleted(bool bNeedToRefreshUserBar);
+    void recordDeletedBalanceChanged(bool bNeedToRefreshUserBar);
+
+    void showContact(QString qstrContactID);
+    void showContactAndRefreshHome(QString qstrContactID);
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
+
+public slots:
+    void onRefresh(int nRow, MTRecordList & theList);
 
 private slots:
     void on_viewContactButton_clicked(bool checked = false);
@@ -56,6 +67,9 @@ private slots:
     void on_msgButton_clicked(bool checked = false);
 
 private:
+    void refresh(MTRecord & recordmt);
+    void refresh(int nRow, MTRecordList & theList);
+
     int m_nContactID; // If there's a known Contact ID for this record, it will be set here when discovered, for later use.
     shared_ptr_MTRecord m_record;
 

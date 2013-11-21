@@ -27,6 +27,7 @@ MTPageAcct_Server::MTPageAcct_Server(QWidget *parent) :
 
     this->registerField("ServerID*", ui->lineEditID);
     // -----------------------------------------------
+    connect(this, SIGNAL(SetDefaultServer(QString, QString)), Moneychanger::It(), SLOT(setDefaultServer(QString,QString)));
 }
 
 
@@ -94,7 +95,7 @@ void MTPageAcct_Server::on_pushButtonSelect_clicked()
             // -----------------------------------------
             if (qstr_default_id.isEmpty())
             {
-                Moneychanger::It()->setDefaultServer(theChooser.m_qstrCurrentID, theChooser.m_qstrCurrentName);
+                emit SetDefaultServer(theChooser.m_qstrCurrentID, theChooser.m_qstrCurrentName);
             }
             // -----------------------------------------
             return;
@@ -163,7 +164,7 @@ void MTPageAcct_Server::showEvent(QShowEvent * event)
             // ---------------------------
             if (qstr_default_id.isEmpty())
             {
-                Moneychanger::It()->setDefaultServer(qstr_id, qstrName);
+                emit SetDefaultServer(qstr_id, qstrName);
             }
         }
         // -------------------------------------------

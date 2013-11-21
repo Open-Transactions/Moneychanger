@@ -295,9 +295,8 @@ void MTNymDetails::DeleteButtonClicked()
             if (bSuccess)
             {
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
-                m_pOwner->RefreshRecords();
                 // ------------------------------------------------
-                Moneychanger::It()->SetupMainMenu();
+                emit RefreshRecordsAndUpdateMenu();
                 // ------------------------------------------------
             }
             else
@@ -388,9 +387,8 @@ void MTNymDetails::AddButtonClicked()
         // ----------
         m_pOwner->m_map.insert(qstrID, qstrName);
         m_pOwner->SetPreSelected(qstrID);
-        m_pOwner->RefreshRecords();
         // ------------------------------------------------
-        Moneychanger::It()->SetupMainMenu();
+        emit RefreshRecordsAndUpdateMenu();
         // ------------------------------------------------
     }
 }
@@ -411,8 +409,9 @@ void MTNymDetails::on_lineEditName_editingFinished()
             m_pOwner->m_map.insert(m_pOwner->m_qstrCurrentID, ui->lineEditName->text());
 
             m_pOwner->SetPreSelected(m_pOwner->m_qstrCurrentID);
-
-            m_pOwner->RefreshRecords();
+            // ------------------------------------------------
+            emit RefreshRecordsAndUpdateMenu();
+            // ------------------------------------------------
         }
     }
 }
