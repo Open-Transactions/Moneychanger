@@ -52,6 +52,7 @@ Moneychanger * Moneychanger::It(QWidget *parent/*=0*/)
 
 Moneychanger::Moneychanger(QWidget *parent)
 : QWidget(parent),
+  nmc(new NMC_Interface ()),
   nmc_names(NULL),
   mc_overall_init(false),
   nmc_update_timer(NULL),
@@ -69,8 +70,7 @@ Moneychanger::Moneychanger(QWidget *parent)
      **/
         
     /* Set up Namecoin name manager.  */
-    NMC_Interface nmc;
-    nmc_names = new NMC_NameManager (nmc);
+    nmc_names = new NMC_NameManager (*nmc);
 
     /* Set up the Namecoin update timer.  */
     nmc_update_timer = new QTimer (this);
@@ -252,6 +252,7 @@ Moneychanger::~Moneychanger()
 {
     delete nmc_update_timer;
     delete nmc_names;
+    delete nmc;
 }
 
 // ---------------------------------------------------------------

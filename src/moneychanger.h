@@ -118,6 +118,8 @@ public:
     
 private:
 
+    /** Namecoin interface used for the NameManager.  */
+    NMC_Interface* nmc;
     /** Namecoin name manager.  */
     NMC_NameManager* nmc_names;
     

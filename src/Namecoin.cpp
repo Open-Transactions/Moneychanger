@@ -131,6 +131,10 @@ NMC_NameManager::startRegistration (const QString nym, const QString cred)
 
       pendingRegs.push_back (reg);
     }
+  catch (const nmcrpc::JsonRpc::RpcError& exc)
+    {
+      qDebug () << "NMC RPC Error: " << exc.getErrorMessage ().c_str ();
+    }
   catch (const std::exception& exc)
     {
       qDebug () << "Error: " << exc.what ();
@@ -144,8 +148,67 @@ NMC_NameManager::startRegistration (const QString nym, const QString cred)
 void
 NMC_NameManager::timerUpdate ()
 {
-  qDebug () << "Name Manager timer called";
-  /* FIXME: Add actual update action.  */
+  qDebug () << "Namecoin update timer called.";
+
+  auto i = pendingRegs.begin ();
+  while (i != pendingRegs.end ())
+    {
+      try
+        {
+          /* If a name registration is finished (i. e., the name_firstupdate
+             is already confirmed), remove it from the list and perform the
+             actual update.  */
+          if (i->isFinished () && false)
+            {
+              qDebug () << "Registration finished for "
+                        << i->getName ().c_str ();
+
+              const QString queryStr = "UPDATE `nmc_names`"
+                                       "  SET `regData` = NULL, `active` = 1"
+                                       "  WHERE `name` = :name";
+              std::unique_ptr<DBHandler::PreparedQuery> qu;
+              qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+              qu->bind (":name", i->getName ().c_str ());
+              DBHandler::getInstance ()->runQuery (qu.release ());
+
+              /* FIXME: Perform update to actual value, activate if again
+                 when this is done.  */
+
+              i = pendingRegs.erase (i);
+              continue;
+            }
+
+          /* If we can active (send the name_firstupdate), do it.  */
+          if (i->canActivate ())
+            {
+              qDebug () << "Activating " << i->getName ().c_str ();
+
+              i->activate ();
+
+              std::ostringstream out;
+              out << *i;
+
+              const QString queryStr = "UPDATE `nmc_names`"
+                                       "  SET `regData` = :regData"
+                                       "  WHERE `name` = :name";
+              std::unique_ptr<DBHandler::PreparedQuery> qu;
+              qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+              qu->bind (":name", i->getName ().c_str ());
+              qu->bind (":regData", out.str ().c_str ());
+              DBHandler::getInstance ()->runQuery (qu.release ());
+            }
+        }
+      catch (const nmcrpc::JsonRpc::RpcError& exc)
+        {
+          qDebug () << "NMC RPC Error: " << exc.getErrorMessage ().c_str ();
+        }
+      catch (const std::exception& exc)
+        {
+          qDebug () << "Error: " << exc.what ();
+        }
+
+      ++i;
+    }
 }
 
 /* ************************************************************************** */
