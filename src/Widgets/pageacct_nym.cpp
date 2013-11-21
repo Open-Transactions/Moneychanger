@@ -27,6 +27,7 @@ MTPageAcct_Nym::MTPageAcct_Nym(QWidget *parent) :
 
     this->registerField("NymID*", ui->lineEditID);
     // -----------------------------------------------
+    connect(this, SIGNAL(SetDefaultNym(QString, QString)), Moneychanger::It(), SLOT(setDefaultNym(QString,QString)));
 }
 
 
@@ -93,7 +94,7 @@ void MTPageAcct_Nym::on_pushButtonSelect_clicked()
             // -----------------------------------------
             if (qstr_default_id.isEmpty())
             {
-                Moneychanger::It()->setDefaultNym(theChooser.m_qstrCurrentID, theChooser.m_qstrCurrentName);
+                emit SetDefaultNym(theChooser.m_qstrCurrentID, theChooser.m_qstrCurrentName);
             }
             // ----------------------------------------
             return;
@@ -162,7 +163,8 @@ void MTPageAcct_Nym::showEvent(QShowEvent * event)
             // ---------------------------
             if (qstr_default_id.isEmpty())
             {
-                Moneychanger::It()->setDefaultNym(qstr_id, qstrName);
+                emit SetDefaultNym(qstr_id, qstrName);
+
             }
         }
         // -------------------------------------------

@@ -72,6 +72,8 @@ public slots:
     void onBalancesChangedFromAbove();
     void onBalancesChangedFromBelow(QString qstrAcctID);
 
+    void onRefreshRecords();
+
 protected:
     QMap<QString, OTDB::MarketData *> * m_pmapMarkets; // do not delete. For reference only.
     // ----------------------------------

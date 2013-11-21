@@ -15,6 +15,9 @@ public:
     explicit MTPageAcct_Server(QWidget *parent = 0);
     ~MTPageAcct_Server();
 
+signals:
+    void SetDefaultServer(QString, QString);
+
 protected:
     virtual void showEvent(QShowEvent * event);
 

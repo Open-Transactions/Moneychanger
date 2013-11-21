@@ -26,7 +26,7 @@ MTHome::MTHome(QWidget *parent) :
     QWidget(parent, Qt::Window),
     already_init(false),
     m_list(*(new MTNameLookupQT)),
-    m_bNeedRefresh(false),
+    m_bTurnRefreshBtnRed(false),
     ui(new Ui::MTHome)
 {
     ui->setupUi(this);
@@ -50,11 +50,10 @@ bool MTHome::eventFilter(QObject *obj, QEvent *event)
             close(); // This is caught by this same filter.
             return true;
         }
-        return true;
     }
 
     // standard event processing
-    return QObject::eventFilter(obj, event);
+    return QWidget::eventFilter(obj, event);
 }
 
 
@@ -80,19 +79,27 @@ void MTHome::dialog()
         // -------------------------------------------
         ui->tableWidget->setContentsMargins(10,0,0,0);
         // -------------------------------------------
-        m_pDetailPane = new MTHomeDetail;
+        QPointer<MTHomeDetail> pDetailPane   = new MTHomeDetail;
+        QPointer<QVBoxLayout>  pDetailLayout = new QVBoxLayout;
+        // -------------------------------------------
+        pDetailPane  ->setContentsMargins(1,1,1,1);
+        pDetailLayout->setContentsMargins(1,1,1,1);
+        // -------------------------------------------
+        pDetailPane->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        // -------------------------------------------
+        pDetailLayout->addWidget(pDetailPane); // MTHomeDetail
+        // -------------------------------------------
+        ui->widget->setLayout(pDetailLayout);
+        // -------------------------------------------
+        m_pDetailPane = pDetailPane;
         m_pDetailPane->SetHomePointer(*this);
-        // -------------------------------------------
-        m_pDetailLayout = new QVBoxLayout;
-        m_pDetailLayout->addWidget(m_pDetailPane);
-
-        m_pDetailPane  ->setContentsMargins(1,1,1,1);
-        m_pDetailLayout->setContentsMargins(1,1,1,1);
-
-        ui->widget->setContentsMargins(1,1,1,1);
-
-        ui->widget->setLayout(m_pDetailLayout);
-        // -------------------------------------------
+        // ----------------------------------
+        // Note: This is a placekeeper, so later on I can just erase
+        // the widget at 0 and replace it with the real header widget.
+        //
+        m_pHeaderFrame  = new QFrame;
+        ui->verticalLayout->insertWidget(0, m_pHeaderFrame);
+        // ----------------------------------
         setupRecordList();
         // ------------------------
         /** Flag Already Init **/
@@ -108,8 +115,11 @@ void MTHome::dialog()
 
 void MTHome::on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn)
 {
-    if (m_pDetailPane)
-        m_pDetailPane->refresh(row, m_list);
+    Q_UNUSED(column);
+    Q_UNUSED(previousRow);
+    Q_UNUSED(previousColumn);
+
+    emit needToRefreshDetails(row, m_list);
 }
 
 void MTHome::setupRecordList()
@@ -156,41 +166,95 @@ void MTHome::setupRecordList()
 
 
 
-void MTHome::onBalancesChanged()
+
+void MTHome::RefreshUserBar()
+{   
+    if (m_pHeaderFrame)
+    {
+        ui->verticalLayout->removeWidget(m_pHeaderFrame);
+
+        m_pHeaderFrame->setParent(NULL);
+        m_pHeaderFrame->disconnect();
+        m_pHeaderFrame->deleteLater();
+
+        m_pHeaderFrame = NULL;
+    }
+    // -------------------------------------------------
+    QPointer<QWidget> pHeaderWidget = this->CreateUserBarWidget();
+
+    if (pHeaderWidget)
+    {
+        // Note: Frame Shape should be Styled Panel, and Frame Shadow should be Raised.
+        // Frame line width should be 1. Mid line width 0. LayoutDirection on frame should
+        // be leftToRight. Font kerning should be on. Horizontal and Vertical policies
+        // should be Preferred.
+        QPointer<QFrame> pHeaderFrame  = new QFrame;
+        // -----------------------------------------
+        pHeaderFrame->setFrameShape (QFrame::StyledPanel);
+        pHeaderFrame->setFrameShadow(QFrame::Raised);
+        pHeaderFrame->setLineWidth(1);
+        pHeaderFrame->setMidLineWidth(0);
+        // -----------------------------------------
+        QPointer<QGridLayout> pHeaderLayout = new QGridLayout;
+        pHeaderLayout->setAlignment(Qt::AlignTop);
+        // -----------------------------------------
+        pHeaderLayout->addWidget(pHeaderWidget);
+        // -----------------------------------------
+        pHeaderFrame->setLayout(pHeaderLayout);
+        // -----------------------------------------
+        ui->verticalLayout->insertWidget(0, pHeaderFrame);
+        // -----------------------------------------
+        m_pHeaderFrame = pHeaderFrame;
+    }
+    // --------------------------------------------------
+}
+
+void MTHome::onNeedToRefreshRecords()
 {
+    RefreshAll();
+}
+
+void MTHome::onAccountDataDownloaded()
+{
+    RefreshAll();
+}
+
+void MTHome::onSetRefreshBtnRed()
+{
+    SetRefreshBtnRed();
+}
+
+// This means "refresh the user bar to have a RED Refresh button on it."
+// m_bTurnRefreshBtnRed being set to true is what makes the button red once it's refreshed.
+// (As as soon as the button is turned red, m_bTurnRefreshBtnRed is set back to false so it
+// will be black again the next time around.)
+//
+void MTHome::SetRefreshBtnRed()
+{
+    m_bTurnRefreshBtnRed = true;
+
     RefreshUserBar();
 }
 
 
-void MTHome::RefreshUserBar()
+void MTHome::onRecordDeleted(bool bNeedToRefreshUserBar)
 {
-    // --------------------------------------------------
-    // Clever way to clear the entire layout and delete all
-    // its widgets. Basically the ownership is switched to
-    // a temporary widget, which then passes out of scope.
-    //
-    if (ui->headerFrame->layout())
-        QWidget().setLayout(ui->headerFrame->layout());
+    OnDeletedRecord(); // This does a "RefreshRecords" internally, but doesn't refresh the user bar.
 
-    // --------------------------------------------------
-    m_pHeaderLayout = new QGridLayout;
-    m_pHeaderLayout->setAlignment(Qt::AlignTop);
-    // --------------------------------------------------
-    QWidget * pUserBar = this->CreateUserBarWidget();
-
-    if (NULL != pUserBar)
-    {
-        m_pHeaderLayout->addWidget(pUserBar);
-    }
-    // --------------------------------------------------
-    ui->headerFrame->setLayout(m_pHeaderLayout);
+    if (bNeedToRefreshUserBar)
+        RefreshUserBar();
 }
 
-
-void MTHome::SetNeedRefresh()
+// The balances hasn't necessarily changed.
+// (Perhaps the default account was changed.)
+//
+void MTHome::onNeedToRefreshUserBar()
 {
-    m_bNeedRefresh = true;
+    RefreshUserBar();
+}
 
+void MTHome::onBalancesChanged()
+{
     RefreshUserBar();
 }
 
@@ -198,49 +262,44 @@ void MTHome::RefreshAll()
 {
 //  int nRowCount    = ui->tableWidget->rowCount();
     int nCurrentRow  = ui->tableWidget->currentRow();
-
-//  bool bRefreshed = ;// PULL THE DATA FROM THE SERVER HERE.
-    bool bRefreshed = true;
-
-    if (bRefreshed)
+    // -----------------------------------------
+    m_list.Populate(); // Refreshes the data from local storage.
+    // -----------------------------------------
+    RefreshUserBar();
+    // -------------------------------------------
+    RefreshRecords(); // Refreshes the list of records on the left-hand side, from the data.
+    // -----------------------------------------
+    if (nCurrentRow >= 0)
     {
-        // -----------------------------------------
-        qDebug() << QString("Refreshing records from local storage.");
-        // -----------------------------------------
-        m_list.Populate();
-        // -----------------------------------------
-        RefreshUserBar();
-        // -------------------------------------------
-        RefreshRecords();
-        // -----------------------------------------
-        if (nCurrentRow >= 0)
+        if (nCurrentRow < ui->tableWidget->rowCount())
         {
-            if (nCurrentRow < ui->tableWidget->rowCount())
-            {
-                ui->tableWidget->setCurrentCell(nCurrentRow, 1);
-                on_tableWidget_currentCellChanged(nCurrentRow, 1, 0, 0);
-            }
-            // ------------------------------------------------
-            else if (ui->tableWidget->rowCount() > 0)
-            {
-                ui->tableWidget->setCurrentCell((ui->tableWidget->rowCount() - 1), 1);
-                on_tableWidget_currentCellChanged((ui->tableWidget->rowCount() - 1), 1, 0, 0);
-            }
-            // ------------------------------------------------
-            else
-                qDebug() << QString("Apparently there are zero rows in the tableWidget.");
-            // ------------------------------------------------
+            ui->tableWidget->blockSignals(true);
+            ui->tableWidget->setCurrentCell(nCurrentRow, 1);
+            ui->tableWidget->blockSignals(false);
+            on_tableWidget_currentCellChanged(nCurrentRow, 1, 0, 0);
         }
         // ------------------------------------------------
         else if (ui->tableWidget->rowCount() > 0)
         {
-            ui->tableWidget->setCurrentCell(0, 1);
-            on_tableWidget_currentCellChanged(0, 1, 0, 0);
+            ui->tableWidget->blockSignals(true);
+            ui->tableWidget->setCurrentCell((ui->tableWidget->rowCount() - 1), 1);
+            ui->tableWidget->blockSignals(false);
+            on_tableWidget_currentCellChanged((ui->tableWidget->rowCount() - 1), 1, 0, 0);
         }
-        // -----------------------------------------
+        // ------------------------------------------------
+        else
+            qDebug() << QString("Apparently there are zero rows in the tableWidget.");
+        // ------------------------------------------------
     }
-    else
-        qDebug() << QString("Failure removing MTRecord at index %1.").arg(nCurrentRow);
+    // ------------------------------------------------
+    else if (ui->tableWidget->rowCount() > 0)
+    {
+        ui->tableWidget->blockSignals(true);
+        ui->tableWidget->setCurrentCell(0, 1);
+        ui->tableWidget->blockSignals(false);
+        on_tableWidget_currentCellChanged(0, 1, 0, 0);
+    }
+    // -----------------------------------------
 }
 
 
@@ -253,45 +312,6 @@ void MTHome::on_refreshButton_clicked()
     emit needToDownloadAccountData();
 }
 
-
-void MTHome::onAccountDataDownloaded()
-{
-    RefreshAll();
-}
-
-void MTHome::on_contactsButton_clicked()
-{
-    Moneychanger::It()->mc_addressbook_show(QString(""));
-}
-
-
-void MTHome::on_sendButton_clicked()
-{
-    MTSendDlg * send_window = new MTSendDlg(NULL);
-    send_window->setAttribute(Qt::WA_DeleteOnClose);
-    // --------------------------------------------------
-    QString qstr_acct_id = Moneychanger::It()->get_default_account_id();
-
-    if (!qstr_acct_id.isEmpty())
-        send_window->setInitialMyAcct(qstr_acct_id);
-    // ---------------------------------------
-    send_window->dialog();
-    // --------------------------------------------------
-}
-
-void MTHome::on_requestButton_clicked()
-{
-    MTRequestDlg * request_window = new MTRequestDlg(NULL);
-    request_window->setAttribute(Qt::WA_DeleteOnClose);
-    // --------------------------------------------------
-    QString qstr_acct_id = Moneychanger::It()->get_default_account_id();
-
-    if (!qstr_acct_id.isEmpty())
-        request_window->setInitialMyAcct(qstr_acct_id);
-    // ---------------------------------------
-    request_window->dialog();
-    // --------------------------------------------------
-}
 
 // ----------------------------------------------------------------------
 
@@ -423,28 +443,19 @@ QString MTHome::FormDisplayLabelForAcctButton(QString qstr_acct_id, QString qstr
 
 // ----------------------------------------------------------------------
 
-void MTHome::on_account_clicked()
-{
-    Moneychanger::It()->mc_accountmanager_dialog();
-}
-
 
 QWidget * MTHome::CreateUserBarWidget()
 {
-    //Append to transactions list in overview dialog.
-    QWidget     * row_widget        = new QWidget;
-    QGridLayout * row_widget_layout = new QGridLayout;
+    QWidget     * pUserBarWidget        = new QWidget;
+    QGridLayout * pUserBarWidget_layout = new QGridLayout;
 
-    row_widget_layout->setSpacing(12);
-    row_widget_layout->setContentsMargins(12, 3, 8, 10); // left top right bottom
-//  row_widget_layout->setContentsMargins(12, 3, 8, 3); // left top right bottom
+    pUserBarWidget_layout->setSpacing(12);
+    pUserBarWidget_layout->setContentsMargins(12, 3, 8, 10); // left top right bottom
+//  pUserBarWidget_layout->setContentsMargins(12, 3, 8, 3); // left top right bottom
 
-    row_widget->setLayout(row_widget_layout);
-    row_widget->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");
+    pUserBarWidget->setLayout(pUserBarWidget_layout);
+    pUserBarWidget->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");
     // -------------------------------------------
-    //Render row.
-    //Header of row
-    //
     QString qstr_acct_nym,
             qstr_acct_server,
             qstr_acct_asset, qstr_acct_asset_name("");
@@ -503,7 +514,7 @@ QWidget * MTHome::CreateUserBarWidget()
     buttonAccount->setStyleSheet("QToolButton { font-weight: bold; margin-left: 0; font-size:18pt; }");
     buttonAccount->setText(header_of_row_string);
     // -------------------------------------------
-    connect(buttonAccount, SIGNAL(clicked()), this, SLOT(on_account_clicked()));
+    connect(buttonAccount, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_show_account_manager_slot()));
     // ----------------------------------------------------------------
     QLabel * asset_type = new QLabel;
 
@@ -518,23 +529,10 @@ QWidget * MTHome::CreateUserBarWidget()
     pAccountLayout->addWidget(buttonAccount);
     pAccountLayout->addWidget(asset_type);
     // ----------------------------------------------------------------
-    row_widget_layout->addLayout(pAccountLayout, 0, 0, 1,1, Qt::AlignLeft);
-    // ----------------------------------------------------------------
-//  QIcon(":/icons/request");
-//  QIcon(":/icons/user");
-//  QIcon(":/icons/refresh");
-    // ----------------------------------------------------------------
-    // Amount (with currency tla)
+    pUserBarWidget_layout->addLayout(pAccountLayout, 0, 0, 1,1, Qt::AlignLeft);
     // ----------------------------------------------------------------
     QLabel * currency_amount_label = new QLabel;
     QString currency_amount = QString("");
-    // ----------------------------------------------------------------
-//    long lAmount = OTAPI_Wrap::StringToLong(recordmt.GetAmount());
-
-//    if (recordmt.IsOutgoing() || (lAmount < 0))
-//        currency_amount_label->setStyleSheet("QLabel { color : red; }");
-//    else
-//        currency_amount_label->setStyleSheet("QLabel { color : green; }");
     // ----------------------------------------------------------------
     currency_amount_label->setStyleSheet("QLabel { color : grey; }");
     currency_amount_label->setText(currency_amount);
@@ -579,10 +577,10 @@ QWidget * MTHome::CreateUserBarWidget()
     buttonRefresh->setIconSize(pixmapContacts.rect().size());
     buttonRefresh->setText(tr("Refresh"));
 
-    if (m_bNeedRefresh)
+    if (m_bTurnRefreshBtnRed)
     {
         buttonRefresh->setStyleSheet("color: red");
-        m_bNeedRefresh = false;
+        m_bTurnRefreshBtnRed = false;
     }
     // ----------------------------------------------------------------
     QHBoxLayout * pButtonLayout = new QHBoxLayout;
@@ -593,20 +591,17 @@ QWidget * MTHome::CreateUserBarWidget()
     pButtonLayout->addWidget(buttonContacts);
     pButtonLayout->addWidget(buttonRefresh);
     // ----------------------------------------------------------------
-    row_widget_layout->addLayout(pButtonLayout, 0, 1, 1,1, Qt::AlignRight);
-//  row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
+    pUserBarWidget_layout->addLayout(pButtonLayout, 0, 1, 1,1, Qt::AlignRight);
+//  pUserBarWidget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
     // -------------------------------------------
-
     connect(buttonRefresh,  SIGNAL(clicked()),  this, SLOT(on_refreshButton_clicked()));
-    connect(buttonContacts, SIGNAL(clicked()),  this, SLOT(on_contactsButton_clicked()));
-    connect(buttonSend,     SIGNAL(clicked()),  this, SLOT(on_sendButton_clicked()));
-    connect(buttonRequest,  SIGNAL(clicked()),  this, SLOT(on_requestButton_clicked()));
-
+    connect(buttonContacts, SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_addressbook_slot()));
+    connect(buttonSend,     SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_sendfunds_slot()));
+    connect(buttonRequest,  SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_requestfunds_slot()));
     // -------------------------------------------
     //Sub-info
     QWidget * row_content_container = new QWidget;
     QGridLayout * row_content_grid = new QGridLayout;
-
 
     row_content_container->setContentsMargins(0, 0, 0, 0);
 
@@ -616,12 +611,8 @@ QWidget * MTHome::CreateUserBarWidget()
 
     row_content_container->setLayout(row_content_grid);
 
-    row_widget_layout->addWidget(row_content_container, 1,0, 1,2);
+    pUserBarWidget_layout->addWidget(row_content_container, 1,0, 1,2);
     // -------------------------------------------
-    // Column one
-    //Date (sub-info)
-    //Calc/convert date/times
-    //
     QLabel * pBalanceLabel = new QLabel(QString("<font color=grey>%1</font> %2").arg(tr("Available:")).arg(tr("no account selected")));
 //  QString  balance_label_string("<font color=grey>Available:</font> $50.93 (+ $167.23 in cash)");
     // ---------------------------------------------
@@ -648,26 +639,8 @@ QWidget * MTHome::CreateUserBarWidget()
     pBalanceLayout->addWidget(pBalanceLabel);
     // ---------------------------------------------------------------
     row_content_grid->addLayout(pBalanceLayout, 0,0, 1,1, Qt::AlignLeft);
-//  row_content_grid->addWidget(pBalanceLabel,  0,0, 1,1, Qt::AlignLeft);
     // -------------------------------------------
-    // Column two
-    //Status
-//    QLabel * row_content_status_label = new QLabel;
-//    QString row_content_status_string;
-//
-//    std::string formatDescription_holder("DESCRIPTION");
-////    recordmt.FormatDescription(formatDescription_holder);
-//
-//    row_content_status_string.append(QString::fromStdString(formatDescription_holder));
-//    // -------------------------------------------
-//    //add string to label
-//    row_content_status_label->setStyleSheet("QLabel { color : grey; }");
-//    row_content_status_label->setText(row_content_status_string);
-
-//    //add to row_content grid
-//    row_content_grid->addWidget(row_content_status_label, 0,1, 1,1, Qt::AlignRight);
-    // -------------------------------------------
-    return row_widget;
+    return pUserBarWidget;
 }
 
 void MTHome::OnDeletedRecord()
@@ -710,13 +683,15 @@ void MTHome::OnDeletedRecord()
 void MTHome::RefreshRecords()
 {
     //(Lock the overview dialog refreshing mechinism until finished)
-    QMutexLocker overview_refresh_locker(&mc_overview_refreshing_visuals_mutex);
+//    QMutexLocker overview_refresh_locker(&mc_overview_refreshing_visuals_mutex);
     // -------------------------------------------------------
-    m_bNeedRefresh = false;
+    m_bTurnRefreshBtnRed = false;
     // -------------------------------------------------------
     int listSize       = m_list.size();
     // -------------------------------------------------------
     int nTotalRecords  = listSize;
+    // -------------------------------------------------------
+    ui->tableWidget->blockSignals(true);
     // -------------------------------------------------------
     int nGridItemCount = ui->tableWidget->rowCount();
     // -------------------------------------------------------
@@ -755,6 +730,7 @@ void MTHome::RefreshRecords()
         }
     }
     // -------------------------------------------------------
+    ui->tableWidget->blockSignals(false);
 }
 
 

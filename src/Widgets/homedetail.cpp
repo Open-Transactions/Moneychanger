@@ -37,8 +37,28 @@
 void MTHomeDetail::SetHomePointer(MTHome & theHome)
 {
     m_pHome = &theHome;
-}
 
+    connect(this, SIGNAL(accountDataDownloaded()), m_pHome, SLOT(onAccountDataDownloaded()));
+//  connect(this, SIGNAL(balanceChanged()),        m_pHome, SLOT(onBalancesChanged()));
+    connect(this, SIGNAL(setRefreshBtnRed()),      m_pHome, SLOT(onSetRefreshBtnRed()));
+    connect(this, SIGNAL(refreshUserBar()),        m_pHome, SLOT(onNeedToRefreshUserBar()));
+    connect(this, SIGNAL(recordDeleted(bool)),     m_pHome, SLOT(onRecordDeleted(bool)));
+    // --------------------------------------------------------
+    connect(this, SIGNAL(showContact(QString)),               Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
+    // --------------------------------------------------------
+    connect(this, SIGNAL(showContactAndRefreshHome(QString)), m_pHome,            SLOT(onNeedToRefreshRecords()));
+    connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
+    // --------------------------------------------------------
+    connect(this, SIGNAL(balanceChanged()),                   Moneychanger::It(), SLOT(onBalancesChanged()));
+    connect(this, SIGNAL(balanceChanged()),                   m_pHome,            SLOT(onAccountDataDownloaded()));
+    // --------------------------------------------------------
+    connect(this, SIGNAL(recordDeletedBalanceChanged(bool)),  Moneychanger::It(), SLOT(onBalancesChanged()));
+    connect(this, SIGNAL(recordDeletedBalanceChanged(bool)),  m_pHome,            SLOT(onRecordDeleted(bool))); // bRefreshUserBar
+    // NOTE: ALWAYS pass false to recordDeletedBalanceChanged, since Moneychanger::onBalancesChanged refreshes
+    // it anyway, so we don't want MTHome::recordDeleted() to unnecessarily refresh it a second time.
+    // --------------------------------------------------------
+    connect(m_pHome, SIGNAL(needToRefreshDetails(int, MTRecordList&)), this, SLOT(onRefresh(int, MTRecordList&)));
+}
 
 
 MTHomeDetail::MTHomeDetail(QWidget *parent) :
@@ -80,18 +100,7 @@ void MTHomeDetail::FavorLeftSideForIDs()
 
 bool MTHomeDetail::eventFilter(QObject *obj, QEvent *event)
 {
-    if (event->type() == QEvent::KeyPress)
-    {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-
-        if (keyEvent->key() == Qt::Key_Escape)
-        {
-            close(); // This is caught by this same filter.
-            return true;
-        }
-        return true;
-    }
-    else if (event->type() == QEvent::Resize)
+    if (event->type() == QEvent::Resize)
     {
         // This insures that the left-most part of the IDs and Names
         // remains visible during all resize events.
@@ -100,20 +109,28 @@ bool MTHomeDetail::eventFilter(QObject *obj, QEvent *event)
     }
 
     // standard event processing
-    return QObject::eventFilter(obj, event);
+    return QWidget::eventFilter(obj, event);
 }
 
 
 void MTHomeDetail::on_viewContactButton_clicked(bool checked /*=false*/)
 {
+    Q_UNUSED(checked);
+
     qDebug() << "View Existing Contact button clicked.";
 
-    if (m_record && (m_pHome) && (m_nContactID > 0))
-        Moneychanger::It()->mc_addressbook_show(QString("%1").arg(m_nContactID));
+    if (m_record && (m_nContactID > 0))
+    {
+        QString qstrContactID = QString("%1").arg(m_nContactID);
+        emit showContact(qstrContactID);
+    }
 }
+
 
 void MTHomeDetail::on_addContactButton_clicked(bool checked /*=false*/)
 {
+    Q_UNUSED(checked);
+
     qDebug() << "Add New Contact button clicked.";
 
     if (m_record)
@@ -160,17 +177,14 @@ void MTHomeDetail::on_addContactButton_clicked(bool checked /*=false*/)
                     // ---------------------------------
                     // Refresh the detail page.
                     //
-                    refresh(recordmt);
+//                    refresh(recordmt);
                     // ---------------------------------
                     // Display the normal contacts dialog, with the new contact
                     // being the one selected.
                     //
-                    if (m_pHome)
-                    {
-                        m_pHome->SetNeedRefresh();
+                    QString qstrContactID = QString("%1").arg(m_nContactID);
 
-                        Moneychanger::It()->mc_addressbook_show(QString("%1").arg(m_nContactID));
-                    }
+                    emit showContactAndRefreshHome(qstrContactID);
                 }
             }
             else
@@ -180,8 +194,14 @@ void MTHomeDetail::on_addContactButton_clicked(bool checked /*=false*/)
     }
 }
 
+
+
+
+
 void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
 {
+    Q_UNUSED(checked);
+
     qDebug() << "Add to Existing Contact button clicked.";
 
     if (m_record)
@@ -254,17 +274,14 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
                 // ---------------------------------
                 // Refresh the detail page.
                 //
-                refresh(recordmt);
+//                refresh(recordmt);
                 // ---------------------------------
                 // Display the normal contacts dialog, with the new contact
                 // being the one selected.
                 //
-                if (m_pHome)
-                {
-                    m_pHome->SetNeedRefresh();
+                QString qstrContactID = QString("%1").arg(m_nContactID);
 
-                    Moneychanger::It()->mc_addressbook_show(QString("%1").arg(m_nContactID));
-                }
+                emit showContactAndRefreshHome(qstrContactID);
                 // ---------------------------------
             } // nContactID > 0
         }
@@ -278,6 +295,8 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
 
 void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
 {
+    Q_UNUSED(checked);
+
     qDebug() << "Delete button clicked.";
     // --------------------------------
     QMessageBox::StandardButton reply;
@@ -295,10 +314,7 @@ void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
 
         if (bSuccess)
         {
-            if (m_pHome)
-                m_pHome->OnDeletedRecord();
-            else
-                qDebug() << QString("Error: m_pHome was NULL.");
+            emit recordDeleted(false); // bRefreshUserBar
         }
     }
 }
@@ -484,6 +500,8 @@ QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
 
 void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
 {
+    Q_UNUSED(checked);
+
     qDebug() << "Accept button clicked.";
 
     if (m_record)
@@ -508,10 +526,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
             }
             else
             {
-                // Refresh the main list, or at least change the color of the refresh button.
-                //
-                if (m_pHome)
-                    m_pHome->SetNeedRefresh();
+                emit balanceChanged();
             }
         }
         // -------------------------------------------------
@@ -530,10 +545,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
             }
             else
             {
-                // Refresh the main list, or at least change the color of the refresh button.
-                //
-                if (m_pHome)
-                    m_pHome->SetNeedRefresh();
+                emit accountDataDownloaded();
             }
         }
         // -------------------------------------------------
@@ -573,8 +585,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
                 {
                     // Refresh the main list, or at least change the color of the refresh button.
                     //
-                    if (m_pHome)
-                        m_pHome->SetNeedRefresh();
+                    emit balanceChanged();
                 }
             }
         } // record type == instrument.
@@ -585,6 +596,8 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
 
 void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
 {
+    Q_UNUSED(checked);
+
     qDebug() << "Cancel button clicked.";
 
     if (m_record)
@@ -635,11 +648,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
                 {
                     // Refresh the main list, or at least change the color of the refresh button.
                     //
-                    if (m_pHome)
-                    {
-                        m_pHome->SetNeedRefresh();
-                        m_pHome->OnDeletedRecord();
-                    }
+                    emit recordDeletedBalanceChanged(false); // Passing true would unnecessarily refresh the user bar twice.
                 }
             } // qstr_acct_id not empty.
         } // record is cash
@@ -672,8 +681,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
             {
                 // Refresh the main list, or at least change the color of the refresh button.
                 //
-                if (m_pHome)
-                    m_pHome->SetNeedRefresh();
+                emit balanceChanged();
             }
         } // not cash
         // ----------------------------------------
@@ -684,6 +692,8 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
 
 void MTHomeDetail::on_discardOutgoingButton_clicked(bool checked /*=false*/)
 {
+    Q_UNUSED(checked);
+
     qDebug() << "Discard Outgoing button clicked.";
 
     if (m_record)
@@ -714,13 +724,7 @@ void MTHomeDetail::on_discardOutgoingButton_clicked(bool checked /*=false*/)
         }
         else
         {
-            // Refresh the main list, or at least change the color of the refresh button.
-            //
-            if (m_pHome)
-            {
-                m_pHome->SetNeedRefresh();
-                m_pHome->OnDeletedRecord();
-            }
+            emit recordDeletedBalanceChanged(false);
         }
         // ----------------------------------
     }
@@ -730,6 +734,8 @@ void MTHomeDetail::on_discardOutgoingButton_clicked(bool checked /*=false*/)
 
 void MTHomeDetail::on_discardIncomingButton_clicked(bool checked /*=false*/)
 {
+    Q_UNUSED(checked);
+
     qDebug() << "Discard Incoming button clicked.";
 
     if (m_record)
@@ -760,13 +766,7 @@ void MTHomeDetail::on_discardIncomingButton_clicked(bool checked /*=false*/)
         }
         else
         {
-            // Refresh the main list, or at least change the color of the refresh button.
-            //
-            if (m_pHome)
-            {
-                m_pHome->SetNeedRefresh();
-                m_pHome->OnDeletedRecord();
-            }
+            emit recordDeletedBalanceChanged(false);
         }
         // ----------------------------------
     }
@@ -776,6 +776,8 @@ void MTHomeDetail::on_discardIncomingButton_clicked(bool checked /*=false*/)
 
 void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
 {
+    Q_UNUSED(checked);
+
     if (m_record)
     {
         MTRecord & recordmt = *m_record;
@@ -799,7 +801,7 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
         std::string str_desc;
 
         if (recordmt.IsMail())
-            recordmt.FormatShortMailDescription(str_desc);
+            recordmt.FormatMailSubject(str_desc);
         else
             recordmt.FormatDescription(str_desc);
         // ---------------------------------------
@@ -844,7 +846,16 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt, bool bExte
     std::string str_desc;
     // ---------------------------------------
     if (recordmt.IsMail())
-        recordmt.FormatShortMailDescription(str_desc);
+    {
+        // We'll put some quotes around it, since that looks better
+        // in the header.
+        std::string str_temp;
+        recordmt.FormatShortMailDescription(str_temp);
+        // ----------------
+        QString qstrTemp = QString("\"%1\"").arg(QString::fromStdString(str_temp));
+        // ----------------
+        str_desc = qstrTemp.toStdString();
+    }
     else
         recordmt.FormatDescription(str_desc);
     // ---------------------------------------
@@ -925,7 +936,7 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt, bool bExte
         // ------------------------------------------
         if (!bExternal)
         {
-//            QToolButton *buttonLock  = new QToolButton;
+//          QToolButton *buttonLock  = new QToolButton;
             // ----------------------------------------------------------------
             QPixmap pixmapLock    (":/icons/icons/lock.png");
             // ----------------------------------------------------------------
@@ -1026,6 +1037,10 @@ void increment_cell(int & nCurrentRow, int & nCurrentColumn)
     }
 }
 
+void MTHomeDetail::onRefresh(int nRow, MTRecordList & theList)
+{
+    refresh(nRow, theList);
+}
 
 void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 {
@@ -1056,14 +1071,19 @@ void MTHomeDetail::refresh(int nRow, MTRecordList & theList)
 
 void MTHomeDetail::RecreateLayout()
 {
+    this->blockSignals(true);
+    // --------------------------------------------------
     m_nContactID = 0;
     // --------------------------------------------------
     // Clever way to clear the entire layout and delete all
-    // its widgets. Basically the ownership is switched to
-    // a temporary widget, which then passes out of scope.
+    // its widgets.
     //
     if (layout())
-        QWidget().setLayout(layout());
+    {
+        QPointer<QWidget> pWidget = new QWidget;
+        pWidget->setLayout(layout());
+        pWidget->deleteLater();
+    }
     // --------------------------------------------------
     m_pDetailLayout = new QGridLayout;
     m_pDetailLayout->setAlignment(Qt::AlignTop);
@@ -1081,6 +1101,8 @@ void MTHomeDetail::RecreateLayout()
     m_pLineEdit_OtherAcct_Name = NULL;
     m_pLineEdit_Server_Name = NULL;
     m_pLineEdit_AssetType_Name = NULL;
+    // --------------------------------------------------
+    this->blockSignals(false);
 }
 
 

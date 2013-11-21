@@ -15,6 +15,9 @@ public:
     explicit MTPageAcct_Nym(QWidget *parent = 0);
     ~MTPageAcct_Nym();
 
+signals:
+    void SetDefaultNym(QString, QString);
+
 protected:
     virtual void showEvent(QShowEvent * event);
 

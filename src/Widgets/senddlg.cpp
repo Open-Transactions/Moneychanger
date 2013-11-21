@@ -651,9 +651,10 @@ void MTSendDlg::on_fromButton_clicked()
 
 
 
+
 void MTSendDlg::on_toolButtonManageAccts_clicked()
 {
-    Moneychanger::It()->mc_accountmanager_dialog(m_myAcctId);
+    emit ShowAccount(m_myAcctId);
 }
 
 void MTSendDlg::on_toolButton_clicked()
@@ -668,7 +669,7 @@ void MTSendDlg::on_toolButton_clicked()
             qstrContactID = QString("%1").arg(nContactID);
     }
     // ------------------------------------------------
-    Moneychanger::It()->mc_addressbook_show(qstrContactID);
+    emit ShowContact(qstrContactID);
 }
 
 
@@ -914,6 +915,9 @@ MTSendDlg::MTSendDlg(QWidget *parent) :
     this->installEventFilter(this);
 
     connect(this, SIGNAL(balancesChanged()), this, SLOT(onBalancesChanged()));
+
+    connect(this, SIGNAL(ShowContact(QString)), Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
+    connect(this, SIGNAL(ShowAccount(QString)), Moneychanger::It(), SLOT(mc_show_account_slot(QString)));
 }
 
 

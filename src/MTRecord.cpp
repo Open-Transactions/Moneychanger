@@ -65,6 +65,47 @@ bool MTRecord::FormatAmount(std::string & str_output)
     return (!str_output.empty());
 }
 // ---------------------------------------
+bool MTRecord::FormatMailSubject(std::string & str_output)
+{
+    str_output.clear();
+    // ------------------------
+    if (IsMail())
+    {
+        if (!HasContents())
+            str_output = "(empty subject)";
+        else
+        {
+            std::string str_temp_contents = GetContents();
+
+            if (str_temp_contents.compare(0,8,"Subject:") == 0)
+            {
+                // Make the replacement.
+                str_temp_contents.replace(0, 8, "");
+            }
+            // -----------------------------------
+            // Trim it, since there is probably a space after "Subject:"
+            // (Plus we want it trimmed anyway.)
+            std::string str_contents = OTString::trim(str_temp_contents);
+            // -----------------------------------
+            // Cut the string at the first newline.
+            //
+            std::string::size_type pos_start = 0;
+            std::string::size_type pos       = str_contents.find("\r\n", pos_start);
+
+            if (std::string::npos == pos) // Didn't find anything.
+                pos = str_contents.find ("\n", pos_start);
+            // -----------------------------------
+            if (std::string::npos != pos) // We found a newline.
+                str_contents.erase(pos, std::string::npos);
+            // -----------------------------------
+            // Trim it again, just for good measure.
+            str_output = OTString::trim(str_contents);
+        }
+    }
+    // -----------------------------
+    return (!str_output.empty());
+}
+// ---------------------------------------
 bool MTRecord::FormatShortMailDescription(std::string & str_output)
 {
     OTString strDescription;
@@ -75,7 +116,8 @@ bool MTRecord::FormatShortMailDescription(std::string & str_output)
             strDescription.Set("(empty message)");
         else
         {
-            std::string str_contents = GetContents();
+            std::string str_temp_contents = GetContents();
+            std::string str_contents      = OTString::trim(str_temp_contents);
 
             if (str_contents.compare(0,8,"Subject:") == 0)
             {
@@ -91,7 +133,7 @@ bool MTRecord::FormatShortMailDescription(std::string & str_output)
                 bTruncated = true;
             }
             // -----------------------------------
-            strDescription.Format("\"%s%s\"", OTString::trim(str_contents).c_str(),
+            strDescription.Format("%s%s", OTString::trim(str_contents).c_str(),
                                   bTruncated ? "..." : "");
         }
     }

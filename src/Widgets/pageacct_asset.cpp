@@ -27,6 +27,7 @@ MTPageAcct_Asset::MTPageAcct_Asset(QWidget *parent) :
 
     this->registerField("AssetID*", ui->lineEditID);
     // -----------------------------------------------
+    connect(this, SIGNAL(SetDefaultAsset(QString, QString)), Moneychanger::It(), SLOT(setDefaultAsset(QString,QString)));
 }
 
 
@@ -94,7 +95,7 @@ void MTPageAcct_Asset::on_pushButtonSelect_clicked()
             // -----------------------------------------
             if (qstr_default_id.isEmpty())
             {
-                Moneychanger::It()->setDefaultAsset(theChooser.m_qstrCurrentID, theChooser.m_qstrCurrentName);
+                emit SetDefaultAsset(theChooser.m_qstrCurrentID, theChooser.m_qstrCurrentName);
             }
             // -----------------------------------------
             return;
@@ -163,7 +164,7 @@ void MTPageAcct_Asset::showEvent(QShowEvent * event)
             // ---------------------------
             if (qstr_default_id.isEmpty())
             {
-                Moneychanger::It()->setDefaultAsset(qstr_id, qstrName);
+                emit SetDefaultAsset(qstr_id, qstrName);
             }
         }
         // -------------------------------------------

@@ -167,11 +167,36 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
             connect(m_pDetailPane,      SIGNAL(DefaultAccountChanged(QString, QString)),
                     Moneychanger::It(), SLOT  (setDefaultAccount(QString, QString)));
             // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(SendFromAcct(QString)),
+                    Moneychanger::It(), SLOT  (mc_send_from_acct(QString)));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(RequestToAcct(QString)),
+                    Moneychanger::It(), SLOT  (mc_request_to_acct(QString)));
+            // -------------------------------------------
             break;
+
         default:
             qDebug() << "MTDetailEdit::dialog: MTDetailEdit::DetailEditTypeError";
             return;
-        }
+        } //switch
+        // -------------------------------------------
+        connect(m_pDetailPane,      SIGNAL(NeedToUpdateMenu()),
+                Moneychanger::It(), SLOT  (onNeedToUpdateMenu()));
+        // -------------------------------------------
+        connect(m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()),
+                Moneychanger::It(), SLOT  (onNeedToUpdateMenu()));
+        // -------------------------------------------
+        connect(m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()),
+                this,               SLOT  (onRefreshRecords()));
+        // -------------------------------------------
+        connect(m_pDetailPane,      SIGNAL(ShowAsset(QString)),
+                Moneychanger::It(), SLOT  (mc_show_asset_slot(QString)));
+        // -------------------------------------------
+        connect(m_pDetailPane,      SIGNAL(ShowNym(QString)),
+                Moneychanger::It(), SLOT  (mc_show_nym_slot(QString)));
+        // -------------------------------------------
+        connect(m_pDetailPane,      SIGNAL(ShowServer(QString)),
+                Moneychanger::It(), SLOT  (mc_show_server_slot(QString)));
         // -------------------------------------------
         m_pDetailPane->SetOwnerPointer(*this);
         // -------------------------------------------
@@ -226,6 +251,12 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
 }
 
 
+void MTDetailEdit::onRefreshRecords()
+{
+    RefreshRecords();
+}
+
+
 void MTDetailEdit::showEvent(QShowEvent * event)
 {
     QWidget::showEvent(event);
@@ -249,8 +280,7 @@ void MTDetailEdit::showEvent(QShowEvent * event)
 
 void MTDetailEdit::RefreshRecords()
 {
-    disconnect(ui->tableWidget, SIGNAL(currentCellChanged(int,int,int,int)),
-               this, SLOT(on_tableWidget_currentCellChanged(int,int,int,int)));
+    ui->tableWidget->blockSignals(true);
     // ----------------------------------------------------------------------
     int mapSize = m_map.size();
     // -------------------------------------------------------
@@ -275,7 +305,6 @@ void MTDetailEdit::RefreshRecords()
     int nPreselectedIndex = -1;
     // --------------------------------
     QMap<QString, OTDB::MarketData *>::iterator it_markets;
-
 
 //    QMessageBox::information(this, "", QCoreApplication::applicationDirPath());
 
@@ -398,8 +427,7 @@ void MTDetailEdit::RefreshRecords()
     // ------------------------
     if (ui->tableWidget->rowCount() > 0)
     {
-        connect(ui->tableWidget, SIGNAL(currentCellChanged(int,int,int,int)),
-                this, SLOT(on_tableWidget_currentCellChanged(int,int,int,int)));
+        ui->tableWidget->blockSignals(false);
 
         m_pTabWidget->setVisible(true);
 
@@ -441,6 +469,10 @@ void MTDetailEdit::on_deleteButton_clicked()
 
 void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
 {
+    Q_UNUSED(currentColumn);
+    Q_UNUSED(previousRow);
+    Q_UNUSED(previousColumn);
+
     m_nCurrentRow = currentRow;
     // -------------------------------------
     if (m_nCurrentRow >= 0)

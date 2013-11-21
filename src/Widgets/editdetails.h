@@ -45,7 +45,16 @@ public:
     // ----------------------------------
 
 signals:
+    void NeedToUpdateMenu();
+    void RefreshRecordsAndUpdateMenu();
     void DefaultAccountChanged(QString qstrID, QString qstrName);
+
+    void ShowNym(QString);
+    void ShowAsset(QString);
+    void ShowServer(QString);
+
+    void SendFromAcct (QString qstrAcct);
+    void RequestToAcct(QString qstrAcct);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

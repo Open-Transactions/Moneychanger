@@ -46,7 +46,7 @@ bool MTCompose::sendMessage(QString body, QString fromNymId, QString toNymId, QS
     qDebug() << QString("Initiating sendMessage:\n Server:'%1'\n FromNym:'%2'\n ToNym:'%3'\n Subject:'%4'\n Body:'%5'").
                 arg(atServerID).arg(fromNymId).arg(toNymId).arg(subject).arg(body);
     // ----------------------------------------------------
-    QString contents = tr("Subject: %1\n\n%2").arg(subject).arg(body);
+    QString contents = tr("%1: %2\n\n%3").arg(tr("Subject")).arg(subject).arg(body);
     // ----------------------------------------------------
     OT_ME madeEasy;
 
@@ -311,7 +311,7 @@ void MTCompose::on_toButton_clicked()
         }
     }
     // -----------------------------------------------
-    theChooser.setWindowTitle("Choose the Recipient");
+    theChooser.setWindowTitle(tr("Choose the Recipient"));
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
@@ -525,13 +525,13 @@ void MTCompose::dialog()
         // -------------------------------------------
         if (!m_subject.isEmpty())
         {
-            QString qstrRe = m_subject.left(4);
+            QString qstrRe = tr("re:");
 
-            if ((qstrRe.toLower() != tr("re: ")) &&
-                (qstrRe.toLower() != QString("\%1").arg(tr("re:")))
-               )
+            QString qstrSubjectLeft = m_subject.left(qstrRe.size());
+
+            if (qstrSubjectLeft.toLower() != qstrRe)
             {
-                QString strTemp = tr("re: %1").arg(m_subject);
+                QString strTemp = QString("%1 %2").arg(qstrRe).arg(m_subject);
                 m_subject = strTemp;
             }
             // -----------------------
@@ -539,7 +539,7 @@ void MTCompose::dialog()
 
             ui->subjectEdit->setText(qstrTempSubject);
             // -----------------------
-            this->setWindowTitle(tr("Compose: %1").arg(qstrTempSubject));
+            this->setWindowTitle(QString("%1: %2").arg(tr("Compose")).arg(qstrTempSubject));
         }
         // -------------------------------------------
 
@@ -622,6 +622,6 @@ void MTCompose::on_subjectEdit_textChanged(const QString &arg1)
     else
     {
         m_subject = arg1;
-        this->setWindowTitle(tr("Compose: %1").arg(arg1));
+        this->setWindowTitle(QString("%1: %2").arg("Compose").arg(arg1));
     }
 }
