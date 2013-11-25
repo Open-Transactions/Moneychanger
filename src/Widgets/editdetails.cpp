@@ -12,7 +12,8 @@
 
 MTEditDetails::MTEditDetails(QWidget *parent, MTDetailEdit & theOwner) :
     QWidget(parent),
-    m_pOwner(&theOwner)
+    m_pOwner(&theOwner),
+    m_Type(MTDetailEdit::DetailEditTypeError)
 //  ui(new Ui::MTEditDetails)
 {
 //  ui->setupUi(this);
@@ -105,7 +106,8 @@ QString  MTEditDetails::GetCustomTabName(int nTab)
 // ----------------------------------
 
 //static
-QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName,
+QWidget * MTEditDetails::CreateDetailHeaderWidget(MTDetailEdit::DetailEditType theType,
+                                                  QString strID, QString strName,
                                                   QString strAmount/*=QString("")*/,
                                                   QString strStatus/*=QString("")*/,
                                                   QString strPixmap/*=QString("")*/,
@@ -152,7 +154,7 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
     QLabel * currency_amount_label = new QLabel;
     QString currency_amount;
 
-    if (!bExternal)
+    if (!bExternal && (MTDetailEdit::DetailEditTypeMarket != theType))
         currency_amount_label->setStyleSheet(QString("QLabel { color : %1; font-size: 18px }").arg(strColor));
     else
         currency_amount_label->setStyleSheet(QString("QLabel { color : %1; font-size: 16px }").arg(strColor));
@@ -160,7 +162,7 @@ QWidget * MTEditDetails::CreateDetailHeaderWidget(QString strID, QString strName
 //  currency_amount = tr("amount goes here");
 //  currency_amount = strAmount;
 
-    if (!bExternal && !strAmount.isEmpty())
+    if (!bExternal && !strAmount.isEmpty() && (MTDetailEdit::DetailEditTypeAccount == theType))
         currency_amount = QString("<small><font color=grey>%1:</font></small> %2").arg(tr("Balance")).arg(strAmount);
     else
         currency_amount = strAmount;

@@ -404,11 +404,9 @@ void MTAssetDetails::AddButtonClicked()
 //virtual
 void MTAssetDetails::refresh(QString strID, QString strName)
 {
-//  qDebug() << "MTAssetDetails::refresh";
-
     if (!strID.isEmpty() && (NULL != ui))
     {
-        QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(strID, strName, "", "", ":/icons/icons/assets.png", false);
+        QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName, "", "", ":/icons/icons/assets.png", false);
 
         pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
