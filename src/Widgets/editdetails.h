@@ -2,10 +2,13 @@
 #define EDITDETAILS_H
 
 #include <QPointer>
+#include <QVariant>
 #include <QWidget>
 #include <QGridLayout>
 
 #include "Handlers/contacthandler.h"
+
+#include "detailedit.h"
 
 namespace Ui {
 class MTEditDetails;
@@ -13,7 +16,25 @@ class MTEditDetails;
 
 class MTDetailEdit;
 class Moneychanger;
+
 // -----------------------------------------
+
+template <class T> class VPtr
+{
+public:
+    static T* asPtr(QVariant v)
+    {
+    return  (T *) v.value<void *>();
+    }
+
+    static QVariant asQVariant(T* ptr)
+    {
+    return qVariantFromValue((void *) ptr);
+    }
+};
+
+// -----------------------------------------
+
 class MTEditDetails : public QWidget
 {
     Q_OBJECT
@@ -28,7 +49,8 @@ public:
 
     virtual void ClearContents()=0;
 
-    static QWidget * CreateDetailHeaderWidget(QString strID, QString strName,
+    static QWidget * CreateDetailHeaderWidget(MTDetailEdit::DetailEditType theType,
+                                              QString strID, QString strName,
                                               QString strAmount=QString(""),
                                               QString strStatus=QString(""),
                                               QString strPixmap=QString(""),
@@ -43,6 +65,7 @@ public:
     virtual QWidget * CreateCustomTab (int nTab);
     virtual QString   GetCustomTabName(int nTab);
     // ----------------------------------
+    void SetEditType(MTDetailEdit::DetailEditType theType) { m_Type = theType; }
 
 signals:
     void NeedToUpdateMenu();
@@ -66,6 +89,8 @@ private slots:
 
 protected:    
     QPointer<MTDetailEdit> m_pOwner;
+
+    MTDetailEdit::DetailEditType m_Type;
 
 private:
 //    Ui::MTEditDetails *ui;

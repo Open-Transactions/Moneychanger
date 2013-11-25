@@ -74,7 +74,11 @@ MTCashPurse::MTCashPurse(QWidget *parent, MTDetailEdit & theOwner) :
 
 void MTCashPurse::refresh(QString strID, QString strName)
 {
+    this->blockSignals(true);
+//    ui->tableWidget->blockSignals(true);
+    // -----------------------------------
     ui->tableWidget->clearContents();
+    ui->tableWidget->setRowCount (0);
     // -----------------------------------
     if ((NULL != ui) && !strID.isEmpty())
     {
@@ -95,7 +99,7 @@ void MTCashPurse::refresh(QString strID, QString strName)
                 this->TallySelections(selectedIndices, lAmount);
         // ----------------------------------
         QString   qstrAmount    = MTHome::shortAcctBalance(strID);
-        QWidget * pHeaderWidget = MTEditDetails::CreateDetailHeaderWidget(strID, strName, qstrAmount, "", ":/icons/icons/vault.png", false);
+        QWidget * pHeaderWidget = MTEditDetails::CreateDetailHeaderWidget(MTDetailEdit::DetailEditTypeAccount, strID, strName, qstrAmount, "", ":/icons/icons/vault.png", false);
 
         pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
@@ -135,8 +139,6 @@ void MTCashPurse::refresh(QString strID, QString strName)
                                       arg(MTHome::cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym)) );
         ui->labelAssetType->setText(QString("<font color=grey>%1</font>").arg(qstr_asset_name) );
         // -----------------------------------
-//        ui->tableWidget->clearContents();
-//        // -----------------------------------
         if (raw_cash_balance > 0)
         {
             // --------------------------------------
@@ -170,10 +172,10 @@ void MTCashPurse::refresh(QString strID, QString strName)
                         pLabelSeries        ->setAlignment(Qt::AlignCenter);
                         pLabelTokenID       ->setAlignment(Qt::AlignCenter);
 
-//                        pLabelDenomination  ->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-//                        pLabelExpires       ->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-//                        pLabelSeries        ->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-//                        pLabelTokenID       ->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+//                      pLabelDenomination  ->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+//                      pLabelExpires       ->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+//                      pLabelSeries        ->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+//                      pLabelTokenID       ->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
 
                         // ------------------------------
                         QWidget     * wdg       = new QWidget;
@@ -201,6 +203,9 @@ void MTCashPurse::refresh(QString strID, QString strName)
             } // if purse not empty.
         } // if cash balance > 0.
     }
+    // --------------------------------------------
+    this->blockSignals(false);
+//    ui->tableWidget->blockSignals(false);
 }
 
 
@@ -545,10 +550,12 @@ int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmoun
 
 
 void MTCashPurse::ClearContents()
-{
+{    
     this->blockSignals(true);
+//    ui->tableWidget->blockSignals(true);
     // ----------------------------------
     ui->tableWidget->clearContents();
+    ui->tableWidget->setRowCount (0);
     // ----------------------------------
     ui->labelCashBalance->setText("");
     // ----------------------------------
@@ -579,6 +586,7 @@ void MTCashPurse::ClearContents()
     ui->labelAssetType->setText(QString(""));
     // ----------------------------------
     this->blockSignals(false);
+//    ui->tableWidget->blockSignals(false);
 }
 
 

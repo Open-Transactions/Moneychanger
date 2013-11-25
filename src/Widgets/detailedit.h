@@ -3,6 +3,8 @@
 
 #include <QPointer>
 #include <QMap>
+#include <QMultiMap>
+#include <QVariant>
 #include <QWidget>
 #include <QTabWidget>
 #include <QVBoxLayout>
@@ -13,12 +15,9 @@ namespace Ui {
 class MTDetailEdit;
 }
 
-namespace OTDB {
-class MarketData;
-}
-
 class MTEditDetails;
 class Moneychanger;
+class DlgMarkets;
 
 class MTDetailEdit : public QWidget
 {
@@ -48,7 +47,9 @@ public:
     void EnableAdd   (bool bEnabled) { m_bEnableAdd    = bEnabled; }
     void EnableDelete(bool bEnabled) { m_bEnableDelete = bEnabled; }
 
-    void SetMarketMap(QMap<QString, OTDB::MarketData *> & theMap) { m_pmapMarkets = &theMap; }
+    void    SetMarketMap(QMultiMap<QString, QVariant> & theMap);
+    void    SetMarketNymID(QString qstrNymID) { m_qstrMarketNymID = qstrNymID; }
+    QString GetMarketNymID() { return m_qstrMarketNymID; }
     // --------------------------------
     // Use for modeless or modal dialogs.
     void dialog(DetailEditType theType, bool bIsModal=false);
@@ -59,6 +60,8 @@ public:
     void FirstRun(MTDetailEdit::DetailEditType theType); // This only does something the first time you run it.
     // --------------------------------
     void RefreshRecords();
+    // --------------------------------
+    QMultiMap<QString, QVariant> * m_pmapMarkets; // do not delete. For reference only.
     // --------------------------------
     int         m_nCurrentRow;
     QString     m_qstrCurrentID;
@@ -75,7 +78,8 @@ public slots:
     void onRefreshRecords();
 
 protected:
-    QMap<QString, OTDB::MarketData *> * m_pmapMarkets; // do not delete. For reference only.
+    // --------------------------------
+    QString     m_qstrMarketNymID; // used by marketdetails and offerdetails.
     // ----------------------------------
     bool        m_bEnableAdd;
     bool        m_bEnableDelete;

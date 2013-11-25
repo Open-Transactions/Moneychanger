@@ -336,6 +336,7 @@ QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
     std::string str_acct_nym;
     std::string str_acct_server;
     std::string str_acct_asset;
+    std::string str_acct_type; // issuer acct? simple acct? etc. (Any other types are server-side only.)
 
     QString qstr_acct_id,
             qstr_acct_nym,
@@ -370,13 +371,16 @@ QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
         str_acct_server  = OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
         str_acct_asset   = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
         // -----------------------------------
+        str_acct_type    = OTAPI_Wrap::GetAccountWallet_Type(str_acct_id);
+        // -----------------------------------
         qstr_acct_nym    = QString::fromStdString(str_acct_nym);
         qstr_acct_server = QString::fromStdString(str_acct_server);
         qstr_acct_asset  = QString::fromStdString(str_acct_asset);
         // -----------------------------------
         if ((qstr_record_nym    != qstr_acct_nym)    ||
             (qstr_record_server != qstr_acct_server) ||
-            (qstr_record_asset  != qstr_acct_asset) )
+            (qstr_record_asset  != qstr_acct_asset)  ||
+            (0 != str_acct_type.compare("simple"))    ) // DO NOT INTERNATIONALIZE "simple".
         {
             // There's a default account, but it's got the wrong Asset type, or the
             // wrong server, etc, for it to accept this record. Therefore we have to
@@ -387,6 +391,7 @@ QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
             str_acct_nym     = "";
             str_acct_server  = "";
             str_acct_asset   = "";
+            str_acct_type    = "";
             // ------------------
             qstr_acct_id     = QString("");
             qstr_acct_nym    = QString("");
@@ -424,13 +429,16 @@ QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
                 str_acct_server  = OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
                 str_acct_asset   = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
                 // -----------------------------------
+                str_acct_type    = OTAPI_Wrap::GetAccountWallet_Type(str_acct_id);
+                // -----------------------------------
                 qstr_acct_nym    = QString::fromStdString(str_acct_nym);
                 qstr_acct_server = QString::fromStdString(str_acct_server);
                 qstr_acct_asset  = QString::fromStdString(str_acct_asset);
                 // -----------------------------------------------
-                if ((qstr_record_nym    == qstr_acct_nym)    &&
+                if ((qstr_record_nym    == qstr_acct_nym   ) &&
                     (qstr_record_server == qstr_acct_server) &&
-                    (qstr_record_asset  == qstr_acct_asset) )
+                    (qstr_record_asset  == qstr_acct_asset ) &&
+                    (0 == str_acct_type.compare("simple")  )  ) // DO NOT INTERNATIONALIZE "simple".
                 {
                     MTNameLookupQT theLookup;
 
@@ -443,6 +451,7 @@ QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
                 str_acct_nym     = "";
                 str_acct_server  = "";
                 str_acct_asset   = "";
+                str_acct_type    = "";
                 // ------------------
                 qstr_acct_id     = QString("");
                 qstr_acct_nym    = QString("");

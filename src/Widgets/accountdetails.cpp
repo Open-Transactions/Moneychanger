@@ -168,7 +168,7 @@ void MTAccountDetails::refresh(QString strID, QString strName)
         // -------------------------------------
         QString qstrAmount = MTHome::shortAcctBalance(strID);
 
-        QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(strID, strName, qstrAmount, "", ":/icons/icons/vault.png", false);
+        QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName, qstrAmount, "", ":/icons/icons/vault.png", false);
 
         pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
