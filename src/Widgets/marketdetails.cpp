@@ -757,6 +757,7 @@ QString MTMarketDetails::CalculateTotalAssets(QString & qstrID, QMultiMap<QStrin
 {
     QString qstrReturnValue("");
     // -----------------------------
+    bool    bFirstIteration = true;
     int64_t lTotal = 0;
     // -----------------------------
     QMap<QString, QVariant>::iterator it_market = multimap.find(qstrID);
@@ -764,15 +765,19 @@ QString MTMarketDetails::CalculateTotalAssets(QString & qstrID, QMultiMap<QStrin
     while ((multimap.end() != it_market) && (it_market.key() == qstrID))
     {
         OTDB::MarketData * pMarketData = VPtr<OTDB::MarketData>::asPtr(it_market.value());
+        // -----------------------------
+        if (bFirstIteration)
+            qstrReturnValue = QString::fromStdString(OTAPI_Wrap::FormatAmount(pMarketData->asset_type_id, 0));
 
-        if (NULL != pMarketData) // Should never be NULL.
-            lTotal += OTAPI_Wrap::It()->StringToLong(pMarketData->total_assets);
+        bFirstIteration = false;
+        // -----------------------------
+        lTotal += OTAPI_Wrap::It()->StringToLong(pMarketData->total_assets);
         // --------------------
         ++it_market;
         // --------------------
         // We do this here where pMarketData is still a valid pointer.
         //
-        if (multimap.end() == it_market)
+        if ((multimap.end() == it_market) || (it_market.key() != qstrID))
         {
             qstrReturnValue = QString::fromStdString(OTAPI_Wrap::FormatAmount(pMarketData->asset_type_id, lTotal));
             break;
@@ -794,7 +799,7 @@ QString MTMarketDetails::CalculateNumberAsks(QString & qstrID, QMultiMap<QString
 // ----------------------------------
 QString MTMarketDetails::CalculateNumberOffers(QString & qstrID, QMultiMap<QString, QVariant> & multimap, bool bIsBid)
 {
-    QString qstrReturnValue("");
+    QString qstrReturnValue("0");
     // -----------------------------
     int64_t lTotal = 0;
     // -----------------------------
@@ -816,7 +821,7 @@ QString MTMarketDetails::CalculateNumberOffers(QString & qstrID, QMultiMap<QStri
         // --------------------
         // We do this here where pMarketData is still a valid pointer.
         //
-        if (multimap.end() == it_market)
+        if ((multimap.end() == it_market) || (it_market.key() != qstrID))
         {
             qstrReturnValue = QString("%1").arg(lTotal);
             break;
@@ -830,32 +835,35 @@ QString MTMarketDetails::CalculateLastSalePrice(QString & qstrID, QMultiMap<QStr
 {
     QString qstrReturnValue("");
     // -----------------------------
-    int64_t lLastSaleDate  = 0;
-    int64_t lLastSalePrice = 0;
+    bool    bFirstIteration = true;
+    int64_t lLastSaleDate   = 0;
+    int64_t lLastSalePrice  = 0;
     // -----------------------------
     QMap<QString, QVariant>::iterator it_market = multimap.find(qstrID);
     // -----------------------------
     while ((multimap.end() != it_market) && (it_market.key() == qstrID))
     {
         OTDB::MarketData * pMarketData = VPtr<OTDB::MarketData>::asPtr(it_market.value());
+        // -----------------------------
+        if (bFirstIteration)
+            qstrReturnValue = QString::fromStdString(OTAPI_Wrap::FormatAmount(pMarketData->currency_type_id, 0));
 
-        if (NULL != pMarketData) // Should never be NULL.
+        bFirstIteration = false;
+        // -----------------------------
+        int64_t lCurrentLastSaleDate  = OTAPI_Wrap::It()->StringToLong(pMarketData->last_sale_date);
+        int64_t lCurrentLastSalePrice = OTAPI_Wrap::It()->StringToLong(pMarketData->last_sale_price);
+
+        if (lCurrentLastSaleDate > lLastSaleDate)
         {
-            int64_t lCurrentLastSaleDate  = OTAPI_Wrap::It()->StringToLong(pMarketData->last_sale_date);
-            int64_t lCurrentLastSalePrice = OTAPI_Wrap::It()->StringToLong(pMarketData->last_sale_price);
-
-            if (lCurrentLastSaleDate > lLastSaleDate)
-            {
-                lLastSaleDate  = lCurrentLastSaleDate;
-                lLastSalePrice = lCurrentLastSalePrice;
-            }
+            lLastSaleDate  = lCurrentLastSaleDate;
+            lLastSalePrice = lCurrentLastSalePrice;
         }
         // --------------------
         ++it_market;
         // --------------------
         // We do this here where pMarketData is still a valid pointer.
         //
-        if (multimap.end() == it_market)
+        if ((multimap.end() == it_market) || (it_market.key() != qstrID))
         {
             qstrReturnValue = QString::fromStdString(OTAPI_Wrap::FormatAmount(pMarketData->currency_type_id, lLastSalePrice));
             break;
@@ -869,6 +877,7 @@ QString MTMarketDetails::CalculateCurrentBid(QString & qstrID, QMultiMap<QString
 {
     QString qstrReturnValue("");
     // -----------------------------
+    bool    bFirstIteration = true;
     int64_t lHighestBid = 0;
     // -----------------------------
     QMap<QString, QVariant>::iterator it_market = multimap.find(qstrID);
@@ -876,20 +885,22 @@ QString MTMarketDetails::CalculateCurrentBid(QString & qstrID, QMultiMap<QString
     while ((multimap.end() != it_market) && (it_market.key() == qstrID))
     {
         OTDB::MarketData * pMarketData = VPtr<OTDB::MarketData>::asPtr(it_market.value());
+        // -----------------------------
+        if (bFirstIteration)
+            qstrReturnValue = QString::fromStdString(OTAPI_Wrap::FormatAmount(pMarketData->currency_type_id, 0));
 
-        if (NULL != pMarketData) // Should never be NULL.
-        {
-            int64_t lCurrentHighestBid = OTAPI_Wrap::It()->StringToLong(pMarketData->current_bid);
+        bFirstIteration = false;
+        // -----------------------------
+        int64_t lCurrentHighestBid = OTAPI_Wrap::It()->StringToLong(pMarketData->current_bid);
 
-            if (lCurrentHighestBid > lHighestBid)
-                lHighestBid = lCurrentHighestBid;
-        }
+        if (lCurrentHighestBid > lHighestBid)
+            lHighestBid = lCurrentHighestBid;
         // --------------------
         ++it_market;
         // --------------------
         // We do this here where pMarketData is still a valid pointer.
         //
-        if (multimap.end() == it_market)
+        if ((multimap.end() == it_market) || (it_market.key() != qstrID))
         {
             qstrReturnValue = QString::fromStdString(OTAPI_Wrap::FormatAmount(pMarketData->currency_type_id, lHighestBid));
             break;
@@ -903,6 +914,7 @@ QString MTMarketDetails::CalculateCurrentAsk(QString & qstrID, QMultiMap<QString
 {
     QString qstrReturnValue("");
     // -----------------------------
+    bool    bFirstIteration = true;
     int64_t lLowestAsk = 0;
     // -----------------------------
     QMap<QString, QVariant>::iterator it_market = multimap.find(qstrID);
@@ -910,20 +922,22 @@ QString MTMarketDetails::CalculateCurrentAsk(QString & qstrID, QMultiMap<QString
     while ((multimap.end() != it_market) && (it_market.key() == qstrID))
     {
         OTDB::MarketData * pMarketData = VPtr<OTDB::MarketData>::asPtr(it_market.value());
+        // -----------------------------
+        if (bFirstIteration)
+            qstrReturnValue = QString::fromStdString(OTAPI_Wrap::FormatAmount(pMarketData->currency_type_id, 0));
 
-        if (NULL != pMarketData) // Should never be NULL.
-        {
-            int64_t lCurrentLowestAsk = OTAPI_Wrap::It()->StringToLong(pMarketData->current_bid);
+        bFirstIteration = false;
+        // -----------------------------
+        int64_t lCurrentLowestAsk = OTAPI_Wrap::It()->StringToLong(pMarketData->current_bid);
 
-            if ((0 == lLowestAsk) || (lCurrentLowestAsk < lLowestAsk))
-                lLowestAsk = lCurrentLowestAsk;
-        }
+        if ((0 == lLowestAsk) || ((0 != lCurrentLowestAsk) && (lCurrentLowestAsk < lLowestAsk)))
+            lLowestAsk = lCurrentLowestAsk;
         // --------------------
         ++it_market;
         // --------------------
         // We do this here where pMarketData is still a valid pointer.
         //
-        if (multimap.end() == it_market)
+        if ((multimap.end() == it_market) || (it_market.key() != qstrID))
         {
             qstrReturnValue = QString::fromStdString(OTAPI_Wrap::FormatAmount(pMarketData->currency_type_id, lLowestAsk));
             break;
