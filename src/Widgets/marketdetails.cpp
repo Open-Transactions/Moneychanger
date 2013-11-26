@@ -96,6 +96,18 @@ MTMarketDetails::MTMarketDetails(QWidget *parent, MTDetailEdit & theOwner) :
 }
 
 
+void MTMarketDetails::on_toolButtonAsset_clicked()
+{
+    if (!ui->lineEditAssetID->text().isEmpty())
+        emit ShowAsset(ui->lineEditAssetID->text());
+}
+
+void MTMarketDetails::on_toolButtonCurrency_clicked()
+{
+    if (!ui->lineEditCurrencyID->text().isEmpty())
+        emit ShowAsset(ui->lineEditCurrencyID->text());
+}
+
 void MTMarketDetails::ClearBidsGrid()
 {
     this->blockSignals(true);
@@ -715,7 +727,7 @@ void MTMarketDetails::refresh(QString strID, QString strName)
                     // but across multiple servers.)
                     //
                     // ------------------------------------------------------
-//                    ui->labelScaleValue     ->setText(qstrFormattedScale);
+//                  ui->labelScaleValue     ->setText(qstrFormattedScale);
                     // ------------------------------------------------------
                     ui->lineEditAsset       ->setText(QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(pMarketData->asset_type_id)));
                     ui->lineEditCurrency    ->setText(QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(pMarketData->currency_type_id)));
@@ -727,12 +739,11 @@ void MTMarketDetails::refresh(QString strID, QString strName)
                     QString qstrNumberAsks    = CalculateNumberAsks    (strID, *(m_pOwner->m_pmapMarkets));
                     QString qstrLastSalePrice = CalculateLastSalePrice (strID, *(m_pOwner->m_pmapMarkets));
                     // ------------------------------------------------------
-//                    ui->labelTotalValue     ->setText(qstrTotalAssets);
-
+//                  ui->labelTotalValue     ->setText(qstrTotalAssets);
                     ui->labelNumberBidsValue->setText(qstrNumberBids);
                     ui->labelNumberAsksValue->setText(qstrNumberAsks);
-//                    ui->labelCurrentBidValue->setText(qstrCurrentBid);
-//                    ui->labelCurrentAskValue->setText(qstrCurrentAsk);
+//                  ui->labelCurrentBidValue->setText(qstrCurrentBid);
+//                  ui->labelCurrentAskValue->setText(qstrCurrentAsk);
                     ui->labelLastValue      ->setText(qstrLastSalePrice);
                     // ------------------------------------------------------
                     RetrieveMarketOffers     (strID, *(m_pOwner->m_pmapMarkets));
@@ -852,6 +863,12 @@ QString MTMarketDetails::CalculateLastSalePrice(QString & qstrID, QMultiMap<QStr
         // -----------------------------
         int64_t lCurrentLastSaleDate  = OTAPI_Wrap::It()->StringToLong(pMarketData->last_sale_date);
         int64_t lCurrentLastSalePrice = OTAPI_Wrap::It()->StringToLong(pMarketData->last_sale_price);
+
+
+        qDebug() << "lCurrentLastSaleDate: " << lCurrentLastSaleDate;
+        qDebug() << "lCurrentLastSalePrice: " << lCurrentLastSalePrice;
+
+
 
         if (lCurrentLastSaleDate > lLastSaleDate)
         {
