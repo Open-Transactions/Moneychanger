@@ -22,8 +22,10 @@
 #define MONEYCHANGER_NAMECOIN_HPP
 
 #include <QString>
+#include <QWidget>
 
 #include <list>
+#include <stdexcept>
 #include <string>
 
 #include <nmcrpc/JsonRpc.hpp>
@@ -133,8 +135,80 @@ public:
   /**
    * Slot called regularly by a timer that handles all name updates
    * where appropriate.
+   * @param w The widget to use as parent for the password dialog.
    */
-  void timerUpdate ();
+  void timerUpdate (QWidget* w);
+
+};
+
+/* ************************************************************************** */
+/* NMC_WalletUnlocker.  */
+
+/**
+ * Moneychanger specific wrapper around NamecoinInterface::WalletUnlocker that
+ * automatically shows a password dialog when needed.
+ */
+class NMC_WalletUnlocker
+{
+
+private:
+
+  /** High-level Namecoin interface used.  */
+  nmcrpc::NamecoinInterface& nc;
+  
+  /** The "real" wallet unlocker object used behind-the-scenes.  */
+  nmcrpc::NamecoinInterface::WalletUnlocker unlocker;
+
+public:
+
+  class UnlockFailure;
+
+  /**
+   * Construct it.  This doesn't yet show the dialog or performs unlocking,
+   * so that no problems with memory freeing occur in case of exceptions.
+   * @param n The high-level interface to use.
+   * @see unlock(const std::string&) to perform the unlock itself.
+   */
+  explicit inline NMC_WalletUnlocker (nmcrpc::NamecoinInterface& n)
+    : nc(n), unlocker(n)
+  {
+    // Nothing more to do.
+  }
+
+  /**
+   * Try to unlock the wallet.  If a passphrase is needed, a dialog is shown
+   * until the correct one is entered or the user cancels the action.  In the
+   * latter case, UnlockFailure is thrown.
+   * @param w The widget to use as parent for the password dialog.
+   * @throws UnlockFailure if the user cancels the unlock.
+   */
+  void unlock (QWidget* w);
+
+};
+
+/**
+ * Exception code if the unlock dialog was cancelled by the user without
+ * entering a valid passphrase.
+ */
+class NMC_WalletUnlocker::UnlockFailure : public std::runtime_error
+{
+
+public:
+
+  /**
+   * Construct it given the error message.
+   * @param msg The error message.
+   */
+  explicit inline UnlockFailure (const std::string& msg)
+    : std::runtime_error(msg)
+  {
+    // Nothing else to do.
+  }
+
+  /* No default constructor, but copying ok.  */
+  UnlockFailure () = delete;
+  UnlockFailure (const UnlockFailure&) = default;
+  UnlockFailure& operator= (const UnlockFailure&) = default;
 
 };
 

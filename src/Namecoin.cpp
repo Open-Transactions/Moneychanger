@@ -21,8 +21,11 @@
 #include "Namecoin.hpp"
 
 #include "DBHandler.h"
+#include "dlgpassword.h"
 
 #include <nmcrpc/RpcSettings.hpp>
+
+#include <opentxs/OTPassword.h>
 
 #include <QDebug>
 #include <QSqlField>
@@ -144,9 +147,10 @@ NMC_NameManager::startRegistration (const QString nym, const QString cred)
 /**
  * Slot called regularly by a timer that handles all name updates
  * where appropriate.
+ * @param w The widget to use as parent for the password dialog.
  */
 void
-NMC_NameManager::timerUpdate ()
+NMC_NameManager::timerUpdate (QWidget* w)
 {
   qDebug () << "Namecoin update timer called.";
 
@@ -208,6 +212,69 @@ NMC_NameManager::timerUpdate ()
         }
 
       ++i;
+    }
+}
+
+/* ************************************************************************** */
+/* NMC_WalletUnlocker.  */
+
+/**
+ * Try to unlock the wallet.  If a passphrase is needed, a dialog is shown
+ * until the correct one is entered or the user cancels the action.  In the
+ * latter case, UnlockFailure is thrown.
+ * @param w The widget to use as parent for the password dialog.
+ * @throws UnlockFailure if the user cancels the unlock.
+ */
+void
+NMC_WalletUnlocker::unlock (QWidget* w)
+{
+  std::string pwd;
+
+  qDebug () << "Trying to unlock the Namecoin wallet.";
+
+  /* If we need a password, show the dialog.  */
+  if (nc.needWalletPassphrase ())
+    {
+      OTPassword otPwd;
+
+      MTDlgPassword dlg (w, otPwd);
+      dlg.setDisplay ("Your Namecoin wallet is locked.  For the operations to"
+                      " proceed, please enter the passphrase to temporarily"
+                      " unlock the wallet.");
+      const int res = dlg.exec ();
+
+      /* Return code is 0 for cancel button or closing the window.
+         It is 1 in case of ok.  */
+      if (res == 0)
+        {
+          qDebug () << "Wallet unlock was cancelled.";
+          throw UnlockFailure("Wallet unlock was cancelled.");
+        }
+
+      dlg.extractPassword ();
+      pwd = otPwd.getPassword ();
+    }
+
+  /* Now try to unlock.  If the passphrase is wrong, retry by a tail-recursive
+     call to unlock().  */
+  try
+    {
+      unlocker.unlock (pwd);
+      qDebug () << "Unlock successful (or not necessary).";
+    }
+  catch (const nmcrpc::NamecoinInterface::UnlockFailure& exc)
+    {
+      qDebug () << "Wrong passphrase, retrying.";
+      unlock (w);
+    }
+  catch (const nmcrpc::JsonRpc::RpcError& exc)
+    {
+      qDebug () << "NMC RPC Error " << exc.getErrorCode ()
+                << ": " << exc.getErrorMessage ().c_str ();
+    }
+  catch (const std::exception& exc)
+    {
+      qDebug () << "Error: " << exc.what ();
     }
 }
 
