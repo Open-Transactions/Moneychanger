@@ -136,8 +136,11 @@ int main(int argc, char *argv[])
 //  QMessageBox::information(NULL, "", QString::fromStdString(std::string(OTPaths::ScriptsFolder().Get())));
 #endif
 // ----------------------------------------------------------------
-
     int nExec = theApplication.exec(); // <=== Here's where we run the QApplication...
+    // ----------------------------------------------------------------
+
+    Moneychanger::It(NULL, true); // bShuttingDown=true.
+
     // ----------------------------------------------------------------
     OTLog::vOutput(0, "Finished executing the QApplication!\n(AppCleanup should occur "
                    "immediately after this point.)\nReturning: %d\n", nExec);

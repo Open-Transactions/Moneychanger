@@ -27,7 +27,6 @@ MTOfferDetails::MTOfferDetails(QWidget *parent, MTDetailEdit & theOwner) :
     // ----------------------------------
 }
 
-// The offer m_map also needs to use a composite ID: server/market/offer (comma separated.)
 
 void MTOfferDetails::refresh(QString strID, QString strName)
 {

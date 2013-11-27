@@ -41,12 +41,27 @@
  **/
 
 //static
-Moneychanger * Moneychanger::It(QWidget *parent/*=0*/)
+Moneychanger * Moneychanger::It(QWidget *parent/*=0*/, bool bShuttingDown/*=false*/)
 {
     // NOTE: parent is only used the first time this function is called.
+    // (And the last time.)
     //
     static QScopedPointer<Moneychanger> pMoneychanger(new Moneychanger(parent));
 
+    if (bShuttingDown)
+    {
+        // bShuttingDown is only passed in the very last time this is called,
+        // (at application shutdown.)
+        //
+        // (If we don't delete it at this time, then it won't get deleted until
+        // the static objects are deleted, which causes a crash since apparently
+        // that's too late to be deleting the widgets.)
+        //
+        pMoneychanger->disconnect();
+        delete pMoneychanger.take();
+        return NULL;
+    }
+    // -------------------------------------
     return pMoneychanger.data();
 }
 
