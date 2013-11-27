@@ -63,6 +63,7 @@ protected:
     void PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QString, QVariant> & multimap);
     void PopulateRecentTradesGrid (QString & qstrID, QMultiMap<QString, QVariant> & multimap);
     // ----------------------------------
+
 private slots:
     void on_toolButtonAsset_clicked();
 

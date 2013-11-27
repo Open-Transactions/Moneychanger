@@ -46,10 +46,13 @@ public:
 
     void EnableAdd   (bool bEnabled) { m_bEnableAdd    = bEnabled; }
     void EnableDelete(bool bEnabled) { m_bEnableDelete = bEnabled; }
-
+    // --------------------------------
     void    SetMarketMap(QMultiMap<QString, QVariant> & theMap);
+    // --------------------------------
     void    SetMarketNymID(QString qstrNymID) { m_qstrMarketNymID = qstrNymID; }
     QString GetMarketNymID() { return m_qstrMarketNymID; }
+    // --------------------------------
+    void    SetMarketID(QString qstrMarketID) { m_qstrMarketID = qstrMarketID; }
     // --------------------------------
     // Use for modeless or modal dialogs.
     void dialog(DetailEditType theType, bool bIsModal=false);
@@ -61,15 +64,33 @@ public:
     // --------------------------------
     void RefreshRecords();
     // --------------------------------
+    void RefreshMarketCombo();
+    void SetCurrentMarketIDBasedOnIndex(int index);
+    // --------------------------------
     QMultiMap<QString, QVariant> * m_pmapMarkets; // do not delete. For reference only.
     // --------------------------------
     int         m_nCurrentRow;
     QString     m_qstrCurrentID;
     QString     m_qstrCurrentName;
     mapIDName   m_map; // qstr/qstr for id/name
+    // ----------------------------------
+    // Only used in DetailEdit for Offer Details. m_mapMarkets is a Map that uniquely identifies each marketID/scale with a Name.
+    // (It's a copy of m_map from the MarketDetails DetailEdit.)
+    // Whereas m_pOwner->m_pmapMarkets is a MultiMap that contains multiple entries with the same id/scale (each for a different server.)
+    // (It's a pointer to the DlgMarkets m_mapMarkets multimap.)
+    // The first is used to populate the combo box, whereas the second is used to loop through actual MarketData pointers.
+    //
+    mapIDName m_mapMarkets;
+    QString   m_qstrMarketID;
+    // ----------------------------------
+    void SetType(DetailEditType theType) { m_Type = theType; }
 
 signals:
     void balancesChanged();
+
+    void CurrentMarketChanged(QString qstrMarketID);
+
+    void RefreshOffers(QString qstrMarketID);
 
 public slots:
     void onBalancesChangedFromAbove();
@@ -77,9 +98,13 @@ public slots:
 
     void onRefreshRecords();
 
+    void onMarketIDChangedFromAbove(QString qstrMarketID);
+
+    void on_comboBox_currentIndexChanged(int index);
+
 protected:
     // --------------------------------
-    QString     m_qstrMarketNymID; // used by marketdetails and offerdetails.
+    QString     m_qstrMarketNymID;    // used by marketdetails and offerdetails.
     // ----------------------------------
     bool        m_bEnableAdd;
     bool        m_bEnableDelete;

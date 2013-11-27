@@ -66,6 +66,7 @@ public:
     virtual QString   GetCustomTabName(int nTab);
     // ----------------------------------
     void SetEditType(MTDetailEdit::DetailEditType theType) { m_Type = theType; }
+    // ----------------------------------
 
 signals:
     void NeedToUpdateMenu();

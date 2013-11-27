@@ -74,8 +74,8 @@ MTCashPurse::MTCashPurse(QWidget *parent, MTDetailEdit & theOwner) :
 
 void MTCashPurse::refresh(QString strID, QString strName)
 {
-    this->blockSignals(true);
-//    ui->tableWidget->blockSignals(true);
+//    this->blockSignals(true);
+    ui->tableWidget->blockSignals(true);
     // -----------------------------------
     ui->tableWidget->clearContents();
     ui->tableWidget->setRowCount (0);
@@ -204,8 +204,8 @@ void MTCashPurse::refresh(QString strID, QString strName)
         } // if cash balance > 0.
     }
     // --------------------------------------------
-    this->blockSignals(false);
-//    ui->tableWidget->blockSignals(false);
+//    this->blockSignals(false);
+    ui->tableWidget->blockSignals(false);
 }
 
 
@@ -551,8 +551,8 @@ int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmoun
 
 void MTCashPurse::ClearContents()
 {    
-    this->blockSignals(true);
-//    ui->tableWidget->blockSignals(true);
+//    this->blockSignals(true);
+    ui->tableWidget->blockSignals(true);
     // ----------------------------------
     ui->tableWidget->clearContents();
     ui->tableWidget->setRowCount (0);
@@ -585,8 +585,8 @@ void MTCashPurse::ClearContents()
     // ----------------------------------
     ui->labelAssetType->setText(QString(""));
     // ----------------------------------
-    this->blockSignals(false);
-//    ui->tableWidget->blockSignals(false);
+//    this->blockSignals(false);
+    ui->tableWidget->blockSignals(false);
 }
 
 

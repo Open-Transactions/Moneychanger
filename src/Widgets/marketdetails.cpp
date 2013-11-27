@@ -84,9 +84,9 @@ MTMarketDetails::MTMarketDetails(QWidget *parent, MTDetailEdit & theOwner) :
     ui->tableWidgetTrades->horizontalHeaderItem(4)->setTextAlignment(Qt::AlignCenter);
     ui->tableWidgetTrades->horizontalHeaderItem(5)->setTextAlignment(Qt::AlignCenter);
     // ----------------------------------
-    ui->tableWidgetBids  ->verticalHeader()->hide();
-    ui->tableWidgetAsks  ->verticalHeader()->hide();
-    ui->tableWidgetTrades->verticalHeader()->hide();
+    ui->tableWidgetBids   ->verticalHeader()->hide();
+    ui->tableWidgetAsks   ->verticalHeader()->hide();
+    ui->tableWidgetTrades ->verticalHeader()->hide();
     // ----------------------------------
     ui->lineEditAsset     ->setStyleSheet("QLineEdit { background-color: lightgray }");
     ui->lineEditAssetID   ->setStyleSheet("QLineEdit { background-color: lightgray }");
@@ -110,38 +110,38 @@ void MTMarketDetails::on_toolButtonCurrency_clicked()
 
 void MTMarketDetails::ClearBidsGrid()
 {
-    this->blockSignals(true);
-//    ui->tableWidgetBids->blockSignals(true);
+//    this->blockSignals(true);
+    ui->tableWidgetBids->blockSignals(true);
     // -----------------------------------
     ui->tableWidgetBids->clearContents();
     ui->tableWidgetBids->setRowCount (0);
     // -----------------------------------
-    this->blockSignals(false);
-//    ui->tableWidgetBids->blockSignals(false);
+//    this->blockSignals(false);
+    ui->tableWidgetBids->blockSignals(false);
 }
 
 void MTMarketDetails::ClearAsksGrid()
 {
-    this->blockSignals(true);
-//    ui->tableWidgetAsks->blockSignals(true);
+//    this->blockSignals(true);
+    ui->tableWidgetAsks->blockSignals(true);
     // -----------------------------------
     ui->tableWidgetAsks->clearContents();
     ui->tableWidgetAsks->setRowCount (0);
     // -----------------------------------
-    this->blockSignals(false);
-//    ui->tableWidgetAsks->blockSignals(false);
+//    this->blockSignals(false);
+    ui->tableWidgetAsks->blockSignals(false);
 }
 
 void MTMarketDetails::ClearTradesGrid()
 {
-    this->blockSignals(true);
-//    ui->tableWidgetTrades->blockSignals(true);
+//    this->blockSignals(true);
+    ui->tableWidgetTrades->blockSignals(true);
     // -----------------------------------
     ui->tableWidgetTrades->clearContents();
     ui->tableWidgetTrades->setRowCount (0);
     // -----------------------------------
-    this->blockSignals(false);
-//    ui->tableWidgetTrades->blockSignals(false);
+//    this->blockSignals(false);
+    ui->tableWidgetTrades->blockSignals(false);
 }
 
 // ------------------------------------------------------------
@@ -213,11 +213,11 @@ OTDB::OfferListMarket * MTMarketDetails::LoadOfferListForMarket(OTDB::MarketData
 
 void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QString, QVariant> & multimap)
 {
-    this->blockSignals(true);
+//    this->blockSignals(true);
     // -----------------------------------
-//    ui->tableWidgetBids->blockSignals(true);
-//    // -----------------------------------
-//    ui->tableWidgetAsks->blockSignals(true);
+    ui->tableWidgetBids->blockSignals(true);
+    // -----------------------------------
+    ui->tableWidgetAsks->blockSignals(true);
     // -----------------------------------
     int nBidsRowCount = 0;
     int nAsksRowCount = 0;
@@ -433,10 +433,10 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
         ++it_market;
     } // while
     // -----------------------------------------------------
-    this->blockSignals(false);
+//    this->blockSignals(false);
     // -----------------------------------
-//    ui->tableWidgetBids->blockSignals(false);
-//    ui->tableWidgetAsks->blockSignals(false);
+    ui->tableWidgetBids->blockSignals(false);
+    ui->tableWidgetAsks->blockSignals(false);
     // -----------------------------------------------------
     if (ui->tableWidgetBids->rowCount() > 0)
         ui->tableWidgetBids->setCurrentCell(0, 0);
@@ -515,9 +515,9 @@ OTDB::TradeListMarket * MTMarketDetails::LoadTradeListForMarket(OTDB::MarketData
 
 void MTMarketDetails::PopulateRecentTradesGrid(QString & qstrID, QMultiMap<QString, QVariant> & multimap)
 {
-    this->blockSignals(true);
+//    this->blockSignals(true);
     // -----------------------------------
-//    ui->tableWidgetTrades->blockSignals(true);
+    ui->tableWidgetTrades->blockSignals(true);
     // -----------------------------------
     int nTradesRowCount  = 0;
     // -----------------------------------
@@ -630,9 +630,9 @@ void MTMarketDetails::PopulateRecentTradesGrid(QString & qstrID, QMultiMap<QStri
         ++it_market;
     } // while
     // -----------------------------------------------------
-    this->blockSignals(false);
+//    this->blockSignals(false);
     // -----------------------------------
-//    ui->tableWidgetTrades->blockSignals(false);
+    ui->tableWidgetTrades->blockSignals(false);
     // -----------------------------------------------------
     if (ui->tableWidgetTrades->rowCount() > 0)
         ui->tableWidgetTrades->setCurrentCell(0, 0);
@@ -643,7 +643,11 @@ void MTMarketDetails::PopulateRecentTradesGrid(QString & qstrID, QMultiMap<QStri
 
 void MTMarketDetails::refresh(QString strID, QString strName)
 {
-    this->blockSignals(true);
+//    this->blockSignals(true);
+    // -----------------------------------
+    ui->tableWidgetBids  ->blockSignals(true);
+    ui->tableWidgetAsks  ->blockSignals(true);
+    ui->tableWidgetTrades->blockSignals(true);
     // -----------------------------------
     ui->tableWidgetBids->clearContents();
     ui->tableWidgetBids->setRowCount (0);
@@ -654,7 +658,11 @@ void MTMarketDetails::refresh(QString strID, QString strName)
     ui->tableWidgetTrades->clearContents();
     ui->tableWidgetTrades->setRowCount (0);
     // ----------------------------------------
-    this->blockSignals(false);
+    ui->tableWidgetBids  ->blockSignals(false);
+    ui->tableWidgetAsks  ->blockSignals(false);
+    ui->tableWidgetTrades->blockSignals(false);
+    // ----------------------------------------
+//    this->blockSignals(false);
     // ----------------------------------------
     if (!strID.isEmpty() && (NULL != ui))
     {
@@ -727,8 +735,6 @@ void MTMarketDetails::refresh(QString strID, QString strName)
                     // but across multiple servers.)
                     //
                     // ------------------------------------------------------
-//                  ui->labelScaleValue     ->setText(qstrFormattedScale);
-                    // ------------------------------------------------------
                     ui->lineEditAsset       ->setText(QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(pMarketData->asset_type_id)));
                     ui->lineEditCurrency    ->setText(QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(pMarketData->currency_type_id)));
                     // ------------------------------------------------------
@@ -739,11 +745,8 @@ void MTMarketDetails::refresh(QString strID, QString strName)
                     QString qstrNumberAsks    = CalculateNumberAsks    (strID, *(m_pOwner->m_pmapMarkets));
                     QString qstrLastSalePrice = CalculateLastSalePrice (strID, *(m_pOwner->m_pmapMarkets));
                     // ------------------------------------------------------
-//                  ui->labelTotalValue     ->setText(qstrTotalAssets);
                     ui->labelNumberBidsValue->setText(qstrNumberBids);
                     ui->labelNumberAsksValue->setText(qstrNumberAsks);
-//                  ui->labelCurrentBidValue->setText(qstrCurrentBid);
-//                  ui->labelCurrentAskValue->setText(qstrCurrentAsk);
                     ui->labelLastValue      ->setText(qstrLastSalePrice);
                     // ------------------------------------------------------
                     RetrieveMarketOffers     (strID, *(m_pOwner->m_pmapMarkets));
@@ -975,12 +978,8 @@ void MTMarketDetails::ClearContents()
     ui->lineEditAsset       ->setText("");
     ui->lineEditCurrency    ->setText("");
     // -------------------------------------
-//    ui->labelScaleValue     ->setText("");
-//    ui->labelTotalValue     ->setText("");
     ui->labelNumberBidsValue->setText("");
     ui->labelNumberAsksValue->setText("");
-//    ui->labelCurrentBidValue->setText("");
-//    ui->labelCurrentAskValue->setText("");
     ui->labelLastValue      ->setText("");
     // -------------------------------------
     ClearBidsGrid();
