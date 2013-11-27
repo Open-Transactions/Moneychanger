@@ -353,13 +353,14 @@ void MTRequestDlg::on_toolButton_clicked()
             qstrContactID = QString("%1").arg(nContactID);
     }
     // ------------------------------------------------
-    Moneychanger::It()->mc_addressbook_show(qstrContactID);
+    emit ShowContact(qstrContactID);
 }
+
 
 
 void MTRequestDlg::on_toolButtonManageAccts_clicked()
 {
-    Moneychanger::It()->mc_accountmanager_dialog(m_myAcctId);
+    emit ShowAccount(m_myAcctId);
 }
 
 
@@ -598,6 +599,9 @@ MTRequestDlg::MTRequestDlg(QWidget *parent) :
     ui->setupUi(this);
 
     this->installEventFilter(this);
+
+    connect(this, SIGNAL(ShowContact(QString)), Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
+    connect(this, SIGNAL(ShowAccount(QString)), Moneychanger::It(), SLOT(mc_show_account_slot(QString)));
 }
 
 MTRequestDlg::~MTRequestDlg()

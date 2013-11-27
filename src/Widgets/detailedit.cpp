@@ -1,4 +1,8 @@
 #include <QDebug>
+#include <QMap>
+#include <QMultiMap>
+#include <QVariant>
+#include <QPointer>
 
 #include "detailedit.h"
 #include "ui_detailedit.h"
@@ -25,8 +29,8 @@
 MTDetailEdit::MTDetailEdit(QWidget *parent) :
     QWidget(parent, Qt::Window),
     m_bFirstRun(true),
-    m_nCurrentRow(-1),
     m_pmapMarkets(NULL),
+    m_nCurrentRow(-1),
     m_bEnableAdd(true),
     m_bEnableDelete(true),
     m_Type(MTDetailEdit::DetailEditTypeError),
@@ -38,6 +42,12 @@ MTDetailEdit::MTDetailEdit(QWidget *parent) :
 MTDetailEdit::~MTDetailEdit()
 {
     delete ui;
+}
+
+
+void MTDetailEdit::SetMarketMap(QMultiMap<QString, QVariant> & theMap)
+{
+    m_pmapMarkets = &theMap;
 }
 
 void MTDetailEdit::onBalancesChangedFromAbove()
@@ -139,7 +149,9 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         pTab1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         pTab1->setContentsMargins(5, 5, 5, 5);
         // ----------------------------------
-        m_pTabWidget->addTab(pTab1, tr("Details"));
+        QString qstrTab1Title = tr("Details");
+
+        m_pTabWidget->addTab(pTab1, qstrTab1Title);
         // -------------------------------------------
         // Instantiate m_pDetailPane to one of various types.
         //
@@ -151,9 +163,9 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         case MTDetailEdit::DetailEditTypeContact:     m_pDetailPane = new MTContactDetails(this, *this);     break;
         case MTDetailEdit::DetailEditTypeServer:      m_pDetailPane = new MTServerDetails(this, *this);      break;
         case MTDetailEdit::DetailEditTypeAsset:       m_pDetailPane = new MTAssetDetails(this, *this);       break;
-        case MTDetailEdit::DetailEditTypeOffer:       m_pDetailPane = new MTOfferDetails(this, *this);       break;
         case MTDetailEdit::DetailEditTypeAgreement:   m_pDetailPane = new MTAgreementDetails(this, *this);   break;
         case MTDetailEdit::DetailEditTypeCorporation: m_pDetailPane = new MTCorporationDetails(this, *this); break;
+        case MTDetailEdit::DetailEditTypeOffer:       m_pDetailPane = new MTOfferDetails(this, *this);       break;
 
         case MTDetailEdit::DetailEditTypeMarket:
             EnableAdd   (false);
@@ -167,13 +179,39 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
             connect(m_pDetailPane,      SIGNAL(DefaultAccountChanged(QString, QString)),
                     Moneychanger::It(), SLOT  (setDefaultAccount(QString, QString)));
             // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(SendFromAcct(QString)),
+                    Moneychanger::It(), SLOT  (mc_send_from_acct(QString)));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(RequestToAcct(QString)),
+                    Moneychanger::It(), SLOT  (mc_request_to_acct(QString)));
+            // -------------------------------------------
             break;
+
         default:
             qDebug() << "MTDetailEdit::dialog: MTDetailEdit::DetailEditTypeError";
             return;
-        }
+        } //switch
+        // -------------------------------------------
+        connect(m_pDetailPane,      SIGNAL(NeedToUpdateMenu()),
+                Moneychanger::It(), SLOT  (onNeedToUpdateMenu()));
+        // -------------------------------------------
+        connect(m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()),
+                Moneychanger::It(), SLOT  (onNeedToUpdateMenu()));
+        // -------------------------------------------
+        connect(m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()),
+                this,               SLOT  (onRefreshRecords()));
+        // -------------------------------------------
+        connect(m_pDetailPane,      SIGNAL(ShowAsset(QString)),
+                Moneychanger::It(), SLOT  (mc_show_asset_slot(QString)));
+        // -------------------------------------------
+        connect(m_pDetailPane,      SIGNAL(ShowNym(QString)),
+                Moneychanger::It(), SLOT  (mc_show_nym_slot(QString)));
+        // -------------------------------------------
+        connect(m_pDetailPane,      SIGNAL(ShowServer(QString)),
+                Moneychanger::It(), SLOT  (mc_show_server_slot(QString)));
         // -------------------------------------------
         m_pDetailPane->SetOwnerPointer(*this);
+        m_pDetailPane->SetEditType(theType);
         // -------------------------------------------
         m_pDetailLayout = new QVBoxLayout;
         m_pDetailLayout->addWidget(m_pDetailPane);
@@ -226,6 +264,12 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
 }
 
 
+void MTDetailEdit::onRefreshRecords()
+{
+    RefreshRecords();
+}
+
+
 void MTDetailEdit::showEvent(QShowEvent * event)
 {
     QWidget::showEvent(event);
@@ -249,8 +293,7 @@ void MTDetailEdit::showEvent(QShowEvent * event)
 
 void MTDetailEdit::RefreshRecords()
 {
-    disconnect(ui->tableWidget, SIGNAL(currentCellChanged(int,int,int,int)),
-               this, SLOT(on_tableWidget_currentCellChanged(int,int,int,int)));
+    ui->tableWidget->blockSignals(true);
     // ----------------------------------------------------------------------
     int mapSize = m_map.size();
     // -------------------------------------------------------
@@ -274,48 +317,12 @@ void MTDetailEdit::RefreshRecords()
     // -------------------------------------------------------
     int nPreselectedIndex = -1;
     // --------------------------------
-    QMap<QString, OTDB::MarketData *>::iterator it_markets;
-
-
-//    QMessageBox::information(this, "", QCoreApplication::applicationDirPath());
-
-    if (NULL != m_pmapMarkets)
-    {
-        it_markets = m_pmapMarkets->begin();
-
-
-
-
-        // TODO: Remove this (where I loop through m_pmapMarkets simultaneous to looping through m_map.)
-        //
-        // ALSO: Change m_pmapMarkets to use the same composite server/market ID as m_map uses (for markets anyway.)
-        //
-        // That way, whenever market details or offer details need to query the market data by a unique ID, they will
-        // be able to.
-        //
-        // The offer m_map also needs to use a composite ID: server/market/offer (comma separated.)
-        //
-        // Finish the markets / offers screens!
-
-
-    }
-    // ------------------------------------
     int nIndex = -1;
     for (mapIDName::iterator ii = m_map.begin(); ii != m_map.end(); ii++)
     {
         ++nIndex; // 0 on first iteration.
 
         qDebug() << "MTDetailEdit Iteration: " << nIndex;
-        // -------------------------------------
-        QString qstrMarketServerID(""), qstrMarketServerName("");
-        OTDB::MarketData * pMarketData = NULL;
-
-        if (NULL != m_pmapMarkets)
-        {
-            pMarketData          = it_markets.value();
-            qstrMarketServerID   = it_markets.key();
-            qstrMarketServerName = QString::fromStdString( OTAPI_Wrap::GetServer_Name(qstrMarketServerID.toStdString()) );
-        }
         // -------------------------------------
         QString qstrID    = ii.key();
         QString qstrValue = ii.value();
@@ -331,18 +338,18 @@ void MTDetailEdit::RefreshRecords()
         switch (m_Type)
         {
         case MTDetailEdit::DetailEditTypeContact:
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "");
-//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "", ":/icons/icons/user.png");
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "");
+//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "", ":/icons/icons/user.png");
             break;
 
         case MTDetailEdit::DetailEditTypeNym:
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "");
-//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "", ":/icons/icons/identity_BW.png");
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "");
+//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "", ":/icons/icons/identity_BW.png");
             break;
 
         case MTDetailEdit::DetailEditTypeServer:
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "");
-//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "", ":/icons/server");
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "");
+//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "", ":/icons/server");
             break;
 
         case MTDetailEdit::DetailEditTypeAsset:
@@ -350,8 +357,8 @@ void MTDetailEdit::RefreshRecords()
             // Not exposed yet through API. Todo.
 //            QString qstrCurrencySymbol =
 
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "");
-//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "", ":/icons/icons/assets.png");
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "");
+//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "", ":/icons/icons/assets.png");
             break;
         }
 
@@ -359,25 +366,94 @@ void MTDetailEdit::RefreshRecords()
         {
             QString qstrAmount = MTHome::shortAcctBalance(qstrID);
 
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, qstrAmount, "");
-//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, qstrAmount, "", ":/icons/icons/vault.png");
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, qstrAmount, "");
+//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, qstrAmount, "", ":/icons/icons/vault.png");
             break;
         }
 
         case MTDetailEdit::DetailEditTypeMarket: // mc_systrayIcon_markets
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, qstrMarketServerName, "");
+        {
+            // FYI, contents of qstrID:
+//          QString qstrCompositeID = QString("%1,%2").arg(qstrMarketID).arg(qstrScale);
+
+            QString     qstrMarketID, qstrMarketScale;
+            QStringList theIDs = qstrID.split(","); // theIDs.at(0) MarketID, at(1) market Scale
+
+            if (2 == theIDs.size()) // Should always be 2...
+            {
+                qstrMarketID    = theIDs.at(0);
+                qstrMarketScale = theIDs.at(1);
+            }
+            // -------------------------------------
+            QString qstrDisplayScale("");
+
+            if (qstrMarketScale.toInt() > 1)
+                qstrDisplayScale = QString("<font size=1 color=grey>%1:</font> %2").arg(tr("Priced per")).arg(qstrMarketScale);
+            // -------------------------------------
+            if (m_pmapMarkets)
+            {
+                QMap<QString, QVariant>::iterator it_market = m_pmapMarkets->find(qstrID);
+
+                if (m_pmapMarkets->end() != it_market)
+                {
+                    // ------------------------------------------------------
+                    OTDB::MarketData * pMarketData = VPtr<OTDB::MarketData>::asPtr(it_market.value());
+
+                    if (NULL != pMarketData) // Should never be NULL.
+                    {
+                        // ------------------------------------------------------
+                        int64_t     lScale    = OTAPI_Wrap::It()->StringToLong(pMarketData->scale);
+                        std::string str_scale = OTAPI_Wrap::FormatAmount(pMarketData->asset_type_id, lScale);
+                        // ------------------------------------------------------
+                        QString qstrFormattedScale = QString::fromStdString(str_scale);
+                        // ------------------------------------------------------
+                        if (lScale > 1)
+                            qstrDisplayScale = QString("<font size=1 color=grey>%1:</font> %2").arg(tr("Priced per")).arg(qstrFormattedScale);
+                    }
+                }
+            }
+            // -------------------------------------
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrMarketID, qstrValue, qstrDisplayScale, "");
+//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrMarketID, qstrValue, qstrDisplayScale, "", ":/icons/markets");
             break;
+        }
 
         case MTDetailEdit::DetailEditTypeOffer:
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "");
+
+            // NOTE: the below may be all wrong. Fix it when I start on offers.
+        {
+            /*
+            // FYI, contents of qstrID:
+//          QString qstrCompositeID = QString("%1,%2,%3,%4").arg(qstrServerID).arg(qstrNymID).arg(qstrMarketID).arg(lOfferID);
+
+            QString     qstrMarketServerID, qstrNymID, qstrMarketID, qstrMarketServerName, qstrOfferID;
+            QStringList theIDs = qstrID.split(","); // theIDs.at(0) is ServerID, at(1) NymID, at(2) is MarketID, at(3) is OfferID
+
+            if (4 == theIDs.size()) // Should always be 4...
+            {
+                qstrMarketServerID  = theIDs.at(0);
+                qstrNymID           = theIDs.at(1);
+                qstrMarketID        = theIDs.at(2);
+                qstrOfferID         = theIDs.at(3);
+                // ---------------------------------
+                if (!qstrMarketServerID.isEmpty()) // Should never be empty.
+                    qstrMarketServerName = QString::fromStdString( OTAPI_Wrap::GetServer_Name(qstrMarketServerID.toStdString()) );
+            }
+            // -------------------------------------
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrOfferID, qstrValue, qstrMarketServerName, "");
+//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrOfferID, qstrValue, qstrMarketServerName, "", "OFFER ICON HERE");
+*/
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "");
+
             break;
+        }
 
         case MTDetailEdit::DetailEditTypeAgreement: //mc_systrayIcon_advanced_agreements
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "");
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "");
             break;
 
         case MTDetailEdit::DetailEditTypeCorporation://mc_systrayIcon_advanced_corporations
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(qstrID, qstrValue, "", "");
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "");
             break;
 
         default:
@@ -390,16 +466,11 @@ void MTDetailEdit::RefreshRecords()
         else
             qDebug() << "Failed creating detail header widget in MTDetailEdit::RefreshRecords()";
         // -------------------------------------------
-        if (NULL != m_pmapMarkets)
-        {
-            it_markets++;
-        }
     } // For loop
     // ------------------------
     if (ui->tableWidget->rowCount() > 0)
     {
-        connect(ui->tableWidget, SIGNAL(currentCellChanged(int,int,int,int)),
-                this, SLOT(on_tableWidget_currentCellChanged(int,int,int,int)));
+        ui->tableWidget->blockSignals(false);
 
         m_pTabWidget->setVisible(true);
 
@@ -441,6 +512,10 @@ void MTDetailEdit::on_deleteButton_clicked()
 
 void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
 {
+    Q_UNUSED(currentColumn);
+    Q_UNUSED(previousRow);
+    Q_UNUSED(previousColumn);
+
     m_nCurrentRow = currentRow;
     // -------------------------------------
     if (m_nCurrentRow >= 0)

@@ -49,6 +49,9 @@ public:
 signals:
     void balancesChanged();
 
+    void ShowContact(QString);
+    void ShowAccount(QString);
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
     void closeEvent(QCloseEvent *event);

@@ -23,8 +23,13 @@ public:
 
     virtual void ClearContents();
 
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+
+    void FavorLeftSideForIDs();
+
 private:
-    QWidget * m_pHeaderWidget;
+    QPointer<QWidget> m_pHeaderWidget;
 
     Ui::MTOfferDetails *ui;
 };

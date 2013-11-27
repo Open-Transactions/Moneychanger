@@ -186,11 +186,9 @@ FORMS += \
 
 mac:{
 
-	OS_VERSION = $$system(uname -r)
-        
+	OS_VERSION = $$system(uname -r)        
 	QT_CONFIG -= no-pkg-config
         !contains(OS_VERSION, 13.0.0):LIBS += -lboost_system-mt -lboost_thread-mt -ldl
-
 	contains(OS_VERSION, 13.0.0):LIBS += -lboost_system -lboost_thread -ldl
 
     # -------------------------------------------
@@ -199,9 +197,19 @@ mac:{
     #   And your dependencies will have to be rebuilt with similar options.
     #
 	contains(OS_VERSION, 13.0.0):QT_CONFIG += -spec macx-clang-libc++
-	contains(OS_VERSION, 13.0.0):LIBS += -stdlib=libc++
+	contains(OS_VERSION, 13.0.0):LIBS += -stdlib=libc++ -mmacosx-version-min=10.7 
 	contains(OS_VERSION, 13.0.0):CONFIG += c++11
-	contains(OS_VERSION, 13.0.0):QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++ -std=c++11
+	contains(OS_VERSION, 13.0.0):QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++ -std=c++11 -static
+	QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
+
+	MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
+	if( !exists( $$MAC_SDK) ) {
+	  error("The selected Mac OSX SDK does not exist at $$MAC_SDK!")
+	}
+	QMAKE_MAC_SDK=macosx10.8
+	INCLUDEPATH += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
+	DEPENDPATH  += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
+	LIBS += -framework CoreFoundation
     #
     # -------------------------------------------
 }
@@ -245,7 +253,10 @@ unix: PKGCONFIG += opentxs
 
 unix: PKGCONFIG += chaiscript
 
+CONFIG += debug_and_release
+
 #OTHER_FILES +=
 
 TRANSLATIONS += Translations/en_US.ts \
                 Translations/de_DE.ts
+ 

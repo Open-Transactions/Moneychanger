@@ -153,7 +153,9 @@ void MTContactDetails::DeleteButtonClicked()
         if (bSuccess)
         {
             m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
-            m_pOwner->RefreshRecords();
+            // ------------------------------------------------
+            emit RefreshRecordsAndUpdateMenu();
+            // ------------------------------------------------
         }
     }
 }
@@ -207,7 +209,9 @@ void MTContactDetails::AddButtonClicked()
 
             m_pOwner->m_map.insert(qstrContactID, QString("")); // Blank name. (To start.)
             m_pOwner->SetPreSelected(qstrContactID);
-            m_pOwner->RefreshRecords();
+            // ------------------------------------------------
+            emit RefreshRecordsAndUpdateMenu();
+            // ------------------------------------------------
         }
     }
 //    else
@@ -239,7 +243,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
     if ((NULL == ui) || strID.isEmpty())
         return;
 
-    QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(strID, strName, "", "", ":/icons/icons/user.png", false);
+    QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName, "", "", ":/icons/icons/user.png", false);
 
     pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
@@ -350,8 +354,9 @@ void MTContactDetails::on_lineEditName_editingFinished()
             m_pOwner->m_map.insert(m_pOwner->m_qstrCurrentID, ui->lineEditName->text());
 
             m_pOwner->SetPreSelected(m_pOwner->m_qstrCurrentID);
-
-            m_pOwner->RefreshRecords();
+            // ------------------------------------------------
+            emit RefreshRecordsAndUpdateMenu();
+            // ------------------------------------------------
         }
     }
 }

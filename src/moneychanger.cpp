@@ -759,7 +759,8 @@ void Moneychanger::SetupAccountMenu()
  * Address Book 
  **/
 
-void Moneychanger::mc_addressbook_show(QString text) // text may contain a "pre-selected" Contact ID (an integer in string form.)
+// text may contain a "pre-selected" Contact ID (an integer in string form.)
+void Moneychanger::mc_addressbook_show(QString text/*=QString("")*/)
 {
     // The caller dosen't wish to have the address book paste to anything
     // (they just want to see/manage the address book), just call blank.
@@ -771,15 +772,23 @@ void Moneychanger::mc_addressbook_show(QString text) // text may contain a "pre-
     // -------------------------------------
     MTContactHandler::getInstance()->GetContacts(contactswindow->m_map);
     // -------------------------------------
-    contactswindow->SetPreSelected(text);
+    if (!text.isEmpty())
+        contactswindow->SetPreSelected(text);
+    // -------------------------------------
     contactswindow->setWindowTitle(tr("Contacts"));
     // -------------------------------------
     contactswindow->dialog(MTDetailEdit::DetailEditTypeContact);
 }
 
+void Moneychanger::mc_addressbook_slot()
+{
+    mc_addressbook_show();
+}
 
-
-
+void Moneychanger::mc_showcontact_slot(QString text)
+{
+    mc_addressbook_show(text);
+}
 
 
 
@@ -792,6 +801,12 @@ void Moneychanger::mc_defaultnym_slot()
 {
     //The operator has requested to open the dialog to the "Nym Manager";
     mc_nymmanager_dialog();
+}
+
+void Moneychanger::mc_show_nym_slot(QString text)
+{
+    mc_nymmanager_dialog(text);
+
 }
 
 void Moneychanger::mc_nymmanager_dialog(QString qstrPresetID/*=QString("")*/)
@@ -885,12 +900,27 @@ void Moneychanger::mc_nymselection_triggered(QAction*action_triggered)
 
 
 
+void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID)
+{
+    if (qstrAcctID.isEmpty())
+        return;
+    // ------------------------------
+    OT_ME madeEasy;
 
-//QString get_default_server_id(){return default_server_id;}
+    std::string accountId = qstrAcctID.toStdString();
+    std::string acctNymID = OTAPI_Wrap::GetAccountWallet_NymID   (accountId);
+    std::string acctSvrID = OTAPI_Wrap::GetAccountWallet_ServerID(accountId);
 
-//int get_server_list_id_size(){return server_list_id->size();}
+    if (!acctNymID.empty() && !acctSvrID.empty())
+    {
+        MTOverrideCursor theSpinner;
 
-//QString get_server_id_at(int a){return server_list_id->at(a).toString();}
+        madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
+    }
+    // ----------------------------------------------------------------
+    emit downloadedAccountData();
+}
+
 
 void Moneychanger::onNeedToDownloadAccountData()
 {
@@ -993,8 +1023,8 @@ void Moneychanger::onNeedToDownloadAccountData()
                 madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
             }
 
-            std::string statAccount = madeEasy.stat_asset_account(accountId);
-            qDebug() << QString("statAccount: %1").arg(QString::fromStdString(statAccount));
+//            std::string statAccount = madeEasy.stat_asset_account(accountId);
+//            qDebug() << QString("statAccount: %1").arg(QString::fromStdString(statAccount));
         }
         // ----------------------------------------------------------------
         emit downloadedAccountData();
@@ -1004,7 +1034,6 @@ void Moneychanger::onNeedToDownloadAccountData()
         qDebug() << QString("%1: Not at least 1 server contract and 1 asset contract registered, doing nothing.").arg(__FUNCTION__);
     }
 }
-
 
 
 
@@ -1125,6 +1154,11 @@ void Moneychanger::onBalancesChanged()
     emit balancesChanged();
 }
 
+void Moneychanger::onNeedToUpdateMenu()
+{
+    SetupMainMenu();
+}
+
 
 /** 
  * Account Manager 
@@ -1137,6 +1171,16 @@ void Moneychanger::mc_defaultaccount_slot()
     mc_accountmanager_dialog();
 }
 
+
+void Moneychanger::mc_show_account_slot(QString text)
+{
+    mc_accountmanager_dialog(text);
+}
+
+void Moneychanger::mc_show_account_manager_slot()
+{
+    mc_accountmanager_dialog();
+}
 
 void Moneychanger::mc_accountmanager_dialog(QString qstrAcctID/*=QString("")*/)
 {
@@ -1221,7 +1265,7 @@ void Moneychanger::mc_accountselection_triggered(QAction*action_triggered)
             mc_accountmanager_dialog();
         }
         // ------------------------------
-        mc_overview_dialog_refresh();
+        emit downloadedAccountData();
         // ------------------------------
     }
 }
@@ -1297,7 +1341,7 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
 //                                   QString::fromStdString(strServerName));
             }
             // -----------------------------------------------------------
-            mc_overview_dialog_refresh();
+            emit downloadedAccountData();
         }
         // -----------------------------------------------------------
     }
@@ -1306,6 +1350,17 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
 
 
 
+
+void Moneychanger::mc_show_asset_slot(QString text)
+{
+    mc_assetmanager_dialog(text);
+}
+
+
+void Moneychanger::mc_show_server_slot(QString text)
+{
+    mc_servermanager_dialog(text);
+}
 
 
 
@@ -1421,13 +1476,18 @@ void Moneychanger::mc_requestfunds_slot()
     mc_requestfunds_show_dialog();
 }
 
-void Moneychanger::mc_requestfunds_show_dialog()
+void Moneychanger::mc_request_to_acct(QString qstrAcct)
+{
+    mc_requestfunds_show_dialog(qstrAcct);
+}
+
+void Moneychanger::mc_requestfunds_show_dialog(QString qstrAcct/*=QString("")*/)
 {
     // --------------------------------------------------
     MTRequestDlg * request_window = new MTRequestDlg(NULL);
     request_window->setAttribute(Qt::WA_DeleteOnClose);
     // --------------------------------------------------
-    QString qstr_acct_id = this->get_default_account_id();
+    QString qstr_acct_id = qstrAcct.isEmpty() ? this->get_default_account_id() : qstrAcct;
 
     if (!qstr_acct_id.isEmpty())
         request_window->setInitialMyAcct(qstr_acct_id);
@@ -1737,13 +1797,13 @@ void Moneychanger::mc_sendfunds_slot()
     mc_sendfunds_show_dialog();
 }
 
-void Moneychanger::mc_sendfunds_show_dialog()
+void Moneychanger::mc_sendfunds_show_dialog(QString qstrAcct/*=QString("")*/)
 {
     // --------------------------------------------------
     MTSendDlg * send_window = new MTSendDlg(NULL);
     send_window->setAttribute(Qt::WA_DeleteOnClose);
     // --------------------------------------------------
-    QString qstr_acct_id = this->get_default_account_id();
+    QString qstr_acct_id = qstrAcct.isEmpty() ? this->get_default_account_id() : qstrAcct;
 
     if (!qstr_acct_id.isEmpty())
         send_window->setInitialMyAcct(qstr_acct_id);
@@ -1751,6 +1811,12 @@ void Moneychanger::mc_sendfunds_show_dialog()
     send_window->dialog();
     // --------------------------------------------------
 }
+
+void Moneychanger::mc_send_from_acct(QString qstrAcct)
+{
+    mc_sendfunds_show_dialog(qstrAcct);
+}
+
 
 
 /**
@@ -1768,8 +1834,6 @@ void Moneychanger::mc_overview_dialog_refresh()
 {
     if (homewindow && !homewindow->isHidden())
     {
-        homewindow->SetNeedRefresh();
-
         mc_overview_dialog();
     }
 }
