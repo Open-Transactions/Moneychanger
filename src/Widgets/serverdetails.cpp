@@ -198,9 +198,8 @@ void MTServerDetails::DeleteButtonClicked()
             if (bSuccess)
             {
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
-                m_pOwner->RefreshRecords();
                 // ------------------------------------------------
-                Moneychanger::It()->SetupMainMenu();
+                emit RefreshRecordsAndUpdateMenu();
                 // ------------------------------------------------
             }
             else
@@ -277,9 +276,8 @@ void MTServerDetails::ImportContract(QString qstrContents)
         // ----------
         m_pOwner->m_map.insert(qstrContractID, qstrContractName);
         m_pOwner->SetPreSelected(qstrContractID);
-        m_pOwner->RefreshRecords();
         // ------------------------------------------------
-        Moneychanger::It()->SetupMainMenu();
+        emit RefreshRecordsAndUpdateMenu();
         // ------------------------------------------------
     } // if (!qstrContractID.isEmpty())
 }
@@ -404,11 +402,9 @@ void MTServerDetails::AddButtonClicked()
 //virtual
 void MTServerDetails::refresh(QString strID, QString strName)
 {
-//  qDebug() << "MTServerDetails::refresh";
-
     if (!strID.isEmpty() && (NULL != ui))
     {
-        QWidget * pHeaderWidget = MTEditDetails::CreateDetailHeaderWidget(strID, strName, "", "", ":/icons/server", false);
+        QWidget * pHeaderWidget = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName, "", "", ":/icons/server", false);
 
         pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
@@ -453,8 +449,9 @@ void MTServerDetails::on_lineEditName_editingFinished()
             m_pOwner->m_map.insert(m_pOwner->m_qstrCurrentID, ui->lineEditName->text());
 
             m_pOwner->SetPreSelected(m_pOwner->m_qstrCurrentID);
-
-            m_pOwner->RefreshRecords();
+            // ------------------------------------------------
+            emit RefreshRecordsAndUpdateMenu();
+            // ------------------------------------------------
         }
     }
 }

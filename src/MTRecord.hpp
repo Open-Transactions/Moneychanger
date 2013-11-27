@@ -177,6 +177,7 @@ public:
     bool  FormatAmount              (std::string & str_output);
     bool  FormatDescription         (std::string & str_output);
     bool  FormatShortMailDescription(std::string & str_output);
+    bool  FormatMailSubject         (std::string & str_output);
     // ---------------------------------------
     bool operator<(const MTRecord& rhs);
     // ---------------------------------------

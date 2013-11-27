@@ -15,6 +15,9 @@ public:
     explicit MTPageAcct_Asset(QWidget *parent = 0);
     ~MTPageAcct_Asset();
 
+signals:
+    void SetDefaultAsset(QString, QString);
+
 protected:
     virtual void showEvent(QShowEvent * event);
 

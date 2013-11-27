@@ -6,6 +6,7 @@
 
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
+#include <opentxs/OTStorage.h>
 
 #include "dlgmarkets.h"
 #include "ui_dlgmarkets.h"
@@ -14,10 +15,14 @@
 
 #include "detailedit.h"
 
+#include "editdetails.h"
+
+
 
 DlgMarkets::DlgMarkets(QWidget *parent) :
     QDialog(parent),
     m_bFirstRun(true),
+    m_bHaveRetrievedFirstTime(false),
     ui(new Ui::DlgMarkets)
 {
     ui->setupUi(this);
@@ -27,14 +32,14 @@ DlgMarkets::DlgMarkets(QWidget *parent) :
 
 void DlgMarkets::ClearMarketMap()
 {
-    QMap<QString, OTDB::MarketData *> temp_map = m_mapMarkets;
+    QMap<QString, QVariant> temp_map = m_mapMarkets;
 
     m_mapMarkets.clear();
     // ------------------------------------
-    for (QMap<QString, OTDB::MarketData *>::iterator it_map = temp_map.begin();
+    for (QMap<QString, QVariant>::iterator it_map = temp_map.begin();
          it_map != temp_map.end(); ++it_map)
     {
-        OTDB::MarketData * pMarketData = it_map.value();
+        OTDB::MarketData * pMarketData = VPtr<OTDB::MarketData>::asPtr(it_map.value());
 
         if (NULL != pMarketData) // should never be NULL.
             delete pMarketData;
@@ -86,8 +91,10 @@ void DlgMarkets::FirstRun()
         // ******************************************************
         {
         m_pOfferDetails = new MTDetailEdit(this);
+
+        m_pOfferDetails->SetMarketMap(m_mapMarkets);
         // -------------------------------------
-        m_pOfferDetails->setWindowTitle(tr("Offers"));
+        m_pOfferDetails->setWindowTitle(tr("Orders"));
         // -------------------------------------
         QVBoxLayout * pLayout = new QVBoxLayout;
         pLayout->addWidget(m_pOfferDetails);
@@ -114,13 +121,19 @@ void DlgMarkets::FirstRun()
         m_nymId    = Moneychanger::It()->get_default_nym_id();
         m_serverId = Moneychanger::It()->get_default_server_id();
 
+        m_pMarketDetails->SetMarketNymID(m_nymId);
+        m_pOfferDetails ->SetMarketNymID(m_nymId);
     }
 }
 
 
 void DlgMarkets::on_pushButtonRefresh_clicked()
 {
+    m_bHaveRetrievedFirstTime = false; // To force RefreshRecords to re-download.
+
     RefreshRecords();
+
+    // TODO here: turn refresh button black.
 }
 
 
@@ -141,6 +154,15 @@ void DlgMarkets::SetCurrentNymIDBasedOnIndex(int index)
             }
         }
     }
+    else
+        m_nymId = QString("");
+    // ------------------------------------------
+    if (m_pMarketDetails)
+        m_pMarketDetails->SetMarketNymID(m_nymId);
+    // ------------------------------------------
+    if (m_pOfferDetails)
+        m_pOfferDetails->SetMarketNymID(m_nymId);
+    // ------------------------------------------
 }
 
 void DlgMarkets::SetCurrentServerIDBasedOnIndex(int index)
@@ -160,6 +182,8 @@ void DlgMarkets::SetCurrentServerIDBasedOnIndex(int index)
             }
         }
     }
+    else
+        m_serverId = QString("");
 }
 
 void DlgMarkets::on_comboBoxServer_currentIndexChanged(int index)
@@ -178,6 +202,89 @@ void DlgMarkets::on_comboBoxNym_currentIndexChanged(int index)
     RefreshMarkets();
 }
 
+
+bool DlgMarkets::LoadMarketList(mapIDName & the_map)
+{
+    if (m_serverId.isEmpty() || m_nymId.isEmpty())
+        return false;
+    // -----------------
+    bool bSuccess = true;
+    QString qstrAll("all");
+    // -----------------
+    if (m_serverId != qstrAll)
+        return LowLevelLoadMarketList(m_serverId, m_nymId, the_map);
+    else
+    {
+        int nCurrentIndex = -1;
+
+        for (mapIDName::iterator it_map = m_mapServers.begin(); it_map != m_mapServers.end(); ++it_map)
+        {
+            ++nCurrentIndex; // zero on first iteration.
+            // ---------------
+            if (0 == nCurrentIndex)
+                continue; // Skipping the "all" option. (Looping through all the ACTUAL servers.)
+            // ---------------
+            QString qstrServerID = it_map.key();
+            // ---------------
+            if (false == LowLevelLoadMarketList(qstrServerID, m_nymId, the_map))
+                bSuccess = false; // Failure here just means ONE of the servers failed.
+        }
+    }
+    return bSuccess;
+}
+
+
+bool DlgMarkets::LowLevelLoadMarketList(QString qstrServerID, QString qstrNymID, mapIDName & the_map)
+{
+    if (qstrServerID.isEmpty() || qstrNymID.isEmpty())
+        return false;
+    // -----------------------------------
+    OTDB::MarketList * pMarketList = LoadMarketListForServer(qstrServerID.toStdString());
+    OTCleanup<OTDB::MarketList> theAngel(pMarketList);
+
+    if (NULL != pMarketList)
+    {
+        size_t nMarketDataCount = pMarketList->GetMarketDataCount();
+
+        for (size_t ii = 0; ii < nMarketDataCount; ++ii)
+        {
+            OTDB::MarketData * pMarketData = pMarketList->GetMarketData(ii);
+
+            if (NULL == pMarketData) // Should never happen.
+                continue;
+            // -----------------------------------------------------------------------
+            QString qstrMarketID    = QString::fromStdString(pMarketData->market_id);
+            QString qstrScale       = QString::fromStdString(pMarketData->scale);
+            // -----------------------------------------------------------------------
+            QString qstrCompositeID = QString("%1,%2").arg(qstrMarketID).arg(qstrScale);
+            // -----------------------------------------------------------------------
+            // This multimap will have multiple markets of the same key (from
+            // different servers.)
+            //
+            m_mapMarkets.insertMulti(qstrCompositeID, VPtr<OTDB::MarketData>::asQVariant(pMarketData->clone()));
+            // -----------------------------------------------------------------------
+            // Whereas this map will only have a single entry for each key. (Thus
+            // we only add it here if it's not already present.)
+            //
+            mapIDName::iterator it_map = the_map.find(qstrCompositeID);
+
+            if (the_map.end() == it_map)
+            {
+                const std::string str_asset_name    = OTAPI_Wrap::GetAssetType_Name(pMarketData->asset_type_id);
+                const std::string str_currency_name = OTAPI_Wrap::GetAssetType_Name(pMarketData->currency_type_id);
+                // --------------------------
+                QString qstrMarketName = QString("%1 for %2").
+                        arg(QString::fromStdString(str_asset_name)).
+                        arg(QString::fromStdString(str_currency_name));
+                // ---------------------------
+                the_map.insert(qstrCompositeID, qstrMarketName);
+            }
+            // ---------------------------
+        } // for
+    }
+    // -----------------------------------
+    return true;
+}
 
 bool DlgMarkets::RetrieveMarketList(mapIDName & the_map)
 {
@@ -225,35 +332,7 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrServerID, QString qstrNy
     // -----------------------------------
     if (bSuccess)
     {
-        OTDB::MarketList * pMarketList = LoadMarketList(qstrServerID.toStdString());
-        OTCleanup<OTDB::MarketList> theAngel(pMarketList);
-
-        if (NULL != pMarketList)
-        {
-            size_t nMarketDataCount = pMarketList->GetMarketDataCount();
-
-            for (size_t ii = 0; ii < nMarketDataCount; ++ii)
-            {
-                OTDB::MarketData * pMarketData = pMarketList->GetMarketData(ii);
-
-                if (NULL == pMarketData) // Should never happen.
-                    continue;
-                // --------------------------
-                const std::string str_asset_name    = OTAPI_Wrap::GetAssetType_Name(pMarketData->asset_type_id);
-                const std::string str_currency_name = OTAPI_Wrap::GetAssetType_Name(pMarketData->currency_type_id);
-                // --------------------------
-                QString qstrMarketID   = QString::fromStdString(pMarketData->market_id);
-                QString qstrMarketName = QString("%1-%2").
-                        arg(QString::fromStdString(str_asset_name)).
-                        arg(QString::fromStdString(str_currency_name));
-                // ---------------------------
-                QString qstrCompositeID = QString("%1,%2").arg(qstrServerID).arg(qstrMarketID);
-
-                the_map.insert(qstrCompositeID, qstrMarketName);
-                // ---------------------------
-                m_mapMarkets.insertMulti(qstrServerID, pMarketData->clone());
-            } // for
-        }
+        return LowLevelLoadMarketList(qstrServerID, m_nymId, the_map);
     }
 
     return bSuccess;
@@ -263,7 +342,7 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrServerID, QString qstrNy
 
 // Caller responsible to delete!
 //
-OTDB::MarketList * DlgMarkets::LoadMarketList(const std::string & serverID)
+OTDB::MarketList * DlgMarkets::LoadMarketListForServer(const std::string & serverID)
 {
     OTDB::MarketList * pMarketList = NULL;
     OTDB::Storable   * pStorable   = NULL;
@@ -305,7 +384,17 @@ void DlgMarkets::RefreshMarkets()
             // -------------------------------------
             ClearMarketMap();
             // -------------------------------------
-            RetrieveMarketList(the_map); // Download the list of markets from the server(s).
+            if (!m_bHaveRetrievedFirstTime)
+            {
+                m_bHaveRetrievedFirstTime = true;
+                RetrieveMarketList(the_map); // Download the list of markets from the server(s).
+            }
+            else
+            {
+                // TODO here: turn the "refresh" button Red.
+                //
+                LoadMarketList(the_map); // Load from local storage. (Let the user hit "Refresh" if he wants to re-download.)
+            }
             // -------------------------------------
             m_pMarketDetails->show_widget(MTDetailEdit::DetailEditTypeMarket);
         }
@@ -334,10 +423,8 @@ void DlgMarkets::RefreshMarkets()
 //
 void DlgMarkets::RefreshRecords()
 {
-    disconnect(ui->comboBoxServer, SIGNAL(currentIndexChanged(int)),
-               this, SLOT(on_comboBoxServer_currentIndexChanged(int)));
-    disconnect(ui->comboBoxNym,    SIGNAL(currentIndexChanged(int)),
-               this, SLOT(on_comboBoxNym_currentIndexChanged(int)));
+    ui->comboBoxServer->blockSignals(true);
+    ui->comboBoxNym   ->blockSignals(true);
     // ----------------------------
     m_mapServers.clear();
     m_mapNyms   .clear();
@@ -422,7 +509,7 @@ void DlgMarkets::RefreshRecords()
         ui->comboBoxNym->setCurrentIndex(nDefaultNymIndex);
     }
     else
-        m_nymId = QString("");
+        SetCurrentNymIDBasedOnIndex(-1);
     // -----------------------------------------------
     if (m_mapServers.size() > 0)
     {
@@ -432,10 +519,8 @@ void DlgMarkets::RefreshRecords()
     else
         m_serverId = QString("");
     // -----------------------------------------------
-    connect(ui->comboBoxServer, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(on_comboBoxServer_currentIndexChanged(int)));
-    connect(ui->comboBoxNym,    SIGNAL(currentIndexChanged(int)),
-            this, SLOT(on_comboBoxNym_currentIndexChanged(int)));
+    ui->comboBoxServer->blockSignals(false);
+    ui->comboBoxNym   ->blockSignals(false);
     // -----------------------------------------------
 
     RefreshMarkets();

@@ -3,6 +3,7 @@
 
 #include <QPointer>
 #include <QWidget>
+#include <QFrame>
 #include <QLabel>
 #include <QMutex>
 #include <QGridLayout>
@@ -38,15 +39,14 @@ private:
 
     /** Overview **/
     bool already_init;
-    QMutex mc_overview_refreshing_visuals_mutex;
     // ------------------------------------------------
     QPointer<MTHomeDetail>  m_pDetailPane;
-    QPointer<QVBoxLayout>   m_pDetailLayout;
-    QPointer<QGridLayout>   m_pHeaderLayout;
+    // ------------------------------------------------
+    QPointer<QFrame>        m_pHeaderFrame;
     // ------------------------------------------------
     MTRecordList   m_list;
     // ------------------------------------------------
-    bool    m_bNeedRefresh;
+    bool    m_bTurnRefreshBtnRed;
     // ------------------------------------------------
 public:
     explicit MTHome(QWidget *parent = 0);
@@ -54,7 +54,7 @@ public:
     
     void dialog();
 
-    void SetNeedRefresh();
+    void SetRefreshBtnRed();
     void RefreshAll();
 
     void OnDeletedRecord();
@@ -62,27 +62,26 @@ public:
     static QString shortAcctBalance(QString qstr_acct_id,   QString qstr_asset_id=QString(""));
     static QString cashBalance     (QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id);
     static int64_t rawCashBalance  (QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id);
-    static int64_t rawAcctBalance(QString qstrAcctId);
+    static int64_t rawAcctBalance  (QString qstrAcctId);
 
     static QString FormDisplayLabelForAcctButton(QString qstr_acct_id, QString qstr_display_name);
 
 signals:
     void needToDownloadAccountData();
+    void needToRefreshDetails(int nRow, MTRecordList & theList);
 
 public slots:
-    void onBalancesChanged();
     void onAccountDataDownloaded();
+    void onBalancesChanged();
+    void onSetRefreshBtnRed();
+    void onNeedToRefreshUserBar();
+    void onNeedToRefreshRecords();
+    void onRecordDeleted(bool bNeedToRefreshUserBar);
 
 private slots:
     void on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn);
 
-    void on_account_clicked();
-
     void on_refreshButton_clicked();
-    void on_contactsButton_clicked();
-
-    void on_sendButton_clicked();
-    void on_requestButton_clicked();
 
 private:
     Ui::MTHome *ui;

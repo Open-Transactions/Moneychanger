@@ -669,7 +669,7 @@ bool MTRecordList::PerformAutoAccept()
 
 bool compare_records (shared_ptr_MTRecord i, shared_ptr_MTRecord j)
 {
-    return i->operator<(*j);
+    return j->operator<(*i);
 }
 
 

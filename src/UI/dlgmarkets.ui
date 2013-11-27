@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Bid/Ask Markets</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -87,7 +87,6 @@
       <attribute name="title">
        <string>Markets</string>
       </attribute>
-      <zorder>comboBoxNym</zorder>
      </widget>
      <widget class="QWidget" name="tabOffers">
       <attribute name="title">

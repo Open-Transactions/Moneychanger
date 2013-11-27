@@ -77,7 +77,9 @@ signals:
 public slots:
 
     void onBalancesChanged();
+    void onNeedToUpdateMenu();
     void onNeedToDownloadAccountData();
+    void onNeedToDownloadSingleAcct(QString qstrAcctID);
 
     /**
      * Functions for setting Systray Values
@@ -152,15 +154,15 @@ private:
     QPointer<CreateInsuranceCompany> createinsurancecompany_window;
     QPointer<Settings> settingswindow;
         
-public:
+private:
     void SetupMainMenu();
 
-    void mc_nymmanager_dialog   (QString qstrPresetID=QString(""));
-    void mc_servermanager_dialog(QString qstrPresetID=QString(""));
-    void mc_assetmanager_dialog (QString qstrPresetID=QString(""));
+    void mc_nymmanager_dialog    (QString qstrPresetID=QString(""));
+    void mc_servermanager_dialog (QString qstrPresetID=QString(""));
+    void mc_assetmanager_dialog  (QString qstrPresetID=QString(""));
     void mc_accountmanager_dialog(QString qstrAcctID=QString(""));
 
-    void mc_addressbook_show(QString text);
+    void mc_addressbook_show(QString text=QString(""));
 
     void mc_overview_dialog_refresh();
 
@@ -179,8 +181,8 @@ private:
     
     void mc_overview_dialog();
     // ------------------------------------------------
-    void mc_sendfunds_show_dialog();    
-    void mc_requestfunds_show_dialog();
+    void mc_sendfunds_show_dialog(QString qstrAcct=QString(""));
+    void mc_requestfunds_show_dialog(QString qstrAcct=QString(""));
     // ------------------------------------------------
     void mc_market_dialog();
     void mc_corporation_dialog();
@@ -290,7 +292,7 @@ private:
     // ---------------------------------------------------------
     
     
-private slots:
+public slots:
 
     /**
      * Namecoin update timer event.
@@ -306,6 +308,9 @@ private slots:
     // ---------------------------------------------------------------------------
     void mc_overview_slot();                // Overview
     // ---------------------------------------------------------------------------
+    void mc_addressbook_slot();             // Address Book
+    void mc_showcontact_slot(QString text); // Address Book, Select a Contact
+    // ---------------------------------------------------------------------------
     void mc_defaultnym_slot();              // Nym
     void mc_nymselection_triggered(QAction*); //new default nym selected
     // ---------------------------------------------------------------------------
@@ -318,11 +323,22 @@ private slots:
     void mc_defaultaccount_slot();          // Account
     void mc_accountselection_triggered(QAction*); //new default account selected
     // ---------------------------------------------------------------------------
+    void mc_show_account_slot(QString text);
+    void mc_show_account_manager_slot();
+    // ---------------------------------------------------------------------------
+    void mc_show_asset_slot (QString text);
+    void mc_show_nym_slot   (QString text);
+    void mc_show_server_slot(QString text);
+    // ---------------------------------------------------------------------------
     void mc_sendfunds_slot();               // Send Funds
     void mc_requestfunds_slot();            // Request Funds
+    // ---------------------------------------------------------------------------
+    void mc_send_from_acct (QString qstrAcct);
+    void mc_request_to_acct(QString qstrAcct);
+    // ---------------------------------------------------------------------------
     void mc_market_slot();                  // Market Slot
     void mc_agreement_slot();               // Agreements Slot
-    void mc_corporation_slot();               // Agreements Slot
+    void mc_corporation_slot();             // Agreements Slot
     void mc_import_slot();                  // Import Slot
     // ---------------------------------------------------------------------------
     void mc_createinsurancecompany_slot();  // Create Insurance Company Slot
