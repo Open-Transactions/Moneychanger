@@ -64,7 +64,7 @@ private:
 public:
     virtual ~Moneychanger();
     
-    static Moneychanger * It(QWidget *parent = 0);
+    static Moneychanger * It(QWidget *parent = 0, bool bShuttingDown = false);
 
     /** Start **/
     void bootTray();

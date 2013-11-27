@@ -114,6 +114,7 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType, bool bIsModal/*=
     // -------------------------------------------
 }
 
+// -------------------------------------------
 
 // This only does something the first time you run it.
 //
@@ -122,6 +123,8 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
     if (m_bFirstRun)
     {
         m_bFirstRun = false;
+        // -------------------------------------------
+        ui->comboBox->setHidden(true);
         // -------------------------------------------
         ui->tableWidget->setColumnCount(2);
         ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -159,13 +162,17 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
 
         switch (m_Type)
         {
-        case MTDetailEdit::DetailEditTypeNym:         m_pDetailPane = new MTNymDetails(this, *this);         break;
-        case MTDetailEdit::DetailEditTypeContact:     m_pDetailPane = new MTContactDetails(this, *this);     break;
-        case MTDetailEdit::DetailEditTypeServer:      m_pDetailPane = new MTServerDetails(this, *this);      break;
-        case MTDetailEdit::DetailEditTypeAsset:       m_pDetailPane = new MTAssetDetails(this, *this);       break;
-        case MTDetailEdit::DetailEditTypeAgreement:   m_pDetailPane = new MTAgreementDetails(this, *this);   break;
+        case MTDetailEdit::DetailEditTypeNym:         m_pDetailPane = new MTNymDetails        (this, *this); break;
+        case MTDetailEdit::DetailEditTypeContact:     m_pDetailPane = new MTContactDetails    (this, *this); break;
+        case MTDetailEdit::DetailEditTypeServer:      m_pDetailPane = new MTServerDetails     (this, *this); break;
+        case MTDetailEdit::DetailEditTypeAsset:       m_pDetailPane = new MTAssetDetails      (this, *this); break;
+        case MTDetailEdit::DetailEditTypeAgreement:   m_pDetailPane = new MTAgreementDetails  (this, *this); break;
         case MTDetailEdit::DetailEditTypeCorporation: m_pDetailPane = new MTCorporationDetails(this, *this); break;
-        case MTDetailEdit::DetailEditTypeOffer:       m_pDetailPane = new MTOfferDetails(this, *this);       break;
+
+        case MTDetailEdit::DetailEditTypeOffer:
+            ui->comboBox->setHidden(false);
+            m_pDetailPane = new MTOfferDetails(this, *this);
+            break;
 
         case MTDetailEdit::DetailEditTypeMarket:
             EnableAdd   (false);
@@ -289,6 +296,120 @@ void MTDetailEdit::showEvent(QShowEvent * event)
 //    QDialog::showEvent(event);
 //}
 
+
+
+// -------------------------------------------
+
+void MTDetailEdit::onMarketIDChangedFromAbove(QString qstrMarketID)
+{
+    if (MTDetailEdit::DetailEditTypeMarket == m_Type)
+    {
+        // The market ID has been changed on the Offers page.
+        // (And *I* am the Markets page, responding to this event.)
+        //
+        mapIDName::iterator it_markets = m_map.find(qstrMarketID);
+
+        if (m_map.end() != it_markets)
+        {
+            m_qstrCurrentID   = it_markets.key();
+            m_qstrCurrentName = it_markets.value();
+            // ----------------------------------------
+            m_PreSelected = m_qstrCurrentID;
+
+            if (m_pDetailPane)
+                m_pDetailPane->refresh(m_qstrCurrentID, m_qstrCurrentName);
+        }
+    }
+    else if (MTDetailEdit::DetailEditTypeOffer == m_Type)
+    {
+        // The market ID has been changed on the Markets page.
+        // (And *I* am the Offers page, responding to this event.)
+        //
+        m_qstrMarketID = qstrMarketID;
+
+        RefreshMarketCombo();
+    }
+}
+
+// -------------------------------------------
+
+void MTDetailEdit::RefreshMarketCombo()
+{
+    if (MTDetailEdit::DetailEditTypeOffer != m_Type)
+        return;
+    // ----------------------------
+    ui->comboBox->blockSignals(true);
+    // ----------------------------
+    ui->comboBox->clear();
+    // ----------------------------
+    int nCurrentMarketIndex  = 0;
+    // ----------------------------
+    bool bFoundCurrentMarket = false;
+    // ----------------------------
+    int nIndex = -1;
+    for (mapIDName::iterator ii = m_mapMarkets.begin(); ii != m_mapMarkets.end(); ++ii)
+    {
+        ++nIndex; // 0 on first iteration.
+        // ------------------------------
+        QString OT_market_id   = ii.key();   // This is the marketID,scale
+        QString OT_market_name = ii.value(); // This is the display name aka "Bitcoins for Silver Grams"
+        // ------------------------------
+        if (!m_qstrMarketID.isEmpty() && (OT_market_id == m_qstrMarketID))
+        {
+            bFoundCurrentMarket = true;
+            nCurrentMarketIndex = nIndex;
+        }
+        // ------------------------------
+        ui->comboBox->insertItem(nIndex, OT_market_name);
+    }
+    // -----------------------------------------------
+    if (m_mapMarkets.size() > 0)
+    {
+        SetCurrentMarketIDBasedOnIndex(nCurrentMarketIndex);
+        ui->comboBox->setCurrentIndex(nCurrentMarketIndex);
+    }
+    else
+        SetCurrentMarketIDBasedOnIndex(-1);
+    // -----------------------------------------------
+    ui->comboBox->blockSignals(false);
+    // -----------------------------------------------
+    emit RefreshOffers(m_qstrMarketID);
+    // -----------------------------------------------
+}
+
+
+void MTDetailEdit::SetCurrentMarketIDBasedOnIndex(int index)
+{
+    if ((m_mapMarkets.size() > 0) && (index >= 0))
+    {
+        int nCurrentIndex = -1;
+
+        for (mapIDName::iterator it_map = m_mapMarkets.begin(); it_map != m_mapMarkets.end(); ++it_map)
+        {
+            ++nCurrentIndex; // zero on first iteration.
+
+            if (nCurrentIndex == index)
+            {
+                m_qstrMarketID = it_map.key();
+                break;
+            }
+        }
+    }
+    else
+        m_qstrMarketID = QString("");
+    // ------------------------------------------
+}
+
+void MTDetailEdit::on_comboBox_currentIndexChanged(int index)
+{
+    if (MTDetailEdit::DetailEditTypeOffer == m_Type)
+    {
+        SetCurrentMarketIDBasedOnIndex(index);
+        // -----------------------------
+        emit RefreshOffers(m_qstrMarketID);
+        // ----------------------------
+    }
+}
 
 
 void MTDetailEdit::RefreshRecords()
@@ -518,6 +639,8 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
 
     m_nCurrentRow = currentRow;
     // -------------------------------------
+    QString qstrOldID = m_qstrCurrentID;
+    // -------------------------------------
     if (m_nCurrentRow >= 0)
     {
         m_pTabWidget->setVisible(true);
@@ -542,19 +665,27 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
                 if (m_pDetailPane)
                     m_pDetailPane->refresh(m_qstrCurrentID, m_qstrCurrentName);
                 // ----------------------------------------
-                return;
+                break;
             }
         }
     }
     // -------------------------------------
-    m_nCurrentRow     = -1;
-    m_qstrCurrentID   = QString("");
-    m_qstrCurrentName = QString("");
+    else
+    {
+        m_nCurrentRow     = -1;
+        m_qstrCurrentID   = QString("");
+        m_qstrCurrentName = QString("");
 
-    ui->deleteButton->setEnabled(false);
+        ui->deleteButton->setEnabled(false);
 
-    m_pTabWidget->setVisible(false);
+        m_pTabWidget->setVisible(false);
+    }
     // -------------------------------------
+    // If this is the markets page, and the current ID has changed, then we need
+    // to notify the offers page.
+    //
+    if ((MTDetailEdit::DetailEditTypeMarket == m_Type) && (qstrOldID != m_qstrCurrentID))
+        emit CurrentMarketChanged(m_qstrCurrentID);
 }
 
 

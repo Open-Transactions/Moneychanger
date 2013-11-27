@@ -15,6 +15,7 @@ class DlgMarkets;
 
 namespace OTDB {
 class MarketList;
+class OfferListNym;
 }
 
 class MTDetailEdit;
@@ -38,6 +39,12 @@ public:
 
     QString GetNymID() { return m_nymId; }
 
+public slots:
+    void onCurrentMarketChanged_Offers (QString qstrMarketID);
+    void onCurrentMarketChanged_Markets(QString qstrMarketID);
+
+    void onNeedToRefreshOffers(QString qstrMarketID);
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
@@ -51,6 +58,14 @@ protected:
     bool LowLevelLoadMarketList(QString qstrServerID, QString qstrNymID, mapIDName & the_map);
     // -----------------------------------------------
     OTDB::MarketList * LoadMarketListForServer(const std::string & serverID);
+    // -----------------------------------------------
+    bool RetrieveOfferList(mapIDName & the_map);
+    bool LowLevelRetrieveOfferList(QString qstrServerID, QString qstrNymID, mapIDName & the_map);
+    // -----------------------------------------------
+    bool LoadOfferList(mapIDName & the_map);
+    bool LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, mapIDName & the_map);
+    // -----------------------------------------------
+    OTDB::OfferListNym * LoadOfferListForServer(const std::string & serverID, const std::string & nymID);
 
 private slots:
     void on_pushButtonRefresh_clicked();
@@ -72,6 +87,7 @@ private:
 
     bool m_bFirstRun;
     bool m_bHaveRetrievedFirstTime;
+    bool m_bHaveRetrievedOffersFirstTime;
 
     QPointer<MTDetailEdit> m_pMarketDetails;
     QPointer<MTDetailEdit> m_pOfferDetails;

@@ -1,6 +1,8 @@
 #ifndef MARKETDETAILS_H
 #define MARKETDETAILS_H
 
+#include <string>
+
 #include <QMap>
 #include <QMultiMap>
 #include <QWidget>
@@ -61,6 +63,12 @@ protected:
     void PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QString, QVariant> & multimap);
     void PopulateRecentTradesGrid (QString & qstrID, QMultiMap<QString, QVariant> & multimap);
     // ----------------------------------
+
+private slots:
+    void on_toolButtonAsset_clicked();
+
+    void on_toolButtonCurrency_clicked();
+
 private:
     QWidget * m_pHeaderWidget;
 
