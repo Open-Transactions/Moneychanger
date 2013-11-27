@@ -71,8 +71,7 @@ HEADERS += moneychanger.h \
     Widgets/marketdetails.h \
     Widgets/offerdetails.h \
     Widgets/agreementdetails.h \
-    Widgets/corporationdetails.h \
-    httpinterface.h
+    Widgets/corporationdetails.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -132,8 +131,7 @@ SOURCES += main.cpp\
     Widgets/marketdetails.cpp \
     Widgets/offerdetails.cpp \
     Widgets/agreementdetails.cpp \
-    Widgets/corporationdetails.cpp \
-    httpinterface.cpp
+    Widgets/corporationdetails.cpp
 
 RESOURCES += resource.qrc
 
@@ -186,13 +184,19 @@ FORMS += \
     Widgets/agreementdetails.ui \
     Widgets/corporationdetails.ui
 
+## QJsonRpc Library:
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/release/ -lqjsonrpc
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/debug/ -lqjsonrpc
+else:unix: LIBS += -L$$OUT_PWD/../qjsonrpc/src/ -lqjsonrpc
+
+INCLUDEPATH += $$PWD/../qjsonrpc/src
+DEPENDPATH += $$PWD/../qjsonrpc/src    
+    
 mac:{
 
-	OS_VERSION = $$system(uname -r)
-        
+	OS_VERSION = $$system(uname -r)        
 	QT_CONFIG -= no-pkg-config
         !contains(OS_VERSION, 13.0.0):LIBS += -lboost_system-mt -lboost_thread-mt -ldl
-
 	contains(OS_VERSION, 13.0.0):LIBS += -lboost_system -lboost_thread -ldl
 
     # -------------------------------------------
@@ -201,9 +205,19 @@ mac:{
     #   And your dependencies will have to be rebuilt with similar options.
     #
 	contains(OS_VERSION, 13.0.0):QT_CONFIG += -spec macx-clang-libc++
-	contains(OS_VERSION, 13.0.0):LIBS += -stdlib=libc++
+	contains(OS_VERSION, 13.0.0):LIBS += -stdlib=libc++ -mmacosx-version-min=10.7 
 	contains(OS_VERSION, 13.0.0):CONFIG += c++11
-	contains(OS_VERSION, 13.0.0):QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++ -std=c++11
+	contains(OS_VERSION, 13.0.0):QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++ -std=c++11 -static
+	QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
+
+	MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
+	if( !exists( $$MAC_SDK) ) {
+	  error("The selected Mac OSX SDK does not exist at $$MAC_SDK!")
+	}
+	QMAKE_MAC_SDK=macosx10.8
+	INCLUDEPATH += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
+	DEPENDPATH  += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
+	LIBS += -framework CoreFoundation
     #
     # -------------------------------------------
 }
@@ -229,29 +243,23 @@ QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-
 #    OPENTXS_INCLUDE_PATH, OPENTXS_LIB_PATH, CHAI_INCLUDE_PATH,
 #    OPENSSL_INCLUDE_PATH and OPENSSL_LIB_PATH respectively
 
-#PENTXS_INCLUDE_PATH	+= /home/lucas/.local/include/opentxs/
-#OPENTXS_LIB_PATH	+= /home/lucas/.local/lib64/
+##OPENTXS_INCLUDE_PATH	+=
+##OPENTXS_LIB_PATH	+=
 ##CHAI_INCLUDE_PATH	+=
 ##OPENSSL_INCLUDE_PATH	+=
 ##OPENSSL_LIB_PATH	+=
 
-#INCLUDEPATH	+= $$OPENTXS_INCLUDE_PATH $$CHAI_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH
-INCLUDEPATH     += /home/lucas/.local/include/ \
-                   /home/lucas/.local/include/opentxs
-#DEPENDPATH	+= $$OPENTXS_INCLUDE_PATH $$CHAI_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH
-#LIBS		+= $$join(OPENTXS_LIB_PATH,,-L,) $$join(OPENSSL_LIB_PATH,,-L,)
-DEPENDPATH += /home/lucas/.local/lib64/ \
-              /home/lucas/.local/lib64/opentxs/
-LIBS       += -L/home/lucas/.local/lib64/ \
-              -L/home/lucas/.local/lib64/opentxs/
-LIBS 		+= -lboost_thread -lot -lotapi -lssl -lcrypto
+##INCLUDEPATH	+= $$OPENTXS_INCLUDE_PATH $$CHAI_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH
+##DEPENDPATH	+= $$OPENTXS_INCLUDE_PATH $$CHAI_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH
+##LIBS		+= $$join(OPENTXS_LIB_PATH,,-L,) $$join(OPENSSL_LIB_PATH,,-L,)
+##LIBS 		+= -lotapi -lssl -lcrypto
 
 ## Automatic path from pkg-config
 
-#unix: CONFIG += link_pkgconfig
-#unix: PKGCONFIG += opentxs
+unix: CONFIG += link_pkgconfig
+unix: PKGCONFIG += opentxs
 
-#unix: PKGCONFIG += chaiscript
+unix: PKGCONFIG += chaiscript
 
 CONFIG += debug_and_release
 
@@ -259,11 +267,4 @@ CONFIG += debug_and_release
 
 TRANSLATIONS += Translations/en_US.ts \
                 Translations/de_DE.ts
-
-#### lclc
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/release/ -lqjsonrpc
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/debug/ -lqjsonrpc
-else:unix: LIBS += -L$$OUT_PWD/../qjsonrpc/src/ -lqjsonrpc
-
-INCLUDEPATH += $$PWD/../qjsonrpc/src
-DEPENDPATH += $$PWD/../qjsonrpc/src
+ 
