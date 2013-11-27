@@ -243,7 +243,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
     if ((NULL == ui) || strID.isEmpty())
         return;
 
-    QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(strID, strName, "", "", ":/icons/icons/user.png", false);
+    QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName, "", "", ":/icons/icons/user.png", false);
 
     pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
