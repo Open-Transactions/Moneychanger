@@ -1,0 +1,13 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include/qjsonrpc
+qt_config=include_source_dir lex yacc warn_on uic resources qt warn_on release incremental link_prl gdb_dwarf_index def_files_disabled exceptions no_mocdepend release stl qt_no_framework shared create_pc create_prl no_install_prl dll shared moc thread
+
+Name: Qjsonrpc
+Description: Qjsonrpc Library
+Version: 1.0.0
+Libs: -L${libdir} -lqjsonrpc 
+Libs.private: -L/usr/lib64  -lQtNetwork -L/usr/lib64 -lQtCore -lpthread   
+Cflags: -DQJSONRPC_SHARED -I${includedir}
+
