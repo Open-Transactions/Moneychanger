@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include <QString>
 #include <QSqlQuery>
+#include <QSqlRecord>
 #include <QProgressDialog>
 #include <QCoreApplication>
 #include <QMutex>
@@ -75,6 +76,16 @@ class DBHandler
      * @return True in case of success.
      */
     bool runQuery(PreparedQuery* query);
+
+    /**
+     * Run a prepared query, assuming a single returned record.  This record
+     * is returned, so that multiple fields can be extracted at once.
+     * @param query The query, which is freed.
+     * @return The returned query record.
+     * @throws std::runtime_error in case of DB error or if the query returns
+     *                            not exactly one record.
+     */
+    QSqlRecord queryOne(PreparedQuery* query);
 
     int querySize(QString run);
     bool isNext(QString run);

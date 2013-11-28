@@ -2,6 +2,8 @@
 #include <QDebug>
 
 #include <memory>
+#include <sstream>
+#include <stdexcept>
 
 DBHandler * DBHandler::_instance = NULL;
 
@@ -178,6 +180,34 @@ bool DBHandler::runQuery(PreparedQuery* query)
     return false;
 
   return qu->execute ();
+}
+
+QSqlRecord DBHandler::queryOne(PreparedQuery* query)
+{
+  std::unique_ptr<PreparedQuery> qu(query);
+
+  QMutexLocker locker(&dbMutex);
+  if (!db.isOpen ())
+    throw std::runtime_error ("Database is not open.");
+
+  if (!qu->execute ())
+    {
+      std::ostringstream msg;
+      msg << "Database query failed: "
+          << qu->query.lastError ().text ().toStdString ();
+      throw std::runtime_error (msg.str ());
+    }
+
+  if (!qu->query.next ())
+    throw std::runtime_error ("Expected at least one result"
+                              " in DBHandler::queryOne.");
+
+  QSqlRecord res = qu->query.record ();
+  if (qu->query.next ())
+    throw std::runtime_error ("Expected at most one result"
+                              " in DBHandler::queryOne.");
+
+  return res;
 }
 
 bool DBHandler::runQuery(const QString& run)
