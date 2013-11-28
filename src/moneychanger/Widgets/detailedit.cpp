@@ -30,6 +30,7 @@ MTDetailEdit::MTDetailEdit(QWidget *parent) :
     QWidget(parent, Qt::Window),
     m_bFirstRun(true),
     m_pmapMarkets(NULL),
+    m_pmapOffers(NULL),
     m_nCurrentRow(-1),
     m_bEnableAdd(true),
     m_bEnableDelete(true),
@@ -48,6 +49,11 @@ MTDetailEdit::~MTDetailEdit()
 void MTDetailEdit::SetMarketMap(QMultiMap<QString, QVariant> & theMap)
 {
     m_pmapMarkets = &theMap;
+}
+
+void MTDetailEdit::SetOfferMap(QMap<QString, QVariant> & theMap)
+{
+    m_pmapOffers = &theMap;
 }
 
 void MTDetailEdit::onBalancesChangedFromAbove()
@@ -172,6 +178,10 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         case MTDetailEdit::DetailEditTypeOffer:
             ui->comboBox->setHidden(false);
             m_pDetailPane = new MTOfferDetails(this, *this);
+            // -------------------------------------------
+//            connect(ui->comboBox, SIGNAL(currentIndexChanged(int)),
+//                    this,         SLOT  (on_comboBox_currentIndexChanged(int)));
+            // -------------------------------------------
             break;
 
         case MTDetailEdit::DetailEditTypeMarket:
@@ -216,6 +226,9 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         // -------------------------------------------
         connect(m_pDetailPane,      SIGNAL(ShowServer(QString)),
                 Moneychanger::It(), SLOT  (mc_show_server_slot(QString)));
+        // -------------------------------------------
+        connect(m_pDetailPane,      SIGNAL(ShowAccount(QString)),
+                Moneychanger::It(), SLOT  (mc_show_account_slot(QString)));
         // -------------------------------------------
         m_pDetailPane->SetOwnerPointer(*this);
         m_pDetailPane->SetEditType(theType);
@@ -307,12 +320,30 @@ void MTDetailEdit::onMarketIDChangedFromAbove(QString qstrMarketID)
         // The market ID has been changed on the Offers page.
         // (And *I* am the Markets page, responding to this event.)
         //
-        mapIDName::iterator it_markets = m_map.find(qstrMarketID);
+        int nIndex = -1;
+        mapIDName::iterator it_markets = m_map.begin();
+
+        for (; it_markets !=  m_map.end(); ++it_markets)
+        {
+            ++nIndex; // 0 on first iteration.
+            // --------------------------------
+            if (it_markets.key() == qstrMarketID)
+                break;
+
+        }
+        // ------------------------------------------------------------
+//      mapIDName::iterator it_markets = m_map.find(qstrMarketID);
 
         if (m_map.end() != it_markets)
         {
             m_qstrCurrentID   = it_markets.key();
             m_qstrCurrentName = it_markets.value();
+            // ----------------------------------------
+            ui->tableWidget->blockSignals(true);
+            // ----------------------------------------
+            ui->tableWidget->setCurrentCell(nIndex, 0);
+            // ----------------------------------------
+            ui->tableWidget->blockSignals(false);
             // ----------------------------------------
             m_PreSelected = m_qstrCurrentID;
 
@@ -328,6 +359,8 @@ void MTDetailEdit::onMarketIDChangedFromAbove(QString qstrMarketID)
         m_qstrMarketID = qstrMarketID;
 
         RefreshMarketCombo();
+
+        emit RefreshOffers(m_qstrMarketID);
     }
 }
 
@@ -363,6 +396,8 @@ void MTDetailEdit::RefreshMarketCombo()
         ui->comboBox->insertItem(nIndex, OT_market_name);
     }
     // -----------------------------------------------
+    QString qstrOldMarketID = m_qstrMarketID;
+    // -----------------------------------------------
     if (m_mapMarkets.size() > 0)
     {
         SetCurrentMarketIDBasedOnIndex(nCurrentMarketIndex);
@@ -373,7 +408,10 @@ void MTDetailEdit::RefreshMarketCombo()
     // -----------------------------------------------
     ui->comboBox->blockSignals(false);
     // -----------------------------------------------
-    emit RefreshOffers(m_qstrMarketID);
+//    emit RefreshOffers(m_qstrMarketID);
+
+    if (qstrOldMarketID != m_qstrMarketID)
+        emit CurrentMarketChanged(m_qstrMarketID);
     // -----------------------------------------------
 }
 
@@ -406,7 +444,8 @@ void MTDetailEdit::on_comboBox_currentIndexChanged(int index)
     {
         SetCurrentMarketIDBasedOnIndex(index);
         // -----------------------------
-        emit RefreshOffers(m_qstrMarketID);
+//        emit RefreshOffers(m_qstrMarketID);
+        emit CurrentMarketChanged(m_qstrMarketID);
         // ----------------------------
     }
 }
@@ -540,31 +579,79 @@ void MTDetailEdit::RefreshRecords()
         }
 
         case MTDetailEdit::DetailEditTypeOffer:
-
-            // NOTE: the below may be all wrong. Fix it when I start on offers.
         {
-            /*
-            // FYI, contents of qstrID:
-//          QString qstrCompositeID = QString("%1,%2,%3,%4").arg(qstrServerID).arg(qstrNymID).arg(qstrMarketID).arg(lOfferID);
-
-            QString     qstrMarketServerID, qstrNymID, qstrMarketID, qstrMarketServerName, qstrOfferID;
-            QStringList theIDs = qstrID.split(","); // theIDs.at(0) is ServerID, at(1) NymID, at(2) is MarketID, at(3) is OfferID
-
-            if (4 == theIDs.size()) // Should always be 4...
+            if (m_pmapOffers)
             {
-                qstrMarketServerID  = theIDs.at(0);
-                qstrNymID           = theIDs.at(1);
-                qstrMarketID        = theIDs.at(2);
-                qstrOfferID         = theIDs.at(3);
-                // ---------------------------------
-                if (!qstrMarketServerID.isEmpty()) // Should never be empty.
-                    qstrMarketServerName = QString::fromStdString( OTAPI_Wrap::GetServer_Name(qstrMarketServerID.toStdString()) );
+                // -------------------------------------
+                QString     qstrServerID, qstrTransactionID;
+                QStringList theIDs = qstrID.split(","); // theIDs.at(0) ServerID, at(1) transaction ID
+
+                if (2 == theIDs.size()) // Should always be 2...
+                {
+                    qstrServerID      = theIDs.at(0);
+                    qstrTransactionID = theIDs.at(1);
+                }
+                // -------------------------------------
+                QMap<QString, QVariant>::iterator it_offer = m_pmapOffers->find(qstrID);
+
+                if (m_pmapOffers->end() != it_offer)
+                {
+                    // ------------------------------------------------------
+                    OTDB::OfferDataNym * pOfferData = VPtr<OTDB::OfferDataNym>::asPtr(it_offer.value());
+
+                    if (NULL != pOfferData) // Should never be NULL.
+                    {
+                        bool        bSelling          = pOfferData->selling;
+                        // ------------------------------------------------------
+                        int64_t     lTotalAssets      = OTAPI_Wrap::It()->StringToLong(pOfferData->total_assets);
+                        int64_t     lFinished         = OTAPI_Wrap::It()->StringToLong(pOfferData->finished_so_far);
+                        // ------------------------------------------------------
+                        int64_t     lScale            = OTAPI_Wrap::It()->StringToLong(pOfferData->scale);
+                        std::string str_scale         = OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lScale);
+                        // ------------------------------------------------------
+                        int64_t     lPrice            = OTAPI_Wrap::It()->StringToLong(pOfferData->price_per_scale);
+                        std::string str_price         = OTAPI_Wrap::FormatAmount(pOfferData->currency_type_id, lPrice);
+                        // ------------------------------------------------------
+                        QString qstrPrice(tr("market order"));
+
+                        if (lPrice > 0)
+                            qstrPrice = QString("%1: %2").arg(tr("Price")).arg(QString::fromStdString(str_price));
+                        // ------------------------------------------------------
+                        QString qstrFormattedScale    = QString::fromStdString(str_scale);
+
+                        if (lScale > 1)
+                            qstrPrice += QString(" (%1 %2)").arg(tr("per")).arg(qstrFormattedScale);
+                        // ------------------------------------------------------
+                        QString qstrTotalAssets       = QString::fromStdString(OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lTotalAssets));
+                        QString qstrSoldOrPurchased   = QString::fromStdString(OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lFinished));
+                        // ------------------------------------------------------
+                        std::string str_asset_name    = OTAPI_Wrap::GetAssetType_Name(pOfferData->asset_type_id);
+                        // -----------------------------------------------------------------------
+                        QString qstrBuySell = bSelling ? tr("Sell") : tr("Buy");
+                        QString qstrAmounts;
+
+                        qstrAmounts = QString("%1").
+                                arg(qstrTotalAssets);
+                        // ------------------------------------------------------
+                        QString qstrCompleted("");
+
+                        if (lFinished > 0)
+                            qstrCompleted = QString("%1: %2").
+                                    arg(tr("completed")).
+                                    arg(qstrSoldOrPurchased);
+                        // --------------------------
+                        QString qstrOfferName = QString("%1 %2: %3").
+                                arg(qstrBuySell).
+                                arg(QString::fromStdString(str_asset_name)).
+                                arg(qstrAmounts);
+                        // -------------------------------------
+                        QString qstrTrans = QString("%1# %2").arg(tr("Trans")).arg(qstrTransactionID);
+                        // -------------------------------------
+                        pWidget = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrPrice, qstrOfferName,
+                                                                          qstrCompleted, qstrTrans, "");
+                    }
+                }
             }
-            // -------------------------------------
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrOfferID, qstrValue, qstrMarketServerName, "");
-//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrOfferID, qstrValue, qstrMarketServerName, "", "OFFER ICON HERE");
-*/
-            pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "");
 
             break;
         }
@@ -616,6 +703,9 @@ void MTDetailEdit::RefreshRecords()
 
         m_pTabWidget->setVisible(false);
     }
+    // --------------------------------------
+//    if (!m_qstrCurrentID.isEmpty() && (MTDetailEdit::DetailEditTypeMarket == m_Type))
+//        emit CurrentMarketChanged(m_qstrCurrentID);
 }
 
 

@@ -59,13 +59,15 @@ protected:
     // -----------------------------------------------
     OTDB::MarketList * LoadMarketListForServer(const std::string & serverID);
     // -----------------------------------------------
-    bool RetrieveOfferList(mapIDName & the_map);
-    bool LowLevelRetrieveOfferList(QString qstrServerID, QString qstrNymID, mapIDName & the_map);
+    bool RetrieveOfferList(mapIDName & the_map, QString qstrMarketID);
+    bool LowLevelRetrieveOfferList(QString qstrServerID, QString qstrNymID, mapIDName & the_map, QString qstrMarketID);
     // -----------------------------------------------
-    bool LoadOfferList(mapIDName & the_map);
-    bool LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, mapIDName & the_map);
+    bool LoadOfferList(mapIDName & the_map, QString qstrMarketID);
+    bool LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, mapIDName & the_map, QString qstrMarketID);
     // -----------------------------------------------
     OTDB::OfferListNym * LoadOfferListForServer(const std::string & serverID, const std::string & nymID);
+    // -----------------------------------------------
+    bool GetMarket_AssetCurrencyScale(QString qstrMarketID, QString & qstrAssetID, QString & qstrCurrencyID, QString & qstrScale);
 
 private slots:
     void on_pushButtonRefresh_clicked();
@@ -76,8 +78,11 @@ private slots:
 
 private:
     void ClearMarketMap();
+    void ClearOfferMap();
 
     QMultiMap<QString, QVariant> m_mapMarkets; // market/scale, marketdata
+
+    QMap <QString, QVariant> m_mapOffers; // server/transID, offerdatanym
 
     mapIDName m_mapServers;
     mapIDName m_mapNyms;

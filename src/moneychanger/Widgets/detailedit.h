@@ -48,6 +48,7 @@ public:
     void EnableDelete(bool bEnabled) { m_bEnableDelete = bEnabled; }
     // --------------------------------
     void    SetMarketMap(QMultiMap<QString, QVariant> & theMap);
+    void    SetOfferMap(QMap<QString, QVariant> & theMap);
     // --------------------------------
     void    SetMarketNymID(QString qstrNymID) { m_qstrMarketNymID = qstrNymID; }
     QString GetMarketNymID() { return m_qstrMarketNymID; }
@@ -68,6 +69,7 @@ public:
     void SetCurrentMarketIDBasedOnIndex(int index);
     // --------------------------------
     QMultiMap<QString, QVariant> * m_pmapMarkets; // do not delete. For reference only.
+    QMap     <QString, QVariant> * m_pmapOffers;  // do not delete. For reference only.
     // --------------------------------
     int         m_nCurrentRow;
     QString     m_qstrCurrentID;
@@ -100,8 +102,6 @@ public slots:
 
     void onMarketIDChangedFromAbove(QString qstrMarketID);
 
-    void on_comboBox_currentIndexChanged(int index);
-
 protected:
     // --------------------------------
     QString     m_qstrMarketNymID;    // used by marketdetails and offerdetails.
@@ -122,6 +122,8 @@ protected:
 
 private slots:
     void on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
+
+    void on_comboBox_currentIndexChanged(int index);
 
     void on_addButton_clicked();
     void on_deleteButton_clicked();

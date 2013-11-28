@@ -33,17 +33,35 @@ DlgMarkets::DlgMarkets(QWidget *parent) :
 
 void DlgMarkets::ClearMarketMap()
 {
-    QMap<QString, QVariant> temp_map = m_mapMarkets;
+    QMultiMap<QString, QVariant> temp_map = m_mapMarkets;
 
     m_mapMarkets.clear();
     // ------------------------------------
-    for (QMap<QString, QVariant>::iterator it_map = temp_map.begin();
+    for (QMultiMap<QString, QVariant>::iterator it_map = temp_map.begin();
          it_map != temp_map.end(); ++it_map)
     {
         OTDB::MarketData * pMarketData = VPtr<OTDB::MarketData>::asPtr(it_map.value());
 
         if (NULL != pMarketData) // should never be NULL.
             delete pMarketData;
+    }
+    // --------------------
+    temp_map.clear();
+}
+
+void DlgMarkets::ClearOfferMap()
+{
+    QMap<QString, QVariant> temp_map = m_mapOffers;
+
+    m_mapOffers.clear();
+    // ------------------------------------
+    for (QMap<QString, QVariant>::iterator it_map = temp_map.begin();
+         it_map != temp_map.end(); ++it_map)
+    {
+        OTDB::OfferDataNym * pOfferData = VPtr<OTDB::OfferDataNym>::asPtr(it_map.value());
+
+        if (NULL != pOfferData) // should never be NULL.
+            delete pOfferData;
     }
     // --------------------
     temp_map.clear();
@@ -97,6 +115,7 @@ void DlgMarkets::FirstRun()
             m_pOfferDetails = new MTDetailEdit(this);
 
             m_pOfferDetails->SetMarketMap(m_mapMarkets);
+            m_pOfferDetails->SetOfferMap (m_mapOffers);
             // -------------------------------------
             m_pOfferDetails->setWindowTitle(tr("Orders"));
 
@@ -118,6 +137,10 @@ void DlgMarkets::FirstRun()
             // -------------------------------------
             connect(m_pOfferDetails, SIGNAL(CurrentMarketChanged(QString)),
                     this,            SLOT(onCurrentMarketChanged_Offers(QString)));
+            // -------------------------------------
+            connect(m_pOfferDetails, SIGNAL(RefreshOffers(QString)),
+                    this,            SLOT(onNeedToRefreshOffers(QString)));
+            // -------------------------------------
         }
         // ******************************************************
 
@@ -143,6 +166,8 @@ void DlgMarkets::FirstRun()
 void DlgMarkets::onCurrentMarketChanged_Offers (QString qstrMarketID)
 {
     m_pMarketDetails->onMarketIDChangedFromAbove(qstrMarketID);
+
+    onNeedToRefreshOffers(qstrMarketID);
 }
 
 
@@ -231,10 +256,8 @@ void DlgMarkets::on_comboBoxNym_currentIndexChanged(int index)
     RefreshMarkets();
 }
 
-
-
 // -----------------------------------------------
-bool DlgMarkets::RetrieveOfferList(mapIDName & the_map)
+bool DlgMarkets::RetrieveOfferList(mapIDName & the_map, QString qstrMarketID)
 {
     if (m_serverId.isEmpty() || m_nymId.isEmpty())
         return false;
@@ -243,7 +266,7 @@ bool DlgMarkets::RetrieveOfferList(mapIDName & the_map)
     QString qstrAll("all");
     // -----------------
     if (m_serverId != qstrAll)
-        return LowLevelRetrieveOfferList(m_serverId, m_nymId, the_map);
+        return LowLevelRetrieveOfferList(m_serverId, m_nymId, the_map, qstrMarketID);
     else
     {
         int nCurrentIndex = -1;
@@ -257,14 +280,14 @@ bool DlgMarkets::RetrieveOfferList(mapIDName & the_map)
             // ---------------
             QString qstrServerID = it_map.key();
             // ---------------
-            if (false == LowLevelRetrieveOfferList(qstrServerID, m_nymId, the_map))
+            if (false == LowLevelRetrieveOfferList(qstrServerID, m_nymId, the_map, qstrMarketID))
                 bSuccess = false; // Failure here just means ONE of the servers failed.
         }
     }
     return bSuccess;
 }
 // -----------------------------------------------
-bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrServerID, QString qstrNymID, mapIDName & the_map)
+bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrServerID, QString qstrNymID, mapIDName & the_map, QString qstrMarketID)
 {
     if (qstrServerID.isEmpty() || qstrNymID.isEmpty())
         return false;
@@ -279,14 +302,14 @@ bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrServerID, QString qstrNym
     // -----------------------------------
     if (bSuccess)
     {
-        return LowLevelLoadOfferList(qstrServerID, m_nymId, the_map);
+        return LowLevelLoadOfferList(qstrServerID, m_nymId, the_map, qstrMarketID);
     }
 
     return bSuccess;
 
 }
 // -----------------------------------------------
-bool DlgMarkets::LoadOfferList(mapIDName & the_map)
+bool DlgMarkets::LoadOfferList(mapIDName & the_map, QString qstrMarketID)
 {
     if (m_serverId.isEmpty() || m_nymId.isEmpty())
         return false;
@@ -295,7 +318,7 @@ bool DlgMarkets::LoadOfferList(mapIDName & the_map)
     QString qstrAll("all");
     // -----------------
     if (m_serverId != qstrAll)
-        return LowLevelLoadOfferList(m_serverId, m_nymId, the_map);
+        return LowLevelLoadOfferList(m_serverId, m_nymId, the_map, qstrMarketID);
     else
     {
         int nCurrentIndex = -1;
@@ -309,67 +332,108 @@ bool DlgMarkets::LoadOfferList(mapIDName & the_map)
             // ---------------
             QString qstrServerID = it_map.key();
             // ---------------
-            if (false == LowLevelLoadOfferList(qstrServerID, m_nymId, the_map))
+            if (false == LowLevelLoadOfferList(qstrServerID, m_nymId, the_map, qstrMarketID))
                 bSuccess = false; // Failure here just means ONE of the servers failed.
         }
     }
     return bSuccess;
 }
 // -----------------------------------------------
-bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, mapIDName & the_map)
+bool DlgMarkets::GetMarket_AssetCurrencyScale(QString qstrMarketID, QString & qstrAssetID, QString & qstrCurrencyID, QString & qstrScale)
 {
-    if (qstrServerID.isEmpty() || qstrNymID.isEmpty())
+    // -------------------------------------------------------------
+    QMap<QString, QVariant>::iterator it_market = m_mapMarkets.find(qstrMarketID);
+
+    if (m_mapMarkets.end() != it_market)
+    {
+        // ------------------------------------------------------
+        OTDB::MarketData * pMarketData = VPtr<OTDB::MarketData>::asPtr(it_market.value());
+
+        if (NULL != pMarketData) // Should never be NULL.
+        {
+            qstrAssetID    = QString::fromStdString(pMarketData->asset_type_id);
+            qstrCurrencyID = QString::fromStdString(pMarketData->currency_type_id);
+            qstrScale      = QString::fromStdString(pMarketData->scale);
+
+            return true;
+        }
+    }
+    // ------------------------------
+    return false;
+}
+// -----------------------------------------------
+bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, mapIDName & the_map, QString qstrMarketID)
+{
+    if (qstrServerID.isEmpty() || qstrNymID.isEmpty() || qstrMarketID.isEmpty())
         return false;
     // -----------------------------------
-    OTDB::OfferListNym * pOfferList = LoadOfferListForServer(qstrServerID.toStdString(), qstrNymID.toStdString());
-    OTCleanup<OTDB::OfferListNym> theAngel(pOfferList);
+    QString qstrAssetID, qstrCurrencyID, qstrMarketScale;
 
-    if (NULL != pOfferList)
+    const bool bGotIDs = GetMarket_AssetCurrencyScale(qstrMarketID, qstrAssetID, qstrCurrencyID, qstrMarketScale);
+    // -----------------------------------
+    if (bGotIDs)
     {
-        size_t nOfferDataCount = pOfferList->GetOfferDataNymCount();
+        OTDB::OfferListNym * pOfferList = LoadOfferListForServer(qstrServerID.toStdString(), qstrNymID.toStdString());
+        OTCleanup<OTDB::OfferListNym> theAngel(pOfferList);
 
-        for (size_t ii = 0; ii < nOfferDataCount; ++ii)
+        if (NULL != pOfferList)
         {
-            OTDB::OfferDataNym * pOfferData = pOfferList->GetOfferDataNym(ii);
+            size_t nOfferDataCount = pOfferList->GetOfferDataNymCount();
 
-            if (NULL == pOfferData) // Should never happen.
-                continue;
-            // -----------------------------------------------------------------------
-            QString qstrTransactionID = QString::fromStdString(pOfferData->transaction_id);
-            // -----------------------------------------------------------------------
-            QString qstrCompositeID = QString("%1,%2").arg(qstrServerID).arg(qstrTransactionID);
-            // -----------------------------------------------------------------------
-            QString qstrBuySell = pOfferData->selling ? tr("Sell") : tr("Buy");
+            for (size_t ii = 0; ii < nOfferDataCount; ++ii)
+            {
+                OTDB::OfferDataNym * pOfferData = pOfferList->GetOfferDataNym(ii);
 
-            const std::string str_asset_name = OTAPI_Wrap::GetAssetType_Name(pOfferData->asset_type_id);
-            // --------------------------
-            int64_t lTotalAssets   = OTAPI_Wrap::StringToLong(pOfferData->total_assets);
-            int64_t lFinishedSoFar = OTAPI_Wrap::StringToLong(pOfferData->finished_so_far);
-            // --------------------------
-            const std::string str_total_assets    = OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lTotalAssets);
-            const std::string str_finished_so_far = OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lFinishedSoFar);
-            // --------------------------
-            QString qstrAmounts;
+                if (NULL == pOfferData) // Should never happen.
+                    continue;
+                // -----------------------------------------------------------------------
+                QString qstrOfferAssetID    = QString::fromStdString(pOfferData->asset_type_id);
+                QString qstrOfferCurrencyID = QString::fromStdString(pOfferData->currency_type_id);
+                QString qstrOfferScale      = QString::fromStdString(pOfferData->scale);
+                // -----------------------------------------------------------------------
+                if ((qstrAssetID     != qstrOfferAssetID)    ||
+                    (qstrCurrencyID  != qstrOfferCurrencyID) ||
+                    (qstrMarketScale != qstrOfferScale))
+                    continue;
+                // -----------------------------------------------------------------------
+                QString qstrTransactionID = QString::fromStdString(pOfferData->transaction_id);
+                // -----------------------------------------------------------------------
+                QString qstrCompositeID = QString("%1,%2").arg(qstrServerID).arg(qstrTransactionID);
+                // -----------------------------------------------------------------------
+                m_mapOffers.insert(qstrCompositeID, VPtr<OTDB::OfferDataNym>::asQVariant(pOfferData->clone()));
+                // -----------------------------------------------------------------------
+                QString qstrBuySell = pOfferData->selling ? tr("Sell") : tr("Buy");
 
-            if (lFinishedSoFar > 0) // "300g (40g finished so far)"
-                qstrAmounts = QString("%1 (%2 %3)").
-                        arg(QString::fromStdString(str_total_assets)).
-                        arg(QString::fromStdString(str_finished_so_far)).
-                        arg(tr("finished so far"));
-            else // "300g"
-                qstrAmounts = QString("%1").
-                        arg(QString::fromStdString(str_total_assets));
-            // --------------------------
-//          "Buy Silver Grams: 300g (40g finished so far)";
-            //
-            QString qstrOfferName = QString("%1 %2: %3").
-                    arg(qstrBuySell).
-                    arg(QString::fromStdString(str_asset_name)).
-                    arg(qstrAmounts);
-            // ---------------------------
-            the_map.insert(qstrCompositeID, qstrOfferName);
-            // ---------------------------
-        } // for
+                const std::string str_asset_name = OTAPI_Wrap::GetAssetType_Name(pOfferData->asset_type_id);
+                // --------------------------
+                int64_t lTotalAssets   = OTAPI_Wrap::StringToLong(pOfferData->total_assets);
+                int64_t lFinishedSoFar = OTAPI_Wrap::StringToLong(pOfferData->finished_so_far);
+                // --------------------------
+                const std::string str_total_assets    = OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lTotalAssets);
+                const std::string str_finished_so_far = OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lFinishedSoFar);
+                // --------------------------
+                QString qstrAmounts;
+
+                if (lFinishedSoFar > 0) // "300g (40g finished so far)"
+                    qstrAmounts = QString("%1 (%2 %3)").
+                            arg(QString::fromStdString(str_total_assets)).
+                            arg(QString::fromStdString(str_finished_so_far)).
+                            arg(tr("finished so far"));
+                else // "300g"
+                    qstrAmounts = QString("%1").
+                            arg(QString::fromStdString(str_total_assets));
+                // --------------------------
+    //          "Buy Silver Grams: 300g (40g finished so far)";
+                //
+                QString qstrOfferName = QString("%1 %2: %3").
+                        arg(qstrBuySell).
+                        arg(QString::fromStdString(str_asset_name)).
+                        arg(qstrAmounts);
+                // ---------------------------
+                the_map.insert(qstrCompositeID, qstrOfferName);
+                // ---------------------------
+            } // for
+        }
     }
     // -----------------------------------
     return true;
@@ -598,8 +662,39 @@ void DlgMarkets::RefreshMarkets()
         }
         // ***********************************************
         {
+            m_pOfferDetails->m_mapMarkets.clear();
+            // -------------------------------------
+            for (mapIDName::iterator it_offer_markets = m_pMarketDetails->m_map.begin();
+                 it_offer_markets != m_pMarketDetails->m_map.end(); ++it_offer_markets)
+            {
+                QString qstrID    = it_offer_markets.key();
+                QString qstrValue = it_offer_markets.value();
+                // -------------------------------------------------------------
+                QMap<QString, QVariant>::iterator it_market = m_mapMarkets.find(qstrID);
 
-            m_pOfferDetails->m_mapMarkets = m_pMarketDetails->m_map;
+                if (m_mapMarkets.end() != it_market)
+                {
+                    // ------------------------------------------------------
+                    OTDB::MarketData * pMarketData = VPtr<OTDB::MarketData>::asPtr(it_market.value());
+
+                    if (NULL != pMarketData) // Should never be NULL.
+                    {
+                        // ------------------------------------------------------
+                        int64_t     lScale    = OTAPI_Wrap::It()->StringToLong(pMarketData->scale);
+                        if (lScale > 1)
+                        {
+                            std::string str_scale = OTAPI_Wrap::FormatAmount(pMarketData->asset_type_id, lScale);
+                            // ------------------------------------------------------
+                            QString qstrFormattedScale = QString::fromStdString(str_scale);
+                            // ------------------------------------------------------
+                            qstrValue += QString(" (%1 %2)").arg(tr("priced per")).arg(qstrFormattedScale);
+                        }
+                    }
+                }
+                // -------------------------------------------------------------
+                m_pOfferDetails->m_mapMarkets.insert(qstrID, qstrValue);
+            }
+
             // -------------------------------------
 //            mapIDName & the_map = m_pOfferDetails->m_map;
 
@@ -633,14 +728,16 @@ void DlgMarkets::onNeedToRefreshOffers(QString qstrMarketID)
 
     the_map.clear();
     // -------------------------------------
+    ClearOfferMap();
+    // -------------------------------------
     if (!m_bHaveRetrievedOffersFirstTime)
     {
         m_bHaveRetrievedOffersFirstTime = true;
-        RetrieveOfferList(the_map); // Download the list of offers from the server(s).
+        RetrieveOfferList(the_map, qstrMarketID); // Download the list of offers from the server(s).
     }
     else
     {
-        LoadOfferList(the_map); // Load from local storage. (Let the user hit "Refresh" if he wants to re-download.)
+        LoadOfferList(the_map, qstrMarketID); // Load from local storage. (Let the user hit "Refresh" if he wants to re-download.)
     }
     // -------------------------------------
     m_pOfferDetails->show_widget(MTDetailEdit::DetailEditTypeOffer);
@@ -753,6 +850,7 @@ void DlgMarkets::RefreshRecords()
     // -----------------------------------------------
 
     RefreshMarkets();
+
 }
 
 
@@ -779,6 +877,7 @@ DlgMarkets::~DlgMarkets()
     delete ui;
 
     ClearMarketMap();
+    ClearOfferMap();
 }
 
 
