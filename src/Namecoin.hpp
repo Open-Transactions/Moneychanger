@@ -115,6 +115,15 @@ private:
   /** List of pending name registrations.  */
   regList pendingRegs;
 
+  /**
+   * Get the Namecoin name corresponding to a Nym / credentials pair.
+   * @param nym Nym id.
+   * @param cred Credentials hash.
+   * @return Namecoin name at which to register the credentials.
+   */
+  nmcrpc::NamecoinInterface::Name getNameForNym (const QString& nym,
+                                                 const QString& cred);
+
 public:
 
   /**
@@ -130,7 +139,20 @@ public:
    * @param nym The Nym hash.
    * @param cred The credential hash.
    */
-  void startRegistration (const QString nym, const QString cred);
+  void startRegistration (const QString& nym, const QString& cred);
+
+  /**
+   * Update the name corresponding to a nym and credentials hash.  This assumes
+   * that the name is already registered and belongs to the user, and tries
+   * to send (name_update) it to the NMC address that is the Nym's source.   It
+   * also sets the value to the correct signed credentials hash.  If the name
+   * is not available or has been taken by someone else after expirey, false
+   * is returned.
+   * @param nym The Nym hash.
+   * @param cred The credential hash.
+   * @return True iff the name_update was issued successfully.
+   */
+  bool updateName (const QString& nym, const QString& cred);
 
   /**
    * Slot called regularly by a timer that handles all name updates

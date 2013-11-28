@@ -25,6 +25,7 @@
 
 #include <nmcrpc/RpcSettings.hpp>
 
+#include <opentxs/OTAPI.h>
 #include <opentxs/OTPassword.h>
 
 #include <QDebug>
@@ -96,21 +97,34 @@ NMC_NameManager::NMC_NameManager (NMC_Interface& nmc)
 }
 
 /**
+ * Get the Namecoin name corresponding to a Nym / credentials pair.
+ * @param nym Nym id.
+ * @param cred Credentials hash.
+ * @return Namecoin name at which to register the credentials.
+ */
+nmcrpc::NamecoinInterface::Name
+NMC_NameManager::getNameForNym (const QString& nym, const QString& cred)
+{
+  return nc.queryName (NMC_NS, cred.toStdString ());
+}
+
+/**
  * Start the name registration process of a new credential hash in the
  * Namecoin blockchain.
  * @param nym The Nym hash.
  * @param cred The credential hash.
  */
 void
-NMC_NameManager::startRegistration (const QString nym, const QString cred)
+NMC_NameManager::startRegistration (const QString& nym, const QString& cred)
 {
   qDebug () << "Registering " << nym << " with credentials " << cred
             << " on the Namecoin blockchain.";
 
   try
     {
-      nmcrpc::NamecoinInterface::Name nm;
-      nm = nc.queryName (NMC_NS, cred.toStdString ());
+      const nmcrpc::NamecoinInterface::Name nm = getNameForNym (nym, cred);
+
+      /* TODO: Unlock the value.  */
 
       nmcrpc::NameRegistration reg(rpc, nc);
       reg.registerName (nm);
@@ -145,6 +159,60 @@ NMC_NameManager::startRegistration (const QString nym, const QString cred)
 }
 
 /**
+ * Update the name corresponding to a nym and credentials hash.  This assumes
+ * that the name is already registered and belongs to the user, and tries
+ * to send (name_update) it to the NMC address that is the Nym's source.   It
+ * also sets the value to the correct signed credentials hash.  If the name
+ * is not available or has been taken by someone else after expirey, false
+ * is returned.
+ * @param nym The Nym hash.
+ * @param cred The credential hash.
+ * @return True iff the name_update was issued successfully.
+ */
+bool
+NMC_NameManager::updateName (const QString& nym, const QString& cred)
+{
+  std::string addrStr = OTAPI_Wrap::GetNym_SourceForID (nym.toStdString ());
+  const nmcrpc::NamecoinInterface::Address addr = nc.queryAddress (addrStr);
+
+  if (!addr.isValid () || !addr.isMine ())
+    {
+      qDebug () << "Nym source " << addrStr.c_str ()
+                << " is not a valid Namecoin address,"
+                   " or it is not owned by you.";
+      return false;
+    }
+
+  const nmcrpc::NamecoinInterface::Name nm = getNameForNym (nym, cred);
+  nmcrpc::NameUpdate upd(rpc, nc, nm);
+
+  /* TODO: Unlock the wallet.  */
+  upd.setValue (addr.signMessage (cred.toStdString ()));
+
+  try
+    {
+      const std::string txid = upd.execute (addr);
+
+      QString queryStr = "UPDATE `nmc_names`"
+                         "  SET `updateTx` = :txid"
+                         "  WHERE `name` = :name";
+      std::unique_ptr<DBHandler::PreparedQuery> qu;
+      qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+      qu->bind (":txid", txid.c_str ());
+      qu->bind (":name", nm.getName ().c_str ());
+      DBHandler::getInstance ()->runQuery (qu.release ());
+      qu.release ();
+    }
+  catch (const nmcrpc::NamecoinInterface::NoPrivateKey& exc)
+    {
+      qDebug () << "Name cannot be updated, as you don't own the private key.";
+      return false;
+    }
+
+  return true;
+}
+
+/**
  * Slot called regularly by a timer that handles all name updates
  * where appropriate.
  * @param w The widget to use as parent for the password dialog.
@@ -154,6 +222,8 @@ NMC_NameManager::timerUpdate (QWidget* w)
 {
   qDebug () << "Namecoin update timer called.";
 
+  // TODO: Unlock wallet if necessary.
+
   auto i = pendingRegs.begin ();
   while (i != pendingRegs.end ())
     {
@@ -162,21 +232,35 @@ NMC_NameManager::timerUpdate (QWidget* w)
           /* If a name registration is finished (i. e., the name_firstupdate
              is already confirmed), remove it from the list and perform the
              actual update.  */
-          if (i->isFinished () && false)
+          if (i->isFinished ())
             {
               qDebug () << "Registration finished for "
                         << i->getName ().c_str ();
 
-              const QString queryStr = "UPDATE `nmc_names`"
-                                       "  SET `regData` = NULL, `active` = 1"
-                                       "  WHERE `name` = :name";
-              std::unique_ptr<DBHandler::PreparedQuery> qu;
-              qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
-              qu->bind (":name", i->getName ().c_str ());
-              DBHandler::getInstance ()->runQuery (qu.release ());
+              DBHandler& db = *DBHandler::getInstance ();
 
-              /* FIXME: Perform update to actual value, activate if again
-                 when this is done.  */
+              QString queryStr = "UPDATE `nmc_names`"
+                                 "  SET `regData` = NULL, `active` = 1"
+                                 "  WHERE `name` = :name";
+              std::unique_ptr<DBHandler::PreparedQuery> qu;
+              qu.reset (db.prepareQuery (queryStr));
+              qu->bind (":name", i->getName ().c_str ());
+              db.runQuery (qu.release ());
+              qu.release ();
+
+              queryStr = "SELECT `nym`, `cred` FROM `nmc_names`"
+                         "  WHERE `name` = :name";
+              qu.reset (db.prepareQuery (queryStr));
+              qu->bind (":name", i->getName ().c_str ());
+              QSqlRecord rec = db.queryOne (qu.release ());
+
+              const QString nym = rec.field ("nym").value ().toString ();
+              const QString cred = rec.field ("cred").value ().toString ();
+              const bool success = updateName (nym, cred);
+              if (success)
+                qDebug () << "Issued name_update successfully.";
+              else
+                qDebug () << "name_update failed.";
 
               i = pendingRegs.erase (i);
               continue;
