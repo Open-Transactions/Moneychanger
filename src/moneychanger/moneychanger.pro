@@ -223,7 +223,7 @@ mac:{
 }
 
 linux:{
-	LIBS += -ldl
+	LIBS += -ldl -lboost_thread
 }
 
 
