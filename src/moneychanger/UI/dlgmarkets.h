@@ -35,15 +35,22 @@ public:
     void dialog();
 
     void RefreshRecords(); // For servers and nyms.
-    void RefreshMarkets(); // For markets and offers.
 
     QString GetNymID() { return m_nymId; }
+
+signals:
+    void needToLoadOrRetrieveMarkets();
 
 public slots:
     void onCurrentMarketChanged_Offers (QString qstrMarketID);
     void onCurrentMarketChanged_Markets(QString qstrMarketID);
 
-    void onNeedToRefreshOffers(QString qstrMarketID);
+    void LoadOrRetrieveMarkets(); // For markets and offers.
+
+    void onNeedToLoadOrRetrieveOffers(QString qstrMarketID);
+
+    void onBalancesChangedFromAbove();
+
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -92,7 +99,7 @@ private:
 
     bool m_bFirstRun;
     bool m_bHaveRetrievedFirstTime;
-    bool m_bHaveRetrievedOffersFirstTime;
+    bool m_bHaveShownOffersFirstTime;
 
     QPointer<MTDetailEdit> m_pMarketDetails;
     QPointer<MTDetailEdit> m_pOfferDetails;

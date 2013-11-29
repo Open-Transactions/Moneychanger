@@ -66,11 +66,18 @@ protected:
 
 private slots:
     void on_toolButtonAsset_clicked();
-
     void on_toolButtonCurrency_clicked();
 
 private:
     QWidget * m_pHeaderWidget;
+
+    // We retrieve them once the first time, and therefore we merely load them,
+    // unless the user clicks the Refresh button, in which case we retrieve them again :-)
+    // TODO: The Refresh button basically just needs to fire a signal that can be caught here,
+    // enabling us to set these to true, so they will be retrieved the next time they are loaded,
+    // instead of merely loaded from local storage.
+    bool m_bNeedToRetrieveMarketOffers;
+    bool m_bNeedToRetrieveMarketTrades;
 
     Ui::MTMarketDetails *ui;
 };

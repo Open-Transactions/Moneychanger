@@ -37,6 +37,8 @@ OTDB::MarketData * pMarketData = VPtr<OTDB::MarketData>::asPtr(it_map.value());
 MTMarketDetails::MTMarketDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
     m_pHeaderWidget(NULL),
+    m_bNeedToRetrieveMarketOffers(true),
+    m_bNeedToRetrieveMarketTrades(true),
     ui(new Ui::MTMarketDetails)
 {
     ui->setupUi(this);
@@ -213,6 +215,14 @@ OTDB::OfferListMarket * MTMarketDetails::LoadOfferListForMarket(OTDB::MarketData
 
 void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QString, QVariant> & multimap)
 {
+    if (m_bNeedToRetrieveMarketOffers)
+    {
+        m_bNeedToRetrieveMarketOffers = false;
+        // ------------------------------------
+        RetrieveMarketOffers(qstrID, multimap);
+    }
+    // ------------------------------------------------------
+
 //    this->blockSignals(true);
     // -----------------------------------
     ui->tableWidgetBids->blockSignals(true);
@@ -515,6 +525,14 @@ OTDB::TradeListMarket * MTMarketDetails::LoadTradeListForMarket(OTDB::MarketData
 
 void MTMarketDetails::PopulateRecentTradesGrid(QString & qstrID, QMultiMap<QString, QVariant> & multimap)
 {
+    // revisit.
+//    if (m_bNeedToRetrieveMarketTrades)
+//    {
+//        m_bNeedToRetrieveMarketTrades = false;
+        // --------------------------------------
+        RetrieveMarketTrades(qstrID, multimap);
+//    }
+    // ------------------------------------------------------------------------
 //    this->blockSignals(true);
     // -----------------------------------
     ui->tableWidgetTrades->blockSignals(true);
@@ -748,9 +766,6 @@ void MTMarketDetails::refresh(QString strID, QString strName)
                     ui->labelNumberBidsValue->setText(qstrNumberBids);
                     ui->labelNumberAsksValue->setText(qstrNumberAsks);
                     ui->labelLastValue      ->setText(qstrLastSalePrice);
-                    // ------------------------------------------------------
-                    RetrieveMarketOffers     (strID, *(m_pOwner->m_pmapMarkets));
-                    RetrieveMarketTrades     (strID, *(m_pOwner->m_pmapMarkets));
                     // ------------------------------------------------------
                     PopulateMarketOffersGrids(strID, *(m_pOwner->m_pmapMarkets));
                     PopulateRecentTradesGrid (strID, *(m_pOwner->m_pmapMarkets));

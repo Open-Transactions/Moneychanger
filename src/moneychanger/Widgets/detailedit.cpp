@@ -128,7 +128,6 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
 {
     if (m_bFirstRun)
     {
-        m_bFirstRun = false;
         // -------------------------------------------
         ui->comboBox->setHidden(true);
         // -------------------------------------------
@@ -179,8 +178,8 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
             ui->comboBox->setHidden(false);
             m_pDetailPane = new MTOfferDetails(this, *this);
             // -------------------------------------------
-//            connect(ui->comboBox, SIGNAL(currentIndexChanged(int)),
-//                    this,         SLOT  (on_comboBox_currentIndexChanged(int)));
+            connect(ui->comboBox, SIGNAL(currentIndexChanged(int)),
+                    this,         SLOT  (on_comboBox_currentIndexChanged(int)));
             // -------------------------------------------
             break;
 
@@ -280,6 +279,7 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         if (!m_bEnableDelete)
             ui->deleteButton->setVisible(false);
         // ----------------------------------
+        m_bFirstRun = false;
     } // first run.
 }
 
@@ -320,6 +320,10 @@ void MTDetailEdit::onMarketIDChangedFromAbove(QString qstrMarketID)
         // The market ID has been changed on the Offers page.
         // (And *I* am the Markets page, responding to this event.)
         //
+        // Note that we could use a simple find() here, but I wanted
+        // to grab the index. Maybe there's a call on QStringMap that
+        // does that for me... (checked -- nope.)
+        //
         int nIndex = -1;
         mapIDName::iterator it_markets = m_map.begin();
 
@@ -334,19 +338,27 @@ void MTDetailEdit::onMarketIDChangedFromAbove(QString qstrMarketID)
         // ------------------------------------------------------------
 //      mapIDName::iterator it_markets = m_map.find(qstrMarketID);
 
-        if (m_map.end() != it_markets)
+        if ((m_map.end() != it_markets) &&
+            (nIndex < ui->tableWidget->rowCount())) // Should always be true since m_map is used to populate ui->tableWidget.
         {
             m_qstrCurrentID   = it_markets.key();
             m_qstrCurrentName = it_markets.value();
             // ----------------------------------------
             ui->tableWidget->blockSignals(true);
             // ----------------------------------------
-            ui->tableWidget->setCurrentCell(nIndex, 0);
+            ui->tableWidget->setCurrentCell(nIndex, 1);
             // ----------------------------------------
             ui->tableWidget->blockSignals(false);
             // ----------------------------------------
             m_PreSelected = m_qstrCurrentID;
 
+            // (We keep the signals blocked because we don't want the onCellChanged method
+            // to trigger and bounce the football back to the offers panel for an infinite
+            // loop of setting the market ID back and forth.)
+            //
+            // But of course, we still need to refresh the market details:
+            // (e.g. the ui_labels on the market panel.)
+            //
             if (m_pDetailPane)
                 m_pDetailPane->refresh(m_qstrCurrentID, m_qstrCurrentName);
         }
@@ -360,7 +372,18 @@ void MTDetailEdit::onMarketIDChangedFromAbove(QString qstrMarketID)
 
         RefreshMarketCombo();
 
-        emit RefreshOffers(m_qstrMarketID);
+        // NOTE: If this DetailEdit is the Offers panel, and if we were notified from
+        // above, then we must have notified by the Markets panel (which is why we are
+        // setting the current m_qstrMarketID here, because we needed to know about it.)
+        //
+        // But if we are being notified by the Markets panel, then why we are bothering
+        // to emit NeedToLoadOrRetrieveOffers(marketID) here? True, our market ID just
+        // changed, so we DO need to load new offers to match that market. But we shouldn't
+        // have to emit that here, since it should already be connected to the same signal
+        // that triggered this function (that we're currently in) in the first place.
+        // (And indeed it is, for both panels.)
+        //
+//        emit NeedToLoadOrRetrieveOffers(m_qstrMarketID);
     }
 }
 
@@ -396,8 +419,6 @@ void MTDetailEdit::RefreshMarketCombo()
         ui->comboBox->insertItem(nIndex, OT_market_name);
     }
     // -----------------------------------------------
-    QString qstrOldMarketID = m_qstrMarketID;
-    // -----------------------------------------------
     if (m_mapMarkets.size() > 0)
     {
         SetCurrentMarketIDBasedOnIndex(nCurrentMarketIndex);
@@ -408,17 +429,36 @@ void MTDetailEdit::RefreshMarketCombo()
     // -----------------------------------------------
     ui->comboBox->blockSignals(false);
     // -----------------------------------------------
-//    emit RefreshOffers(m_qstrMarketID);
+//    emit NeedToLoadOrRetrieveOffers(m_qstrMarketID);
 
-    if (qstrOldMarketID != m_qstrMarketID)
-        emit CurrentMarketChanged(m_qstrMarketID);
+    // We are going to show_widget for the offers panel BEFORE the markets panel.
+    // But it's only when the markets panel does its show_widget that the market
+    // gets initially set. And it's only then that a signal is sent to the offers
+    // panel (onMarketIDChangedFromAbove) instructing it to refresh the Markets
+    // combo. (No point refreshing that before they've been downloaded, eh?)
+    //
+    // And at that time, there's no point emitting CurrentMarketChanged(m_qstrMarketID);
+    // since we were just NOTIFIED of that -- that's why we're here -- so why pass the football
+    // back and for for eternity? We will already emit CurrentMarketChanged if someone changes
+    // the selection on the combo box.
+    //
+    // Not only do we cause an infinite refresh, but DlgMarkets::
+    // onCurrentMarketChanged also retrieves the Offers by calling DlgMarkets::onNeedToLoadOrRetrieveOffers,
+    // which downloads the offers and then calls m_pOfferDetails->show_widget(MTDetailEdit::DetailEditTypeOffer);
+    //
+    // Do we need that to happen? No, since onMarketIDChangedFromAbove is what calls the function
+    // we're in, LoadOrRetrieveMarkets, and IMMEDIATELY after, it emits NeedToLoadOrRetrieveOffers(m_qstrMarketID) anyway.
+    // Thus, DlgMarkets has already triggered onNeedToLoadOrRetrieveMarkets, even without the below emission.
+    //
+//    if (qstrOldMarketID != m_qstrMarketID)
+//        emit CurrentMarketChanged(m_qstrMarketID);
     // -----------------------------------------------
 }
 
 
 void MTDetailEdit::SetCurrentMarketIDBasedOnIndex(int index)
 {
-    if ((m_mapMarkets.size() > 0) && (index >= 0))
+    if ((m_mapMarkets.size() > 0) && (index >= 0) && (index < m_mapMarkets.size()))
     {
         int nCurrentIndex = -1;
 
@@ -433,23 +473,53 @@ void MTDetailEdit::SetCurrentMarketIDBasedOnIndex(int index)
             }
         }
     }
+    // ------------------------------------------
     else
         m_qstrMarketID = QString("");
-    // ------------------------------------------
 }
 
+// Market is selected from combo box, on Offers page.
 void MTDetailEdit::on_comboBox_currentIndexChanged(int index)
 {
-    if (MTDetailEdit::DetailEditTypeOffer == m_Type)
+    if (ui && (MTDetailEdit::DetailEditTypeOffer == m_Type))
     {
+        // -----------------------------
         SetCurrentMarketIDBasedOnIndex(index);
         // -----------------------------
-//        emit RefreshOffers(m_qstrMarketID);
+
+        // -----------------------------
+//        emit NeedToLoadOrRetrieveOffers(m_qstrMarketID);
         emit CurrentMarketChanged(m_qstrMarketID);
         // ----------------------------
     }
 }
 
+void MTDetailEdit::ClearRecords()
+{
+    ui->tableWidget->blockSignals(true);
+    ui->tableWidget->clearContents();
+    ui->tableWidget->setRowCount(0);
+    ui->tableWidget->blockSignals(false);
+
+    m_map.clear();
+
+    m_nCurrentRow     = -1;
+    m_qstrCurrentID   = QString("");
+    m_qstrCurrentName = QString("");
+
+    ui->deleteButton->setEnabled(false);
+
+    if (m_pDetailPane)
+        m_pDetailPane->ClearContents();
+
+    m_pTabWidget->setVisible(false);
+}
+
+void MTDetailEdit::ClearContents()
+{
+    if (m_pDetailPane && ui)
+        m_pDetailPane->ClearContents();
+}
 
 void MTDetailEdit::RefreshRecords()
 {
@@ -676,11 +746,19 @@ void MTDetailEdit::RefreshRecords()
         // -------------------------------------------
     } // For loop
     // ------------------------
+    // We are doing this here so onCurrentCellChanged can respond even if we set the current cell to -1.
+    // TODO: If I end up having to remove the -1, then I will have to remove this here as well.
+    //
+    ui->tableWidget->blockSignals(false);
+
     if (ui->tableWidget->rowCount() > 0)
     {
-        ui->tableWidget->blockSignals(false);
+//        ui->tableWidget->blockSignals(false);
 
-        m_pTabWidget->setVisible(true);
+        // Unnecessary, since the below call to setCurrentCell already triggers onCellChanged,
+        // which already sets the tab widget visible or not, based on the new cell index.
+        //
+//        m_pTabWidget->setVisible(true);
 
         if ((nPreselectedIndex > (-1)) && (nPreselectedIndex < ui->tableWidget->rowCount()))
         {
@@ -693,16 +771,21 @@ void MTDetailEdit::RefreshRecords()
             ui->tableWidget->setCurrentCell(0, 1);
         }
     }
-    // ------------------------
+    // ------------------------    
+    // This is all handled in ui->tableWidget=>on_currentCell_changed.
     else
-    {
-        ui->deleteButton->setEnabled(false);
+        ui->tableWidget->setCurrentCell(-1, -1); // NEW -- If this doesn't work, we'll maybe call this by hand:
+//    void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
 
-        if (m_pDetailPane)
-            m_pDetailPane->ClearContents();
+//    else
+//    {
+//        ui->deleteButton->setEnabled(false);
 
-        m_pTabWidget->setVisible(false);
-    }
+//        if (m_pDetailPane)
+//            m_pDetailPane->ClearContents();
+
+//        m_pTabWidget->setVisible(false);
+//    }
     // --------------------------------------
 //    if (!m_qstrCurrentID.isEmpty() && (MTDetailEdit::DetailEditTypeMarket == m_Type))
 //        emit CurrentMarketChanged(m_qstrCurrentID);
@@ -731,22 +814,27 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
     // -------------------------------------
     QString qstrOldID = m_qstrCurrentID;
     // -------------------------------------
-    if (m_nCurrentRow >= 0)
+    if ((currentRow >= 0) && (currentRow < m_map.size()))
     {
         m_pTabWidget->setVisible(true);
 
         int nIndex = -1;
 
+        // Here we find m_qstrCurrentID and m_qstrCurrentName (display name)
+        // based on its index in the listbox, by iterating through m_map.
+        // Then
+
         for (mapIDName::iterator ii = m_map.begin(); ii != m_map.end(); ii++)
         {
             ++nIndex; // 0 on first iteration.
             // -------------------------------------
-            if (nIndex == m_nCurrentRow) // ONLY HAPPENS ONCE
+            if (nIndex == m_nCurrentRow) // <===== ONLY HAPPENS ONCE <=====
             {
                 m_qstrCurrentID   = ii.key();
                 m_qstrCurrentName = ii.value();
 
-                ui->deleteButton->setEnabled(true);
+                if (m_bEnableDelete)
+                    ui->deleteButton->setEnabled(true);
 
                 qDebug() << "SETTING current row to " << nIndex << " on the tableWidget.";
                 // ----------------------------------------
@@ -755,8 +843,8 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
                 if (m_pDetailPane)
                     m_pDetailPane->refresh(m_qstrCurrentID, m_qstrCurrentName);
                 // ----------------------------------------
-                break;
-            }
+                break; // <=== ONLY HAPPENS ONCE <=====
+            }//resume
         }
     }
     // -------------------------------------
@@ -768,14 +856,21 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
 
         ui->deleteButton->setEnabled(false);
 
+        if (m_pDetailPane)
+            m_pDetailPane->ClearContents();
+
         m_pTabWidget->setVisible(false);
     }
     // -------------------------------------
     // If this is the markets page, and the current ID has changed, then we need
     // to notify the offers page.
     //
-    if ((MTDetailEdit::DetailEditTypeMarket == m_Type) && (qstrOldID != m_qstrCurrentID))
+    if ((MTDetailEdit::DetailEditTypeMarket == m_Type) &&
+        (qstrOldID.isEmpty() || (!qstrOldID.isEmpty() && (qstrOldID != m_qstrCurrentID))))
+    {
+        SetMarketID(m_qstrCurrentID);
         emit CurrentMarketChanged(m_qstrCurrentID);
+    }
 }
 
 
