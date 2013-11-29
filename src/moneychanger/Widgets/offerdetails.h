@@ -28,6 +28,10 @@ protected:
 
     void FavorLeftSideForIDs();
 
+private slots:
+    void on_toolButtonAssetAcct_clicked();
+    void on_toolButtonCurrencyAcct_clicked();
+
 private:
     QPointer<QWidget> m_pHeaderWidget;
 

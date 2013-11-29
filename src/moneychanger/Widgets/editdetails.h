@@ -76,6 +76,7 @@ signals:
     void ShowNym(QString);
     void ShowAsset(QString);
     void ShowServer(QString);
+    void ShowAccount(QString);
 
     void SendFromAcct (QString qstrAcct);
     void RequestToAcct(QString qstrAcct);
