@@ -54,9 +54,22 @@ void MTOfferDetails::ClearTradesGrid()
 {
 //    this->blockSignals(true);
     ui->tableWidgetTrades->blockSignals(true);
-    // -----------------------------------
-    ui->tableWidgetTrades->clearContents();
-    ui->tableWidgetTrades->setRowCount (0);
+    // -------------------------------------------------------
+    int nGridItemCount = ui->tableWidgetTrades->rowCount();
+    // -------------------------------------------------------
+    for (int ii = 0; ii < nGridItemCount; ii++)
+    {
+        QTableWidgetItem * item = ui->tableWidgetTrades->takeItem(0,1); // Row 0, Column 1
+        ui->tableWidgetTrades->removeRow(0); // Row 0.
+
+        if (NULL != item)
+        {
+            delete item;
+            item = NULL;
+        }
+    }
+    // -------------------------------------------------------
+    ui->tableWidgetTrades->setRowCount(0);
     // -----------------------------------
 //    this->blockSignals(false);
     ui->tableWidgetTrades->blockSignals(false);
@@ -78,12 +91,7 @@ void MTOfferDetails::on_toolButtonCurrencyAcct_clicked()
 void MTOfferDetails::refresh(QString strID, QString strName)
 {
     // -----------------------------------
-    ui->tableWidgetTrades->blockSignals(true);
-    // -----------------------------------
-    ui->tableWidgetTrades->clearContents();
-    ui->tableWidgetTrades->setRowCount (0);
-    // ----------------------------------------
-    ui->tableWidgetTrades->blockSignals(false);
+    ClearTradesGrid();
     // ----------------------------------------
     if (!strID.isEmpty() && (NULL != ui))
     {
@@ -227,6 +235,8 @@ void MTOfferDetails::refresh(QString strID, QString strName)
         FavorLeftSideForIDs();
         // ----------------------------------
     }
+    else
+        ClearContents();
 }
 
 
@@ -417,7 +427,17 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
                     if (NULL == pTradeData) // Should never happen.
                         continue;
                     // -----------------------------------------------------------------------
-                    QString qstrTransactionID = QString::fromStdString(pTradeData->transaction_id);
+                    int64_t lOfferID = OTAPI_Wrap::StringToLong(pOfferData->transaction_id);
+                    int64_t lTradeID = OTAPI_Wrap::StringToLong(pTradeData->transaction_id);
+
+                    if (lOfferID != lTradeID)
+                    {
+                        qDebug() << QString("Showing trades for Offer %1; skipping trade receipt with trans number %2.")
+                                    .arg(lOfferID).arg(lTradeID);
+                        continue;
+                    }
+                    // -----------------------------------------------------------------------
+                    QString qstrUpdatedID     = QString::fromStdString(pTradeData->updated_id);
                     // -----------------------------------------------------------------------
                     time_t tDate = static_cast<time_t>(OTAPI_Wrap::StringToLong(pTradeData->date));
 
@@ -426,18 +446,30 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
                     // -----------------------------------------------------------------------
                     std::string & str_price         = pTradeData->price;
                     int64_t       lPrice            = OTAPI_Wrap::StringToLong(str_price); // this price is "per scale"
+
+                    if (lPrice < 0)
+                        lPrice *= (-1);
+
                     std::string   str_price_display = OTAPI_Wrap::FormatAmount(pOfferData->currency_type_id, lPrice);
 
                     QString qstrPrice = QString::fromStdString(str_price_display);
                     // -----------------------------------------------------------------------
                     std::string & str_amount_sold    = pTradeData->amount_sold;
                     int64_t       lQuantity          = OTAPI_Wrap::StringToLong(str_amount_sold); // Total amount of asset sold.
+
+                    if (lQuantity < 0)
+                        lQuantity *= (-1);
+
                     std::string   str_amount_display = OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lQuantity);
 
                     QString qstrAmountSold = QString::fromStdString(str_amount_display);
                     // -----------------------------------------------------------------------
                     std::string & str_currency_paid   = pTradeData->currency_paid;
                     int64_t       lPayQuantity        = OTAPI_Wrap::StringToLong(str_currency_paid); // Total currency paid
+
+                    if (lPayQuantity < 0)
+                        lPayQuantity *= (-1);
+
                     std::string   str_paid_display    = OTAPI_Wrap::FormatAmount(pOfferData->currency_type_id, lPayQuantity);
 
                     QString qstrCurrencyPaid = QString::fromStdString(str_paid_display);
@@ -445,9 +477,9 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
                     QLabel * pLabelPrice        = new QLabel(qstrPrice);
                     QLabel * pLabelAmountSold   = new QLabel(qstrAmountSold);
                     QLabel * pLabelCurrencyPaid = new QLabel(qstrCurrencyPaid);
-                    QLabel * pLabelDateAdded  = new QLabel(QString("<small>%1</small>").arg(qstrDateAdded));
-                    QLabel * pLabelTransID    = new QLabel(qstrTransactionID);
-                    QLabel * pLabelServer     = new QLabel(qstrServerName);
+                    QLabel * pLabelDateAdded    = new QLabel(QString("<small>%1</small>").arg(qstrDateAdded));
+                    QLabel * pLabelTransID      = new QLabel(qstrUpdatedID);
+                    QLabel * pLabelServer       = new QLabel(qstrServerName);
                     // -----------------------------------------------------------------------
                     pLabelPrice     ->setAlignment(Qt::AlignCenter);
                     pLabelAmountSold->setAlignment(Qt::AlignCenter);

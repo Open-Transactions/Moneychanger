@@ -199,14 +199,22 @@ void DlgMarkets::onCurrentMarketChanged_Markets(QString qstrMarketID)
 
 void DlgMarkets::onBalancesChangedFromAbove()
 {
-    emit LoadOrRetrieveMarkets();
+    emit needToLoadOrRetrieveMarkets();
 }
 
 void DlgMarkets::on_pushButtonRefresh_clicked()
 {
     m_bHaveRetrievedFirstTime = false; // To force RefreshRecords to re-download.
 
-    emit LoadOrRetrieveMarkets();
+    m_pMarketDetails->ClearRecords();
+    m_pOfferDetails->ClearRecords();
+
+    ClearMarketMap();
+    ClearOfferMap();
+
+    m_pOfferDetails->SetMarketID("");
+
+    emit needToLoadOrRetrieveMarkets();
 
     // TODO here: turn refresh button black.
 }
@@ -264,20 +272,36 @@ void DlgMarkets::SetCurrentServerIDBasedOnIndex(int index)
 
 void DlgMarkets::on_comboBoxServer_currentIndexChanged(int index)
 {
+    m_pMarketDetails->ClearRecords();
+    m_pOfferDetails->ClearRecords();
+
+    ClearMarketMap();
+    ClearOfferMap();
+
     SetCurrentServerIDBasedOnIndex(index);
 
+    m_pOfferDetails->SetMarketID("");
+
 //    RefreshRecords();
-    emit LoadOrRetrieveMarkets();
+    emit needToLoadOrRetrieveMarkets();
 }
 
 
 
 void DlgMarkets::on_comboBoxNym_currentIndexChanged(int index)
 {
+    m_pMarketDetails->ClearRecords();
+    m_pOfferDetails->ClearRecords();
+
+    ClearMarketMap();
+    ClearOfferMap();
+
     SetCurrentNymIDBasedOnIndex(index);
 
+    m_pOfferDetails->SetMarketID("");
+
 //    RefreshRecords();
-    emit LoadOrRetrieveMarkets();
+    emit needToLoadOrRetrieveMarkets();
 }
 
 // -----------------------------------------------
@@ -809,6 +833,9 @@ void DlgMarkets::LoadOrRetrieveMarkets()
 
 void DlgMarkets::onNeedToLoadOrRetrieveOffers(QString qstrMarketID)
 {
+    if (!m_pOfferDetails)
+        return;
+
     mapIDName & the_map = m_pOfferDetails->m_map;
     // -------------------------------------
     the_map.clear(); // Clears m_pOfferDetails' map of OfferID to Display name

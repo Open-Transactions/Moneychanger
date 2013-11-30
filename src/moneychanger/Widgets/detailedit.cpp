@@ -497,8 +497,23 @@ void MTDetailEdit::on_comboBox_currentIndexChanged(int index)
 void MTDetailEdit::ClearRecords()
 {
     ui->tableWidget->blockSignals(true);
-    ui->tableWidget->clearContents();
+    // -------------------------------------------------------
+    int nGridItemCount = ui->tableWidget->rowCount();
+    // -------------------------------------------------------
+    for (int ii = 0; ii < nGridItemCount; ii++)
+    {
+        QTableWidgetItem * item = ui->tableWidget->takeItem(0,1); // Row 0, Column 1
+        ui->tableWidget->removeRow(0); // Row 0.
+
+        if (NULL != item)
+        {
+            delete item;
+            item = NULL;
+        }
+    }
+    // -------------------------------------------------------
     ui->tableWidget->setRowCount(0);
+
     ui->tableWidget->blockSignals(false);
 
     m_map.clear();
@@ -866,7 +881,8 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
     // to notify the offers page.
     //
     if ((MTDetailEdit::DetailEditTypeMarket == m_Type) &&
-        (qstrOldID.isEmpty() || (!qstrOldID.isEmpty() && (qstrOldID != m_qstrCurrentID))))
+//            (qstrOldID.isEmpty() || (!qstrOldID.isEmpty() && (qstrOldID != m_qstrCurrentID))))
+        (qstrOldID.isEmpty() || (qstrOldID != m_qstrCurrentID)))
     {
         SetMarketID(m_qstrCurrentID);
         emit CurrentMarketChanged(m_qstrCurrentID);
