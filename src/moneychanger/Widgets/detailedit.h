@@ -51,9 +51,10 @@ public:
     void    SetOfferMap(QMap<QString, QVariant> & theMap);
     // --------------------------------
     void    SetMarketNymID(QString qstrNymID) { m_qstrMarketNymID = qstrNymID; }
-    QString GetMarketNymID() { return m_qstrMarketNymID; }
+    QString GetMarketNymID() const { return m_qstrMarketNymID; }
     // --------------------------------
     void    SetMarketID(QString qstrMarketID) { m_qstrMarketID = qstrMarketID; }
+    QString GetMarketID() const { return m_qstrMarketID; }
     // --------------------------------
     // Use for modeless or modal dialogs.
     void dialog(DetailEditType theType, bool bIsModal=false);
@@ -64,6 +65,8 @@ public:
     void FirstRun(MTDetailEdit::DetailEditType theType); // This only does something the first time you run it.
     // --------------------------------
     void RefreshRecords();
+    void ClearRecords();
+    void ClearContents();
     // --------------------------------
     void RefreshMarketCombo();
     void SetCurrentMarketIDBasedOnIndex(int index);
@@ -92,7 +95,7 @@ signals:
 
     void CurrentMarketChanged(QString qstrMarketID);
 
-    void RefreshOffers(QString qstrMarketID);
+    void NeedToLoadOrRetrieveOffers(QString qstrMarketID);
 
 public slots:
     void onBalancesChangedFromAbove();

@@ -1931,7 +1931,15 @@ void Moneychanger::mc_market_slot()
 void Moneychanger::mc_market_dialog()
 {
     if (!market_window)
+    {
         market_window = new DlgMarkets(this);
+
+        // When Moneychanger's signal "balancesChanged" is triggered,
+        // it will call accountswindow's "onBalancesChangedFromAbove" function.
+        //
+        connect(this,          SIGNAL(balancesChanged()),
+                market_window, SLOT(onBalancesChangedFromAbove()));
+    }
     // ------------------------------------
     market_window->dialog();
 }

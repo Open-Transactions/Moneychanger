@@ -23,7 +23,7 @@ DlgMarkets::DlgMarkets(QWidget *parent) :
     QDialog(parent),
     m_bFirstRun(true),
     m_bHaveRetrievedFirstTime(false),
-    m_bHaveRetrievedOffersFirstTime(false),
+    m_bHaveShownOffersFirstTime(false),
     ui(new Ui::DlgMarkets)
 {
     ui->setupUi(this);
@@ -103,8 +103,17 @@ void DlgMarkets::FirstRun()
 
             ui->tabMarkets->setLayout(pLayout);
             // -------------------------------------
+            connect(this, SIGNAL(needToLoadOrRetrieveMarkets()),
+                    this, SLOT(LoadOrRetrieveMarkets()));
+            // -------------------------------------
             connect(m_pMarketDetails, SIGNAL(CurrentMarketChanged(QString)),
                     this,             SLOT(onCurrentMarketChanged_Markets(QString)));
+            // -------------------------------------
+            // Connect market panel "current market changed" to *this "onCurrentMarketChanged
+            connect(m_pMarketDetails, SIGNAL(CurrentMarketChanged(QString)),
+                    this,             SLOT(onNeedToLoadOrRetrieveOffers(QString)));
+            // -------------------------------------
+
         }
         // ******************************************************
 //        void CurrentMarketChanged(QString qstrMarketID);
@@ -138,8 +147,11 @@ void DlgMarkets::FirstRun()
             connect(m_pOfferDetails, SIGNAL(CurrentMarketChanged(QString)),
                     this,            SLOT(onCurrentMarketChanged_Offers(QString)));
             // -------------------------------------
-            connect(m_pOfferDetails, SIGNAL(RefreshOffers(QString)),
-                    this,            SLOT(onNeedToRefreshOffers(QString)));
+            connect(m_pOfferDetails, SIGNAL(CurrentMarketChanged(QString)),
+                    this,            SLOT(onNeedToLoadOrRetrieveOffers(QString)));
+            // -------------------------------------
+            connect(m_pOfferDetails, SIGNAL(NeedToLoadOrRetrieveOffers(QString)),
+                    this,            SLOT(onNeedToLoadOrRetrieveOffers(QString)));
             // -------------------------------------
         }
         // ******************************************************
@@ -165,9 +177,15 @@ void DlgMarkets::FirstRun()
 //
 void DlgMarkets::onCurrentMarketChanged_Offers (QString qstrMarketID)
 {
+//    m_pOfferDetails->SetMarketID(qstrMarketID);
+
     m_pMarketDetails->onMarketIDChangedFromAbove(qstrMarketID);
 
-    onNeedToRefreshOffers(qstrMarketID);
+    // Not needed, since this is now triggered by the same signal
+    // that triggered this function (onCurrentMarketChanged_Offers)
+    // in the first place.
+    //
+//    onNeedToLoadOrRetrieveOffers(qstrMarketID);
 }
 
 
@@ -179,12 +197,24 @@ void DlgMarkets::onCurrentMarketChanged_Markets(QString qstrMarketID)
     m_pOfferDetails->onMarketIDChangedFromAbove(qstrMarketID);
 }
 
+void DlgMarkets::onBalancesChangedFromAbove()
+{
+    emit needToLoadOrRetrieveMarkets();
+}
+
 void DlgMarkets::on_pushButtonRefresh_clicked()
 {
     m_bHaveRetrievedFirstTime = false; // To force RefreshRecords to re-download.
-    m_bHaveRetrievedOffersFirstTime = false;
 
-    RefreshRecords();
+    m_pMarketDetails->ClearRecords();
+    m_pOfferDetails->ClearRecords();
+
+    ClearMarketMap();
+    ClearOfferMap();
+
+    m_pOfferDetails->SetMarketID("");
+
+    emit needToLoadOrRetrieveMarkets();
 
     // TODO here: turn refresh button black.
 }
@@ -242,18 +272,36 @@ void DlgMarkets::SetCurrentServerIDBasedOnIndex(int index)
 
 void DlgMarkets::on_comboBoxServer_currentIndexChanged(int index)
 {
+    m_pMarketDetails->ClearRecords();
+    m_pOfferDetails->ClearRecords();
+
+    ClearMarketMap();
+    ClearOfferMap();
+
     SetCurrentServerIDBasedOnIndex(index);
-    // -----------------------------
-    RefreshMarkets();
+
+    m_pOfferDetails->SetMarketID("");
+
+//    RefreshRecords();
+    emit needToLoadOrRetrieveMarkets();
 }
 
 
 
 void DlgMarkets::on_comboBoxNym_currentIndexChanged(int index)
 {
+    m_pMarketDetails->ClearRecords();
+    m_pOfferDetails->ClearRecords();
+
+    ClearMarketMap();
+    ClearOfferMap();
+
     SetCurrentNymIDBasedOnIndex(index);
-    // -----------------------------
-    RefreshMarkets();
+
+    m_pOfferDetails->SetMarketID("");
+
+//    RefreshRecords();
+    emit needToLoadOrRetrieveMarkets();
 }
 
 // -----------------------------------------------
@@ -400,8 +448,6 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, 
                 // -----------------------------------------------------------------------
                 QString qstrCompositeID = QString("%1,%2").arg(qstrServerID).arg(qstrTransactionID);
                 // -----------------------------------------------------------------------
-                m_mapOffers.insert(qstrCompositeID, VPtr<OTDB::OfferDataNym>::asQVariant(pOfferData->clone()));
-                // -----------------------------------------------------------------------
                 QString qstrBuySell = pOfferData->selling ? tr("Sell") : tr("Buy");
 
                 const std::string str_asset_name = OTAPI_Wrap::GetAssetType_Name(pOfferData->asset_type_id);
@@ -432,6 +478,17 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, 
                 // ---------------------------
                 the_map.insert(qstrCompositeID, qstrOfferName);
                 // ---------------------------
+                // NOTE that m_mapMarkets is a multimap, since there can be multiple markets with
+                // the exact same ID and scale, across multiple servers. The single entry from MTMarketDetails::m_map
+                // is then mapped to a group of entries in m_mapMarkets, or to a single entry by cross-referencing
+                // the server ID.
+                // Whereas in m_mapOffers, each Offer can be uniquely identified (regardless of server) by its unique key:
+                // serverID,transactionID. Therefore MTOfferDetails::m_map and m_mapOffers are both maps (neither is a
+                // multimap) and each offer is uniquely identified by that same key on both maps.
+                // (That's why you see an insert() here instead of insertMulti.)
+                //
+                m_mapOffers.insert(qstrCompositeID, VPtr<OTDB::OfferDataNym>::asQVariant(pOfferData->clone()));
+                // -----------------------------------------------------------------------
             } // for
         }
     }
@@ -629,41 +686,61 @@ OTDB::MarketList * DlgMarkets::LoadMarketListForServer(const std::string & serve
 // Detail level...
 // (For markets and offers.)
 //
-void DlgMarkets::RefreshMarkets()
+void DlgMarkets::LoadOrRetrieveMarkets()
 {
-    if ((ui->comboBoxNym   ->currentIndex() >=0) &&
+    if (!m_pMarketDetails || !m_pOfferDetails)
+        return;
+    // -----------------------------------------------
+//    // --------------------------------
+//    m_pMarketDetails->ClearRecords();
+//    m_pOfferDetails ->ClearRecords();
+    // -----------------------------------------------
+    if (ui &&
+        (ui->comboBoxNym   ->currentIndex() >=0) &&
         (ui->comboBoxServer->currentIndex() >=0))
     {
         m_pMarketDetails->setVisible(true);
         m_pOfferDetails ->setVisible(true);
 
         // ***********************************************
-        {
+        {   // MARKET WIDGET (vs. Offers Widget)
             // -------------------------------------
             mapIDName & the_map = m_pMarketDetails->m_map;
 
-            the_map.clear();
             // -------------------------------------
-            ClearMarketMap();
-            // -------------------------------------
-            if (!m_bHaveRetrievedFirstTime)
-            {
-                m_bHaveRetrievedFirstTime = true;
+//            if (!m_bHaveRetrievedFirstTime)
+//            {
+//                m_bHaveRetrievedFirstTime = true;
                 RetrieveMarketList(the_map); // Download the list of markets from the server(s).
-            }
-            else
-            {
-                // TODO here: turn the "refresh" button Red.
-                //
-                LoadMarketList(the_map); // Load from local storage. (Let the user hit "Refresh" if he wants to re-download.)
-            }
+//            }
+//            else
+//            {
+//                // TODO here: turn the "refresh" button Red.
+//                //
+//                LoadMarketList(the_map); // Load from local storage. (Let the user hit "Refresh" if he wants to re-download.)
+//            }
             // -------------------------------------
-            m_pMarketDetails->show_widget(MTDetailEdit::DetailEditTypeMarket);
+            // Moving this to BELOW the spot (just below) where we put the same list of markets
+            // into the combo box for the Offers panel.
+            //
+//            m_pMarketDetails->show_widget(MTDetailEdit::DetailEditTypeMarket);
         }
         // ***********************************************
         {
+            // Set up the combo box data for the list of Markets
+            // that appears on the OFFERS PAGE. (In a combo box.)
+
             m_pOfferDetails->m_mapMarkets.clear();
             // -------------------------------------
+            // Loop through the ID/Display_name map in m_pMarketDetails.
+            // For each ID/Display_Name, look up the pointer on DlgMarkets::m_mapMarkets (which
+            // is a multimap of MarketData pointers.) Notice that there may be multiple entries there,
+            // but we don't care -- any of them will do. We use it to look up the scale and asset type
+            // ID for that market, so that we can format a custom display name for the combo box (drop-down)
+            // that displays a list of markets on the Offers page. We thus set m_pOfferDetails->m_mapMarkets
+            // to contain the same ID/Display_Name pair as on the Markets page, except with a custom
+            // Display Name.
+            //
             for (mapIDName::iterator it_offer_markets = m_pMarketDetails->m_map.begin();
                  it_offer_markets != m_pMarketDetails->m_map.end(); ++it_offer_markets)
             {
@@ -695,6 +772,43 @@ void DlgMarkets::RefreshMarkets()
                 m_pOfferDetails->m_mapMarkets.insert(qstrID, qstrValue);
             }
 
+            // -------------------------------------------------------------
+
+            // We show the offer details first (empty) so that it exists and is
+            // properly initialized and ready to go, when it starts receiving signals
+            // from the market panel as it begins refreshing for the first time.
+
+            if (!m_bHaveShownOffersFirstTime)
+            {
+                m_bHaveShownOffersFirstTime = true;
+                m_pOfferDetails->show_widget(MTDetailEdit::DetailEditTypeOffer);
+            }
+
+
+            // HOWEVER, after the first time this happens, we don't need it to happen
+            // AGAIN, since now the object (m_pOfferDetails) is already created, and
+            // m_pMarketDetails will ALREADY send it messages to refresh its offers
+            // thereafter. Even the first time, since offers starts out blank, it is
+            // actually the signals from this second call that actually cause the offers
+            // panel to populate.
+            // The first time here in LoadOrRetrieveMarkets(), we need to make sure offers panel
+            // is created so markets panel can signal it properly. But the second time and
+            // every time after that, we don't have to force refresh the offers panel before
+            // the markets panel, since the markets panel will already trigger it to refresh
+            // (and at the right time.)
+            // Therefore you see above the check to make sure this only happens the first time.
+
+            m_pMarketDetails->show_widget(MTDetailEdit::DetailEditTypeMarket);
+
+            // -------------------------------------------------------------
+
+            // We do NOT retrieve the offers yet (and have NOT shown the widget yet!!)
+            // since that should be triggered by the showing of the market widget, which
+            // has to populate its list of markets, THEN SELECT ONE, and only THEN should
+            // we show the offers panel, since we need to know which market is selected
+            // before we can show its markets.
+            //
+            // UPDATE: We still need to show_widget for the offers. It will have an empty
             // -------------------------------------
 //            mapIDName & the_map = m_pOfferDetails->m_map;
 
@@ -714,32 +828,47 @@ void DlgMarkets::RefreshMarkets()
         }
         // ***********************************************
     }
-    else
-    {
-        m_pMarketDetails->setVisible(false);
-        m_pOfferDetails ->setVisible(false);
-    }
 }
 
 
-void DlgMarkets::onNeedToRefreshOffers(QString qstrMarketID)
+void DlgMarkets::onNeedToLoadOrRetrieveOffers(QString qstrMarketID)
 {
-    mapIDName & the_map = m_pOfferDetails->m_map;
+    if (!m_pOfferDetails)
+        return;
 
-    the_map.clear();
+    mapIDName & the_map = m_pOfferDetails->m_map;
     // -------------------------------------
-    ClearOfferMap();
+    the_map.clear(); // Clears m_pOfferDetails' map of OfferID to Display name
     // -------------------------------------
-    if (!m_bHaveRetrievedOffersFirstTime)
-    {
-        m_bHaveRetrievedOffersFirstTime = true;
+    ClearOfferMap(); // Clears *this' (DlgMarkets) map of OfferDataNym pointers.
+    // -------------------------------------
+
+    m_pOfferDetails->SetMarketID(qstrMarketID);
+
+    // Note: this would fail to retrieve for every market except the first one.
+    // Thus, we would have to store this boolean for EACH market, and not just
+    // for the "first time" for the entire dialog.
+    // Therefore for now, I am calling retrieve only, until a solution is worked
+    // out for making those bools available here.
+    //
+//    if (!m_bHaveRetrievedOffersFirstTime)
+//    {
+//        m_bHaveRetrievedOffersFirstTime = true;
+
+    if (!qstrMarketID.isEmpty())
         RetrieveOfferList(the_map, qstrMarketID); // Download the list of offers from the server(s).
-    }
-    else
-    {
-        LoadOfferList(the_map, qstrMarketID); // Load from local storage. (Let the user hit "Refresh" if he wants to re-download.)
-    }
+//    }
+//    else
+//    {
+//        LoadOfferList(the_map, qstrMarketID); // Load from local storage. (Let the user hit "Refresh" if he wants to re-download.)
+//    }
+
     // -------------------------------------
+    // Now that we've repopulated m_pOfferDetails->m_map and m_pOfferDetails->m_mapOffers,
+    // (which MTOfferDetails sees as m_pOwner->m_pmapOffers) we need to Refresh the tablewidget
+    // on m_pOfferDetails:
+    //
+    // -------------------------------------------
     m_pOfferDetails->show_widget(MTDetailEdit::DetailEditTypeOffer);
 }
 
@@ -754,6 +883,9 @@ void DlgMarkets::RefreshRecords()
     // ----------------------------
     m_mapServers.clear();
     m_mapNyms   .clear();
+    // ----------------------------
+    ClearOfferMap();
+    ClearMarketMap();
     // ----------------------------
     ui->comboBoxServer->clear();
     ui->comboBoxNym   ->clear();
@@ -848,9 +980,7 @@ void DlgMarkets::RefreshRecords()
     ui->comboBoxServer->blockSignals(false);
     ui->comboBoxNym   ->blockSignals(false);
     // -----------------------------------------------
-
-    RefreshMarkets();
-
+    emit needToLoadOrRetrieveMarkets();
 }
 
 

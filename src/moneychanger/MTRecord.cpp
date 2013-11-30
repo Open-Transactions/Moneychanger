@@ -205,6 +205,19 @@ bool MTRecord::FormatDescription(std::string & str_output)
                 str_instrument_type = "transfer";
             else if (0 == GetInstrumentType().compare("finalReceipt"))
                 str_instrument_type = "final receipt (closed)";
+            else if (0 == GetInstrumentType().compare("marketReceipt"))
+            {
+                const long lAmount = OTAPI_Wrap::It()->StringToLong(m_str_amount);
+
+                // I *think* successful trades have a negative amount -- we'll find out!
+                //
+                if (lAmount == 0)
+                    str_instrument_type = "failed trade";
+                else
+                {
+                    str_instrument_type = "market trade (receipt)";
+                }
+            }
             else if (0 == GetInstrumentType().compare("chequeReceipt"))
             {
                 const long lAmount = OTAPI_Wrap::It()->StringToLong(m_str_amount);
@@ -259,6 +272,16 @@ bool MTRecord::FormatDescription(std::string & str_output)
             }
             else if (0 == GetInstrumentType().compare("finalReceipt"))
                 str_instrument_type = "final receipt";
+            else if (0 == GetInstrumentType().compare("marketReceipt"))
+            {
+                const long lAmount = OTAPI_Wrap::It()->StringToLong(m_str_amount);
+
+                // I *think* marketReceipts have negative value. We'll just test for non-zero.
+                if (lAmount == 0)
+                    str_instrument_type = "failed trade";
+                else
+                    str_instrument_type = "market trade (receipt)";
+            }
             else if (0 == GetInstrumentType().compare("chequeReceipt"))
             {
                 const long lAmount = OTAPI_Wrap::It()->StringToLong(m_str_amount);

@@ -852,6 +852,14 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt, bool bExte
                      TransactionTableViewCellTypeOutgoing  : // incoming
                      TransactionTableViewCellTypeSent));     // received
     // --------------------------------------------------------------------------------------------
+    if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
+    {
+        const int64_t lAmount = OTAPI_Wrap::StringToAmount(recordmt.GetAssetID(), recordmt.GetAmount());
+
+        cellType = (lAmount > 0) ? TransactionTableViewCellTypeReceived : TransactionTableViewCellTypeSent;
+    }
+
+    // --------------------------------------------------------------------------------------------
     std::string str_desc;
     // ---------------------------------------
     if (recordmt.IsMail())
@@ -908,7 +916,7 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt, bool bExte
     {
         //Tx has no name
         tx_name.clear();
-        tx_name = "Transaction";
+        tx_name = "Receipt";
     }
 
     QLabel * header_of_row = new QLabel;
