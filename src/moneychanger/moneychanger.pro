@@ -18,9 +18,10 @@ HEADERS += moneychanger.h \
            ot_worker.h \
     MTRecord.hpp \
     MTRecordList.hpp \
+    Namecoin.hpp \
     Handlers/contacthandler.h \
     Handlers/FileHandler.h \
-    Handlers/DBHandler.h \
+    Handlers/DBHandler.h Handlers/DBHandler.tpp \
     Widgets/home.h \
     Widgets/homedetail.h \
     Widgets/createinsurancecompany.h \
@@ -73,11 +74,15 @@ HEADERS += moneychanger.h \
     Widgets/agreementdetails.h \
     Widgets/corporationdetails.h
 
+QMAKE_CXXFLAGS += -std=c++11
+QMAKE_LIBS += -lnmcrpc -ljsoncpp -lcurl
+
 SOURCES += main.cpp\
            moneychanger.cpp \
            ot_worker.cpp \
            MTRecordList.cpp \
            MTRecord.cpp \
+           Namecoin.cpp \
     Handlers/FileHandler.cpp \
     Handlers/DBHandler.cpp \
     Handlers/contacthandler.cpp \
