@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CreateInsuranceCompany</class>
+ <widget class="QWizard" name="CreateInsuranceCompany">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>816</width>
+    <height>579</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Wizard</string>
+  </property>
+  <widget class="QWizardPage" name="immutableSettings">
+   <widget class="QTextEdit" name="nameText">
+    <property name="geometry">
+     <rect>
+      <x>283</x>
+      <y>130</y>
+      <width>271</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="introImmutableLabel">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>551</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Your new insurance company is almost ready. We just need to ask a few questions to get started.</string>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="Line" name="immutableLine">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>40</y>
+      <width>551</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="immutableLabel">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>80</y>
+      <width>551</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>The settings on this page can not be altered once you've formed your company, so think carefully about your answers before proceeding.</string>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="nameLabel">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>130</y>
+      <width>331</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>You need to give your company a name so that customers can identify you:</string>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="trusteeSpin">
+    <property name="geometry">
+     <rect>
+      <x>490</x>
+      <y>190</y>
+      <width>62</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="decimals">
+     <number>0</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="trusteeLabel">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>190</y>
+      <width>201</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Trustees vote on arbitration decisions when your company needs to arbitrate a dispute. How trustees will form your company? We recommend 6-10:</string>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="multisigSpin">
+    <property name="geometry">
+     <rect>
+      <x>490</x>
+      <y>280</y>
+      <width>62</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="decimals">
+     <number>0</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="multisigLabel">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>280</y>
+      <width>201</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>In order to finalize an arbitration settlement, how many trustees must concur? We recommend more than majority, but less than all of them:</string>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="decisionTimeGroup">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>190</y>
+      <width>131</width>
+      <height>201</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Decision Time</string>
+    </property>
+    <property name="checkable">
+     <bool>false</bool>
+    </property>
+    <widget class="QRadioButton" name="time_neg1">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>93</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>0.2 hours</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="time_0">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>93</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>2 hours</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="time_1">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>93</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>20 hours</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="time_2">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>93</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>200 hours</string>
+     </property>
+    </widget>
+    <widget class="QRadioButton" name="time_3">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>150</y>
+       <width>93</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>2000 hours</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="decisionTimeLabel">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>190</y>
+      <width>141</width>
+      <height>201</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Estimate the maximum amount of time you are willing to spend while deliberating a decision. This helps your customers know what to expect in terms of how quickly you will reach a decision, and how much investigation you are willing to perform.</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QWizardPage" name="mutableSettings">
+   <widget class="QLabel" name="introMutableLabel">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>541</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>The answer to these questions will show up in directory listings, if you choose to advertise your company to the public. This helps customers find insurnace companies which offer the services they are looking for.</string>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="Line" name="mutableLine">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>50</y>
+      <width>531</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="mutableLabel">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>70</y>
+      <width>541</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>The settings here can be changed at any time after you form your company.</string>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="lawTypeGroup">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>120</y>
+      <width>131</width>
+      <height>181</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Law Standard</string>
+    </property>
+    <property name="checkable">
+     <bool>false</bool>
+    </property>
+    <widget class="QCheckBox" name="commonLawCheck">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>111</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Common law</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="civilLawCheck">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>111</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Civil law</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="canonLawCheck">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>111</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Canon law</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="halakhaCheck">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>111</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Halakha</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="shariaCheck">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>150</y>
+       <width>111</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Sharia</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="lawTypeLabel">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>120</y>
+      <width>131</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Use this box to indicate the legal theory your company will use to make arbitration decisions. If you're not sure what to choose, you probably want Common law.</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="commissionLabel">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>320</y>
+      <width>441</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>What comission will your company charge on a per-contract basis?</string>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="commissionSpin">
+    <property name="geometry">
+     <rect>
+      <x>470</x>
+      <y>320</y>
+      <width>62</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="suffix">
+     <string comment="%"/>
+    </property>
+    <property name="decimals">
+     <number>2</number>
+    </property>
+    <property name="maximum">
+     <double>100.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>0.100000000000000</double>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="allowedCurrenciesGroup">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>120</y>
+      <width>131</width>
+      <height>181</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Contract Currencies</string>
+    </property>
+    <property name="checkable">
+     <bool>false</bool>
+    </property>
+    <widget class="QCheckBox" name="bitcoinCheck">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>111</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Bitcoin</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="dollarCheck">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>111</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Dollar</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="euroCheck">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>111</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Euro</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="yuanCheck">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>120</y>
+       <width>111</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Yuan</string>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="goldCheck">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>150</y>
+       <width>111</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Gold</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="lawTypeLabel_2">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>120</y>
+      <width>131</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>When your customers want to insure a contract, what currencies are they allowed to use?</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox">
+    <property name="geometry">
+     <rect>
+      <x>320</x>
+      <y>360</y>
+      <width>221</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>List our company in the directory</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QWizardPage" name="inviteFriends"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
