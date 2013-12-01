@@ -18,53 +18,24 @@
 #define QJSONRPCSERVICEREPLY_H
 
 #include <QObject>
-#include <QNetworkReply>
 
 #include "qjsonrpc_export.h"
 #include "qjsonrpcmessage.h"
 
-class QJsonRpcServiceReplyPrivate;
 class QJSONRPC_EXPORT QJsonRpcServiceReply : public QObject
 {
     Q_OBJECT
 public:
     explicit QJsonRpcServiceReply(QObject *parent = 0);
-    virtual ~QJsonRpcServiceReply();
-
     QJsonRpcMessage response() const;
 
 Q_SIGNALS:
     void finished();
 
-protected:
-    QJsonRpcServiceReply(QJsonRpcServiceReplyPrivate *dd, QObject *parent = 0);
-
 private:
-    Q_DISABLE_COPY(QJsonRpcServiceReply)
-    Q_DECLARE_PRIVATE(QJsonRpcServiceReply)
-    QScopedPointer<QJsonRpcServiceReplyPrivate> d_ptr;
+    QJsonRpcMessage m_response;
     friend class QJsonRpcSocket;
-
 };
 
-class QJsonRpcHttpReplyPrivate;
-class QJSONRPC_EXPORT QJsonRpcHttpReply : public QJsonRpcServiceReply
-{
-    Q_OBJECT
-public:
-    explicit QJsonRpcHttpReply(const QJsonRpcMessage &request, QNetworkReply *reply,
-                               QObject *parent = 0);
-    virtual ~QJsonRpcHttpReply();
-
-private Q_SLOTS:
-    void networkReplyFinished();
-    void networkReplyerror(QNetworkReply::NetworkError code);
-
-private:
-    Q_DISABLE_COPY(QJsonRpcHttpReply)
-    Q_DECLARE_PRIVATE(QJsonRpcHttpReply)
-    QScopedPointer<QJsonRpcHttpReplyPrivate> d_ptr;
-
-};
 
 #endif // QJSONRPCSERVICEREPLY_H

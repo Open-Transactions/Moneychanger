@@ -22,8 +22,7 @@ lessThan(QT_VERSION_MAJOR, 5) {
 PRIVATE_HEADERS += \
     qjsonrpcservice_p.h \
     qjsonrpcsocket_p.h \
-    qjsonrpcabstractserver_p.h \
-    qjsonrpcservicereply_p.h
+    qjsonrpcabstractserver_p.h
 
 INSTALL_HEADERS += \
     qjsonrpcservice.h \
@@ -33,8 +32,7 @@ INSTALL_HEADERS += \
     qjsonrpctcpserver.h \
     qjsonrpcmessage.h \
     qjsonrpc_export.h \
-    qjsonrpcservicereply.h \
-    qjsonrpchttpclient.h
+    qjsonrpcservicereply.h
 
 HEADERS += \
     $${INSTALL_HEADERS} \
@@ -47,8 +45,7 @@ SOURCES += \
     qjsonrpclocalserver.cpp \
     qjsonrpctcpserver.cpp \
     qjsonrpcmessage.cpp \
-    qjsonrpcservicereply.cpp \
-    qjsonrpchttpclient.cpp
+    qjsonrpcservicereply.cpp
 
 # install
 headers.files = $${INSTALL_HEADERS}
