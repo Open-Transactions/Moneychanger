@@ -1,0 +1,7 @@
+*.moc
+json/tst_qtjson
+qjsonrpchttpclient/tst_qjsonrpchttpclient
+qjsonrpcmessage/tst_qjsonrpcmessage
+qjsonrpcserver/tst_qjsonrpcserver
+qjsonrpcservice/tst_qjsonrpcservice
+qjsonrpcsocket/tst_qjsonrpcsocket
