@@ -22,7 +22,6 @@
 #define MONEYCHANGER_NAMECOIN_HPP
 
 #include <QString>
-#include <QWidget>
 
 #include <list>
 #include <stdexcept>
@@ -157,9 +156,8 @@ public:
   /**
    * Slot called regularly by a timer that handles all name updates
    * where appropriate.
-   * @param w The widget to use as parent for the password dialog.
    */
-  void timerUpdate (QWidget* w);
+  void timerUpdate ();
 
 };
 
@@ -189,7 +187,7 @@ public:
    * Construct it.  This doesn't yet show the dialog or performs unlocking,
    * so that no problems with memory freeing occur in case of exceptions.
    * @param n The high-level interface to use.
-   * @see unlock(const std::string&) to perform the unlock itself.
+   * @see unlock() to perform the unlock itself.
    */
   explicit inline NMC_WalletUnlocker (nmcrpc::NamecoinInterface& n)
     : nc(n), unlocker(n)
@@ -201,10 +199,9 @@ public:
    * Try to unlock the wallet.  If a passphrase is needed, a dialog is shown
    * until the correct one is entered or the user cancels the action.  In the
    * latter case, UnlockFailure is thrown.
-   * @param w The widget to use as parent for the password dialog.
    * @throws UnlockFailure if the user cancels the unlock.
    */
-  void unlock (QWidget* w);
+  void unlock ();
 
 };
 

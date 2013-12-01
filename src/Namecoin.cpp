@@ -124,7 +124,16 @@ NMC_NameManager::startRegistration (const QString& nym, const QString& cred)
     {
       const nmcrpc::NamecoinInterface::Name nm = getNameForNym (nym, cred);
 
-      /* TODO: Unlock the value.  */
+      NMC_WalletUnlocker unlocker (nc);
+      try
+        {
+          unlocker.unlock ();
+        }
+      catch (const NMC_WalletUnlocker::UnlockFailure& exc)
+        {
+          qDebug () << "Unlock failed.";
+          return;
+        }
 
       nmcrpc::NameRegistration reg(rpc, nc);
       reg.registerName (nm);
@@ -186,7 +195,16 @@ NMC_NameManager::updateName (const QString& nym, const QString& cred)
   const nmcrpc::NamecoinInterface::Name nm = getNameForNym (nym, cred);
   nmcrpc::NameUpdate upd(rpc, nc, nm);
 
-  /* TODO: Unlock the wallet.  */
+  /* The wallet needs to be already unlocked from the caller.  Otherwise,
+     the timer update may ask for the password multiple times during a single
+     update timer event, for instance.  */
+  if (nc.needWalletPassphrase ())
+    {
+      qDebug () << "Wallet should be unlocked already for updateName(),"
+                << " but is not.";
+      return false;
+    }
+
   upd.setValue (addr.signMessage (cred.toStdString ()));
 
   try
@@ -215,14 +233,35 @@ NMC_NameManager::updateName (const QString& nym, const QString& cred)
 /**
  * Slot called regularly by a timer that handles all name updates
  * where appropriate.
- * @param w The widget to use as parent for the password dialog.
  */
 void
-NMC_NameManager::timerUpdate (QWidget* w)
+NMC_NameManager::timerUpdate ()
 {
   qDebug () << "Namecoin update timer called.";
 
-  // TODO: Unlock wallet if necessary.
+  /* In a first loop through all pending name registrations, see if we need
+     to unlock the wallet.  */
+  bool needUnlock = false;
+  for (const auto& entry : pendingRegs)
+    if (entry.canActivate () || entry.isFinished ())
+      needUnlock = true;
+
+  NMC_WalletUnlocker unlocker (nc);
+  if (needUnlock)
+    {
+      qDebug () << "Need to unlock the wallet, trying to do it.";
+      try
+        {
+          unlocker.unlock ();
+        }
+      catch (const NMC_WalletUnlocker::UnlockFailure& exc)
+        {
+          qDebug () << "Unlock failed, cancelling the timer update.";
+          return;
+        }
+    }
+  else
+    qDebug () << "No operations necessary that need an unlocked wallet.";
 
   auto i = pendingRegs.begin ();
   while (i != pendingRegs.end ())
@@ -306,11 +345,10 @@ NMC_NameManager::timerUpdate (QWidget* w)
  * Try to unlock the wallet.  If a passphrase is needed, a dialog is shown
  * until the correct one is entered or the user cancels the action.  In the
  * latter case, UnlockFailure is thrown.
- * @param w The widget to use as parent for the password dialog.
  * @throws UnlockFailure if the user cancels the unlock.
  */
 void
-NMC_WalletUnlocker::unlock (QWidget* w)
+NMC_WalletUnlocker::unlock ()
 {
   std::string pwd;
 
@@ -321,7 +359,7 @@ NMC_WalletUnlocker::unlock (QWidget* w)
     {
       OTPassword otPwd;
 
-      MTDlgPassword dlg (w, otPwd);
+      MTDlgPassword dlg (nullptr, otPwd);
       dlg.setDisplay ("Your Namecoin wallet is locked.  For the operations to"
                       " proceed, please enter the passphrase to temporarily"
                       " unlock the wallet.");
@@ -349,7 +387,7 @@ NMC_WalletUnlocker::unlock (QWidget* w)
   catch (const nmcrpc::NamecoinInterface::UnlockFailure& exc)
     {
       qDebug () << "Wrong passphrase, retrying.";
-      unlock (w);
+      unlock ();
     }
   catch (const nmcrpc::JsonRpc::RpcError& exc)
     {

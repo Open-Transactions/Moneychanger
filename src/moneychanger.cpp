@@ -2007,7 +2007,7 @@ void Moneychanger::mc_settings_slot()
  */
 void Moneychanger::nmc_timer_event()
 {
-  nmc_names->timerUpdate (this);
+  nmc_names->timerUpdate ();
 }
 
 
