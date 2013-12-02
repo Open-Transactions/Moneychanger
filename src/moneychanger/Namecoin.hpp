@@ -114,6 +114,9 @@ private:
   /** List of pending name registrations.  */
   regList pendingRegs;
 
+  /** Singleton instance created (if there is one).  */
+  static NMC_NameManager* instance;
+
   /**
    * Get the Namecoin name corresponding to a Nym / credentials pair.
    * @param nym Nym id.
@@ -131,6 +134,11 @@ public:
    * @param nmc NMC_Interface instance to use.
    */
   explicit NMC_NameManager (NMC_Interface& nmc);
+
+  /**
+   * Destruct, clearing the instance static variable.
+   */
+  ~NMC_NameManager ();
 
   /**
    * Start the name registration process of a new credential hash in the
@@ -158,6 +166,13 @@ public:
    * where appropriate.
    */
   void timerUpdate ();
+
+  /**
+   * Get the singleton instance.
+   * @return The singleton instance.
+   * @throws std::runtime_error if there is no instance.
+   */
+  static NMC_NameManager& getInstance ();
 
 };
 

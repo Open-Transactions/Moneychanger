@@ -70,6 +70,9 @@ NMC_Interface::~NMC_Interface ()
 /* ************************************************************************** */
 /* NMC_NameManager.  */
 
+/** Singleton instance created (if there is one).  */
+NMC_NameManager* NMC_NameManager::instance = nullptr;
+
 /**
  * Construct with NMC_Interface to take the connections from.  It also
  * queries the database to fill in the pending registrations.
@@ -79,6 +82,11 @@ NMC_NameManager::NMC_NameManager (NMC_Interface& nmc)
   : rpc(nmc.getJsonRpc ()), nc(nmc.getNamecoin ()),
     pendingRegs()
 {
+  if (instance != nullptr)
+    qDebug () << "Error: Already have a NMC_NameManager instance!";
+  else
+    instance = this;
+
   const QString query = "SELECT `regData` FROM `nmc_names`"
                         " WHERE (`regData` IS NOT NULL) AND (NOT `active`)";
 
@@ -94,6 +102,17 @@ NMC_NameManager::NMC_NameManager (NMC_Interface& nmc)
     };
   qDebug () << "Loading pending name registrations:";
   DBHandler::getInstance ()->queryMultiple (query, addPendingReg);
+}
+
+/**
+ * Destruct, clearing the instance static variable.
+ */
+NMC_NameManager::~NMC_NameManager ()
+{
+  if (!instance)
+    qDebug () << "Error: Expected instance variable to be"
+                 " set for NMC_NameManager";
+  instance = nullptr;
 }
 
 /**
@@ -336,6 +355,20 @@ NMC_NameManager::timerUpdate ()
 
       ++i;
     }
+}
+
+/**
+ * Get the singleton instance.
+ * @return The singleton instance.
+ * @throws std::runtime_error if there is no instance.
+ */
+NMC_NameManager&
+NMC_NameManager::getInstance ()
+{
+  if (!instance)
+    throw std::runtime_error ("No NMC_NameManager instance exists.");
+
+  return *instance;
 }
 
 /* ************************************************************************** */
