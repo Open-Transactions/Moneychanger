@@ -1,7 +1,10 @@
 include(../qjsonrpc.pri)
 
 INCLUDEPATH += .
-TEMPLATE = lib
+
+win32:TEMPLATE    = vslib
+!win32:TEMPLATE    = lib
+
 TARGET = qjsonrpc
 QT += core network
 QT -= gui

@@ -4,6 +4,9 @@
 #
 #-------------------------------------------------
 
+win32:TEMPLATE    = vsapp
+!win32:TEMPLATE    = app
+
 TEMPLATE    = app
 
 TARGET      = moneychanger-qt

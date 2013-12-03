@@ -33,6 +33,7 @@ Release*
 mc_db
 ui_*
 *plugin_import.cpp
+.DS_Store
 
 #text editor backup files
 *~
