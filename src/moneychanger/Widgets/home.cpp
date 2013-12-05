@@ -6,6 +6,7 @@
 #include <QKeyEvent>
 #include <QDebug>
 
+#include "stdafx.h"
 
 #include "moneychanger.h"
 

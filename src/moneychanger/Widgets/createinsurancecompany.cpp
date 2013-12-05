@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include <QKeyEvent>
 
 #include "createinsurancecompany.h"

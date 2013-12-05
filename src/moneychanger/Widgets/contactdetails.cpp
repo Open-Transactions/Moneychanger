@@ -1,4 +1,6 @@
 
+#include "stdafx.h"
+
 #include <QDebug>
 #include <QMessageBox>
 #include <QPlainTextEdit>

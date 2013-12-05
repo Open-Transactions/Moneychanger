@@ -10,6 +10,8 @@
 #include <QMutex>
 #include <QMutexLocker>
 
+#include "stdafx.h"
+
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
 #include <opentxs/OTLog.h>

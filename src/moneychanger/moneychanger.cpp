@@ -13,6 +13,8 @@
  *
  */
 
+#include "stdafx.h"
+
 #include <QScopedPointer>
 #include <QFile>
 
