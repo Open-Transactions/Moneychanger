@@ -23,7 +23,7 @@
 
 #include "overridecursor.h"
 
-#include "DBHandler.h"
+#include "handlers/DBHandler.h"
 #include "cashpurse.h"
 
 
