@@ -16,9 +16,9 @@
 
 #include "moneychanger.h"
 
-#include "detailedit.h"
+#include "widgets/detailedit.h"
 
-#include "editdetails.h"
+#include "widgets/editdetails.h"
 
 
 

@@ -7,7 +7,7 @@
 #include <QGridLayout>
 #include <QString>
 
-#include "editdetails.h"
+#include "widgets/editdetails.h"
 
 namespace Ui {
 class MTAccountDetails;

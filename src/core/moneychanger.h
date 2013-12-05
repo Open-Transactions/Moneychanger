@@ -41,15 +41,15 @@
 #include "MTRecordList.hpp"
 #include "MTRecord.hpp"
 
-#include "Widgets/home.h"
+#include "widgets/home.h"
 
-#include "Widgets/createinsurancecompany.h"
+#include "widgets/createinsurancecompany.h"
 
-#include "UI/dlgmarkets.h"
-#include "UI/dlgmenu.h"
+#include "ui/dlgmarkets.h"
+#include "ui/dlgmenu.h"
 
-#include "Widgets/detailedit.h"
-#include "Widgets/settings.h"
+#include "widgets/detailedit.h"
+#include "widgets/settings.h"
 
 class MTHome;
 class MTDetailEdit;

@@ -3,8 +3,8 @@
 
 #include "passwordcallback.h"
 
-#include "dlgpassword.h"
-#include "dlgpasswordconfirm.h"
+#include "ui/dlgpassword.h"
+#include "ui/dlgpasswordconfirm.h"
 
 #include "moneychanger.h"
 

@@ -52,6 +52,7 @@ include($${SOLUTION_DIR}../src/gui/gui.pri)
 #-------------------------------------------------
 # Include
 
+INCLUDEPATH += $${SOLUTION_DIR}../src
 INCLUDEPATH += $${SOLUTION_DIR}../include
 INCLUDEPATH += $${SOLUTION_DIR}../include/opentxs
 

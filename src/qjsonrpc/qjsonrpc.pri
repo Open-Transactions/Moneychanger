@@ -21,3 +21,4 @@ SOURCES += \
     $${PWD}/qjsonrpcsocket.cpp \
     $${PWD}/qjsonrpctcpserver.cpp
 
+INCLUDEPATH += $${PWD}

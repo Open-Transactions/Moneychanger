@@ -3,8 +3,7 @@
 
 #include <opentxs/OT_ME.h>
 
-#include "qjsonrpchttpclient.h"
-#include "qjsonrpcmessage.h"
+#include <qjsonrpc/qjsonrpcmessage.h>
 
 class HTTPInterface
 {

@@ -23,16 +23,16 @@
 #include "handlers/contacthandler.h"
 #include "handlers/DBHandler.h"
 
-#include "Widgets/detailedit.h"
+#include "widgets/detailedit.h"
 
-#include "Widgets/senddlg.h"
-#include "Widgets/requestdlg.h"
+#include "widgets/senddlg.h"
+#include "widgets/requestdlg.h"
 
-#include "Widgets/dlgchooser.h"
+#include "widgets/dlgchooser.h"
 
-#include "UI/dlgimport.h"
+#include "ui/dlgimport.h"
 
-#include "overridecursor.h"
+#include "widgets/overridecursor.h"
 
 
 #include "opentxs/OTAPI.h"

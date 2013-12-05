@@ -11,7 +11,7 @@
 #include "dlgexportcash.h"
 #include "ui_dlgexportcash.h"
 
-#include "dlgchooser.h"
+#include "widgets/dlgchooser.h"
 
 #include "handlers/contacthandler.h"
 //#include "handlers/DBHandler.h"
