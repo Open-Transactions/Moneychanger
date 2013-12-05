@@ -32,6 +32,7 @@ Debug*
 Release*
 mc_db
 ui_*
+*plugin_import.cpp
 
 #text editor backup files
 *~
