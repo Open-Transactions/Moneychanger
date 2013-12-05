@@ -224,7 +224,10 @@ NMC_NameManager::updateName (const QString& nym, const QString& cred)
       return false;
     }
 
-  upd.setValue (addr.signMessage (cred.toStdString ()));
+  const std::string sig = addr.signMessage (cred.toStdString ());
+  nmcrpc::JsonRpc::JsonData data(Json::objectValue);
+  data["nmcsig"] = sig;
+  upd.setValue (nmcrpc::JsonRpc::encodeJson (data));
 
   try
     {
