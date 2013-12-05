@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "pageacct_nym.h"
 #include "ui_pageacct_nym.h"
 

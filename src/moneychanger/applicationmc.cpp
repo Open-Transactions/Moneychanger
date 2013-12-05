@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "applicationmc.h"
 
 #include "moneychanger.h"
