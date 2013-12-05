@@ -20,7 +20,7 @@ mac:{
         contains(OS_VERSION, 13.0.0):QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
 
        contains(OS_VERSION, 13.0.0): MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
-        if( !exists( $$MAC_SDK) ) {
+       contains(OS_VERSION, 13.0.0):if( !exists( $$MAC_SDK) ) {
           error("The selected Mac OSX SDK does not exist at $$MAC_SDK!")
         }
         contains(OS_VERSION, 13.0.0):QMAKE_MAC_SDK=macosx10.8
