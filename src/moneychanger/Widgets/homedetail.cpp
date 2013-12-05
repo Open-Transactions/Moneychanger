@@ -1,4 +1,6 @@
 
+#include "stdafx.h"
+
 #include <QObject>
 #include <QMessageBox>
 #include <QVBoxLayout>

@@ -6,6 +6,8 @@
 //  Copyright (c) 2013 Monetas. All rights reserved.
 //
 
+#include "stdafx.h"
+
 #include <OTStorage.h>
 
 #include <OTString.h>

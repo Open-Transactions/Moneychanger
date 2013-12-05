@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "ot_worker.h"
 
