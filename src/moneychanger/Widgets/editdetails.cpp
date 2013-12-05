@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include <QDebug>
 #include <QLabel>
 #include <QEvent>

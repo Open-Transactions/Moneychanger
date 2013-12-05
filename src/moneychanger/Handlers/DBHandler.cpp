@@ -1,3 +1,7 @@
+#include "stdafx.h"
+
+#include <OTPaths.h>
+
 #include "DBHandler.h"
 #include <QDebug>
 
@@ -30,8 +34,8 @@ DBHandler::DBHandler()
     db = QSqlDatabase::addDatabase(dbDriverStr, dbConnNameStr);
     
     bool flag = isDbExist();
-    qDebug() << QCoreApplication::applicationDirPath() + dbFileNameStr;
-    db.setDatabaseName( QCoreApplication::applicationDirPath() + dbFileNameStr);
+    qDebug() << QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr;
+    db.setDatabaseName( QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr);
     if(!dbConnect())
         qDebug() << "Error Opening Database";
     
@@ -75,13 +79,13 @@ bool DBHandler::dbDisconnect()
 
 bool DBHandler::isDbExist()
 {
-    return dbFile.isFileExist(QCoreApplication::applicationDirPath() + dbFileNameStr);
+    return dbFile.isFileExist(QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 }
 
 
 bool DBHandler::dbRemove()
 {
-    return dbFile.removeFile(QCoreApplication::applicationDirPath() + dbFileNameStr);
+    return dbFile.removeFile(QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 }
 
 /*
@@ -129,7 +133,9 @@ bool DBHandler::dbCreateInstance()
             qDebug() << "dbCreateInstance Error: " << dbConnectErrorStr + " " + dbCreationStr;
             FileHandler rm;
             db.close();
-            rm.removeFile(QCoreApplication::applicationDirPath() + dbFileNameStr);
+
+            rm.removeFile(QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr);
+//          rm.removeFile(QCoreApplication::applicationDirPath() + dbFileNameStr);
         }
         else
             qDebug() << "Database " + dbFileNameStr + " created.";

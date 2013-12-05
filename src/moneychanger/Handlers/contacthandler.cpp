@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
