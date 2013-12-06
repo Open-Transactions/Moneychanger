@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
+
 #include "pageacct_nym.h"
 #include "ui_pageacct_nym.h"
 

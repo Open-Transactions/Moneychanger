@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
+
 #include "filedownloader.h"
 
 FileDownloader::FileDownloader(QUrl imageUrl, QObject *parent) :

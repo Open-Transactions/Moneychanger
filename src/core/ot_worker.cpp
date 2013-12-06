@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
+
 #include "ot_worker.h"
 
 #include "handlers/contacthandler.h"

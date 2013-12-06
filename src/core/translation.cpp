@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
+
 #include "translation.h"
 #include "handlers/DBHandler.h"
 

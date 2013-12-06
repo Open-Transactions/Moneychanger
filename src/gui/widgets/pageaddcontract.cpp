@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
+
 #include "pageaddcontract.h"
 #include "ui_pageaddcontract.h"
 

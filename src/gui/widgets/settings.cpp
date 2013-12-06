@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
+
 #include "settings.h"
 #include "ui_settings.h"
 #include "handlers/DBHandler.h"

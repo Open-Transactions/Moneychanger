@@ -1,4 +1,8 @@
 
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
+
 #include <QApplication>
 #include <QEvent>
 

@@ -1,3 +1,6 @@
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
 
 #include <QDebug>
 #include <QFile>

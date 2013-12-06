@@ -1,5 +1,7 @@
 // stable.h
 // Moneychanger Pre-Compiled Headers File
+#ifndef STABLE_H
+#define STABLE_H
 
 #pragma once
 
@@ -52,3 +54,5 @@
 #undef NO_OT_PCH
 #endif
 #endif
+
+#endif // STABLE_H

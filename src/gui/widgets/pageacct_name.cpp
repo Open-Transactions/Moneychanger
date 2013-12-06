@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
+
 #include "pageacct_name.h"
 #include "ui_pageacct_name.h"
 

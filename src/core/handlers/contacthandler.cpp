@@ -1,4 +1,6 @@
-#include "stdafx.h"
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
 
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>

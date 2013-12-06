@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
+
 #include "pagenym_authority.h"
 #include "ui_pagenym_authority.h"
 

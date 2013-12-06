@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
+
 #include "identifierwidget.h"
 #include "ui_identifierwidget.h"
 
