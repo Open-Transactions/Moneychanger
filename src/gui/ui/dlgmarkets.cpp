@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QVBoxLayout>

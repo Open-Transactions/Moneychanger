@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include <QDebug>
 #include <QFile>
 #include <QFileDialog>

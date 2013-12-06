@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include <QApplication>
 #include <QtGui>
 #include <QLibrary>

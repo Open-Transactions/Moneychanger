@@ -1,4 +1,5 @@
 
+PRECOMPILED_HEADER = $${PWD}/stable.h
 
 HEADERS += \
     $${PWD}/applicationmc.h \

@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "pageacct_server.h"
 #include "ui_pageacct_server.h"
 

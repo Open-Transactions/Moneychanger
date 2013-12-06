@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include <QDebug>
 #include <QCheckBox>
 #include <QDateTime>

@@ -7,8 +7,7 @@
 #-------------------------------------------------
 # Global
 
-!win:TEMPLATE    = lib
-win:TEMPLATE    = vslib
+TEMPLATE    = lib
 
 TARGET      = qjsonrpc
 #VERSION     =
@@ -16,23 +15,9 @@ TARGET      = qjsonrpc
 QT         += network
 
 #-------------------------------------------------
-# Objects
+# Common Settings
 
-MOC_DIR        = $${SOLUTION_DIR}../obj/$${TARGET}
-OBJECTS_DIR    = $${SOLUTION_DIR}../obj/$${TARGET}
-
-
-#-------------------------------------------------
-# Output
-
-RCC_DIR        = $${SOLUTION_DIR}../out/$${TARGET}/resources
-UI_DIR         = $${SOLUTION_DIR}../out/$${TARGET}/ui/
-
-#-------------------------------------------------
-# Target
-
-DESTDIR = $${SOLUTION_DIR}../lib/$${TARGET}
-
+include($${SOLUTION_DIR}common.pri)
 
 #-------------------------------------------------
 # Source
@@ -53,3 +38,7 @@ INCLUDEPATH += $${SOLUTION_DIR}../include/qjsonrpc
 #-------------------------------------------------
 # Options
 
+win32:{
+    DEFINES     += "_UNICODE=1"
+    CharacterSet = 1
+}

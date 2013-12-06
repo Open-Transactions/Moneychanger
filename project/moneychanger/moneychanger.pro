@@ -10,133 +10,93 @@
 #-------------------------------------------------
 # Global
 
-!win:TEMPLATE    = app
-win:TEMPLATE    = vsapp
+TEMPLATE    = app
 
 TARGET      = moneychanger-qt
 #VERSION     =
 
-QT         += core gui sql network
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-
+QT         += core gui sql network widgets
 DEFINES    += "OT_ZMQ_MODE=1"
 
 #-------------------------------------------------
-# Objects
+# Common Settings
 
-MOC_DIR        = $${SOLUTION_DIR}../obj/$${TARGET}
-OBJECTS_DIR    = $${SOLUTION_DIR}../obj/$${TARGET}
-
-
-#-------------------------------------------------
-# Output
-
-RCC_DIR        = $${SOLUTION_DIR}../out/$${TARGET}/resources
-UI_DIR         = $${SOLUTION_DIR}../out/$${TARGET}/ui/
-
-
-#-------------------------------------------------
-# Target
-
-DESTDIR = $${SOLUTION_DIR}../lib/$${TARGET}
-
+include($${SOLUTION_DIR}common.pri)
 
 #-------------------------------------------------
 # Source
 
-
 include($${SOLUTION_DIR}../src/core/core.pri)
 include($${SOLUTION_DIR}../src/gui/gui.pri)
 
-
 #-------------------------------------------------
 # Include
-
 
 INCLUDEPATH += $${SOLUTION_DIR}../src
 INCLUDEPATH += $${SOLUTION_DIR}../include
 INCLUDEPATH += $${SOLUTION_DIR}../include/opentxs
 
-
 #-------------------------------------------------
 # Options
 
-win: {
+## Windows
+win32:{
+
+INCLUDEPATH += C:\OpenSSL-Win32\include
+DEFINES     += "_UNICODE" "NOMINMAX"
+CharacterSet = 1
+
+QMAKE_CXXFLAGS += /bigobj /Zm480 /wd4512 /wd4100
+
 
 }
 
-
-
-
-# this is still a mess! but getting better.
-
+## Mac OS X
 mac:{
-OS_VERSION = $$system(uname -r)
+    OS_VERSION = $$system(uname -r)
 
-#Common
-LIBS += -ldl -mmacosx-version-min=10.7 -framework CoreFoundation
-QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
-QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -static
+    # this is still a mess! but getting better.
 
-#Mavericks is version 13
-contains(OS_VERSION, 13.0.0):{
-    LIBS += -stdlib=libc++
 
-    QT_CONFIG += -spec macx-clang-libc++
-    CONFIG += c++11
-    QMAKE_CXXFLAGS += -stdlib=libc++ -std=c++11
+    #Common
+    LIBS += -ldl -mmacosx-version-min=10.7 -framework CoreFoundation
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
+    QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -static
 
-    MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk
-    QMAKE_MAC_SDK=macosx10.9
+    #Mavericks is version 13
+    contains(OS_VERSION, 13.0.0):{
+        LIBS += -stdlib=libc++
+
+       QT_CONFIG += -spec macx-clang-libc++
+       CONFIG += c++11
+       QMAKE_CXXFLAGS += -stdlib=libc++ -std=c++11
+
+       MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk
+       QMAKE_MAC_SDK=macosx10.9
+    }
+
+    #Not Mavericks
+    !contains(OS_VERSION, 13.0.0): {
+       LIBS += -lboost_system -lboost_thread
+
+       MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
+       QMAKE_MAC_SDK=macosx10.8
+    }
+
+    if( !exists( $$MAC_SDK) ) {error("The selected Mac OSX SDK does not exist at $$MAC_SDK!")}
+
+    INCLUDEPATH += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
+    DEPENDPATH  += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
 }
 
-#Not Mavericks
-!contains(OS_VERSION, 13.0.0): {
-    LIBS += -lboost_system -lboost_thread
 
-    MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
-    QMAKE_MAC_SDK=macosx10.8
-}
-
-if( !exists( $$MAC_SDK) ) {error("The selected Mac OSX SDK does not exist at $$MAC_SDK!")}
-
-INCLUDEPATH += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
-DEPENDPATH  += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
-}
-
+# Linux
 linux:{
         LIBS += -ldl
 }
 
-
-#QMAKE_CXXFLAGS_WARN_ON  = ""
-#QMAKE_CXXFLAGS_WARN_OFF = ""
-
 QMAKE_CFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
-
-#QMAKE_CXXFLAGS  -= -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
-#QMAKE_CXXFLAGS  += -Wno-unused-parameter -Wno-unused-function -Wno-unneeded-internal-declaration
-
-
-# Set libraries and includes at end, to use platform-defined defaults if not overridden
-
-# Dependency library locations can be customized with:
-#    OPENTXS_INCLUDE_PATH, OPENTXS_LIB_PATH, CHAI_INCLUDE_PATH,
-#    OPENSSL_INCLUDE_PATH and OPENSSL_LIB_PATH respectively
-
-##OPENTXS_INCLUDE_PATH	+=
-##OPENTXS_LIB_PATH	+=
-##CHAI_INCLUDE_PATH	+=
-##OPENSSL_INCLUDE_PATH	+=
-##OPENSSL_LIB_PATH	+=
-
-##INCLUDEPATH	+= $$OPENTXS_INCLUDE_PATH $$CHAI_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH
-##DEPENDPATH	+= $$OPENTXS_INCLUDE_PATH $$CHAI_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH
-##LIBS		+= $$join(OPENTXS_LIB_PATH,,-L,) $$join(OPENSSL_LIB_PATH,,-L,)
-##LIBS 		+= -lotapi -lssl -lcrypto
-
-## Automatic path from pkg-config
 
 mac:  QT_CONFIG -= no-pkg-config
 unix: CONFIG += link_pkgconfig

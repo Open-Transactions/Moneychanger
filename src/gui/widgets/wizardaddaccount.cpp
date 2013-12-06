@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "wizardaddaccount.h"
 #include "ui_wizardaddaccount.h"
 

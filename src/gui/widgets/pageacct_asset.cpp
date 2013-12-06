@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "pageacct_asset.h"
 #include "ui_pageacct_asset.h"
 
