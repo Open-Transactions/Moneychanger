@@ -10,7 +10,8 @@
 #-------------------------------------------------
 # Global
 
-TEMPLATE    = app
+!win:TEMPLATE    = app
+win:TEMPLATE    = vsapp
 
 TARGET      = moneychanger-qt
 #VERSION     =
@@ -31,8 +32,7 @@ OBJECTS_DIR    = $${SOLUTION_DIR}../obj/$${TARGET}
 # Output
 
 RCC_DIR        = $${SOLUTION_DIR}../out/$${TARGET}/resources
-UI_HEADERS_DIR = $${SOLUTION_DIR}../out/$${TARGET}/ui/include
-UI_SOURCES_DIR = $${SOLUTION_DIR}../out/$${TARGET}/ui/src
+UI_DIR         = $${SOLUTION_DIR}../out/$${TARGET}/ui/
 
 
 #-------------------------------------------------
@@ -52,6 +52,7 @@ include($${SOLUTION_DIR}../src/gui/gui.pri)
 #-------------------------------------------------
 # Include
 
+
 INCLUDEPATH += $${SOLUTION_DIR}../src
 INCLUDEPATH += $${SOLUTION_DIR}../include
 INCLUDEPATH += $${SOLUTION_DIR}../include/opentxs
@@ -59,6 +60,13 @@ INCLUDEPATH += $${SOLUTION_DIR}../include/opentxs
 
 #-------------------------------------------------
 # Options
+
+win: {
+
+}
+
+
+
 
 # this is still a mess! but getting better.
 

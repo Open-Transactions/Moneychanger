@@ -7,7 +7,8 @@
 #-------------------------------------------------
 # Global
 
-TEMPLATE    = lib
+!win:TEMPLATE    = lib
+win:TEMPLATE    = vslib
 
 TARGET      = qjsonrpc
 #VERSION     =
@@ -25,9 +26,7 @@ OBJECTS_DIR    = $${SOLUTION_DIR}../obj/$${TARGET}
 # Output
 
 RCC_DIR        = $${SOLUTION_DIR}../out/$${TARGET}/resources
-UI_HEADERS_DIR = $${SOLUTION_DIR}../out/$${TARGET}/ui/include
-UI_SOURCES_DIR = $${SOLUTION_DIR}../out/$${TARGET}/ui/src
-
+UI_DIR         = $${SOLUTION_DIR}../out/$${TARGET}/ui/
 
 #-------------------------------------------------
 # Target
