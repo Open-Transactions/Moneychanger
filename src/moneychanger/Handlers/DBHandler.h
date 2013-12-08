@@ -15,6 +15,8 @@
 
 #include "FileHandler.h"
 
+#include <memory>
+
 /*
  * declare DB driver and filename.
  * Note that the filename path assignment is going to need to be fixed.
@@ -102,6 +104,8 @@ class DBHandler
      */
     template<typename T>
       bool queryMultiple(const QString& run, T cb);
+    template<typename T>
+      bool queryMultiple(PreparedQuery* run, T cb);
 
     QVariant AddressBookInsertNym(QString nym_id_string, QString nym_display_name_string);
 

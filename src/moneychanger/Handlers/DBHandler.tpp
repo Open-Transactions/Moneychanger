@@ -31,3 +31,30 @@ template<typename T>
 
   return true;
 }
+
+/**
+ * Run a query and for each returned record, execute a callback.  The
+ * callback is passed the QSqlRecord for each result.
+ * @param run The query to run.
+ * @param cb The callback function called.
+ * @return True in case of success.
+ */
+template<typename T>
+  bool
+  DBHandler::queryMultiple (PreparedQuery* run, T cb)
+{
+  std::unique_ptr<PreparedQuery> query(run);
+  QMutexLocker locker(&dbMutex);
+
+  if (!db.isOpen ())
+    return false;
+
+  const bool ok = query->execute ();
+  if (!ok)
+    return false;
+
+  while (query->query.next ())
+    cb (query->query.record ());
+
+  return true;
+}

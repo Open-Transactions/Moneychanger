@@ -5,7 +5,6 @@
 #include "DBHandler.h"
 #include <QDebug>
 
-#include <memory>
 #include <sstream>
 #include <stdexcept>
 
