@@ -261,30 +261,46 @@ NMC_NameManager::timerUpdate ()
 {
   qDebug () << "Namecoin update timer called.";
 
-  /* In a first loop through all pending name registrations, see if we need
-     to unlock the wallet.  */
-  bool needUnlock = false;
-  for (const auto& entry : pendingRegs)
-    if (entry.canActivate () || entry.isFinished ())
-      needUnlock = true;
-
+  /* See if we need to unlock the wallet and do it if necessary.  */
   NMC_WalletUnlocker unlocker (nc);
-  if (needUnlock)
+  try
     {
-      qDebug () << "Need to unlock the wallet, trying to do it.";
-      try
-        {
-          unlocker.unlock ();
-        }
-      catch (const NMC_WalletUnlocker::UnlockFailure& exc)
-        {
-          qDebug () << "Unlock failed, cancelling the timer update.";
-          return;
-        }
-    }
-  else
-    qDebug () << "No operations necessary that need an unlocked wallet.";
+      bool needUnlock = false;
+      for (const auto& entry : pendingRegs)
+        if (entry.canActivate () || entry.isFinished ())
+          needUnlock = true;
 
+      if (needUnlock)
+        {
+          qDebug () << "Need to unlock the wallet, trying to do it.";
+          try
+            {
+              unlocker.unlock ();
+            }
+          catch (const NMC_WalletUnlocker::UnlockFailure& exc)
+            {
+              qDebug () << "Unlock failed, cancelling the timer update.";
+              return;
+            }
+        }
+      else
+        qDebug () << "No operations necessary that need an unlocked wallet.";
+    }
+  catch (const nmcrpc::JsonRpc::RpcError& exc)
+    {
+      qDebug () << "NMC RPC Error: " << exc.getErrorMessage ().c_str ();
+      return;
+    }
+  catch (const std::exception& exc)
+    {
+      qDebug () << "Error: " << exc.what ();
+      return;
+    }
+
+  /* Go over pending registrations and try to update them.  Here, we have the
+     try-block inside, so that if one of those names fails (because of whatever
+     reason associated to this particular name), this doesn't prevent other
+     names from updating.  */
   auto i = pendingRegs.begin ();
   while (i != pendingRegs.end ())
     {
