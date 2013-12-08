@@ -2,6 +2,8 @@
 
 #include <QDebug>
 #include <QMessageBox>
+#include <QSqlField>
+#include <QSqlRecord>
 
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
@@ -13,6 +15,12 @@
 
 #include "detailedit.h"
 #include "editdetails.h"
+
+#include "DBHandler.h"
+
+#include "Namecoin.hpp"
+
+#include <nmcrpc/NamecoinInterface.hpp>
 
 
 
@@ -172,6 +180,7 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
                 // ---------------------------------------
                 cred_item->setText(0, tr("Master Credential"));
                 cred_item->setText(1, qstrCredID);
+                cred_item->setText(2, getNamecoinStatus(str_nym_id, str_cred_id));
                 // ---------------------------------------
                 topLevel->addChild(cred_item);
                 ui->treeWidget->expandItem(cred_item);
@@ -251,3 +260,62 @@ MTCredentials::~MTCredentials()
 }
 
 
+/**
+ * For a given Nym ID and credential ID, find the Namecoin status text
+ * to display for it.
+ * @param nym Nym ID.
+ * @param cred Master credential hash.
+ * @return The string to display as status text.
+ */
+QString
+MTCredentials::getNamecoinStatus (const std::string& nym,
+                                  const std::string& cred)
+{
+  QString res;
+  bool found = false;
+
+  const auto nameHandler = [this, &res, &found, nym, cred] (const QSqlRecord& rec)
+    {
+      if (found)
+        qDebug () << "ERROR: Found more than one nmc_names entry for Nym "
+                  << nym.c_str () << " and cred " << cred.c_str ();
+      found = true;
+
+      const bool active = rec.field ("active").value ().toInt ();
+      const QString name = rec.field ("name").value ().toString ();
+
+      if (!active)
+          res = tr("pending");
+      else
+      {
+          NMC_Interface nmc;
+          nmcrpc::NamecoinInterface& nc = nmc.getNamecoin ();
+          auto nm = nc.queryName (name.toStdString ());
+
+          std::string nymSrc;
+          nymSrc = OTAPI_Wrap::GetNym_SourceForID (nym);
+
+          NMC_Verifier verify(nc);
+          if (!verify.verifyCredentialHashAtSource (cred, nymSrc))
+              res = tr("invalid");
+          else if (nm.isExpired ())
+              res = tr("expired");
+          else
+          {
+              const int expireIn = nm.getExpireCounter ();
+              res = tr("%1 blocks valid").arg(expireIn);
+          }
+      }
+    };
+
+  DBHandler& db = *DBHandler::getInstance ();
+  const QString queryStr = "SELECT `name`, `active` FROM `nmc_names`"
+                           "  WHERE `nym` = :nym AND `cred` = :cred";
+  std::unique_ptr<DBHandler::PreparedQuery> qu;
+  qu.reset (db.prepareQuery (queryStr));
+  qu->bind (":nym", nym.c_str ());
+  qu->bind (":cred", cred.c_str ());
+  db.queryMultiple (qu.release (), nameHandler);
+
+  return res;
+}

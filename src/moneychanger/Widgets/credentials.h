@@ -33,6 +33,16 @@ private:
     MTDetailEdit * m_pOwner;
 
     Ui::MTCredentials *ui;
+
+    /**
+     * For a given Nym ID and credential ID, find the Namecoin status text
+     * to display for it.
+     * @param nym Nym ID.
+     * @param cred Master credential hash.
+     * @return The string to display as status text.
+     */
+    QString getNamecoinStatus (const std::string& nym, const std::string& cred);
+
 };
 
 #endif // CREDENTIALS_H
