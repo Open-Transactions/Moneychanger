@@ -5,8 +5,10 @@
 #-------------------------------------------------
 
 TEMPLATE    = app
-TARGET      = moneychanger-qt
-#VERSION     =
+
+TARGET      = ../moneychanger-qt
+VERSION     = 0.0.1
+
 INCLUDEPATH+= Handlers UI Widgets
 QT         += core gui sql network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
