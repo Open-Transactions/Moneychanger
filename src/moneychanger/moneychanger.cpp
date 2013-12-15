@@ -94,6 +94,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     connect (nmc_update_timer, SIGNAL(timeout()),
              this, SLOT(nmc_timer_event()));
     nmc_update_timer->start (1000 * 60 * 10);
+    nmc_timer_event ();
     
     //SQLite database
     // This can be moved very easily into a different class
