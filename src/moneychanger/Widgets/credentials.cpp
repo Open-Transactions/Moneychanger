@@ -274,7 +274,10 @@ MTCredentials::getNamecoinStatus (const std::string& nym,
   QString res;
   bool found = false;
 
-  const auto nameHandler = [this, &res, &found, nym, cred] (const QSqlRecord& rec)
+  NMC_Interface nmc;
+  nmcrpc::NamecoinInterface& nc = nmc.getNamecoin ();
+
+  const auto nameHandler = [this, &nc, &res, &found, nym, cred] (const QSqlRecord& rec)
     {
       if (found)
         qDebug () << "ERROR: Found more than one nmc_names entry for Nym "
@@ -283,14 +286,19 @@ MTCredentials::getNamecoinStatus (const std::string& nym,
 
       const bool active = rec.field ("active").value ().toInt ();
       const QString name = rec.field ("name").value ().toString ();
+      const QString updateTx = rec.field ("updateTx").value ().toString ();
 
-      if (!active)
+      /* If the active flag is set but the update transaction is currently
+         unconfirmed, mark the entry also as 'pending'.  */
+      bool unconfirmed = false;
+      if (active && nc.getNumberOfConfirmations (updateTx.toStdString ()) == 0)
+          unconfirmed = true;
+
+      if (!active || unconfirmed)
           res = tr("pending");
       else
       {
-          NMC_Interface nmc;
-          nmcrpc::NamecoinInterface& nc = nmc.getNamecoin ();
-          auto nm = nc.queryName (name.toStdString ());
+          const auto nm = nc.queryName (name.toStdString ());
 
           std::string nymSrc;
           nymSrc = OTAPI_Wrap::GetNym_SourceForID (nym);
@@ -309,13 +317,28 @@ MTCredentials::getNamecoinStatus (const std::string& nym,
     };
 
   DBHandler& db = *DBHandler::getInstance ();
-  const QString queryStr = "SELECT `name`, `active` FROM `nmc_names`"
+  const QString queryStr = "SELECT `name`, `active`, `updateTx`"
+                           "  FROM `nmc_names`"
                            "  WHERE `nym` = :nym AND `cred` = :cred";
   std::unique_ptr<DBHandler::PreparedQuery> qu;
   qu.reset (db.prepareQuery (queryStr));
   qu->bind (":nym", nym.c_str ());
   qu->bind (":cred", cred.c_str ());
-  db.queryMultiple (qu.release (), nameHandler);
+
+  try
+    {
+      db.queryMultiple (qu.release (), nameHandler);
+    }
+  catch (const nmcrpc::JsonRpc::RpcError& exc)
+    {
+      qDebug () << "NMC RPC Error: " << exc.getErrorMessage ().c_str ();
+      res = tr("error");
+    }
+  catch (const std::exception& exc)
+    {
+      qDebug () << "Error: " << exc.what ();
+      res = tr("error");
+    }
 
   return res;
 }
