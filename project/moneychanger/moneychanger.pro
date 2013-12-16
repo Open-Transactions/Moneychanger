@@ -98,10 +98,15 @@ linux:{
 QMAKE_CFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 
+#we do it this way, since we don't want any more tokens.
+mac: PKG_CONFIG_LIBDIR = "/usr/local/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
+mac: PKG_CONFIG_LIBDIR = "/usr/local/opt/openssl/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
+mac: PKG_CONFIG_LIBDIR = "$${PKG_CONFIG_LIBDIR}:" #end with a colon.
+
 mac:  QT_CONFIG -= no-pkg-config
 unix: CONFIG += link_pkgconfig
-unix: PKGCONFIG += opentxs
 
+unix: PKGCONFIG += opentxs
 unix: PKGCONFIG += chaiscript
 
 CONFIG += debug_and_release
