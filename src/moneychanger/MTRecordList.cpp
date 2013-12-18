@@ -409,11 +409,13 @@ bool MTRecordList::PerformAutoAccept()
                         OT_ASSERT(NULL != pAccount);
                         // ------------------------------------------------
                         const OTIdentifier & theAcctNymID    = pAccount->GetUserID();
-//                      const OTIdentifier & theAcctServerID = pAccount->GetPurportedServerID();
+                        const OTIdentifier & theAcctServerID = pAccount->GetPurportedServerID();
                         const OTIdentifier & theAcctAssetID  = pAccount->GetAssetTypeID();
-                        // ------------------------------------------------
+                        // -----------------------------------
+                        const std::string    str_acct_type   = pAccount->GetTypeString();
+                        // -----------------------------------
 //                      const OTString       strAcctNymID   (theAcctNymID);
-//                      const OTString       strAcctServerID(theAcctServerID);
+                        const OTString       strAcctServerID(theAcctServerID);
                         const OTString       strAcctAssetID (theAcctAssetID);
                         // ------------------------------------------------
                         // If the current account is owned by the Nym, AND it has the same asset type ID
@@ -422,7 +424,10 @@ bool MTRecordList::PerformAutoAccept()
                         // TODO: we should first just see if the default account matches, instead of doing
                         // this loop in the first place.
                         //
-                        if ((theNymID == theAcctNymID) && (strAcctAssetID.Compare(str_asset_type_id.c_str())))
+                        if ((theNymID == theAcctNymID)                           &&
+                            (strAcctServerID.Compare(str_server_id    .c_str())) &&
+                            (strAcctAssetID .Compare(str_asset_type_id.c_str())) &&
+                            (0 == str_acct_type.compare("simple"))) // No issuer accounts allowed here. Only simple accounts.
                         {
                             // Accept it.
                             //
@@ -2571,13 +2576,26 @@ bool MTRecordList::Populate()
                     {
                         bOutgoing = true; // if Nym is the sender, then it must have been outgoing.
 
+                        const bool bGotRecipientUserIDForDisplay =
+                                pBoxTrans->GetRecipientUserIDForDisplay(theRecipientID);
+
                         if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
                         {
-                            const OTString strRecipientAcctID(theRecipientAcctID);
-                            const std::string str_recipient_id(strRecipientAcctID.Get());
+                            const OTString    strRecipientAcctID(theRecipientAcctID);
+                            const std::string str_recip_acct_id(strRecipientAcctID.Get());
 
-                            OTString strName(m_pLookup->GetAcctName(str_recipient_id,
-                                                                    NULL, // nym ID if known
+                                  OTString    strRecipientUserID("");
+                                  std::string str_recip_user_id("");
+
+                            if (bGotRecipientUserIDForDisplay)
+                            {
+                                theRecipientID.GetString(strRecipientUserID);
+                                str_recip_user_id = strRecipientUserID.Get();
+                            }
+
+                            OTString strName(m_pLookup->GetAcctName(str_recip_acct_id,
+                                                                    bGotRecipientUserIDForDisplay ?
+                                                                       &str_recip_user_id : NULL, // nym ID if known
                                                                     pstr_server_id, // server ID if known.
                                                                     pstr_asset_id)), // asset ID if known.
                                     strNameTemp;
@@ -2585,13 +2603,13 @@ bool MTRecordList::Populate()
                             if (strName.Exists())
                                 strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                             else
-                                strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
+                                strNameTemp.Format(MC_UI_TEXT_TO, str_recip_acct_id.c_str());
 
-                            str_name         = strNameTemp.Get();
-                            str_other_acct_id = str_recipient_id;
+                            str_name          = strNameTemp.Get();
+                            str_other_acct_id = str_recip_acct_id;
                         }
                         // -----------------------------------------
-                        if (pBoxTrans->GetRecipientUserIDForDisplay(theRecipientID))
+                        if (bGotRecipientUserIDForDisplay)
                         {
                             const OTString strRecipientID(theRecipientID);
                             const std::string str_recipient_id(strRecipientID.Get());
