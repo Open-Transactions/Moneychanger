@@ -30,6 +30,7 @@ MTCredentials::MTCredentials(QWidget *parent, MTDetailEdit & theOwner) :
 //    ui->treeWidget->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignCenter);  // Credential
 //    ui->treeWidget->horizontalHeaderItem(2)->setTextAlignment(Qt::AlignCenter);  // Sub-credential
 
+    ui->treeWidget->setSelectionMode    (QAbstractItemView::SingleSelection);
     ui->treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
 }
 

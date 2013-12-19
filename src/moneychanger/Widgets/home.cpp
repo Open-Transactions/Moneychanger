@@ -69,6 +69,7 @@ void MTHome::dialog()
     if (!already_init)
     {
         ui->tableWidget->setColumnCount(2);
+        ui->tableWidget->setSelectionMode    (QAbstractItemView::SingleSelection);
         ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
         // -------------------------------------------
         ui->tableWidget->horizontalHeader()->resizeSection(0, 5);
@@ -120,7 +121,15 @@ void MTHome::on_tableWidget_currentCellChanged(int row, int column, int previous
     Q_UNUSED(previousRow);
     Q_UNUSED(previousColumn);
 
-    emit needToRefreshDetails(row, m_list);
+    if (m_pDetailPane)
+    {
+        if ((-1) == row)
+            m_pDetailPane->setVisible(false);
+        else
+            m_pDetailPane->setVisible(true);
+
+        emit needToRefreshDetails(row, m_list);
+    }
 }
 
 void MTHome::setupRecordList()
@@ -301,6 +310,13 @@ void MTHome::RefreshAll()
         on_tableWidget_currentCellChanged(0, 1, 0, 0);
     }
     // -----------------------------------------
+    else
+    {
+        ui->tableWidget->blockSignals(true);
+        ui->tableWidget->setCurrentCell(-1, 1);
+        ui->tableWidget->blockSignals(false);
+        on_tableWidget_currentCellChanged(-1, 1, 0, 0);
+    }
 }
 
 
@@ -673,7 +689,10 @@ void MTHome::OnDeletedRecord()
                 ui->tableWidget->setCurrentCell((ui->tableWidget->rowCount() - 1), 1);
             }
             else
-                qDebug() << QString("Apparently there are zero rows in the tableWidget.");
+            {
+                m_pDetailPane->setVisible(false);
+                ui->tableWidget->setCurrentCell(-1, 1);
+            }
             // -----------------------------------------
         }
         else

@@ -2168,17 +2168,18 @@ bool MTRecordList::Populate()
                         }
                         // ------------------------------------
                         const OTString    strSenderAcctID(theSenderAcctID);
-                        const std::string str_sender_id(strSenderAcctID.Get());
+                        const std::string str_sender_acct_id(strSenderAcctID.Get());
 
 //                        std::string MTNameLookup::GetAcctName(const std::string & str_id,
 //                                                              const std::string * p_nym_id/*=NULL*/,
 //                                                              const std::string * p_server_id/*=NULL*/,
 //                                                              const std::string * p_asset_id/*=NULL*/) const
 
-                        str_other_acct_id = str_sender_id;
+                        str_other_acct_id = str_sender_acct_id;
 
-                        OTString strName(m_pLookup->GetAcctName(str_sender_id,
-                                                                NULL, // nym ID if known
+                        OTString strName(m_pLookup->GetAcctName(str_other_acct_id,
+                                                                str_other_nym_id.empty() ? NULL :
+                                                                    &str_other_nym_id, // nym ID if known
                                                                 pstr_server_id, // server ID if known.
                                                                 pstr_asset_id)), // asset ID if known.
                                  strNameTemp;
@@ -2201,7 +2202,7 @@ bool MTRecordList::Populate()
                         // ---------------------------------------
                         if (str_name.empty())
                         {
-                            strNameTemp.Format(MC_UI_TEXT_FROM, str_sender_id.c_str());
+                            strNameTemp.Format(MC_UI_TEXT_FROM, str_sender_acct_id.c_str());
                             str_name = strNameTemp.Get();
                         }
                     }
@@ -2239,18 +2240,18 @@ bool MTRecordList::Populate()
 
                     if (pBoxTrans->GetRecipientUserIDForDisplay(theRecipientID))
                     {
-                        const OTString    strRecipientID  (theRecipientID);
-                        const std::string str_recipient_id(strRecipientID.Get());
+                        const OTString    strRecipientID       (theRecipientID);
+                        const std::string str_recipient_user_id(strRecipientID.Get());
 
-                        OTString strName(m_pLookup->GetNymName(str_recipient_id, &(*it_server))), strNameTemp;
+                        OTString strName(m_pLookup->GetNymName(str_recipient_user_id, &(*it_server))), strNameTemp;
 
                         if (strName.Exists())
                             strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                         else
-                            strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
+                            strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_user_id.c_str());
 
                         str_name         = strNameTemp.Get(); // Todo: lookup the name in address book also.
-                        str_other_nym_id = str_recipient_id;
+                        str_other_nym_id = str_recipient_user_id;
                         // ------------------------------------
                         if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
                         {
@@ -2260,10 +2261,10 @@ bool MTRecordList::Populate()
                     }
                     else if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
                     {
-                        const OTString    strRecipientAcctID(theRecipientAcctID);
-                        const std::string str_recipient_id(strRecipientAcctID.Get());
+                        const OTString    strRecipientAcctID   (theRecipientAcctID);
+                        const std::string str_recipient_acct_id(strRecipientAcctID.Get());
 
-                        OTString strName(m_pLookup->GetAcctName(str_recipient_id,
+                        OTString strName(m_pLookup->GetAcctName(str_recipient_acct_id,
                                                                 NULL, // nym ID if known
                                                                 pstr_server_id, // server ID if known.
                                                                 pstr_asset_id)), // asset ID if known.
@@ -2272,10 +2273,10 @@ bool MTRecordList::Populate()
                         if (strName.Exists())
                             strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                         else
-                            strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
+                            strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_acct_id.c_str());
 
                         str_name          = strNameTemp.Get(); // Todo: lookup the name in address book also.
-                        str_other_acct_id = str_recipient_id;
+                        str_other_acct_id = str_recipient_acct_id;
                     }
                 } //end: (else it's a receipt.)
             }
@@ -2416,9 +2417,9 @@ bool MTRecordList::Populate()
                 else if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
                 {
                     const OTString    strRecipientAcctID(theRecipientAcctID);
-                    const std::string str_recipient_id(strRecipientAcctID.Get());
+                    const std::string str_recipient_acct_id(strRecipientAcctID.Get());
 
-                    OTString strName(m_pLookup->GetAcctName(str_recipient_id,
+                    OTString strName(m_pLookup->GetAcctName(str_recipient_acct_id,
                                                             NULL, // nym ID if known
                                                             pstr_server_id, // server ID if known.
                                                             pstr_asset_id)), // asset ID if known.
@@ -2427,10 +2428,10 @@ bool MTRecordList::Populate()
                     if (strName.Exists())
                         strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                     else
-                        strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
+                        strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_acct_id.c_str());
 
                     str_name          = strNameTemp.Get(); // Todo: lookup the name in address book also.
-                    str_other_acct_id = str_recipient_id;
+                    str_other_acct_id = str_recipient_acct_id;
                 }
                 // --------------------------
                 if (OTTransaction::pending == pBoxTrans->GetType())
@@ -2565,14 +2566,14 @@ bool MTRecordList::Populate()
                 if (pBoxTrans->GetSenderAcctIDForDisplay(theSenderAcctID))
                 {
                     const OTString    strSenderAcctID(theSenderAcctID);
-                    const std::string str_sender_id(strSenderAcctID.Get());
+                    const std::string str_sender_acct_id(strSenderAcctID.Get());
 
                     // Usually, Nym is the RECIPIENT. Sometimes he's the sender.
                     // Either way, we want the OTHER ID (the other Nym) for display.
                     // So here, if Nym's CLEARLY the sender, then we want the RECIPIENT.
                     // Whereas if Nym were the recipient, then we'd want the SENDER. (For display.)
                     //
-                    if (0 == str_account_id.compare(str_sender_id)) // str_account_id IS str_sender_id. (Therefore we want recipient.)
+                    if (0 == str_account_id.compare(str_sender_acct_id)) // str_account_id IS str_sender_acct_id. (Therefore we want recipient.)
                     {
                         bOutgoing = true; // if Nym is the sender, then it must have been outgoing.
 
@@ -2629,11 +2630,18 @@ bool MTRecordList::Populate()
                             }
                         }
                     }
-                    else // str_nym_id IS NOT str_sender_id. (Therefore we want sender.)
+                    else // str_account_id IS NOT str_sender_acct_id. (Therefore we want sender.)
                     {    // In this case, some OTHER Nym is the sender, so it must have been incoming. (And bOutgoing is already false.)
 
-                        OTString strName(m_pLookup->GetAcctName(str_sender_id,
-                                                                NULL, // nym ID if known
+                        if (pBoxTrans->GetSenderUserIDForDisplay(theSenderID))
+                        {
+                            const OTString strSenderUserID(theSenderID);
+                            str_other_nym_id = strSenderUserID.Get();
+                        }
+                        // ------------------------------------
+                        OTString strName(m_pLookup->GetAcctName(str_sender_acct_id,
+                                                                str_other_nym_id.empty() ? NULL :
+                                                                    &str_other_nym_id, // nym ID if known
                                                                 pstr_server_id, // server ID if known.
                                                                 pstr_asset_id)), // asset ID if known.
                                 strNameTemp;
@@ -2641,33 +2649,36 @@ bool MTRecordList::Populate()
                         if (strName.Exists())
                             strNameTemp.Format(MC_UI_TEXT_FROM, strName.Get());
                         else
-                            strNameTemp.Format(MC_UI_TEXT_FROM, str_sender_id.c_str());
+                            strNameTemp.Format(MC_UI_TEXT_FROM, str_sender_acct_id.c_str());
 
                         str_name          = strNameTemp.Get();
-                        str_other_acct_id = str_sender_id;
-                        // ------------------------------------
-                        if (pBoxTrans->GetSenderUserIDForDisplay(theSenderID))
-                        {
-                            const OTString strSenderID(theSenderID);
-                            str_other_nym_id = strSenderID.Get();
-                        }
+                        str_other_acct_id = str_sender_acct_id;
                     }
                 }
                 // In this block below, we already KNOW GetSenderAcctIDForDisplay is EMPTY.
                 // (So it's "recipient or bust.")
                 else if (pBoxTrans->GetRecipientAcctIDForDisplay(theRecipientAcctID))
                 {
-                    const OTString strRecipientAcctID(theRecipientAcctID);
-                    const std::string str_recipient_id(strRecipientAcctID.Get());
+                    if (pBoxTrans->GetRecipientUserIDForDisplay(theRecipientID))
+                    {
+                        const OTString strRecipientID(theRecipientID);
+                        const std::string str_recipient_user_id(strRecipientID.Get());
 
-                    if (0 != str_account_id.compare(str_recipient_id)) // str_account_id is NOT str_recipient_id. (Therefore we want str_recipient_id.)
+                        str_other_nym_id = str_recipient_user_id;
+                    }
+                    // --------------------------------------------------------
+                    const OTString strRecipientAcctID(theRecipientAcctID);
+                    const std::string str_recipient_acct_id(strRecipientAcctID.Get());
+
+                    if (0 != str_account_id.compare(str_recipient_acct_id)) // str_account_id is NOT str_recipient_acct_id. (Therefore we want str_recipient_acct_id.)
                     {
                         // If Nym is not the recipient, then he must be the sender.
                         // (Therefore it must be outgoing.)
                         bOutgoing = true;
 
-                        OTString strName(m_pLookup->GetAcctName(str_recipient_id,
-                                                                NULL, // nym ID if known
+                        OTString strName(m_pLookup->GetAcctName(str_recipient_acct_id,
+                                                                str_other_nym_id.empty() ? NULL :
+                                                                    &str_other_nym_id, // nym ID if known
                                                                 pstr_server_id, // server ID if known.
                                                                 pstr_asset_id)), // asset ID if known.
                                 strNameTemp;
@@ -2675,18 +2686,10 @@ bool MTRecordList::Populate()
                         if (strName.Exists())
                             strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
                         else
-                            strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_id.c_str());
+                            strNameTemp.Format(MC_UI_TEXT_TO, str_recipient_acct_id.c_str());
 
                         str_name          = strNameTemp.Get(); // Todo: lookup the name in address book also.
-                        str_other_acct_id = str_recipient_id;
-                        // --------------------------------------------------------
-                        if (pBoxTrans->GetRecipientUserIDForDisplay(theRecipientID))
-                        {
-                            const OTString strRecipientID(theRecipientID);
-                            const std::string str_recipient_user_id(strRecipientID.Get());
-
-                            str_other_nym_id = str_recipient_user_id;
-                        }
+                        str_other_acct_id = str_recipient_acct_id;
                     }
                 }
                 else if (pBoxTrans->GetSenderUserIDForDisplay(theSenderID))
