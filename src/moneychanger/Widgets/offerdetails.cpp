@@ -41,6 +41,7 @@ MTOfferDetails::MTOfferDetails(QWidget *parent, MTDetailEdit & theOwner) :
     // ----------------------------------
     ui->tableWidgetTrades->horizontalHeader()->setStretchLastSection(true);
     ui->tableWidgetTrades->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+    ui->tableWidgetTrades->setSelectionMode    (QAbstractItemView::SingleSelection);
     ui->tableWidgetTrades->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     ui->tableWidgetTrades->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignCenter);

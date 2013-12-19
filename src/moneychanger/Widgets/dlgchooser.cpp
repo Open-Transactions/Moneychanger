@@ -54,6 +54,7 @@ void DlgChooser::showEvent(QShowEvent * event)
         // ----------------------
         ui->tableWidget->setRowCount(m_map.size());
         ui->tableWidget->setColumnCount(2);
+        ui->tableWidget->setSelectionMode    (QAbstractItemView::SingleSelection);
         ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
         // -------------------------------------------
         ui->tableWidget->horizontalHeader()->resizeSection(0, 5);

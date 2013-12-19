@@ -60,6 +60,7 @@ MTCashPurse::MTCashPurse(QWidget *parent, MTDetailEdit & theOwner) :
 //    ui->tableWidget->horizontalHeaderItem(2)->setSizeHint(QSize(30, 0));  // expires
 //    ui->tableWidget->horizontalHeaderItem(3)->setSizeHint(QSize(10, 0));  // series
 
+    ui->tableWidget->setSelectionMode    (QAbstractItemView::SingleSelection);
     ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     // ------------------------------------
 //    ui->tableWidget->setColumnWidth(0,60); // checkbox

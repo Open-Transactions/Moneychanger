@@ -1127,8 +1127,9 @@ void MTHomeDetail::RecreateLayout()
 
 void MTHomeDetail::refresh(MTRecord & recordmt)
 {
+    RecreateLayout(); // (This sets *this to visible=false.)
     // --------------------------------------------------
-    RecreateLayout();
+    this->setVisible(true);
     // --------------------------------------------------
     int nCurrentRow = 0;
     int nCurrentColumn = 1;
