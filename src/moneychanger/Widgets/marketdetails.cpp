@@ -55,6 +55,7 @@ MTMarketDetails::MTMarketDetails(QWidget *parent, MTDetailEdit & theOwner) :
     // ----------------------------------
     ui->tableWidgetBids->horizontalHeader()->setStretchLastSection(true);
     ui->tableWidgetBids->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+    ui->tableWidgetBids->setSelectionMode    (QAbstractItemView::SingleSelection);
     ui->tableWidgetBids->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     ui->tableWidgetBids->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignCenter);
@@ -67,6 +68,7 @@ MTMarketDetails::MTMarketDetails(QWidget *parent, MTDetailEdit & theOwner) :
     // ----------------------------------
     ui->tableWidgetAsks->horizontalHeader()->setStretchLastSection(true);
     ui->tableWidgetAsks->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+    ui->tableWidgetAsks->setSelectionMode    (QAbstractItemView::SingleSelection);
     ui->tableWidgetAsks->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     ui->tableWidgetAsks->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignCenter);
@@ -79,6 +81,7 @@ MTMarketDetails::MTMarketDetails(QWidget *parent, MTDetailEdit & theOwner) :
     // ----------------------------------
     ui->tableWidgetTrades->horizontalHeader()->setStretchLastSection(true);
     ui->tableWidgetTrades->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+    ui->tableWidgetTrades->setSelectionMode    (QAbstractItemView::SingleSelection);
     ui->tableWidgetTrades->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     ui->tableWidgetTrades->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignCenter);
