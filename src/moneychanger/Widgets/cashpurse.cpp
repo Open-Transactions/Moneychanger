@@ -159,9 +159,14 @@ void MTCashPurse::refresh(QString strID, QString strName)
 
                     if (!cash_token.empty())
                     {
+                        std::string str_amount = OTAPI_Wrap::FormatAmount(str_acct_asset,
+                                                                          OTAPI_Wrap::Token_GetDenomination(str_acct_server,
+                                                                                                            str_acct_asset,
+                                                                                                            cash_token));
+                        // ------------------------------------------------------
                         QDateTime qdate_expires     = QDateTime::fromTime_t(OTAPI_Wrap::Token_GetValidTo(str_acct_server, str_acct_asset, cash_token));
                         QString   qstr_token_id     = QString::fromStdString(OTAPI_Wrap::Token_GetID(str_acct_server, str_acct_asset, cash_token));
-                        QString   qstr_denomination = QString("%1").arg(OTAPI_Wrap::Token_GetDenomination(str_acct_server, str_acct_asset, cash_token));
+                        QString   qstr_denomination = QString::fromStdString(str_amount);
                         QString   qstr_series       = QString("%1").arg(OTAPI_Wrap::Token_GetSeries(str_acct_server, str_acct_asset, cash_token));
                         QString   qstr_expires      = qdate_expires.toString(QString("MMM d yyyy hh:mm:ss"));
 
@@ -513,7 +518,11 @@ int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmoun
                 QLabel * pIDLabel    = (QLabel *)pIDItem; // todo cast
                 // -------------------------
                 if (NULL != pValueLabel)
-                    lSelectedAmount += static_cast<int64_t>(pValueLabel->text().toLong());
+                {
+                    int64_t lTokenAmount = OTAPI_Wrap::StringToAmount(m_qstrAssetId.toStdString(),
+                                                                      pValueLabel->text().toStdString());
+                    lSelectedAmount += lTokenAmount;
+                }
                 // -------------------------
                 if (NULL != pIDLabel) // NOTE that we now attach the index here, instead of the ID.
                     selectedIndices.append(QString("%1").arg(ii));
