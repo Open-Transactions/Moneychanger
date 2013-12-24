@@ -9,6 +9,8 @@ MTDlgPasswordConfirm::MTDlgPasswordConfirm(QWidget *parent, OTPassword & thePass
     ui(new Ui::MTDlgPasswordConfirm)
 {
     ui->setupUi(this);
+
+    this->installEventFilter(this);
 }
 
 MTDlgPasswordConfirm::~MTDlgPasswordConfirm()
