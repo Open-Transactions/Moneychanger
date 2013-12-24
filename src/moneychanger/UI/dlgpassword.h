@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QDialog>
+#include <QCloseEvent>
 
 
 namespace Ui {
@@ -10,6 +11,8 @@ class MTDlgPassword;
 }
 
 class OTPassword;
+
+class MTOverrideCursor;
 
 class MTDlgPassword : public QDialog
 {
@@ -21,11 +24,16 @@ public:
 
     void setDisplay(QString qstrDisplay);
 
+protected:
+    void closeEvent(QCloseEvent * e);
+
 private slots:
     void on_MTDlgPassword_accepted();
 
 private:
     OTPassword * m_pPassword;
+
+    MTOverrideCursor * m_pCursor; // Do not delete. Here for reference only.
 
     Ui::MTDlgPassword *ui;
 };

@@ -919,8 +919,8 @@ bool MTRecordList::Populate()
                                                            false,//IsReceipt
                                                            MTRecord::Instrument
                                                            ));
-                long lTransNum = 0;
-                theOutPayment.GetOpeningNum(lTransNum, theNymID);
+                // -------------------------------------------------
+                sp_Record->SetContents(strOutpayment.Get());
                 // -------------------------------------------------
                 sp_Record->SetOtherNymID(str_outpmt_recipientID);
                 // -------------------------------------------------
@@ -929,8 +929,11 @@ bool MTRecordList::Populate()
                 // -------------------------------------------------
                 sp_Record->SetDateRange(tFrom, tTo);
                 sp_Record->SetBoxIndex(static_cast<int>(nCurrentOutpayment));
+                // -------------------------------------------------
+                long lTransNum = 0;
+                theOutPayment.GetOpeningNum(lTransNum, theNymID);
+                // -------------------------------------------------
                 sp_Record->SetTransactionNum(lTransNum);
-                sp_Record->SetContents(strOutpayment.Get());
                 m_contents.push_back(sp_Record);
             }
             else // the server for this outpayment is not on the list of servers we care about. Skip this outpayment.
@@ -1015,6 +1018,8 @@ bool MTRecordList::Populate()
                                                            false, //IsReceipt
                                                            MTRecord::Mail
                                                            ));
+                const OTString strMail(OTAPI_Wrap::GetNym_MailContentsByIndex(str_nym_id, nCurrentMail));
+                sp_Record->SetContents(strMail.Get());
                 // -------------------------------------------------
                 sp_Record->SetOtherNymID(str_mail_senderID);
                 // -------------------------------------------------
@@ -1022,8 +1027,6 @@ bool MTRecordList::Populate()
                 // -------------------------------------------------
                 sp_Record->SetDateRange(static_cast<time_t>(pMsg->m_lTime), static_cast<time_t>(pMsg->m_lTime));
                 // -------------------------------------------------
-                const OTString strMail(OTAPI_Wrap::GetNym_MailContentsByIndex(str_nym_id, nCurrentMail));
-                sp_Record->SetContents(strMail.Get());
                 m_contents.push_back(sp_Record);
             }
         } // loop through incoming Mail.
@@ -1102,6 +1105,8 @@ bool MTRecordList::Populate()
                                                            false, //IsReceipt
                                                            MTRecord::Mail
                                                            ));
+                const OTString strOutmail(OTAPI_Wrap::GetNym_OutmailContentsByIndex(str_nym_id, nCurrentOutmail));
+                sp_Record->SetContents(strOutmail.Get());
                 // -------------------------------------------------
                 sp_Record->SetBoxIndex(static_cast<int>(nCurrentOutmail));
                 // -------------------------------------------------
@@ -1109,8 +1114,6 @@ bool MTRecordList::Populate()
                 // -------------------------------------------------
                 sp_Record->SetDateRange(static_cast<time_t>(pMsg->m_lTime), static_cast<time_t>(pMsg->m_lTime));
                 // -------------------------------------------------
-                const OTString strOutmail(OTAPI_Wrap::GetNym_OutmailContentsByIndex(str_nym_id, nCurrentOutmail));
-                sp_Record->SetContents(strOutmail.Get());
                 m_contents.push_back(sp_Record);
             }
         } // loop through outgoing Mail.
@@ -1336,6 +1339,9 @@ bool MTRecordList::Populate()
                                                            false, //bIsReceipt
                                                            MTRecord::Instrument));
                 // -------------------------------------------------
+                if (strContents.Exists())
+                    sp_Record->SetContents(strContents.Get());
+                // -------------------------------------------------
                 sp_Record->SetDateRange(tValidFrom, tValidTo);
                 // -------------------------------------------------
                 sp_Record->SetBoxIndex(static_cast<int>(nIndex));
@@ -1348,9 +1354,6 @@ bool MTRecordList::Populate()
                 // -------------------------------------------------
                 if (!str_sender_acct_id.empty())
                     sp_Record->SetOtherAccountID(str_sender_acct_id);
-                // -------------------------------------------------
-                if (strContents.Exists())
-                    sp_Record->SetContents(strContents.Get());
                 // -------------------------------------------------
                 sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
                 sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
@@ -1673,6 +1676,9 @@ bool MTRecordList::Populate()
                                                            false,//IsReceipt,
                                                            MTRecord::Instrument));
                 // -------------------------------------------------
+                if (strContents.Exists())
+                    sp_Record->SetContents(strContents.Get());
+                // -------------------------------------------------
                 sp_Record->SetDateRange(tValidFrom, tValidTo);
                 // -------------------------------------------------
                 sp_Record->SetBoxIndex(static_cast<int>(nIndex));
@@ -1685,9 +1691,6 @@ bool MTRecordList::Populate()
                 // -------------------------------------------------
                 if (!str_other_acct_id.empty())
                     sp_Record->SetOtherAccountID(str_other_acct_id);
-                // -------------------------------------------------
-                if (strContents.Exists())
-                    sp_Record->SetContents(strContents.Get());
                 // -------------------------------------------------
                 sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
                 sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
@@ -2012,6 +2015,9 @@ bool MTRecordList::Populate()
                                                            false,//IsReceipt,
                                                            MTRecord::Instrument));
                 // -------------------------------------------------
+                if (strContents.Exists())
+                    sp_Record->SetContents(strContents.Get());
+                // -------------------------------------------------
                 sp_Record->SetDateRange(tValidFrom, tValidTo);
                 // -------------------------------------------------
                 sp_Record->SetExpired();
@@ -2026,9 +2032,6 @@ bool MTRecordList::Populate()
                 // -------------------------------------------------
                 if (!str_other_acct_id.empty())
                     sp_Record->SetOtherAccountID(str_other_acct_id);
-                // -------------------------------------------------
-                if (strContents.Exists())
-                    sp_Record->SetContents(strContents.Get());
                 // -------------------------------------------------
                 sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
                 sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
@@ -2336,6 +2339,9 @@ bool MTRecordList::Populate()
                                                        (OTTransaction::pending == pBoxTrans->GetType()) ?
                                                             MTRecord::Transfer : MTRecord::Receipt ));
             // -------------------------------------------------
+            const OTString strContents(*pBoxTrans);
+            sp_Record->SetContents(strContents.Get());
+            // -------------------------------------------------
             sp_Record->SetDateRange(tValidFrom, tValidTo);
             // -------------------------------------------------
             sp_Record->SetBoxIndex(static_cast<int>(nInboxIndex));
@@ -2354,9 +2360,6 @@ bool MTRecordList::Populate()
             // -------------------------------------------------
             sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
             sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
-            // -------------------------------------------------
-            const OTString strContents(*pBoxTrans);
-            sp_Record->SetContents(strContents.Get());
             // -------------------------------------------------
             m_contents.push_back(sp_Record);
         }
@@ -2505,6 +2508,9 @@ bool MTRecordList::Populate()
                                                        MTRecord::Transfer
                                                        ));
             // -------------------------------------------------
+            const OTString strContents(*pBoxTrans);
+            sp_Record->SetContents(strContents.Get());
+            // -------------------------------------------------
             sp_Record->SetDateRange(tValidFrom, tValidTo);
             // -------------------------------------------------
             sp_Record->SetBoxIndex(static_cast<int>(nOutboxIndex));
@@ -2520,9 +2526,6 @@ bool MTRecordList::Populate()
             // -------------------------------------------------
             sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
             sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
-            // -------------------------------------------------
-            const OTString strContents(*pBoxTrans);
-            sp_Record->SetContents(strContents.Get());
             // -------------------------------------------------
             m_contents.push_back(sp_Record);
         }
@@ -2868,6 +2871,9 @@ bool MTRecordList::Populate()
                                                        pBoxTrans->GetType() == OTTransaction::pending ?
                                                             MTRecord::Transfer : MTRecord::Receipt));
             // -------------------------------------------------
+            const OTString strContents(*pBoxTrans);
+            sp_Record->SetContents(strContents.Get());
+            // -------------------------------------------------
             if (bCanceled)
                 sp_Record->SetCanceled();
             // -------------------------------------------------
@@ -2886,9 +2892,6 @@ bool MTRecordList::Populate()
             // -------------------------------------------------
             sp_Record->SetTransNumForDisplay(pBoxTrans->GetReferenceNumForDisplay());
             sp_Record->SetTransactionNum(pBoxTrans->GetTransactionNum());
-            // -------------------------------------------------
-            const OTString strContents(*pBoxTrans);
-            sp_Record->SetContents(strContents.Get());
             // -------------------------------------------------
             m_contents.push_back(sp_Record);
         }

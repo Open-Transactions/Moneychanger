@@ -54,7 +54,7 @@ bool MTCompose::sendMessage(QString body, QString fromNymId, QString toNymId, QS
 
     std::string strResponse;
     {
-        MTOverrideCursor theSpinner;
+        MTSpinner theSpinner;
 
         strResponse = madeEasy.send_user_msg(str_serverId, str_fromNymId, str_toNymId, contents.toStdString());
     }
