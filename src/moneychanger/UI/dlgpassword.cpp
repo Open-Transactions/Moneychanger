@@ -9,6 +9,8 @@ MTDlgPassword::MTDlgPassword(QWidget *parent, OTPassword & thePassword) :
     ui(new Ui::MTDlgPassword)
 {
     ui->setupUi(this);
+
+    this->installEventFilter(this);
 }
 
 MTDlgPassword::~MTDlgPassword()

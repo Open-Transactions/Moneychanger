@@ -6,7 +6,7 @@
 
 TEMPLATE    = app
 
-TARGET      = ../moneychanger-qt
+TARGET      = moneychanger-qt
 VERSION     = 0.0.1
 
 INCLUDEPATH+= Handlers UI Widgets
