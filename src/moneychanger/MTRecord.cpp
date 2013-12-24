@@ -135,6 +135,14 @@ bool MTRecord::FormatShortMailDescription(std::string & str_output)
                 bTruncated = true;
             }
             // -----------------------------------
+            // Replace any newlines with spaces...
+            //
+            std::replace( str_contents.begin(), str_contents.end(), '\r', ' ');
+            std::replace( str_contents.begin(), str_contents.end(), '\n', ' ');
+
+//          str_contents.erase(std::remove(str_contents.begin(), str_contents.end(), '\n'), str_contents.end());
+//          str_contents.erase(std::remove(str_contents.begin(), str_contents.end(), '\r'), str_contents.end());
+            // -----------------------------------
             strDescription.Format("%s%s", OTString::trim(str_contents).c_str(),
                                   bTruncated ? "..." : "");
         }

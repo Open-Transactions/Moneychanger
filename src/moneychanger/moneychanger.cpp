@@ -434,7 +434,7 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu_advanced->addSeparator();
     // ------------------------------------------------
 
-    mc_systrayMenu_advanced_agreements = new QAction(mc_systrayIcon_advanced_agreements, tr("Agreements"), mc_systrayMenu_advanced);
+    mc_systrayMenu_advanced_agreements = new QAction(mc_systrayIcon_advanced_agreements, tr("Smart Contracts"), mc_systrayMenu_advanced);
     mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_agreements);
     connect(mc_systrayMenu_advanced_agreements, SIGNAL(triggered()), this, SLOT(mc_agreement_slot()));
     // --------------------------------------------------------------
@@ -1927,7 +1927,7 @@ void Moneychanger::mc_agreement_dialog()
     // TODO: populate the map here.
 
     // -------------------------------------
-    agreement_window->setWindowTitle(tr("Agreements"));
+    agreement_window->setWindowTitle(tr("Smart Contracts"));
     // -------------------------------------
     agreement_window->dialog(MTDetailEdit::DetailEditTypeAgreement);
 }
