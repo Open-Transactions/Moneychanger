@@ -526,7 +526,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
         {
             bool bSuccess = false;
             {
-                MTOverrideCursor theSpinner;
+                MTSpinner theSpinner;
                 // -----------------------------------------
                 bSuccess = recordmt.AcceptIncomingTransfer();
             }
@@ -545,7 +545,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
         {
             bool bSuccess = false;
             {
-                MTOverrideCursor theSpinner;
+                MTSpinner theSpinner;
                 // -----------------------------------------
                 bSuccess = recordmt.AcceptIncomingReceipt();
             }
@@ -583,7 +583,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
             {
                 bool bSuccess = false;
                 {
-                    MTOverrideCursor theSpinner;
+                    MTSpinner theSpinner;
                     // -----------------------------------------
                     bSuccess = recordmt.AcceptIncomingInstrument(qstr_acct_id.toStdString());
                 }
@@ -637,7 +637,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
             {
                 bool bSuccess = false;
                 {
-                    MTOverrideCursor theSpinner;
+                    MTSpinner theSpinner;
                     // -----------------------------------------
                     OT_ME madeEasy;
 
@@ -678,7 +678,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
             // ----------------------------------------
             bool bSuccess = false;
             {
-                MTOverrideCursor theSpinner;
+                MTSpinner theSpinner;
                 // -----------------------------------------
                 bSuccess = recordmt.CancelOutgoing(recordmt.GetAccountID());
             }
@@ -723,7 +723,7 @@ void MTHomeDetail::on_discardOutgoingButton_clicked(bool checked /*=false*/)
         // ----------------------------------------
         bool bSuccess = false;
         {
-            MTOverrideCursor theSpinner;
+            MTSpinner theSpinner;
             // -----------------------------------------
             bSuccess = recordmt.DiscardOutgoingCash();
         }
@@ -765,7 +765,7 @@ void MTHomeDetail::on_discardIncomingButton_clicked(bool checked /*=false*/)
         // ----------------------------------------
         bool bSuccess = false;
         {
-            MTOverrideCursor theSpinner;
+            MTSpinner theSpinner;
             // -------------------------------------
             bSuccess = recordmt.DiscardIncoming();
         }

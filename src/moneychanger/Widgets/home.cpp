@@ -322,7 +322,7 @@ void MTHome::RefreshAll()
 
 void MTHome::on_refreshButton_clicked()
 {
-    MTOverrideCursor theSpinner;
+    MTSpinner theSpinner;
     // -----------------------------------------
     qDebug() << QString("Refreshing records from transaction servers.");
     // -----------------------------------------

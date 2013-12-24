@@ -264,7 +264,7 @@ void MTCashPurse::on_pushButtonWithdraw_clicked()
         OT_ME   madeEasy;
         int64_t lAmount = dlgAmount.GetAmount();
 
-        MTOverrideCursor theSpinner;
+        MTSpinner theSpinner;
 
         bSent = (1 == madeEasy.easy_withdraw_cash(accountID, lAmount));
     }
@@ -446,9 +446,9 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
     {
         bool bSent = false;
         {
-            OT_ME            madeEasy;
-            MTOverrideCursor theSpinner;
-            std::string      str_selected_indices(qstrSelectedIndices.toStdString()); // (FYI, you can also use "all" for all indices.)
+            OT_ME        madeEasy;
+            MTSpinner    theSpinner;
+            std::string  str_selected_indices(qstrSelectedIndices.toStdString()); // (FYI, you can also use "all" for all indices.)
 
             bSent = (1 == madeEasy.deposit_local_purse(str_acct_server, // <=======
                                                        str_acct_nym,
