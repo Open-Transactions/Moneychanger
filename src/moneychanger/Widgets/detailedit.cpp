@@ -134,6 +134,7 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         ui->comboBox->setHidden(true);
         // -------------------------------------------
         ui->tableWidget->setColumnCount(2);
+        ui->tableWidget->setSelectionMode    (QAbstractItemView::SingleSelection);
         ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
         // -------------------------------------------
         ui->tableWidget->horizontalHeader()->resizeSection(0, 5);

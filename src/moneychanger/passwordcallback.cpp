@@ -6,6 +6,7 @@
 #include "dlgpassword.h"
 #include "dlgpasswordconfirm.h"
 
+#include "moneychanger.h"
 
 
 void MTPasswordCallback::runOne(const char * szDisplay, OTPassword & theOutput)
@@ -16,12 +17,15 @@ void MTPasswordCallback::runOne(const char * szDisplay, OTPassword & theOutput)
         return;
     }
 
-    MTDlgPassword theDlg(NULL, theOutput);
+//    MTDlgPassword * pDlg = new MTDlgPassword(NULL, theOutput);
+    MTDlgPassword * pDlg = new MTDlgPassword(Moneychanger::It(), theOutput);
+
+    pDlg->setAttribute(Qt::WA_DeleteOnClose);
 
     QString qstrDisplay(szDisplay);
-    theDlg.setDisplay(qstrDisplay);
+    pDlg->setDisplay(qstrDisplay);
 
-    theDlg.exec();
+    pDlg->exec();
 }
 
 void MTPasswordCallback::runTwo(const char * szDisplay, OTPassword & theOutput)
@@ -32,12 +36,15 @@ void MTPasswordCallback::runTwo(const char * szDisplay, OTPassword & theOutput)
         return;
     }
 
-    MTDlgPasswordConfirm theDlg(NULL, theOutput);
+//    MTDlgPasswordConfirm * pDlg = new MTDlgPasswordConfirm(NULL, theOutput);
+    MTDlgPasswordConfirm * pDlg = new MTDlgPasswordConfirm(Moneychanger::It(), theOutput);
+
+    pDlg->setAttribute(Qt::WA_DeleteOnClose);
 
     QString qstrDisplay(szDisplay);
-    theDlg.setDisplay(qstrDisplay);
+    pDlg->setDisplay(qstrDisplay);
 
-    theDlg.exec();
+    pDlg->exec();
 }
 
 

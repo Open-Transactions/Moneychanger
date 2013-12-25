@@ -930,7 +930,7 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID)
 
     if (!acctNymID.empty() && !acctSvrID.empty())
     {
-        MTOverrideCursor theSpinner;
+        MTSpinner theSpinner;
 
         madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
     }
@@ -955,7 +955,7 @@ void Moneychanger::onNeedToDownloadAccountData()
             DBHandler::getInstance()->AddressBookUpdateDefaultServer(QString::fromStdString(defaultServerId));
         }
         // ----------------------------------------------------------------
-        int nymCount = OTAPI_Wrap::GetNymCount();
+        int32_t nymCount = OTAPI_Wrap::GetNymCount();
 
         if (0 == nymCount)
         {
@@ -971,6 +971,8 @@ void Moneychanger::onNeedToDownloadAccountData()
                 DBHandler::getInstance()->AddressBookUpdateDefaultNym(QString::fromStdString(newNymId));
                 qDebug() << "Finished Making Nym";
             }
+
+            nymCount = OTAPI_Wrap::GetNymCount();
         }
         // ----------------------------------------------------------------
         std::string defaultNymID(get_default_nym_id().toStdString());
@@ -981,16 +983,10 @@ void Moneychanger::onNeedToDownloadAccountData()
 
             if (!isReg)
             {
-                MTOverrideCursor theSpinner;
+                MTSpinner theSpinner;
 
                 std::string response = madeEasy.register_nym(defaultServerId, defaultNymID);
                 qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
-            }
-
-            {
-                MTOverrideCursor theSpinner;
-
-                madeEasy.retrieve_nym(defaultServerId, defaultNymID, true);
             }
         }
         // ----------------------------------------------------------------
@@ -1002,7 +998,7 @@ void Moneychanger::onNeedToDownloadAccountData()
             DBHandler::getInstance()->AddressBookUpdateDefaultAsset(QString::fromStdString(defaultAssetId));
         }
         // ----------------------------------------------------------------
-        int accountCount = OTAPI_Wrap::GetAccountCount();
+        int32_t accountCount = OTAPI_Wrap::GetAccountCount();
 
         qDebug() << QString("Account Count: %1").arg(accountCount);
 
@@ -1012,7 +1008,7 @@ void Moneychanger::onNeedToDownloadAccountData()
             {
                 std::string response;
                 {
-                    MTOverrideCursor theSpinner;
+                    MTSpinner theSpinner;
                     response = madeEasy.create_asset_acct(defaultServerId, defaultNymID, defaultAssetId);
                 }
                 qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
@@ -1029,14 +1025,34 @@ void Moneychanger::onNeedToDownloadAccountData()
             }
         }
         // ----------------------------------------------------------------
-        for (int i = 0; i < accountCount; i++)
+        // Retrieve Nyms
+        //
+        int32_t serverCount = OTAPI_Wrap::GetServerCount();
+
+        for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
+        {
+            std::string serverId = OTAPI_Wrap::GetServer_ID(serverIndex);
+
+            for (int32_t nymIndex = 0; nymIndex < nymCount; ++nymIndex)
+            {
+                std::string nymId = OTAPI_Wrap::GetNym_ID(nymIndex);
+
+                if (OTAPI_Wrap::IsNym_RegisteredAtServer(nymId, serverId))
+                {
+                    MTSpinner theSpinner;
+                    madeEasy.retrieve_nym(serverId, nymId, true);
+                }
+            }
+        }
+        // ----------------------------------------------------------------
+        for (int32_t i = 0; i < accountCount; i++)
         {
             std::string accountId = OTAPI_Wrap::GetAccountWallet_ID(i);
             std::string acctNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountId);
             std::string acctSvrID = OTAPI_Wrap::GetAccountWallet_ServerID(accountId);
 
             {
-                MTOverrideCursor theSpinner;
+                MTSpinner theSpinner;
                 madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
             }
 
