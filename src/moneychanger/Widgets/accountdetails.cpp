@@ -395,7 +395,8 @@ void MTAccountDetails::AddButtonClicked()
         QString qstrNymName    = QString::fromStdString(OTAPI_Wrap::GetNym_Name      (qstrNymID   .toStdString()));
         QString qstrServerName = QString::fromStdString(OTAPI_Wrap::GetServer_Name   (qstrServerID.toStdString()));
         // ---------------------------------------------------
-        QMessageBox::information(this, tr("Confirm Create Account"), QString("%1: '%2' %3: %4 %5: %6 %7: %8").arg(tr("Confirm Create Account: Name")).
+        QMessageBox::information(this, tr("Confirm Create Account"),
+                                 QString("%1: '%2'<br/>%3: %4<br/>%5: %6<br/>%7: %8").arg(tr("Confirm Create Account:<br/>Name")).
                                  arg(qstrName).arg(tr("Asset")).arg(qstrAssetName).arg(tr("Nym")).arg(qstrNymName).arg(tr("Server")).arg(qstrServerName));
         // ---------------------------------------------------
         // NOTE: theWizard won't allow each page to finish unless the ID is provided.
@@ -414,7 +415,7 @@ void MTAccountDetails::AddButtonClicked()
             //
             int32_t nSuccess = 0;
             {
-                MTOverrideCursor theSpinner;
+                MTSpinner theSpinner;
 
                 std::string strResponse = madeEasy.register_nym(qstrServerID.toStdString(),
                                                                 qstrNymID   .toStdString()); // This also does getRequest internally, if success.
@@ -455,7 +456,7 @@ void MTAccountDetails::AddButtonClicked()
         //
         std::string strResponse;
         {
-            MTOverrideCursor theSpinner;
+            MTSpinner theSpinner;
 
             strResponse = madeEasy.create_asset_acct(qstrServerID.toStdString(),
                                                      qstrNymID   .toStdString(),
@@ -488,7 +489,7 @@ void MTAccountDetails::AddButtonClicked()
                                                   qstrNymID.toStdString(),
                                                   qstrName .toStdString());
         // -----------------------------------------------
-        QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Creating Account! Name")).
+        QMessageBox::information(this, tr("Success!"), QString("%1: '%2'<br/>%3: %4").arg(tr("Success Creating Account!<br/>Name")).
                                  arg(qstrName).arg(tr("ID")).arg(qstrID));
         // ----------
         m_pOwner->m_map.insert(qstrID, qstrName);

@@ -90,7 +90,7 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString fromAcctId, QS
 
     bool bReturnValue = false;
     {
-        MTOverrideCursor theSpinner;
+        MTSpinner theSpinner;
 
         bReturnValue = madeEasy.withdraw_and_send_cash(str_fromAcctId, str_toNymId, note.toStdString(), SignedAmount);
     }
@@ -142,7 +142,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     std::string strAttempt  = "withdraw_voucher";
     std::string strResponse;
     {
-        MTOverrideCursor theSpinner;
+        MTSpinner theSpinner;
 
         strResponse = madeEasy.withdraw_voucher(str_serverId, str_fromNymId, str_fromAcctId,
                                                 str_toNymId, note.toStdString(), SignedAmount);
@@ -203,7 +203,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     OT_ME retrieveAcct;
     bool bRetrieved = false;
     {
-        MTOverrideCursor theSpinner;
+        MTSpinner theSpinner;
 
         bRetrieved = retrieveAcct.retrieve_account(str_serverId, str_fromNymId, str_fromAcctId, true); //bForceDownload defaults to false.
     }
@@ -222,7 +222,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
 
     std::string  strSendResponse;
     {
-        MTOverrideCursor theSpinner;
+        MTSpinner theSpinner;
 
         strSendResponse = sendPayment.send_user_payment(str_serverId, str_fromNymId, str_toNymId, strVoucher);
     }
@@ -360,7 +360,7 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
 
     std::string  strResponse;
     {
-        MTOverrideCursor theSpinner;
+        MTSpinner theSpinner;
 
         strResponse = madeEasy.send_user_payment(str_serverId, str_fromNymId, str_toNymId, strCheque);
     }

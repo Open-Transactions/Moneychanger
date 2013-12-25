@@ -3,12 +3,32 @@
 
 #include <opentxs/OTPassword.h>
 
+#include "overridecursor.h"
+
 MTDlgPasswordConfirm::MTDlgPasswordConfirm(QWidget *parent, OTPassword & thePassword) :
     QDialog(parent),
     m_pPassword(&thePassword),
+    m_pCursor(MTOverrideCursor::Exists()),
     ui(new Ui::MTDlgPasswordConfirm)
 {
     ui->setupUi(this);
+
+    this->installEventFilter(this);
+    // --------------------------------
+    // If the MTSpinner aka MTOverrideCursor was set already by the time this
+    // password dialog activated, we want to TEMPORARILY deactivate it, until
+    // this password dialog closes again.
+    //
+    if (NULL != m_pCursor)
+        m_pCursor->Pause();
+}
+
+void MTDlgPasswordConfirm::closeEvent(QCloseEvent * e)
+{
+    if (NULL != m_pCursor)
+        m_pCursor->Unpause();
+    // --------------------------------
+    QDialog::closeEvent(e);
 }
 
 MTDlgPasswordConfirm::~MTDlgPasswordConfirm()
