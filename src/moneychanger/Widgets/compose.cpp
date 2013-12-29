@@ -17,7 +17,7 @@
 
 #include "overridecursor.h"
 
-
+#include "moneychanger.h"
 
 
 // ----------------------------------------------------------------------
@@ -135,13 +135,20 @@ void MTCompose::on_sendButton_clicked()
                              tr("Failed trying to send the message."));
     else
     {
-        QMessageBox::information(this, tr("Success"), tr("Success sending message."));
-        this->close();
+        QMessageBox::StandardButton info_btn =
+                QMessageBox::information(this, tr("Success"), tr("Success sending message."));
+        // -----------------------------------------------------------------
+        emit balancesChanged(); // So we'll see the sent message in the transaction history
+        // -----------------------------------------------------------------
     }
     // -----------------------------------------------------------------
 }
 
 
+void MTCompose::onBalancesChanged()
+{
+    this->close();
+}
 
 
 
@@ -418,6 +425,9 @@ void MTCompose::dialog()
 
     if (!already_init)
     {
+        connect(this,               SIGNAL(balancesChanged()),
+                Moneychanger::It(), SLOT  (onBalancesChanged()));
+        // ---------------------------------------
         this->setWindowTitle(tr("Compose: (no subject)"));
 
         QString style_sheet = "QPushButton{border: none; border-style: outset; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa);}"
@@ -607,6 +617,8 @@ MTCompose::MTCompose(QWidget *parent) :
     ui->setupUi(this);
 
     this->installEventFilter(this);
+
+    connect(this, SIGNAL(balancesChanged()), this, SLOT(onBalancesChanged()));
 }
 
 MTCompose::~MTCompose()
