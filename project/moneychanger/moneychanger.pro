@@ -58,6 +58,13 @@ mac:{
     # this is still a mess! but getting better.
 
 
+    #Boost (only if you need it. otherwise comment it out)
+    INCLUDEPATH += /usr/local/include
+    LIBS += -L/usr/local/Cellar/boost/1.55.0/lib
+    LIBS += -lboost_system
+
+
+
     #Common
     LIBS += -ldl -mmacosx-version-min=10.7 -framework CoreFoundation
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
@@ -77,7 +84,6 @@ mac:{
 
     #Not Mavericks
     !contains(OS_VERSION, 13.0.0): {
-       LIBS += -lboost_system -lboost_thread
 
        MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
        QMAKE_MAC_SDK=macosx10.8
