@@ -2173,11 +2173,6 @@ bool MTRecordList::Populate()
                         const OTString    strSenderAcctID(theSenderAcctID);
                         const std::string str_sender_acct_id(strSenderAcctID.Get());
 
-//                        std::string MTNameLookup::GetAcctName(const std::string & str_id,
-//                                                              const std::string * p_nym_id/*=NULL*/,
-//                                                              const std::string * p_server_id/*=NULL*/,
-//                                                              const std::string * p_asset_id/*=NULL*/) const
-
                         str_other_acct_id = str_sender_acct_id;
 
                         OTString strName(m_pLookup->GetAcctName(str_other_acct_id,
@@ -2596,20 +2591,35 @@ bool MTRecordList::Populate()
                                 theRecipientID.GetString(strRecipientUserID);
                                 str_recip_user_id = strRecipientUserID.Get();
                             }
+                            // ---------------------------------------
+                            // NOTE: We check for cancelled here so we don't accidentally
+                            // cause the address book to falsely believe that str_recip_user_id
+                            // is the owner of str_recip_acct_id. (If the cheque/invoice is cancelled,
+                            // the recipient account will be the sender account, which is NOT owned
+                            // by the recipient, obviously...)
+                            //
+                            if (!pBoxTrans->IsCancelled())
+                            {
+                                OTString strName(m_pLookup->GetAcctName(str_recip_acct_id,
+                                                                        // NOTE: we CANNOT pass str_recip_user_id here with str_recip_acct_id
+                                                                        // if it's a cancelled instrument, since in that case, the SENDER ACCT
+                                                                        // is ALSO the RECIPIENT ACCT. So this logic is ONLY correct since we
+                                                                        // are inside the block of if (!pBoxTrans->IsCancelled())
+                                                                        // (Otherwise we'd be training the address book to falsely believe that
+                                                                        // the recipient Nym is the owner of the sender acct.)
+                                                                        bGotRecipientUserIDForDisplay ?
+                                                                           &str_recip_user_id : NULL, // nym ID if known
+                                                                        pstr_server_id, // server ID if known.
+                                                                        pstr_asset_id)), // asset ID if known.
+                                        strNameTemp;
 
-                            OTString strName(m_pLookup->GetAcctName(str_recip_acct_id,
-                                                                    bGotRecipientUserIDForDisplay ?
-                                                                       &str_recip_user_id : NULL, // nym ID if known
-                                                                    pstr_server_id, // server ID if known.
-                                                                    pstr_asset_id)), // asset ID if known.
-                                    strNameTemp;
+                                if (strName.Exists())
+                                    strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
+                                else
+                                    strNameTemp.Format(MC_UI_TEXT_TO, str_recip_acct_id.c_str());
 
-                            if (strName.Exists())
-                                strNameTemp.Format(MC_UI_TEXT_TO, strName.Get());
-                            else
-                                strNameTemp.Format(MC_UI_TEXT_TO, str_recip_acct_id.c_str());
-
-                            str_name          = strNameTemp.Get();
+                                str_name = strNameTemp.Get(); // We don't want to see our own name on cancelled cheques.
+                            }
                             str_other_acct_id = str_recip_acct_id;
                         }
                         // -----------------------------------------

@@ -31,11 +31,16 @@ public:
 
     bool sendMessage(QString body, QString fromNymId, QString toNymId, QString atServerID, QString subject);
 
+signals:
+    void balancesChanged();
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
     void closeEvent(QCloseEvent *event);
 
 private slots:
+    void onBalancesChanged();
+
     void on_toButton_clicked();
     void on_fromButton_clicked();
     void on_serverButton_clicked();
