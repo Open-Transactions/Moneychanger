@@ -73,7 +73,8 @@ HEADERS += moneychanger.h \
     Widgets/marketdetails.h \
     Widgets/offerdetails.h \
     Widgets/agreementdetails.h \
-    Widgets/corporationdetails.h
+    Widgets/corporationdetails.h \
+    UI/dlgmenu.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -133,7 +134,8 @@ SOURCES += main.cpp\
     Widgets/marketdetails.cpp \
     Widgets/offerdetails.cpp \
     Widgets/agreementdetails.cpp \
-    Widgets/corporationdetails.cpp
+    Widgets/corporationdetails.cpp \
+    UI/dlgmenu.cpp
 
 RESOURCES += resource.qrc
 
@@ -184,7 +186,8 @@ FORMS += \
     Widgets/marketdetails.ui \
     Widgets/offerdetails.ui \
     Widgets/agreementdetails.ui \
-    Widgets/corporationdetails.ui
+    Widgets/corporationdetails.ui \
+    UI/dlgmenu.ui
 
 ## QJsonRpc Library:
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/release/ -lqjsonrpc

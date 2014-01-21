@@ -582,7 +582,7 @@ bool MTCompose::eventFilter(QObject *obj, QEvent *event)
     else
     {
         // standard event processing
-        return QObject::eventFilter(obj, event);
+        return QWidget::eventFilter(obj, event);
     }
 }
 

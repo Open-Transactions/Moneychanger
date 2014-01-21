@@ -277,6 +277,12 @@ void Moneychanger::bootTray()
     // ----------------------------------------------------------------------------
     // Pop up the home screen.
     mc_overview_dialog();
+    // ----------------------------------------------------------------------------
+    QString qstrMenuFileExists = QString(OTPaths::AppDataFolder().Get()) + QString("/knotworkpigeons");
+
+    if (QFile::exists(qstrMenuFileExists))
+        mc_main_menu_dialog();
+    // ----------------------------------------------------------------------------
 }
 
 
@@ -1900,6 +1906,68 @@ void Moneychanger::mc_overview_dialog()
 // End Overview
 
 
+
+
+/**
+ * Main Menu Window  (For people who can't see the menu on the systray.)
+ **/
+
+// Main Menu slots
+void Moneychanger::mc_main_menu_slot()
+{
+    //The operator has requested to open the dialog to the "main menu";
+    mc_main_menu_dialog();
+}
+
+// --------------------------------------------------
+
+void Moneychanger::mc_main_menu_dialog()
+{
+    if (!menuwindow)
+    {
+        // --------------------------------------------------
+        menuwindow = new DlgMenu(this);
+        // --------------------------------------------------
+        connect(menuwindow, SIGNAL(sig_on_toolButton_main_clicked()),
+                this,       SLOT(mc_overview_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_markets_clicked()),
+                this,       SLOT(mc_market_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_importCash_clicked()),
+                this,       SLOT(mc_import_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_manageAccounts_clicked()),
+                this,       SLOT(mc_show_account_manager_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_manageAssets_clicked()),
+                this,       SLOT(mc_defaultasset_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_manageNyms_clicked()),
+                this,       SLOT(mc_defaultnym_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_manageServers_clicked()),
+                this,       SLOT(mc_defaultserver_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_smartContracts_clicked()),
+                this,       SLOT(mc_agreement_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_Corporations_clicked()),
+                this,       SLOT(mc_corporation_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_settings_clicked()),
+                this,       SLOT(mc_settings_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_quit_clicked()),
+                this,       SLOT(mc_shutdown_slot()));
+
+        qDebug() << "Main Menu Opened";
+    }
+    // ---------------------------------
+    menuwindow->dialog();
+}
+
+// End Main Menu
 
 
 
