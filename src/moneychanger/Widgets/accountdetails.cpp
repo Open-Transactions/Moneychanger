@@ -489,8 +489,10 @@ void MTAccountDetails::AddButtonClicked()
                                                   qstrNymID.toStdString(),
                                                   qstrName .toStdString());
         // -----------------------------------------------
-        QMessageBox::information(this, tr("Success!"), QString("%1: '%2'<br/>%3: %4").arg(tr("Success Creating Account!<br/>Name")).
-                                 arg(qstrName).arg(tr("ID")).arg(qstrID));
+        // Commenting out for now.
+        //
+//        QMessageBox::information(this, tr("Success!"), QString("%1: '%2'<br/>%3: %4").arg(tr("Success Creating Account!<br/>Name")).
+//                                 arg(qstrName).arg(tr("ID")).arg(qstrID));
         // ----------
         m_pOwner->m_map.insert(qstrID, qstrName);
         m_pOwner->SetPreSelected(qstrID);

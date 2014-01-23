@@ -168,8 +168,10 @@ void DlgMarkets::FirstRun()
         m_nymId    = Moneychanger::It()->get_default_nym_id();
         m_serverId = Moneychanger::It()->get_default_server_id();
 
-        m_pMarketDetails->SetMarketNymID(m_nymId);
-        m_pOfferDetails ->SetMarketNymID(m_nymId);
+        m_pMarketDetails->SetMarketNymID   (m_nymId);
+        m_pOfferDetails ->SetMarketNymID   (m_nymId);
+        m_pMarketDetails->SetMarketServerID(m_serverId);
+        m_pOfferDetails ->SetMarketServerID(m_serverId);
     }
 }
 
@@ -269,6 +271,12 @@ void DlgMarkets::SetCurrentServerIDBasedOnIndex(int index)
     else
         m_serverId = QString("");
     // ------------------------------------------
+    if (m_pMarketDetails)
+        m_pMarketDetails->SetMarketServerID(m_serverId);
+    // ------------------------------------------
+    if (m_pOfferDetails)
+        m_pOfferDetails->SetMarketServerID(m_serverId);
+    // ------------------------------------------
 }
 
 void DlgMarkets::on_comboBoxServer_currentIndexChanged(int index)
@@ -312,7 +320,7 @@ bool DlgMarkets::RetrieveOfferList(mapIDName & the_map, QString qstrMarketID)
         return false;
     // -----------------
     bool bSuccess = true;
-    QString qstrAll("all");
+    QString qstrAll(tr("all"));
     // -----------------
     if (m_serverId != qstrAll)
         return LowLevelRetrieveOfferList(m_serverId, m_nymId, the_map, qstrMarketID);
@@ -364,7 +372,7 @@ bool DlgMarkets::LoadOfferList(mapIDName & the_map, QString qstrMarketID)
         return false;
     // -----------------
     bool bSuccess = true;
-    QString qstrAll("all");
+    QString qstrAll(tr("all"));
     // -----------------
     if (m_serverId != qstrAll)
         return LowLevelLoadOfferList(m_serverId, m_nymId, the_map, qstrMarketID);
@@ -529,7 +537,7 @@ bool DlgMarkets::LoadMarketList(mapIDName & the_map)
         return false;
     // -----------------
     bool bSuccess = true;
-    QString qstrAll("all");
+    QString qstrAll(tr("all"));
     // -----------------
     if (m_serverId != qstrAll)
         return LowLevelLoadMarketList(m_serverId, m_nymId, the_map);
@@ -612,7 +620,7 @@ bool DlgMarkets::RetrieveMarketList(mapIDName & the_map)
         return false;
     // -----------------
     bool bSuccess = true;
-    QString qstrAll("all");
+    QString qstrAll(tr("all"));
     // -----------------
     if (m_serverId != qstrAll)
         return LowLevelRetrieveMarketList(m_serverId, m_nymId, the_map);
@@ -896,7 +904,7 @@ void DlgMarkets::RefreshRecords()
     // ----------------------------
     bool bFoundServerDefault = false;
     // ----------------------------
-    QString qstrAllID   = "all";
+    QString qstrAllID   = tr("all");
     QString qstrAllName = tr("All Servers");
 
     m_mapServers.insert(qstrAllID, qstrAllName);

@@ -38,6 +38,8 @@ protected:
 
     OTDB::TradeListNym * LoadTradeListForNym(OTDB::OfferDataNym & offerData, QString qstrServerID, QString qstrNymID);
 
+    bool ChooseServer(QString & qstrServerID, QString & qstrServerName);
+
 private slots:
     void on_toolButtonAssetAcct_clicked();
     void on_toolButtonCurrencyAcct_clicked();

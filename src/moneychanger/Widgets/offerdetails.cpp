@@ -10,9 +10,132 @@
 #include "offerdetails.h"
 #include "ui_offerdetails.h"
 
+#include "dlgchooser.h"
+
 #include "detailedit.h"
 #include "moneychanger.h"
 #include "overridecursor.h"
+
+#include "wizardnewoffer.h"
+
+// ------------------------------------------------------------------------
+
+void MTOfferDetails::AddButtonClicked()
+{
+    Q_ASSERT(NULL != m_pOwner);
+    // ---------------------------------------------------
+    QString qstrMarketNymID    = m_pOwner->GetMarketNymID();
+    QString qstrMarketServerID = m_pOwner->GetMarketServerID();
+    // ---------------------------------------------------
+    if (qstrMarketNymID.isEmpty())
+    {
+        QMessageBox::warning(this, tr("Need Nym ID"),
+                             tr("Missing Nym ID. Please select it from the drop-down."));
+        return;
+    }
+    // ---------------------------------------------------
+    QString qstrMarketNymName = QString::fromStdString(OTAPI_Wrap::GetNym_Name(qstrMarketNymID.toStdString()));
+    QString qstrMarketServerName;
+    // ---------------------------------------------------
+    const QString qstrAll(tr("all"));
+
+    if (qstrMarketServerID.isEmpty() || (qstrAll == qstrMarketServerID))
+    {
+        if (false == ChooseServer(qstrMarketServerID, qstrMarketServerName))
+            return;
+    }
+    else
+        qstrMarketServerName = QString::fromStdString(OTAPI_Wrap::GetServer_Name(qstrMarketServerID.toStdString()));
+    // ---------------------------------------------------
+    WizardNewOffer theWizard(this);
+
+    theWizard.SetNymID     (qstrMarketNymID);
+    theWizard.SetNymName   (qstrMarketNymName);
+    theWizard.SetServerID  (qstrMarketServerID);
+    theWizard.SetServerName(qstrMarketServerName);
+    // ---------------------------------------------------
+    theWizard.setWindowTitle(tr("Create Offer"));
+
+    if (QDialog::Accepted == theWizard.exec())
+    {
+        const bool bIsBid = theWizard.field("bid").toBool();
+
+        if (bIsBid)
+            QMessageBox::information(this, tr("Wizard Done"), tr("It's a BID!"));
+        else
+            QMessageBox::information(this, tr("Wizard Done"), tr("It's an ASK!"));
+    }
+
+}
+
+// ------------------------------------------------------------------------
+
+void MTOfferDetails::DeleteButtonClicked()
+{
+
+}
+
+bool MTOfferDetails::ChooseServer(QString & qstrServerID, QString & qstrServerName)
+{
+    QString qstr_default_id = Moneychanger::It()->get_default_server_id();
+    // -------------------------------------------
+    QString qstr_current_id = m_pOwner->GetMarketServerID();
+    // -------------------------------------------
+    const QString qstrAll(tr("all"));
+
+    if (qstr_current_id.isEmpty() || (qstrAll == qstr_current_id))
+        qstr_current_id = qstr_default_id;
+    // -------------------------------------------
+    if (qstr_current_id.isEmpty() && (OTAPI_Wrap::GetServerCount() > 0))
+        qstr_current_id = QString::fromStdString(OTAPI_Wrap::GetServer_ID(0));
+    // -------------------------------------------
+    // Select from Servers in local wallet.
+    //
+    DlgChooser theChooser(this);
+    // -----------------------------------------------
+    mapIDName & the_map = theChooser.m_map;
+
+    bool bFoundDefault = false;
+    // -----------------------------------------------
+    const int32_t the_count = OTAPI_Wrap::GetServerCount();
+    // -----------------------------------------------
+    for (int32_t ii = 0; ii < the_count; ++ii)
+    {
+        QString OT_id = QString::fromStdString(OTAPI_Wrap::GetServer_ID(ii));
+        QString OT_name("");
+        // -----------------------------------------------
+        if (!OT_id.isEmpty())
+        {
+            if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
+                bFoundDefault = true;
+            // -----------------------------------------------
+            OT_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(OT_id.toStdString()));
+            // -----------------------------------------------
+            the_map.insert(OT_id, OT_name);
+        }
+     }
+    // -----------------------------------------------
+    if (bFoundDefault)
+        theChooser.SetPreSelected(qstr_current_id);
+    // -----------------------------------------------
+    theChooser.setWindowTitle(tr("Select the Server"));
+    // -----------------------------------------------
+    if (theChooser.exec() == QDialog::Accepted)
+    {
+        if (!theChooser.m_qstrCurrentID  .isEmpty() &&
+            !theChooser.m_qstrCurrentName.isEmpty())
+        {
+            qstrServerID   = theChooser.m_qstrCurrentID;
+            qstrServerName = theChooser.m_qstrCurrentName;
+
+            return true;
+        }
+    }
+    // --------------
+    return false;
+}
+
+// ------------------------------------------------------------------------
 
 MTOfferDetails::MTOfferDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
@@ -517,18 +640,8 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
     // -----------------------------------------------------
 }
 
+
 // ------------------------------------------------------------------------
-
-
-void MTOfferDetails::AddButtonClicked()
-{
-
-}
-
-void MTOfferDetails::DeleteButtonClicked()
-{
-
-}
 
 void MTOfferDetails::FavorLeftSideForIDs()
 {
