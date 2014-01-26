@@ -8,14 +8,20 @@
 
 #include "passwordcallback.h"
 
+#ifdef _WIN32
+#include <otapi/OTAPI.h>
+#include <otapi/OT_ME.h>
+#include <otlib/OTLog.h>
+#include <otlib/OTPassword.h>
+#include <otlib/OTAsymmetricKey.h>
+#else
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
-
-#include <opentxs/OTPassword.h>
-
-#include <opentxs/OTAsymmetricKey.h>
-
 #include <opentxs/OTLog.h>
+#include <opentxs/OTPassword.h>
+#include <opentxs/OTAsymmetricKey.h>
+#endif
+
 
 bool SetupPasswordCallback(OTCaller & passwordCaller, OTCallback & passwordCallback);
 

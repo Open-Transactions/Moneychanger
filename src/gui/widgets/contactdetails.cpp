@@ -6,9 +6,15 @@
 #include <QMessageBox>
 #include <QPlainTextEdit>
 
+#ifdef _WIN32
+#include <otapi/OTAPI.h>
+#include <otapi/OT_ME.h>
+#include <otlib/OTLog.h>
+#else
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
 #include <opentxs/OTLog.h>
+#endif
 
 #include "contactdetails.h"
 #include "ui_contactdetails.h"

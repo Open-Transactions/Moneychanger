@@ -11,8 +11,13 @@
 
 #include "dlgchooser.h"
 
+#ifdef _WIN32
+#include <otapi/OTAPI.h>
+#include <otapi/OT_ME.h>
+#else
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
+#endif
 
 MTPageAcct_Nym::MTPageAcct_Nym(QWidget *parent) :
     QWizardPage(parent),

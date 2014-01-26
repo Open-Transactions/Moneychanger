@@ -5,7 +5,11 @@
 #include "dlgpasswordconfirm.h"
 #include "ui_dlgpasswordconfirm.h"
 
+#ifdef _WIN32
+#include <otlib/OTPassword.h>
+#else
 #include <opentxs/OTPassword.h>
+#endif
 
 #include "overridecursor.h"
 

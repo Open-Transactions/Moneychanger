@@ -2,6 +2,7 @@
 PRECOMPILED_HEADER = $${PWD}/stable.h
 
 HEADERS += \
+    $${PWD}/stable.h \
     $${PWD}/applicationmc.h \
     $${PWD}/filedownloader.h \
     $${PWD}/httpinterface.h \

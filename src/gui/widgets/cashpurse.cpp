@@ -8,8 +8,13 @@
 #include <QMessageBox>
 #include <QStringList>
 
+#ifdef _WIN32
+#include <otapi/OTAPI.h>
+#include <otapi/OT_ME.h>
+#else
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
+#endif
 
 #include "cashpurse.h"
 #include "ui_cashpurse.h"

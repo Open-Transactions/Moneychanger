@@ -17,5 +17,7 @@ UI_DIR         = $${SOLUTION_DIR}../out/$${TARGET}/ui/
 #-------------------------------------------------
 # Target
 
-DESTDIR = $${SOLUTION_DIR}../lib/$${TARGET}
+win32:{
+DESTDIR = $${SOLUTION_DIR}../lib/$(PlatformName)/$(Configuration)
+}
 

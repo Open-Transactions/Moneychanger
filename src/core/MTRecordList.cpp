@@ -22,11 +22,17 @@
 #include <OTMessage.h>
 #include <OTLedger.h>
 
-#include <OpenTransactions.h>
-#include <OTAPI.h>
-#include <OT_ME.h>
-
-#include <OTLog.h>
+#ifdef _WIN32
+#include <otapi/OpenTransactions.h>
+#include <otapi/OTAPI.h>
+#include <otapi/OT_ME.h>
+#include <otlib/OTLog.h>
+#else
+#include <opentxs/OpenTransactions.h>
+#include <opentxs/OTAPI.h>
+#include <opentxs/OT_ME.h>
+#include <opentxs/OTLog.h>
+#endif
 
 
 #include "MTRecordList.hpp"

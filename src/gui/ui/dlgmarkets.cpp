@@ -7,9 +7,15 @@
 #include <QVBoxLayout>
 #include <QDebug>
 
+#ifdef _WIN32
+#include <otapi/OTAPI.h>
+#include <otapi/OT_ME.h>
+#include <otlib/OTStorage.h>
+#else
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
 #include <opentxs/OTStorage.h>
+#endif
 
 #include "dlgmarkets.h"
 #include "ui_dlgmarkets.h"

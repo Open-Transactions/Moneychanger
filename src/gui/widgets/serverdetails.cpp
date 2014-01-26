@@ -17,8 +17,13 @@
 
 #include "detailedit.h"
 
+#ifdef _WIN32
+#include <otapi/OTAPI.h>
+#include <otapi/OT_ME.h>
+#else
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
+#endif
 
 
 MTServerDetails::MTServerDetails(QWidget *parent, MTDetailEdit & theOwner) :

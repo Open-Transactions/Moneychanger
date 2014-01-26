@@ -37,8 +37,13 @@
 #include "widgets/overridecursor.h"
 
 
-#include "opentxs/OTAPI.h"
-#include "opentxs/OT_ME.h"
+#ifdef _WIN32
+#include <otapi/OTAPI.h>
+#include <otapi/OT_ME.h>
+#else
+#include <opentxs/OTAPI.h>
+#include <opentxs/OT_ME.h>
+#endif
 
 /**
  * Constructor & Destructor

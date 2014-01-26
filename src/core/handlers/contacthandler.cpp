@@ -2,12 +2,19 @@
 #include <core/stable.h>
 #endif
 
+#ifdef _WIN32
+#include <otapi/OTAPI.h>
+#include <otapi/OT_ME.h>
+#include <otlib/OTStorage.h>
+#include <otlib/OTASCIIArmor.h>
+#include <otlib/OTLog.h>
+#else
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
-
 #include <opentxs/OTStorage.h>
 #include <opentxs/OTASCIIArmor.h>
 #include <opentxs/OTLog.h>
+#endif
 
 #include "contacthandler.h"
 

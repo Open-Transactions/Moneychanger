@@ -9,6 +9,7 @@ FORMS += \
     $${PWD}/ui/dlgexportedtopass.ui \
     $${PWD}/ui/dlgimport.ui \
     $${PWD}/ui/dlgmarkets.ui \
+    $${PWD}/ui/dlgmenu.ui \
     $${PWD}/ui/dlgnewcontact.ui \
     $${PWD}/ui/dlgpassword.ui \
     $${PWD}/ui/dlgpasswordconfirm.ui \
@@ -63,6 +64,7 @@ HEADERS += \
     $${PWD}/ui/dlgexportedtopass.h \
     $${PWD}/ui/dlgimport.h \
     $${PWD}/ui/dlgmarkets.h \
+    $${PWD}/ui/dlgmenu.h \
     $${PWD}/ui/dlgnewcontact.h \
     $${PWD}/ui/dlgpassword.h \
     $${PWD}/ui/dlgpasswordconfirm.h \
@@ -118,6 +120,7 @@ SOURCES += \
     $${PWD}/ui/dlgexportedtopass.cpp \
     $${PWD}/ui/dlgimport.cpp \
     $${PWD}/ui/dlgmarkets.cpp \
+    $${PWD}/ui/dlgmenu.cpp \
     $${PWD}/ui/dlgnewcontact.cpp \
     $${PWD}/ui/dlgpassword.cpp \
     $${PWD}/ui/dlgpasswordconfirm.cpp \

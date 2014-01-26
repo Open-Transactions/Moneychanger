@@ -15,6 +15,8 @@ TEMPLATE    = app
 TARGET      = moneychanger-qt
 #VERSION     =
 
+CONFIG += debug_and_release precompile_header
+
 QT         += core gui sql network widgets
 DEFINES    += "OT_ZMQ_MODE=1"
 
@@ -33,8 +35,7 @@ include($${SOLUTION_DIR}../src/gui/gui.pri)
 # Include
 
 INCLUDEPATH += $${SOLUTION_DIR}../src
-INCLUDEPATH += $${SOLUTION_DIR}../include
-INCLUDEPATH += $${SOLUTION_DIR}../include/opentxs
+INCLUDEPATH += $${SOLUTION_DIR}../src/core
 
 #-------------------------------------------------
 # Options
@@ -42,12 +43,19 @@ INCLUDEPATH += $${SOLUTION_DIR}../include/opentxs
 ## Windows
 win32:{
 
-INCLUDEPATH += C:\OpenSSL-Win32\include
-DEFINES     += "_UNICODE" "NOMINMAX"
-CharacterSet = 1
+    INCLUDEPATH += $(SystemDrive)/OpenSSL-Win$(PlatformArchitecture)/include
+    LIBPATH += $(SystemDrive)/OpenSSL-Win$(PlatformArchitecture)/lib/VC
+    LIBS +=
 
-QMAKE_CXXFLAGS += /bigobj /Zm480 /wd4512 /wd4100
+    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include
+    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include/otlib
+    LIBPATH += $${SOLUTION_DIR}../../Open-Transactions/lib/$(PlatformName)/$(Configuration)/
+    LIBS += otlib.lib otapi.lib
 
+    DEFINES     += "_UNICODE" "NOMINMAX"
+    CharacterSet = 1
+
+    QMAKE_CXXFLAGS += /bigobj /Zm480 /wd4512 /wd4100
 
 }
 
@@ -114,6 +122,4 @@ unix: CONFIG += link_pkgconfig
 
 unix: PKGCONFIG += opentxs
 unix: PKGCONFIG += chaiscript
-
-CONFIG += debug_and_release
 

@@ -17,8 +17,13 @@
 
 #include "detailedit.h"
 
+#ifdef _WIN32
+#include <otapi/OTAPI.h>
+#include <otapi/OT_ME.h>
+#else
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
+#endif
 
 MTAssetDetails::MTAssetDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
