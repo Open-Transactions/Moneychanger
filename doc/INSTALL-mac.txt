@@ -10,13 +10,15 @@ $ brew update
 #########
 # install QT
 $ brew install libpng qt5
+$ brew unlink qt
+$ brew link —-force qt5
 
 
 #########
 # adding path /usr/local/bin to /etc/launchd.conf
 # this step adds the path “/usr/local/bin” to all applications that are run from the launcher.
 
-# we will use nano (but you can use your favorite command line text editor.
+# we will use nano (but you can use your favourite command line text editor.
 
 $ sudo nano /etc/launchd.conf
 
@@ -28,13 +30,13 @@ make sure you have a blank line at the end of the file.
 # download and install QT Creator:
 http://qt-project.org/downloads
 
-## add /usr/local to finder favorites.
+## add /usr/local to finder favourites.
 # open the terminal and run:
 $open /usr/local
 
 Now favorite the folder that loads up (you cannot normally get to this folder through finder).
 
-# reboot the pc: (requres a reboot for these changes to take effect).
+# reboot the pc: (requires a reboot for these changes to take effect).
 $ sudo reboot
 
 
@@ -59,7 +61,7 @@ $ cd Moneychanger
 file: ~/Scratch/Sources/Moneychanger/project/moneychanger.pro
 
 
-Make sure you have Open Transctions installed!
+Make sure you have Open Transactions installed!
 
 Compile and Run.
 
