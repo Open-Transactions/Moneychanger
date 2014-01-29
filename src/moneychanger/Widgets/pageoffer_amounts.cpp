@@ -1,11 +1,26 @@
 
 #include <cmath>
 
+#include <opentxs/OTStorage.h>
+
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
 
+#include <opentxs/OTPaymentPlan.h>
+
 #include "pageoffer_amounts.h"
 #include "ui_pageoffer_amounts.h"
+
+const int64_t array_timespan[] = {
+    LENGTH_OF_MINUTE_IN_SECONDS,
+    LENGTH_OF_HOUR_IN_SECONDS,
+    LENGTH_OF_DAY_IN_SECONDS,
+    LENGTH_OF_MONTH_IN_SECONDS,
+    LENGTH_OF_THREE_MONTHS_IN_SECONDS,
+    LENGTH_OF_SIX_MONTHS_IN_SECONDS,
+    LENGTH_OF_YEAR_IN_SECONDS
+};
+
 
 PageOffer_Amounts::PageOffer_Amounts(QWidget *parent) :
     QWizardPage(parent),
@@ -13,16 +28,45 @@ PageOffer_Amounts::PageOffer_Amounts(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    registerField("isMarketOrder", ui->radioButton);
-    registerField("isLimitOrder",  ui->radioButton_2);
-    registerField("isFillOrKill",  ui->checkBox);
+    registerField("isMarketOrder",  ui->radioButton);
+    registerField("isLimitOrder",   ui->radioButton_2);
+    registerField("isFillOrKill",   ui->checkBox);
+    registerField("quantityAsset*", ui->lineEditQuantity);
+    registerField("totalAsset",     ui->lineEditTotal);
+    registerField("pricePerScale",  ui->labelCalculatedPrice, "text");
+    registerField("scale",          ui->comboBox,             "currentText");
+    registerField("expiration",     ui->comboBoxExpiration,   "currentIndex");
+    registerField("expirationStr",  ui->comboBoxExpiration,   "currentText");
 
     ui->lineEditTotal->setStyleSheet("QLineEdit { border: none; background-color: lightgray }");
-
-//    ui->lineEditQuantity;
-//    ui->lineEditPrice;
 }
 
+bool PageOffer_Amounts::isComplete() const
+{
+    const bool bIsMarketOrder = field("isMarketOrder").toBool();
+
+    if (bIsMarketOrder)
+        return QWizardPage::isComplete();
+    // -----------------------------------
+    // We really only overrode this function in the case
+    // of limit orders. Since we now know this is a limit
+    // order, we need to make sure the price is set.
+    //
+    QString qstrPrice = ui->labelCalculatedPrice->text();
+
+    if (qstrPrice.isEmpty())
+        return false;
+    // ------------------------
+    std::string str_asset = (field("AssetID").toString()).toStdString();
+    std::string str_price = qstrPrice.toStdString();
+
+    int64_t lAmount = OTAPI_Wrap::StringToAmount(str_asset, str_price);
+
+    if (lAmount < 1)
+        return false;
+    // ------------------------
+    return QWizardPage::isComplete();
+}
 
 void PageOffer_Amounts::on_lineEditPrice_textChanged(const QString &arg1)
 {
@@ -39,6 +83,8 @@ void PageOffer_Amounts::on_lineEditPrice_textChanged(const QString &arg1)
     QString qstrFinal(QString::fromStdString(str_final));
 
     ui->labelCalculatedPrice->setText(qstrFinal);
+
+    emit completeChanged();
 }
 
 
@@ -90,11 +136,15 @@ void PageOffer_Amounts::on_comboBox_currentIndexChanged(const QString &arg1)
 void PageOffer_Amounts::on_radioButton_clicked()
 {
     RadioChanged();
+
+    emit completeChanged();
 }
 
 void PageOffer_Amounts::on_radioButton_2_clicked()
 {
     RadioChanged();
+
+    emit completeChanged();
 }
 
 void PageOffer_Amounts::RadioChanged()
@@ -103,21 +153,37 @@ void PageOffer_Amounts::RadioChanged()
 
     if (bIsMarketOrder)
     {
-        ui->labelPrice          ->setStyleSheet("QLabel { color : gray; }");
-        ui->labelPer            ->setStyleSheet("QLabel { color : gray; }");
-        ui->labelCalculatedPrice->setStyleSheet("QLabel { color : gray; }");
+//        ui->labelPrice          ->setStyleSheet("QLabel { color : gray; }");
+//        ui->labelPer            ->setStyleSheet("QLabel { color : gray; }");
+//        ui->labelCalculatedPrice->setStyleSheet("QLabel { color : gray; }");
+//        ui->labelExpiration     ->setStyleSheet("QLabel { color : gray; }");
+//        ui->comboBoxExpiration->setEnabled(false);
+//        ui->lineEditPrice->setReadOnly(true);
+//        ui->lineEditPrice->setEnabled(false);
 
-        ui->lineEditPrice->setReadOnly(true);
-        ui->lineEditPrice->setEnabled(false);
+        ui->labelPrice          ->setVisible(false);
+        ui->labelPer            ->setVisible(false);
+        ui->labelCalculatedPrice->setVisible(false);
+        ui->labelExpiration     ->setVisible(false);
+        ui->comboBoxExpiration  ->setVisible(false);
+        ui->lineEditPrice       ->setVisible(false);
     }
     else // Limit order
     {
-        ui->labelPrice          ->setStyleSheet("QLabel { color : black; }");
-        ui->labelPer            ->setStyleSheet("QLabel { color : black; }");
-        ui->labelCalculatedPrice->setStyleSheet("QLabel { color : black; }");
+//        ui->labelPrice          ->setStyleSheet("QLabel { color : black; }");
+//        ui->labelPer            ->setStyleSheet("QLabel { color : black; }");
+//        ui->labelCalculatedPrice->setStyleSheet("QLabel { color : black; }");
+//        ui->labelExpiration     ->setStyleSheet("QLabel { color : black; }");
+//        ui->comboBoxExpiration->setEnabled(true);
+//        ui->lineEditPrice->setReadOnly(false);
+//        ui->lineEditPrice->setEnabled(true);
 
-        ui->lineEditPrice->setReadOnly(false);
-        ui->lineEditPrice->setEnabled(true);
+        ui->labelPrice          ->setVisible(true);
+        ui->labelPer            ->setVisible(true);
+        ui->labelCalculatedPrice->setVisible(true);
+        ui->labelExpiration     ->setVisible(true);
+        ui->comboBoxExpiration  ->setVisible(true);
+        ui->lineEditPrice       ->setVisible(true);
     }
 }
 
@@ -159,7 +225,7 @@ void PageOffer_Amounts::initializePage()
         long    lScale = static_cast<long>(dValue);
 
         OTString strTemp;
-        strTemp.Format("%ld\.", lScale); // So 1 becomes "1." which StringToAmount makes into 1.000 which is actually 1000
+        strTemp.Format("%ld.", lScale); // So 1 becomes "1." which StringToAmount makes into 1.000 which is actually 1000
 
         const std::string str_input(strTemp.Get());
 
@@ -177,6 +243,31 @@ void PageOffer_Amounts::initializePage()
 
     ui->comboBox->setCurrentIndex(-1);
     ui->comboBox->setCurrentIndex(0);
+    // ----------------------------------------------
+    const QString array_timename[] = {
+        QString(tr("one minute")),
+        QString(tr("one hour")),
+        QString(tr("one day")),
+        QString(tr("one month")),
+        QString(tr("three months")),
+        QString(tr("six months")),
+        QString(tr("one year"))
+    };
+
+    ui->comboBoxExpiration->clear();
+
+    for (int ii = 0; ii < 7; ++ii)
+    {
+        QVariant qvarTime(array_timespan[ii]);
+        ui->comboBoxExpiration->addItem(array_timename[ii], qvarTime);
+    }
+
+    if (ui->comboBoxExpiration->count() >= 3)
+        ui->comboBoxExpiration->setCurrentIndex(2);
+    else if (ui->comboBoxExpiration->count() >= 1)
+        ui->comboBoxExpiration->setCurrentIndex(0);
+    // ----------------------------------------------
+    ui->lineEditPrice->setText("");
     // ----------------------------------------------
     RadioChanged();
 }

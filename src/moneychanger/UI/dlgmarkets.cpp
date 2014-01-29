@@ -12,6 +12,8 @@
 #include "dlgmarkets.h"
 #include "ui_dlgmarkets.h"
 
+#include "overridecursor.h"
+
 #include "moneychanger.h"
 
 #include "detailedit.h"
@@ -351,19 +353,25 @@ bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrServerID, QString qstrNym
     // -----------------
     OT_ME madeEasy;
 
-    const std::string str_reply = madeEasy.get_nym_market_offers(qstrServerID.toStdString(),
-                                                                 qstrNymID   .toStdString());
-    const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+    bool bSuccess = false;
+    {
+        MTSpinner theSpinner;
 
-    const bool bSuccess = (1 == nResult);
+        const std::string str_reply = madeEasy.get_nym_market_offers(qstrServerID.toStdString(),
+                                                                     qstrNymID   .toStdString());
+        const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+
+        bSuccess = (1 == nResult);
+    }
     // -----------------------------------
     if (bSuccess)
     {
         return LowLevelLoadOfferList(qstrServerID, m_nymId, the_map, qstrMarketID);
     }
-
+    else
+        Moneychanger::HasUsageCredits(this, qstrServerID, qstrNymID);
+    // -----------------------------------
     return bSuccess;
-
 }
 // -----------------------------------------------
 bool DlgMarkets::LoadOfferList(mapIDName & the_map, QString qstrMarketID)
@@ -652,17 +660,24 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrServerID, QString qstrNy
     // -----------------
     OT_ME madeEasy;
 
-    const std::string str_reply = madeEasy.get_market_list(qstrServerID.toStdString(),
-                                                           qstrNymID   .toStdString());
-    const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+    bool bSuccess = false;
+    {
+        MTSpinner theSpinner;
 
-    const bool bSuccess = (1 == nResult);
+        const std::string str_reply = madeEasy.get_market_list(qstrServerID.toStdString(),
+                                                               qstrNymID   .toStdString());
+        const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+
+        bSuccess = (1 == nResult);
+    }
     // -----------------------------------
     if (bSuccess)
     {
         return LowLevelLoadMarketList(qstrServerID, m_nymId, the_map);
     }
-
+    else
+        Moneychanger::HasUsageCredits(this, qstrServerID, qstrNymID);
+    // -----------------------------------
     return bSuccess;
 }
 

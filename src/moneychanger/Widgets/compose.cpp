@@ -65,6 +65,8 @@ bool MTCompose::sendMessage(QString body, QString fromNymId, QString toNymId, QS
     {
         qDebug() << "send_message: Failed.";
 
+        Moneychanger::HasUsageCredits(this, str_serverId, str_fromNymId);
+
         return false;
     }
 

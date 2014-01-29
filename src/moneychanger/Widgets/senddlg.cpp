@@ -95,6 +95,9 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString fromAcctId, QS
         bReturnValue = madeEasy.withdraw_and_send_cash(str_fromAcctId, str_toNymId, note.toStdString(), SignedAmount);
     }
     // ------------------------------------------------------------
+    if (!bReturnValue)
+        Moneychanger::HasUsageCredits(this, str_serverId, str_fromNymId);
+    // ------------------------------------------------------------
     return bReturnValue;
 
     // NOTE: We don't retrieve the account files in the case of success, because the
@@ -154,6 +157,9 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     if (1 != nInterpretReply) // Failure
     {
         qDebug() << QString("Failure withdrawing voucher.");
+
+        Moneychanger::HasUsageCredits(this, str_serverId, str_fromNymId);
+
         return false;
     }
     // ---------------------------------------------------------
@@ -209,6 +215,9 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     }
     qDebug() << QString("%1 retrieving intermediary files for account %2. (After withdraw voucher.)").
                 arg(bRetrieved ? QString("Success") : QString("Failed")).arg(str_fromAcctId.c_str());
+    // -------------
+    if (!bRetrieved)
+        Moneychanger::HasUsageCredits(this, str_serverId, str_fromNymId);
     // ---------------------------------------------------------
     // We try to send it, even if the retrieve_account failed.
     // That way we insure that a copy of the voucher is stored
@@ -230,7 +239,11 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     int32_t nReturnVal = sendPayment.VerifyMessageSuccess(strSendResponse);
 
     if (1 != nReturnVal)
+    {
         qDebug() << QString("send %1: Failed.").arg(nsChequeType);
+
+        Moneychanger::HasUsageCredits(this, str_serverId, str_fromNymId);
+    }
     else
     {
         qDebug() << QString("Success in send %1!").arg(nsChequeType);
@@ -368,7 +381,11 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
     int32_t nReturnVal  = madeEasy.VerifyMessageSuccess(strResponse);
 
     if (1 != nReturnVal)
+    {
         qDebug() << QString("send %1: failed.").arg(nsChequeType);
+
+        Moneychanger::HasUsageCredits(this, str_serverId, str_fromNymId);
+    }
     else
     {
         qDebug() << QString("Success in send %1!").arg(nsChequeType);

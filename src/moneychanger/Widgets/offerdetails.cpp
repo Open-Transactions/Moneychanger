@@ -3,9 +3,12 @@
 #include <QMessageBox>
 #include <QDebug>
 
+#include <opentxs/OTStorage.h>
+
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
-#include <opentxs/OTStorage.h>
+
+#include <opentxs/OTPaymentPlan.h>
 
 #include "offerdetails.h"
 #include "ui_offerdetails.h"
@@ -17,6 +20,7 @@
 #include "overridecursor.h"
 
 #include "wizardnewoffer.h"
+
 
 // ------------------------------------------------------------------------
 
@@ -54,18 +58,187 @@ void MTOfferDetails::AddButtonClicked()
     theWizard.SetServerID  (qstrMarketServerID);
     theWizard.SetServerName(qstrMarketServerName);
     // ---------------------------------------------------
+    const std::string str_nym_id   (qstrMarketNymID   .toStdString());
+    const std::string str_server_id(qstrMarketServerID.toStdString());
+    // ---------------------------------------------------
     theWizard.setWindowTitle(tr("Create Offer"));
 
     if (QDialog::Accepted == theWizard.exec())
     {
-        const bool bIsBid = theWizard.field("bid").toBool();
+        // --------------------------------------------
+        const bool    bIsBid                 (theWizard.field("bid")                .toBool());
+        const bool    bSelling               (!bIsBid);
+        // --------------------------------------------
+        const bool    bIsMarketOrder         (theWizard.field("isMarketOrder")      .toBool());
+        const bool    bIsFillOrKill          (theWizard.field("isFillOrKill")       .toBool());
+        // --------------------------------------------
+        const QString qstrAssetID            (theWizard.field("AssetID")            .toString());
+        const QString qstrCurrencyID         (theWizard.field("CurrencyID")         .toString());
+        // --------------------------------------------
+        const std::string str_asset_id       (qstrAssetID                           .toStdString());
+        const std::string str_currency_id    (qstrCurrencyID                        .toStdString());
+        // --------------------------------------------
+//      const QString qstrAssetName          (theWizard.field("AssetName")          .toString());
+//      const QString qstrCurrencyName       (theWizard.field("CurrencyName")       .toString());
+        // --------------------------------------------
+        const QString qstrQuantity           (theWizard.field("quantityAsset")      .toString());
+        const int64_t lQuantity              (static_cast<int64_t>(qstrQuantity     .toLong  ())); // If this is "9"...
+        // --------------------------------------------
+        const QString qstrTotalAsset         (theWizard.field("totalAsset")         .toString());//...then this is "BTC 9.000"
+        const int64_t lTotalAsset            (OTAPI_Wrap::StringToAmount(str_asset_id,           //...and lTotalAsset is 9000
+                                                                         qstrTotalAsset.toStdString())); // Note: scale is already inside this.
+        // --------------------------------------------
+        const QString qstrScale              (theWizard.field("scale")              .toString      ());// If this is "BTC 1.000"
+        const int64_t lScale                 (OTAPI_Wrap::StringToAmount(str_asset_id,                 // ...then lScale is 1000
+                                                                         qstrScale  .toStdString   ()));
+        // --------------------------------------------
+        const QString qstrPrice              (theWizard.field("pricePerScale")      .toString      ());// If this is "$ 45.98"
+        const int64_t lPrice                 (OTAPI_Wrap::StringToAmount(str_currency_id,              // ...then lPrice is 4598
+                                                                         qstrPrice  .toStdString   ())); // (per scale.)
+        // --------------------------------------------
+        const QString qstrAssetAcctID        (theWizard.field("AssetAcctID")        .toString());
+        const QString qstrCurrencyAcctID     (theWizard.field("CurrencyAcctID")     .toString());
+        // --------------------------------------------
+        const std::string str_asset_acct_id   (qstrAssetAcctID                      .toStdString());
+        const std::string str_currency_acct_id(qstrCurrencyAcctID                   .toStdString());
+        // --------------------------------------------
+        const QString qstrAssetAcctName      (theWizard.field("AssetAcctName")      .toString());
+        const QString qstrCurrencyAcctName   (theWizard.field("CurrencyAcctName")   .toString());
+        // --------------------------------------------
+        const QString qstrAssetAcctBalance   (theWizard.field("AssetAcctBalance")   .toString());
+        const QString qstrCurrencyAcctBalance(theWizard.field("CurrencyAcctBalance").toString());
+        // --------------------------------------------
+        const int64_t lAssetAcctBalance      (OTAPI_Wrap::StringToAmount(str_asset_id,
+                                                                         qstrAssetAcctBalance   .toStdString()));
+        const int64_t lCurrencyAcctBalance   (OTAPI_Wrap::StringToAmount(str_currency_id,
+                                                                         qstrCurrencyAcctBalance.toStdString()));
+        // --------------------------------------------
+//      const QString qstrExpire             (theWizard.field("expirationStr")      .toString());
+        const int     nExpire                (theWizard.field("expiration")         .toInt   ());
+        // --------------------------------------------
+        const int     timespan_array_len                  = 7;
+        const int64_t array_timespan[timespan_array_len]  = {
+            LENGTH_OF_MINUTE_IN_SECONDS,
+            LENGTH_OF_HOUR_IN_SECONDS,
+            LENGTH_OF_DAY_IN_SECONDS,
+            LENGTH_OF_MONTH_IN_SECONDS,
+            LENGTH_OF_THREE_MONTHS_IN_SECONDS,
+            LENGTH_OF_SIX_MONTHS_IN_SECONDS,
+            LENGTH_OF_YEAR_IN_SECONDS
+        };
 
-        if (bIsBid)
-            QMessageBox::information(this, tr("Wizard Done"), tr("It's a BID!"));
+        const int64_t lExpire = (((nExpire < 0) || (nExpire >= timespan_array_len)) ? 0 : array_timespan[nExpire]);
+        // --------------------------------------------
+/*
+    EXPORT  std::string create_market_offer(const std::string  & ASSET_ACCT_ID,
+                                            const std::string  & CURRENCY_ACCT_ID,
+                                            const int64_t  scale,
+                                            const int64_t  minIncrement,
+                                            const int64_t  quantity,
+                                            const int64_t  price,
+                                            const bool      bSelling,
+                                            const int64_t  lLifespanInSeconds,  // 0 does default of 86400 == 1 day.
+                                            const std::string STOP_SIGN, // If a stop order, must be "<" or ">"
+                                            const int64_t ACTIVATION_PRICE); // If a stop order, must be non-zero.
+*/
+
+        // --------------------------------------------------------------
+        const int64_t     lActualPrice (bIsMarketOrder ? 0         : lPrice);
+        const int64_t     lMinIncrement(bIsFillOrKill  ? lQuantity : 1);
+        // --------------------------------------------------------------
+        const int64_t     lActivationPrice = 0; // For now we're not supporting stop orders in the GUI.
+        const std::string str_stop_sign("");    // For now we're not supporting stop orders in the GUI.
+        // ----------------------------------------------------------------
+        // Do some validation on the account balances.
+        //
+        if (bIsMarketOrder)
+        {
+            if (( bIsBid && (lCurrencyAcctBalance <= 0)) || // If I'm buying, but have no currency...
+                (!bIsBid && (lAssetAcctBalance    <= 0)))   // ...or if I'm selling, but have no assets...
+            {
+                QMessageBox::warning(this,
+                                     bIsBid ? tr("Currency Account Empty.") : tr("Asset Account Empty."),
+                                     bIsBid ? tr("Cannot place bid offer: currency account is empty.") :
+                                              tr("Cannot place ask offer: asset account is empty.") );
+                return;
+            }
+        }
+        else // Limit order
+        {
+            const int64_t lHaveBalance = bIsBid ? lCurrencyAcctBalance : lAssetAcctBalance;
+            const int64_t lNeedBalance = bIsBid ? (lQuantity * lPrice) : lTotalAsset;
+
+            if (lHaveBalance < lNeedBalance)
+            {
+                const QString qstrNeededBalance = QString::fromStdString(OTAPI_Wrap::FormatAmount(
+                                                                             bIsBid ? str_currency_id : str_asset_id,
+                                                                             lNeedBalance));
+                QString qstrError = bIsBid ?
+                            QString("%1 '%2' %3 %4, %5 %6 %7").arg(tr("Cannot place bid offer: currency account")).
+                            arg(qstrCurrencyAcctName).arg(tr("contains")).arg(qstrCurrencyAcctBalance).
+                            arg(tr("but at least")).arg(qstrNeededBalance).arg(tr("is needed."))
+                          :
+                            QString("%1 '%2' %3 %4, %5 %6 %7").arg(tr("Cannot place ask offer: asset account")).
+                            arg(qstrAssetAcctName).arg(tr("contains")).arg(qstrAssetAcctBalance).
+                            arg(tr("but at least")).arg(qstrNeededBalance).arg(tr("is needed."))
+                          ;
+                QMessageBox::warning(this, bIsBid ? tr("Insufficient Funds.") : tr("Insufficient Assets."), qstrError);
+                return;
+            }
+        }
+        // ----------------------------------------------------------------
+        // If we're in here, that means the person entered a valid market offer,
+        // and then clicked "OK".
+        //
+        OT_ME        madeEasy;
+        std::string  strResponse;
+        {
+            MTSpinner theSpinner;
+            // --------------------------------------------------------------
+            strResponse = madeEasy.create_market_offer(str_asset_acct_id,
+                                                       str_currency_acct_id,
+                                                       lScale,
+                                                       lMinIncrement,
+                                                       lTotalAsset,
+                                                       lActualPrice,
+                                                       bSelling,
+                                                       lExpire,  // 0 does default of 86400 == 1 day.
+                                                       str_stop_sign, // If a stop order, must be "<" or ">"
+                                                       lActivationPrice); // For stop orders.
+        }
+        // --------------------------------------------------------
+        const std::string strAttempt("create_market_offer");
+
+        int32_t nInterpretReply = madeEasy.InterpretTransactionMsgReply(str_server_id,
+                                                                        str_nym_id,
+                                                                        str_asset_acct_id,
+                                                                        strAttempt, strResponse);
+        const bool bPlacedOffer = (1 == nInterpretReply);
+        // ---------------------------------------------------------
+        if (!bPlacedOffer)
+        {
+            const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, str_server_id, str_nym_id);
+
+            // In the cases of -2 and 0, HasUsageCredits already pops up a message box.
+            //
+            if (((-2) != lUsageCredits) && (0 != lUsageCredits))
+                QMessageBox::warning(this,
+                                     tr("Failed placing Offer on Market"),
+                                     tr("Failed placing offer on market."));
+        }
         else
-            QMessageBox::information(this, tr("Wizard Done"), tr("It's an ASK!"));
+        {
+            QMessageBox::information(this,
+                                     tr("Success Placing Offer on Market"),
+                                     tr("Success placing offer on market. "
+                                        "NOTE: Though offers are always added according to turn, "
+                                        "it can still take around 30 seconds for an offer to appear on the market. "
+                                        "(So wait a little while before clicking 'Refresh.')"));
+            // --------------------------------------------------------
+//          emit balancesChanged(m_qstrAcctId); // Offers don't appear on market immediately anyway, so no point emitting a signal.
+        }
+        // -----------------------------------------------------------------
     }
-
 }
 
 // ------------------------------------------------------------------------
@@ -346,8 +519,8 @@ void MTOfferDetails::refresh(QString strID, QString strName)
                     const int64_t lAcctBalance     = OTAPI_Wrap::GetAccountWallet_Balance(pOfferData->asset_acct_id);
                     const int64_t lCurrencyBalance = OTAPI_Wrap::GetAccountWallet_Balance(pOfferData->currency_acct_id);
 
-                    const std::string str_acct_balance     = OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lAcctBalance);
-                    const std::string str_currency_balance = OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lCurrencyBalance);
+                    const std::string str_acct_balance     = OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id,    lAcctBalance);
+                    const std::string str_currency_balance = OTAPI_Wrap::FormatAmount(pOfferData->currency_type_id, lCurrencyBalance);
 
                     ui->lineEditAcctBalance    ->setText(QString::fromStdString(str_acct_balance));
                     ui->lineEditCurrencyBalance->setText(QString::fromStdString(str_currency_balance));

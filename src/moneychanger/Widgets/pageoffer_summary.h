@@ -15,6 +15,9 @@ public:
     explicit PageOffer_Summary(QWidget *parent = 0);
     ~PageOffer_Summary();
 
+protected:
+    void initializePage(); //virtual
+
 private:
     Ui::PageOffer_Summary *ui;
 };

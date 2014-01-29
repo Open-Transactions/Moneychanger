@@ -185,11 +185,18 @@ bool MTMarketDetails::LowLevelRetrieveMarketOffers(OTDB::MarketData & marketData
     // ------------------------------
     OT_ME madeEasy;
 
-    const std::string str_reply = madeEasy.get_market_offers(marketData.server_id, strNymID,
-                                                             marketData.market_id, MAX_DEPTH);
-    const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+    bool bSuccess = false;
+    {
+        MTSpinner         theSpinner;
+        const std::string str_reply = madeEasy.get_market_offers(marketData.server_id, strNymID,
+                                                                 marketData.market_id, MAX_DEPTH);
+        const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
 
-    const bool bSuccess = (1 == nResult);
+        bSuccess = (1 == nResult);
+    }
+    // -----------------------------------
+    if (!bSuccess)
+        Moneychanger::HasUsageCredits(this, marketData.server_id, strNymID);
     // -----------------------------------
     return bSuccess;
 }
@@ -494,11 +501,19 @@ bool MTMarketDetails::LowLevelRetrieveMarketTrades(OTDB::MarketData & marketData
     // ------------------------------
     OT_ME madeEasy;
 
-    const std::string str_reply = madeEasy.get_market_recent_trades(marketData.server_id, strNymID,
-                                                                    marketData.market_id);
-    const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+    bool  bSuccess = false;
+    {
+        MTSpinner theSpinner;
 
-    const bool bSuccess = (1 == nResult);
+        const std::string str_reply = madeEasy.get_market_recent_trades(marketData.server_id, strNymID,
+                                                                        marketData.market_id);
+        const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+
+        bSuccess = (1 == nResult);
+    }
+    // ---------------
+    if (!bSuccess)
+        Moneychanger::HasUsageCredits(this, marketData.server_id, strNymID);
     // -----------------------------------
     return bSuccess;
 }
@@ -968,7 +983,7 @@ QString MTMarketDetails::CalculateCurrentAsk(QString & qstrID, QMultiMap<QString
 
         bFirstIteration = false;
         // -----------------------------
-        int64_t lCurrentLowestAsk = OTAPI_Wrap::It()->StringToLong(pMarketData->current_bid);
+        int64_t lCurrentLowestAsk = OTAPI_Wrap::It()->StringToLong(pMarketData->current_ask);
 
         if ((0 == lLowestAsk) || ((0 != lCurrentLowestAsk) && (lCurrentLowestAsk < lLowestAsk)))
             lLowestAsk = lCurrentLowestAsk;

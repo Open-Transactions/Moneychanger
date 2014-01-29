@@ -20,7 +20,6 @@
   <widget class="PageOffer_Assets" name="page_Assets"/>
   <widget class="PageOffer_Accounts" name="page_Accounts"/>
   <widget class="PageOffer_Amounts" name="page_Amounts"/>
-  <widget class="PageOffer_Expiry" name="page_Expiry"/>
   <widget class="PageOffer_Summary" name="page_Summary"/>
  </widget>
  <customwidgets>
@@ -40,12 +39,6 @@
    <class>PageOffer_Amounts</class>
    <extends>QWizardPage</extends>
    <header>pageoffer_amounts.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>PageOffer_Expiry</class>
-   <extends>QWizardPage</extends>
-   <header>pageoffer_expiry.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

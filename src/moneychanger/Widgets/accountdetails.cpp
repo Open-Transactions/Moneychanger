@@ -436,14 +436,20 @@ void MTAccountDetails::AddButtonClicked()
                 {
                     QMessageBox::warning(this, tr("Failed Registration"),
                         tr("Failed while trying to register Nym at Server."));
-                    return;
+                    break;
                 }
             default:
                 {
                     QMessageBox::warning(this, tr("Error in Registration"),
                         tr("Error while trying to register Nym at Server."));
-                    return;
+                    break;
                 }
+            } // switch
+            // --------------------------
+            if (1 != nSuccess)
+            {
+                Moneychanger::HasUsageCredits(this, qstrServerID, qstrNymID);
+                return;
             }
         }
         // --------------------------
@@ -466,8 +472,13 @@ void MTAccountDetails::AddButtonClicked()
         //
         if (1 != madeEasy.VerifyMessageSuccess(strResponse))
         {
-            QMessageBox::warning(this, tr("Failed Creating Account"),
-                tr("Failed trying to create Account at Server."));
+            const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, qstrServerID, qstrNymID);
+
+            // HasUsageCredits already pops up an error box in the cases of -2 and 0.
+            //
+            if (((-2) != lUsageCredits) && (0 != lUsageCredits))
+                QMessageBox::warning(this, tr("Failed Creating Account"),
+                    tr("Failed trying to create Account at Server."));
             return;
         }
         // ------------------------------------------------------

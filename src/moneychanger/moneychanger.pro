@@ -79,7 +79,6 @@ HEADERS += moneychanger.h \
     Widgets/pageoffer_bidask.h \
     Widgets/pageoffer_accounts.h \
     Widgets/pageoffer_amounts.h \
-    Widgets/pageoffer_expiry.h \
     Widgets/pageoffer_summary.h \
     Widgets/pageoffer_assets.h
 
@@ -147,7 +146,6 @@ SOURCES += main.cpp\
     Widgets/pageoffer_bidask.cpp \
     Widgets/pageoffer_accounts.cpp \
     Widgets/pageoffer_amounts.cpp \
-    Widgets/pageoffer_expiry.cpp \
     Widgets/pageoffer_summary.cpp \
     Widgets/pageoffer_assets.cpp
 
@@ -206,7 +204,6 @@ FORMS += \
     Widgets/pageoffer_bidask.ui \
     Widgets/pageoffer_accounts.ui \
     Widgets/pageoffer_amounts.ui \
-    Widgets/pageoffer_expiry.ui \
     Widgets/pageoffer_summary.ui \
     Widgets/pageoffer_assets.ui
 

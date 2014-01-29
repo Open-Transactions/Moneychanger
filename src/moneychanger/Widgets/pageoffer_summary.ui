@@ -1,6 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>PageOffer_Summary</class>
- <widget name="PageOffer_Summary" class="QWizardPage">
+ <widget class="QWizardPage" name="PageOffer_Summary">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -12,5 +13,12 @@
   <property name="windowTitle">
    <string>WizardPage</string>
   </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <item>
+    <widget class="QPlainTextEdit" name="plainTextEdit"/>
+   </item>
+  </layout>
  </widget>
+ <resources/>
+ <connections/>
 </ui>

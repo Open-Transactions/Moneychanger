@@ -19,6 +19,8 @@ protected:
     void initializePage(); //virtual
     void RadioChanged();
 
+    bool isComplete() const;//virtual
+
 private slots:
     void on_radioButton_clicked();
 
