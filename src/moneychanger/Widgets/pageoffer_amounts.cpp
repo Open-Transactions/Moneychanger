@@ -234,7 +234,7 @@ void PageOffer_Amounts::initializePage()
         std::string str_formatted = OTAPI_Wrap::FormatAmount(str_asset, lAmount);
         QString qstrFormatted(QString::fromStdString(str_formatted));
 
-        QVariant qvarVal(lAmount);
+        QVariant qvarVal(static_cast<qlonglong>(lAmount));
 
         ui->comboBox->addItem(qstrFormatted, qvarVal);
     }
@@ -258,7 +258,7 @@ void PageOffer_Amounts::initializePage()
 
     for (int ii = 0; ii < 7; ++ii)
     {
-        QVariant qvarTime(array_timespan[ii]);
+        QVariant qvarTime(static_cast<qlonglong>(array_timespan[ii]));
         ui->comboBoxExpiration->addItem(array_timename[ii], qvarTime);
     }
 
