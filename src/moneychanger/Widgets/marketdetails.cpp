@@ -225,6 +225,15 @@ OTDB::OfferListMarket * MTMarketDetails::LoadOfferListForMarket(OTDB::MarketData
     return pOfferList;
 }
 
+// ----------------------------------
+
+// public slot
+void MTMarketDetails::onSetNeedToRetrieveOfferTradeFlags()
+{
+    m_bNeedToRetrieveMarketOffers = true;
+    m_bNeedToRetrieveMarketTrades = true;
+}
+
 void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QString, QVariant> & multimap)
 {
     if (m_bNeedToRetrieveMarketOffers)
@@ -260,28 +269,29 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
             QString       qstrServerName     = QString::fromStdString(str_server_display);
             // -----------------------------------------
             int64_t lScale = OTAPI_Wrap::StringToLong(pMarketData->scale);
+
+            const std::string str_price_per_scale(OTAPI_Wrap::FormatAmount(pMarketData->asset_type_id,
+                                                                           lScale));
             // -----------------------------------------
             {
+                // BIDS
                 QTableWidgetItem * pPriceHeader = ui->tableWidgetBids->horizontalHeaderItem(0);
 
                 if (NULL != pPriceHeader)
                 {
-                    if (1 == lScale)
-                        pPriceHeader->setText(tr("Price"));
-                    else
-                        pPriceHeader->setText(QString("%1 %2").arg(tr("Price per")).arg(lScale));
+                    pPriceHeader->setText(QString("%1 %2").arg(tr("Price per")).
+                                          arg(QString::fromStdString(str_price_per_scale)));
                 }
             }
             // -----------------------------------------
             {
+                // ASKS
                 QTableWidgetItem * pPriceHeader = ui->tableWidgetAsks->horizontalHeaderItem(0);
 
                 if (NULL != pPriceHeader)
                 {
-                    if (1 == lScale)
-                        pPriceHeader->setText(tr("Price"));
-                    else
-                        pPriceHeader->setText(QString("%1 %2").arg(tr("Price per")).arg(lScale));
+                    pPriceHeader->setText(QString("%1 %2").arg(tr("Price per")).
+                                          arg(QString::fromStdString(str_price_per_scale)));
                 }
             }
             // -----------------------------------------
@@ -342,7 +352,8 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
                     }
                     // -----------------------------------------------------------------------
                     int64_t       lTotalCost     = (lPrice * lScaleUnits);
-                    std::string   str_total_cost = OTAPI_Wrap::FormatAmount(pMarketData->currency_type_id, lTotalCost);
+                    std::string   str_total_cost = OTAPI_Wrap::FormatAmount(pMarketData->currency_type_id,
+                                                                            lTotalCost);
 
                     QString qstrTotalCost = QString::fromStdString(str_total_cost);
                     // -----------------------------------------------------------------------
@@ -579,10 +590,10 @@ void MTMarketDetails::PopulateRecentTradesGrid(QString & qstrID, QMultiMap<QStri
 
             if (NULL != pPriceHeader)
             {
-                if (1 == lScale)
-                    pPriceHeader->setText(tr("Price"));
-                else
-                    pPriceHeader->setText(QString("%1 %2").arg(tr("Price per")).arg(lScale));
+                const std::string str_price_per_scale(OTAPI_Wrap::FormatAmount(pMarketData->asset_type_id,
+                                                                               lScale));
+                pPriceHeader->setText(QString("%1 %2").arg(tr("Price per")).
+                                      arg(QString::fromStdString(str_price_per_scale)));
             }
             // -----------------------------------------
             OTDB::TradeListMarket * pTradeList = LoadTradeListForMarket(*pMarketData);
@@ -700,7 +711,7 @@ void MTMarketDetails::refresh(QString strID, QString strName)
     ui->tableWidgetAsks  ->blockSignals(false);
     ui->tableWidgetTrades->blockSignals(false);
     // ----------------------------------------
-//    this->blockSignals(false);
+//  this->blockSignals(false);
     // ----------------------------------------
     if (!strID.isEmpty() && (NULL != ui))
     {
@@ -733,16 +744,12 @@ void MTMarketDetails::refresh(QString strID, QString strName)
                     // ------------------------------------------------------
                     QString qstrFormattedScale = QString::fromStdString(str_scale);
                     // ------------------------------------------------------
-                    QString qstrTotalAssets   = CalculateTotalAssets   (strID, *(m_pOwner->m_pmapMarkets));
-
+                    QString qstrTotalAssets   = CalculateTotalAssets(strID, *(m_pOwner->m_pmapMarkets));
                     QString qstrDisplayScale;
 
-                    if (1 == lScale)
-                        qstrDisplayScale = QString("%1: %2").
-                            arg(tr("Total Assets")).arg(qstrTotalAssets);
-                    else
-                        qstrDisplayScale = QString("%1: %2, %3 %4").
-                            arg(tr("Total Assets")).arg(qstrTotalAssets).arg(tr("priced per")).arg(qstrFormattedScale);
+                    qstrDisplayScale = QString("%1: %2, %3 %4").
+                            arg(tr("Total Assets")).arg(qstrTotalAssets).arg(tr("priced per")).
+                            arg(qstrFormattedScale);
                     // ------------------------------------------------------
                     QString qstrCurrentBid    = CalculateCurrentBid    (strID, *(m_pOwner->m_pmapMarkets));
                     QString qstrCurrentAsk    = CalculateCurrentAsk    (strID, *(m_pOwner->m_pmapMarkets));

@@ -111,6 +111,8 @@ public slots:
 
     void onMarketIDChangedFromAbove(QString qstrMarketID);
 
+    void onSetNeedToRetrieveOfferTradeFlags();
+
 protected:
     // --------------------------------
     QString     m_qstrMarketNymID;    // used by marketdetails and offerdetails.

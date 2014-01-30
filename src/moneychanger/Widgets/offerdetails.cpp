@@ -680,10 +680,10 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
 
             if (NULL != pPriceHeader)
             {
-                if (1 == lScale)
-                    pPriceHeader->setText(tr("Actual Price"));
-                else
-                    pPriceHeader->setText(QString("%1 %2").arg(tr("Actual Price per")).arg(lScale));
+                const std::string str_price_per_scale(OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id,
+                                                                               lScale));
+                pPriceHeader->setText(QString("%1 %2").arg(tr("Actual Price per")).
+                                      arg(QString::fromStdString(str_price_per_scale)));
             }
             // -----------------------------------------
             QTableWidgetItem * pAmountHeader = ui->tableWidgetTrades->horizontalHeaderItem(1);

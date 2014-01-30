@@ -87,6 +87,19 @@ void DlgMarkets::FirstRun()
         m_bFirstRun = false;
         // -----------------------
         // Initialization here...
+        // ----------------------------------------------------------------
+        QPixmap pixmapContacts(":/icons/icons/user.png");
+        QPixmap pixmapRefresh (":/icons/icons/refresh.png");
+        // ----------------------------------------------------------------
+        QIcon contactsButtonIcon(pixmapContacts);
+        QIcon refreshButtonIcon (pixmapRefresh);
+        // ----------------------------------------------------------------
+        ui->toolButton->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButton->setAutoRaise(true);
+        ui->toolButton->setIcon(refreshButtonIcon);
+//      ui->toolButton->setIconSize(pixmapRefresh.rect().size());
+        ui->toolButton->setIconSize(pixmapContacts.rect().size());
+        ui->toolButton->setText(tr("Refresh"));
 
         // ******************************************************
         {
@@ -105,6 +118,9 @@ void DlgMarkets::FirstRun()
             ui->tabMarkets->setContentsMargins(1,1,1,1);
 
             ui->tabMarkets->setLayout(pLayout);
+            // -------------------------------------
+            connect(this,             SIGNAL(needToLoadOrRetrieveMarkets()),
+                    m_pMarketDetails, SLOT(onSetNeedToRetrieveOfferTradeFlags()));
             // -------------------------------------
             connect(this, SIGNAL(needToLoadOrRetrieveMarkets()),
                     this, SLOT(LoadOrRetrieveMarkets()));
@@ -207,12 +223,12 @@ void DlgMarkets::onBalancesChangedFromAbove()
     emit needToLoadOrRetrieveMarkets();
 }
 
-void DlgMarkets::on_pushButtonRefresh_clicked()
+void DlgMarkets::on_toolButton_clicked()
 {
     m_bHaveRetrievedFirstTime = false; // To force RefreshRecords to re-download.
 
     m_pMarketDetails->ClearRecords();
-    m_pOfferDetails->ClearRecords();
+    m_pOfferDetails-> ClearRecords();
 
     ClearMarketMap();
     ClearOfferMap();
@@ -715,9 +731,8 @@ void DlgMarkets::LoadOrRetrieveMarkets()
     if (!m_pMarketDetails || !m_pOfferDetails)
         return;
     // -----------------------------------------------
-//    // --------------------------------
-//    m_pMarketDetails->ClearRecords();
-//    m_pOfferDetails ->ClearRecords();
+//  m_pMarketDetails->ClearRecords();
+//  m_pOfferDetails ->ClearRecords();
     // -----------------------------------------------
     if (ui &&
         (ui->comboBoxNym   ->currentIndex() >=0) &&
@@ -808,7 +823,6 @@ void DlgMarkets::LoadOrRetrieveMarkets()
                 m_pOfferDetails->show_widget(MTDetailEdit::DetailEditTypeOffer);
             }
 
-
             // HOWEVER, after the first time this happens, we don't need it to happen
             // AGAIN, since now the object (m_pOfferDetails) is already created, and
             // m_pMarketDetails will ALREADY send it messages to refresh its offers
@@ -866,7 +880,6 @@ void DlgMarkets::onNeedToLoadOrRetrieveOffers(QString qstrMarketID)
     // -------------------------------------
     ClearOfferMap(); // Clears *this' (DlgMarkets) map of OfferDataNym pointers.
     // -------------------------------------
-
     m_pOfferDetails->SetMarketID(qstrMarketID);
 
     // Note: this would fail to retrieve for every market except the first one.
