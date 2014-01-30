@@ -277,8 +277,10 @@ void MTAssetDetails::ImportContract(QString qstrContents)
         // -----------------------------------------------
         QString qstrContractName = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(qstrContractID.toStdString()));
         // -----------------------------------------------
-        QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Importing Asset Contract! Name")).
-                                 arg(qstrContractName).arg(tr("ID")).arg(qstrContractID));
+        // This was irritating knotwork.
+        //
+//        QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Importing Asset Contract! Name")).
+//                                 arg(qstrContractName).arg(tr("ID")).arg(qstrContractID));
         // ----------
         m_pOwner->m_map.insert(qstrContractID, qstrContractName);
         m_pOwner->SetPreSelected(qstrContractID);

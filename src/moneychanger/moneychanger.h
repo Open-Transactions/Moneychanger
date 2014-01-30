@@ -69,6 +69,13 @@ public:
     
     static Moneychanger * It(QWidget *parent = 0, bool bShuttingDown = false);
 
+    static int64_t HasUsageCredits(      QWidget     * parent,
+                                   const std::string & SERVER_ID,
+                                   const std::string & NYM_ID);
+
+    static int64_t HasUsageCredits(QWidget * parent,
+                                   QString   SERVER_ID,
+                                   QString   NYM_ID);
     /** Start **/
     void bootTray();
     

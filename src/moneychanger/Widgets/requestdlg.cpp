@@ -95,7 +95,11 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString f
     int32_t nReturnVal  = madeEasy.VerifyMessageSuccess(strResponse);
 
     if (1 != nReturnVal)
+    {
         qDebug() << QString("send %1: failed.").arg(nsChequeType);
+
+        Moneychanger::HasUsageCredits(this, str_serverId, str_fromNymId);
+    }
     else
     {
         qDebug() << QString("Success in send %1!").arg(nsChequeType);

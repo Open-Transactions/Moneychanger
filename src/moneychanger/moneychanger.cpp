@@ -261,6 +261,79 @@ Moneychanger::~Moneychanger()
 }
 
 // ---------------------------------------------------------------
+// Static method to check and see if the Nym has exhausted his usage credits.
+//
+// Return value: -2 for error, -1 for "unlimited" (or "server isn't enforcing"),
+//                0 for "exhausted", and non-zero for the exact number of credits available.
+int64_t Moneychanger::HasUsageCredits(      QWidget     * parent,
+                                      const std::string & SERVER_ID,
+                                      const std::string & NYM_ID)
+{
+    OT_ME madeEasy;
+    // --------------------------------------------------------
+    const std::string strAdjustment("0");
+    // --------------------------------------------------------
+    std::string strMessage;
+    {
+        MTSpinner theSpinner;
+
+        strMessage = madeEasy.adjust_usage_credits(SERVER_ID, NYM_ID, NYM_ID, strAdjustment);
+    }
+    // --------------------------------------------------------
+    const int64_t lReturnValue = OTAPI_Wrap::Message_GetUsageCredits(strMessage);
+    // --------------------------------------------------------
+    QString qstrErrorHeader, qstrErrorMsg;
+
+    switch (lReturnValue)
+    {
+    case (-2): // error
+        qstrErrorHeader = tr("Error Checking Usage Credits");
+        qstrErrorMsg    = tr("Error checking usage credits. Perhaps the server is down or inaccessible?");
+        break;
+        // --------------------------------
+    case (-1): // unlimited, or server isn't enforcing
+        qstrErrorHeader = tr("Unlimited Usage Credits");
+        qstrErrorMsg    = tr("Nym has unlimited usage credits (or the server isn't enforcing credits.')");
+        break;
+        // --------------------------------
+    case (0): // Exhausted
+        qstrErrorHeader = tr("Usage Credits Exhausted!");
+        qstrErrorMsg    = tr("Sorry, but the Nym attempting this action is all out of usage credits on the server. "
+                             "(You should contact the server operator and purchase more usage credits.)");
+        break;
+        // --------------------------------
+    default: // Nym has X usage credits remaining.
+        qstrErrorHeader = tr("Nym Still Has Usage Credits");
+        qstrErrorMsg    = tr("The Nym still has usage credits remaining. Should be fine.");
+        break;
+    }
+    // --------------------------------
+    switch (lReturnValue)
+    {
+    case (-2): // Error
+    case (0):  // Exhausted
+        QMessageBox::warning(parent, qstrErrorHeader, qstrErrorMsg);
+        // --------------------------------
+    default: // Nym has X usage credits remaining, or server isn't enforcing credits.
+        break;
+    }
+    // --------------------------------
+    return lReturnValue;
+}
+
+
+//static
+int64_t Moneychanger::HasUsageCredits(QWidget * parent,
+                                      QString   SERVER_ID,
+                                      QString   NYM_ID)
+{
+    const std::string str_server(SERVER_ID.toStdString());
+    const std::string str_nym   (NYM_ID   .toStdString());
+
+    return Moneychanger::HasUsageCredits(parent, str_server, str_nym);
+}
+
+// ---------------------------------------------------------------
 
 
 /**
@@ -934,16 +1007,27 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID)
     std::string acctNymID = OTAPI_Wrap::GetAccountWallet_NymID   (accountId);
     std::string acctSvrID = OTAPI_Wrap::GetAccountWallet_ServerID(accountId);
 
+    bool bRetrievalAttempted = false;
+    bool bRetrievalSucceeded = false;
+
     if (!acctNymID.empty() && !acctSvrID.empty())
     {
         MTSpinner theSpinner;
 
-        madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
+        bRetrievalAttempted = true;
+        bRetrievalSucceeded = madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
     }
     // ----------------------------------------------------------------
-    emit downloadedAccountData();
+    if (bRetrievalAttempted)
+    {
+        if (!bRetrievalSucceeded)
+            Moneychanger::HasUsageCredits(NULL, acctSvrID, acctNymID);
+        else
+            emit downloadedAccountData();
+    }
 }
 
+// ----------------------------------------------------------------
 
 void Moneychanger::onNeedToDownloadAccountData()
 {
@@ -989,9 +1073,16 @@ void Moneychanger::onNeedToDownloadAccountData()
 
             if (!isReg)
             {
-                MTSpinner theSpinner;
+                std::string response;
+                {
+                    MTSpinner theSpinner;
 
-                std::string response = madeEasy.register_nym(defaultServerId, defaultNymID);
+                    response = madeEasy.register_nym(defaultServerId, defaultNymID);
+                }
+
+                if (!madeEasy.VerifyMessageSuccess(response))
+                    Moneychanger::HasUsageCredits(NULL, defaultServerId, defaultNymID);
+
                 qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
             }
         }
@@ -1017,6 +1108,10 @@ void Moneychanger::onNeedToDownloadAccountData()
                     MTSpinner theSpinner;
                     response = madeEasy.create_asset_acct(defaultServerId, defaultNymID, defaultAssetId);
                 }
+
+                if (!madeEasy.VerifyMessageSuccess(response))
+                    Moneychanger::HasUsageCredits(NULL, defaultServerId, defaultNymID);
+
                 qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
 
                 accountCount = OTAPI_Wrap::GetAccountCount();
@@ -1043,11 +1138,19 @@ void Moneychanger::onNeedToDownloadAccountData()
             {
                 std::string nymId = OTAPI_Wrap::GetNym_ID(nymIndex);
 
+                bool bRetrievalAttempted = false;
+                bool bRetrievalSucceeded = false;
+
                 if (OTAPI_Wrap::IsNym_RegisteredAtServer(nymId, serverId))
                 {
                     MTSpinner theSpinner;
-                    madeEasy.retrieve_nym(serverId, nymId, true);
+
+                    bRetrievalAttempted = true;
+                    bRetrievalSucceeded = madeEasy.retrieve_nym(serverId, nymId, true);
                 }
+                // ----------------------------------------------------------------
+                if (bRetrievalAttempted && !bRetrievalSucceeded)
+                    Moneychanger::HasUsageCredits(NULL, serverId, nymId);
             }
         }
         // ----------------------------------------------------------------
@@ -1057,10 +1160,21 @@ void Moneychanger::onNeedToDownloadAccountData()
             std::string acctNymID = OTAPI_Wrap::GetAccountWallet_NymID(accountId);
             std::string acctSvrID = OTAPI_Wrap::GetAccountWallet_ServerID(accountId);
 
+            bool bRetrievalAttempted = false;
+            bool bRetrievalSucceeded = false;
+
             {
                 MTSpinner theSpinner;
-                madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
+
+                bRetrievalAttempted = true;
+                bRetrievalSucceeded = madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
             }
+
+            // NOTE: the HasUsageCredits call is commented-out here because we already do this
+            // just above while retrieving the Nyms. (No point calling it redundantly.)
+            //
+//            if (bRetrievalAttempted && !bRetrievalSucceeded)
+//                Moneychanger::HasUsageCredits(NULL, acctSvrID, acctNymID);
 
 //            std::string statAccount = madeEasy.stat_asset_account(accountId);
 //            qDebug() << QString("statAccount: %1").arg(QString::fromStdString(statAccount));
@@ -1810,15 +1924,31 @@ void Moneychanger::mc_import_slot()
             OT_ME madeEasy;
 //          const bool bImported = OTAPI_Wrap::Wallet_ImportPurse(strServerID, strAssetID, strPurseOwner, strInstrument);
 
-            if (1 == madeEasy.deposit_cash(strServerID, strPurseOwner,
-                                           theChooser.m_qstrCurrentID.toStdString(), // AcctID.
-                                           strInstrument))
+            int32_t nDepositCash = 0;
+            {
+                MTSpinner theSpinner;
+
+                nDepositCash = madeEasy.deposit_cash(strServerID, strPurseOwner,
+                                                     theChooser.m_qstrCurrentID.toStdString(), // AcctID.
+                                                     strInstrument);
+            }
+            // --------------------------------------------
+            if (1 == nDepositCash)
             {
                 QMessageBox::information(this, tr("Success"), tr("Success depositing cash purse."));
                 emit balancesChanged();
             }
             else
-                QMessageBox::warning(this, tr("Failed Import"), tr("Failed trying to deposit cash purse."));
+            {
+                const int64_t lUsageCredits = Moneychanger::HasUsageCredits(NULL, strServerID, strPurseOwner);
+
+                // In the case of -2 and 0, the problem has to do with the usage credits,
+                // and it already pops up an error box. Otherwise, the user had enough usage
+                // credits, so there must have been some other problem, so we pop up an error box.
+                //
+                if ((lUsageCredits != (-2)) && (lUsageCredits != 0))
+                    QMessageBox::warning(this, tr("Failed Import"), tr("Failed trying to deposit cash purse."));
+            }
         }
     }
 }

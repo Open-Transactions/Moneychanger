@@ -19,7 +19,9 @@ signals:
     void SetDefaultNym(QString, QString);
 
 protected:
-    virtual void showEvent(QShowEvent * event);
+    void initializePage(); //virtual
+
+    void SetFieldsBlank();
 
 private slots:
     void on_pushButtonSelect_clicked();

@@ -12,6 +12,7 @@
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
 
+
 MTPageAcct_Server::MTPageAcct_Server(QWidget *parent) :
     QWizardPage(parent),
     m_bFirstRun(true),
@@ -27,7 +28,8 @@ MTPageAcct_Server::MTPageAcct_Server(QWidget *parent) :
 
     ui->lineEditID->setStyleSheet("QLineEdit { background-color: lightgray }");
 
-    this->registerField("ServerID*", ui->lineEditID);
+    this->registerField("ServerID*",  ui->lineEditID);
+    this->registerField("ServerName", ui->pushButtonSelect, "text");
     // -----------------------------------------------
     connect(this, SIGNAL(SetDefaultServer(QString, QString)), Moneychanger::It(), SLOT(setDefaultServer(QString,QString)));
 }
@@ -36,17 +38,9 @@ MTPageAcct_Server::MTPageAcct_Server(QWidget *parent) :
 
 void MTPageAcct_Server::on_pushButtonSelect_clicked()
 {
-    QString qstr_default_id;
+    QString qstr_default_id = Moneychanger::It()->get_default_server_id();
     // -------------------------------------------
-    QWizard            * pWizard           = this->wizard();
-    MTWizardAddAccount * pWizardAddAccount = (MTWizardAddAccount *)pWizard;
-    // -------------------------------------------
-    if (NULL != pWizardAddAccount)
-    {
-        qstr_default_id = Moneychanger::It()->get_default_server_id();
-    }
-    // -------------------------------------------
-    QString qstr_current_id = ui->lineEditID->text();
+    QString qstr_current_id = field("ServerID").toString();
     // -------------------------------------------
     if (qstr_current_id.isEmpty())
         qstr_current_id = qstr_default_id;
@@ -80,7 +74,7 @@ void MTPageAcct_Server::on_pushButtonSelect_clicked()
         }
      }
     // -----------------------------------------------
-    if (bFoundDefault && !qstr_current_id.isEmpty())
+    if (bFoundDefault)
         theChooser.SetPreSelected(qstr_current_id);
     // -----------------------------------------------
     theChooser.setWindowTitle(tr("Select the Server"));
@@ -90,148 +84,112 @@ void MTPageAcct_Server::on_pushButtonSelect_clicked()
         if (!theChooser.m_qstrCurrentID  .isEmpty() &&
             !theChooser.m_qstrCurrentName.isEmpty())
         {
-            ui->lineEditID->setText(theChooser.m_qstrCurrentID);
+            setField("ServerID",   theChooser.m_qstrCurrentID);
+            setField("ServerName", theChooser.m_qstrCurrentName);
+            // -----------------------------------------
             ui->lineEditID->home(false);
             // -----------------------------------------
-            ui->pushButtonSelect->setText(theChooser.m_qstrCurrentName);
-            // -----------------------------------------
             if (qstr_default_id.isEmpty())
-            {
                 emit SetDefaultServer(theChooser.m_qstrCurrentID, theChooser.m_qstrCurrentName);
-            }
-            // -----------------------------------------
-            return;
         }
     }
+}
+
+void MTPageAcct_Server::initializePage() //virtual
+{
+    std::string str_name;
+    QString     qstr_id;
+    // -------------------------------------------
+    QString qstr_default_id = Moneychanger::It()->get_default_server_id();
+    // -------------------------------------------
+    QString qstr_current_id = field("ServerID").toString();
+    // -------------------------------------------
+    qstr_id = qstr_current_id.isEmpty() ? qstr_default_id : qstr_current_id;
+    // -------------------------------------------
+    if (qstr_id.isEmpty() && (OTAPI_Wrap::GetServerCount() > 0))
+        qstr_id = QString::fromStdString(OTAPI_Wrap::GetServer_ID(0));
+    // -------------------------------------------
+    if (!qstr_id.isEmpty())
+        str_name = OTAPI_Wrap::GetServer_Name(qstr_id.toStdString());
+    // -------------------------------------------
+    if (str_name.empty() || qstr_id.isEmpty())
+        SetFieldsBlank();
     else
     {
-      qDebug() << "CANCEL was clicked";
+        QString qstrName = QString::fromStdString(str_name);
+        // ---------------------------
+        setField("ServerID",   qstr_id);
+        setField("ServerName", qstrName);
+        // ---------------------------
+        ui->lineEditID->home(false);
+        // ---------------------------
+        if (qstr_default_id.isEmpty())
+            emit SetDefaultServer(qstr_id, qstrName);
     }
-    // -----------------------------------------------
-    ui->pushButtonSelect->setText(QString("<%1>").arg(tr("Click to choose Server")));
-    ui->lineEditID->setText("");
-    // -------------------------------------------
 }
 
-
-//virtual
-void MTPageAcct_Server::showEvent(QShowEvent * event)
-{
-    // -------------------------------
-    // call inherited method
-    //
-    QWizardPage::showEvent(event);
-    // -------------------------------
-//    if (m_bFirstRun)
-    {
-        m_bFirstRun = false;
-        // --------------------------------------------------
-        std::string str_name;
-        QString     qstr_id;
-        // -------------------------------------------
-        QString qstr_default_id;
-        // -------------------------------------------
-        QWizard            * pWizard           = this->wizard();
-        MTWizardAddAccount * pWizardAddAccount = (MTWizardAddAccount *)pWizard;
-        // -------------------------------------------
-        if (NULL != pWizardAddAccount)
-        {
-            qstr_default_id = Moneychanger::It()->get_default_server_id();
-        }
-        // -------------------------------------------
-        QString qstr_current_id = ui->lineEditID->text();
-        // -------------------------------------------
-        if (qstr_current_id.isEmpty())
-            qstr_id = qstr_default_id;
-        else
-            qstr_id = qstr_current_id;
-        // -------------------------------------------
-        if (qstr_id.isEmpty() && (OTAPI_Wrap::GetServerCount() > 0))
-            qstr_id = QString::fromStdString(OTAPI_Wrap::GetServer_ID(0));
-        // -------------------------------------------
-        if (!qstr_id.isEmpty())
-            str_name = OTAPI_Wrap::GetServer_Name(qstr_id.toStdString());
-        // -------------------------------------------
-        if (str_name.empty() || qstr_id.isEmpty())
-        {
-            ui->pushButtonSelect->setText(QString("<%1>").arg(tr("Click to choose Server")));
-            ui->lineEditID->setText("");
-        }
-        else
-        {
-            QString qstrName = QString::fromStdString(str_name);
-            ui->pushButtonSelect->setText(qstrName);
-            ui->lineEditID->setText(qstr_id);
-            ui->lineEditID->home(false);
-            // ---------------------------
-            if (qstr_default_id.isEmpty())
-            {
-                emit SetDefaultServer(qstr_id, qstrName);
-            }
-        }
-        // -------------------------------------------
-//        if (OTAPI_Wrap::GetServerCount() < 1)
-//            on_pushButtonManage_clicked();
-    } // first run.
-    // -------------------------------------
-}
 
 void MTPageAcct_Server::on_pushButtonManage_clicked()
 {
-    QWizard            * pWizard           = this->wizard();
-    MTWizardAddAccount * pWizardAddAccount = (MTWizardAddAccount *)pWizard;
-    // -------------------------------------------
-    if (NULL != pWizardAddAccount)
+    MTDetailEdit * pWindow = new MTDetailEdit(this);
+
+    pWindow->setAttribute(Qt::WA_DeleteOnClose);
+    // -------------------------------------
+    mapIDName & the_map = pWindow->m_map;
+    // -------------------------------------
+    the_map.clear();
+    // -------------------------------------
+    QString qstrPreSelected   = field("ServerID").toString();
+    bool    bFoundPreselected = false;
+    // -------------------------------------
+    int32_t the_count = OTAPI_Wrap::GetServerCount();
+    bool    bStartingWithNone = (the_count < 1);
+
+    for (int32_t ii = 0; ii < the_count; ii++)
     {
-        MTDetailEdit * pWindow = new MTDetailEdit(this);
+        QString OT_id   = QString::fromStdString(OTAPI_Wrap::GetServer_ID(ii));
+        QString OT_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(OT_id.toStdString()));
 
-        pWindow->setAttribute(Qt::WA_DeleteOnClose);
-        // -------------------------------------
-        mapIDName & the_map = pWindow->m_map;
-        // -------------------------------------
-        the_map.clear();
-        // -------------------------------------
-        int32_t the_count = OTAPI_Wrap::GetServerCount();
-        bool    bStartingWithNone = (the_count < 1);
+        the_map.insert(OT_id, OT_name);
 
-        for (int32_t ii = 0; ii < the_count; ii++)
+        if (!qstrPreSelected.isEmpty() && (qstrPreSelected == OT_id))
+            bFoundPreselected = true;
+    } // for
+    // -------------------------------------
+    pWindow->setWindowTitle(tr("Manage Servers"));
+    // -------------------------------------
+    if (bFoundPreselected)
+        pWindow->SetPreSelected(qstrPreSelected);
+    // -------------------------------------
+    pWindow->dialog(MTDetailEdit::DetailEditTypeServer, true);
+    // -------------------------------------
+    if (bStartingWithNone && (OTAPI_Wrap::GetServerCount() > 0))
+    {
+        std::string str_id = OTAPI_Wrap::GetServer_ID(0);
+
+        if (!str_id.empty())
         {
-            QString OT_id   = QString::fromStdString(OTAPI_Wrap::GetServer_ID(ii));
-            QString OT_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(OT_id.toStdString()));
+            std::string str_name = OTAPI_Wrap::GetServer_Name(str_id);
 
-            the_map.insert(OT_id, OT_name);
-        } // for
-        // -------------------------------------
-        pWindow->setWindowTitle(tr("Manage Servers"));
-        // -------------------------------------
-        pWindow->dialog(MTDetailEdit::DetailEditTypeServer, true);
-        // -------------------------------------
-        if (bStartingWithNone && (OTAPI_Wrap::GetServerCount() > 0))
-        {
-            std::string str_id = OTAPI_Wrap::GetServer_ID(0);
-
-            if (!str_id.empty())
-            {
-                std::string str_name = OTAPI_Wrap::GetServer_Name(str_id);
-
-                if (str_name.empty())
-                    str_name = str_id;
-                // --------------------------------
-                ui->pushButtonSelect->setText(QString::fromStdString(str_name));
-                ui->lineEditID->setText(QString::fromStdString(str_id));
-                ui->lineEditID->home(false);
-            }
-        }
-        // -------------------------------------
-        else if (OTAPI_Wrap::GetServerCount() < 1)
-        {
-            ui->pushButtonSelect->setText(QString("<%1>").arg(tr("Click to choose Server")));
-            ui->lineEditID->setText("");
+            if (str_name.empty())
+                str_name = str_id;
+            // --------------------------------
+            setField("ServerID",   QString::fromStdString(str_id));
+            setField("ServerName", QString::fromStdString(str_name));
+            // --------------------------------
+            ui->lineEditID->home(false);
         }
     }
-    // -------------------------------------------
+    // -------------------------------------
+    else if (OTAPI_Wrap::GetServerCount() < 1)
+        SetFieldsBlank();
 }
 
+void MTPageAcct_Server::SetFieldsBlank()
+{
+    setField("ServerID",   "");
+    setField("ServerName", QString("<%1>").arg(tr("Click to choose Server")));
+}
 
 MTPageAcct_Server::~MTPageAcct_Server()
 {

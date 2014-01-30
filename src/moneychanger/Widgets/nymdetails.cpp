@@ -383,8 +383,10 @@ void MTNymDetails::AddButtonClicked()
         //bool bNameSet =
                 OTAPI_Wrap::SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
         // -----------------------------------------------
-        QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Creating Nym! Name")).
-                                 arg(qstrName).arg(tr("ID")).arg(qstrID));
+        // Commenting this out for now.
+        //
+//        QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Creating Nym! Name")).
+//                                 arg(qstrName).arg(tr("ID")).arg(qstrID));
         // ----------
         m_pOwner->m_map.insert(qstrID, qstrName);
         m_pOwner->SetPreSelected(qstrID);
