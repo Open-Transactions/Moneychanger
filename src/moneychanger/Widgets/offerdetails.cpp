@@ -245,8 +245,86 @@ void MTOfferDetails::AddButtonClicked()
 
 void MTOfferDetails::DeleteButtonClicked()
 {
+    if (m_pOwner && m_pOwner->m_pmapOffers && !m_pOwner->m_qstrCurrentID.isEmpty())
+    {
+        // Make sure it works without this before I erase it.
+        //
+//        QString     qstrServerID, qstrTransactionID;
+//        QStringList theIDs = m_pOwner->m_qstrCurrentID.split(","); // theIDs.at(0) ServerID, at(1) transaction ID
 
+//        if (2 == theIDs.size()) // Should always be 2...
+//        {
+//            qstrServerID      = theIDs.at(0);
+//            qstrTransactionID = theIDs.at(1);
+//        }
+        // -------------------------------------
+        QMap<QString, QVariant>::iterator it_offer = m_pOwner->m_pmapOffers->find(m_pOwner->m_qstrCurrentID);
+
+        if (m_pOwner->m_pmapOffers->end() != it_offer)
+        {
+            // ------------------------------------------------------
+            OTDB::OfferDataNym * pOfferData = VPtr<OTDB::OfferDataNym>::asPtr(it_offer.value());
+
+            if (NULL != pOfferData) // Should never be NULL.
+            {
+                const std::string str_server_id     (pOfferData->server_id);
+                const std::string str_nym_id        (m_pOwner->GetMarketNymID().toStdString());
+                const std::string str_asset_acct_id (pOfferData->asset_acct_id);
+                // ---------------------------------
+                OTString      strTransID(pOfferData->transaction_id);
+                const int64_t lTransID  (strTransID.ToLong());
+                // ---------------------------------
+                OT_ME        madeEasy;
+                std::string  strResponse;
+                {
+                    MTSpinner theSpinner;
+                    // --------------------------------------------------------------
+                    strResponse = madeEasy.kill_market_offer(str_server_id,
+                                                             str_nym_id,
+                                                             str_asset_acct_id,
+                                                             lTransID);
+                }
+                // --------------------------------------------------------
+                const std::string strAttempt("kill_market_offer");
+
+                int32_t nInterpretReply = madeEasy.InterpretTransactionMsgReply(str_server_id,
+                                                                                str_nym_id,
+                                                                                str_asset_acct_id,
+                                                                                strAttempt, strResponse);
+                const bool bKilledOffer = (1 == nInterpretReply);
+                // ---------------------------------------------------------
+                if (!bKilledOffer)
+                {
+                    const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, str_server_id, str_nym_id);
+
+                    // In the cases of -2 and 0, HasUsageCredits already pops up a message box.
+                    //
+                    if (((-2) != lUsageCredits) && (0 != lUsageCredits))
+                        QMessageBox::warning(this,
+                                             tr("Failed removing Offer from Market"),
+                                             tr("Failed removing offer from market."));
+                }
+                else
+                {
+                    QMessageBox::information(this,
+                                             tr("Success Removing Offer from Market"),
+                                             tr("Success removing offer from market. "));
+                    // --------------------------------------------------------
+                    m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
+                    m_pOwner->m_pmapOffers->remove(m_pOwner->m_qstrCurrentID);
+
+                    ClearContents();
+
+                    emit RefreshRecordsAndUpdateMenu();
+
+//                  emit balancesChanged(m_qstrAcctId); // Offers don't appear on market immediately anyway, so no point emitting a signal.
+                }
+            }
+        }
+    }
 }
+
+// -----------------------------------------------------------------
 
 bool MTOfferDetails::ChooseServer(QString & qstrServerID, QString & qstrServerName)
 {
