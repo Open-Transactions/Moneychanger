@@ -185,7 +185,6 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
                     this,         SLOT  (on_comboBox_currentIndexChanged(int)));
             // -------------------------------------------
             break;
-
         case MTDetailEdit::DetailEditTypeMarket:
             EnableAdd   (false);
             EnableDelete(false);
@@ -336,7 +335,6 @@ void MTDetailEdit::onMarketIDChangedFromAbove(QString qstrMarketID)
             // --------------------------------
             if (it_markets.key() == qstrMarketID)
                 break;
-
         }
         // ------------------------------------------------------------
 //      mapIDName::iterator it_markets = m_map.find(qstrMarketID);
@@ -635,8 +633,8 @@ void MTDetailEdit::RefreshRecords()
             // -------------------------------------
             QString qstrDisplayScale("");
 
-            if (qstrMarketScale.toInt() > 1)
-                qstrDisplayScale = QString("<font size=1 color=grey>%1:</font> %2").arg(tr("Priced per")).arg(qstrMarketScale);
+            qstrDisplayScale = QString("<font size=1 color=grey>%1:</font> %2").
+                    arg(tr("Priced per")).arg(qstrMarketScale);
             // -------------------------------------
             if (m_pmapMarkets)
             {
@@ -655,8 +653,8 @@ void MTDetailEdit::RefreshRecords()
                         // ------------------------------------------------------
                         QString qstrFormattedScale = QString::fromStdString(str_scale);
                         // ------------------------------------------------------
-                        if (lScale > 1)
-                            qstrDisplayScale = QString("<font size=1 color=grey>%1:</font> %2").arg(tr("Priced per")).arg(qstrFormattedScale);
+                        qstrDisplayScale = QString("<font size=1 color=grey>%1:</font> %2").
+                                arg(tr("Priced per")).arg(qstrFormattedScale);
                     }
                 }
             }
@@ -707,8 +705,7 @@ void MTDetailEdit::RefreshRecords()
                         // ------------------------------------------------------
                         QString qstrFormattedScale    = QString::fromStdString(str_scale);
 
-                        if (lScale > 1)
-                            qstrPrice += QString(" (%1 %2)").arg(tr("per")).arg(qstrFormattedScale);
+                        qstrPrice += QString(" (%1 %2)").arg(tr("per")).arg(qstrFormattedScale);
                         // ------------------------------------------------------
                         QString qstrTotalAssets       = QString::fromStdString(OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lTotalAssets));
                         QString qstrSoldOrPurchased   = QString::fromStdString(OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lFinished));
@@ -884,11 +881,23 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
     // to notify the offers page.
     //
     if ((MTDetailEdit::DetailEditTypeMarket == m_Type) &&
-//            (qstrOldID.isEmpty() || (!qstrOldID.isEmpty() && (qstrOldID != m_qstrCurrentID))))
+//      (qstrOldID.isEmpty() || (!qstrOldID.isEmpty() && (qstrOldID != m_qstrCurrentID))))
         (qstrOldID.isEmpty() || (qstrOldID != m_qstrCurrentID)))
     {
         SetMarketID(m_qstrCurrentID);
         emit CurrentMarketChanged(m_qstrCurrentID);
+    }
+}
+
+//public slot
+void MTDetailEdit::onSetNeedToRetrieveOfferTradeFlags()
+{
+    if (m_pDetailPane)
+    {
+        MTEditDetails   * pEditDetails   = m_pDetailPane.data();
+        MTMarketDetails * pMarketDetails = (MTMarketDetails * )pEditDetails;
+
+        pMarketDetails->onSetNeedToRetrieveOfferTradeFlags();
     }
 }
 

@@ -77,11 +77,11 @@ protected:
     bool GetMarket_AssetCurrencyScale(QString qstrMarketID, QString & qstrAssetID, QString & qstrCurrencyID, QString & qstrScale);
 
 private slots:
-    void on_pushButtonRefresh_clicked();
-
     void on_comboBoxServer_currentIndexChanged(int index);
 
     void on_comboBoxNym_currentIndexChanged(int index);
+
+    void on_toolButton_clicked();
 
 private:
     void ClearMarketMap();

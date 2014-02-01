@@ -53,6 +53,12 @@ public:
     void    SetMarketNymID(QString qstrNymID) { m_qstrMarketNymID = qstrNymID; }
     QString GetMarketNymID() const { return m_qstrMarketNymID; }
     // --------------------------------
+    // NOTE:    Used by marketdetails and offerdetails.
+    // WARNING: THIS MAY CONTAIN "all" instead of a server ID!
+    //
+    void    SetMarketServerID(QString qstrServerID) { m_qstrMarketServerID = qstrServerID; }
+    QString GetMarketServerID() const { return m_qstrMarketServerID; }
+    // --------------------------------
     void    SetMarketID(QString qstrMarketID) { m_qstrMarketID = qstrMarketID; }
     QString GetMarketID() const { return m_qstrMarketID; }
     // --------------------------------
@@ -105,9 +111,12 @@ public slots:
 
     void onMarketIDChangedFromAbove(QString qstrMarketID);
 
+    void onSetNeedToRetrieveOfferTradeFlags();
+
 protected:
     // --------------------------------
     QString     m_qstrMarketNymID;    // used by marketdetails and offerdetails.
+    QString     m_qstrMarketServerID; // used by marketdetails and offerdetails.
     // ----------------------------------
     bool        m_bEnableAdd;
     bool        m_bEnableDelete;

@@ -47,6 +47,7 @@
 #include "Widgets/createinsurancecompany.h"
 
 #include "UI/dlgmarkets.h"
+#include "UI/dlgmenu.h"
 
 #include "Widgets/detailedit.h"
 #include "Widgets/settings.h"
@@ -69,6 +70,13 @@ public:
     
     static Moneychanger * It(QWidget *parent = 0, bool bShuttingDown = false);
 
+    static int64_t HasUsageCredits(      QWidget     * parent,
+                                   const std::string & SERVER_ID,
+                                   const std::string & NYM_ID);
+
+    static int64_t HasUsageCredits(QWidget * parent,
+                                   QString   SERVER_ID,
+                                   QString   NYM_ID);
     /** Start **/
     void bootTray();
     
@@ -140,7 +148,8 @@ private:
      * Window Classes
      **/
     
-    QPointer<MTHome> homewindow;
+    QPointer<MTHome>  homewindow;
+    QPointer<DlgMenu> menuwindow;
 
     QPointer<MTDetailEdit> contactswindow;
     QPointer<MTDetailEdit> nymswindow;
@@ -182,6 +191,7 @@ private:
     
     
     void mc_overview_dialog();
+    void mc_main_menu_dialog();
     // ------------------------------------------------
     void mc_sendfunds_show_dialog(QString qstrAcct=QString(""));
     void mc_requestfunds_show_dialog(QString qstrAcct=QString(""));
@@ -309,6 +319,7 @@ public slots:
     void mc_shutdown_slot();
     // ---------------------------------------------------------------------------
     void mc_overview_slot();                // Overview
+    void mc_main_menu_slot();               // Main Menu
     // ---------------------------------------------------------------------------
     void mc_addressbook_slot();             // Address Book
     void mc_showcontact_slot(QString text); // Address Book, Select a Contact

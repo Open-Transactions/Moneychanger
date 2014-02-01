@@ -14,6 +14,8 @@
 
 #include "overridecursor.h"
 
+#include "moneychanger.h"
+
 #include "detailedit.h"
 #include "editdetails.h"
 
@@ -270,8 +272,18 @@ void MTCashPurse::on_pushButtonWithdraw_clicked()
     }
     // -----------------------------------------------------------------
     if (!bSent)
-        QMessageBox::warning(this, tr("Failed Withdrawing Cash"),
-                             tr("Failed trying to withdraw cash."));
+    {
+        const std::string str_server = OTAPI_Wrap::GetAccountWallet_ServerID(accountID);
+        const std::string str_nym    = OTAPI_Wrap::GetAccountWallet_NymID   (accountID);
+
+        const int64_t lUsageCredits  = Moneychanger::HasUsageCredits(this, str_server, str_nym);
+
+        // In the cases of -2 and 0, HasUsageCredits already pops up its own message box.
+        //
+        if (((-2) != lUsageCredits) && (0 != lUsageCredits))
+            QMessageBox::warning(this, tr("Failed Withdrawing Cash"),
+                                 tr("Failed trying to withdraw cash."));
+    }
     else
     {
         QMessageBox::information(this, tr("Success Withdrawing Cash"),
@@ -457,8 +469,15 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
         }
         // -----------------------------------------------------------------
         if (!bSent)
-            QMessageBox::warning(this, tr("Failed Depositing Cash"),
-                                 tr("Failed trying to deposit cash."));
+        {
+            const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, str_acct_server, str_acct_nym);
+
+            // In the cases of -2 and 0, HasUsageCredits already pops up its own error box.
+            //
+            if (((-2) != lUsageCredits) && (0 != lUsageCredits))
+                QMessageBox::warning(this, tr("Failed Depositing Cash"),
+                                     tr("Failed trying to deposit cash."));
+        }
         else
         {
             QMessageBox::information(this, tr("Success Depositing Cash"),
