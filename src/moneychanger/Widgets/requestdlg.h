@@ -36,6 +36,8 @@ public:
     bool sendChequeLowLevel (int64_t amount, QString toNymId, QString fromAcctId, QString note, bool isInvoice);
 
 signals:
+    void balancesChanged();
+
     void ShowContact(QString);
     void ShowAccount(QString);
 
@@ -44,6 +46,8 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private slots:
+    void onBalancesChanged();
+
     void on_toButton_clicked();
     void on_fromButton_clicked();
     void on_requestButton_clicked();

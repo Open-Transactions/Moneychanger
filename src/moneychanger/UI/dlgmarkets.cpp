@@ -12,6 +12,8 @@
 #include "dlgmarkets.h"
 #include "ui_dlgmarkets.h"
 
+#include "overridecursor.h"
+
 #include "moneychanger.h"
 
 #include "detailedit.h"
@@ -85,6 +87,19 @@ void DlgMarkets::FirstRun()
         m_bFirstRun = false;
         // -----------------------
         // Initialization here...
+        // ----------------------------------------------------------------
+        QPixmap pixmapContacts(":/icons/icons/user.png");
+        QPixmap pixmapRefresh (":/icons/icons/refresh.png");
+        // ----------------------------------------------------------------
+        QIcon contactsButtonIcon(pixmapContacts);
+        QIcon refreshButtonIcon (pixmapRefresh);
+        // ----------------------------------------------------------------
+        ui->toolButton->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButton->setAutoRaise(true);
+        ui->toolButton->setIcon(refreshButtonIcon);
+//      ui->toolButton->setIconSize(pixmapRefresh.rect().size());
+        ui->toolButton->setIconSize(pixmapContacts.rect().size());
+        ui->toolButton->setText(tr("Refresh"));
 
         // ******************************************************
         {
@@ -103,6 +118,9 @@ void DlgMarkets::FirstRun()
             ui->tabMarkets->setContentsMargins(1,1,1,1);
 
             ui->tabMarkets->setLayout(pLayout);
+            // -------------------------------------
+            connect(this,             SIGNAL(needToLoadOrRetrieveMarkets()),
+                    m_pMarketDetails, SLOT(onSetNeedToRetrieveOfferTradeFlags()));
             // -------------------------------------
             connect(this, SIGNAL(needToLoadOrRetrieveMarkets()),
                     this, SLOT(LoadOrRetrieveMarkets()));
@@ -168,8 +186,10 @@ void DlgMarkets::FirstRun()
         m_nymId    = Moneychanger::It()->get_default_nym_id();
         m_serverId = Moneychanger::It()->get_default_server_id();
 
-        m_pMarketDetails->SetMarketNymID(m_nymId);
-        m_pOfferDetails ->SetMarketNymID(m_nymId);
+        m_pMarketDetails->SetMarketNymID   (m_nymId);
+        m_pOfferDetails ->SetMarketNymID   (m_nymId);
+        m_pMarketDetails->SetMarketServerID(m_serverId);
+        m_pOfferDetails ->SetMarketServerID(m_serverId);
     }
 }
 
@@ -203,12 +223,12 @@ void DlgMarkets::onBalancesChangedFromAbove()
     emit needToLoadOrRetrieveMarkets();
 }
 
-void DlgMarkets::on_pushButtonRefresh_clicked()
+void DlgMarkets::on_toolButton_clicked()
 {
     m_bHaveRetrievedFirstTime = false; // To force RefreshRecords to re-download.
 
     m_pMarketDetails->ClearRecords();
-    m_pOfferDetails->ClearRecords();
+    m_pOfferDetails-> ClearRecords();
 
     ClearMarketMap();
     ClearOfferMap();
@@ -269,6 +289,12 @@ void DlgMarkets::SetCurrentServerIDBasedOnIndex(int index)
     else
         m_serverId = QString("");
     // ------------------------------------------
+    if (m_pMarketDetails)
+        m_pMarketDetails->SetMarketServerID(m_serverId);
+    // ------------------------------------------
+    if (m_pOfferDetails)
+        m_pOfferDetails->SetMarketServerID(m_serverId);
+    // ------------------------------------------
 }
 
 void DlgMarkets::on_comboBoxServer_currentIndexChanged(int index)
@@ -312,7 +338,7 @@ bool DlgMarkets::RetrieveOfferList(mapIDName & the_map, QString qstrMarketID)
         return false;
     // -----------------
     bool bSuccess = true;
-    QString qstrAll("all");
+    QString qstrAll(tr("all"));
     // -----------------
     if (m_serverId != qstrAll)
         return LowLevelRetrieveOfferList(m_serverId, m_nymId, the_map, qstrMarketID);
@@ -343,19 +369,25 @@ bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrServerID, QString qstrNym
     // -----------------
     OT_ME madeEasy;
 
-    const std::string str_reply = madeEasy.get_nym_market_offers(qstrServerID.toStdString(),
-                                                                 qstrNymID   .toStdString());
-    const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+    bool bSuccess = false;
+    {
+        MTSpinner theSpinner;
 
-    const bool bSuccess = (1 == nResult);
+        const std::string str_reply = madeEasy.get_nym_market_offers(qstrServerID.toStdString(),
+                                                                     qstrNymID   .toStdString());
+        const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+
+        bSuccess = (1 == nResult);
+    }
     // -----------------------------------
     if (bSuccess)
     {
         return LowLevelLoadOfferList(qstrServerID, m_nymId, the_map, qstrMarketID);
     }
-
+    else
+        Moneychanger::HasUsageCredits(this, qstrServerID, qstrNymID);
+    // -----------------------------------
     return bSuccess;
-
 }
 // -----------------------------------------------
 bool DlgMarkets::LoadOfferList(mapIDName & the_map, QString qstrMarketID)
@@ -364,7 +396,7 @@ bool DlgMarkets::LoadOfferList(mapIDName & the_map, QString qstrMarketID)
         return false;
     // -----------------
     bool bSuccess = true;
-    QString qstrAll("all");
+    QString qstrAll(tr("all"));
     // -----------------
     if (m_serverId != qstrAll)
         return LowLevelLoadOfferList(m_serverId, m_nymId, the_map, qstrMarketID);
@@ -529,7 +561,7 @@ bool DlgMarkets::LoadMarketList(mapIDName & the_map)
         return false;
     // -----------------
     bool bSuccess = true;
-    QString qstrAll("all");
+    QString qstrAll(tr("all"));
     // -----------------
     if (m_serverId != qstrAll)
         return LowLevelLoadMarketList(m_serverId, m_nymId, the_map);
@@ -612,7 +644,7 @@ bool DlgMarkets::RetrieveMarketList(mapIDName & the_map)
         return false;
     // -----------------
     bool bSuccess = true;
-    QString qstrAll("all");
+    QString qstrAll(tr("all"));
     // -----------------
     if (m_serverId != qstrAll)
         return LowLevelRetrieveMarketList(m_serverId, m_nymId, the_map);
@@ -644,17 +676,24 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrServerID, QString qstrNy
     // -----------------
     OT_ME madeEasy;
 
-    const std::string str_reply = madeEasy.get_market_list(qstrServerID.toStdString(),
-                                                           qstrNymID   .toStdString());
-    const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+    bool bSuccess = false;
+    {
+        MTSpinner theSpinner;
 
-    const bool bSuccess = (1 == nResult);
+        const std::string str_reply = madeEasy.get_market_list(qstrServerID.toStdString(),
+                                                               qstrNymID   .toStdString());
+        const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+
+        bSuccess = (1 == nResult);
+    }
     // -----------------------------------
     if (bSuccess)
     {
         return LowLevelLoadMarketList(qstrServerID, m_nymId, the_map);
     }
-
+    else
+        Moneychanger::HasUsageCredits(this, qstrServerID, qstrNymID);
+    // -----------------------------------
     return bSuccess;
 }
 
@@ -692,9 +731,8 @@ void DlgMarkets::LoadOrRetrieveMarkets()
     if (!m_pMarketDetails || !m_pOfferDetails)
         return;
     // -----------------------------------------------
-//    // --------------------------------
-//    m_pMarketDetails->ClearRecords();
-//    m_pOfferDetails ->ClearRecords();
+//  m_pMarketDetails->ClearRecords();
+//  m_pOfferDetails ->ClearRecords();
     // -----------------------------------------------
     if (ui &&
         (ui->comboBoxNym   ->currentIndex() >=0) &&
@@ -785,7 +823,6 @@ void DlgMarkets::LoadOrRetrieveMarkets()
                 m_pOfferDetails->show_widget(MTDetailEdit::DetailEditTypeOffer);
             }
 
-
             // HOWEVER, after the first time this happens, we don't need it to happen
             // AGAIN, since now the object (m_pOfferDetails) is already created, and
             // m_pMarketDetails will ALREADY send it messages to refresh its offers
@@ -843,7 +880,6 @@ void DlgMarkets::onNeedToLoadOrRetrieveOffers(QString qstrMarketID)
     // -------------------------------------
     ClearOfferMap(); // Clears *this' (DlgMarkets) map of OfferDataNym pointers.
     // -------------------------------------
-
     m_pOfferDetails->SetMarketID(qstrMarketID);
 
     // Note: this would fail to retrieve for every market except the first one.
@@ -896,7 +932,7 @@ void DlgMarkets::RefreshRecords()
     // ----------------------------
     bool bFoundServerDefault = false;
     // ----------------------------
-    QString qstrAllID   = "all";
+    QString qstrAllID   = tr("all");
     QString qstrAllName = tr("All Servers");
 
     m_mapServers.insert(qstrAllID, qstrAllName);

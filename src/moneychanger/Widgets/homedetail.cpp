@@ -637,12 +637,13 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
             {
                 bool bSuccess = false;
                 {
+                    OT_ME     madeEasy;
                     MTSpinner theSpinner;
                     // -----------------------------------------
-                    OT_ME madeEasy;
-
-                    if (1 == madeEasy.deposit_cash(recordmt.GetServerID(), recordmt.GetNymID(),
-                                                   qstr_acct_id.toStdString(), recordmt.GetContents()))
+                    const int32_t nDepositCash = madeEasy.deposit_cash(recordmt.GetServerID(), recordmt.GetNymID(),
+                                                                       qstr_acct_id.toStdString(), recordmt.GetContents());
+                    // -----------------------------------------
+                    if (1 == nDepositCash)
                     {
                         bSuccess = true;
                         recordmt.DiscardOutgoingCash();
@@ -651,9 +652,16 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
                 // -----------------------------------------
                 if (!bSuccess)
                 {
-                    QMessageBox::warning(this, tr("Recovery failure"),
-                                         tr("Failed recovering this outgoing cash. "
-                                                 "(Perhaps the recipient already deposited it?)"));
+                    const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this,
+                                                                                recordmt.GetServerID(),
+                                                                                recordmt.GetNymID());
+                    // In the cases of -2 and 0, HasUsageCredits already pops up an error box.
+                    // Otherwise, we pop one up ourselves here.
+                    //
+                    if (((-2) != lUsageCredits) && (0 != lUsageCredits))
+                        QMessageBox::warning(this, tr("Recovery failure"),
+                                             tr("Failed recovering this outgoing cash. "
+                                                "(Perhaps the recipient already deposited it?)"));
                 }
                 else
                 {

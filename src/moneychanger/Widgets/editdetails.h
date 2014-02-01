@@ -67,7 +67,6 @@ public:
     // ----------------------------------
     void SetEditType(MTDetailEdit::DetailEditType theType) { m_Type = theType; }
     // ----------------------------------
-
 signals:
     void NeedToUpdateMenu();
     void RefreshRecordsAndUpdateMenu();

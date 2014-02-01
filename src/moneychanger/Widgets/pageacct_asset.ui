@@ -37,7 +37,7 @@
    <item row="1" column="0">
     <widget class="QPushButton" name="pushButtonSelect">
      <property name="text">
-      <string/>
+      <string>&lt;Click to choose Asset Type&gt;</string>
      </property>
      <property name="flat">
       <bool>true</bool>
@@ -46,14 +46,24 @@
    </item>
    <item row="1" column="1">
     <widget class="QPushButton" name="pushButtonManage">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="maximumSize">
       <size>
-       <width>100</width>
-       <height>16777215</height>
+       <width>21</width>
+       <height>21</height>
       </size>
      </property>
      <property name="text">
-      <string>Manage...</string>
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../resource.qrc">
+       <normaloff>:/icons/icons/assets.png</normaloff>:/icons/icons/assets.png</iconset>
      </property>
     </widget>
    </item>
@@ -66,6 +76,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

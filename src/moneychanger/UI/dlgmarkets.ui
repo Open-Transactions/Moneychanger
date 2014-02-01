@@ -62,9 +62,9 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButtonRefresh">
+       <widget class="QToolButton" name="toolButton">
         <property name="text">
-         <string>Refresh</string>
+         <string/>
         </property>
        </widget>
       </item>

@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Wizard</string>
   </property>
+  <property name="options">
+   <set>QWizard::IndependentPages|QWizard::NoCancelButton|QWizard::NoDefaultButton</set>
+  </property>
   <widget class="MTPageAcct_Name" name="wizardPage"/>
   <widget class="MTPageAcct_Asset" name="wizardPage1"/>
   <widget class="MTPageAcct_Nym" name="wizardPage2"/>

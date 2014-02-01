@@ -73,7 +73,14 @@ HEADERS += moneychanger.h \
     Widgets/marketdetails.h \
     Widgets/offerdetails.h \
     Widgets/agreementdetails.h \
-    Widgets/corporationdetails.h
+    Widgets/corporationdetails.h \
+    UI/dlgmenu.h \
+    Widgets/wizardnewoffer.h \
+    Widgets/pageoffer_bidask.h \
+    Widgets/pageoffer_accounts.h \
+    Widgets/pageoffer_amounts.h \
+    Widgets/pageoffer_summary.h \
+    Widgets/pageoffer_assets.h
 
 SOURCES += main.cpp\
            moneychanger.cpp \
@@ -133,7 +140,14 @@ SOURCES += main.cpp\
     Widgets/marketdetails.cpp \
     Widgets/offerdetails.cpp \
     Widgets/agreementdetails.cpp \
-    Widgets/corporationdetails.cpp
+    Widgets/corporationdetails.cpp \
+    UI/dlgmenu.cpp \
+    Widgets/wizardnewoffer.cpp \
+    Widgets/pageoffer_bidask.cpp \
+    Widgets/pageoffer_accounts.cpp \
+    Widgets/pageoffer_amounts.cpp \
+    Widgets/pageoffer_summary.cpp \
+    Widgets/pageoffer_assets.cpp
 
 RESOURCES += resource.qrc
 
@@ -184,7 +198,14 @@ FORMS += \
     Widgets/marketdetails.ui \
     Widgets/offerdetails.ui \
     Widgets/agreementdetails.ui \
-    Widgets/corporationdetails.ui
+    Widgets/corporationdetails.ui \
+    UI/dlgmenu.ui \
+    Widgets/wizardnewoffer.ui \
+    Widgets/pageoffer_bidask.ui \
+    Widgets/pageoffer_accounts.ui \
+    Widgets/pageoffer_amounts.ui \
+    Widgets/pageoffer_summary.ui \
+    Widgets/pageoffer_assets.ui
 
 ## QJsonRpc Library:
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../qjsonrpc/src/release/ -lqjsonrpc

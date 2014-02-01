@@ -95,7 +95,11 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString f
     int32_t nReturnVal  = madeEasy.VerifyMessageSuccess(strResponse);
 
     if (1 != nReturnVal)
+    {
         qDebug() << QString("send %1: failed.").arg(nsChequeType);
+
+        Moneychanger::HasUsageCredits(this, str_serverId, str_fromNymId);
+    }
     else
     {
         qDebug() << QString("Success in send %1!").arg(nsChequeType);
@@ -263,13 +267,17 @@ void MTRequestDlg::on_requestButton_clicked()
         bool bSent = this->requestFunds(memo, amount);
         // -----------------------------------------------------------------
         if (bSent)
-            this->close();
+            emit balancesChanged();
         // -----------------------------------------------------------------
     }
 }
 
 
 
+void MTRequestDlg::onBalancesChanged()
+{
+    this->close();
+}
 
 
 void MTRequestDlg::on_toButton_clicked()
@@ -492,6 +500,9 @@ void MTRequestDlg::dialog()
 
     if (!already_init)
     {
+        connect(this,               SIGNAL(balancesChanged()),
+                Moneychanger::It(), SLOT  (onBalancesChanged()));
+        // ---------------------------------------
         this->setWindowTitle(tr("Request Funds"));
 
         QString style_sheet = "QPushButton{border: none; border-style: outset; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa);}"
@@ -601,6 +612,8 @@ MTRequestDlg::MTRequestDlg(QWidget *parent) :
     ui->setupUi(this);
 
     this->installEventFilter(this);
+
+    connect(this, SIGNAL(balancesChanged()), this, SLOT(onBalancesChanged()));
 
     connect(this, SIGNAL(ShowContact(QString)), Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
     connect(this, SIGNAL(ShowAccount(QString)), Moneychanger::It(), SLOT(mc_show_account_slot(QString)));

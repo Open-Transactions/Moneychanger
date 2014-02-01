@@ -107,6 +107,7 @@ QString  MTEditDetails::GetCustomTabName(int nTab)
 }
 // ----------------------------------
 
+
 //static
 QWidget * MTEditDetails::CreateDetailHeaderWidget(MTDetailEdit::DetailEditType theType,
                                                   QString strID, QString strName,
