@@ -23,7 +23,7 @@ DEFINES    += "OT_ZMQ_MODE=1"
 #-------------------------------------------------
 # Common Settings
 
-include($${SOLUTION_DIR}common.pri)
+include(../common.pri)
 
 #-------------------------------------------------
 # Source
@@ -67,9 +67,9 @@ mac:{
 
 
     #Boost (only if you need it. otherwise comment it out)
-    INCLUDEPATH += /usr/local/include
-    LIBS += -L/usr/local/Cellar/boost/1.55.0/lib
-    LIBS += -lboost_system
+    #INCLUDEPATH += /usr/local/include
+    #LIBS += -L/usr/local/Cellar/boost/1.55.0/lib
+    #LIBS += -lboost_system
 
 
 
@@ -81,26 +81,21 @@ mac:{
     #Mavericks is version 13
     contains(OS_VERSION, 13.0.0):{
         LIBS += -stdlib=libc++
-
-       QT_CONFIG += -spec macx-clang-libc++
-       CONFIG += c++11
-       QMAKE_CXXFLAGS += -stdlib=libc++ -std=c++11
-
-       MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk
-       QMAKE_MAC_SDK=macosx10.9
+        QT_CONFIG += -spec macx-clang-libc++
+        CONFIG += c++11
+        QMAKE_CXXFLAGS += -stdlib=libc++ -std=c++11
     }
 
     #Not Mavericks
     !contains(OS_VERSION, 13.0.0): {
+        MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
+        QMAKE_MAC_SDK=macosx10.8
 
-       MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
-       QMAKE_MAC_SDK=macosx10.8
+        INCLUDEPATH += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
+        DEPENDPATH  += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
+
+        if( !exists( $$MAC_SDK) ) {error("The selected Mac OSX SDK does not exist at $$MAC_SDK!")}
     }
-
-    if( !exists( $$MAC_SDK) ) {error("The selected Mac OSX SDK does not exist at $$MAC_SDK!")}
-
-    INCLUDEPATH += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
-    DEPENDPATH  += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
 }
 
 

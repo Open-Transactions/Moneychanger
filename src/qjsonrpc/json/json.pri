@@ -22,4 +22,3 @@ SOURCES += \
     $${PWD}/qjsonwriter.cpp \
     $${PWD}/qjsonparser.cpp
 
-INSTALLS += json

@@ -17,7 +17,7 @@ QT         += network
 #-------------------------------------------------
 # Common Settings
 
-include($${SOLUTION_DIR}common.pri)
+include(../common.pri)
 
 #-------------------------------------------------
 # Source

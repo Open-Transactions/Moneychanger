@@ -13,6 +13,10 @@ $ brew install libpng qt5
 $ brew unlink qt
 $ brew link —-force qt5
 
+OR. (we can just use the qt4 version)
+
+# brew install qt
+
 
 #########
 # adding path /usr/local/bin to /etc/launchd.conf
@@ -56,7 +60,15 @@ $ cd Moneychanger
 
 
 #########
-# Open in QT Creator
+# Compile via cli
+
+# qmake -r project
+# cd moneychanger
+# make -j2
+
+
+#########
+# Open in QT Creator  (not recommended)
 
 file: ~/Scratch/Sources/Moneychanger/project/moneychanger.pro
 

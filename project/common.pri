@@ -1,5 +1,14 @@
 
 
+SOLUTION_DIR=$${PWD}/
+
+win32:{
+
+#-------------------------------------------------
+# Target
+DESTDIR = $${SOLUTION_DIR}../lib/$(PlatformName)/$(Configuration)
+
+
 #-------------------------------------------------
 # Objects
 
@@ -13,11 +22,5 @@ OBJECTS_DIR    = $${SOLUTION_DIR}../obj/$${TARGET}
 RCC_DIR        = $${SOLUTION_DIR}../out/$${TARGET}/resources
 UI_DIR         = $${SOLUTION_DIR}../out/$${TARGET}/ui/
 
-
-#-------------------------------------------------
-# Target
-
-win32:{
-DESTDIR = $${SOLUTION_DIR}../lib/$(PlatformName)/$(Configuration)
 }
 
