@@ -1,0 +1,9 @@
+
+Open Visual Studio x86 2013 prompt.
+
+
+change to the 'project' directory.
+run: qmake -r -tp vc moneychanger.pro
+
+
+Open Project file in Visual Studio, and compile.

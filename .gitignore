@@ -14,6 +14,7 @@
 
 *.pro.user
 *.pro.user.*
+*.pro.*
 moc_*.cpp
 qrc_*.cpp
 Makefile
@@ -33,6 +34,11 @@ Release*
 mc_db
 ui_*
 *plugin_import.cpp
+*.DS_Store
+
+.qmake.stash
+Makefile.Debug
+Makefile.Release
 
 #text editor backup files
 *~
@@ -41,3 +47,23 @@ ui_*
 *.kdev4
 src/moneychanger-qt
 
+# visual studio noise
+*.user
+*.sdf
+*ipch/
+*.userprefs
+*.suo
+*.sln
+*.sdf
+*.vcxproj
+*.vcxproj.filters
+*.opensdf
+
+# targets
+
+build/
+lib/
+obj/
+bin/
+out/
+include/
