@@ -5,7 +5,7 @@
 #include <QString>
 #include <QGridLayout>
 
-#include "Widgets/identifierwidget.h"
+#include "widgets/identifierwidget.h"
 
 namespace Ui {
 class MTDlgNewContact;

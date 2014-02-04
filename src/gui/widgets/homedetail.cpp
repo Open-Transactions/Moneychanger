@@ -35,8 +35,8 @@
 
 #include "home.h"
 
-#include "UI/getstringdialog.h"
-#include "Widgets/dlgchooser.h"
+#include "ui/getstringdialog.h"
+#include "widgets/dlgchooser.h"
 
 #include "handlers/contacthandler.h"
 

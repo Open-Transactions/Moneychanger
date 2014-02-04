@@ -23,8 +23,8 @@
 
 #include "overridecursor.h"
 
-#include "Widgets/senddlg.h"
-#include "Widgets/requestdlg.h"
+#include "widgets/senddlg.h"
+#include "widgets/requestdlg.h"
 
 
 MTHome::MTHome(QWidget *parent) :
