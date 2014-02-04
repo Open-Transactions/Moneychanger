@@ -23,7 +23,7 @@
 
 #include "detailedit.h"
 
-#include "UI/dlgnewcontact.h"
+#include "ui/dlgnewcontact.h"
 
 #include "credentials.h"
 

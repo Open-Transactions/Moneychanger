@@ -101,7 +101,7 @@ mac:{
 
 # Linux
 linux:{
-        LIBS += -ldl
+        LIBS += -ldl -lboost_system -lboost_thread  ##need to remove these boost hacks eventually
 }
 
 QMAKE_CFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration

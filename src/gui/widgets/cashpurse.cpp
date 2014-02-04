@@ -30,9 +30,9 @@
 
 #include "home.h"
 
-#include "UI/dlgexportcash.h"
-#include "UI/dlgexportedcash.h"
-#include "UI/dlgexportedtopass.h"
+#include "ui/dlgexportcash.h"
+#include "ui/dlgexportedcash.h"
+#include "ui/dlgexportedtopass.h"
 
 
 MTCashPurse::MTCashPurse(QWidget *parent, MTDetailEdit & theOwner) :
