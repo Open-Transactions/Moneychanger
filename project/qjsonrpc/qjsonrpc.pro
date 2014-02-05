@@ -33,7 +33,7 @@ lessThan(QT_MAJOR_VERSION, 5): include($${SOLUTION_DIR}../src/qjsonrpc/json/json
 #-------------------------------------------------
 # Include
 
-INCLUDEPATH += $${SOLUTION_DIR}../include/qjsonrpc
+INCLUDEPATH += $${SOLUTION_DIR}../src/qjsonrpc
 
 #-------------------------------------------------
 # Options

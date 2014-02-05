@@ -1,6 +1,6 @@
 
 TEMPLATE = subdirs
 
-SUBDIRS += qjsonrpc moneychanger-qt
+SUBDIRS += qjsonrpc bitcoin-api moneychanger-qt
 
 CONFIG += ordered

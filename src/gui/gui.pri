@@ -18,6 +18,9 @@ FORMS += \
     $${PWD}/widgets/accountdetails.ui \
     $${PWD}/widgets/agreementdetails.ui \
     $${PWD}/widgets/assetdetails.ui \
+    $${PWD}/widgets/btcguitest.ui \
+    $${PWD}/widgets/btcguitestp2p.ui \
+    $${PWD}/widgets/btcsenddlg.ui \
     $${PWD}/widgets/cashpurse.ui \
     $${PWD}/widgets/compose.ui \
     $${PWD}/widgets/contactdetails.ui \
@@ -72,6 +75,9 @@ HEADERS += \
     $${PWD}/widgets/accountdetails.h \
     $${PWD}/widgets/agreementdetails.h \
     $${PWD}/widgets/assetdetails.h \
+    $${PWD}/widgets/btcguitest.h \
+    $${PWD}/widgets/btcguitestp2p.h \
+    $${PWD}/widgets/btcsenddlg.h \
     $${PWD}/widgets/cashpurse.h \
     $${PWD}/widgets/compose.h \
     $${PWD}/widgets/contactdetails.h \
@@ -128,6 +134,9 @@ SOURCES += \
     $${PWD}/widgets/accountdetails.cpp \
     $${PWD}/widgets/agreementdetails.cpp \
     $${PWD}/widgets/assetdetails.cpp \
+    $${PWD}/widgets/btcguitest.cpp \
+    $${PWD}/widgets/btcguitestp2p.cpp \
+    $${PWD}/widgets/btcsenddlg.cpp \
     $${PWD}/widgets/cashpurse.cpp \
     $${PWD}/widgets/compose.cpp \
     $${PWD}/widgets/contactdetails.cpp \

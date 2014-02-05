@@ -30,12 +30,24 @@ include(../common.pri)
 
 include($${SOLUTION_DIR}../src/core/core.pri)
 include($${SOLUTION_DIR}../src/gui/gui.pri)
+include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
 
 #-------------------------------------------------
 # Include
 
 INCLUDEPATH += $${SOLUTION_DIR}../src
-INCLUDEPATH += $${SOLUTION_DIR}../src/core
+INCLUDEPATH += $${SOLUTION_DIR}../src/bitcoin-api
+
+#-------------------------------------------------
+# Linked Libraries
+
+## QJsonRpc Library:
+LIBS += -L$${SOLUTION_DIR}qjsonrpc -lqjsonrpc
+
+## Bitcoin-Api Library:
+LIBS += -L$${SOLUTION_DIR}bitcoin-api -lbitcoin-api
+
+
 
 #-------------------------------------------------
 # Options
@@ -63,14 +75,7 @@ win32:{
 mac:{
     OS_VERSION = $$system(uname -r)
 
-    # this is still a mess! but getting better.
-
-
-    #Boost (only if you need it. otherwise comment it out)
-    #INCLUDEPATH += /usr/local/include
-    #LIBS += -L/usr/local/Cellar/boost/1.55.0/lib
-    #LIBS += -lboost_system
-
+    # this is still a mess! but getting better. Need to remove boost hacks eventually.
 
 
     #Common

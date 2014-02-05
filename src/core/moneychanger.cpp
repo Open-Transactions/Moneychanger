@@ -589,6 +589,18 @@ void Moneychanger::SetupMainMenu()
     // --------------------------------------------------------------
     //Server section
     SetupServerMenu();
+
+    //Separator
+    mc_systrayMenu->addSeparator();
+    // --------------------------------------------------------------
+
+    // Bitcoin
+    mc_systrayMenu_bitcoin = new QMenu(tr("Bitcoin"), mc_systrayMenu);
+    mc_systrayMenu->addMenu(mc_systrayMenu_bitcoin);
+    mc_systrayMenu_bitcoin_test = new QAction(tr("Test"), mc_systrayMenu_bitcoin);
+    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_test);
+    connect(mc_systrayMenu_bitcoin_test, SIGNAL(triggered()), this, SLOT(mc_bitcoin_slot()));
+
     // --------------------------------------------------------------
     //Separator
     mc_systrayMenu->addSeparator();
@@ -2236,6 +2248,17 @@ void Moneychanger::mc_settings_slot()
 }
 
 
+
+
+/**
+  * (Bitcoin ->) Test Window
+  **/
+void Moneychanger::mc_bitcoin_slot()
+{
+    if(!bitcoinwindow)
+        bitcoinwindow = new BtcGuiTest(this);
+    bitcoinwindow->show();
+}
 
 
 
