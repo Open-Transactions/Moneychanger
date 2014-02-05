@@ -63,7 +63,7 @@ $ cd Moneychanger
 # Compile via cli
 
 # qmake -r project
-# cd moneychanger
+# cd moneychanger-qt
 # make -j2
 
 
