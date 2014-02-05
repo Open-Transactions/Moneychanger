@@ -80,10 +80,10 @@ mac:{
 
     #Mavericks is version 13
     contains(OS_VERSION, 13.0.0):{
-        LIBS += -stdlib=libc++
         QT_CONFIG += -spec macx-clang-libc++
         CONFIG += c++11
         QMAKE_CXXFLAGS += -stdlib=libc++ -std=c++11
+        LIBS += -stdlib=libc++ -lboost_system -lboost_thread
     }
 
     #Not Mavericks
@@ -93,6 +93,7 @@ mac:{
 
         INCLUDEPATH += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
         DEPENDPATH  += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
+        LIBS += -lboost_system-mt -lboost_thread-mt
 
         if( !exists( $$MAC_SDK) ) {error("The selected Mac OSX SDK does not exist at $$MAC_SDK!")}
     }
