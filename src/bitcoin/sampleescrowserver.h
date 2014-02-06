@@ -1,7 +1,12 @@
 #ifndef SAMPLEESCROWSERVER_H
 #define SAMPLEESCROWSERVER_H
 
+#ifndef OT_USE_TR1
+#include <memory>
+#else
 #include <tr1/memory>
+#endif
+
 #include "btcobjects.h"
 #include "btcmodules.h"
 #include "sampleescrowtransaction.h"

@@ -38,6 +38,7 @@ include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
 INCLUDEPATH += $${SOLUTION_DIR}../src
 INCLUDEPATH += $${SOLUTION_DIR}../src/bitcoin-api
 
+
 #-------------------------------------------------
 # Linked Libraries
 
@@ -47,7 +48,9 @@ LIBS += -L$${SOLUTION_DIR}qjsonrpc -lqjsonrpc
 ## Bitcoin-Api Library:
 LIBS += -L$${SOLUTION_DIR}bitcoin-api -lbitcoin-api
 
-
+## Jsoncpp Library:
+unix:  INCLUDEPATH += /usr/include/jsoncpp       ## assume system jsoncpp build
+mac:   INCLUDEPATH += /usr/local/include/jsoncpp ## custom jsoncpp build
 
 #-------------------------------------------------
 # Options

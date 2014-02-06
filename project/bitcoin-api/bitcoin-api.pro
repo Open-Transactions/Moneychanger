@@ -30,10 +30,16 @@ include($${SOLUTION_DIR}../src/bitcoin-api/bitcoin-api.pri)
 
 INCLUDEPATH += $${SOLUTION_DIR}../src/bitcoin-api
 
+
+ 
 #-------------------------------------------------
 # Linked Libraries
 
-LIBS += -lcurl -ljsoncpp  # cross-platform communication with bitcoind
+unix:LIBS += -lcurl -ljsoncpp                   ## cross-platform communication with bitcoind
+mac: LIBS += -lcurl /usr/local/lib/libjsoncpp.a ## custom jsoncpp build
+
+unix:INCLUDEPATH += /usr/include/jsoncpp       ## assume system jsoncpp build
+mac: INCLUDEPATH += /usr/local/include/jsoncpp ## custom jsoncpp build
 
 #-------------------------------------------------
 # Options

@@ -1,7 +1,12 @@
 #ifndef ESCROWPOOL_H
 #define ESCROWPOOL_H
 
+#ifndef OT_USE_TR1
+#include <memory>
+#else
 #include <tr1/memory>
+#endif
+
 #include <QList>
 #include <QString>
 //#include "sampleescrowserver.h"

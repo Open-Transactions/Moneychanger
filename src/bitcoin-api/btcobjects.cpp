@@ -1,7 +1,7 @@
 #include "btcobjects.h"
 #include "btchelper.h"
 #include <cstdlib>
-#include <stdio.h>
+#include <cstdio>
 
 BtcTransaction::BtcTransaction(Json::Value reply)
 {

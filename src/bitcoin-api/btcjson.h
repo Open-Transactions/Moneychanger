@@ -4,7 +4,12 @@
 #include "ibtcjson.h"
 #include "btcmodules.h"
 
+#ifndef OT_USE_TR1
+#include <memory>
+#else
 #include <tr1/memory>
+#endif
+
 
 
 /*

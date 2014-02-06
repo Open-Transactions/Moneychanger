@@ -1,7 +1,11 @@
 #ifndef SAMPLETYPEDEFS_H
 #define SAMPLETYPEDEFS_H
 
+#ifndef OT_USE_TR1
+#include <memory>
+#else
 #include <tr1/memory>
+#endif
 
 // this whole header file is wrong. TODO: figure out how to circular dependency and get rid of it.
 

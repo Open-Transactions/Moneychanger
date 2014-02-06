@@ -1,8 +1,10 @@
 #include "btchelper.h"
 #include "btcmodules.h"
+
+#include <iostream>
 #include <vector>
 #include <algorithm>
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 
 #ifndef OT_USE_TR1

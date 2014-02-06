@@ -6,7 +6,12 @@
 #include "btcmodules.h"
 
 #include <curl/curl.h>
+
+#ifndef OT_USE_TR1
+#include <memory>
+#else
 #include <tr1/memory>
+#endif
 
 
 /*

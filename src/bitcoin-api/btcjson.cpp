@@ -1,8 +1,9 @@
 #include "btcjson.h"
-#include <jsoncpp/json/json.h>
+#include <json/json.h>
 //#include <OTLog.h>
+#include <iostream>
 #include <map>
-#include <stdio.h>
+#include <cstdio>
 
 // https://en.bitcoin.it/wiki/Proper_Money_Handling_%28JSON-RPC%29 on how to avoid rounding errors and such. might be worth a read someday.
 

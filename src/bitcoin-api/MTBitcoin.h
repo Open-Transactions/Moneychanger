@@ -5,7 +5,12 @@
 #include <sys/types.h>
 #include <string>
 #include <list>
+
+#ifndef OT_USE_TR1
+#include <memory>
+#else
 #include <tr1/memory>
+#endif
 
 #include "imtbitcoin.h"
 #include "btcobjects.h"

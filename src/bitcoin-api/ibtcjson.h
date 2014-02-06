@@ -4,9 +4,16 @@
 #include <string>
 #include <list>
 #include <map>
+
+#ifndef OT_USE_TR1
+#include <memory>
+#else
 #include <tr1/memory>
+#endif
+
+#include <json/value.h>
+
 #include "btcobjects.h"
-#include "jsoncpp/json/value.h"
 
 /*
  *

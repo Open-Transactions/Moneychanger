@@ -1,6 +1,7 @@
-#include "btctest.h"
-#include "btcmodules.h"
-#include <stdio.h>
+
+
+#include <cstdio>
+#include <iostream>
 
 #ifndef OT_USE_TR1
     #include <thread>
@@ -10,6 +11,9 @@
     #include <unistd.h>
     #define Sleep(milliSeconds) usleep(milliSeconds * 1000)
 #endif // OT_USE_TR1
+
+#include "btctest.h"
+#include "btcmodules.h"
 
 
 BtcModulesPtr BtcTest::modules;

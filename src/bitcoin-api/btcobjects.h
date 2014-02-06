@@ -4,16 +4,15 @@
 #include <string.h>
 #include <list>
 #include <vector>
-#include <jsoncpp/json/json.h>
-#include <tr1/memory>
+
+#include <json/json.h>
 #include <sys/types.h>
-
+ 
 #ifndef OT_USE_TR1
-    // include c++11 shared pointers here.
+#include <memory>
 #else
-    #include <tr1/shared_ptr.h>
-#endif // OT_USE_TR1
-
+#include <tr1/memory>
+#endif
 
 /*
  *

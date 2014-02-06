@@ -2,9 +2,14 @@
 #define IBTCRPC_H
 
 #include <string>
-#include <tr1/memory>   // in tr1, otherwise mac users might not find it i heard
-#include <btcobjects.h>
 
+#ifndef OT_USE_TR1
+#include <memory>
+#else
+#include <tr1/memory>
+#endif
+
+#include "btcobjects.h"
 
 /*
  *

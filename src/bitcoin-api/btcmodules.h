@@ -1,7 +1,12 @@
 #ifndef BTCMODULES_H
 #define BTCMODULES_H
 
+#ifndef OT_USE_TR1
+#include <memory>
+#else
 #include <tr1/memory>
+#endif
+
 #include "ibtcjson.h"
 #include "ibtcrpc.h"
 #include "imtbitcoin.h"
