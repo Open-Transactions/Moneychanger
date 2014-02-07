@@ -1,0 +1,19 @@
+#include "transactionmanager.h"
+
+TransactionManager::TransactionManager()
+{
+    this->transactions = QList<SampleEscrowTransactionPtr>();
+}
+
+void TransactionManager::AddTransaction(SampleEscrowTransactionPtr transaction)
+{
+    if(transaction == NULL || this->transactions.contains(transaction))
+        return;
+
+    this->transactions.append(transaction);
+}
+
+void TransactionManager::RemoveTransaction(SampleEscrowTransactionPtr transaction)
+{
+    this->transactions.removeAll(transaction);
+}

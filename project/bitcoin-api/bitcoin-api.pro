@@ -4,15 +4,12 @@
 #
 #-------------------------------------------------
 
-#-------------------------------------------------
-# Global
-
 TEMPLATE    = lib
 
-TARGET      = qjsonrpc
-#VERSION     =
+TARGET      = bitcoin-api
+#VERSION     = 0.0.1
 
-QT         += network
+QT         += core network
 
 #-------------------------------------------------
 # Common Settings
@@ -22,19 +19,28 @@ include(../common.pri)
 #-------------------------------------------------
 # Source
 
-
-include($${SOLUTION_DIR}../src/qjsonrpc/qjsonrpc.pri)
-
-lessThan(QT_MAJOR_VERSION, 5): include($${SOLUTION_DIR}../src/qjsonrpc/json/json.pri)
+include($${SOLUTION_DIR}../src/bitcoin-api/bitcoin-api.pri)
 
 
 #-------------------------------------------------
 # Include
 
-INCLUDEPATH += $${SOLUTION_DIR}../src/qjsonrpc
+INCLUDEPATH += $${SOLUTION_DIR}../src/bitcoin-api
+INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
+
+ 
+#-------------------------------------------------
+# Linked Libraries
+
+LIBS += -L$${SOLUTION_DIR}jsoncpp -ljsoncpp
+LIBS += -lcurl
 
 #-------------------------------------------------
 # Options
+
+# uncomment one of the following two lines:
+##QMAKE_CXXFLAGS += -std=c++11
+DEFINES += OT_USE_TR1
 
 win32:{
     DEFINES     += "_UNICODE=1"
