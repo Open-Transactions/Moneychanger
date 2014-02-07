@@ -25,9 +25,7 @@ include(../common.pri)
 
 include($${SOLUTION_DIR}../src/qjsonrpc/qjsonrpc.pri)
 
-
 lessThan(QT_MAJOR_VERSION, 5): include($${SOLUTION_DIR}../src/qjsonrpc/json/json.pri)
-
 
 
 #-------------------------------------------------

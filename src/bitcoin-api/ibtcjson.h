@@ -11,7 +11,7 @@
 #include <tr1/memory>
 #endif
 
-#include <json/value.h>
+#include <json/json.h>
 
 #include "btcobjects.h"
 

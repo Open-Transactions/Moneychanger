@@ -11,13 +11,13 @@
 # Global
 
 TEMPLATE    = app
+CONFIG     += debug_and_release precompile_header
 
 TARGET      = moneychanger-qt
-#VERSION     =
-
-CONFIG += debug_and_release precompile_header
+#VERSION     = 0.0.1
 
 QT         += core gui sql network widgets
+
 DEFINES    += "OT_ZMQ_MODE=1"
 
 #-------------------------------------------------
@@ -36,21 +36,22 @@ include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
 # Include
 
 INCLUDEPATH += $${SOLUTION_DIR}../src
+INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
 INCLUDEPATH += $${SOLUTION_DIR}../src/bitcoin-api
 
 
 #-------------------------------------------------
-# Linked Libraries
+# Linked Libs
 
-## QJsonRpc Library:
-LIBS += -L$${SOLUTION_DIR}qjsonrpc -lqjsonrpc
+# QJsonRpc
+##LIBS += -L$${SOLUTION_DIR}qjsonrpc -lqjsonrpc
 
-## Bitcoin-Api Library:
+# Jsoncpp
+LIBS += -L$${SOLUTION_DIR}jsoncpp -ljsoncpp
+
+# Bitcoin-Api
 LIBS += -L$${SOLUTION_DIR}bitcoin-api -lbitcoin-api
 
-## Jsoncpp Library:
-unix:  INCLUDEPATH += /usr/include/jsoncpp       ## assume system jsoncpp build
-mac:   INCLUDEPATH += /usr/local/include/jsoncpp ## custom jsoncpp build
 
 #-------------------------------------------------
 # Options

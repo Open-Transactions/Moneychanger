@@ -4,13 +4,10 @@
 #
 #-------------------------------------------------
 
-#-------------------------------------------------
-# Global
-
 TEMPLATE    = lib
 
 TARGET      = bitcoin-api
-#VERSION     =
+#VERSION     = 0.0.1
 
 QT         += core network
 
@@ -29,17 +26,14 @@ include($${SOLUTION_DIR}../src/bitcoin-api/bitcoin-api.pri)
 # Include
 
 INCLUDEPATH += $${SOLUTION_DIR}../src/bitcoin-api
-
+INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
 
  
 #-------------------------------------------------
 # Linked Libraries
 
-unix:LIBS += -lcurl -ljsoncpp                   ## cross-platform communication with bitcoind
-mac: LIBS += -lcurl /usr/local/lib/libjsoncpp.a ## custom jsoncpp build
-
-unix:INCLUDEPATH += /usr/include/jsoncpp       ## assume system jsoncpp build
-mac: INCLUDEPATH += /usr/local/include/jsoncpp ## custom jsoncpp build
+LIBS += -L$${SOLUTION_DIR}jsoncpp -ljsoncpp
+LIBS += -lcurl
 
 #-------------------------------------------------
 # Options
