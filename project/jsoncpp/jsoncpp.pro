@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 TEMPLATE    = lib
+CONFIG     += staticlib
 
 TARGET      = jsoncpp
 #VERSION     = 0.6.0
@@ -24,4 +25,3 @@ include($${SOLUTION_DIR}../src/jsoncpp/jsoncpp.pri)
 # Include
 
 INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
-

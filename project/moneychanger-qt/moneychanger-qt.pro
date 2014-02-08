@@ -11,7 +11,7 @@
 # Global
 
 TEMPLATE    = app
-CONFIG     += debug_and_release precompile_header
+CONFIG     += precompile_header
 
 TARGET      = moneychanger-qt
 #VERSION     = 0.0.1
@@ -43,18 +43,22 @@ INCLUDEPATH += $${SOLUTION_DIR}../src/bitcoin-api
 #-------------------------------------------------
 # Linked Libs
 
-# QJsonRpc
-##LIBS += -L$${SOLUTION_DIR}qjsonrpc -lqjsonrpc
+# Bitcoin-Api
+LIBS += -L$${SOLUTION_DIR}bitcoin-api -lbitcoin-api
 
 # Jsoncpp
 LIBS += -L$${SOLUTION_DIR}jsoncpp -ljsoncpp
 
-# Bitcoin-Api
-LIBS += -L$${SOLUTION_DIR}bitcoin-api -lbitcoin-api
+LIBS += -lcurl ## bitcoin-api dependency
+
+# QJsonRpc
+##LIBS += -L$${SOLUTION_DIR}qjsonrpc -lqjsonrpc
 
 
 #-------------------------------------------------
 # Options
+
+QMAKE_CXXFLAGS += -fPIC ## put only here, sub-libs pick it up from elsewhere?
 
 ## Windows
 win32:{
@@ -110,12 +114,13 @@ mac:{
 
 
 # Linux
+
 linux:{
         LIBS += -ldl -lboost_system -lboost_thread  ##need to remove these boost hacks eventually
 }
 
-QMAKE_CFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
-QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
+QMAKE_CFLAGS_WARN_ON -= -Wall -Wextra -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
+QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wextra -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 
 #we do it this way, since we don't want any more tokens.
 mac: PKG_CONFIG_LIBDIR = "/usr/local/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"

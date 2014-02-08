@@ -1,6 +1,8 @@
 
+CONFIG     += debug_and_release
 
 SOLUTION_DIR=$${PWD}/
+
 
 win32:{
 
