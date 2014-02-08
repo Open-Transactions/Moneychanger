@@ -5,11 +5,11 @@
 #-------------------------------------------------
 
 TEMPLATE    = lib
+CONFIG     += staticlib
 
 TARGET      = bitcoin-api
 #VERSION     = 0.0.1
 
-QT         += core network
 
 #-------------------------------------------------
 # Common Settings
@@ -28,12 +28,6 @@ include($${SOLUTION_DIR}../src/bitcoin-api/bitcoin-api.pri)
 INCLUDEPATH += $${SOLUTION_DIR}../src/bitcoin-api
 INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
 
- 
-#-------------------------------------------------
-# Linked Libraries
-
-LIBS += -L$${SOLUTION_DIR}jsoncpp -ljsoncpp
-LIBS += -lcurl
 
 #-------------------------------------------------
 # Options
