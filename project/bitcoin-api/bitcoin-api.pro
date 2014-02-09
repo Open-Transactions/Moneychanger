@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Moneychanger Project File
+# Bitcoin API Project File
 #
 #-------------------------------------------------
 
@@ -27,6 +27,7 @@ include($${SOLUTION_DIR}../src/bitcoin-api/bitcoin-api.pri)
 
 INCLUDEPATH += $${SOLUTION_DIR}../src/bitcoin-api
 INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
+INCLUDEPATH += $${SOLUTION_DIR}../src/curl/include
 
 
 #-------------------------------------------------
