@@ -43,16 +43,22 @@ INCLUDEPATH += $${SOLUTION_DIR}../src/bitcoin-api
 #-------------------------------------------------
 # Linked Libs
 
+
 # Bitcoin-Api
-LIBS += -L$${SOLUTION_DIR}bitcoin-api -lbitcoin-api
+!win32: LIBS += -L$${SOLUTION_DIR}bitcoin-api
+LIBS += -lbitcoin-api
 
 # Jsoncpp
-LIBS += -L$${SOLUTION_DIR}jsoncpp -ljsoncpp
+!win32: LIBS += -L$${SOLUTION_DIR}jsoncpp
+LIBS += -ljsoncpp
 
-LIBS += -lcurl ## bitcoin-api dependency
+## Curl
+!win32: LIBS += -L$${SOLUTION_DIR}curl
+LIBS += -lcurl
 
 # QJsonRpc
-##LIBS += -L$${SOLUTION_DIR}qjsonrpc -lqjsonrpc
+#!win32: LIBPATH += $${SOLUTION_DIR}qjsonrpc
+##LIBS += -lqjsonrpc
 
 
 #-------------------------------------------------
@@ -63,14 +69,25 @@ QMAKE_CXXFLAGS += -fPIC ## put only here, sub-libs pick it up from elsewhere?
 ## Windows
 win32:{
 
+equals(TEMPLATE,vcapp):{
     INCLUDEPATH += $(SystemDrive)/OpenSSL-Win$(PlatformArchitecture)/include
     LIBPATH += $(SystemDrive)/OpenSSL-Win$(PlatformArchitecture)/lib/VC
-    LIBS +=
+    LIBPATH += $${SOLUTION_DIR}../../Open-Transactions/lib/$(PlatformName)/$(Configuration)/
+}
+else:{
+    INCLUDEPATH += C:/OpenSSL-Win32/include
+    LIBPATH += C:/OpenSSL-Win32/lib/VC
 
+    CONFIG(debug, debug|release):{
+        LIBPATH += $${SOLUTION_DIR}../../Open-Transactions/lib/Win32/Debug/
+    }
+    else:{
+        LIBPATH += $${SOLUTION_DIR}../../Open-Transactions/lib/Win32/Release/
+    }
+}
     INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include
     INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include/otlib
-    LIBPATH += $${SOLUTION_DIR}../../Open-Transactions/lib/$(PlatformName)/$(Configuration)/
-    LIBS += otlib.lib otapi.lib
+    LIBS += otlib.lib otapi.lib Advapi32.lib
 
     DEFINES     += "_UNICODE" "NOMINMAX"
     CharacterSet = 1

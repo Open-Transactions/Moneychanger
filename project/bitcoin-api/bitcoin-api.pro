@@ -10,6 +10,7 @@ CONFIG     += staticlib
 TARGET      = bitcoin-api
 #VERSION     = 0.0.1
 
+win32:DEFINES += "CURL_STATICLIB=1"
 
 #-------------------------------------------------
 # Common Settings
