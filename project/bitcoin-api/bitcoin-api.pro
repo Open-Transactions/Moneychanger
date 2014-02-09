@@ -34,7 +34,7 @@ INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
 
 # uncomment one of the following two lines:
 ##QMAKE_CXXFLAGS += -std=c++11
-DEFINES += OT_USE_TR1
+!win32:DEFINES += OT_USE_TR1
 
 win32:{
     DEFINES     += "_UNICODE=1"

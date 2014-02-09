@@ -24,7 +24,7 @@ BtcTransaction::BtcTransaction(Json::Value reply)
     if(details.size() == 0)
         return;
 
-    for(uint i = 0; i < details.size(); i++)
+    for (Json::Value::ArrayIndex i = 0; i < details.size(); i++)
     {
         Json::Value detail = details[i];
         std::string address = detail["address"].asString();
@@ -69,14 +69,14 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
     this->txID = rawTx["txid"].asString();
 
     Json::Value vin = rawTx["vin"];
-    for(uint i = 0; i < vin.size(); i++)
+    for (Json::Value::ArrayIndex i = 0; i < vin.size(); i++)
     {
         Json::Value inputObj = vin[i];
         this->inputs.push_back(VIN(inputObj["txid"].asString(), (int)inputObj["vout"].asDouble()));
     }
 
     Json::Value vouts  = rawTx["vout"];
-    for(uint i = 0; i < vouts.size(); i++)
+    for (Json::Value::ArrayIndex i = 0; i < vouts.size(); i++)
     {
         Json::Value outputObj = vouts[i];
         VOUT output;
@@ -87,7 +87,7 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
         Json::Value scriptPubKey = outputObj["scriptPubKey"];
         output.reqSigs = (int)scriptPubKey["reqSigs"].asDouble();
         Json::Value addresses = scriptPubKey["addresses"];
-        for(uint i= 0; i < addresses.size(); i++)
+        for (Json::Value::ArrayIndex i = 0; i < addresses.size(); i++)
         {
             output.addresses.push_back(addresses[i].asString());
         }
@@ -155,7 +155,7 @@ BtcBlock::BtcBlock(Json::Value block)
 
     // get list of transactions in the block
     Json::Value transacts = block["tx"];
-    for(uint i = 0; i < transacts.size(); i++)
+    for (Json::Value::ArrayIndex i = 0; i < transacts.size(); i++)
     {
         this->transactions.push_back(transacts[i].asString());
     }
@@ -180,7 +180,7 @@ BtcTxTarget::BtcTxTarget(const std::string &toAddress, int64_t amount)
 void BtcTxTarget::ConvertSatoshisToBitcoin()
 {
     Members targetAddresses = this->getMemberNames();
-    for(uint i = 0; i < targetAddresses.size(); i++)
+    for (Json::Value::ArrayIndex i = 0; i < targetAddresses.size(); i++)
     {
         (*this)[targetAddresses[i]] = BtcHelper::SatoshisToCoins(
                     (*this)[targetAddresses[i]].asInt64());
@@ -252,7 +252,7 @@ BtcRpcPacket::BtcRpcPacket(const char *data, int size)
         return;
     }
 
-    memccpy(this->data, data, 0, size);
+    _memccpy(this->data, data, 0, size);
     this->dataSize = size;
     this->pointerOffset = 0;
     this->data[this->dataSize] = '\0';
@@ -267,7 +267,7 @@ BtcRpcPacket::BtcRpcPacket(const std::string &data)
         return;
     }
 
-    memccpy(this->data, data.c_str(), 0, data.size());
+    _memccpy(this->data, data.c_str(), 0, data.size());
     this->dataSize = data.size();
     this->pointerOffset = 0;
     this->data[this->dataSize] = '\0';
@@ -288,7 +288,7 @@ BtcRpcPacket::BtcRpcPacket(const BtcRpcPacketPtr packet)
         return;
     }
 
-    memccpy(this->data, packet->data, 0, packet->dataSize);
+    _memccpy(this->data, packet->data, 0, packet->dataSize);
     this->dataSize = packet->dataSize;
     this->pointerOffset = 0;
     this->data[this->dataSize] = '\0';

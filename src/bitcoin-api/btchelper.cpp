@@ -81,7 +81,7 @@ int64_t BtcHelper::GetTotalOutput(BtcRawTransactionPtr transaction, const std::s
         return 0;
 
     int64_t amountReceived = 0.0;
-    for(uint i = 0; i < transaction->outputs.size(); i++)
+    for(uint64_t i = 0; i < transaction->outputs.size(); i++)
     {
         // I don't know what outputs to multiple addresses mean so I'm not gonna trust them for now.
         if(transaction->outputs[i].addresses.size() > 1)
@@ -208,7 +208,7 @@ BtcSignedTransactionPtr BtcHelper::WithdrawAllFromAddress(const std::string &txT
     int64_t funds = 0;
     BtcTxIdVouts unspentOutputs = BtcTxIdVouts();
     std::list<BtcSigningPrequisite> signingPrequisites;
-    for(uint i = 0; i < rawTransaction->outputs.size(); i++)
+    for(uint64_t i = 0; i < rawTransaction->outputs.size(); i++)
     {
         BtcRawTransaction::VOUT output = rawTransaction->outputs[i];
 

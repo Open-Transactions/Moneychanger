@@ -188,7 +188,7 @@ bool BtcTest::TestRawTransactions()
     if(decodedTx == NULL)
         return false;
 
-    for(uint i = 0; i < decodedTx->outputs.size(); i++)
+    for (uint64_t i = 0; i < decodedTx->outputs.size(); i++)
     {
         if(decodedTx->outputs[i].addresses[0] == myAddress1)
             unspentOutputList.push_back(BtcTxIdVoutPtr(new BtcTxIdVout(txId, i)));
