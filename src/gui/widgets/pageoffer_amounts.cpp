@@ -1,12 +1,18 @@
 
 #include <cmath>
 
-#include <opentxs/OTStorage.h>
-
+#ifdef _WIN32
+#include <otapi/OTAPI.h>
+#include <otapi/OT_ME.h>
+#include <otlib/OTStorage.h>
+#include <otlib/OTPaymentPlan.h>
+#else
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
-
+#include <opentxs/OTStorage.h>
 #include <opentxs/OTPaymentPlan.h>
+#endif
+
 
 #include "pageoffer_amounts.h"
 #include "ui_pageoffer_amounts.h"
