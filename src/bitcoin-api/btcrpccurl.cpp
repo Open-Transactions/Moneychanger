@@ -12,7 +12,6 @@
 #include <cstdlib>
 //#include <OTLog.h>
 
-
 BtcRpcPacketPtr BtcRpcCurl::connectString = BtcRpcPacketPtr(new BtcRpcPacket("{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }"));
 
 BtcRpcCurl::BtcRpcCurl(BtcModules *modules)

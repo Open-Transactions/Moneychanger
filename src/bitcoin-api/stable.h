@@ -32,6 +32,10 @@
 #include <vector>
 #include <locale>
 
+#ifndef _WIN32
+    #include <stdint.h>
+#endif
+
 // if we are not compiling with C++11, lets use the tr1.
 #ifdef OT_USE_TR1
 #undef OT_USE_TR1
