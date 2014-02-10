@@ -5,40 +5,32 @@ SOLUTION_DIR=$${PWD}/
 
 
 win32:{
-
-
-equals(TEMPLATE,vcapp)|equals(TEMPLATE,vclib):{
-
-#-------------------------------------------------
-# Target
-DESTDIR = $${SOLUTION_DIR}../lib/$(PlatformName)/$(Configuration)
-
-#-------------------------------------------------
-# Objects
-
-MOC_DIR        = $${SOLUTION_DIR}../obj/$${TARGET}
-OBJECTS_DIR    = $${SOLUTION_DIR}../obj/$${TARGET}
-
-
-#-------------------------------------------------
-# Output
-
-RCC_DIR        = $${SOLUTION_DIR}../out/$${TARGET}/resources
-UI_DIR         = $${SOLUTION_DIR}../out/$${TARGET}/ui/
-
-}
-else:{
-#-------------------------------------------------
-# Target (no Visual Studio)
-    CONFIG(debug, debug|release):{
-        DESTDIR = $${SOLUTION_DIR}../lib/Win32/Debug
+    equals(TEMPLATE,vcapp)|equals(TEMPLATE,vclib):{
+        DESTDIR     = $${SOLUTION_DIR}../lib/$(PlatformName)/$(Configuration)
+        MOC_DIR     = $${SOLUTION_DIR}../obj/$${TARGET}
+        OBJECTS_DIR = $${SOLUTION_DIR}../obj/$${TARGET}
+        RCC_DIR     = $${SOLUTION_DIR}../out/$${TARGET}/resources
+        UI_DIR      = $${SOLUTION_DIR}../out/$${TARGET}/ui/
     }
     else:{
-        DESTDIR = $${SOLUTION_DIR}../lib/Win32/Debug
+        !contains(QMAKE_HOST.arch, x86_64):{
+            CONFIG(debug, debug|release):{
+                DESTDIR = $${SOLUTION_DIR}../lib/Win32/Debug
+            }
+            else:{
+                DESTDIR = $${SOLUTION_DIR}../lib/Win32/Debug
+            }
+        }
+        else:{
+            CONFIG(debug, debug|release):{
+                DESTDIR = $${SOLUTION_DIR}../lib/x64/Debug
+            }
+            else:{
+                DESTDIR = $${SOLUTION_DIR}../lib/x64/Debug
+            }
+        }
     }
 }
 
-LIBPATH += $${DESTDIR}
-
-}
+mac:MAC_OS_VERSION = $$system(uname -r)
 

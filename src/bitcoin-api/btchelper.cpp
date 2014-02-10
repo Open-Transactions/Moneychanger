@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <stable.h>
+#endif
+
 #include "btchelper.h"
 #include "btcmodules.h"
 
@@ -6,6 +10,10 @@
 #include <algorithm>
 #include <cstdio>
 #include <string>
+
+#ifndef _WIN32
+    #include <stdint.h>
+#endif
 
 #ifndef OT_USE_TR1
     #include <thread>   // for sleep()

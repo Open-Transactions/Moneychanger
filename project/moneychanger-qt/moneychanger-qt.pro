@@ -32,6 +32,55 @@ include($${SOLUTION_DIR}../src/core/core.pri)
 include($${SOLUTION_DIR}../src/gui/gui.pri)
 include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
 
+
+#-------------------------------------------------
+# Options
+
+QMAKE_CFLAGS_WARN_ON -= -Wall -Wextra -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
+QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wextra -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
+
+win32:{
+    DEFINES     += "_UNICODE" "NOMINMAX"
+    CharacterSet = 1
+    QMAKE_CXXFLAGS += /bigobj /Zm480 /wd4512 /wd4100
+}
+
+unix:{
+    CONFIG += link_pkgconfig
+    QMAKE_CXXFLAGS += -fPIC ## put only here, sub-libs pick it up from elsewhere?
+}
+
+mac:{
+    QT_CONFIG -= no-pkg-config
+    QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -static
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
+
+    #we do it this way, since we don't want any more tokens.
+    PKG_CONFIG_LIBDIR = "/usr/local/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
+    PKG_CONFIG_LIBDIR = "/usr/local/opt/openssl/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
+    PKG_CONFIG_LIBDIR = "$${PKG_CONFIG_LIBDIR}:" #end with a colon.
+
+    contains(MAC_OS_VERSION, 13.0.0):{
+        QT_CONFIG += -spec macx-clang-libc++
+        CONFIG += c++11
+        QMAKE_CXXFLAGS += -stdlib=libc++ -std=c++11
+    }
+    else:{
+        MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
+        QMAKE_MAC_SDK=macosx10.8
+        !exists($$MAC_SDK): error("The selected Mac OSX SDK does not exist at $${MAC_SDK}!")
+    }
+}
+
+#-------------------------------------------------
+# Package Config
+
+unix:{
+    PKGCONFIG += opentxs
+    PKGCONFIG += chaiscript
+}
+
+
 #-------------------------------------------------
 # Include
 
@@ -39,114 +88,96 @@ INCLUDEPATH += $${SOLUTION_DIR}../src
 INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
 INCLUDEPATH += $${SOLUTION_DIR}../src/bitcoin-api
 
+win32:{
+    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include
+    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include/otlib
+
+    equals(TEMPLATE,vcapp):{
+        INCLUDEPATH += $(SystemDrive)/OpenSSL-Win$(PlatformArchitecture)/include
+        }
+    else:{
+        !contains(QMAKE_HOST.arch, x86_64):{
+            INCLUDEPATH += C:/OpenSSL-Win32/include
+        }
+        else:{
+            INCLUDEPATH += C:/OpenSSL-Win64/include
+        }
+    }
+}
+
+mac:{
+    !contains(MAC_OS_VERSION, 13.0.0): {
+        INCLUDEPATH += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
+    }
+}
+
 
 #-------------------------------------------------
 # Linked Libs
 
-
-# Bitcoin-Api
-!win32: LIBS += -L$${SOLUTION_DIR}bitcoin-api
-LIBS += -lbitcoin-api
-
-# Jsoncpp
-!win32: LIBS += -L$${SOLUTION_DIR}jsoncpp
-LIBS += -ljsoncpp
-
-## Curl
-!win32: LIBS += -L$${SOLUTION_DIR}curl
-LIBS += -lcurl
-
 # QJsonRpc
-#!win32: LIBPATH += $${SOLUTION_DIR}qjsonrpc
-##LIBS += -lqjsonrpc
+##LIBS += -L$${SOLUTION_DIR}qjsonrpc -lqjsonrpc
 
+unix: {
+    LIBS += -L$${SOLUTION_DIR}bitcoin-api
+    LIBS += -L$${SOLUTION_DIR}jsoncpp
+    LIBS += -L$${SOLUTION_DIR}curl
 
-#-------------------------------------------------
-# Options
+    LIBS += -ldl
+    LIBS += -lbitcoin-api
+    LIBS += -ljsoncpp
+    LIBS += -lcurl
 
-QMAKE_CXXFLAGS += -fPIC ## put only here, sub-libs pick it up from elsewhere?
-
-## Windows
-win32:{
-
-equals(TEMPLATE,vcapp):{
-    INCLUDEPATH += $(SystemDrive)/OpenSSL-Win$(PlatformArchitecture)/include
-    LIBPATH += $(SystemDrive)/OpenSSL-Win$(PlatformArchitecture)/lib/VC
-    LIBPATH += $${SOLUTION_DIR}../../Open-Transactions/lib/$(PlatformName)/$(Configuration)/
+    LIBS += -lboost_system-mt
+    LIBS += -lboost_thread-mt
 }
-else:{
-    INCLUDEPATH += C:/OpenSSL-Win32/include
-    LIBPATH += C:/OpenSSL-Win32/lib/VC
 
-    CONFIG(debug, debug|release):{
-        LIBPATH += $${SOLUTION_DIR}../../Open-Transactions/lib/Win32/Debug/
+win32: {
+    QMAKE_LIBDIR += $${DESTDIR}
+
+    equals(TEMPLATE,vcapp):{
+        QMAKE_LIBDIR += $(SystemDrive)/OpenSSL-Win$(PlatformArchitecture)/lib/VC
+        QMAKE_LIBDIR += $${SOLUTION_DIR}../../Open-Transactions/lib/$(PlatformName)/$(Configuration)/
     }
     else:{
-        LIBPATH += $${SOLUTION_DIR}../../Open-Transactions/lib/Win32/Release/
+        !contains(QMAKE_HOST.arch, x86_64):{
+            QMAKE_LIBDIR += C:/OpenSSL-Win32/lib/VC
+            CONFIG(debug, debug|release):{
+                QMAKE_LIBDIR += $${SOLUTION_DIR}../../Open-Transactions/lib/Win32/Debug/
+            }
+            else:{
+                QMAKE_LIBDIR += $${SOLUTION_DIR}../../Open-Transactions/lib/Win32/Release/
+            }
+        }
+        else:{
+            QMAKE_LIBDIR += C:/OpenSSL-Win64/lib/VC
+            CONFIG(debug, debug|release):{
+                QMAKE_LIBDIR += $${SOLUTION_DIR}../../Open-Transactions/lib/x64/Debug/
+            }
+            else:{
+                QMAKE_LIBDIR += $${SOLUTION_DIR}../../Open-Transactions/lib/x64/Release/
+            }
+        }
     }
+
+    LIBS += bitcoin-api.lib
+    LIBS += jsoncpp.lib
+    LIBS += curl.lib
+
+    LIBS += otlib.lib
+    LIBS += otapi.lib
+
+    LIBS += Advapi32.lib
 }
-    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include
-    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include/otlib
-    LIBS += otlib.lib otapi.lib Advapi32.lib
 
-    DEFINES     += "_UNICODE" "NOMINMAX"
-    CharacterSet = 1
-
-    QMAKE_CXXFLAGS += /bigobj /Zm480 /wd4512 /wd4100
-
-}
-
-## Mac OS X
 mac:{
-    OS_VERSION = $$system(uname -r)
+    LIBS += -mmacosx-version-min=10.7
+    LIBS += -framework CoreFoundation
 
-    # this is still a mess! but getting better. Need to remove boost hacks eventually.
-
-
-    #Common
-    LIBS += -ldl -mmacosx-version-min=10.7 -framework CoreFoundation
-    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
-    QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -static
-
-    #Mavericks is version 13
-    contains(OS_VERSION, 13.0.0):{
-        QT_CONFIG += -spec macx-clang-libc++
-        CONFIG += c++11
-        QMAKE_CXXFLAGS += -stdlib=libc++ -std=c++11
-        LIBS += -stdlib=libc++ -lboost_system -lboost_thread
-    }
-
-    #Not Mavericks
-    !contains(OS_VERSION, 13.0.0): {
-        MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
-        QMAKE_MAC_SDK=macosx10.8
-
-        INCLUDEPATH += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
-        DEPENDPATH  += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
-        LIBS += -lboost_system-mt -lboost_thread-mt
-
-        if( !exists( $$MAC_SDK) ) {error("The selected Mac OSX SDK does not exist at $$MAC_SDK!")}
+    contains(MAC_OS_VERSION, 13.0.0):{
+        LIBS += -stdlib=libc++
     }
 }
 
 
-# Linux
-
-linux:{
-        LIBS += -ldl -lboost_system -lboost_thread  ##need to remove these boost hacks eventually
-}
-
-QMAKE_CFLAGS_WARN_ON -= -Wall -Wextra -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
-QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wextra -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
-
-#we do it this way, since we don't want any more tokens.
-mac: PKG_CONFIG_LIBDIR = "/usr/local/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
-mac: PKG_CONFIG_LIBDIR = "/usr/local/opt/openssl/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
-mac: PKG_CONFIG_LIBDIR = "$${PKG_CONFIG_LIBDIR}:" #end with a colon.
-
-mac:  QT_CONFIG -= no-pkg-config
-unix: CONFIG += link_pkgconfig
-
-unix: PKGCONFIG += opentxs
-unix: PKGCONFIG += chaiscript
 

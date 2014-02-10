@@ -1,3 +1,8 @@
+#ifndef STABLE_H
+#include <stable.h>
+#endif
+
+
 #include "btcmodules.h"
 #include "btcrpccurl.h"
 #include "btcjson.h"

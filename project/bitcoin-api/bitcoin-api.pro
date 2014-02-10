@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 TEMPLATE    = lib
+CONFIG     += precompile_header
 CONFIG     += staticlib
 
 TARGET      = bitcoin-api
@@ -34,9 +35,11 @@ INCLUDEPATH += $${SOLUTION_DIR}../src/curl/include
 #-------------------------------------------------
 # Options
 
-# uncomment one of the following two lines:
-##QMAKE_CXXFLAGS += -std=c++11
-!win32:DEFINES += OT_USE_TR1
+mac:{
+    contains(MAC_OS_VERSION, 13.0.0):{
+        QMAKE_CXXFLAGS += -std=c++11
+    }
+}
 
 win32:{
     DEFINES     += "_UNICODE=1"

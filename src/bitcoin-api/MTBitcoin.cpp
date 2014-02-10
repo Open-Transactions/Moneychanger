@@ -1,3 +1,8 @@
+#ifndef STABLE_H
+#include <stable.h>
+#endif
+
+
 #include "MTBitcoin.h"
 #include "btcmodules.h"
 

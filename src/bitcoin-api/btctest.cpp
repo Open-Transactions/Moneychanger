@@ -1,4 +1,6 @@
-
+#ifndef STABLE_H
+#include <stable.h>
+#endif
 
 #include <cstdio>
 #include <iostream>
