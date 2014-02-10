@@ -15,11 +15,15 @@
 #define EXPORT
 #endif
 #ifndef NOEXPORT
+#ifdef _WIN32
+#include <otlib/ExportWrapper.h>
+#else
 #include <opentxs/ExportWrapper.h>
+#endif
 #endif
 
 #ifdef _WIN32
-#include <WinsockWrapper.h>
+#include <otlib/ExportWrapper.h>
 #endif
 
 #include <list>

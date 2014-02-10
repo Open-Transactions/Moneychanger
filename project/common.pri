@@ -78,3 +78,9 @@ mac:{
     }
 }
 
+#-------------------------------------------------
+# Include
+
+win32:{
+    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include
+}

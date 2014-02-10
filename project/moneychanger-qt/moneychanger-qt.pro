@@ -51,7 +51,6 @@ INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
 INCLUDEPATH += $${SOLUTION_DIR}../src/bitcoin-api
 
 win32:{
-    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include
     INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include/otlib
 
     equals(TEMPLATE,vcapp):{
