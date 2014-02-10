@@ -35,13 +35,14 @@ INCLUDEPATH += $${SOLUTION_DIR}../src/curl/include
 #-------------------------------------------------
 # Options
 
-mac:{
-    contains(MAC_OS_VERSION, 13.0.0):{
-        QMAKE_CXXFLAGS += -std=c++11
-    }
-}
 
 win32:{
     DEFINES     += "_UNICODE=1"
     CharacterSet = 1
+}
+
+#-------------------------------------------------
+# Package Config
+unix:{
+    PKGCONFIG += opentxs
 }
