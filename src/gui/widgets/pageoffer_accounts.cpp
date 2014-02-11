@@ -1,5 +1,11 @@
+
+#ifdef _WIN32
+#include <otapi/OTAPI.h>
+#include <otapi/OT_ME.h>
+#else
 #include <opentxs/OTAPI.h>
 #include <opentxs/OT_ME.h>
+#endif
 
 #include "pageoffer_accounts.h"
 #include "ui_pageoffer_accounts.h"

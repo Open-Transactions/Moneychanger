@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <stable.h>
+#endif
+
 #include "btcrpccurl.h"
 
 #include <iostream>
@@ -7,7 +11,6 @@
 #include <cstdio>
 #include <cstdlib>
 //#include <OTLog.h>
-
 
 BtcRpcPacketPtr BtcRpcCurl::connectString = BtcRpcPacketPtr(new BtcRpcPacket("{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }"));
 

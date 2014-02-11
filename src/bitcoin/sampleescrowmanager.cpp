@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
+
 #include<QObject>
 #include "widgets/btcguitest.h"
 #include "sampleescrowmanager.h"

@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
+
 #include "sampleescrowclient.h"
 #include "modules.h"
 #include "sampleescrowserver.h"

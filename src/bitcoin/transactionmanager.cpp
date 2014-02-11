@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.h>
+#endif
+
 #include "transactionmanager.h"
 
 TransactionManager::TransactionManager()

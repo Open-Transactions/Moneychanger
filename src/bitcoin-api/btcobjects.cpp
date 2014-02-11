@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <stable.h>
+#endif
+
 #include "btcobjects.h"
 #include "btchelper.h"
 #include <cstdlib>
@@ -24,7 +28,7 @@ BtcTransaction::BtcTransaction(Json::Value reply)
     if(details.size() == 0)
         return;
 
-    for(uint i = 0; i < details.size(); i++)
+    for (Json::Value::ArrayIndex i = 0; i < details.size(); i++)
     {
         Json::Value detail = details[i];
         std::string address = detail["address"].asString();
@@ -69,14 +73,14 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
     this->txID = rawTx["txid"].asString();
 
     Json::Value vin = rawTx["vin"];
-    for(uint i = 0; i < vin.size(); i++)
+    for (Json::Value::ArrayIndex i = 0; i < vin.size(); i++)
     {
         Json::Value inputObj = vin[i];
         this->inputs.push_back(VIN(inputObj["txid"].asString(), (int)inputObj["vout"].asDouble()));
     }
 
     Json::Value vouts  = rawTx["vout"];
-    for(uint i = 0; i < vouts.size(); i++)
+    for (Json::Value::ArrayIndex i = 0; i < vouts.size(); i++)
     {
         Json::Value outputObj = vouts[i];
         VOUT output;
@@ -87,7 +91,7 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
         Json::Value scriptPubKey = outputObj["scriptPubKey"];
         output.reqSigs = (int)scriptPubKey["reqSigs"].asDouble();
         Json::Value addresses = scriptPubKey["addresses"];
-        for(uint i= 0; i < addresses.size(); i++)
+        for (Json::Value::ArrayIndex i = 0; i < addresses.size(); i++)
         {
             output.addresses.push_back(addresses[i].asString());
         }
@@ -155,7 +159,7 @@ BtcBlock::BtcBlock(Json::Value block)
 
     // get list of transactions in the block
     Json::Value transacts = block["tx"];
-    for(uint i = 0; i < transacts.size(); i++)
+    for (Json::Value::ArrayIndex i = 0; i < transacts.size(); i++)
     {
         this->transactions.push_back(transacts[i].asString());
     }
@@ -180,7 +184,7 @@ BtcTxTarget::BtcTxTarget(const std::string &toAddress, int64_t amount)
 void BtcTxTarget::ConvertSatoshisToBitcoin()
 {
     Members targetAddresses = this->getMemberNames();
-    for(uint i = 0; i < targetAddresses.size(); i++)
+    for (Json::Value::ArrayIndex i = 0; i < targetAddresses.size(); i++)
     {
         (*this)[targetAddresses[i]] = BtcHelper::SatoshisToCoins(
                     (*this)[targetAddresses[i]].asInt64());

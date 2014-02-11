@@ -1,3 +1,8 @@
+#ifndef STABLE_H
+#include <stable.h>
+#endif
+
+
 #include "btcjson.h"
 #include <json/json.h>
 //#include <OTLog.h>
@@ -117,7 +122,8 @@ void BtcJson::GetInfo()
     if(!error.isNull())
         return;
 
-    int64_t balance = this->modules->btcHelper->CoinsToSatoshis(result["balance"].asDouble());
+    // TODO:: what is happening here!? (da2ce7)
+    uint64_t balance = this->modules->btcHelper->CoinsToSatoshis(result["balance"].asDouble());
 }
 
 int64_t BtcJson::GetBalance(const char *account/*=NULL*/)
@@ -296,7 +302,7 @@ BtcUnspentOutputs BtcJson::ListUnspent(int minConf, int maxConf, std::vector<std
     params.append(minConf);
     params.append(maxConf);
     Json::Value addressesJson = Json::Value(Json::arrayValue);
-    for(uint i = 0; i < addresses.size(); i++)
+    for (size_t i = 0; i < addresses.size(); i++)
     {
         addressesJson.append(addresses[i]);
     }
@@ -313,7 +319,7 @@ BtcUnspentOutputs BtcJson::ListUnspent(int minConf, int maxConf, std::vector<std
 
     std::vector<BtcUnspentOutputPtr> outputs = std::vector<BtcUnspentOutputPtr>();
 
-    for(uint i = 0; i < result.size(); i++)
+    for (Json::Value::ArrayIndex i = 0; i < result.size(); i++)
     {
         outputs.push_back(BtcUnspentOutputPtr(new BtcUnspentOutput(result[i])));
     }
@@ -462,7 +468,7 @@ std::string BtcJson::CreateRawTransaction(BtcTxIdVouts unspentOutputs, BtcTxTarg
 {
     Json::Value params = Json::Value();
     Json::Value outputsArray = Json::Value();
-    for(uint i = 0; i < unspentOutputs.size(); i++)
+    for (size_t i = 0; i < unspentOutputs.size(); i++)
     {
         outputsArray.append(*unspentOutputs[i].get());
     }
@@ -572,7 +578,7 @@ std::vector<std::string> BtcJson::GetRawMemPool()
         return std::vector<std::string>();
 
     std::vector<std::string> rawMemPool = std::vector<std::string>();
-    for(uint i = 0; i < result.size(); i++)
+    for (Json::Value::ArrayIndex i = 0; i < result.size(); i++)
     {
         rawMemPool.push_back(result[i].asString());
     }
