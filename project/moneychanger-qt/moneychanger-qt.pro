@@ -80,8 +80,6 @@ mac:{
 ##LIBS += -L$${SOLUTION_DIR}qjsonrpc -lqjsonrpc
 
 unix: {
-    LIBS += -ldl
-
     LIBS += -L$${OUT_PWD}/../bitcoin-api
     LIBS += -lbitcoin-api
 
@@ -90,7 +88,9 @@ unix: {
 
     LIBS += -L$${OUT_PWD}/../curl
     LIBS += -lcurl
+}
 
+linux: {
     LIBS += -lboost_system-mt
     LIBS += -lboost_thread-mt
 }
@@ -140,6 +140,16 @@ mac:{
     contains(MAC_OS_VERSION, 13.0.0):{
         LIBS += -stdlib=libc++
     }
+    else:{
+        # if not on Mavericks
+        LIBS += -lboost_system-mt
+        LIBS += -lboost_thread-mt
+    }
+}
+
+# need to put -ldl last.
+unix:{
+    LIBS += -ldl
 }
 
 
