@@ -1,27 +1,24 @@
-QJSONRPC_VERSION = 1.0.0
 
-isEmpty(QJSONRPC_LIBRARY_TYPE) {
-    QJSONRPC_LIBRARY_TYPE = shared
-}
+HEADERS += \
+    $${PWD}/qjsonrpc_export.h \
+    $${PWD}/qjsonrpcabstractserver.h \
+    $${PWD}/qjsonrpcabstractserver_p.h \
+    $${PWD}/qjsonrpclocalserver.h \
+    $${PWD}/qjsonrpcmessage.h \
+    $${PWD}/qjsonrpcservice.h \
+    $${PWD}/qjsonrpcservice_p.h \
+    $${PWD}/qjsonrpcservicereply.h \
+    $${PWD}/qjsonrpcsocket.h \
+    $${PWD}/qjsonrpcsocket_p.h \
+    $${PWD}/qjsonrpctcpserver.h
 
-QT += network
-QJSONRPC_INCLUDEPATH = $${PWD}/src
-QJSONRPC_LIBS = -lqjsonrpc
-contains(QJSONRPC_LIBRARY_TYPE, staticlib) {
-    DEFINES += QJSONRPC_STATIC
-} else {
-    DEFINES += QJSONRPC_SHARED
-    win32:QJSONRPC_LIBS = -lqjsonrpc1
-}
+SOURCES += \
+    $${PWD}/qjsonrpcabstractserver.cpp \
+    $${PWD}/qjsonrpclocalserver.cpp \
+    $${PWD}/qjsonrpcmessage.cpp \
+    $${PWD}/qjsonrpcservice.cpp \
+    $${PWD}/qjsonrpcservicereply.cpp \
+    $${PWD}/qjsonrpcsocket.cpp \
+    $${PWD}/qjsonrpctcpserver.cpp
 
-isEmpty(PREFIX) {
-    unix {
-        PREFIX = /usr
-    } else {
-        PREFIX = $$[QT_INSTALL_PREFIX]
-    }
-}
-isEmpty(LIBDIR) {
-    LIBDIR = lib
-}
-
+INCLUDEPATH += $${PWD}

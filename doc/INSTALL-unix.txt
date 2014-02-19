@@ -1,0 +1,16 @@
+
+
+Have the QT bin folder on your path.
+
+Open a command prompt.
+
+navigate to the ‘project’ folder
+
+run:  qmake
+
+then: make (-jx, where x is the number of threads you want).
+
+navigate to the ‘lib’ directory.
+where you will find moneychanger-qt
+
+:)
