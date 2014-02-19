@@ -3,12 +3,33 @@ Moneychanger (System Tray Oriented)
 An intuitive QT/C++ system tray client for Open-Transactions.
 
 
-##Development (or Manual Compile) Instuctions  
+### Development (and Manual) Build Instuctions
 
-Download the latest moneychanger code (If you are planning to contribute please contact the devs in #opentransactions @ freenode.net irc chat room to get the latest)  
+Download the latest moneychanger code (If you are planning to contribute please contact the devs in #opentransactions @ freenode.net irc chat)
 
-Download QT tools (Qt Core Version 5.1.0+; 64bit compiling support Recomended for OT)  
+git clone https://github.com/Open-Transactions/Moneychanger.git
 
-Open the .pro file and press run. Please make sure you have installed OT (https://github.com/Open-Transactions/ or at https://github.com/FellowTraveler/Open-Transactions)  
+#### IDE
+
+Download QT tools (Qt Core Version 5.1.0+; 64bit compiling support Recomended for OT)
+
+Open the moneychanger.pro file and press run.
+
+(First make sure you have installed the OT library
+
+https://github.com/Open-Transactions/Open-Transactions
+
+or
+
+https://github.com/FellowTraveler/Open-Transactions )
 
 
+#### Manual
+
+cd Moneychanger/project
+
+qmake
+
+make
+
+(NB: qmake will be qmake-qt4 or qmake-qt5 on linux RH, Fedora)

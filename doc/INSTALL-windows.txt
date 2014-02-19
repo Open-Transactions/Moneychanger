@@ -1,0 +1,19 @@
+
+
+
+Compile QT5
+configure -mp -debug-and-release -opensource -nomake examples -confirm-license -prefix C:\qt5 -openssl -L C:/OpenSSL-Win32/lib -I C:/OpenSSL-Win32/include
+nmake
+nmake install
+
+
+
+
+Open Visual Studio x86 2013 prompt.
+
+
+change to the 'project' directory.
+run: qmake -r -tp vc moneychanger.pro
+
+
+Open Project file in Visual Studio, and compile.
