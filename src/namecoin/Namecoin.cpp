@@ -2,7 +2,7 @@
     Namecoin.hpp
     Namecoin credential verification.
 
-    Copyright (c) 2013 by Daniel Kraft <d@domob.eu>
+    Copyright (c) 2013-2014 by Daniel Kraft <d@domob.eu>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -18,9 +18,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Namecoin.hpp"
+#include "Namecoin.h"
 
-#include "DBHandler.h"
+#include "handlers/DBHandler.h"
 #include "dlgpassword.h"
 
 #include <nmcrpc/RpcSettings.hpp>

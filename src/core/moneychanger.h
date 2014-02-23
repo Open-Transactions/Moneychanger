@@ -46,7 +46,7 @@
 
 #include "MTRecordList.hpp"
 #include "MTRecord.hpp"
-#include "Namecoin.hpp"
+#include "Namecoin.h"
 
 #include "widgets/home.h"
 

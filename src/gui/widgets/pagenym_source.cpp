@@ -5,7 +5,7 @@
 #include "pagenym_source.h"
 #include "ui_pagenym_source.h"
 
-#include "Namecoin.hpp"
+#include "Namecoin.h"
 
 #include <string>
 

@@ -23,9 +23,9 @@
 #include "detailedit.h"
 #include "editdetails.h"
 
-#include "DBHandler.h"
+#include "handlers/DBHandler.h"
 
-#include "Namecoin.hpp"
+#include "Namecoin.h"
 
 #include <nmcrpc/NamecoinInterface.hpp>
 

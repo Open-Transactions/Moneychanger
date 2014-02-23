@@ -31,6 +31,7 @@ include(../common.pri)
 include($${SOLUTION_DIR}../src/core/core.pri)
 include($${SOLUTION_DIR}../src/gui/gui.pri)
 include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
+include($${SOLUTION_DIR}../src/namecoin/namecoin.pri)
 
 
 
@@ -88,6 +89,8 @@ unix: {
 
     LIBS += -L$${OUT_PWD}/../curl
     LIBS += -lcurl
+
+    LIBS += -lnmcrpc
 }
 
 linux: {

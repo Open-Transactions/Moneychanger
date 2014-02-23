@@ -20,7 +20,7 @@
 
 #include "credentials.h"
 
-#include "Namecoin.hpp"
+#include "Namecoin.h"
 
 #ifdef _WIN32
 #include <otapi/OTAPI.h>
