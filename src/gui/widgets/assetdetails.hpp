@@ -4,11 +4,8 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-#include <QPointer>
-
-#include "editdetails.h"
-
-#include "filedownloader.h"
+#include <gui/widgets/editdetails.hpp>
+#include <core/filedownloader.hpp>
 
 namespace Ui {
 class MTAssetDetails;

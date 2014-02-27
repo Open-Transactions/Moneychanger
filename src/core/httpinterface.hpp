@@ -4,14 +4,7 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-
-#ifdef _WIN32
-#include <otapi/OT_ME.hpp>
-#else
-#include <opentxs/OT_ME.hpp>
-#endif
-
-#include <qjsonrpc/qjsonrpcmessage.h>
+#include <OT_ME.hpp>
 
 class HTTPInterface
 {

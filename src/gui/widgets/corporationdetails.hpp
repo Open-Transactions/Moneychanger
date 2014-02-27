@@ -4,9 +4,7 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-#include <QWidget>
-
-#include "editdetails.h"
+#include <gui/widgets/editdetails.hpp>
 
 namespace Ui {
 class MTCorporationDetails;

@@ -4,11 +4,8 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-
-#include <QMessageBox>
+#include <QObject>
 #include <QString>
-#include <QFile>
-#include <QDebug>
 
 
 /* GUI string messages. */

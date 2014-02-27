@@ -4,29 +4,10 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
+#include <core/MTRecordList.hpp>
+
 #include <QPointer>
 #include <QWidget>
-#include <QFrame>
-#include <QLabel>
-#include <QMutex>
-#include <QGridLayout>
-#include <QVBoxLayout>
-#include <QScrollArea>
-
-#include <opentxs/stdafx.hpp>
-
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#include <otlib/OTLog.hpp>
-#else
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#include <opentxs/OTLog.hpp>
-#endif
-
-#include "MTRecord.hpp"
-#include "MTRecordList.hpp"
 
 
 namespace Ui {
@@ -34,6 +15,7 @@ class MTHome;
 }
 
 class MTHomeDetail;
+class QFrame;
 
 class MTHome : public QWidget
 {

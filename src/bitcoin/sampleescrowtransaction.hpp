@@ -3,16 +3,10 @@
 
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
+#include <MemoryWrapper.hpp>
 
-#include <string>
-#include "btcobjects.h"
-#include "btcmodules.h"
+#include <bitcoin-api/btcmodules.hpp>
 
-#ifndef OT_USE_TR1
-#include <memory>
-#else
-#include <tr1/memory>
-#endif
 
 //#include "sampleescrowclient.h"
 //#include "sampleescrowserver.h"

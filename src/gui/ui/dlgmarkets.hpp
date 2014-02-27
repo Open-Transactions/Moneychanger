@@ -4,13 +4,11 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-#include <QPointer>
-#include <QVariant>
-#include <QDialog>
-#include <QMap>
-#include <QMultiMap>
+#include <core/handlers/contacthandler.hpp>
 
-#include "handlers/contacthandler.h"
+#include <QPointer>
+#include <QDialog>
+
 
 namespace Ui {
 class DlgMarkets;

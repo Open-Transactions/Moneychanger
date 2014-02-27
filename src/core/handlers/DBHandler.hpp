@@ -4,18 +4,10 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-#include <QSqlDatabase>
-#include <QMessageBox>
-#include <QString>
-#include <QSqlQuery>
-#include <QProgressDialog>
-#include <QCoreApplication>
-#include <QMutex>
-#include <QMutexLocker>
-#include <QSqlError>
-#include <QVariant>
+#include <core/handlers/FileHandler.hpp>
 
-#include "FileHandler.h"
+#include <QSqlDatabase>
+
 
 /*
  * declare DB driver and filename.

@@ -4,9 +4,8 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-#include <QPointer>
+#include <gui/widgets/editdetails.hpp>
 
-#include "editdetails.h"
 
 namespace Ui {
 class MTContactDetails;

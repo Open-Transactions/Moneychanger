@@ -4,15 +4,13 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
+#include <core/handlers/contacthandler.hpp>
+
 #include <QPointer>
-#include <QMap>
-#include <QMultiMap>
-#include <QVariant>
 #include <QWidget>
 #include <QTabWidget>
 #include <QVBoxLayout>
 
-#include "handlers/contacthandler.h"
 
 namespace Ui {
 class MTDetailEdit;

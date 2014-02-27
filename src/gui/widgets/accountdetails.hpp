@@ -4,13 +4,8 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-#include <widgets/editdetails.hpp>
+#include <gui/widgets/editdetails.hpp>
 
-#include <QWidget>
-#include <QPointer>
-#include <QLineEdit>
-#include <QGridLayout>
-#include <QString>
 
 namespace Ui {
 class MTAccountDetails;

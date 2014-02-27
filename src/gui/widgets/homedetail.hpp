@@ -4,12 +4,12 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
+#include <core/MTRecordList.hpp>
+
 #include <QPointer>
 #include <QWidget>
 #include <QLineEdit>
 
-#include "MTRecord.hpp"
-#include "MTRecordList.hpp"
 
 class QGraphicsLayout;
 class QLayout;

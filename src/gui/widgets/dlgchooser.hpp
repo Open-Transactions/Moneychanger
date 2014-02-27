@@ -4,9 +4,11 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
+#include <core/handlers/contacthandler.hpp>
+
 #include <QDialog>
 
-#include "handlers/contacthandler.h"
+
 
 namespace Ui {
 class DlgChooser;

@@ -4,69 +4,24 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-
-#include <QMap>
 #include <QPointer>
-#include <QtSql>
-#include <QMenu>
 #include <QList>
-#include <QMutex>
-#include <QDebug>
-#include <QTimer>
-#include <QLabel>
-#include <QWidget>
-#include <QDialog>
-#include <QAction>
+#include <QIcon>
 #include <QVariant>
-#include <QLineEdit>
-#include <QTextEdit>
-#include <QComboBox>
-#include <QTableView>
-#include <QScrollArea>
-#include <QLayoutItem>
-#include <QHBoxLayout>
-#include <QGridLayout>
-#include <QPushButton>
-#include <QMutexLocker>
-#include <QRadioButton>
-#include <QSystemTrayIcon>
-#include <QCoreApplication>
-#include <QStandardItemModel>
-#include <QMessageBox>
-#include <QtSql/QtSql>
+#include <QWidget>
 
-#include <opentxs/stdafx.hpp>
+#include <cstdint>
 
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#include <otlib/OTLog.hpp>
-#else
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#include <opentxs/OTLog.hpp>
-#endif
-
-#include "MTRecordList.hpp"
-#include "MTRecord.hpp"
-
-#include "widgets/home.h"
-
-#include "widgets/createinsurancecompany.h"
-
-#include "ui/dlgmarkets.h"
-#include "ui/dlgmenu.h"
-
-#include "widgets/detailedit.h"
-#include "widgets/settings.h"
-
-#include "widgets/btcguitest.h"
 
 class MTHome;
 class MTDetailEdit;
-
+class DlgMenu;
+class DlgMarkets;
+class Settings;
+class BtcGuiTest;
+class QMenu;
+class QSystemTrayIcon;
 class CreateInsuranceCompany;
-
 
 class Moneychanger : public QWidget
 {

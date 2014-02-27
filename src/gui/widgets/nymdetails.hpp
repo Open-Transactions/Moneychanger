@@ -4,15 +4,14 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-#include <QPointer>
-#include <QPlainTextEdit>
+#include <gui/widgets/editdetails.hpp>
 
-#include "editdetails.h"
 
 namespace Ui {
 class MTNymDetails;
 }
 
+class QPlainTextEdit;
 class MTCredentials;
 
 class MTNymDetails : public MTEditDetails

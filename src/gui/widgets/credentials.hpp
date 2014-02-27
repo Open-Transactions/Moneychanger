@@ -4,7 +4,6 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-#include <QTreeWidgetItem>
 #include <QWidget>
 #include <QString>
 #include <QStringList>

@@ -5,7 +5,7 @@
 #include <ExportWrapper.h>
 
 #include <QWizard>
-#include "moneychanger.h"
+
 
 namespace Ui {
 class CreateInsuranceCompany;

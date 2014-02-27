@@ -4,13 +4,8 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-#include <string>
+#include <gui/widgets/editdetails.hpp>
 
-#include <QMap>
-#include <QMultiMap>
-#include <QWidget>
-
-#include "editdetails.h"
 
 namespace Ui {
 class MTMarketDetails;

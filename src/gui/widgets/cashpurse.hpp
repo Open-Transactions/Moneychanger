@@ -9,6 +9,8 @@
 #include <QWidget>
 #include <QString>
 
+#include <cstdint>
+
 namespace Ui {
 class MTCashPurse;
 }

@@ -4,13 +4,8 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-#include <QtCore>
-#include <QtGui>
 #include <QApplication>
 
-class OTCaller;
-class OTCallback;
-class Moneychanger;
 
 class MTApplicationMC : public QApplication
 {

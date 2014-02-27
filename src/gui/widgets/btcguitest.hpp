@@ -4,8 +4,10 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
+#include <bitcoin/sampleescrowtransaction.hpp>
+
 #include <QWidget>
-#include "sampleescrowtransaction.h"
+
 
 namespace Ui
 {

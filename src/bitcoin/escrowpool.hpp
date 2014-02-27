@@ -3,12 +3,7 @@
 
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
-
-#ifndef OT_USE_TR1
-#include <memory>
-#else
-#include <tr1/memory>
-#endif
+#include <MemoryWrapper.hpp>
 
 #include <QList>
 #include <QString>

@@ -6,6 +6,8 @@
 
 #include <QDialog>
 
+#include <cstdint>
+
 namespace Ui {
 class DlgGetAmount;
 }

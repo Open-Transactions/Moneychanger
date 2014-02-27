@@ -4,8 +4,6 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-
-
 #include <QWidget>
 
 namespace Ui {

@@ -4,14 +4,7 @@
 #include <WinsockWrapper.h>
 #include <ExportWrapper.h>
 
-#include <QPointer>
-#include <QVariant>
-#include <QWidget>
-#include <QGridLayout>
-
-#include "handlers/contacthandler.h"
-
-#include "detailedit.h"
+#include <gui/widgets/detailedit.hpp>
 
 namespace Ui {
 class MTEditDetails;
