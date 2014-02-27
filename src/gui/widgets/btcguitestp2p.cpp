@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.hpp>
+#endif
+
 #include "btcguitestp2p.h"
 #include "ui_btcguitestp2p.h"
 

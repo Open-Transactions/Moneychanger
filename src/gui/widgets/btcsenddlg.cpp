@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.hpp>
+#endif
+
 #include "btcsenddlg.h"
 #include "ui_btcsenddlg.h"
 #include <QStringListModel>

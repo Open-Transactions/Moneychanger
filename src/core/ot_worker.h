@@ -10,7 +10,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 
-#include "stdafx.h"
+#include <opentxs/stdafx.hpp>
 
 #ifdef _WIN32
 #include <otapi/OTAPI.hpp>

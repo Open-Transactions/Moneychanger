@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.hpp>
+#endif
+
 #include "pageoffer_summary.h"
 #include "ui_pageoffer_summary.h"
 

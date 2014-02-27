@@ -1,6 +1,5 @@
-
 #ifndef STABLE_H
-#include <core/stable.h>
+#include <core/stable.hpp>
 #endif
 
 #include <QApplication>

@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.hpp>
+#endif
+
 #include "widgets/btcguitest.h"
 #include "ui_btcguitest.h"
 #include "modules.h"

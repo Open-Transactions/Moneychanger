@@ -1,8 +1,8 @@
 
-PRECOMPILED_HEADER = $${PWD}/stable.h
+PRECOMPILED_HEADER = $${PWD}/stable.hpp
 
 HEADERS += \
-    $${PWD}/stable.h \
+    $${PWD}/stable.hpp \
     $${PWD}/bitcoin-api_global.h \
     $${PWD}/bitcoinapi.h \
     $${PWD}/btchelper.h \

@@ -1,3 +1,6 @@
+#ifndef STABLE_H
+#include <core/stable.hpp>
+#endif
 
 #ifdef _WIN32
 #include <otapi/OTAPI.hpp>

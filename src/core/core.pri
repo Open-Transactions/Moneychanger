@@ -1,8 +1,8 @@
 
-PRECOMPILED_HEADER = $${PWD}/stable.h
+PRECOMPILED_HEADER = $${PWD}/stable.hpp
 
 HEADERS += \
-    $${PWD}/stable.h \
+    $${PWD}/stable.hpppp \
     $${PWD}/applicationmc.h \
     $${PWD}/filedownloader.h \
     $${PWD}/FastDelegate.h \

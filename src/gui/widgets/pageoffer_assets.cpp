@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.hpp>
+#endif
+
 #include <QDebug>
 
 #ifdef _WIN32

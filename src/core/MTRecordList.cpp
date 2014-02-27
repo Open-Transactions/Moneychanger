@@ -6,7 +6,9 @@
 //  Copyright (c) 2013 Monetas. All rights reserved.
 //
 
-#include "stdafx.h"
+#ifndef STABLE_H
+#include <core/stable.hpp>
+#endif
 
 #include <algorithm>
 

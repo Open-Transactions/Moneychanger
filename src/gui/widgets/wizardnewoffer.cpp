@@ -1,3 +1,7 @@
+#ifndef STABLE_H
+#include <core/stable.hpp>
+#endif
+
 #include "wizardnewoffer.h"
 #include "ui_wizardnewoffer.h"
 

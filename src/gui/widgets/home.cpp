@@ -1,5 +1,5 @@
 #ifndef STABLE_H
-#include <core/stable.h>
+#include <core/stable.hpp>
 #endif
 
 #include <QApplication>
@@ -10,7 +10,7 @@
 #include <QKeyEvent>
 #include <QDebug>
 
-#include "stdafx.h"
+#include <opentxs/stdafx.hpp>
 
 #include "moneychanger.h"
 
