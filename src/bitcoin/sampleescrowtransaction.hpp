@@ -1,5 +1,8 @@
-#ifndef SAMPLEESCROWTRANSACTION_H
-#define SAMPLEESCROWTRANSACTION_H
+#ifndef SAMPLEESCROWTRANSACTION_HPP
+#define SAMPLEESCROWTRANSACTION_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <string>
 #include "btcobjects.h"
@@ -66,4 +69,4 @@ private:
     typedef std::tr1::shared_ptr<SampleEscrowTransaction> SampleEscrowTransactionPtr;
 #endif // OT_USE_TR1
 
-#endif // SAMPLEESCROWTRANSACTION_H
+#endif // SAMPLEESCROWTRANSACTION_HPP

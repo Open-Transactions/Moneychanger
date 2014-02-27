@@ -1,5 +1,8 @@
-#ifndef MONEYCHANGER_H
-#define MONEYCHANGER_H
+#ifndef MONEYCHANGER_HPP
+#define MONEYCHANGER_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 
 #include <QMap>
@@ -361,4 +364,4 @@ public slots:
     void mc_bitcoin_slot();                 // Bitcoin
 };
 
-#endif // MONEYCHANGER_H
+#endif // MONEYCHANGER_HPP

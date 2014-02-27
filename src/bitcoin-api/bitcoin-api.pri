@@ -1,6 +1,5 @@
 
 HEADERS += \
-    $${PWD}/stable.hpp \
     $${PWD}/bitcoin-api_global.hpp \
     $${PWD}/bitcoinapi.hpp \
     $${PWD}/btchelper.hpp \
@@ -23,5 +22,3 @@ SOURCES += \
     $${PWD}/btcrpccurl.cpp \
     $${PWD}/btctest.cpp \
     $${PWD}/MTBitcoin.cpp
-
-INCLUDEPATH += $${PWD}

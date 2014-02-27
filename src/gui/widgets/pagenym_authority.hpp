@@ -1,5 +1,8 @@
-#ifndef PAGENYM_AUTHORITY_H
-#define PAGENYM_AUTHORITY_H
+#ifndef PAGENYM_AUTHORITY_HPP
+#define PAGENYM_AUTHORITY_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -21,4 +24,4 @@ private:
     Ui::MTPageNym_Authority *ui;
 };
 
-#endif // PAGENYM_AUTHORITY_H
+#endif // PAGENYM_AUTHORITY_HPP

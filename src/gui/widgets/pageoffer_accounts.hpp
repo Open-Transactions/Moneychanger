@@ -1,5 +1,8 @@
-#ifndef PAGEOFFER_ACCOUNTS_H
-#define PAGEOFFER_ACCOUNTS_H
+#ifndef PAGEOFFER_ACCOUNTS_HPP
+#define PAGEOFFER_ACCOUNTS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -30,4 +33,4 @@ private:
     Ui::PageOffer_Accounts *ui;
 };
 
-#endif // PAGEOFFER_ACCOUNTS_H
+#endif // PAGEOFFER_ACCOUNTS_HPP

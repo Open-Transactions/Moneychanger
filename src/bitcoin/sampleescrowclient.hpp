@@ -1,5 +1,8 @@
-#ifndef SAMPLEESCROWCLIENT_H
-#define SAMPLEESCROWCLIENT_H
+#ifndef SAMPLEESCROWCLIENT_HPP
+#define SAMPLEESCROWCLIENT_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include "btcobjects.h"
 #include "btcmodules.h"
@@ -80,4 +83,4 @@ private:
 
 
 
-#endif // SAMPLEESCROWCLIENT_H
+#endif // SAMPLEESCROWCLIENT_HPP

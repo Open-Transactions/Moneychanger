@@ -1,19 +1,16 @@
-#ifndef IMTBITCOIN_H
-#define IMTBITCOIN_H
+#ifndef IMTBITCOIN_HPP
+#define IMTBITCOIN_HPP
+
+#include <MemoryWrapper.hpp>
+
+#include <bitcoin-api/btcobjects.hpp>
+#include <bitcoin-api/btchelper.hpp>
 
 #include <map>
 #include <sys/types.h>
 #include <string>
 #include <list>
 
-#ifndef OT_USE_TR1
-#include <memory>
-#else
-#include <tr1/memory>
-#endif
-
-#include "btcobjects.h"
-#include "btchelper.h"
 
 
 /*
@@ -140,4 +137,4 @@ public:
 #endif // OT_USE_TR1
 
 
-#endif // IMTBITCOIN_H
+#endif // IMTBITCOIN_HPP

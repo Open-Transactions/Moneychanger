@@ -1,5 +1,8 @@
-#ifndef REQUESTDLG_H
-#define REQUESTDLG_H
+#ifndef REQUESTDLG_HPP
+#define REQUESTDLG_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QPointer>
 #include <QWidget>
@@ -66,4 +69,4 @@ private:
     Ui::MTRequestDlg *ui;
 };
 
-#endif // REQUESTDLG_H
+#endif // REQUESTDLG_HPP

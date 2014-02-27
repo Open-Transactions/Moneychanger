@@ -1,5 +1,8 @@
-#ifndef COMPOSE_H
-#define COMPOSE_H
+#ifndef COMPOSE_HPP
+#define COMPOSE_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWidget>
 
@@ -54,4 +57,4 @@ private:
     Ui::MTCompose *ui;
 };
 
-#endif // COMPOSE_H
+#endif // COMPOSE_HPP

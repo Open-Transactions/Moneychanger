@@ -1,5 +1,8 @@
-#ifndef CreateInsuranceCompany_H
-#define CreateInsuranceCompany_H
+#ifndef CreateInsuranceCompany_HPP
+#define CreateInsuranceCompany_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizard>
 #include "moneychanger.h"
@@ -24,4 +27,4 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 };
 
-#endif // CreateInsuranceCompany_H
+#endif // CreateInsuranceCompany_HPP

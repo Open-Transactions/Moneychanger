@@ -1,5 +1,8 @@
-#ifndef DLGMENU_H
-#define DLGMENU_H
+#ifndef DLGMENU_HPP
+#define DLGMENU_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QDialog>
 
@@ -51,4 +54,4 @@ private:
     Ui::DlgMenu *ui;
 };
 
-#endif // DLGMENU_H
+#endif // DLGMENU_HPP

@@ -1,5 +1,8 @@
-#ifndef PAGEOFFER_ASSETS_H
-#define PAGEOFFER_ASSETS_H
+#ifndef PAGEOFFER_ASSETS_HPP
+#define PAGEOFFER_ASSETS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -30,4 +33,4 @@ private:
     Ui::PageOffer_Assets *ui;
 };
 
-#endif // PAGEOFFER_ASSETS_H
+#endif // PAGEOFFER_ASSETS_HPP

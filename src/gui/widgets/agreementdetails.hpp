@@ -1,5 +1,8 @@
-#ifndef AGREEMENTDETAILS_H
-#define AGREEMENTDETAILS_H
+#ifndef AGREEMENTDETAILS_HPP
+#define AGREEMENTDETAILS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWidget>
 
@@ -28,4 +31,4 @@ private:
     Ui::MTAgreementDetails *ui;
 };
 
-#endif // AGREEMENTDETAILS_H
+#endif // AGREEMENTDETAILS_HPP

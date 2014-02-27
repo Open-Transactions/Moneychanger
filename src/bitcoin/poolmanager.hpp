@@ -1,5 +1,8 @@
-#ifndef POOLMANAGER_H
-#define POOLMANAGER_H
+#ifndef POOLMANAGER_HPP
+#define POOLMANAGER_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QObject>
 #include<QList>
@@ -25,4 +28,4 @@ private:
     typedef std::tr1::shared_ptr<PoolManager> PoolManagerPtr;
 #endif // OT_USE_TR1
 
-#endif // POOLMANAGER_H
+#endif // POOLMANAGER_HPP

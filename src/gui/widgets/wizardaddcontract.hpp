@@ -1,5 +1,8 @@
-#ifndef WIZARDADDCONTRACT_H
-#define WIZARDADDCONTRACT_H
+#ifndef WIZARDADDCONTRACT_HPP
+#define WIZARDADDCONTRACT_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizard>
 
@@ -21,4 +24,4 @@ private:
     Ui::MTWizardAddContract *ui;
 };
 
-#endif // WIZARDADDCONTRACT_H
+#endif // WIZARDADDCONTRACT_HPP

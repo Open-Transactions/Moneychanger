@@ -1,5 +1,8 @@
-#ifndef WIZARDADDACCOUNT_H
-#define WIZARDADDACCOUNT_H
+#ifndef WIZARDADDACCOUNT_HPP
+#define WIZARDADDACCOUNT_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QPointer>
 #include <QWizard>
@@ -21,4 +24,4 @@ private:
     Ui::MTWizardAddAccount *ui;
 };
 
-#endif // WIZARDADDACCOUNT_H
+#endif // WIZARDADDACCOUNT_HPP

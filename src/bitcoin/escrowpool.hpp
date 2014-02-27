@@ -1,5 +1,8 @@
-#ifndef ESCROWPOOL_H
-#define ESCROWPOOL_H
+#ifndef ESCROWPOOL_HPP
+#define ESCROWPOOL_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #ifndef OT_USE_TR1
 #include <memory>
@@ -42,4 +45,4 @@ private:
     typedef std::tr1::shared_ptr<EscrowPool> EscrowPoolPtr;
 #endif // OT_USE_TR1
 
-#endif // ESCROWPOOL_H
+#endif // ESCROWPOOL_HPP

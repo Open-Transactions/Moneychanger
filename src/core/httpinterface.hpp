@@ -1,5 +1,8 @@
-#ifndef HTTPINTERFACE_H
-#define HTTPINTERFACE_H
+#ifndef HTTPINTERFACE_HPP
+#define HTTPINTERFACE_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 
 #ifdef _WIN32
@@ -19,4 +22,4 @@ private:
     OT_ME   mMadeEasy;
 };
 
-#endif // HTTPINTERFACE_H
+#endif // HTTPINTERFACE_HPP

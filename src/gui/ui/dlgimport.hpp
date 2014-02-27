@@ -1,5 +1,8 @@
-#ifndef DLGIMPORT_H
-#define DLGIMPORT_H
+#ifndef DLGIMPORT_HPP
+#define DLGIMPORT_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QDialog>
 
@@ -43,4 +46,4 @@ private:
     Ui::DlgImport *ui;
 };
 
-#endif // DLGIMPORT_H
+#endif // DLGIMPORT_HPP

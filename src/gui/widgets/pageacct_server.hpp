@@ -1,5 +1,8 @@
-#ifndef PAGEACCT_SERVER_H
-#define PAGEACCT_SERVER_H
+#ifndef PAGEACCT_SERVER_HPP
+#define PAGEACCT_SERVER_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -32,4 +35,4 @@ private:
     Ui::MTPageAcct_Server *ui;
 };
 
-#endif // PAGEACCT_SERVER_H
+#endif // PAGEACCT_SERVER_HPP

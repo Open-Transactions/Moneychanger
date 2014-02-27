@@ -21,7 +21,3 @@ include(../common.pri)
 
 include($${SOLUTION_DIR}../src/jsoncpp/jsoncpp.pri)
 
-#-------------------------------------------------
-# Include
-
-INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp

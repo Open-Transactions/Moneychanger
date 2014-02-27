@@ -1,5 +1,8 @@
-#ifndef EDITDETAILS_H
-#define EDITDETAILS_H
+#ifndef EDITDETAILS_HPP
+#define EDITDETAILS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QPointer>
 #include <QVariant>
@@ -97,4 +100,4 @@ private:
 //    Ui::MTEditDetails *ui;
 };
 
-#endif // EDITDETAILS_H
+#endif // EDITDETAILS_HPP

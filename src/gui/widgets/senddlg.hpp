@@ -1,5 +1,8 @@
-#ifndef SENDDLG_H
-#define SENDDLG_H
+#ifndef SENDDLG_HPP
+#define SENDDLG_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QPointer>
 #include <QWidget>
@@ -77,4 +80,4 @@ private:
     Ui::MTSendDlg *ui;
 };
 
-#endif // SENDDLG_H
+#endif // SENDDLG_HPP

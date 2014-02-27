@@ -1,5 +1,8 @@
-#ifndef PAGEOFFER_SUMMARY_H
-#define PAGEOFFER_SUMMARY_H
+#ifndef PAGEOFFER_SUMMARY_HPP
+#define PAGEOFFER_SUMMARY_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -22,4 +25,4 @@ private:
     Ui::PageOffer_Summary *ui;
 };
 
-#endif // PAGEOFFER_SUMMARY_H
+#endif // PAGEOFFER_SUMMARY_HPP

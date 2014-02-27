@@ -1,5 +1,10 @@
-#ifndef BTCSENDDLG_H
-#define BTCSENDDLG_H
+#ifndef BTCSENDDLG_HPP
+#define BTCSENDDLG_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
+
+
 
 #include <QWidget>
 
@@ -24,4 +29,4 @@ private:
     Ui::BtcSendDlg *ui;
 };
 
-#endif // BTCSENDDLG_H
+#endif // BTCSENDDLG_HPP

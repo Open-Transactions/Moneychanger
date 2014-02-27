@@ -1,5 +1,8 @@
-#ifndef PAGENYM_ALTLOCATION_H
-#define PAGENYM_ALTLOCATION_H
+#ifndef PAGENYM_ALTLOCATION_HPP
+#define PAGENYM_ALTLOCATION_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -19,4 +22,4 @@ private:
     Ui::MTPageNym_AltLocation *ui;
 };
 
-#endif // PAGENYM_ALTLOCATION_H
+#endif // PAGENYM_ALTLOCATION_HPP

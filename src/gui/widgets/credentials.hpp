@@ -1,5 +1,8 @@
-#ifndef CREDENTIALS_H
-#define CREDENTIALS_H
+#ifndef CREDENTIALS_HPP
+#define CREDENTIALS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QTreeWidgetItem>
 #include <QWidget>
@@ -35,4 +38,4 @@ private:
     Ui::MTCredentials *ui;
 };
 
-#endif // CREDENTIALS_H
+#endif // CREDENTIALS_HPP

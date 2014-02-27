@@ -1,5 +1,8 @@
-#ifndef DLGNEWCONTACT_H
-#define DLGNEWCONTACT_H
+#ifndef DLGNEWCONTACT_HPP
+#define DLGNEWCONTACT_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QDialog>
 #include <QString>
@@ -40,4 +43,4 @@ private:
     Ui::MTDlgNewContact *ui;
 };
 
-#endif // DLGNEWCONTACT_H
+#endif // DLGNEWCONTACT_HPP

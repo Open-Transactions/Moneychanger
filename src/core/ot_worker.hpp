@@ -1,5 +1,8 @@
-#ifndef OT_WORKER_H
-#define OT_WORKER_H
+#ifndef OT_WORKER_HPP
+#define OT_WORKER_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QDebug>
 #include <QObject>
@@ -48,4 +51,4 @@ signals:
     
 };
 
-#endif // OT_WORKER_H
+#endif // OT_WORKER_HPP

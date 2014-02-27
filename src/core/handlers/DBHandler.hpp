@@ -1,5 +1,8 @@
-#ifndef DBHANDLER_H
-#define DBHANDLER_H
+#ifndef DBHANDLER_HPP
+#define DBHANDLER_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QSqlDatabase>
 #include <QMessageBox>
@@ -80,4 +83,4 @@ class DBHandler
     ~DBHandler();
 };
 
-#endif // DBHANDLER_H
+#endif // DBHANDLER_HPP

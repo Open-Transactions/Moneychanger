@@ -1,5 +1,8 @@
-#ifndef DLGPASSWORD_H
-#define DLGPASSWORD_H
+#ifndef DLGPASSWORD_HPP
+#define DLGPASSWORD_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QString>
 #include <QDialog>
@@ -38,4 +41,4 @@ private:
     Ui::MTDlgPassword *ui;
 };
 
-#endif // DLGPASSWORD_H
+#endif // DLGPASSWORD_HPP

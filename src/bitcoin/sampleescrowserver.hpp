@@ -1,5 +1,11 @@
-#ifndef SAMPLEESCROWSERVER_H
-#define SAMPLEESCROWSERVER_H
+#ifndef SAMPLEESCROWSERVER_HPP
+#define SAMPLEESCROWSERVER_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #ifndef OT_USE_TR1
 #include <memory>
@@ -69,4 +75,4 @@ private:
 #endif // OT_USE_TR1
 
 
-#endif // SAMPLEESCROWSERVER_H
+#endif // SAMPLEESCROWSERVER_HPP

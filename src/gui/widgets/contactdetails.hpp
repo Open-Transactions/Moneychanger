@@ -1,5 +1,8 @@
-#ifndef CONTACTDETAILS_H
-#define CONTACTDETAILS_H
+#ifndef CONTACTDETAILS_HPP
+#define CONTACTDETAILS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QPointer>
 
@@ -48,4 +51,4 @@ private:
     Ui::MTContactDetails *ui;
 };
 
-#endif // CONTACTDETAILS_H
+#endif // CONTACTDETAILS_HPP

@@ -1,5 +1,8 @@
-#ifndef CORPORATIONDETAILS_H
-#define CORPORATIONDETAILS_H
+#ifndef CORPORATIONDETAILS_HPP
+#define CORPORATIONDETAILS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWidget>
 
@@ -29,4 +32,4 @@ private:
     Ui::MTCorporationDetails *ui;
 };
 
-#endif // CORPORATIONDETAILS_H
+#endif // CORPORATIONDETAILS_HPP

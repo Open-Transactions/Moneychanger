@@ -1,5 +1,8 @@
-#ifndef PAGEACCT_NYM_H
-#define PAGEACCT_NYM_H
+#ifndef PAGEACCT_NYM_HPP
+#define PAGEACCT_NYM_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -34,4 +37,4 @@ private:
     Ui::MTPageAcct_Nym *ui;
 };
 
-#endif // PAGEACCT_NYM_H
+#endif // PAGEACCT_NYM_HPP

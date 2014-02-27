@@ -3,11 +3,15 @@ CONFIG     += debug_and_release
 
 SOLUTION_DIR=$${PWD}/
 
+INCLUDEPATH += $${SOLUTION_DIR}../src
+INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
 
 #-------------------------------------------------
 # Output
 
 win32:{
+    INCLUDEPATH += $${SOLUTION_DIR}../src/curl/include
+
     equals(TEMPLATE,vcapp)|equals(TEMPLATE,vclib):{
         DESTDIR     = $${SOLUTION_DIR}../lib/$(PlatformName)/$(Configuration)
         MOC_DIR     = $${SOLUTION_DIR}../obj/$${TARGET}
@@ -82,5 +86,6 @@ mac:{
 # Include
 
 win32:{
-    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include
+    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include/otlib
+    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include/otapi
 }

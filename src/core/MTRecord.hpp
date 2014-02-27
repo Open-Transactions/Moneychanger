@@ -10,6 +10,9 @@
 #ifndef __OTClient__MTRecord__
 #define __OTClient__MTRecord__
 
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
+
 #include <iostream>
 #include <string>
 

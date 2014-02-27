@@ -1,5 +1,8 @@
-#ifndef PAGEIMPORTCONTRACT_H
-#define PAGEIMPORTCONTRACT_H
+#ifndef PAGEIMPORTCONTRACT_HPP
+#define PAGEIMPORTCONTRACT_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -42,4 +45,4 @@ private:
     Ui::MTPageImportContract *ui;
 };
 
-#endif // PAGEIMPORTCONTRACT_H
+#endif // PAGEIMPORTCONTRACT_HPP

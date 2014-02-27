@@ -1,5 +1,8 @@
-#ifndef PAGEOFFER_AMOUNTS_H
-#define PAGEOFFER_AMOUNTS_H
+#ifndef PAGEOFFER_AMOUNTS_HPP
+#define PAGEOFFER_AMOUNTS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -36,4 +39,4 @@ private:
     Ui::PageOffer_Amounts *ui;
 };
 
-#endif // PAGEOFFER_AMOUNTS_H
+#endif // PAGEOFFER_AMOUNTS_HPP

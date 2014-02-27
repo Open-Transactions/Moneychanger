@@ -1,19 +1,19 @@
-#ifndef IBTCJSON_H
-#define IBTCJSON_H
+#ifndef IBTCJSON_HPP
+#define IBTCJSON_HPP
+
+#include <MemoryWrapper.hpp>
+
+#include <bitcoin-api/btcobjects.hpp>
+
+#include <json/json.h>
 
 #include <string>
 #include <list>
 #include <map>
 
-#ifndef OT_USE_TR1
-#include <memory>
-#else
-#include <tr1/memory>
-#endif
 
-#include <json/json.h>
 
-#include "btcobjects.h"
+
 
 /*
  *
@@ -139,4 +139,4 @@ private:
     typedef std::tr1::shared_ptr<IBtcJson> IBtcJsonPtr;
 #endif // OT_USE_TR1
 
-#endif // IBTCJSON_H
+#endif // IBTCJSON_HPP

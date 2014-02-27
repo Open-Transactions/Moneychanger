@@ -1,5 +1,8 @@
-#ifndef WIZARDNEWOFFER_H
-#define WIZARDNEWOFFER_H
+#ifndef WIZARDNEWOFFER_HPP
+#define WIZARDNEWOFFER_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizard>
 
@@ -34,4 +37,4 @@ private:
     Ui::WizardNewOffer *ui;
 };
 
-#endif // WIZARDNEWOFFER_H
+#endif // WIZARDNEWOFFER_HPP

@@ -1,5 +1,8 @@
-#ifndef PAGENYM_SOURCE_H
-#define PAGENYM_SOURCE_H
+#ifndef PAGENYM_SOURCE_HPP
+#define PAGENYM_SOURCE_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -22,4 +25,4 @@ private:
     Ui::MTPageNym_Source *ui;
 };
 
-#endif // PAGENYM_SOURCE_H
+#endif // PAGENYM_SOURCE_HPP

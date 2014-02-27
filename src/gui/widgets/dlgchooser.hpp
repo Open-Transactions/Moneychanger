@@ -1,5 +1,8 @@
-#ifndef DLGCHOOSER_H
-#define DLGCHOOSER_H
+#ifndef DLGCHOOSER_HPP
+#define DLGCHOOSER_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QDialog>
 
@@ -50,4 +53,4 @@ private:
     Ui::DlgChooser *ui;
 };
 
-#endif // DLGCHOOSER_H
+#endif // DLGCHOOSER_HPP

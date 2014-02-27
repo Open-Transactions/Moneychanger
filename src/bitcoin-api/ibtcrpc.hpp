@@ -1,15 +1,15 @@
-#ifndef IBTCRPC_H
-#define IBTCRPC_H
+#ifndef IBTCRPC_HPP
+#define IBTCRPC_HPP
+
+#include <MemoryWrapper.hpp>
+
+#include <bitcoin-api/btcobjects.hpp>
 
 #include <string>
 
-#ifndef OT_USE_TR1
-#include <memory>
-#else
-#include <tr1/memory>
-#endif
 
-#include "btcobjects.h"
+
+
 
 /*
  *
@@ -92,4 +92,4 @@ public:
 #endif // OT_USE_TR1
 
 
-#endif // IBTCRPC_H
+#endif // IBTCRPC_HPP

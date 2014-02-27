@@ -1,20 +1,17 @@
-#ifndef MTBITCOIN_H
-#define MTBITCOIN_H
+#ifndef MTBITCOIN_HPP
+#define MTBITCOIN_HPP
+
+#include <MemoryWrapper.hpp>
+
+#include <bitcoin-api/imtbitcoin.hpp>
+#include <bitcoin-api/btcobjects.hpp>
+#include <bitcoin-api/btcmodules.hpp>
 
 #include <map>
 #include <sys/types.h>
 #include <string>
 #include <list>
 
-#ifndef OT_USE_TR1
-#include <memory>
-#else
-#include <tr1/memory>
-#endif
-
-#include "imtbitcoin.h"
-#include "btcobjects.h"
-#include "btcmodules.h"
 
 
 /*
@@ -124,4 +121,4 @@ private:
     typedef std::tr1::shared_ptr<MTBitcoin> MTBitcoinPtr;
 #endif // OT_USE_TR1
 
-#endif // MTBITCOIN_H
+#endif // MTBITCOIN_HPP

@@ -1,5 +1,8 @@
-#ifndef CASHPURSE_H
-#define CASHPURSE_H
+#ifndef CASHPURSE_HPP
+#define CASHPURSE_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QPointer>
 #include <QTableWidgetItem>
@@ -50,4 +53,4 @@ private:
     Ui::MTCashPurse *ui;
 };
 
-#endif // CASHPURSE_H
+#endif // CASHPURSE_HPP

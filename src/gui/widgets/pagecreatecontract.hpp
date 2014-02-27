@@ -1,5 +1,8 @@
-#ifndef PAGECREATECONTRACT_H
-#define PAGECREATECONTRACT_H
+#ifndef PAGECREATECONTRACT_HPP
+#define PAGECREATECONTRACT_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -22,4 +25,4 @@ private:
     Ui::MTPageCreateContract *ui;
 };
 
-#endif // PAGECREATECONTRACT_H
+#endif // PAGECREATECONTRACT_HPP

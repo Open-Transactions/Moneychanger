@@ -1,5 +1,8 @@
-#ifndef GETSTRINGDIALOG_H
-#define GETSTRINGDIALOG_H
+#ifndef GETSTRINGDIALOG_HPP
+#define GETSTRINGDIALOG_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QDialog>
 
@@ -30,4 +33,4 @@ private:
     Ui::MTGetStringDialog *ui;
 };
 
-#endif // GETSTRINGDIALOG_H
+#endif // GETSTRINGDIALOG_HPP

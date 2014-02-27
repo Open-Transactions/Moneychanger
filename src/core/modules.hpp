@@ -1,5 +1,8 @@
-#ifndef MODULES_H
-#define MODULES_H
+#ifndef MODULES_HPP
+#define MODULES_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QScopedPointer>
 #include "sampleescrowmanager.h"
@@ -23,4 +26,4 @@ public:
     //static QScopedPointer<MTBitcoin> mtBitcoin;
 };
 
-#endif // MODULES_H
+#endif // MODULES_HPP

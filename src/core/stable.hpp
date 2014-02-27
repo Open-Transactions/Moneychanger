@@ -1,12 +1,8 @@
 // stable.h
 // Moneychanger Pre-Compiled Headers File
-#ifndef STABLE_H
-#define STABLE_H
+#ifndef __STABLE_HPP__
+#define __STABLE_HPP__
 
-#ifdef _WIN32
-#include <otlib/stdafx.hpp>
-#else
-#include <opentxs/stdafx.hpp>
-#endif
+#include <stdafx.hpp>
 
-#endif // STABLE_H
+#endif // __STABLE_HPP__

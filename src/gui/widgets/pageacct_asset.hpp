@@ -1,5 +1,8 @@
-#ifndef PAGEACCT_ASSET_H
-#define PAGEACCT_ASSET_H
+#ifndef PAGEACCT_ASSET_HPP
+#define PAGEACCT_ASSET_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -34,4 +37,4 @@ private:
     Ui::MTPageAcct_Asset *ui;
 };
 
-#endif // PAGEACCT_ASSET_H
+#endif // PAGEACCT_ASSET_HPP

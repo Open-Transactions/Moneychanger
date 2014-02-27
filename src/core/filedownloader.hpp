@@ -1,6 +1,9 @@
+#ifndef FILEDOWNLOADER_HPP
+#define FILEDOWNLOADER_HPP
 
-#ifndef FILEDOWNLOADER_H
-#define FILEDOWNLOADER_H
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
+
 
 #include <QObject>
 #include <QByteArray>
@@ -33,4 +36,4 @@ private:
 
 };
 
-#endif // FILEDOWNLOADER_H
+#endif // FILEDOWNLOADER_HPP

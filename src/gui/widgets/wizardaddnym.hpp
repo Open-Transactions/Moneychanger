@@ -1,5 +1,8 @@
-#ifndef WIZARDADDNYM_H
-#define WIZARDADDNYM_H
+#ifndef WIZARDADDNYM_HPP
+#define WIZARDADDNYM_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizard>
 
@@ -19,4 +22,4 @@ private:
     Ui::MTWizardAddNym *ui;
 };
 
-#endif // WIZARDADDNYM_H
+#endif // WIZARDADDNYM_HPP

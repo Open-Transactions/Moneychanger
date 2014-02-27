@@ -1,5 +1,8 @@
-#ifndef CONTACTHANDLER_H
-#define CONTACTHANDLER_H
+#ifndef CONTACTHANDLER_HPP
+#define CONTACTHANDLER_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QMutex>
 #include <QString>
@@ -75,4 +78,4 @@ public:
     ~MTContactHandler();
 };
 
-#endif // CONTACTHANDLER_H
+#endif // CONTACTHANDLER_HPP

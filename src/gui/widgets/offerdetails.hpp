@@ -1,5 +1,8 @@
-#ifndef OFFERDETAILS_H
-#define OFFERDETAILS_H
+#ifndef OFFERDETAILS_HPP
+#define OFFERDETAILS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWidget>
 
@@ -50,4 +53,4 @@ private:
     Ui::MTOfferDetails *ui;
 };
 
-#endif // OFFERDETAILS_H
+#endif // OFFERDETAILS_HPP

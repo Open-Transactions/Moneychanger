@@ -1,5 +1,8 @@
-#ifndef PAGEACCT_NAME_H
-#define PAGEACCT_NAME_H
+#ifndef PAGEACCT_NAME_HPP
+#define PAGEACCT_NAME_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -19,4 +22,4 @@ private:
     Ui::MTPageAcct_Name *ui;
 };
 
-#endif // PAGEACCT_NAME_H
+#endif // PAGEACCT_NAME_HPP

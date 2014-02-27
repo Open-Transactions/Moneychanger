@@ -1,5 +1,8 @@
-#ifndef SAMPLETYPEDEFS_H
-#define SAMPLETYPEDEFS_H
+#ifndef SAMPLETYPEDEFS_HPP
+#define SAMPLETYPEDEFS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #ifndef OT_USE_TR1
 #include <memory>
@@ -38,4 +41,4 @@ class EscrowPool;
 #endif // OT_USE_TR1
 
 
-#endif // SAMPLETYPEDEFS_H
+#endif // SAMPLETYPEDEFS_HPP

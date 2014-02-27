@@ -1,5 +1,8 @@
-#ifndef SERVERDETAILS_H
-#define SERVERDETAILS_H
+#ifndef SERVERDETAILS_HPP
+#define SERVERDETAILS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QPointer>
 
@@ -57,4 +60,4 @@ private:
     Ui::MTServerDetails *ui;
 };
 
-#endif // SERVERDETAILS_H
+#endif // SERVERDETAILS_HPP

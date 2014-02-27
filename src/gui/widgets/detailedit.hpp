@@ -1,5 +1,8 @@
-#ifndef DETAILEDIT_H
-#define DETAILEDIT_H
+#ifndef DETAILEDIT_HPP
+#define DETAILEDIT_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QPointer>
 #include <QMap>
@@ -146,4 +149,4 @@ private:
     Ui::MTDetailEdit *ui;
 };
 
-#endif // DETAILEDIT_H
+#endif // DETAILEDIT_HPP

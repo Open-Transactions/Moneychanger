@@ -183,7 +183,4 @@ TRANSLATIONS += $${PWD}/translations/en_US.ts \
                 $${PWD}/translations/de_DE.ts
 
 
-INCLUDEPATH += $${PWD}
-INCLUDEPATH += $${PWD}/ui
-INCLUDEPATH += $${PWD}/widgets
 

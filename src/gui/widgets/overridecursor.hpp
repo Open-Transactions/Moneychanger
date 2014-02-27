@@ -1,5 +1,8 @@
-#ifndef OVERRIDECURSOR_H
-#define OVERRIDECURSOR_H
+#ifndef OVERRIDECURSOR_HPP
+#define OVERRIDECURSOR_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QObject>
 
@@ -59,6 +62,6 @@ public:
 
 // -----------------------------------
 
-#endif // OVERRIDECURSOR_H
+#endif // OVERRIDECURSOR_HPP
 
 

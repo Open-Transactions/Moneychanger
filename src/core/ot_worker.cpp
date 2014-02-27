@@ -1,4 +1,4 @@
-#ifndef STABLE_H
+#ifndef __STABLE_HPP__
 #include <core/stable.hpp>
 #endif
 

@@ -1,5 +1,8 @@
-#ifndef IDENTIFIERWIDGET_H
-#define IDENTIFIERWIDGET_H
+#ifndef IDENTIFIERWIDGET_HPP
+#define IDENTIFIERWIDGET_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWidget>
 #include <QString>
@@ -29,4 +32,4 @@ private:
     Ui::MTIdentifierWidget *ui;
 };
 
-#endif // IDENTIFIERWIDGET_H
+#endif // IDENTIFIERWIDGET_HPP

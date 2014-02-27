@@ -17,5 +17,3 @@ SOURCES += \
     $${PWD}/sampleescrowserver.cpp \
     $${PWD}/sampleescrowtransaction.cpp \
     $${PWD}/transactionmanager.cpp
-
-INCLUDEPATH += $${PWD}

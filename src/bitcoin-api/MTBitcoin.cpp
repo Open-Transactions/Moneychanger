@@ -1,11 +1,10 @@
-#ifndef STABLE_H
-#include <stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
+#include <bitcoin-api/MTBitcoin.hpp>
 
-#include "MTBitcoin.h"
-#include "btcmodules.h"
-
+#include <bitcoin-api/btcmodules.hpp>
 
 
 MTBitcoin::MTBitcoin(BtcModules *modules)

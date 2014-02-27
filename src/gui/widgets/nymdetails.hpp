@@ -1,5 +1,8 @@
-#ifndef NYMDETAILS_H
-#define NYMDETAILS_H
+#ifndef NYMDETAILS_HPP
+#define NYMDETAILS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QPointer>
 #include <QPlainTextEdit>
@@ -54,4 +57,4 @@ private:
     Ui::MTNymDetails *ui;
 };
 
-#endif // NYMDETAILS_H
+#endif // NYMDETAILS_HPP

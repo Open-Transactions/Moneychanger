@@ -1,5 +1,8 @@
-#ifndef APPLICATIONMC_H
-#define APPLICATIONMC_H
+#ifndef APPLICATIONMC_HPP
+#define APPLICATIONMC_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QtCore>
 #include <QtGui>
@@ -21,6 +24,6 @@ public slots:
     void appStarting();
 };
 
-#endif // APPLICATIONMC_H
+#endif // APPLICATIONMC_HPP
 
 

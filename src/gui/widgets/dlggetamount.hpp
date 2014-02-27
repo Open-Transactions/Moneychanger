@@ -1,5 +1,8 @@
-#ifndef DLGGETAMOUNT_H
-#define DLGGETAMOUNT_H
+#ifndef DLGGETAMOUNT_HPP
+#define DLGGETAMOUNT_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QDialog>
 
@@ -42,4 +45,4 @@ private:
     Ui::DlgGetAmount *ui;
 };
 
-#endif // DLGGETAMOUNT_H
+#endif // DLGGETAMOUNT_HPP

@@ -1,13 +1,16 @@
-#ifndef ACCOUNTDETAILS_H
-#define ACCOUNTDETAILS_H
+#ifndef ACCOUNTDETAILS_HPP
+#define ACCOUNTDETAILS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
+
+#include <widgets/editdetails.hpp>
 
 #include <QWidget>
 #include <QPointer>
 #include <QLineEdit>
 #include <QGridLayout>
 #include <QString>
-
-#include "widgets/editdetails.h"
 
 namespace Ui {
 class MTAccountDetails;
@@ -65,4 +68,4 @@ private:
     Ui::MTAccountDetails *ui;
 };
 
-#endif // ACCOUNTDETAILS_H
+#endif // ACCOUNTDETAILS_HPP

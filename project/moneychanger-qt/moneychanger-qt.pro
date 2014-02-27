@@ -29,6 +29,8 @@ include(../common.pri)
 #-------------------------------------------------
 # Source
 
+PRECOMPILED_HEADER = $${SOLUTION_DIR}../src/core/stable.hpp
+
 include($${SOLUTION_DIR}../src/core/core.pri)
 include($${SOLUTION_DIR}../src/gui/gui.pri)
 include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
@@ -47,13 +49,7 @@ unix:{
 #-------------------------------------------------
 # Include
 
-INCLUDEPATH += $${SOLUTION_DIR}../src
-INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
-INCLUDEPATH += $${SOLUTION_DIR}../src/bitcoin-api
-
 win32:{
-    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include/otlib
-
     equals(TEMPLATE,vcapp):{
         INCLUDEPATH += $(SystemDrive)/OpenSSL-Win$(PlatformArchitecture)/include
         }

@@ -1,5 +1,8 @@
-#ifndef DLGEXPORTEDCASH_H
-#define DLGEXPORTEDCASH_H
+#ifndef DLGEXPORTEDCASH_HPP
+#define DLGEXPORTEDCASH_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QDialog>
 
@@ -29,4 +32,4 @@ private:
     Ui::DlgExportedCash *ui;
 };
 
-#endif // DLGEXPORTEDCASH_H
+#endif // DLGEXPORTEDCASH_HPP

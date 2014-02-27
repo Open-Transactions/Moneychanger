@@ -1,7 +1,7 @@
-#ifndef BTCTEST_H
-#define BTCTEST_H
+#ifndef BTCTEST_HPP
+#define BTCTEST_HPP
 
-#include "btcmodules.h"
+#include <bitcoin-api/btcmodules.hpp>
 
 // will be used as a sort of unit test
 // currently only checks the most important things.
@@ -33,4 +33,4 @@ private:
 
 };
 
-#endif // BTCTEST_H
+#endif // BTCTEST_HPP

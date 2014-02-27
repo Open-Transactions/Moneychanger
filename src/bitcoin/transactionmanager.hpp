@@ -1,5 +1,8 @@
-#ifndef TRANSACTIONMANAGER_H
-#define TRANSACTIONMANAGER_H
+#ifndef TRANSACTIONMANAGER_HPP
+#define TRANSACTIONMANAGER_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QSharedPointer>
 #include <QList>
@@ -21,4 +24,4 @@ private:
     QList<SampleEscrowTransactionPtr> transactions;
 };
 
-#endif // TRANSACTIONMANAGER_H
+#endif // TRANSACTIONMANAGER_HPP

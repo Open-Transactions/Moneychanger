@@ -1,5 +1,8 @@
-#ifndef MTHOMEDETAIL_H
-#define MTHOMEDETAIL_H
+#ifndef MTHOMEDETAIL_HPP
+#define MTHOMEDETAIL_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QPointer>
 #include <QWidget>
@@ -99,4 +102,4 @@ private:
     Ui::MTHomeDetail *ui;
 };
 
-#endif // MTHOMEDETAIL_H
+#endif // MTHOMEDETAIL_HPP

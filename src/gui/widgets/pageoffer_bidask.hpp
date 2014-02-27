@@ -1,5 +1,8 @@
-#ifndef PAGEOFFER_BIDASK_H
-#define PAGEOFFER_BIDASK_H
+#ifndef PAGEOFFER_BIDASK_HPP
+#define PAGEOFFER_BIDASK_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -19,4 +22,4 @@ private:
     Ui::PageOffer_BidAsk *ui;
 };
 
-#endif // PAGEOFFER_BIDASK_H
+#endif // PAGEOFFER_BIDASK_HPP

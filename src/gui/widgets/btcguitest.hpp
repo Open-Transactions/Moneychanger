@@ -1,6 +1,8 @@
-#ifndef BTCGUITEST_H
-#define BTCGUITEST_H
+#ifndef BTCGUITEST_HPP
+#define BTCGUITEST_HPP
 
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWidget>
 #include "sampleescrowtransaction.h"
@@ -45,4 +47,4 @@ signals:
     void SetConfirmationsWithdrawal(int confirms);
 };
 
-#endif // BTCGUITEST_H
+#endif // BTCGUITEST_HPP

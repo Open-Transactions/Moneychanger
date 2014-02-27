@@ -1,5 +1,8 @@
-#ifndef DLGEXPORTEDTOPASS_H
-#define DLGEXPORTEDTOPASS_H
+#ifndef DLGEXPORTEDTOPASS_HPP
+#define DLGEXPORTEDTOPASS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QDialog>
 
@@ -27,4 +30,4 @@ private:
     Ui::DlgExportedToPass *ui;
 };
 
-#endif // DLGEXPORTEDTOPASS_H
+#endif // DLGEXPORTEDTOPASS_HPP

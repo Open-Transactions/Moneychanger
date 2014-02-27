@@ -1,5 +1,8 @@
-#ifndef MTHOME_H
-#define MTHOME_H
+#ifndef MTHOME_HPP
+#define MTHOME_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QPointer>
 #include <QWidget>
@@ -98,4 +101,4 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 };
 
-#endif // MTHOME_H
+#endif // MTHOME_HPP

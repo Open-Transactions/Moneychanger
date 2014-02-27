@@ -1,18 +1,12 @@
-#ifndef BTCHELPER_H
-#define BTCHELPER_H
+#ifndef BTCHELPER_HPP
+#define BTCHELPER_HPP
+
+#include <MemoryWrapper.hpp>
+
+#include <bitcoin-api/btcobjects.hpp>
 
 #include <sys/types.h>
 #include <string>
-
-#ifndef OT_USE_TR1
-#include <memory>
-#else
-#include <tr1/memory>
-#endif
-
-
-#include "btcobjects.h"
-//#include "btcmodules.h"
 
 
 /*
@@ -131,4 +125,4 @@ namespace btc
     std::string to_string(T number);
 }
 
-#endif // BTCHELPER_H
+#endif // BTCHELPER_HPP

@@ -1,5 +1,8 @@
-#ifndef BTCGUITESTP2P_H
-#define BTCGUITESTP2P_H
+#ifndef BTCGUITESTP2P_HPP
+#define BTCGUITESTP2P_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWidget>
 
@@ -22,4 +25,4 @@ private:
     Ui::BtcGuiTestp2p *ui;
 };
 
-#endif // BTCGUITESTP2P_H
+#endif // BTCGUITESTP2P_HPP

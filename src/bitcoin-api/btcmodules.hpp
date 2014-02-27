@@ -1,16 +1,12 @@
-#ifndef BTCMODULES_H
-#define BTCMODULES_H
+#ifndef BTCMODULES_HPP
+#define BTCMODULES_HPP
 
-#ifndef OT_USE_TR1
-#include <memory>
-#else
-#include <tr1/memory>
-#endif
+#include <MemoryWrapper.hpp>
 
-#include "ibtcjson.h"
-#include "ibtcrpc.h"
-#include "imtbitcoin.h"
-#include "btchelper.h"
+#include <bitcoin-api/ibtcjson.hpp>
+#include <bitcoin-api/ibtcrpc.hpp>
+#include <bitcoin-api/imtbitcoin.hpp>
+#include <bitcoin-api/btchelper.hpp>
 
 
 /*
@@ -59,4 +55,4 @@ public:
     static BtcModules* staticInstance;
 };
 
-#endif // BTCMODULES_H
+#endif // BTCMODULES_HPP

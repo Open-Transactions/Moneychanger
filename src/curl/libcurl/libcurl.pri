@@ -207,5 +207,4 @@ SOURCES += \
     $${PWD}/wildcard.c \
     $${PWD}/x509asn1.c
 
-
 INCLUDEPATH += $${PWD}

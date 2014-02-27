@@ -1,7 +1,7 @@
-#ifndef BITCOINAPI_H
-#define BITCOINAPI_H
+#ifndef BITCOINAPI_HPP
+#define BITCOINAPI_HPP
 
-#include "bitcoin-api_global.h"
+#include <bitcoin-api/bitcoin-api_global.hpp>
 
 /*
  *
@@ -33,4 +33,4 @@ public:
     BitcoinApi();
 };
 
-#endif // BITCOINAPI_H
+#endif // BITCOINAPI_HPP

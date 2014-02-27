@@ -1,5 +1,8 @@
-#ifndef DLGPASSWORDCONFIRM_H
-#define DLGPASSWORDCONFIRM_H
+#ifndef DLGPASSWORDCONFIRM_HPP
+#define DLGPASSWORDCONFIRM_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QString>
 #include <QDialog>
@@ -37,4 +40,4 @@ private:
     Ui::MTDlgPasswordConfirm *ui;
 };
 
-#endif // DLGPASSWORDCONFIRM_H
+#endif // DLGPASSWORDCONFIRM_HPP

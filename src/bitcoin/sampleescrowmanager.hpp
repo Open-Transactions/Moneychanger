@@ -1,5 +1,8 @@
-#ifndef SAMPLEESCROWMANAGER_H
-#define SAMPLEESCROWMANAGER_H
+#ifndef SAMPLEESCROWMANAGER_HPP
+#define SAMPLEESCROWMANAGER_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QObject>
 #include <QList>
@@ -28,4 +31,4 @@ private:
 //public slots:
 };
 
-#endif // SAMPLEESCROWMANAGER_H
+#endif // SAMPLEESCROWMANAGER_HPP

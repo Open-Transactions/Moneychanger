@@ -1,5 +1,8 @@
-#ifndef MARKETDETAILS_H
-#define MARKETDETAILS_H
+#ifndef MARKETDETAILS_HPP
+#define MARKETDETAILS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <string>
 
@@ -84,4 +87,4 @@ private:
     Ui::MTMarketDetails *ui;
 };
 
-#endif // MARKETDETAILS_H
+#endif // MARKETDETAILS_HPP

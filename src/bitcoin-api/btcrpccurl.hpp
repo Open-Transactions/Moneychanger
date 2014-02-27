@@ -1,17 +1,13 @@
-#ifndef BTCRPCZMQ_H
-#define BTCRPCZMQ_H
+#ifndef BTCRPCZMQ_HPP
+#define BTCRPCZMQ_HPP
 
+#include <MemoryWrapper.hpp>
 
-#include "ibtcrpc.h"
-#include "btcmodules.h"
+#include <bitcoin-api/ibtcrpc.hpp>
+#include <bitcoin-api/btcmodules.hpp>
 
 #include <curl/curl.h>
 
-#ifndef OT_USE_TR1
-#include <memory>
-#else
-#include <tr1/memory>
-#endif
 
 
 /*
@@ -119,4 +115,4 @@ public slots:
 #endif // OT_USE_TR1
 
 
-#endif // BTCRPCZMQ_H
+#endif // BTCRPCZMQ_HPP

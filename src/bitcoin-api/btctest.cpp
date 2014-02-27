@@ -1,6 +1,10 @@
-#ifndef STABLE_H
-#include <stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
+
+#include <bitcoin-api/btctest.hpp>
+
+#include <bitcoin-api/btcmodules.hpp>
 
 #include <cstdio>
 #include <iostream>
@@ -14,8 +18,7 @@
     #define Sleep(milliSeconds) usleep(milliSeconds * 1000)
 #endif // OT_USE_TR1
 
-#include "btctest.h"
-#include "btcmodules.h"
+
 
 
 BtcModulesPtr BtcTest::modules;

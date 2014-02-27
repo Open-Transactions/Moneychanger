@@ -1,5 +1,8 @@
-#ifndef PASSWORDCALLBACK_H
-#define PASSWORDCALLBACK_H
+#ifndef PASSWORDCALLBACK_HPP
+#define PASSWORDCALLBACK_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #ifdef _WIN32
 #include <otlib/OTPassword.hpp>
@@ -14,4 +17,4 @@ public:
     void runTwo(const char * szDisplay, OTPassword & theOutput);
 };
 
-#endif // PASSWORDCALLBACK_H
+#endif // PASSWORDCALLBACK_HPP

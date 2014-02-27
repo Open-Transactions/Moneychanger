@@ -1,5 +1,8 @@
-#ifndef FILEHANDLER_H
-#define FILEHANDLER_H
+#ifndef FILEHANDLER_HPP
+#define FILEHANDLER_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 
 #include <QMessageBox>
@@ -24,4 +27,4 @@ public:
     bool removeFile(QString fileName);
 };
 
-#endif // FILEHANDLER_H
+#endif // FILEHANDLER_HPP

@@ -1,5 +1,8 @@
-#ifndef DLGMARKETS_H
-#define DLGMARKETS_H
+#ifndef DLGMARKETS_HPP
+#define DLGMARKETS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QPointer>
 #include <QVariant>
@@ -107,4 +110,4 @@ private:
     Ui::DlgMarkets *ui;
 };
 
-#endif // DLGMARKETS_H
+#endif // DLGMARKETS_HPP

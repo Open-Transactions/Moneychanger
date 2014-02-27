@@ -1,5 +1,8 @@
-#ifndef PAGENYM_KEYSIZE_H
-#define PAGENYM_KEYSIZE_H
+#ifndef PAGENYM_KEYSIZE_HPP
+#define PAGENYM_KEYSIZE_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QWizardPage>
 
@@ -19,4 +22,4 @@ private:
     Ui::MTPageNym_Keysize *ui;
 };
 
-#endif // PAGENYM_KEYSIZE_H
+#endif // PAGENYM_KEYSIZE_HPP

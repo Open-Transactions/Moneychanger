@@ -1,12 +1,12 @@
-#ifndef STABLE_H
-#include <stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "btcrpccurl.h"
-
-#include <iostream>
+#include <bitcoin-api/btcrpccurl.hpp>
 
 #include <curl/curl.h>
+
+#include <iostream>
 #include <string.h>
 #include <cstdio>
 #include <cstdlib>

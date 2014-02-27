@@ -1,18 +1,16 @@
-#ifndef BTCOBJECTS_H
-#define BTCOBJECTS_H
+#ifndef BTCOBJECTS_HPP
+#define BTCOBJECTS_HPP
 
-#include <string.h>
-#include <list>
-#include <vector>
+#include <MemoryWrapper.hpp>
 
 #include <json/json.h>
-#include <sys/types.h>
- 
-#ifndef OT_USE_TR1
-#include <memory>
-#else
-#include <tr1/memory>
-#endif
+
+#include <list>
+#include <vector>
+#include <cinttypes>
+
+
+
 
 /*
  *
@@ -294,4 +292,4 @@ typedef std::vector<BtcTxIdVoutPtr> BtcTxIdVouts;
 
 
 
-#endif // BTCOBJECTS_H
+#endif // BTCOBJECTS_HPP

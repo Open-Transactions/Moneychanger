@@ -1,5 +1,8 @@
-#ifndef TRANSLATION_H
-#define TRANSLATION_H
+#ifndef TRANSLATION_HPP
+#define TRANSLATION_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QObject>
 #include <QApplication>
@@ -19,4 +22,4 @@ private:
     QString ui_language;
 };
 
-#endif // TRANSLATION_H
+#endif // TRANSLATION_HPP

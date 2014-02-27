@@ -1,5 +1,8 @@
-#ifndef ASSETDETAILS_H
-#define ASSETDETAILS_H
+#ifndef ASSETDETAILS_HPP
+#define ASSETDETAILS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #include <QPointer>
 
@@ -58,4 +61,4 @@ private:
     Ui::MTAssetDetails *ui;
 };
 
-#endif // ASSETDETAILS_H
+#endif // ASSETDETAILS_HPP

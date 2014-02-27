@@ -1,15 +1,10 @@
-#ifndef BTCJSON_H
-#define BTCJSON_H
+#ifndef BTCJSON_HPP
+#define BTCJSON_HPP
 
-#include "ibtcjson.h"
-#include "btcmodules.h"
+#include <MemoryWrapper.hpp>
 
-#ifndef OT_USE_TR1
-#include <memory>
-#else
-#include <tr1/memory>
-#endif
-
+#include <bitcoin-api/ibtcjson.hpp>
+#include <bitcoin-api/btcmodules.hpp>
 
 
 /*
@@ -141,4 +136,4 @@ private:
 #endif // OT_USE_TR1
 
 
-#endif // BTCJSON_H
+#endif // BTCJSON_HPP

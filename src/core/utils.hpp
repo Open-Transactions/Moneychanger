@@ -1,5 +1,8 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef UTILS_HPP
+#define UTILS_HPP
+
+#include <WinsockWrapper.h>
+#include <ExportWrapper.h>
 
 #ifdef Q_OS_WIN
 #include <windows.h>    // for Sleep
@@ -52,4 +55,4 @@ namespace utils
     };
 }
 
-#endif // UTILS_H
+#endif // UTILS_HPP
