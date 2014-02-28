@@ -10,28 +10,28 @@
 
 #include <algorithm>
 
-#include <OTStorage.h>
+#include <OTStorage.hpp>
 
-#include <OTString.h>
-#include <OTIdentifier.h>
-#include <OTASCIIArmor.h>
-#include <OTAccount.h>
-#include <OTWallet.h>
-#include <OTIdentifier.h>
-#include <OTPayment.h>
-#include <OTMessage.h>
-#include <OTLedger.h>
+#include <OTString.hpp>
+#include <OTIdentifier.hpp>
+#include <OTASCIIArmor.hpp>
+#include <OTAccount.hpp>
+#include <OTWallet.hpp>
+#include <OTIdentifier.hpp>
+#include <OTPayment.hpp>
+#include <OTMessage.hpp>
+#include <OTLedger.hpp>
 
 #ifdef _WIN32
-#include <otapi/OpenTransactions.h>
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#include <otlib/OTLog.h>
+#include <otapi/OpenTransactions.hpp>
+#include <otapi/OTAPI.hpp>
+#include <otapi/OT_ME.hpp>
+#include <otlib/OTLog.hpp>
 #else
-#include <opentxs/OpenTransactions.h>
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#include <opentxs/OTLog.h>
+#include <opentxs/OpenTransactions.hpp>
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OT_ME.hpp>
+#include <opentxs/OTLog.hpp>
 #endif
 
 

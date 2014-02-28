@@ -48,7 +48,7 @@
 
 #ifdef _WIN32
 #ifndef NO_OT_PCH
-#include <OTStorage.h>
+#include <OTStorage.hpp>
 #include <OTSmartContract.h>
 #else
 #undef NO_OT_PCH

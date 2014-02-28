@@ -27,8 +27,8 @@
 
 #include "moneychanger.h"
 
-#include <OTStorage.h>
-#include <OTLog.h>
+#include <OTStorage.hpp>
+#include <OTLog.hpp>
 
 MTDetailEdit::MTDetailEdit(QWidget *parent) :
     QWidget(parent, Qt::Window),

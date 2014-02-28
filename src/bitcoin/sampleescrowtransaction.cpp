@@ -4,7 +4,7 @@
 
 #include "sampleescrowtransaction.h"
 #include "modules.h"
-#include <OTLog.h>
+#include <OTLog.hpp>
 
 SampleEscrowTransaction::SampleEscrowTransaction(int64_t amountToSend)
 {
@@ -27,7 +27,7 @@ bool SampleEscrowTransaction::SendToTarget()
     // check if we got a tx id
     if(this->txId == "")
     {
-        this->status == Failed;
+        this->status = Failed;
         return false;
     }
 
