@@ -2,7 +2,7 @@
 #include <core/stable.h>
 #endif
 
-#include <OTPaths.h>
+#include <OTPaths.hpp>
 
 #include "DBHandler.h"
 #include <QDebug>

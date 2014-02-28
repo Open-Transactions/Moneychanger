@@ -6,15 +6,15 @@
 #include <QDebug>
 
 #ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#include <otlib/OTStorage.h>
-#include <otlib/OTPaymentPlan.h>
+#include <otapi/OTAPI.hpp>
+#include <otapi/OT_ME.hpp>
+#include <otlib/OTStorage.hpp>
+#include <otlib/OTPaymentPlan.hpp>
 #else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#include <opentxs/OTStorage.h>
-#include <opentxs/OTPaymentPlan.h>
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OT_ME.hpp>
+#include <opentxs/OTStorage.hpp>
+#include <opentxs/OTPaymentPlan.hpp>
 #endif
 
 #include "offerdetails.h"

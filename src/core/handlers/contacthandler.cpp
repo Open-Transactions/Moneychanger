@@ -3,17 +3,17 @@
 #endif
 
 #ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#include <otlib/OTStorage.h>
-#include <otlib/OTASCIIArmor.h>
-#include <otlib/OTLog.h>
+#include <otapi/OTAPI.hpp>
+#include <otapi/OT_ME.hpp>
+#include <otlib/OTStorage.hpp>
+#include <otlib/OTASCIIArmor.hpp>
+#include <otlib/OTLog.hpp>
 #else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#include <opentxs/OTStorage.h>
-#include <opentxs/OTASCIIArmor.h>
-#include <opentxs/OTLog.h>
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OT_ME.hpp>
+#include <opentxs/OTStorage.hpp>
+#include <opentxs/OTASCIIArmor.hpp>
+#include <opentxs/OTLog.hpp>
 #endif
 
 #include "contacthandler.h"

@@ -3,9 +3,9 @@
 
 
 #ifdef _WIN32
-#include <otapi/OT_ME.h>
+#include <otapi/OT_ME.hpp>
 #else
-#include <opentxs/OT_ME.h>
+#include <opentxs/OT_ME.hpp>
 #endif
 
 #include <qjsonrpc/qjsonrpcmessage.h>

@@ -6,7 +6,7 @@
 #include "sampleescrowserver.h"
 #include "sampleescrowclient.h"
 #include "sampleescrowtransaction.h"
-#include <OTLog.h>
+#include <OTLog.hpp>
 
 SampleEscrowServer::SampleEscrowServer(BitcoinServerPtr rpcServer)
 {

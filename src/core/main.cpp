@@ -19,19 +19,19 @@
 #include "passwordcallback.h"
 
 #ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#include <otlib/OTLog.h>
-#include <otlib/OTPaths.h>
-#include <otlib/OTPassword.h>
-#include <otlib/OTAsymmetricKey.h>
+#include <otapi/OTAPI.hpp>
+#include <otapi/OT_ME.hpp>
+#include <otlib/OTLog.hpp>
+#include <otlib/OTPaths.hpp>
+#include <otlib/OTPassword.hpp>
+#include <otlib/OTAsymmetricKey.hpp>
 #else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#include <opentxs/OTLog.h>
-#include <opentxs/OTPaths.h>
-#include <opentxs/OTPassword.h>
-#include <opentxs/OTAsymmetricKey.h>
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OT_ME.hpp>
+#include <opentxs/OTLog.hpp>
+#include <opentxs/OTPaths.hpp>
+#include <opentxs/OTPassword.hpp>
+#include <opentxs/OTAsymmetricKey.hpp>
 #endif
 
 

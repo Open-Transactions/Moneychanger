@@ -2,9 +2,9 @@
 #define PASSWORDCALLBACK_H
 
 #ifdef _WIN32
-#include <otlib/OTPassword.h>
+#include <otlib/OTPassword.hpp>
 #else
-#include <opentxs/OTPassword.h>
+#include <opentxs/OTPassword.hpp>
 #endif
 
 class MTPasswordCallback : public OTCallback

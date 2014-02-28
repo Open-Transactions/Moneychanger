@@ -7,13 +7,13 @@
 #include <QKeyEvent>
 
 #ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#include <otlib/OTLog.h>
+#include <otapi/OTAPI.hpp>
+#include <otapi/OT_ME.hpp>
+#include <otlib/OTLog.hpp>
 #else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#include <opentxs/OTLog.h>
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OT_ME.hpp>
+#include <opentxs/OTLog.hpp>
 #endif
 
 #include "requestdlg.h"
