@@ -2,8 +2,9 @@
 #include <core/stable.hpp>
 #endif
 
-#include "wizardaddcontract.h"
-#include "ui_wizardaddcontract.h"
+#include <gui/widgets/wizardaddcontract.hpp>
+#include <ui_wizardaddcontract.h>
+
 
 MTWizardAddContract::MTWizardAddContract(QWidget *parent) :
     QWizard(parent),

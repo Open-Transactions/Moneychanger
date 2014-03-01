@@ -2,8 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
-#include "translation.h"
-#include "handlers/DBHandler.h"
+#include <core/translation.hpp>
+#include <core/handlers/DBHandler.hpp>
 
 Translation::Translation(QObject *parent) :
     QObject(parent)
