@@ -51,6 +51,7 @@ win32:{
 unix:{
     CONFIG += link_pkgconfig
     QMAKE_CXXFLAGS += -fPIC ## put only here, sub-libs pick it up from elsewhere?
+    QMAKE_CXXFLAGS += -std=c++11
 }
 
 mac:MAC_OS_VERSION = $$system(uname -r)
