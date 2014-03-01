@@ -3,6 +3,20 @@
 #endif
 
 #include <gui/widgets/accountdetails.hpp>
+#include <ui_accountdetails.h>
+
+#include <gui/widgets/cashpurse.hpp>
+#include <gui/widgets/home.hpp>
+#include <gui/widgets/wizardaddaccount.hpp>
+#include <gui/widgets/overridecursor.hpp>
+
+#include <core/moneychanger.hpp>
+
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OT_ME.hpp>
+
+#include <QMessageBox>
+#include <QDebug>
 
 
 

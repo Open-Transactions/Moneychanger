@@ -6,6 +6,8 @@
 
 #include <gui/widgets/detailedit.hpp>
 
+#include <QVariant>
+
 namespace Ui {
 class MTEditDetails;
 }
