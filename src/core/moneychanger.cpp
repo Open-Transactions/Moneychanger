@@ -17,35 +17,33 @@
 #include <core/stable.hpp>
 #endif
 
-#include <QScopedPointer>
-#include <QFile>
+#include <core/moneychanger.hpp>
 
-#include "moneychanger.h"
+#include <gui/widgets/home.hpp>
+#include <gui/widgets/overridecursor.hpp>
+#include <gui/widgets/editdetails.hpp>
+#include <gui/widgets/requestdlg.hpp>
+#include <gui/widgets/dlgchooser.hpp>
+#include <gui/widgets/senddlg.hpp>
+#include <gui/widgets/createinsurancecompany.hpp>
+#include <gui/widgets/settings.hpp>
+#include <gui/widgets/btcguitest.hpp>
+#include <gui/ui/dlgimport.hpp>
+#include <gui/ui/dlgmenu.hpp>
+#include <gui/ui/dlgmarkets.hpp>
 
-#include "handlers/contacthandler.h"
-#include "handlers/DBHandler.h"
+#include <core/handlers/DBHandler.hpp>
 
-#include "widgets/detailedit.h"
-
-#include "widgets/senddlg.h"
-#include "widgets/requestdlg.h"
-
-#include "widgets/dlgchooser.h"
-
-#include "ui/dlgimport.h"
-
-#include "widgets/overridecursor.h"
-
-
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#include <otlib/OTPaths.hpp>
-#else
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OT_ME.hpp>
 #include <opentxs/OTPaths.hpp>
-#endif
+
+#include <QMenu>
+#include <QApplication>
+#include <QFile>
+#include <QDebug>
+#include <QMessageBox>
+#include <QSystemTrayIcon>
 
 /**
  * Constructor & Destructor

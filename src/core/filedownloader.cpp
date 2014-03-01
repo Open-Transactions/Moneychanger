@@ -2,7 +2,7 @@
 #include <core/stable.hpp>
 #endif
 
-#include "filedownloader.h"
+#include <core/filedownloader.hpp>
 
 FileDownloader::FileDownloader(QUrl imageUrl, QObject *parent) :
     QObject(parent)

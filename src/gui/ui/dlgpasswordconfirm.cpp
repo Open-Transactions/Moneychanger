@@ -2,16 +2,13 @@
 #include <core/stable.hpp>
 #endif
 
-#include "dlgpasswordconfirm.h"
-#include "ui_dlgpasswordconfirm.h"
+#include <gui/ui/dlgpasswordconfirm.hpp>
+#include <ui_dlgpasswordconfirm.h>
 
-#ifdef _WIN32
-#include <otlib/OTPassword.hpp>
-#else
+#include <gui/widgets/overridecursor.hpp>
+
 #include <opentxs/OTPassword.hpp>
-#endif
 
-#include "overridecursor.h"
 
 MTDlgPasswordConfirm::MTDlgPasswordConfirm(QWidget *parent, OTPassword & thePassword) :
     QDialog(parent),

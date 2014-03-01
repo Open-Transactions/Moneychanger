@@ -2,19 +2,12 @@
 #include <core/stable.hpp>
 #endif
 
-#include <gui/ui/editdetails.hpp>
+#include <gui/widgets/editdetails.hpp>
+#include <ui_editdetails.h>
 
 #include <QDebug>
 #include <QLabel>
-#include <QEvent>
-#include <QKeyEvent>
-#include <QSizePolicy>
 
-#include "editdetails.h"
-#include "ui_editdetails.h"
-
-#include "moneychanger.h"
-#include "detailedit.h"
 
 MTEditDetails::MTEditDetails(QWidget *parent, MTDetailEdit & theOwner) :
     QWidget(parent),

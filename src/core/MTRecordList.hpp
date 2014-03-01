@@ -13,7 +13,7 @@
 #include <opentxs/ExportWrapper.h>
 #include <opentxs/MemoryWrapper.hpp>
 
-#include <core\MTRecord.hpp>
+#include <core/MTRecord.hpp>
 
 #include <iostream>
 #include <vector>

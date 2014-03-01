@@ -2,8 +2,9 @@
 #include <core/stable.hpp>
 #endif
 
-#include "identifierwidget.h"
-#include "ui_identifierwidget.h"
+#include <gui/widgets/identifierwidget.hpp>
+#include <ui_identifierwidget.h>
+
 
 MTIdentifierWidget::MTIdentifierWidget(QWidget *parent) :
     QWidget(parent),

@@ -2,40 +2,17 @@
 #include <core/stable.hpp>
 #endif
 
-#include <QApplication>
-#include <QtGui>
-#include <QLibrary>
-#include <QSystemTrayIcon>
-#include <QDialog>
-#include <QVBoxLayout>
-#include <QLabel>
+#include <core/moneychanger.hpp>
+#include <core/applicationmc.hpp>
+#include <core/modules.hpp>
+#include <core/translation.hpp>
 
+#include <bitcoin-api/btcmodules.hpp>
 
-#include "moneychanger.h"
-#include "modules.h"
-#include "utils.h"
-#include "translation.h"
-
-#include "passwordcallback.h"
-
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#include <otlib/OTLog.hpp>
-#include <otlib/OTPaths.hpp>
-#include <otlib/OTPassword.hpp>
-#include <otlib/OTAsymmetricKey.hpp>
-#else
 #include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
 #include <opentxs/OTLog.hpp>
-#include <opentxs/OTPaths.hpp>
-#include <opentxs/OTPassword.hpp>
-#include <opentxs/OTAsymmetricKey.hpp>
-#endif
 
-
-#include "applicationmc.h"
+#include <QTimer>
 
 
 void shutdown_app()

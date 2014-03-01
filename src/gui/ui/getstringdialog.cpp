@@ -2,11 +2,11 @@
 #include <core/stable.hpp>
 #endif
 
-#include <QEvent>
+#include <gui/ui/getstringdialog.hpp>
+#include <ui_getstringdialog.h>
+
 #include <QKeyEvent>
 
-#include "getstringdialog.h"
-#include "ui_getstringdialog.h"
 
 MTGetStringDialog::MTGetStringDialog(QWidget *parent) :
     QDialog(parent),

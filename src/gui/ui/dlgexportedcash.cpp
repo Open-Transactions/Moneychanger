@@ -2,14 +2,12 @@
 #include <core/stable.hpp>
 #endif
 
-#include <QApplication>
+#include <gui/ui/dlgexportedcash.hpp>
+#include <ui_dlgexportedcash.h>
+
 #include <QMessageBox>
 #include <QClipboard>
-#include <QKeyEvent>
-#include <QDebug>
 
-#include "dlgexportedcash.h"
-#include "ui_dlgexportedcash.h"
 
 DlgExportedCash::DlgExportedCash(QWidget *parent, QString qstrHisCopy, QString qstrMyCopy) :
     QDialog(parent),

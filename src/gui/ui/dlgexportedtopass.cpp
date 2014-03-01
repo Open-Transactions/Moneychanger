@@ -2,14 +2,12 @@
 #include <core/stable.hpp>
 #endif
 
-#include <QApplication>
+#include <gui/ui/dlgexportedtopass.hpp>
+#include <ui_dlgexportedtopass.h>
+
 #include <QMessageBox>
 #include <QClipboard>
-#include <QKeyEvent>
-#include <QDebug>
 
-#include "dlgexportedtopass.h"
-#include "ui_dlgexportedtopass.h"
 
 DlgExportedToPass::DlgExportedToPass(QWidget *parent, QString qstrTheCash) :
     QDialog(parent),

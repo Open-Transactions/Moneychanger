@@ -10,34 +10,17 @@
 #include <core/stable.hpp>
 #endif
 
-#include <algorithm>
+#include <core/MTRecordList.hpp>
 
-#include <opentxs/OTStorage.hpp>
-
-#include <opentxs/OTString.hpp>
-#include <opentxs/OTIdentifier.hpp>
-#include <opentxs/OTASCIIArmor.hpp>
-#include <opentxs/OTAccount.hpp>
-#include <opentxs/OTWallet.hpp>
-#include <opentxs/OTIdentifier.hpp>
-#include <opentxs/OTPayment.hpp>
-#include <opentxs/OTMessage.hpp>
-#include <opentxs/OTLedger.hpp>
-
-#ifdef _WIN32
-#include <otapi/OpenTransactions.hpp>
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#include <otlib/OTLog.hpp>
-#else
 #include <opentxs/OpenTransactions.hpp>
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTWallet.hpp>
+#include <opentxs/OTPayment.hpp>
+#include <opentxs/OTAccount.hpp>
+#include <opentxs/OTLedger.hpp>
 #include <opentxs/OT_ME.hpp>
+#include <opentxs/OTMessage.hpp>
 #include <opentxs/OTLog.hpp>
-#endif
-
-
-#include "MTRecordList.hpp"
 
 
 #define MC_UI_TEXT_TO "<font color='grey'>To:</font> %s"

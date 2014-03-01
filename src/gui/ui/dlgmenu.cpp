@@ -2,12 +2,12 @@
 #include <core/stable.hpp>
 #endif
 
-#include <QKeyEvent>
+#include <gui/ui/dlgmenu.hpp>
+#include <ui_dlgmenu.h>
 
+#include <QKeyEvent>
 #include <QMessageBox>
 
-#include "dlgmenu.h"
-#include "ui_dlgmenu.h"
 
 DlgMenu::DlgMenu(QWidget *parent) :
     QDialog(parent),

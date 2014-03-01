@@ -2,7 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
-#include "httpinterface.h"
+#include <core/httpinterface.hpp>
+
 
 HTTPInterface::HTTPInterface()
 {
