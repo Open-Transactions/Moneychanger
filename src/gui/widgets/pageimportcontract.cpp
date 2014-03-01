@@ -2,13 +2,11 @@
 #include <core/stable.hpp>
 #endif
 
-#include <QDebug>
-#include <QFile>
-#include <QFileDialog>
-#include <QMessageBox>
+#include <gui/widgets/pageimportcontract.hpp>
+#include <ui_pageimportcontract.h>
 
-#include "pageimportcontract.h"
-#include "ui_pageimportcontract.h"
+#include <QFileDialog>
+
 
 MTPageImportContract::MTPageImportContract(QWidget *parent) :
     QWizardPage(parent),

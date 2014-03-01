@@ -3,8 +3,8 @@
 #endif
 
 #include <gui/widgets/pageacct_name.hpp>
+#include <ui_pageacct_name.h>
 
-#include "ui_pageacct_name.h"
 
 MTPageAcct_Name::MTPageAcct_Name(QWidget *parent) :
     QWizardPage(parent),

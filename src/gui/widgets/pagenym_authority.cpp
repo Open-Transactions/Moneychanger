@@ -3,9 +3,8 @@
 #endif
 
 #include <gui/widgets/pagenym_authority.hpp>
+#include <ui_pagenym_authority.h>
 
-#include "pagenym_authority.h"
-#include "ui_pagenym_authority.h"
 
 MTPageNym_Authority::MTPageNym_Authority(QWidget *parent) :
     QWizardPage(parent),

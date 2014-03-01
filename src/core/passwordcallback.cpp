@@ -2,14 +2,14 @@
 #include <core/stable.hpp>
 #endif
 
+#include <core/passwordcallback.hpp>
+
+#include <gui/ui/dlgpassword.hpp>
+#include <gui/ui/dlgpasswordconfirm.hpp>
+
+#include <core/moneychanger.hpp>
+
 #include <QDebug>
-
-#include "passwordcallback.h"
-
-#include "ui/dlgpassword.h"
-#include "ui/dlgpasswordconfirm.h"
-
-#include "moneychanger.h"
 
 
 void MTPasswordCallback::runOne(const char * szDisplay, OTPassword & theOutput)

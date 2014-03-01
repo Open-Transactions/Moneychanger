@@ -2,9 +2,14 @@
 #include <core/stable.hpp>
 #endif
 
-#include "ot_worker.h"
+#include <core/ot_worker.hpp>
 
-#include "handlers/contacthandler.h"
+#include <core/handlers/contacthandler.hpp>
+
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OTLog.hpp>
+
+#include <QVariant>
 
 ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookupQT))
 {

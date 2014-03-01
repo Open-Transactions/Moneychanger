@@ -2,7 +2,7 @@
 #include <core/stable.hpp>
 #endif
 
-#include "poolmanager.h"
+#include <bitcoin/poolmanager.hpp>
 
 
 PoolManager::PoolManager()

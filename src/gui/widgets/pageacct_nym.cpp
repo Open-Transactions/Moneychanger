@@ -3,23 +3,15 @@
 #endif
 
 #include <gui/widgets/pageacct_nym.hpp>
+#include <ui_pageacct_nym.h>
 
-#include "pageacct_nym.h"
-#include "ui_pageacct_nym.h"
+#include <gui/widgets/dlgchooser.hpp>
+#include <gui/widgets/detailedit.hpp>
 
-#include "moneychanger.h"
+#include <core/moneychanger.hpp>
 
-#include "wizardaddaccount.h"
-
-#include "dlgchooser.h"
-
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#else
 #include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#endif
+
 
 MTPageAcct_Nym::MTPageAcct_Nym(QWidget *parent) :
     QWizardPage(parent),

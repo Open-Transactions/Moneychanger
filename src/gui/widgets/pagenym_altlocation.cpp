@@ -3,9 +3,8 @@
 #endif
 
 #include <gui/widgets/pagenym_altlocation.hpp>
+#include <ui_pagenym_altlocation.h>
 
-#include "pagenym_altlocation.h"
-#include "ui_pagenym_altlocation.h"
 
 MTPageNym_AltLocation::MTPageNym_AltLocation(QWidget *parent) :
     QWizardPage(parent),

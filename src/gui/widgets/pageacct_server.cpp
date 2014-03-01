@@ -3,23 +3,14 @@
 #endif
 
 #include <gui/widgets/pageacct_server.hpp>
+#include <ui_pageacct_server.h>
 
-#include "pageacct_server.h"
-#include "ui_pageacct_server.h"
+#include <gui/widgets/dlgchooser.hpp>
+#include <gui/widgets/detailedit.hpp>
 
-#include "moneychanger.h"
+#include <core/moneychanger.hpp>
 
-#include "wizardaddaccount.h"
-
-#include "dlgchooser.h"
-
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#else
 #include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#endif
 
 
 MTPageAcct_Server::MTPageAcct_Server(QWidget *parent) :

@@ -2,8 +2,9 @@
 #include <core/stable.hpp>
 #endif
 
-#include "pageaddcontract.h"
-#include "ui_pageaddcontract.h"
+#include <gui/widgets/pageaddcontract.hpp>
+#include <ui_pageaddcontract.h>
+
 
 MTPageAddContract::MTPageAddContract(QWidget *parent) :
     QWizardPage(parent),

@@ -2,11 +2,14 @@
 #include <core/stable.hpp>
 #endif
 
-#include "modules.h"
-#include "sampleescrowserver.h"
-#include "sampleescrowclient.h"
-#include "sampleescrowtransaction.h"
-#include <opentxs/OTLog.hpp>
+#include <bitcoin/sampleescrowserver.hpp>
+
+#include <bitcoin/sampleescrowclient.hpp>
+
+
+
+#include <core/modules.hpp>
+
 
 SampleEscrowServer::SampleEscrowServer(BitcoinServerPtr rpcServer)
 {

@@ -2,24 +2,16 @@
 #include <core/stable.hpp>
 #endif
 
-#include <gui/ui/pageacct_asset.hpp>
+#include <gui/widgets/pageacct_asset.hpp>
+#include <ui_pageacct_asset.h>
 
-#include "pageacct_asset.h"
-#include "ui_pageacct_asset.h"
+#include <gui/widgets/dlgchooser.hpp>
+#include <gui/widgets/detailedit.hpp>
 
-#include "moneychanger.h"
+#include <core/moneychanger.hpp>
 
-#include "wizardaddaccount.h"
-
-#include "dlgchooser.h"
-
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#else
 #include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#endif
+
 
 MTPageAcct_Asset::MTPageAcct_Asset(QWidget *parent) :
     QWizardPage(parent),

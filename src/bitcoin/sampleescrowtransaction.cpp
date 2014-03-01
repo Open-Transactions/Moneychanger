@@ -2,9 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
-#include "sampleescrowtransaction.h"
-#include "modules.h"
-#include <opentxs/OTLog.hpp>
+#include <bitcoin/sampleescrowtransaction.hpp>
+
 
 SampleEscrowTransaction::SampleEscrowTransaction(int64_t amountToSend)
 {

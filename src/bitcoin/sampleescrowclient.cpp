@@ -2,10 +2,9 @@
 #include <core/stable.hpp>
 #endif
 
-#include "sampleescrowclient.h"
-#include "modules.h"
-#include "sampleescrowserver.h"
-#include <opentxs/OTLog.hpp>
+#include <bitcoin/sampleescrowclient.hpp>
+
+#include <bitcoin/sampleescrowserver.hpp>
 
 
 SampleEscrowClient::SampleEscrowClient(QObject* parent)

@@ -2,31 +2,23 @@
 #include <core/stable.hpp>
 #endif
 
-#include <QMessageBox>
-#include <QDebug>
+#include <gui/widgets/offerdetails.hpp>
+#include <ui_offerdetails.h>
 
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#include <otlib/OTStorage.hpp>
-#include <otlib/OTPaymentPlan.hpp>
-#else
+#include <gui/widgets/wizardnewoffer.hpp>
+#include <gui/widgets/dlgchooser.hpp>
+#include <gui/widgets/overridecursor.hpp>
+
+#include <core/moneychanger.hpp>
+
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OT_ME.hpp>
 #include <opentxs/OTStorage.hpp>
+#include <opentxs/OTData.hpp>
 #include <opentxs/OTPaymentPlan.hpp>
-#endif
 
-#include "offerdetails.h"
-#include "ui_offerdetails.h"
-
-#include "dlgchooser.h"
-
-#include "detailedit.h"
-#include "moneychanger.h"
-#include "overridecursor.h"
-
-#include "wizardnewoffer.h"
+#include <QMessageBox>
+#include <QDateTime>
 
 
 // ------------------------------------------------------------------------

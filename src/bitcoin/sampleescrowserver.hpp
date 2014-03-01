@@ -3,24 +3,10 @@
 
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
+#include <opentxs/MemoryWrapper.hpp>
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
-
-#ifndef OT_USE_TR1
-#include <memory>
-#else
-#include <tr1/memory>
-#endif
-
-#include "btcobjects.h"
-#include "btcmodules.h"
-#include "sampleescrowtransaction.h"
-#include "poolmanager.h"
-//#include "sampleescrowclient.h"
-//#include "escrowpool.h"
-//#include "sampletypedefs.h"
-
+#include <bitcoin/escrowpool.hpp>
+#include <bitcoin/sampleescrowtransaction.hpp>
 
 class SampleEscrowClient;
 

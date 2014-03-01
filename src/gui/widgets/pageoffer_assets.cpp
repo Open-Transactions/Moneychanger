@@ -3,23 +3,13 @@
 #endif
 
 #include <gui/widgets/pageoffer_assets.hpp>
+#include <ui_pageoffer_assets.h>
 
-#include <QDebug>
+#include <gui/widgets/dlgchooser.hpp>
+#include <gui/widgets/detailedit.hpp>
 
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#else
 #include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#endif
 
-#include "pageoffer_assets.h"
-#include "ui_pageoffer_assets.h"
-
-#include "detailedit.h"
-
-#include "dlgchooser.h"
 
 PageOffer_Assets::PageOffer_Assets(QWidget *parent) :
     QWizardPage(parent),

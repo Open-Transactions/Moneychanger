@@ -3,10 +3,8 @@
 #endif
 
 #include <gui/widgets/pagenym_keysize.hpp>
+#include <ui_pagenym_keysize.h>
 
-
-#include "pagenym_keysize.h"
-#include "ui_pagenym_keysize.h"
 
 MTPageNym_Keysize::MTPageNym_Keysize(QWidget *parent) :
     QWizardPage(parent),
