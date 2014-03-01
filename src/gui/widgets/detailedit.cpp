@@ -2,33 +2,28 @@
 #include <core/stable.hpp>
 #endif
 
-#include <QDebug>
-#include <QMap>
-#include <QMultiMap>
-#include <QVariant>
-#include <QPointer>
+#include <gui/widgets/detailedit.hpp>
+#include <ui_detailedit.h>
 
-#include "detailedit.h"
-#include "ui_detailedit.h"
+#include <gui/widgets/nymdetails.hpp>
+#include <gui/widgets/contactdetails.hpp>
+#include <gui/widgets/serverdetails.hpp>
+#include <gui/widgets/assetdetails.hpp>
+#include <gui/widgets/agreementdetails.hpp>
+#include <gui/widgets/corporationdetails.hpp>
+#include <gui/widgets/offerdetails.hpp>
+#include <gui/widgets/marketdetails.hpp>
+#include <gui/widgets/accountdetails.hpp>
+#include <gui/widgets/home.hpp>
 
-#include "editdetails.h"
+#include <core/moneychanger.hpp>
 
-#include "home.h"
-
-#include "contactdetails.h"
-#include "nymdetails.h"
-#include "serverdetails.h"
-#include "assetdetails.h"
-#include "accountdetails.h"
-#include "agreementdetails.h"
-#include "corporationdetails.h"
-#include "marketdetails.h"
-#include "offerdetails.h"
-
-#include "moneychanger.h"
-
+#include <opentxs/OTAPI.hpp>
 #include <opentxs/OTStorage.hpp>
-#include <opentxs/OTLog.hpp>
+
+#include <QDialog>
+#include <QKeyEvent>
+
 
 MTDetailEdit::MTDetailEdit(QWidget *parent) :
     QWidget(parent, Qt::Window),

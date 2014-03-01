@@ -2,10 +2,10 @@
 #include <core/stable.hpp>
 #endif
 
-#include <QKeyEvent>
+#include <gui/widgets/createinsurancecompany.hpp>
+#include <ui_createinsurancecompany.h>
 
-#include "createinsurancecompany.h"
-#include "ui_createinsurancecompany.h"
+#include <QKeyEvent>
 
 CreateInsuranceCompany::CreateInsuranceCompany(QWidget *parent) :
     QWizard(parent),

@@ -2,25 +2,14 @@
 #include <core/stable.hpp>
 #endif
 
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#include <otlib/OTStorage.hpp>
-#include <otlib/OTASCIIArmor.hpp>
-#include <otlib/OTLog.hpp>
-#else
+#include <core/handlers/contacthandler.hpp>
+
+#include <core/handlers/DBHandler.hpp>
+
 #include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#include <opentxs/OTStorage.hpp>
 #include <opentxs/OTASCIIArmor.hpp>
-#include <opentxs/OTLog.hpp>
-#endif
 
-#include "contacthandler.h"
-
-#include "DBHandler.h"
-
-
+#include <QDebug>
 
 
 std::string MTNameLookupQT::GetNymName(const std::string & str_id,

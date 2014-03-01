@@ -2,10 +2,13 @@
 #include <core/stable.hpp>
 #endif
 
+#include <core/handlers/DBHandler.hpp>
+
 #include <opentxs/OTPaths.hpp>
 
-#include "DBHandler.h"
 #include <QDebug>
+#include <QSqlQuery>
+
 
 DBHandler * DBHandler::_instance = NULL;
 

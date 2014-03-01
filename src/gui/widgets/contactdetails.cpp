@@ -2,30 +2,15 @@
 #include <core/stable.hpp>
 #endif
 
-#include <QDebug>
-#include <QMessageBox>
+#include <gui/widgets/contactdetails.hpp>
+#include <ui_contactdetails.h>
+
+#include <gui/widgets/credentials.hpp>
+
+#include <gui/ui/dlgnewcontact.hpp>
+
 #include <QPlainTextEdit>
-
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#include <otlib/OTLog.hpp>
-#else
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#include <opentxs/OTLog.hpp>
-#endif
-
-#include "contactdetails.h"
-#include "ui_contactdetails.h"
-
-#include "handlers/contacthandler.h"
-
-#include "detailedit.h"
-
-#include "ui/dlgnewcontact.h"
-
-#include "credentials.h"
+#include <QMessageBox>
 
 
 
