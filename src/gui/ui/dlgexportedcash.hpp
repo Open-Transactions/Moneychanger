@@ -1,8 +1,8 @@
 #ifndef DLGEXPORTEDCASH_HPP
 #define DLGEXPORTEDCASH_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QDialog>
 

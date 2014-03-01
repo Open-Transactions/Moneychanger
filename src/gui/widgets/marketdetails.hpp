@@ -1,8 +1,8 @@
 #ifndef MARKETDETAILS_HPP
 #define MARKETDETAILS_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <gui/widgets/editdetails.hpp>
 

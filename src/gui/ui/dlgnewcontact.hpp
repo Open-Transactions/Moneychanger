@@ -1,8 +1,8 @@
 #ifndef DLGNEWCONTACT_HPP
 #define DLGNEWCONTACT_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QDialog>
 #include <QString>

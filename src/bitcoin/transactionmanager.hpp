@@ -1,12 +1,12 @@
 #ifndef TRANSACTIONMANAGER_HPP
 #define TRANSACTIONMANAGER_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
-#include <QSharedPointer>
+#include <bitcoin/sampleescrowtransaction.hpp>
+
 #include <QList>
-#include "sampleescrowtransaction.h"
 
 
 // TransactionManager will watch pending transactions in the background and notify on event

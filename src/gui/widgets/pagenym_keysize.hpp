@@ -1,8 +1,8 @@
 #ifndef PAGENYM_KEYSIZE_HPP
 #define PAGENYM_KEYSIZE_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QWizardPage>
 

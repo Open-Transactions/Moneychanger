@@ -1,8 +1,8 @@
 #ifndef DLGCHOOSER_HPP
 #define DLGCHOOSER_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <core/handlers/contacthandler.hpp>
 

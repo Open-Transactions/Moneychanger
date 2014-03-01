@@ -1,12 +1,12 @@
 #ifndef OFFERDETAILS_HPP
 #define OFFERDETAILS_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QWidget>
 
-#include "editdetails.h"
+#include <gui/widgets/editdetails.hpp>
 
 namespace Ui {
 class MTOfferDetails;

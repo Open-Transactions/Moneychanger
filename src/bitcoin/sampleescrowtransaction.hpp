@@ -1,9 +1,9 @@
 #ifndef SAMPLEESCROWTRANSACTION_HPP
 #define SAMPLEESCROWTRANSACTION_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
-#include <MemoryWrapper.hpp>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
+#include <opentxs/MemoryWrapper.hpp>
 
 #include <bitcoin-api/btcmodules.hpp>
 

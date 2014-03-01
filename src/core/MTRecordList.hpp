@@ -9,9 +9,9 @@
 #ifndef __OTClient__MTRecordList__
 #define __OTClient__MTRecordList__
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
-#include <MemoryWrapper.hpp>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
+#include <opentxs/MemoryWrapper.hpp>
 
 #include <core\MTRecord.hpp>
 

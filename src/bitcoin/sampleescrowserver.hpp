@@ -1,11 +1,11 @@
 #ifndef SAMPLEESCROWSERVER_HPP
 #define SAMPLEESCROWSERVER_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #ifndef OT_USE_TR1
 #include <memory>

@@ -1,16 +1,14 @@
 #ifndef SAMPLEESCROWCLIENT_HPP
 #define SAMPLEESCROWCLIENT_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
+#include <opentxs/MemoryWrapper.hpp>
 
-#include "btcobjects.h"
-#include "btcmodules.h"
-#include "widgets/btcguitest.h"
-//#include "sampletypedefs.h"
-//#include "sampleescrowserver.h"
-//#include "sampleescrowtransaction.h"
-#include "poolmanager.h"
+#include <bitcoin/sampleescrowtransaction.hpp>
+#include <bitcoin/escrowpool.hpp>
+
+#include <QObject>
 
 
 class SampleEscrowClient : public QObject

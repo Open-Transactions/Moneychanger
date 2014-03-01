@@ -1,8 +1,8 @@
 #ifndef ACCOUNTDETAILS_HPP
 #define ACCOUNTDETAILS_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <gui/widgets/editdetails.hpp>
 

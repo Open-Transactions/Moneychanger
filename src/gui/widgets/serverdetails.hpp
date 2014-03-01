@@ -1,14 +1,12 @@
 #ifndef SERVERDETAILS_HPP
 #define SERVERDETAILS_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
-#include <QPointer>
+#include <gui/widgets/editdetails.hpp>
+#include <core/filedownloader.hpp>
 
-#include "editdetails.h"
-
-#include "filedownloader.h"
 
 namespace Ui {
 class MTServerDetails;

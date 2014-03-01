@@ -1,7 +1,7 @@
 #ifndef BTCHELPER_HPP
 #define BTCHELPER_HPP
 
-#include <MemoryWrapper.hpp>
+#include <opentxs/MemoryWrapper.hpp>
 
 #include <bitcoin-api/btcobjects.hpp>
 

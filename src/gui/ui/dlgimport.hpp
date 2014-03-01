@@ -1,8 +1,8 @@
 #ifndef DLGIMPORT_HPP
 #define DLGIMPORT_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QDialog>
 

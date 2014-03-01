@@ -1,8 +1,8 @@
 #ifndef DBHANDLER_HPP
 #define DBHANDLER_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <core/handlers/FileHandler.hpp>
 

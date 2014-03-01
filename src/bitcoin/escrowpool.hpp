@@ -1,13 +1,12 @@
 #ifndef ESCROWPOOL_HPP
 #define ESCROWPOOL_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
-#include <MemoryWrapper.hpp>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
+#include <opentxs/MemoryWrapper.hpp>
 
 #include <QList>
 #include <QString>
-//#include "sampleescrowserver.h"
 
 class SampleEscrowServer;
 #ifndef OT_USE_TR1

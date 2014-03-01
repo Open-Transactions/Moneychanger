@@ -1,7 +1,7 @@
 #ifndef MTBITCOIN_HPP
 #define MTBITCOIN_HPP
 
-#include <MemoryWrapper.hpp>
+#include <opentxs/MemoryWrapper.hpp>
 
 #include <bitcoin-api/imtbitcoin.hpp>
 #include <bitcoin-api/btcobjects.hpp>

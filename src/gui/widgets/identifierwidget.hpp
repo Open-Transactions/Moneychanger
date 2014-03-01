@@ -1,8 +1,8 @@
 #ifndef IDENTIFIERWIDGET_HPP
 #define IDENTIFIERWIDGET_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QWidget>
 #include <QString>

@@ -1,14 +1,10 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
-#ifdef Q_OS_WIN
-#include <windows.h>    // for Sleep
-#else
-#include <time.h>       // for nanosleep
-#endif
+#include <opentxs/Timer.hpp>
 
 #include <QMutex>
 #include <QWaitCondition>

@@ -1,14 +1,10 @@
 #ifndef PASSWORDCALLBACK_HPP
 #define PASSWORDCALLBACK_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
-#ifdef _WIN32
-#include <otlib/OTPassword.hpp>
-#else
 #include <opentxs/OTPassword.hpp>
-#endif
 
 class MTPasswordCallback : public OTCallback
 {

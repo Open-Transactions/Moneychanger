@@ -1,8 +1,8 @@
 #ifndef MTHOMEDETAIL_HPP
 #define MTHOMEDETAIL_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <core/MTRecordList.hpp>
 

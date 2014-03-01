@@ -12,17 +12,17 @@
 
 #include <algorithm>
 
-#include <OTStorage.hpp>
+#include <opentxs/OTStorage.hpp>
 
-#include <OTString.hpp>
-#include <OTIdentifier.hpp>
-#include <OTASCIIArmor.hpp>
-#include <OTAccount.hpp>
-#include <OTWallet.hpp>
-#include <OTIdentifier.hpp>
-#include <OTPayment.hpp>
-#include <OTMessage.hpp>
-#include <OTLedger.hpp>
+#include <opentxs/OTString.hpp>
+#include <opentxs/OTIdentifier.hpp>
+#include <opentxs/OTASCIIArmor.hpp>
+#include <opentxs/OTAccount.hpp>
+#include <opentxs/OTWallet.hpp>
+#include <opentxs/OTIdentifier.hpp>
+#include <opentxs/OTPayment.hpp>
+#include <opentxs/OTMessage.hpp>
+#include <opentxs/OTLedger.hpp>
 
 #ifdef _WIN32
 #include <otapi/OpenTransactions.hpp>

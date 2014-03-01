@@ -1,8 +1,8 @@
 #ifndef WIZARDADDACCOUNT_HPP
 #define WIZARDADDACCOUNT_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QPointer>
 #include <QWizard>

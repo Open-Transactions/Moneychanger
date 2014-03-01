@@ -1,8 +1,8 @@
 #ifndef PAGEOFFER_SUMMARY_HPP
 #define PAGEOFFER_SUMMARY_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QWizardPage>
 

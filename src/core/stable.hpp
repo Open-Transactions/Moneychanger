@@ -3,6 +3,6 @@
 #ifndef __STABLE_HPP__
 #define __STABLE_HPP__
 
-#include <stdafx.hpp>
+#include <opentxs/stdafx.hpp>
 
 #endif // __STABLE_HPP__

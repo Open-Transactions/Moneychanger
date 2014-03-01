@@ -1,8 +1,8 @@
 #ifndef BTCGUITESTP2P_HPP
 #define BTCGUITESTP2P_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QWidget>
 

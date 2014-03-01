@@ -1,8 +1,8 @@
 #ifndef PAGEOFFER_ASSETS_HPP
 #define PAGEOFFER_ASSETS_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QWizardPage>
 

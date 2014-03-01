@@ -1,8 +1,8 @@
 #ifndef APPLICATIONMC_HPP
 #define APPLICATIONMC_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QApplication>
 

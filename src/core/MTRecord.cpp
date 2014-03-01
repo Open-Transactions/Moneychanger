@@ -8,17 +8,17 @@
 
 #include "stdafx.h"
 
-#include <OTStorage.hpp>
+#include <opentxs/OTStorage.hpp>
 
-#include <OTString.hpp>
-#include <OTIdentifier.hpp>
-#include <OTASCIIArmor.hpp>
-#include <OTAccount.hpp>
-#include <OTLedger.hpp>
-#include <OTTransaction.hpp>
-#include <OTPaymentPlan.hpp>
-#include <OTWallet.hpp>
-#include <OTPayment.hpp>
+#include <opentxs/OTString.hpp>
+#include <opentxs/OTIdentifier.hpp>
+#include <opentxs/OTASCIIArmor.hpp>
+#include <opentxs/OTAccount.hpp>
+#include <opentxs/OTLedger.hpp>
+#include <opentxs/OTTransaction.hpp>
+#include <opentxs/OTPaymentPlan.hpp>
+#include <opentxs/OTWallet.hpp>
+#include <opentxs/OTPayment.hpp>
 
 
 #ifdef _WIN32

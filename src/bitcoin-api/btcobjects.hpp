@@ -1,7 +1,7 @@
 #ifndef BTCOBJECTS_HPP
 #define BTCOBJECTS_HPP
 
-#include <MemoryWrapper.hpp>
+#include <opentxs/MemoryWrapper.hpp>
 
 #include <json/json.h>
 

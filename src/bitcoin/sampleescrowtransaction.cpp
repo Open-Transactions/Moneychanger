@@ -4,7 +4,7 @@
 
 #include "sampleescrowtransaction.h"
 #include "modules.h"
-#include <OTLog.hpp>
+#include <opentxs/OTLog.hpp>
 
 SampleEscrowTransaction::SampleEscrowTransaction(int64_t amountToSend)
 {

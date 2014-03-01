@@ -1,7 +1,7 @@
 #ifndef IBTCRPC_HPP
 #define IBTCRPC_HPP
 
-#include <MemoryWrapper.hpp>
+#include <opentxs/MemoryWrapper.hpp>
 
 #include <bitcoin-api/btcobjects.hpp>
 

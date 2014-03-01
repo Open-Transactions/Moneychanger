@@ -2,7 +2,7 @@
 #include <core/stable.hpp>
 #endif
 
-#include <OTPaths.hpp>
+#include <opentxs/OTPaths.hpp>
 
 #include "DBHandler.h"
 #include <QDebug>

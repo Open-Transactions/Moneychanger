@@ -1,32 +1,12 @@
 #ifndef OT_WORKER_HPP
 #define OT_WORKER_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
-#include <QDebug>
+#include <core/MTRecordList.hpp>
+
 #include <QObject>
-#include <QThread>
-#include <QList>
-#include <QMap>
-#include <QVariant>
-#include <QMutex>
-#include <QMutexLocker>
-
-#include <opentxs/stdafx.hpp>
-
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#include <otlib/OTLog.hpp>
-#else
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#include <opentxs/OTLog.hpp>
-#endif
-
-#include "MTRecord.hpp"
-#include "MTRecordList.hpp"
 
 
 class ot_worker : public QObject

@@ -6,7 +6,7 @@
 #include "ui_btcguitest.h"
 #include "modules.h"
 #include "btctest.h"
-#include <OTLog.hpp>
+#include <opentxs/OTLog.hpp>
 
 BtcGuiTest::BtcGuiTest(QWidget *parent) :
     QWidget(parent, Qt::Window),

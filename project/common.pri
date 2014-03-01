@@ -81,11 +81,3 @@ mac:{
         !exists($$MAC_SDK): error("The selected Mac OSX SDK does not exist at $${MAC_SDK}!")
     }
 }
-
-#-------------------------------------------------
-# Include
-
-win32:{
-    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include/otlib
-    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include/otapi
-}

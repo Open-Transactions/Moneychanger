@@ -5,7 +5,7 @@
 #include "sampleescrowclient.h"
 #include "modules.h"
 #include "sampleescrowserver.h"
-#include <OTLog.hpp>
+#include <opentxs/OTLog.hpp>
 
 
 SampleEscrowClient::SampleEscrowClient(QObject* parent)

@@ -2,7 +2,7 @@
 #include <core/stable.hpp>
 #endif
 
-#include "escrowpool.h"
+#include <bitcoin/escrowpool.hpp>
 
 EscrowPool::EscrowPool()
 {

@@ -1,7 +1,7 @@
 #ifndef BTCJSON_HPP
 #define BTCJSON_HPP
 
-#include <MemoryWrapper.hpp>
+#include <opentxs/MemoryWrapper.hpp>
 
 #include <bitcoin-api/ibtcjson.hpp>
 #include <bitcoin-api/btcmodules.hpp>

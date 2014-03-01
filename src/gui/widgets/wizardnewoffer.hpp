@@ -1,8 +1,8 @@
 #ifndef WIZARDNEWOFFER_HPP
 #define WIZARDNEWOFFER_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QWizard>
 

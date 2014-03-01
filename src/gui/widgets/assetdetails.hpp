@@ -1,8 +1,8 @@
 #ifndef ASSETDETAILS_HPP
 #define ASSETDETAILS_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <gui/widgets/editdetails.hpp>
 #include <core/filedownloader.hpp>

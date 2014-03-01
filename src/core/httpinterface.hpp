@@ -1,10 +1,10 @@
 #ifndef HTTPINTERFACE_HPP
 #define HTTPINTERFACE_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
-#include <OT_ME.hpp>
+#include <opentxs/OT_ME.hpp>
 
 class HTTPInterface
 {

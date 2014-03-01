@@ -1,8 +1,8 @@
 #ifndef FILEHANDLER_HPP
 #define FILEHANDLER_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QObject>
 #include <QString>

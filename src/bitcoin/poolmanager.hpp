@@ -1,12 +1,13 @@
 #ifndef POOLMANAGER_HPP
 #define POOLMANAGER_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
+
+#include <bitcoin/escrowpool.hpp>
 
 #include <QObject>
-#include<QList>
-#include "escrowpool.h"
+
 
 class PoolManager : QObject
 {

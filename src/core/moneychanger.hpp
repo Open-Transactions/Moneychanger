@@ -1,8 +1,8 @@
 #ifndef MONEYCHANGER_HPP
 #define MONEYCHANGER_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QPointer>
 #include <QList>

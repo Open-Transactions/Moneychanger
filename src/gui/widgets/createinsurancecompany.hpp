@@ -1,8 +1,8 @@
 #ifndef CreateInsuranceCompany_HPP
 #define CreateInsuranceCompany_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QWizard>
 

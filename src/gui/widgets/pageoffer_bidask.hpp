@@ -1,8 +1,8 @@
 #ifndef PAGEOFFER_BIDASK_HPP
 #define PAGEOFFER_BIDASK_HPP
 
-#include <WinsockWrapper.h>
-#include <ExportWrapper.h>
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 
 #include <QWizardPage>
 
