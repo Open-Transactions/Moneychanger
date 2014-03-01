@@ -2,6 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
+#include <gui/widgets/pageacct_server.hpp>
+
 #include "pageacct_server.h"
 #include "ui_pageacct_server.h"
 

@@ -26,31 +26,31 @@
   <customwidget>
    <class>PageOffer_BidAsk</class>
    <extends>QWizardPage</extends>
-   <header>pageoffer_bidask.h</header>
+   <header>gui/widgets/pageoffer_bidask.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>PageOffer_Accounts</class>
    <extends>QWizardPage</extends>
-   <header>pageoffer_accounts.h</header>
+   <header>gui/widgets/pageoffer_amounts.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>PageOffer_Amounts</class>
    <extends>QWizardPage</extends>
-   <header>pageoffer_amounts.h</header>
+   <header>gui/widgets/pageoffer_amounts.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>PageOffer_Summary</class>
    <extends>QWizardPage</extends>
-   <header>pageoffer_summary.h</header>
+   <header>gui/widgets/pageoffer_summary.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>PageOffer_Assets</class>
    <extends>QWizardPage</extends>
-   <header>pageoffer_assets.h</header>
+   <header>gui/widgets/pageoffer_assets.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

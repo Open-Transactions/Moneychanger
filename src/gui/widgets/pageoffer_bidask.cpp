@@ -2,6 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
+#include <gui/widgets/pageoffer_bidask.hpp>
+
 #include "pageoffer_bidask.h"
 #include "ui_pageoffer_bidask.h"
 

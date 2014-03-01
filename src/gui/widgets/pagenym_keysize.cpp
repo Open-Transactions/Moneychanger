@@ -2,6 +2,9 @@
 #include <core/stable.hpp>
 #endif
 
+#include <gui/widgets/pagenym_keysize.hpp>
+
+
 #include "pagenym_keysize.h"
 #include "ui_pagenym_keysize.h"
 

@@ -2,35 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
-#include <QDebug>
-#include <QMessageBox>
+#include <gui/widgets/accountdetails.hpp>
 
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#else
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#endif
-
-#include "accountdetails.h"
-#include "ui_accountdetails.h"
-
-#include "detailedit.h"
-
-#include "senddlg.h"
-#include "requestdlg.h"
-
-#include "home.h"
-
-#include "moneychanger.h"
-
-#include "wizardaddaccount.h"
-
-#include "overridecursor.h"
-
-#include "handlers/DBHandler.h"
-#include "cashpurse.h"
 
 
 

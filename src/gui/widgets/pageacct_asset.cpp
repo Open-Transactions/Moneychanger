@@ -2,6 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
+#include <gui/ui/pageacct_asset.hpp>
+
 #include "pageacct_asset.h"
 #include "ui_pageacct_asset.h"
 

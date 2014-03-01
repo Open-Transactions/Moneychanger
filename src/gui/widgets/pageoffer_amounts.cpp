@@ -2,6 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
+#include <gui/widgets/pageoffer_amounts.hpp>
+
 #include <cmath>
 
 #ifdef _WIN32

@@ -2,6 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
+#include <gui/widgets/pagenym_altlocation.hpp>
+
 #include "pagenym_altlocation.h"
 #include "ui_pagenym_altlocation.h"
 

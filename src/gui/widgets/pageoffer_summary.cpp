@@ -2,6 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
+#include <gui/widgets/pageoffer_summary.hpp>
+
 #include "pageoffer_summary.h"
 #include "ui_pageoffer_summary.h"
 

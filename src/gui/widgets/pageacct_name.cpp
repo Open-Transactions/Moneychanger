@@ -2,7 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
-#include "pageacct_name.h"
+#include <gui/widgets/pageacct_name.hpp>
+
 #include "ui_pageacct_name.h"
 
 MTPageAcct_Name::MTPageAcct_Name(QWidget *parent) :

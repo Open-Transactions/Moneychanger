@@ -2,6 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
+#include <gui/ui/editdetails.hpp>
+
 #include <QDebug>
 #include <QLabel>
 #include <QEvent>

@@ -2,6 +2,9 @@
 #include <core/stable.hpp>
 #endif
 
+#include <gui/widgets/pageoffer_accounts.hpp>
+
+
 #ifdef _WIN32
 #include <otapi/OTAPI.hpp>
 #include <otapi/OT_ME.hpp>

@@ -2,6 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
+#include <gui/widgets/pageoffer_assets.hpp>
+
 #include <QDebug>
 
 #ifdef _WIN32

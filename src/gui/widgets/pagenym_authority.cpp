@@ -2,6 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
+#include <gui/widgets/pagenym_authority.hpp>
+
 #include "pagenym_authority.h"
 #include "ui_pagenym_authority.h"
 

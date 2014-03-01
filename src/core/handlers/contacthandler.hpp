@@ -4,7 +4,7 @@
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
 
-#include <core\MTRecordList.hpp>
+#include <core/MTRecordList.hpp>
 
 #include <QMutex>
 #include <QString>

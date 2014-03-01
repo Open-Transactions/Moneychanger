@@ -2,6 +2,9 @@
 #include <core/stable.hpp>
 #endif
 
+#include <gui/widgets/pagenym_source.hpp>
+
+
 #include "pagenym_source.h"
 #include "ui_pagenym_source.h"
 

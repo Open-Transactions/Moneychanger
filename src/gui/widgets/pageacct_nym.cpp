@@ -2,6 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
+#include <gui/widgets/pageacct_nym.hpp>
+
 #include "pageacct_nym.h"
 #include "ui_pageacct_nym.h"
 
