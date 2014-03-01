@@ -33,19 +33,19 @@
   <customwidget>
    <class>MTPageAddContract</class>
    <extends>QWizardPage</extends>
-   <header>pageaddcontract.h</header>
+   <header>gui/widgets/pageaddcontract.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>MTPageImportContract</class>
    <extends>QWizardPage</extends>
-   <header>pageimportcontract.h</header>
+   <header>gui/widgets/pageimportcontract.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>MTPageCreateContract</class>
    <extends>QWizardPage</extends>
-   <header>pagecreatecontract.h</header>
+   <header>gui/widgets/pagecreatecontract.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

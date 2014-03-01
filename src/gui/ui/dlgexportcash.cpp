@@ -9,6 +9,8 @@
 
 #include <QMessageBox>
 #include <QKeyEvent>
+#include <QDebug>
+
 
 
 DlgExportCash::DlgExportCash(QWidget *parent) :

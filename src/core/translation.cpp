@@ -5,6 +5,9 @@
 #include <core/translation.hpp>
 #include <core/handlers/DBHandler.hpp>
 
+#include <QDebug>
+
+
 Translation::Translation(QObject *parent) :
     QObject(parent)
 {

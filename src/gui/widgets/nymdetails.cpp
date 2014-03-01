@@ -14,6 +14,7 @@
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QClipboard>
+#include <QDebug>
 
 
 // ------------------------------------------------------

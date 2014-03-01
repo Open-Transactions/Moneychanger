@@ -19,6 +19,7 @@
 
 #include <QMessageBox>
 #include <QDateTime>
+#include <QDebug>
 
 
 // ------------------------------------------------------------------------

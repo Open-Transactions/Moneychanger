@@ -3,14 +3,13 @@
 
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
+#include <opentxs/MemoryWrapper.hpp>
 
 #include <QPointer>
 #include <QList>
 #include <QIcon>
 #include <QVariant>
 #include <QWidget>
-
-#include <cstdint>
 
 
 class MTHome;

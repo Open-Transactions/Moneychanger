@@ -3,9 +3,11 @@
 
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
+#include <opentxs/MemoryWrapper.hpp>
 
 #include <QPointer>
 #include <QWidget>
+
 
 namespace Ui {
 class MTRequestDlg;

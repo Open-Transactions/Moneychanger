@@ -15,6 +15,7 @@
 #include <opentxs/OTData.hpp>
 
 #include <QDateTime>
+#include <QDebug>
 
 
 

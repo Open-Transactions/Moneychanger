@@ -8,6 +8,8 @@
 
 #include <QDebug>
 #include <QSqlQuery>
+#include <QDebug>
+#include <QSqlError>
 
 
 DBHandler * DBHandler::_instance = NULL;

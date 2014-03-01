@@ -10,6 +10,8 @@
 
 #include <QDir>
 #include <QMessageBox>
+#include <QDebug>
+
 
 Settings::Settings(QWidget *parent) :
     QWidget(parent, Qt::Window),

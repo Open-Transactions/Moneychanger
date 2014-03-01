@@ -3,13 +3,13 @@
 
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
+#include <opentxs/MemoryWrapper.hpp>
 
 #include <QPointer>
 #include <QTableWidgetItem>
 #include <QWidget>
 #include <QString>
 
-#include <cstdint>
 
 namespace Ui {
 class MTCashPurse;
