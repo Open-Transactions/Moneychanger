@@ -2,10 +2,15 @@
 #include <core/stable.hpp>
 #endif
 
-#include "btcsenddlg.h"
-#include "ui_btcsenddlg.h"
+#include <gui/widgets/btcsenddlg.hpp>
+#include <ui_btcsenddlg.h>
+
+#include <core/modules.hpp>
+
+#include <bitcoin/poolmanager.hpp>
+
 #include <QStringListModel>
-#include "modules.h"
+
 
 BtcSendDlg::BtcSendDlg(QWidget *parent) :
     QWidget(parent),

@@ -4,13 +4,9 @@
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
 
-#include <QObject>
-#include <QList>
-#include <QSharedPointer>
-//#include "sampletypedefs.h"
-#include "sampleescrowserver.h"
-#include "sampleescrowclient.h"
-#include "widgets/btcguitest.h"
+#include <bitcoin/sampleescrowclient.hpp>
+
+class BtcGuiTest;
 
 class SampleEscrowManager : public QObject
 {

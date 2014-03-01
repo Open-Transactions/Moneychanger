@@ -2,30 +2,20 @@
 #include <core/stable.hpp>
 #endif
 
-#include <QDebug>
-#include <QMessageBox>
+#include <gui/widgets/compose.hpp>
+#include <ui_compose.h>
 
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#include <otlib/OTLog.hpp>
-#else
+#include <gui/widgets/overridecursor.hpp>
+#include <gui/widgets/dlgchooser.hpp>
+
+#include <core/moneychanger.hpp>
+#include <core/handlers/DBHandler.hpp>
+
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OT_ME.hpp>
-#include <opentxs/OTLog.hpp>
-#endif
 
-#include "compose.h"
-#include "ui_compose.h"
-
-#include "dlgchooser.h"
-
-#include "handlers/contacthandler.h"
-#include "handlers/DBHandler.h"
-
-#include "overridecursor.h"
-
-#include "moneychanger.h"
+#include <QMessageBox>
+#include <QDebug>
 
 
 // ----------------------------------------------------------------------

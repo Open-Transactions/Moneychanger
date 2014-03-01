@@ -2,25 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
-
-
-//#include <QMessageBox>
-//#include <QDebug>
-//
-//#ifdef _WIN32
-//#include <otapi/OTAPI.hpp>
-//#include <otapi/OT_ME.hpp>
-//#else
-//#include <opentxs/OTAPI.hpp>
-//#include <opentxs/OT_ME.hpp>
-//#endif
-//
-//#include "agreementdetails.h"
-//#include "ui_agreementdetails.h"
-//
-//#include "detailedit.h"
-//#include "moneychanger.h"
-//#include "overridecursor.h"
+#include <gui/widgets/agreementdetails.hpp>
+#include <ui_agreementdetails.h>
 
 
 MTAgreementDetails::MTAgreementDetails(QWidget *parent, MTDetailEdit & theOwner) :
