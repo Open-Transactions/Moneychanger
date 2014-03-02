@@ -6,6 +6,8 @@
 
 #include <bitcoin-api/btchelper.hpp>
 
+#include <opentxs/OTAssert.hpp>
+
 #include <cstdlib>
 #include <cstdio>
 
@@ -16,7 +18,7 @@ BtcTransaction::BtcTransaction(Json::Value reply)
     if(!reply["error"].isNull())
         return;
 
-    this->Confirmations = (int)(reply["confirmations"].asDouble());
+    this->Confirmations = reply["confirmations"].asInt64();
     this->Amount = BtcHelper::CoinsToSatoshis(reply["amount"].asDouble());
 
     this->Fee = BtcHelper::CoinsToSatoshis(reply["fee"].asDouble());
@@ -78,7 +80,7 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
     for (Json::Value::ArrayIndex i = 0; i < vin.size(); i++)
     {
         Json::Value inputObj = vin[i];
-        this->inputs.push_back(VIN(inputObj["txid"].asString(), (int)inputObj["vout"].asDouble()));
+        this->inputs.push_back(VIN(inputObj["txid"].asString(), inputObj["vout"].asInt64()));
     }
 
     Json::Value vouts  = rawTx["vout"];
@@ -88,10 +90,10 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
         VOUT output;
 
         output.value = BtcHelper::CoinsToSatoshis(outputObj["value"].asDouble());
-        output.n = (int)outputObj["n"].asDouble();      // JSON doesn't know integers
+        output.n = outputObj["n"].asInt64();      // JSON doesn't know integers
 
         Json::Value scriptPubKey = outputObj["scriptPubKey"];
-        output.reqSigs = (int)scriptPubKey["reqSigs"].asDouble();
+        output.reqSigs = scriptPubKey["reqSigs"].asInt64();
         Json::Value addresses = scriptPubKey["addresses"];
         for (Json::Value::ArrayIndex i = 0; i < addresses.size(); i++)
         {
@@ -107,12 +109,12 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
 BtcUnspentOutput::BtcUnspentOutput(Json::Value unspentOutput)
 {
     this->txId = unspentOutput["txid"].asString();
-    this->vout = (int)unspentOutput["vout"].asDouble();
+    this->vout = unspentOutput["vout"].asInt64();
     this->address = unspentOutput["address"].asString();
     this->account = unspentOutput["account"].asString();
     this->scriptPubKey = unspentOutput["scriptPubKey"].asString();
     this->amount = BtcHelper::CoinsToSatoshis(unspentOutput["amount"].asDouble());
-    this->confirmations = (int)unspentOutput["confirmations"].asDouble();
+    this->confirmations = unspentOutput["confirmations"].asInt64();
 }
 
 BtcAddressInfo::BtcAddressInfo(Json::Value result)
@@ -151,10 +153,10 @@ BtcBlock::BtcBlock()
 BtcBlock::BtcBlock(Json::Value block)
 {
     // latest block has 1 confirmations I think so tx->confirms == block->confirms
-    this->confirmations = (int)block["confirmations"].asDouble();
+    this->confirmations = block["confirmations"].asInt64();
 
     // block number (count since genesis)
-    this->height = (int)block["height"].asDouble();
+    this->height = block["height"].asInt64();
 
     this->hash = block["hash"].asString();
     this->previousHash = block["previousblockhash"].asString();
@@ -167,7 +169,7 @@ BtcBlock::BtcBlock(Json::Value block)
     }
 }
 
-BtcTxIdVout::BtcTxIdVout(std::string txID, int vout)
+BtcTxIdVout::BtcTxIdVout(std::string txID, int64_t vout)
 {
     (*this)["txid"] = txID;
     (*this)["vout"] = vout;
@@ -180,7 +182,7 @@ BtcTxTarget::BtcTxTarget()
 
 BtcTxTarget::BtcTxTarget(const std::string &toAddress, int64_t amount)
 {
-    (*this)[toAddress] = (Json::Int64)amount;
+    (*this)[toAddress] = static_cast<Json::Int64>(amount);
 }
 
 void BtcTxTarget::ConvertSatoshisToBitcoin()
@@ -204,7 +206,7 @@ BtcSigningPrequisite::BtcSigningPrequisite()
 
 }
 
-BtcSigningPrequisite::BtcSigningPrequisite(std::string txId, int vout, std::string scriptPubKey, std::string redeemScript)
+BtcSigningPrequisite::BtcSigningPrequisite(std::string txId, int64_t vout, std::string scriptPubKey, std::string redeemScript)
 {
     // all of these values must be set or else prequisite is invalid
     (*this)["txid"] = txId;
@@ -219,7 +221,7 @@ void BtcSigningPrequisite::SetTxId(std::string txId)
     (*this)["txid"] = txId;
 }
 
-void BtcSigningPrequisite::SetVout(int vout)
+void BtcSigningPrequisite::SetVout(int64_t vout)
 {
     // we can get this value from the transaction used to send funds to the p2sh
     (*this)["vout"] = vout;
@@ -243,124 +245,57 @@ BtcRpcPacket::BtcRpcPacket()
     return;
 }
 
-BtcRpcPacket::BtcRpcPacket(const char *data, int size)
+BtcRpcPacket::BtcRpcPacket(const std::string &strData)
+: data(strData.begin(), strData.end()), pointerOffset(0)
 {
-    if(data == NULL || size <= 0)
-    {
-        SetDefaults();
-        return;
-    }
-
-    this->data = (char*)malloc(size + 1);
-    if(this->data == NULL)
-    {
-        SetDefaults();
-        return;
-    }
-
-    memccpy(this->data, data, 0, size);
-    this->dataSize = size;
-    this->pointerOffset = 0;
-    this->data[this->dataSize] = '\0';
-}
-
-BtcRpcPacket::BtcRpcPacket(const std::string &data)
-{
-    this->data = (char*)malloc(data.size() + 1);    // +1 for the final null char
-    if(this->data == NULL)
-    {
-        SetDefaults();
-        return;
-    }
-
-    memccpy(this->data, data.c_str(), 0, data.size());
-    this->dataSize = data.size();
-    this->pointerOffset = 0;
-    this->data[this->dataSize] = '\0';
+    this->data.push_back('\0');
 }
 
 BtcRpcPacket::BtcRpcPacket(const BtcRpcPacketPtr packet)
+: data(packet->data.begin(), packet->data.end()), pointerOffset(0)
 {
-    if(packet == NULL || packet->data == NULL || packet->dataSize <= 0)
-    {
-        SetDefaults();
-        return;
-    }
-
-    this->data = (char*)malloc(packet->dataSize + 1);   // +1 for the final null char
-    if(this->data == NULL)
-    {
-        SetDefaults();
-        return;
-    }
-
-    memccpy(this->data, packet->data, 0, packet->dataSize);
-    this->dataSize = packet->dataSize;
-    this->pointerOffset = 0;
-    this->data[this->dataSize] = '\0';
+    this->data.push_back('\0');
 }
 
 BtcRpcPacket::~BtcRpcPacket()
 {
-    if(this->data != NULL)
-        free(this->data);
-    this->dataSize = 0;
-    this->data = NULL;
+    this->data.clear();
     this->pointerOffset = 0;
 }
 
 void BtcRpcPacket::SetDefaults()
 {
-    this->data = NULL;
-    this->dataSize = 0;
+    this->data.clear();
     this->pointerOffset = 0;
 }
 
-bool BtcRpcPacket::AddData(const char *data, int size)
+bool BtcRpcPacket::AddData(const std::string &strData)
 {
-    if(data == NULL || size <= 0)
-        return true;
+    std::string data(this->data.begin(), this->data.end());
+    data.append(strData);
 
-    int newSize = this->dataSize + size;
-
-    this->pointerOffset = 0;
-
-    this->data = (char*)realloc(this->data, newSize + 1);
-
-    if(this->data == NULL)
-    {
-        this->dataSize = 0;
-        this->pointerOffset = 0;
-        return false;
-    }
-
-    memcpy(this->data + this->dataSize, data, size);
-    this->data[newSize] = '\0';
-    this->dataSize = newSize;
+    this->data.clear();
+    this->data = std::vector<char>(data.begin(), data.end());
+    this->data.push_back('\0');
 
     return true;
 }
 
 const char *BtcRpcPacket::ReadNextChar()
 {
-    if(this->data == NULL || this->dataSize == 0 || this->pointerOffset >= this->dataSize)
-    {
-        return NULL;
-    }
-
-    this->pointerOffset++;
-
-    return (const char*)(this->data + this->pointerOffset - 1);
+    if (this->pointerOffset <= this->data.size())
+        return &this->data.at(this->pointerOffset++);
+    else return '\0';
 }
 
-int BtcRpcPacket::size()
+size_t BtcRpcPacket::size()
 {
-    return this->dataSize;
+    return this->data.size();
 }
 
 const char* BtcRpcPacket::GetData()
 {
-    return (const char*)(this->data);
+    return &*this->data.begin();
 }
 
 

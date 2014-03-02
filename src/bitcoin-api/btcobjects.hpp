@@ -8,6 +8,8 @@
 #include <list>
 #include <vector>
 
+#include <cstddef>
+
 
 
 /*
@@ -40,6 +42,7 @@ namespace std
 }
 
 
+
 // TODO: error checking
 
 
@@ -51,14 +54,14 @@ namespace std
 // Does not take into account block rewards.
 struct BtcTransaction
 {
-    int Confirmations;
+    int64_t Confirmations;
     // all amounts are satoshis
     int64_t AmountReceived;  // amount received
     int64_t AmountSent;      // amount sent
     int64_t Amount;          // +received -sent
     int64_t Fee;             // only displayed when sender
     std::string TxID;
-    double Time;
+    time_t Time;
     //std::string Account;
     std::list<std::string> AddressesRecv;   // received to addresses
     std::list<std::string> AddressesSent;   // sent to addresses
@@ -77,9 +80,9 @@ struct BtcRawTransaction
     struct VIN
     {
         std::string txInID;
-        int vout;   // number of txInID's output to be used as input
+        int64_t vout;   // number of txInID's output to be used as input
 
-        VIN(std::string txInID, int vout)
+        VIN(std::string txInID, int64_t vout)
             :txInID(txInID), vout(vout)
         {}
     };
@@ -88,8 +91,8 @@ struct BtcRawTransaction
     struct VOUT
     {
         int64_t value;      // amount of satoshis to be sent
-        int n ;             // outputs array index
-        int reqSigs;        // signatures required to spend the output I think?
+        int64_t n ;             // outputs array index
+        uint32_t reqSigs;        // signatures required to spend the output I think?
         std::vector<std::string> addresses; // an array of addresses receiving the value.
         std::string scriptPubKeyHex;        // needed to spend offline transactions
 
@@ -102,7 +105,7 @@ struct BtcRawTransaction
             this->scriptPubKeyHex = "";
         }
 
-        VOUT(int64_t value, int n, int reqSigs, std::vector<std::string> addresses, std::string scriptPubKeyHex)
+        VOUT(int64_t value, int64_t n, uint32_t reqSigs, std::vector<std::string> addresses, std::string scriptPubKeyHex)
             :value(value), n(n), reqSigs(reqSigs), addresses(addresses), scriptPubKeyHex(scriptPubKeyHex)
         {}
 
@@ -116,12 +119,12 @@ struct BtcRawTransaction
 struct BtcUnspentOutput
 {
     std::string txId;
-    int vout;
+    int64_t vout;
     std::string address;
     std::string account;
     std::string scriptPubKey;
     int64_t amount;
-    int confirmations;
+    uint32_t confirmations;
 
     BtcUnspentOutput(Json::Value unspentOutput);
 };
@@ -135,7 +138,7 @@ struct BtcAddressInfo
     bool isvalid;
     bool isScript;
     Json::Value addresses;       // shows addresses which a multi-sig is composed of
-    int sigsRequired;
+    uint32_t sigsRequired;
 
     BtcAddressInfo(Json::Value result);
 };
@@ -157,9 +160,9 @@ struct BtcMultiSigAddress
 
 struct BtcBlock
 {
-    int confirmations;
+    int64_t confirmations;
     std::list<std::string> transactions;
-    int height;
+    int64_t height;
     std::string hash;
     std::string previousHash;
 
@@ -172,7 +175,7 @@ struct BtcBlock
 // used in CreateRawTransaction
 struct BtcTxIdVout : Json::Value
 {
-    BtcTxIdVout(std::string txID, int vout);
+    BtcTxIdVout(std::string txID, int64_t vout);
 };
 
 // a json object mapping amounts to addresses
@@ -203,13 +206,13 @@ struct BtcSigningPrequisite : Json::Value
 
     BtcSigningPrequisite();
 
-    BtcSigningPrequisite(std::string txId, int vout, std::string scriptPubKey, std::string redeemScript);
+    BtcSigningPrequisite(std::string txId, int64_t vout, std::string scriptPubKey, std::string redeemScript);
 
     // all of these values must be set or else prequisite is invalid
     void SetTxId(std::string txId);
 
     // all of these values must be set or else prequisite is invalid
-    void SetVout(int vout);
+    void SetVout(int64_t vout);
 
     // all of these values must be set or else prequisite is invalid
     void SetScriptPubKey(std::string scriptPubKey);
@@ -223,9 +226,7 @@ struct BtcRpcPacket
 {
     BtcRpcPacket();
 
-    BtcRpcPacket(const char *data, int dataSize);
-
-    BtcRpcPacket(const std::string &data);
+    BtcRpcPacket(const std::string &strData);
 
 #ifndef OT_USE_TR1
     typedef std::shared_ptr<BtcRpcPacket> BtcRpcPacketPtr;
@@ -237,21 +238,20 @@ struct BtcRpcPacket
     ~BtcRpcPacket();
 
     // appends data to data
-    bool AddData(const char* data, int dataSize);
+    bool AddData(const std::string &strData);
 
     // returns char and offsets the data pointer (makes no sense, will fix sometime)
     const char* ReadNextChar();
 
     const char* GetData();
 
-    int size();
+    size_t size();
 
 private:
     void SetDefaults();
 
-    int dataSize;                   // size of data
-    char* data;     // received data or data to send
-    int pointerOffset;  // need that for curl's way to send data
+    std::vector<char> data;     // received data or data to send
+    ptrdiff_t pointerOffset;  // need that for curl's way to send data
 };
 
 

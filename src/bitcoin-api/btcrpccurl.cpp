@@ -72,7 +72,11 @@ static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userp)
     if(size < 1)
         return 0;
 
-    if(pooh->AddData((const char*)ptr, newSize))
+    const char *charBuf = static_cast<const char*>(ptr);
+    std::vector<char> data(charBuf, charBuf + newSize);
+    std::string strData(data.begin(), data.end());
+
+    if (pooh->AddData(strData))
     {
         return newSize;
     }
