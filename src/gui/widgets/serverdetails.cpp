@@ -9,6 +9,7 @@
 
 #include <opentxs/OTAPI.hpp>
 
+#include <QFile>
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QDebug>
