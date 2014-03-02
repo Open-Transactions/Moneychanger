@@ -11,6 +11,7 @@
 
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OTLog.hpp>
+#include <opentxs/OTPaths.hpp>
 
 #include <QTimer>
 
