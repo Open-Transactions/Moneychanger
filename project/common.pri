@@ -1,5 +1,5 @@
 
-CONFIG     += debug_and_release
+CONFIG     += debug_and_release silent
 
 SOLUTION_DIR=$${PWD}/
 
