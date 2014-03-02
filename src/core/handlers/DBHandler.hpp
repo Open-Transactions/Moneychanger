@@ -7,6 +7,8 @@
 #include <core/handlers/FileHandler.hpp>
 
 #include <QSqlDatabase>
+#include <QMutex>
+#include <QVariant>
 
 
 /*
