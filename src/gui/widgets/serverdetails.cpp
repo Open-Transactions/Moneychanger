@@ -11,6 +11,7 @@
 
 #include <QMessageBox>
 #include <QPlainTextEdit>
+#include <QDebug>
 
 
 MTServerDetails::MTServerDetails(QWidget *parent, MTDetailEdit & theOwner) :

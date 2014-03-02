@@ -23,6 +23,7 @@
 
 #include <QDialog>
 #include <QKeyEvent>
+#include <QDebug>
 
 
 MTDetailEdit::MTDetailEdit(QWidget *parent) :
