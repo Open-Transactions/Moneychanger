@@ -11,6 +11,9 @@
 
 #include <QPlainTextEdit>
 #include <QMessageBox>
+#include <QDebug>
+#include <QFile>
+#include <QTextStream>
 
 
 MTAssetDetails::MTAssetDetails(QWidget *parent, MTDetailEdit & theOwner) :
