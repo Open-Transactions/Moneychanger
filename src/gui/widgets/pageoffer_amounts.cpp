@@ -8,6 +8,8 @@
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OTPaymentPlan.hpp>
 
+#include <cmath>
+
 
 const int64_t array_timespan[] = {
     LENGTH_OF_MINUTE_IN_SECONDS,
