@@ -7,7 +7,9 @@
 #include <core/MTRecordList.hpp>
 
 #include <QObject>
-
+#include <QMap>
+#include <QMutex>
+#include <QList>
 
 class ot_worker : public QObject
 {
