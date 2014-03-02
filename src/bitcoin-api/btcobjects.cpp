@@ -172,7 +172,7 @@ BtcBlock::BtcBlock(Json::Value block)
 BtcTxIdVout::BtcTxIdVout(std::string txID, int64_t vout)
 {
     (*this)["txid"] = txID;
-    (*this)["vout"] = vout;
+    (*this)["vout"] = static_cast<Json::Int64>(vout);
 }
 
 BtcTxTarget::BtcTxTarget()
@@ -210,7 +210,7 @@ BtcSigningPrequisite::BtcSigningPrequisite(std::string txId, int64_t vout, std::
 {
     // all of these values must be set or else prequisite is invalid
     (*this)["txid"] = txId;
-    (*this)["vout"] = vout;
+    (*this)["vout"] = static_cast<Json::Int64>(vout);
     (*this)["scriptPubKey"] = scriptPubKey;
     (*this)["redeemScript"] = redeemScript;
 }
@@ -221,7 +221,7 @@ void BtcSigningPrequisite::SetTxId(std::string txId)
     (*this)["txid"] = txId;
 }
 
-void BtcSigningPrequisite::SetVout(int64_t vout)
+void BtcSigningPrequisite::SetVout(Json::Int64 vout)
 {
     // we can get this value from the transaction used to send funds to the p2sh
     (*this)["vout"] = vout;

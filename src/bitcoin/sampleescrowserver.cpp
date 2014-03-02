@@ -7,8 +7,9 @@
 #include <bitcoin/sampleescrowclient.hpp>
 
 
-
 #include <core/modules.hpp>
+
+#include <opentxs/OTLog.hpp>
 
 
 SampleEscrowServer::SampleEscrowServer(BitcoinServerPtr rpcServer)

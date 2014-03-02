@@ -8,7 +8,10 @@
 #include <bitcoin/escrowpool.hpp>
 #include <bitcoin/sampleescrowtransaction.hpp>
 
+#include <map>
+
 class SampleEscrowClient;
+typedef std::shared_ptr<SampleEscrowClient> SampleEscrowClientPtr;
 
 class SampleEscrowServer
 {

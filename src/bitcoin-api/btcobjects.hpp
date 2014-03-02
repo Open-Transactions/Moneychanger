@@ -212,7 +212,7 @@ struct BtcSigningPrequisite : Json::Value
     void SetTxId(std::string txId);
 
     // all of these values must be set or else prequisite is invalid
-    void SetVout(int64_t vout);
+    void SetVout(Json::Int64 vout);
 
     // all of these values must be set or else prequisite is invalid
     void SetScriptPubKey(std::string scriptPubKey);

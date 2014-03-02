@@ -4,6 +4,9 @@
 
 #include <bitcoin/escrowpool.hpp>
 
+#include <bitcoin/sampleescrowserver.hpp>
+
+
 EscrowPool::EscrowPool()
 {
     this->escrowServers = QList<SampleEscrowServerPtr>();
