@@ -11,7 +11,12 @@
 #include <map>
 
 class SampleEscrowClient;
+
+#ifndef OT_USE_TR1
 typedef std::shared_ptr<SampleEscrowClient> SampleEscrowClientPtr;
+#else
+typedef std::tr1::shared_ptr<SampleEscrowClient> SampleEscrowClientPtr;
+#endif // OT_USE_TR1
 
 class SampleEscrowServer
 {
