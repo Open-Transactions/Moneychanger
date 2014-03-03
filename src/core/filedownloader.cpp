@@ -1,8 +1,8 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "filedownloader.h"
+#include <core/filedownloader.hpp>
 
 FileDownloader::FileDownloader(QUrl imageUrl, QObject *parent) :
     QObject(parent)

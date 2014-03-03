@@ -1,11 +1,10 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "wizardaddaccount.h"
-#include "ui_wizardaddaccount.h"
+#include <gui/widgets/wizardaddaccount.hpp>
+#include <ui_wizardaddaccount.h>
 
-#include "moneychanger.h"
 
 MTWizardAddAccount::MTWizardAddAccount(QWidget *parent) :
     QWizard(parent),

@@ -1,15 +1,17 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "settings.h"
-#include "ui_settings.h"
-#include "handlers/DBHandler.h"
-#include "translation.h"
+#include <gui/widgets/settings.hpp>
+#include <ui_settings.h>
+
+#include <core/translation.hpp>
+#include <core/handlers/DBHandler.hpp>
 
 #include <QDir>
 #include <QMessageBox>
-#include <QLocale>
+#include <QDebug>
+
 
 Settings::Settings(QWidget *parent) :
     QWidget(parent, Qt::Window),

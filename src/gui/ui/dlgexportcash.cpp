@@ -1,28 +1,17 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
+
+#include <gui/ui/dlgexportcash.hpp>
+#include <ui_dlgexportcash.h>
+
+#include <gui/widgets/dlgchooser.hpp>
 
 #include <QMessageBox>
 #include <QKeyEvent>
 #include <QDebug>
 
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#include <otlib/OTLog.hpp>
-#else
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#include <opentxs/OTLog.hpp>
-#endif
 
-#include "dlgexportcash.h"
-#include "ui_dlgexportcash.h"
-
-#include "widgets/dlgchooser.h"
-
-#include "handlers/contacthandler.h"
-//#include "handlers/DBHandler.h"
 
 DlgExportCash::DlgExportCash(QWidget *parent) :
     QDialog(parent),

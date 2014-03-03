@@ -1,29 +1,20 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
+#include <gui/widgets/assetdetails.hpp>
+#include <ui_assetdetails.h>
+
+#include <gui/widgets/wizardaddcontract.hpp>
+
+#include <opentxs/OTAPI.hpp>
+
+#include <QPlainTextEdit>
+#include <QMessageBox>
 #include <QDebug>
 #include <QFile>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QPlainTextEdit>
+#include <QTextStream>
 
-#include "assetdetails.h"
-#include "ui_assetdetails.h"
-
-#include "wizardaddcontract.h"
-
-#include "moneychanger.h"
-
-#include "detailedit.h"
-
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#else
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#endif
 
 MTAssetDetails::MTAssetDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),

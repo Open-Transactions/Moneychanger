@@ -1,8 +1,9 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "httpinterface.h"
+#include <core/httpinterface.hpp>
+
 
 HTTPInterface::HTTPInterface()
 {

@@ -1,5 +1,10 @@
-#include "pageoffer_summary.h"
-#include "ui_pageoffer_summary.h"
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
+#endif
+
+#include <gui/widgets/pageoffer_summary.hpp>
+#include <ui_pageoffer_summary.h>
+
 
 PageOffer_Summary::PageOffer_Summary(QWidget *parent) :
     QWizardPage(parent),

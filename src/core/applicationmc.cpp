@@ -1,26 +1,20 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "applicationmc.h"
+#include <core/applicationmc.hpp>
 
-#include "moneychanger.h"
+#include <core/passwordcallback.hpp>
+#include <core/moneychanger.hpp>
 
-#include "passwordcallback.h"
-
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#include <otlib/OTLog.hpp>
-#include <otlib/OTPassword.hpp>
-#include <otlib/OTAsymmetricKey.hpp>
-#else
 #include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#include <opentxs/OTLog.hpp>
-#include <opentxs/OTPassword.hpp>
 #include <opentxs/OTAsymmetricKey.hpp>
-#endif
+
+#include <QVBoxLayout>
+#include <QDebug>
+#include <QSystemTrayIcon>
+#include <QDialog>
+#include <QLabel>
 
 
 bool SetupPasswordCallback(OTCaller & passwordCaller, OTCallback & passwordCallback);

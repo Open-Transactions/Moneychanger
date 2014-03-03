@@ -1,17 +1,17 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
+
+#include <gui/widgets/dlgchooser.hpp>
+#include <ui_dlgchooser.h>
+
+#include <gui/widgets/home.hpp>
 
 #include <QDebug>
 #include <QLabel>
 #include <QDateTime>
 #include <QKeyEvent>
-#include <QPushButton>
 
-#include "dlgchooser.h"
-#include "ui_dlgchooser.h"
-
-#include "home.h"
 
 DlgChooser::DlgChooser(QWidget *parent, QString qstrInstructions/*=QString("")*/) :
     QDialog(parent),

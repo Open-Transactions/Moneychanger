@@ -1,36 +1,23 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include <QDebug>
-#include <QMessageBox>
-#include <QApplication>
-#include <QClipboard>
+#include <gui/widgets/nymdetails.hpp>
+#include <ui_nymdetails.h>
 
-#include "nymdetails.h"
-#include "ui_nymdetails.h"
+#include <gui/widgets/credentials.hpp>
+#include <gui/widgets/wizardaddnym.hpp>
 
-#include "overridecursor.h"
-#include "detailedit.h"
-
-
-#include "moneychanger.h"
-
-#include "wizardaddnym.h"
-
-#include "credentials.h"
-
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#else
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OT_ME.hpp>
-#endif
+
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QClipboard>
+#include <QDebug>
 
 
 // ------------------------------------------------------
-
 MTNymDetails::MTNymDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
     ui(new Ui::MTNymDetails)

@@ -1,34 +1,30 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
+#include <gui/widgets/detailedit.hpp>
+#include <ui_detailedit.h>
+
+#include <gui/widgets/nymdetails.hpp>
+#include <gui/widgets/contactdetails.hpp>
+#include <gui/widgets/serverdetails.hpp>
+#include <gui/widgets/assetdetails.hpp>
+#include <gui/widgets/agreementdetails.hpp>
+#include <gui/widgets/corporationdetails.hpp>
+#include <gui/widgets/offerdetails.hpp>
+#include <gui/widgets/marketdetails.hpp>
+#include <gui/widgets/accountdetails.hpp>
+#include <gui/widgets/home.hpp>
+
+#include <core/moneychanger.hpp>
+
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OTStorage.hpp>
+
+#include <QDialog>
+#include <QKeyEvent>
 #include <QDebug>
-#include <QMap>
-#include <QMultiMap>
-#include <QVariant>
-#include <QPointer>
 
-#include "detailedit.h"
-#include "ui_detailedit.h"
-
-#include "editdetails.h"
-
-#include "home.h"
-
-#include "contactdetails.h"
-#include "nymdetails.h"
-#include "serverdetails.h"
-#include "assetdetails.h"
-#include "accountdetails.h"
-#include "agreementdetails.h"
-#include "corporationdetails.h"
-#include "marketdetails.h"
-#include "offerdetails.h"
-
-#include "moneychanger.h"
-
-#include <OTStorage.hpp>
-#include <OTLog.hpp>
 
 MTDetailEdit::MTDetailEdit(QWidget *parent) :
     QWidget(parent, Qt::Window),

@@ -1,9 +1,10 @@
-#ifndef STABLE_H
-#include <stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "btchelper.h"
-#include "btcmodules.h"
+#include <bitcoin-api/btchelper.hpp>
+
+#include <bitcoin-api/btcmodules.hpp>
 
 #include <iostream>
 #include <vector>

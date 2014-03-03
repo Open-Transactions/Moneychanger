@@ -1,24 +1,22 @@
 
-PRECOMPILED_HEADER = $${PWD}/stable.h
-
 HEADERS += \
-    $${PWD}/stable.h \
-    $${PWD}/applicationmc.h \
-    $${PWD}/filedownloader.h \
-    $${PWD}/FastDelegate.h \
-    $${PWD}/FastDelegateBind.h \
-    $${PWD}/httpinterface.h \
-    $${PWD}/modules.h \
-    $${PWD}/moneychanger.h \
+    $${PWD}/stable.hpp \
+    $${PWD}/applicationmc.hpp \
+    $${PWD}/filedownloader.hpp \
+    $${PWD}/FastDelegate.hpp \
+    $${PWD}/FastDelegateBind.hpp \
+    $${PWD}/httpinterface.hpp \
+    $${PWD}/modules.hpp \
+    $${PWD}/moneychanger.hpp \
     $${PWD}/MTRecord.hpp \
     $${PWD}/MTRecordList.hpp \
-    $${PWD}/ot_worker.h \
-    $${PWD}/passwordcallback.h \
-    $${PWD}/translation.h \
-    $${PWD}/utils.h \
-    $${PWD}/handlers/contacthandler.h \
-    $${PWD}/handlers/DBHandler.h \
-    $${PWD}/handlers/FileHandler.h
+    $${PWD}/ot_worker.hpp \
+    $${PWD}/passwordcallback.hpp \
+    $${PWD}/translation.hpp \
+    $${PWD}/utils.hpp \
+    $${PWD}/handlers/contacthandler.hpp \
+    $${PWD}/handlers/DBHandler.hpp \
+    $${PWD}/handlers/FileHandler.hpp
 
 SOURCES += \
     $${PWD}/applicationmc.cpp \
@@ -36,5 +34,3 @@ SOURCES += \
     $${PWD}/handlers/contacthandler.cpp \
     $${PWD}/handlers/DBHandler.cpp \
     $${PWD}/handlers/FileHandler.cpp
-
-INCLUDEPATH += $${PWD}

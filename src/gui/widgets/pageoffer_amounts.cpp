@@ -1,21 +1,15 @@
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
+#endif
+
+#include <gui/widgets/pageoffer_amounts.hpp>
+#include <ui_pageoffer_amounts.h>
+
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OTPaymentPlan.hpp>
 
 #include <cmath>
 
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#include <otlib/OTStorage.hpp>
-#include <otlib/OTPaymentPlan.hpp>
-#else
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#include <opentxs/OTStorage.hpp>
-#include <opentxs/OTPaymentPlan.hpp>
-#endif
-
-
-#include "pageoffer_amounts.h"
-#include "ui_pageoffer_amounts.h"
 
 const int64_t array_timespan[] = {
     LENGTH_OF_MINUTE_IN_SECONDS,

@@ -1,13 +1,13 @@
-#ifndef STABLE_H
-#include <stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
+#include <bitcoin-api/btcmodules.hpp>
 
-#include "btcmodules.h"
-#include "btcrpccurl.h"
-#include "btcjson.h"
-#include "MTBitcoin.h"
-#include "bitcoinapi.h"
+#include <bitcoin-api/btcrpccurl.hpp>
+#include <bitcoin-api/btcjson.hpp>
+#include <bitcoin-api/MTBitcoin.hpp>
+#include <bitcoin-api/bitcoinapi.hpp>
 
 BtcModules* BtcModules::staticInstance;
 

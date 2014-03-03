@@ -1,24 +1,9 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include <QMessageBox>
-#include <QDebug>
-
-#ifdef _WIN32
-#include <otapi/OTAPI.hpp>
-#include <otapi/OT_ME.hpp>
-#else
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OT_ME.hpp>
-#endif
-
-#include "corporationdetails.h"
-#include "ui_corporationdetails.h"
-
-#include "detailedit.h"
-#include "moneychanger.h"
-#include "overridecursor.h"
+#include <gui/widgets/corporationdetails.hpp>
+#include <ui_corporationdetails.h>
 
 
 MTCorporationDetails::MTCorporationDetails(QWidget *parent, MTDetailEdit & theOwner) :

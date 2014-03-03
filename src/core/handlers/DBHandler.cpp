@@ -1,11 +1,16 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include <OTPaths.hpp>
+#include <core/handlers/DBHandler.hpp>
 
-#include "DBHandler.h"
+#include <opentxs/OTPaths.hpp>
+
 #include <QDebug>
+#include <QSqlQuery>
+#include <QDebug>
+#include <QSqlError>
+
 
 DBHandler * DBHandler::_instance = NULL;
 

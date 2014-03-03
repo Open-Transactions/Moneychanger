@@ -23,31 +23,31 @@
   <customwidget>
    <class>MTPageAcct_Name</class>
    <extends>QWizardPage</extends>
-   <header>pageacct_name.h</header>
+   <header>gui/widgets/pageacct_name.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>MTPageNym_Keysize</class>
    <extends>QWizardPage</extends>
-   <header>pagenym_keysize.h</header>
+   <header>gui/widgets/pagenym_keysize.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>MTPageNym_Authority</class>
    <extends>QWizardPage</extends>
-   <header>pagenym_authority.h</header>
+   <header>gui/widgets/pagenym_authority.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>MTPageNym_Source</class>
    <extends>QWizardPage</extends>
-   <header>pagenym_source.h</header>
+   <header>gui/widgets/pagenym_source.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>MTPageNym_AltLocation</class>
    <extends>QWizardPage</extends>
-   <header>pagenym_altlocation.h</header>
+   <header>gui/widgets/pagenym_altlocation.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

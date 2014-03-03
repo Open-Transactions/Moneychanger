@@ -1,0 +1,16 @@
+#ifndef BITCOINAPI_GLOBAL_HPP
+#define BITCOINAPI_GLOBAL_HPP
+
+#include <QtCore/qglobal.h>
+
+#ifdef STATICLIB
+#  define BITCOINAPISHARED_EXPORT
+#else
+#if defined(BITCOINAPI_LIBRARY)
+#  define BITCOINAPISHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define BITCOINAPISHARED_EXPORT Q_DECL_IMPORT
+#endif
+#endif
+
+#endif // BITCOINAPI_GLOBAL_HPP

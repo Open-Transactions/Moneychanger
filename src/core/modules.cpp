@@ -1,4 +1,13 @@
-#include "modules.h"
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
+#endif
+
+#include <core/modules.hpp>
+
+#include <bitcoin/sampleescrowmanager.hpp>
+#include <bitcoin/poolmanager.hpp>
+#include <bitcoin/transactionmanager.hpp>
+
 
 
 QScopedPointer<SampleEscrowManager> Modules::sampleEscrowManager;

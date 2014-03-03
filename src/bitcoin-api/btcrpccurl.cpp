@@ -1,16 +1,16 @@
-#ifndef STABLE_H
-#include <stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "btcrpccurl.h"
-
-#include <iostream>
+#include <bitcoin-api/btcrpccurl.hpp>
 
 #include <curl/curl.h>
+
+#include <iostream>
 #include <string.h>
 #include <cstdio>
 #include <cstdlib>
-//#include <OTLog.hpp>
+
 
 BtcRpcPacketPtr BtcRpcCurl::connectString = BtcRpcPacketPtr(new BtcRpcPacket("{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }"));
 
@@ -72,7 +72,11 @@ static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userp)
     if(size < 1)
         return 0;
 
-    if(pooh->AddData((const char*)ptr, newSize))
+    const char *charBuf = static_cast<const char*>(ptr);
+    std::vector<char> data(charBuf, charBuf + newSize);
+    std::string strData(data.begin(), data.end());
+
+    if (pooh->AddData(strData))
     {
         return newSize;
     }

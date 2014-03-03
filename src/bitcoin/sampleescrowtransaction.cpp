@@ -1,10 +1,9 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "sampleescrowtransaction.h"
-#include "modules.h"
-#include <OTLog.hpp>
+#include <bitcoin/sampleescrowtransaction.hpp>
+
 
 SampleEscrowTransaction::SampleEscrowTransaction(int64_t amountToSend)
 {

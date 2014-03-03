@@ -1,8 +1,11 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "escrowpool.h"
+#include <bitcoin/escrowpool.hpp>
+
+#include <bitcoin/sampleescrowserver.hpp>
+
 
 EscrowPool::EscrowPool()
 {

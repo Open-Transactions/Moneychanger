@@ -1,13 +1,17 @@
 
-CONFIG     += debug_and_release
+CONFIG     += debug_and_release silent
 
 SOLUTION_DIR=$${PWD}/
 
+INCLUDEPATH += $${SOLUTION_DIR}../src
+INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
 
 #-------------------------------------------------
 # Output
 
 win32:{
+    INCLUDEPATH += $${SOLUTION_DIR}../src/curl/include
+
     equals(TEMPLATE,vcapp)|equals(TEMPLATE,vclib):{
         DESTDIR     = $${SOLUTION_DIR}../lib/$(PlatformName)/$(Configuration)
         MOC_DIR     = $${SOLUTION_DIR}../obj/$${TARGET}
@@ -53,7 +57,8 @@ unix:{
     QMAKE_CXXFLAGS += -fPIC ## put only here, sub-libs pick it up from elsewhere?
 }
 
-mac:MAC_OS_VERSION = $$system(uname -r)
+mac:MAC_OS_VERSION = $$system(sw_vers -productVersion)
+mac:MAC_OS_VERSION ~= s/\([0-9]*.[0-9]*\).*/\1/
 
 mac:{
     QT_CONFIG -= no-pkg-config
@@ -66,7 +71,7 @@ mac:{
     QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -static
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
 
-    contains(MAC_OS_VERSION, 13.0.0):{
+    contains(MAC_OS_VERSION, 10.9):{
         QT_CONFIG += -spec macx-clang-libc++
         CONFIG += c++11
         QMAKE_CXXFLAGS += -stdlib=libc++ -std=c++11
@@ -76,11 +81,4 @@ mac:{
         QMAKE_MAC_SDK=macosx10.8
         !exists($$MAC_SDK): error("The selected Mac OSX SDK does not exist at $${MAC_SDK}!")
     }
-}
-
-#-------------------------------------------------
-# Include
-
-win32:{
-    INCLUDEPATH += $${SOLUTION_DIR}../../Open-Transactions/include
 }

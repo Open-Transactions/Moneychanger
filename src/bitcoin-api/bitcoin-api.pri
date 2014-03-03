@@ -1,20 +1,17 @@
 
-PRECOMPILED_HEADER = $${PWD}/stable.h
-
 HEADERS += \
-    $${PWD}/stable.h \
-    $${PWD}/bitcoin-api_global.h \
-    $${PWD}/bitcoinapi.h \
-    $${PWD}/btchelper.h \
-    $${PWD}/btcjson.h \
-    $${PWD}/btcmodules.h \
-    $${PWD}/btcobjects.h \
-    $${PWD}/btcrpccurl.h \
-    $${PWD}/btctest.h \
-    $${PWD}/ibtcjson.h \
-    $${PWD}/ibtcrpc.h \
-    $${PWD}/imtbitcoin.h \
-    $${PWD}/MTBitcoin.h
+    $${PWD}/bitcoin-api_global.hpp \
+    $${PWD}/bitcoinapi.hpp \
+    $${PWD}/btchelper.hpp \
+    $${PWD}/btcjson.hpp \
+    $${PWD}/btcmodules.hpp \
+    $${PWD}/btcobjects.hpp \
+    $${PWD}/btcrpccurl.hpp \
+    $${PWD}/btctest.hpp \
+    $${PWD}/ibtcjson.hpp \
+    $${PWD}/ibtcrpc.hpp \
+    $${PWD}/imtbitcoin.hpp \
+    $${PWD}/MTBitcoin.hpp
 
 SOURCES += \
     $${PWD}/bitcoinapi.cpp \
@@ -25,5 +22,3 @@ SOURCES += \
     $${PWD}/btcrpccurl.cpp \
     $${PWD}/btctest.cpp \
     $${PWD}/MTBitcoin.cpp
-
-INCLUDEPATH += $${PWD}
