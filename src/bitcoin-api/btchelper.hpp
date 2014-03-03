@@ -1,6 +1,8 @@
 #ifndef BTCHELPER_HPP
 #define BTCHELPER_HPP
 
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 #include <opentxs/MemoryWrapper.hpp>
 
 #include <bitcoin-api/btcobjects.hpp>

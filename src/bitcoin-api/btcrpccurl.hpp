@@ -1,6 +1,8 @@
 #ifndef BTCRPCZMQ_HPP
 #define BTCRPCZMQ_HPP
 
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 #include <opentxs/MemoryWrapper.hpp>
 
 #include <bitcoin-api/ibtcrpc.hpp>

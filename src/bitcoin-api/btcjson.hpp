@@ -1,6 +1,8 @@
 #ifndef BTCJSON_HPP
 #define BTCJSON_HPP
 
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
 #include <opentxs/MemoryWrapper.hpp>
 
 #include <bitcoin-api/ibtcjson.hpp>
