@@ -87,7 +87,7 @@
   <customwidget>
    <class>MTEditDetails</class>
    <extends>QWidget</extends>
-   <header>editdetails.h</header>
+   <header>gui/widgets/editdetails.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

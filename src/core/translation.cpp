@@ -1,9 +1,12 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "translation.h"
-#include "handlers/DBHandler.h"
+#include <core/translation.hpp>
+#include <core/handlers/DBHandler.hpp>
+
+#include <QDebug>
+
 
 Translation::Translation(QObject *parent) :
     QObject(parent)

@@ -1,16 +1,14 @@
-
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
 #include <QApplication>
 #include <QEvent>
 
-#include "overridecursor.h"
+#include <gui/widgets/overridecursor.hpp>
 
 
 // -----------------------------------
-
 MTSpinner::MTSpinner()
     : m_pCursor(MTOverrideCursor::It())
 {   // Note: MTOverrideCursor::It() returns NULL if one is already instantiated.

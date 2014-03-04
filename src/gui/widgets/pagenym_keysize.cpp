@@ -1,9 +1,10 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "pagenym_keysize.h"
-#include "ui_pagenym_keysize.h"
+#include <gui/widgets/pagenym_keysize.hpp>
+#include <ui_pagenym_keysize.h>
+
 
 MTPageNym_Keysize::MTPageNym_Keysize(QWidget *parent) :
     QWizardPage(parent),

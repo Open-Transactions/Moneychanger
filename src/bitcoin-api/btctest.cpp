@@ -1,6 +1,10 @@
-#ifndef STABLE_H
-#include <stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
+
+#include <bitcoin-api/btctest.hpp>
+
+#include <bitcoin-api/btcmodules.hpp>
 
 #include <cstdio>
 #include <iostream>
@@ -14,8 +18,7 @@
     #define Sleep(milliSeconds) usleep(milliSeconds * 1000)
 #endif // OT_USE_TR1
 
-#include "btctest.h"
-#include "btcmodules.h"
+
 
 
 BtcModulesPtr BtcTest::modules;
@@ -64,7 +67,7 @@ bool BtcTest::TestBtcRpc()
     BitcoinServerPtr bitcoind1 = BitcoinServerPtr(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
 
     { BtcRpcPacketPtr(new BtcRpcPacket()); }
-    { std::string str = "kjlk"; BtcRpcPacketPtr(new BtcRpcPacket(str.c_str(), str.size())); }
+    { std::string str = "kjlk"; BtcRpcPacketPtr(new BtcRpcPacket(str)); }
     { BtcRpcPacketPtr(new BtcRpcPacket("jklklj")); }
     {
         BtcRpcPacketPtr ptr = BtcRpcPacketPtr(new BtcRpcPacket("jkjlk"));
@@ -72,7 +75,7 @@ bool BtcTest::TestBtcRpc()
     }
     {
         BtcRpcPacketPtr ptr = BtcRpcPacketPtr(new BtcRpcPacket());
-        ptr->AddData("kjlkj", 5);
+        ptr->AddData("kjlkj");
         for(int i = 0; i < ptr->size() + 10; i++)
             ptr->ReadNextChar();
     }
@@ -100,9 +103,9 @@ bool BtcTest::TestBtcRpc()
 
     modules->btcRpc->SendRpc('\0');
 
-    modules->btcRpc->SendRpc(BtcRpcPacketPtr(new BtcRpcPacket('\0',1)));
+    modules->btcRpc->SendRpc(BtcRpcPacketPtr(new BtcRpcPacket()));
 
-    modules->btcRpc->SendRpc(BtcRpcPacketPtr(new BtcRpcPacket('\0',0)));
+    modules->btcRpc->SendRpc(BtcRpcPacketPtr(new BtcRpcPacket()));
 
     return true;    // not crashing is enough to pass this test
 }

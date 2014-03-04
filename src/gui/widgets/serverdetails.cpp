@@ -1,29 +1,18 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include <QDebug>
+#include <gui/widgets/serverdetails.hpp>
+#include <ui_serverdetails.h>
+
+#include <gui/widgets/wizardaddcontract.hpp>
+
+#include <opentxs/OTAPI.hpp>
+
 #include <QFile>
-#include <QFileDialog>
 #include <QMessageBox>
 #include <QPlainTextEdit>
-
-#include "serverdetails.h"
-#include "ui_serverdetails.h"
-
-#include "wizardaddcontract.h"
-
-#include "moneychanger.h"
-
-#include "detailedit.h"
-
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#endif
+#include <QDebug>
 
 
 MTServerDetails::MTServerDetails(QWidget *parent, MTDetailEdit & theOwner) :

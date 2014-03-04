@@ -9,22 +9,18 @@
 #ifndef __OTClient__MTRecordList__
 #define __OTClient__MTRecordList__
 
+#include <opentxs/WinsockWrapper.h>
+#include <opentxs/ExportWrapper.h>
+#include <opentxs/MemoryWrapper.hpp>
+
+#include <core/MTRecord.hpp>
+
 #include <iostream>
 #include <vector>
 #include <list>
 #include <map>
 #include <string>
 
-#ifdef _WIN32
-#include <memory>
-#elif __GXX_EXPERIMENTAL_CXX0X__ || __cplusplus >= 201103L
-#include <memory>
-#else
-#include <tr1/memory>
-#endif
-
-
-#include "MTRecord.hpp"
 
 
 class MTNameLookup
@@ -50,7 +46,7 @@ public:
  };
  */
 
-#if __GXX_EXPERIMENTAL_CXX0X__ || __cplusplus >= 201103L
+#ifndef OT_USE_TR1
 // -------------------------------------------------------------
 typedef std::weak_ptr  <MTRecord>       weak_ptr_MTRecord;
 typedef std::shared_ptr<MTRecord>     shared_ptr_MTRecord;

@@ -1,36 +1,23 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include <QDebug>
+#include <gui/widgets/accountdetails.hpp>
+#include <ui_accountdetails.h>
+
+#include <gui/widgets/cashpurse.hpp>
+#include <gui/widgets/home.hpp>
+#include <gui/widgets/wizardaddaccount.hpp>
+#include <gui/widgets/overridecursor.hpp>
+
+#include <core/moneychanger.hpp>
+
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OT_ME.hpp>
+
 #include <QMessageBox>
+#include <QDebug>
 
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#endif
-
-#include "accountdetails.h"
-#include "ui_accountdetails.h"
-
-#include "detailedit.h"
-
-#include "senddlg.h"
-#include "requestdlg.h"
-
-#include "home.h"
-
-#include "moneychanger.h"
-
-#include "wizardaddaccount.h"
-
-#include "overridecursor.h"
-
-#include "handlers/DBHandler.h"
-#include "cashpurse.h"
 
 
 

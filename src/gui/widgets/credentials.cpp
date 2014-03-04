@@ -1,26 +1,13 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include <QDebug>
-#include <QMessageBox>
+#include <gui/widgets/credentials.hpp>
+#include <ui_credentials.h>
 
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#endif
+#include <core/handlers/contacthandler.hpp>
 
-#include "credentials.h"
-#include "ui_credentials.h"
-
-#include "overridecursor.h"
-
-#include "detailedit.h"
-#include "editdetails.h"
-
+#include <opentxs/OTAPI.hpp>
 
 
 MTCredentials::MTCredentials(QWidget *parent, MTDetailEdit & theOwner) :

@@ -1,9 +1,10 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "wizardaddnym.h"
-#include "ui_wizardaddnym.h"
+#include <gui/widgets/wizardaddnym.hpp>
+#include <ui_wizardaddnym.h>
+
 
 MTWizardAddNym::MTWizardAddNym(QWidget *parent) :
     QWizard(parent),

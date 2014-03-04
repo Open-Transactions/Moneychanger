@@ -1,26 +1,15 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#include <otlib/OTStorage.h>
-#include <otlib/OTASCIIArmor.h>
-#include <otlib/OTLog.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#include <opentxs/OTStorage.h>
-#include <opentxs/OTASCIIArmor.h>
-#include <opentxs/OTLog.h>
-#endif
+#include <core/handlers/contacthandler.hpp>
 
-#include "contacthandler.h"
+#include <core/handlers/DBHandler.hpp>
 
-#include "DBHandler.h"
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OTASCIIArmor.hpp>
 
-
+#include <QDebug>
 
 
 std::string MTNameLookupQT::GetNymName(const std::string & str_id,

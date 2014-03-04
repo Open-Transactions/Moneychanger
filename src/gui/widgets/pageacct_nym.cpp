@@ -1,23 +1,17 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "pageacct_nym.h"
-#include "ui_pageacct_nym.h"
+#include <gui/widgets/pageacct_nym.hpp>
+#include <ui_pageacct_nym.h>
 
-#include "moneychanger.h"
+#include <gui/widgets/dlgchooser.hpp>
+#include <gui/widgets/detailedit.hpp>
 
-#include "wizardaddaccount.h"
+#include <core/moneychanger.hpp>
 
-#include "dlgchooser.h"
+#include <opentxs/OTAPI.hpp>
 
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#endif
 
 MTPageAcct_Nym::MTPageAcct_Nym(QWidget *parent) :
     QWizardPage(parent),

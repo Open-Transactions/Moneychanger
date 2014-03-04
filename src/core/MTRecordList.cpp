@@ -6,36 +6,21 @@
 //  Copyright (c) 2013 Monetas. All rights reserved.
 //
 
-#include "stdafx.h"
-
-#include <algorithm>
-
-#include <OTStorage.h>
-
-#include <OTString.h>
-#include <OTIdentifier.h>
-#include <OTASCIIArmor.h>
-#include <OTAccount.h>
-#include <OTWallet.h>
-#include <OTIdentifier.h>
-#include <OTPayment.h>
-#include <OTMessage.h>
-#include <OTLedger.h>
-
-#ifdef _WIN32
-#include <otapi/OpenTransactions.h>
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#include <otlib/OTLog.h>
-#else
-#include <opentxs/OpenTransactions.h>
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#include <opentxs/OTLog.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
+#include <core/MTRecordList.hpp>
 
-#include "MTRecordList.hpp"
+#include <opentxs/OpenTransactions.hpp>
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OTWallet.hpp>
+#include <opentxs/OTPayment.hpp>
+#include <opentxs/OTAccount.hpp>
+#include <opentxs/OTLedger.hpp>
+#include <opentxs/OT_ME.hpp>
+#include <opentxs/OTMessage.hpp>
+#include <opentxs/OTLog.hpp>
 
 
 #define MC_UI_TEXT_TO "<font color='grey'>To:</font> %s"

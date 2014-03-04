@@ -11,7 +11,7 @@ CONFIG     += staticlib
 TARGET      = bitcoin-api
 #VERSION     = 0.0.1
 
-win32:DEFINES += "CURL_STATICLIB=1"
+win32:DEFINES += "CURL_STATICLIB=1" "STATICLIB=1"
 
 #-------------------------------------------------
 # Common Settings
@@ -21,15 +21,9 @@ include(../common.pri)
 #-------------------------------------------------
 # Source
 
+PRECOMPILED_HEADER = $${SOLUTION_DIR}../src/core/stable.hpp
+
 include($${SOLUTION_DIR}../src/bitcoin-api/bitcoin-api.pri)
-
-
-#-------------------------------------------------
-# Include
-
-INCLUDEPATH += $${SOLUTION_DIR}../src/bitcoin-api
-INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
-INCLUDEPATH += $${SOLUTION_DIR}../src/curl/include
 
 
 #-------------------------------------------------

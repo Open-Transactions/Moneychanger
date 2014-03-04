@@ -1,17 +1,14 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "dlgpassword.h"
-#include "ui_dlgpassword.h"
+#include <gui/ui/dlgpassword.hpp>
+#include <ui_dlgpassword.h>
 
-#ifdef _WIN32
-#include <otlib/OTPassword.h>
-#else
-#include <opentxs/OTPassword.h>
-#endif
+#include <gui/widgets/overridecursor.hpp>
 
-#include "overridecursor.h"
+#include <opentxs/OTPassword.hpp>
+
 
 
 MTDlgPassword::MTDlgPassword(QWidget *parent, OTPassword & thePassword) :

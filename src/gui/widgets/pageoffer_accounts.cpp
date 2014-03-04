@@ -1,19 +1,16 @@
-
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "pageoffer_accounts.h"
-#include "ui_pageoffer_accounts.h"
+#include <gui/widgets/pageoffer_accounts.hpp>
+#include <ui_pageoffer_accounts.h>
 
-#include "dlgchooser.h"
-#include "detailedit.h"
+#include <gui/widgets/dlgchooser.hpp>
+#include <gui/widgets/detailedit.hpp>
+#include <gui/widgets/wizardnewoffer.hpp>
 
-#include "wizardnewoffer.h"
+#include <opentxs/OTAPI.hpp>
+
 
 PageOffer_Accounts::PageOffer_Accounts(QWidget *parent) :
     QWizardPage(parent),

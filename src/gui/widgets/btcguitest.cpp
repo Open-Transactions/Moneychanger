@@ -1,8 +1,18 @@
-#include "widgets/btcguitest.h"
-#include "ui_btcguitest.h"
-#include "modules.h"
-#include "btctest.h"
-#include <OTLog.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
+#endif
+
+#include <gui/widgets/btcguitest.hpp>
+#include <ui_btcguitest.h>
+
+#include <core/modules.hpp>
+
+#include <bitcoin/sampleescrowmanager.hpp>
+
+#include <bitcoin-api/btctest.hpp>
+
+#include <opentxs/OTLog.hpp>
+
 
 BtcGuiTest::BtcGuiTest(QWidget *parent) :
     QWidget(parent, Qt::Window),

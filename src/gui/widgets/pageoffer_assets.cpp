@@ -1,19 +1,15 @@
-#include <QDebug>
-
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "pageoffer_assets.h"
-#include "ui_pageoffer_assets.h"
+#include <gui/widgets/pageoffer_assets.hpp>
+#include <ui_pageoffer_assets.h>
 
-#include "detailedit.h"
+#include <gui/widgets/dlgchooser.hpp>
+#include <gui/widgets/detailedit.hpp>
 
-#include "dlgchooser.h"
+#include <opentxs/OTAPI.hpp>
+
 
 PageOffer_Assets::PageOffer_Assets(QWidget *parent) :
     QWizardPage(parent),

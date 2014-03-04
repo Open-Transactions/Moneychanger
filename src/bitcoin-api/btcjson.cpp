@@ -1,11 +1,11 @@
-#ifndef STABLE_H
-#include <stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
+#include <bitcoin-api/btcjson.hpp>
 
-#include "btcjson.h"
 #include <json/json.h>
-//#include <OTLog.h>
+
 #include <iostream>
 #include <map>
 #include <cstdio>

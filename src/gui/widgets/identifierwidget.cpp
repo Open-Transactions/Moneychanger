@@ -1,9 +1,10 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "identifierwidget.h"
-#include "ui_identifierwidget.h"
+#include <gui/widgets/identifierwidget.hpp>
+#include <ui_identifierwidget.h>
+
 
 MTIdentifierWidget::MTIdentifierWidget(QWidget *parent) :
     QWidget(parent),

@@ -1,11 +1,13 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include <QKeyEvent>
+#include <gui/ui/dlgnewcontact.hpp>
+#include <ui_dlgnewcontact.h>
 
-#include "dlgnewcontact.h"
-#include "ui_dlgnewcontact.h"
+#include <gui/widgets/identifierwidget.hpp>
+
+#include <QKeyEvent>
 
 
 MTDlgNewContact::MTDlgNewContact(QWidget *parent) :

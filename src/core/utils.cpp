@@ -1,4 +1,8 @@
-#include "utils.h"
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
+#endif
+
+#include <core/utils.hpp>
 
 
 namespace utils
