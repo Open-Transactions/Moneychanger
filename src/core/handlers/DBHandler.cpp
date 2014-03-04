@@ -1,11 +1,12 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include <OTPaths.h>
+#include <core/handlers/DBHandler.hpp>
 
-#include "DBHandler.h"
-#include <QDebug>
+#include <opentxs/OTPaths.hpp>
+
+#include <QSqlRecord>
 
 #include <sstream>
 #include <stdexcept>

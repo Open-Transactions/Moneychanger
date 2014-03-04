@@ -1,27 +1,22 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include <QMessageBox>
+#include <gui/widgets/marketdetails.hpp>
+#include <ui_marketdetails.h>
+
+#include <gui/widgets/overridecursor.hpp>
+
+#include <core/moneychanger.hpp>
+
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OT_ME.hpp>
+#include <opentxs/OTStorage.hpp>
+#include <opentxs/OTData.hpp>
+
+#include <QDateTime>
 #include <QDebug>
 
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#include <otlib/OTStorage.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#include <opentxs/OTStorage.h>
-#endif
-
-#include "marketdetails.h"
-#include "ui_marketdetails.h"
-
-#include "detailedit.h"
-#include "editdetails.h"
-#include "moneychanger.h"
-#include "overridecursor.h"
 
 
 // How many market offers should be downloaded?

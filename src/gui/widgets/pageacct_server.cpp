@@ -1,23 +1,16 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "pageacct_server.h"
-#include "ui_pageacct_server.h"
+#include <gui/widgets/pageacct_server.hpp>
+#include <ui_pageacct_server.h>
 
-#include "moneychanger.h"
+#include <gui/widgets/dlgchooser.hpp>
+#include <gui/widgets/detailedit.hpp>
 
-#include "wizardaddaccount.h"
+#include <core/moneychanger.hpp>
 
-#include "dlgchooser.h"
-
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#endif
+#include <opentxs/OTAPI.hpp>
 
 
 MTPageAcct_Server::MTPageAcct_Server(QWidget *parent) :

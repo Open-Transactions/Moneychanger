@@ -35,6 +35,7 @@ mc_db
 ui_*
 *plugin_import.cpp
 *.DS_Store
+*.hpp.cpp
 
 .qmake.stash
 Makefile.Debug
@@ -45,7 +46,21 @@ Makefile.Release
 
 # KDevelop files
 *.kdev4
-src/moneychanger-qt
+/src/zmq*
+/src/moneychanger-qt
+/src/opentxs/
+/src/chaiscript/
+/src/irrxml/
+/src/containers/
+/src/google/
+/src/simpleini/
+/src/bigint/
+/src/lucre/
+/src/lucre/
+/src/otlib/
+/src/otapi/
+/src/ots/
+/src/zlib/
 
 # visual studio noise
 *.user

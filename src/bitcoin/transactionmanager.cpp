@@ -1,8 +1,9 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "transactionmanager.h"
+#include <bitcoin/transactionmanager.hpp>
+
 
 TransactionManager::TransactionManager()
 {

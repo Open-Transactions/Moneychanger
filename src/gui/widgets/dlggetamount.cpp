@@ -1,23 +1,16 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
+
+#include <gui/widgets/dlggetamount.hpp>
+#include <ui_dlggetamount.h>
+
+#include <gui/widgets/home.hpp>
 
 #include <QMessageBox>
 #include <QKeyEvent>
 
-#include "dlggetamount.h"
-#include "ui_dlggetamount.h"
-
-#include "home.h"
-
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#endif
-
+#include <opentxs/OTAPI.hpp>
 
 
 DlgGetAmount::DlgGetAmount(QWidget *parent, QString qstrAcctId, QString qstrAssetId, QString qstrReason) :

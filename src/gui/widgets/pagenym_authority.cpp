@@ -1,9 +1,10 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "pagenym_authority.h"
-#include "ui_pagenym_authority.h"
+#include <gui/widgets/pagenym_authority.hpp>
+#include <ui_pagenym_authority.h>
+
 
 MTPageNym_Authority::MTPageNym_Authority(QWidget *parent) :
     QWizardPage(parent),

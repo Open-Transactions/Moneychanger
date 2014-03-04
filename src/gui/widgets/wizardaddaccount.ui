@@ -25,25 +25,25 @@
   <customwidget>
    <class>MTPageAcct_Asset</class>
    <extends>QWizardPage</extends>
-   <header>pageacct_asset.h</header>
+   <header>gui/widgets/pageacct_asset.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>MTPageAcct_Nym</class>
    <extends>QWizardPage</extends>
-   <header>pageacct_nym.h</header>
+   <header>gui/widgets/pageacct_nym.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>MTPageAcct_Server</class>
    <extends>QWizardPage</extends>
-   <header>pageacct_server.h</header>
+   <header>gui/widgets/pageacct_server.hpp</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>MTPageAcct_Name</class>
    <extends>QWizardPage</extends>
-   <header>pageacct_name.h</header>
+   <header>gui/widgets/pageacct_name.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

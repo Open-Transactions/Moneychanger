@@ -1,33 +1,21 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
+
+#include <gui/ui/dlgmarkets.hpp>
+#include <ui_dlgmarkets.h>
+
+#include <gui/widgets/editdetails.hpp>
+#include <gui/widgets/overridecursor.hpp>
+
+#include <core/moneychanger.hpp>
+
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OT_ME.hpp>
+#include <opentxs/OTStorage.hpp>
+#include <opentxs/OTData.hpp>
 
 #include <QKeyEvent>
-#include <QMessageBox>
-#include <QVBoxLayout>
-#include <QDebug>
-
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#include <otlib/OTStorage.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#include <opentxs/OTStorage.h>
-#endif
-
-#include "dlgmarkets.h"
-#include "ui_dlgmarkets.h"
-
-#include "overridecursor.h"
-
-#include "moneychanger.h"
-
-#include "widgets/detailedit.h"
-
-#include "widgets/editdetails.h"
-
 
 
 DlgMarkets::DlgMarkets(QWidget *parent) :

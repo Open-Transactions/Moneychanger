@@ -1,5 +1,10 @@
-#include "pageoffer_bidask.h"
-#include "ui_pageoffer_bidask.h"
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
+#endif
+
+#include <gui/widgets/pageoffer_bidask.hpp>
+#include <ui_pageoffer_bidask.h>
+
 
 PageOffer_BidAsk::PageOffer_BidAsk(QWidget *parent) :
     QWizardPage(parent),

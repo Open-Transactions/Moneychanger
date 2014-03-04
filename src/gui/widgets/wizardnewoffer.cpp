@@ -1,5 +1,10 @@
-#include "wizardnewoffer.h"
-#include "ui_wizardnewoffer.h"
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
+#endif
+
+#include <gui/widgets/wizardnewoffer.hpp>
+#include <ui_wizardnewoffer.h>
+
 
 WizardNewOffer::WizardNewOffer(QWidget *parent) :
     QWizard(parent),

@@ -1,38 +1,28 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include <QDebug>
-#include <QCheckBox>
+#include <gui/widgets/cashpurse.hpp>
+#include <ui_cashpurse.h>
+
+#include <gui/widgets/home.hpp>
+#include <gui/widgets/editdetails.hpp>
+#include <gui/widgets/dlggetamount.hpp>
+#include <gui/widgets/overridecursor.hpp>
+
+#include <gui/ui/dlgexportedtopass.hpp>
+#include <gui/ui/dlgexportedcash.hpp>
+#include <gui/ui/dlgexportcash.hpp>
+
+#include <core/moneychanger.hpp>
+
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OT_ME.hpp>
+
 #include <QDateTime>
+#include <QCheckBox>
 #include <QMessageBox>
-#include <QStringList>
-
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#endif
-
-#include "cashpurse.h"
-#include "ui_cashpurse.h"
-
-#include "overridecursor.h"
-
-#include "moneychanger.h"
-
-#include "detailedit.h"
-#include "editdetails.h"
-
-#include "dlggetamount.h"
-
-#include "home.h"
-
-#include "ui/dlgexportcash.h"
-#include "ui/dlgexportedcash.h"
-#include "ui/dlgexportedtopass.h"
+#include <QDebug>
 
 
 MTCashPurse::MTCashPurse(QWidget *parent, MTDetailEdit & theOwner) :

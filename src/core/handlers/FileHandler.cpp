@@ -1,8 +1,11 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "FileHandler.h"
+#include <core/handlers/FileHandler.hpp>
+
+#include <QFile>
+#include <QDebug>
 
 
 bool FileHandler::removeFile(QString fileName)

@@ -1,46 +1,30 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include <QObject>
-#include <QMessageBox>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QDebug>
-#include <QVBoxLayout>
-#include <QPlainTextEdit>
+#include <gui/widgets/homedetail.hpp>
+#include <ui_homedetail.h>
+
+#include <gui/widgets/home.hpp>
+#include <gui/widgets/dlgchooser.hpp>
+#include <gui/widgets/overridecursor.hpp>
+#include <gui/widgets/compose.hpp>
+#include <gui/ui/getstringdialog.hpp>
+
+#include <core/moneychanger.hpp>
+#include <core/handlers/contacthandler.hpp>
+
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OT_ME.hpp>
+#include <opentxs/OTLog.hpp>
+
 #include <QGridLayout>
-#include <QToolButton>
-#include <QIcon>
-#include <QPixmap>
-#include <QDateTime>
+#include <QMessageBox>
 #include <QLabel>
-#include <QString>
-
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#include <otlib/OTLog.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#include <opentxs/OTLog.h>
-#endif
-
-#include "homedetail.h"
-#include "ui_homedetail.h"
-
-#include "compose.h"
-#include "overridecursor.h"
-
-#include "home.h"
-
-#include "ui/getstringdialog.h"
-#include "widgets/dlgchooser.h"
-
-#include "handlers/contacthandler.h"
-
-#include "moneychanger.h"
+#include <QDebug>
+#include <QDateTime>
+#include <QPlainTextEdit>
+#include <QPushButton>
 
 
 void MTHomeDetail::SetHomePointer(MTHome & theHome)
@@ -911,7 +895,7 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt, bool bExte
             break;
         default:
             qDebug() << "CELL TYPE: " << cellType;
-            assert("Expected all cell types to be handled for color.");
+            OT_FAIL_MSG("Expected all cell types to be handled for color.");
             break;
     }
     // --------------------------------------------------------------------------------------------

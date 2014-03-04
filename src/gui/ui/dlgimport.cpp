@@ -1,14 +1,13 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
+#include <gui/ui/dlgimport.hpp>
+#include <ui_dlgimport.h>
+
 #include <QMessageBox>
-#include <QKeyEvent>
-#include <QDebug>
 #include <QFileDialog>
 
-#include "dlgimport.h"
-#include "ui_dlgimport.h"
 
 DlgImport::DlgImport(QWidget *parent) :
     QDialog(parent),

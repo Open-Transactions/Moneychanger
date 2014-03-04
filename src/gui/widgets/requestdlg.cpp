@@ -1,35 +1,26 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
+
+#include <gui/widgets/requestdlg.hpp>
+#include <ui_requestdlg.h>
+
+#include <gui/widgets/home.hpp>
+#include <gui/widgets/overridecursor.hpp>
+#include <gui/widgets/dlgchooser.hpp>
+
+#include <core/moneychanger.hpp>
+#include <core/handlers/contacthandler.hpp>
+
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OT_ME.hpp>
 
 #include <QDebug>
 #include <QMessageBox>
 #include <QKeyEvent>
 
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#include <otlib/OTLog.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#include <opentxs/OTLog.h>
-#endif
-
-#include "requestdlg.h"
-#include "ui_requestdlg.h"
-
-#include "moneychanger.h"
-#include "dlgchooser.h"
-
-#include "handlers/contacthandler.h"
-#include "handlers/DBHandler.h"
-
-#include "overridecursor.h"
-
 
 // ----------------------------------------------------------------------
-
 bool MTRequestDlg::sendInvoice(int64_t amount, QString toNymId, QString fromAcctId, QString note)
 {
     return sendChequeLowLevel(amount, toNymId, fromAcctId, note, true); //isInvoice = true

@@ -1,8 +1,8 @@
-#ifndef STABLE_H
-#include <stable.h>
+#ifndef __STABLE_HPP__
+#include <bitcoin-api/stable.hpp>
 #endif
 
-#include "bitcoinapi.h"
+#include <bitcoin-api/bitcoinapi.hpp>
 
 // go to header
 

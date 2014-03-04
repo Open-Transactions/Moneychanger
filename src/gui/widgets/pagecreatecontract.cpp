@@ -1,9 +1,10 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "pagecreatecontract.h"
-#include "ui_pagecreatecontract.h"
+#include <gui/widgets/pagecreatecontract.hpp>
+#include <ui_pagecreatecontract.h>
+
 
 MTPageCreateContract::MTPageCreateContract(QWidget *parent) :
     QWizardPage(parent),

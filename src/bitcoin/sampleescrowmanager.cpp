@@ -1,14 +1,19 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include<QObject>
-#include "widgets/btcguitest.h"
-#include "sampleescrowmanager.h"
-#include "sampleescrowclient.h"
-#include "sampleescrowserver.h"
-#include "modules.h"
-#include "utils.h"
+#include <bitcoin/sampleescrowmanager.hpp>
+
+#include <gui/widgets/btcguitest.hpp>
+
+#include <bitcoin/poolmanager.hpp>
+#include <bitcoin/transactionmanager.hpp>
+
+#include <bitcoin/sampleescrowserver.hpp>
+
+#include <core/modules.hpp>
+#include <core/utils.hpp>
+
 
 SampleEscrowManager::SampleEscrowManager()
 {

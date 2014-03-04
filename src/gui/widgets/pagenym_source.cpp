@@ -1,9 +1,10 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "pagenym_source.h"
-#include "ui_pagenym_source.h"
+#include <gui/widgets/pagenym_source.hpp>
+#include <ui_pagenym_source.h>
+
 
 #include "Namecoin.h"
 

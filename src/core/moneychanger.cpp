@@ -13,37 +13,38 @@
  *
  */
 
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include <QScopedPointer>
+#include <core/moneychanger.hpp>
+
+#include <gui/widgets/home.hpp>
+#include <gui/widgets/overridecursor.hpp>
+#include <gui/widgets/editdetails.hpp>
+#include <gui/widgets/requestdlg.hpp>
+#include <gui/widgets/dlgchooser.hpp>
+#include <gui/widgets/senddlg.hpp>
+#include <gui/widgets/createinsurancecompany.hpp>
+#include <gui/widgets/settings.hpp>
+#include <gui/widgets/btcguitest.hpp>
+#include <gui/ui/dlgimport.hpp>
+#include <gui/ui/dlgmenu.hpp>
+#include <gui/ui/dlgmarkets.hpp>
+
+#include <core/handlers/DBHandler.hpp>
+
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OT_ME.hpp>
+#include <opentxs/OTPaths.hpp>
+
+#include <QMenu>
+#include <QApplication>
 #include <QFile>
-
-#include "moneychanger.h"
-
-#include "handlers/contacthandler.h"
-#include "handlers/DBHandler.h"
-
-#include "widgets/detailedit.h"
-
-#include "widgets/senddlg.h"
-#include "widgets/requestdlg.h"
-
-#include "widgets/dlgchooser.h"
-
-#include "ui/dlgimport.h"
-
-#include "widgets/overridecursor.h"
-
-
-#ifdef _WIN32
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#else
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#endif
+#include <QDebug>
+#include <QMessageBox>
+#include <QSystemTrayIcon>
+#include <QTimer>
 
 /**
  * Constructor & Destructor

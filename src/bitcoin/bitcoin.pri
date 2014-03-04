@@ -1,13 +1,13 @@
 
 HEADERS += \
-    $${PWD}/escrowpool.h \
-    $${PWD}/poolmanager.h \
-    $${PWD}/sampleescrowclient.h \
-    $${PWD}/sampleescrowmanager.h \
-    $${PWD}/sampleescrowserver.h \
-    $${PWD}/sampleescrowtransaction.h \
-    $${PWD}/sampletypedefs.h \
-    $${PWD}/transactionmanager.h
+    $${PWD}/escrowpool.hpp \
+    $${PWD}/poolmanager.hpp \
+    $${PWD}/sampleescrowclient.hpp \
+    $${PWD}/sampleescrowmanager.hpp \
+    $${PWD}/sampleescrowserver.hpp \
+    $${PWD}/sampleescrowtransaction.hpp \
+    $${PWD}/sampletypedefs.hpp \
+    $${PWD}/transactionmanager.hpp
 
 SOURCES += \
     $${PWD}/escrowpool.cpp \
@@ -17,5 +17,3 @@ SOURCES += \
     $${PWD}/sampleescrowserver.cpp \
     $${PWD}/sampleescrowtransaction.cpp \
     $${PWD}/transactionmanager.cpp
-
-INCLUDEPATH += $${PWD}

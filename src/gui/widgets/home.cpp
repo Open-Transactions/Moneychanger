@@ -1,30 +1,24 @@
-#ifndef STABLE_H
-#include <core/stable.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include <QApplication>
-#include <QMessageBox>
-#include <QPushButton>
-#include <QToolButton>
-#include <QScrollArea>
-#include <QKeyEvent>
+#include <gui/widgets/home.hpp>
+#include <ui_home.h>
+
+#include <gui/widgets/homedetail.hpp>
+#include <gui/widgets/overridecursor.hpp>
+
+#include <core/moneychanger.hpp>
+#include <core/handlers/contacthandler.hpp>
+
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OTLog.hpp>
+
+#include <QLabel>
 #include <QDebug>
+#include <QToolButton>
+#include <QKeyEvent>
 
-#include "stdafx.h"
-
-#include "moneychanger.h"
-
-#include "home.h"
-#include "ui_home.h"
-
-#include "homedetail.h"
-
-#include "handlers/contacthandler.h"
-
-#include "overridecursor.h"
-
-#include "widgets/senddlg.h"
-#include "widgets/requestdlg.h"
 
 
 MTHome::MTHome(QWidget *parent) :

@@ -6,35 +6,23 @@
 //  Copyright (c) 2013 Monetas. All rights reserved.
 //
 
-#include "stdafx.h"
-
-#include <OTStorage.h>
-
-#include <OTString.h>
-#include <OTIdentifier.h>
-#include <OTASCIIArmor.h>
-#include <OTAccount.h>
-#include <OTLedger.h>
-#include <OTTransaction.h>
-#include <OTPaymentPlan.h>
-#include <OTWallet.h>
-#include <OTIdentifier.h>
-#include <OTPayment.h>
-
-
-#ifdef _WIN32
-#include <otapi/OpenTransactions.h>
-#include <otapi/OTAPI.h>
-#include <otapi/OT_ME.h>
-#include <otlib/OTLog.h>
-#else
-#include <opentxs/OpenTransactions.h>
-#include <opentxs/OTAPI.h>
-#include <opentxs/OT_ME.h>
-#include <opentxs/OTLog.h>
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
 #endif
 
-#include "MTRecord.hpp"
+#include <core/MTRecord.hpp>
+
+#include <opentxs/OpenTransactions.hpp>
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OTString.hpp>
+#include <opentxs/OTPaymentPlan.hpp>
+#include <opentxs/OTPayment.hpp>
+#include <opentxs/OTLedger.hpp>
+#include <opentxs/OT_ME.hpp>
+#include <opentxs/OTLog.hpp>
+
+#include <algorithm>
+
 
 
 const std::string Instrument_TypeStrings[] =
