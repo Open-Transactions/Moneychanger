@@ -21,6 +21,7 @@
 #ifndef MONEYCHANGER_NAMECOIN_HPP
 #define MONEYCHANGER_NAMECOIN_HPP
 
+#include <QSqlRecord>
 #include <QString>
 
 #include <list>
@@ -133,6 +134,30 @@ private:
    */
   nmcrpc::NamecoinInterface::Name getNameForNym (const QString& nym,
                                                  const QString& cred);
+
+  /* Functor class replacing the lambda expression to add names to
+     list of pending registrations in C++03 mode.  */
+  /* FIXME: Replace by lambda expression if we can be C++11-only.  */
+  class AddPendingRegFunctor
+  {
+
+  private:
+
+    NMC_NameManager& me;
+
+    // No default constructor.
+    AddPendingRegFunctor ();
+
+  public:
+    
+    inline explicit
+    AddPendingRegFunctor (NMC_NameManager& m)
+      : me(m)
+    {}
+
+    void operator() (const QSqlRecord& rec);
+
+  };
 
 public:
 

@@ -30,7 +30,6 @@
 
 #include <QDebug>
 #include <QSqlField>
-#include <QSqlRecord>
 
 #include <cassert>
 #include <iostream>
@@ -90,18 +89,23 @@ NMC_NameManager::NMC_NameManager (NMC_Interface& nmc)
   const QString query = "SELECT `regData` FROM `nmc_names`"
                         " WHERE (`regData` IS NOT NULL) AND (NOT `active`)";
 
-  const auto addPendingReg = [this] (const QSqlRecord& rec)
-    {
-      nmcrpc::NameRegistration reg(rpc, nc);
-      const QString val = rec.field("regData").value ().toString ();
-      std::istringstream in(val.toStdString ());
-      in >> reg;
-      pendingRegs.push_back (reg);
+  /* FIXME: Replace by lambda expression if we use C++11-only.  */
+  AddPendingRegFunctor addPendingReg(*this);
 
-      qDebug () << "  " << QString(reg.getName ().c_str ());
-    };
   qDebug () << "Loading pending name registrations:";
   DBHandler::getInstance ()->queryMultiple (query, addPendingReg);
+}
+
+void
+NMC_NameManager::AddPendingRegFunctor::operator() (const QSqlRecord& rec)
+{
+  nmcrpc::NameRegistration reg(me.rpc, me.nc);
+  const QString val = rec.field("regData").value ().toString ();
+  std::istringstream in(val.toStdString ());
+  in >> reg;
+  me.pendingRegs.push_back (reg);
+
+  qDebug () << "  " << QString(reg.getName ().c_str ());
 }
 
 /**
@@ -166,7 +170,11 @@ NMC_NameManager::startRegistration (const QString& nym, const QString& cred)
       const QString queryStr = "INSERT INTO `nmc_names`"
                                "  (`name`, `nym`, `cred`, `active`, `regData`)"
                                "  VALUES (:name, :nym, :cred, 0, :regData)";
+#ifdef CXX_11
       std::unique_ptr<DBHandler::PreparedQuery> qu;
+#else /* CXX_11?  */
+      std::auto_ptr<DBHandler::PreparedQuery> qu;
+#endif /* CXX_11?  */
       qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
       qu->bind (":name", nm.getName ().c_str ());
       qu->bind (":nym", nym);
@@ -236,7 +244,11 @@ NMC_NameManager::updateName (const QString& nym, const QString& cred)
       QString queryStr = "UPDATE `nmc_names`"
                          "  SET `updateTx` = :txid"
                          "  WHERE `name` = :name";
+#ifdef CXX_11
       std::unique_ptr<DBHandler::PreparedQuery> qu;
+#else /* CXX_11?  */
+      std::auto_ptr<DBHandler::PreparedQuery> qu;
+#endif /* CXX_11?  */
       qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
       qu->bind (":txid", txid.c_str ());
       qu->bind (":name", nm.getName ().c_str ());
@@ -266,8 +278,9 @@ NMC_NameManager::timerUpdate ()
   try
     {
       bool needUnlock = false;
-      for (const auto& entry : pendingRegs)
-        if (entry.canActivate () || entry.isFinished ())
+      for (regList::const_iterator i = pendingRegs.begin ();
+           i != pendingRegs.end (); ++i)
+        if (i->canActivate () || i->isFinished ())
           needUnlock = true;
 
       if (needUnlock)
@@ -301,7 +314,7 @@ NMC_NameManager::timerUpdate ()
      try-block inside, so that if one of those names fails (because of whatever
      reason associated to this particular name), this doesn't prevent other
      names from updating.  */
-  auto i = pendingRegs.begin ();
+  regList::iterator i = pendingRegs.begin ();
   while (i != pendingRegs.end ())
     {
       try
@@ -319,7 +332,11 @@ NMC_NameManager::timerUpdate ()
               QString queryStr = "UPDATE `nmc_names`"
                                  "  SET `regData` = NULL, `active` = 1"
                                  "  WHERE `name` = :name";
+#ifdef CXX_11
               std::unique_ptr<DBHandler::PreparedQuery> qu;
+#else /* CXX_11?  */
+              std::auto_ptr<DBHandler::PreparedQuery> qu;
+#endif /* CXX_11?  */
               qu.reset (db.prepareQuery (queryStr));
               qu->bind (":name", i->getName ().c_str ());
               db.runQuery (qu.release ());
@@ -356,7 +373,11 @@ NMC_NameManager::timerUpdate ()
               const QString queryStr = "UPDATE `nmc_names`"
                                        "  SET `regData` = :regData"
                                        "  WHERE `name` = :name";
+#ifdef CXX_11
               std::unique_ptr<DBHandler::PreparedQuery> qu;
+#else /* CXX_11?  */
+              std::auto_ptr<DBHandler::PreparedQuery> qu;
+#endif /* CXX_11?  */
               qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
               qu->bind (":name", i->getName ().c_str ());
               qu->bind (":regData", out.str ().c_str ());
