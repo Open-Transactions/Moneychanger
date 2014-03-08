@@ -25,8 +25,8 @@
 
 #include <nmcrpc/RpcSettings.hpp>
 
-#include <opentxs/OTAPI.h>
-#include <opentxs/OTPassword.h>
+#include <opentxs/OTAPI.hpp>
+#include <opentxs/OTPassword.hpp>
 
 #include <QDebug>
 #include <QSqlField>
