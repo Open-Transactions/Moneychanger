@@ -11,9 +11,6 @@
 #include <namecoin/Namecoin.hpp>
 
 #include <QSqlField>
-#include <QSqlRecord>
-
-#include <nmcrpc/NamecoinInterface.hpp>
 
 #include <opentxs/OTAPI.hpp>
 
@@ -272,50 +269,17 @@ MTCredentials::getNamecoinStatus (const std::string& nym,
   NMC_Interface nmc;
   nmcrpc::NamecoinInterface& nc = nmc.getNamecoin ();
 
-  const auto nameHandler = [this, &nc, &res, &found, nym, cred] (const QSqlRecord& rec)
-    {
-      if (found)
-        qDebug () << "ERROR: Found more than one nmc_names entry for Nym "
-                  << nym.c_str () << " and cred " << cred.c_str ();
-      found = true;
-
-      const bool active = rec.field ("active").value ().toInt ();
-      const QString name = rec.field ("name").value ().toString ();
-      const QString updateTx = rec.field ("updateTx").value ().toString ();
-
-      /* If the active flag is set but the update transaction is currently
-         unconfirmed, mark the entry also as 'pending'.  */
-      bool unconfirmed = false;
-      if (active && nc.getNumberOfConfirmations (updateTx.toStdString ()) == 0)
-          unconfirmed = true;
-
-      if (!active || unconfirmed)
-          res = tr("pending");
-      else
-      {
-          const auto nm = nc.queryName (name.toStdString ());
-
-          std::string nymSrc;
-          nymSrc = OTAPI_Wrap::GetNym_SourceForID (nym);
-
-          NMC_Verifier verify(nc);
-          if (!verify.verifyCredentialHashAtSource (cred, nymSrc))
-              res = tr("invalid");
-          else if (nm.isExpired ())
-              res = tr("expired");
-          else
-          {
-              const int expireIn = nm.getExpireCounter ();
-              res = tr("%1 blocks valid").arg(expireIn);
-          }
-      }
-    };
+  NameStatusFunctor nameHandler (nc, res, found, nym, cred);
 
   DBHandler& db = *DBHandler::getInstance ();
   const QString queryStr = "SELECT `name`, `active`, `updateTx`"
                            "  FROM `nmc_names`"
                            "  WHERE `nym` = :nym AND `cred` = :cred";
+#ifdef CXX_11
   std::unique_ptr<DBHandler::PreparedQuery> qu;
+#else /* CXX_11?  */
+  std::auto_ptr<DBHandler::PreparedQuery> qu;
+#endif /* CXX_11?  */
   qu.reset (db.prepareQuery (queryStr));
   qu->bind (":nym", nym.c_str ());
   qu->bind (":cred", cred.c_str ());
@@ -336,4 +300,46 @@ MTCredentials::getNamecoinStatus (const std::string& nym,
     }
 
   return res;
+}
+
+/* Code for the name status functor.  */
+void
+MTCredentials::NameStatusFunctor::operator() (const QSqlRecord& rec)
+{
+  if (found)
+    qDebug () << "ERROR: Found more than one nmc_names entry for Nym "
+              << nym.c_str () << " and cred " << cred.c_str ();
+  found = true;
+
+  const bool active = rec.field ("active").value ().toInt ();
+  const QString name = rec.field ("name").value ().toString ();
+  const QString updateTx = rec.field ("updateTx").value ().toString ();
+
+  /* If the active flag is set but the update transaction is currently
+     unconfirmed, mark the entry also as 'pending'.  */
+  bool unconfirmed = false;
+  if (active && nc.getNumberOfConfirmations (updateTx.toStdString ()) == 0)
+    unconfirmed = true;
+
+  if (!active || unconfirmed)
+    res = tr("pending");
+  else
+    {
+      nmcrpc::NamecoinInterface::Name nm;
+      nm = nc.queryName (name.toStdString ());
+
+      std::string nymSrc;
+      nymSrc = OTAPI_Wrap::GetNym_SourceForID (nym);
+
+      NMC_Verifier verify(nc);
+      if (!verify.verifyCredentialHashAtSource (cred, nymSrc))
+        res = tr("invalid");
+      else if (nm.isExpired ())
+        res = tr("expired");
+      else
+        {
+          const int expireIn = nm.getExpireCounter ();
+          res = tr("%1 blocks valid").arg (expireIn);
+        }
+    }
 }
