@@ -20,8 +20,8 @@
 
 #include "Namecoin.h"
 
-#include "handlers/DBHandler.h"
-#include "dlgpassword.h"
+#include <core/handlers/DBHandler.hpp>
+#include <gui/ui/dlgpassword.hpp>
 
 #include <nmcrpc/RpcSettings.hpp>
 

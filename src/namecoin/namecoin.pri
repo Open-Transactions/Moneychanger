@@ -4,5 +4,3 @@ HEADERS += \
 
 SOURCES += \
     $${PWD}/Namecoin.cpp
-
-INCLUDEPATH += $${PWD}
