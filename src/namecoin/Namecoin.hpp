@@ -2,7 +2,7 @@
     Namecoin.hpp
     Namecoin credential verification.
 
-    Copyright (c) 2013 by Daniel Kraft <d@domob.eu>
+    Copyright (c) 2013-2014 by Daniel Kraft <d@domob.eu>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -53,6 +53,12 @@ private:
   /** High-level interface used.  */
   nmcrpc::NamecoinInterface* nc;
 
+  // Disable copying.
+#ifndef CXX_11
+  NMC_Interface (const NMC_Interface&);
+  NMC_Interface& operator= (const NMC_Interface&);
+#endif /* !CXX_11  */
+
 public:
 
   /**
@@ -66,8 +72,10 @@ public:
   ~NMC_Interface ();
 
   // No copying.
+#ifdef CXX_11
   NMC_Interface (const NMC_Interface&) = delete;
   NMC_Interface& operator= (const NMC_Interface&) = delete;
+#endif /* CXX_11?  */
 
   /**
    * Get JSON-RPC connection.
@@ -227,6 +235,13 @@ public:
 class NMC_WalletUnlocker::UnlockFailure : public std::runtime_error
 {
 
+private:
+
+  // No default constructor.
+#ifndef CXX_11
+  UnlockFailure ();
+#endif /* !CXX_11  */
+
 public:
 
   /**
@@ -240,9 +255,11 @@ public:
   }
 
   /* No default constructor, but copying ok.  */
+#ifdef CXX_11
   UnlockFailure () = delete;
   UnlockFailure (const UnlockFailure&) = default;
   UnlockFailure& operator= (const UnlockFailure&) = default;
+#endif /* CXX_11?  */
 
 };
 
@@ -262,6 +279,13 @@ private:
   /** Namecoin interface to use.  */
   nmcrpc::NamecoinInterface& nc;
 
+  // Disable copying.
+#ifndef CXX_11
+  NMC_Verifier ();
+  NMC_Verifier (const NMC_Verifier&);
+  NMC_Verifier& operator= (const NMC_Verifier&);
+#endif /* !CXX_11  */
+
 public:
 
   /**
@@ -275,9 +299,11 @@ public:
   }
 
   // No default constructor or copying.
+#ifdef CXX_11
   NMC_Verifier () = delete;
   NMC_Verifier (const NMC_Verifier&) = delete;
   NMC_Verifier& operator= (const NMC_Verifier&) = delete;
+#endif /* CXX_11?  */
 
   /**
    * Verify a credentials hash.

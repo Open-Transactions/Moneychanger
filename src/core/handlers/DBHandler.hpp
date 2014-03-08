@@ -147,10 +147,12 @@ class DBHandler::PreparedQuery
       query.prepare (run);
     }
 
-    // No copying.
-    PreparedQuery () = delete;
-    PreparedQuery (const PreparedQuery&) = delete;
-    PreparedQuery& operator= (const PreparedQuery&) = delete;
+    // Disable copying.
+#ifndef CXX_11
+    PreparedQuery ();
+    PreparedQuery (const PreparedQuery&);
+    PreparedQuery& operator= (const PreparedQuery&);
+#endif /* !CXX_11  */
 
     /**
      * Execute the query.
@@ -159,6 +161,13 @@ class DBHandler::PreparedQuery
     bool execute ();
 
   public:
+
+    // No copying.
+#ifdef CXX_11
+    PreparedQuery () = delete;
+    PreparedQuery (const PreparedQuery&) = delete;
+    PreparedQuery& operator= (const PreparedQuery&) = delete;
+#endif /* CXX_11?  */
 
     /**
      * Add a bound value.

@@ -181,7 +181,11 @@ DBHandler::PreparedQuery* DBHandler::prepareQuery(const QString& run)
 
 bool DBHandler::runQuery(PreparedQuery* query)
 {
+#ifdef CXX_11
   std::unique_ptr<PreparedQuery> qu(query);
+#else /* CXX_11?  */
+  std::auto_ptr<PreparedQuery> qu(query);
+#endif /* CXX_11?  */
 
   QMutexLocker locker(&dbMutex);
   if (!db.isOpen ())
@@ -192,7 +196,11 @@ bool DBHandler::runQuery(PreparedQuery* query)
 
 QSqlRecord DBHandler::queryOne(PreparedQuery* query)
 {
+#ifdef CXX_11
   std::unique_ptr<PreparedQuery> qu(query);
+#else /* CXX_11?  */
+  std::auto_ptr<PreparedQuery> qu(query);
+#endif /* CXX_11?  */
 
   QMutexLocker locker(&dbMutex);
   if (!db.isOpen ())
