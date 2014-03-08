@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Namecoin.h"
+#include "Namecoin.hpp"
 
 #include <core/handlers/DBHandler.hpp>
 #include <gui/ui/dlgpassword.hpp>

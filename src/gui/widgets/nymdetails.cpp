@@ -8,7 +8,7 @@
 #include <gui/widgets/credentials.hpp>
 #include <gui/widgets/wizardaddnym.hpp>
 
-#include <namecoin/Namecoin.h>
+#include <namecoin/Namecoin.hpp>
 
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OT_ME.hpp>

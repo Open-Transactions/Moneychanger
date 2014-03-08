@@ -7,7 +7,8 @@
 
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/DBHandler.hpp>
-#include <namecoin/Namecoin.h>
+
+#include <namecoin/Namecoin.hpp>
 
 #include <QSqlField>
 #include <QSqlRecord>

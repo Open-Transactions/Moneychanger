@@ -5,7 +5,7 @@
 #include <gui/widgets/pagenym_source.hpp>
 #include <ui_pagenym_source.h>
 
-#include <namecoin/Namecoin.h>
+#include <namecoin/Namecoin.hpp>
 
 #include <string>
 
