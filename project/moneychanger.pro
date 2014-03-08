@@ -8,4 +8,5 @@ win32: SUBDIRS += curl
 
 SUBDIRS += jsoncpp
 SUBDIRS += bitcoin-api
+SUBDIRS += nmcrpc
 SUBDIRS += moneychanger-qt
