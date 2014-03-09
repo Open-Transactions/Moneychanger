@@ -5,6 +5,12 @@ The install process on MacOSX is somewhat involved.
 #########
 # update:
 $ brew update
+$ brew upgrade
+
+#########
+# install libidn
+
+$ brew install libidn
 
 
 #########

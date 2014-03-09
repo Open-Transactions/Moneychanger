@@ -70,23 +70,21 @@ mac:{
     }
 }
 
-
 #-------------------------------------------------
 # Linked Libs
 
-# QJsonRpc
-##LIBS += -L$${SOLUTION_DIR}qjsonrpc -lqjsonrpc
-
 unix: {
+
+##    LIBS += -L$${OUT_PWD}/../curl
+##    LIBS += -lcurl
+
     LIBS += -L$${OUT_PWD}/../bitcoin-api
     LIBS += -lbitcoin-api
 
     LIBS += -L$${OUT_PWD}/../jsoncpp
     LIBS += -ljsoncpp
 
-    LIBS += -L$${OUT_PWD}/../curl
-    LIBS += -lcurl
-
+    LIBS += -L$${OUT_PWD}/../nmcrpc
     LIBS += -lnmcrpc
 }
 
@@ -150,6 +148,8 @@ mac:{
 # need to put -ldl last.
 unix:{
     LIBS += -ldl
+    LIBS += -lcurl
+
 }
 
 
