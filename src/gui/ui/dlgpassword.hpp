@@ -27,6 +27,13 @@ public:
 
     void setDisplay(QString qstrDisplay);
 
+    /**
+     * Manually extract the input field's content into m_pPassword.  This is
+     * necessary because in some situations the accepted-slot is not called
+     * correctly for unknown reasons.
+     */
+    void extractPassword();
+
 protected:
     void closeEvent(QCloseEvent * e);
 

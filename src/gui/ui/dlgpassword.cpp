@@ -49,6 +49,11 @@ void MTDlgPassword::setDisplay(QString qstrDisplay)
 
 void MTDlgPassword::on_MTDlgPassword_accepted()
 {
+    extractPassword ();
+}
+
+void MTDlgPassword::extractPassword()
+{
     if (!ui->lineEdit->text().isEmpty())
         m_pPassword->setPassword(ui->lineEdit->text().toStdString().c_str(),
                                  ui->lineEdit->text().toStdString().size());

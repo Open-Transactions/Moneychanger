@@ -20,9 +20,13 @@ public:
 
 protected:
     virtual void showEvent(QShowEvent * event);
+    virtual bool validatePage();
 
 private:
     Ui::MTPageNym_Source *ui;
+
+private slots:
+    void getAddressClicked();
 };
 
 #endif // PAGENYM_SOURCE_HPP

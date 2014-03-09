@@ -5,12 +5,13 @@
 #include <opentxs/ExportWrapper.h>
 #include <opentxs/MemoryWrapper.hpp>
 
+#include <namecoin/Namecoin.hpp>
+
 #include <QPointer>
 #include <QList>
 #include <QIcon>
 #include <QVariant>
 #include <QWidget>
-
 
 class MTHome;
 class MTDetailEdit;
@@ -93,12 +94,20 @@ public:
     
     
 private:
+
+    /** Namecoin interface used for the NameManager.  */
+    NMC_Interface* nmc;
+    /** Namecoin name manager.  */
+    NMC_NameManager* nmc_names;
     
     /**
      * Booleans for tracking initialization
      **/
     
     bool mc_overall_init;
+
+    /** Timer used to update Namecoin names.  */
+    QTimer* nmc_update_timer;
     
     /**
      * Window Classes
@@ -267,6 +276,11 @@ private:
     
     
 public slots:
+
+    /**
+     * Namecoin update timer event.
+     */
+    void nmc_timer_event();
 
     /** 
      * Systray Menu Slots

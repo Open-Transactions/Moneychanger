@@ -8,6 +8,8 @@
 #include <gui/widgets/credentials.hpp>
 #include <gui/widgets/wizardaddnym.hpp>
 
+#include <namecoin/Namecoin.hpp>
+
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OT_ME.hpp>
 
@@ -367,10 +369,31 @@ void MTNymDetails::AddButtonClicked()
                 tr("Failed trying to create Nym."));
             return;
         }
+
         // ------------------------------------------------------
         // Get the ID of the new nym.
         //
         QString qstrID = QString::fromStdString(str_id);
+
+        // ------------------------------------------------------
+        // Register the Namecoin name.
+        if (nAuthorityIndex == 1)
+        {
+            const unsigned cnt = OTAPI_Wrap::GetNym_CredentialCount (str_id);
+            if (cnt != 1)
+            {
+                qDebug () << "Expected one master credential, got " << cnt
+                          << ".  Skipping Namecoin registration.";
+            }
+            else
+            {
+                const std::string cred = OTAPI_Wrap::GetNym_CredentialID (str_id, 0);
+                const QString qCred = QString::fromStdString (cred);
+                NMC_NameManager& nmc = NMC_NameManager::getInstance ();
+                nmc.startRegistration (qstrID, qCred);
+            }
+        }
+
         // ------------------------------------------------------
         // Set the Name of the new Nym.
         //
