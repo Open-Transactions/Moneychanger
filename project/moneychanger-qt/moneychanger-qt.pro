@@ -43,7 +43,6 @@ include($${SOLUTION_DIR}../src/namecoin/namecoin.pri)
 
 unix:{
     PKGCONFIG += opentxs
-    PKGCONFIG += chaiscript
 }
 
 
