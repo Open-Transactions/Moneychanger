@@ -300,6 +300,15 @@ int64_t Moneychanger::HasUsageCredits(      QWidget     * parent,
 
         strMessage = madeEasy.adjust_usage_credits(SERVER_ID, NYM_ID, NYM_ID, strAdjustment);
     }
+    if (strMessage.empty())
+    {
+        QString qstrErrorHeader, qstrErrorMsg;
+        qstrErrorHeader = tr("Moneychanger::HasUsageCredits: Error 'strMessage' is Empty!");
+        qstrErrorMsg = tr("This should not happen. Please Report!");
+        QMessageBox::warning(parent, qstrErrorHeader, qstrErrorMsg);
+        return -2;
+    }
+
     // --------------------------------------------------------
     const int64_t lReturnValue = OTAPI_Wrap::Message_GetUsageCredits(strMessage);
     // --------------------------------------------------------
