@@ -22,6 +22,8 @@
 #include <opentxs/OTMessage.hpp>
 #include <opentxs/OTLog.hpp>
 
+#include <algorithm>
+
 
 #define MC_UI_TEXT_TO "<font color='grey'>To:</font> %s"
 #define MC_UI_TEXT_FROM "<font color='grey'>From:</font> %s"
