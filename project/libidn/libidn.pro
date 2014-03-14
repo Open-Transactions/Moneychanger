@@ -1,17 +1,16 @@
 #-------------------------------------------------
 #
-# Moneychanger Project File
+# LibIDN Project File
 #
 #-------------------------------------------------
 
 TEMPLATE    = lib
 CONFIG     += staticlib
 
-TARGET      = nmcrpc
-#VERSION     =
+TARGET      = libidn
+#VERSION     = 1.28.0
 
-win32:DEFINES += "CURL_STATICLIB=1" "STATICLIB=1"
-
+DEFINES += "IDNA_EXPORTS" "HAVE_CONFIG_H" "LIBIDN_BUILDING" "LIBIDN_STATIC"
 
 #-------------------------------------------------
 # Common Settings
@@ -22,18 +21,11 @@ include(../common.pri)
 #-------------------------------------------------
 # Source
 
-include($${SOLUTION_DIR}../src/nmcrpc/nmcrpc.pri)
-
+include($${SOLUTION_DIR}../src/libidn/libidn/libidn.pri)
+include($${SOLUTION_DIR}../src/libidn/libidn/gl/gl.pri)
 
 #-------------------------------------------------
 # Include
 
-INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
-
-
-#-------------------------------------------------
-# Package Config
-unix:{
-    PKGCONFIG += libidn
-}
+include($${SOLUTION_DIR}../src/libidn/windows/idn_windows.pri)
 

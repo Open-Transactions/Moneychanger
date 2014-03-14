@@ -124,6 +124,7 @@ win32: {
     LIBS += bitcoin-api.lib
     LIBS += jsoncpp.lib
     LIBS += curl.lib
+    LIBS += nmcrpc.lib
 
     LIBS += otlib.lib
     LIBS += otapi.lib

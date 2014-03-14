@@ -11,6 +11,8 @@ INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
 
 win32:{
     INCLUDEPATH += $${SOLUTION_DIR}../src/curl/include
+    INCLUDEPATH += $${SOLUTION_DIR}../src/libidn/libidn
+    INCLUDEPATH += $${SOLUTION_DIR}../src/libidn/windows/include
 
     equals(TEMPLATE,vcapp)|equals(TEMPLATE,vclib):{
         DESTDIR     = $${SOLUTION_DIR}../lib/$(PlatformName)/$(Configuration)
