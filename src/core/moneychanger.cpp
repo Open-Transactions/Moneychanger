@@ -301,7 +301,11 @@ int64_t Moneychanger::HasUsageCredits(      QWidget     * parent,
         strMessage = madeEasy.adjust_usage_credits(SERVER_ID, NYM_ID, NYM_ID, strAdjustment);
     }
     // --------------------------------------------------------
-    const int64_t lReturnValue = OTAPI_Wrap::Message_GetUsageCredits(strMessage);
+    int64_t lReturnValue;
+    if(strMessage.size() > 2)
+        lReturnValue = OTAPI_Wrap::Message_GetUsageCredits(strMessage);
+    else
+        lReturnValue = -2;
     // --------------------------------------------------------
     QString qstrErrorHeader, qstrErrorMsg;
 
