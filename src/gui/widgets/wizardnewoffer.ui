@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>WizardNewOffer</class>
+ <widget class="QWizard" name="WizardNewOffer">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Wizard</string>
+  </property>
+  <property name="options">
+   <set>QWizard::CancelButtonOnLeft|QWizard::NoDefaultButton</set>
+  </property>
+  <widget class="PageOffer_BidAsk" name="page_BidAsk"/>
+  <widget class="PageOffer_Assets" name="page_Assets"/>
+  <widget class="PageOffer_Accounts" name="page_Accounts"/>
+  <widget class="PageOffer_Amounts" name="page_Amounts"/>
+  <widget class="PageOffer_Summary" name="page_Summary"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>PageOffer_BidAsk</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pageoffer_bidask.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageOffer_Accounts</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pageoffer_accounts.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageOffer_Amounts</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pageoffer_amounts.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageOffer_Summary</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pageoffer_summary.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageOffer_Assets</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pageoffer_assets.hpp</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

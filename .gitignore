@@ -14,6 +14,7 @@
 
 *.pro.user
 *.pro.user.*
+*.pro.*
 moc_*.cpp
 qrc_*.cpp
 Makefile
@@ -33,11 +34,51 @@ Release*
 mc_db
 ui_*
 *plugin_import.cpp
+*.DS_Store
+*.hpp.cpp
+
+.qmake.stash
+Makefile.Debug
+Makefile.Release
 
 #text editor backup files
 *~
 
 # KDevelop files
 *.kdev4
-src/moneychanger-qt
+/src/zmq*
+/src/moneychanger-qt
+/src/opentxs/
+/src/chaiscript/
+/src/irrxml/
+/src/containers/
+/src/google/
+/src/simpleini/
+/src/bigint/
+/src/lucre/
+/src/lucre/
+/src/otlib/
+/src/otapi/
+/src/ots/
+/src/zlib/
 
+# visual studio noise
+*.user
+*.sdf
+*ipch/
+*.userprefs
+*.suo
+*.sln
+*.sdf
+*.vcxproj
+*.vcxproj.filters
+*.opensdf
+
+# targets
+
+build/
+lib/
+obj/
+bin/
+out/
+/include/

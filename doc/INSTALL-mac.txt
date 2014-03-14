@@ -1,0 +1,91 @@
+The install process on MacOSX is somewhat involved.
+
+(we assume that you already have brew installed, from OT)
+
+#########
+# update:
+$ brew update
+$ brew upgrade
+
+#########
+# install libidn
+
+$ brew install libidn
+
+
+#########
+# install QT
+$ brew install libpng qt5
+$ brew unlink qt
+$ brew link —-force qt5
+
+OR. (we can just use the qt4 version)
+
+# brew install qt
+
+
+#########
+# adding path /usr/local/bin to /etc/launchd.conf
+# this step adds the path “/usr/local/bin” to all applications that are run from the launcher.
+
+# we will use nano (but you can use your favourite command line text editor.
+
+$ sudo nano /etc/launchd.conf
+
+add/append: setenv PATH /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
+make sure you have a blank line at the end of the file.
+
+#########
+# download and install QT Creator:
+http://qt-project.org/downloads
+
+## add /usr/local to finder favourites.
+# open the terminal and run:
+$open /usr/local
+
+Now favorite the folder that loads up (you cannot normally get to this folder through finder).
+
+# reboot the pc: (requires a reboot for these changes to take effect).
+$ sudo reboot
+
+
+#########
+# Run QT Creator.  You will need to manually setup QT:
+qmake location: /usr/local/Cellar/qt5/5.2.0/bin/qmake
+
+# and the kits (all defaults should be fine)
+
+
+#########
+# Download Moneychanger
+
+$ mkdir -p ~/Scratch/Sources; cd ~/Scratch/Sources
+$ git clone git://github.com/Open-Transactions/Moneychanger.git
+$ cd Moneychanger
+
+
+#########
+# Compile via cli
+
+# qmake -r project
+# cd moneychanger-qt
+# make -j2
+
+
+#########
+# Open in QT Creator  (not recommended)
+
+file: ~/Scratch/Sources/Moneychanger/project/moneychanger.pro
+
+
+Make sure you have Open Transactions installed!
+
+Compile and Run.
+
+
+Have fun.
+
+This guide, I'm sure, will need more work.
+
+

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MTWizardAddContract</class>
+ <widget class="QWizard" name="MTWizardAddContract">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>597</width>
+    <height>369</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Wizard</string>
+  </property>
+  <widget class="MTPageAddContract" name="wizardPage1">
+   <attribute name="pageId">
+    <string notr="true">0</string>
+   </attribute>
+  </widget>
+  <widget class="MTPageImportContract" name="wizardPage2">
+   <attribute name="pageId">
+    <string notr="true">1</string>
+   </attribute>
+  </widget>
+  <widget class="MTPageCreateContract" name="wizardPage3">
+   <attribute name="pageId">
+    <string notr="true">2</string>
+   </attribute>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MTPageAddContract</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pageaddcontract.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MTPageImportContract</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pageimportcontract.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MTPageCreateContract</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pagecreatecontract.hpp</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,22 @@
+
+
+Have the QT bin folder on your path.
+
+Open a command prompt.
+
+navigate to the ‘project’ folder
+
+run:  qmake
+
+(NB :On systems where OT was compiled with C++11 use
+
+qmake "QMAKE_CXXFLAGS += -std=c++11"
+
+)
+
+then: make (-jx, where x is the number of threads you want).
+
+navigate to the ‘lib’ directory.
+where you will find moneychanger-qt
+
+:)

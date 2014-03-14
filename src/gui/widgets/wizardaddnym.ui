@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MTWizardAddNym</class>
+ <widget class="QWizard" name="MTWizardAddNym">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>579</width>
+    <height>344</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Wizard</string>
+  </property>
+  <widget class="MTPageAcct_Name" name="wizardPage1"/>
+  <widget class="MTPageNym_Keysize" name="wizardPage2"/>
+  <widget class="MTPageNym_Authority" name="wizardPage3"/>
+  <widget class="MTPageNym_Source" name="wizardPage4"/>
+  <widget class="MTPageNym_AltLocation" name="wizardPage5"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MTPageAcct_Name</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pageacct_name.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MTPageNym_Keysize</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pagenym_keysize.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MTPageNym_Authority</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pagenym_authority.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MTPageNym_Source</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pagenym_source.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MTPageNym_AltLocation</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pagenym_altlocation.hpp</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
