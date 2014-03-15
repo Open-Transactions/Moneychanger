@@ -11,9 +11,12 @@
 
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
-#include <opentxs/MemoryWrapper.hpp>
+#include <opentxs/TR1_Wrapper.hpp>
 
 #include <core/MTRecord.hpp>
+
+#include _CINTTYPES
+#include _MEMORY
 
 #include <iostream>
 #include <vector>
@@ -46,17 +49,9 @@ public:
  };
  */
 
-#ifndef OT_USE_TR1
-// -------------------------------------------------------------
-typedef std::weak_ptr  <MTRecord>       weak_ptr_MTRecord;
-typedef std::shared_ptr<MTRecord>     shared_ptr_MTRecord;
-// -------------------------------------------------------------
-#else
-// -------------------------------------------------------------
-typedef std::tr1::weak_ptr  <MTRecord>       weak_ptr_MTRecord;
-typedef std::tr1::shared_ptr<MTRecord>     shared_ptr_MTRecord;
-// -------------------------------------------------------------
-#endif
+typedef _WeakPtr<MTRecord>       weak_ptr_MTRecord;
+typedef _SharedPtr<MTRecord>     shared_ptr_MTRecord;
+
 
 typedef std::vector<shared_ptr_MTRecord>      vec_MTRecordList;
 // -------------------------------------------------------------

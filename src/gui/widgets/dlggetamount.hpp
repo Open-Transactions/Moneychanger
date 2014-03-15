@@ -3,7 +3,10 @@
 
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
-#include <opentxs/MemoryWrapper.hpp>
+#include <opentxs/TR1_Wrapper.hpp>
+
+#include _CINTTYPES
+#include _MEMORY
 
 #include <QDialog>
 

@@ -3,13 +3,15 @@
 
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
-#include <opentxs/MemoryWrapper.hpp>
+#include <opentxs/TR1_Wrapper.hpp>
 
 #include <bitcoin-api/ibtcrpc.hpp>
 #include <bitcoin-api/btcmodules.hpp>
 
 #include <curl/curl.h>
 
+#include _CINTTYPES
+#include _MEMORY
 
 
 /*
@@ -110,11 +112,7 @@ public slots:
     */
 };
 
-#ifndef OT_USE_TR1
-    typedef std::shared_ptr<BtcRpcCurl> BtcRpcCurlPtr;
-#else
-    typedef std::tr1::shared_ptr<BtcRpcCurl> BtcRpcCurlPtr;
-#endif // OT_USE_TR1
+typedef _SharedPtr<BtcRpcCurl> BtcRpcCurlPtr;
 
 
 #endif // BTCRPCZMQ_HPP

@@ -3,20 +3,19 @@
 
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
-#include <opentxs/MemoryWrapper.hpp>
+#include <opentxs/TR1_Wrapper.hpp>
 
 #include <bitcoin/escrowpool.hpp>
 #include <bitcoin/sampleescrowtransaction.hpp>
+
+#include _CINTTYPES
+#include _MEMORY
 
 #include <map>
 
 class SampleEscrowClient;
 
-#ifndef OT_USE_TR1
-typedef std::shared_ptr<SampleEscrowClient> SampleEscrowClientPtr;
-#else
-typedef std::tr1::shared_ptr<SampleEscrowClient> SampleEscrowClientPtr;
-#endif // OT_USE_TR1
+typedef _SharedPtr<SampleEscrowClient> SampleEscrowClientPtr;
 
 class SampleEscrowServer
 {
@@ -62,11 +61,7 @@ private:
     int minConfirms;            // minimum required confirmations
 };
 
-#ifndef OT_USE_TR1
-    typedef std::shared_ptr<SampleEscrowServer> SampleEscrowServerPtr;
-#else
-    typedef std::tr1::shared_ptr<SampleEscrowServer> SampleEscrowServerPtr;
-#endif // OT_USE_TR1
+typedef _SharedPtr<SampleEscrowServer> SampleEscrowServerPtr;
 
 
 #endif // SAMPLEESCROWSERVER_HPP

@@ -3,9 +3,12 @@
 
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
-#include <opentxs/MemoryWrapper.hpp>
+#include <opentxs/TR1_Wrapper.hpp>
 
 #include <bitcoin-api/btcobjects.hpp>
+
+#include _CINTTYPES
+#include _MEMORY
 
 #include <string>
 
@@ -49,11 +52,7 @@ struct BitcoinServer
     {}
 };
 
-#ifndef OT_USE_TR1
-    typedef std::shared_ptr<BitcoinServer> BitcoinServerPtr;
-#else
-    typedef std::tr1::shared_ptr<BitcoinServer> BitcoinServerPtr;
-#endif // OT_USE_TR1
+typedef _SharedPtr<BitcoinServer> BitcoinServerPtr;
 
 
 class IBtcRpc
@@ -87,11 +86,7 @@ public:
     virtual BtcRpcPacketPtr SendRpc(BtcRpcPacketPtr jsonString) = 0;
 };
 
-#ifndef OT_USE_TR1
-    typedef std::shared_ptr<IBtcRpc> IBtcRpcPtr;
-#else
-    typedef std::tr1::shared_ptr<IBtcRpc> IBtcRpcPtr;
-#endif // OT_USE_TR1
+typedef _SharedPtr<IBtcRpc> IBtcRpcPtr;
 
 
 #endif // IBTCRPC_HPP

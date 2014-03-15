@@ -3,14 +3,16 @@
 
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
-#include <opentxs/MemoryWrapper.hpp>
+#include <opentxs/TR1_Wrapper.hpp>
 
 #include <bitcoin-api/imtbitcoin.hpp>
 #include <bitcoin-api/btcobjects.hpp>
 #include <bitcoin-api/btcmodules.hpp>
 
+#include _CINTTYPES
+#include _MEMORY
+
 #include <map>
-#include <sys/types.h>
 #include <string>
 #include <list>
 
@@ -117,10 +119,6 @@ private:
     BtcModules* modules;
 };
 
-#ifndef OT_USE_TR1
-    typedef std::shared_ptr<MTBitcoin> MTBitcoinPtr;
-#else
-    typedef std::tr1::shared_ptr<MTBitcoin> MTBitcoinPtr;
-#endif // OT_USE_TR1
+typedef _SharedPtr<MTBitcoin> MTBitcoinPtr;
 
 #endif // MTBITCOIN_HPP

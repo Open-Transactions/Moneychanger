@@ -3,11 +3,14 @@
 
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
-#include <opentxs/MemoryWrapper.hpp>
+#include <opentxs/TR1_Wrapper.hpp>
 
 #include <bitcoin-api/btcobjects.hpp>
 
 #include <json/json.h>
+
+#include _CINTTYPES
+#include _MEMORY
 
 #include <string>
 #include <list>
@@ -135,10 +138,6 @@ private:
     virtual void ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json::Value& error, Json::Value& result) = 0;
 };
 
-#ifndef OT_USE_TR1
-    typedef std::shared_ptr<IBtcJson> IBtcJsonPtr;
-#else
-    typedef std::tr1::shared_ptr<IBtcJson> IBtcJsonPtr;
-#endif // OT_USE_TR1
+typedef _SharedPtr<IBtcJson> IBtcJsonPtr;
 
 #endif // IBTCJSON_HPP
