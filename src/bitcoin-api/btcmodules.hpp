@@ -3,13 +3,15 @@
 
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
-#include <opentxs/MemoryWrapper.hpp>
+#include <opentxs/TR1_Wrapper.hpp>
 
 #include <bitcoin-api/ibtcjson.hpp>
 #include <bitcoin-api/ibtcrpc.hpp>
 #include <bitcoin-api/imtbitcoin.hpp>
 #include <bitcoin-api/btchelper.hpp>
 
+#include _CINTTYPES
+#include _MEMORY
 
 /*
 *
@@ -36,11 +38,9 @@
 
 
 class BtcModules;
-#ifndef OT_USE_TR1
-    typedef std::shared_ptr<BtcModules> BtcModulesPtr;
-#else
-    typedef std::tr1::shared_ptr<BtcModules> BtcModulesPtr;
-#endif // OT_USE_TR1
+
+typedef _SharedPtr<BtcModules> BtcModulesPtr;
+
 
 class BtcModules
 {

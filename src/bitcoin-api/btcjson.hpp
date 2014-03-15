@@ -3,11 +3,13 @@
 
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
-#include <opentxs/MemoryWrapper.hpp>
+#include <opentxs/TR1_Wrapper.hpp>
 
 #include <bitcoin-api/ibtcjson.hpp>
 #include <bitcoin-api/btcmodules.hpp>
 
+#include _CINTTYPES
+#include _MEMORY
 
 /*
  *
@@ -131,11 +133,7 @@ private:
     BtcModules* modules;
 };
 
-#ifndef OT_USE_TR1
-    typedef std::shared_ptr<BtcJson> BtcJsonPtr;
-#else
-    typedef std::tr1::shared_ptr<BtcJson> BtcJsonPtr;
-#endif // OT_USE_TR1
+typedef _SharedPtr<BtcJson> BtcJsonPtr;
 
 
 #endif // BTCJSON_HPP

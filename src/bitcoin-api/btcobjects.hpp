@@ -3,9 +3,12 @@
 
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
-#include <opentxs/MemoryWrapper.hpp>
+#include <opentxs/TR1_Wrapper.hpp>
 
 #include <json/json.h>
+
+#include _CINTTYPES
+#include _MEMORY
 
 #include <list>
 #include <vector>
@@ -230,11 +233,8 @@ struct BtcRpcPacket
 
     BtcRpcPacket(const std::string &strData);
 
-#ifndef OT_USE_TR1
-    typedef std::shared_ptr<BtcRpcPacket> BtcRpcPacketPtr;
-#else
-    typedef std::tr1::shared_ptr<BtcRpcPacket> BtcRpcPacketPtr;
-#endif // OT_USE_TR1
+    typedef _SharedPtr<BtcRpcPacket> BtcRpcPacketPtr;
+
     BtcRpcPacket(const BtcRpcPacketPtr packet);
 
     ~BtcRpcPacket();
@@ -257,31 +257,18 @@ private:
 };
 
 
-#ifndef OT_USE_TR1
-typedef std::shared_ptr<BtcTransaction>         BtcTransactionPtr;
-typedef std::shared_ptr<BtcRawTransaction>      BtcRawTransactionPtr;
-typedef std::shared_ptr<BtcUnspentOutput>       BtcUnspentOutputPtr;
-typedef std::shared_ptr<BtcAddressInfo>         BtcAddressInfoPtr;
-typedef std::shared_ptr<BtcMultiSigAddress>     BtcMultiSigAddressPtr;
-typedef std::shared_ptr<BtcBlock>               BtcBlockPtr;
-typedef std::shared_ptr<BtcTxIdVout>            BtcTxIdVoutPtr;
-typedef std::shared_ptr<BtcTxTarget>            BtcTxTargetPtr;
-typedef std::shared_ptr<BtcSignedTransaction>   BtcSignedTransactionPtr;
-typedef std::shared_ptr<BtcSigningPrequisite>   BtcSigningPrequisitePtr;
-typedef std::shared_ptr<BtcRpcPacket>           BtcRpcPacketPtr;
-#else
-typedef std::tr1::shared_ptr<BtcTransaction>        BtcTransactionPtr;
-typedef std::tr1::shared_ptr<BtcRawTransaction>     BtcRawTransactionPtr;
-typedef std::tr1::shared_ptr<BtcUnspentOutput>      BtcUnspentOutputPtr;
-typedef std::tr1::shared_ptr<BtcAddressInfo>        BtcAddressInfoPtr;
-typedef std::tr1::shared_ptr<BtcMultiSigAddress>    BtcMultiSigAddressPtr;
-typedef std::tr1::shared_ptr<BtcBlock>              BtcBlockPtr;
-typedef std::tr1::shared_ptr<BtcTxIdVout>           BtcTxIdVoutPtr;
-typedef std::tr1::shared_ptr<BtcTxTarget>           BtcTxTargetPtr;
-typedef std::tr1::shared_ptr<BtcSignedTransaction>  BtcSignedTransactionPtr;
-typedef std::tr1::shared_ptr<BtcSigningPrequisite>  BtcSigningPrequisitePtr;
-typedef std::tr1::shared_ptr<BtcRpcPacket>          BtcRpcPacketPtr;
-#endif
+typedef _SharedPtr<BtcTransaction>         BtcTransactionPtr;
+typedef _SharedPtr<BtcRawTransaction>      BtcRawTransactionPtr;
+typedef _SharedPtr<BtcUnspentOutput>       BtcUnspentOutputPtr;
+typedef _SharedPtr<BtcAddressInfo>         BtcAddressInfoPtr;
+typedef _SharedPtr<BtcMultiSigAddress>     BtcMultiSigAddressPtr;
+typedef _SharedPtr<BtcBlock>               BtcBlockPtr;
+typedef _SharedPtr<BtcTxIdVout>            BtcTxIdVoutPtr;
+typedef _SharedPtr<BtcTxTarget>            BtcTxTargetPtr;
+typedef _SharedPtr<BtcSignedTransaction>   BtcSignedTransactionPtr;
+typedef _SharedPtr<BtcSigningPrequisite>   BtcSigningPrequisitePtr;
+typedef _SharedPtr<BtcRpcPacket>           BtcRpcPacketPtr;
+
 
 typedef std::vector<BtcUnspentOutputPtr> BtcUnspentOutputs;
 typedef std::vector<BtcTxIdVoutPtr> BtcTxIdVouts;
