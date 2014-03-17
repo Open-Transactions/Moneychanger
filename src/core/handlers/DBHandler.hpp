@@ -11,6 +11,7 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QSqlRecord>
 #include <QString>
 #include <QVariant>
 

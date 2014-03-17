@@ -285,7 +285,7 @@ const char *BtcRpcPacket::ReadNextChar()
 {
     if (this->pointerOffset <= this->data.size())
         return &this->data.at(this->pointerOffset++);
-    else return '\0';
+    else return "";
 }
 
 size_t BtcRpcPacket::size()
