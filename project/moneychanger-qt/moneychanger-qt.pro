@@ -88,8 +88,9 @@ unix: {
 }
 
 linux: {
-    LIBS += -lboost_system-mt
-    LIBS += -lboost_thread-mt
+    # only need if no C++11 available (e.g. Ubuntu 12.04)
+    #LIBS += -lboost_system-mt
+    #LIBS += -lboost_thread-mt
 }
 
 win32: {
