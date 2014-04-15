@@ -33,3 +33,14 @@ qmake
 make
 
 (NB: qmake will be qmake-qt4 or qmake-qt5 on linux RH, Fedora)
+
+
+#### Dependencies
+(Only on Unix systems)
+
+Install the following packages with your systems packagmanager (e.g. sudo apt-get install):
+
+libidn11
+libidn-devel
+libcurl4
+libcurl-devel
