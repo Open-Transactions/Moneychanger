@@ -15,6 +15,7 @@
 #include <core/handlers/contacthandler.hpp>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OT_ME.hpp>
 #include <opentxs/OTLog.hpp>
 
