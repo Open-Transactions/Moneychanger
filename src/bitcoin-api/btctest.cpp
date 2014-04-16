@@ -101,7 +101,7 @@ bool BtcTest::TestBtcRpc()
 
     modules->btcRpc->SendRpc("garbage");
 
-    modules->btcRpc->SendRpc('\0');
+    modules->btcRpc->SendRpc("\0");
 
     modules->btcRpc->SendRpc(BtcRpcPacketPtr(new BtcRpcPacket()));
 

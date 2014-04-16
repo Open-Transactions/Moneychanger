@@ -133,13 +133,7 @@ win32: {
 }
 
 mac:{
-    LIBS += -mmacosx-version-min=10.7
-    LIBS += -framework CoreFoundation
-
-    contains(MAC_OS_VERSION, 13.0.0):{
-        LIBS += -stdlib=libc++
-    }
-    else:{
+    !contains(MAC_OS_VERSION, 10.9):{
         # if not on Mavericks
         LIBS += -lboost_system-mt
         LIBS += -lboost_thread-mt

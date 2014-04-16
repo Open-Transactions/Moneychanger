@@ -64,6 +64,8 @@ unix:{
 mac:MAC_OS_VERSION = $$system(sw_vers -productVersion)
 mac:MAC_OS_VERSION ~= s/\([0-9]*.[0-9]*\).*/\1/
 
+mac:QMAKE_MACOSX_DEPLOYMENT_TARGET = $${MAC_OS_VERSION}
+
 mac:{
     QT_CONFIG -= no-pkg-config
 
@@ -72,13 +74,8 @@ mac:{
     PKG_CONFIG_LIBDIR = "/usr/local/opt/openssl/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
     PKG_CONFIG_LIBDIR = "$${PKG_CONFIG_LIBDIR}:" #end with a colon.
 
-    QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -static
-    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
-
     contains(MAC_OS_VERSION, 10.9):{
-        QT_CONFIG += -spec macx-clang-libc++
         CONFIG += c++11
-        QMAKE_CXXFLAGS += -stdlib=libc++ -std=c++11
     }
     else:{
         MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
