@@ -747,7 +747,7 @@ bool MTRecordList::Populate()
                 continue;
             }
             // ----------------------------------
-            long lAmount = 0;
+            int64_t lAmount = 0;
             std::string str_amount;  // <========== AMOUNT
 
             if (theOutPayment.GetAmount(lAmount))
@@ -924,7 +924,7 @@ bool MTRecordList::Populate()
                 sp_Record->SetDateRange(tFrom, tTo);
                 sp_Record->SetBoxIndex(static_cast<int>(nCurrentOutpayment));
                 // -------------------------------------------------
-                long lTransNum = 0;
+                int64_t lTransNum = 0;
                 theOutPayment.GetOpeningNum(lTransNum, theNymID);
                 // -------------------------------------------------
                 sp_Record->SetTransactionNum(lTransNum);
@@ -1301,7 +1301,7 @@ bool MTRecordList::Populate()
 
                         str_type = MTRecord_GetTypeString(nType);
                         // ---------------------------------------------------
-                        long lAmount = 0;
+                        int64_t lAmount = 0;
 
                         if (pPayment->GetAmount(lAmount))
                         {
@@ -1638,7 +1638,7 @@ bool MTRecordList::Populate()
 
                         str_type = MTRecord_GetTypeString(nType);
                         // ---------------------------------------------------
-                        long lAmount = 0;
+                        int64_t lAmount = 0;
 
                         if (pPayment->GetAmount(lAmount))
                         {
@@ -1977,7 +1977,7 @@ bool MTRecordList::Populate()
 
                         str_type = MTRecord_GetTypeString(nType);
                         // ---------------------------------------------------
-                        long lAmount = 0;
+                        int64_t lAmount = 0;
 
                         if (pPayment->GetAmount(lAmount))
                         {
