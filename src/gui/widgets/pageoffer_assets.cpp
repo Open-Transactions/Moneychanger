@@ -9,6 +9,7 @@
 #include <gui/widgets/detailedit.hpp>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 
 
 PageOffer_Assets::PageOffer_Assets(QWidget *parent) :

@@ -8,6 +8,7 @@
 #include <gui/widgets/wizardaddcontract.hpp>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 
 #include <QFile>
 #include <QMessageBox>

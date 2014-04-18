@@ -17,6 +17,7 @@
 #include <core/moneychanger.hpp>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OT_ME.hpp>
 
 #include <QDateTime>

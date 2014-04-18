@@ -14,6 +14,7 @@
 
 #include <opentxs/OpenTransactions.hpp>
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OTString.hpp>
 #include <opentxs/OTPaymentPlan.hpp>
 #include <opentxs/OTPayment.hpp>

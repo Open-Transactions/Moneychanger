@@ -11,6 +11,7 @@
 #include <core/moneychanger.hpp>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 
 
 MTPageAcct_Nym::MTPageAcct_Nym(QWidget *parent) :
