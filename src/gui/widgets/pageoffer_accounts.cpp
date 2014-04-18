@@ -10,6 +10,7 @@
 #include <gui/widgets/wizardnewoffer.hpp>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 
 
 PageOffer_Accounts::PageOffer_Accounts(QWidget *parent) :

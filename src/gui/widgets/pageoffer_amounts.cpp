@@ -6,6 +6,7 @@
 #include <ui_pageoffer_amounts.h>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OTPaymentPlan.hpp>
 
 #include <cmath>

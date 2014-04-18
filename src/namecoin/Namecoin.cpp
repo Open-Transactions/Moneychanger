@@ -26,6 +26,7 @@
 #include <nmcrpc/RpcSettings.hpp>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OTPassword.hpp>
 
 #include <QDebug>

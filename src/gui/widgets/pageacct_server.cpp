@@ -11,6 +11,7 @@
 #include <core/moneychanger.hpp>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 
 
 MTPageAcct_Server::MTPageAcct_Server(QWidget *parent) :
