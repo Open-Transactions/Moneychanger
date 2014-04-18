@@ -992,7 +992,7 @@ bool MTRecord::CancelOutgoing(const std::string str_via_acct) // This can be bla
                         return false;
                     }
                     // ------------------------
-                    long lTransNum = 0;
+                    int64_t lTransNum = 0;
                     thePayment.GetOpeningNum(lTransNum, theNymID);
                     // ------------------------
                     if (0 == lTransNum) // Found it.
@@ -1046,7 +1046,7 @@ bool MTRecord::CancelOutgoing(const std::string str_via_acct) // This can be bla
                     return false;
                 }
                 // ------------------------
-                long lTransNum = 0;
+                int64_t lTransNum = 0;
                 thePayment.GetOpeningNum(lTransNum, theNymID);
                 // ------------------------
                 if (lTransNum == m_lTransactionNum) // Found it.
