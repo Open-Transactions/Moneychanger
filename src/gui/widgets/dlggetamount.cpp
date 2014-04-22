@@ -11,6 +11,7 @@
 #include <QKeyEvent>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 
 
 DlgGetAmount::DlgGetAmount(QWidget *parent, QString qstrAcctId, QString qstrAssetId, QString qstrReason) :
@@ -26,18 +27,18 @@ DlgGetAmount::DlgGetAmount(QWidget *parent, QString qstrAcctId, QString qstrAsse
     // ----------------------
     ui->labelReason->setText(qstrReason);
     // ----------------------
-    std::string str_asset_name  = OTAPI_Wrap::GetAssetType_Name(qstrAssetId.toStdString());
+    std::string str_asset_name  = OTAPI_Wrap::It()->GetAssetType_Name(qstrAssetId.toStdString());
     QString     qstr_asset_name = QString("<font color=grey>%1</font>").arg(QString::fromStdString(str_asset_name));
     // ----------------------
     ui->labelAsset->setText(qstr_asset_name);
     // ----------------------
     QString     qstrBalance   = MTHome::shortAcctBalance(qstrAcctId);
-    std::string str_acct_name = OTAPI_Wrap::GetAccountWallet_Name(qstrAcctId.toStdString());
+    std::string str_acct_name = OTAPI_Wrap::It()->GetAccountWallet_Name(qstrAcctId.toStdString());
     QString     qstrAcctName  = QString::fromStdString(str_acct_name);
     // ----------------------
     ui->labelBalance->setText(QString("<font color=grey>%1:</font> <big>%2</big>").arg(qstrAcctName).arg(qstrBalance));
     // ----------------------
-    std::string str_amount = OTAPI_Wrap::FormatAmount(m_qstrAssetId.toStdString(), m_lAmount);
+    std::string str_amount = OTAPI_Wrap::It()->FormatAmount(m_qstrAssetId.toStdString(), m_lAmount);
     // ----------------------
     ui->lineEdit->setText(QString::fromStdString(str_amount));
     // ----------------------
@@ -84,7 +85,7 @@ void DlgGetAmount::on_buttonBox_accepted()
         return;
     }
     // ------------------------------------
-    std::string str_amount = OTAPI_Wrap::FormatAmount(m_qstrAssetId.toStdString(), m_lAmount);
+    std::string str_amount = OTAPI_Wrap::It()->FormatAmount(m_qstrAssetId.toStdString(), m_lAmount);
     // ------------------------------------
     QMessageBox::StandardButton reply;
 
@@ -109,8 +110,8 @@ void DlgGetAmount::on_buttonBox_accepted()
 void DlgGetAmount::on_lineEdit_editingFinished()
 {
     std::string   str_amount;
-    m_lAmount   = OTAPI_Wrap::StringToAmount(m_qstrAssetId.toStdString(), ui->lineEdit->text().toStdString());
-    str_amount  = OTAPI_Wrap::FormatAmount  (m_qstrAssetId.toStdString(), m_lAmount);
+    m_lAmount   = OTAPI_Wrap::It()->StringToAmount(m_qstrAssetId.toStdString(), ui->lineEdit->text().toStdString());
+    str_amount  = OTAPI_Wrap::It()->FormatAmount  (m_qstrAssetId.toStdString(), m_lAmount);
 
     ui->lineEdit->setText(QString::fromStdString(str_amount));
     // --------------------------------

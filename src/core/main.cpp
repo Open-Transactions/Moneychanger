@@ -10,6 +10,7 @@
 #include <bitcoin-api/btcmodules.hpp>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OTLog.hpp>
 #include <opentxs/OTPaths.hpp>
 

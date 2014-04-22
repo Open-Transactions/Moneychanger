@@ -46,8 +46,8 @@ void MTPageAcct_Asset::on_pushButtonSelect_clicked()
     if (qstr_current_id.isEmpty())
         qstr_current_id = qstr_default_id;
     // -------------------------------------------
-    if (qstr_current_id.isEmpty() && (OTAPI_Wrap::GetAssetTypeCount() > 0))
-        qstr_current_id = QString::fromStdString(OTAPI_Wrap::GetAssetType_ID(0));
+    if (qstr_current_id.isEmpty() && (OTAPI_Wrap::It()->GetAssetTypeCount() > 0))
+        qstr_current_id = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_ID(0));
     // -------------------------------------------
     // Select from Asset Types in local wallet.
     //
@@ -57,11 +57,11 @@ void MTPageAcct_Asset::on_pushButtonSelect_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t the_count = OTAPI_Wrap::GetAssetTypeCount();
+    const int32_t the_count = OTAPI_Wrap::It()->GetAssetTypeCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < the_count; ++ii)
     {
-        QString OT_id = QString::fromStdString(OTAPI_Wrap::GetAssetType_ID(ii));
+        QString OT_id = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_ID(ii));
         QString OT_name("");
         // -----------------------------------------------
         if (!OT_id.isEmpty())
@@ -69,7 +69,7 @@ void MTPageAcct_Asset::on_pushButtonSelect_clicked()
             if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
                 bFoundDefault = true;
             // -----------------------------------------------
-            OT_name = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(OT_id.toStdString()));
+            OT_name = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_Name(OT_id.toStdString()));
             // -----------------------------------------------
             the_map.insert(OT_id, OT_name);
         }
@@ -112,11 +112,11 @@ void MTPageAcct_Asset::initializePage()
     // -------------------------------------------
     qstr_id = qstr_current_id.isEmpty() ? qstr_default_id : qstr_current_id;
     // -------------------------------------------
-    if (qstr_id.isEmpty() && (OTAPI_Wrap::GetAssetTypeCount() > 0))
-        qstr_id = QString::fromStdString(OTAPI_Wrap::GetAssetType_ID(0));
+    if (qstr_id.isEmpty() && (OTAPI_Wrap::It()->GetAssetTypeCount() > 0))
+        qstr_id = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_ID(0));
     // -------------------------------------------
     if (!qstr_id.isEmpty())
-        str_name = OTAPI_Wrap::GetAssetType_Name(qstr_id.toStdString());
+        str_name = OTAPI_Wrap::It()->GetAssetType_Name(qstr_id.toStdString());
     // -------------------------------------------
     if (str_name.empty() || qstr_id.isEmpty())
         SetFieldsBlank();
@@ -148,13 +148,13 @@ void MTPageAcct_Asset::on_pushButtonManage_clicked()
     QString qstrPreSelected   = field("AssetID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
-    int32_t the_count = OTAPI_Wrap::GetAssetTypeCount();
+    int32_t the_count = OTAPI_Wrap::It()->GetAssetTypeCount();
     bool    bStartingWithNone = (the_count < 1);
 
     for (int32_t ii = 0; ii < the_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(OTAPI_Wrap::GetAssetType_ID(ii));
-        QString OT_name = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_ID(ii));
+        QString OT_name = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
 
@@ -169,13 +169,13 @@ void MTPageAcct_Asset::on_pushButtonManage_clicked()
     // -------------------------------------
     pWindow->dialog(MTDetailEdit::DetailEditTypeAsset, true);
     // -------------------------------------
-    if (bStartingWithNone && (OTAPI_Wrap::GetAssetTypeCount() > 0))
+    if (bStartingWithNone && (OTAPI_Wrap::It()->GetAssetTypeCount() > 0))
     {
-        std::string str_id = OTAPI_Wrap::GetAssetType_ID(0);
+        std::string str_id = OTAPI_Wrap::It()->GetAssetType_ID(0);
 
         if (!str_id.empty())
         {
-            std::string str_name = OTAPI_Wrap::GetAssetType_Name(str_id);
+            std::string str_name = OTAPI_Wrap::It()->GetAssetType_Name(str_id);
 
             if (str_name.empty())
                 str_name = str_id;
@@ -187,7 +187,7 @@ void MTPageAcct_Asset::on_pushButtonManage_clicked()
         }
     }
     // -------------------------------------
-    else if (OTAPI_Wrap::GetAssetTypeCount() < 1)
+    else if (OTAPI_Wrap::It()->GetAssetTypeCount() < 1)
         SetFieldsBlank();
     // -------------------------------------------
 }

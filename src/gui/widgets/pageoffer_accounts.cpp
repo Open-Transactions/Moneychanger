@@ -77,12 +77,12 @@ void PageOffer_Accounts::on_pushButtonManageServer_clicked()
     QString qstrPreselected   = field("ServerID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
-    int32_t the_count = OTAPI_Wrap::GetServerCount();
+    int32_t the_count = OTAPI_Wrap::It()->GetServerCount();
 
     for (int32_t ii = 0; ii < the_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(OTAPI_Wrap::GetServer_ID(ii));
-        QString OT_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(OTAPI_Wrap::It()->GetServer_ID(ii));
+        QString OT_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
 
@@ -111,12 +111,12 @@ void PageOffer_Accounts::on_pushButtonManageNym_clicked()
     QString qstrPreselected   = field("NymID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
-    int32_t the_count = OTAPI_Wrap::GetNymCount();
+    int32_t the_count = OTAPI_Wrap::It()->GetNymCount();
 
     for (int32_t ii = 0; ii < the_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(OTAPI_Wrap::GetNym_ID(ii));
-        QString OT_name = QString::fromStdString(OTAPI_Wrap::GetNym_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(OTAPI_Wrap::It()->GetNym_ID(ii));
+        QString OT_name = QString::fromStdString(OTAPI_Wrap::It()->GetNym_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
 
@@ -145,12 +145,12 @@ void PageOffer_Accounts::on_pushButtonManageAssetAcct_clicked()
     QString qstrPreselected   = field("AssetAcctID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
-    int32_t the_count = OTAPI_Wrap::GetAccountCount();
+    int32_t the_count = OTAPI_Wrap::It()->GetAccountCount();
 
     for (int32_t ii = 0; ii < the_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(ii));
-        QString OT_name = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
+        QString OT_name = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
 
@@ -179,12 +179,12 @@ void PageOffer_Accounts::on_pushButtonManageCurrencyAcct_clicked()
     QString qstrPreselected   = field("CurrencyAcctID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
-    int32_t the_count = OTAPI_Wrap::GetAccountCount();
+    int32_t the_count = OTAPI_Wrap::It()->GetAccountCount();
 
     for (int32_t ii = 0; ii < the_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(ii));
-        QString OT_name = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
+        QString OT_name = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
 
@@ -211,8 +211,8 @@ void PageOffer_Accounts::on_pushButtonSelectAssetAcct_clicked()
     // -------------------------------------------
     QString qstr_current_id = field("AssetAcctID").toString();
     // -------------------------------------------
-    if (qstr_current_id.isEmpty() && (OTAPI_Wrap::GetAccountCount() > 0))
-        qstr_current_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(0));
+    if (qstr_current_id.isEmpty() && (OTAPI_Wrap::It()->GetAccountCount() > 0))
+        qstr_current_id = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ID(0));
     // -------------------------------------------
     // Select from asset accounts in local wallet.
     //
@@ -222,20 +222,20 @@ void PageOffer_Accounts::on_pushButtonSelectAssetAcct_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t the_count = OTAPI_Wrap::GetAccountCount();
+    const int32_t the_count = OTAPI_Wrap::It()->GetAccountCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < the_count; ++ii)
     {
-        QString OT_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(ii));
+        QString OT_id = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
         QString OT_name("");
         // -----------------------------------------------
         if (!OT_id.isEmpty())
         {
             // Filter the accounts shown based on asset type, server ID, and Nym ID.
             //
-            QString qstrAcctNymID    = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_NymID       (OT_id.toStdString()));
-            QString qstrAcctAssetID  = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_AssetTypeID (OT_id.toStdString()));
-            QString qstrAcctServerID = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ServerID    (OT_id.toStdString()));
+            QString qstrAcctNymID    = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_NymID       (OT_id.toStdString()));
+            QString qstrAcctAssetID  = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID (OT_id.toStdString()));
+            QString qstrAcctServerID = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ServerID    (OT_id.toStdString()));
             // -----------------------------------------------
             if ((qstrAcctNymID    != qstrNymID)   ||
                 (qstrAcctAssetID  != qstrAssetID) ||
@@ -245,7 +245,7 @@ void PageOffer_Accounts::on_pushButtonSelectAssetAcct_clicked()
             if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
                 bFoundDefault = true;
             // -----------------------------------------------
-            OT_name = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(OT_id.toStdString()));
+            OT_name = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_Name(OT_id.toStdString()));
             // -----------------------------------------------
             the_map.insert(OT_id, OT_name);
         }
@@ -266,8 +266,8 @@ void PageOffer_Accounts::on_pushButtonSelectAssetAcct_clicked()
             // -----------------------------------------
             ui->lineEditAssetAcctID->home(false);
             // -----------------------------------------
-            int64_t     lBalance      = OTAPI_Wrap::GetAccountWallet_Balance(theChooser.m_qstrCurrentID.toStdString());
-            std::string str_formatted = OTAPI_Wrap::FormatAmount(qstrAssetID.toStdString(), lBalance);
+            int64_t     lBalance      = OTAPI_Wrap::It()->GetAccountWallet_Balance(theChooser.m_qstrCurrentID.toStdString());
+            std::string str_formatted = OTAPI_Wrap::It()->FormatAmount(qstrAssetID.toStdString(), lBalance);
             QString     qstrBalance   = QString::fromStdString(str_formatted);
 
             setField("AssetAcctBalance", qstrBalance);
@@ -283,8 +283,8 @@ void PageOffer_Accounts::on_pushButtonSelectCurrencyAcct_clicked()
     // -------------------------------------------
     QString qstr_current_id = field("CurrencyAcctID").toString();
     // -------------------------------------------
-    if (qstr_current_id.isEmpty() && (OTAPI_Wrap::GetAccountCount() > 0))
-        qstr_current_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(0));
+    if (qstr_current_id.isEmpty() && (OTAPI_Wrap::It()->GetAccountCount() > 0))
+        qstr_current_id = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ID(0));
     // -------------------------------------------
     // Select from currency accounts in local wallet.
     //
@@ -294,20 +294,20 @@ void PageOffer_Accounts::on_pushButtonSelectCurrencyAcct_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t the_count = OTAPI_Wrap::GetAccountCount();
+    const int32_t the_count = OTAPI_Wrap::It()->GetAccountCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < the_count; ++ii)
     {
-        QString OT_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(ii));
+        QString OT_id = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
         QString OT_name("");
         // -----------------------------------------------
         if (!OT_id.isEmpty())
         {
             // Filter the accounts shown based on asset type, server ID, and Nym ID.
             //
-            QString qstrAcctNymID    = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_NymID       (OT_id.toStdString()));
-            QString qstrAcctAssetID  = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_AssetTypeID (OT_id.toStdString()));
-            QString qstrAcctServerID = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ServerID    (OT_id.toStdString()));
+            QString qstrAcctNymID    = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_NymID       (OT_id.toStdString()));
+            QString qstrAcctAssetID  = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID (OT_id.toStdString()));
+            QString qstrAcctServerID = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ServerID    (OT_id.toStdString()));
             // -----------------------------------------------
             if ((qstrAcctNymID    != qstrNymID)   ||
                 (qstrAcctAssetID  != qstrAssetID) ||
@@ -317,7 +317,7 @@ void PageOffer_Accounts::on_pushButtonSelectCurrencyAcct_clicked()
             if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
                 bFoundDefault = true;
             // -----------------------------------------------
-            OT_name = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_Name(OT_id.toStdString()));
+            OT_name = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_Name(OT_id.toStdString()));
             // -----------------------------------------------
             the_map.insert(OT_id, OT_name);
         }
@@ -338,8 +338,8 @@ void PageOffer_Accounts::on_pushButtonSelectCurrencyAcct_clicked()
             // -----------------------------------------
             ui->lineEditCurrencyAcctID->home(false);
             // -----------------------------------------
-            int64_t     lBalance      = OTAPI_Wrap::GetAccountWallet_Balance(theChooser.m_qstrCurrentID.toStdString());
-            std::string str_formatted = OTAPI_Wrap::FormatAmount(qstrAssetID.toStdString(), lBalance);
+            int64_t     lBalance      = OTAPI_Wrap::It()->GetAccountWallet_Balance(theChooser.m_qstrCurrentID.toStdString());
+            std::string str_formatted = OTAPI_Wrap::It()->FormatAmount(qstrAssetID.toStdString(), lBalance);
             QString     qstrBalance   = QString::fromStdString(str_formatted);
 
             setField("CurrencyAcctBalance", qstrBalance);

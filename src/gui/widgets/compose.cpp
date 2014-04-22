@@ -12,6 +12,7 @@
 #include <core/handlers/DBHandler.hpp>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OT_ME.hpp>
 
 #include <QMessageBox>
@@ -188,13 +189,13 @@ void MTCompose::on_serverButton_clicked()
     // -----------------------------------------------
     if (the_map.size() < 1)
     {
-        const int32_t server_count = OTAPI_Wrap::GetServerCount();
+        const int32_t server_count = OTAPI_Wrap::It()->GetServerCount();
         // -----------------------------------------------
         for (int32_t ii = 0; ii < server_count; ++ii)
         {
             //Get OT Server ID
             //
-            QString OT_server_id = QString::fromStdString(OTAPI_Wrap::GetServer_ID(ii));
+            QString OT_server_id = QString::fromStdString(OTAPI_Wrap::It()->GetServer_ID(ii));
             QString OT_server_name("");
             // -----------------------------------------------
             if (!OT_server_id.isEmpty())
@@ -202,7 +203,7 @@ void MTCompose::on_serverButton_clicked()
                 if (!m_serverId.isEmpty() && (OT_server_id == m_serverId))
                     theChooser.SetPreSelected(m_serverId);
                 // -----------------------------------------------
-                OT_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(OT_server_id.toStdString()));
+                OT_server_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(OT_server_id.toStdString()));
                 // -----------------------------------------------
                 the_map.insert(OT_server_id, OT_server_name);
             }
@@ -246,12 +247,12 @@ void MTCompose::on_fromButton_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t nym_count = OTAPI_Wrap::GetNymCount();
+    const int32_t nym_count = OTAPI_Wrap::It()->GetNymCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < nym_count; ++ii)
     {
         //Get OT Nym ID
-        QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::GetNym_ID(ii));
+        QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::It()->GetNym_ID(ii));
         QString OT_nym_name("");
         // -----------------------------------------------
         if (!OT_nym_id.isEmpty())
@@ -516,7 +517,7 @@ void MTCompose::dialog()
         // -------------------------------------------
         if (!m_serverId.isEmpty()) // serverID was provided.
         {
-            str_server_name = OTAPI_Wrap::GetServer_Name(m_serverId.toStdString());
+            str_server_name = OTAPI_Wrap::It()->GetServer_Name(m_serverId.toStdString());
 
             if (str_server_name.empty())
                 str_server_name = m_serverId.toStdString();

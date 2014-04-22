@@ -43,9 +43,9 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString fromAcctId, QS
     std::string str_toNymId   (toNymId   .toStdString());
     std::string str_fromAcctId(fromAcctId.toStdString());
     // ------------------------------------------------------------
-    std::string str_fromNymId(OTAPI_Wrap::GetAccountWallet_NymID      (str_fromAcctId));
-    std::string str_serverId (OTAPI_Wrap::GetAccountWallet_ServerID   (str_fromAcctId));
-    std::string str_assetId  (OTAPI_Wrap::GetAccountWallet_AssetTypeID(str_fromAcctId));
+    std::string str_fromNymId(OTAPI_Wrap::It()->GetAccountWallet_NymID      (str_fromAcctId));
+    std::string str_serverId (OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_fromAcctId));
+    std::string str_assetId  (OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_fromAcctId));
     // ------------------------------------------------------------
     // TODO: for security reasons, we might change the below 'if' so that
     // it ONLY checks the cash balance, and not the account balance here.
@@ -129,8 +129,8 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     std::string str_toNymId   (toNymId   .toStdString());
     std::string str_fromAcctId(fromAcctId.toStdString());
     // ------------------------------------------------------------
-    std::string str_fromNymId(OTAPI_Wrap::GetAccountWallet_NymID   (str_fromAcctId));
-    std::string str_serverId (OTAPI_Wrap::GetAccountWallet_ServerID(str_fromAcctId));
+    std::string str_fromNymId(OTAPI_Wrap::It()->GetAccountWallet_NymID   (str_fromAcctId));
+    std::string str_serverId (OTAPI_Wrap::It()->GetAccountWallet_ServerID(str_fromAcctId));
     // ------------------------------------------------------------
     int64_t SignedAmount = amount;
     qDebug() << QString("Sending %1:\n Server:'%2'\n Nym:'%3'\n Acct:'%4'\n ToNym:'%5'\n Amount:'%6'\n Note:'%7'").
@@ -161,7 +161,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     }
     // ---------------------------------------------------------
     //else Success!
-    std::string strLedger = OTAPI_Wrap::Message_GetLedger(strResponse);
+    std::string strLedger = OTAPI_Wrap::It()->Message_GetLedger(strResponse);
 
     if (strLedger.empty())
     {
@@ -169,7 +169,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
         return false;
     }
     // ---------------------------------------------------------
-    std::string strTransReply = OTAPI_Wrap::Ledger_GetTransactionByIndex(str_serverId, str_fromNymId, str_fromAcctId, strLedger, 0); // index 0.
+    std::string strTransReply = OTAPI_Wrap::It()->Ledger_GetTransactionByIndex(str_serverId, str_fromNymId, str_fromAcctId, strLedger, 0); // index 0.
 
     if (strTransReply.empty())
     {
@@ -179,7 +179,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
         return false;
     }
     // ---------------------------------------------------------
-    std::string strVoucher = OTAPI_Wrap::Transaction_GetVoucher(str_serverId, str_fromNymId, str_fromAcctId, strTransReply);
+    std::string strVoucher = OTAPI_Wrap::It()->Transaction_GetVoucher(str_serverId, str_fromNymId, str_fromAcctId, strTransReply);
 
     if (strVoucher.empty())
     {
@@ -344,8 +344,8 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
     std::string str_toNymId   (toNymId   .toStdString());
     std::string str_fromAcctId(fromAcctId.toStdString());
     // ------------------------------------------------------------
-    std::string str_fromNymId(OTAPI_Wrap::GetAccountWallet_NymID   (str_fromAcctId));
-    std::string str_serverId (OTAPI_Wrap::GetAccountWallet_ServerID(str_fromAcctId));
+    std::string str_fromNymId(OTAPI_Wrap::It()->GetAccountWallet_NymID   (str_fromAcctId));
+    std::string str_serverId (OTAPI_Wrap::It()->GetAccountWallet_ServerID(str_fromAcctId));
     // ------------------------------------------------------------
     int64_t SignedAmount = amount;
     int64_t trueAmount   = isInvoice ? (SignedAmount*(-1)) : SignedAmount;
@@ -354,10 +354,10 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
                 arg(nsChequeType).arg(QString::fromStdString(str_serverId)).arg(QString::fromStdString(str_fromNymId)).
                 arg(fromAcctId).arg(toNymId).arg(SignedAmount).arg(note);
     // ------------------------------------------------------------
-    time_t tFrom = OTAPI_Wrap::GetTime();
+    time_t tFrom = OTAPI_Wrap::It()->GetTime();
     time_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
     // ------------------------------------------------------------
-    std::string strCheque = OTAPI_Wrap::WriteCheque(str_serverId, trueAmount, tFrom, tTo,
+    std::string strCheque = OTAPI_Wrap::It()->WriteCheque(str_serverId, trueAmount, tFrom, tTo,
                                                     str_fromAcctId, str_fromNymId, note.toStdString(),
                                                     str_toNymId);
     if (strCheque.empty())
@@ -401,7 +401,7 @@ void MTSendDlg::on_amountEdit_editingFinished()
 {
     if (!m_myAcctId.isEmpty() && !m_bSent)
     {
-        std::string str_assetId(OTAPI_Wrap::GetAccountWallet_AssetTypeID(m_myAcctId.toStdString()));
+        std::string str_assetId(OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(m_myAcctId.toStdString()));
         QString     amt = ui->amountEdit->text();
 
         if (!amt.isEmpty() && !str_assetId.empty())
@@ -445,7 +445,7 @@ bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
         qstr_amount = QString("0");
     // ----------------------------------------------------
     int64_t     amount = 0;
-    std::string str_assetId(OTAPI_Wrap::GetAccountWallet_AssetTypeID(fromAcctId.toStdString()));
+    std::string str_assetId(OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(fromAcctId.toStdString()));
 
     if (!str_assetId.empty())
     {
@@ -546,7 +546,7 @@ void MTSendDlg::on_sendButton_clicked()
     // Make sure I'm not sending to myself (since that will fail...)
     //
     std::string str_fromAcctId(m_myAcctId.toStdString());
-    QString     qstr_fromNymId(QString::fromStdString(OTAPI_Wrap::GetAccountWallet_NymID(str_fromAcctId)));
+    QString     qstr_fromNymId(QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_NymID(str_fromAcctId)));
 
     if (m_hisNymId == qstr_fromNymId)
     {
@@ -606,12 +606,12 @@ void MTSendDlg::on_fromButton_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t acct_count = OTAPI_Wrap::GetAccountCount();
+    const int32_t acct_count = OTAPI_Wrap::It()->GetAccountCount();
     // -----------------------------------------------
     for(int32_t ii = 0; ii < acct_count; ++ii)
     {
         //Get OT Acct ID
-        QString OT_acct_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(ii));
+        QString OT_acct_id = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
         QString OT_acct_name("");
         // -----------------------------------------------
         if (!OT_acct_id.isEmpty())

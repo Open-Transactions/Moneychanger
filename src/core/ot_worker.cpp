@@ -7,6 +7,7 @@
 #include <core/handlers/contacthandler.hpp>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OTLog.hpp>
 
 #include <QVariant>
@@ -18,32 +19,32 @@ ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookup
      **/
     overview_list = new QList< QMap<QString,QVariant> >();
     
-    int nServerCount  = OTAPI_Wrap::GetServerCount();
-    int nAssetCount   = OTAPI_Wrap::GetAssetTypeCount();
-    int nNymCount     = OTAPI_Wrap::GetNymCount();
-    int nAccountCount = OTAPI_Wrap::GetAccountCount();
+    int nServerCount  = OTAPI_Wrap::It()->GetServerCount();
+    int nAssetCount   = OTAPI_Wrap::It()->GetAssetTypeCount();
+    int nNymCount     = OTAPI_Wrap::It()->GetNymCount();
+    int nAccountCount = OTAPI_Wrap::It()->GetAccountCount();
     // ----------------------------------------------------
     for (int ii = 0; ii < nServerCount; ++ii)
     {
-        std::string serverId = OTAPI_Wrap::GetServer_ID(ii);
+        std::string serverId = OTAPI_Wrap::It()->GetServer_ID(ii);
         list.AddServerID(serverId);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAssetCount; ++ii)
     {
-        std::string assetId = OTAPI_Wrap::GetAssetType_ID(ii);
+        std::string assetId = OTAPI_Wrap::It()->GetAssetType_ID(ii);
         list.AddAssetID(assetId);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nNymCount; ++ii)
     {
-        std::string nymId = OTAPI_Wrap::GetNym_ID(ii);
+        std::string nymId = OTAPI_Wrap::It()->GetNym_ID(ii);
         list.AddNymID(nymId);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAccountCount; ++ii)
     {
-        std::string accountID = OTAPI_Wrap::GetAccountWallet_ID(ii);
+        std::string accountID = OTAPI_Wrap::It()->GetAccountWallet_ID(ii);
         list.AddAccountID(accountID);
     }
     // ----------------------------------------------------

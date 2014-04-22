@@ -648,7 +648,7 @@ void MTDetailEdit::RefreshRecords()
                     {
                         // ------------------------------------------------------
                         int64_t     lScale    = OTAPI_Wrap::It()->StringToLong(pMarketData->scale);
-                        std::string str_scale = OTAPI_Wrap::FormatAmount(pMarketData->asset_type_id, lScale);
+                        std::string str_scale = OTAPI_Wrap::It()->FormatAmount(pMarketData->asset_type_id, lScale);
                         // ------------------------------------------------------
                         QString qstrFormattedScale = QString::fromStdString(str_scale);
                         // ------------------------------------------------------
@@ -692,10 +692,10 @@ void MTDetailEdit::RefreshRecords()
                         int64_t     lFinished         = OTAPI_Wrap::It()->StringToLong(pOfferData->finished_so_far);
                         // ------------------------------------------------------
                         int64_t     lScale            = OTAPI_Wrap::It()->StringToLong(pOfferData->scale);
-                        std::string str_scale         = OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lScale);
+                        std::string str_scale         = OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lScale);
                         // ------------------------------------------------------
                         int64_t     lPrice            = OTAPI_Wrap::It()->StringToLong(pOfferData->price_per_scale);
-                        std::string str_price         = OTAPI_Wrap::FormatAmount(pOfferData->currency_type_id, lPrice);
+                        std::string str_price         = OTAPI_Wrap::It()->FormatAmount(pOfferData->currency_type_id, lPrice);
                         // ------------------------------------------------------
                         QString qstrPrice(tr("market order"));
 
@@ -706,10 +706,10 @@ void MTDetailEdit::RefreshRecords()
 
                         qstrPrice += QString(" (%1 %2)").arg(tr("per")).arg(qstrFormattedScale);
                         // ------------------------------------------------------
-                        QString qstrTotalAssets       = QString::fromStdString(OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lTotalAssets));
-                        QString qstrSoldOrPurchased   = QString::fromStdString(OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lFinished));
+                        QString qstrTotalAssets       = QString::fromStdString(OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lTotalAssets));
+                        QString qstrSoldOrPurchased   = QString::fromStdString(OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lFinished));
                         // ------------------------------------------------------
-                        std::string str_asset_name    = OTAPI_Wrap::GetAssetType_Name(pOfferData->asset_type_id);
+                        std::string str_asset_name    = OTAPI_Wrap::It()->GetAssetType_Name(pOfferData->asset_type_id);
                         // -----------------------------------------------------------------------
                         QString qstrBuySell = bSelling ? tr("Sell") : tr("Buy");
                         QString qstrAmounts;

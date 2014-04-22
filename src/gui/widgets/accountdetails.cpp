@@ -13,6 +13,7 @@
 #include <core/moneychanger.hpp>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OT_ME.hpp>
 
 #include <QMessageBox>
@@ -183,17 +184,17 @@ void MTAccountDetails::refresh(QString strID, QString strName)
 //      ui->lineEditID  ->setText(strID);
         ui->lineEditName->setText(strName);
         // ----------------------------------
-        std::string str_server_id = OTAPI_Wrap::GetAccountWallet_ServerID   (strID.toStdString());
-        std::string str_asset_id  = OTAPI_Wrap::GetAccountWallet_AssetTypeID(strID.toStdString());
-        std::string str_nym_id    = OTAPI_Wrap::GetAccountWallet_NymID      (strID.toStdString());
+        std::string str_server_id = OTAPI_Wrap::It()->GetAccountWallet_ServerID   (strID.toStdString());
+        std::string str_asset_id  = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(strID.toStdString());
+        std::string str_nym_id    = OTAPI_Wrap::It()->GetAccountWallet_NymID      (strID.toStdString());
         // ----------------------------------
         QString qstr_server_id    = QString::fromStdString(str_server_id);
         QString qstr_asset_id     = QString::fromStdString(str_asset_id);
         QString qstr_nym_id       = QString::fromStdString(str_nym_id);
         // ----------------------------------
-        QString qstr_server_name  = QString::fromStdString(OTAPI_Wrap::GetServer_Name   (str_server_id));
-        QString qstr_asset_name   = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(str_asset_id));
-        QString qstr_nym_name     = QString::fromStdString(OTAPI_Wrap::GetNym_Name      (str_nym_id));
+        QString qstr_server_name  = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name   (str_server_id));
+        QString qstr_asset_name   = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_Name(str_asset_id));
+        QString qstr_nym_name     = QString::fromStdString(OTAPI_Wrap::It()->GetNym_Name      (str_nym_id));
         // ----------------------------------
         // MAIN TAB
         //
@@ -270,7 +271,7 @@ void MTAccountDetails::on_pushButtonMakeDefault_clicked()
 {
     if ((NULL != m_pOwner) && !m_qstrID.isEmpty())
     {
-        std::string str_acct_name = OTAPI_Wrap::GetAccountWallet_Name(m_qstrID.toStdString());
+        std::string str_acct_name = OTAPI_Wrap::It()->GetAccountWallet_Name(m_qstrID.toStdString());
         ui->pushButtonMakeDefault->setEnabled(false);
         // --------------------------------------------------
         QString qstrAcctName = QString::fromStdString(str_acct_name);
@@ -287,7 +288,7 @@ void MTAccountDetails::on_toolButtonAsset_clicked()
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
-        QString qstr_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_AssetTypeID(str_acct_id));
+        QString qstr_id = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id));
         // --------------------------------------------------
         emit ShowAsset(qstr_id);
     }
@@ -299,7 +300,7 @@ void MTAccountDetails::on_toolButtonNym_clicked()
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
-        QString qstr_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_NymID(str_acct_id));
+        QString qstr_id = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id));
         // --------------------------------------------------
         emit ShowNym(qstr_id);
     }
@@ -311,7 +312,7 @@ void MTAccountDetails::on_toolButtonServer_clicked()
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
-        QString qstr_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ServerID(str_acct_id));
+        QString qstr_id = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ServerID(str_acct_id));
         // --------------------------------------------------
         emit ShowServer(qstr_id);
     }
@@ -327,7 +328,7 @@ void MTAccountDetails::DeleteButtonClicked()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         // ----------------------------------------------------
-        bool bCanRemove = OTAPI_Wrap::Wallet_CanRemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
+        bool bCanRemove = OTAPI_Wrap::It()->Wallet_CanRemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
 
         if (!bCanRemove)
         {
@@ -348,7 +349,7 @@ void MTAccountDetails::DeleteButtonClicked()
             // TODO: Need to use OT_ME to send a "delete account" message to the server.
             // Only if that is successful, do we set bSuccess here to true.
 
-//          bool bSuccess = OTAPI_Wrap::Wallet_RemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
+//          bool bSuccess = OTAPI_Wrap::It()->Wallet_RemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
 
             bool bSuccess = false;
 
@@ -384,9 +385,9 @@ void MTAccountDetails::AddButtonClicked()
         QString qstrNymID    = theWizard.field("NymID")   .toString();
         QString qstrServerID = theWizard.field("ServerID").toString();
         // ---------------------------------------------------
-        QString qstrAssetName  = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(qstrAssetID .toStdString()));
-        QString qstrNymName    = QString::fromStdString(OTAPI_Wrap::GetNym_Name      (qstrNymID   .toStdString()));
-        QString qstrServerName = QString::fromStdString(OTAPI_Wrap::GetServer_Name   (qstrServerID.toStdString()));
+        QString qstrAssetName  = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_Name(qstrAssetID .toStdString()));
+        QString qstrNymName    = QString::fromStdString(OTAPI_Wrap::It()->GetNym_Name      (qstrNymID   .toStdString()));
+        QString qstrServerName = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name   (qstrServerID.toStdString()));
         // ---------------------------------------------------
         QMessageBox::information(this, tr("Confirm Create Account"),
                                  QString("%1: '%2'<br/>%3: %4<br/>%5: %6<br/>%7: %8").arg(tr("Confirm Create Account:<br/>Name")).
@@ -398,7 +399,7 @@ void MTAccountDetails::AddButtonClicked()
         // ------------------------------
         // First make sure the Nym is registered at the server, and if not, register him.
         //
-        bool bIsRegiseredAtServer = OTAPI_Wrap::IsNym_RegisteredAtServer(qstrNymID.toStdString(),
+        bool bIsRegiseredAtServer = OTAPI_Wrap::It()->IsNym_RegisteredAtServer(qstrNymID.toStdString(),
                                                                          qstrServerID.toStdString());
         if (!bIsRegiseredAtServer)
         {
@@ -477,7 +478,7 @@ void MTAccountDetails::AddButtonClicked()
         // ------------------------------------------------------
         // Get the ID of the new account.
         //
-        QString qstrID = QString::fromStdString(OTAPI_Wrap::Message_GetNewAcctID(strResponse));
+        QString qstrID = QString::fromStdString(OTAPI_Wrap::It()->Message_GetNewAcctID(strResponse));
 
         if (qstrID.isEmpty())
         {
@@ -489,7 +490,7 @@ void MTAccountDetails::AddButtonClicked()
         // Set the Name of the new account.
         //
         //bool bNameSet =
-                OTAPI_Wrap::SetAccountWallet_Name(qstrID   .toStdString(),
+                OTAPI_Wrap::It()->SetAccountWallet_Name(qstrID   .toStdString(),
                                                   qstrNymID.toStdString(),
                                                   qstrName .toStdString());
         // -----------------------------------------------
@@ -514,11 +515,11 @@ void MTAccountDetails::on_lineEditName_editingFinished()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
-        std::string str_nym_id  = OTAPI_Wrap::GetAccountWallet_NymID(str_acct_id);
+        std::string str_nym_id  = OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
 
         if (!str_acct_id.empty() && !str_nym_id.empty())
         {
-            bool bSuccess = OTAPI_Wrap::SetAccountWallet_Name(str_acct_id,  // Account
+            bool bSuccess = OTAPI_Wrap::It()->SetAccountWallet_Name(str_acct_id,  // Account
                                                               str_nym_id,   // Nym (Account Owner.)
                                                               ui->lineEditName->text().toStdString()); // New Name
             if (bSuccess)

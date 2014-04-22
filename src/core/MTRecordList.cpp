@@ -36,7 +36,7 @@ std::string MTNameLookup::GetNymName(const std::string & str_id,
     if (str_id.empty())
         return "";
 
-    return OTAPI_Wrap::GetNym_Name(str_id);
+    return OTAPI_Wrap::It()->GetNym_Name(str_id);
 }
 
 //virtual
@@ -48,7 +48,7 @@ std::string MTNameLookup::GetAcctName(const std::string & str_id,
     if (str_id.empty())
         return "";
 
-    return OTAPI_Wrap::GetAccountWallet_Name(str_id);
+    return OTAPI_Wrap::It()->GetAccountWallet_Name(str_id);
 }
 
 
@@ -129,7 +129,7 @@ void MTRecordList::AddAssetID(const std::string str_id)
     }
     // ------------------------------------------------
     if (str_asset_name.empty())
-        str_asset_name = OTAPI_Wrap::GetAssetType_Name(str_id); // Otherwise we try to grab the name.
+        str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(str_id); // Otherwise we try to grab the name.
     // ------------------------------------------------
     // (Otherwise we just leave it blank. The ID is too big to cram in here.)
     // ------------------------------------------------
@@ -690,7 +690,7 @@ bool MTRecordList::Populate()
     // OTAPI_Wrap::OTAPI()->GetServerCount()
     //
     // From OTAPI.h:
-    // OTAPI_Wrap::GetServerCount()  // wraps the above call.
+    // OTAPI_Wrap::It()->GetServerCount()  // wraps the above call.
     //
     // -------------------------
     OTWallet * pWallet = OTAPI_Wrap::OTAPI()->GetWallet(__FUNCTION__); // This logs and ASSERTs already.
@@ -724,7 +724,7 @@ bool MTRecordList::Populate()
         // ------------------------------------------------
         // For each Nym, loop through his OUTPAYMENTS box.
         //
-        const int32_t nOutpaymentsCount  = OTAPI_Wrap::GetNym_OutpaymentsCount(str_nym_id);
+        const int32_t nOutpaymentsCount  = OTAPI_Wrap::It()->GetNym_OutpaymentsCount(str_nym_id);
 
         OTLog::vOutput(0, "--------\n%s: Nym %d, nOutpaymentsCount: %d, ID: %s\n",
                        __FUNCTION__, nNymIndex, nOutpaymentsCount, strNymID.Get());
@@ -735,7 +735,7 @@ bool MTRecordList::Populate()
             OTLog::vOutput(0, "%s: Outpayment instrument: %d\n", __FUNCTION__, nCurrentOutpayment);
             // ------------------------------------------------
             const OTString strOutpayment(
-                OTAPI_Wrap::GetNym_OutpaymentsContentsByIndex(str_nym_id, nCurrentOutpayment));
+                OTAPI_Wrap::It()->GetNym_OutpaymentsContentsByIndex(str_nym_id, nCurrentOutpayment));
             // ----------------------------------
             std::string str_memo;
             OTPayment   theOutPayment(strOutpayment);
@@ -834,10 +834,10 @@ bool MTRecordList::Populate()
             // strOutpayment contains the actual outgoing payment instrument.
             //
             const std::string str_outpmt_server =
-                OTAPI_Wrap::GetNym_OutpaymentsServerIDByIndex(str_nym_id, nCurrentOutpayment);
+                OTAPI_Wrap::It()->GetNym_OutpaymentsServerIDByIndex(str_nym_id, nCurrentOutpayment);
             // ----------------------------------
             const std::string str_outpmt_recipientID =
-                OTAPI_Wrap::GetNym_OutpaymentsRecipientIDByIndex(str_nym_id, nCurrentOutpayment);
+                OTAPI_Wrap::It()->GetNym_OutpaymentsRecipientIDByIndex(str_nym_id, nCurrentOutpayment);
             // ----------------------------------
             // str_outpmt_server is the server for this outpayment.
             // But is that server on our list of servers that we care about?
@@ -940,7 +940,7 @@ bool MTRecordList::Populate()
         // ------------------------------------------------
         // For each Nym, loop through his MAIL box.
         //
-        const int32_t nMailCount  = OTAPI_Wrap::GetNym_MailCount(str_nym_id);
+        const int32_t nMailCount  = OTAPI_Wrap::It()->GetNym_MailCount(str_nym_id);
         for ( int32_t nCurrentMail = 0; nCurrentMail < nMailCount; ++nCurrentMail)
         {
             // ------------------------------------------------
@@ -950,10 +950,10 @@ bool MTRecordList::Populate()
             OT_ASSERT(NULL != pMsg);
             // ------------------------------------------------
             const std::string str_mail_server =
-                OTAPI_Wrap::GetNym_MailServerIDByIndex(str_nym_id, nCurrentMail);
+                OTAPI_Wrap::It()->GetNym_MailServerIDByIndex(str_nym_id, nCurrentMail);
             // ----------------------------------
             const std::string str_mail_senderID =
-                OTAPI_Wrap::GetNym_MailSenderIDByIndex(str_nym_id, nCurrentMail);
+                OTAPI_Wrap::It()->GetNym_MailSenderIDByIndex(str_nym_id, nCurrentMail);
             // ----------------------------------
             // str_mail_server is the server for this mail.
             // But is that server on our list of servers that we care about?
@@ -1012,7 +1012,7 @@ bool MTRecordList::Populate()
                                                            false, //IsReceipt
                                                            MTRecord::Mail
                                                            ));
-                const OTString strMail(OTAPI_Wrap::GetNym_MailContentsByIndex(str_nym_id, nCurrentMail));
+                const OTString strMail(OTAPI_Wrap::It()->GetNym_MailContentsByIndex(str_nym_id, nCurrentMail));
                 sp_Record->SetContents(strMail.Get());
                 // -------------------------------------------------
                 sp_Record->SetOtherNymID(str_mail_senderID);
@@ -1027,7 +1027,7 @@ bool MTRecordList::Populate()
         // ------------------------------------------------
         // Outmail
         //
-        const int32_t nOutmailCount   = OTAPI_Wrap::GetNym_OutmailCount(str_nym_id);
+        const int32_t nOutmailCount   = OTAPI_Wrap::It()->GetNym_OutmailCount(str_nym_id);
         for ( int32_t nCurrentOutmail = 0; nCurrentOutmail < nOutmailCount; ++nCurrentOutmail)
         {
             // ------------------------------------------------
@@ -1037,10 +1037,10 @@ bool MTRecordList::Populate()
             OT_ASSERT(NULL != pMsg);
             // ------------------------------------------------
             const std::string str_mail_server =
-                OTAPI_Wrap::GetNym_OutmailServerIDByIndex(str_nym_id, nCurrentOutmail);
+                OTAPI_Wrap::It()->GetNym_OutmailServerIDByIndex(str_nym_id, nCurrentOutmail);
             // ----------------------------------
             const std::string str_mail_recipientID =
-                OTAPI_Wrap::GetNym_OutmailRecipientIDByIndex(str_nym_id, nCurrentOutmail);
+                OTAPI_Wrap::It()->GetNym_OutmailRecipientIDByIndex(str_nym_id, nCurrentOutmail);
             // ----------------------------------
             // str_mail_server is the server for this mail.
             // But is that server on our list of servers that we care about?
@@ -1099,7 +1099,7 @@ bool MTRecordList::Populate()
                                                            false, //IsReceipt
                                                            MTRecord::Mail
                                                            ));
-                const OTString strOutmail(OTAPI_Wrap::GetNym_OutmailContentsByIndex(str_nym_id, nCurrentOutmail));
+                const OTString strOutmail(OTAPI_Wrap::It()->GetNym_OutmailContentsByIndex(str_nym_id, nCurrentOutmail));
                 sp_Record->SetContents(strOutmail.Get());
                 // -------------------------------------------------
                 sp_Record->SetBoxIndex(static_cast<int>(nCurrentOutmail));
@@ -2152,7 +2152,7 @@ bool MTRecordList::Populate()
 //                    const OTString strBoxTrans(*pBoxTrans);
 //
 //                    if (strBoxTrans.Exists())
-//                        str_memo = OTAPI_Wrap::Pending_GetNote(*pstr_server_id, *pstr_nym_id, str_account_id, strBoxTrans.Get());
+//                        str_memo = OTAPI_Wrap::It()->Pending_GetNote(*pstr_server_id, *pstr_nym_id, str_account_id, strBoxTrans.Get());
                     // ------------------------------
                     OTIdentifier theSenderID, theSenderAcctID;
 
@@ -2215,7 +2215,7 @@ bool MTRecordList::Populate()
                     }
                     else
                     {
-                        OTString strName(OTAPI_Wrap::GetAccountWallet_Name(str_account_id)), strNameTemp;
+                        OTString strName(OTAPI_Wrap::It()->GetAccountWallet_Name(str_account_id)), strNameTemp;
 
                         if (strName.Exists())
                             strNameTemp = strName;
@@ -2437,7 +2437,7 @@ bool MTRecordList::Populate()
 //                    const OTString strBoxTrans(*pBoxTrans);
 //
 //                    if (strBoxTrans.Exists())
-//                        str_memo = OTAPI_Wrap::Pending_GetNote(*pstr_server_id, *pstr_nym_id, str_account_id, strBoxTrans.Get());
+//                        str_memo = OTAPI_Wrap::It()->Pending_GetNote(*pstr_server_id, *pstr_nym_id, str_account_id, strBoxTrans.Get());
                 }
             }
             // ------------------------------
