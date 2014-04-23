@@ -41,11 +41,8 @@ include($${SOLUTION_DIR}../src/namecoin/namecoin.pri)
 #-------------------------------------------------
 # Package Config
 
-linux:{
-    PKGCONFIG += opentxs
-}
-
-mac:{
+# MAC AND LINUX:
+unix:{
     PKGCONFIG += opentxs
 }
 
@@ -76,25 +73,11 @@ mac:{
 #-------------------------------------------------
 # Linked Libs
 
-linux: {
+# MAC AND LINUX:
+unix: {
 
-##    LIBS += -L$${OUT_PWD}/../curl
-##    LIBS += -lcurl
-
-    LIBS += -L$${OUT_PWD}/../bitcoin-api
-    LIBS += -lbitcoin-api
-
-    LIBS += -L$${OUT_PWD}/../jsoncpp
-    LIBS += -ljsoncpp
-
-    LIBS += -L$${OUT_PWD}/../nmcrpc
-    LIBS += -lnmcrpc
-}
-
-mac: {
-
-##    LIBS += -L$${OUT_PWD}/../curl
-##    LIBS += -lcurl
+##  LIBS += -L$${OUT_PWD}/../curl
+##  LIBS += -lcurl
 
     LIBS += -L$${OUT_PWD}/../bitcoin-api
     LIBS += -lbitcoin-api
@@ -104,12 +87,21 @@ mac: {
 
     LIBS += -L$${OUT_PWD}/../nmcrpc
     LIBS += -lnmcrpc
-}
 
-linux: {
-    # only need if no C++11 available (e.g. Ubuntu 12.04)
-    #LIBS += -lboost_system-mt
-    #LIBS += -lboost_thread-mt
+
+    mac:{
+        !contains(MAC_OS_VERSION, 10.9):{
+            # if not on Mavericks
+            LIBS += -lboost_system-mt
+            LIBS += -lboost_thread-mt
+        }
+    } 
+    # LINUX:
+    else: {
+        # only need if no C++11 available (e.g. Ubuntu 12.04)
+        #LIBS += -lboost_system-mt
+        #LIBS += -lboost_thread-mt
+    }
 }
 
 win32: {
@@ -151,22 +143,11 @@ win32: {
     LIBS += Advapi32.lib
 }
 
-mac:{
-    !contains(MAC_OS_VERSION, 10.9):{
-        # if not on Mavericks
-        LIBS += -lboost_system-mt
-        LIBS += -lboost_thread-mt
-    }
-}
 
+
+# MAC AND LINUX:
 # need to put -ldl last.
-linux:{
-    LIBS += -ldl
-    LIBS += -lcurl
-
-}
-
-mac:{
+unix:{
     LIBS += -ldl
     LIBS += -lcurl
 
