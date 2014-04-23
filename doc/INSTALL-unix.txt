@@ -8,11 +8,24 @@ navigate to the ‘project’ folder
 
 run:  qmake
 
-(NB :On systems where OT was compiled with C++11 use
+#################################
+(NB :On older systems where OT was compiled with C++03 you need to uncomment
 
-qmake "QMAKE_CXXFLAGS += -std=c++11"
+the line in project/common.pri
 
+        QMAKE_CXXFLAGS += -std=c++03 -Dnullptr=NULL -DOT_USE_TR1  ## Ubuntu 12.04
+
+and comment out the line
+
+       #QMAKE_CXXFLAGS += -std=c++11
+
+and also in project/moneychanger-qt/moneychanger-qt.pro uncomment the two lines
+
+        # only need if no C++11 available (e.g. Ubuntu 12.04)
+        LIBS += -lboost_system-mt
+        LIBS += -lboost_thread-mt
 )
+##################################
 
 then: make (-jx, where x is the number of threads you want).
 
