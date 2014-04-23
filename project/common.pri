@@ -54,12 +54,13 @@ win32:{
     QMAKE_CXXFLAGS += /bigobj /Zm480 /wd4512 /wd4100
 }
 
-unix:{
+linux:{
     CONFIG += link_pkgconfig
     QMAKE_CXXFLAGS += -fPIC ## put only here, sub-libs pick it up from elsewhere?
     #QMAKE_CXXFLAGS += -std=c++03 -Dnullptr=NULL -DOT_USE_TR1  ## Ubuntu 12.04
     QMAKE_CXXFLAGS += -std=c++11 -DCXX_11
 }
+
 
 mac:MAC_OS_VERSION = $$system(sw_vers -productVersion)
 mac:MAC_OS_VERSION ~= s/\([0-9]*.[0-9]*\).*/\1/
@@ -67,6 +68,14 @@ mac:MAC_OS_VERSION ~= s/\([0-9]*.[0-9]*\).*/\1/
 mac:QMAKE_MACOSX_DEPLOYMENT_TARGET = $${MAC_OS_VERSION}
 
 mac:{
+    #
+    # note: copied from unix section, since this stuff WAS happening on mac anyway.
+    ##
+    CONFIG += link_pkgconfig
+    QMAKE_CXXFLAGS += -fPIC     ## put only here, sub-libs pick it up from elsewhere?
+    # end: copied from unix section.
+
+
     QT_CONFIG -= no-pkg-config
 
     #we do it this way, since we don't want any more tokens.
@@ -74,12 +83,23 @@ mac:{
     PKG_CONFIG_LIBDIR = "/usr/local/opt/openssl/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
     PKG_CONFIG_LIBDIR = "$${PKG_CONFIG_LIBDIR}:" #end with a colon.
 
+
     contains(MAC_OS_VERSION, 10.9):{
+        # NOTE: below line copied from unix section:
+        QMAKE_CXXFLAGS += -std=c++11 -DCXX_11
+
         CONFIG += c++11
     }
     else:{
+        # NOTE: below line copied from unix section:
+        QMAKE_CXXFLAGS += -std=c++03 -Dnullptr=NULL -DOT_USE_TR1
+
         MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
         QMAKE_MAC_SDK=macosx10.8
         !exists($$MAC_SDK): error("The selected Mac OSX SDK does not exist at $${MAC_SDK}!")
     }
 }
+
+
+
+

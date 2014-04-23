@@ -41,7 +41,11 @@ include($${SOLUTION_DIR}../src/namecoin/namecoin.pri)
 #-------------------------------------------------
 # Package Config
 
-unix:{
+linux:{
+    PKGCONFIG += opentxs
+}
+
+mac:{
     PKGCONFIG += opentxs
 }
 
@@ -64,7 +68,7 @@ win32:{
 }
 
 mac:{
-    !contains(MAC_OS_VERSION, 13.0.0): {
+    !contains(MAC_OS_VERSION, 10.9): {
         INCLUDEPATH += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
     }
 }
@@ -72,7 +76,22 @@ mac:{
 #-------------------------------------------------
 # Linked Libs
 
-unix: {
+linux: {
+
+##    LIBS += -L$${OUT_PWD}/../curl
+##    LIBS += -lcurl
+
+    LIBS += -L$${OUT_PWD}/../bitcoin-api
+    LIBS += -lbitcoin-api
+
+    LIBS += -L$${OUT_PWD}/../jsoncpp
+    LIBS += -ljsoncpp
+
+    LIBS += -L$${OUT_PWD}/../nmcrpc
+    LIBS += -lnmcrpc
+}
+
+mac: {
 
 ##    LIBS += -L$${OUT_PWD}/../curl
 ##    LIBS += -lcurl
@@ -141,7 +160,13 @@ mac:{
 }
 
 # need to put -ldl last.
-unix:{
+linux:{
+    LIBS += -ldl
+    LIBS += -lcurl
+
+}
+
+mac:{
     LIBS += -ldl
     LIBS += -lcurl
 
