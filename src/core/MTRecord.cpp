@@ -570,7 +570,7 @@ bool MTRecord::DiscardOutgoingCash()
     if (!this->CanDiscardOutgoingCash())
         return false;
     // -----------------------------
-    return OTAPI_Wrap::Nym_RemoveOutpaymentsByIndex(m_str_nym_id, GetBoxIndex());
+    return OTAPI_Wrap::It()->Nym_RemoveOutpaymentsByIndex(m_str_nym_id, GetBoxIndex());
 }
 
 // For completed records (not pending.)
@@ -611,27 +611,27 @@ bool MTRecord::DeleteRecord()
         {
             if (m_bIsOutgoing) // outgoing mail
             {
-                int32_t	nCount = OTAPI_Wrap::GetNym_OutmailCount(m_str_nym_id);
+                int32_t	nCount = OTAPI_Wrap::It()->GetNym_OutmailCount(m_str_nym_id);
                 for (int32_t nIndex = 0; nIndex < nCount; ++nIndex)
                 {
-                    const std::string str_contents(OTAPI_Wrap::GetNym_OutmailContentsByIndex(m_str_nym_id, nIndex));
+                    const std::string str_contents(OTAPI_Wrap::It()->GetNym_OutmailContentsByIndex(m_str_nym_id, nIndex));
 
                     if (str_contents == m_str_contents) // found it.
                     {
-                        return OTAPI_Wrap::Nym_RemoveOutmailByIndex(m_str_nym_id, nIndex);
+                        return OTAPI_Wrap::It()->Nym_RemoveOutmailByIndex(m_str_nym_id, nIndex);
                     }
                 }
             }
             else // incoming mail
             {
-                int32_t	nCount = OTAPI_Wrap::GetNym_MailCount(m_str_nym_id);
+                int32_t	nCount = OTAPI_Wrap::It()->GetNym_MailCount(m_str_nym_id);
                 for (int32_t nIndex = 0; nIndex < nCount; ++nIndex)
                 {
-                    const std::string str_contents(OTAPI_Wrap::GetNym_MailContentsByIndex(m_str_nym_id, nIndex));
+                    const std::string str_contents(OTAPI_Wrap::It()->GetNym_MailContentsByIndex(m_str_nym_id, nIndex));
 
                     if (str_contents == m_str_contents) // found it.
                     {
-                        return OTAPI_Wrap::Nym_RemoveMailByIndex(m_str_nym_id, nIndex);
+                        return OTAPI_Wrap::It()->Nym_RemoveMailByIndex(m_str_nym_id, nIndex);
                     }
                 }
             }
@@ -687,7 +687,7 @@ bool MTRecord::DeleteRecord()
     // ------------------------------------------
     // Accept it.
     //
-    return OTAPI_Wrap::ClearRecord(m_str_server_id, m_str_nym_id, str_using_account, nIndex, false); //clear all = false. We're only clearing one record.
+    return OTAPI_Wrap::It()->ClearRecord(m_str_server_id, m_str_nym_id, str_using_account, nIndex, false); //clear all = false. We're only clearing one record.
 }
 // ---------------------------------------
 bool MTRecord::AcceptIncomingTransfer() { return this->AcceptIncomingTransferOrReceipt(); } // For incoming, pending (not-yet-accepted) transfers.
@@ -973,7 +973,7 @@ bool MTRecord::CancelOutgoing(const std::string str_via_acct) // This can be bla
                 if (IsCash())
                 {
                     // Maybe it's cash...
-                    std::string strOutpayment(OTAPI_Wrap::GetNym_OutpaymentsContentsByIndex(m_str_nym_id, GetBoxIndex()));
+                    std::string strOutpayment(OTAPI_Wrap::It()->GetNym_OutpaymentsContentsByIndex(m_str_nym_id, GetBoxIndex()));
 
                     if (strOutpayment.empty())
                     {
@@ -1023,11 +1023,11 @@ bool MTRecord::CancelOutgoing(const std::string str_via_acct) // This can be bla
             // ---------------------------------------
             // Find the payment in the Nym's outpayments box that correlates to this MTRecord.
             //
-            int32_t nCount = OTAPI_Wrap::GetNym_OutpaymentsCount(m_str_nym_id);
+            int32_t nCount = OTAPI_Wrap::It()->GetNym_OutpaymentsCount(m_str_nym_id);
 
             for (int32_t nIndex = 0; nIndex < nCount; ++nIndex)
             {
-                std::string strOutpayment(OTAPI_Wrap::GetNym_OutpaymentsContentsByIndex(m_str_nym_id, nIndex));
+                std::string strOutpayment(OTAPI_Wrap::It()->GetNym_OutpaymentsContentsByIndex(m_str_nym_id, nIndex));
 
                 if (strOutpayment.empty())
                 {
@@ -1160,7 +1160,7 @@ void MTRecord::SetDateRange(time_t tValidFrom, time_t tValidTo)
     m_ValidFrom = tValidFrom;
     m_ValidTo   = tValidTo;
     // ----------------------------------------------------------
-    time_t tCurrentTime = static_cast<time_t>(OTAPI_Wrap::GetTime());
+    time_t tCurrentTime = static_cast<time_t>(OTAPI_Wrap::It()->GetTime());
     // ----------------------------------------------------------
     if ((tValidTo > 0) && (tCurrentTime > tValidTo) && !IsMail() && !IsRecord())
         SetExpired();

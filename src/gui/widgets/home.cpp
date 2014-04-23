@@ -133,10 +133,10 @@ void MTHome::on_tableWidget_currentCellChanged(int row, int column, int previous
 
 void MTHome::setupRecordList()
 {
-    int nServerCount  = OTAPI_Wrap::GetServerCount();
-    int nAssetCount   = OTAPI_Wrap::GetAssetTypeCount();
-    int nNymCount     = OTAPI_Wrap::GetNymCount();
-    int nAccountCount = OTAPI_Wrap::GetAccountCount();
+    int nServerCount  = OTAPI_Wrap::It()->GetServerCount();
+    int nAssetCount   = OTAPI_Wrap::It()->GetAssetTypeCount();
+    int nNymCount     = OTAPI_Wrap::It()->GetNymCount();
+    int nAccountCount = OTAPI_Wrap::It()->GetAccountCount();
     // ----------------------------------------------------
     m_list.ClearServers();
     m_list.ClearAssets();
@@ -145,25 +145,25 @@ void MTHome::setupRecordList()
     // ----------------------------------------------------
     for (int ii = 0; ii < nServerCount; ++ii)
     {
-        std::string serverId = OTAPI_Wrap::GetServer_ID(ii);
+        std::string serverId = OTAPI_Wrap::It()->GetServer_ID(ii);
         m_list.AddServerID(serverId);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAssetCount; ++ii)
     {
-        std::string assetId = OTAPI_Wrap::GetAssetType_ID(ii);
+        std::string assetId = OTAPI_Wrap::It()->GetAssetType_ID(ii);
         m_list.AddAssetID(assetId);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nNymCount; ++ii)
     {
-        std::string nymId = OTAPI_Wrap::GetNym_ID(ii);
+        std::string nymId = OTAPI_Wrap::It()->GetNym_ID(ii);
         m_list.AddNymID(nymId);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAccountCount; ++ii)
     {
-        std::string accountID = OTAPI_Wrap::GetAccountWallet_ID(ii);
+        std::string accountID = OTAPI_Wrap::It()->GetAccountWallet_ID(ii);
         m_list.AddAccountID(accountID);
     }
     // ----------------------------------------------------
@@ -358,11 +358,11 @@ int64_t MTHome::rawCashBalance(QString qstr_server_id, QString qstr_asset_id, QS
     std::string assetId (qstr_asset_id.toStdString());
     std::string nymId   (qstr_nym_id.toStdString());
 
-    std::string str_purse = OTAPI_Wrap::LoadPurse(serverId, assetId, nymId);
+    std::string str_purse = OTAPI_Wrap::It()->LoadPurse(serverId, assetId, nymId);
 
     if (!str_purse.empty())
     {
-        int64_t temp_balance = OTAPI_Wrap::Purse_GetTotalValue(serverId, assetId, str_purse);
+        int64_t temp_balance = OTAPI_Wrap::It()->Purse_GetTotalValue(serverId, assetId, str_purse);
 
         if (temp_balance >= 0)
             balance = temp_balance;
@@ -382,13 +382,13 @@ QString MTHome::shortAcctBalance(QString qstr_acct_id, QString qstr_asset_id/*=Q
         return return_value; // Might want to assert here... (returns blank string.)
     // -------------------------------------------
     std::string  acctID     = qstr_acct_id.toStdString();
-    int64_t      balance    = OTAPI_Wrap::GetAccountWallet_Balance(acctID);
+    int64_t      balance    = OTAPI_Wrap::It()->GetAccountWallet_Balance(acctID);
     std::string  assetId;
     // -------------------------------------------
     if (!qstr_asset_id.isEmpty())
         assetId = qstr_asset_id.toStdString();
     else
-        assetId = OTAPI_Wrap::GetAccountWallet_AssetTypeID(acctID);
+        assetId = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(acctID);
     // -------------------------------------------
     std::string  str_output;
 
@@ -413,7 +413,7 @@ QString MTHome::shortAcctBalance(QString qstr_acct_id, QString qstr_asset_id/*=Q
 //static
 int64_t MTHome::rawAcctBalance(QString qstrAcctId)
 {
-    int64_t ret = qstrAcctId.isEmpty() ? 0 : OTAPI_Wrap::GetAccountWallet_Balance(qstrAcctId.toStdString());
+    int64_t ret = qstrAcctId.isEmpty() ? 0 : OTAPI_Wrap::It()->GetAccountWallet_Balance(qstrAcctId.toStdString());
     return ret;
 }
 

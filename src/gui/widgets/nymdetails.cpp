@@ -193,7 +193,7 @@ void MTNymDetails::refresh(QString strID, QString strName)
         //
         if (m_pPlainTextEdit)
         {
-            QString strContents = QString::fromStdString(OTAPI_Wrap::GetNym_Stats(strID.toStdString()));
+            QString strContents = QString::fromStdString(OTAPI_Wrap::It()->GetNym_Stats(strID.toStdString()));
             m_pPlainTextEdit->setPlainText(strContents);
         }
         // -----------------------------------
@@ -270,7 +270,7 @@ void MTNymDetails::DeleteButtonClicked()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         // ----------------------------------------------------
-        bool bCanRemove = OTAPI_Wrap::Wallet_CanRemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
+        bool bCanRemove = OTAPI_Wrap::It()->Wallet_CanRemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
 
         if (!bCanRemove)
         {
@@ -288,7 +288,7 @@ void MTNymDetails::DeleteButtonClicked()
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
-            bool bSuccess = OTAPI_Wrap::Wallet_RemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
+            bool bSuccess = OTAPI_Wrap::It()->Wallet_RemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
 
             if (bSuccess)
             {
@@ -380,7 +380,7 @@ void MTNymDetails::AddButtonClicked()
         // Register the Namecoin name.
         if (nAuthorityIndex == 1)
         {
-            const unsigned cnt = OTAPI_Wrap::GetNym_CredentialCount (str_id);
+            const unsigned cnt = OTAPI_Wrap::It()->GetNym_CredentialCount (str_id);
             if (cnt != 1)
             {
                 qDebug () << "Expected one master credential, got " << cnt
@@ -388,7 +388,7 @@ void MTNymDetails::AddButtonClicked()
             }
             else
             {
-                const std::string cred = OTAPI_Wrap::GetNym_CredentialID (str_id, 0);
+                const std::string cred = OTAPI_Wrap::It()->GetNym_CredentialID (str_id, 0);
                 const QString qCred = QString::fromStdString (cred);
                 NMC_NameManager& nmc = NMC_NameManager::getInstance ();
                 nmc.startRegistration (qstrID, qCred);
@@ -399,7 +399,7 @@ void MTNymDetails::AddButtonClicked()
         // Set the Name of the new Nym.
         //
         //bool bNameSet =
-                OTAPI_Wrap::SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
+                OTAPI_Wrap::It()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
         // -----------------------------------------------
         // Commenting this out for now.
         //
@@ -421,7 +421,7 @@ void MTNymDetails::on_lineEditName_editingFinished()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = OTAPI_Wrap::SetNym_Name(m_pOwner->m_qstrCurrentID.toStdString(), // Nym
+        bool bSuccess = OTAPI_Wrap::It()->SetNym_Name(m_pOwner->m_qstrCurrentID.toStdString(), // Nym
                                                 m_pOwner->m_qstrCurrentID.toStdString(), // Signer
                                                 ui->lineEditName->text(). toStdString()); // New Name
         if (bSuccess)

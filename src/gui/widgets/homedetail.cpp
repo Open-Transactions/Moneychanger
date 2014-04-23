@@ -365,7 +365,7 @@ QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
         str_acct_server  = OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
         str_acct_asset   = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
         // -----------------------------------
-        str_acct_type    = OTAPI_Wrap::GetAccountWallet_Type(str_acct_id);
+        str_acct_type    = OTAPI_Wrap::It()->GetAccountWallet_Type(str_acct_id);
         // -----------------------------------
         qstr_acct_nym    = QString::fromStdString(str_acct_nym);
         qstr_acct_server = QString::fromStdString(str_acct_server);
@@ -406,12 +406,12 @@ QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
         // -----------------------------------------------
         mapIDName & the_map = theChooser.m_map;
         // -----------------------------------------------
-        const int32_t acct_count = OTAPI_Wrap::GetAccountCount();
+        const int32_t acct_count = OTAPI_Wrap::It()->GetAccountCount();
         // -----------------------------------------------
         for (int32_t ii = 0; ii < acct_count; ++ii)
         {
             //Get OT Acct ID
-            QString OT_acct_id = QString::fromStdString(OTAPI_Wrap::GetAccountWallet_ID(ii));
+            QString OT_acct_id = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
             QString OT_acct_name("");
             // -----------------------------------------------
             if (!OT_acct_id.isEmpty()) // Should never be empty.
@@ -423,7 +423,7 @@ QString MTHomeDetail::FindAppropriateDepositAccount(MTRecord & recordmt)
                 str_acct_server  = OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
                 str_acct_asset   = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
                 // -----------------------------------
-                str_acct_type    = OTAPI_Wrap::GetAccountWallet_Type(str_acct_id);
+                str_acct_type    = OTAPI_Wrap::It()->GetAccountWallet_Type(str_acct_id);
                 // -----------------------------------
                 qstr_acct_nym    = QString::fromStdString(str_acct_nym);
                 qstr_acct_server = QString::fromStdString(str_acct_server);
@@ -856,7 +856,7 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt, bool bExte
     // --------------------------------------------------------------------------------------------
     if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
     {
-        const int64_t lAmount = OTAPI_Wrap::StringToAmount(recordmt.GetAssetID(), recordmt.GetAmount());
+        const int64_t lAmount = OTAPI_Wrap::It()->StringToAmount(recordmt.GetAssetID(), recordmt.GetAmount());
 
         cellType = (lAmount > 0) ? TransactionTableViewCellTypeReceived : TransactionTableViewCellTypeSent;
     }
@@ -998,7 +998,7 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(MTRecord & recordmt, bool bExte
     //Calc/convert date/times
     QDateTime timestamp;
 
-    long lDate = OTAPI_Wrap::StringToLong(recordmt.GetDate());
+    long lDate = OTAPI_Wrap::It()->StringToLong(recordmt.GetDate());
 
     timestamp.setTime_t(lDate);
 
@@ -1577,7 +1577,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     {
         QLabel    * pLabel    = new QLabel(QString("%1: ").arg(tr("Server")));
 
-        QString qstr_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(qstr_ServerID.toStdString()));
+        QString qstr_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(qstr_ServerID.toStdString()));
 
         m_pLineEdit_Server_ID       = new QLineEdit(qstr_ServerID);
         m_pLineEdit_Server_Name     = new QLineEdit(qstr_name);
@@ -1597,7 +1597,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     {
         QLabel    * pLabel    = new QLabel(QString("%1: ").arg(tr("Asset Type")));
 
-        QString qstr_name = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(qstr_AssetTypeID.toStdString()));
+        QString qstr_name = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_Name(qstr_AssetTypeID.toStdString()));
 
         m_pLineEdit_AssetType_ID    = new QLineEdit(qstr_AssetTypeID);
         m_pLineEdit_AssetType_Name  = new QLineEdit(qstr_name);
@@ -1727,7 +1727,7 @@ void MTHomeDetail::refresh(MTRecord & recordmt)
     {
         if (recordmt.HasInitialPayment() || recordmt.HasPaymentPlan())
         {
-            std::string str_asset_name = OTAPI_Wrap::GetAssetType_Name(recordmt.GetAssetID().c_str());
+            std::string str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(recordmt.GetAssetID().c_str());
             // ---------------------------------
             std::stringstream sss;
             sss << "Payments use the currency: " << str_asset_name << "\n";

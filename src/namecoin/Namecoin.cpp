@@ -209,7 +209,7 @@ NMC_NameManager::startRegistration (const QString& nym, const QString& cred)
 bool
 NMC_NameManager::updateName (const QString& nym, const QString& cred)
 {
-  std::string addrStr = OTAPI_Wrap::GetNym_SourceForID (nym.toStdString ());
+  std::string addrStr = OTAPI_Wrap::It()->GetNym_SourceForID (nym.toStdString ());
   const nmcrpc::NamecoinInterface::Address addr = nc.queryAddress (addrStr);
 
   if (!addr.isValid () || !addr.isMine ())

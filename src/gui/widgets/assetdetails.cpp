@@ -8,6 +8,7 @@
 #include <gui/widgets/wizardaddcontract.hpp>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 
 #include <QPlainTextEdit>
 #include <QMessageBox>
@@ -177,7 +178,7 @@ void MTAssetDetails::DeleteButtonClicked()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         // ----------------------------------------------------
-        bool bCanRemove = OTAPI_Wrap::Wallet_CanRemoveAssetType(m_pOwner->m_qstrCurrentID.toStdString());
+        bool bCanRemove = OTAPI_Wrap::It()->Wallet_CanRemoveAssetType(m_pOwner->m_qstrCurrentID.toStdString());
 
         if (!bCanRemove)
         {
@@ -194,7 +195,7 @@ void MTAssetDetails::DeleteButtonClicked()
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
-            bool bSuccess = OTAPI_Wrap::Wallet_RemoveAssetType(m_pOwner->m_qstrCurrentID.toStdString());
+            bool bSuccess = OTAPI_Wrap::It()->Wallet_RemoveAssetType(m_pOwner->m_qstrCurrentID.toStdString());
 
             if (bSuccess)
             {
@@ -242,7 +243,7 @@ void MTAssetDetails::ImportContract(QString qstrContents)
         return;
     }
     // ------------------------------------------------------
-    QString qstrContractID = QString::fromStdString(OTAPI_Wrap::CalculateAssetContractID(qstrContents.toStdString()));
+    QString qstrContractID = QString::fromStdString(OTAPI_Wrap::It()->CalculateAssetContractID(qstrContents.toStdString()));
 
     if (qstrContractID.isEmpty())
     {
@@ -255,7 +256,7 @@ void MTAssetDetails::ImportContract(QString qstrContents)
     {
         // Already in the wallet?
         //
-//        std::string str_Contract = OTAPI_Wrap::LoadAssetContract(qstrContractID.toStdString());
+//        std::string str_Contract = OTAPI_Wrap::It()->LoadAssetContract(qstrContractID.toStdString());
 //
 //        if (!str_Contract.empty())
 //        {
@@ -264,7 +265,7 @@ void MTAssetDetails::ImportContract(QString qstrContents)
 //            return;
 //        }
         // ---------------------------------------------------
-        int32_t nAdded = OTAPI_Wrap::AddAssetContract(qstrContents.toStdString());
+        int32_t nAdded = OTAPI_Wrap::It()->AddAssetContract(qstrContents.toStdString());
 
         if (1 != nAdded)
         {
@@ -273,7 +274,7 @@ void MTAssetDetails::ImportContract(QString qstrContents)
             return;
         }
         // -----------------------------------------------
-        QString qstrContractName = QString::fromStdString(OTAPI_Wrap::GetAssetType_Name(qstrContractID.toStdString()));
+        QString qstrContractName = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_Name(qstrContractID.toStdString()));
         // -----------------------------------------------
         // This was irritating knotwork.
         //
@@ -431,7 +432,7 @@ void MTAssetDetails::refresh(QString strID, QString strName)
         // --------------------------
         if (m_pPlainTextEdit)
         {
-            QString strContents = QString::fromStdString(OTAPI_Wrap::LoadAssetContract(strID.toStdString()));
+            QString strContents = QString::fromStdString(OTAPI_Wrap::It()->LoadAssetContract(strID.toStdString()));
 
             m_pPlainTextEdit->setPlainText(strContents);
         }
@@ -445,7 +446,7 @@ void MTAssetDetails::on_lineEditName_editingFinished()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = OTAPI_Wrap::SetAssetType_Name(m_pOwner->m_qstrCurrentID.toStdString(),  // Asset Type
+        bool bSuccess = OTAPI_Wrap::It()->SetAssetType_Name(m_pOwner->m_qstrCurrentID.toStdString(),  // Asset Type
                                                       ui->lineEditName->text(). toStdString()); // New Name
         if (bSuccess)
         {

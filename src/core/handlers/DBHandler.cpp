@@ -455,8 +455,8 @@ bool DBHandler::AddressBookUpdateNym(QString nym_id_string, QString nym_display_
     
     if (db.isOpen())
     {
-        return query.exec(QString("UPDATE `address_book` SET `nym_id` = '%1', `nym_display_name` = '%2' WHERE `id`='%3'").arg(nym_id_string).arg(nym_display_name_string).arg(index_id_string));
-
+        return query.exec(QString("UPDATE `address_book` SET `nym_id` = '%1', `nym_display_name` = '%2' WHERE `id`='%3'").
+                          arg(nym_id_string).arg(nym_display_name_string).arg(index_id_string));
     }
     else
     {

@@ -37,6 +37,12 @@ win32:{
 
 #-------------------------------------------------
 # Package Config
-unix:{
+
+linux:{
     PKGCONFIG += opentxs
 }
+
+mac:{
+    PKGCONFIG += opentxs
+}
+

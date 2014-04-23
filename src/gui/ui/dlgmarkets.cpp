@@ -480,13 +480,13 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, 
                 // -----------------------------------------------------------------------
                 QString qstrBuySell = pOfferData->selling ? tr("Sell") : tr("Buy");
 
-                const std::string str_asset_name = OTAPI_Wrap::GetAssetType_Name(pOfferData->asset_type_id);
+                const std::string str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(pOfferData->asset_type_id);
                 // --------------------------
-                int64_t lTotalAssets   = OTAPI_Wrap::StringToLong(pOfferData->total_assets);
-                int64_t lFinishedSoFar = OTAPI_Wrap::StringToLong(pOfferData->finished_so_far);
+                int64_t lTotalAssets   = OTAPI_Wrap::It()->StringToLong(pOfferData->total_assets);
+                int64_t lFinishedSoFar = OTAPI_Wrap::It()->StringToLong(pOfferData->finished_so_far);
                 // --------------------------
-                const std::string str_total_assets    = OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lTotalAssets);
-                const std::string str_finished_so_far = OTAPI_Wrap::FormatAmount(pOfferData->asset_type_id, lFinishedSoFar);
+                const std::string str_total_assets    = OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lTotalAssets);
+                const std::string str_finished_so_far = OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lFinishedSoFar);
                 // --------------------------
                 QString qstrAmounts;
 
@@ -619,8 +619,8 @@ bool DlgMarkets::LowLevelLoadMarketList(QString qstrServerID, QString qstrNymID,
 
             if (the_map.end() == it_map)
             {
-                const std::string str_asset_name    = OTAPI_Wrap::GetAssetType_Name(pMarketData->asset_type_id);
-                const std::string str_currency_name = OTAPI_Wrap::GetAssetType_Name(pMarketData->currency_type_id);
+                const std::string str_asset_name    = OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->asset_type_id);
+                const std::string str_currency_name = OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->currency_type_id);
                 // --------------------------
                 QString qstrMarketName = QString("%1 for %2").
                         arg(QString::fromStdString(str_asset_name)).
@@ -796,7 +796,7 @@ void DlgMarkets::LoadOrRetrieveMarkets()
                         int64_t     lScale    = OTAPI_Wrap::It()->StringToLong(pMarketData->scale);
                         if (lScale > 1)
                         {
-                            std::string str_scale = OTAPI_Wrap::FormatAmount(pMarketData->asset_type_id, lScale);
+                            std::string str_scale = OTAPI_Wrap::It()->FormatAmount(pMarketData->asset_type_id, lScale);
                             // ------------------------------------------------------
                             QString qstrFormattedScale = QString::fromStdString(str_scale);
                             // ------------------------------------------------------
@@ -941,13 +941,13 @@ void DlgMarkets::RefreshRecords()
         nDefaultServerIndex = 0;
     }
     // ----------------------------
-    const int32_t server_count = OTAPI_Wrap::GetServerCount();
+    const int32_t server_count = OTAPI_Wrap::It()->GetServerCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < server_count; ++ii)
     {
         //Get OT Server ID
         //
-        QString OT_server_id = QString::fromStdString(OTAPI_Wrap::GetServer_ID(ii));
+        QString OT_server_id = QString::fromStdString(OTAPI_Wrap::It()->GetServer_ID(ii));
         QString OT_server_name("");
         // -----------------------------------------------
         if (!OT_server_id.isEmpty())
@@ -958,7 +958,7 @@ void DlgMarkets::RefreshRecords()
                 nDefaultServerIndex = ii+1; // the +1 is because of "all" in the 0 position. (Servers only.)
             }
             // -----------------------------------------------
-            OT_server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(OT_server_id.toStdString()));
+            OT_server_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(OT_server_id.toStdString()));
             // -----------------------------------------------
             m_mapServers.insert(OT_server_id, OT_server_name);
             ui->comboBoxServer->insertItem(ii+1, OT_server_name);
@@ -968,12 +968,12 @@ void DlgMarkets::RefreshRecords()
 
     // -----------------------------------------------
     bool bFoundNymDefault = false;
-    const int32_t nym_count = OTAPI_Wrap::GetNymCount();
+    const int32_t nym_count = OTAPI_Wrap::It()->GetNymCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < nym_count; ++ii)
     {
         //Get OT Nym ID
-        QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::GetNym_ID(ii));
+        QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::It()->GetNym_ID(ii));
         QString OT_nym_name("");
         // -----------------------------------------------
         if (!OT_nym_id.isEmpty())

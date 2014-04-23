@@ -175,7 +175,7 @@ void MTServerDetails::DeleteButtonClicked()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         // ----------------------------------------------------
-        bool bCanRemove = OTAPI_Wrap::Wallet_CanRemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
+        bool bCanRemove = OTAPI_Wrap::It()->Wallet_CanRemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
 
         if (!bCanRemove)
         {
@@ -191,7 +191,7 @@ void MTServerDetails::DeleteButtonClicked()
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
-            bool bSuccess = OTAPI_Wrap::Wallet_RemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
+            bool bSuccess = OTAPI_Wrap::It()->Wallet_RemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
 
             if (bSuccess)
             {
@@ -236,7 +236,7 @@ void MTServerDetails::ImportContract(QString qstrContents)
         return;
     }
     // ------------------------------------------------------
-    QString qstrContractID = QString::fromStdString(OTAPI_Wrap::CalculateServerContractID(qstrContents.toStdString()));
+    QString qstrContractID = QString::fromStdString(OTAPI_Wrap::It()->CalculateServerContractID(qstrContents.toStdString()));
 
     if (qstrContractID.isEmpty())
     {
@@ -249,7 +249,7 @@ void MTServerDetails::ImportContract(QString qstrContents)
     {
         // Already in the wallet?
         //
-//        std::string str_Contract = OTAPI_Wrap::LoadServerContract(qstrContractID.toStdString());
+//        std::string str_Contract = OTAPI_Wrap::It()->LoadServerContract(qstrContractID.toStdString());
 //
 //        if (!str_Contract.empty())
 //        {
@@ -258,7 +258,7 @@ void MTServerDetails::ImportContract(QString qstrContents)
 //            return;
 //        }
         // ---------------------------------------------------
-        int32_t nAdded = OTAPI_Wrap::AddServerContract(qstrContents.toStdString());
+        int32_t nAdded = OTAPI_Wrap::It()->AddServerContract(qstrContents.toStdString());
 
         if (1 != nAdded)
         {
@@ -267,7 +267,7 @@ void MTServerDetails::ImportContract(QString qstrContents)
             return;
         }
         // -----------------------------------------------
-        QString qstrContractName = QString::fromStdString(OTAPI_Wrap::GetServer_Name(qstrContractID.toStdString()));
+        QString qstrContractName = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(qstrContractID.toStdString()));
         // -----------------------------------------------
         // Commenting this out for now.
         //
@@ -428,7 +428,7 @@ void MTServerDetails::refresh(QString strID, QString strName)
         // --------------------------
         if (m_pPlainTextEdit)
         {
-            QString strContents = QString::fromStdString(OTAPI_Wrap::LoadServerContract(strID.toStdString()));
+            QString strContents = QString::fromStdString(OTAPI_Wrap::It()->LoadServerContract(strID.toStdString()));
             m_pPlainTextEdit->setPlainText(strContents);
         }
         // --------------------------
@@ -441,7 +441,7 @@ void MTServerDetails::on_lineEditName_editingFinished()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = OTAPI_Wrap::SetServer_Name(m_pOwner->m_qstrCurrentID.toStdString(),  // Server
+        bool bSuccess = OTAPI_Wrap::It()->SetServer_Name(m_pOwner->m_qstrCurrentID.toStdString(),  // Server
                                                    ui->lineEditName->text(). toStdString()); // New Name
         if (bSuccess)
         {

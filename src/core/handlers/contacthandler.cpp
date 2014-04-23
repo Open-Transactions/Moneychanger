@@ -7,6 +7,7 @@
 #include <core/handlers/DBHandler.hpp>
 
 #include <opentxs/OTAPI.hpp>
+#include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OTASCIIArmor.hpp>
 
 #include <QDebug>
@@ -196,7 +197,7 @@ bool MTContactHandler::GetServers(mapIDName & theMap, QString filterByNym)
 
         if (!server_id.isEmpty())
         {
-            QString server_name = QString::fromStdString(OTAPI_Wrap::GetServer_Name(server_id.toStdString()));
+            QString server_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(server_id.toStdString()));
 
             if (!server_name.isEmpty())
             {
