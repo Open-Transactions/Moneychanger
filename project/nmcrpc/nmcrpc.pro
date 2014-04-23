@@ -34,11 +34,9 @@ INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
 #-------------------------------------------------
 # Package Config
 
-linux:{
+# MAC AND LINUX:
+unix:{
     PKGCONFIG += libidn
 }
 
-mac:{
-    PKGCONFIG += libidn
-}
 
