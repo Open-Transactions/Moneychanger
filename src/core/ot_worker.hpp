@@ -4,7 +4,7 @@
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
 
-#include <core/MTRecordList.hpp>
+#include <opentxs/OTRecordList.hpp>
 
 #include <QObject>
 #include <QMap>
@@ -24,7 +24,7 @@ public:
     QMutex overview_list_mutex;
     
 private:
-    MTRecordList list;
+    OTRecordList list;
     QList< QMap<QString,QVariant> > * overview_list;
     
 signals:

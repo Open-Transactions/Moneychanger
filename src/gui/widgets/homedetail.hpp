@@ -4,7 +4,7 @@
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
 
-#include <core/MTRecordList.hpp>
+#include <opentxs/OTRecordList.hpp>
 
 #include <QPointer>
 #include <QWidget>
@@ -36,7 +36,7 @@ public:
     explicit MTHomeDetail(QWidget *parent = 0);
     ~MTHomeDetail();
     
-    static QWidget * CreateDetailHeaderWidget(MTRecord & recordmt, bool bExternal=true);
+    static QWidget * CreateDetailHeaderWidget(OTRecord & recordmt, bool bExternal=true);
 
     void SetHomePointer(MTHome & theHome);
 
@@ -55,7 +55,7 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
 public slots:
-    void onRefresh(int nRow, MTRecordList & theList);
+    void onRefresh(int nRow, OTRecordList & theList);
 
 private slots:
     void on_viewContactButton_clicked(bool checked = false);
@@ -70,11 +70,11 @@ private slots:
     void on_msgButton_clicked(bool checked = false);
 
 private:
-    void refresh(MTRecord & recordmt);
-    void refresh(int nRow, MTRecordList & theList);
+    void refresh(OTRecord & recordmt);
+    void refresh(int nRow, OTRecordList & theList);
 
     int m_nContactID; // If there's a known Contact ID for this record, it will be set here when discovered, for later use.
-    shared_ptr_MTRecord m_record;
+    shared_ptr_OTRecord m_record;
 
     QPointer<QGridLayout> m_pDetailLayout;
     QPointer<MTHome> m_pHome;
@@ -95,7 +95,7 @@ private:
 
     void FavorLeftSideForIDs();
 
-    QString FindAppropriateDepositAccount(MTRecord & recordmt);
+    QString FindAppropriateDepositAccount(OTRecord & recordmt);
     void    RecreateLayout();
 
 private:
