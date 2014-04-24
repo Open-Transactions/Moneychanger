@@ -97,10 +97,17 @@ unix:{
     
     # LINUX:
     else:{
+        GCC_VERSION = $$system(g++ -dumpversion | cut -d. -f1-2)
+
         CONFIG += link_pkgconfig
         QMAKE_CXXFLAGS += -fPIC ## put only here, sub-libs pick it up from elsewhere?
-        #QMAKE_CXXFLAGS += -std=c++03 -Dnullptr=NULL -DOT_USE_TR1  ## Ubuntu 12.04
-        QMAKE_CXXFLAGS += -std=c++11 -DCXX_11
+
+        lessThan(GCC_VERSION, 4.7):{
+            QMAKE_CXXFLAGS += -std=c++03 -Dnullptr=NULL -DOT_USE_TR1
+        }
+        else:{
+            QMAKE_CXXFLAGS += -std=c++11 -DCXX_11
+        }
     }
 }
 
