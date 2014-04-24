@@ -98,9 +98,11 @@ unix: {
     } 
     # LINUX:
     else: {
-        # only need if no C++11 available (e.g. Ubuntu 12.04)
-        #LIBS += -lboost_system-mt
-        #LIBS += -lboost_thread-mt
+        lessThan(GCC_VERSION, 4.7):{
+            # only need if no C++11 available
+            LIBS += -lboost_system-mt
+            LIBS += -lboost_thread-mt
+        }
     }
 }
 
