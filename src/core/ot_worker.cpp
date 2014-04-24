@@ -72,8 +72,8 @@ void ot_worker::mc_overview_ping(){
     
     //REadd to the backend memory to the visual table.
     for(int a = 0;a < listSize;a++){
-        weak_ptr_MTRecord weakRecord = list.GetRecord(a);
-        shared_ptr_MTRecord record = weakRecord.lock();
+        weak_ptr_OTRecord weakRecord = list.GetRecord(a);
+        shared_ptr_OTRecord record = weakRecord.lock();
         if (weakRecord.expired()) {
             OTLog::Output(2, "Reloading table due to expired pointer");
             list.Populate();
@@ -81,7 +81,7 @@ void ot_worker::mc_overview_ping(){
             a = 0;
             
         }else{
-            MTRecord recordmt = *record;
+            OTRecord recordmt = *record;
             
             /** Refernce Comment/Code **
              qDebug() << recordmt.IsOutgoing();
@@ -136,7 +136,7 @@ void ot_worker::mc_overview_ping(){
              long  GetTransactionNum() const;
              long  GetTransNumForDisplay() const;
              
-             MTRecordType  GetRecordType() const;
+             OTRecordType  GetRecordType() const;
              // ---------------------------------------
              const std::string & GetServerID()       const;
              const std::string & GetAssetID()        const;

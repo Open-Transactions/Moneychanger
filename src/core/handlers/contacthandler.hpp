@@ -4,7 +4,7 @@
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
 
-#include <core/MTRecordList.hpp>
+#include <opentxs/OTRecordList.hpp>
 
 #include <QMutex>
 #include <QString>
@@ -14,7 +14,7 @@
 #define DEFAULT_CHEQUE_EXPIRATION 60*60*24*30 // 2592000 seconds == 30 days
 
 
-class MTNameLookupQT : public MTNameLookup
+class MTNameLookupQT : public OTNameLookup
 {
 public:
     virtual ~MTNameLookupQT() {}

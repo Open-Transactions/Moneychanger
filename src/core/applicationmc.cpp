@@ -7,9 +7,12 @@
 #include <core/passwordcallback.hpp>
 #include <core/moneychanger.hpp>
 
+#include <core/handlers/contacthandler.hpp>
+
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OTAsymmetricKey.hpp>
+#include <opentxs/OTRecordList.hpp>
 
 #include <QVBoxLayout>
 #include <QDebug>
@@ -18,7 +21,39 @@
 #include <QLabel>
 
 
-bool SetupPasswordCallback(OTCaller & passwordCaller, OTCallback & passwordCallback);
+
+bool SetupPasswordCallback(OTCaller & passwordCaller, OTCallback & passwordCallback)
+{
+    passwordCaller.setCallback(&passwordCallback);
+
+    bool bSuccess = OT_API_Set_PasswordCallback(passwordCaller);
+
+    if (!bSuccess)
+    {
+        qDebug() << QString("Error setting password callback!");
+        return false;
+    }
+
+    return true;
+}
+
+
+bool SetupAddressBookCallback(OTLookupCaller & theCaller, OTNameLookup & theCallback)
+{
+    theCaller.setCallback(&theCallback);
+
+    bool bSuccess = OT_API_Set_AddrBookCallback(theCaller);
+
+    if (!bSuccess)
+    {
+        qDebug() << QString("Error setting address book callback!");
+        return false;
+    }
+
+    return true;
+}
+
+
 
 
 MTApplicationMC::MTApplicationMC(int &argc, char **argv)
@@ -41,7 +76,7 @@ void MTApplicationMC::appStarting()
     //Compiled details
     QString mc_window_title = mc_app_name+" | "+mc_version;
     // ----------------------------------------
-    // Load OTAPI Wallet
+    // Set Password Callback.
     //
     static OTCaller           passwordCaller;
     static MTPasswordCallback passwordCallback;
@@ -52,6 +87,19 @@ void MTApplicationMC::appStarting()
         abort();
     }
     // ----------------------------------------
+    // Set Address Book Callback.
+    //
+    static OTLookupCaller theCaller;
+    static MTNameLookupQT theCallback;
+
+    if (!SetupAddressBookCallback(theCaller, theCallback))
+    {
+        qDebug() << "Failure setting address book callback in MTApplicationMC";
+        abort();
+    }
+    // ----------------------------------------
+    // Load OTAPI Wallet
+    //
     OTAPI_Wrap::It()->LoadWallet();
     // ----------------------------------------
     /** Init Moneychanger code (Start when necessary below) **/
@@ -95,20 +143,4 @@ void MTApplicationMC::appStarting()
         pMoneychanger->bootTray();
     }
 }
-
-bool SetupPasswordCallback(OTCaller & passwordCaller, OTCallback & passwordCallback)
-{
-    passwordCaller.setCallback(&passwordCallback);
-
-    bool bSuccess = OT_API_Set_PasswordCallback(passwordCaller);
-
-    if (!bSuccess)
-    {
-        qDebug() << QString("Error setting password callback!");
-        return false;
-    }
-
-    return true;
-}
-
 

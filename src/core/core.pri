@@ -8,8 +8,6 @@ HEADERS += \
     $${PWD}/httpinterface.hpp \
     $${PWD}/modules.hpp \
     $${PWD}/moneychanger.hpp \
-    $${PWD}/MTRecord.hpp \
-    $${PWD}/MTRecordList.hpp \
     $${PWD}/ot_worker.hpp \
     $${PWD}/passwordcallback.hpp \
     $${PWD}/translation.hpp \
@@ -25,8 +23,6 @@ SOURCES += \
     $${PWD}/main.cpp \
     $${PWD}/modules.cpp \
     $${PWD}/moneychanger.cpp \
-    $${PWD}/MTRecord.cpp \
-    $${PWD}/MTRecordList.cpp \
     $${PWD}/ot_worker.cpp \
     $${PWD}/passwordcallback.cpp \
     $${PWD}/translation.cpp \
