@@ -44,3 +44,9 @@ libidn11
 libidn-devel
 libcurl4
 libcurl-devel
+
+### Contributing
+
+All development goes in develop branch - please don't submit pull requests to master.
+
+Please do *NOT* use an editor that automatically reformats.
