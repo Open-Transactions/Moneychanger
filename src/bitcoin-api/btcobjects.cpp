@@ -90,7 +90,7 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
         VOUT output;
 
         output.value = BtcHelper::CoinsToSatoshis(outputObj["value"].asDouble());
-        output.n = outputObj["n"].asInt64();      // JSON doesn't know integers
+        output.n = outputObj["n"].asInt64();
 
         Json::Value scriptPubKey = outputObj["scriptPubKey"];
         output.reqSigs = scriptPubKey["reqSigs"].asInt64();
@@ -169,7 +169,7 @@ BtcBlock::BtcBlock(Json::Value block)
     }
 }
 
-BtcTxIdVout::BtcTxIdVout(std::string txID, int64_t vout)
+BtcTxIdVout::BtcTxIdVout(const std::string &txID, const int64_t &vout)
 {
     (*this)["txid"] = txID;
     (*this)["vout"] = static_cast<Json::Int64>(vout);
@@ -201,39 +201,39 @@ BtcSignedTransaction::BtcSignedTransaction(Json::Value signedTransactionObj)
     this->complete = signedTransactionObj["complete"].asBool();
 }
 
-BtcSigningPrequisite::BtcSigningPrequisite()
+BtcSigningPrerequisite::BtcSigningPrerequisite()
 {
 
 }
 
-BtcSigningPrequisite::BtcSigningPrequisite(std::string txId, int64_t vout, std::string scriptPubKey, std::string redeemScript)
+BtcSigningPrerequisite::BtcSigningPrerequisite(const std::string &txId, const int64_t &vout, const std::string &scriptPubKey, const std::string &redeemScript)
 {
-    // all of these values must be set or else prequisite is invalid
+    // all of these values must be set or else prerequisite is invalid
     (*this)["txid"] = txId;
     (*this)["vout"] = static_cast<Json::Int64>(vout);
     (*this)["scriptPubKey"] = scriptPubKey;
     (*this)["redeemScript"] = redeemScript;
 }
 
-void BtcSigningPrequisite::SetTxId(std::string txId)
+void BtcSigningPrerequisite::SetTxId(std::string txId)
 {
     // we can get this value from the transaction used to send funds to the p2sh
     (*this)["txid"] = txId;
 }
 
-void BtcSigningPrequisite::SetVout(Json::Int64 vout)
+void BtcSigningPrerequisite::SetVout(Json::Int64 vout)
 {
     // we can get this value from the transaction used to send funds to the p2sh
     (*this)["vout"] = vout;
 }
 
-void BtcSigningPrequisite::SetScriptPubKey(std::string scriptPubKey)
+void BtcSigningPrerequisite::SetScriptPubKey(std::string scriptPubKey)
 {
     // we can get this value from the transaction used to send funds to the p2sh
     (*this)["scriptPubKey"] = scriptPubKey;
 }
 
-void BtcSigningPrequisite::SetRedeemScript(std::string redeemScript)
+void BtcSigningPrerequisite::SetRedeemScript(std::string redeemScript)
 {
     // we can get this from the createmultisig api function
     (*this)["redeemScript"] = redeemScript;
@@ -246,13 +246,13 @@ BtcRpcPacket::BtcRpcPacket()
 }
 
 BtcRpcPacket::BtcRpcPacket(const std::string &strData)
-: data(strData.begin(), strData.end()), pointerOffset(0)
+    :data(strData.begin(), strData.end()), pointerOffset(0)
 {
     this->data.push_back('\0');
 }
 
 BtcRpcPacket::BtcRpcPacket(const BtcRpcPacketPtr packet)
-: data(packet->data.begin(), packet->data.end()), pointerOffset(0)
+    : data(packet->data.begin(), packet->data.end()), pointerOffset(0)
 {
     this->data.push_back('\0');
 }
@@ -269,28 +269,32 @@ void BtcRpcPacket::SetDefaults()
     this->pointerOffset = 0;
 }
 
-bool BtcRpcPacket::AddData(const std::string &strData)
+bool BtcRpcPacket::AddData(const std::string strData)
 {
-    std::string data(this->data.begin(), this->data.end());
+    std::string data(this->data.begin(), this->data.end()--);
     data.append(strData);
-
     this->data.clear();
     this->data = std::vector<char>(data.begin(), data.end());
     this->data.push_back('\0');
+
+    printf("size: %d\n", this->size());
+    std::cout.flush();
+    printf(" data: %s\n", strData.c_str());
 
     return true;
 }
 
 const char *BtcRpcPacket::ReadNextChar()
 {
-    if (this->pointerOffset <= this->data.size())
+    printf("offset: %d, size: %d -1", this->pointerOffset, this->size());
+    if (this->pointerOffset < this->data.size() - 1)
         return &this->data.at(this->pointerOffset++);
-    else return "";
+    else return NULL;
 }
 
 size_t BtcRpcPacket::size()
 {
-    return this->data.size();
+    return this->data.size() - 1;
 }
 
 const char* BtcRpcPacket::GetData()

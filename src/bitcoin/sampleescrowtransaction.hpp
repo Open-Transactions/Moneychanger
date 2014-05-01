@@ -10,6 +10,7 @@
 
 #include <bitcoin-api/btcmodules.hpp>
 
+#include <string>
 
 //#include "sampleescrowclient.h"
 //#include "sampleescrowserver.h"

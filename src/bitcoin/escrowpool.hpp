@@ -10,6 +10,7 @@
 
 #include <QList>
 #include <QString>
+#include <map>
 
 class SampleEscrowServer;
 
@@ -28,6 +29,8 @@ public:
     QList<SampleEscrowServerPtr> escrowServers;     // servers that are part of this pool
 
     QString poolName;
+
+    std::map<std::string, SampleEscrowServerPtr> serverNameMap;
 
 private:
 

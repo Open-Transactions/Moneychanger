@@ -78,12 +78,12 @@ void SampleEscrowManager::OnInitializeEscrow(BtcGuiTest* btcGuiTest)
     // in this example we already waited for the client so this should complete instantly
     foreach(SampleEscrowServerPtr server, this->escrowPool->escrowServers)
     {
-        while(!server->CheckIncomingTransaction())
+        while(!server->CheckTransaction(this->client->transactionDeposit->targetAddr, this->client->transactionDeposit->txId, this->client->clientName))
         {
             sleeper.sleep(500);
         }
 
-        if(server->transactionDeposit->status == SampleEscrowTransaction::Successfull)
+        //if(server->transactionDeposit->status == SampleEscrowTransaction::Successfull)
         {
             // server received funds to escrow
         }

@@ -87,7 +87,7 @@ struct BtcRawTransaction
         std::string txInID;
         int64_t vout;   // number of txInID's output to be used as input
 
-        VIN(std::string txInID, int64_t vout)
+        VIN(const std::string &txInID, const int64_t &vout)
             :txInID(txInID), vout(vout)
         {}
     };
@@ -110,7 +110,7 @@ struct BtcRawTransaction
             this->scriptPubKeyHex = "";
         }
 
-        VOUT(int64_t value, int64_t n, uint32_t reqSigs, std::vector<std::string> addresses, std::string scriptPubKeyHex)
+        VOUT(const int64_t &value, const int64_t &n, const uint32_t &reqSigs, const std::vector<std::string> &addresses, const std::string &scriptPubKeyHex)
             :value(value), n(n), reqSigs(reqSigs), addresses(addresses), scriptPubKeyHex(scriptPubKeyHex)
         {}
 
@@ -151,7 +151,7 @@ struct BtcAddressInfo
 struct BtcAddressAmount
 {
     std::string Address;
-    double Amount;
+    double Amount;              // amount in bitcoins
 };
 
 struct BtcMultiSigAddress
@@ -180,7 +180,7 @@ struct BtcBlock
 // used in CreateRawTransaction
 struct BtcTxIdVout : Json::Value
 {
-    BtcTxIdVout(std::string txID, int64_t vout);
+    BtcTxIdVout(const std::string &txID, const int64_t &vout);
 };
 
 // a json object mapping amounts to addresses
@@ -201,28 +201,28 @@ struct BtcSignedTransaction
 };
 
 // used to sign some raw transactions
-struct BtcSigningPrequisite : Json::Value
+struct BtcSigningPrerequisite : Json::Value
 {
-    // an array of BtcSigningPrequisites can be passed to bitcoin- as an optional argument to signrawtransaction
+    // an array of BtcSigningPrerequisites can be passed to bitcoin- as an optional argument to signrawtransaction
     // [{"txid":txid,"vout":n,"scriptPubKey":hex,"redeemScript":hex},...]
     // this is required if we
     //      a) didn't add the address to our wallet (createmultisig instead of addmultisigaddress)
     //      b) want to sign a raw tx only with a particular address's private key (the privkey is passed in another argument)
 
-    BtcSigningPrequisite();
+    BtcSigningPrerequisite();
 
-    BtcSigningPrequisite(std::string txId, int64_t vout, std::string scriptPubKey, std::string redeemScript);
+    BtcSigningPrerequisite(const std::string &txId, const int64_t &vout, const std::string &scriptPubKey, const std::string &redeemScript);
 
-    // all of these values must be set or else prequisite is invalid
+    // all of these values must be set or else prerequisite is invalid
     void SetTxId(std::string txId);
 
-    // all of these values must be set or else prequisite is invalid
+    // all of these values must be set or else prerequisite is invalid
     void SetVout(Json::Int64 vout);
 
-    // all of these values must be set or else prequisite is invalid
+    // all of these values must be set or else prerequisite is invalid
     void SetScriptPubKey(std::string scriptPubKey);
 
-    // all of these values must be set or else prequisite is invalid
+    // all of these values must be set or else prerequisite is invalid
     void SetRedeemScript(std::string redeemScript);
 };
 
@@ -234,13 +234,12 @@ struct BtcRpcPacket
     BtcRpcPacket(const std::string &strData);
 
     typedef _SharedPtr<BtcRpcPacket> BtcRpcPacketPtr;
-
     BtcRpcPacket(const BtcRpcPacketPtr packet);
 
     ~BtcRpcPacket();
 
     // appends data to data
-    bool AddData(const std::string &strData);
+    bool AddData(const std::string strData);
 
     // returns char and offsets the data pointer (makes no sense, will fix sometime)
     const char* ReadNextChar();
@@ -266,7 +265,7 @@ typedef _SharedPtr<BtcBlock>               BtcBlockPtr;
 typedef _SharedPtr<BtcTxIdVout>            BtcTxIdVoutPtr;
 typedef _SharedPtr<BtcTxTarget>            BtcTxTargetPtr;
 typedef _SharedPtr<BtcSignedTransaction>   BtcSignedTransactionPtr;
-typedef _SharedPtr<BtcSigningPrequisite>   BtcSigningPrequisitePtr;
+typedef _SharedPtr<BtcSigningPrerequisite> BtcSigningPrerequisitePtr;
 typedef _SharedPtr<BtcRpcPacket>           BtcRpcPacketPtr;
 
 

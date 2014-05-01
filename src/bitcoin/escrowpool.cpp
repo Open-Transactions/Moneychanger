@@ -12,6 +12,8 @@ EscrowPool::EscrowPool()
     this->escrowServers = QList<SampleEscrowServerPtr>();
 
     this->poolName = "unnamed";
+
+    this->serverNameMap = std::map<std::string, SampleEscrowServerPtr>();
 }
 
 void EscrowPool::AddEscrowServer(SampleEscrowServerPtr server)
@@ -20,6 +22,7 @@ void EscrowPool::AddEscrowServer(SampleEscrowServerPtr server)
         return;
 
     this->escrowServers.append(server);
+    this->serverNameMap[server->serverName] = server;
 }
 
 void EscrowPool::RemoveEscrowServer(SampleEscrowServerPtr server)

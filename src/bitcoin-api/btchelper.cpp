@@ -6,14 +6,13 @@
 
 #include <bitcoin-api/btcmodules.hpp>
 
+#include <stdio.h>
 #include <iostream>
 #include <vector>
-#include <algorithm>
-#include <cstdio>
-#include <string>
+#include <algorithm>    // std::find
 
 #ifndef OT_USE_TR1
-    #include <thread>   // for sleep()
+    #include <thread>   // sleep()
 #else
     #include <unistd.h> // usleep
     #include <sstream>  // ostringstream
@@ -212,7 +211,7 @@ BtcSignedTransactionPtr BtcHelper::WithdrawAllFromAddress(const std::string &txT
     // count funds in source address and list outputs leading to it
     int64_t funds = 0;
     BtcTxIdVouts unspentOutputs = BtcTxIdVouts();
-    std::list<BtcSigningPrequisite> signingPrequisites;
+    std::list<BtcSigningPrerequisite> signingPrerequisites;
     for(uint64_t i = 0; i < rawTransaction->outputs.size(); i++)
     {
         BtcRawTransaction::VOUT output = rawTransaction->outputs[i];
@@ -224,9 +223,9 @@ BtcSignedTransactionPtr BtcHelper::WithdrawAllFromAddress(const std::string &txT
             funds += output.value;
             unspentOutputs.push_back(BtcTxIdVoutPtr(new BtcTxIdVout(txToSourceId, output.n)));
 
-            // create signing prequisite (optional, needed for offline signing)
+            // create signing prerequisite (optional, needed for offline signing)
             if(!signingAddress.empty() && !redeemScript.empty())
-                signingPrequisites.push_back(BtcSigningPrequisite(txToSourceId, output.n, output.scriptPubKeyHex, redeemScript));
+                signingPrerequisites.push_back(BtcSigningPrerequisite(txToSourceId, output.n, output.scriptPubKeyHex, redeemScript));
         }
     }
 
@@ -249,14 +248,14 @@ BtcSignedTransactionPtr BtcHelper::WithdrawAllFromAddress(const std::string &txT
         signingKeys.push_back(this->modules->btcJson->GetPrivateKey(signingAddress));
     }
 
-    // Note: signingPrequisites can be empty, in that case bitcoin will sign with any key that fits.
+    // Note: signingPrerequisites can be empty, in that case bitcoin will sign with any key that fits.
     // this should only be done with locally generated transactions or transactions whose outputs were checked first
     // because otherwise someone could give you a transaction to send funds from your wallet to his and you'd blindly sign it.
     // if a signingAddress is passed, redeemScript is required aswell, at least for p2sh.
 
     // sign raw transaction
     // as we just created this tx ourselves, we can assume that it is safe to sign
-    BtcSignedTransactionPtr signedTransact = this->modules->btcJson->SignRawTransaction(withdrawTransaction, signingPrequisites, signingKeys);
+    BtcSignedTransactionPtr signedTransact = this->modules->btcJson->SignRawTransaction(withdrawTransaction, signingPrerequisites, signingKeys);
 
     return signedTransact;
 }

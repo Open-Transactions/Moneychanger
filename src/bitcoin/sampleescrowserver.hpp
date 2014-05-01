@@ -17,23 +17,38 @@ class SampleEscrowClient;
 
 typedef _SharedPtr<SampleEscrowClient> SampleEscrowClientPtr;
 
+#include <map>
+
 class SampleEscrowServer
 {
 public:
     SampleEscrowServer(BitcoinServerPtr rpcServer);
 
+    virtual void OnClientConnected(SampleEscrowClient* client);
+
     // called when someone wants to make a deposit
-    void OnRequestEscrowDeposit(SampleEscrowClient* client);
+    virtual std::string OnRequestEscrowDeposit(const std::string &sender, int64_t amount);
 
     // called by other servers in the pool so they get eachothers' public keys for multi-sig
-    std::string GetMultiSigPubKey();
+    virtual std::string GetMultiSigPubKey();
+
+    virtual std::string OnGetPubKey(const std::string &sender);
+
+    virtual void AddPubKey(const std::string &sender, const std::string &key);
+
+    //virtual void OnReceivePubKey(const std::string &sender, const std::string &key);
 
     // called when the client tells the server the tx id of the incoming transaction
-    void OnIncomingDeposit(std::string txId);
+    virtual void OnIncomingDeposit(const std::string sender, const std::string txId, int64_t amount);
 
-    bool CheckIncomingTransaction();
+    virtual bool CheckTransaction(const std::string &sender, const std::string txId, const std::string &targetAddress);
 
-    void OnRequestEscrowWithdrawal(SampleEscrowClient* client);
+    virtual std::string OnRequestEscrowWithdrawal(const std::string &sender, const std::string &txId, const std::string &fromAddress, const std::string &toAddress);
+
+    // we get notified that a client's deposit is being released
+    virtual void ReleasingFunds(const std::string &client, const std::string &txId, const std::string &sourceTxId, const std::string &sourceAddress, const std::string &toAddress);
+
+    std::string serverName;             // name of this server
 
     EscrowPoolPtr serverPool;           // the pool that this server is part of
 
@@ -47,9 +62,14 @@ public:
 
     BtcMultiSigAddressPtr multiSigAddrInfo; // info required to withdraw from the address
 
-    SampleEscrowTransactionPtr transactionDeposit;      // info about deposit
-    SampleEscrowTransactionPtr transactionWithdrawal;   // info about withdrawal
+    //SampleEscrowTransactionPtr transactionDeposit;      // info about deposit
+    //SampleEscrowTransactionPtr transactionWithdrawal;   // info about withdrawal
 
+protected:
+    void AddClientDeposit(const std::string &client, SampleEscrowTransactionPtr transaction);
+    void RemoveClientDeposit(const std::string &client, SampleEscrowTransactionPtr transaction);
+    SampleEscrowTransactionPtr FindClientTransaction(const std::string &targetAddress, const std::string &txId, const std::string &client);
+    SampleEscrowTransactionPtr FindClientTransaction(const std::string &targetAddress, const std::string txId);
 
 private:
     BitcoinServerPtr rpcServer;     // login info for bitcoin-qt rpc
@@ -59,6 +79,10 @@ private:
     int minSignatures;          // minimum required signatures
 
     int minConfirms;            // minimum required confirmations
+
+    std::map<std::string, SampleEscrowClientPtr> clientList;
+    typedef std::map<std::string, std::list<SampleEscrowTransactionPtr> > BalanceMap;
+    BalanceMap clientBalances;  // list of transactions
 };
 
 typedef _SharedPtr<SampleEscrowServer> SampleEscrowServerPtr;

@@ -45,9 +45,9 @@ struct BitcoinServer
     std::string user;
     std::string password;
     std::string url;
-    int port;
+    uint64_t port;
 
-    BitcoinServer(const std::string account, std::string password, std::string url, int port):
+    BitcoinServer(const std::string &account, const std::string &password, const std::string &url, const uint64_t &port):
         user(account), password(password), url(url), port(port)
     {}
 };

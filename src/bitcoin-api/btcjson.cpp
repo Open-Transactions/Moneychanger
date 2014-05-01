@@ -123,6 +123,8 @@ void BtcJson::GetInfo()
         return;
 
     // TODO:: what is happening here!? (da2ce7)
+    // Bitcoin is returning the balance as double, e.g. 5.123 bitcoins, whereas we want it as an integer denominated in satoshis to avoid rounding errors.
+    // I'm not doing anything with the result because i haven't found any use for it yet. (JaSK)
     uint64_t balance = this->modules->btcHelper->CoinsToSatoshis(result["balance"].asDouble());
 }
 
@@ -485,7 +487,7 @@ std::string BtcJson::CreateRawTransaction(BtcTxIdVouts unspentOutputs, BtcTxTarg
     return result.asString();
 }
 
-BtcSignedTransactionPtr BtcJson::SignRawTransaction(const std::string &rawTransaction, const std::list<BtcSigningPrequisite> &previousTransactions, const std::stringList &privateKeys)
+BtcSignedTransactionPtr BtcJson::SignRawTransaction(const std::string &rawTransaction, const std::list<BtcSigningPrerequisite> &previousTransactions, const std::stringList &privateKeys)
 {
     Json::Value params = Json::Value();
     params.append(rawTransaction);
@@ -494,7 +496,7 @@ BtcSignedTransactionPtr BtcJson::SignRawTransaction(const std::string &rawTransa
     if(previousTransactions.size() > 0)
     {
         Json::Value unspentArray = Json::Value();
-        for(std::list<BtcSigningPrequisite>::const_iterator i = previousTransactions.begin(); i != previousTransactions.end(); i++)
+        for(std::list<BtcSigningPrerequisite>::const_iterator i = previousTransactions.begin(); i != previousTransactions.end(); i++)
         {
             unspentArray.append(*i);
         }
@@ -534,7 +536,7 @@ BtcSignedTransactionPtr BtcJson::SignRawTransaction(const std::string &rawTransa
     return signedTransaction;
 }
 
-BtcSignedTransactionPtr BtcJson::CombineSignedTransactions(std::string rawTransaction)
+BtcSignedTransactionPtr BtcJson::CombineSignedTransactions(const std::string &rawTransaction)
 {
     Json::Value params = Json::Value();
     params.append(rawTransaction);  // a concatenation of partially signed tx's

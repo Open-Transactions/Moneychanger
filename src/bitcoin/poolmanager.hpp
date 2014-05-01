@@ -11,7 +11,7 @@
 #include _MEMORY
 
 #include <QObject>
-
+#include<QList>
 
 class PoolManager : QObject
 {

@@ -76,8 +76,15 @@ bool BtcTest::TestBtcRpc()
     {
         BtcRpcPacketPtr ptr = BtcRpcPacketPtr(new BtcRpcPacket());
         ptr->AddData("kjlkj");
-        for(int i = 0; i < ptr->size() + 10; i++)
-            ptr->ReadNextChar();
+        std::string data = "";
+        for(size_t i = 0; i < ptr->size() + 10; i++)
+        {
+            const char* c = ptr->ReadNextChar();
+            if(c) data += c;
+            printf(data.c_str());
+            std::cout.flush();
+        }
+        printf(data.c_str());
     }
 
     // connect to server (if this function succeeds, SendRpc() works too)
@@ -102,8 +109,6 @@ bool BtcTest::TestBtcRpc()
     modules->btcRpc->SendRpc("garbage");
 
     modules->btcRpc->SendRpc("\0");
-
-    modules->btcRpc->SendRpc(BtcRpcPacketPtr(new BtcRpcPacket()));
 
     modules->btcRpc->SendRpc(BtcRpcPacketPtr(new BtcRpcPacket()));
 
@@ -142,6 +147,7 @@ bool BtcTest::TestBtcJson()
 
     // list unspent outputs
     BtcUnspentOutputs unspentOutputs = modules->btcJson->ListUnspent(/*optional*/);
+    // TODO: wait for tx
     if(unspentOutputs.empty())
         return false;
 
@@ -193,7 +199,7 @@ bool BtcTest::TestRawTransactions()
     if(decodedTx == NULL)
         return false;
 
-    for (uint64_t i = 0; i < decodedTx->outputs.size(); i++)
+    for (size_t i = 0; i < decodedTx->outputs.size(); i++)
     {
         if(decodedTx->outputs[i].addresses[0] == myAddress1)
             unspentOutputList.push_back(BtcTxIdVoutPtr(new BtcTxIdVout(txId, i)));

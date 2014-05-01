@@ -115,9 +115,9 @@ public:
 
     virtual std::string CreateRawTransaction(BtcTxIdVouts unspentOutputs, BtcTxTarget txTargets) = 0;
 
-    virtual BtcSignedTransactionPtr SignRawTransaction(const std::string &rawTransaction, const std::list<BtcSigningPrequisite> &previousTransactions = std::list<BtcSigningPrequisite>(), const std::stringList &privateKeys = std::list<std::string>()) = 0;
+    virtual BtcSignedTransactionPtr SignRawTransaction(const std::string &rawTransaction, const std::list<BtcSigningPrerequisite> &previousTransactions = std::list<BtcSigningPrerequisite>(), const std::stringList &privateKeys = std::list<std::string>()) = 0;
 
-    virtual BtcSignedTransactionPtr CombineSignedTransactions(std::string rawTransaction) = 0;
+    virtual BtcSignedTransactionPtr CombineSignedTransactions(const std::string &rawTransaction) = 0;
 
     virtual std::string SendRawTransaction(const std::string &rawTransaction) = 0;
 

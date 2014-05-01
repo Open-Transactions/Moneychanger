@@ -45,6 +45,7 @@ public:
     bool CheckTransactionFinished(SampleEscrowTransactionPtr transaction);
 
 
+    std::string clientName;
     std::list<std::string> pubKeyList;
     int minSignatures;
 
@@ -78,6 +79,8 @@ private:
 typedef _SharedPtr<SampleEscrowClient> SampleEscrowClientPtr;
 
 
+// random name generator
+void gen_random(char *s, const int len);
 
 
 

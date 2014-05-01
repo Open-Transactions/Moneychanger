@@ -81,8 +81,8 @@ bool SampleEscrowTransaction::SendWithdrawalTransaction()
 
 void SampleEscrowTransaction::CheckTransaction(int minConfirms)
 {
-    if(this->status != Pending)
-        return;
+    //if(this->status == Successfull)
+    //    return;
 
     // wait for the transaction to be broadcasted over the network
     // and get an object containing info
@@ -91,7 +91,11 @@ void SampleEscrowTransaction::CheckTransaction(int minConfirms)
 
     if(rawTx == NULL)
     {
-        // error, transaction apparently wasn't received yet or we don't have internet.
+        if(this->status == Successfull)
+            this->status == Pending;
+
+        // error, transaction apparently wasn't received yet.
+        // or it _could_ be in some old block that bitcoind has forgotten about. in that case run bitcoind with -txindex 1
         this->confirmations = 0;
         return;
     }
