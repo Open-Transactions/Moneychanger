@@ -142,12 +142,15 @@ bool BtcTest::TestBtcJson()
 
     address = modules->btcJson->GetNewAddress();
 
-    if(modules->btcJson->SendToAddress(address, BtcHelper::CoinsToSatoshis(10)).empty())
+    std::string txid;
+    if((txid = modules->btcJson->SendToAddress(address, BtcHelper::CoinsToSatoshis(10))).empty())
         return false;
+
+    // even when testing locally it takes a few ms
+    modules->btcHelper->WaitForTransaction(txid);
 
     // list unspent outputs
     BtcUnspentOutputs unspentOutputs = modules->btcJson->ListUnspent(/*optional*/);
-    // TODO: wait for tx
     if(unspentOutputs.empty())
         return false;
 

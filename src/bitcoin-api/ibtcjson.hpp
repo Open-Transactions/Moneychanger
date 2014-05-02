@@ -60,7 +60,10 @@ public:
     virtual std::list<std::string> GetAddressesByAccount(const std::string &account = "") = 0;
 
     // Add new address to account
-    virtual std::string GetNewAddress(const std::string &account = "") = 0;
+    virtual std::string GetNewAddress(const std::string &account = "btcapi") = 0;
+
+    // Import a watch-only address
+    virtual void ImportAddress(const std::string &address, const std::string &account = "watchonly", bool rescan = false);
 
     // Validate an address
     virtual BtcAddressInfoPtr ValidateAddress(const std::string &address) = 0;

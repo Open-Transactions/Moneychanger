@@ -17,6 +17,7 @@
 #define METHOD_GETBALANCE           "getbalance"
 #define METHOD_GETACCOUNTADDRESS    "getaccountaddress"
 #define METHOD_GETNEWADDRESS        "getnewaddress"
+#define METHOD_IMPORTADDRESS        "importaddress"
 #define METHOD_VALIDATEADDRESS      "validateaddress"
 #define METHOD_DUMPPRIVKEY          "dumpprivkey"
 #define METHOD_LISTACCOUNTS         "listaccounts"
@@ -185,6 +186,17 @@ std::string BtcJson::GetNewAddress(const std::string &account)
         return "";     // this should never happen unless the protocol was changed
 
     return result.asString();
+}
+
+bool BtcJson::ImportAddress(const std::string &address, const std::string &account, bool rescan)
+{
+    Json::Value params = Json::Value();
+    params.append(address);
+    params.append(account);
+    params.append(rescan);
+
+    Json::Value result = Json::Value();
+    return ProcessRpcString(this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_IMPORTADDRESS, params)), result);
 }
 
 BtcAddressInfoPtr BtcJson::ValidateAddress(const std::string &address)
