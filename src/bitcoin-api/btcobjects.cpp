@@ -275,7 +275,7 @@ bool BtcRpcPacket::AddData(const std::string strData)
     data.append(strData);
     this->data.clear();
     this->data = std::vector<char>(data.begin(), data.end());
-    this->data.push_back('\0');
+    this->data.back() = '\0';
 
     printf("size: %d\n", this->size());
     std::cout.flush();
@@ -287,14 +287,14 @@ bool BtcRpcPacket::AddData(const std::string strData)
 const char *BtcRpcPacket::ReadNextChar()
 {
     printf("offset: %d, size: %d -1", this->pointerOffset, this->size());
-    if (this->pointerOffset < this->data.size() - 1)
+    if (this->pointerOffset < this->data.size())
         return &this->data.at(this->pointerOffset++);
     else return NULL;
 }
 
 size_t BtcRpcPacket::size()
 {
-    return this->data.size() - 1;
+    return this->data.size();
 }
 
 const char* BtcRpcPacket::GetData()
