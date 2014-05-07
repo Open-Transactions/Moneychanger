@@ -73,11 +73,6 @@ unix:{
 
         QT_CONFIG -= no-pkg-config
 
-        #we do it this way, since we don't want any more tokens.
-        PKG_CONFIG_LIBDIR = "/usr/local/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
-        PKG_CONFIG_LIBDIR = "/usr/local/opt/openssl/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
-        PKG_CONFIG_LIBDIR = "$${PKG_CONFIG_LIBDIR}:" #end with a colon.
-
 
         contains(MAC_OS_VERSION, 10.9):{
             # NOTE: below line copied from unix section:

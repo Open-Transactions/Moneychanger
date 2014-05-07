@@ -872,8 +872,8 @@ bool MTRecordList::Populate()
                 // ----------------------------------
                 // For the "date" on this record we're using the "valid from" date on the instrument.
                 std::string str_date = "0";
-                time_t      tFrom    =  0 ;
-                time_t      tTo      =  0 ;
+                time64_t      tFrom    =  0 ;
+                time64_t      tTo      =  0 ;
 
                 if (theOutPayment.GetValidFrom(tFrom))
                 {
@@ -1178,7 +1178,7 @@ bool MTRecordList::Populate()
                     }
                 }
                 // ------------------------------
-                time_t  tValidFrom = 0, tValidTo = 0;
+                time64_t  tValidFrom = 0, tValidTo = 0;
                 // ----------------------------------
                 std::string str_date    = "0"; // the "date signed" on the transaction receipt.
                 time_t      tDateSigned = pBoxTrans->GetDateSigned();
@@ -1477,7 +1477,7 @@ bool MTRecordList::Populate()
                     }
                 } // if not abbreviated.
                 // ------------------------------
-                time_t tValidFrom = 0, tValidTo = 0;
+                time64_t tValidFrom = 0, tValidTo = 0;
                 // ------------------------------
                 std::string str_date    = "0"; // the "date signed" on the transaction receipt.
                 time_t      tDateSigned = pBoxTrans->GetDateSigned();
@@ -1816,7 +1816,7 @@ bool MTRecordList::Populate()
                     }
                 } // if not abbreviated.
                 // ------------------------------
-                time_t tValidFrom = 0, tValidTo = 0;
+                time64_t tValidFrom = 0, tValidTo = 0;
                 // ------------------------------
                 std::string str_date    = "0"; // the "date signed" on the transaction receipt.
                 time_t      tDateSigned = pBoxTrans->GetDateSigned();

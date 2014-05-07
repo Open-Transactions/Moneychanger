@@ -5,6 +5,8 @@
 #include <gui/widgets/pageoffer_amounts.hpp>
 #include <ui_pageoffer_amounts.h>
 
+#include <core/utils.hpp>
+
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OTPaymentPlan.hpp>
