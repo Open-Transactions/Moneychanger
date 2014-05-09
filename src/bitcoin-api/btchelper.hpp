@@ -45,9 +45,12 @@ public:
     // default amount of confirmations to wait for
     static int MinConfirms;
 
+    // default max confirmations
+    static int32_t MaxConfirms;
+
     // default fee to pay when withdrawing from multi-sig
     // to set default fee for all transactions, use BtcJson::SetTxFee()
-    static int FeeMultiSig;
+    static int64_t FeeMultiSig;
 
     BtcHelper(BtcModules* modules);
 
@@ -78,30 +81,31 @@ public:
     int64_t TransactionConfirmed(const std::string &txId, int minConfirms = MinConfirms);
 
     // Checks a transaction for correct amount and confirmations.
-    bool TransactionSuccessfull(int64_t amount, BtcTransactionPtr transaction, int minConfirms = MinConfirms);
+    bool TransactionSuccessfull(int64_t amount, BtcTransactionPtr transaction, const std::string &targetAddress, int minConfirms = MinConfirms);
 
     // Checks a raw transaction for correct amount, confirmations and recipient.
-    // We need this because bitcoin-qt offers no good way to watch multi-sig addresses if we don't own all the keys
     bool TransactionSuccessfull(int64_t amount, BtcRawTransactionPtr transaction, const std::string &targetAddress, int minConfirms = MinConfirms);
 
+    // Checks a list of outputs for correct amount, confirmations and recipient.
+    // returns the first output that matches
+    const BtcRawTransactionPtr TransactionSuccessfull(const int64_t &amount, BtcUnspentOutputs outputs, const std::string &targetAddress, const int32_t &MinConfirms = MinConfirms);
 
     // Halts thread execution until the transaction has enough confirmations
     // timeOutSeconds is the time in seconds after which the function will fail
     // timerMS is the delay between each confirmation check
     // returns true if sufficient confirmations were received before timeout
-    bool WaitTransactionSuccessfull(int64_t amount, BtcTransactionPtr transaction, int minConfirms = MinConfirms, double timeOutSeconds = 7200, double timerSeconds = 1);
+    bool WaitTransactionSuccessfull(const int64_t &amount, BtcTransactionPtr transaction, const std::string &targetAddress, const int32_t &minConfirms = MinConfirms, int32_t timeOutSeconds = 7200, const int32_t &timerMS = 1000);
 
-    bool WaitTransactionSuccessfull(int64_t amount, BtcRawTransactionPtr transaction, const std::string &targetAddress, int minConfirms = MinConfirms, double timeOutSeconds = 7200, double timerSeconds = 1);
-
-    // Halts thread execution until the bitcoin client learns about a new transaction
-    bool WaitForTransaction(const std::string &txID, int timerMS = 500, int maxAttempts = 20);
+    bool WaitTransactionSuccessfull(const int64_t &amount, BtcRawTransactionPtr transaction, const std::string &targetAddress, const int32_t &minConfirms = MinConfirms, int32_t timeOutSeconds = 7200, const int32_t &timerMS = 1000);
 
     // Halts thread execution and returns the transaction once it arrives
-    // Will only work if you have all keys of the receiving address.
-    BtcTransactionPtr WaitGetTransaction(const std::string &txID, int timerMS = 500, int maxAttempts = 20);
+    // Will only work if you have all keys of the sending/receiving address or added it as watchonly
+    BtcTransactionPtr WaitGetTransaction(const std::string &txId, int timerMS = 500, int maxAttempts = 20);
 
     // Halts thread execution and returns the decoded raw transaction once it arrives
-    BtcRawTransactionPtr WaitGetRawTransaction(const std::string &txID, int timerMS = 500, int maxAttempts = 20);
+    BtcRawTransactionPtr WaitGetRawTransaction(const std::string &txId, int timerMS = 500, int maxAttempts = 20);
+
+    BtcUnspentOutputs ListNewOutputs(const std::vector<std::string> &addresses, BtcUnspentOutputs knownOutputs);
 
     // Creates a raw transaction that sends all unspent outputs from an address to another
     // txSourceId: transaction that sends funds to sourceAddress

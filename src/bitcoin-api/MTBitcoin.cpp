@@ -27,6 +27,11 @@ std::string MTBitcoin::GetNewAddress(const std::string &account)
     return this->modules->btcJson->GetNewAddress(account);
 }
 
+bool MTBitcoin::ImportAddress(const std::string &address, const std::string &label, bool rescan)
+{
+    return this->modules->btcJson->ImportAddress(address, label, rescan);
+}
+
 std::string MTBitcoin::GetPublicKey(const std::string& address)
 {
     return this->modules->btcJson->GetPublicKey(address);
@@ -110,6 +115,11 @@ BtcSignedTransactionPtr MTBitcoin::CombineTransactions(const std::string &concat
 std::string MTBitcoin::SendRawTransaction(const std::string &rawTransaction)
 {
     return this->modules->btcJson->SendRawTransaction(rawTransaction);
+}
+
+BtcUnspentOutputs MTBitcoin::ListUnspentOutputs(const std::vector<std::string> &addresses)
+{
+    return this->modules->btcJson->ListUnspent(0, BtcHelper::MaxConfirms, addresses);
 }
 
 

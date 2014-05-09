@@ -55,7 +55,19 @@ bool BtcTest::TestBitcoinFunctions()
     if(!TestRawTransactions())
         return false;
 
-    if(!TestMultiSig())
+    if(!TestMultiSig(false))    // false = don't wait for confirmations = quick test
+        return false;
+
+    if(!TestImportAddress(0))
+        return false;
+
+    if(!TestImportAddress(1))
+        return false;
+
+    if(!TestImportMultisig(0))
+        return false;
+
+    if(!TestImportMultisig(1))
         return false;
 
     return true;
@@ -67,24 +79,32 @@ bool BtcTest::TestBtcRpc()
     BitcoinServerPtr bitcoind1 = BitcoinServerPtr(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
 
     { BtcRpcPacketPtr(new BtcRpcPacket()); }
-    { std::string str = "kjlk"; BtcRpcPacketPtr(new BtcRpcPacket(str)); }
-    { BtcRpcPacketPtr(new BtcRpcPacket("jklklj")); }
+    { std::string str = "test"; BtcRpcPacketPtr(new BtcRpcPacket(str)); }
+    { BtcRpcPacketPtr(new BtcRpcPacket("test")); }
     {
-        BtcRpcPacketPtr ptr = BtcRpcPacketPtr(new BtcRpcPacket("jkjlk"));
+        BtcRpcPacketPtr ptr = BtcRpcPacketPtr(new BtcRpcPacket("test"));
         BtcRpcPacketPtr(new BtcRpcPacket(ptr));
     }
     {
+        std::printf("\n");
+        std::cout.flush();
+
         BtcRpcPacketPtr ptr = BtcRpcPacketPtr(new BtcRpcPacket());
-        ptr->AddData("kjlkj");
+        ptr->AddData("test");
+        ptr->AddData("moreTEST");
         std::string data = "";
         for(size_t i = 0; i < ptr->size() + 10; i++)
         {
             const char* c = ptr->ReadNextChar();
-            if(c) data += c;
-            printf(data.c_str());
+            if(c)
+            {
+                data += *c;
+                printf("%c\n", *c);
+            }
             std::cout.flush();
         }
-        printf(data.c_str());
+        printf("%s\n", data.c_str());
+        std::cout.flush();
     }
 
     // connect to server (if this function succeeds, SendRpc() works too)
@@ -147,7 +167,8 @@ bool BtcTest::TestBtcJson()
         return false;
 
     // even when testing locally it takes a few ms
-    modules->btcHelper->WaitForTransaction(txid);
+    if(modules->btcHelper->WaitGetTransaction(txid) == NULL)
+        return false;
 
     // list unspent outputs
     BtcUnspentOutputs unspentOutputs = modules->btcJson->ListUnspent(/*optional*/);
@@ -227,7 +248,7 @@ bool BtcTest::TestRawTransactions()
     return true;
 }
 
-bool BtcTest::TestMultiSig()
+bool BtcTest::TestMultiSig(bool waitForConfirmations = true)
 {
     // first without confirmations
     // i thought zero-conf requires passing additional arguments to VoteMultiSigRelease,
@@ -237,6 +258,9 @@ bool BtcTest::TestMultiSig()
 
     if(!TestMultiSigWithdrawal(0))
         return false;
+
+    if(!waitForConfirmations)
+        return true;
 
     if(!TestMultiSigDeposit(1))
         return false;
@@ -250,53 +274,53 @@ bool BtcTest::TestMultiSig()
 bool BtcTest::TestMultiSigDeposit(int minConfirms)
 {
     // create two modules so we don't have to change connections all the time
-    BtcModules module1;
-    BtcModules module2;
-    if(!module1.btcRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001))
+    BtcModules bitcoin1;
+    BtcModules bitcoin2;
+    if(!bitcoin1.btcRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001))
         return false;
-    if(!module2.btcRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011))
+    if(!bitcoin2.btcRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011))
         return false;
 
     // public keys of the addresses used for multisig
     std::list<std::string> keys;
 
     // GetNewAddress on bitcoind #1
-    std::string address1 = module1.mtBitcoin->GetNewAddress();
+    std::string address1 = bitcoin1.mtBitcoin->GetNewAddress();
     if(address1.empty())
         return false;
-    keys.push_back(module1.mtBitcoin->GetPublicKey(address1));
+    keys.push_back(bitcoin1.mtBitcoin->GetPublicKey(address1));
 
     // GetNewAddress on bitcoind #2
-    std::string address2 = module2.mtBitcoin->GetNewAddress();
+    std::string address2 = bitcoin2.mtBitcoin->GetNewAddress();
     if(address2.empty())
         return false;
-    keys.push_back(module2.mtBitcoin->GetPublicKey(address2));
+    keys.push_back(bitcoin2.mtBitcoin->GetPublicKey(address2));
 
     // add address to bitcoind #1 wallet
-    multiSigAddress = module1.mtBitcoin->GetMultiSigAddress(2, keys, true, "test");
+    multiSigAddress = bitcoin1.mtBitcoin->GetMultiSigAddress(2, keys, true, "test");
     if(multiSigAddress.empty())
         return false;
 
     // add address to bitcoind #2 wallet
     // if we don't add it to the wallet, we'd have to pass additional arguments to CreateRawTransaction later
-    module2.mtBitcoin->GetMultiSigAddress(2, keys, true, "test");
+    bitcoin2.mtBitcoin->GetMultiSigAddress(2, keys, true, "test");
 
 
 
     // send from bitcoind #1 to multisig
     int64_t amountToSend = BtcHelper::CoinsToSatoshis(1.22);
-    std::string txId = module1.mtBitcoin->SendToAddress(multiSigAddress, amountToSend);
+    std::string txId = bitcoin1.mtBitcoin->SendToAddress(multiSigAddress, amountToSend);
     if(txId.empty())
         return false;
     depositTxId = txId;    // need to remember this for later;
 
     // get an object containing the decoded raw transaction data
-    BtcRawTransactionPtr txToMultiSig = module1.mtBitcoin->WaitGetRawTransaction(txId);
+    BtcRawTransactionPtr txToMultiSig = bitcoin1.mtBitcoin->WaitGetRawTransaction(txId);
     if(txToMultiSig == NULL)
         return false;
 
     // wait for confirmations and check for correct amount
-    while(!module1.mtBitcoin->TransactionSuccessfull(amountToSend, txToMultiSig, multiSigAddress, minConfirms))
+    while(!bitcoin1.mtBitcoin->TransactionSuccessfull(amountToSend, txToMultiSig, multiSigAddress, minConfirms))
     {
         Sleep(500);
     }
@@ -306,21 +330,21 @@ bool BtcTest::TestMultiSigDeposit(int minConfirms)
 
 bool BtcTest::TestMultiSigWithdrawal(int minConfirms)
 {
-    BtcModules module1;
-    BtcModules module2;
-    if(!module1.btcRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001))
+    BtcModules bitcoin1;
+    BtcModules bitcoin2;
+    if(!bitcoin1.btcRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001))
         return false;
-    if(!module2.btcRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011))
+    if(!bitcoin2.btcRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011))
         return false;
 
     // wait for transaction to propagate through the network
-    if(module2.mtBitcoin->WaitGetRawTransaction(depositTxId) == NULL)
+    if(bitcoin2.mtBitcoin->WaitGetRawTransaction(depositTxId) == NULL)
         return false;
 
     // now get ready to release to bitcoind #2.
 
     // create address to receive btc
-    std::string targetAddress = module2.mtBitcoin->GetNewAddress();
+    std::string targetAddress = bitcoin2.mtBitcoin->GetNewAddress();
     if(targetAddress.empty())
         return false;
 
@@ -330,37 +354,146 @@ bool BtcTest::TestMultiSigWithdrawal(int minConfirms)
     // bitcoind #2 votes to release coins to his own address
     // the optional arguments redeemScript and signingAddress are only needed to
     // sign offline transactions or if depositTxId has no confirmations yet
-    BtcSignedTransactionPtr partialTx2 = module2.mtBitcoin->VoteMultiSigRelease(depositTxId, multiSigAddress, targetAddress);
+    BtcSignedTransactionPtr partialTx2 = bitcoin2.mtBitcoin->VoteMultiSigRelease(depositTxId, multiSigAddress, targetAddress);
     if(partialTx2 == NULL)
         return false;
 
     // bitcoind #1 votes to release coins to #2's address
-    BtcSignedTransactionPtr partialTx1 = module1.mtBitcoin->VoteMultiSigRelease(depositTxId, multiSigAddress, targetAddress);
+    BtcSignedTransactionPtr partialTx1 = bitcoin1.mtBitcoin->VoteMultiSigRelease(depositTxId, multiSigAddress, targetAddress);
     if(partialTx1 == NULL)
         return false;
 
     // combine both partially signed transactions into one
     std::string rawTxString = partialTx1->signedTransaction + partialTx2->signedTransaction;
-    BtcSignedTransactionPtr completeTx = module1.mtBitcoin->CombineTransactions(rawTxString);
+    BtcSignedTransactionPtr completeTx = bitcoin1.mtBitcoin->CombineTransactions(rawTxString);
     if(completeTx == NULL || !completeTx->complete)
         return false;
 
-    std::string releaseTxId = module1.mtBitcoin->SendRawTransaction(completeTx->signedTransaction);
+    std::string releaseTxId = bitcoin1.mtBitcoin->SendRawTransaction(completeTx->signedTransaction);
     if(releaseTxId.empty())
         return false;
 
-    BtcRawTransactionPtr releaseTx = module2.mtBitcoin->WaitGetRawTransaction(releaseTxId);
+    BtcRawTransactionPtr releaseTx = bitcoin2.mtBitcoin->WaitGetRawTransaction(releaseTxId);
     if(releaseTx == NULL)
         return false;   
 
     // count how much btc we received in the deposit transaction and substract Fee
-    int64_t amountToExpect = module1.btcHelper->GetTotalOutput(depositTxId, multiSigAddress) - BtcHelper::FeeMultiSig;
+    int64_t amountToExpect = bitcoin1.btcHelper->GetTotalOutput(depositTxId, multiSigAddress) - BtcHelper::FeeMultiSig;
 
     // wait for confirmations and correct amount
-    while(!module2.mtBitcoin->TransactionSuccessfull(amountToExpect, releaseTx, targetAddress, minConfirms))
+    while(!bitcoin2.mtBitcoin->TransactionSuccessfull(amountToExpect, releaseTx, targetAddress, minConfirms))
     {
         Sleep(500);
     }
 
     return true;
 }
+
+bool BtcTest::TestImportAddress(int32_t confirmations)
+{
+    BtcModules bitcoin1;
+    BtcModules bitcoin2;
+    if(!bitcoin1.btcRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001))
+        return false;
+    if(!bitcoin2.btcRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011))
+        return false;
+
+    // generate new address
+    std::string address = bitcoin1.mtBitcoin->GetNewAddress("watched");
+
+    // import that address in other client without rescanning:
+    bitcoin2.btcJson->ImportAddress(address, "watching", false);
+
+    // send coins to that address
+    int64_t amount = BtcHelper::CoinsToSatoshis(5.0);
+    if(bitcoin1.mtBitcoin->SendToAddress(address, amount) == "")
+        return false;
+
+    // client 2 waits for a transaction without knowing the txid
+    bool stop = false;
+    while(!stop)
+    {
+        BtcUnspentOutputs outputs = bitcoin2.mtBitcoin->ListUnspentOutputs( {address} );
+        for(size_t i = 0; i < outputs.size(); i++)
+        {
+            BtcTransactionPtr transaction = bitcoin2.btcHelper->WaitGetTransaction(outputs[i]->txId);
+            if(bitcoin2.btcHelper->TransactionSuccessfull(amount, transaction, address, confirmations))
+            {
+                stop = true;
+                break;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool BtcTest::TestImportMultisig(int32_t confirmations)
+{
+    BtcModules bitcoin1;
+    BtcModules bitcoin2;
+    if(!bitcoin1.btcRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001))
+        return false;
+    if(!bitcoin2.btcRpc->ConnectToBitcoin("admin2", "123", "http://127.0.0.1", 19011))
+        return false;
+
+    std::string addr1 = bitcoin1.mtBitcoin->GetNewAddress("multisig1");
+    std::string pubkey1 = bitcoin1.mtBitcoin->GetPublicKey(addr1);
+    std::string addr2 = bitcoin2.mtBitcoin->GetNewAddress("multisig2");
+    std::string pubkey2 = bitcoin2.mtBitcoin->GetPublicKey(addr2);
+
+    std::stringList pubKeys = { pubkey1, pubkey2 };
+    std::string multiSig = bitcoin1.mtBitcoin->GetMultiSigAddress(2, pubKeys, true, "multisigAddress");
+
+    if(!bitcoin2.mtBitcoin->ImportAddress(multiSig, "multiSigWatching", false))
+        return false;   // command not supported yet
+
+    // send to multisig
+    int64_t amount = BtcHelper::CoinsToSatoshis(1.22222);
+    if(bitcoin1.mtBitcoin->SendToAddress(multiSig, amount).empty())
+        return false;
+
+    // multisig waits for incoming transactions
+    BtcUnspentOutputs newOutputs = BtcUnspentOutputs();
+    while(true)
+    {
+        newOutputs = bitcoin2.btcHelper->ListNewOutputs( {multiSig}, newOutputs);
+        if(newOutputs.size() > 0)
+            break;
+    }
+
+    // find out which transaction sent enough funds
+    BtcRawTransactionPtr txToMultisig;
+    txToMultisig = bitcoin2.btcHelper->TransactionSuccessfull(amount, newOutputs, multiSig, 0);
+
+    // wait for confirmations:
+    if(!bitcoin2.btcHelper->WaitTransactionSuccessfull(amount, txToMultisig, multiSig, confirmations))
+        return false;
+
+    // now spend from the multisig
+    std::string receivingAddress = bitcoin2.mtBitcoin->GetNewAddress("multisigrelease");
+    BtcSignedTransactionPtr transaction1 = bitcoin1.mtBitcoin->VoteMultiSigRelease(txToMultisig->txID, multiSig, receivingAddress);
+    BtcSignedTransactionPtr transaction2 = bitcoin2.mtBitcoin->VoteMultiSigRelease(txToMultisig->txID, multiSig, receivingAddress);
+    BtcSignedTransactionPtr transaction = bitcoin2.mtBitcoin->CombineTransactions(transaction1->signedTransaction + transaction2->signedTransaction);
+    bitcoin2.mtBitcoin->SendRawTransaction(transaction->signedTransaction);
+
+    return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

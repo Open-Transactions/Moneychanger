@@ -6,6 +6,7 @@
 #include <opentxs/TR1_Wrapper.hpp>
 
 #include <bitcoin-api/btcobjects.hpp>
+#include <bitcoin-api/btchelper.hpp>
 
 #include <json/json.h>
 
@@ -63,7 +64,7 @@ public:
     virtual std::string GetNewAddress(const std::string &account = "btcapi") = 0;
 
     // Import a watch-only address
-    virtual void ImportAddress(const std::string &address, const std::string &account = "watchonly", bool rescan = false);
+    virtual bool ImportAddress(const std::string &address, const std::string &account = "watchonly", const bool &rescan = false) = 0;
 
     // Validate an address
     virtual BtcAddressInfoPtr ValidateAddress(const std::string &address) = 0;
@@ -98,7 +99,7 @@ public:
 
     // Returns vector of unspent outputs
     // does not work with non-wallet addresses (multisig)
-    virtual BtcUnspentOutputs ListUnspent(int minConf = 1, int maxConf = 9999999, std::vector<std::string> addresses = std::vector<std::string>()) = 0;
+    virtual BtcUnspentOutputs ListUnspent(const int32_t &minConf = 0, const int32_t &maxConf = BtcHelper::MaxConfirms, std::vector<std::string> addresses = std::vector<std::string>()) = 0;
 
     virtual std::string SendToAddress(const std::string &btcAddress, int64_t amount) = 0;
 

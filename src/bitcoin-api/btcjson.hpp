@@ -58,7 +58,7 @@ public:
     virtual std::string GetNewAddress(const std::string &account = "btcapi");
 
     // Import a watch-only address
-    virtual void ImportAddress(const std::string &address, const std::string &account = "watchonly", bool rescan = false);
+    virtual bool ImportAddress(const std::string &address, const std::string &account = "watchonly", const bool &rescan = false);
 
     // Validate an address
     virtual BtcAddressInfoPtr ValidateAddress(const std::string &address);
@@ -91,7 +91,7 @@ public:
     // Could also return the balance of each account
     virtual std::vector<std::string> ListAccounts();
 
-    virtual BtcUnspentOutputs ListUnspent(int minConf = 1, int maxConf = 9999999, std::vector<std::string> addresses = std::vector<std::string>());
+    virtual BtcUnspentOutputs ListUnspent(const int32_t &minConf = 0, const int32_t &maxConf = BtcHelper::MaxConfirms, std::vector<std::string> addresses = std::vector<std::string>());
 
     virtual std::string SendToAddress(const std::string &btcAddress, int64_t amount);
 

@@ -55,7 +55,13 @@ public:
 
     // account (optional): the account to which the address should be added.
     // returns new address
-    virtual std::string GetNewAddress(const std::string &account = NULL);
+    virtual std::string GetNewAddress(const std::string &account = "");
+
+    // address: watchonly address to import
+    // label:   the name of the address and its accounts
+    // rescan:  rescan the entire blockchain for old transactions
+    // Can be called multiple times to change the label
+    virtual bool ImportAddress(const std::string &address, const std::string &label = "watchonly", bool rescan = false);
 
     // returns public key for address (works only if public key is known)
     virtual std::string GetPublicKey(const std::string &address);
@@ -103,6 +109,10 @@ public:
     virtual BtcSignedTransactionPtr CombineTransactions(const std::string &concatenatedRawTransactions);
 
     virtual std::string SendRawTransaction(const std::string &rawTransaction);
+
+    // Lists unspent outputs, including watchonly addresses
+    // addresses [optional]: limit results to addresses
+    virtual BtcUnspentOutputs ListUnspentOutputs(const std::vector<std::string> &addresses = std::vector<std::string>());
 
     /*
         std::map<std::string, int64_t> GetAddressesAndBalances();

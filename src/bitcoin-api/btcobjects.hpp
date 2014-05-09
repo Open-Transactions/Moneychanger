@@ -71,6 +71,9 @@ struct BtcTransaction
     std::list<std::string> AddressesRecv;   // received to addresses
     std::list<std::string> AddressesSent;   // sent to addresses
     //std::string Category;           // "send", "receive", "immature" (unconfirmed block reward), ...?
+    std::vector<std::string> walletConflicts;
+    std::string rawTransaction;
+    bool involvesWatchonly;
 
     BtcTransaction(Json::Value reply);
 
@@ -130,6 +133,7 @@ struct BtcUnspentOutput
     std::string scriptPubKey;
     int64_t amount;
     uint32_t confirmations;
+    bool spendable;
 
     BtcUnspentOutput(Json::Value unspentOutput);
 };
@@ -252,7 +256,7 @@ private:
     void SetDefaults();
 
     std::vector<char> data;     // received data or data to send
-    ptrdiff_t pointerOffset;  // need that for curl's way to send data
+    size_t pointerOffset;       // need that for curl's way to send data
 };
 
 

@@ -42,7 +42,7 @@ static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *userp)
     if(size*nmemb < 1)
         return 0;
 
-    const char* dataPtr = pooh->ReadNextChar();
+    const char* dataPtr = pooh->ReadNextChar();  
 
     if(dataPtr == NULL)
         return 0;

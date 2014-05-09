@@ -24,6 +24,14 @@ BtcTransaction::BtcTransaction(Json::Value reply)
     this->Fee = BtcHelper::CoinsToSatoshis(reply["fee"].asDouble());
     this->TxID = reply["txid"].asString();
     this->Time = reply["time"].asDouble();
+    if(reply["walletconflicts"].isArray())
+    {
+        for(Json::ArrayIndex i = 0; i < reply["walletconflicts"].size(); i++)
+        {
+            this->walletConflicts.push_back(reply["walletconflicts"][i].asString());
+        }
+    }
+    this->rawTransaction = reply["hex"].asString();
 
     // details
     if(!reply["details"].isArray())
@@ -37,6 +45,8 @@ BtcTransaction::BtcTransaction(Json::Value reply)
         Json::Value detail = details[i];
         std::string address = detail["address"].asString();
         std::string category = detail["category"].asString();
+        if(reply["involvesWatchonly"].asBool())
+            this->involvesWatchonly = true;
         int64_t amount = BtcHelper::CoinsToSatoshis(detail["amount"].asDouble());
         if(category == "send")
         {
@@ -115,6 +125,7 @@ BtcUnspentOutput::BtcUnspentOutput(Json::Value unspentOutput)
     this->scriptPubKey = unspentOutput["scriptPubKey"].asString();
     this->amount = BtcHelper::CoinsToSatoshis(unspentOutput["amount"].asDouble());
     this->confirmations = unspentOutput["confirmations"].asInt64();
+    this->spendable = unspentOutput["spendable"].asBool();
 }
 
 BtcAddressInfo::BtcAddressInfo(Json::Value result)
@@ -271,30 +282,34 @@ void BtcRpcPacket::SetDefaults()
 
 bool BtcRpcPacket::AddData(const std::string strData)
 {
+    // cut off the trailing '\0'
     std::string data(this->data.begin(), this->data.end()--);
-    data.append(strData);
+    data.append(strData.begin(), strData.end());
     this->data.clear();
     this->data = std::vector<char>(data.begin(), data.end());
-    this->data.back() = '\0';
+    this->data.push_back('\0');
 
-    printf("size: %d\n", this->size());
+    std::printf("%s\n", this->data.begin());
+    std::printf("%s\n", strData.begin());
     std::cout.flush();
-    printf(" data: %s\n", strData.c_str());
 
     return true;
 }
 
 const char *BtcRpcPacket::ReadNextChar()
 {
-    printf("offset: %d, size: %d -1", this->pointerOffset, this->size());
-    if (this->pointerOffset < this->data.size())
+    if (this->pointerOffset < this->data.size()-1)
+    {
+        std::printf("%c", this->data.at(this->pointerOffset));
+        std::cout.flush();
         return &this->data.at(this->pointerOffset++);
+    }
     else return NULL;
 }
 
 size_t BtcRpcPacket::size()
 {
-    return this->data.size();
+    return this->data.size()-1;
 }
 
 const char* BtcRpcPacket::GetData()

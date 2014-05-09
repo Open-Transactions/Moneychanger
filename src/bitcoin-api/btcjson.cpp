@@ -188,7 +188,7 @@ std::string BtcJson::GetNewAddress(const std::string &account)
     return result.asString();
 }
 
-bool BtcJson::ImportAddress(const std::string &address, const std::string &account, bool rescan)
+bool BtcJson::ImportAddress(const std::string &address, const std::string &account, const bool &rescan)
 {
     Json::Value params = Json::Value();
     params.append(address);
@@ -310,7 +310,7 @@ std::vector<std::string> BtcJson::ListAccounts()
     return result.getMemberNames();      // each key is an account, each value is the account's balance
 }
 
-BtcUnspentOutputs BtcJson::ListUnspent(int minConf, int maxConf, std::vector<std::string> addresses)
+BtcUnspentOutputs BtcJson::ListUnspent(const int32_t &minConf, const int32_t &maxConf, std::vector<std::string> addresses)
 {
     Json::Value params = Json::Value();
     params.append(minConf);

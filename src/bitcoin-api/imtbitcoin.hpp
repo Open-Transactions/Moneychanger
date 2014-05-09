@@ -52,6 +52,13 @@ public:
     // returns new address
     virtual std::string GetNewAddress(const std::string &account = "") = 0;
 
+    // address: watchonly address to import
+    // label:   the name of the address and its accounts
+    // rescan:  rescan the entire blockchain for old transactions
+    // returns false if an error occurs, e.g. the command is not supported yet
+    // Can be called multiple times to change address label
+    virtual bool ImportAddress(const std::string &address, const std::string &label = "watchonly", bool rescan = false) = 0;
+
     // returns public key for address (works only if public key is known...)
     virtual std::string GetPublicKey(const std::string &address) = 0;
 
@@ -118,6 +125,10 @@ public:
     // Broadcasts a raw transaction to the network
     // returns txId or ""
     virtual std::string SendRawTransaction(const std::string &rawTransaction) = 0;
+
+    // Lists unspent outputs, including watchonly addresses
+    // addresses [optional]: limit results to addresses
+    virtual BtcUnspentOutputs ListUnspentOutputs(const std::vector<std::string> &addresses = std::vector<std::string>()) = 0;
 
     /*
         std::map<std::string, int64_t> GetAddressesAndBalances() = 0;
