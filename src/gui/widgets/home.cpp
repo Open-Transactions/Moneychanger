@@ -695,7 +695,7 @@ void MTHome::OnDeletedRecord()
             // -----------------------------------------
         }
         else
-            qDebug() << QString("Failure removing MTRecord at index %1.").arg(nCurrentRow);
+            qDebug() << QString("Failure removing OTRecord at index %1.").arg(nCurrentRow);
     }
 }
 
@@ -727,8 +727,8 @@ void MTHome::RefreshRecords()
     // -------------------------------------------------------
     for (int nIndex = 0; nIndex < listSize; ++nIndex)
     {
-        weak_ptr_MTRecord   weakRecord = m_list.GetRecord(nIndex);
-        shared_ptr_MTRecord record     = weakRecord.lock();
+        weak_ptr_OTRecord   weakRecord = m_list.GetRecord(nIndex);
+        shared_ptr_OTRecord record     = weakRecord.lock();
 
         if (weakRecord.expired())
         {
@@ -739,13 +739,13 @@ void MTHome::RefreshRecords()
         }
         else
         {
-            MTRecord & recordmt = *record;
+            OTRecord & recordmt = *record;
             QWidget  * pWidget  = MTHomeDetail::CreateDetailHeaderWidget(recordmt);
             // -------------------------------------------
             if (NULL != pWidget)
                 ui->tableWidget->setCellWidget( nIndex, 1, pWidget );
             else
-                qDebug() << "Failed creating detail header widget based on MTRecord.";
+                qDebug() << "Failed creating detail header widget based on OTRecord.";
         }
     }
     // -------------------------------------------------------

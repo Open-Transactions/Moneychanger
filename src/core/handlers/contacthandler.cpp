@@ -18,7 +18,7 @@ std::string MTNameLookupQT::GetNymName(const std::string & str_id,
 {
     std::string str_result("");
     // ------------------------
-    str_result = this->MTNameLookup::GetNymName(str_id, p_server_id);
+    str_result = this->OTNameLookup::GetNymName(str_id, p_server_id);
     // ------------------------
     if (str_result.empty())
     {
@@ -47,7 +47,7 @@ std::string MTNameLookupQT::GetAcctName(const std::string & str_id,
 {
     std::string str_result("");
     // ------------------------
-    str_result = this->MTNameLookup::GetAcctName(str_id, p_nym_id, p_server_id, p_asset_id);
+    str_result = this->OTNameLookup::GetAcctName(str_id, p_nym_id, p_server_id, p_asset_id);
     // ------------------------
     if (str_result.empty())
     {

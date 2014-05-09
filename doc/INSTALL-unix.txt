@@ -4,32 +4,14 @@ Have the QT bin folder on your path.
 
 Open a command prompt.
 
-navigate to the ‘project’ folder
+navigate to the ‘project’ dir.
 
 run:  qmake
 
-#################################
-(NB :On older systems where OT was compiled with C++03 you need to uncomment
+then: make (-jx, where x is # of threads).
 
-the line in project/common.pri
+navigate to ‘project/moneychanger-qt’ dir.
 
-        QMAKE_CXXFLAGS += -std=c++03 -Dnullptr=NULL -DOT_USE_TR1  ## Ubuntu 12.04
-
-and comment out the line
-
-       #QMAKE_CXXFLAGS += -std=c++11
-
-and also in project/moneychanger-qt/moneychanger-qt.pro uncomment the two lines
-
-        # only need if no C++11 available (e.g. Ubuntu 12.04)
-        LIBS += -lboost_system-mt
-        LIBS += -lboost_thread-mt
-)
-##################################
-
-then: make (-jx, where x is the number of threads you want).
-
-navigate to the ‘lib’ directory.
-where you will find moneychanger-qt
+where you will find "moneychanger-qt" binary
 
 :)

@@ -4,7 +4,7 @@
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
 
-#include <core/MTRecordList.hpp>
+#include <opentxs/OTRecordList.hpp>
 
 #include <QPointer>
 #include <QWidget>
@@ -37,7 +37,7 @@ private:
     // ------------------------------------------------
     QPointer<QFrame>        m_pHeaderFrame;
     // ------------------------------------------------
-    MTRecordList   m_list;
+    OTRecordList   m_list;
     // ------------------------------------------------
     bool    m_bTurnRefreshBtnRed;
     // ------------------------------------------------
@@ -61,7 +61,7 @@ public:
 
 signals:
     void needToDownloadAccountData();
-    void needToRefreshDetails(int nRow, MTRecordList & theList);
+    void needToRefreshDetails(int nRow, OTRecordList & theList);
 
 public slots:
     void onAccountDataDownloaded();
