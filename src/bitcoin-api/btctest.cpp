@@ -444,7 +444,10 @@ bool BtcTest::TestImportMultisig(int32_t confirmations)
 
     std::stringList pubKeys = { pubkey1, pubkey2 };
     std::string multiSig = bitcoin1.mtBitcoin->GetMultiSigAddress(2, pubKeys, true, "multisigAddress");
+    bitcoin2.mtBitcoin->GetMultiSigAddress(2, pubKeys, true, "multisigAddress");
 
+    if(!bitcoin1.mtBitcoin->ImportAddress(multiSig, "multiSigWatching", false))
+        return false;   // command not supported yet
     if(!bitcoin2.mtBitcoin->ImportAddress(multiSig, "multiSigWatching", false))
         return false;   // command not supported yet
 
@@ -458,6 +461,7 @@ bool BtcTest::TestImportMultisig(int32_t confirmations)
     while(true)
     {
         newOutputs = bitcoin2.btcHelper->ListNewOutputs( {multiSig}, newOutputs);
+        Sleep(500);
         if(newOutputs.size() > 0)
             break;
     }
@@ -475,7 +479,8 @@ bool BtcTest::TestImportMultisig(int32_t confirmations)
     BtcSignedTransactionPtr transaction1 = bitcoin1.mtBitcoin->VoteMultiSigRelease(txToMultisig->txID, multiSig, receivingAddress);
     BtcSignedTransactionPtr transaction2 = bitcoin2.mtBitcoin->VoteMultiSigRelease(txToMultisig->txID, multiSig, receivingAddress);
     BtcSignedTransactionPtr transaction = bitcoin2.mtBitcoin->CombineTransactions(transaction1->signedTransaction + transaction2->signedTransaction);
-    bitcoin2.mtBitcoin->SendRawTransaction(transaction->signedTransaction);
+    if(bitcoin2.mtBitcoin->SendRawTransaction(transaction->signedTransaction).empty())
+        return false;
 
     return true;
 }

@@ -86,7 +86,7 @@ void BtcJson::ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json
         return;
     Json::Value replyObj;
     Json::Reader reader;
-    if(!reader.parse(jsonString->GetData(), jsonString->GetData() + jsonString->size() - 1, replyObj))
+    if(!reader.parse(jsonString->GetData(), jsonString->GetData() + jsonString->size(), replyObj))
         return;
 
     if(replyObj.isNull() || replyObj.empty())

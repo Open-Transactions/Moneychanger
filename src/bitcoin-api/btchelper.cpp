@@ -44,7 +44,7 @@ namespace btc   // will probably put everything into this namespace
 }
 
 
-int BtcHelper::MinConfirms = 1;
+int BtcHelper::MinConfirms = 0;
 int32_t BtcHelper::MaxConfirms = 9999999;
 int64_t BtcHelper::FeeMultiSig = BtcHelper::CoinsToSatoshis(0.001);
 
@@ -323,7 +323,7 @@ BtcUnspentOutputs BtcHelper::ListNewOutputs(const std::vector<std::string> &addr
     }
 
     // get list of all unspent outputs
-    BtcUnspentOutputs outputs = this->modules->btcJson->ListUnspent(1, MaxConfirms, addresses);
+    BtcUnspentOutputs outputs = this->modules->btcJson->ListUnspent(MinConfirms, MaxConfirms, addresses);
 
     // iterate through them
     BtcUnspentOutputs newOutputs = BtcUnspentOutputs();

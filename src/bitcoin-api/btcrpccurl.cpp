@@ -239,7 +239,7 @@ BtcRpcPacketPtr BtcRpcCurl::SendRpc(BtcRpcPacketPtr jsonString)
 
     // we have to copy the response because for some reason the next few lines set the smart pointer to NULL (?!?!??)
     BtcRpcPacketPtr packetCopy = BtcRpcPacketPtr(new BtcRpcPacket(receivedData));
-    {BtcRpcPacketPtr test = BtcRpcPacketPtr(new BtcRpcPacket(packetCopy));}
+    {BtcRpcPacketPtr test = BtcRpcPacketPtr(new BtcRpcPacket(packetCopy));}     // i think this line can be removed
 
     receivedData.reset();
 

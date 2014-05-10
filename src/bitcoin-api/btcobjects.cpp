@@ -259,13 +259,15 @@ BtcRpcPacket::BtcRpcPacket()
 BtcRpcPacket::BtcRpcPacket(const std::string &strData)
     :data(strData.begin(), strData.end()), pointerOffset(0)
 {
-    this->data.push_back('\0');
+    if(*(data.end()-1) != '\0')
+        this->data.push_back('\0');
 }
 
 BtcRpcPacket::BtcRpcPacket(const BtcRpcPacketPtr packet)
     : data(packet->data.begin(), packet->data.end()), pointerOffset(0)
 {
-    this->data.push_back('\0');
+    if(*(data.end()-1) != '\0')
+        this->data.push_back('\0');
 }
 
 BtcRpcPacket::~BtcRpcPacket()
@@ -277,33 +279,27 @@ BtcRpcPacket::~BtcRpcPacket()
 void BtcRpcPacket::SetDefaults()
 {
     this->data.clear();
+    this->data.push_back('\0');
     this->pointerOffset = 0;
 }
 
 bool BtcRpcPacket::AddData(const std::string strData)
 {
-    // cut off the trailing '\0'
-    std::string data(this->data.begin(), this->data.end()--);
+    // cut off the trailing '\0' as otherwise multipart messages won't work:
+    std::string data(this->data.begin(), this->data.end() - 1);
     data.append(strData.begin(), strData.end());
     this->data.clear();
     this->data = std::vector<char>(data.begin(), data.end());
-    this->data.push_back('\0');
-
-    std::printf("%s\n", this->data.begin());
-    std::printf("%s\n", strData.begin());
-    std::cout.flush();
+    if(*(data.end()-1) != '\0')
+        this->data.push_back('\0');
 
     return true;
 }
 
 const char *BtcRpcPacket::ReadNextChar()
 {
-    if (this->pointerOffset < this->data.size()-1)
-    {
-        std::printf("%c", this->data.at(this->pointerOffset));
-        std::cout.flush();
+    if (this->pointerOffset < size())
         return &this->data.at(this->pointerOffset++);
-    }
     else return NULL;
 }
 
