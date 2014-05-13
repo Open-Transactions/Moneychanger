@@ -91,7 +91,7 @@ public:
     // Could also return the balance of each account
     virtual std::vector<std::string> ListAccounts();
 
-    virtual BtcUnspentOutputs ListUnspent(const int32_t &minConf = 0, const int32_t &maxConf = BtcHelper::MaxConfirms, std::vector<std::string> addresses = std::vector<std::string>());
+    virtual BtcUnspentOutputs ListUnspent(const int32_t &minConf = BtcHelper::MinConfirms, const int32_t &maxConf = BtcHelper::MaxConfirms, std::vector<std::string> addresses = std::vector<std::string>());
 
     virtual std::string SendToAddress(const std::string &btcAddress, int64_t amount);
 

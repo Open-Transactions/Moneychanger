@@ -99,7 +99,7 @@ public:
 
     // Returns vector of unspent outputs
     // does not work with non-wallet addresses (multisig)
-    virtual BtcUnspentOutputs ListUnspent(const int32_t &minConf = 0, const int32_t &maxConf = BtcHelper::MaxConfirms, std::vector<std::string> addresses = std::vector<std::string>()) = 0;
+    virtual BtcUnspentOutputs ListUnspent(const int32_t &minConf = BtcHelper::MinConfirms, const int32_t &maxConf = BtcHelper::MaxConfirms, std::vector<std::string> addresses = std::vector<std::string>()) = 0;
 
     virtual std::string SendToAddress(const std::string &btcAddress, int64_t amount) = 0;
 
