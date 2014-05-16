@@ -42,11 +42,14 @@ class BtcModules;
 class BtcHelper
 {
 public:
-    // default amount of confirmations to wait for
+    // default min confirmations to wait for before displaying a transaction
     static int MinConfirms;
 
     // default max confirmations
     static int32_t MaxConfirms;
+
+    // default confirmations to wait for before accepting a transaction as confirmed
+    static int32_t WaitForConfirms;
 
     // default fee to pay when withdrawing from multi-sig
     // to set default fee for all transactions, use BtcJson::SetTxFee()
@@ -74,29 +77,32 @@ public:
 
     int64_t GetConfirmations(const std::string &txId);
 
+    // returns a list of double spends/conflicts
+    btc::stringList GetDoubleSpends(const std::string &txId);
+
     // Checks whether a transaction has been confirmed often enough
-    bool TransactionConfirmed(BtcTransactionPtr transaction, int minconfirms = MinConfirms);
+    bool TransactionConfirmed(BtcTransactionPtr transaction, int minconfirms = WaitForConfirms);
 
     // Checks whether a transaction (can be non-wallet) has been confirmed often enough
-    int64_t TransactionConfirmed(const std::string &txId, int minConfirms = MinConfirms);
+    int64_t TransactionConfirmed(const std::string &txId, int minConfirms = WaitForConfirms);
 
     // Checks a transaction for correct amount and confirmations.
-    bool TransactionSuccessfull(int64_t amount, BtcTransactionPtr transaction, const std::string &targetAddress, int minConfirms = MinConfirms);
+    bool TransactionSuccessfull(int64_t amount, BtcTransactionPtr transaction, const std::string &targetAddress, int minConfirms = WaitForConfirms);
 
     // Checks a raw transaction for correct amount, confirmations and recipient.
-    bool TransactionSuccessfull(int64_t amount, BtcRawTransactionPtr transaction, const std::string &targetAddress, int minConfirms = MinConfirms);
+    bool TransactionSuccessfull(int64_t amount, BtcRawTransactionPtr transaction, const std::string &targetAddress, int minConfirms = WaitForConfirms);
 
     // Checks a list of outputs for correct amount, confirmations and recipient.
     // returns the first output that matches
-    const BtcRawTransactionPtr TransactionSuccessfull(const int64_t &amount, BtcUnspentOutputs outputs, const std::string &targetAddress, const int32_t &MinConfirms = MinConfirms);
+    const BtcRawTransactionPtr TransactionSuccessfull(const int64_t &amount, BtcUnspentOutputs outputs, const std::string &targetAddress, const int32_t &MinConfirms = WaitForConfirms);
 
     // Halts thread execution until the transaction has enough confirmations
     // timeOutSeconds is the time in seconds after which the function will fail
     // timerMS is the delay between each confirmation check
     // returns true if sufficient confirmations were received before timeout
-    bool WaitTransactionSuccessfull(const int64_t &amount, BtcTransactionPtr transaction, const std::string &targetAddress, const int32_t &minConfirms = MinConfirms, int32_t timeOutSeconds = 7200, const int32_t &timerMS = 1000);
+    bool WaitTransactionSuccessfull(const int64_t &amount, BtcTransactionPtr transaction, const std::string &targetAddress, const int32_t &minConfirms = WaitForConfirms, int32_t timeOutSeconds = 7200, const int32_t &timerMS = 1000);
 
-    bool WaitTransactionSuccessfull(const int64_t &amount, BtcRawTransactionPtr transaction, const std::string &targetAddress, const int32_t &minConfirms = MinConfirms, int32_t timeOutSeconds = 7200, const int32_t &timerMS = 1000);
+    bool WaitTransactionSuccessfull(const int64_t &amount, BtcRawTransactionPtr transaction, const std::string &targetAddress, const int32_t &minConfirms = WaitForConfirms, int32_t timeOutSeconds = 7200, const int32_t &timerMS = 1000);
 
     // Halts thread execution and returns the transaction once it arrives
     // Will only work if you have all keys of the sending/receiving address or added it as watchonly

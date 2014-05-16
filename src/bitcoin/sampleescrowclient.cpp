@@ -29,7 +29,7 @@ SampleEscrowClient::SampleEscrowClient(QObject* parent)
 
     this->minSignatures = 0;    // will be set later by server pool
 
-    this->minConfirms = BtcHelper::MinConfirms;      // wait for one confirmation by default
+    this->minConfirms = BtcHelper::WaitForConfirms;      // wait for one confirmation by default
 
     this->targetPool = EscrowPoolPtr();
     this->pubKeyList = btc::stringList();

@@ -44,15 +44,15 @@ namespace btc   // will probably put everything into this namespace
 }
 
 
-int BtcHelper::MinConfirms = 0;
-int32_t BtcHelper::MaxConfirms = 9999999;
+int32_t BtcHelper::MinConfirms = 0;         // used for listunspent, should be zero or same as WaitForConfirms imho
+int32_t BtcHelper::MaxConfirms = 9999999;   // used for listunspent, it's 9999999 in bitcoin-qt
+int32_t BtcHelper::WaitForConfirms = 1;     // confirmations to wait for before accepting a transaction as confirmed. should be higher.
 int64_t BtcHelper::FeeMultiSig = BtcHelper::CoinsToSatoshis(0.001);
 
 BtcHelper::BtcHelper(BtcModules *modules)
 {
     this->modules = modules;
 
-    // i think the compiler removes the function body if it is not referenced at least once.
     std::string str = btc::to_string(0);
 }
 
@@ -71,6 +71,7 @@ int64_t BtcHelper::CoinsToSatoshis(double value)
 // converts int64 satoshis to double bitcoin
 double BtcHelper::SatoshisToCoins(int64_t value)
 {
+    // also copied from the wiki
     return (double)value / 1e8;
 }
 
@@ -161,6 +162,15 @@ int64_t BtcHelper::GetConfirmations(const std::string &txId)
 
     // if we find it in an old enough block, return number of confirmations
     return confirmations;
+}
+
+btc::stringList BtcHelper::GetDoubleSpends(const std::string &txId)
+{
+    BtcTransactionPtr tx = modules->btcJson->GetTransaction(txId);
+    if(tx == NULL)
+        return btc::stringList();
+
+    return tx->walletConflicts;
 }
 
 int64_t BtcHelper::TransactionConfirmed(const std::string &txId, int minConfirms)
@@ -384,7 +394,7 @@ BtcSignedTransactionPtr BtcHelper::WithdrawAllFromAddress(const std::string &txT
 
     // only sign transaction with signingAddress's privkey
     // in multi-sig signing will fail unless redeemScript is passed aswell, but we can try anyway...
-    std::stringList signingKeys;
+    btc::stringList signingKeys;
     if(!signingAddress.empty() /*&& !redeemScript.empty()*/)
     {
         signingKeys.push_back(this->modules->btcJson->GetPrivateKey(signingAddress));
