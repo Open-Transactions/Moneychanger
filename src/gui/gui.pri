@@ -21,6 +21,7 @@ FORMS += \
     $${PWD}/widgets/btcguitest.ui \
     $${PWD}/widgets/btcguitestp2p.ui \
     $${PWD}/widgets/btcsenddlg.ui \
+    $${PWD}/widgets/btcpoolmanager.ui \
     $${PWD}/widgets/cashpurse.ui \
     $${PWD}/widgets/compose.ui \
     $${PWD}/widgets/contactdetails.ui \
@@ -79,6 +80,7 @@ HEADERS += \
     $${PWD}/widgets/btcguitest.hpp \
     $${PWD}/widgets/btcguitestp2p.hpp \
     $${PWD}/widgets/btcsenddlg.hpp \
+    $${PWD}/widgets/btcpoolmanager.hpp \
     $${PWD}/widgets/cashpurse.hpp \
     $${PWD}/widgets/compose.hpp \
     $${PWD}/widgets/contactdetails.hpp \
@@ -139,6 +141,7 @@ SOURCES += \
     $${PWD}/widgets/btcguitest.cpp \
     $${PWD}/widgets/btcguitestp2p.cpp \
     $${PWD}/widgets/btcsenddlg.cpp \
+    $${PWD}/widgets/btcpoolmanager.cpp \
     $${PWD}/widgets/cashpurse.cpp \
     $${PWD}/widgets/compose.cpp \
     $${PWD}/widgets/contactdetails.cpp \
