@@ -69,8 +69,10 @@ public:
     // Pub keys need to be shared to create multi signature addresses
     std::string GetPublicKey(const std::string &address);
 
+    BtcRawTransactionPtr GetDecodedRawTransaction(const std::string &txId) const;
+
     // Counts how many coins are sent to targetAddress through this transaction
-    int64_t GetTotalOutput(const std::string &transactionId, const std::string &targetAddress);
+    int64_t GetTotalOutput(const std::string &txId, const std::string &targetAddress);
 
     // Counts how many coins are sent to targetAddress through this transaction
     int64_t GetTotalOutput(BtcRawTransactionPtr transaction, const std::string &targetAddress);
@@ -111,7 +113,11 @@ public:
     // Halts thread execution and returns the decoded raw transaction once it arrives
     BtcRawTransactionPtr WaitGetRawTransaction(const std::string &txId, int timerMS = 500, int maxAttempts = 20);
 
-    BtcUnspentOutputs ListNewOutputs(const std::vector<std::string> &addresses, BtcUnspentOutputs knownOutputs);
+    // asks bitcoind for a list of unspent outputs and returns those that aren't already known
+    // addresses: list of receiving addresses
+    // knownOutputs: list of unspent outputs that is already known
+    // returns unknown outputs
+    BtcUnspentOutputs ListNewOutputs(const btc::stringList &addresses, BtcUnspentOutputs knownOutputs);
 
     // Creates a raw transaction that sends all unspent outputs from an address to another
     // txSourceId: transaction that sends funds to sourceAddress

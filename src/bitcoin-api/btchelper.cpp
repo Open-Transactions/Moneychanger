@@ -75,9 +75,28 @@ double BtcHelper::SatoshisToCoins(int64_t value)
     return (double)value / 1e8;
 }
 
-int64_t BtcHelper::GetTotalOutput(const std::string &transactionId, const std::string &targetAddress)
+BtcRawTransactionPtr BtcHelper::GetDecodedRawTransaction(const std::string &txId) const
 {
-    return GetTotalOutput(this->modules->btcJson->GetDecodedRawTransaction(transactionId), targetAddress);
+    if(txId.empty())
+        return BtcRawTransactionPtr();
+
+    // first check transaction database
+    BtcTransactionPtr tx = this->modules->btcJson->GetTransaction(txId);
+    if(tx != NULL)
+        if(!tx->rawTransaction.empty())
+            return this->modules->btcJson->DecodeRawTransaction(tx->rawTransaction);
+
+    // otherwise check block database
+    // use bitcoind -txindex to keep a complete list of all transactions, otherwise it might not find it if it's too old
+    return this->modules->btcJson->GetDecodedRawTransaction(txId);
+}
+
+int64_t BtcHelper::GetTotalOutput(const std::string &txId, const std::string &targetAddress)
+{
+    if(txId.empty() || targetAddress.empty())
+            return 0;
+
+    return GetTotalOutput(GetDecodedRawTransaction(txId), targetAddress);
 }
 
 int64_t BtcHelper::GetTotalOutput(BtcRawTransactionPtr transaction, const std::string &targetAddress)
@@ -120,7 +139,7 @@ int64_t BtcHelper::GetConfirmations(const std::string &txId)
     if(txId.empty())
         return 0;
 
-    // if it wasn't a transaction to a multi-sig then we can just ask bitcoind
+    // if it wasn't a transaction to a multi-sig or if we used importaddress then we can just ask bitcoind
     BtcTransactionPtr transaction = this->modules->btcJson->GetTransaction(txId);
     if(transaction != NULL)
         return transaction->Confirmations;
@@ -166,6 +185,9 @@ int64_t BtcHelper::GetConfirmations(const std::string &txId)
 
 btc::stringList BtcHelper::GetDoubleSpends(const std::string &txId)
 {
+    if(txId.empty())
+        return btc::stringList();
+
     BtcTransactionPtr tx = modules->btcJson->GetTransaction(txId);
     if(tx == NULL)
         return btc::stringList();
@@ -199,7 +221,7 @@ bool BtcHelper::TransactionSuccessfull(int64_t amount, BtcTransactionPtr transac
 
 bool BtcHelper::TransactionSuccessfull(int64_t amountRequested, BtcRawTransactionPtr transaction, const std::string &targetAddress, int minConfirms)
 {
-    if(transaction == NULL) // if it hasn't been received yet we will return.
+    if(transaction == NULL || targetAddress.empty() || minConfirms < 0) // if it hasn't been received yet we will return.
         return false;       // use WaitForTransaction(txid) to prevent this.
 
     // check for sufficient confirms...
@@ -293,23 +315,9 @@ BtcRawTransactionPtr BtcHelper::WaitGetRawTransaction(const std::string &txId, i
 
     BtcRawTransactionPtr rawTransaction = BtcRawTransactionPtr();
 
-    // TODO: see WaitGetTransaction()
-
-    // first, see if we have it in our transaction database
-    BtcTransactionPtr transaction = this->modules->btcJson->GetTransaction(txId);
-    if(transaction != NULL)
-    {
-        if(!transaction->rawTransaction.empty())
-        {
-            rawTransaction = this->modules->btcJson->DecodeRawTransaction(transaction->rawTransaction);
-            return rawTransaction;
-        }
-    }
-
-    // otherwise see if we have it the in our block database
     while(maxAttempts)
     {
-        rawTransaction = this->modules->btcJson->GetDecodedRawTransaction(txId);
+        rawTransaction = GetDecodedRawTransaction(txId);
         if(rawTransaction != NULL)
             return rawTransaction;
 
@@ -320,7 +328,7 @@ BtcRawTransactionPtr BtcHelper::WaitGetRawTransaction(const std::string &txId, i
     return rawTransaction;
 }
 
-BtcUnspentOutputs BtcHelper::ListNewOutputs(const std::vector<std::string> &addresses, BtcUnspentOutputs knownOutputs)
+BtcUnspentOutputs BtcHelper::ListNewOutputs(const btc::stringList &addresses, BtcUnspentOutputs knownOutputs)
 {
     if(addresses.empty())
         return BtcUnspentOutputs();
@@ -356,7 +364,7 @@ BtcSignedTransactionPtr BtcHelper::WithdrawAllFromAddress(const std::string &txT
     // This will only work when none of the outputs (usually it's just one) have been spent yet
 
     // retrieve decoded raw transaction sending funds to our sourceAddress
-    BtcRawTransactionPtr rawTransaction = this->modules->btcJson->GetDecodedRawTransaction(txToSourceId);
+    BtcRawTransactionPtr rawTransaction = GetDecodedRawTransaction(txToSourceId);
     if(rawTransaction == NULL)
         return BtcSignedTransactionPtr();   // return NULL
 
@@ -400,10 +408,10 @@ BtcSignedTransactionPtr BtcHelper::WithdrawAllFromAddress(const std::string &txT
         signingKeys.push_back(this->modules->btcJson->GetPrivateKey(signingAddress));
     }
 
-    // Note: signingPrerequisites can be empty, in that case bitcoin will sign with any key that fits.
+    // Note: signingPrerequisites can be empty if the input transaction is known and if signingKeys is empty too,
+    // in that case bitcoin will sign with any key that fits.
     // this should only be done with locally generated transactions or transactions whose outputs were checked first
     // because otherwise someone could give you a transaction to send funds from your wallet to his and you'd blindly sign it.
-    // if a signingAddress is passed, redeemScript is required aswell, at least for p2sh.
 
     // sign raw transaction
     // as we just created this tx ourselves, we can assume that it is safe to sign
