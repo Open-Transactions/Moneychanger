@@ -41,9 +41,9 @@
 */
 
 
-namespace std
+namespace btc
 {   // might make things easier to read. also maybe i should use vectors instead.
-    typedef list<std::string> stringList;
+    typedef std::vector<std::string> stringList;
 }
 
 
@@ -68,10 +68,10 @@ struct BtcTransaction
     std::string TxID;
     time_t Time;
     //std::string Account;
-    std::list<std::string> AddressesRecv;   // received to addresses
-    std::list<std::string> AddressesSent;   // sent to addresses
+    btc::stringList AddressesRecv;   // received to addresses
+    btc::stringList AddressesSent;   // sent to addresses
     //std::string Category;           // "send", "receive", "immature" (unconfirmed block reward), ...?
-    std::vector<std::string> walletConflicts;
+    btc::stringList walletConflicts;
     std::string rawTransaction;
     bool involvesWatchonly;
 
@@ -162,15 +162,15 @@ struct BtcMultiSigAddress
 {
     std::string address;
     std::string redeemScript;
-    std::stringList publicKeys;     // this will make everything so much more convenient
+    btc::stringList publicKeys;     // this will make everything so much more convenient
 
-    BtcMultiSigAddress(Json::Value result, const std::stringList& publicKeys);
+    BtcMultiSigAddress(Json::Value result, const btc::stringList& publicKeys);
 };
 
 struct BtcBlock
 {
     int64_t confirmations;
-    std::list<std::string> transactions;
+    btc::stringList transactions;
     int64_t height;
     std::string hash;
     std::string previousHash;

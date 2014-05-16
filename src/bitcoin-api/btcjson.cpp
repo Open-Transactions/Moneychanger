@@ -165,10 +165,10 @@ std::string BtcJson::GetAccountAddress(const std::string &account)
     return result.asString();
 }
 
-std::stringList BtcJson::GetAddressesByAccount(const std::string &account)
+btc::stringList BtcJson::GetAddressesByAccount(const std::string &account)
 {
     // not yet implemented
-    return std::stringList();
+    return btc::stringList();
 }
 
 std::string BtcJson::GetNewAddress(const std::string &account)
@@ -244,12 +244,12 @@ std::string BtcJson::DumpPrivKey(const std::string &address)
     return result.asString();
 }
 
-BtcMultiSigAddressPtr BtcJson::AddMultiSigAddress(int nRequired, const std::list<std::string> &keys, const std::string &account)
+BtcMultiSigAddressPtr BtcJson::AddMultiSigAddress(int nRequired, const btc::stringList &keys, const std::string &account)
 {
     Json::Value params = Json::Value();
     params.append(nRequired);
     Json::Value keysValue;
-    for(std::list<std::string>::const_iterator i = keys.begin(); i != keys.end(); i++)
+    for(btc::stringList::const_iterator i = keys.begin(); i != keys.end(); i++)
     {
         keysValue.append(*i);
     }
@@ -270,12 +270,12 @@ BtcMultiSigAddressPtr BtcJson::AddMultiSigAddress(int nRequired, const std::list
     return CreateMultiSigAddress(nRequired, keys);
 }
 
-BtcMultiSigAddressPtr BtcJson::CreateMultiSigAddress(int nRequired, const std::list<std::string> &keys)
+BtcMultiSigAddressPtr BtcJson::CreateMultiSigAddress(int nRequired, const btc::stringList &keys)
 {
     Json::Value params = Json::Value();
     params.append(nRequired);
     Json::Value keysValue;
-    for(std::list<std::string>::const_iterator i = keys.begin(); i != keys.end(); i++)
+    for(btc::stringList::const_iterator i = keys.begin(); i != keys.end(); i++)
     {
         keysValue.append(*i);
     }
@@ -293,12 +293,12 @@ BtcMultiSigAddressPtr BtcJson::CreateMultiSigAddress(int nRequired, const std::l
     return multiSigAddr;
 }
 
-std::string BtcJson::GetRedeemScript(int nRequired, std::list<std::string> keys)
+std::string BtcJson::GetRedeemScript(int nRequired, btc::stringList keys)
 {
     return CreateMultiSigAddress(nRequired, keys)->redeemScript;
 }
 
-std::vector<std::string> BtcJson::ListAccounts()
+btc::stringList BtcJson::ListAccounts()
 {
     Json::Value result = Json::Value();
     if(!ProcessRpcString(this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_LISTACCOUNTS)), result))
@@ -499,7 +499,7 @@ std::string BtcJson::CreateRawTransaction(BtcTxIdVouts unspentOutputs, BtcTxTarg
     return result.asString();
 }
 
-BtcSignedTransactionPtr BtcJson::SignRawTransaction(const std::string &rawTransaction, const std::list<BtcSigningPrerequisite> &previousTransactions, const std::stringList &privateKeys)
+BtcSignedTransactionPtr BtcJson::SignRawTransaction(const std::string &rawTransaction, const std::list<BtcSigningPrerequisite> &previousTransactions, const btc::stringList &privateKeys)
 {
     Json::Value params = Json::Value();
     params.append(rawTransaction);
@@ -523,7 +523,7 @@ BtcSignedTransactionPtr BtcJson::SignRawTransaction(const std::string &rawTransa
     if(privateKeys.size() > 0)
     {
         Json::Value privKeysArray;               // TODO: figure out how to properly parse a string list
-        for(std::stringList::const_iterator i = privateKeys.begin(); i != privateKeys.end(); i++)
+        for(btc::stringList::const_iterator i = privateKeys.begin(); i != privateKeys.end(); i++)
         {
             privKeysArray.append(*i);
         }

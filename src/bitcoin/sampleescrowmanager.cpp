@@ -42,7 +42,6 @@ void SampleEscrowManager::OnSimulateEscrowServers()
         SampleEscrowServerPtr server = SampleEscrowServerPtr(new SampleEscrowServer(rpcServer));
         server->serverPool = this->escrowPool;
         this->escrowPool->AddEscrowServer(server);
-
     }
 }
 

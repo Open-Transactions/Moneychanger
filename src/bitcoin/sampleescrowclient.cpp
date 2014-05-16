@@ -29,10 +29,10 @@ SampleEscrowClient::SampleEscrowClient(QObject* parent)
 
     this->minSignatures = 0;    // will be set later by server pool
 
-    this->minConfirms = 1;      // wait for one confirmation
+    this->minConfirms = BtcHelper::MinConfirms;      // wait for one confirmation by default
 
     this->targetPool = EscrowPoolPtr();
-    this->pubKeyList = std::list<std::string>();
+    this->pubKeyList = btc::stringList();
 
     this->transactionDeposit = SampleEscrowTransactionPtr();
     this->transactionWithdrawal = SampleEscrowTransactionPtr();
@@ -85,7 +85,7 @@ void SampleEscrowClient::OnReceivePubKey(const std::string &publicKey, int minSi
         return;
 
     this->pubKeyList.push_back(publicKey);         // add server's key to keylist
-    this->pubKeyList.sort();                    // somehow arrange all keys in the same order.
+    std::sort(this->pubKeyList.begin(), this->pubKeyList.end());                    // somehow arrange all keys in the same order.
 
     if(this->minSignatures == 0)                // set number of required signatures
         this->minSignatures = minSignatures;

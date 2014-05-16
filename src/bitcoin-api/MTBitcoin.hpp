@@ -68,11 +68,11 @@ public:
 
     // Creates a multi-sig address from public keys
     // returns the address string
-    virtual std::string GetMultiSigAddress(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = true, const std::string &account = NULL);
+    virtual std::string GetMultiSigAddress(int minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = NULL);
 
     // Creates a multi-sig address from public keys
     // returns an object containing info required to withdraw from that address
-    virtual BtcMultiSigAddressPtr GetMultiSigAddressInfo(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = true, const std::string &account = NULL);
+    virtual BtcMultiSigAddressPtr GetMultiSigAddressInfo(int minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = NULL);
 
     // Returns an object containing information about a raw transaction
     virtual BtcRawTransactionPtr GetRawTransaction(const std::string &txId);
@@ -95,7 +95,7 @@ public:
     // If the multisig address is already known, we can instead just call SendToAddress(multiSigAddress)
     // as bitcoin makes no difference between those and regular addresses.
     // returns the transaction id string or NULL
-    virtual std::string SendToMultisig(int64_t lAmount, int nRequired, const std::list<std::string> &to_publicKeys);
+    virtual std::string SendToMultisig(int64_t lAmount, int nRequired, const btc::stringList &to_publicKeys);
 
     // creates a partially signed raw transaction to withdraw funds
     // txToSourceId: transaction id that was used to fund the pool

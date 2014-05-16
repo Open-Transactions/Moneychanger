@@ -46,7 +46,7 @@ public:
 
 
     std::string clientName;
-    std::list<std::string> pubKeyList;
+    btc::stringList pubKeyList;
     int minSignatures;
 
     int minConfirms;  // minimum number of confirmations before tx is considered successfull

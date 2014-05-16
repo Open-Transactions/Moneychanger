@@ -41,7 +41,7 @@ public:
     // called when the client tells the server the tx id of the incoming transaction
     virtual void OnIncomingDeposit(const std::string sender, const std::string txId, int64_t amount);
 
-    virtual bool CheckTransaction(const std::string &sender, const std::string txId, const std::string &targetAddress);
+    virtual bool CheckTransaction(const std::string &targetAddress, const std::string txId, const std::string &sender);
 
     virtual std::string OnRequestEscrowWithdrawal(const std::string &sender, const std::string &txId, const std::string &fromAddress, const std::string &toAddress);
 
@@ -56,7 +56,7 @@ public:
 
     std::string pubKeyForMultiSig;      // public key of the address used to create the multi-sig
 
-    std::list<std::string> publicKeys;  // public keys of this and all servers to create multi-sig
+    btc::stringList publicKeys;  // public keys of this and all servers to create multi-sig
 
     std::string multiSigAddress;        // the actual multisig address
 

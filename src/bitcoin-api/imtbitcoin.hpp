@@ -68,7 +68,7 @@ public:
     // addToWallet [optional]:  whether or not to add address to wallet
     // account [optional]:      account to which the address should be added
     // returns the multi-sig address
-    virtual std::string GetMultiSigAddress(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = false, const std::string &account = "") = 0;
+    virtual std::string GetMultiSigAddress(int minSignatures, const btc::stringList& publicKeys, bool addToWallet = false, const std::string &account = "") = 0;
 
     // Creates a multi-sig address from public keys
     // minSignatures:           signatures required to release funds
@@ -76,7 +76,7 @@ public:
     // addToWallet [optional]:  whether or not to add address to wallet
     // account [optional]:      account to which the address should be added
     // returns an object containing the address and additional info
-    virtual BtcMultiSigAddressPtr GetMultiSigAddressInfo(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = true, const std::string &account = "") = 0;
+    virtual BtcMultiSigAddressPtr GetMultiSigAddressInfo(int minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = "") = 0;
 
     // Returns an object containing information about a raw transaction
     virtual BtcRawTransactionPtr GetRawTransaction(const std::string &txId) = 0;
@@ -107,7 +107,7 @@ public:
     // nRequired:       number of signatures required
     // to_publicKeys:   an array containing the public keys of the addresses
     // returns the transaction id string or ""
-    virtual std::string SendToMultisig(int64_t lAmount, int nRequired, const std::list<std::string> &to_publicKeys) = 0;
+    virtual std::string SendToMultisig(int64_t lAmount, int nRequired, const btc::stringList &to_publicKeys) = 0;
 
     // creates a partially signed raw transaction to withdraw funds
     // every escrow participant who wants to vote "yes" has to call this

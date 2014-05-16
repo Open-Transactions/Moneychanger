@@ -282,7 +282,7 @@ bool BtcTest::TestMultiSigDeposit(int minConfirms)
         return false;
 
     // public keys of the addresses used for multisig
-    std::list<std::string> keys;
+    btc::stringList keys;
 
     // GetNewAddress on bitcoind #1
     std::string address1 = bitcoin1.mtBitcoin->GetNewAddress();
@@ -442,7 +442,7 @@ bool BtcTest::TestImportMultisig(int32_t confirmations)
     std::string addr2 = bitcoin2.mtBitcoin->GetNewAddress("multisig2");
     std::string pubkey2 = bitcoin2.mtBitcoin->GetPublicKey(addr2);
 
-    std::stringList pubKeys = { pubkey1, pubkey2 };
+    btc::stringList pubKeys = { pubkey1, pubkey2 };
     std::string multiSig = bitcoin1.mtBitcoin->GetMultiSigAddress(2, pubKeys, true, "multisigAddress");
     bitcoin2.mtBitcoin->GetMultiSigAddress(2, pubKeys, true, "multisigAddress");
 

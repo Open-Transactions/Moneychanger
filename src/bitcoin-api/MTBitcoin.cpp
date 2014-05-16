@@ -37,13 +37,13 @@ std::string MTBitcoin::GetPublicKey(const std::string& address)
     return this->modules->btcJson->GetPublicKey(address);
 }
 
-std::string MTBitcoin::GetMultiSigAddress(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet, const std::string &account)
+std::string MTBitcoin::GetMultiSigAddress(int minSignatures, const btc::stringList& publicKeys, bool addToWallet, const std::string &account)
 {
     BtcMultiSigAddressPtr multiSigAddr;
     return (multiSigAddr = GetMultiSigAddressInfo(minSignatures, publicKeys, addToWallet, account)) == NULL ? "" : multiSigAddr->address;
 }
 
-BtcMultiSigAddressPtr MTBitcoin::GetMultiSigAddressInfo(int minSignatures, const std::list<std::string> &publicKeys, bool addToWallet, const std::string &account)
+BtcMultiSigAddressPtr MTBitcoin::GetMultiSigAddressInfo(int minSignatures, const btc::stringList &publicKeys, bool addToWallet, const std::string &account)
 {
     BtcMultiSigAddressPtr multiSigAddr;
     if(addToWallet)
@@ -85,7 +85,7 @@ std::string MTBitcoin::SendToAddress(const std::string &to_address, int64_t lAmo
     return this->modules->btcJson->SendToAddress(to_address, lAmount);
 }
 
-std::string MTBitcoin::SendToMultisig(int64_t lAmount, int nRequired, const std::list<std::string> &to_publicKeys)
+std::string MTBitcoin::SendToMultisig(int64_t lAmount, int nRequired, const btc::stringList &to_publicKeys)
 {
     // will send to a multi-sig address without adding it to the wallet.
     // if you want the address to be added to your wallet, use AddMultiSigAddress() and SendToAddress()

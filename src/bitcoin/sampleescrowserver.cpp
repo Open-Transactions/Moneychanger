@@ -21,7 +21,7 @@ SampleEscrowServer::SampleEscrowServer(BitcoinServerPtr rpcServer)
     this->multiSigAddress = "";
 
     this->serverPool = EscrowPoolPtr();
-    this->publicKeys = std::list<std::string>();
+    this->publicKeys = btc::stringList();
 
     //this->transactionDeposit = SampleEscrowTransactionPtr();
     //this->transactionWithdrawal = SampleEscrowTransactionPtr();
@@ -90,7 +90,7 @@ std::string SampleEscrowServer::OnRequestEscrowDeposit(const std::string &sender
 std::string SampleEscrowServer::GetMultiSigPubKey()
 {
     // see if we already created an address to be used for multi-sig
-    if(this->addressForMultiSig == "")
+    if(this->addressForMultiSig.empty())
     {
         this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
@@ -120,11 +120,13 @@ std::string SampleEscrowServer::OnGetPubKey(const std::string &sender)
 
 void SampleEscrowServer::AddPubKey(const std::string &sender, const std::string &key)
 {
-    this->publicKeys.remove(key);
+    btc::stringList::iterator keyRef = std::find(this->publicKeys.begin(), this->publicKeys.end(), key);
+    if(keyRef != this->publicKeys.end())
+        this->publicKeys.erase(keyRef);
     this->publicKeys.push_back(key);
 
     // sort the keys alphabetically
-    this->publicKeys.sort();
+    std::sort(this->publicKeys.begin(), this->publicKeys.end());
 }
 
 void SampleEscrowServer::AddClientDeposit(const std::string &client, SampleEscrowTransactionPtr transaction)
@@ -134,7 +136,7 @@ void SampleEscrowServer::AddClientDeposit(const std::string &client, SampleEscro
 
     this->clientBalances[client].push_back(transaction);
 
-    OTLog::vOutput(0, "Client %s now has %d deposit transaction(s)\n", client.c_str(), this->clientBalances[client].size());
+    OTLog::vOutput(0, "Added %s\n to %s\nClient %s now has %d deposit transaction(s)\n", transaction->txId.c_str(), transaction->targetAddr.c_str(), client.c_str(), this->clientBalances[client].size());
 }
 
 void SampleEscrowServer::RemoveClientDeposit(const std::string &client, SampleEscrowTransactionPtr transaction)
@@ -147,11 +149,13 @@ void SampleEscrowServer::RemoveClientDeposit(const std::string &client, SampleEs
 
 SampleEscrowTransactionPtr SampleEscrowServer::FindClientTransaction(const std::string &targetAddress, const std::string &txId, const std::string &client)
 {
+    OTLog::vOutput(0, "Looking for client %s's\n transaction %s\n to %s...\n", client.c_str(), txId.c_str(), targetAddress.c_str());
     if(this->clientBalances.find(client) == this->clientBalances.end())
         return SampleEscrowTransactionPtr();
 
     foreach(SampleEscrowTransactionPtr tx, this->clientBalances[client])
     {
+        OTLog::vOutput(0, "    checking %s\n to %s...\n", tx->txId.c_str(), tx->targetAddr.c_str());
         if(tx->txId == txId && tx->targetAddr == targetAddress)
             return tx;
     }
@@ -191,8 +195,9 @@ void SampleEscrowServer::OnIncomingDeposit(const std::string sender, const std::
     this->AddClientDeposit(sender, deposit);
 }
 
-bool SampleEscrowServer::CheckTransaction(const std::string &sender, const std::string txId, const std::string &targetAddress)
+bool SampleEscrowServer::CheckTransaction(const std::string &targetAddress, const std::string txId, const std::string &sender)
 {   
+    OTLog::vOutput(0, "Checking %s's transactions for\n %s\ to %s...\n", sender.c_str(), txId.c_str(), targetAddress.c_str());
     if(this->clientBalances[sender].empty())
         return false;
 

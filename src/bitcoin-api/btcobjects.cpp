@@ -75,8 +75,8 @@ void BtcTransaction::SetDefaults()
     this->Fee = 0.0;
     this->TxID = std::string();
     this->Time = 0;
-    this->AddressesRecv = std::list<std::string>();
-    this->AddressesSent = std::list<std::string>();
+    this->AddressesRecv = btc::stringList();
+    this->AddressesSent = btc::stringList();
 }
 
 BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
@@ -144,7 +144,7 @@ BtcAddressInfo::BtcAddressInfo(Json::Value result)
     this->addresses = result["addresses"];
 }
 
-BtcMultiSigAddress::BtcMultiSigAddress(Json::Value result, const std::stringList &publicKeys)
+BtcMultiSigAddress::BtcMultiSigAddress(Json::Value result, const btc::stringList &publicKeys)
 {
     this->address = result["address"].asString();
     this->redeemScript = result["redeemScript"].asString();
@@ -155,7 +155,7 @@ BtcMultiSigAddress::BtcMultiSigAddress(Json::Value result, const std::stringList
 BtcBlock::BtcBlock()
 {
     this->confirmations = 0;
-    this->transactions = std::list<std::string>();
+    this->transactions = btc::stringList();
     this->height = 0;
     this->hash = std::string();
     this->previousHash = std::string();

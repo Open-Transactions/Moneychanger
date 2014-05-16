@@ -58,7 +58,7 @@ public:
     virtual std::string GetAccountAddress(const std::string &account = "") = 0;
 
     // Returns list of all addresses belonging to account
-    virtual std::list<std::string> GetAddressesByAccount(const std::string &account = "") = 0;
+    virtual btc::stringList GetAddressesByAccount(const std::string &account = "") = 0;
 
     // Add new address to account
     virtual std::string GetNewAddress(const std::string &account = "btcapi") = 0;
@@ -82,16 +82,16 @@ public:
     // keys: list of public keys (addresses work too, if the public key is known)
     // account [optional]: account to add the address to
     // Returns the multi-sig address
-    virtual BtcMultiSigAddressPtr AddMultiSigAddress(int nRequired, const std::list<std::string> &keys, const std::string &account = "") = 0;
+    virtual BtcMultiSigAddressPtr AddMultiSigAddress(int nRequired, const btc::stringList &keys, const std::string &account = "") = 0;
 
     // Creates a multi-sig address without adding it to the wallet
     // nRequired: signatures required
     // keys: list of public keys (addresses work too, if the public key is known)
-    virtual BtcMultiSigAddressPtr CreateMultiSigAddress(int nRequired, const std::list<std::string> &keys) = 0;
+    virtual BtcMultiSigAddressPtr CreateMultiSigAddress(int nRequired, const btc::stringList &keys) = 0;
 
     // Creates a multi-sig address and returns its redeemScript
     // the address will not be added to your address list, use AddMultiSigAddress for that
-    virtual std::string GetRedeemScript(int nRequired, std::list<std::string> keys) = 0;
+    virtual std::string GetRedeemScript(int nRequired, btc::stringList keys) = 0;
 
     // Returns list of account names
     // Could also return the balance of each account but I find that confusing
@@ -119,7 +119,7 @@ public:
 
     virtual std::string CreateRawTransaction(BtcTxIdVouts unspentOutputs, BtcTxTarget txTargets) = 0;
 
-    virtual BtcSignedTransactionPtr SignRawTransaction(const std::string &rawTransaction, const std::list<BtcSigningPrerequisite> &previousTransactions = std::list<BtcSigningPrerequisite>(), const std::stringList &privateKeys = std::list<std::string>()) = 0;
+    virtual BtcSignedTransactionPtr SignRawTransaction(const std::string &rawTransaction, const std::list<BtcSigningPrerequisite> &previousTransactions = std::list<BtcSigningPrerequisite>(), const btc::stringList &privateKeys = btc::stringList()) = 0;
 
     virtual BtcSignedTransactionPtr CombineSignedTransactions(const std::string &rawTransaction) = 0;
 
