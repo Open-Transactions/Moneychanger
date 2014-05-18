@@ -117,15 +117,15 @@ void MTOfferDetails::AddButtonClicked()
 //      const QString qstrExpire             (theWizard.field("expirationStr")      .toString());
         const int     nExpire                (theWizard.field("expiration")         .toInt   ());
         // --------------------------------------------
-        const int     timespan_array_len                  = 7;
+        const int     timespan_array_len                  = 7;        
         const int64_t array_timespan[timespan_array_len]  = {
-            LENGTH_OF_MINUTE_IN_SECONDS,
-            LENGTH_OF_HOUR_IN_SECONDS,
-            LENGTH_OF_DAY_IN_SECONDS,
-            LENGTH_OF_MONTH_IN_SECONDS,
-            LENGTH_OF_THREE_MONTHS_IN_SECONDS,
-            LENGTH_OF_SIX_MONTHS_IN_SECONDS,
-            LENGTH_OF_YEAR_IN_SECONDS
+            OT_TIME_MINUTE_IN_SECONDS,
+            OT_TIME_HOUR_IN_SECONDS,
+            OT_TIME_DAY_IN_SECONDS,
+            OT_TIME_MONTH_IN_SECONDS,
+            OT_TIME_THREE_MONTHS_IN_SECONDS,
+            OT_TIME_SIX_MONTHS_IN_SECONDS,
+            OT_TIME_YEAR_IN_SECONDS
         };
 
         const int64_t lExpire = (((nExpire < 0) || (nExpire >= timespan_array_len)) ? 0 : array_timespan[nExpire]);

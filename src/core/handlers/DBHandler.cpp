@@ -118,9 +118,21 @@ bool DBHandler::dbCreateInstance()
         QString settings = "CREATE TABLE settings (setting TEXT PRIMARY KEY, parameter1 TEXT)";
         // --------------------------------------------
         QString create_contact = "CREATE TABLE contact(contact_id INTEGER PRIMARY KEY, contact_display_name TEXT)";
-        QString create_nym     = "CREATE TABLE nym(nym_id TEXT PRIMARY KEY, contact_id INTEGER, nym_display_name)";
+        QString create_nym     = "CREATE TABLE nym(nym_id TEXT PRIMARY KEY, contact_id INTEGER, nym_display_name TEXT)";
         QString create_server  = "CREATE TABLE nym_server(nym_id TEXT, server_id TEXT, PRIMARY KEY(nym_id, server_id))";
         QString create_account = "CREATE TABLE nym_account(account_id TEXT PRIMARY KEY, server_id TEXT, nym_id TEXT, asset_id TEXT, account_display_name TEXT)";
+        // --------------------------------------------
+        QString create_msg_method = "CREATE TABLE msg_method"
+                " (method_id INTEGER PRIMARY KEY,"   // 1, 2, etc.
+                "  method_display_name TEXT,"        // "Localhost"
+                "  method_type TEXT,"                // "bitmessage"
+                "  method_type_display TEXT,"        // "Bitmessage"
+                "  method_connect TEXT)";            // "http://username:password@http://127.0.0.1:8332/"
+        // --------------------------------------------
+        // Messaging methods set for various nyms or contacts.
+        //
+        QString create_nym_method      = "CREATE TABLE nym_method(nym_id TEXT, method_id INTEGER, address TEXT, PRIMARY KEY(nym_id, method_id, address))";
+        QString create_contact_method  = "CREATE TABLE contact_method(contact_id INTEGER, method_type TEXT, address TEXT, PRIMARY KEY(contact_id, method_type, address))";
         // --------------------------------------------
         /* Keep track of Namecoin names registered for the purpose of
            Moneychanger.  They are always related to a Nym and credential
@@ -152,9 +164,14 @@ bool DBHandler::dbCreateInstance()
         error += query.exec(create_nym);
         error += query.exec(create_server);
         error += query.exec(create_account);
+        // ------------------------------------------
+        error += query.exec(create_msg_method);
+        error += query.exec(create_nym_method);
+        error += query.exec(create_contact_method);
+        // ------------------------------------------
         error += query.exec(create_nmc);
         // ------------------------------------------
-        if(error != 11)  //every querie passed?
+        if(error != 14)  //every query passed?
         {
             qDebug() << "dbCreateInstance Error: " << dbConnectErrorStr + " " + dbCreationStr;
             FileHandler rm;

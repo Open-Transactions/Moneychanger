@@ -806,7 +806,7 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
         // --------------------------------------------------
         compose_window->setInitialSenderNym   (myNymID);
         compose_window->setInitialRecipientNym(otherNymID);
-        compose_window->setInitialServer      (serverID);
+//        compose_window->setInitialMethod      (QString("ot|%1").arg(serverID));  // todo
         // ---------------------------------------
         // Set subject, if one is available.
         std::string str_desc;

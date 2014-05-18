@@ -14,7 +14,12 @@ HEADERS += \
     $${PWD}/utils.hpp \
     $${PWD}/handlers/contacthandler.hpp \
     $${PWD}/handlers/DBHandler.hpp \
-    $${PWD}/handlers/FileHandler.hpp
+    $${PWD}/handlers/FileHandler.hpp \
+    ../../src/core/network/XmlRPC.h \
+    ../../src/core/network/Network.h \
+    ../../src/core/network/BitMessage.h \
+    ../../src/core/mtcomms.h \
+    ../../src/core/network/base64.h
 
 SOURCES += \
     $${PWD}/applicationmc.cpp \
@@ -29,4 +34,9 @@ SOURCES += \
     $${PWD}/utils.cpp \
     $${PWD}/handlers/contacthandler.cpp \
     $${PWD}/handlers/DBHandler.cpp \
-    $${PWD}/handlers/FileHandler.cpp
+    $${PWD}/handlers/FileHandler.cpp \
+    ../../src/core/network/XmlRPC.cpp \
+    ../../src/core/network/Network.cpp \
+    ../../src/core/network/BitMessage.cpp \
+    ../../src/core/mtcomms.cpp \
+    ../../src/core/network/base64.cpp

@@ -88,12 +88,12 @@
       </size>
      </property>
      <property name="text">
-      <string>Server:</string>
+      <string>Via:</string>
      </property>
     </widget>
    </item>
    <item row="4" column="1">
-    <widget class="QPushButton" name="serverButton">
+    <widget class="QPushButton" name="viaButton">
      <property name="styleSheet">
       <string notr="true"/>
      </property>

@@ -152,6 +152,9 @@ win32: {
 unix:{
     LIBS += -ldl
     LIBS += -lcurl
+    LIBS += -lxmlrpc
+    LIBS += -lxmlrpc++
+    LIBS += -lxmlrpc_client++
 
 }
 
