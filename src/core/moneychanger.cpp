@@ -267,6 +267,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon_advanced_import = QIcon(":/icons/icons/request.png");
     mc_systrayIcon_advanced_agreements = QIcon(":/icons/agreements");
     mc_systrayIcon_advanced_corporations = QIcon(":/icons/icons/buildings.png");
+    mc_systrayIcon_advanced_transport = QIcon(":/icons/icons/buildings.png");
     mc_systrayIcon_advanced_settings = QIcon(":/icons/settings");
     
     // ----------------------------------------------------------------------------
@@ -552,6 +553,12 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu_advanced_corporations = new QAction(mc_systrayIcon_advanced_corporations, tr("Corporations"), mc_systrayMenu_advanced);
     mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_corporations);
     connect(mc_systrayMenu_advanced_corporations, SIGNAL(triggered()), this, SLOT(mc_corporation_slot()));
+
+    // --------------------------------------------------------------
+    // Transport
+    mc_systrayMenu_advanced_transport = new QAction(mc_systrayIcon_advanced_transport, tr("Transport"), mc_systrayMenu_advanced);
+    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_transport);
+    connect(mc_systrayMenu_advanced_transport, SIGNAL(triggered()), this, SLOT(mc_transport_slot()));
 
     // --------------------------------------------------------------
     //Separator
@@ -928,6 +935,7 @@ void Moneychanger::mc_showcontact_slot(QString text)
 {
     mc_addressbook_show(text);
 }
+
 
 
 
@@ -2128,6 +2136,9 @@ void Moneychanger::mc_main_menu_dialog()
         connect(menuwindow, SIGNAL(sig_on_toolButton_Corporations_clicked()),
                 this,       SLOT(mc_corporation_slot()));
 
+        connect(menuwindow, SIGNAL(sig_on_toolButton_Transport_clicked()),
+                this,       SLOT(mc_transport_slot()));
+
         connect(menuwindow, SIGNAL(sig_on_toolButton_settings_clicked()),
                 this,       SLOT(mc_settings_slot()));
 
@@ -2234,6 +2245,36 @@ void Moneychanger::mc_corporation_dialog()
 }
 
 
+
+// TRANSPORT:  Various messaging system connection info
+
+void Moneychanger::mc_transport_slot()
+{
+    mc_transport_dialog();
+}
+
+// Same, except choose a specific one when opening.
+void Moneychanger::mc_showtransport_slot(QString text)
+{
+    mc_transport_dialog(text);
+}
+
+void Moneychanger::mc_transport_dialog(QString qstrPresetID/*=QString("")*/)
+{
+    if (!transport_window)
+        transport_window = new MTDetailEdit(this);
+    // -------------------------------------
+    transport_window->m_map.clear();
+    // -------------------------------------
+    MTContactHandler::getInstance()->GetMsgMethods(transport_window->m_map);
+    // -------------------------------------
+    if (!qstrPresetID.isEmpty())
+        transport_window->SetPreSelected(qstrPresetID);
+    // -------------------------------------
+    transport_window->setWindowTitle(tr("Transport Methods"));
+    // -------------------------------------
+    transport_window->dialog(MTDetailEdit::DetailEditTypeTransport);
+}
 
 /**
  * Create insurance company wizard

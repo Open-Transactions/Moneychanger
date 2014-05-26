@@ -804,9 +804,14 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
         MTCompose * compose_window = new MTCompose;
         compose_window->setAttribute(Qt::WA_DeleteOnClose);
         // --------------------------------------------------
-        compose_window->setInitialSenderNym   (myNymID);
-        compose_window->setInitialRecipientNym(otherNymID);
-//        compose_window->setInitialMethod      (QString("ot|%1").arg(serverID));  // todo
+        if (!myNymID.isEmpty())
+            compose_window->setInitialSenderNym(myNymID);
+
+        if (!otherNymID.isEmpty())
+            compose_window->setInitialRecipientNym(otherNymID);
+
+        if (!serverID.isEmpty())
+            compose_window->setInitialServer(serverID);
         // ---------------------------------------
         // Set subject, if one is available.
         std::string str_desc;

@@ -10,7 +10,7 @@ namespace Ui {
 class MTCompose;
 }
 
-class mapIDName;
+typedef QMap<QString, QString> mapIDName; // ID, display name.
 
 class MTCompose : public QWidget
 {
@@ -52,19 +52,38 @@ public:
 
     void setSenderNameBasedOnAvailableData();
     void setRecipientNameBasedOnAvailableData();
+    void setTransportDisplayBasedOnAvailableData();
+
+    bool chooseSenderAddress   (mapIDName & mapSenderAddresses,    QString qstrMsgTypeDisplay);
+    bool chooseRecipientAddress(mapIDName & mapRecipientAddresses, QString qstrMsgTypeDisplay);
+    bool chooseSenderMethodID  (mapIDName & theMap,                QString qstrMsgTypeDisplay);
+    bool chooseRecipientNym    (mapIDName & theMap);
+    bool chooseServer          (mapIDName & theMap);
+
+    bool verifySenderAgainstServer();    // Assumes senderNymId and serverId are set.
+    bool verifyRecipientAgainstServer(); // Assumes senderNymId and serverId are set.
+
 
     void dialog();
 
-    bool sendMessage(QString body, QString fromNymId, QString toNymId, QString viaMethod, QString subject);
+    bool sendMessage(QString subject,   QString body, QString fromNymId, QString toNymId, QString fromAddress, QString toAddress,
+                     QString viaServer, QString viaTransport, int viaMethodID);
 
     // This insures that the sender and recipient nym are using the same Msg Method.
     // Which is to say, the same OT server, or both using Bitmessage, etc.
     //
     bool MakeSureCommonMsgMethod();
     bool CheckPotentialCommonMsgMethod(QString qstrMsgTypeAttempt, mapIDName * pmapSenderAddresses=NULL, mapIDName * pmapRecipientAddresses=NULL);
+    void FindSenderMsgMethod();     // Recipient has just changed. Does Sender exist? If so, make sure he is compatible with msgtype or find a new one that matches both.
+    void FindRecipientMsgMethod();  // Sender has just changed. Does Recipient exist? If so, make sure he is compatible with msgtype or find a new one that matches both.
+
+    QString FindIDMatch(mapIDName map1, mapIDName map2); // Loops through map1 and returns first ID from it found on map2.
 
 signals:
     void balancesChanged();
+
+    void ShowContact(QString);
+    void ShowNym(QString);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -77,6 +96,8 @@ private slots:
     void on_fromButton_clicked();
     void on_viaButton_clicked();
     void on_sendButton_clicked();
+    void on_toolButtonTo_clicked();
+    void on_toolButtonFrom_clicked();
 
     void on_subjectEdit_textChanged(const QString &arg1);
 

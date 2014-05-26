@@ -20,17 +20,19 @@ class MTComms
     static MTComms * s_pIt;
 
 public:
-    void        it_clearmodules();
-    bool        it_add(const std::string type, const std::string commstring);
-    bool        it_get(const std::string type, mapOfNetModules & mapOutput);
-    bool        it_types(mapOfCommTypes & mapTypes);
-    std::string it_displayName(const std::string strType);
+    void            it_clearmodules();
+    bool            it_add(const std::string type, const std::string commstring);
+    bool            it_get(const std::string type, mapOfNetModules & mapOutput);
+    NetworkModule * it_find(const std::string commstring);
+    bool            it_types(mapOfCommTypes & mapTypes);
+    std::string     it_displayName(const std::string strType);
 
-    static bool          add(const std::string type, const std::string commstring);
-    static bool          get(const std::string type, mapOfNetModules & mapOutput);
-    static bool          types(mapOfCommTypes & mapTypes);
-    static std::string   displayName(const std::string strType);
-    static MTComms     * it ();
+    static bool            add(const std::string type, const std::string commstring);
+    static bool            get(const std::string type, mapOfNetModules & mapOutput);
+    static NetworkModule * find(const std::string commstring);
+    static bool            types(mapOfCommTypes & mapTypes);
+    static std::string     displayName(const std::string strType);
+    static MTComms       * it ();
 };
 
 #endif // MTCOMMS_H

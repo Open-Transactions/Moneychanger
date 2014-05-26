@@ -103,7 +103,7 @@ public:
 //QString create_nym_method
 // = "CREATE TABLE nym_method(nym_id TEXT, method_id INTEGER, address TEXT, PRIMARY KEY(nym_id, method_id, address))";
 //QString create_contact_method
-// = "CREATE TABLE contact_method(contact_id INTEGER, method_type TEXT, address TEXT, PRIMARY KEY(contact_id, method_id, address))";
+// = "CREATE TABLE contact_method(contact_id INTEGER, method_type TEXT, address TEXT, PRIMARY KEY(contact_id, method_type, address))";
 
   bool AddMsgAddressToNym    (QString nym_id, int     nMethodID,      QString address);
   bool AddMsgAddressToContact(int nContactID, QString qstrMethodType, QString address);
@@ -155,14 +155,20 @@ public:
   // If bAddServers is set to true, then it will include the OT servers on that
   // list.
   //
-  bool GetMsgMethods             (mapIDName & theMap,                       bool bAddServers=false);
+  bool GetMsgMethods             (mapIDName & theMap,                       bool bAddServers=false, QString filterByType="");
   bool GetMsgMethodTypes         (mapIDName & theMap,                       bool bAddServers=false);
   bool GetMsgMethodsByNym        (mapIDName & theMap, QString filterByNym,  bool bAddServers=false, QString filterByType=""); // Methods.
   bool GetMsgMethodTypesByContact(mapIDName & theMap, int nFilterByContact, bool bAddServers=false, QString filterByType=""); // Method Types.
+  bool GetMsgMethodTypesByNym    (mapIDName & theMap, QString filterByNym,  bool bAddServers=false);
 
   bool GetAddressesByContact     (mapIDName & theMap, int nFilterByContact, QString filterByType);
   bool GetAddressesByNym         (mapIDName & theMap, QString filterByNym,  QString filterByType);
   bool GetAddressesByNym         (mapIDName & theMap, QString filterByNym,  int filterByMethodID);
+
+  QString GetNymByAddress(QString qstrAddress);
+  int     GetContactByAddress(QString qstrAddress);
+
+  int  GetMethodIDByNymAndAddress(QString filterByNym, QString qstrAddress);
 
   bool GetServers (mapIDName & theMap,                       bool bPrependOTType=false);
   bool GetServers (mapIDName & theMap, QString filterByNym,  bool bPrependOTType=false);

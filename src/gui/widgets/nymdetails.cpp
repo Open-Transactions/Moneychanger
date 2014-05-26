@@ -8,6 +8,9 @@
 #include <gui/widgets/credentials.hpp>
 #include <gui/widgets/wizardaddnym.hpp>
 
+#include <core/handlers/contacthandler.hpp>
+#include <core/mtcomms.h>
+
 #include <namecoin/Namecoin.hpp>
 
 #include <opentxs/OTAPI.hpp>
@@ -15,6 +18,13 @@
 #include <opentxs/OT_ME.hpp>
 
 #include <QMessageBox>
+#include <QStringList>
+#include <QComboBox>
+#include <QLabel>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QRadioButton>
 #include <QPlainTextEdit>
 #include <QClipboard>
 #include <QDebug>
@@ -160,6 +170,140 @@ QString  MTNymDetails::GetCustomTabName(int nTab)
 }
 // ------------------------------------------------------
 
+QWidget * MTNymDetails::createNewAddressWidget(QString strNymID)
+{
+    QWidget     * pWidget = new QWidget;
+
+//    QPushButton * button1 = new QPushButton("One");
+    QPushButton * add_button = new QPushButton(tr("Add"));
+
+    /*
+    QString create_msg_method = "CREATE TABLE msg_method"
+            " (method_id INTEGER PRIMARY KEY,"   // 1, 2, etc.
+            "  method_display_name TEXT,"        // "Localhost"
+            "  method_type TEXT,"                // "bitmessage"
+            "  method_type_display TEXT,"        // "Bitmessage"
+            "  method_connect TEXT)";            // "http://username:password@http://127.0.0.1:8332/"
+    */
+  //QString create_nym_method
+  // = "CREATE TABLE nym_method(nym_id TEXT, method_id INTEGER, address TEXT, PRIMARY KEY(nym_id, method_id, address))";
+  //QString create_contact_method
+  // = "CREATE TABLE contact_method(contact_id INTEGER, method_type TEXT, address TEXT, PRIMARY KEY(contact_id, method_type, address))";
+
+    QComboBox   * pCombo  = new QComboBox;
+    mapIDName     mapMethods;
+    MTContactHandler::getInstance()->GetMsgMethods(mapMethods);
+    // -----------------------------------------------
+    int nIndex = -1;
+    for (mapIDName::iterator ii = mapMethods.begin(); ii != mapMethods.end(); ++ii)
+    {
+        ++nIndex; // 0 on first iteration.
+        // ------------------------------
+        QString method_id   = ii.key();
+        QString method_name = ii.value();
+        // ------------------------------
+        pCombo->insertItem(nIndex, method_name);
+    }
+    // -----------------------------------------------
+    if (mapMethods.size() > 0)
+        pCombo->setCurrentIndex(0);
+    // -----------------------------------------------
+    QLabel      * pLabel = new QLabel(tr("Address:"));
+    QLineEdit   * pEdit  = new QLineEdit;
+    QHBoxLayout * layout = new QHBoxLayout;
+    // -----------------------------------------------
+    layout->addWidget(pCombo);
+    layout->addWidget(pLabel);
+    layout->addWidget(pEdit);
+    layout->addWidget(add_button);
+    // -----------------------------------------------
+    pWidget->setLayout(layout);
+    // -----------------------------------------------
+    layout->setStretch(0, 0);
+    layout->setStretch(1, 2);
+    layout->setStretch(2, 4);
+    layout->setStretch(3, 1);
+
+    return pWidget;
+}
+
+
+QWidget * MTNymDetails::createSingleAddressWidget(QString strNymID, QString qstrMethodType, QString qstrMethodID, QString qstrDisplayName)
+{
+    QWidget     * pWidget = new QWidget;
+
+    QPushButton * button1 = new QPushButton("One");
+    QPushButton * button2 = new QPushButton("Two");
+    QPushButton * button3 = new QPushButton("Three");
+
+
+    QPlainTextEdit * pEdit = new QPlainTextEdit(qstrDisplayName);
+
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->addWidget(pEdit);
+
+    layout->addWidget(button1);
+    layout->addWidget(button2);
+    layout->addWidget(button3);
+
+
+    pWidget->setLayout(layout);
+
+    return pWidget;
+}
+
+QGroupBox * MTNymDetails::createAddressGroupBox(QString strNymID)
+{
+    QGroupBox * pBox = new QGroupBox(tr("Alternate Transport"));
+
+//    QRadioButton *radio1 = new QRadioButton(tr("&Radio button 1"));
+//    QRadioButton *radio2 = new QRadioButton(tr("R&adio button 2"));
+//    QRadioButton *radio3 = new QRadioButton(tr("Ra&dio button 3"));
+
+//    radio1->setChecked(true);
+
+    QVBoxLayout *vbox = new QVBoxLayout;
+//    vbox->addWidget(radio1);
+//    vbox->addWidget(radio2);
+//    vbox->addWidget(radio3);
+    // -----------------------------------------------------------------
+    // Loop through all known transport methods (communications addresses)
+    // known for this Nym,
+    mapIDName theMap;
+
+    if (!strNymID.isEmpty() && MTContactHandler::getInstance()->GetMsgMethodsByNym(theMap, strNymID))
+    {
+        for (mapIDName::iterator it = theMap.begin(); it != theMap.end(); ++it)
+        {
+            QString qstrID   = it.key();   // QString("%1|%2").arg(qstrType).arg(nMethodID);
+            QString qstrName = it.value(); // QString("%1: %2").arg(qstrTypeDisplay).arg(qstrDisplayName);
+
+            QStringList stringlist = qstrID.split("|");
+
+            if (stringlist.size() >= 2) // Should always be 2...
+            {
+                QString qstrMethodType = stringlist.at(0);
+                QString qstrMethodID   = stringlist.at(1);
+                // --------------------------------------
+                QWidget * pWidget = this->createSingleAddressWidget(strNymID, qstrMethodType, qstrMethodID, qstrName);
+
+                if (NULL != pWidget)
+                    vbox->addWidget(pWidget);
+            }
+        }
+    }
+    // -----------------------------------------------------------------
+    QWidget * pWidget = this->createNewAddressWidget(strNymID);
+
+    if (NULL != pWidget)
+        vbox->addWidget(pWidget);
+    // -----------------------------------------------------------------
+    vbox->addStretch(1);
+    pBox->setLayout(vbox);
+
+    return pBox;
+}
+
 //virtual
 void MTNymDetails::refresh(QString strID, QString strName)
 {
@@ -189,6 +333,25 @@ void MTNymDetails::refresh(QString strID, QString strName)
 
         FavorLeftSideForIDs();
         // --------------------------
+        QGroupBox * pAddresses = this->createAddressGroupBox(strID);
+
+        if (m_pAddresses)
+        {
+            ui->verticalLayout->removeWidget(m_pAddresses);
+
+            m_pAddresses->setParent(NULL);
+            m_pAddresses->disconnect();
+            m_pAddresses->deleteLater();
+
+            m_pAddresses = NULL;
+        }
+        ui->verticalLayout->addWidget(pAddresses);
+
+        m_pAddresses = pAddresses;
+        // ----------------------------------
+
+
+        // ----------------------------------
         // TAB: "Nym State"
         //
         if (m_pPlainTextEdit)
@@ -221,6 +384,17 @@ void MTNymDetails::ClearContents()
     // ------------------------------------------
     if (m_pPlainTextEdit)
         m_pPlainTextEdit->setPlainText("");
+    // ------------------------------------------
+    if (m_pAddresses)
+    {
+        ui->verticalLayout->removeWidget(m_pAddresses);
+
+        m_pAddresses->setParent(NULL);
+        m_pAddresses->disconnect();
+        m_pAddresses->deleteLater();
+
+        m_pAddresses = NULL;
+    }
 }
 
 // ------------------------------------------------------

@@ -1083,7 +1083,7 @@ QString MTContactHandler::GetMethodType(QString qstrAddress) // Get the method t
 // list.
 //
 
-bool MTContactHandler::GetMsgMethods(mapIDName & theMap, bool bAddServers/*=false*/)
+bool MTContactHandler::GetMsgMethods(mapIDName & theMap, bool bAddServers/*=false*/, QString filterByType/*=""*/)
 {
     bool bFoundAny = false;
 
@@ -1110,12 +1110,19 @@ bool MTContactHandler::GetMsgMethods(mapIDName & theMap, bool bAddServers/*=fals
             QString qstrTypeDisplay    = Decode(qstrEncTypeDisplay);
 //          QString qstrConnect        = Decode(qstrEncConnect);
             // -----------------------------------------------------
+            // If a type filter is passed in, and it doesn't match the type of this record,
+            // then continue.
+            if (!filterByType.isEmpty() && (0 != filterByType.compare(qstrType)))
+                continue;
+            // -----------------------------------------------------
             // Whereas for a Bitmessage address, the ID would be:
             // "bitmessage|METHOD_ID"
             // Display name:  "Bitmessage: Localhost"
             //
-            QString qstrID   = QString("%1|%2").arg(qstrType).arg(nMethodID);
-            QString qstrName = QString("%1: %2").arg(qstrTypeDisplay).arg(qstrDisplayName);
+//            QString qstrID   = filterByType.isEmpty() ? QString("%1|%2").arg(qstrType).arg(nMethodID) : QString("%1").arg(nMethodID);
+//            QString qstrName = filterByType.isEmpty() ? QString("%1: %2").arg(qstrTypeDisplay).arg(qstrDisplayName) : qstrDisplayName;
+            QString qstrID   = QString("%1").arg(nMethodID);
+            QString qstrName = qstrDisplayName;
 
             theMap.insert(qstrID, qstrName);
 
@@ -1145,8 +1152,6 @@ class MTComms
 
 bool MTContactHandler::GetMsgMethodTypes(mapIDName & theMap, bool bAddServers/*=false*/)
 {
-// = "CREATE TABLE contact_method(contact_id INTEGER, method_type TEXT, address TEXT, PRIMARY KEY(contact_id, method_id, address))";
-
     bool bFoundAny = false;
 
     mapOfCommTypes mapTypes;
@@ -1223,6 +1228,34 @@ bool MTContactHandler::GetAddressesByNym(mapIDName & theMap, QString filterByNym
 
 // --------------------------------------------
 
+int MTContactHandler::GetMethodIDByNymAndAddress(QString filterByNym, QString qstrAddress)
+{
+    // = "CREATE TABLE nym_method(nym_id TEXT, method_id INTEGER, address TEXT, PRIMARY KEY(nym_id, method_id, address))";
+
+    int nReturn = 0;
+
+    {   // This block is here so locker will expire at the bottom of the block.
+        QMutexLocker locker(&m_Mutex);
+
+        QString str_select = QString("SELECT method_id "
+                                     "FROM `nym_method` "
+                                     "WHERE nym_id='%1' AND address='%2'").arg(filterByNym).arg(qstrAddress);
+
+        int nRows = DBHandler::getInstance()->querySize(str_select);
+        // -----------------------------------
+        for (int ii=0; ii < nRows; ii++)
+        {
+            nReturn = DBHandler::getInstance()->queryInt(str_select, 0, ii);
+            break; // Should only be one.
+            // (You might have multiple addresses for the same NymID/MethodID,
+            // but you won't have multiple MethodIDs for the same address. Thus,
+            // should be only one.)
+        }
+    }
+    // --------------------------------------------
+    return nReturn;
+}
+
 bool MTContactHandler::GetAddressesByNym(mapIDName & theMap, QString filterByNym, int filterByMethodID)
 {
     // = "CREATE TABLE nym_method(nym_id TEXT, method_id INTEGER, address TEXT, PRIMARY KEY(nym_id, method_id, address))";
@@ -1270,6 +1303,57 @@ bool MTContactHandler::GetAddressesByNym(mapIDName & theMap, QString filterByNym
     // --------------------------------------------
     return bFoundAny;
 }
+
+bool MTContactHandler::GetMsgMethodTypesByNym(mapIDName & theMap, QString filterByNym, bool bAddServers/*=false*/)
+{
+    bool bFoundAny = false;
+
+    {   // This block is here so locker will expire at the bottom of the block.
+        QMutexLocker locker(&m_Mutex);
+
+        QString str_select = QString("SELECT method_type, method_type_display "
+                                     "FROM `msg_method` "
+                                     "INNER JOIN `nym_method` "
+                                     "ON nym_method.method_id=msg_method.method_id "
+                                     "WHERE nym_method.nym_id='%1'").arg(filterByNym);
+
+        int nRows = DBHandler::getInstance()->querySize(str_select);
+        // -----------------------------------
+        for (int ii=0; ii < nRows; ii++)
+        {
+            QString qstrEncType        = DBHandler::getInstance()->queryString(str_select, 0, ii);
+            QString qstrEncTypeDisplay = DBHandler::getInstance()->queryString(str_select, 1, ii);
+//          QString qstrEncAddress     = DBHandler::getInstance()->queryString(str_select, 2, ii);
+            // -----------------------------------------------------
+            QString qstrType           = Decode(qstrEncType);
+            QString qstrTypeDisplay    = Decode(qstrEncTypeDisplay);
+//          QString qstrAddress        = Decode(qstrEncAddress);
+            // -----------------------------------------------------
+            // Whereas for a Bitmessage address, the ID would be:
+            // "bitmessage|METHOD_ID"
+            // Display name:  "Bitmessage: Localhost"
+            //
+            QString qstrID   = QString("%1").arg(qstrType);
+            QString qstrName = QString("%1").arg(qstrTypeDisplay);
+            // --------------------------------------------
+            mapIDName::iterator it = theMap.find(qstrID);
+
+            if (theMap.end() == it) // If it's not already in there.
+            {
+                theMap.insertMulti(qstrID, qstrName);
+                bFoundAny = true;
+            }
+        }
+    }
+    // --------------------------------------------
+    bool bGotServers = false;
+
+    if (bAddServers)
+        bGotServers = this->GetServers(theMap, filterByNym, true); //bPrependOTType=false by default
+
+    return bFoundAny || bGotServers;
+}
+
 
 bool MTContactHandler::GetMsgMethodsByNym(mapIDName & theMap, QString filterByNym, bool bAddServers/*=false*/, QString filterByType/*=""*/)
 {
@@ -1334,6 +1418,55 @@ bool MTContactHandler::GetMsgMethodsByNym(mapIDName & theMap, QString filterByNy
     return bFoundAny || bGotServers;
 }
 
+
+QString MTContactHandler::GetNymByAddress(QString qstrAddress)
+{
+    QString qstrResult("");
+
+    {   // This block is here so locker will expire at the bottom of the block.
+        QMutexLocker locker(&m_Mutex);
+
+        QString encoded_address = Encode(qstrAddress);
+
+        QString str_select = QString("SELECT nym_id "
+                                     "FROM `nym_method` "
+                                     "WHERE address='%1'").arg(encoded_address);
+
+        int nRows = DBHandler::getInstance()->querySize(str_select);
+        // -----------------------------------
+        for (int ii=0; ii < nRows; ++ii)
+            return DBHandler::getInstance()->queryString(str_select, 0, ii);
+    }
+
+    return qstrResult;
+}
+
+//QString create_nym_method
+// = "CREATE TABLE nym_method(nym_id TEXT, method_id INTEGER, address TEXT, PRIMARY KEY(nym_id, method_id, address))";
+//QString create_contact_method
+// = "CREATE TABLE contact_method(contact_id INTEGER, method_type TEXT, address TEXT, PRIMARY KEY(contact_id, method_id, address))";
+
+int MTContactHandler::GetContactByAddress(QString qstrAddress)
+{
+    {   // This block is here so locker will expire at the bottom of the block.
+        QMutexLocker locker(&m_Mutex);
+
+        QString encoded_address = Encode(qstrAddress);
+
+        QString str_select = QString("SELECT contact_id "
+                                     "FROM `contact_method` "
+                                     "WHERE address='%1'").arg(encoded_address);
+
+        int nRows = DBHandler::getInstance()->querySize(str_select);
+        // -----------------------------------
+        for (int ii=0; ii < nRows; ++ii)
+        {
+            return DBHandler::getInstance()->queryInt(str_select, 0, ii);
+        }
+    }
+
+    return 0;
+}
 
 bool MTContactHandler::GetMsgMethodTypesByContact(mapIDName & theMap, int nFilterByContact, bool bAddServers/*=false*/, QString filterByType/*=""*/)
 {

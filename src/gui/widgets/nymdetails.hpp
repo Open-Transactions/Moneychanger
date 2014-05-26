@@ -6,6 +6,7 @@
 
 #include <gui/widgets/editdetails.hpp>
 
+#include <QGroupBox>
 
 namespace Ui {
 class MTNymDetails;
@@ -50,8 +51,13 @@ protected:
 
     void FavorLeftSideForIDs();
 
+    QGroupBox * createAddressGroupBox    (QString strNymID);
+    QWidget   * createSingleAddressWidget(QString strNymID, QString qstrMethodType, QString qstrMethodID, QString qstrDisplayName);
+    QWidget   * createNewAddressWidget   (QString strNymID);
+
 private:
-    QPointer<QWidget> m_pHeaderWidget;
+    QPointer<QWidget>   m_pHeaderWidget;
+    QPointer<QGroupBox> m_pAddresses;
 
     Ui::MTNymDetails *ui;
 };

@@ -10,6 +10,8 @@
 
 #include <core/moneychanger.hpp>
 #include <core/handlers/DBHandler.hpp>
+#include <core/handlers/contacthandler.hpp>
+#include <core/mtcomms.h>
 
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OTAPI_Exec.hpp>
@@ -17,6 +19,7 @@
 
 #include <QMessageBox>
 #include <QDebug>
+#include <QStringList>
 
 
 void MTCompose::setInitialSubject(QString subject)  { m_subject = subject; }
@@ -91,7 +94,7 @@ void MTCompose::setInitialRecipientAddress(QString address) // Bitmessage addres
                 if (0 != senderMethodType.compare(recipientMethodType))
                     qDebug() << QString("MTCompose::setInitialRecipient: Warning: address %1 has msg type %2 but "
                                         "current type was already set to %3, and sender's msg type is set to %4.").
-                                arg(address).arg(methodType).arg(m_msgtype).arg(senderMethodType);
+                                arg(address).arg(recipientMethodType).arg(m_msgtype).arg(senderMethodType);
 
                 // In this case, senderMethodType and recipientMethodType DO MATCH,
                 // but we already know they do NOT match m_msgtype, which does exist.
@@ -120,6 +123,32 @@ void MTCompose::setInitialSenderNym(QString nymId, QString address/*=""*/)
 
 
 
+void MTCompose::setTransportDisplayBasedOnAvailableData()
+{
+    if (NULL != ui)
+    {
+        QString qstrMsgTypeDisplay("");
+
+        if (sendingThroughOTServer() && !m_serverId.isEmpty())
+        {
+            qstrMsgTypeDisplay = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(m_serverId.toStdString()));
+
+            if (qstrMsgTypeDisplay.isEmpty())
+                qstrMsgTypeDisplay = m_serverId;
+        }
+        // --------------------------------------------------
+        else if (!m_msgtype.isEmpty() && !sendingThroughOTServer())
+        {
+            qstrMsgTypeDisplay = QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
+
+            if (qstrMsgTypeDisplay.isEmpty())
+                qstrMsgTypeDisplay = m_msgtype;
+        }
+        // --------------------------------------------------
+        ui->viaButton->setText(qstrMsgTypeDisplay.isEmpty() ? tr("<Choose Transport>") : qstrMsgTypeDisplay);
+    }
+}
+
 void MTCompose::setSenderNameBasedOnAvailableData()
 {
     if (NULL != ui)
@@ -127,19 +156,27 @@ void MTCompose::setSenderNameBasedOnAvailableData()
         QString qstrNymName("");
 
         if (!m_senderNymId.isEmpty())
-            qstrNymName = QString::fromStdString(OTAPI_Wrap::It()->GetNym_Name(m_senderNymId.toStdString()));
+        {
+            MTNameLookupQT theLookup;
+
+            qstrNymName = QString::fromStdString(theLookup.GetNymName(m_senderNymId.toStdString()));
+        }
         // ---------------------------
         QString qstrAddressPortion("");
 
         if (!this->m_senderAddress.isEmpty())
-        {
             qstrAddressPortion = QString(" (%1)").arg(this->m_senderAddress);
+        else if (!sendingThroughOTServer())
+        {
+            QString qstrMsgTypeDisplay = m_msgtype.isEmpty() ? QString(tr("transport or ")) : QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
+
+            qstrAddressPortion = QString(" (%1 %2 %3)").arg(tr("No")).arg(qstrMsgTypeDisplay).arg(tr("address available"));
         }
         // ---------------------------
         if (qstrNymName.isEmpty())
         {
             if (m_senderNymId.isEmpty())
-                qstrNymName = tr("<Click to choose sender>");
+                qstrNymName = tr("<Choose Sender>");
             else
                 qstrNymName = tr("(Sender name is blank)");
         }
@@ -164,7 +201,11 @@ void MTCompose::setRecipientNameBasedOnAvailableData()
         QString qstrNymName("");
 
         if (!m_recipientNymId.isEmpty())
-            qstrNymName = QString::fromStdString(OTAPI_Wrap::It()->GetNym_Name(m_recipientNymId.toStdString()));
+        {
+            MTNameLookupQT theLookup;
+
+            qstrNymName = QString::fromStdString(theLookup.GetNymName(m_recipientNymId.toStdString()));
+        }
         // ---------------------------
         QString qstrContactName;
 
@@ -177,14 +218,18 @@ void MTCompose::setRecipientNameBasedOnAvailableData()
         QString qstrAddressPortion("");
 
         if (!this->m_recipientAddress.isEmpty())
-        {
             qstrAddressPortion = QString(" (%1)").arg(this->m_recipientAddress);
+        else if (!sendingThroughOTServer())
+        {
+            QString qstrMsgTypeDisplay = m_msgtype.isEmpty() ? QString(tr("transport or ")) : QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
+
+            qstrAddressPortion = QString(" (%1 %2 %3)").arg(tr("No")).arg(qstrMsgTypeDisplay).arg(tr("address available"));
         }
         // ---------------------------
         if (qstrContactName.isEmpty())
         {
             if (m_recipientNymId.isEmpty() && (m_recipientContactId <= 0) && this->m_recipientAddress.isEmpty())
-                qstrContactName = tr("<Click to choose recipient>");
+                qstrContactName = tr("<Choose Recipient>");
             else
                 qstrContactName = tr("(Contact name is blank)");
         }
@@ -244,49 +289,121 @@ void MTCompose::setInitialRecipient(QString nymId, int contactid/*=0*/, QString 
 }
 
 
+// If you call as:   setInitialMsgType("", SERVER_ID);
+// it will work, and set "otserver" as msgtype.
+//
 void MTCompose::setInitialMsgType(QString msgtype, QString server/*=""*/)
 {
     m_msgtype = server.isEmpty() ? msgtype : QString("otserver");
 
-    if (sendingThroughOTServer())
-        setInitialServer(server);
-    else // m_msgtype is NOT otserver. Must be bitmessage or something...
-        m_serverId = QString("");
+    setInitialServer(sendingThroughOTServer() ? server : QString(""));
 }
 
 void MTCompose::setInitialServer(QString serverId)
 {
-    m_msgtype  = QString("otserver");
-
-    // if serverId is empty, but m_serverId was already set, we don't
-    // want to overwrite it with a blank. So we leave m_serverId alone.
-    // UNLESS serverId was actually NOT empty, in which case we set
-    // m_serverId based on it.
+    // If someone passed in an empty server Id, but the msgType IS set,
+    // then if msgType is "otserver", we keep the serverId we already had,
+    // and we don't blank it out. But if msgtype is "bitmessage" or something,
+    // then we blank out the OT Server ID.
     //
+    if (serverId.isEmpty() && !m_msgtype.isEmpty())
+    {
+        if (0 != m_msgtype.compare("otserver"))
+            m_serverId = QString("");
+        // else if msgtype IS "otserver" (and serverId arg is empty) then we
+        // preserve whatever value was already in m_serverId.
+    }
+    // -------------------
     if (!serverId.isEmpty())
+    {
+        m_msgtype  = QString("otserver");
         m_serverId = serverId;
 
-    // These aren't used in the case of OT server, so we blank them out.
-    // (Only Server ID and NymIDs are necessary in this case.)
-    //
-    m_senderAddress    = QString("");
-    m_recipientAddress = QString("");
-    m_senderMethodId   = 0; // Method #5 might be the sender's Bitmessage connection. Mandatory if msgtype is "bitmessage" (or anything other than otserver.)
+        // These aren't used in the case of OT server, so we blank them out.
+        // (Only Server ID and NymIDs are necessary in this case.)
+        //
+        m_senderAddress    = QString("");
+        m_recipientAddress = QString("");
+        m_senderMethodId   = 0; // Method #5 might be the sender's Bitmessage connection. Mandatory if msgtype is "bitmessage" (or anything other than otserver.)
+    }
+    // -------------------
+    setTransportDisplayBasedOnAvailableData();
 }
 
 // ----------------------------------------------------------------------
-bool MTCompose::sendMessage(QString body, QString fromNymId, QString toNymId, QString atServerID, QString subject)
+bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, QString toNymId, QString fromAddress, QString toAddress,
+                            QString viaServer, QString viaTransport, int viaMethodID)
 {
+    NetworkModule * pModule = NULL;
+
+    if (viaTransport.isEmpty())
+    {
+        qDebug() << "Cannot send a message via a blank transport type, aborting.";
+        return false;
+    }
+    // ----------------------------------------------------
     if (fromNymId.isEmpty())
     {
         qDebug() << "Cannot send a message from an empty nym id, aborting.";
         return false;
     }
     // ----------------------------------------------------
-    if (toNymId.isEmpty())
+    if (0 == viaTransport.compare("otserver"))
     {
-        qDebug() << "Cannot send a message to an empty nym id, aborting.";
-        return false;
+        if (viaServer.isEmpty())
+        {
+            qDebug() << "Cannot send a message via an empty server id, aborting.";
+            return false;
+        }
+
+        if (toNymId.isEmpty())
+        {
+            qDebug() << "Cannot send a message to an empty nym id, aborting.";
+            return false;
+        }
+    }
+    else // All other transport types.
+    {
+        if (fromAddress.isEmpty())
+        {
+            qDebug() << "Cannot send a message from an empty address, aborting.";
+            return false;
+        }
+
+        if (toAddress.isEmpty())
+        {
+            qDebug() << "Cannot send a message to an empty address, aborting.";
+            return false;
+        }
+
+        if (viaMethodID <= 0)
+        {
+            qDebug() << QString("Cannot send a message via a nonexistent %1 interface, aborting.").arg(viaTransport);
+            return false;
+        }
+        // ------------------------------------------------------
+        QString qstrCommString = MTContactHandler::getInstance()->GetMethodConnectStr(viaMethodID);
+
+        if (qstrCommString.isEmpty())
+        {
+            // todo probably need a messagebox here.
+            qDebug() << QString("Cannot send a message via a %1 interface that has an empty connection string, aborting.").arg(viaTransport);
+            return false;
+        }
+        else
+        {
+            pModule = MTComms::find(qstrCommString.toStdString());
+
+            if ((NULL == pModule) && MTComms::add(viaTransport.toStdString(), qstrCommString.toStdString()))
+                pModule = MTComms::find(qstrCommString.toStdString());
+
+            if (NULL == pModule)
+            {
+                // todo probably need a messagebox here.
+                qDebug() << QString("Unable to add a %1 interface with connection string: %2").arg(viaTransport).arg(qstrCommString);
+                return false;
+            }
+        }
     }
     // ----------------------------------------------------
     if (subject.isEmpty())
@@ -295,37 +412,62 @@ bool MTCompose::sendMessage(QString body, QString fromNymId, QString toNymId, QS
     if (body.isEmpty())
         body = tr("From the desktop client. (Empty message body.)");
     // ----------------------------------------------------
-    std::string str_serverId  (atServerID.toStdString());
-    std::string str_fromNymId (fromNymId.toStdString());
-    std::string str_toNymId   (toNymId.toStdString());
+    std::string str_serverId  (viaServer  .toStdString());
+    std::string str_fromNymId (fromNymId  .toStdString());
+    std::string str_fromAddr  (fromAddress.toStdString());
+    std::string str_toNymId   (toNymId    .toStdString());
+    std::string str_toAddr    (toAddress  .toStdString());
     // ----------------------------------------------------
-    qDebug() << QString("Initiating sendMessage:\n Server:'%1'\n FromNym:'%2'\n ToNym:'%3'\n Subject:'%4'\n Body:'%5'").
-                arg(atServerID).arg(fromNymId).arg(toNymId).arg(subject).arg(body);
+    qDebug() << QString("Initiating sendMessage:\n Transport:'%1'\n Server:'%2'\n From Nym:'%3'\n From Address:'%4'\n To Nym:'%5'\n To Address:'%6'\n Subject:'%7'\n Body:'%8'").
+                arg(viaTransport).arg(viaServer).arg(fromNymId).arg(fromAddress).arg(toNymId).arg(toAddress).arg(subject).arg(body);
     // ----------------------------------------------------
     QString contents = tr("%1: %2\n\n%3").arg(tr("Subject")).arg(subject).arg(body);
     // ----------------------------------------------------
-    OT_ME madeEasy;
-
-    std::string strResponse;
+    if (0 == viaTransport.compare("otserver"))
     {
-        MTSpinner theSpinner;
+        OT_ME madeEasy;
 
-        strResponse = madeEasy.send_user_msg(str_serverId, str_fromNymId, str_toNymId, contents.toStdString());
+        std::string strResponse;
+        {
+            MTSpinner theSpinner;
+
+            strResponse = madeEasy.send_user_msg(str_serverId, str_fromNymId, str_toNymId, contents.toStdString());
+        }
+
+        int32_t nReturnVal = madeEasy.VerifyMessageSuccess(strResponse);
+
+        if (1 != nReturnVal)
+        {
+            qDebug() << "OT send_message: Failed.";
+
+            Moneychanger::HasUsageCredits(this, str_serverId, str_fromNymId);
+
+            return false;
+        }
+
+        qDebug() << "Success in OT send_message!";
+        m_bSent = true;
     }
-
-    int32_t nReturnVal = madeEasy.VerifyMessageSuccess(strResponse);
-
-    if (1 != nReturnVal)
+    // ---------------------------------------------------------
+    else if (NULL != pModule) // Anything but otserver. (Bitmessage, probably.)
     {
-        qDebug() << "send_message: Failed.";
+        bool bSuccessSending = false;
+        {
+            MTSpinner   theSpinner;
+            NetworkMail message(str_fromAddr, str_toAddr, subject.toStdString(), body.toStdString());
 
-        Moneychanger::HasUsageCredits(this, str_serverId, str_fromNymId);
+            bSuccessSending = pModule->sendMail(message);
+        }
 
-        return false;
+        if (!bSuccessSending)
+        {
+            qDebug() << "send_message: Failed.";
+            return false;
+        }
+
+        qDebug() << "Success in send_message!";
+        m_bSent = true;
     }
-
-    qDebug() << "Success in send_message!";
-    m_bSent = true;
     // ---------------------------------------------------------
     return m_bSent;
 }
@@ -363,7 +505,9 @@ bool MTCompose::hasSender()
             // We know, by this point, that there IS a message type, and that
             // it's NOT an OT Server. (Therefore it must be bitmessage or whatever.)
             // Therefore we know there's a sender if: the Sender Method ID
-            // OR Address is set. (Either.) Sender NymID is also mandatory.
+            // OR Address is set. (Either.)
+            //
+            // (Sender NymID is also mandatory.)
             //
             if (m_senderNymId.isEmpty())
                 return false;
@@ -373,44 +517,27 @@ bool MTCompose::hasSender()
             // later, at send time, based on the method ID. If that fails, it will
             // fail then (not now.)
             //
-            if ((m_senderAddress.isEmpty()) && (m_senderMethodId <= 0))
-                return false;
+            // NOTE: it's possible to lookup a sender address purely based on sender NymID
+            // and message type, and since we're actually doing that now (below) I removed
+            // this if block.
+//            if ((m_senderAddress.isEmpty()) && (m_senderMethodId <= 0))
+//                return false;
             // --------------------------------
-            // By this point we know we have one-or-the-other, and possibly both.
-            //
+            if (m_senderAddress.isEmpty())
+            {
+                mapIDName theMap;
 
-            // NOTE: commenting this out here, since the msgtype should be coordinated
-            // later between sender AND recipient -- at send time.
+                QString qstrMsgTypeDisplay = QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
 
-//            if (m_senderMethodId > 0)
-//            {
-//                QString qstrMsgType = MTContactHandler::getInstance()->GetMethodType(m_senderMethodId);
+                if ((m_senderMethodId > 0) && MTContactHandler::getInstance()->GetAddressesByNym(theMap, m_senderNymId, m_senderMethodId))
+                    return this->chooseSenderAddress(theMap, qstrMsgTypeDisplay);
+                else if (!m_senderNymId.isEmpty() && MTContactHandler::getInstance()->GetAddressesByNym(theMap, m_senderNymId, m_msgtype))
+                    return this->chooseSenderAddress(theMap, qstrMsgTypeDisplay);
 
-//                if (0 != qstrMsgType.compare(m_msgtype)) // qstrMsgType expected based on senderMethodId doesn't match m_msgtype.
-//                {
-//                    qDebug() << QString("MTCompose::hasSender: qstrMsgType (%1) expected based on senderMethodId doesn't match m_msgtype (%2.)").
-//                                    arg(qstrMsgType).arg(m_msgtype);
-//                    return false;
-//                }
-//                // By this point we know the senderMethodID we have, has the same message type,
-//                // such as "bitmessage", that we expected based on m_msgtype.
-//            }
-//            // ---------------------------------
-//            // If there's a sender address, we should make sure it corresponds
-//            // to the msg type.
-//            //
-//            if (!m_senderAddress.isEmpty())
-//            {
-//                QString qstrAddressMsgType = MTContactHandler::getInstance()->GetMethodType(m_senderAddress);
-
-//                if (0 != qstrAddressMsgType.compare(m_msgtype)) // qstrAddressMsgType expected based on m_senderAddress doesn't match m_msgtype.
-//                {
-//                    qDebug() << QString("MTCompose::hasSender: qstrAddressMsgType (%1) expected based on m_senderAddress doesn't match m_msgtype (%2.)").
-//                                    arg(qstrAddressMsgType).arg(m_msgtype);
-//                    return false;
-//                }
-//            }
-            // ---------------------------------
+                return false;
+            }
+            // --------------------------------
+            // else sender address is NOT empty (so return true.)
             return true;
         }
     }
@@ -504,10 +631,12 @@ bool MTCompose::hasRecipient()
             {
                 mapIDName theMap;
 
+                QString qstrMsgTypeDisplay = QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
+
                 if ((m_recipientContactId > 0) && MTContactHandler::getInstance()->GetAddressesByContact(theMap, m_recipientContactId, m_msgtype))
-                    return true;
+                    return this->chooseRecipientAddress(theMap, qstrMsgTypeDisplay);
                 else if (!m_recipientNymId.isEmpty() && MTContactHandler::getInstance()->GetAddressesByNym(theMap, m_recipientNymId, m_msgtype))
-                    return true;
+                    return this->chooseRecipientAddress(theMap, qstrMsgTypeDisplay);
 
                 // Why check for a recipient address based on NymID (when normally we use ContactID) ?
                 // Because it's possible that the recipient is one of my OWN Nyms.
@@ -573,68 +702,7 @@ void MTCompose::on_viaButton_clicked()
     DlgChooser theChooser(this);
     mapIDName & the_map = theChooser.m_map;
     // -----------------------------------------------
-    mapIDName map_recipientMsgMethods;
-
-    // If method is already explicitly set, then we may know about a method that the contact
-    // record DOESN'T know about. No need to change anything if it's already set - leave it
-    // alone. Therefore, we only do this block if the method ISN'T set. So if it's empty, but
-    // Recipient Nym ID is known, try to find a server based on recipient Nym. Pre-select
-    // the default server, if it's on that list of known servers for the recipient Nym.
-    // But even before all that, see if the Nyms have any other transport methods in common.
-    // For example, if Bitmessage is available, then add "Bitmessage" to the list along with
-    // the OT servers. If the user chooses Bitmessage, and the recipient exists and has a
-    // Bitmessage address, then change recipient to: "recipient, via Bitmessage".
-    // If Bitmessage is the selected type, yet the sender nym and/or recipient contact don't
-    // have a Bitmessage address, then ask the user to paste or select a Bitmessage address.
-    // For sender, from the getAddresses. And for recipient, from bitmessage's getContacts.
-    // Then associate those addresses for the future.
-    //
-    if (m_serverId.isEmpty() && !m_recipientNymId.isEmpty())
-    {
-        // There are many methods for sending a message. Perhaps it's going
-        // through OT. Or perhaps it's going through Bitmessage. Etc.
-        //
-
-        int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID (m_recipientNymId);
-
-        //resume
-
-//        bool MTContactHandler::getInstance()->GetMsgMethodsByContact(map_recipientMsgMethods,
-//                                                                     nContactID, true);//bAddServers=false by default
-
-
-//        bool MTContactHandler::getInstance()->GetMsgMethodsByNym(map_recipientMsgMethods,
-//                                                                 m_recipientNymId,
-//                                                                 true);//bool bAddServers=false by default
-
-        // Get a list of servers, filtered based on recipient Nym ID.
-        // If default server is on that list, set it as the default here.
-        //
-        if (MTContactHandler::getInstance()->GetServers(map_recipientMsgMethods, m_recipientNymId, true))
-        {
-            the_map = map_recipientMsgMethods;
-            // ------------------------------
-            // Look up the default.
-            if (DBHandler::getInstance()->runQuery("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1"))
-            {
-                QString default_server_id = DBHandler::getInstance()->queryString("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
-
-                if (!default_server_id.isEmpty())
-                {
-                    mapIDName::iterator it_server = the_map.find(default_server_id);
-
-                    // Set the default server from moneychanger as default on this Chooser Dlg.
-                    if (it_server != the_map.end())
-                        theChooser.SetPreSelected(default_server_id);
-                }
-            }
-        }
-    }
-    // -----------------------------------------------
-    // If we found no servers for that Nym. (Or other transport methods.)
-    //
-    if (the_map.size() < 1)
-        MTContactHandler::getInstance()->GetMsgMethodTypes(the_map, true); //bAddServers=false by default
+    MTContactHandler::getInstance()->GetMsgMethodTypes(the_map, true); //bAddServers=false by default
     // -----------------------------------------------
     theChooser.setWindowTitle(tr("Select Messaging Type"));
     // -----------------------------------------------
@@ -644,23 +712,41 @@ void MTCompose::on_viaButton_clicked()
 
         if (!theChooser.m_qstrCurrentID.isEmpty())
         {
-            m_serverId = theChooser.m_qstrCurrentID;
-            // -----------------------------------------
-            if (theChooser.m_qstrCurrentName.isEmpty())
-                ui->viaButton->setText(tr("(blank name)"));
-            else
-                ui->viaButton->setText(theChooser.m_qstrCurrentName);
-            // -----------------------------------------
-            return;
+            QString qstrType(""); // msgtype
+            QString qstrID  (""); // server ID.
+
+            if ((-1) != theChooser.m_qstrCurrentID.indexOf("|", 0)) // Pipe was found.
+            {
+                QStringList stringlist = theChooser.m_qstrCurrentID.split("|");
+
+                if (stringlist.size() >= 2) // Should always be 2...
+                {
+                    qstrType = stringlist.at(0);
+                    qstrID   = stringlist.at(1);
+                }
+            }
+            // ----------------------------
+            else // Pipe wasn't found.
+                qstrType = theChooser.m_qstrCurrentID;
+            // ----------------------------
+            this->setInitialMsgType(qstrType, qstrID);
+            // ----------------------------
+            // Since the message type just changed, whether to OT server
+            // or to Bitmessage, either way any previous address that was
+            // set needs to be cleared.
+            //
+            this->setInitialSenderAddress(QString(""));
+            this->setInitialRecipientAddress(QString(""));
+
+            // These calls will select the right addresses, if appropriate.
+            this->hasSender();
+            this->hasRecipient();
         }
     }
     else
     {
       qDebug() << "CANCEL was clicked";
     }
-    // -----------------------------------------------
-    m_serverId = QString("");
-    ui->viaButton->setText(tr("<Click to choose Transport>"));
 }
 
 // --------------------------------------------
@@ -726,19 +812,12 @@ bool MTCompose::CheckPotentialCommonMsgMethod(QString qstrMsgTypeAttempt, mapIDN
 
 bool MTCompose::sendingThroughOTServer()
 {
-    return (0 == m_msgtype.compare(QString("otserver")));
+    return (!m_msgtype.isEmpty() && (0 == m_msgtype.compare(QString("otserver"))));
 }
 
 void MTCompose::on_sendButton_clicked()
 {
     // Send message and then close dialog. Use progress bar.
-    // -----------------------------------------------------------------
-    if (!hasRecipient())
-    {
-        QMessageBox::warning(this, tr("Message Has No Recipient"),
-                             tr("Please choose a recipient for this message, before sending."));
-        return;
-    }
     // -----------------------------------------------------------------
     if (!hasSender())
     {
@@ -747,63 +826,30 @@ void MTCompose::on_sendButton_clicked()
         return;
     }
     // -----------------------------------------------------------------
-    if (m_msgtype.isEmpty())
+    if (!hasRecipient())
     {
-        QMessageBox::warning(this, tr("Message Has No Transport"),
-                             tr("Before sending, please click 'Via' to choose how it will be sent."));
+        QMessageBox::warning(this, tr("Message Has No Recipient"),
+                             tr("Please choose a recipient for this message, before sending."));
         return;
     }
-    else // msgtype exists... but what type?
-    {
-        if (sendingThroughOTServer())
-        {
-            if (m_serverId.isEmpty())
-            {
-                QMessageBox::warning(this, tr("Message Has No Server ID"),
-                                     tr("ERROR: This should never happen. We know the message type is 'otserver', so therefore we should also already know the Server ID by this point."));
-                return;
-            }
-            // todo: else if sender Nym isn't registered on that server -- would you like to?
-            // todo: else if recipient isn't known to be on that server -- send it anyway?
-            // UPDATE: These todos need to be coded in MakeSureCommonMsgMethod.
-        }
-        // By this point we know, if the msgtype is 'otserver', that a server ID is available for us
-        // to use.
-        // What we don't know, yet, is if the type is "bitmessage" (or anything other than "otserver")
-        // whether there are addresses available for sender and recipient, and whether they are appropriate
-        // based on the msgtype.
-        // We also don't know for sure, even if it is "otserver", whether the recipient Nym is actually set.
-        // up until this point, a Contact ID is enough to get us here even without the NymID, since the NymID
-        // can be resolved based on the Contact ID. But beyond this point, we ACTUALLY need the NymID. So
-        // MakeSureCommonMsgMethod() will look that up, too, if we don't already have it.
-
-
-
-        // TODO: This is where, if the sender or recipient ADDRESS isn't set,
-        // or if the sender METHOD isn't set, that we derive (or ask) to get
-        // those things set before the actual send.
-
-
-        //resume
-
-        // The below call is what insures all the addresses are in order.
-        // When necessary, it will pop up a chooser dialog, or an "Are you sure?"
-        // dialog, in order to gather the appropriate information.
-        // If successful setting everything such that we could actually
-        // send, it returns true. But if this function finishes in a state
-        // where we do not have the necessary info to send, it will return false.
-        //
-        if (!MakeSureCommonMsgMethod())
-            return false;
-
-
-
-
-
-
-
-
-    }
+    // -----------------------------------------------------------------
+    // What we don't know, yet, is if the type is "bitmessage" (or anything else), or whether
+    // there are addresses available for sender and recipient, and whether they are appropriate
+    // based on the msgtype.
+    // We also don't know for sure, even if it is "otserver", whether the recipient Nym is actually set.
+    // up until this point, a Contact ID is enough to get us here even without the NymID, since the NymID
+    // can be resolved based on the Contact ID. But beyond this point, we ACTUALLY need the NymID. So
+    // MakeSureCommonMsgMethod() will look that up, if we don't already have it.
+    //
+    // The below call is what insures all the addresses are in order.
+    // When necessary, it will pop up a chooser dialog, or an "Are you sure?"
+    // dialog, in order to gather the appropriate information.
+    // If successful setting everything such that we could actually
+    // send, it returns true. But if this function finishes in a state
+    // where we do not have the necessary info to send, it will return false.
+    //
+    if (!MakeSureCommonMsgMethod())
+        return;
     // -----------------------------------------------------------------
     if (ui->subjectEdit->text().isEmpty())
     {
@@ -831,10 +877,13 @@ void MTCompose::on_sendButton_clicked()
     QString body         = ui->contentsEdit->toPlainText();
     QString fromNymId    = m_senderNymId;
     QString toNymId      = m_recipientNymId;
+    QString fromAddress  = m_senderAddress;
+    QString toAddress    = m_recipientAddress;
     QString viaServer    = m_serverId;
     QString viaTransport = m_msgtype;
+    int     viaMethodID  = m_senderMethodId;
 
-    bool bSent = this->sendMessage(body, fromNymId, toNymId, viaServer, subject);
+    bool bSent = this->sendMessage(subject, body, fromNymId, toNymId, fromAddress, toAddress, viaServer, viaTransport, viaMethodID);
     // -----------------------------------------------------------------
     if (!bSent)
         QMessageBox::warning(this, tr("Failed Sending Message"),
@@ -850,7 +899,737 @@ void MTCompose::on_sendButton_clicked()
     // -----------------------------------------------------------------
 }
 
-// This insures that the sender and recipient nym are using the same Msg Method.
+
+
+
+
+bool MTCompose::chooseSenderMethodID(mapIDName & theMap, QString qstrMsgTypeDisplay)
+{
+    if (1 == theMap.size())
+    {
+        mapIDName::iterator it = theMap.begin();
+        m_senderMethodId = it.key().toInt();
+        return true;
+    }
+    else if (theMap.size() > 1)
+    {
+        // There are multiple matching method types for the sender.
+        // (Have the user choose one of them.)
+        //
+        DlgChooser theChooser(this);
+        // -----------------------------------------------
+        theChooser.m_map = theMap;
+        // -----------------------------------------------
+        QString qstrWindowTitle = QString("%1 %2 %3.").arg(tr("Multiple")).arg(qstrMsgTypeDisplay).arg(tr("transports are available"));
+        theChooser.setWindowTitle(qstrWindowTitle);
+        // -----------------------------------------------
+        if (theChooser.exec() == QDialog::Accepted)
+        {
+            if (!theChooser.m_qstrCurrentID.isEmpty())
+            {
+                m_senderMethodId = theChooser.m_qstrCurrentID.toInt();
+                return true;
+            }
+        }
+    }
+    // -----------------
+    return false;
+}
+
+
+
+bool MTCompose::chooseSenderAddress(mapIDName & mapSenderAddresses, QString qstrMsgTypeDisplay)
+{
+    if (1 == mapSenderAddresses.size())
+    {
+        mapIDName::iterator it = mapSenderAddresses.begin();
+        this->setInitialSenderAddress(it.key());
+        m_senderMethodId = MTContactHandler::getInstance()->GetMethodIDByNymAndAddress(m_senderNymId, m_senderAddress);
+        return true;
+    }
+    else if (mapSenderAddresses.size() > 1)
+    {
+        // There are multiple matching addresses for the sender.
+        // (Have the user choose one of them.)
+        //
+        DlgChooser theChooser(this);
+        // -----------------------------------------------
+        theChooser.m_map = mapSenderAddresses;
+        // -----------------------------------------------
+        QString qstrWindowTitle = QString("%1 %2 %3.").arg(tr("Sender has multiple")).arg(qstrMsgTypeDisplay).arg(tr("addresses"));
+        theChooser.setWindowTitle(qstrWindowTitle);
+        // -----------------------------------------------
+        if (theChooser.exec() == QDialog::Accepted)
+        {
+            if (!theChooser.m_qstrCurrentID.isEmpty())
+            {
+                this->setInitialSenderAddress(theChooser.m_qstrCurrentID);
+                m_senderMethodId = MTContactHandler::getInstance()->GetMethodIDByNymAndAddress(m_senderNymId, m_senderAddress);
+                return true;
+            }
+        }
+    }
+    // -----------------
+    return false;
+}
+
+bool MTCompose::chooseRecipientAddress(mapIDName & mapRecipientAddresses, QString qstrMsgTypeDisplay)
+{
+    if (1 == mapRecipientAddresses.size())
+    {
+        mapIDName::iterator it = mapRecipientAddresses.begin();
+        this->setInitialRecipientAddress(it.key());
+        return true;
+    }
+    else if (mapRecipientAddresses.size() > 1)
+    {
+        // There are multiple matching addresses for the recipient.
+        // (Have the user choose one of them.)
+        //
+        DlgChooser theChooser(this);
+        // -----------------------------------------------
+        theChooser.m_map = mapRecipientAddresses;
+        // -----------------------------------------------
+        QString qstrWindowTitle = QString("%1 %2 %3.").arg(tr("Recipient has multiple")).arg(qstrMsgTypeDisplay).arg(tr("addresses"));
+        theChooser.setWindowTitle(qstrWindowTitle);
+        // -----------------------------------------------
+        if (theChooser.exec() == QDialog::Accepted)
+        {
+            if (!theChooser.m_qstrCurrentID.isEmpty())
+            {
+                this->setInitialRecipientAddress(theChooser.m_qstrCurrentID);
+                return true;
+            }
+        }
+    }
+    // --------------------
+    return false;
+}
+
+
+bool MTCompose::chooseServer(mapIDName & theMap)
+{
+    if (1 == theMap.size())
+    {
+        mapIDName::iterator it = theMap.begin();
+        this->setInitialServer(it.key());
+        return true;
+    }
+    else if (theMap.size() > 1)
+    {
+        // There are multiple matching servers.
+        // (Have the user choose one of them.)
+        //
+        DlgChooser theChooser(this);
+        // -----------------------------------------------
+        theChooser.m_map = theMap;
+        // -----------------------------------------------
+        QString qstrWindowTitle = QString(tr("Choose Server"));
+        theChooser.setWindowTitle(qstrWindowTitle);
+        // -----------------------------------------------
+        if (theChooser.exec() == QDialog::Accepted)
+        {
+            if (!theChooser.m_qstrCurrentID.isEmpty())
+            {
+                this->setInitialServer(theChooser.m_qstrCurrentID);
+                return true;
+            }
+        }
+    }
+    // --------------------
+    return false;
+}
+
+
+
+
+// Recipient has just changed. Does Sender exist? If so, make sure he is compatible with msgtype or find a new one that matches both.
+void MTCompose::FindSenderMsgMethod()
+{
+    // If sender doesn't exist, we can just return now.
+    // BUT the sender could be m_senderNymId, m_senderAddress,
+    // or some combination. Let's find what we can...
+    //
+    if (m_senderNymId.isEmpty() && !m_senderAddress.isEmpty())
+    {
+        QString qstrSenderNym = MTContactHandler::getInstance()->GetNymByAddress(m_senderAddress);
+
+        if (!qstrSenderNym.isEmpty())
+            this->setInitialSenderNym(qstrSenderNym, m_senderAddress);
+    }
+    // -------------------------------------------------
+    // We use the recipient's NymID in this function, so we might as well make sure we
+    // have all that info ready.
+    //
+    bool bUpdatedRecipientDetails = false;
+
+    if (m_recipientContactId <= 0)
+    {
+        if (!m_recipientNymId.isEmpty())
+        {
+            m_recipientContactId = MTContactHandler::getInstance()->FindContactIDByNymID(m_recipientNymId);
+            bUpdatedRecipientDetails = true;
+        }
+        // -------------------------------------------------
+        if ((m_recipientContactId <= 0) && !m_recipientAddress.isEmpty())
+        {
+            m_recipientContactId = MTContactHandler::getInstance()->GetContactByAddress(m_recipientAddress);
+            bUpdatedRecipientDetails = true;
+        }
+    }
+    // -------------------------------------------------
+    if (m_recipientNymId.isEmpty())
+    {
+        if (!m_recipientAddress.isEmpty())
+        {
+            m_recipientNymId = MTContactHandler::getInstance()->GetNymByAddress(m_recipientAddress);
+            bUpdatedRecipientDetails = true;
+        }
+        // -------------------------------------------------
+        else
+        {
+            mapIDName mapNyms;
+
+            if ((m_recipientContactId > 0) && MTContactHandler::getInstance()->GetNyms(mapNyms, m_recipientContactId))
+            {
+                if (mapNyms.size() > 0)
+                {
+                    mapIDName::iterator it = mapNyms.begin();
+                    m_recipientNymId = it.key();
+                    bUpdatedRecipientDetails = true;
+                }
+            }
+        }
+    }
+    // -------------------------------------------------
+    if (bUpdatedRecipientDetails)
+        this->setRecipientNameBasedOnAvailableData();
+    // -------------------------------------------------
+    if (!m_serverId.isEmpty() && m_msgtype.isEmpty())
+        setInitialMsgType("otserver");
+    // -------------------------------------------------
+    if (sendingThroughOTServer())
+    {
+        if (!m_senderNymId.isEmpty())
+        {
+            if (!m_recipientNymId.isEmpty()) // we already know this or we wouldn't have even called this function. (Still, makes me feel safe.)
+            {
+                // If we already have a server ID, let's see if they both support it.
+                // If we don't already have a server ID, let's find one they both agree on.
+
+                if (!m_serverId.isEmpty()) // server ID not empty. Let's see if they both support it.
+                {
+                    if (verifySenderAgainstServer() && verifyRecipientAgainstServer())
+                        return;  // SUCCESS!
+                    // else if they DON'T both support it, therefore we should find one they DO support.
+                    // Note, this is definite, since it actually checks each nym's registration against
+                    // the server itself. There's no chance it's wrong. Therefore we can definitely
+                    // dump this server and try to find another one.
+                    else
+                    {
+                        m_serverId = QString("");  // We force this here, since setInitialServer won't normally blank out a serverID even if you pass a blank one.
+                        setInitialServer(QString(""));
+                    }
+                }
+                //else Server ID empty. Let's find one they both agree on.
+
+                // Basically we just grab the servers the recipient is known to frequent,
+                // and then loop through them and see if the sender is registered on any of them.
+                //
+                bool      bGotServers = false;
+                mapIDName mapServers;
+
+                if (m_recipientContactId > 0)
+                    bGotServers = MTContactHandler::getInstance()->GetServers(mapServers, m_recipientContactId);
+
+                if (!bGotServers && !m_recipientNymId.isEmpty())
+                    bGotServers = MTContactHandler::getInstance()->GetServers(mapServers, m_recipientNymId);
+
+                if (bGotServers)
+                {
+                    for (mapIDName::iterator it = mapServers.begin(); it != mapServers.end(); ++it)
+                    {
+                        QString qstrServerID = it.key();
+
+                        std::string server_id    = qstrServerID.toStdString();
+                        std::string sender_id    = m_senderNymId.toStdString();
+
+                        if (OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
+                        {
+                            setInitialServer(qstrServerID);
+                            return; // SUCCESS!
+                        }
+                    }
+                } // get servers
+            } // recipient nym ID not empty.
+        } // sender nym ID not empty.
+        // -------------------------------
+        else // sender nym ID is empty.
+        {
+            // If sending through OT, then we MUST have a Sender Nym by this point.
+            // If we don't, then we already KNOW we couldn't find one based on the address.
+            // (If it even existed.) But let's say it DOES exist. If the address exists, then it
+            // might be possible to find a recipient address for the same msgtype, and then just change
+            // the msgtype to match them both.
+            //
+            // NOTE: This means we've given up on finding a matching OT server, and are pursuing
+            // other methods at this point.
+            // -------------------------------------------------------
+            // Fall through...
+        }
+    } // if sending through OT server
+    // --------------------------------
+    //else Sending through other methods. (Bitmessage probably.)
+
+    QString qstrMethodTypeSender("");
+    QString qstrMethodTypeRecipient("");
+
+    // If the sender address exists, then it might be possible to find a recipient address
+    // for the same msgtype, and then just change the msgtype to match them both.
+
+    if (!m_senderAddress.isEmpty())
+        qstrMethodTypeSender = MTContactHandler::getInstance()->GetMethodType(m_senderAddress);
+    if (qstrMethodTypeSender.isEmpty() && (m_senderMethodId > 0))
+        qstrMethodTypeSender = MTContactHandler::getInstance()->GetMethodType(m_senderMethodId);
+    // ---------------------------------
+    if (!m_recipientAddress.isEmpty())
+        qstrMethodTypeRecipient = MTContactHandler::getInstance()->GetMethodType(m_recipientAddress);
+    // ---------------------------------
+    // If the recipient and sender both have addresses, see if they are of a matching type
+    // and if so, just go with that.
+    if (!qstrMethodTypeSender     .isEmpty() &&
+        !qstrMethodTypeRecipient  .isEmpty() &&
+        (0 == qstrMethodTypeSender.compare(qstrMethodTypeRecipient)))
+    {
+        setInitialMsgType(qstrMethodTypeSender);
+        return; // SUCCESS!
+    }
+    // --------------------------------
+    // If the recipient address exists, then we know the sender address either doesn't exist,
+    // or doesn't match its type. Let's see if we can find a better sender address that
+    // DOES match its type.
+    //
+    if (!qstrMethodTypeRecipient.isEmpty())
+    {
+        mapIDName mapSenderAddresses;
+        bool bGotAddresses = false;
+
+        if (!m_senderNymId.isEmpty() &&
+            MTContactHandler::getInstance()->GetAddressesByNym(mapSenderAddresses, m_senderNymId, qstrMethodTypeRecipient))
+            bGotAddresses = true;
+
+        if (bGotAddresses)
+        {
+            mapIDName::iterator it = mapSenderAddresses.begin();
+
+            // We just automatically choose the first one in the list.
+            // In other words, when the user selects a recipient, this function gets called, in order
+            // to adjust the sender (if there is one) so the message will go to it, by setting
+            // the sender's address to one that matches the type of the recipient's address.
+            // So if we are here, and we found a list of matching addresses, we just pick the first
+            // one. We don't ask the user to choose from the list, because he just clicked on RECIPIENT,
+            // and it would confuse him to make him choose from the SENDER list. So instead, we
+            // just pick the very first sender address that will work with the recipient he chose.
+            // (If the user wants to use a different address, he can just click SENDER and do so.)
+            //
+            if (mapSenderAddresses.end() != it)
+            {
+                setInitialMsgType(qstrMethodTypeRecipient);
+                setInitialSenderNym(m_senderNymId, it.key());
+                return; // SUCCESS!
+            }
+        }
+    }
+
+    // If the sender address exists, then we know the recipient address either doesn't exist,
+    // or doesn't match it. However, the only reason we're here is because the user just CHOSE
+    // the recipient (that's why we're now in a function to try to make the sender match to him.)
+    // So if we changed the recipient, we can't just change him again, because maybe the user was
+    // about to change the sender, too! We can't have the recipient keep switching back, right
+    // when the user has clicked on it!
+    //
+    // So here's what we'll do. We'll try to find a common msg method between the sender and
+    // recipient. And IF WE FIND ONE, we'll THEN ask the user if he wants us to automatically
+    // coordinate the transport type, giving him a simple yes/no option.
+    //
+    mapOfCommTypes mapTypes;
+    bool bFoundOneInCommon = false;
+    bool bGotCommTypes     = MTComms::types(mapTypes);
+
+    // Here we're looping through the list of transport types OTHER than "otserver",
+    // such as "bitmessage". See if we can find one that both parties have in common.
+    //
+    if (bGotCommTypes)
+    {
+        QString qstrMsgTypeAttempt, qstrMsgTypeDisplay;
+        mapIDName mapSenderAddresses, mapRecipientAddresses;
+
+        for (mapOfCommTypes::iterator it = mapTypes.begin(); it != mapTypes.end(); ++it)
+        {
+            qstrMsgTypeAttempt = QString("");
+            qstrMsgTypeDisplay = QString("");
+
+            std::string strTypeName    = it->first;
+            std::string strTypeDisplay = it->second;
+
+            if (!strTypeName.empty() && !strTypeDisplay.empty())
+            {
+                qstrMsgTypeAttempt = QString::fromStdString(strTypeName);
+                qstrMsgTypeDisplay = QString::fromStdString(strTypeDisplay);
+
+                mapSenderAddresses   .clear();
+                mapRecipientAddresses.clear();
+
+                if (this->CheckPotentialCommonMsgMethod(qstrMsgTypeAttempt, &mapSenderAddresses, &mapRecipientAddresses))
+                {
+                    bFoundOneInCommon = true;
+                    break;
+                }
+            }
+        } // for
+        // -------------------------------
+        // Did we find one?
+        //
+        if (bFoundOneInCommon)
+        {
+            QMessageBox::StandardButton reply;
+
+            reply = QMessageBox::question(this, "",
+                                          tr("Recipient and Sender have different transport types. Shall I auto-match? (You probably want to choose Yes.)"),
+                                          QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::Yes)
+            {
+                // Okay then, let's set the msgtype to qstrMsgTypeAttempt, and we'll set the sender and
+                // recipient addresses. (And sender method ID.) If there's only one address to choose from
+                // for either, we can just go with it. But if there are more than one, we must ask the user
+                // to choose which he prefers.
+                //
+                if (!this->chooseSenderAddress(mapSenderAddresses, qstrMsgTypeDisplay))
+                    return; // failure
+
+                if (!this->chooseRecipientAddress(mapRecipientAddresses, qstrMsgTypeDisplay))
+                    return; // failure.
+                // -------------------------------------------
+                // If both addresses were selected (we got this far, didn't we?)
+                // then we go ahead and set the msgtype.
+                //
+                this->setInitialMsgType(qstrMsgTypeAttempt); // (server="" by default.)
+                return; // SUCCESS!
+            }
+        } // if (bFoundOneInCommon)
+    } // if (bGotCommTypes)
+    // ----------------------
+    // By this point, oh well. We gave it the old college try.
+}
+
+
+// Sender has just changed. Does Recipient exist? If so, make sure he is compatible with msgtype or find a new one that matches both.
+void MTCompose::FindRecipientMsgMethod()
+{
+    // We use the sender's ID in this function, so let's make sure it's ready...
+    //
+    if (m_senderNymId.isEmpty() && !m_senderAddress.isEmpty())
+    {
+        QString qstrSenderNym = MTContactHandler::getInstance()->GetNymByAddress(m_senderAddress);
+
+        if (!qstrSenderNym.isEmpty())
+            this->setInitialSenderNym(qstrSenderNym, m_senderAddress);
+    }
+    // -------------------------------------------------
+    // If recipient doesn't exist, we can just return now.
+    // BUT the recipient could be m_recipientContactId, m_recipientNymId,
+    // m_recipientAddress, or some combination. Let's find what we can...
+    //
+    bool bUpdatedRecipientDetails = false;
+
+    if (m_recipientContactId <= 0)
+    {
+        if (!m_recipientNymId.isEmpty())
+        {
+            m_recipientContactId = MTContactHandler::getInstance()->FindContactIDByNymID(m_recipientNymId);
+            bUpdatedRecipientDetails = true;
+        }
+        // -------------------------------------------------
+        if ((m_recipientContactId <= 0) && !m_recipientAddress.isEmpty())
+        {
+            m_recipientContactId = MTContactHandler::getInstance()->GetContactByAddress(m_recipientAddress);
+            bUpdatedRecipientDetails = true;
+        }
+    }
+    // -------------------------------------------------
+    if (m_recipientNymId.isEmpty())
+    {
+        if (!m_recipientAddress.isEmpty())
+        {
+            m_recipientNymId = MTContactHandler::getInstance()->GetNymByAddress(m_recipientAddress);
+            bUpdatedRecipientDetails = true;
+        }
+        // -------------------------------------------------
+        else
+        {
+            mapIDName mapNyms;
+
+            if ((m_recipientContactId > 0) && MTContactHandler::getInstance()->GetNyms(mapNyms, m_recipientContactId))
+            {
+                if (mapNyms.size() > 0)
+                {
+                    mapIDName::iterator it = mapNyms.begin();
+                    m_recipientNymId = it.key();
+                    bUpdatedRecipientDetails = true;
+                }
+            }
+        }
+    }
+    // -------------------------------------------------
+    if (bUpdatedRecipientDetails)
+        this->setRecipientNameBasedOnAvailableData();
+    // -------------------------------------------------
+    if (!m_serverId.isEmpty() && m_msgtype.isEmpty())
+        setInitialMsgType("otserver");
+    // -------------------------------------------------
+    if (sendingThroughOTServer())
+    {
+        if (!m_recipientNymId.isEmpty())
+        {
+            if (!m_senderNymId.isEmpty()) // we already know this or we wouldn't have even called this function. (Still, makes me feel safe.)
+            {
+                // If we already have a server ID, let's see if they both support it.
+                // If we don't already have a server ID, let's find one they both agree on.
+
+                if (!m_serverId.isEmpty()) // server ID not empty. Let's see if they both support it.
+                {
+                    if (verifySenderAgainstServer() && verifyRecipientAgainstServer())
+                        return;  // SUCCESS!
+                    // else if they DON'T both support it, therefore we should find one they DO support.
+                    // Note, this is definite, since it actually checks each nym's registration against
+                    // the server itself. There's no chance it's wrong. Therefore we can definitely
+                    // dump this server and try to find another one.
+                    else
+                    {
+                        m_serverId = QString("");  // We force this here, since setInitialServer won't normally blank out a serverID even if you pass a blank one.
+                        setInitialServer(QString(""));
+                    }
+                }
+                //else Server ID empty. Let's find one they both agree on.
+
+                // Basically we just grab the servers the recipient is known to frequent,
+                // and then loop through them and see if the sender is registered on any of them.
+                //
+                bool      bGotServers = false;
+                mapIDName mapServers;
+
+                if (m_recipientContactId > 0)
+                    bGotServers = MTContactHandler::getInstance()->GetServers(mapServers, m_recipientContactId);
+
+                if (!bGotServers && !m_recipientNymId.isEmpty())
+                    bGotServers = MTContactHandler::getInstance()->GetServers(mapServers, m_recipientNymId);
+
+                if (bGotServers)
+                {
+                    for (mapIDName::iterator it = mapServers.begin(); it != mapServers.end(); ++it)
+                    {
+                        QString qstrServerID = it.key();
+
+                        std::string server_id    = qstrServerID.toStdString();
+                        std::string sender_id    = m_senderNymId.toStdString();
+
+                        if (OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
+                        {
+                            setInitialServer(qstrServerID);
+                            return; // SUCCESS!
+                        }
+                    }
+                } // get servers
+            } // sender nym ID not empty.
+        } // recipient nym ID not empty.
+        // -------------------------------
+        else // recipient nym ID is empty.
+        {
+            // If sending through OT, then we MUST have a Recipient Nym by this point.
+            // If we don't, then we already KNOW we couldn't find one based on the contact or address.
+            // (If those even existed.) But let's say they DO exist. If the address exists, then it
+            // might be possible to find a sender address for the same msgtype, and then just change
+            // the msgtype to match them both. Similarly, if the contact exists, then it might be
+            // possible to find a msgtype in common between the sender nym and the contact.
+            //
+            // NOTE: This means we've given up on finding a matching OT server, and are pursuing
+            // other methods at this point.
+            // -------------------------------------------------------
+            // Fall through...
+        }
+    } // if sending through OT server
+    // --------------------------------
+    //else Sending through other methods. (Bitmessage probably.)
+
+    QString qstrMethodTypeSender("");
+    QString qstrMethodTypeRecipient("");
+
+    // If the recipient address exists, then it might be possible to find a sender address
+    // for the same msgtype, and then just change the msgtype to match them both.
+
+    if (!m_senderAddress.isEmpty())
+        qstrMethodTypeSender = MTContactHandler::getInstance()->GetMethodType(m_senderAddress);
+    if (qstrMethodTypeSender.isEmpty() && (m_senderMethodId > 0))
+        qstrMethodTypeSender = MTContactHandler::getInstance()->GetMethodType(m_senderMethodId);
+    // ---------------------------------
+    if (!m_recipientAddress.isEmpty())
+        qstrMethodTypeRecipient = MTContactHandler::getInstance()->GetMethodType(m_recipientAddress);
+    // ---------------------------------
+    // If the recipient and sender both have addresses, see if they are of a matching type
+    // and if so, just go with that.
+    if (!qstrMethodTypeSender     .isEmpty() &&
+        !qstrMethodTypeRecipient  .isEmpty() &&
+        (0 == qstrMethodTypeSender.compare(qstrMethodTypeRecipient)))
+    {
+        setInitialMsgType(qstrMethodTypeSender);
+        return; // SUCCESS!
+    }
+    // --------------------------------
+    // If the sender address exists, then we know the recipient address either doesn't exist,
+    // or doesn't match its type. Let's see if we can find a better recipient address that
+    // DOES match its type.
+    //
+    if (!qstrMethodTypeSender.isEmpty())
+    {
+        if (!m_senderNymId.isEmpty()) // I already know this is the case, or this function wouldn't have even been called in the first place.
+            m_senderMethodId = MTContactHandler::getInstance()->GetMethodIDByNymAndAddress(m_senderNymId, m_senderAddress);
+        // -----------------------------
+        mapIDName mapRecipAddresses;
+        bool bGotAddresses = false;
+
+        if ((m_recipientContactId > 0) && MTContactHandler::getInstance()->GetAddressesByContact(mapRecipAddresses, m_recipientContactId, qstrMethodTypeSender))
+            bGotAddresses = true;
+
+        if (!bGotAddresses && !m_recipientNymId.isEmpty() &&
+            MTContactHandler::getInstance()->GetAddressesByNym(mapRecipAddresses, m_recipientNymId, qstrMethodTypeSender))
+            bGotAddresses = true;
+
+        if (bGotAddresses)
+        {
+            mapIDName::iterator it = mapRecipAddresses.begin();
+
+            // We just automatically choose the first one in the list.
+            // In other words, when the user selects a sender, this function gets called, in order
+            // to adjust the recipient (if there is one) so the message will go to it, by setting
+            // the recipient's address to one that matches the type of the sender's address.
+            // So if we are here, and we found a list of matching addresses, we just pick the first
+            // one. We don't ask the user to choose from the list, because he just clicked on SENDER,
+            // and it would confuse him to make him choose from the RECIPIENT list. So instead, we
+            // just pick the very first recipient address that will work with the sender he chose.
+            // (If the user wants to use a different address, he can just click RECIPIENT and do so.)
+            //
+            if (mapRecipAddresses.end() != it)
+            {
+                setInitialMsgType(qstrMethodTypeSender);
+                setInitialRecipient(m_recipientNymId, m_recipientContactId, it.key());
+                return; // SUCCESS!
+            }
+        }
+    }
+
+    // If the recipient address exists, then we know the sender address either doesn't exist,
+    // or doesn't match it. However, the only reason we're here is because the user just CHOSE
+    // the sender (that's why we're now in a function to try to make the recipient match to him.)
+    // So if we changed the sender, we can't just change him again, because maybe the user was
+    // about to change the recipient, too! We can't have the sender keep switching back, right
+    // when the user has clicked on it!
+    //
+    // So here's what we'll do. We'll try to find a common msg method between the sender and
+    // recipient. And IF WE FIND ONE, we'll THEN ask the user if he wants us to automatically
+    // coordinate the transport type, giving him a simple yes/no option.
+    //
+    mapOfCommTypes mapTypes;
+    bool bFoundOneInCommon = false;
+    bool bGotCommTypes     = MTComms::types(mapTypes);
+
+    // Here we're looping through the list of transport types OTHER than "otserver",
+    // such as "bitmessage". See if we can find one that both parties have in common.
+    //
+    if (bGotCommTypes)
+    {
+        QString qstrMsgTypeAttempt, qstrMsgTypeDisplay;
+        mapIDName mapSenderAddresses, mapRecipientAddresses;
+
+        for (mapOfCommTypes::iterator it = mapTypes.begin(); it != mapTypes.end(); ++it)
+        {
+            qstrMsgTypeAttempt = QString("");
+            qstrMsgTypeDisplay = QString("");
+
+            std::string strTypeName    = it->first;
+            std::string strTypeDisplay = it->second;
+
+            if (!strTypeName.empty() && !strTypeDisplay.empty())
+            {
+                qstrMsgTypeAttempt = QString::fromStdString(strTypeName);
+                qstrMsgTypeDisplay = QString::fromStdString(strTypeDisplay);
+
+                mapSenderAddresses   .clear();
+                mapRecipientAddresses.clear();
+
+                if (this->CheckPotentialCommonMsgMethod(qstrMsgTypeAttempt, &mapSenderAddresses, &mapRecipientAddresses))
+                {
+                    bFoundOneInCommon = true;
+                    break;
+                }
+            }
+        } // for
+        // -------------------------------
+        // Did we find one?
+        //
+        if (bFoundOneInCommon)
+        {
+            QMessageBox::StandardButton reply;
+
+            reply = QMessageBox::question(this, "",
+                                          tr("Sender and Recipient have different transport types. Shall I auto-match? (You probably want to choose Yes.)"),
+                                          QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::Yes)
+            {
+                // Okay then, let's set the msgtype to qstrMsgTypeAttempt, and we'll set the sender and
+                // recipient addresses. (And sender method ID.) If there's only one address to choose from
+                // for either, we can just go with it. But if there are more than one, we must ask the user
+                // to choose which he prefers.
+                //
+                if (!this->chooseSenderAddress(mapSenderAddresses, qstrMsgTypeDisplay))
+                    return; // failure
+
+                if (!this->chooseRecipientAddress(mapRecipientAddresses, qstrMsgTypeDisplay))
+                    return; // failure.
+                // -------------------------------------------
+                // If both addresses were selected (we got this far, didn't we?)
+                // then we go ahead and set the msgtype.
+                //
+                this->setInitialMsgType(qstrMsgTypeAttempt); // (server="" by default.)
+                return; // SUCCESS!
+            }
+
+        } // if (bFoundOneInCommon)
+    } // if (bGotCommTypes)
+    // ----------------------
+    // By this point, oh well. We gave it the old college try.
+}
+
+
+
+
+// Loops through map1 and returns first ID from it found on map2.
+//
+QString MTCompose::FindIDMatch(mapIDName map1, mapIDName map2)
+{
+    for (mapIDName::iterator it = map1.begin(); it != map1.end(); ++it)
+    {
+        mapIDName::iterator found = map2.find(it.key());
+
+        if (map2.end() != found)
+            return it.key();
+    }
+    return QString("");
+}
+
+
+
+
+// This insures that the sender and recipient nym are using the sam e Msg Method.
 // Which is to say, the same OT server, or both using Bitmessage, etc.
 //
 // NOTE: You probably shouldn't call this if m_method is already set, since it
@@ -880,11 +1659,16 @@ bool MTCompose::MakeSureCommonMsgMethod()
     // both IDs, and we DO have m_method. Either way, we have
     // both IDs.
     //
-    if (!hasSenderAndRecipient())
-    {
-        qDebug() << "MakeSureCommonMsgMethod was just called even though sender (or recipient) isn't set.";
-        return false;
-    }
+
+    // NOTE: These are already checked in the calling function, so I didn't
+    // want to needlessly check twice, since this function itself is only
+    // called on one place.
+    //
+//    if (!hasSenderAndRecipient())
+//    {
+//        qDebug() << "MakeSureCommonMsgMethod was just called even though sender (or recipient) isn't set.";
+//        return false;
+//    }
     // -------------------------------------------
     // Note: the same contact could have 3 different Nyms.
     //
@@ -923,114 +1707,82 @@ bool MTCompose::MakeSureCommonMsgMethod()
     //
     if (m_recipientNymId.isEmpty())
     {
-        bool      bNeedToChooseNym = false;
-        mapIDName theMap;
+        if ((m_recipientContactId <= 0) && !m_recipientAddress.isEmpty())
+            m_recipientContactId = MTContactHandler::getInstance()->GetContactByAddress(m_recipientAddress);
 
-        if (sendingThroughOTServer())
+        if ((m_recipientContactId <= 0) && !m_recipientAddress.isEmpty())
+            m_recipientNymId = MTContactHandler::getInstance()->GetNymByAddress(m_recipientAddress);
+
+        if (m_recipientNymId.isEmpty())
         {
-            // REQUIRE a recipient Nym to be selected.
-            //
-            if (m_recipientContactId <= 0)
-            {
-                qDebug() << "MTCompose::MakeSureCommonMsgMethod: SHOULD NEVER HAPPEN: Recipient wasn't even set.";
+            mapIDName theMap;
 
-                QMessageBox::warning(this, tr("Contact not even set"),
-                                     tr("SHOULD NEVER HAPPEN: Recipient wasn't even set"));
-                return false;
-            }
-            else
+            if (sendingThroughOTServer()) // SENDING THROUGH AN OT SERVER
             {
-                MTContactHandler::getInstance()->GetNyms(theMap, m_recipientContactId);
-
-                if (0 == theMap.size())
+                // REQUIRE a recipient Nym to be selected.
+                //
+                if (m_recipientContactId <= 0)
                 {
-                    QString qstrContactName = MTContactHandler::getInstance()->GetContactName(m_recipientContactId);
+                    qDebug() << "MTCompose::MakeSureCommonMsgMethod: SHOULD NEVER HAPPEN: Recipient wasn't even set.";
 
-                    QMessageBox::warning(this, tr("Contact has no known identities"),
-                                         tr("Sorry, recipient '%1' has no known NymIDs (to send a message to.)").arg(qstrContactName));
+                    QMessageBox::warning(this, tr("Contact not even set"),
+                                         tr("SHOULD NEVER HAPPEN: Recipient wasn't even set"));
                     return false;
                 }
-                else if (1 == theMap.size())
-                {
-                    mapIDName::iterator it = theMap.begin();
-
-                    QString qstrNymID       = it.key();
-//                  QString qstrNymName     = it.value();
-
-                    this->setInitialRecipient(qstrNymID, m_recipientContactId, m_recipientAddress);
-                }
-                else // There are multiple Nyms available to choose from, for m_recipientContactId.
-                    bNeedToChooseNym = true;
-            }
-        }
-        else // NOT sendingThroughOTServer()
-        {
-            // Ask the user to choose one of the Recipient Contact's Nyms.
-            // If there is no Recipient Contact ID at all, or if there are no Nyms found
-            // for that contact, then pop up a warning dialog saying, "Warning, the
-            // Recipient Contact apparently has no Nyms associated with it, and so the
-            // outgoing message will not be encrypted by Open-Transactions. Is this okay?"
-            //
-            bool bNeedToWarn = false;
-
-            if (m_recipientContactId <= 0)
-                bNeedToWarn = true;
-            else // There's a Contact ID, so let's choose one of his Nyms (if there are any.)
-            {
-                MTContactHandler::getInstance()->GetNyms(theMap, m_recipientContactId);
-
-                if (0 == theMap.size())
-                    bNeedToWarn = true;
-                else if (1 == theMap.size())
-                {
-                    mapIDName::iterator it = theMap.begin();
-
-                    QString qstrNymID       = it.key();
-//                  QString qstrNymName     = it.value();
-
-                    this->setInitialRecipient(qstrNymID, m_recipientContactId, m_recipientAddress);
-                }
-                else // There are multiple Nyms available to choose from, for m_recipientContactId.
-                    bNeedToChooseNym = true;
-            }
-            // -----------------------------------------------
-            if (bNeedToWarn)
-            {
-                QMessageBox::StandardButton reply;
-
-                reply = QMessageBox::question(this, "",
-                                              tr("The recipient has no Nyms associated with it, and so the outgoing message will NOT be encrypted by Open-Transactions. Is this okay?"),
-                                              QMessageBox::Yes|QMessageBox::No);
-                if (reply == QMessageBox::No)
-                  return false;
-            }
-        } // else (NOT sendingThroughOTServer())
-        // ----------------------------------------------
-        // Select from Nyms in local wallet.
-        //
-        if (bNeedToChooseNym)
-        {
-            DlgChooser theChooser(this);
-            // -----------------------------------------------
-            theChooser.m_map = theMap;
-            // -----------------------------------------------
-            theChooser.setWindowTitle(tr("Choose Recipient Nym"));
-            // -----------------------------------------------
-            if (theChooser.exec() == QDialog::Accepted)
-            {
-                qDebug() << QString("SELECT was clicked for NymID: %1").arg(theChooser.m_qstrCurrentID);
-
-                if (!theChooser.m_qstrCurrentID.isEmpty())
-                    this->setInitialRecipient(theChooser.m_qstrCurrentID, m_recipientContactId, m_recipientAddress);
                 else
-                    return false;
+                {
+                    MTContactHandler::getInstance()->GetNyms(theMap, m_recipientContactId);
+
+                    if (0 == theMap.size())
+                    {
+                        QString qstrContactName = MTContactHandler::getInstance()->GetContactName(m_recipientContactId);
+
+                        QMessageBox::warning(this, tr("Contact has no known identities"),
+                                             tr("Sorry, recipient '%1' has no known Nyms (to send an OT message to.)").arg(qstrContactName));
+                        return false;
+                    }
+                    else if (!chooseRecipientNym(theMap))
+                        return false;
+                }
             }
-        }
+            else // NOT sendingThroughOTServer()
+            {
+                // Ask the user to choose one of the Recipient Contact's Nyms.
+                // If there is no Recipient Contact ID at all, or if there are no Nyms found
+                // for that contact, then pop up a warning dialog saying, "Warning, the
+                // Recipient Contact apparently has no Nyms associated with it, and so the
+                // outgoing message will not be encrypted by Open-Transactions. Is this okay?"
+                //
+                bool bNeedToWarn = false;
+
+                if (m_recipientContactId <= 0)
+                    bNeedToWarn = true;
+                else // There's a Contact ID, so let's choose one of his Nyms (if there are any.)
+                {
+                    MTContactHandler::getInstance()->GetNyms(theMap, m_recipientContactId);
+
+                    if (0 == theMap.size())
+                        bNeedToWarn = true;
+                    else if (!chooseRecipientNym(theMap))
+                        return false;
+                }
+                // -----------------------------------------------
+                if (bNeedToWarn)
+                {
+                    QMessageBox::StandardButton reply;
+
+                    reply = QMessageBox::question(this, "",
+                                                  tr("The recipient has no Nyms associated with it, and so the outgoing message will NOT be encrypted by Open-Transactions. Is this okay?"),
+                                                  QMessageBox::Yes|QMessageBox::No);
+                    if (reply == QMessageBox::No)
+                      return false;
+                }
+            } // else (NOT sendingThroughOTServer())
+        }  // if recipientNymID.isEmpty()
     } // if recipientNymID.isEmpty()
     // -------------------------------------------
-    // Below this block, we will know for a fact that either a Nym is available
-    // if needed or wanted, or that if a Nym is not available, that he's not needed
-    // and not wanted.
+    // Below this block, we will know for a fact that either a recipient Nym is available
+    // if needed or wanted, or that if a Nym is not available, that he's not needed.
     // -------------------------------------------
     // Here we check to see, if the msgtype is empty, whether we can set it based
     // on sender address/method or recipient address.
@@ -1047,20 +1799,66 @@ bool MTCompose::MakeSureCommonMsgMethod()
         // -------------------------------------------------------------------------
         if (!qstrMethodTypeSender.isEmpty() && !qstrMethodTypeRecipient.isEmpty() &&
                 (0 == qstrMethodTypeRecipient.compare(qstrMethodTypeSender)))
-            m_msgtype = qstrMethodTypeSender;
-        // -------------------------------------------------------------------------
+            this->setInitialMsgType(qstrMethodTypeSender); // (server="" by default.)
         else if (!qstrMethodTypeSender.isEmpty() && !qstrMethodTypeRecipient.isEmpty())
         {
-         //resume
+            // This means they both exist, but they don't match (because otherwise the
+            // previous block would have run instead of this one.)
+            // So whose do we choose, the sender, or the recipient? For now, I say we
+            // choose the recipient, since the user must have chosen it, and then we'll
+            // just select a matching method for the sender further on down below.
+            //
+            this->setInitialMsgType(qstrMethodTypeRecipient); // (server="" by default.)
         }
+        // -------------------------------------------------------------------------
+        // In this case, the method type IS known for the sender, but NOT for the recipient.
+        // Therefore we'll go with the sender.
+        //
+        else if (!qstrMethodTypeSender.isEmpty() && qstrMethodTypeRecipient.isEmpty())
+            this->setInitialMsgType(qstrMethodTypeSender); // (server="" by default.)
+        // -------------------------------------------------------------------------
+        // In this case, the method type IS known for the recipient, but NOT for the sender.
+        // Therefore we'll go with the recipient.
+        //
+        else if (qstrMethodTypeSender.isEmpty() && !qstrMethodTypeRecipient.isEmpty())
+            this->setInitialMsgType(qstrMethodTypeRecipient); // (server="" by default.)
+        // -------------------------------------------------------------------------
+        // Whereas if BOTH are empty, there might still be addresses set -- we just don't know
+        // what type they are. You might reply to someone's message, which puts his address
+        // as the "recipient" -- even if that address was never previously in your address
+        // book. Therefore, just because you aren't familiar with the address, and can't
+        // find its type, doesn't mean it's an invalid address. We probably still want to
+        // try to send to that address! So further on below, you will see that when the type
+        // of an address is not ascertainable, the address is still considered "valid" as long
+        // as we know the msgtype we're supposed to TRY to use that address as.
+        // But by THIS point, in THIS block, if we still haven't figured out the msgtype, then
+        // we have to error out, because even though we might have an address, we have no idea
+        // how to try to send to it.
+        // So at this point we have to tell the user to click the "Via" button and specify the
+        // transport.
+        // UPDATE: I moved this MessageBox lower, since it's still possible yet to figure out
+        // the transport type and set it dynamically. Only once we've exhausted any hope of
+        // doing that, do we pop up this box and then return false. (Below, lower down.)
+        //
+//      QMessageBox::warning(this, tr("Message Has No Transport"),
+//                           tr("Before sending, please click 'Via' to choose HOW it will be sent."));
+//      return false;
     }
     // -------------------------------------------
-    // If we have no method, then we just pick one that the
-    // sender/recipient have in common.
+    // Above we tried to ascertain the method (if it was empty)
+    // based on whether it could be derived from one or both of
+    // the sender/recipient.
     //
-    // Whereas if we DO have a method, then we make sure the sender
-    // and recipient are compatible with it. This is where we know
-    // we have chosen the right methodID for sender and address
+    // If we STILL have no method, then we just find and choose
+    // one that the sender/recipient have in common, which we can
+    // potentially do by searching our local database. This is
+    // what the below block does. It has to then set their addresses
+    // and method ID, and ask the user to choose when necessary.
+    //
+    // After that:
+    // Either way, if we DO have a method now, then we next make sure
+    // the sender/recipient are compatible with it. This is where we
+    // insure we have chosen the right methodID for sender and address
     // for recipient. If method type is "otserver|SERVER_ID" then
     // we see if both are known to be on that server. Whereas if
     // the type is "bitmessage" then we look up the methodID and
@@ -1068,19 +1866,6 @@ bool MTCompose::MakeSureCommonMsgMethod()
     //
     if (m_msgtype.isEmpty())
     {
-//        QString m_msgtype;            // Will be "otserver" or "bitmessage" etc.
-//        QString m_serverId;           // If msgtype is "otserver" then the OT Server ID must be set here. Otherwise should be blank.
-
-//        QString m_senderNymId;        // Sender NymID should always be available.
-//        int     m_senderMethodId;     // Method #5 might be the sender's Bitmessage connection. Mandatory if msgtype is "bitmessage" (or anything other than otserver.)
-//        QString m_senderAddress;      // If msgtype is "bitmessage" this will contain a Bitmessage address.
-
-//        QString m_recipientNymId;     // If not available, then m_recipientContactID must be available. (For Bitmessage, for example, Nym is optional.)
-//        int     m_recipientContactId; // Recipient Nym kjsdfds982345 might be Contact #2. (Or Nym itself might be blank, with ONLY Contact!)
-//        QString m_recipientAddress;   // If msgtype is "bitmessage" this will contain a Bitmessage address.
-
-
-
         // LOGIC:
         //
         // if m_serverId is set, and senderNymId is set (which it definitely is, by this point), and recipientNymId is set,
@@ -1092,202 +1877,420 @@ bool MTCompose::MakeSureCommonMsgMethod()
         //
         // HOWEVER, what if both already have an ADDRESS / METHOD ID set? In that case we don't have to loop, since it's already
         // set. In that case though, we should have checked that before we even entered this block, and set the msgtype by now
-        // already. Therefore I will add that now, above this block.
+        // already. Therefore I will add that now, above this block. Update: Added. Therefore we now know for a fact that if we
+        // were able to ascertain the msgtype based on any preset addresses, that we have already done so by this point.
+        // Therefore the fact that the msgtype is still blank, means we were definitely unable to determine it based on the
+        // addresses (if there were any.) Therefore our next step in here is to try to find a msgtype that the sender/recipient
+        // DO have in common, and set their addresses accordingly. If we fail, then we will display the "Message Has No Transport"
+        // error and ask the user to click the "Via" button.
         //
-
-
-        mapOfCommTypes mapTypes;
-        bool bGotCommTypes = MTComms::types(mapOfCommTypes & mapTypes);
-
-
-        QString qstrMsgTypeAttempt = QString("bitmessage");
-
-
-        bool MTCompose::CheckPotentialCommonMsgMethod(QString qstrMsgTypeAttempt, mapIDName * pmapSenderAddresses/*=NULL*/, mapIDName * pmapRecipientAddresses/*=NULL*/)
-
-
-
-
-
-
-
-
-//      bool GetMsgMethodsByNym        (mapIDName & theMap, QString filterByNym,  bool bAddServers=false); // Methods.
-//      bool GetMsgMethodTypesByContact(mapIDName & theMap, int nFilterByContact, bool bAddServers=false); // Method Types.
-
-
-        int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID (m_recipientNymId);
-
-        if (bRecipientTypeFoundOnNym && (nContactID > 0))
-        {
-            // If we have no method, then we just pick one that the
-            // sender/recipient have in common.
-            //
-            // First we see if they both have Bitmessage, and if not,
-            // see if they have any non-OT-server options in common.
-            // If not, see if they have the default server in common.
-            // If not, see if they have any server in common.
-            // If not, return false.
-            //
-            // (Otherwise below this block we know we have a method chosen.)
-            //
-            if ( MTContactHandler::getInstance()->MethodTypeFoundOnNym    (QString("bitmessage"), m_senderNymId) &&
-                 MTContactHandler::getInstance()->MethodTypeFoundOnContact(QString("bitmessage"), nContactID))
-            {
-
-            }
-        } // if nContactID > 0
-
-
-//      bool MTContactHandler::getInstance()->MethodTypeFoundOnNym    (QString method_type, QString filterByNym);
-//      bool MTContactHandler::getInstance()->MethodTypeFoundOnContact(QString method_type, int nFilterByContact);
-
-    }
-    // -----------------------------------------
-    // Whereas if we DO have a method, then we make sure the sender
-    // and recipient are compatible with it. This is where we know
-    // we have chosen the right methodID for sender and address
-    // for recipient. If method type is "otserver|SERVER_ID" then
-    // we see if both are known to be on that server. Whereas if
-    // the type is "bitmessage" then we look up the methodID and
-    // address appropriately.
-    //
-    if (!m_msgtype.isEmpty())
-    {
-        // Whereas if we DO have a method, then we make sure the
-        // sender and recipient are compatible. This is where we know
-        // we have chosen the right methodID for sender and address
-        // for recipient. If method type is "otserver|SERVER_ID" then
-        // we see if both are known to be on that server. Whereas if
-        // the type is "bitmessage" then we look up the methodID and
-        // address appropriately.
-        //
-
-
-
-//       bool MTContactHandler::getInstance()->MethodTypeFoundOnNym    (QString method_type, QString filterByNym);
-//       bool MTContactHandler::getInstance()->MethodTypeFoundOnContact(QString method_type, int nFilterByContact);
-
-
-    }
-    // -----------------------------------------
-
-    int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID (m_recipientNymId);
-
-    if (nContactID <= 0)
-    {
-        qDebug() << "MTCompose::MakeSureCommonMsgMethod: Unable to find contact ID based on recipient nym ID.";
-        // Perhaps TODO, msgbox: "No contact found for recipient nym. Would you like to add one?"
-    }
-    else //nContactID > 0
-    {
-        mapIDName map_senderMsgMethods;
-        mapIDName map_recipientMsgMethods;
-
-//        bool bGotNymMethods     = MTContactHandler::getInstance()->GetMsgMethodsByNym(map_senderMsgMethods,
-//                                                                                      m_senderNymId,
-//                                                                                      true);//bool bAddServers=false by default
-
-//        bool bGotContactMethods = MTContactHandler::getInstance()->GetMsgMethodsByContact(map_recipientMsgMethods,
-//                                                                                          nContactID,
-//                                                                                          true);//bAddServers=false by default
-//        if (!bGotNymMethods)
-//        {
-//            qDebug() << "MTCompose::MakeSureCommonMsgMethod: Can find ANY messaging methods for sender Nym.";
-//            // Perhaps todo: msgbox.
-//            return false;
-//        }
-//        else if (!bGotContactMethods)
-//        {
-//            qDebug() << "MTCompose::MakeSureCommonMsgMethod: Can find ANY messaging methods for recipient Nym.";
-//            // Perhaps todo: msgbox.
-//            return false;
-//        }
-        // By this point we know there's a contact assigned to the recipient.
-        // We also know that we were able to find messaging methods for the sender
-        // AND for the recipient.
-        // But what we don't know yet is, if they have any in COMMON.
         // -------------------------------------------
-        // If a method is already set, then make sure sender and recipient both
-        // support it.
-        //
-        if (!m_msgtype.isEmpty())
+        if (!m_serverId.isEmpty() && !m_recipientNymId.isEmpty()) // No need to check if senderNymID isn't empty, since we already know it isn't, by this point.
         {
-
-            //resume
-
-
-
-
-        }
-        // Else if a method is NOT already set, then find one in common between sender
-        // and recipient.
-        //
-        else // m_method is empty.
-        {
-
-        }
-    } // if (nContactID > 0)
-
-
-
-
-
-
-
-
-
-    // BELOW SAVED FROM PREVIOUS FUNCTION JUST IN CASE
-
-    m_msgtype = qstrMsgTypeAttempt;
-
-    // By this point, we KNOW both sender and recipient have ability to transport
-    // via qstrMsgTypeAttempt ("bitmessage" or whatever.) Let's see if they already
-    // have addresses set, in which case we'll stick with the ones already set.
-    //
-    if (!m_recipientAddress.isEmpty())
-    {
-        QString qstrMethodType = MTContactHandler::getInstance()->GetMethodType(m_recipientAddress);
-
-        if (!qstrMethodType.isEmpty())
-        {
-            // Let's make sure whether the types match.
-            //
-            if (0 != qstrMethodType.compare(qstrMsgTypeAttempt))
-            {
-                // This means a type was found for the address, but it's different than
-                // the type we just set as m_msgtype.
-            }
+            this->setInitialMsgType(QString("otserver")); // arg server="" by default.
+            // BUT: If m_serverId is already set, and blank is passed, then m_serverId's
+            // value is preserved (not overwritten by the blank "")
         }
         else
         {
-            // NOTE: Just because we didn't find the method type for a given address,
-            // doesn't mean the address isn't of that type! We may have received a message
-            // from someone who we haven't yet added to our own address book.
+            // Since we know the msgtype can't possible be "otserver" (since either the server ID is empty,
+            // or the recipientNymId is still empty) we go ahead and blank out any server ID that might be
+            // there, and proceed to find a msgtype that they DO have in common.
             //
+//          m_serverId = QString(""); // Now done farther below.
+            // -------------------------------------
+            mapOfCommTypes mapTypes;
+            bool bFoundOneInCommon = false;
+            bool bGotCommTypes     = MTComms::types(mapTypes);
+
+            // Here we're looping through the list of transport types OTHER than "otserver",
+            // such as "bitmessage". See if we can find one that both parties have in common.
             //
+            if (bGotCommTypes)
+            {
+                QString qstrMsgTypeAttempt, qstrMsgTypeDisplay;
+                mapIDName mapSenderAddresses, mapRecipientAddresses;
+
+                for (mapOfCommTypes::iterator it = mapTypes.begin(); it != mapTypes.end(); ++it)
+                {
+                    qstrMsgTypeAttempt = QString("");
+                    qstrMsgTypeDisplay = QString("");
+
+                    std::string strTypeName    = it->first;
+                    std::string strTypeDisplay = it->second;
+
+                    if (!strTypeName.empty() && !strTypeDisplay.empty())
+                    {
+                        qstrMsgTypeAttempt = QString::fromStdString(strTypeName);
+                        qstrMsgTypeDisplay = QString::fromStdString(strTypeDisplay);
+
+                        mapSenderAddresses   .clear();
+                        mapRecipientAddresses.clear();
+
+                        if (this->CheckPotentialCommonMsgMethod(qstrMsgTypeAttempt, &mapSenderAddresses, &mapRecipientAddresses))
+                        {
+                            bFoundOneInCommon = true;
+                            break;
+                        }
+                    }
+                } // for
+                // -------------------------------
+                // Did we find one?
+                //
+                if (bFoundOneInCommon)
+                {
+                    // Okay then, let's set the msgtype to qstrMsgTypeAttempt, and we'll set the sender and
+                    // recipient addresses. (And sender method ID.) If there's only one address to choose from
+                    // for either, we can just go with it. But if there are more than one, we must ask the user
+                    // to choose which he prefers.
+                    //
+                    if (!this->chooseSenderAddress(mapSenderAddresses, qstrMsgTypeDisplay))
+                        return false;
+
+                    if (!this->chooseRecipientAddress(mapRecipientAddresses, qstrMsgTypeDisplay))
+                        return false;
+                    // -------------------------------------------
+                    // If both addresses were selected (we got this far, didn't we?)
+                    // then we go ahead and set the msgtype.
+                    //
+                    this->setInitialMsgType(qstrMsgTypeAttempt); // (server="" by default.)
+
+                } // if (bFoundOneInCommon)
+            } // if (bGotCommTypes)
         }
-    }
-
-    if (!m_senderAddress.isEmpty())
+    } // if (m_msgtype.isEmpty())
+    // ------------------------------------
+    // By this point, if msgtype STILL wasn't set, we have no choice but to return empty-handed.
+    //
+    if (m_msgtype.isEmpty())
     {
-
+        QMessageBox::warning(this, tr("Message Has No Transport"),
+                             tr("Before sending, please click 'Via' to choose HOW it will be sent."));
+        return false;
     }
+    // -----------------------------------------
+    // By this point we know for a fact:
+    //
+    // -- We know that m_msgtype is definitely set to a specific messagetype.
+    // -- If that type is "otserver", we know m_serverId is set.
+    // -- We know, no matter what, that the sender Nym ID is set by now.
+    // -- If the type is "otserver", then we know the recipient Nym IDs is set.
+    // -- If the type is NOT "otserver", then we know the recipient Nym ID MIGHT be set...
+    //    ...but also might NOT be. And either way, we know that's all we'll know about it.
+    // -- If the type is NOT "otserver", (e.g. it's "bitmessage" or anything else) AND if
+    //    we had to figure that out above, then we know the sender and recipient addresses
+    //    ARE set, and we also know that we tried to find the sender method ID based on the
+    //    sender address. (Which may or may not have succeeded.)
+    // ----------------------------------------------------------------------------------------
+    //
+    // We DO have a method, so next, we need to make sure the sender
+    // and recipient are compatible with it. This is where we make sure
+    // we have chosen the right methodID for sender, and the right address
+    // for the recipient.
+    //
+    if (!sendingThroughOTServer())
+    {
+        QString qstrMethodTypeSender, qstrMethodTypeRecipient;
 
+        if (!m_senderAddress.isEmpty())
+            qstrMethodTypeSender    = MTContactHandler::getInstance()->GetMethodType(m_senderAddress);
+
+        if (!m_recipientAddress.isEmpty())
+            qstrMethodTypeRecipient = MTContactHandler::getInstance()->GetMethodType(m_recipientAddress);
+        // -------------------------------------------------------------------------
+        // If both addresses exist, and both have a message type, and their message types
+        // match each other, but they do NOT match the actual msgtype, then set it to
+        // match them.
+        //
+        if (!qstrMethodTypeSender.isEmpty() && !qstrMethodTypeRecipient.isEmpty() &&  // If sender AND recipient address exists,
+                (0 == qstrMethodTypeSender.compare(qstrMethodTypeRecipient)) &&       // and if they are the same,
+                (0 != qstrMethodTypeSender.compare(m_msgtype)))                       // and if they do NOT match with m_msgtype
+            this->setInitialMsgType(qstrMethodTypeSender);                            // ...Then set the msgtype to match with them.
+        // -------------------------------------------------------------------------
+        // We DON'T KNOW if both sender and recipient addresses are even set yet.
+        // Further: just because an address is set doesn't mean our local database
+        // has any record of it. (We must give unknown addresses the benefit of
+        // the doubt.)
+        // But we DO know what the msgtype is. Therefore if either address is set,
+        // its type had better either be unknown (because it wasn't in our address
+        // book yet) or known and matching the msgtype.
+        // If the sender or recipient address is known, and DOESN'T match the msgtype,
+        // then we have a problem and have to return false.
+        // Then if BOTH addresses exist (and knowing they are already validated against
+        // the msgtype just above) then we are good to go!
+        // But if one (or both) of the addresses doesn't exist, then we have to choose
+        // it from among the available addresses for the msgtype.
+        // ----------------------------------------------------------
+        // If either address is set, its type had better either be unknown (because
+        // it wasn't in our address book yet) or known and MATCHES the msgtype.
+        //
+        // If the sender or recipient address type is known from the DB, yet DOESN'T
+        // match the msgtype, then we have a problem and have to return false.
+
+        if (!qstrMethodTypeSender.isEmpty() &&
+            (0 != m_msgtype.compare(qstrMethodTypeSender)))
+        {
+            qDebug() << "MTCompose::MakeSureCommonMsgMethod: Transport type of sender doesn't match expected transport type.";
+
+            QMessageBox::warning(this, tr("Wrong Transport"),
+                                 tr("Sender address produced unexpected transport type. Please click 'From' and update the sender."));
+            return false;
+        }
+
+        if (!qstrMethodTypeRecipient.isEmpty() &&
+            (0 != m_msgtype.compare(qstrMethodTypeRecipient)))
+        {
+            qDebug() << "MTCompose::MakeSureCommonMsgMethod: Transport type of recipient doesn't match expected transport type.";
+
+            QMessageBox::warning(this, tr("Wrong Transport"),
+                                 tr("Recipient address produced unexpected transport type. Please click 'To' and update the recipient."));
+            return false;
+        }
+        // ----------------------------------------------------------
+        // But if one (or both) of the addresses doesn't exist, then we have to choose
+        // it from among the available addresses for the msgtype.
+        //
+        QString qstrMsgTypeDisplay = QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
+
+        if (m_senderAddress.isEmpty())
+        {
+            mapIDName mapSenderAddresses;
+            bool      bGotAddresses = false;
+
+            if (!m_senderNymId.isEmpty())
+            {
+                if (m_senderMethodId > 0)
+                    bGotAddresses = MTContactHandler::getInstance()->GetAddressesByNym(mapSenderAddresses,
+                                                                                       m_senderNymId, m_senderMethodId);
+                if (!bGotAddresses)
+                    bGotAddresses = MTContactHandler::getInstance()->GetAddressesByNym(mapSenderAddresses,
+                                                                                       m_senderNymId, m_msgtype);
+                if (bGotAddresses)
+                    this->chooseSenderAddress(mapSenderAddresses, qstrMsgTypeDisplay);
+            }
+        }
+
+        if (m_recipientAddress.isEmpty())
+        {
+            mapIDName mapRecipientAddresses;
+            bool      bGotAddresses = false;
+
+            if (!m_recipientNymId.isEmpty())
+                bGotAddresses = MTContactHandler::getInstance()->GetAddressesByNym(mapRecipientAddresses,
+                                                                                   m_recipientNymId, m_msgtype);
+
+            if (!bGotAddresses && (m_recipientContactId > 0))
+                bGotAddresses = MTContactHandler::getInstance()->GetAddressesByContact(mapRecipientAddresses,
+                                                                                       m_recipientContactId, m_msgtype);
+
+            if (bGotAddresses)
+                this->chooseRecipientAddress(mapRecipientAddresses, qstrMsgTypeDisplay);
+        }
+        // ----------------------------------------------------------
+        if (m_senderAddress.isEmpty())
+        {
+            QMessageBox::warning(this, tr("Missing Sender Address"),
+                                 tr("Sender address missing. Please click 'From' and update the sender."));
+            return false;
+        }
+        else if (m_senderMethodId <= 0)
+        {
+            mapIDName mapMethods;
+            bool bGotMethods = MTContactHandler::getInstance()->GetMsgMethodsByNym(mapMethods, m_senderNymId, /*bAddServers=*/false, m_msgtype);
+
+            if (!bGotMethods)
+            {
+                // Just because the Sender Nym doesn't have msg methods for a specific transport type,
+                // doesn't mean that NO NYMS IN THE ENTIRE WALLET have msg methods for that transport
+                // type.
+                // So next step is to see if there are ANY in the whole wallet for the given
+                // type, and then ask the user to choose one that the address will be associated
+                // with.
+                //
+                bGotMethods = MTContactHandler::getInstance()->GetMsgMethods(mapMethods, /*bAddServers=*/false, m_msgtype);
+
+                if (bGotMethods)
+                {
+                    QMessageBox::StandardButton reply;
+
+                    QString qstrQuestion = QString("%1 %2 %3").arg(tr("Sender has no")).arg(qstrMsgTypeDisplay).arg(tr("interfaces. Choose one?"));
+
+                    reply = QMessageBox::question(this, "", qstrQuestion, QMessageBox::Yes|QMessageBox::No);
+
+                    if ((reply == QMessageBox::No) || !this->chooseSenderMethodID(mapMethods, qstrMsgTypeDisplay))
+                        return false;
+                    else
+                        MTContactHandler::getInstance()->AddMsgAddressToNym(m_senderNymId, m_senderMethodId, m_senderAddress);
+                }
+                else
+                {
+                    QString qstrWarning = QString("%1 %2 %3").arg(tr("No")).arg(qstrMsgTypeDisplay).arg(tr("interfaces found. Edit the Sender to add one, and then try again."));
+                    QMessageBox::warning(this, tr("No Transport Interfaces"), qstrWarning);
+                    return false;
+                }
+            }
+            else if (!this->chooseSenderMethodID(mapMethods, qstrMsgTypeDisplay))
+                return false;
+        }
+        // -------------------------------------
+        if (m_recipientAddress.isEmpty())
+        {
+            QMessageBox::warning(this, tr("Missing Recipient Address"),
+                                 tr("Recipient address missing. Please click 'To' and update the recipient."));
+            return false;
+        }
+        // ----------------------------------------------------------
+        m_serverId = QString("");
+    }
+    else // Sending through an OT server
+    {
+        // server id is set?
+        if (m_serverId.isEmpty())
+        {
+            QMessageBox::warning(this, tr("Missing OT Server"),
+                                 tr("OT Server ID missing. Please click 'Via' and choose a server."));
+            return false;
+        }
+        // ---------------------------------------------------
+        // recipient nym ID is set? Otherwise instruct user to click 'to' and choose one.
+        //
+        if (m_recipientNymId.isEmpty())
+        {
+            QMessageBox::warning(this, tr("Missing Recipient"),
+                                 tr("Recipient Nym ID missing. Please click 'To' and choose a recipient."));
+            return false;
+        }
+        // ---------------------------------------------------
+        // sender nym is registered there? Warn if not and give option to register there.
+        //
+        if (!verifySenderAgainstServer())
+            return false;
+        // ---------------------------------------------------
+        // recipient nym is known to frequent that server? if not, warn the user and give him
+        // the option to just look it up directly on the server.
+        //
+        if (!verifyRecipientAgainstServer())
+            return false;
+    }
+    // -----------------------------------------
+    return true;
 }
 
-// TODO: when sender is selected, and IF recipient is already selected,
-// try to find a common communication method between them. If currently
-// selected is already in common -- fine. Otherwise choose one if in
-// common.
+
+bool MTCompose::verifySenderAgainstServer()   // Assumes senderNymId and serverId are set.
+{
+    // sender nym is registered there? Warn if not and give option to register there.
+    //
+    std::string server_id    = m_serverId.toStdString();
+    std::string sender_id    = m_senderNymId.toStdString();
+
+    if (!OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
+    {
+        QMessageBox::StandardButton reply;
+
+        reply = QMessageBox::question(this, "", tr("Sender Nym not registered on selected OT server. Register now?"),
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::Yes)
+        {
+            OT_ME       madeEasy;
+            std::string response;
+            {
+                MTSpinner theSpinner;
+
+                response = madeEasy.register_nym(server_id, sender_id);
+            }
+
+            qDebug() << QString("Nym Creation Response: %1").arg(QString::fromStdString(response));
+
+            int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
+
+            if (1 != nReturnVal)
+            {
+                Moneychanger::HasUsageCredits(this, server_id, sender_id);
+                return false;
+            }
+        }
+        else
+            return false;
+    }
+    return true;
+}
+
+bool MTCompose::verifyRecipientAgainstServer() // Assumes senderNymId and serverId are set.
+{
+    // recipient nym is known to frequent that server? if not, warn the user and give him
+    // the option to just look it up directly on the server.
+    //
+    std::string server_id    = m_serverId.toStdString();
+    std::string sender_id    = m_senderNymId.toStdString();
+    std::string recipient_id = m_recipientNymId.toStdString();
+
+    mapIDName mapServers;
+    bool      bGotServers = false;
+
+    if (m_recipientContactId > 0)
+        bGotServers = MTContactHandler::getInstance()->GetServers(mapServers, m_recipientContactId);
+
+    if (!bGotServers && !m_recipientNymId.isEmpty())
+        bGotServers = MTContactHandler::getInstance()->GetServers(mapServers, m_recipientNymId);
+
+    if (bGotServers)
+    {
+        mapIDName::iterator it = mapServers.find(m_serverId);
+
+        if (mapServers.end() == it)
+        {
+            QMessageBox::StandardButton reply;
+
+            reply = QMessageBox::question(this, "", tr("Recipient Nym not known to frequent the selected OT server. Shall I ask the server and find out?"),
+                                          QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::Yes)
+            {
+                OT_ME       madeEasy;
+                std::string response;
+                {
+                    MTSpinner theSpinner;
+
+                    response = madeEasy.check_user(server_id, sender_id, recipient_id);
+                }
+
+                int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
+
+                if (1 != nReturnVal)
+                {
+                    QMessageBox::warning(this, tr("Recipient Not Found on Server"),
+                                         tr("Recipient Nym not found on selected OT server. Please click 'Via' and choose a different server or a different transport method."));
+                    Moneychanger::HasUsageCredits(this, server_id, sender_id);
+                    return false;
+                }
+            }
+            else
+                return false;
+        }
+    }
+    return true;
+}
+
+
+
 void MTCompose::on_fromButton_clicked()
 {
+    if (!m_senderAddress.isEmpty())
+    {
+        QString qstrOldNymByAddress  = MTContactHandler::getInstance()->GetNymByAddress(m_senderAddress);
+
+        if (m_senderNymId.isEmpty() && !qstrOldNymByAddress.isEmpty())
+            m_senderNymId = qstrOldNymByAddress;
+
+        if ((0 == m_senderMethodId) && !m_senderNymId.isEmpty())
+            m_senderMethodId = MTContactHandler::getInstance()->GetMethodIDByNymAndAddress(m_senderNymId, m_senderAddress);
+    }
+    // ---------------------------
     // Select from Nyms in local wallet.
     //
     DlgChooser theChooser(this);
     // -----------------------------------------------
     mapIDName & the_map = theChooser.m_map;
-
     bool bFoundDefault = false;
     // -----------------------------------------------
     const int32_t nym_count = OTAPI_Wrap::It()->GetNymCount();
@@ -1309,56 +2312,95 @@ void MTCompose::on_fromButton_clicked()
             // -----------------------------------------------
             the_map.insert(OT_nym_id, OT_nym_name);
         }
-     }
+    }
     // -----------------------------------------------
     if (bFoundDefault && !m_senderNymId.isEmpty())
         theChooser.SetPreSelected(m_senderNymId);
     // -----------------------------------------------
-    theChooser.setWindowTitle(tr("Choose your Sender identity"));
+    theChooser.setWindowTitle(tr("Choose Sender"));
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
-        qDebug() << QString("SELECT was clicked for NymID: %1").arg(theChooser.m_qstrCurrentID);
-
         if (!theChooser.m_qstrCurrentID.isEmpty())
         {
-            m_senderNymId = theChooser.m_qstrCurrentID;
-            // -----------------------------------------
-            if (theChooser.m_qstrCurrentName.isEmpty())
-                ui->fromButton->setText(QString(""));
-            else
-                ui->fromButton->setText(theChooser.m_qstrCurrentName);
-            // -----------------------------------------
+            this->setInitialSenderNym(theChooser.m_qstrCurrentID);
+            // ---------------------------------------------
+            if (!m_msgtype.isEmpty() && !sendingThroughOTServer())
+            {
+                QString qstrMsgTypeDisplay = QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
 
+                if (qstrMsgTypeDisplay.isEmpty())
+                    qstrMsgTypeDisplay = m_msgtype;
+                // -------------------------------------------
+                mapIDName mapSenderAddresses;
+                bool      bGotAddresses = false;
 
-
-
-
-
-            return;
+                if (!m_senderNymId.isEmpty())
+                    bGotAddresses = MTContactHandler::getInstance()->GetAddressesByNym(mapSenderAddresses,
+                                                                                       m_senderNymId, m_msgtype);
+                if (bGotAddresses)
+                    this->chooseSenderAddress(mapSenderAddresses, qstrMsgTypeDisplay);
+            }
+            // -------------------------------------------
+            // We've just chosen the sender.
+            //
+            // What if a recipient is already there?
+            //
+            // Well, if the msgtype is already set, we should see if the recipient is
+            // compatible with it. If he isn't, then we should see if we can auto-select
+            // a new msgtype that sender and recipient are both compatible with.
+            //
+            // If the msgtype ISN'T set, then we should choose one automatically, if
+            // possible, that both sender and recipient are compatible with.
+            //
+            FindRecipientMsgMethod();
         }
     }
     else
     {
       qDebug() << "CANCEL was clicked";
     }
-    // -----------------------------------------------
-    m_senderNymId = QString("");
-    ui->fromButton->setText(tr("<Click to choose Sender>"));
 }
 
 
-// TODO: when recipient is selected and IF sender is already selected,
-// try to find a communication method in common between them, and if
-// current method is in common, keep it selected. Perhaps if the initial
-// method is "otserver|SERVER_ID" we set it that way to start, but if
-// instead the method was initially blank, and if both sender and recip-
-// ient have bitmessage, then perhaps prefer that even over an OT server
-// they have in common such as the default OT server. Basically if the
-// initial method is blank, prefer bitmessage, and if that's not found,
-// then prefer the default server if it exists on a server list in common
-// between them. And if it doesn't then find SOME server in common
-// between them.
+// -------------------------------------------------------------
+
+
+
+bool MTCompose::chooseRecipientNym(mapIDName & theMap)
+{
+    if (1 == theMap.size())
+    {
+        mapIDName::iterator it = theMap.begin();
+        this->setInitialRecipient(it.key(), m_recipientContactId, m_recipientAddress);
+        return true;
+    }
+    else if (theMap.size() > 1)
+    {
+        // There are multiple matching addresses for the recipient.
+        // (Have the user choose one of them.)
+        //
+        DlgChooser theChooser(this);
+        // -----------------------------------------------
+        theChooser.m_map = theMap;
+        // -----------------------------------------------
+        QString qstrWindowTitle = QString(tr("Recipient has multiple Nyms"));
+        theChooser.setWindowTitle(qstrWindowTitle);
+        // -----------------------------------------------
+        if (theChooser.exec() == QDialog::Accepted)
+        {
+            if (!theChooser.m_qstrCurrentID.isEmpty())
+            {
+                this->setInitialRecipient(theChooser.m_qstrCurrentID, m_recipientContactId, m_recipientAddress);
+                return true;
+            }
+        }
+    }
+    // --------------------
+    return false;
+}
+
+
 void MTCompose::on_toButton_clicked()
 {
     // Select recipient from the address book and convert to Nym ID.
@@ -1368,115 +2410,87 @@ void MTCompose::on_toButton_clicked()
     mapIDName & the_map = theChooser.m_map;
 
     MTContactHandler::getInstance()->GetContacts(the_map);
+    // ---------------------------
+    if (!m_recipientAddress.isEmpty())
+    {
+        QString qstrOldNymByAddress  = MTContactHandler::getInstance()->GetNymByAddress(m_recipientAddress);
+        int     nOldContactByAddress = MTContactHandler::getInstance()->GetContactByAddress(m_recipientAddress);
 
+        if (m_recipientNymId.isEmpty() && !qstrOldNymByAddress.isEmpty())
+            m_recipientNymId = qstrOldNymByAddress;
+
+        if ((m_recipientContactId <= 0) && (nOldContactByAddress > 0))
+            m_recipientContactId = nOldContactByAddress;
+    }
+    // ---------------------------
     // Set Chooser's default to recipient nym's Contact, if nym is
     // there and Contact is found based on it.
     if (!m_recipientNymId.isEmpty())
     {
-        int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID(m_recipientNymId);
-
+        const int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID(m_recipientNymId);
         if (nContactID > 0)
-        {
-            QString strTempID = QString("%1").arg(nContactID);
-            theChooser.SetPreSelected(strTempID);
-        }
+            m_recipientContactId = nContactID;
+    }
+    // ---------------------------
+    if (m_recipientContactId > 0)
+    {
+        QString strTempID = QString("%1").arg(m_recipientContactId);
+        theChooser.SetPreSelected(strTempID);
     }
     // -----------------------------------------------
-    theChooser.setWindowTitle(tr("Choose the Recipient"));
+    theChooser.setWindowTitle(tr("Choose Recipient"));
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
         qDebug() << QString("SELECT was clicked for ID: %1").arg(theChooser.m_qstrCurrentID);
 
-        // If not the same as before, then we have to choose a NymID based on the selected Contact.
+        // We try to choose a NymID based on the selected Contact.
         //
         int nSelectedContactID = theChooser.m_qstrCurrentID.toInt();
-        int nOldNymContactID   = MTContactHandler::getInstance()->FindContactIDByNymID(m_recipientNymId);
 
-        // If they had matched, then we could have kept m_recipientNymId as it was.
-        // But since they are different, we have to figure out a NymID to use, based
-        // on nSelectedContactID.
+        this->setInitialRecipient(QString(""), 0, QString(""));
+        this->setInitialRecipientContactID(nSelectedContactID);
+        // ---------------------------------------------
+        // Next we try to find a Nym based on this Contact...
         //
-        if (nSelectedContactID != nOldNymContactID)
+        mapIDName theNymMap;
+
+        if (MTContactHandler::getInstance()->GetNyms(theNymMap, nSelectedContactID))
+            this->chooseRecipientNym(theNymMap);
+        // ---------------------------------------------
+        if (!m_msgtype.isEmpty() && !sendingThroughOTServer())
         {
-            QString qstrContactName;
+            QString qstrMsgTypeDisplay = QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
 
-            if (nSelectedContactID <= 0) // Should never happen.
-            {
-                qstrContactName  = QString("");
-                m_recipientNymId = QString("");
-                ui->toButton->setText(tr("<Click to choose Recipient>"));
-                return;
-            }
-            // else...
+            if (qstrMsgTypeDisplay.isEmpty())
+                qstrMsgTypeDisplay = m_msgtype;
+            // -------------------------------------------
+            mapIDName mapRecipientAddresses;
+            bool      bGotAddresses = false;
+
+            if (!m_recipientNymId.isEmpty())
+                bGotAddresses = MTContactHandler::getInstance()->GetAddressesByNym(mapRecipientAddresses,
+                                                                                   m_recipientNymId, m_msgtype);
+
+            if (!bGotAddresses && (m_recipientContactId > 0))
+                bGotAddresses = MTContactHandler::getInstance()->GetAddressesByContact(mapRecipientAddresses,
+                                                                                       m_recipientContactId, m_msgtype);
+
+            if (bGotAddresses)
+                this->chooseRecipientAddress(mapRecipientAddresses, qstrMsgTypeDisplay);
+            // -------------------------------------------
+            // We've just chosen the recipient.
             //
-            qstrContactName = MTContactHandler::getInstance()->GetContactName(nSelectedContactID);
-
-            if (qstrContactName.isEmpty())
-                ui->toButton->setText(tr("(Contact has a blank name)"));
-            else
-                ui->toButton->setText(qstrContactName);
-            // ---------------------------------------------
-            // Next we need to find a Nym based on this Contact...
+            // What if a sender is already there?
             //
-            mapIDName theNymMap;
-
-            if (MTContactHandler::getInstance()->GetNyms(theNymMap, nSelectedContactID))
-            {
-                if (theNymMap.size() == 0)
-                {
-                    // TODO!
-
-                    // Perhaps there are no Nyms for the recipient.
-                    // (Perhaps there is a Bitmessage address, however.)
-                    // In that case we'd end up in this block.
-                }
-                else if (theNymMap.size() == 1)
-                {
-                    mapIDName::iterator theNymIt = theNymMap.begin();
-
-                    if (theNymIt != theNymMap.end())
-                    {
-                        QString qstrNymID   = theNymIt.key();
-                        QString qstrNymName = theNymIt.value();
-
-                        m_recipientNymId = qstrNymID;
-                    }
-                    else // Should never happen, since map size is 1.
-                    {
-                        m_recipientNymId = QString("");
-                        ui->toButton->setText(tr("<Click to choose Recipient>"));
-                        // -------------------------------------
-                        QMessageBox::warning(this, tr("Contact has no known identities"),
-                                             tr("Sorry, Contact '%1' has no known NymIDs (to send messages to.)").arg(qstrContactName));
-                        return;
-                    }
-                }
-                else // There are multiple Nyms to choose from.
-                {
-                    DlgChooser theNymChooser(this);
-                    theNymChooser.m_map = theNymMap;
-                    theNymChooser.setWindowTitle(tr("Recipient has multiple Nyms. (Please choose one.)"));
-                    // -----------------------------------------------
-                    if (theNymChooser.exec() == QDialog::Accepted)
-                        m_recipientNymId = theNymChooser.m_qstrCurrentID;
-                    else // User must have cancelled.
-                    {
-                        m_recipientNymId = QString("");
-                        ui->toButton->setText(tr("<Click to choose Recipient>"));
-                    }
-                }
-            }
-            else // No nyms found for this ContactID.
-            {
-                m_recipientNymId = QString("");
-                ui->toButton->setText(tr("<Click to choose Recipient>"));
-                // -------------------------------------
-                QMessageBox::warning(this, tr("Contact has no known identities"),
-                                     tr("Sorry, Contact '%1' has no known NymIDs (to send messages to.)").arg(qstrContactName));
-                return;
-            }
-            // --------------------------------
+            // Well, if the msgtype is already set, we should see if the sender is
+            // compatible with it. If he isn't, then we should see if we can auto-select
+            // a new msgtype that sender and recipient are both compatible with.
+            //
+            // If the msgtype ISN'T set, then we should choose one automatically, if
+            // possible, that both sender and recipient are compatible with.
+            //
+            FindSenderMsgMethod();
         }
     }
     else
@@ -1505,8 +2519,8 @@ void MTCompose::dialog()
                 "QPushButton:hover {border: 1px solid black; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa); }";
 
         ui->fromButton->setStyleSheet(style_sheet);
-        ui->toButton->setStyleSheet(style_sheet);
-        ui->viaButton->setStyleSheet(style_sheet);
+        ui->toButton  ->setStyleSheet(style_sheet);
+        ui->viaButton ->setStyleSheet(style_sheet);
 
         // Here if there is pre-set data for the subject, contents, to, from, server, etc
         // then we set it here.
@@ -1530,78 +2544,11 @@ void MTCompose::dialog()
         //
         // When sending to a Nym on a particular server he's NOT known to be
         // on, a warning message should be displayed first.
-
-
-
-        // Todo.
-
         // -------------------------------------------
-        std::string str_sender_name;
+        setSenderNameBasedOnAvailableData();
+        setRecipientNameBasedOnAvailableData();
+        setTransportDisplayBasedOnAvailableData();
         // -------------------------------------------
-        if (!m_senderNymId.isEmpty()) // senderNym was provided.
-        {
-            MTNameLookupQT theLookup;
-
-            str_sender_name = theLookup.GetNymName(m_senderNymId.toStdString());
-
-            if (str_sender_name.empty())
-                str_sender_name = m_senderNymId.toStdString();
-        }
-        // -------------------------------------------
-        if (str_sender_name.empty())
-        {
-            m_senderNymId = QString("");
-            ui->fromButton->setText(tr("<Click to choose Sender>"));
-        }
-        else
-            ui->fromButton->setText(QString::fromStdString(str_sender_name));
-        // -------------------------------------------
-
-
-        // -------------------------------------------
-        std::string str_recipient_name;
-        // -------------------------------------------
-        if (!m_recipientNymId.isEmpty()) // recipientNym was provided.
-        {
-            MTNameLookupQT theLookup;
-
-            str_recipient_name = theLookup.GetNymName(m_recipientNymId.toStdString());
-
-            if (str_recipient_name.empty())
-                str_recipient_name = m_recipientNymId.toStdString();
-        }
-        // -------------------------------------------
-        if (str_recipient_name.empty())
-        {
-            m_recipientNymId = QString("");
-            ui->toButton->setText(tr("<Click to choose Recipient>"));
-        }
-        else
-            ui->toButton->setText(QString::fromStdString(str_recipient_name));
-        // -------------------------------------------
-
-
-        // -------------------------------------------
-        std::string str_server_name;
-        // -------------------------------------------
-        if (!m_serverId.isEmpty()) // serverID was provided.
-        {
-            str_server_name = OTAPI_Wrap::It()->GetServer_Name(m_serverId.toStdString());
-
-            if (str_server_name.empty())
-                str_server_name = m_serverId.toStdString();
-        }
-        // -------------------------------------------
-        if (str_server_name.empty())
-        {
-            m_serverId = QString("");
-            ui->viaButton->setText(tr("<Click to choose Method>"));
-        }
-        else
-            ui->viaButton->setText(QString::fromStdString(str_server_name));
-        // -------------------------------------------
-
-
 
 
         // -------------------------------------------
@@ -1693,6 +2640,9 @@ MTCompose::MTCompose(QWidget *parent) :
     this->installEventFilter(this);
 
     connect(this, SIGNAL(balancesChanged()), this, SLOT(onBalancesChanged()));
+
+    connect(this, SIGNAL(ShowContact(QString)), Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
+    connect(this, SIGNAL(ShowNym(QString)),     Moneychanger::It(), SLOT(mc_show_nym_slot(QString)));
 }
 
 MTCompose::~MTCompose()
@@ -1712,4 +2662,33 @@ void MTCompose::on_subjectEdit_textChanged(const QString &arg1)
         m_subject = arg1;
         this->setWindowTitle(QString("%1: %2").arg("Compose").arg(arg1));
     }
+}
+
+void MTCompose::on_toolButtonTo_clicked()
+{
+    QString qstrContactID("");
+    // ------------------------------------------------
+    if (m_recipientContactId > 0)
+    {
+        qstrContactID = QString("%1").arg(m_recipientContactId);
+    }
+    else if (!m_recipientNymId.isEmpty())
+    {
+        int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID(m_recipientNymId);
+
+        if (nContactID > 0)
+            qstrContactID = QString("%1").arg(nContactID);
+    }
+    // ------------------------------------------------
+    emit ShowContact(qstrContactID);
+}
+
+void MTCompose::on_toolButtonFrom_clicked()
+{
+    QString qstrNymID("");
+    // ------------------------------------------------
+    if (!m_senderNymId.isEmpty())
+        qstrNymID = m_senderNymId;
+    // ------------------------------------------------
+    emit ShowNym(qstrNymID);
 }

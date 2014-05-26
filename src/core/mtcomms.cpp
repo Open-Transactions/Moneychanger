@@ -39,11 +39,28 @@ void MTComms::it_clearmodules()
 MTComms * MTComms::s_pIt = NULL;
 
 
+
+
+NetworkModule * MTComms::it_find(const std::string commstring)
+{
+    for (mapOfNetModules::iterator it = m_mapModules.begin(); it != m_mapModules.end(); ++it)
+    {
+        NetworkModule * pModule = it->second;
+
+        if (NULL != pModule)
+        {
+            if (0 == commstring.compare(pModule->getCommstring()))
+                return pModule;
+        }
+    }
+    return NULL;
+}
+
 bool MTComms::it_get(const std::string type, mapOfNetModules & mapOutput)
 {
     bool bFoundAny = false;
 
-    for(mapOfNetModules::iterator it = mapOutput.begin(); it != mapOutput.end(); ++it)
+    for(mapOfNetModules::iterator it = m_mapModules.begin(); it != m_mapModules.end(); ++it)
     {
         // -----------------------------
         const std::string & current_type = it->first;
@@ -145,6 +162,12 @@ bool MTComms::add(const std::string type, const std::string commstring)
 bool MTComms::get(const std::string type, mapOfNetModules & mapOutput)
 {
     return MTComms::it()->it_get(type, mapOutput);
+}
+
+//static
+NetworkModule * MTComms::find(const std::string commstring)
+{
+    return MTComms::it()->find(commstring);
 }
 
 //static
