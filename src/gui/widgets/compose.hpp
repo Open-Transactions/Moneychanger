@@ -50,19 +50,20 @@ public:
     void setInitialRecipientAddress(QString address);
     void setInitialRecipientContactID(int contactid, QString address="");
 
+    bool setRecipientNymBasedOnContact();
+
     void setSenderNameBasedOnAvailableData();
     void setRecipientNameBasedOnAvailableData();
     void setTransportDisplayBasedOnAvailableData();
 
-    bool chooseSenderAddress   (mapIDName & mapSenderAddresses,    QString qstrMsgTypeDisplay);
+    bool chooseSenderAddress   (mapIDName & mapSenderAddresses,    QString qstrMsgTypeDisplay, bool bForce=false);
     bool chooseRecipientAddress(mapIDName & mapRecipientAddresses, QString qstrMsgTypeDisplay);
     bool chooseSenderMethodID  (mapIDName & theMap,                QString qstrMsgTypeDisplay);
     bool chooseRecipientNym    (mapIDName & theMap);
     bool chooseServer          (mapIDName & theMap);
 
-    bool verifySenderAgainstServer();    // Assumes senderNymId and serverId are set.
-    bool verifyRecipientAgainstServer(); // Assumes senderNymId and serverId are set.
-
+    bool verifySenderAgainstServer   (bool bAsk=true, QString qstrServerID=QString("")); // Assumes senderNymId and serverId are set.
+    bool verifyRecipientAgainstServer(bool bAsk=true, QString qstrServerID=QString("")); // Assumes recipientNymId and serverId are set.
 
     void dialog();
 

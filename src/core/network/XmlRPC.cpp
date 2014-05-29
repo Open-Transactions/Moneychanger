@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 #include <utility>
-#include <sstream>
+
 
 XmlRPC::XmlRPC(std::string serverurl, int port, bool authrequired, int Timeout) : m_serverurl(serverurl), m_port(port), m_authrequired(authrequired), m_timeout(Timeout) {
     
@@ -42,12 +42,9 @@ XmlResponse XmlRPC::run(std::string methodName, std::vector<xmlrpc_c::value> par
         }
         
         // Construct the Server URL
-        std::stringstream sstream;
-        sstream << m_serverurl;
-        sstream << ":";
-        sstream << m_port;
-
-        std::string const serverUrl(sstream.str());
+        char port_string[10];
+        sprintf(port_string, "%d", m_port);
+        std::string const serverUrl(m_serverurl + ":" + port_string);
         xmlrpc_c::carriageParm_http0 carriageParams(serverUrl);
 
         // Check That Auth Requirements have been met

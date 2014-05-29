@@ -43,8 +43,10 @@ private:
 
 private slots:
     void on_lineEditName_editingFinished();
-
     void on_toolButton_clicked();
+
+    void on_btnAddressAdd_clicked();
+    void on_btnAddressDelete_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -52,7 +54,7 @@ protected:
     void FavorLeftSideForIDs();
 
     QGroupBox * createAddressGroupBox    (QString strNymID);
-    QWidget   * createSingleAddressWidget(QString strNymID, QString qstrMethodType, QString qstrMethodID, QString qstrDisplayName);
+    QWidget   * createSingleAddressWidget(QString strNymID, int nMethodID, QString qstrAddress, QString qstrDisplayAddr);
     QWidget   * createNewAddressWidget   (QString strNymID);
 
 private:

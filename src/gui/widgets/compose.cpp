@@ -168,9 +168,10 @@ void MTCompose::setSenderNameBasedOnAvailableData()
             qstrAddressPortion = QString(" (%1)").arg(this->m_senderAddress);
         else if (!sendingThroughOTServer())
         {
-            QString qstrMsgTypeDisplay = m_msgtype.isEmpty() ? QString(tr("transport or ")) : QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
+            QString qstrMsgTypeDisplay = m_msgtype.isEmpty() ? QString(tr("transport or ")) :
+                                                               QString("%1 ").arg(QString::fromStdString(MTComms::displayName(m_msgtype.toStdString())));
 
-            qstrAddressPortion = QString(" (%1 %2 %3)").arg(tr("No")).arg(qstrMsgTypeDisplay).arg(tr("address available"));
+            qstrAddressPortion = QString(" (%1 %2%3)").arg(tr("No")).arg(qstrMsgTypeDisplay).arg(tr("address available"));
         }
         // ---------------------------
         if (qstrNymName.isEmpty())
@@ -221,9 +222,10 @@ void MTCompose::setRecipientNameBasedOnAvailableData()
             qstrAddressPortion = QString(" (%1)").arg(this->m_recipientAddress);
         else if (!sendingThroughOTServer())
         {
-            QString qstrMsgTypeDisplay = m_msgtype.isEmpty() ? QString(tr("transport or ")) : QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
+            QString qstrMsgTypeDisplay = m_msgtype.isEmpty() ? QString(tr("transport or ")) :
+                                                               QString("%1 ").arg(QString::fromStdString(MTComms::displayName(m_msgtype.toStdString())));
 
-            qstrAddressPortion = QString(" (%1 %2 %3)").arg(tr("No")).arg(qstrMsgTypeDisplay).arg(tr("address available"));
+            qstrAddressPortion = QString(" (%1 %2%3)").arg(tr("No")).arg(qstrMsgTypeDisplay).arg(tr("address available"));
         }
         // ---------------------------
         if (qstrContactName.isEmpty())
@@ -252,6 +254,42 @@ void MTCompose::setInitialRecipientNym(QString nymId, QString address/*=""*/) //
 
     setInitialRecipientAddress(address); // If msgtype is "bitmessage" this will contain a Bitmessage address. For msgtype "otserver", address is blank.
     // NOTE: the display name is also set in this call.
+}
+
+bool MTCompose::setRecipientNymBasedOnContact()
+{
+    // If there's no Contact ID set, we return immediately.
+    if (m_recipientContactId <= 0)
+        return false;
+
+    // OK, the contact ID is set...
+
+    // If the NymID is already set, let's see if it already matches the Contact ID...
+    if (!m_recipientNymId.isEmpty())
+    {
+        const int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID(m_recipientNymId);
+
+        if (nContactID == m_recipientContactId)
+            return true;
+    }
+
+    // By this point it means either the recipient Nym is empty, or it was set but didn't
+    // match the current Contact. Either way, let's try to find a better Nym...
+    //
+    mapIDName theMap;
+
+    if (MTContactHandler::getInstance()->GetNyms(theMap, m_recipientContactId))
+    {
+        mapIDName::iterator it = theMap.begin();
+
+        if (it != theMap.end())
+        {
+            m_recipientNymId = it.key();
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void MTCompose::setInitialRecipientContactID(int contactid, QString address/*=""*/)
@@ -938,14 +976,17 @@ bool MTCompose::chooseSenderMethodID(mapIDName & theMap, QString qstrMsgTypeDisp
 
 
 
-bool MTCompose::chooseSenderAddress(mapIDName & mapSenderAddresses, QString qstrMsgTypeDisplay)
+bool MTCompose::chooseSenderAddress(mapIDName & mapSenderAddresses, QString qstrMsgTypeDisplay, bool bForce/*=false*/)
 {
-    if (1 == mapSenderAddresses.size())
+    if (bForce || (1 == mapSenderAddresses.size()))
     {
-        mapIDName::iterator it = mapSenderAddresses.begin();
-        this->setInitialSenderAddress(it.key());
-        m_senderMethodId = MTContactHandler::getInstance()->GetMethodIDByNymAndAddress(m_senderNymId, m_senderAddress);
-        return true;
+        if (mapSenderAddresses.size() >= 1)
+        {
+            mapIDName::iterator it = mapSenderAddresses.begin();
+            this->setInitialSenderAddress(it.key());
+            m_senderMethodId = MTContactHandler::getInstance()->GetMethodIDByNymAndAddress(m_senderNymId, m_senderAddress);
+            return true;
+        }
     }
     else if (mapSenderAddresses.size() > 1)
     {
@@ -1195,6 +1236,18 @@ void MTCompose::FindSenderMsgMethod()
     if (!m_recipientAddress.isEmpty())
         qstrMethodTypeRecipient = MTContactHandler::getInstance()->GetMethodType(m_recipientAddress);
     // ---------------------------------
+
+
+
+    qDebug() << QString("m_senderAddress: %1").arg(m_senderAddress);
+    qDebug() << QString("m_recipientAddress: %1").arg(m_recipientAddress);
+    qDebug() << QString("qstrMethodTypeSender: %1").arg(qstrMethodTypeSender);
+    qDebug() << QString("qstrMethodTypeRecipient: %1").arg(qstrMethodTypeRecipient);
+
+
+
+
+
     // If the recipient and sender both have addresses, see if they are of a matching type
     // and if so, just go with that.
     if (!qstrMethodTypeSender     .isEmpty() &&
@@ -2177,38 +2230,46 @@ bool MTCompose::MakeSureCommonMsgMethod()
 }
 
 
-bool MTCompose::verifySenderAgainstServer()   // Assumes senderNymId and serverId are set.
+bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrServerID/*=QString("")*/)   // Assumes senderNymId and serverId are set.
 {
+    if (qstrServerID.isEmpty())
+        qstrServerID = m_serverId;
+
     // sender nym is registered there? Warn if not and give option to register there.
     //
-    std::string server_id    = m_serverId.toStdString();
+    std::string server_id    = qstrServerID .toStdString();
     std::string sender_id    = m_senderNymId.toStdString();
 
     if (!OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
     {
-        QMessageBox::StandardButton reply;
-
-        reply = QMessageBox::question(this, "", tr("Sender Nym not registered on selected OT server. Register now?"),
-                                      QMessageBox::Yes|QMessageBox::No);
-        if (reply == QMessageBox::Yes)
+        if (bAsk)
         {
-            OT_ME       madeEasy;
-            std::string response;
-            {
-                MTSpinner theSpinner;
+            QMessageBox::StandardButton reply;
 
-                response = madeEasy.register_nym(server_id, sender_id);
+            reply = QMessageBox::question(this, "", tr("Sender Nym not registered on selected OT server. Register now?"),
+                                          QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::Yes)
+            {
+                OT_ME       madeEasy;
+                std::string response;
+                {
+                    MTSpinner theSpinner;
+
+                    response = madeEasy.register_nym(server_id, sender_id);
+                }
+
+                qDebug() << QString("Nym Creation Response: %1").arg(QString::fromStdString(response));
+
+                int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
+
+                if (1 != nReturnVal)
+                {
+                    Moneychanger::HasUsageCredits(this, server_id, sender_id);
+                    return false;
+                }
             }
-
-            qDebug() << QString("Nym Creation Response: %1").arg(QString::fromStdString(response));
-
-            int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
-
-            if (1 != nReturnVal)
-            {
-                Moneychanger::HasUsageCredits(this, server_id, sender_id);
+            else
                 return false;
-            }
         }
         else
             return false;
@@ -2216,13 +2277,16 @@ bool MTCompose::verifySenderAgainstServer()   // Assumes senderNymId and serverI
     return true;
 }
 
-bool MTCompose::verifyRecipientAgainstServer() // Assumes senderNymId and serverId are set.
+bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrServerID/*=QString("")*/) // Assumes m_senderNymId, m_recipientNymId and serverId are set.
 {
+    if (qstrServerID.isEmpty())
+        qstrServerID = m_serverId;
+
     // recipient nym is known to frequent that server? if not, warn the user and give him
     // the option to just look it up directly on the server.
     //
-    std::string server_id    = m_serverId.toStdString();
-    std::string sender_id    = m_senderNymId.toStdString();
+    std::string server_id    = qstrServerID    .toStdString();
+    std::string sender_id    = m_senderNymId   .toStdString();
     std::string recipient_id = m_recipientNymId.toStdString();
 
     mapIDName mapServers;
@@ -2236,33 +2300,38 @@ bool MTCompose::verifyRecipientAgainstServer() // Assumes senderNymId and server
 
     if (bGotServers)
     {
-        mapIDName::iterator it = mapServers.find(m_serverId);
+        mapIDName::iterator it = mapServers.find(qstrServerID);
 
         if (mapServers.end() == it)
         {
-            QMessageBox::StandardButton reply;
-
-            reply = QMessageBox::question(this, "", tr("Recipient Nym not known to frequent the selected OT server. Shall I ask the server and find out?"),
-                                          QMessageBox::Yes|QMessageBox::No);
-            if (reply == QMessageBox::Yes)
+            if (bAsk)
             {
-                OT_ME       madeEasy;
-                std::string response;
-                {
-                    MTSpinner theSpinner;
+                QMessageBox::StandardButton reply;
 
-                    response = madeEasy.check_user(server_id, sender_id, recipient_id);
+                reply = QMessageBox::question(this, "", tr("Recipient Nym not known to frequent the selected OT server. Shall I ask the server and find out?"),
+                                              QMessageBox::Yes|QMessageBox::No);
+                if (reply == QMessageBox::Yes)
+                {
+                    OT_ME       madeEasy;
+                    std::string response;
+                    {
+                        MTSpinner theSpinner;
+
+                        response = madeEasy.check_user(server_id, sender_id, recipient_id);
+                    }
+
+                    int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
+
+                    if (1 != nReturnVal)
+                    {
+                        QMessageBox::warning(this, tr("Recipient Not Found on Server"),
+                                             tr("Recipient Nym not found on selected OT server. Please click 'Via' and choose a different server or a different transport method."));
+                        Moneychanger::HasUsageCredits(this, server_id, sender_id);
+                        return false;
+                    }
                 }
-
-                int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
-
-                if (1 != nReturnVal)
-                {
-                    QMessageBox::warning(this, tr("Recipient Not Found on Server"),
-                                         tr("Recipient Nym not found on selected OT server. Please click 'Via' and choose a different server or a different transport method."));
-                    Moneychanger::HasUsageCredits(this, server_id, sender_id);
+                else
                     return false;
-                }
             }
             else
                 return false;

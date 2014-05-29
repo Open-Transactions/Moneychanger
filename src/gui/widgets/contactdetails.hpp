@@ -6,6 +6,7 @@
 
 #include <gui/widgets/editdetails.hpp>
 
+#include <QGroupBox>
 
 namespace Ui {
 class MTContactDetails;
@@ -36,16 +37,26 @@ public:
 
     virtual void ClearContents();
 
+protected:
+    QGroupBox * createAddressGroupBox    (QString strContactID);
+    QWidget   * createSingleAddressWidget(int nContactID, QString qstrType, QString qstrTypeDisplay, QString qstrAddress);
+    QWidget   * createNewAddressWidget   (int nContactID);
+
 private:
     QPointer<QPlainTextEdit> m_pPlainTextEdit;
-
     QPointer<MTCredentials> m_pCredentials;
 
 private slots:
     void on_lineEditName_editingFinished();
 
+    void on_btnAddressAdd_clicked();
+    void on_btnAddressDelete_clicked();
+
+    void on_pushButtonMsg_clicked();
+
 private:
-    QPointer<QWidget> m_pHeaderWidget;
+    QPointer<QWidget>   m_pHeaderWidget;
+    QPointer<QGroupBox> m_pAddresses;
 
     Ui::MTContactDetails *ui;
 };

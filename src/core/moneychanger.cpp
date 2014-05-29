@@ -267,7 +267,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon_advanced_import = QIcon(":/icons/icons/request.png");
     mc_systrayIcon_advanced_agreements = QIcon(":/icons/agreements");
     mc_systrayIcon_advanced_corporations = QIcon(":/icons/icons/buildings.png");
-    mc_systrayIcon_advanced_transport = QIcon(":/icons/icons/buildings.png");
+    mc_systrayIcon_advanced_transport = QIcon(":/icons/icons/p2p.png");
     mc_systrayIcon_advanced_settings = QIcon(":/icons/settings");
     
     // ----------------------------------------------------------------------------
@@ -556,7 +556,7 @@ void Moneychanger::SetupMainMenu()
 
     // --------------------------------------------------------------
     // Transport
-    mc_systrayMenu_advanced_transport = new QAction(mc_systrayIcon_advanced_transport, tr("Transport"), mc_systrayMenu_advanced);
+    mc_systrayMenu_advanced_transport = new QAction(mc_systrayIcon_advanced_transport, tr("P2P Transport"), mc_systrayMenu_advanced);
     mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_transport);
     connect(mc_systrayMenu_advanced_transport, SIGNAL(triggered()), this, SLOT(mc_transport_slot()));
 

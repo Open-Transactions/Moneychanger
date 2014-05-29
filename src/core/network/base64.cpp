@@ -27,7 +27,7 @@
 
 /*
 
- NOTICE - This source has been modified from the original for inclusion in the "base64" class as part of this project.
+ NOTICE - This source has been modified from the original for inclusion in the "base64" class as part of the vp-auditservice project.
  
  */
 

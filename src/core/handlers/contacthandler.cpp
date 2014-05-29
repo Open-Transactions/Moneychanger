@@ -1,5 +1,3 @@
-#include <QDebug>
-#include <QObject>
 
 
 #ifndef __STABLE_HPP__
@@ -14,6 +12,9 @@
 #include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OTASCIIArmor.hpp>
 
+#include <QDebug>
+#include <QObject>
+#include <QStringList>
 
 
 std::string MTNameLookupQT::GetNymName(const std::string & str_id,
@@ -96,7 +97,7 @@ MTContactHandler * MTContactHandler::getInstance()
 bool MTContactHandler::ContactExists(int nContactID)
 {
     QMutexLocker locker(&m_Mutex);
-    QString str_select = QString("SELECT * FROM `contact` WHERE `contact_id`='%1' LIMIT 0,1").arg(nContactID);
+    QString str_select = QString("SELECT * FROM `contact` WHERE `contact_id`=%1 LIMIT 0,1").arg(nContactID);
     int nRows = DBHandler::getInstance()->querySize(str_select);
     return (nRows > 0);
 }
@@ -106,10 +107,12 @@ bool MTContactHandler::DeleteContact(int nContactID)
 {
     QMutexLocker locker(&m_Mutex);
 
-    QString str_delete_nym     = QString("DELETE FROM `nym` WHERE `contact_id`='%1'").arg(nContactID);
-    QString str_delete_contact = QString("DELETE FROM `contact` WHERE `contact_id`='%1'").arg(nContactID);
+    QString str_delete_nym     = QString("DELETE FROM `nym` WHERE `contact_id`=%1").arg(nContactID);
+    QString str_delete_method  = QString("DELETE FROM `contact_method` WHERE `contact_id`=%1").arg(nContactID);
+    QString str_delete_contact = QString("DELETE FROM `contact` WHERE `contact_id`=%1").arg(nContactID);
 
-    return (DBHandler::getInstance()->runQuery(str_delete_nym) &&
+    return (DBHandler::getInstance()->runQuery(str_delete_nym)     &&
+            DBHandler::getInstance()->runQuery(str_delete_method)  &&
             DBHandler::getInstance()->runQuery(str_delete_contact));
 }
 
@@ -148,10 +151,10 @@ bool MTContactHandler::AddNymToExistingContact(int nContactID, QString nym_id_st
         if (!bNymExists)
             str_insert_nym = QString("INSERT INTO `nym` "
                                      "(`nym_id`, `contact_id`) "
-                                     "VALUES('%1', '%2')").arg(nym_id_string).arg(nContactID);
+                                     "VALUES('%1', %2)").arg(nym_id_string).arg(nContactID);
 //      else if (bHadToCreateContact)
         else
-            str_insert_nym = QString("UPDATE nym SET contact_id='%1' WHERE nym_id='%2'").arg(nContactID).arg(nym_id_string);
+            str_insert_nym = QString("UPDATE nym SET contact_id=%1 WHERE nym_id='%2'").arg(nContactID).arg(nym_id_string);
 
         if (!str_insert_nym.isEmpty())
         {
@@ -273,7 +276,7 @@ bool MTContactHandler::GetServers(mapIDName & theMap, int nFilterByContact, bool
                                  "FROM `nym_server` "
                                  "INNER JOIN `nym` "
                                  "ON nym.nym_id=nym_server.nym_id "
-                                 "WHERE nym.contact_id='%1'").arg(nFilterByContact);
+                                 "WHERE nym.contact_id=%1").arg(nFilterByContact);
 
     bool bFoundAny = false;
     int  nRows     = DBHandler::getInstance()->querySize(str_select);
@@ -361,8 +364,8 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact)
 {
     QMutexLocker locker(&m_Mutex);
 
-    QString str_select = QString("SELECT * FROM `nym` WHERE `contact_id`='%1'").arg(nFilterByContact);
-//  QString str_select = QString("SELECT * FROM `nym` WHERE `contact_id`='%1' LIMIT 0,1").arg(nFilterByContact);
+    QString str_select = QString("SELECT * FROM `nym` WHERE `contact_id`=%1").arg(nFilterByContact);
+//  QString str_select = QString("SELECT * FROM `nym` WHERE `contact_id`=%1 LIMIT 0,1").arg(nFilterByContact);
 
     bool bFoundAny = false;
     int  nRows     = DBHandler::getInstance()->querySize(str_select);
@@ -563,10 +566,10 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString ser
         if (!bNymExists)
             str_insert_nym = QString("INSERT INTO `nym` "
                                      "(`nym_id`, `contact_id`) "
-                                     "VALUES('%1', '%2')").arg(nym_id_string).arg(nContactID);
+                                     "VALUES('%1', %2)").arg(nym_id_string).arg(nContactID);
 //      else if (bHadToCreateContact)
         else
-            str_insert_nym = QString("UPDATE nym SET contact_id='%1' WHERE nym_id='%2'").arg(nContactID).arg(nym_id_string);
+            str_insert_nym = QString("UPDATE nym SET contact_id=%1 WHERE nym_id='%2'").arg(nContactID).arg(nym_id_string);
 
         if (!str_insert_nym.isEmpty())
         {
@@ -699,9 +702,9 @@ QString MTContactHandler::GetValueByID(int nID, QString column, QString table, Q
     // table might be 'contact'
     // and id_name might be 'contact_id'
     // For something like:
-    // QString("SELECT `contact_display_name` FROM `contact` WHERE `contact_id`='%1' LIMIT 0,1").arg(nContactID);
+    // QString("SELECT `contact_display_name` FROM `contact` WHERE `contact_id`=%1 LIMIT 0,1").arg(nContactID);
     // ----------------------------------
-    QString str_select = QString("SELECT `%1` FROM `%2` WHERE `%3`='%4' LIMIT 0,1")
+    QString str_select = QString("SELECT `%1` FROM `%2` WHERE `%3`=%4 LIMIT 0,1")
             .arg(column)   // "contact_display_name"
             .arg(table)    // "contact"
             .arg(id_name)  // "contact_id"
@@ -717,7 +720,7 @@ bool MTContactHandler::SetValueByID(int nID, QString value, QString column, QStr
 
     QString encoded_value = Encode(value);
     // ------------------------------------------
-    QString str_update = QString("UPDATE `%1` SET `%2`='%3' WHERE `%4`='%5'")
+    QString str_update = QString("UPDATE `%1` SET `%2`='%3' WHERE `%4`=%5")
             .arg(table)         // "contact"
             .arg(column)        // "contact_display_name"
             .arg(encoded_value) // (base64-encoded display name)
@@ -765,7 +768,8 @@ QString MTContactHandler::Encode(QString plaintext)
     {
         // Encode base64.
         OTString        strValue(plaintext.toStdString());
-        OTASCIIArmor    ascValue(strValue);
+        OTASCIIArmor    ascValue;
+        ascValue.SetString(strValue, false); //bLineBreaks=true by default
         encoded_value = QString(ascValue.Get());
     }
 
@@ -782,7 +786,8 @@ QString MTContactHandler::Decode(QString encoded)
         // Decode base64.
         OTASCIIArmor ascValue;
         ascValue.Set(encoded.toStdString().c_str());
-        OTString strValue(ascValue);
+        OTString strValue;
+        ascValue.GetString(strValue, false); //bLineBreaks=true by default
         decoded_value = QString(strValue.Get());
     }
 
@@ -822,7 +827,7 @@ bool MTContactHandler::MethodTypeFoundOnContact(QString method_type, int nFilter
     {
         QString str_select = QString("SELECT * "                // Select all rows...
                                      "FROM `contact_method` "   // ...from the contact_method table...
-                                     "WHERE method_type='%1' AND contact_id='%2' LIMIT 0,1").
+                                     "WHERE method_type='%1' AND contact_id=%2 LIMIT 0,1").
                 arg(encoded_type).arg(nFilterByContact); // ...filtered by a method_type of 'encoded_type' function parameter.
 
         nReturnValue = DBHandler::getInstance()->querySize(str_select);
@@ -879,7 +884,7 @@ bool MTContactHandler::MethodTypeFoundOnAnyContact(QString method_type)
 bool MTContactHandler::MethodExists(int nMethodID)
 {
     QMutexLocker locker(&m_Mutex);
-    QString str_select = QString("SELECT * FROM `msg_method` WHERE `method_id`='%1' LIMIT 0,1").arg(nMethodID);
+    QString str_select = QString("SELECT * FROM `msg_method` WHERE `method_id`=%1 LIMIT 0,1").arg(nMethodID);
     int nRows = DBHandler::getInstance()->querySize(str_select);
     return (nRows > 0);
 }
@@ -912,7 +917,7 @@ bool MTContactHandler::AddMsgAddressToNym(QString nym_id, int nMethodID, QString
     QString encoded_address = Encode(address);
 
     QString str_select = QString("SELECT `method_id` FROM `nym_method` "
-                                 "WHERE `nym_id`='%1' AND `method_id`='%2' AND `address`='%3' LIMIT 0,1").
+                                 "WHERE `nym_id`='%1' AND `method_id`=%2 AND `address`='%3' LIMIT 0,1").
             arg(nym_id).arg(nMethodID).arg(encoded_address);
 
     int nRows = DBHandler::getInstance()->querySize(str_select);
@@ -921,7 +926,7 @@ bool MTContactHandler::AddMsgAddressToNym(QString nym_id, int nMethodID, QString
     {
         QString str_insert = QString("INSERT INTO `nym_method` "
                                      "(`nym_id`, `method_id`, `address`) "
-                                     "VALUES('%1', '%2', '%3')").arg(nym_id).arg(nMethodID).arg(encoded_address);
+                                     "VALUES('%1', %2, '%3')").arg(nym_id).arg(nMethodID).arg(encoded_address);
         return DBHandler::getInstance()->runQuery(str_insert);
     }
 
@@ -935,7 +940,7 @@ bool MTContactHandler::RemoveMsgAddressFromNym(QString nym_id, int nMethodID, QS
     QString encoded_address = Encode(address);
 
     QString str_delete = QString("DELETE FROM `nym_method` "
-                                 "WHERE `nym_id`='%1' AND `method_id`='%2' AND `address`='%3'")
+                                 "WHERE `nym_id`='%1' AND `method_id`=%2 AND `address`='%3'")
             .arg(nym_id).arg(nMethodID).arg(encoded_address);
 
     return (DBHandler::getInstance()->runQuery(str_delete));
@@ -955,7 +960,7 @@ bool MTContactHandler::AddMsgAddressToContact(int nContactID, QString qstrMethod
     // (If so, no need to re-add them.)
     //
     QString str_select = QString("SELECT `method_type` FROM `contact_method` "
-                                 "WHERE `contact_id`='%1' AND `method_type`='%2' AND `address`='%3' LIMIT 0,1").
+                                 "WHERE `contact_id`=%1 AND `method_type`='%2' AND `address`='%3' LIMIT 0,1").
             arg(nContactID).arg(encoded_type).arg(encoded_address);
 
     int nRows = DBHandler::getInstance()->querySize(str_select);
@@ -964,7 +969,7 @@ bool MTContactHandler::AddMsgAddressToContact(int nContactID, QString qstrMethod
     {
         QString str_insert = QString("INSERT INTO `contact_method` "
                                      "(`contact_id`, `method_type`, `address`) "
-                                     "VALUES('%1', '%2', '%3')").arg(nContactID).arg(encoded_type).arg(encoded_address);
+                                     "VALUES(%1, '%2', '%3')").arg(nContactID).arg(encoded_type).arg(encoded_address);
         return DBHandler::getInstance()->runQuery(str_insert);
     }
 
@@ -979,7 +984,7 @@ bool MTContactHandler::RemoveMsgAddressFromContact(int nContactID, QString qstrM
     QString encoded_address = Encode(address);
 
     QString str_delete = QString("DELETE FROM `contact_method` "
-                                 "WHERE `contact_id`='%1' AND `method_type`='%2' AND `address`='%3'")
+                                 "WHERE `contact_id`=%1 AND `method_type`='%2' AND `address`='%3'")
             .arg(nContactID).arg(encoded_type).arg(encoded_address);
 
     return (DBHandler::getInstance()->runQuery(str_delete));
@@ -1050,7 +1055,21 @@ QString MTContactHandler::GetMethodType(QString qstrAddress) // Get the method t
 
         return qstrType;
     }
+    // -------------------------------------------------------
+    str_select = QString("SELECT method_type "
+                         "FROM `contact_method` "
+                         "WHERE contact_method.address='%1' LIMIT 0,1").arg(encoded_address);
 
+    nRows = DBHandler::getInstance()->querySize(str_select);
+
+    if (nRows > 0)
+    {
+        QString qstrEncType = DBHandler::getInstance()->queryString(str_select, 0, 0);
+        QString qstrType    = Decode(qstrEncType);
+
+        return qstrType;
+    }
+    // -------------------------------------------------------
     return returnVal;
 }
 
@@ -1184,6 +1203,58 @@ bool MTContactHandler::GetMsgMethodTypes(mapIDName & theMap, bool bAddServers/*=
 
 // --------------------------------------------
 
+bool MTContactHandler::GetMethodsAndAddrByNym(mapIDName & theMap, QString filterByNym)
+{
+    bool bFoundAny = false;
+    // ----------------------
+    mapIDName mapMethods;
+
+    bool bGotMethods = this->GetMsgMethodsByNym(mapMethods, filterByNym, false, QString(""));
+
+    if (bGotMethods)
+    {
+        // Loop through mapMethods and for each methodID, call GetAddressesByNym.
+        // Then add those addresses, each iteration, to theMap.
+        //
+        for (mapIDName::iterator ii = mapMethods.begin(); ii != mapMethods.end(); ++ii)
+        {
+            QString qstrID        = ii.key();
+            int nFilterByMethodID = 0;
+
+            QStringList stringlist = qstrID.split("|");
+
+            if (stringlist.size() >= 2) // Should always be 2...
+            {
+//              QString qstrType     = stringlist.at(0);
+                QString qstrMethodID = stringlist.at(1);
+                const int  nMethodID = qstrMethodID.isEmpty() ? 0 : qstrMethodID.toInt();
+                // --------------------------------------
+                if (nMethodID > 0)
+                {
+                    mapIDName mapAddresses;
+
+                    if (this->GetMethodsAndAddrByNym(mapAddresses, filterByNym, nMethodID))
+                    {
+                        for (mapIDName::iterator jj = mapAddresses.begin(); jj != mapAddresses.end(); ++jj)
+                        {
+                            QString qstrAddress = jj.key();
+
+                            if (!theMap.contains(qstrAddress))
+                            {
+                                bFoundAny = true;
+                                theMap.insertMulti(qstrAddress, jj.value());
+                            }
+                        } // for
+                    } // if GetAddressesByNym
+                } // if nMethodID > 0
+            }
+        } // for
+     } // if bGotMethods
+    // ----------------------
+    return bFoundAny;
+}
+
+
 bool MTContactHandler::GetAddressesByNym(mapIDName & theMap, QString filterByNym, QString filterByType)
 {
     bool bFoundAny = false;
@@ -1256,6 +1327,55 @@ int MTContactHandler::GetMethodIDByNymAndAddress(QString filterByNym, QString qs
     return nReturn;
 }
 
+
+bool MTContactHandler::GetMethodsAndAddrByNym(mapIDName & theMap, QString filterByNym, int filterByMethodID)
+{
+    // = "CREATE TABLE nym_method(nym_id TEXT, method_id INTEGER, address TEXT, PRIMARY KEY(nym_id, method_id, address))";
+
+    bool bFoundAny = false;
+
+    {   // This block is here so locker will expire at the bottom of the block.
+        QMutexLocker locker(&m_Mutex);
+
+        QString str_select = QString("SELECT msg_method.method_id, nym_method.address, msg_method.method_type "
+                                     "FROM `nym_method` "
+                                     "INNER JOIN `msg_method` "
+                                     "ON nym_method.method_id=msg_method.method_id "
+                                     "WHERE nym_method.nym_id='%1' AND nym_method.method_id=%2").arg(filterByNym).arg(filterByMethodID);
+
+        int nRows = DBHandler::getInstance()->querySize(str_select);
+        // -----------------------------------
+        for (int ii=0; ii < nRows; ii++)
+        {
+            //Extract data
+            int     nMethodID          = DBHandler::getInstance()->queryInt   (str_select, 0, ii);
+            QString qstrEncAddress     = DBHandler::getInstance()->queryString(str_select, 1, ii);
+            QString qstrEncType        = DBHandler::getInstance()->queryString(str_select, 2, ii);
+//          QString qstrEncTypeDisplay = DBHandler::getInstance()->queryString(str_select, 3, ii);
+            // -----------------------------------------------------
+            QString qstrAddress        = Decode(qstrEncAddress);
+            QString qstrType           = Decode(qstrEncType);
+//          QString qstrTypeDisplay    = Decode(qstrEncTypeDisplay);
+            // -----------------------------------------------------
+            std::string strTypeDisplay = MTComms::displayName(qstrType.toStdString());
+            QString    qstrTypeDisplay = QString::fromStdString(strTypeDisplay);
+
+            // For a Bitmessage address, the ID would be:
+            // "BITMESSAGE_ADDRESS|METHOD_ID"
+            // Display name:  "Bitmessage: BITMESSAGE_ADDRESS"
+            //
+            QString qstrID   = QString("%1|%2").arg(qstrAddress).arg(nMethodID);
+            QString qstrName = QString("%1: %2").arg(qstrTypeDisplay).arg(qstrAddress);
+            // --------------------------------------------
+            theMap.insertMulti(qstrID, qstrName);
+
+            bFoundAny = true;
+        }
+    }
+    // --------------------------------------------
+    return bFoundAny;
+}
+
 bool MTContactHandler::GetAddressesByNym(mapIDName & theMap, QString filterByNym, int filterByMethodID)
 {
     // = "CREATE TABLE nym_method(nym_id TEXT, method_id INTEGER, address TEXT, PRIMARY KEY(nym_id, method_id, address))";
@@ -1270,7 +1390,7 @@ bool MTContactHandler::GetAddressesByNym(mapIDName & theMap, QString filterByNym
                                      "FROM `nym_method` "
                                      "INNER JOIN `msg_method` "
                                      "ON nym_method.method_id=msg_method.method_id "
-                                     "WHERE nym_method.nym_id='%1' AND nym_method.method_id='%2'").arg(filterByNym).arg(filterByMethodID);
+                                     "WHERE nym_method.nym_id='%1' AND nym_method.method_id=%2").arg(filterByNym).arg(filterByMethodID);
 
         int nRows = DBHandler::getInstance()->querySize(str_select);
         // -----------------------------------
@@ -1370,7 +1490,7 @@ bool MTContactHandler::GetMsgMethodsByNym(mapIDName & theMap, QString filterByNy
             qstrTypeFilter = QString(" AND msg_method.method_type='%1'").arg(qstrEncType);
         }
 
-        QString str_select = QString("SELECT * "
+        QString str_select = QString("SELECT msg_method.method_id, msg_method.method_display_name, msg_method.method_type, msg_method.method_type_display "
                                      "FROM `msg_method` "
                                      "INNER JOIN `nym_method` "
                                      "ON nym_method.method_id=msg_method.method_id "
@@ -1485,18 +1605,17 @@ bool MTContactHandler::GetMsgMethodTypesByContact(mapIDName & theMap, int nFilte
             qstrTypeFilter = QString(" AND method_type='%1'").arg(qstrEncType);
         }
 
-        QString str_select = QString("SELECT * "
+        QString str_select = QString("SELECT contact_method.method_type, contact_method.address "
                                      "FROM `contact_method` "
-                                     "WHERE contact_id='%1'%2").arg(nFilterByContact).arg(qstrTypeFilter);
+                                     "WHERE contact_id=%1%2").arg(nFilterByContact).arg(qstrTypeFilter);
 
         int nRows = DBHandler::getInstance()->querySize(str_select);
         // -----------------------------------
         for (int ii=0; ii < nRows; ii++)
         {
             //Extract data
-//          int     nContactID     = DBHandler::getInstance()->queryInt   (str_select, 0, ii);
-            QString qstrEncType    = DBHandler::getInstance()->queryString(str_select, 1, ii);
-            QString qstrEncAddress = DBHandler::getInstance()->queryString(str_select, 2, ii);
+            QString qstrEncType    = DBHandler::getInstance()->queryString(str_select, 0, ii);
+            QString qstrEncAddress = DBHandler::getInstance()->queryString(str_select, 1, ii);
             // -----------------------------------------------------
             QString qstrType       = Decode(qstrEncType);
             QString qstrAddress    = Decode(qstrEncAddress);
@@ -1579,9 +1698,9 @@ bool MTContactHandler::DeleteMsgMethod(int nMethodID)
     QMutexLocker locker(&m_Mutex);
 
     QString str_delete_nym     = QString("DELETE FROM `nym_method` "
-                                 "WHERE `method_id`='%1'").arg(nMethodID);
+                                 "WHERE `method_id`=%1").arg(nMethodID);
     QString str_delete_msg     = QString("DELETE FROM `msg_method` "
-                                 "WHERE `method_id`='%1'").arg(nMethodID);
+                                 "WHERE `method_id`=%1").arg(nMethodID);
 
     return (DBHandler::getInstance()->runQuery(str_delete_nym)     &&
             DBHandler::getInstance()->runQuery(str_delete_msg));

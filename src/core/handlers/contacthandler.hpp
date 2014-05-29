@@ -165,6 +165,9 @@ public:
   bool GetAddressesByNym         (mapIDName & theMap, QString filterByNym,  QString filterByType);
   bool GetAddressesByNym         (mapIDName & theMap, QString filterByNym,  int filterByMethodID);
 
+  bool GetMethodsAndAddrByNym    (mapIDName & theMap, QString filterByNym,  int filterByMethodID);
+  bool GetMethodsAndAddrByNym    (mapIDName & theMap, QString filterByNym);
+
   QString GetNymByAddress(QString qstrAddress);
   int     GetContactByAddress(QString qstrAddress);
 

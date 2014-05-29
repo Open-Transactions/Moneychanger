@@ -19,7 +19,8 @@ HEADERS += \
     ../../src/core/network/Network.h \
     ../../src/core/network/BitMessage.h \
     ../../src/core/mtcomms.h \
-    ../../src/core/network/base64.h
+    ../../src/core/network/base64.h \
+    ../../src/core/network/BitMessageQueue.h
 
 SOURCES += \
     $${PWD}/applicationmc.cpp \
@@ -39,4 +40,5 @@ SOURCES += \
     ../../src/core/network/Network.cpp \
     ../../src/core/network/BitMessage.cpp \
     ../../src/core/mtcomms.cpp \
-    ../../src/core/network/base64.cpp
+    ../../src/core/network/base64.cpp \
+    ../../src/core/network/BitMessageQueue.cpp
