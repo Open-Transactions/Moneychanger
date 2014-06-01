@@ -83,11 +83,12 @@ BtcRawTransactionPtr BtcHelper::GetDecodedRawTransaction(const std::string &txId
     // first check transaction database
     BtcTransactionPtr tx = this->modules->btcJson->GetTransaction(txId);
     if(tx != NULL)
-        if(!tx->rawTransaction.empty())
-            return this->modules->btcJson->DecodeRawTransaction(tx->rawTransaction);
+        if(!tx->Hex.empty())
+            return this->modules->btcJson->DecodeRawTransaction(tx->Hex);
 
     // otherwise check block database
     // use bitcoind -txindex to keep a complete list of all transactions, otherwise it might not find it if it's too old
+    // or use 'importaddress' and bitcoind will index all relevant transactions and return them with 'gettransaction'
     return this->modules->btcJson->GetDecodedRawTransaction(txId);
 }
 
@@ -134,7 +135,7 @@ int64_t BtcHelper::GetTotalOutput(BtcRawTransactionPtr transaction, const std::s
     return amountReceived;
 }
 
-int64_t BtcHelper::GetConfirmations(const std::string &txId)
+int32_t BtcHelper::GetConfirmations(const std::string &txId)
 {
     if(txId.empty())
         return 0;
@@ -195,31 +196,31 @@ btc::stringList BtcHelper::GetDoubleSpends(const std::string &txId)
     return tx->walletConflicts;
 }
 
-int64_t BtcHelper::TransactionConfirmed(const std::string &txId, int minConfirms)
+int64_t BtcHelper::TransactionConfirmed(const std::string &txId, const int32_t &minConfirms)
 {
     return GetConfirmations(txId) >= minConfirms;
 }
 
 bool BtcHelper::TransactionSuccessfull(int64_t amount, BtcTransactionPtr transaction, const std::string &targetAddress, int minConfirms)
 {
-    if(amount < 0 || transaction == NULL || targetAddress.empty() || minConfirms < 0)
+    if(amount < 0 || transaction == NULL || targetAddress.empty() || minConfirms < -1)
         return false;
 
     // see if we got the "hex" transaction (own/watchonly addresses only)
-    if(!transaction->rawTransaction.empty())
+    if(!transaction->Hex.empty())
     {
         return TransactionSuccessfull(amount,
-                                      this->modules->btcJson->DecodeRawTransaction(transaction->rawTransaction),
+                                      this->modules->btcJson->DecodeRawTransaction(transaction->Hex),
                                       targetAddress, minConfirms);
     }
     else
     {
         // otherwise try to find it in block database. use -txindex=1 to keep a full index.
-        return TransactionSuccessfull(amount, WaitGetRawTransaction(transaction->TxID), targetAddress, minConfirms);
+        return TransactionSuccessfull(amount, WaitGetRawTransaction(transaction->TxId), targetAddress, minConfirms);
     }
 }
 
-bool BtcHelper::TransactionSuccessfull(int64_t amountRequested, BtcRawTransactionPtr transaction, const std::string &targetAddress, int minConfirms)
+bool BtcHelper::TransactionSuccessfull(int64_t amountRequested, BtcRawTransactionPtr transaction, const std::string &targetAddress, int32_t minConfirms)
 {
     if(transaction == NULL || targetAddress.empty() || minConfirms < 0) // if it hasn't been received yet we will return.
         return false;       // use WaitForTransaction(txid) to prevent this.
@@ -235,7 +236,7 @@ bool BtcHelper::TransactionSuccessfull(int64_t amountRequested, BtcRawTransactio
     return false;
 }
 
-const BtcRawTransactionPtr BtcHelper::TransactionSuccessfull(const int64_t &amount, BtcUnspentOutputs outputs, const std::string &targetAddress, const int32_t &MinConfirms)
+const BtcRawTransactionPtr BtcHelper::TransactionSuccessfull(const int64_t &amount, BtcUnspentOutputs outputs, const std::string &targetAddress, const int32_t &minConfirms)
 {
     if(amount < 0 || outputs.empty() || targetAddress.empty() || MinConfirms < 0)
         return BtcRawTransactionPtr();
@@ -243,14 +244,14 @@ const BtcRawTransactionPtr BtcHelper::TransactionSuccessfull(const int64_t &amou
     for(size_t i = 0; i < outputs.size(); i++)
     {
         BtcRawTransactionPtr transaction =  WaitGetRawTransaction(outputs[i]->txId);
-        if(TransactionSuccessfull(amount, transaction, targetAddress))
+        if(TransactionSuccessfull(amount, transaction, targetAddress, minConfirms))
             return transaction;
     }
 
     return BtcRawTransactionPtr();
 }
 
-bool BtcHelper::WaitTransactionSuccessfull(const int64_t &amount, BtcTransactionPtr transaction, const std::string &targetAddress, const int32_t &minConfirms, int timeOutSeconds, const int &timerMS)
+bool BtcHelper::WaitTransactionSuccessfull(const int64_t &amount, BtcTransactionPtr transaction, const std::string &targetAddress, const int32_t &minConfirms, int32_t timeOutSeconds, const int32_t &timerMS)
 {
     if(amount < 0 || transaction == NULL || minConfirms < 0 || timeOutSeconds <= 0 || timerMS < 0)
         return false;
@@ -290,7 +291,7 @@ bool BtcHelper::WaitTransactionSuccessfull(const int64_t &amount, BtcRawTransact
     return false;
 }
 
-BtcTransactionPtr BtcHelper::WaitGetTransaction(const std::string &txId, int timerMS, int maxAttempts)
+BtcTransactionPtr BtcHelper::WaitGetTransaction(const std::string &txId, const int32_t &timerMS, const int32_t &maxAttempts)
 {
     if(txId.empty())
         return BtcTransactionPtr();
@@ -308,7 +309,7 @@ BtcTransactionPtr BtcHelper::WaitGetTransaction(const std::string &txId, int tim
     return transaction;
 }
 
-BtcRawTransactionPtr BtcHelper::WaitGetRawTransaction(const std::string &txId, int timerMS, int maxAttempts)
+BtcRawTransactionPtr BtcHelper::WaitGetRawTransaction(const std::string &txId, const int32_t &timerMS, int32_t maxAttempts)
 {
     if(txId.empty())
         return BtcRawTransactionPtr();

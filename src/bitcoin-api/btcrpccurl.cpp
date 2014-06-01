@@ -107,7 +107,11 @@ static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userp)
 bool BtcRpcCurl::ConnectToBitcoin(BitcoinServerPtr server)
 {
     if(server == NULL)
+    {
+        this->currentServer = server;
+        CleanUpCurl();
         return false;
+    }
 
     if(this->currentServer != server || !this->curl || this->res != CURLE_OK)
     {

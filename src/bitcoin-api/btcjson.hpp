@@ -76,12 +76,12 @@ public:
     // keys: list of public keys (addresses work too, if the public key is known)
     // account [optional]: account to add the address to
     // Returns the multi-sig address
-    virtual BtcMultiSigAddressPtr AddMultiSigAddress(int nRequired, const btc::stringList &keys, const std::string &account = "");
+    virtual BtcMultiSigAddressPtr AddMultiSigAddress(const int32_t &nRequired, const btc::stringList &keys, const std::string &account = "multisig");
 
     // Creates a multi-sig address without adding it to the wallet
     // nRequired: signatures required
     // keys: list of public keys (addresses work too, if the public key is known)
-    virtual BtcMultiSigAddressPtr CreateMultiSigAddress(int nRequired, const btc::stringList &keys);
+    virtual BtcMultiSigAddressPtr CreateMultiSigAddress(const int32_t &nRequired, const btc::stringList &keys);
 
     // Creates a multi-sig address and returns its redeemScript
     // the address will not be added to your address list, use AddMultiSigAddress for that
@@ -89,9 +89,11 @@ public:
 
     // Returns list of account names
     // Could also return the balance of each account
-    virtual btc::stringList ListAccounts();
+    virtual btc::stringList ListAccounts(const int32_t &minConf = 1, const bool &includeWatchonly = true);
 
-    virtual BtcUnspentOutputs ListUnspent(const int32_t &minConf = BtcHelper::MinConfirms, const int32_t &maxConf = BtcHelper::MaxConfirms, std::vector<std::string> addresses = std::vector<std::string>());
+    virtual BtcTransactions ListTransactions(const std::string &account = "*", const int32_t &count = 20, const int32_t &from = 0, const bool &includeWatchonly = true);
+
+    virtual BtcUnspentOutputs ListUnspent(const int32_t &minConf = BtcHelper::MinConfirms, const int32_t &maxConf = BtcHelper::MaxConfirms, const btc::stringList &addresses = btc::stringList());
 
     virtual std::string SendToAddress(const std::string &btcAddress, int64_t amount);
 

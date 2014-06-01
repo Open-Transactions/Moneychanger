@@ -22,6 +22,7 @@
 #define METHOD_DUMPPRIVKEY          "dumpprivkey"
 #define METHOD_LISTACCOUNTS         "listaccounts"
 #define METHOD_LISTUNSPENT          "listunspent"
+#define METHOD_LISTTRANSACTIONS     "listtransactions"
 #define METHOD_SENDTOADDRESS        "sendtoaddress"
 #define METHOD_SENDMANY             "sendmany"
 #define METHOD_SETTXFEE             "settxfee"
@@ -244,7 +245,7 @@ std::string BtcJson::DumpPrivKey(const std::string &address)
     return result.asString();
 }
 
-BtcMultiSigAddressPtr BtcJson::AddMultiSigAddress(int nRequired, const btc::stringList &keys, const std::string &account)
+BtcMultiSigAddressPtr BtcJson::AddMultiSigAddress(const int32_t &nRequired, const btc::stringList &keys, const std::string &account)
 {
     Json::Value params = Json::Value();
     params.append(nRequired);
@@ -270,7 +271,7 @@ BtcMultiSigAddressPtr BtcJson::AddMultiSigAddress(int nRequired, const btc::stri
     return CreateMultiSigAddress(nRequired, keys);
 }
 
-BtcMultiSigAddressPtr BtcJson::CreateMultiSigAddress(int nRequired, const btc::stringList &keys)
+BtcMultiSigAddressPtr BtcJson::CreateMultiSigAddress(const int32_t &nRequired, const btc::stringList &keys)
 {
     Json::Value params = Json::Value();
     params.append(nRequired);
@@ -295,22 +296,51 @@ BtcMultiSigAddressPtr BtcJson::CreateMultiSigAddress(int nRequired, const btc::s
 
 std::string BtcJson::GetRedeemScript(int nRequired, btc::stringList keys)
 {
+    // we can also get it from 'validateaddress' if we used 'addmultisigaddress'
     return CreateMultiSigAddress(nRequired, keys)->redeemScript;
 }
 
-btc::stringList BtcJson::ListAccounts()
+btc::stringList BtcJson::ListAccounts(const int32_t &minConf, const bool &includeWatchonly)
 {
+    Json::Value params = Json::Value();
+    params.append(minConf);
+    params.append(includeWatchonly);
+
     Json::Value result = Json::Value();
-    if(!ProcessRpcString(this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_LISTACCOUNTS)), result))
-        return std::vector<std::string>();     // error
+    if(!ProcessRpcString(this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_LISTACCOUNTS, params)), result))
+        return btc::stringList();     // error
 
     if(!result.isObject())
-        return std::vector<std::string>();        // this shouldn't happen unless the protocol was changed
+        return btc::stringList();        // this shouldn't happen unless the protocol was changed
 
     return result.getMemberNames();      // each key is an account, each value is the account's balance
 }
 
-BtcUnspentOutputs BtcJson::ListUnspent(const int32_t &minConf, const int32_t &maxConf, std::vector<std::string> addresses)
+BtcTransactions BtcJson::ListTransactions(const std::string &account, const int32_t &count, const int32_t &from, const bool &includeWatchonly)
+{
+    Json::Value params = Json::Value();
+    params.append(account);
+    params.append(count);
+    params.append(from);
+    params.append(includeWatchonly);
+
+    Json::Value result = Json::Value();
+    if(!ProcessRpcString(this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_LISTTRANSACTIONS, params)), result))
+        return BtcTransactions();     // error
+
+    if(!result.isArray())
+        return BtcTransactions();
+
+    BtcTransactions transactions = BtcTransactions();
+    for (Json::Value::ArrayIndex i = 0; i < result.size(); i++)
+    {
+        transactions.push_back(BtcTransactionPtr(new BtcTransaction(result[i])));
+    }
+
+    return transactions;
+}
+
+BtcUnspentOutputs BtcJson::ListUnspent(const int32_t &minConf, const int32_t &maxConf, const btc::stringList &addresses)
 {
     Json::Value params = Json::Value();
     params.append(minConf);
@@ -331,7 +361,7 @@ BtcUnspentOutputs BtcJson::ListUnspent(const int32_t &minConf, const int32_t &ma
         return std::vector<BtcUnspentOutputPtr>();
 
 
-    std::vector<BtcUnspentOutputPtr> outputs = std::vector<BtcUnspentOutputPtr>();
+    BtcUnspentOutputs outputs = BtcUnspentOutputs();
 
     for (Json::Value::ArrayIndex i = 0; i < result.size(); i++)
     {
@@ -340,6 +370,8 @@ BtcUnspentOutputs BtcJson::ListUnspent(const int32_t &minConf, const int32_t &ma
 
     return outputs;
 }
+
+
 
 std::string BtcJson::SendToAddress(const std::string &btcAddress, int64_t amount)
 {
@@ -398,9 +430,6 @@ std::string BtcJson::SendMany(BtcTxTarget txTargets, const std::string &fromAcco
 
 BtcTransactionPtr BtcJson::GetTransaction(std::string txID)
 {
-    // TODO: maybe we can automate the process of appending arguments
-    //      and calling SendRPC(CreateJsonQuery..) as it's
-    //      virtually the same code in every function.
     Json::Value params = Json::Value();
     params.append(txID);
 
@@ -415,11 +444,6 @@ BtcTransactionPtr BtcJson::GetTransaction(std::string txID)
 
     BtcTransactionPtr transaction = BtcTransactionPtr(new BtcTransaction(result));
     return transaction;
-
-    // TODO:
-    // for checking balance see "details"->received, confirmations, amount (and address(es)?)
-
-    // also check what happens in multi-sig-transactions.
 }
 
 std::string BtcJson::GetRawTransaction(std::string txID)
