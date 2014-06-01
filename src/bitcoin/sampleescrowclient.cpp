@@ -3,8 +3,9 @@
 #endif
 
 #include <bitcoin/sampleescrowclient.hpp>
-
 #include <bitcoin/sampleescrowserver.hpp>
+
+#include <core/modules.hpp>
 
 
 // random name generator
@@ -25,8 +26,6 @@ void gen_random(char *s, const int len)
 SampleEscrowClient::SampleEscrowClient(QObject* parent)
     :QObject(parent)
 {   
-    this->rpcServer = BitcoinServerPtr(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001));
-
     this->minSignatures = 0;    // will be set later by server pool
 
     this->minConfirms = BtcHelper::WaitForConfirms;      // wait for one confirmation by default
@@ -44,6 +43,11 @@ SampleEscrowClient::SampleEscrowClient(QObject* parent)
     gen_random((char*)this->clientName.c_str(), this->clientName.size());
 }
 
+SampleEscrowClient::SampleEscrowClient(BitcoinServerPtr rpcServer, QObject *parent)
+{
+    this->rpcServer = rpcServer;
+}
+
 SampleEscrowClient::~SampleEscrowClient()
 {
     this->rpcServer.reset();
@@ -55,7 +59,8 @@ SampleEscrowClient::~SampleEscrowClient()
 
 void SampleEscrowClient::StartDeposit(int64_t amountToSend, EscrowPoolPtr targetPool)
 {
-    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
+    if(this->rpcServer != NULL)
+        this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
     this->targetPool = targetPool;
 
@@ -104,7 +109,8 @@ void SampleEscrowClient::OnReceivePubKey(const std::string &publicKey, int minSi
 
 void SampleEscrowClient::SendToEscrow()
 {
-    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
+    if(this->rpcServer != NULL)
+        this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
     // set multi-sig address in GUI
     emit SetMultiSigAddress(this->transactionDeposit->targetAddr);
@@ -134,7 +140,8 @@ bool SampleEscrowClient::CheckDepositFinished()
 
 void SampleEscrowClient::StartWithdrawal()
 {
-    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
+    if(this->rpcServer != NULL)
+        this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
     // create new transaction object. substract fee from the amount we expect
     this->transactionWithdrawal = SampleEscrowTransactionPtr(
@@ -187,7 +194,8 @@ bool SampleEscrowClient::CheckWithdrawalFinished()
 
 bool SampleEscrowClient::CheckTransactionFinished(SampleEscrowTransactionPtr transaction)
 {
-    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
+    if(this->rpcServer != NULL)
+        this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
     transaction->CheckTransaction(this->minConfirms);
 

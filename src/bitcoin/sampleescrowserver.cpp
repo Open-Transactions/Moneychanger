@@ -197,7 +197,7 @@ void SampleEscrowServer::OnIncomingDeposit(const std::string sender, const std::
 
 bool SampleEscrowServer::CheckTransaction(const std::string &targetAddress, const std::string txId, const std::string &sender)
 {   
-    OTLog::vOutput(0, "Checking %s's transactions for\n %s\ to %s...\n", sender.c_str(), txId.c_str(), targetAddress.c_str());
+    OTLog::vOutput(0, "Checking %s's transactions for\n %s to %s...\n", sender.c_str(), txId.c_str(), targetAddress.c_str());
     if(this->clientBalances[sender].empty())
         return false;
 

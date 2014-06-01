@@ -7,26 +7,16 @@
     <x>0</x>
     <y>0</y>
     <width>740</width>
-    <height>384</height>
+    <height>352</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QListView" name="poolList">
-   <property name="geometry">
-    <rect>
-     <x>220</x>
-     <y>120</y>
-     <width>341</width>
-     <height>91</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QDoubleSpinBox" name="amountSpinBox">
    <property name="geometry">
     <rect>
-     <x>220</x>
+     <x>290</x>
      <y>60</y>
      <width>181</width>
      <height>27</height>
@@ -45,20 +35,20 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>220</x>
+     <x>290</x>
      <y>40</y>
      <width>141</width>
      <height>17</height>
     </rect>
    </property>
    <property name="text">
-    <string>Amount to deposit:</string>
+    <string>Amount to send:</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>220</x>
+     <x>65</x>
      <y>90</y>
      <width>141</width>
      <height>17</height>
@@ -71,7 +61,7 @@
   <widget class="QPushButton" name="sendButton">
    <property name="geometry">
     <rect>
-     <x>330</x>
+     <x>105</x>
      <y>220</y>
      <width>99</width>
      <height>27</height>
@@ -81,7 +71,7 @@
     <string>Send</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit">
+  <widget class="QLineEdit" name="editTxid">
    <property name="geometry">
     <rect>
      <x>60</x>
@@ -102,6 +92,78 @@
    </property>
    <property name="text">
     <string>Transaction ID:</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonRefresh">
+   <property name="geometry">
+    <rect>
+     <x>225</x>
+     <y>220</y>
+     <width>93</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Refresh</string>
+   </property>
+  </widget>
+  <widget class="QListWidget" name="listPools">
+   <property name="geometry">
+    <rect>
+     <x>60</x>
+     <y>120</y>
+     <width>291</width>
+     <height>91</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="editAddress">
+   <property name="geometry">
+    <rect>
+     <x>430</x>
+     <y>130</y>
+     <width>281</width>
+     <height>27</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>380</x>
+     <y>150</y>
+     <width>21</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>or</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5">
+   <property name="geometry">
+    <rect>
+     <x>430</x>
+     <y>100</y>
+     <width>161</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Address to send to:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_6">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>65</y>
+     <width>31</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>BTC</string>
    </property>
   </widget>
  </widget>

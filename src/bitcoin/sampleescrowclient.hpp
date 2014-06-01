@@ -19,6 +19,7 @@ class SampleEscrowClient : public QObject
         Q_OBJECT
 public:
     explicit SampleEscrowClient(QObject* parent = 0);
+    SampleEscrowClient(BitcoinServerPtr rpcServer, QObject *parent = NULL);
     ~SampleEscrowClient();
 
 

@@ -4,6 +4,8 @@
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
 
+#include <bitcoin/sampleescrowclient.hpp>
+
 #include <QWidget>
 
 namespace Ui {
@@ -23,8 +25,14 @@ private slots:
 
     void OnPoolListUpdate();
 
+    void on_buttonRefresh_clicked();
+
+    void on_editAddress_textEdited(const QString &arg1);
+
 private:
     Ui::BtcSendDlg *ui;
+
+    SampleEscrowClientPtr client;
 };
 
 #endif // BTCSENDDLG_HPP

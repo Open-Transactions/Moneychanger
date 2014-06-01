@@ -11,7 +11,8 @@
 #include _MEMORY
 
 #include <QObject>
-#include<QList>
+#include <QList>
+#include <QMap>
 
 class PoolManager : QObject
 {
@@ -22,9 +23,14 @@ public:
 
     void RemovePool(EscrowPoolPtr poolToRemove);
 
+    EscrowPoolPtr GetPoolByName(const QString &);
+
     QList<EscrowPoolPtr> escrowPools;   // available pools
 
+    QString selectedPool;
+
 private:
+    QMap<QString, EscrowPoolPtr> poolNameMap;
 };
 
 typedef _SharedPtr<PoolManager> PoolManagerPtr;
