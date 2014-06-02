@@ -78,6 +78,10 @@ public:
     // returns an object containing the address and additional info
     virtual BtcMultiSigAddressPtr GetMultiSigAddressInfo(int minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = "") = 0;
 
+    // Returns information about a transaction
+    // Only works for your own and imported watchonly addresses
+    virtual BtcTransactionPtr GetTransaction(const std::string &txId) = 0;
+
     // Returns an object containing information about a raw transaction
     virtual BtcRawTransactionPtr GetRawTransaction(const std::string &txId) = 0;
 

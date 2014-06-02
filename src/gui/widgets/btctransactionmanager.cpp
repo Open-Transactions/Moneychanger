@@ -1,8 +1,11 @@
 #include "btctransactionmanager.hpp"
 #include "ui_btctransactionmanager.h"
+#include "btctransactioninfo.hpp"
 
 #include <core/modules.hpp>
 #include <bitcoin-api/btcmodules.hpp>
+
+BtcTransactionInfo* infoWindow = NULL;
 
 BtcTransactionManager::BtcTransactionManager(QWidget *parent) :
     QWidget(parent, Qt::Window),
@@ -34,7 +37,7 @@ void BtcTransactionManager::RefreshBitcoinTransactions()
     BtcTransactions transactions = Modules::btcModules->btcJson->ListTransactions("*", txCount);
     foreach(BtcTransactionPtr tx, transactions)
     {
-        int row = 0;
+        int row = 0;    // insert at top
         int column = 0;
         this->ui->tableTxBtc->insertRow(row);
         QTableWidgetItem* item;
@@ -68,12 +71,32 @@ void BtcTransactionManager::RefreshBitcoinTransactions()
         // txid
         item = new QTableWidgetItem(QString::fromStdString(tx->TxId));
         this->ui->tableTxBtc->setItem(row, column++, item);
-
-        row++;
     }
 }
 
 void BtcTransactionManager::RefreshPoolTransactions()
 {
 
+}
+
+void BtcTransactionManager::on_buttonSearchTx_clicked()
+{
+    QString txId = this->ui->editSearchTx->text();
+    if(txId.isEmpty())
+        return;
+
+    BtcTransactionPtr txInfo = Modules::btcModules->mtBitcoin->GetTransaction(txId.toStdString());
+    BtcRawTransactionPtr txRawInfo = Modules::btcModules->btcJson->DecodeRawTransaction(txInfo->Hex);
+
+    if(infoWindow == NULL)
+        infoWindow = new BtcTransactionInfo();
+    infoWindow->show();
+    infoWindow->Initialize(txInfo, txRawInfo);
+}
+
+void BtcTransactionManager::on_tableTxBtc_cellChanged(int row, int column)
+{
+    // get txid from 6th column:
+    QString txId = this->ui->tableTxBtc->itemAt(row, 5)->text();
+    this->ui->editSearchTx->setText(txId);
 }

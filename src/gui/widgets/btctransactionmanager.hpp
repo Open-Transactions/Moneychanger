@@ -18,6 +18,10 @@ public:
 private slots:
     void on_buttonRefresh_clicked();
 
+    void on_buttonSearchTx_clicked();
+
+    void on_tableTxBtc_cellChanged(int row, int column);
+
 private:
     void RefreshBitcoinTransactions();
     void RefreshPoolTransactions();

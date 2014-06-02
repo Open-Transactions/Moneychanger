@@ -58,6 +58,11 @@ BtcMultiSigAddressPtr MTBitcoin::GetMultiSigAddressInfo(int minSignatures, const
     return multiSigAddr;
 }
 
+BtcTransactionPtr MTBitcoin::GetTransaction(const std::string &txId)
+{
+    return this->modules->btcJson->GetTransaction(txId);
+}
+
 BtcRawTransactionPtr MTBitcoin::GetRawTransaction(const std::string &txId)
 {
     return this->modules->btcJson->GetDecodedRawTransaction(txId);
