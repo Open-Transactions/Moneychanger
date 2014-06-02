@@ -8,6 +8,9 @@
 #include <gui/widgets/credentials.hpp>
 #include <gui/widgets/wizardaddnym.hpp>
 
+#include <core/handlers/contacthandler.hpp>
+#include <core/mtcomms.h>
+
 #include <namecoin/Namecoin.hpp>
 
 #include <opentxs/OTAPI.hpp>
@@ -15,6 +18,13 @@
 #include <opentxs/OT_ME.hpp>
 
 #include <QMessageBox>
+#include <QStringList>
+#include <QComboBox>
+#include <QLabel>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QRadioButton>
 #include <QPlainTextEdit>
 #include <QClipboard>
 #include <QDebug>
@@ -160,6 +170,269 @@ QString  MTNymDetails::GetCustomTabName(int nTab)
 }
 // ------------------------------------------------------
 
+QWidget * MTNymDetails::createNewAddressWidget(QString strNymID)
+{
+    QWidget     * pWidget = new QWidget;
+    QPushButton * pBtnAdd = new QPushButton(tr("Add"));
+    /*
+    QString create_msg_method = "CREATE TABLE msg_method"
+            " (method_id INTEGER PRIMARY KEY,"   // 1, 2, etc.
+            "  method_display_name TEXT,"        // "Localhost"
+            "  method_type TEXT,"                // "bitmessage"
+            "  method_type_display TEXT,"        // "Bitmessage"
+            "  method_connect TEXT)";            // "http://username:password@http://127.0.0.1:8332/"
+    */
+  //QString create_nym_method
+  // = "CREATE TABLE nym_method(nym_id TEXT, method_id INTEGER, address TEXT, PRIMARY KEY(nym_id, method_id, address))";
+  //QString create_contact_method
+  // = "CREATE TABLE contact_method(contact_id INTEGER, method_type TEXT, address TEXT, PRIMARY KEY(contact_id, method_type, address))";
+
+    QComboBox   * pCombo  = new QComboBox;
+    mapIDName     mapMethods;
+    MTContactHandler::getInstance()->GetMsgMethods(mapMethods);
+    // -----------------------------------------------
+    int nIndex = -1;
+    for (mapIDName::iterator ii = mapMethods.begin(); ii != mapMethods.end(); ++ii)
+    {
+        ++nIndex; // 0 on first iteration.
+        // ------------------------------
+        QString method_id   = ii.key();
+        QString method_name = ii.value();
+        // ------------------------------
+        pCombo->insertItem(nIndex, method_name, method_id);
+    }
+    // -----------------------------------------------
+    if (mapMethods.size() > 0)
+        pCombo->setCurrentIndex(0);
+    else
+        pBtnAdd->setEnabled(false);
+    // -----------------------------------------------
+    QLabel      * pLabel   = new QLabel(tr("Address:"));
+    QLineEdit   * pAddress = new QLineEdit;
+    QHBoxLayout * layout   = new QHBoxLayout;
+    // -----------------------------------------------
+    pCombo   ->setMinimumWidth(60);
+    pLabel   ->setMinimumWidth(55);
+    pLabel   ->setMaximumWidth(55);
+    pAddress ->setMinimumWidth(60);
+
+    pBtnAdd->setProperty("nymid",        strNymID);
+    pBtnAdd->setProperty("methodcombo",  VPtr<QWidget>::asQVariant(pCombo));
+    pBtnAdd->setProperty("addressedit",  VPtr<QWidget>::asQVariant(pAddress));
+    pBtnAdd->setProperty("methodwidget", VPtr<QWidget>::asQVariant(pWidget));
+    // -----------------------------------------------
+    layout->addWidget(pCombo);
+    layout->addWidget(pLabel);
+    layout->addWidget(pAddress);
+    layout->addWidget(pBtnAdd);
+    // -----------------------------------------------
+    pWidget->setLayout(layout);
+    // -----------------------------------------------
+    layout->setStretch(0,  0);
+    layout->setStretch(1, -1);
+    layout->setStretch(2,  0);
+    layout->setStretch(3,  1);
+    // -----------------------------------------------
+    connect(pBtnAdd, SIGNAL(clicked()), this, SLOT(on_btnAddressAdd_clicked()));
+    // -----------------------------------------------
+    return pWidget;
+}
+
+void MTNymDetails::on_btnAddressAdd_clicked()
+{
+    QObject * pqobjSender = QObject::sender();
+
+    if (NULL != pqobjSender)
+    {
+        QPushButton * pBtnAdd = dynamic_cast<QPushButton *>(pqobjSender);
+
+        if (m_pAddresses && (NULL != pBtnAdd))
+        {
+            QVariant    varNymID       = pBtnAdd->property("nymid");
+            QVariant    varMethodCombo = pBtnAdd->property("methodcombo");
+            QVariant    varAddressEdit = pBtnAdd->property("addressedit");
+            QString     qstrNymID      = varNymID.toString();
+            QComboBox * pCombo         = VPtr<QComboBox>::asPtr(varMethodCombo);
+            QLineEdit * pAddressEdit   = VPtr<QLineEdit>::asPtr(varAddressEdit);
+            QWidget   * pWidget        = VPtr<QWidget>::asPtr(pBtnAdd->property("methodwidget"));
+
+            if (!qstrNymID.isEmpty() && (NULL != pCombo) && (NULL != pAddressEdit) && (NULL != pWidget))
+            {
+                int     nMethodID       = 0;
+                QString qstrAddress     = QString("");
+                QString qstrDisplayAddr = QString("");
+                // --------------------------------------------------
+                if (pCombo->currentIndex() < 0)
+                    return;
+                // --------------------------------------------------
+                QVariant varMethodID = pCombo->itemData(pCombo->currentIndex());
+                nMethodID = varMethodID.toInt();
+
+                if (nMethodID <= 0)
+                    return;
+                // --------------------------------------------------
+                qstrAddress = pAddressEdit->text();
+
+                if (qstrAddress.isEmpty())
+                    return;
+                // --------------------------------------------------
+                bool bAdded = MTContactHandler::getInstance()->AddMsgAddressToNym(qstrNymID, nMethodID, qstrAddress);
+
+                if (bAdded) // Let's add it to the GUI, too, then.
+                {
+                    QString qstrTypeDisplay = MTContactHandler::getInstance()->GetMethodTypeDisplay(nMethodID);
+                    qstrDisplayAddr = QString("%1: %2").arg(qstrTypeDisplay).arg(qstrAddress);
+                    // --------------------------------------------------
+                    QLayout     * pLayout = m_pAddresses->layout();
+                    QVBoxLayout * pVBox   = (NULL == pLayout) ? NULL : dynamic_cast<QVBoxLayout *>(pLayout);
+
+                    if (NULL != pVBox)
+                    {
+                        QWidget * pNewWidget = this->createSingleAddressWidget(qstrNymID, nMethodID, qstrAddress, qstrAddress);
+
+                        if (NULL != pNewWidget)
+                            pVBox->insertWidget(pVBox->count()-1, pNewWidget);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void MTNymDetails::on_btnAddressDelete_clicked()
+{
+    QObject * pqobjSender = QObject::sender();
+
+    if (NULL != pqobjSender)
+    {
+        QPushButton * pBtnDelete = dynamic_cast<QPushButton *>(pqobjSender);
+
+        if (m_pAddresses && (NULL != pBtnDelete))
+        {
+            QVariant  varNymID      = pBtnDelete->property("nymid");
+            QVariant  varMethodID   = pBtnDelete->property("methodid");
+            QVariant  varMethodAddr = pBtnDelete->property("methodaddr");
+            QString   qstrNymID     = varNymID     .toString();
+            int       nMethodID     = varMethodID  .toInt();
+            QString   qstrAddress   = varMethodAddr.toString();
+            QWidget * pWidget       = VPtr<QWidget>::asPtr(pBtnDelete->property("methodwidget"));
+
+            if (NULL != pWidget)
+            {
+                bool bRemoved = MTContactHandler::getInstance()->RemoveMsgAddressFromNym(qstrNymID, nMethodID, qstrAddress);
+
+                if (bRemoved) // Let's remove it from the GUI, too, then.
+                {
+                    QLayout * pLayout = m_pAddresses->layout();
+
+                    if (NULL != pLayout)
+                    {
+                        pLayout->removeWidget(pWidget);
+
+                        pWidget->setParent(NULL);
+                        pWidget->disconnect();
+                        pWidget->deleteLater();
+
+                        pWidget = NULL;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+QWidget * MTNymDetails::createSingleAddressWidget(QString strNymID, int nMethodID, QString qstrAddress, QString qstrDisplayAddr)
+{
+    QString qstrMethodName = (nMethodID > 0) ? MTContactHandler::getInstance()->GetMethodDisplayName(nMethodID) : QString(tr("Unknown"));
+
+    QWidget     * pWidget    = new QWidget;
+    QLineEdit   * pMethod    = new QLineEdit(qstrMethodName);
+    QLabel      * pLabel     = new QLabel(tr("Address:"));
+    QLineEdit   * pAddress   = new QLineEdit(qstrDisplayAddr);
+    QPushButton * pBtnDelete = new QPushButton(tr("Delete"));
+    // ----------------------------------------------------------
+    pMethod ->setMinimumWidth(60);
+    pLabel  ->setMinimumWidth(55);
+    pLabel  ->setMaximumWidth(55);
+    pAddress->setMinimumWidth(60);
+
+    pMethod ->setReadOnly(true);
+    pAddress->setReadOnly(true);
+
+    pMethod ->setStyleSheet("QLineEdit { background-color: lightgray }");
+    pAddress->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+    pBtnDelete->setProperty("nymid",        strNymID);
+    pBtnDelete->setProperty("methodid",     nMethodID);
+    pBtnDelete->setProperty("methodaddr",   qstrAddress);
+    pBtnDelete->setProperty("methodwidget", VPtr<QWidget>::asQVariant(pWidget));
+    // ----------------------------------------------------------
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->addWidget(pMethod);
+    layout->addWidget(pLabel);
+    layout->addWidget(pAddress);
+    layout->addWidget(pBtnDelete);
+    // ----------------------------------------------------------
+    pWidget->setLayout(layout);
+
+    connect(pBtnDelete, SIGNAL(clicked()), this, SLOT(on_btnAddressDelete_clicked()));
+    // ----------------------------------------------------------
+    layout->setStretch(0,  0);
+    layout->setStretch(1, -1);
+    layout->setStretch(2,  0);
+    layout->setStretch(3,  1);
+    // ----------------------------------------------------------
+    pMethod ->home(false);
+    pAddress->home(false);
+    // ----------------------------------------------------------
+    return pWidget;
+}
+
+QGroupBox * MTNymDetails::createAddressGroupBox(QString strNymID)
+{
+    QGroupBox   * pBox = new QGroupBox(tr("P2P Addresses"));
+    QVBoxLayout * vbox = new QVBoxLayout;
+    // -----------------------------------------------------------------
+    // Loop through all known transport methods (communications addresses)
+    // known for this Nym,
+    mapIDName theMap;
+
+    qDebug() << QString("NYM ID: %1").arg(strNymID);
+
+    if (!strNymID.isEmpty() && MTContactHandler::getInstance()->GetMethodsAndAddrByNym(theMap, strNymID))
+    {
+        for (mapIDName::iterator it = theMap.begin(); it != theMap.end(); ++it)
+        {
+            QString qstrID          = it.key();   // QString("%1|%2").arg(qstrAddress).arg(nMethodID);
+            QString qstrDisplayAddr = it.value(); // QString("%1: %2").arg(qstrTypeDisplay).arg(qstrAddress);
+
+            QStringList stringlist = qstrID.split("|");
+
+            if (stringlist.size() >= 2) // Should always be 2...
+            {
+                QString qstrAddress  = stringlist.at(0);
+                QString qstrMethodID = stringlist.at(1);
+                const int  nMethodID = qstrMethodID.isEmpty() ? 0 : qstrMethodID.toInt();
+                // --------------------------------------
+                QWidget * pWidget = this->createSingleAddressWidget(strNymID, nMethodID, qstrAddress, qstrAddress);
+
+                if (NULL != pWidget)
+                    vbox->addWidget(pWidget);
+            }
+        }
+    }
+    // -----------------------------------------------------------------
+    QWidget * pWidget = this->createNewAddressWidget(strNymID);
+
+    if (NULL != pWidget)
+        vbox->addWidget(pWidget);
+    // -----------------------------------------------------------------
+    pBox->setLayout(vbox);
+
+    return pBox;
+}
+
 //virtual
 void MTNymDetails::refresh(QString strID, QString strName)
 {
@@ -189,6 +462,25 @@ void MTNymDetails::refresh(QString strID, QString strName)
 
         FavorLeftSideForIDs();
         // --------------------------
+        QGroupBox * pAddresses = this->createAddressGroupBox(strID);
+
+        if (m_pAddresses)
+        {
+            ui->verticalLayout->removeWidget(m_pAddresses);
+
+            m_pAddresses->setParent(NULL);
+            m_pAddresses->disconnect();
+            m_pAddresses->deleteLater();
+
+            m_pAddresses = NULL;
+        }
+        ui->verticalLayout->addWidget(pAddresses);
+
+        m_pAddresses = pAddresses;
+        // ----------------------------------
+
+
+        // ----------------------------------
         // TAB: "Nym State"
         //
         if (m_pPlainTextEdit)
@@ -221,6 +513,17 @@ void MTNymDetails::ClearContents()
     // ------------------------------------------
     if (m_pPlainTextEdit)
         m_pPlainTextEdit->setPlainText("");
+    // ------------------------------------------
+    if (m_pAddresses)
+    {
+        ui->verticalLayout->removeWidget(m_pAddresses);
+
+        m_pAddresses->setParent(NULL);
+        m_pAddresses->disconnect();
+        m_pAddresses->deleteLater();
+
+        m_pAddresses = NULL;
+    }
 }
 
 // ------------------------------------------------------

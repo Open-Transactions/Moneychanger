@@ -126,6 +126,7 @@ private:
     QPointer<MTDetailEdit> accountswindow;
     QPointer<MTDetailEdit> corporation_window;
     QPointer<MTDetailEdit> agreement_window;
+    QPointer<MTDetailEdit> transport_window;
 
     QPointer<DlgMarkets  > market_window;
 
@@ -169,6 +170,7 @@ private:
     void mc_market_dialog();
     void mc_corporation_dialog();
     void mc_agreement_dialog();
+    void mc_transport_dialog(QString qstrPresetID=QString(""));
     void mc_createinsurancecompany_dialog();
     // ------------------------------------------------    
     QList<QVariant> * nym_list_id;
@@ -211,6 +213,7 @@ private:
     QIcon mc_systrayIcon_advanced_settings;
     
     QIcon mc_systrayIcon_advanced_corporations;
+    QIcon mc_systrayIcon_advanced_transport;
     QIcon mc_systrayIcon_advanced_bazaar;
     // ------------------------------------------------
     /**
@@ -263,6 +266,7 @@ private:
     QPointer<QAction> mc_systrayMenu_advanced_import;
     QPointer<QAction> mc_systrayMenu_advanced_settings;
     QPointer<QAction> mc_systrayMenu_advanced_corporations;
+    QPointer<QAction> mc_systrayMenu_advanced_transport;
     QPointer<QMenu>   mc_systrayMenu_advanced_bazaar;
     // ---------------------------------------------------------
     // Bazaar
@@ -289,14 +293,16 @@ public slots:
      * Systray Menu Slots
      **/
     
-    //Shutdown
-    void mc_shutdown_slot();
+    void mc_shutdown_slot(); //Shutdown
     // ---------------------------------------------------------------------------
     void mc_overview_slot();                // Overview
     void mc_main_menu_slot();               // Main Menu
     // ---------------------------------------------------------------------------
     void mc_addressbook_slot();             // Address Book
     void mc_showcontact_slot(QString text); // Address Book, Select a Contact
+    // ---------------------------------------------------------------------------
+    void mc_transport_slot();                 // Various Transport connection strings
+    void mc_showtransport_slot(QString text); // Same, except choose a specific one when opening.
     // ---------------------------------------------------------------------------
     void mc_defaultnym_slot();              // Nym
     void mc_nymselection_triggered(QAction*); //new default nym selected

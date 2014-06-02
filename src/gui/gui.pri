@@ -59,7 +59,8 @@ FORMS += \
     $${PWD}/widgets/wizardaddaccount.ui \
     $${PWD}/widgets/wizardaddcontract.ui \
     $${PWD}/widgets/wizardaddnym.ui \
-    $${PWD}/widgets/wizardnewoffer.ui
+    $${PWD}/widgets/wizardnewoffer.ui \
+    ../../src/gui/widgets/transportdetails.ui
 
 HEADERS += \
     $${PWD}/ui/dlgexportcash.hpp \
@@ -118,7 +119,8 @@ HEADERS += \
     $${PWD}/widgets/wizardaddaccount.hpp \
     $${PWD}/widgets/wizardaddcontract.hpp \
     $${PWD}/widgets/wizardaddnym.hpp \
-    $${PWD}/widgets/wizardnewoffer.hpp
+    $${PWD}/widgets/wizardnewoffer.hpp \
+    ../../src/gui/widgets/transportdetails.hpp
 
 SOURCES += \
     $${PWD}/ui/dlgexportcash.cpp \
@@ -177,7 +179,8 @@ SOURCES += \
     $${PWD}/widgets/wizardaddaccount.cpp \
     $${PWD}/widgets/wizardaddcontract.cpp \
     $${PWD}/widgets/wizardaddnym.cpp \
-    $${PWD}/widgets/wizardnewoffer.cpp
+    $${PWD}/widgets/wizardnewoffer.cpp \
+    ../../src/gui/widgets/transportdetails.cpp
 
 TRANSLATIONS += $${PWD}/translations/en_US.ts \
                 $${PWD}/translations/de_DE.ts

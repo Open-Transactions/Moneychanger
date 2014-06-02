@@ -804,9 +804,14 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
         MTCompose * compose_window = new MTCompose;
         compose_window->setAttribute(Qt::WA_DeleteOnClose);
         // --------------------------------------------------
-        compose_window->setInitialSenderNym   (myNymID);
-        compose_window->setInitialRecipientNym(otherNymID);
-        compose_window->setInitialServer      (serverID);
+        if (!myNymID.isEmpty())
+            compose_window->setInitialSenderNym(myNymID);
+
+        if (!otherNymID.isEmpty())
+            compose_window->setInitialRecipientNym(otherNymID);
+
+        if (!serverID.isEmpty())
+            compose_window->setInitialServer(serverID);
         // ---------------------------------------
         // Set subject, if one is available.
         std::string str_desc;
@@ -1168,7 +1173,7 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
         sec->setReadOnly(true);
         // -----------------------------------------
         QHBoxLayout * pHLayout = new QHBoxLayout;
-        QLabel * labelMemo = new QLabel(QString("Memo: "));
+        QLabel * labelMemo = new QLabel(QString(tr("Memo: ")));
 
         pHLayout->addWidget(labelMemo);
         pHLayout->addWidget(sec);
@@ -1439,7 +1444,6 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
         increment_cell(nCurrentRow, nCurrentColumn);
 
         connect(msgButton, SIGNAL(clicked()), this, SLOT(on_msgButton_clicked()));
-
     }
 
     // ----------------------------------

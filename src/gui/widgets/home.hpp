@@ -24,6 +24,8 @@ class MTHome : public QWidget
 private:
     /** Functions **/
 
+    void PopulateRecords();  // Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
+
     void RefreshRecords();
     void setupRecordList();
     void RefreshUserBar();

@@ -8,11 +8,16 @@
 #include <QKeyEvent>
 
 
-MTGetStringDialog::MTGetStringDialog(QWidget *parent) :
+MTGetStringDialog::MTGetStringDialog(QWidget *parent, QString qstrLabel/*=QString("")*/) :
     QDialog(parent),
     ui(new Ui::MTGetStringDialog)
 {
     ui->setupUi(this);
+
+    if (qstrLabel.isEmpty())
+        qstrLabel = tr("Enter a Display Name:");
+
+    ui->label->setText(qstrLabel);
 
     this->installEventFilter(this);
 }

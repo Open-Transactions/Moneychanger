@@ -10,6 +10,8 @@
 
 #include <core/moneychanger.hpp>
 #include <core/handlers/contacthandler.hpp>
+#include <core/mtcomms.h>
+#include <core/network/Network.h>
 
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OTAPI_Exec.hpp>
@@ -272,11 +274,11 @@ void MTHome::RefreshAll()
 //  int nRowCount    = ui->tableWidget->rowCount();
     int nCurrentRow  = ui->tableWidget->currentRow();
     // -----------------------------------------
-    m_list.Populate(); // Refreshes the data from local storage.
+    PopulateRecords(); // Refreshes the data from local storage.
     // -----------------------------------------
     RefreshUserBar();
     // -------------------------------------------
-    RefreshRecords(); // Refreshes the list of records on the left-hand side, from the data.
+    RefreshRecords(); // Refreshes the list of records on the left-hand side in the GUI, from the data.
     // -----------------------------------------
     if (nCurrentRow >= 0)
     {
@@ -675,7 +677,7 @@ void MTHome::OnDeletedRecord()
             // We do this because the individual records keep track of their index inside their box.
             // Once a record is deleted, all the others now have bad indices, and must be reloaded.
             //
-            m_list.Populate();
+            PopulateRecords(); // Refreshes the data from local storage.
 
             RefreshRecords();
             // -----------------------------------------
@@ -698,6 +700,118 @@ void MTHome::OnDeletedRecord()
             qDebug() << QString("Failure removing OTRecord at index %1.").arg(nCurrentRow);
     }
 }
+
+
+// Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
+//
+void MTHome::PopulateRecords()
+{
+    m_list.Populate(); // Refreshes the OT data from local storage.
+    // ---------------------------------------------------------------------
+    QList<QString> listCheckOnlyOnce; // So we don't call checkMail more than once for the same connect string.
+    // ---------------------------------------------------------------------
+    // Let's see if, additionally, there are any Bitmessage records (etc)
+    // for the Nyms that we care about. (If we didn't add a Nym ID to m_list's
+    // list of Nyms, then we don't care about any Bitmessages for that Nym.)
+    //
+    bool bNeedsReSorting = false;
+
+    const list_of_strings & the_nyms = m_list.GetNyms();
+
+    for (list_of_strings::const_iterator it = the_nyms.begin(); it != the_nyms.end(); ++it)
+    {
+        const std::string str_nym_id = *it;
+        // -----------------------------
+        mapIDName mapMethods;
+        QString   filterByNym = QString::fromStdString(str_nym_id);
+
+        bool bGotMethods = !filterByNym.isEmpty() ? MTContactHandler::getInstance()->GetMsgMethodsByNym(mapMethods, filterByNym, false, QString("")) : false;
+
+        if (bGotMethods)
+        {
+            // Loop through mapMethods and for each methodID, call GetAddressesByNym.
+            // Then for each address, grab the inbox and outbox from MTComms, and add
+            // the messages to m_list.
+            //
+            for (mapIDName::iterator ii = mapMethods.begin(); ii != mapMethods.end(); ++ii)
+            {
+                QString qstrMethodID  = ii.key();
+                int nFilterByMethodID = qstrMethodID.toInt();
+
+                if (nFilterByMethodID > 0)
+                {
+                    QString   qstrMethodType  = MTContactHandler::getInstance()->GetMethodType       (nFilterByMethodID);
+                    QString   qstrTypeDisplay = MTContactHandler::getInstance()->GetMethodTypeDisplay(nFilterByMethodID);
+                    QString   qstrConnectStr  = MTContactHandler::getInstance()->GetMethodConnectStr (nFilterByMethodID);
+
+                    if (!qstrConnectStr.isEmpty())
+                    {
+                        NetworkModule * pModule = MTComms::find(qstrConnectStr.toStdString());
+
+                        if ((NULL != pModule) && pModule->accessible())
+                        {
+                            if ((-1) == listCheckOnlyOnce.indexOf(qstrConnectStr)) // Not on the list yet.
+                            {
+                                pModule->checkMail();
+                                listCheckOnlyOnce.insert(0, qstrConnectStr);
+                            }
+                            // ------------------------------
+                            mapIDName mapAddresses;
+
+                            if (MTContactHandler::getInstance()->GetAddressesByNym(mapAddresses, filterByNym, nFilterByMethodID))
+                            {
+                                for (mapIDName::iterator jj = mapAddresses.begin(); jj != mapAddresses.end(); ++jj)
+                                {
+                                    QString qstrAddress = jj.key();
+
+                                    if (!qstrAddress.isEmpty())
+                                    {
+                                        std::vector<NetworkMail> theInbox = pModule->getInbox(qstrAddress.toStdString());
+
+                                        for (std::vector<NetworkMail>::size_type nIndex = 0; nIndex < theInbox.size(); ++nIndex)
+                                        {
+                                            NetworkMail & theMsg = theInbox[nIndex];
+
+                                            std::string strSubject  = theMsg.getSubject();
+                                            std::string strContents = theMsg.getMessage();
+                                            // ----------------------------------------------------
+                                            QString qstrFinal;
+
+                                            if (!strSubject.empty())
+                                                qstrFinal = QString("%1: %2\n%3").
+                                                        arg(tr("Subject")).
+                                                        arg(QString::fromStdString(strSubject)).
+                                                        arg(QString::fromStdString(strContents));
+                                            else
+                                                qstrFinal = QString::fromStdString(strContents);
+                                            // ----------------------------------------------------
+                                            bNeedsReSorting = true;
+
+                                            m_list.AddSpecialMsg(theMsg.getMessageID(),
+                                                                 false, //bIsOutgoing=false
+                                                                 static_cast<int32_t>(nFilterByMethodID),
+                                                                 qstrFinal.toStdString(),
+                                                                 theMsg.getTo(),
+                                                                 theMsg.getFrom(),
+                                                                 qstrMethodType.toStdString(),
+                                                                 qstrTypeDisplay.toStdString(),
+                                                                 str_nym_id,
+                                                                 static_cast<time64_t>(theMsg.getSentTime()));
+                                        } // for (inbox)
+                                    } // if (!qstrAddress.isEmpty())
+                                } // for (addresses)
+                            } // if GetAddressesByNym
+                        } // if ((NULL != pModule) && pModule->accessible())
+                    } // if (!qstrConnectStr.isEmpty())
+                } // if nFilterByMethodID > 0
+            } // for (methods)
+        } // if bGotMethods
+    } // for (nyms)
+    // -----------------------------------------------------
+    if (bNeedsReSorting)
+        m_list.SortRecords();
+}
+
 
 void MTHome::RefreshRecords()
 {
@@ -733,7 +847,7 @@ void MTHome::RefreshRecords()
         if (weakRecord.expired())
         {
             OTLog::Output(2, "Reloading table due to expired pointer.\n");
-            m_list.Populate();
+            PopulateRecords(); // Refreshes the data from local storage.
             listSize = m_list.size();
             nIndex = 0;
         }

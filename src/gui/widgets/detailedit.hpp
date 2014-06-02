@@ -37,7 +37,8 @@ public:
         DetailEditTypeMarket,
         DetailEditTypeOffer,
         DetailEditTypeAgreement,
-        DetailEditTypeCorporation
+        DetailEditTypeCorporation,
+        DetailEditTypeTransport
     };
 
     explicit MTDetailEdit(QWidget *parent);

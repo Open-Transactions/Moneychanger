@@ -94,6 +94,8 @@ unix: {
             # if not on Mavericks
             LIBS += -lboost_system-mt
             LIBS += -lboost_thread-mt
+            LIBS += -lboost_chrono-mt
+            LIBS += -lboost_atomic-mt
         }
     } 
     # LINUX:
@@ -102,6 +104,8 @@ unix: {
             # only need if no C++11 available
             LIBS += -lboost_system-mt
             LIBS += -lboost_thread-mt
+            LIBS += -lboost_chrono-mt
+            LIBS += -lboost_atomic-mt
         }
     }
 }
@@ -152,6 +156,9 @@ win32: {
 unix:{
     LIBS += -ldl
     LIBS += -lcurl
+    LIBS += -lxmlrpc
+    LIBS += -lxmlrpc++
+    LIBS += -lxmlrpc_client++
 
 }
 
