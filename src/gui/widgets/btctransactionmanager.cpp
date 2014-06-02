@@ -94,9 +94,13 @@ void BtcTransactionManager::on_buttonSearchTx_clicked()
     infoWindow->Initialize(txInfo, txRawInfo);
 }
 
-void BtcTransactionManager::on_tableTxBtc_cellChanged(int row, int column)
+void BtcTransactionManager::on_tableTxBtc_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
 {
     // get txid from 6th column:
-    QString txId = this->ui->tableTxBtc->itemAt(row, 5)->text();
+    QTableWidgetItem* txIdItem = this->ui->tableTxBtc->item(currentRow, 5);
+    if(txIdItem == NULL)
+        return;
+
+    QString txId = txIdItem->text();
     this->ui->editSearchTx->setText(txId);
 }

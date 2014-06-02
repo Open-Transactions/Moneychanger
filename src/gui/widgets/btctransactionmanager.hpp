@@ -20,7 +20,7 @@ private slots:
 
     void on_buttonSearchTx_clicked();
 
-    void on_tableTxBtc_cellChanged(int row, int column);
+    void on_tableTxBtc_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
 
 private:
     void RefreshBitcoinTransactions();
