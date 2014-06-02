@@ -72,6 +72,34 @@ std::string MTNameLookupQT::GetAcctName(const std::string & str_id,
 }
 
 
+//virtual
+std::string MTNameLookupQT::GetAddressName(const std::string & str_address) const // Used for Bitmessage addresses (etc.)
+{
+    std::string str_result("");
+    // ------------------------
+    if (!str_address.empty())
+    {
+        int nContactID = MTContactHandler::getInstance()->GetContactByAddress(QString::fromStdString(str_address));
+
+        if (nContactID > 0)
+        {
+            QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
+
+            if (!contact_name.isEmpty())
+                str_result = contact_name.toStdString();
+        }
+        else
+        {
+            QString qstrNymID = MTContactHandler::getInstance()->GetNymByAddress(QString::fromStdString(str_address));
+
+            if (!qstrNymID.isEmpty())
+                str_result = this->GetNymName(qstrNymID.toStdString());
+        }
+    }
+    // ------------------------
+    return str_result;
+}
+
 
 //static
 MTContactHandler * MTContactHandler::_instance = NULL;

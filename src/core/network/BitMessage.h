@@ -6,8 +6,7 @@
 #include <memory>
 #include <string>
 #include <ctime>
-
-
+//#include <mutex>
 #include "Network.h"
 #include "XmlRPC.h"
 #include "base64.h"
@@ -187,13 +186,14 @@ public:
     
     std::string moduleType(){return "BitMessage";}
     
-    bool createAddress(std::string options);  // Queued
-    bool createDeterministicAddress(std::string key); // Queued
+    bool createAddress(std::string label="");  // Queued
+    bool createDeterministicAddress(std::string key, std::string label=""); // Queued
+    bool deleteLocalAddress(std::string address); // Queued
     
     bool addressAccessible(std::string address);  // Queued
     
-    std::vector<std::string> getRemoteAddresses();    // Queued
-    std::vector<std::string> getLocalAddresses();    // Queued
+    std::vector<std::pair<std::string, std::string> > getRemoteAddresses();    // Queued
+    std::vector<std::pair<std::string, std::string> > getLocalAddresses();    // Queued
     bool checkLocalAddresses(); // Queued
     bool checkRemoteAddresses(); // Queued
 
@@ -211,7 +211,8 @@ public:
     bool sendMail(NetworkMail message); // Queued
     
     bool publishSupport(){return true;};
-    std::vector<std::string> getSubscriptions();
+    std::vector<std::pair<std::string,std::string> > getSubscriptions();
+    bool refreshSubscriptions();
     
     
     // Message Queue Interaction
@@ -255,7 +256,7 @@ public:
     
     // Subscription Management
     
-    BitMessageSubscriptionList listSubscriptions();
+    void listSubscriptions();
     
     bool addSubscription(std::string address, base64 label);
     bool addSubscription(std::string address, std::string label){return addSubscription(address, base64(label));}
@@ -283,8 +284,8 @@ public:
 
     // Warning - This is not guaranteed to return a filled vector if the call does not return any new addresses.
     // You must check that you are accessing a legal position in the vector first.
-    std::vector<BitMessageAddress> createDeterministicAddresses(base64 password, int numberOfAddresses=1, int addressVersionNumber=0, int streamNumber=0, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
-    std::vector<BitMessageAddress> createDeterministicAddresses(std::string password, int numberOfAddresses=1, int addressVersionNumber=0, int streamNumber=0, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){return createDeterministicAddresses(base64(password), numberOfAddresses, addressVersionNumber, streamNumber, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);}
+    void createDeterministicAddresses(base64 password, int numberOfAddresses=1, int addressVersionNumber=0, int streamNumber=0, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
+    //std::vector<BitMessageAddress> createDeterministicAddresses(std::string password, int numberOfAddresses=1, int addressVersionNumber=0, int streamNumber=0, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){return createDeterministicAddresses(base64(password), numberOfAddresses, addressVersionNumber, streamNumber, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);}
     
     BitMessageAddress getDeterministicAddress(base64 password, int addressVersionNumber=4, int streamNumber=1);
     BitMessageAddress getDeterministicAddress(std::string password, int addressVersionNumber=4, int streamNumber=1){return getDeterministicAddress(base64(password), addressVersionNumber, streamNumber);}
@@ -296,7 +297,7 @@ public:
 
     bool deleteAddressBookEntry(std::string address);
     
-    bool deleteAddress(BitMessageAddress address);
+    void deleteAddress(BitMessageAddress address);
     
     BitDecodedAddress decodeAddress(BitMessageAddress address);
     
@@ -377,6 +378,9 @@ private:
     OT_MUTEX(m_localOutboxMutex);
     std::vector<NetworkMail> m_localOutbox;
     BitMessageInbox m_localUnformattedOutbox; // Necessary for doing operations on BitMessage-specific messages
+    
+    OT_MUTEX(m_localSubscriptionListMutex);
+    BitMessageSubscriptionList m_localSubscriptionList;
     
 };
 

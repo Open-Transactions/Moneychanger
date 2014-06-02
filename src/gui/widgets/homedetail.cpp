@@ -1173,7 +1173,7 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
         sec->setReadOnly(true);
         // -----------------------------------------
         QHBoxLayout * pHLayout = new QHBoxLayout;
-        QLabel * labelMemo = new QLabel(QString("Memo: "));
+        QLabel * labelMemo = new QLabel(QString(tr("Memo: ")));
 
         pHLayout->addWidget(labelMemo);
         pHLayout->addWidget(sec);
@@ -1444,7 +1444,6 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
         increment_cell(nCurrentRow, nCurrentColumn);
 
         connect(msgButton, SIGNAL(clicked()), this, SLOT(on_msgButton_clicked()));
-
     }
 
     // ----------------------------------

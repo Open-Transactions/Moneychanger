@@ -91,7 +91,7 @@ public:
     NetworkModule(std::string commstring) : m_commstring(commstring) {}
 
     std::string getCommstring() { return m_commstring; }
-
+    
     virtual bool accessible(){return false;}
     
     virtual int  modulesLoaded(){return NetCounter::loaded;}
@@ -99,13 +99,14 @@ public:
     
     virtual std::string moduleType(){return "";}
     
-    virtual bool createAddress(std::string options){return false;}
-    virtual bool createDeterministicAddress(std::string key){return false;}
+    virtual bool createAddress(std::string label=""){return false;}
+    virtual bool createDeterministicAddress(std::string key, std::string label=""){return false;}
+    virtual bool deleteLocalAddress(std::string address){return false;}
     
     virtual bool addressAccessible(std::string address){return false;}  // Checks to see if an address is useable for sending messages.
     
-    virtual std::vector<std::string> getLocalAddresses(){return std::vector<std::string>();}
-    virtual std::vector<std::string> getRemoteAddresses(){return std::vector<std::string>();}
+    virtual std::vector<std::pair<std::string, std::string> > getLocalAddresses(){return std::vector<std::pair<std::string, std::string> >();}
+    virtual std::vector<std::pair<std::string, std::string> > getRemoteAddresses(){return std::vector<std::pair<std::string, std::string> >();}
     virtual bool checkLocalAddresses(){return false;} // Asks the network interface to manually check for new owned addresses.
     virtual bool checkRemoteAddresses(){return false;} // Asks the API to refresh its list of contacts.
     
@@ -125,7 +126,8 @@ public:
     virtual bool sendMail(NetworkMail message){return false;} // Need To, From, Subject and Message in formatted NetworkMail object
     
     virtual bool publishSupport(){return false;}
-    virtual std::vector<std::string> getSubscriptions(){return std::vector<std::string>();}
+    virtual std::vector<std::pair<std::string,std::string> > getSubscriptions(){return std::vector<std::pair<std::string, std::string> >();}
+    virtual bool refreshSubscriptions(){return false;} // Need to run this to request a refresh of the subscriptions list without flooding network with data
     
     // Broadcasting Functions
     

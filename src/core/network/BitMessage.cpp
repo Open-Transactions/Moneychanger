@@ -13,18 +13,15 @@
 #include <utility>
 #include <algorithm>
 
-#include <functional>
-
-
 #ifndef OT_USE_TR1
 #include <chrono>
 #include <thread>
 #else
 #include <boost/chrono.hpp>
 #include <boost/thread.hpp>
-//#include <QThread>
 #endif
 
+#include <functional>
 
 #include<boost/tokenizer.hpp>
 
@@ -85,40 +82,105 @@ bool BitMessage::accessible(){
 }
 
 
-bool BitMessage::createAddress(std::string options=""){
+bool BitMessage::createAddress(std::string label){
+
+    listAddresses();
+
+    INSTANTIATE_MLOCK(m_localIdentitiesMutex);
     
     try{
-        // Here we will push a request to create a new random address onto the queue
-        // And then immediately request the updated list of addresses
-        OT_STD_FUNCTION(void()) firstCommand = OT_STD_BIND(&BitMessage::createRandomAddress, this, base64(""), false, 1, 1);
-        bm_queue->addToQueue(firstCommand);
+        if(label == ""){
+            std::cerr << "Will Not Create Address with Blank Label" << std::endl;
+            mlock.unlock();
+            return false;
+        }
     
-        OT_STD_FUNCTION(void()) secondCommand = OT_STD_BIND(&BitMessage::listAddresses, this);
-        bm_queue->addToQueue(secondCommand);
-        return true;
-    }
-    catch(...){
-        return false;
-    }
-}  // Queued
-
-
-bool BitMessage::createDeterministicAddress(std::string key){
-    
-    try{
-        OT_STD_FUNCTION(void()) firstCommand = OT_STD_BIND(&BitMessage::createRandomAddress, this, base64(key), false, 1, 1);
-        bm_queue->addToQueue(firstCommand);
-    
-        OT_STD_FUNCTION(void()) secondCommand = OT_STD_BIND(&BitMessage::listAddresses, this);
-        bm_queue->addToQueue(secondCommand);
         
+        for(int x = 0; x < m_localIdentities.size(); x++){
+            if(m_localIdentities.at(x).getLabel().decoded() == label){
+                std::cerr << "Cannot Create Address: Label " << label << " already in Use" << std::endl;
+                mlock.unlock();
+                return false;
+            }
+            
+        }
+
+        OT_STD_FUNCTION(void()) firstCommand = OT_STD_BIND(&BitMessage::createRandomAddress, this, base64(label), false, 1, 1);
+        bm_queue->addToQueue(firstCommand);
+    
+        checkLocalAddresses();
+        
+        mlock.unlock();
         return true;
     }
     catch(...){
+        mlock.unlock();
+        return false;
+    }
+}  // Queued
+
+
+bool BitMessage::createDeterministicAddress(std::string key, std::string label){
+
+    listAddresses();
+
+    INSTANTIATE_MLOCK(m_localIdentitiesMutex);
+
+    try{
+        
+        if(label == ""){
+            std::cerr << "Will Not Create Address with Blank Label" << std::endl;
+            mlock.unlock();
+            return false;
+        }
+        
+        if(m_localIdentities.size() == 0){
+            checkLocalAddresses();
+            mlock.unlock();
+            return false;
+        }
+        
+        for(int x = 0; x < m_localIdentities.size(); x++){
+            if(m_localIdentities.at(x).getLabel().decoded() == label){
+                std::cerr << "Cannot Create Address: Label " << label << " already in Use" << std::endl;
+                mlock.unlock();
+                return false;
+            }
+            
+        }
+        
+        
+        OT_STD_FUNCTION(void()) firstCommand = OT_STD_BIND(&BitMessage::createDeterministicAddresses, this, base64(key), 1, 0, 0, false, 1, 1);
+        bm_queue->addToQueue(firstCommand);
+    
+        checkLocalAddresses();
+
+        mlock.unlock();
+        return true;
+    }
+    catch(...){
+        mlock.unlock();
         return false;
     }
     
 }  // Queued
+
+
+bool BitMessage::deleteLocalAddress(std::string address){
+    try{
+        
+        OT_STD_FUNCTION(void()) firstCommand = OT_STD_BIND(&BitMessage::deleteAddress, this, address);
+        bm_queue->addToQueue(firstCommand);
+        
+        checkLocalAddresses();
+        return true;
+        
+    }
+    catch(...){
+        return false;
+    }
+}
+
 
 bool BitMessage::addressAccessible(std::string address){
     
@@ -140,13 +202,14 @@ bool BitMessage::addressAccessible(std::string address){
     return false;
 } // Queued
 
-std::vector<std::string> BitMessage::getRemoteAddresses(){
+std::vector<std::pair<std::string, std::string> > BitMessage::getRemoteAddresses(){
     
     INSTANTIATE_MLOCK(m_localAddressBookMutex);
 
-    std::vector<std::string> addresses;
+    std::vector<std::pair<std::string, std::string> > addresses;
     for(int x = 0; x < m_localAddressBook.size(); x++){
-        addresses.push_back(m_localAddressBook.at(x).getAddress());
+        std::pair<std::string, std::string> address(m_localAddressBook.at(x).getLabel().decoded(), m_localAddressBook.at(x).getAddress());
+        addresses.push_back(address);
     }
     
     mlock.unlock();
@@ -155,14 +218,15 @@ std::vector<std::string> BitMessage::getRemoteAddresses(){
 
 } // Queued
 
-std::vector<std::string> BitMessage::getLocalAddresses(){
+std::vector<std::pair<std::string, std::string> > BitMessage::getLocalAddresses(){
     
     INSTANTIATE_MLOCK(m_localIdentitiesMutex);
-
-    std::vector<std::string> addresses;
+    
+    std::vector<std::pair<std::string, std::string> > addresses;
     
     for(int x = 0; x < m_localIdentities.size(); x++){
-        addresses.push_back(m_localIdentities.at(x).getAddress());
+        std::pair<std::string, std::string> address(m_localIdentities.at(x).getLabel().decoded(), m_localIdentities.at(x).getAddress());
+        addresses.push_back(address);
     }
     
     mlock.unlock();
@@ -182,6 +246,19 @@ bool BitMessage::checkLocalAddresses(){
     }
 } // Queued
 
+
+bool BitMessage::checkRemoteAddresses(){
+    
+    try{
+        OT_STD_FUNCTION(void()) command = OT_STD_BIND(&BitMessage::listAddressBookEntries, this); // push a list address request to the queue.
+        bm_queue->addToQueue(command);
+        return true;
+    }
+    catch(...){
+        return false;
+    }
+}
+
 bool BitMessage::checkMail(){
     try{
         OT_STD_FUNCTION(void()) command = OT_STD_BIND(&BitMessage::getAllInboxMessages, this);
@@ -199,7 +276,6 @@ bool BitMessage::newMailExists(std::string address){
     if(m_localInbox.size() == 0){
         getAllInboxMessages(); // Blocking call, otherwise this may cause problems.
     }
-
     INSTANTIATE_MLOCK(m_localInboxMutex);
 
     if(address != ""){
@@ -229,7 +305,6 @@ std::vector<NetworkMail> BitMessage::getInbox(std::string address){
     if(m_localInbox.size() == 0){
         getAllInboxMessages();  // Blocking call, otherwise this may cause problems.
     }
-
     INSTANTIATE_MLOCK(m_localInboxMutex);
     try{
         
@@ -328,8 +403,8 @@ bool BitMessage::markRead(std::string messageID, bool read){
     if(m_localInbox.size() == 0){
         getAllInboxMessages();  // Blocking call, otherwise this may cause problems.
     }
+    
     INSTANTIATE_MLOCK(m_localInboxMutex);
-
     for(int x=0; x<m_localInbox.size(); x++){
 
         if(m_localInbox.at(x).getMessageID() == messageID){
@@ -367,19 +442,46 @@ bool BitMessage::sendMail(NetworkMail message){
 }
 
 
-std::vector<std::string> BitMessage::getSubscriptions(){return std::vector<std::string>();}
+std::vector<std::pair<std::string,std::string> > BitMessage::getSubscriptions(){
+    
+    INSTANTIATE_MLOCK(m_localSubscriptionListMutex);
+    
+    if(m_localSubscriptionList.size() == 0){
+        mlock.unlock();
+        refreshSubscriptions();
+        return std::vector<std::pair<std::string, std::string> >();
+    }
+    else{
+        std::vector<std::pair<std::string, std::string> > subscriptionList;
+        for(int x = 0; x < m_localSubscriptionList.size(); x++){
+            std::pair<std::string, std::string> subscription(m_localSubscriptionList.at(x).getLabel().decoded(), m_localSubscriptionList.at(x).getAddress());
+            subscriptionList.push_back(subscription);
+        }
+        mlock.unlock();
+        return subscriptionList;
+    }
+    
+    // We should never reach here.
+    mlock.unlock();
+    return std::vector<std::pair<std::string, std::string> >();
 
-bool BitMessage::checkRemoteAddresses(){
+}
+
+
+bool BitMessage::refreshSubscriptions(){
     
     try{
-        OT_STD_FUNCTION(void()) command = OT_STD_BIND(&BitMessage::listAddressBookEntries, this); // push a list address request to the queue.
+        OT_STD_FUNCTION(void()) command = OT_STD_BIND(&BitMessage::listSubscriptions, this);
         bm_queue->addToQueue(command);
         return true;
     }
     catch(...){
         return false;
     }
+    return false;
 }
+
+
 
 /*
  * Message Queue Interaction
@@ -483,8 +585,8 @@ void BitMessage::getAllInboxMessages(){
         inbox.push_back(message);
         
     }
-    INSTANTIATE_MLOCK(m_localInboxMutex); // Lock so that we dont have a race condition.
 
+    INSTANTIATE_MLOCK(m_localInboxMutex); // Lock so that we dont have a race condition.
     // Populate our local inbox.
 
     m_localInbox.clear();
@@ -845,7 +947,7 @@ std::string BitMessage::sendBroadcast(std::string fromAddress, base64 subject, b
 // Subscription Management
 
 
-BitMessageSubscriptionList BitMessage::listSubscriptions(){
+void BitMessage::listSubscriptions(){
 
     Parameters params;
     BitMessageSubscriptionList subscriptionList;
@@ -854,14 +956,14 @@ BitMessageSubscriptionList BitMessage::listSubscriptions(){
     
     if(result.first == false){
         std::cerr << "Error: listSubscriptions failed" << std::endl;
-        return subscriptionList;
+        //return subscriptionList;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
             std::cerr << std::string(ValueString(result.second)) << std::endl;
-            return subscriptionList;
+            //return subscriptionList;
         }
     }
     
@@ -872,7 +974,7 @@ BitMessageSubscriptionList BitMessage::listSubscriptions(){
     if ( !parsesuccess )
     {
         std::cerr  << "Failed to parse subscription list\n" << reader.getFormattedErrorMessages();
-        return subscriptionList;
+        //return subscriptionList;
     }
     
     const Json::Value subscriptions = root["subscriptions"];
@@ -888,8 +990,9 @@ BitMessageSubscriptionList BitMessage::listSubscriptions(){
         
     }
     
-    return subscriptionList;
-
+    INSTANTIATE_MLOCK(m_localSubscriptionListMutex);
+    m_localSubscriptionList = subscriptionList;
+    mlock.unlock();
 };
 
 
@@ -1058,13 +1161,13 @@ void BitMessage::listAddresses(){
     
     const Json::Value addresses = root["addresses"];
     for ( int index = 0; index < addresses.size(); ++index ){  // Iterates over the sequence elements.
-        BitMessageIdentity entry(base64(addresses[index].get("label", "").asString()), addresses[index].get("address", "").asString(), addresses[index].get("stream", 0).asInt(), addresses[index].get("enabled", false).asBool(), addresses[index].get("chan", false).asBool());
+        BitMessageIdentity entry(base64(addresses[index].get("label", "").asString(), true), addresses[index].get("address", "").asString(), addresses[index].get("stream", 0).asInt(), addresses[index].get("enabled", false).asBool(), addresses[index].get("chan", false).asBool());
         
         responses.push_back(entry);
         
     }
+    
     INSTANTIATE_MLOCK(m_localIdentitiesMutex);
-
     m_localIdentities = responses;
     mlock.unlock();
     
@@ -1094,15 +1197,15 @@ void BitMessage::createRandomAddress(base64 label, bool eighteenByteRipe, int to
             //return "";
         }
     }
+    
     INSTANTIATE_MLOCK(m_newestCreatedAddressMutex);
-
     newestCreatedAddress = std::string(ValueString(result.second));
     mlock.unlock();
     
 };
 
 
-std::vector<BitMessageAddress> BitMessage::createDeterministicAddresses(base64 password, int numberOfAddresses, int addressVersionNumber, int streamNumber, bool eighteenByteRipe, int totalDifficulty, int smallMessageDifficulty){
+void BitMessage::createDeterministicAddresses(base64 password, int numberOfAddresses, int addressVersionNumber, int streamNumber, bool eighteenByteRipe, int totalDifficulty, int smallMessageDifficulty){
 
     Parameters params;
     std::vector<BitMessageAddress> addressList;
@@ -1120,14 +1223,14 @@ std::vector<BitMessageAddress> BitMessage::createDeterministicAddresses(base64 p
     
     if(result.first == false){
         std::cerr << "Error: createDeterministicAddresses failed" << std::endl;
-        return addressList;
+        //return addressList;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
             std::cerr << std::string(ValueString(result.second)) << std::endl;
-            return addressList;
+            //return addressList;
         }
     }
     
@@ -1138,7 +1241,7 @@ std::vector<BitMessageAddress> BitMessage::createDeterministicAddresses(base64 p
     if ( !parsesuccess )
     {
         std::cerr  << "Failed to parse address list\n" << reader.getFormattedErrorMessages();
-        return addressList;
+        //return addressList;
     }
     
     const Json::Value addresses = root["addresses"];
@@ -1149,7 +1252,8 @@ std::vector<BitMessageAddress> BitMessage::createDeterministicAddresses(base64 p
         
     }
     
-    return addressList;
+    OT_STD_FUNCTION(void()) secondCommand = OT_STD_BIND(&BitMessage::listAddresses, this);
+    bm_queue->addToQueue(secondCommand);
 
 };
 
@@ -1224,7 +1328,6 @@ void BitMessage::listAddressBookEntries(){
     }
     
     INSTANTIATE_MLOCK(m_localAddressBookMutex);
-
     m_localAddressBook = addressBook;
     mlock.unlock();
     
@@ -1286,7 +1389,7 @@ bool BitMessage::deleteAddressBookEntry(std::string address){
 };
 
 
-bool BitMessage::deleteAddress(std::string address){
+void BitMessage::deleteAddress(std::string address){
 
     Parameters params;
     params.push_back(ValueString(address));
@@ -1294,19 +1397,19 @@ bool BitMessage::deleteAddress(std::string address){
     XmlResponse result = m_xmllib->run("deleteAddress", params);
     
     if(result.first == false){
-        std::cerr << "Error: deleteAddress failed" << std::endl;
-        return false;
+        std::cerr << "Error: deleteAddress " << address << " failed" << std::endl;
+        //return false;
     }
     else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
         std::size_t found;
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
             std::cerr << std::string(ValueString(result.second)) << std::endl;
-            return false;
+            //return false;
         }
     }
     
-    return true;
+    //return true;
 
 };
 
@@ -1502,5 +1605,6 @@ void BitMessage::initializeUserData(){
     listAddresses(); // Populates Local Owned Addresses
     listAddressBookEntries();  // Populates address book data, for remote users we have addresses for.
     getAllInboxMessages();
+    listSubscriptions();
     
 }

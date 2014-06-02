@@ -31,6 +31,8 @@ public:
                                     const std::string * p_nym_id=NULL,
                                     const std::string * p_server_id=NULL,
                                     const std::string * p_asset_id=NULL) const;
+
+    virtual std::string GetAddressName(const std::string & str_address) const; // Used for Bitmessage addresses (etc.)
 };
 
 
@@ -168,7 +170,7 @@ public:
   bool GetMethodsAndAddrByNym    (mapIDName & theMap, QString filterByNym,  int filterByMethodID);
   bool GetMethodsAndAddrByNym    (mapIDName & theMap, QString filterByNym);
 
-  QString GetNymByAddress(QString qstrAddress);
+  QString GetNymByAddress    (QString qstrAddress);
   int     GetContactByAddress(QString qstrAddress);
 
   int  GetMethodIDByNymAndAddress(QString filterByNym, QString qstrAddress);

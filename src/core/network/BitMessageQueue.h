@@ -4,9 +4,8 @@
 //  
 #include "BitMessage.h"
 
-#ifndef OT_USE_TR1
-#else
-#endif
+//#include <mutex>
+//#include <condition_variable>
 
 class BitMessage;
 
@@ -35,8 +34,6 @@ public:
 protected:
     
     OT_ATOMIC(m_stop);
-    
-    
     void run(){ while(OT_ATOMIC_ISFALSE(m_stop)){parseNextMessage();} } // Obviously this will be our message parsing loop
     
 private:
