@@ -132,7 +132,6 @@ bool MTComms::it_add(const std::string type, const std::string commstring)
                     return false;
             }
         }
-
     }
     // ----------------------------------------------------
     // If we got this far, that means it wasn't already there,

@@ -1,6 +1,6 @@
 //
 //  BitMessageQueue.cpp
-//  
+//
 
 #include "BitMessageQueue.h"
 
@@ -9,8 +9,8 @@
 
 
 bool BitMessageQueue::start() {
-
-    if(OT_ATOMIC_ISTRUE(m_stop)){
+    
+    if(m_stop){
         m_stop = false;
         m_thread = OT_THREAD(&BitMessageQueue::run, this);
         return true;
@@ -24,7 +24,7 @@ bool BitMessageQueue::start() {
 
 bool BitMessageQueue::stop() {
     
-    if(OT_ATOMIC_ISFALSE(m_stop)){
+    if(!m_stop){
         INSTANTIATE_MLOCK(m_processing); // Don't stop the thread in the middle of processing
         m_stop = true;
         m_thread.join();
@@ -78,7 +78,7 @@ bool BitMessageQueue::parseNextMessage(){
     
     INSTANTIATE_MLOCK(m_processing);  // Don't let other functions interfere with our message parsing
     
-//    m_working = true; // Notify our atomic boolean that we are in the middle of a process
+    //    m_working = true; // Notify our atomic boolean that we are in the middle of a process
     
     OT_STD_FUNCTION(void()) message = MasterQueue.pop();  // Pull out our function to run
     
@@ -86,12 +86,12 @@ bool BitMessageQueue::parseNextMessage(){
     
     mlock.unlock();
     m_conditional.notify_one(); // Let other functions know that we're done and they can continue.
-                                // This is primarily for when a request comes in to shut down the queue
-                                // While an action is in progress. This will notify our stop handler that it is safe
-                                // To shut down the thread.
+    // This is primarily for when a request comes in to shut down the queue
+    // While an action is in progress. This will notify our stop handler that it is safe
+    // To shut down the thread.
     
-//    m_working = false; // Notify our atomic boolean that we are done with our processing
-
+    //    m_working = false; // Notify our atomic boolean that we are done with our processing
+    
     
     return true;
 }
@@ -106,5 +106,5 @@ BitMessageQueue::~BitMessageQueue(){
     catch(...){
         /* Will need to refactor this */
     }
-
+    
 }

@@ -23,7 +23,7 @@ public:
         queue_.pop();
         return item;
     }
-
+    
     void pop(T& item)
     {
         INSTANTIATE_MLOCK(mutex_);
