@@ -1,7 +1,7 @@
 #pragma once
 //
 //  BitMessageQueue.h
-//  
+//
 #include "BitMessage.h"
 
 //#include <mutex>
@@ -34,7 +34,7 @@ public:
 protected:
     
     OT_ATOMIC(m_stop);
-    void run(){ while(OT_ATOMIC_ISFALSE(m_stop)){parseNextMessage();} } // Obviously this will be our message parsing loop
+    void run(){ while(!m_stop){parseNextMessage();} }; // Obviously this will be our message parsing loop
     
 private:
     
@@ -48,8 +48,8 @@ private:
     
     BitMessage *parentInterface;
     
-    MsgQueue< OT_STD_FUNCTION(void()) > MasterQueue;
-     
+    MsgQueue<OT_STD_FUNCTION(void())> MasterQueue;
+    
     // Functions
     
     bool parseNextMessage();

@@ -1,6 +1,6 @@
 //
 //  XmlRPC.h
-//  
+//
 
 #include <cassert>
 #include <cstdlib>
@@ -38,7 +38,7 @@ public:
     void toggleAuth(bool toggle);
     
 private:
-
+    
     // Address Settings
     std::string m_serverurl;
     int m_port;
@@ -46,7 +46,7 @@ private:
     // Transport Settings
     int m_timeout;
     xmlrpc_c::clientXmlTransport_curl transport;
-
+    
     // Auth Variables
     bool m_authrequired;
     bool m_authset;

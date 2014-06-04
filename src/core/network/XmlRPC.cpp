@@ -1,6 +1,6 @@
 //
 //  XmlRPC.cpp
-//  
+//
 
 
 #include "XmlRPC.h"
@@ -29,9 +29,9 @@ XmlResponse XmlRPC::run(std::string methodName, std::vector<xmlrpc_c::value> par
         
         // Construct our client from our Transport object
         xmlrpc_c::client_xml client(&transport);
-    
+        
         std::string const method(methodName);
-
+        
         // Parse through our parameters list
         
         xmlrpc_c::paramList params;
@@ -46,7 +46,7 @@ XmlResponse XmlRPC::run(std::string methodName, std::vector<xmlrpc_c::value> par
         sprintf(port_string, "%d", m_port);
         std::string const serverUrl(m_serverurl + ":" + port_string);
         xmlrpc_c::carriageParm_http0 carriageParams(serverUrl);
-
+        
         // Check That Auth Requirements have been met
         if(m_authrequired){
             if(!m_authset){
@@ -64,7 +64,7 @@ XmlResponse XmlRPC::run(std::string methodName, std::vector<xmlrpc_c::value> par
         // similar to the timeout setting one.
         //
         xmlrpc_limit_set(XMLRPC_XML_SIZE_LIMIT_ID, 5e6);
-
+        
         // Run our RPC Call
         xmlrpc_c::rpcPtr rpc(method, params);
         rpc->call(&client, &carriageParams);

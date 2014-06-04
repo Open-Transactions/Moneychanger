@@ -766,14 +766,17 @@ void MTHome::PopulateRecords()
 
                                     if (!qstrAddress.isEmpty())
                                     {
-                                        std::vector<NetworkMail> theInbox = pModule->getInbox(qstrAddress.toStdString());
+                                        // --------------------------------------------------------------------------------------------
+                                        // INBOX
+                                        //
+                                        std::vector< _SharedPtr<NetworkMail> > theInbox = pModule->getInbox(qstrAddress.toStdString());
 
-                                        for (std::vector<NetworkMail>::size_type nIndex = 0; nIndex < theInbox.size(); ++nIndex)
+                                        for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theInbox.size(); ++nIndex)
                                         {
-                                            NetworkMail & theMsg = theInbox[nIndex];
+                                            _SharedPtr<NetworkMail> & theMsg = theInbox[nIndex];
 
-                                            std::string strSubject  = theMsg.getSubject();
-                                            std::string strContents = theMsg.getMessage();
+                                            std::string strSubject  = theMsg->getSubject();
+                                            std::string strContents = theMsg->getMessage();
                                             // ----------------------------------------------------
                                             QString qstrFinal;
 
@@ -787,17 +790,52 @@ void MTHome::PopulateRecords()
                                             // ----------------------------------------------------
                                             bNeedsReSorting = true;
 
-                                            m_list.AddSpecialMsg(theMsg.getMessageID(),
+                                            m_list.AddSpecialMsg(theMsg->getMessageID(),
                                                                  false, //bIsOutgoing=false
                                                                  static_cast<int32_t>(nFilterByMethodID),
                                                                  qstrFinal.toStdString(),
-                                                                 theMsg.getTo(),
-                                                                 theMsg.getFrom(),
+                                                                 theMsg->getTo(),
+                                                                 theMsg->getFrom(),
                                                                  qstrMethodType.toStdString(),
                                                                  qstrTypeDisplay.toStdString(),
                                                                  str_nym_id,
-                                                                 static_cast<time64_t>(theMsg.getSentTime()));
+                                                                 static_cast<time64_t>(theMsg->getSentTime()));
                                         } // for (inbox)
+                                        // --------------------------------------------------------------------------------------------
+                                        // OUTBOX
+                                        //
+                                        std::vector< _SharedPtr<NetworkMail> > theOutbox = pModule->getOutbox(qstrAddress.toStdString());
+
+                                        for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theOutbox.size(); ++nIndex)
+                                        {
+                                            _SharedPtr<NetworkMail> & theMsg = theOutbox[nIndex];
+
+                                            std::string strSubject  = theMsg->getSubject();
+                                            std::string strContents = theMsg->getMessage();
+                                            // ----------------------------------------------------
+                                            QString qstrFinal;
+
+                                            if (!strSubject.empty())
+                                                qstrFinal = QString("%1: %2\n%3").
+                                                        arg(tr("Subject")).
+                                                        arg(QString::fromStdString(strSubject)).
+                                                        arg(QString::fromStdString(strContents));
+                                            else
+                                                qstrFinal = QString::fromStdString(strContents);
+                                            // ----------------------------------------------------
+                                            bNeedsReSorting = true;
+
+                                            m_list.AddSpecialMsg(theMsg->getMessageID(),
+                                                                 true, //bIsOutgoing=true
+                                                                 static_cast<int32_t>(nFilterByMethodID),
+                                                                 qstrFinal.toStdString(),
+                                                                 theMsg->getTo(),
+                                                                 theMsg->getFrom(),
+                                                                 qstrMethodType.toStdString(),
+                                                                 qstrTypeDisplay.toStdString(),
+                                                                 str_nym_id,
+                                                                 static_cast<time64_t>(theMsg->getSentTime()));
+                                        } // for (outbox)
                                     } // if (!qstrAddress.isEmpty())
                                 } // for (addresses)
                             } // if GetAddressesByNym

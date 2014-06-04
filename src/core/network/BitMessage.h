@@ -1,7 +1,7 @@
 #pragma once
 //
 //  BitMessage.h
-//  
+//
 
 #include <memory>
 #include <string>
@@ -13,6 +13,8 @@
 #include "WorkQueue.h"
 #include "MsgQueue.h"
 #include "BitMessageQueue.h"
+#include "TR1_Wrapper.hpp"
+
 
 typedef std::string BitMessageAddress;
 
@@ -47,7 +49,7 @@ class BitMessageAddressBookEntry {
 public:
     
     BitMessageAddressBookEntry(BitMessageAddress address, base64 label) : m_address(address), m_label(label) {}
-
+    
     BitMessageAddress getAddress(){return m_address;}
     base64 getLabel(){return m_label;}
     
@@ -83,7 +85,7 @@ typedef std::vector<BitMessageSubscription> BitMessageSubscriptionList;
 
 
 class BitInboxMessage {
-
+    
 public:
     
     BitInboxMessage(std::string msgID, BitMessageAddress toAddress, BitMessageAddress fromAddress, base64 subject, base64 message, int encodingType, std::time_t m_receivedTime, bool m_read) : m_msgID(msgID), m_toAddress(toAddress), m_fromAddress(fromAddress), m_subject(subject), m_message(message), m_encodingType(encodingType), m_receivedTime(m_receivedTime), m_read(m_read) {}
@@ -96,8 +98,8 @@ public:
     int getEncodingType(){return m_encodingType;}
     std::time_t getReceivedTime(){return m_receivedTime;}
     bool getRead(){return m_read;}
-
-
+    
+    
 private:
     
     std::string m_msgID;
@@ -129,7 +131,7 @@ public:
     std::time_t getLastActionTime(){return m_lastActionTime;}
     std::string getStatus(){return m_status;}
     std::string getAckData(){return m_ackData;}
-
+    
     
 private:
     
@@ -173,7 +175,7 @@ private:
 class BitMessageQueue; // Pre-defined here so we can hold one as an object in our BitMessage class.
 
 class BitMessage : public NetworkModule {
-
+    
 public:
     
     BitMessage(std::string commstring);
@@ -196,14 +198,16 @@ public:
     std::vector<std::pair<std::string, std::string> > getLocalAddresses();    // Queued
     bool checkLocalAddresses(); // Queued
     bool checkRemoteAddresses(); // Queued
-
+    
     bool checkMail(); // Asks the network interface to manually check for messages // Queued
     bool newMailExists(std::string address=""); // checks for new mail, returns true if there is new mail in the queue. // "Queued", will queue new mail request if inbox is empty.
     
-    std::vector<NetworkMail> getInbox(std::string address=""); // No queueing, if no inbox exists (which shouldn't happen), it will block until one is returned by the api server.
-    std::vector<NetworkMail> getAllInboxes();  // Implemented as passthrough function
-    std::vector<NetworkMail> getUnreadMail(std::string address);
-    std::vector<NetworkMail> getAllUnreadMail();
+    std::vector<_SharedPtr<NetworkMail> > getInbox(std::string address=""); // No queueing, if no inbox exists (which shouldn't happen), it will block until one is returned by the api server.
+    std::vector<_SharedPtr<NetworkMail> > getAllInboxes();  // Implemented as passthrough function
+    std::vector<_SharedPtr<NetworkMail> > getOutbox(std::string address="");
+    std::vector<_SharedPtr<NetworkMail> > getAllOutboxes(); // Implemented as passthrough function
+    std::vector<_SharedPtr<NetworkMail> > getUnreadMail(std::string address);
+    std::vector<_SharedPtr<NetworkMail> > getAllUnreadMail();
     
     bool deleteMessage(std::string messageID); // Any part of the message should be able to be used to delete it from an inbox    // Queued
     bool markRead(std::string messageID, bool read=true); // By default this marks a given message as read or not, not all API's will support this and should thus return false.  // Queued
@@ -221,38 +225,38 @@ public:
     bool flushQueue();
     int queueSize();
     
-        
+    
     //
     // Core API Functions
     // https://bitmessage.org/wiki/API_Reference
     //
-
+    
     // Inbox Management
     
     void getAllInboxMessages();
     
     void getInboxMessageByID(std::string msgID, bool setRead=true);
     
-    BitMessageOutbox getAllSentMessages();
+    void getAllSentMessages();
     
     BitSentMessage getSentMessageByID(std::string msgID);
-
+    
     BitSentMessage getSentMessageByAckData(std::string ackData);
-
+    
     std::vector<BitSentMessage> getSentMessagesBySender(std::string address);
     
     void trashMessage(std::string msgID);
     
     bool trashSentMessageByAckData(std::string ackData);
-
+    
     
     // Message Management
     void sendMessage(std::string fromAddress, std::string toAddress, base64 subject, base64 message, int encodingType=2);
     //std::string sendMessage(std::string fromAddress, std::string toAddress, std::string subject, std::string message, int encodingType=2){return sendMessage(fromAddress, toAddress, base64(subject), base64(message), encodingType);}
-
+    
     std::string sendBroadcast(std::string fromAddress, base64 subject, base64 message, int encodingType=2);
     std::string sendBroadcast(std::string fromAddress, std::string subject, std::string message, int encodingType=2){return sendBroadcast(fromAddress, base64(subject), base64(message), encodingType);}
-
+    
     
     // Subscription Management
     
@@ -260,7 +264,7 @@ public:
     
     bool addSubscription(std::string address, base64 label);
     bool addSubscription(std::string address, std::string label){return addSubscription(address, base64(label));}
-
+    
     bool deleteSubscription(std::string address);
     
     
@@ -281,7 +285,7 @@ public:
     
     void createRandomAddress(base64 label=base64(""), bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
     //void createRandomAddress(std::string label, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1){createRandomAddress(label, eighteenByteRipe, totalDifficulty, smallMessageDifficulty);}
-
+    
     // Warning - This is not guaranteed to return a filled vector if the call does not return any new addresses.
     // You must check that you are accessing a legal position in the vector first.
     void createDeterministicAddresses(base64 password, int numberOfAddresses=1, int addressVersionNumber=0, int streamNumber=0, bool eighteenByteRipe=false, int totalDifficulty=1, int smallMessageDifficulty=1);
@@ -294,7 +298,7 @@ public:
     
     bool addAddressBookEntry(std::string address, base64 label);
     bool addAddressBookEntry(std::string address, std::string label){return addAddressBookEntry(address, base64(label));}
-
+    
     bool deleteAddressBookEntry(std::string address);
     
     void deleteAddress(BitMessageAddress address);
@@ -311,7 +315,7 @@ public:
     
     
     // Extra BitMessage Options (some of these are pass-through functions not related to the API)
-
+    
     void setTimeout(int timeout);
     
     
@@ -335,10 +339,10 @@ private:
     int m_port;
     std::string m_pass;
     std::string m_username;
-
+    
     bool m_serverAvailable;
     bool m_forceKill;  // If this is set, the class will ignore the status of the queue processing and force a shut down of the network.
-
+    
     
     // Communication Library, XmlRPC in this case
     XmlRPC *m_xmllib;
@@ -371,13 +375,13 @@ private:
     BitMessageAddressBook m_localAddressBook;   // Remote user addresses.
     
     OT_MUTEX(m_localInboxMutex);
-    std::vector<NetworkMail> m_localInbox;
+    std::vector<_SharedPtr<NetworkMail> > m_localInbox;
     BitMessageInbox m_localUnformattedInbox; // Necessary for doing operations on BitMessage-specific messages
     OT_ATOMIC(m_newMailExists);
     
     OT_MUTEX(m_localOutboxMutex);
-    std::vector<NetworkMail> m_localOutbox;
-    BitMessageInbox m_localUnformattedOutbox; // Necessary for doing operations on BitMessage-specific messages
+    std::vector<_SharedPtr<NetworkMail> > m_localOutbox;
+    BitMessageOutbox m_localUnformattedOutbox; // Necessary for doing operations on BitMessage-specific messages
     
     OT_MUTEX(m_localSubscriptionListMutex);
     BitMessageSubscriptionList m_localSubscriptionList;
