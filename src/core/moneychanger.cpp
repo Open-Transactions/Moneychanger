@@ -32,6 +32,7 @@
 #include <gui/widgets/btctransactionmanager.hpp>
 #include <gui/widgets/btcconnectdlg.hpp>
 #include <gui/widgets/btcsenddlg.hpp>
+#include <gui/widgets/btcreceivedlg.hpp>
 #include <gui/ui/dlgimport.hpp>
 #include <gui/ui/dlgmenu.hpp>
 #include <gui/ui/dlgmarkets.hpp>
@@ -633,20 +634,23 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu_bitcoin = new QMenu(tr("Bitcoin"), mc_systrayMenu);
     mc_systrayMenu->addMenu(mc_systrayMenu_bitcoin);
     mc_systrayMenu_bitcoin_test = new QAction(tr("Test"), mc_systrayMenu_bitcoin);
+    mc_systrayMenu_bitcoin_connect = new QAction(tr("Connect to wallet"), mc_systrayMenu_bitcoin);
     mc_systrayMenu_bitcoin_pools = new QAction(tr("Pools"), mc_systrayMenu_bitcoin);
     mc_systrayMenu_bitcoin_transactions = new QAction(tr("Transactions"), mc_systrayMenu_bitcoin);
-    mc_systrayMenu_bitcoin_connect = new QAction(tr("Connect to wallet"), mc_systrayMenu_bitcoin);
     mc_systrayMenu_bitcoin_send = new QAction(tr("Send"), mc_systrayMenu_bitcoin);
+    mc_systrayMenu_bitcoin_receive = new QAction(tr("Receive"), mc_systrayMenu_bitcoin);
     mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_test);
+    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_connect);
     mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_pools);
     mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_transactions);
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_connect);
     mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_send);
+    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_receive);
     connect(mc_systrayMenu_bitcoin_test, SIGNAL(triggered()), this, SLOT(mc_bitcoin_slot()));
+    connect(mc_systrayMenu_bitcoin_connect, SIGNAL(triggered()), this, SLOT(mc_bitcoin_connect_slot()));
     connect(mc_systrayMenu_bitcoin_pools, SIGNAL(triggered()), this, SLOT(mc_bitcoin_pools_slot()));
     connect(mc_systrayMenu_bitcoin_transactions, SIGNAL(triggered()), this, SLOT(mc_bitcoin_transactions_slot()));
-    connect(mc_systrayMenu_bitcoin_connect, SIGNAL(triggered()), this, SLOT(mc_bitcoin_connect_slot()));
     connect(mc_systrayMenu_bitcoin_send, SIGNAL(triggered()), this, SLOT(mc_bitcoin_send_slot()));
+    connect(mc_systrayMenu_bitcoin_receive, SIGNAL(triggered()), this, SLOT(mc_bitcoin_receive_slot()));
 
     // --------------------------------------------------------------
     //Separator
@@ -2349,6 +2353,16 @@ void Moneychanger::mc_bitcoin_slot()
 }
 
 /**
+  * (Bitcoin ->) Connect to wallet
+  **/
+void Moneychanger::mc_bitcoin_connect_slot()
+{
+    if(!bitcoinConnectWindow)
+        bitcoinConnectWindow = new BtcConnectDlg(this);
+    bitcoinConnectWindow->show();
+}
+
+/**
   * (Bitcoin ->) Pools
   **/
 void Moneychanger::mc_bitcoin_pools_slot()
@@ -2369,23 +2383,23 @@ void Moneychanger::mc_bitcoin_transactions_slot()
 }
 
 /**
-  * (Bitcoin ->) Connect to wallet
-  **/
-void Moneychanger::mc_bitcoin_connect_slot()
-{
-    if(!bitcoinConnectWindow)
-        bitcoinConnectWindow = new BtcConnectDlg(this);
-    bitcoinConnectWindow->show();
-}
-
-/**
-  * (Bitcoin ->) Connect to wallet
+  * (Bitcoin ->) Send
   **/
 void Moneychanger::mc_bitcoin_send_slot()
 {
     if(!bitcoinSendWindow)
         bitcoinSendWindow = new BtcSendDlg(this);
     bitcoinSendWindow->show();
+}
+
+/**
+  * (Bitcoin ->) Receive
+  **/
+void Moneychanger::mc_bitcoin_receive_slot()
+{
+    if(!bitcoinReceiveWindow)
+        bitcoinReceiveWindow = new BtcReceiveDlg(this);
+    bitcoinReceiveWindow->show();
 }
 
 
