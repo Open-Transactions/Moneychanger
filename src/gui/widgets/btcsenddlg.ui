@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Send Bitcoin</string>
   </property>
   <widget class="QDoubleSpinBox" name="spinBoxAmount">
    <property name="geometry">
@@ -178,7 +178,7 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>-96</y>
+      <y>-227</y>
       <width>751</width>
       <height>1509</height>
      </rect>

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Recent transactions</string>
   </property>
   <widget class="QTableWidget" name="tableTxBtc">
    <property name="geometry">

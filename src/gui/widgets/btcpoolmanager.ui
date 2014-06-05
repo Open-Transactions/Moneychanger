@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Manage pools</string>
   </property>
   <widget class="QListWidget" name="listPools">
    <property name="geometry">
