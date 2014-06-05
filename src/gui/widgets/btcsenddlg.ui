@@ -6,21 +6,24 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>740</width>
-    <height>352</height>
+    <width>790</width>
+    <height>877</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QDoubleSpinBox" name="amountSpinBox">
+  <widget class="QDoubleSpinBox" name="spinBoxAmount">
    <property name="geometry">
     <rect>
-     <x>290</x>
-     <y>60</y>
-     <width>181</width>
+     <x>160</x>
+     <y>165</y>
+     <width>101</width>
      <height>27</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string>Amount in Bitcoin</string>
    </property>
    <property name="decimals">
     <number>8</number>
@@ -35,9 +38,9 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>290</x>
-     <y>40</y>
-     <width>141</width>
+     <x>40</x>
+     <y>170</y>
+     <width>111</width>
      <height>17</height>
     </rect>
    </property>
@@ -48,8 +51,8 @@
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>65</x>
-     <y>90</y>
+     <x>45</x>
+     <y>25</y>
      <width>141</width>
      <height>17</height>
     </rect>
@@ -58,12 +61,12 @@
     <string>Pool to deposit to:</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="sendButton">
+  <widget class="QPushButton" name="buttonSend">
    <property name="geometry">
     <rect>
-     <x>105</x>
-     <y>220</y>
-     <width>99</width>
+     <x>410</x>
+     <y>165</y>
+     <width>101</width>
      <height>27</height>
     </rect>
    </property>
@@ -74,9 +77,9 @@
   <widget class="QLineEdit" name="editTxid">
    <property name="geometry">
     <rect>
-     <x>60</x>
-     <y>290</y>
-     <width>651</width>
+     <x>40</x>
+     <y>235</y>
+     <width>671</width>
      <height>27</height>
     </rect>
    </property>
@@ -84,8 +87,8 @@
   <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
-     <x>60</x>
-     <y>260</y>
+     <x>40</x>
+     <y>205</y>
      <width>111</width>
      <height>17</height>
     </rect>
@@ -97,8 +100,8 @@
   <widget class="QPushButton" name="buttonRefresh">
    <property name="geometry">
     <rect>
-     <x>225</x>
-     <y>220</y>
+     <x>190</x>
+     <y>20</y>
      <width>93</width>
      <height>27</height>
     </rect>
@@ -110,8 +113,8 @@
   <widget class="QListWidget" name="listPools">
    <property name="geometry">
     <rect>
-     <x>60</x>
-     <y>120</y>
+     <x>40</x>
+     <y>55</y>
      <width>291</width>
      <height>91</height>
     </rect>
@@ -120,18 +123,21 @@
   <widget class="QLineEdit" name="editAddress">
    <property name="geometry">
     <rect>
-     <x>430</x>
-     <y>130</y>
-     <width>281</width>
+     <x>390</x>
+     <y>65</y>
+     <width>321</width>
      <height>27</height>
     </rect>
+   </property>
+   <property name="text">
+    <string/>
    </property>
   </widget>
   <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
-     <x>380</x>
-     <y>150</y>
+     <x>360</x>
+     <y>85</y>
      <width>21</width>
      <height>17</height>
     </rect>
@@ -143,8 +149,8 @@
   <widget class="QLabel" name="label_5">
    <property name="geometry">
     <rect>
-     <x>430</x>
-     <y>100</y>
+     <x>390</x>
+     <y>35</y>
      <width>161</width>
      <height>20</height>
     </rect>
@@ -153,19 +159,447 @@
     <string>Address to send to:</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_6">
+  <widget class="QScrollArea" name="scrollArea">
    <property name="geometry">
     <rect>
-     <x>260</x>
-     <y>65</y>
+     <x>10</x>
+     <y>275</y>
+     <width>771</width>
+     <height>561</height>
+    </rect>
+   </property>
+   <property name="verticalScrollBarPolicy">
+    <enum>Qt::ScrollBarAsNeeded</enum>
+   </property>
+   <property name="widgetResizable">
+    <bool>true</bool>
+   </property>
+   <widget class="QWidget" name="scrollAreaWidgetContents">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>-96</y>
+      <width>751</width>
+      <height>1509</height>
+     </rect>
+    </property>
+    <layout class="QFormLayout" name="formLayout">
+     <item row="0" column="0">
+      <widget class="QFrame" name="frameMultiSig">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>721</width>
+         <height>1491</height>
+        </size>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>10</y>
+          <width>691</width>
+          <height>1431</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Multisig (advanced):</string>
+        </property>
+        <widget class="QPlainTextEdit" name="textMultisigTxids">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>160</y>
+           <width>661</width>
+           <height>84</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_7">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>130</y>
+           <width>171</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Input TxIds (one per line):</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_8">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>30</y>
+           <width>131</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Address to send to:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_9">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>100</y>
+           <width>111</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Change address:</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="editAddressMultisig">
+         <property name="geometry">
+          <rect>
+           <x>160</x>
+           <y>20</y>
+           <width>341</width>
+           <height>27</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="editChangeMultisig">
+         <property name="geometry">
+          <rect>
+           <x>160</x>
+           <y>95</y>
+           <width>341</width>
+           <height>27</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="buttonFindOutputs">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>260</y>
+           <width>93</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Find outputs</string>
+         </property>
+        </widget>
+        <widget class="QPlainTextEdit" name="textOutputs">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>290</y>
+           <width>611</width>
+           <height>131</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QPlainTextEdit" name="textVout">
+         <property name="geometry">
+          <rect>
+           <x>640</x>
+           <y>290</y>
+           <width>41</width>
+           <height>131</height>
+          </rect>
+         </property>
+         <property name="plainText">
+          <string/>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_12">
+         <property name="geometry">
+          <rect>
+           <x>110</x>
+           <y>60</y>
+           <width>41</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Label:</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="editAddressMultisigLabel">
+         <property name="geometry">
+          <rect>
+           <x>160</x>
+           <y>50</y>
+           <width>341</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>frommultisig</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="buttonCreateRawTx">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>470</y>
+           <width>201</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Generate raw transaction</string>
+         </property>
+        </widget>
+        <widget class="QPlainTextEdit" name="textRawTx">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>500</y>
+           <width>611</width>
+           <height>191</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="buttonSignRawTx">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>990</y>
+           <width>161</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Sign raw transaction</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_10">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>710</y>
+           <width>101</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>scriptPubKeys:</string>
+         </property>
+        </widget>
+        <widget class="QPlainTextEdit" name="textScriptPubKeys">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>730</y>
+           <width>611</width>
+           <height>101</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_11">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>840</y>
+           <width>101</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>redeemScripts:</string>
+         </property>
+        </widget>
+        <widget class="QPlainTextEdit" name="textRedeemScripts">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>860</y>
+           <width>611</width>
+           <height>111</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_13">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>1030</y>
+           <width>51</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Status:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="labelSigned">
+         <property name="geometry">
+          <rect>
+           <x>90</x>
+           <y>1030</y>
+           <width>81</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Not signed</string>
+         </property>
+        </widget>
+        <widget class="QPlainTextEdit" name="textRawTxSigned">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>1050</y>
+           <width>611</width>
+           <height>311</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_15">
+         <property name="geometry">
+          <rect>
+           <x>500</x>
+           <y>100</y>
+           <width>171</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>(leave empty to generate)</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="buttonSendRawTx">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>1370</y>
+           <width>141</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Send transaction</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_6">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>430</y>
+           <width>131</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Spendable amount:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="labelMultisigSpendable">
+         <property name="geometry">
+          <rect>
+           <x>160</x>
+           <y>430</y>
+           <width>171</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>0.0</string>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit">
+   <property name="geometry">
+    <rect>
+     <x>390</x>
+     <y>115</y>
+     <width>321</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>someone</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_14">
+   <property name="geometry">
+    <rect>
+     <x>390</x>
+     <y>95</y>
+     <width>62</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Label:</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="spinBoxFee">
+   <property name="geometry">
+    <rect>
+     <x>300</x>
+     <y>165</y>
+     <width>101</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Fee in Bitcoin</string>
+   </property>
+   <property name="decimals">
+    <number>8</number>
+   </property>
+   <property name="value">
+    <double>0.001000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_16">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>170</y>
      <width>31</width>
      <height>17</height>
     </rect>
    </property>
    <property name="text">
-    <string>BTC</string>
+    <string>Fee:</string>
    </property>
   </widget>
+  <zorder>scrollArea</zorder>
+  <zorder>spinBoxAmount</zorder>
+  <zorder>label</zorder>
+  <zorder>label_2</zorder>
+  <zorder>buttonSend</zorder>
+  <zorder>editTxid</zorder>
+  <zorder>label_3</zorder>
+  <zorder>buttonRefresh</zorder>
+  <zorder>listPools</zorder>
+  <zorder>editAddress</zorder>
+  <zorder>label_4</zorder>
+  <zorder>label_5</zorder>
+  <zorder>lineEdit</zorder>
+  <zorder>label_14</zorder>
+  <zorder>spinBoxFee</zorder>
+  <zorder>label_16</zorder>
  </widget>
  <resources/>
  <connections/>

@@ -21,7 +21,7 @@ public:
     ~BtcSendDlg();
 
 private slots:
-    void on_sendButton_clicked();
+    void on_buttonSend_clicked();
 
     void OnPoolListUpdate();
 
@@ -29,8 +29,22 @@ private slots:
 
     void on_editAddress_textEdited(const QString &arg1);
 
+    void on_buttonFindOutputs_clicked();
+
+    void on_buttonCreateRawTx_clicked();
+
+    void on_buttonSignRawTx_clicked();
+
+    void on_buttonSendRawTx_clicked();
+
 private:
     Ui::BtcSendDlg *ui;
+
+    // raw transaction utxos
+    BtcUnspentOutputs outputsToSpend;
+
+    // information for offline signing
+    BtcSigningPrerequisites prereqs;
 
     SampleEscrowClientPtr client;
 };
