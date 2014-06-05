@@ -37,13 +37,13 @@ std::string MTBitcoin::GetPublicKey(const std::string& address)
     return this->modules->btcJson->GetPublicKey(address);
 }
 
-std::string MTBitcoin::GetMultiSigAddress(int minSignatures, const btc::stringList& publicKeys, bool addToWallet, const std::string &account)
+std::string MTBitcoin::GetMultiSigAddress(int32_t minSignatures, const btc::stringList& publicKeys, bool addToWallet, const std::string &account)
 {
     BtcMultiSigAddressPtr multiSigAddr;
     return (multiSigAddr = GetMultiSigAddressInfo(minSignatures, publicKeys, addToWallet, account)) == NULL ? "" : multiSigAddr->address;
 }
 
-BtcMultiSigAddressPtr MTBitcoin::GetMultiSigAddressInfo(int minSignatures, const btc::stringList &publicKeys, bool addToWallet, const std::string &account)
+BtcMultiSigAddressPtr MTBitcoin::GetMultiSigAddressInfo(int32_t minSignatures, const btc::stringList &publicKeys, bool addToWallet, const std::string &account)
 {
     BtcMultiSigAddressPtr multiSigAddr;
     if(addToWallet)

@@ -96,6 +96,9 @@ public:
     // Returns list of account names
     virtual std::vector<std::string> ListAccounts(const int32_t &minConf = 1, const bool &includeWatchonly = true) = 0;
 
+    // Returns list of addresses, their balances and txids
+    virtual BtcAddressBalances ListReceivedByAddress(const int32_t &minConf = 1, bool includeEmpty = false, bool includeWatchonly = true) = 0;
+
     // Returns list of transactions
     virtual BtcTransactions ListTransactions(const std::string &account = "*", const int32_t &count = 20, const int32_t &from = 0, const bool &includeWatchonly = true) = 0;
 

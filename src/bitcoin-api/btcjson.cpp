@@ -13,31 +13,32 @@
 // https://en.bitcoin.it/wiki/Proper_Money_Handling_%28JSON-RPC%29 on how to avoid rounding errors and such. might be worth a read someday.
 
 // bitcoin rpc methods
-#define METHOD_GETINFO              "getinfo"
-#define METHOD_GETBALANCE           "getbalance"
-#define METHOD_GETACCOUNTADDRESS    "getaccountaddress"
-#define METHOD_GETNEWADDRESS        "getnewaddress"
-#define METHOD_IMPORTADDRESS        "importaddress"
-#define METHOD_VALIDATEADDRESS      "validateaddress"
-#define METHOD_DUMPPRIVKEY          "dumpprivkey"
-#define METHOD_LISTACCOUNTS         "listaccounts"
-#define METHOD_LISTUNSPENT          "listunspent"
-#define METHOD_LISTTRANSACTIONS     "listtransactions"
-#define METHOD_SENDTOADDRESS        "sendtoaddress"
-#define METHOD_SENDMANY             "sendmany"
-#define METHOD_SETTXFEE             "settxfee"
-#define METHOD_ADDMULTISIGADDRESS   "addmultisigaddress"
-#define METHOD_CREATEMULTISIG       "createmultisig"
-#define METHOD_GETTRANSACTION       "gettransaction"
-#define METHOD_GETRAWTRANSACTION    "getrawtransaction"
-#define METHOD_DECODERAWTRANSACTION "decoderawtransaction"
-#define METHOD_CREATERAWTRANSACTION "createrawtransaction"
-#define METHOD_SIGNRAWTRANSACTION   "signrawtransaction"
-#define METHOD_SENDRAWTRANSACTION   "sendrawtransaction"
-#define METHOD_GETRAWMEMPOOL        "getrawmempool"
-#define METHOD_GETBLOCKCOUNT        "getblockcount"
-#define METHOD_GETBLOCKHASH         "getblockhash"
-#define METHOD_GETBLOCK             "getblock"
+#define METHOD_GETINFO               "getinfo"
+#define METHOD_GETBALANCE            "getbalance"
+#define METHOD_GETACCOUNTADDRESS     "getaccountaddress"
+#define METHOD_GETNEWADDRESS         "getnewaddress"
+#define METHOD_IMPORTADDRESS         "importaddress"
+#define METHOD_VALIDATEADDRESS       "validateaddress"
+#define METHOD_DUMPPRIVKEY           "dumpprivkey"
+#define METHOD_LISTACCOUNTS          "listaccounts"
+#define METHOD_LISTRECEIVEDBYADDRESS "listreceivedbyaddress"
+#define METHOD_LISTUNSPENT           "listunspent"
+#define METHOD_LISTTRANSACTIONS      "listtransactions"
+#define METHOD_SENDTOADDRESS         "sendtoaddress"
+#define METHOD_SENDMANY              "sendmany"
+#define METHOD_SETTXFEE              "settxfee"
+#define METHOD_ADDMULTISIGADDRESS    "addmultisigaddress"
+#define METHOD_CREATEMULTISIG        "createmultisig"
+#define METHOD_GETTRANSACTION        "gettransaction"
+#define METHOD_GETRAWTRANSACTION     "getrawtransaction"
+#define METHOD_DECODERAWTRANSACTION  "decoderawtransaction"
+#define METHOD_CREATERAWTRANSACTION  "createrawtransaction"
+#define METHOD_SIGNRAWTRANSACTION    "signrawtransaction"
+#define METHOD_SENDRAWTRANSACTION    "sendrawtransaction"
+#define METHOD_GETRAWMEMPOOL         "getrawmempool"
+#define METHOD_GETBLOCKCOUNT         "getblockcount"
+#define METHOD_GETBLOCKHASH          "getblockhash"
+#define METHOD_GETBLOCK              "getblock"
 
 
 BtcJson::BtcJson(BtcModules *modules)
@@ -314,6 +315,29 @@ btc::stringList BtcJson::ListAccounts(const int32_t &minConf, const bool &includ
         return btc::stringList();        // this shouldn't happen unless the protocol was changed
 
     return result.getMemberNames();      // each key is an account, each value is the account's balance
+}
+
+BtcAddressBalances BtcJson::ListReceivedByAddress(const int32_t &minConf, bool includeEmpty, bool includeWatchonly)
+{
+    Json::Value params = Json::Value();
+    params.append(minConf);
+    params.append(includeEmpty);
+    params.append(includeWatchonly);
+
+    Json::Value result = Json::Value();
+    if(!ProcessRpcString(this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_LISTRECEIVEDBYADDRESS, params)), result))
+        return BtcAddressBalances();     // error
+
+    if(!result.isArray())
+        return BtcAddressBalances();
+
+    BtcAddressBalances addressBalances = BtcAddressBalances();
+    for (Json::Value::ArrayIndex i = 0; i < result.size(); i++)
+    {
+        addressBalances.push_back(BtcAddressBalancePtr(new BtcAddressBalance(result[i])));
+    }
+
+    return addressBalances;
 }
 
 BtcTransactions BtcJson::ListTransactions(const std::string &account, const int32_t &count, const int32_t &from, const bool &includeWatchonly)

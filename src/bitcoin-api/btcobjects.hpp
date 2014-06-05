@@ -155,6 +155,19 @@ struct BtcUnspentOutput
     BtcUnspentOutput(Json::Value unspentOutput);
 };
 
+// returned by listreceivedbyaddress
+struct BtcAddressBalance
+{
+    bool involvesWatchonly;
+    std::string address;
+    std::string account;
+    int64_t amount;
+    int32_t confirmations;
+    btc::stringList txIds;
+
+    BtcAddressBalance(Json::Value addressBalance);
+};
+
 struct BtcAddressInfo
 {
     std::string address;
@@ -281,6 +294,7 @@ typedef _SharedPtr<BtcTxDetail>            BtcTxDetailPtr;
 typedef _SharedPtr<BtcTransaction>         BtcTransactionPtr;
 typedef _SharedPtr<BtcRawTransaction>      BtcRawTransactionPtr;
 typedef _SharedPtr<BtcUnspentOutput>       BtcUnspentOutputPtr;
+typedef _SharedPtr<BtcAddressBalance>      BtcAddressBalancePtr;
 typedef _SharedPtr<BtcAddressInfo>         BtcAddressInfoPtr;
 typedef _SharedPtr<BtcMultiSigAddress>     BtcMultiSigAddressPtr;
 typedef _SharedPtr<BtcBlock>               BtcBlockPtr;
@@ -290,10 +304,11 @@ typedef _SharedPtr<BtcSignedTransaction>   BtcSignedTransactionPtr;
 typedef _SharedPtr<BtcSigningPrerequisite> BtcSigningPrerequisitePtr;
 typedef _SharedPtr<BtcRpcPacket>           BtcRpcPacketPtr;
 
-typedef std::vector<BtcTxDetailPtr>      BtcTxDetails;
-typedef std::vector<BtcUnspentOutputPtr> BtcUnspentOutputs;
-typedef std::vector<BtcTxIdVoutPtr>      BtcTxIdVouts;
-typedef std::vector<BtcTransactionPtr>   BtcTransactions;
+typedef std::vector<BtcTxDetailPtr>        BtcTxDetails;
+typedef std::vector<BtcUnspentOutputPtr>   BtcUnspentOutputs;
+typedef std::vector<BtcAddressBalancePtr>  BtcAddressBalances;
+typedef std::vector<BtcTxIdVoutPtr>        BtcTxIdVouts;
+typedef std::vector<BtcTransactionPtr>     BtcTransactions;
 //typedef std::vector<BtcTxTargetPtr> BtcTxTargets;
 
 

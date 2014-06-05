@@ -68,7 +68,7 @@ public:
     // addToWallet [optional]:  whether or not to add address to wallet
     // account [optional]:      account to which the address should be added
     // returns the multi-sig address
-    virtual std::string GetMultiSigAddress(int minSignatures, const btc::stringList& publicKeys, bool addToWallet = false, const std::string &account = "") = 0;
+    virtual std::string GetMultiSigAddress(int32_t minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = "") = 0;
 
     // Creates a multi-sig address from public keys
     // minSignatures:           signatures required to release funds
@@ -76,7 +76,7 @@ public:
     // addToWallet [optional]:  whether or not to add address to wallet
     // account [optional]:      account to which the address should be added
     // returns an object containing the address and additional info
-    virtual BtcMultiSigAddressPtr GetMultiSigAddressInfo(int minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = "") = 0;
+    virtual BtcMultiSigAddressPtr GetMultiSigAddressInfo(int32_t minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = "") = 0;
 
     // Returns information about a transaction
     // Only works for your own and imported watchonly addresses

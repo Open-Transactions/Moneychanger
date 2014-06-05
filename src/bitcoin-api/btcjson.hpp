@@ -91,6 +91,9 @@ public:
     // Could also return the balance of each account
     virtual btc::stringList ListAccounts(const int32_t &minConf = 1, const bool &includeWatchonly = true);
 
+    // Returns list of addresses, their balances and txids
+    virtual BtcAddressBalances ListReceivedByAddress(const int32_t &minConf = 1, bool includeEmpty = false, bool includeWatchonly = true);
+
     virtual BtcTransactions ListTransactions(const std::string &account = "*", const int32_t &count = 20, const int32_t &from = 0, const bool &includeWatchonly = true);
 
     virtual BtcUnspentOutputs ListUnspent(const int32_t &minConf = BtcHelper::MinConfirms, const int32_t &maxConf = BtcHelper::MaxConfirms, const btc::stringList &addresses = btc::stringList());

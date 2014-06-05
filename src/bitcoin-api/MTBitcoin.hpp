@@ -68,11 +68,11 @@ public:
 
     // Creates a multi-sig address from public keys
     // returns the address string
-    virtual std::string GetMultiSigAddress(int minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = NULL);
+    virtual std::string GetMultiSigAddress(int32_t minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = NULL);
 
     // Creates a multi-sig address from public keys
     // returns an object containing info required to withdraw from that address
-    virtual BtcMultiSigAddressPtr GetMultiSigAddressInfo(int minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = NULL);
+    virtual BtcMultiSigAddressPtr GetMultiSigAddressInfo(int32_t minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = NULL);
 
     // Returns information about a transaction
     // Only works for your own and imported watchonly addresses

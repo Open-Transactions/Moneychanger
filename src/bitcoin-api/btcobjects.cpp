@@ -150,6 +150,23 @@ BtcUnspentOutput::BtcUnspentOutput(Json::Value unspentOutput)
     this->spendable = unspentOutput["spendable"].asBool();
 }
 
+BtcAddressBalance::BtcAddressBalance(Json::Value addressBalance)
+{
+    if(!addressBalance.isObject())
+        addressBalance = Json::Value(Json::objectValue);
+    this->involvesWatchonly = addressBalance["involvesWatchonly"].asBool();
+    this->address = addressBalance["address"].asString();
+    this->account = addressBalance["account"].asString();
+    this->amount = BtcHelper::CoinsToSatoshis(addressBalance["amount"].asDouble());
+    this->confirmations = addressBalance["confirmations"].asInt();
+    this->txIds = btc::stringList();
+    Json::Value txids = addressBalance["txids"];
+    for(Json::ArrayIndex i = 0; i < txids.size(); i++)
+    {
+        this->txIds.push_back(txids[i].asString());
+    }
+}
+
 BtcAddressInfo::BtcAddressInfo(Json::Value result)
 {
     this->sigsRequired = 0;
