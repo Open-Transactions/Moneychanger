@@ -98,8 +98,8 @@ struct BtcRawTransaction
     struct VIN
     {
         std::string txInID;
-        int64_t vout;   // number of txInID's output to be used as input
-        // std::string ScriptSigAsm;     // add this when you need it
+        int64_t vout;                   // number of txInID's output to be used as input
+        // std::string ScriptSigAsm;    // add this when you need it
         std::string ScriptSigHex;
         int64_t Sequence;
 
@@ -111,13 +111,13 @@ struct BtcRawTransaction
 
     struct VOUT
     {
-        int64_t value;      // amount of satoshis to be sent
-        int64_t n ;             // outputs array index
-        // std::string ScriptPubKeyAsm;        // add this when you need it
-        std::string scriptPubKeyHex;        // needed to spend offline transactions
-        uint32_t reqSigs;        // signatures required to spend the output I think?
-        std::string Type;       // scripthash, pubkeyhash, ..
-        btc::stringList addresses; // an array of addresses receiving the value.
+        int64_t value;                  // amount of satoshis to be sent
+        uint32_t n ;                     // outputs array index
+        // std::string ScriptPubKeyAsm; // add this when you need it
+        std::string scriptPubKeyHex;    // needed to spend offline transactions
+        uint32_t reqSigs;               // signatures required to spend the output I think?
+        std::string Type;               // scripthash, pubkeyhash, ..
+        btc::stringList addresses;      // an array of addresses receiving the value.
 
         int64_t sequence;
 
@@ -170,14 +170,23 @@ struct BtcAddressBalance
 
 struct BtcAddressInfo
 {
-    std::string address;
-    std::string pubkey;
-    std::string account;
-    bool ismine;
     bool isvalid;
+    std::string address;
+    bool ismine;
+    bool isWatchonly;
     bool isScript;
-    Json::Value addresses;       // shows addresses which a multi-sig is composed of
+
+    // regular addresses:
+    std::string pubkey;
+    bool isCompressed;
+
+    // p2sh:
+    std::string script;         // "multisig"
+    std::string redeemScript;   // hex
+    btc::stringList addresses;  // shows addresses which a multi-sig is composed of
     uint32_t sigsRequired;
+
+    std::string account;
 
     BtcAddressInfo(Json::Value result);
 };
@@ -219,10 +228,11 @@ struct BtcTxIdVout : Json::Value
 
 // a json object mapping amounts to addresses
 // used in raw and sendmany transactions
-struct BtcTxTarget : Json::Value
+struct BtcTxTargets : Json::Value
 {
-    BtcTxTarget();
-    BtcTxTarget(const std::string &toAddress, int64_t amount);
+    BtcTxTargets();
+    BtcTxTargets(const std::string &toAddress, int64_t amount);
+    void SetTarget(const std::string &toAddress, int64_t amount);
     void ConvertSatoshisToBitcoin();
 };
 
@@ -299,7 +309,7 @@ typedef _SharedPtr<BtcAddressInfo>         BtcAddressInfoPtr;
 typedef _SharedPtr<BtcMultiSigAddress>     BtcMultiSigAddressPtr;
 typedef _SharedPtr<BtcBlock>               BtcBlockPtr;
 typedef _SharedPtr<BtcTxIdVout>            BtcTxIdVoutPtr;
-typedef _SharedPtr<BtcTxTarget>            BtcTxTargetPtr;
+typedef _SharedPtr<BtcTxTargets>            BtcTxTargetPtr;
 typedef _SharedPtr<BtcSignedTransaction>   BtcSignedTransactionPtr;
 typedef _SharedPtr<BtcSigningPrerequisite> BtcSigningPrerequisitePtr;
 typedef _SharedPtr<BtcRpcPacket>           BtcRpcPacketPtr;
@@ -309,6 +319,7 @@ typedef std::vector<BtcUnspentOutputPtr>   BtcUnspentOutputs;
 typedef std::vector<BtcAddressBalancePtr>  BtcAddressBalances;
 typedef std::vector<BtcTxIdVoutPtr>        BtcTxIdVouts;
 typedef std::vector<BtcTransactionPtr>     BtcTransactions;
+typedef std::list<BtcSigningPrerequisitePtr> BtcSigningPrerequisites;   // must be a list so the json lib accepts it
 //typedef std::vector<BtcTxTargetPtr> BtcTxTargets;
 
 

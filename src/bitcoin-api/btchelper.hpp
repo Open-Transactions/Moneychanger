@@ -65,6 +65,9 @@ public:
     // converts int64 satoshis to double bitcoin
     static double SatoshisToCoins(int64_t value);
 
+    // returns true if we own the address or any address making up a multisig
+    bool IsMine(const std::string &address);
+
     // Returns the public key of an address (addresses are just hashes)
     // Pub keys need to be shared to create multi signature addresses
     std::string GetPublicKey(const std::string &address);
@@ -119,13 +122,30 @@ public:
     // returns unknown outputs
     BtcUnspentOutputs ListNewOutputs(const btc::stringList &addresses, BtcUnspentOutputs knownOutputs);
 
-    // Creates a raw transaction that sends all unspent outputs from an address to another
+    // Looks through a list of txIds to find everything we can sign, including multisig addresses
+    // Only works when bitcoind received the blocks containing those transactions.
+    BtcUnspentOutputs FindSignableOutputs(const btc::stringList &txIds);
+
+    // Creates the signing prerequisites corresponding to those outputs
+    BtcSigningPrerequisites GetSigningPrerequisites(const BtcUnspentOutputs &outputs);
+
+    // Creates an unsigned raw transaction that sends coins to a target address, pays a fee and returns change.
+    // outputs:         outputs to spend
+    // amount:          amount in satoshis
+    // toAddress:       send to
+    // changeAddress:   receive change to
+    // fee:                     optional, fee in satoshis
+    // SigningPreRequisites:    optional, needed for offline transactions or when passing an array of private keys
+    // signingKeys:             optional, only sign with those keys
+    BtcSignedTransactionPtr CreateSpendTransaction(const BtcUnspentOutputs &outputs, const int64_t &amount, const std::string &toAddress, const std::string &changeAddress, const int64_t &fee = CoinsToSatoshis(FeeMultiSig));
+
+    // Creates an unsigned raw transaction that sends all unspent outputs from an address to another
     // txSourceId: transaction that sends funds to sourceAddress
     // sourceAddress: address from which you want to withdraw
     // destinationAddress: address to which to withdraw
     // signingAddress: only this address's private key will be used to sign the tx
     // redeemScript: the script needed to withdraw btc from p2sh addresses
-    BtcSignedTransactionPtr WithdrawAllFromAddress(const std::string &txSourceId, const std::string &sourceAddress, const std::string &destinationAddress, int64_t fee = BtcHelper::CoinsToSatoshis(0.0001), const std::string &redeemScript = "", const std::string &signingAddress = "");
+    BtcSignedTransactionPtr WithdrawAllFromAddress(const std::string &txSourceId, const std::string &sourceAddress, const std::string &destinationAddress, const int64_t fee = CoinsToSatoshis(FeeMultiSig), const std::string &redeemScript = "", const std::string &signingAddress = "");
 
 
 private:

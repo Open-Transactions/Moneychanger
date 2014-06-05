@@ -431,7 +431,7 @@ bool BtcJson::SetTxFee(int64_t fee)
     return true;    // todo: check for more errors
 }
 
-std::string BtcJson::SendMany(BtcTxTarget txTargets, const std::string &fromAccount)
+std::string BtcJson::SendMany(BtcTxTargets txTargets, const std::string &fromAccount)
 {
     Json::Value params = Json::Value();
     params.append(fromAccount);     // account to send coins from
@@ -526,7 +526,7 @@ BtcRawTransactionPtr BtcJson::DecodeRawTransaction(std::string rawTransaction)
     return decodedRawTransaction;
 }
 
-std::string BtcJson::CreateRawTransaction(BtcTxIdVouts unspentOutputs, BtcTxTarget txTargets)
+std::string BtcJson::CreateRawTransaction(BtcTxIdVouts unspentOutputs, BtcTxTargets txTargets)
 {
     Json::Value params = Json::Value();
     Json::Value outputsArray = Json::Value();
@@ -547,7 +547,7 @@ std::string BtcJson::CreateRawTransaction(BtcTxIdVouts unspentOutputs, BtcTxTarg
     return result.asString();
 }
 
-BtcSignedTransactionPtr BtcJson::SignRawTransaction(const std::string &rawTransaction, const std::list<BtcSigningPrerequisite> &previousTransactions, const btc::stringList &privateKeys)
+BtcSignedTransactionPtr BtcJson::SignRawTransaction(const std::string &rawTransaction, const BtcSigningPrerequisites &previousTransactions, const btc::stringList &privateKeys)
 {
     Json::Value params = Json::Value();
     params.append(rawTransaction);
@@ -556,9 +556,9 @@ BtcSignedTransactionPtr BtcJson::SignRawTransaction(const std::string &rawTransa
     if(previousTransactions.size() > 0)
     {
         Json::Value unspentArray = Json::Value();
-        for(std::list<BtcSigningPrerequisite>::const_iterator i = previousTransactions.begin(); i != previousTransactions.end(); i++)
+        for(BtcSigningPrerequisites::const_iterator i = previousTransactions.begin(); i != previousTransactions.end(); i++)
         {
-            unspentArray.append(*i);
+            unspentArray.append((*(*i)));
         }
         params.append((unspentArray));
     }

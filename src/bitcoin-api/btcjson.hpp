@@ -102,7 +102,7 @@ public:
 
     // Send to multiple addresses at once
     // txTargets maps amounts (int64 satoshis) to addresses (QString)
-    virtual std::string SendMany(BtcTxTarget txTargets, const std::string &fromAccount = "");
+    virtual std::string SendMany(BtcTxTargets txTargets, const std::string &fromAccount = "");
 
     virtual bool SetTxFee(int64_t fee);
 
@@ -114,9 +114,9 @@ public:
 
     virtual BtcRawTransactionPtr DecodeRawTransaction(std::string rawTransaction);
 
-    virtual std::string CreateRawTransaction(BtcTxIdVouts unspentOutputs, BtcTxTarget txTargets);
+    virtual std::string CreateRawTransaction(BtcTxIdVouts unspentOutputs, BtcTxTargets txTargets);
 
-    virtual BtcSignedTransactionPtr SignRawTransaction(const std::string &rawTransaction, const std::list<BtcSigningPrerequisite> &previousTransactions = std::list<BtcSigningPrerequisite>(), const btc::stringList &privateKeys = btc::stringList());
+    virtual BtcSignedTransactionPtr SignRawTransaction(const std::string &rawTransaction, const BtcSigningPrerequisites &previousTransactions = BtcSigningPrerequisites(), const btc::stringList &privateKeys = btc::stringList());
 
     virtual BtcSignedTransactionPtr CombineSignedTransactions(const std::string &rawTransaction);
 

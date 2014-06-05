@@ -181,7 +181,7 @@ bool BtcTest::TestBtcJson()
     outputsToSpend.push_back(BtcTxIdVoutPtr(new BtcTxIdVout(unspentOutputs[0]->txId, unspentOutputs[0]->vout)));
 
     // create a list of address:vout mappings to which the inputs will be sent
-    BtcTxTarget txTargets = BtcTxTarget();
+    BtcTxTargets txTargets = BtcTxTargets();
     txTargets[address] = (Json::Int64)(unspentOutputs[0]->amount - BtcHelper::FeeMultiSig);
 
     // create raw transaction
@@ -229,7 +229,7 @@ bool BtcTest::TestRawTransactions()
             unspentOutputList.push_back(BtcTxIdVoutPtr(new BtcTxIdVout(txId, i)));
     }
 
-    BtcTxTarget targetList;
+    BtcTxTargets targetList;
     targetList[myAddress2] = (Json::Int64)BtcHelper::CoinsToSatoshis(1);
     // spend the received funds
     std::string rawTx = modules->btcJson->CreateRawTransaction(unspentOutputList, targetList);

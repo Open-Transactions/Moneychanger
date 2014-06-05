@@ -127,7 +127,7 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
         }
 
         VOUT output = VOUT(BtcHelper::CoinsToSatoshis(outputObj["value"].asDouble()),
-                            outputObj["n"].asInt64(),
+                            outputObj["n"].asInt(),
                             scriptPubKey["hex"].asString(),
                             scriptPubKey["reqSigs"].asInt(),
                             scriptPubKey["type"].asString(),
@@ -172,15 +172,27 @@ BtcAddressInfo::BtcAddressInfo(Json::Value result)
     this->sigsRequired = 0;
 
     // it seems we don't need to do any error checking. thanks, .
-    this->address = result["address"].asString();   // if wrong type, default value will be returned
-    this->pubkey = result["pubkey"].asString();
-    this->account = result["account"].asString();
-    this->ismine = result["ismine"].asBool();
     this->isvalid = result["isvalid"].asBool();
-
-    // multi-sig properties:
+    this->address = result["address"].asString();
+    this->ismine = result["ismine"].asBool();
+    this->isWatchonly = result["iswatchonly"].asBool();
     this->isScript = result["isscript"].asBool();
-    this->addresses = result["addresses"];
+
+    // regular addresses
+    this->pubkey = result["pubkey"].asString();
+    this->isCompressed = result["iscompressed"].asBool();
+
+    // p2sh:
+    this->script = result["script"].asString();
+    this->redeemScript = result["hex"].asString();
+    this->addresses = btc::stringList();
+    for(Json::ArrayIndex i = 0; i < result["addresses"].size(); i++)
+    {
+        this->addresses.push_back(result["addresses"][i].asString());
+    }
+    this->sigsRequired = result["sigsrequired"].asInt();
+
+    this->account = result["account"].asString();
 }
 
 BtcMultiSigAddress::BtcMultiSigAddress(Json::Value result, const btc::stringList &publicKeys)
@@ -225,17 +237,22 @@ BtcTxIdVout::BtcTxIdVout(const std::string &txID, const int64_t &vout)
     (*this)["vout"] = static_cast<Json::Int64>(vout);
 }
 
-BtcTxTarget::BtcTxTarget()
+BtcTxTargets::BtcTxTargets()
 {
 
 }
 
-BtcTxTarget::BtcTxTarget(const std::string &toAddress, int64_t amount)
+BtcTxTargets::BtcTxTargets(const std::string &toAddress, int64_t amount)
 {
     (*this)[toAddress] = static_cast<Json::Int64>(amount);
 }
 
-void BtcTxTarget::ConvertSatoshisToBitcoin()
+void BtcTxTargets::SetTarget(const std::string &toAddress, int64_t amount)
+{
+    (*this)[toAddress] = static_cast<Json::Int64>(amount);
+}
+
+void BtcTxTargets::ConvertSatoshisToBitcoin()
 {
     Members targetAddresses = this->getMemberNames();
     for (Json::Value::ArrayIndex i = 0; i < targetAddresses.size(); i++)

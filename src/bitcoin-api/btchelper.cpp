@@ -75,6 +75,35 @@ double BtcHelper::SatoshisToCoins(int64_t value)
     return (double)value / 1e8;
 }
 
+bool BtcHelper::IsMine(const std::string &address)
+{
+    BtcAddressInfoPtr addressInfo = this->modules->btcJson->ValidateAddress(address);
+
+    // get address info
+    BtcAddressInfoPtr addrInfo = this->modules->btcJson->ValidateAddress(address);
+    if(!addrInfo->isvalid)
+        return false;
+
+    // is it ours and do we own the public key? then we also know the private key.
+    if(addrInfo->ismine && !addrInfo->pubkey.empty())
+    {
+        return true;
+    }
+
+    // multisig
+    if(addrInfo->isScript)
+    {
+        // iterate through the addresses that make up the multisig
+        for(btc::stringList::const_iterator multiSigAddr = addrInfo->addresses.begin(); multiSigAddr != addrInfo->addresses.end(); multiSigAddr++)
+        {
+            if(IsMine((*multiSigAddr)))
+            {
+                return true;
+            }
+        }
+    }
+}
+
 BtcRawTransactionPtr BtcHelper::GetDecodedRawTransaction(const std::string &txId) const
 {
     if(txId.empty())
@@ -358,7 +387,90 @@ BtcUnspentOutputs BtcHelper::ListNewOutputs(const btc::stringList &addresses, Bt
     return newOutputs;
 }
 
-BtcSignedTransactionPtr BtcHelper::WithdrawAllFromAddress(const std::string &txToSourceId, const std::string &sourceAddress, const std::string &destinationAddress, int64_t fee, const std::string &redeemScript /* = "" */, const std::string &signingAddress /* = "" */)
+BtcUnspentOutputs BtcHelper::FindSignableOutputs(const btc::stringList &txIds)
+{
+    BtcUnspentOutputs outputs = BtcUnspentOutputs();
+
+    // iterate through txids
+    for(btc::stringList::const_iterator txId = txIds.begin(); txId != txIds.end(); txId++)
+    {
+        // get transaction details
+        BtcTransactionPtr tx = this->modules->btcJson->GetTransaction((*txId));
+        BtcRawTransactionPtr txRaw;
+
+        // get raw transaction details
+        if(!tx->Hex.empty())
+            txRaw = this->modules->btcJson->DecodeRawTransaction(tx->Hex);
+        else
+            txRaw = this->GetDecodedRawTransaction((*txId));
+
+        // iterate through raw transaction VOUT array
+        for(std::vector<BtcRawTransaction::VOUT>::const_iterator vout = txRaw->outputs.begin(); vout != txRaw->outputs.end(); vout++)
+        {
+            // iterate through VOUT.addresses array (there should only be one address in that array)
+            for(btc::stringList::const_iterator outAddr = vout->addresses.begin(); outAddr != vout->addresses.end(); outAddr++)
+            {
+                if(!IsMine(*outAddr))
+                    continue;
+
+                BtcUnspentOutputPtr output = BtcUnspentOutputPtr(new BtcUnspentOutput(Json::Value()));
+                output->txId = (*txId);
+                output->address = (*outAddr);
+                output->scriptPubKey = vout->scriptPubKeyHex;
+                output->amount = vout->value;
+                output->vout = vout->n;
+                outputs.push_back(output);
+            }
+        }
+    }
+
+    return outputs;
+}
+
+BtcSigningPrerequisites BtcHelper::GetSigningPrerequisites(const BtcUnspentOutputs &outputs)
+{
+    BtcSigningPrerequisites prereqs = BtcSigningPrerequisites();
+
+    for(BtcUnspentOutputs::const_iterator output = outputs.begin(); output != outputs.end(); output++)
+    {
+        BtcAddressInfoPtr addrInfo = this->modules->btcJson->ValidateAddress((*output)->address);
+        if(addrInfo == NULL)
+            addrInfo = BtcAddressInfoPtr(new BtcAddressInfo(Json::Value(Json::objectValue)));
+        prereqs.push_back(BtcSigningPrerequisitePtr(new BtcSigningPrerequisite((*output)->txId, (*output)->vout, (*output)->scriptPubKey, addrInfo->redeemScript)));
+    }
+
+    return prereqs;
+}
+
+BtcSignedTransactionPtr BtcHelper::CreateSpendTransaction(const BtcUnspentOutputs &outputs, const int64_t &amount, const std::string &toAddress, const std::string &changeAddress,
+                                                const int64_t &fee)
+{
+    BtcTxIdVouts vouts = BtcTxIdVouts();
+    BtcTxTargets targets = BtcTxTargets();
+    int64_t amountAvailable = 0;
+    for(BtcUnspentOutputs::const_iterator output = outputs.begin(); output != outputs.end(); output++)
+    {
+        vouts.push_back(BtcTxIdVoutPtr(new BtcTxIdVout((*output)->txId, (*output)->vout)));
+        amountAvailable += (*output)->amount;
+    }
+
+    int64_t change = amountAvailable - amount - fee;
+    if(change < 0)
+       return BtcSignedTransactionPtr();  // invalid amount
+
+    // set amount=0 to sweep all funds to change address
+    if(amount > 0)
+        targets.SetTarget(toAddress, amount);
+    if(change > 0)
+        targets.SetTarget(changeAddress, change);
+
+    BtcSignedTransactionPtr transactionPtr = BtcSignedTransactionPtr(new BtcSignedTransaction(Json::Value(Json::objectValue)));
+    transactionPtr->signedTransaction = this->modules->btcJson->CreateRawTransaction(vouts, targets);
+
+    return transactionPtr;
+}
+
+BtcSignedTransactionPtr BtcHelper::WithdrawAllFromAddress(const std::string &txToSourceId, const std::string &sourceAddress, const std::string &destinationAddress, const int64_t fee, const std::string &redeemScript /* = "" */, const std::string &signingAddress /* = "" */)
 {
     // This function will check a txId for outputs leading to sourceAddress
     // and then create and sign a raw transaction sending those outputs to destinationAddress.
@@ -372,7 +484,7 @@ BtcSignedTransactionPtr BtcHelper::WithdrawAllFromAddress(const std::string &txT
     // count funds in source address and list outputs leading to it
     int64_t funds = 0;
     BtcTxIdVouts unspentOutputs = BtcTxIdVouts();
-    std::list<BtcSigningPrerequisite> signingPrerequisites;
+    BtcSigningPrerequisites signingPrerequisites = BtcSigningPrerequisites();
     for(uint64_t i = 0; i < rawTransaction->outputs.size(); i++)
     {
         BtcRawTransaction::VOUT output = rawTransaction->outputs[i];
@@ -386,7 +498,7 @@ BtcSignedTransactionPtr BtcHelper::WithdrawAllFromAddress(const std::string &txT
 
             // create signing prerequisite (optional, needed for offline signing)
             if(!signingAddress.empty() && !redeemScript.empty())
-                signingPrerequisites.push_back(BtcSigningPrerequisite(txToSourceId, output.n, output.scriptPubKeyHex, redeemScript));
+                signingPrerequisites.push_back(BtcSigningPrerequisitePtr(new BtcSigningPrerequisite(txToSourceId, output.n, output.scriptPubKeyHex, redeemScript)));
         }
     }
 
@@ -395,8 +507,8 @@ BtcSignedTransactionPtr BtcHelper::WithdrawAllFromAddress(const std::string &txT
         return BtcSignedTransactionPtr();
 
     // map of output addresses and the amount each of them receives.
-    BtcTxTarget txTargets = BtcTxTarget();
-    txTargets[destinationAddress] = Json::Value((Json::Value::Int64)funds);
+    BtcTxTargets txTargets = BtcTxTargets();
+    txTargets.SetTarget(destinationAddress, funds);
 
     // create raw transaction to send outputs to target address
     std::string withdrawTransaction = this->modules->btcJson->CreateRawTransaction(unspentOutputs, txTargets);
