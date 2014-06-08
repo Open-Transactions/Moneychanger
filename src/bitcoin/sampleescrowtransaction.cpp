@@ -5,7 +5,7 @@
 #include <bitcoin/sampleescrowtransaction.hpp>
 
 
-SampleEscrowTransaction::SampleEscrowTransaction(int64_t amountToSend)
+SampleEscrowTransaction::SampleEscrowTransaction(int64_t amountToSend, BtcModulesPtr modules)
 {
     this->amountToSend = amountToSend;
 
@@ -13,62 +13,19 @@ SampleEscrowTransaction::SampleEscrowTransaction(int64_t amountToSend)
     this->txId = "";
     this->targetAddr = "";
     this->confirmations = 0;
-    this->withdrawalTransaction = "";
 
-    this->modules = BtcModules::staticInstance;
+    this->modules = modules;
 }
 
 bool SampleEscrowTransaction::SendToTarget()
 {
+    std::printf("sending %f.8 BTC to %s\n", BtcHelper::SatoshisToCoins(this->amountToSend), this->targetAddr.c_str());
+    std::cout.flush();
+
     // send to this address, get transaction id
     this->txId = this->modules->mtBitcoin->SendToAddress(this->targetAddr, this->amountToSend);
 
     // check if we got a tx id
-    if(this->txId == "")
-    {
-        this->status = Failed;
-        return false;
-    }
-
-    this->status = Pending;
-    return true;
-}
-
-bool SampleEscrowTransaction::CreateWithdrawalTransaction(const std::string& sourceTxId, const std::string& multiSigSourceAddress, const std::string& targetAddr)
-{
-    this->sourceTxId = sourceTxId;
-    this->targetAddr = targetAddr;
-
-    // create a partially signed transaction releasing funds that were sent to multiSigAddress in transaction sourceTxId to targetAddr
-    BtcSignedTransactionPtr signedTx = this->modules->mtBitcoin->VoteMultiSigRelease(sourceTxId, multiSigSourceAddress, targetAddr);
-    if(signedTx == NULL)
-    {
-        this->status = Failed;
-        return "";
-    }
-
-    this->withdrawalTransaction = signedTx->signedTransaction;
-
-    return signedTx->complete;
-}
-
-bool SampleEscrowTransaction::AddWithdrawalTransaction(const std::string &partiallySignedTx)
-{
-    // concatenate raw transactions and let bitcoin- merge them to one
-    BtcSignedTransactionPtr signedTx = this->modules->mtBitcoin->CombineTransactions(this->withdrawalTransaction + partiallySignedTx);
-    if(signedTx == NULL)
-        return false;
-
-    this->withdrawalTransaction = signedTx->signedTransaction;
-
-    // return if enough signatures were collected
-    return signedTx->complete;
-}
-
-bool SampleEscrowTransaction::SendWithdrawalTransaction()
-{
-    this->txId = this->modules->mtBitcoin->SendRawTransaction(this->withdrawalTransaction);
-
     if(this->txId == "")
     {
         this->status = Failed;
@@ -87,24 +44,26 @@ void SampleEscrowTransaction::CheckTransaction(int minConfirms)
     // wait for the transaction to be broadcasted over the network
     // and get an object containing info
     // we have to use raw transactions here because bitcoin- doesn't properly support multi-sig yet
-    BtcRawTransactionPtr rawTx = this->modules->mtBitcoin->GetRawTransaction(this->txId);
-
-    if(rawTx == NULL)
+    BtcTransactionPtr tx = this->modules->mtBitcoin->GetTransaction(this->txId);
+    if(tx == NULL)
     {
-        if(this->status == Successfull)
-            this->status == Pending;
-
-        // error, transaction apparently wasn't received yet.
-        // or it _could_ be in some old block that bitcoind has forgotten about. in that case run bitcoind with -txindex 1
-        this->confirmations = 0;
+        this->status = Failed;
         return;
     }
 
+    // this only works with multisig transactions that were 'importaddress'd
+    BtcRawTransactionPtr rawTx = this->modules->btcJson->DecodeRawTransaction(tx->Hex);
+    if(rawTx == NULL)
+        return;
+
     // check if transaction has enough confirmations
     if(this->modules->mtBitcoin->TransactionSuccessfull(this->amountToSend, rawTx, this->targetAddr, minConfirms))
-    {
-        // yay
         this->status = Successfull;
+    else
+    {
+        this->status = Pending;
+        if(tx->walletConflicts.size() > 0)
+            this->status = Conflicted;
     }
 
     this->confirmations = this->modules->mtBitcoin->GetConfirmations(rawTx->txID);

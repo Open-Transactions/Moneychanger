@@ -48,7 +48,8 @@ void SampleEscrowManager::OnSimulateEscrowServers()
 void SampleEscrowManager::OnInitializeEscrow(BtcGuiTest* btcGuiTest)
 {
     // create a new client
-    this->client = SampleEscrowClientPtr(new SampleEscrowClient());
+    if(client == NULL)
+        this->client = SampleEscrowClientPtr(new SampleEscrowClient(BitcoinServerPtr(new BitcoinServer("admin1", "123", "http://127.0.0.1", 19001))));
 
     // connect events to update GUI
     QObject::connect(client.get(), SIGNAL(SetMultiSigAddress(const std::string&)), btcGuiTest, SLOT(SetMultiSigAddress(const std::string&)));
@@ -64,29 +65,7 @@ void SampleEscrowManager::OnInitializeEscrow(BtcGuiTest* btcGuiTest)
     int64_t amountSatoshis = BtcHelper::CoinsToSatoshis(amountToSend);
 
     // instruct client to start sending bitcoin to pool
-    client->StartDeposit(amountSatoshis, this->escrowPool);
-
-    // update client until transaction is confirmed
-    utils::SleepSimulator sleeper;
-    while(!client->CheckDepositFinished())
-    {
-        sleeper.sleep(500);
-    }
-
-    // update servers until transaction is confirmed
-    // in this example we already waited for the client so this should complete instantly
-    foreach(SampleEscrowServerPtr server, this->escrowPool->escrowServers)
-    {
-        while(!server->CheckTransaction(this->client->transactionDeposit->targetAddr, this->client->transactionDeposit->txId, this->client->clientName))
-        {
-            sleeper.sleep(500);
-        }
-
-        //if(server->transactionDeposit->status == SampleEscrowTransaction::Successfull)
-        {
-            // server received funds to escrow
-        }
-    }    
+    client->StartDeposit(amountSatoshis, this->escrowPool); 
 }
 
 void SampleEscrowManager::OnRequestWithdrawal(BtcGuiTest *BtcGuiTest)
@@ -94,18 +73,6 @@ void SampleEscrowManager::OnRequestWithdrawal(BtcGuiTest *BtcGuiTest)
     if(client->transactionDeposit->status == SampleEscrowTransaction::Successfull)
     {
         // successfully deposited funds, so we can withdraw them now
-        client->StartWithdrawal();
-    }
-
-    // update client until transaction is finished
-    utils::SleepSimulator sleeper;
-    while(!client->CheckWithdrawalFinished())
-    {
-        sleeper.sleep(500);
-    }
-
-    if(client->transactionWithdrawal->status == SampleEscrowTransaction::Successfull)
-    {
-        // successfully received funds from escrow
+        client->StartWithdrawal(client->transactionDeposit->amountToSend - BtcHelper::FeeMultiSig);
     }
 }

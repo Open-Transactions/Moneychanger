@@ -3,258 +3,580 @@
 #endif
 
 #include <bitcoin/sampleescrowserver.hpp>
-
 #include <bitcoin/sampleescrowclient.hpp>
-
 
 #include <core/modules.hpp>
 
 #include <opentxs/OTLog.hpp>
 
+#include <QTimer>
+#include <QMutex>
 
-SampleEscrowServer::SampleEscrowServer(BitcoinServerPtr rpcServer)
+
+struct SampleEscrowServer::ClientRequest
+{
+    enum Action
+    {
+        CreatePubKey,
+        CreateMultisig,
+        StartReleaseDeposit,
+        SendReleaseTx
+    };
+
+    std::string client;
+    std::string address;
+    int64_t amount;
+    Action action;
+};
+
+SampleEscrowServer::SampleEscrowServer(BitcoinServerPtr rpcServer, QObject* parent)
+    :QObject(parent)
 {
     this->rpcServer = rpcServer;
 
-    this->addressForMultiSig = "";
-    this->pubKeyForMultiSig = "";
-    this->multiSigAddress = "";
+    this->addressForMultiSig = ClientAddressMap();
+    this->pubKeyForMultiSig = ClientKeyMap();
+    this->multiSigAddress = ClientMultiSigMap();
+    this->publicKeys = ClientKeyListMap();
+    this->clientBalances = ClientBalanceMap();
+    this->clientReleaseTxMap = ClientReleaseTxMap();
+    this->addressToClientMap = AddressClientMap();
 
     this->serverPool = EscrowPoolPtr();
-    this->publicKeys = btc::stringList();
-
-    //this->transactionDeposit = SampleEscrowTransactionPtr();
-    //this->transactionWithdrawal = SampleEscrowTransactionPtr();
 
     this->clientList = std::map<std::string, SampleEscrowClientPtr>();
-    this->clientBalances = BalanceMap();
 
-    this->modules = BtcModules::staticInstance;
+    this->modules = BtcModulesPtr(new BtcModules());
 
     this->minSignatures = 2;
 
-    this->minConfirms = 1;
+    this->minConfirms = BtcHelper::WaitForConfirms;
 
     // generate random server name
     this->serverName = "                   ";
     gen_random((char*)this->serverName.c_str(), this->serverName.size());
+
+    this->updateTimer = new QTimer(parent);
+    updateTimer->setInterval(5000);
+    updateTimer->start();
+    connect(updateTimer, SIGNAL(timeout()), this, SLOT(Update()));
+
+    this->mutex = new QMutex(QMutex::Recursive);
 }
 
-void SampleEscrowServer::OnClientConnected(SampleEscrowClient *client)
+SampleEscrowServer::~SampleEscrowServer()
 {
+    this->updateTimer->stop();
+    delete this->updateTimer;
+    this->updateTimer = NULL;
+
+    this->mutex->unlock();
+    delete this->mutex;
+    this->mutex = NULL;
+}
+
+void SampleEscrowServer::ClientConnected(SampleEscrowClient *client)
+{
+    this->mutex->lock();
+
     SampleEscrowClientPtr localClient = SampleEscrowClientPtr(new SampleEscrowClient());
     localClient->clientName = client->clientName;
 
     this->clientList[localClient->clientName] = localClient;
+
+    this->mutex->unlock();
 }
 
-std::string SampleEscrowServer::OnRequestEscrowDeposit(const std::string &sender, int64_t amount)
+void SampleEscrowServer::Initialize(const std::string &client)
 {
-    // abort if invalid name or amount less than withdrawal fee or client not officially connected yet
-    if(sender.empty() || amount <= BtcHelper::FeeMultiSig || this->clientList.find(sender) == this->clientList.end())
-        return "";
+    this->mutex->lock();
+
+    std::printf("Clearing temporary deposit info for client %s\n", client.c_str());
+    std::cout.flush();
+
+    this->addressForMultiSig[client] = std::string();
+    this->pubKeyForMultiSig[client] = std::string();
+    this->multiSigAddress[client] = std::string();
+    this->publicKeys[client] = btc::stringList();
+    this->clientReleaseTxMap[client] = BtcSignedTransactionPtr();
+
+    this->mutex->unlock();
+}
+
+void SampleEscrowServer::Update()
+{
+    this->mutex->lock();
 
     this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
-    // create new address to be used for creation of the multi-sig address
-    // and get its public key:
-    std::string pubKey = GetMultiSigPubKey();
-
-    // also ask the other servers for their public keys
-    foreach(SampleEscrowServerPtr server, this->serverPool->escrowServers)
+    foreach(ClientRequestPtr request, this->clientRequests)
     {
-        if(server->serverName == this->serverName)
-            continue;
+        switch(request->action)
+        {
+        case ClientRequest::CreatePubKey:
+        {
+            // create new address to be used for creation of the multi-sig address
+            // and get its public key:
+            std::string pubKey = CreatePubKey(request->client);
 
-        // ask server for his public key
-        std::string pubKey = server->OnGetPubKey(this->serverName);
-        if(pubKey.empty())
-            return "";
-        this->AddPubKey("", pubKey);
+            break;
+        }
+        case ClientRequest::CreateMultisig:
+        {
+            // also ask the other servers for their public keys
+            foreach(SampleEscrowServerPtr server, this->serverPool->escrowServers)
+            {
+                // skip ourselves
+                if(server->serverName == this->serverName)
+                    continue;
+
+                // ask server for his public key
+                std::string pubKeyOther = server->GetPubKey(request->client);
+                if(pubKeyOther.empty())
+                    continue;
+                this->AddPubKey(request->client, pubKeyOther);
+            }
+
+            // if we have don't enough keys, try again later
+            if(this->publicKeys[request->client].size() < static_cast<size_t>(this->serverPool->escrowServers.size()))
+            {
+                ClientRequestPtr createMultiSig = ClientRequestPtr(new ClientRequest());
+                createMultiSig->client = request->client;
+                this->clientRequests.push_back(createMultiSig);
+                break;
+            }
+
+            // generate the multisig address
+            BtcMultiSigAddressPtr multiSigAddrInfo = this->modules->mtBitcoin->GetMultiSigAddressInfo(this->minSignatures, this->publicKeys[request->client], true, "multiSigDeposit");
+            if(multiSigAddrInfo != NULL)
+            {
+                this->multiSigAddress[request->client] = multiSigAddrInfo->address;
+                this->addressToClientMap[multiSigAddrInfo->address] = request->client;
+                this->modules->btcJson->ImportAddress(multiSigAddrInfo->address, "multisigdeposit", false);
+            }
+
+            break;
+        }
+        case ClientRequest::StartReleaseDeposit:
+        {
+            // find enough outputs to cover transaction + fee
+            BtcUnspentOutputs outputsToSpend = GetOutputsToSpend(request->client, request->amount + BtcHelper::FeeMultiSig);
+
+            if (outputsToSpend.size() == 0)
+            {
+                std::printf("Insufficient funds.\n");
+                std::cout.flush();
+
+                ClientRequestPtr startRelease = ClientRequestPtr(new ClientRequest());
+                startRelease->client = request->client;
+                startRelease->action = request->action;
+                startRelease->address = request->address;
+                startRelease->amount = request->amount;
+                this->clientRequests.push_back(startRelease);
+                break;
+            }
+            else if (this->multiSigAddress[request->client].empty())
+            {
+                // create change key
+                ClientRequestPtr createPubKey = ClientRequestPtr(new ClientRequest());
+                createPubKey->action = ClientRequest::CreatePubKey;
+                createPubKey->client = request->client;
+                this->clientRequests.push_back(createPubKey);
+
+                // create change address
+                ClientRequestPtr createMultisig = ClientRequestPtr(new ClientRequest());
+                createMultisig->action = ClientRequest::CreateMultisig;
+                createMultisig->client = request->client;
+                this->clientRequests.push_back(createMultisig);
+
+                ClientRequestPtr startRelease = ClientRequestPtr(new ClientRequest());
+                startRelease->client = request->client;
+                startRelease->action = request->action;
+                startRelease->address = request->address;
+                startRelease->amount = request->amount;
+                this->clientRequests.push_back(startRelease);
+
+                break;
+            }
+
+            // create unsigned transaction to send to client address and change in case there is any to change address
+            BtcSignedTransactionPtr releaseTx = this->modules->btcHelper->CreateSpendTransaction(outputsToSpend, request->amount, request->address, this->multiSigAddress[request->client]);
+            if(releaseTx == NULL)
+                releaseTx = BtcSignedTransactionPtr(new BtcSignedTransaction(Json::Value(Json::objectValue)));
+            releaseTx = this->modules->btcJson->SignRawTransaction(releaseTx->signedTransaction);
+
+            this->clientReleaseTxMap[request->client] = releaseTx;
+
+            // ask other servers for signed transactions
+            ClientRequestPtr sendTx = ClientRequestPtr(new ClientRequest());
+            sendTx->action = ClientRequest::SendReleaseTx;
+            sendTx->client = request->client;
+            sendTx->address = request->address;
+            sendTx->amount = request->amount;
+            this->clientRequests.push_back(sendTx);
+
+            break;
+        }
+        case ClientRequest::SendReleaseTx:
+        {
+            BtcSignedTransactionPtr releaseTx = this->clientReleaseTxMap[request->client];
+            if(releaseTx == NULL)
+                releaseTx = BtcSignedTransactionPtr(new BtcSignedTransaction(Json::Value(Json::objectValue)));
+
+            foreach(SampleEscrowServerPtr server, this->serverPool->escrowServers)
+            {
+                if(server->serverName == this->serverName)
+                    continue;
+
+                std::string partiallySignedTx = server->RequestSignedWithdrawal(request->client);
+                releaseTx->signedTransaction += partiallySignedTx;
+                releaseTx = this->modules->btcJson->CombineSignedTransactions(releaseTx->signedTransaction);
+
+                if(releaseTx != NULL && releaseTx->complete)
+                    break;
+            }
+
+            if(releaseTx == NULL)
+                break;
+
+            this->modules->btcJson->SendRawTransaction(releaseTx->signedTransaction);
+
+            break;
+        }
+        default:
+            break;
+        }
+
+        this->clientRequests.remove(request);
+        break;
     }
+    this->mutex->unlock();
 
-    // generate the multi sig address
-    this->multiSigAddrInfo = this->modules->mtBitcoin->GetMultiSigAddressInfo(this->minSignatures, this->publicKeys, true, "multiSigDeposit");
-    if(this->multiSigAddrInfo != NULL)
-        this->multiSigAddress = this->multiSigAddrInfo->address;
-
-    return this->multiSigAddress;
-
-    //this->transactionDeposit->targetAddr = this->multiSigAddress;
-
-    // tell client our public key and how many signatures the pool requires, so client can recreate the address himself
-    // we could also just tell him the address, it doesn't really matter
-    //client->OnReceivePubKey(pubKey, this->minSignatures);    // transmitted over the network
+    CheckTransactions();
 }
 
-std::string SampleEscrowServer::GetMultiSigPubKey()
+bool SampleEscrowServer::RequestEscrowDeposit(const std::string &client, const int64_t &amount)
 {
+    // abort if invalid name or amount less than withdrawal fee or client not officially connected yet
+    if(client.empty() || amount <= BtcHelper::FeeMultiSig || this->clientList.find(client) == this->clientList.end())
+        return false;
+
+    this->mutex->lock();
+
+    // create change address
+    ClientRequestPtr createPubKey = ClientRequestPtr(new ClientRequest());
+    createPubKey->action = ClientRequest::CreatePubKey;
+    createPubKey->client = client;
+    this->clientRequests.push_back(createPubKey);
+
+    ClientRequestPtr request = ClientRequestPtr(new ClientRequest());
+    request->action = ClientRequest::CreateMultisig;
+    request->client = client;
+    this->clientRequests.push_back(request);
+
+    this->mutex->unlock();
+
+    return true;
+
+
+    //return this->multiSigAddress[client];
+}
+
+std::string SampleEscrowServer::RequestDepositAddress(const std::string &client)
+{
+    this->mutex->lock();
+
+    return this->multiSigAddress[client];
+
+    this->mutex->unlock();
+}
+
+std::string SampleEscrowServer::CreatePubKey(const std::string &client)
+{
+    this->mutex->lock();
+
     // see if we already created an address to be used for multi-sig
-    if(this->addressForMultiSig.empty())
+    ClientAddressMap::iterator pubKey = this->pubKeyForMultiSig.find(client);
+    if(pubKey != this->pubKeyForMultiSig.end() && !pubKey->second.empty())
     {
-        this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
-
-        // if not, create one:
-        this->addressForMultiSig = this->modules->mtBitcoin->GetNewAddress();
-        if(this->addressForMultiSig.empty())
-            return "";
-
-        // and get its public key
-        this->pubKeyForMultiSig = this->modules->mtBitcoin->GetPublicKey(this->addressForMultiSig);
-        this->publicKeys.push_back(this->pubKeyForMultiSig);
+        this->mutex->unlock();
+        return pubKey->second;
     }
 
-    return this->pubKeyForMultiSig;
+    // if not, create one:
+    this->addressForMultiSig[client] = this->modules->mtBitcoin->GetNewAddress();
+    if(this->addressForMultiSig[client].empty())
+    {
+        this->mutex->unlock();
+        return std::string();
+    }
+
+    // and get its public key
+    this->pubKeyForMultiSig[client] = this->modules->mtBitcoin->GetPublicKey(this->addressForMultiSig[client]);
+    AddPubKey(client, this->pubKeyForMultiSig[client]);
+
+    this->mutex->lock();
+
+    return this->pubKeyForMultiSig[client];
 }
 
-std::string SampleEscrowServer::OnGetPubKey(const std::string &sender)
+std::string SampleEscrowServer::GetPubKey(const std::string &client)
 {
-    std::string pubKey = GetMultiSigPubKey();
-
-    return pubKey;
-
-    // send our public key to the server asking for it
-    //if(sender != "")
-    //    this->serverPool->serverNameMap[sender]->OnReceivePubKey(this->serverName, pubKey);
+    return CreatePubKey(client);
 }
 
-void SampleEscrowServer::AddPubKey(const std::string &sender, const std::string &key)
+void SampleEscrowServer::AddPubKey(const std::string &client, const std::string &key)
 {
-    btc::stringList::iterator keyRef = std::find(this->publicKeys.begin(), this->publicKeys.end(), key);
-    if(keyRef != this->publicKeys.end())
-        this->publicKeys.erase(keyRef);
-    this->publicKeys.push_back(key);
+    this->mutex->lock();
+
+    btc::stringList::iterator keyRef = std::find(this->publicKeys[client].begin(), this->publicKeys[client].end(), key);
+    if(keyRef == this->publicKeys[client].end())
+        this->publicKeys[client].push_back(key);
 
     // sort the keys alphabetically
-    std::sort(this->publicKeys.begin(), this->publicKeys.end());
+    std::sort(this->publicKeys[client].begin(), this->publicKeys[client].end());
+
+    this->mutex->unlock();
 }
 
 void SampleEscrowServer::AddClientDeposit(const std::string &client, SampleEscrowTransactionPtr transaction)
 {
-    if(this->clientBalances.find(client) == this->clientBalances.end())
-        this->clientBalances[client] = std::list<SampleEscrowTransactionPtr>();
+    this->mutex->lock();
 
+    foreach(SampleEscrowTransactionPtr tx, this->clientBalances[client])
+    {
+        if(tx->txId == transaction->txId && tx->targetAddr == transaction->targetAddr)
+        {
+            this->mutex->unlock();
+            return;
+        }
+    }
     this->clientBalances[client].push_back(transaction);
 
     OTLog::vOutput(0, "Added %s\n to %s\nClient %s now has %d deposit transaction(s)\n", transaction->txId.c_str(), transaction->targetAddr.c_str(), client.c_str(), this->clientBalances[client].size());
+
+    this->mutex->unlock();
 }
 
 void SampleEscrowServer::RemoveClientDeposit(const std::string &client, SampleEscrowTransactionPtr transaction)
 {
-    if(this->clientBalances.find(client) == this->clientBalances.end())
-        return;
+    this->mutex->lock();
 
-    this->clientBalances[client].remove(transaction);
+    for(SampleEscrowTransactions::iterator tx = this->clientBalances[client].begin(); tx != this->clientBalances[client].end(); tx++)
+    {
+        if((*tx)->txId == transaction->txId && (*tx)->targetAddr == transaction->targetAddr)
+        {
+            this->clientBalances[client].remove((*tx));
+            tx = this->clientBalances[client].begin();
+        }
+    }
+
+    this->mutex->unlock();
+}
+
+void SampleEscrowServer::CheckTransactions()
+{
+    this->mutex->lock();
+
+    BtcUnspentOutputs balances = this->modules->btcJson->ListUnspent(0); //ListReceivedByAddress(int32_t(0), false, true);
+    foreach(BtcUnspentOutputPtr balance, balances)
+    {
+        AddressClientMap::iterator client = this->addressToClientMap.find(balance->address);
+        if(client == this->addressToClientMap.end())
+            continue;
+
+        // see if tx is already known
+        SampleEscrowTransactionPtr clientTx = FindClientTransaction(balance->address, balance->txId, client->second);
+        if(clientTx != NULL)
+            continue;
+
+        BtcRawTransactionPtr rawTx = this->modules->btcHelper->GetDecodedRawTransaction(balance->txId);
+        int64_t amount = this->modules->btcHelper->GetTotalOutput(rawTx, balance->address);
+        clientTx = SampleEscrowTransactionPtr(new SampleEscrowTransaction(amount, this->modules));
+        clientTx->txId = balance->txId;
+        clientTx->targetAddr = balance->address;
+        AddClientDeposit(client->second, clientTx);
+
+        // clear temporary deposit info
+        Initialize(client->second);
+
+    }
+
+    for(ClientBalanceMap::iterator clientBalanceMap = this->clientBalances.begin(); clientBalanceMap != this->clientBalances.end(); clientBalanceMap++)
+    {
+        foreach(SampleEscrowTransactionPtr tx, clientBalanceMap->second)
+        {
+            // check if transaction isn't spent yet
+            bool spent = true;
+            BtcUnspentOutputs outputs = this->modules->btcHelper->FindUnspentSignableOutputs(btc::stringList { tx->txId });
+            foreach(BtcUnspentOutputPtr output, outputs)
+            {
+                // found it in 'listunspent'
+                if(output->address == tx->targetAddr)
+                {
+                    spent = false;
+                    tx->amountToSend = output->amount;
+                }
+            }
+            if(spent)
+                tx->status = SampleEscrowTransaction::Spent;
+
+            if(tx->status == SampleEscrowTransaction::Successfull)
+                continue;
+
+            if(tx->status == SampleEscrowTransaction::Pending)
+            {
+                tx->CheckTransaction(this->minConfirms);
+            }
+
+            if(tx->status == SampleEscrowTransaction::Conflicted)
+            {
+                foreach (std::string txId, this->modules->btcHelper->GetDoubleSpends(tx->txId))
+                {
+                    if(this->modules->btcHelper->TransactionConfirmed(txId, this->minConfirms))
+                        tx->status = SampleEscrowTransaction::Failed;
+
+                    break;
+                }
+            }
+
+            if(tx->status == SampleEscrowTransaction::Failed || tx->status == SampleEscrowTransaction::Spent)
+            {
+                std::printf("removing tx %s\n to address %s\n from client %s\n", tx->txId.c_str(), tx->targetAddr.c_str(), clientBalanceMap->first.c_str());
+                clientBalanceMap->second.remove(tx);
+                break;
+            }
+        }
+    }
+
+    this->mutex->unlock();
 }
 
 SampleEscrowTransactionPtr SampleEscrowServer::FindClientTransaction(const std::string &targetAddress, const std::string &txId, const std::string &client)
 {
-    OTLog::vOutput(0, "Looking for client %s's\n transaction %s\n to %s...\n", client.c_str(), txId.c_str(), targetAddress.c_str());
+    this->mutex->lock();
+
     if(this->clientBalances.find(client) == this->clientBalances.end())
+    {
+        this->mutex->unlock();
         return SampleEscrowTransactionPtr();
+    }
 
     foreach(SampleEscrowTransactionPtr tx, this->clientBalances[client])
     {
-        OTLog::vOutput(0, "    checking %s\n to %s...\n", tx->txId.c_str(), tx->targetAddr.c_str());
         if(tx->txId == txId && tx->targetAddr == targetAddress)
-            return tx;
-    }
-
-    return SampleEscrowTransactionPtr();
-}
-
-SampleEscrowTransactionPtr SampleEscrowServer::FindClientTransaction(const std::string &targetAddress, const std::string txId)
-{
-    for(BalanceMap::iterator i = this->clientBalances.begin(); i != this->clientBalances.end(); i++)
-    {        
-        foreach(SampleEscrowTransactionPtr tx, i->second)
         {
-            if(tx->txId == txId && tx->targetAddr == targetAddress)
-                return tx;
+            this->mutex->unlock();
+            return tx;
         }
     }
 
+    this->mutex->unlock();
+
     return SampleEscrowTransactionPtr();
 }
 
-void SampleEscrowServer::OnIncomingDeposit(const std::string sender, const std::string txId, int64_t amount)
+int64_t SampleEscrowServer::GetClientBalance(const std::string &client)
 {
-    if(sender.empty() || txId.empty() || amount <= BtcHelper::FeeMultiSig || this->clientList.find(sender) == this->clientList.end())
-        return;
+    this->mutex->lock();
 
-    // we will need to keep a list of all deposit transaction ids so we know everyone's balance
-    // and because we need the tx ids to withdraw later
+    ClientBalanceMap::iterator clientBalanceMap = this->clientBalances.find(client);
+    if(clientBalanceMap == this->clientBalances.end())
+    {
+        this->mutex->unlock();
+        return 0;
+    }
 
-    // create a new object containing information about this deposit
-    SampleEscrowTransactionPtr deposit = SampleEscrowTransactionPtr(new SampleEscrowTransaction(amount));
-    deposit->targetAddr = this->multiSigAddress;
-    deposit->txId = txId;
-    deposit->status = SampleEscrowTransaction::Pending;
+    // iterate through all transactions associated with this client
+    int64_t balance = 0;
+    foreach(SampleEscrowTransactionPtr tx, clientBalanceMap->second)
+    {
+        // recheck transaction status
+        tx->CheckTransaction(this->minConfirms);
+        if(tx->status == tx->Successfull)
+            balance += tx->amountToSend;    // add value to overall balance
+    }
 
-    // add the transaction object to this client's tx list
-    this->AddClientDeposit(sender, deposit);
+    this->mutex->unlock();
+    return balance;
 }
 
-bool SampleEscrowServer::CheckTransaction(const std::string &targetAddress, const std::string txId, const std::string &sender)
-{   
-    OTLog::vOutput(0, "Checking %s's transactions for\n %s to %s...\n", sender.c_str(), txId.c_str(), targetAddress.c_str());
-    if(this->clientBalances[sender].empty())
+BtcUnspentOutputs SampleEscrowServer::GetOutputsToSpend(const std::string &client, const int64_t &amountToSpend)
+{
+    this->mutex->lock();
+
+    BtcUnspentOutputs outputsToSpend = BtcUnspentOutputs();
+
+    ClientBalanceMap::iterator clientBalanceMap = this->clientBalances.find(client);
+    if(clientBalanceMap == this->clientBalances.end())
+    {
+        this->mutex->unlock();
+        return outputsToSpend;        
+    }
+
+    int64_t currentBalance = 0;
+    foreach(SampleEscrowTransactionPtr tx, clientBalanceMap->second)
+    {
+        BtcUnspentOutputs txOutputs = this->modules->btcHelper->FindUnspentSignableOutputs(btc::stringList {tx->txId});
+        foreach(BtcUnspentOutputPtr output, txOutputs)
+        {
+            // one transaction could be depositing into different addresses for different accounts
+            // only pick the transaction for this client
+            if(output->address != tx->targetAddr)
+                continue;
+
+            outputsToSpend.push_back(output);
+            currentBalance += output->amount;
+            break;  // there can only be one output per address per transaction
+        }
+    }
+
+    this->mutex->unlock();
+
+    if(currentBalance >= amountToSpend)
+        return outputsToSpend;
+    else
+        return BtcUnspentOutputs();
+}
+
+bool SampleEscrowServer::RequestEscrowWithdrawal(const std::string &client, const int64_t &amount, const std::string &toAddress)
+{
+    this->mutex->lock();
+
+    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
+
+    // check client balance
+    int64_t spendable = GetClientBalance(client);
+    if(spendable < amount + BtcHelper::FeeMultiSig)
+    {
+        this->mutex->unlock();
         return false;
+    }
 
-    SampleEscrowTransactionPtr deposit = FindClientTransaction(targetAddress, txId, sender);
-    if(deposit == NULL)
-        return false;
+    ClientRequestPtr request = ClientRequestPtr(new ClientRequest());
+    request->client = client;
+    request->amount = amount;
+    request->address = toAddress;
+    request->action = ClientRequest::StartReleaseDeposit;
+    this->clientRequests.push_back(request);
 
-    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
+    this->mutex->unlock();
 
-    // check transaction for correct amount and number of confirmations
-    deposit->CheckTransaction(this->minConfirms);
-
-    if(deposit->status != SampleEscrowTransaction::Pending)
-        return true;    // if transaction isn't pending anymore, we're finished
-
-    return false;
+    return true;
 }
 
-std::string SampleEscrowServer::OnRequestEscrowWithdrawal(const std::string &sender, const std::string &txId, const std::string &fromAddress, const std::string &toAddress)
+std::string SampleEscrowServer::RequestSignedWithdrawal(const std::string &client)
 {
-    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
+    this->mutex->lock();
 
-    SampleEscrowTransactionPtr deposit = FindClientTransaction(fromAddress, txId, sender);
-    if(deposit == NULL)
-        return "";
-
-    // update transaction status
-    deposit->CheckTransaction(this->minConfirms);
-
-    // check if deposit is confirmed
-    if(deposit->status != SampleEscrowTransaction::Successfull)
-        return "";     // nope
-
-    // create new transaction object
-    SampleEscrowTransactionPtr txRelease = SampleEscrowTransactionPtr(new SampleEscrowTransaction(deposit->amountToSend));
-
-    // create partially signed raw transaction
-    txRelease->CreateWithdrawalTransaction(txId, fromAddress, toAddress);
-
-    return txRelease->withdrawalTransaction;
-
-
-    // send the partially signed transaction to the client
-    //sender->OnReceiveSignedTx(this->transactionWithdrawal->withdrawalTransaction);
-}
-
-void SampleEscrowServer::ReleasingFunds(const std::string &client, const std::string &txId, const std::string &sourceTxId, const std::string &sourceAddress, const std::string &toAddress)
-{
-    if(client.empty() || txId.empty() || sourceAddress.empty())
-        return;
-
-    this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
-
-    SampleEscrowTransactionPtr deposit = FindClientTransaction(sourceAddress, sourceTxId, client);
-    if(deposit == NULL)
-        return;
-
-    // we will just assume that the transaction goes through because this is just an example
-    this->RemoveClientDeposit(client, deposit);
+    if(this->clientReleaseTxMap[client] != NULL)
+    {
+        this->mutex->unlock();
+        return this->clientReleaseTxMap[client]->signedTransaction;
+    }
+    else
+    {
+        this->mutex->unlock();
+        return std::string();
+    }
 }

@@ -21,19 +21,9 @@
 class SampleEscrowTransaction
 {
 public:
-    SampleEscrowTransaction(int64_t amountToSend);
+    SampleEscrowTransaction(int64_t amountToSend, BtcModulesPtr modules);
 
     bool SendToTarget();
-
-    // creates a raw transaction to send funds from source tx and address to target address
-    // returns true if signing is complete
-    bool CreateWithdrawalTransaction(const std::string &sourceTxId, const std::string &multiSigSourceAddress, const std::string &targetAddr);
-
-    // combines raw transactions and their signatures
-    // returns true if signing is complete
-    bool AddWithdrawalTransaction(const std::string& partiallySignedTx);
-
-    bool SendWithdrawalTransaction();
 
     // checks if transaction is confirmed and sends the correct value to the correct address
     void CheckTransaction(int minConfirms);
@@ -43,24 +33,24 @@ public:
     std::string txId;                   // id of the pending transaction
     int64_t confirmations;              // confirmations of pending transaction
 
-    std::string sourceTxId;             // transaction id from which to withdraw the outputs
-    std::string withdrawalTransaction;  // a (partially) signed raw transaction to withdraw funds from sourceTxId to targetAddr
-
     enum SUCCESS
     {
         NotStarted,
         Pending,
         Successfull,
-        Failed
+        Conflicted,
+        Failed,
+        Spent
     }status;
 
     //SampleEscrowClientPtr client;
 
 private:
-    BtcModules* modules;
+    BtcModulesPtr modules;
     //QList<SampleEscrowServerPtr> servers;
 };
 
 typedef _SharedPtr<SampleEscrowTransaction> SampleEscrowTransactionPtr;
+typedef std::list<SampleEscrowTransactionPtr> SampleEscrowTransactions;
 
 #endif // SAMPLEESCROWTRANSACTION_HPP

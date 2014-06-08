@@ -7,6 +7,8 @@
 
 #include <core/modules.hpp>
 
+#include <QTimer>
+
 
 // random name generator
 void gen_random(char *s, const int len)
@@ -36,14 +38,20 @@ SampleEscrowClient::SampleEscrowClient(QObject* parent)
     this->transactionDeposit = SampleEscrowTransactionPtr();
     this->transactionWithdrawal = SampleEscrowTransactionPtr();
 
-    this->modules = BtcModules::staticInstance;
+    this->modules = BtcModulesPtr(new BtcModules());
 
     // generate random client name
     this->clientName = "                   ";
     gen_random((char*)this->clientName.c_str(), this->clientName.size());
+
+    this->updateTimer = new QTimer(parent);
+    updateTimer->setInterval(5000);
+    updateTimer->start();
+    connect(updateTimer, SIGNAL(timeout()), this, SLOT(Update()));
 }
 
 SampleEscrowClient::SampleEscrowClient(BitcoinServerPtr rpcServer, QObject *parent)
+    : SampleEscrowClient(parent)
 {
     this->rpcServer = rpcServer;
 }
@@ -55,6 +63,31 @@ SampleEscrowClient::~SampleEscrowClient()
     this->pubKeyList.clear();
     this->transactionDeposit.reset();
     this->transactionWithdrawal.reset();
+
+    delete this->updateTimer;
+}
+
+void SampleEscrowClient::Update()
+{
+    if(this->transactionDeposit != NULL && this->transactionDeposit->status != SampleEscrowTransaction::Successfull)
+    {
+        if(this->transactionDeposit->targetAddr.empty())
+        {
+            AskForDepositAddress();
+        }
+        else if(this->transactionDeposit->txId.empty())
+        {
+            SendToEscrow();
+        }
+        else
+        {
+            CheckDepositFinished();
+        }
+    }
+    if(this->transactionWithdrawal != NULL && transactionWithdrawal->status != SampleEscrowTransaction::Successfull)
+    {
+        CheckWithdrawalFinished();
+    }
 }
 
 void SampleEscrowClient::StartDeposit(int64_t amountToSend, EscrowPoolPtr targetPool)
@@ -64,67 +97,49 @@ void SampleEscrowClient::StartDeposit(int64_t amountToSend, EscrowPoolPtr target
 
     this->targetPool = targetPool;
 
-    this->transactionDeposit = SampleEscrowTransactionPtr(new SampleEscrowTransaction(amountToSend));
+    this->transactionDeposit = SampleEscrowTransactionPtr(new SampleEscrowTransaction(amountToSend, this->modules));
 
-    // ask the servers for an address to send money to
-    // assuming no BIP32 and assuming servers don't constantly monitor the blockchain for incoming transactions
-    // in reality this call would have to be forwarded through the net
-    std::string depositAddress;
+    // connect to each server
     foreach(SampleEscrowServerPtr server, this->targetPool->escrowServers)
     {
-        server->OnClientConnected(this);
+        server->ClientConnected(this);
+    }
 
-        depositAddress = server->OnRequestEscrowDeposit(this->clientName, amountToSend);
+    // tell each server we'd like to deposit something
+    foreach(SampleEscrowServerPtr server, this->targetPool->escrowServers)
+    {
+        bool accepted = server->RequestEscrowDeposit(this->clientName, amountToSend);
+        if(!accepted)
+            return;
+    }
+}
+
+void SampleEscrowClient::AskForDepositAddress()
+{
+    // ask the servers for an address to send money to
+    std::string depositAddress = std::string();
+    foreach(SampleEscrowServerPtr server, this->targetPool->escrowServers)
+    {
+        std::string serverMultisig = server->RequestDepositAddress(this->clientName);
+
         if(depositAddress.empty())
-            break;  // error
+            depositAddress = serverMultisig;
+        else if(depositAddress != serverMultisig)
+            return;     // error
     }
 
     this->transactionDeposit->targetAddr = depositAddress;
 
-    SendToEscrow();
-}
-
-void SampleEscrowClient::OnReceivePubKey(const std::string &publicKey, int minSignatures)
-{
-    if(publicKey == "")
-        return;
-
-    this->pubKeyList.push_back(publicKey);         // add server's key to keylist
-    std::sort(this->pubKeyList.begin(), this->pubKeyList.end());                    // somehow arrange all keys in the same order.
-
-    if(this->minSignatures == 0)                // set number of required signatures
-        this->minSignatures = minSignatures;
-    if(this->minSignatures != minSignatures)    // see if all servers agree
-        return;     // OMG HACKS!!!11
-
-    // if we received all public keys we can start sending the bitcoins
-    if(this->pubKeyList.size() == (uint)this->targetPool->escrowServers.size())
-    {
-        // create the multi-sig address of the server pool
-        this->transactionDeposit->targetAddr = this->modules->mtBitcoin->GetMultiSigAddress(this->minSignatures, this->pubKeyList);
-
-        SendToEscrow();
-    }
+    // set multi-sig address in GUI
+    emit SetMultiSigAddress(this->transactionDeposit->targetAddr);
 }
 
 void SampleEscrowClient::SendToEscrow()
 {
-    if(this->rpcServer != NULL)
-        this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
-
-    // set multi-sig address in GUI
-    emit SetMultiSigAddress(this->transactionDeposit->targetAddr);
-
     this->transactionDeposit->SendToTarget();
 
     // set txid in GUI
     emit SetTxIdDeposit(this->transactionDeposit->txId);
-
-    // notify server of incoming transaction
-    foreach(SampleEscrowServerPtr server, this->targetPool->escrowServers)
-    {
-        server->OnIncomingDeposit(this->clientName, this->transactionDeposit->txId, this->transactionDeposit->amountToSend);
-    }
 }
 
 bool SampleEscrowClient::CheckDepositFinished()
@@ -138,17 +153,14 @@ bool SampleEscrowClient::CheckDepositFinished()
     return finished;
 }
 
-void SampleEscrowClient::StartWithdrawal()
+void SampleEscrowClient::StartWithdrawal(const int64_t &amountToWithdraw)
 {
     if(this->rpcServer != NULL)
         this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
 
     // create new transaction object. substract fee from the amount we expect
     this->transactionWithdrawal = SampleEscrowTransactionPtr(
-                new SampleEscrowTransaction(this->transactionDeposit->amountToSend - BtcHelper::FeeMultiSig));
-
-    // set the txId from which the funds should be released
-    this->transactionWithdrawal->sourceTxId = this->transactionDeposit->txId;
+                new SampleEscrowTransaction(amountToWithdraw, this->modules));
 
     // set the address to which the funds should be sent
     this->transactionWithdrawal->targetAddr = this->modules->mtBitcoin->GetNewAddress("ReceivedFromPool");
@@ -160,24 +172,7 @@ void SampleEscrowClient::StartWithdrawal()
 
     foreach(SampleEscrowServerPtr server, this->targetPool->escrowServers)
     {
-        std::string partiallySignedTx = server->OnRequestEscrowWithdrawal(this->clientName, this->transactionWithdrawal->sourceTxId, this->transactionDeposit->targetAddr, this->transactionWithdrawal->targetAddr);
-
-        // break when enough signatures were collected
-        if(this->transactionWithdrawal->AddWithdrawalTransaction(partiallySignedTx))
-            break;
-    }
-
-    // if enough signatures were collected, broadcast the transaction immediately
-    // adding more signatures would do nothing but increase fees
-    this->transactionWithdrawal->SendWithdrawalTransaction();
-
-    // set txid in GUI
-    emit SetTxIdWithdrawal(this->transactionWithdrawal->txId);
-
-    foreach (SampleEscrowServerPtr server, this->targetPool->escrowServers)
-    {
-        // notify servers about the transaction
-        server->ReleasingFunds(this->clientName, this->transactionWithdrawal->txId, this->transactionDeposit->txId, this->transactionWithdrawal->sourceTxId, this->transactionWithdrawal->targetAddr);
+        bool accepted = server->RequestEscrowWithdrawal(this->clientName, this->transactionWithdrawal->amountToSend, this->transactionWithdrawal->targetAddr);
     }
 }
 
@@ -194,9 +189,6 @@ bool SampleEscrowClient::CheckWithdrawalFinished()
 
 bool SampleEscrowClient::CheckTransactionFinished(SampleEscrowTransactionPtr transaction)
 {
-    if(this->rpcServer != NULL)
-        this->modules->btcRpc->ConnectToBitcoin(this->rpcServer);
-
     transaction->CheckTransaction(this->minConfirms);
 
     if(transaction->status == SampleEscrowTransaction::Pending)

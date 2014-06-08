@@ -13,6 +13,7 @@
 
 #include <QObject>
 
+class QTimer;
 
 class SampleEscrowClient : public QObject
 {
@@ -28,18 +29,12 @@ public:
     // amountToSend: amount in satoshis
     void StartDeposit(int64_t amountToSend, EscrowPoolPtr targetPool);
 
-    // client receives public keys
-    void OnReceivePubKey(const std::string& publicKey, int minSignatures);
-
     // returns true when the transaction finished
     bool CheckDepositFinished();
 
     /** Release **/
     // client asks server for release of escrow
-    void StartWithdrawal();
-
-    // client receives partially signed tx
-    void OnReceiveSignedTx(const std::string &signedTx);
+    void StartWithdrawal(const int64_t &amountToWithdraw);
 
     bool CheckWithdrawalFinished();
 
@@ -59,10 +54,13 @@ private:
     BitcoinServerPtr rpcServer;
     EscrowPoolPtr targetPool;
 
-    BtcModules* modules;
+    BtcModulesPtr modules;
 
+    void AskForDepositAddress();
     // client sends bitcoin to escrow
     void SendToEscrow();
+
+    QTimer* updateTimer;
 
     signals:    // used to update the GUI
         // deposit
@@ -75,6 +73,9 @@ private:
         void SetTxIdWithdrawal(const std::string& txId);
         void SetConfirmationsWithdrawal(int confirms);
         void SetStatusWithdrawal(SampleEscrowTransaction::SUCCESS status);
+
+    public slots:
+        void Update();
 };
 
 typedef _SharedPtr<SampleEscrowClient> SampleEscrowClientPtr;
