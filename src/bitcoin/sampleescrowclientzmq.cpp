@@ -1,6 +1,8 @@
-#include "sampleescrowclientzmq.h"
+#include "sampleescrowclientzmq.hpp"
+
 #include <zmq.hpp>
-#include <OTLog.h>
+
+#include <opentxs/OTLog.hpp>
 
 SampleEscrowClientZmq::SampleEscrowClientZmq()
 {
@@ -18,7 +20,6 @@ void SampleEscrowClientZmq::SendData(BtcNetMsg *message)
     // Prepare our context and socket
     zmq::context_t context (1);
     zmq::socket_t socket (context, ZMQ_REQ);
-
 
     OTLog::Output(0, "Connecting to hello world server…\n");
     std::string connectString = "tcp://";
@@ -85,7 +86,7 @@ void SampleEscrowClientZmq::Startserver()
         case (int)MultiSigKey:
             BtcNetMsgPubKey message;
             memcpy(&message, reply.data(), NetMessageSizes[MultiSigKey]);
-            OnReceivePubKey(message.pubKey, message.minSignatures);
+
             break;
         }
 

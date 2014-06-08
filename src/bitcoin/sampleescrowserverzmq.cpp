@@ -1,8 +1,11 @@
-#include "sampleescrowserverzmq.h"
-#include "sampleescrowclientzmq.h"
+#include "sampleescrowserverzmq.hpp"
+#include "sampleescrowclientzmq.hpp"
+
 #include <zmq.hpp>
+
 #include <string>
-#include <OTLog.h>
+
+#include <opentxs/OTLog.hpp>
 
 
 SampleEscrowServerZmq::SampleEscrowServerZmq(BitcoinServerPtr bitcoind, int port)
@@ -21,39 +24,67 @@ SampleEscrowServerZmq::SampleEscrowServerZmq(BitcoinServerPtr bitcoind, const st
     InitNetMessages();
 }
 
-void SampleEscrowServerZmq::OnRequestEscrowDeposit(SampleEscrowClient *client)
+void SampleEscrowServerZmq::ClientConnected(SampleEscrowClient *client)
 {
-    SampleEscrowServer::OnRequestEscrowDeposit(client);
+    BtcNetMsgPtr clientMsg = BtcNetMsgPtr(new BtcNetMsg());
+    memccpy(clientMsg->sender, client->clientName.c_str(), 0, 20);
+    SendData(static_cast<BtcNetMsg*>(static_cast<void*>(clientMsg.get())));
 }
 
-void SampleEscrowServerZmq::OnRequestEscrowDeposit(const std::string &sender, int64_t amount)
+void SampleEscrowServerZmq::ClientConnected(BtcNetMsg clientMsg)
 {
-    SampleEscrowClientZmqPtr client = SampleEscrowClientZmqPtr(new SampleEscrowClientZmq());
-    OnRequestEscrowDeposit(client.get());
+    SampleEscrowClient* client = new SampleEscrowClientZmq();
+    SampleEscrowServer::ClientConnected(client);
 }
 
-void SampleEscrowServerZmq::OnGetMultiSigPubKey(const std::string &sender)
+bool SampleEscrowServerZmq::RequestEscrowDeposit(const std::string &sender, const int64_t &amount)
 {
-    if(!sender.empty())
+    BtcNetMsgReqDepositPtr reqDeposit = BtcNetMsgReqDepositPtr(new BtcNetMsgReqDeposit());
+    memccpy(reqDeposit->sender, sender.c_str(), 0, 20);
+    reqDeposit->amount = amount;
+    SendData(static_cast<BtcNetMsg*>(static_cast<void*>(reqDeposit.get())));
+}
+
+bool SampleEscrowServerZmq::RequestEscrowDeposit(BtcNetMsgReqDepositPtr deposit)
+{
+    return SampleEscrowServer::RequestEscrowDeposit(deposit->sender, deposit->amount);
+}
+
+std::string SampleEscrowServerZmq::CreatePubKey(const std::string &client)
+{
+    return SampleEscrowServer::CreatePubKey(client);
+}
+
+std::string SampleEscrowServerZmq::GetPubKey(const std::string &client)
+{
+
+    return SampleEscrowServer::GetPubKey(client);
+
+
+    if(!client.empty())
     {
-        this->serverPool->serverNameMap[sender]->OnGetMultiSigPubKey("");
-        return;
+        return this->serverPool->serverNameMap[client]->GetPubKey(client);
     }
 
     BtcNetMsgPubKey msg;
-    std::string pubKey = GetPubKey();
+    std::string pubKey = CreatePubKey(client);
 
     memccpy(msg.pubKey, pubKey.c_str(), 0, pubKey.size() < 66 ? pubKey.size() : 66);
     msg.pubKey[66] = 0;
     SendData((BtcNetMsg*)&msg);
 }
 
-void SampleEscrowServerZmq::OnIncomingDeposit(std::string txId)
+void SampleEscrowServerZmq::AddPubKey(const std::string &client, const std::string &key)
 {
-
+    return SampleEscrowServer::AddPubKey(client, key);
 }
 
-void SampleEscrowServerZmq::SendData(BtcNetMsg *message)
+bool SampleEscrowServerZmq::RequestEscrowWithdrawal(const std::string &client, const int64_t &amount, const std::string &toAddress)
+{
+    return SampleEscrowServer::RequestEscrowWithdrawal(client, amount, toAddress);
+}
+
+void SampleEscrowServerZmq::SendData(BtcNetMsg* message)
 {
     // Prepare our context and socket
     zmq::context_t context (1);
@@ -68,7 +99,7 @@ void SampleEscrowServerZmq::SendData(BtcNetMsg *message)
     // Do 10 requests, waiting each time for a response
     //for (int request_nbr = 0; request_nbr != 10; request_nbr++)
     //{
-        int size = NetMessageSizes[(NetMessageType)message->MessageType];
+        int size = NetMessageSizes[static_cast<NetMessageType>(message->MessageType)];
         zmq::message_t request (size);
         memcpy ((void *) request.data (), message->data, size);
         OTLog::Output(0, "Sending data…\n");
@@ -110,7 +141,7 @@ void SampleEscrowServerZmq::StartServer()
         if(request.size() < NetMessageSizes[Unknown])
             continue;
 
-        int messageType = ((BtcNetMsg*)request.data())->MessageType;
+        int messageType = static_cast<BtcNetMsg*>(request.data())->MessageType;
 
         if(request.size() < NetMessageSizes[(NetMessageType)messageType])
             continue;
@@ -122,7 +153,7 @@ void SampleEscrowServerZmq::StartServer()
         case (int)GetMultiSigKey:
             BtcNetMsgGetKey message;
             memcpy(&message, reply.data(), NetMessageSizes[GetMultiSigKey]);
-            OnGetMultiSigPubKey(message.sender);
+            GetPubKey(message.client);
         }
 
         // Do some 'work'

@@ -1,8 +1,10 @@
 #ifndef SAMPLEESCROWCLIENTZMQ_H
 #define SAMPLEESCROWCLIENTZMQ_H
 
-#include "sampleescrowclient.h"
-#include "samplenetmessages.h"
+#include "sampleescrowclient.hpp"
+#include "samplenetmessages.hpp"
+
+#include <opentxs/TR1_Wrapper.hpp>
 
 class SampleEscrowClientZmq : public SampleEscrowClient
 {
@@ -18,10 +20,6 @@ public:
     BitcoinServerPtr serverInfo;
 };
 
-#ifndef OT_USE_TR1
-    typedef std::shared_ptr<SampleEscrowClientZmq> SampleEscrowClientZmqPtr;
-#else
-    typedef std::tr1::shared_ptr<SampleEscrowClientZmq> SampleEscrowClientZmqPtr;
-#endif
+    typedef _SharedPtr<SampleEscrowClientZmq> SampleEscrowClientZmqPtr;
 
 #endif // SAMPLEESCROWCLIENTZMQ_H

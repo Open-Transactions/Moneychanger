@@ -2,14 +2,15 @@
 #define SAMPLENETMESSAGES_H
 
 #include <map>
+#include <opentxs/TR1_Wrapper.hpp>
 
 
 enum NetMessageType
 {
     Unknown = 0,
+    ReqDeposit,
     GetMultiSigKey,
     MultiSigKey,
-    RequestDeposit,
     DepositId,
     RequestRelease
 };
@@ -19,7 +20,7 @@ union BtcNetMsg
 {
     struct
     {
-        int MessageType;
+        int32_t MessageType;
         char sender[20];
     };
     char data[NetMsgSize];
@@ -27,13 +28,28 @@ union BtcNetMsg
     BtcNetMsg();    // wow, unions can contain constructors.
 };
 
-#define NetMsgGetKeySize 4 + 20
+#define NetMsgReqDepositSize 4 + 20 + 8
+union BtcNetMsgReqDeposit
+{
+    struct
+    {
+        int32_t MessageType;
+        char sender[20];
+        int64_t amount;
+    };
+    char data[NetMsgSize];
+
+    BtcNetMsgReqDeposit();
+};
+
+#define NetMsgGetKeySize 4 + 20 + 20
 union BtcNetMsgGetKey
 {
     struct
     {
-        int MessageType;
+        int32_t MessageType;
         char sender[20];
+        char client[20];
     };
     char data[NetMsgGetKeySize];
 
@@ -45,10 +61,10 @@ union BtcNetMsgPubKey
 {
     struct
     {
-        int MessageType;
+        int32_t MessageType;
         char sender[20];
         char pubKey[67];    // public keys are usually 66 characters
-        int minSignatures;
+        int32_t minSignatures;
     };
 
     BtcNetMsgPubKey();
@@ -57,6 +73,10 @@ union BtcNetMsgPubKey
 extern std::map<NetMessageType, unsigned int> NetMessageSizes;
 
 void InitNetMessages();
+
+typedef _SharedPtr<BtcNetMsg>           BtcNetMsgPtr;
+typedef _SharedPtr<BtcNetMsgReqDeposit> BtcNetMsgReqDepositPtr;
+typedef _SharedPtr<BtcNetMsgGetKey>     BtcNetMsgGetKeyPtr;
 
 
 #endif // SAMPLENETMESSAGES_H
