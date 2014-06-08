@@ -126,6 +126,10 @@ public:
     // Only works when bitcoind received the blocks containing those transactions.
     BtcUnspentOutputs FindSignableOutputs(const btc::stringList &txIds);
 
+    // Looks through a list of txIds to find everything we can sign and haven't spent yet
+    // only works with own and imported addresses and up-to-date blockchain
+    BtcUnspentOutputs FindUnspentSignableOutputs(const btc::stringList &txIds);
+
     // Creates the signing prerequisites corresponding to those outputs
     BtcSigningPrerequisites GetSigningPrerequisites(const BtcUnspentOutputs &outputs);
 
@@ -137,7 +141,7 @@ public:
     // fee:                     optional, fee in satoshis
     // SigningPreRequisites:    optional, needed for offline transactions or when passing an array of private keys
     // signingKeys:             optional, only sign with those keys
-    BtcSignedTransactionPtr CreateSpendTransaction(const BtcUnspentOutputs &outputs, const int64_t &amount, const std::string &toAddress, const std::string &changeAddress, const int64_t &fee = CoinsToSatoshis(FeeMultiSig));
+    BtcSignedTransactionPtr CreateSpendTransaction(const BtcUnspentOutputs &outputs, const int64_t &amount, const std::string &toAddress, const std::string &changeAddress, const int64_t &fee = FeeMultiSig);
 
     // Creates an unsigned raw transaction that sends all unspent outputs from an address to another
     // txSourceId: transaction that sends funds to sourceAddress
@@ -145,7 +149,7 @@ public:
     // destinationAddress: address to which to withdraw
     // signingAddress: only this address's private key will be used to sign the tx
     // redeemScript: the script needed to withdraw btc from p2sh addresses
-    BtcSignedTransactionPtr WithdrawAllFromAddress(const std::string &txSourceId, const std::string &sourceAddress, const std::string &destinationAddress, const int64_t fee = CoinsToSatoshis(FeeMultiSig), const std::string &redeemScript = "", const std::string &signingAddress = "");
+    BtcSignedTransactionPtr WithdrawAllFromAddress(const std::string &txSourceId, const std::string &sourceAddress, const std::string &destinationAddress, const int64_t fee = FeeMultiSig, const std::string &redeemScript = "", const std::string &signingAddress = "");
 
 
 private:
@@ -157,6 +161,7 @@ typedef _SharedPtr<BtcHelper> BtcHelperPtr;
 
 namespace btc
 {
+    void Sleep(time_t milliSeconds);
     template <typename T>
     std::string to_string(T number);
 }

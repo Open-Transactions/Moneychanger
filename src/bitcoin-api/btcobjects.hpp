@@ -309,7 +309,7 @@ typedef _SharedPtr<BtcAddressInfo>         BtcAddressInfoPtr;
 typedef _SharedPtr<BtcMultiSigAddress>     BtcMultiSigAddressPtr;
 typedef _SharedPtr<BtcBlock>               BtcBlockPtr;
 typedef _SharedPtr<BtcTxIdVout>            BtcTxIdVoutPtr;
-typedef _SharedPtr<BtcTxTargets>            BtcTxTargetPtr;
+typedef _SharedPtr<BtcTxTargets>           BtcTxTargetPtr;
 typedef _SharedPtr<BtcSignedTransaction>   BtcSignedTransactionPtr;
 typedef _SharedPtr<BtcSigningPrerequisite> BtcSigningPrerequisitePtr;
 typedef _SharedPtr<BtcRpcPacket>           BtcRpcPacketPtr;

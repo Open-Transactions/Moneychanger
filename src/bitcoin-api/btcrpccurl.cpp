@@ -150,7 +150,7 @@ bool BtcRpcCurl::ConnectToBitcoin(BitcoinServerPtr server)
     return SendRpc(BtcRpcPacketPtr(new BtcRpcPacket(connectString))) != NULL;
 }
 
-bool BtcRpcCurl::ConnectToBitcoin(const std::string &user, const std::string &password, const std::string &url, int port)
+bool BtcRpcCurl::ConnectToBitcoin(const std::string &user, const std::string &password, const std::string &url, int32_t port)
 {
     return ConnectToBitcoin(BitcoinServerPtr(new BitcoinServer(user, password, url, port)));
 }
@@ -184,7 +184,7 @@ BtcRpcPacketPtr BtcRpcCurl::SendRpc(BtcRpcPacketPtr jsonString)
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, receivedData.get());
 
     /* get verbose debug output please */
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
 
     /*
         If you use POST to a HTTP 1.1 server, you can send data without knowing

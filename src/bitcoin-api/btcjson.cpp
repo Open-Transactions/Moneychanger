@@ -94,9 +94,9 @@ void BtcJson::ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json
     if(replyObj.isNull() || replyObj.empty())
         return;
 
-    Json::StyledWriter writer;
-    printf("Received JSON:\n%s\n", writer.write(replyObj).c_str());
-    std::cout.flush();
+    //Json::StyledWriter writer;
+    //printf("Received JSON:\n%s\n", writer.write(replyObj).c_str());
+    //std::cout.flush();
 
     if(replyObj.isObject())
     {
