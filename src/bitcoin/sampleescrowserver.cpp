@@ -29,7 +29,7 @@ struct SampleEscrowServer::ClientRequest
     Action action;
 };
 
-SampleEscrowServer::SampleEscrowServer(BitcoinServerPtr rpcServer, QObject* parent)
+SampleEscrowServer::SampleEscrowServer(BitcoinServerPtr rpcServer, EscrowPoolPtr pool, QObject* parent)
     :QObject(parent)
 {
     this->rpcServer = rpcServer;
@@ -44,13 +44,12 @@ SampleEscrowServer::SampleEscrowServer(BitcoinServerPtr rpcServer, QObject* pare
 
     this->multiSigAddresses = btc::stringList();
 
-    this->serverPool = EscrowPoolPtr();
+    this->serverPool = pool;
+    this->minSignatures = this->serverPool->sigsRequired;
 
     this->clientList = std::map<std::string, SampleEscrowClientPtr>();
 
     this->modules = BtcModulesPtr(new BtcModules());
-
-    this->minSignatures = 2;
 
     this->minConfirms = BtcHelper::WaitForConfirms;
 
@@ -156,7 +155,8 @@ void SampleEscrowServer::Update()
                 this->multiSigAddress[request->client] = multiSigAddrInfo->address;
                 this->addressToClientMap[multiSigAddrInfo->address] = request->client;
                 this->modules->btcJson->ImportAddress(multiSigAddrInfo->address, "multisigdeposit", false);
-                this->multiSigAddresses.push_back(multiSigAddrInfo->address);
+                if(std::find(this->multiSigAddresses.begin(), this->multiSigAddresses.end(), multiSigAddrInfo->address) == this->multiSigAddresses.end())
+                    this->multiSigAddresses.push_back(multiSigAddrInfo->address);
             }
 
             break;

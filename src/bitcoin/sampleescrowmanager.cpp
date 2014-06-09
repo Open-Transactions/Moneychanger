@@ -24,7 +24,7 @@ SampleEscrowManager::SampleEscrowManager()
 void SampleEscrowManager::OnSimulateEscrowServers()
 {
     // simulate a new pool
-    this->escrowPool = EscrowPoolPtr(new EscrowPool());
+    this->escrowPool = EscrowPoolPtr(new EscrowPool(2));
 
     // give pool a name
     this->escrowPool->poolName = "pool #" + btc::to_string(Modules::poolManager->escrowPools.size());
@@ -39,8 +39,7 @@ void SampleEscrowManager::OnSimulateEscrowServers()
         // admin2..4, rpc port 19011, 19021, 19031
         rpcServer = BitcoinServerPtr(new BitcoinServer(QString("admin"+QString::number(i+1)).toStdString(), "123", "http://127.0.0.1", 19001 + i * 10));
 
-        SampleEscrowServerPtr server = SampleEscrowServerPtr(new SampleEscrowServer(rpcServer));
-        server->serverPool = this->escrowPool;
+        SampleEscrowServerPtr server = SampleEscrowServerPtr(new SampleEscrowServer(rpcServer, this->escrowPool));
         this->escrowPool->AddEscrowServer(server);
     }
 }

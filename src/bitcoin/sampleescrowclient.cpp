@@ -283,12 +283,18 @@ void SampleEscrowClient::RequestRelease(ActionPtr action)
 
 void SampleEscrowClient::CheckBalance(ActionPtr action)
 {
+    if(action->pool->escrowServers.isEmpty())
+        return;
+
     SampleEscrowServerPtr server = action->pool->escrowServers.first();
     this->poolBalanceMap[action->pool->poolName] = server->GetClientBalance(this->clientName);
 }
 
 void SampleEscrowClient::GetPoolTxCount(ActionPtr action)
 {
+    if(action->pool->escrowServers.isEmpty())
+        return;
+
     SampleEscrowServerPtr server = action->pool->escrowServers.first();
     this->poolTxCountMap[action->pool->poolName] = server->GetClientTransactionCount(this->clientName);
 
@@ -299,6 +305,9 @@ void SampleEscrowClient::GetPoolTxCount(ActionPtr action)
 void SampleEscrowClient::FetchPoolTx(ActionPtr action)
 {
     if(this->poolTxCountMap[action->pool->poolName] == this->poolTxMap[action->pool->poolName].size())
+        return;
+
+    if(action->pool->escrowServers.isEmpty())
         return;
 
     SampleEscrowServerPtr server = action->pool->escrowServers.first();

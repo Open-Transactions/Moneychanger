@@ -19,7 +19,7 @@ typedef _SharedPtr<SampleEscrowServer> SampleEscrowServerPtr;
 class EscrowPool
 {
 public:
-    EscrowPool();
+    EscrowPool(int32_t sigsRequired);
 
     // add server to pool
     void AddEscrowServer(SampleEscrowServerPtr server);
@@ -31,6 +31,8 @@ public:
     std::string poolName;
 
     std::map<std::string, SampleEscrowServerPtr> serverNameMap;
+
+    int32_t sigsRequired;
 
 private:
 

@@ -18,7 +18,7 @@
     <rect>
      <x>40</x>
      <y>50</y>
-     <width>241</width>
+     <width>231</width>
      <height>141</height>
     </rect>
    </property>
@@ -41,12 +41,12 @@
     <rect>
      <x>40</x>
      <y>240</y>
-     <width>221</width>
+     <width>101</width>
      <height>27</height>
     </rect>
    </property>
    <property name="text">
-    <string>Add locally simulated pool</string>
+    <string>Add pool</string>
    </property>
   </widget>
   <widget class="QPushButton" name="buttonDelPool">
@@ -78,9 +78,9 @@
   <widget class="QListWidget" name="listServers">
    <property name="geometry">
     <rect>
-     <x>300</x>
+     <x>290</x>
      <y>50</y>
-     <width>221</width>
+     <width>231</width>
      <height>141</height>
     </rect>
    </property>
@@ -249,6 +249,58 @@
    </property>
    <property name="text">
     <string>Request new deposit address</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonAddServer">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>200</y>
+     <width>111</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Add Server</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonRemoveServer">
+   <property name="geometry">
+    <rect>
+     <x>410</x>
+     <y>200</y>
+     <width>111</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Remove server</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBoxSignatures">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>240</y>
+     <width>56</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="value">
+    <number>2</number>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>245</y>
+     <width>101</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>votes required</string>
    </property>
   </widget>
  </widget>

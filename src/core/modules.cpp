@@ -9,30 +9,28 @@
 #include <bitcoin/transactionmanager.hpp>
 #include <bitcoin/sampleescrowclient.hpp>
 #include <bitcoin-api/btcmodules.hpp>
-
-
+#include <gui/widgets/btcconnectdlg.hpp>
 
 _SharedPtr<SampleEscrowManager> Modules::sampleEscrowManager;
 _SharedPtr<PoolManager> Modules::poolManager;
 _SharedPtr<TransactionManager> Modules::transactionManager;
+QPointer<BtcConnectDlg> Modules::connectionManager;
 _SharedPtr<SampleEscrowClient> Modules::sampleEscrowClient;
 _SharedPtr<BtcModules> Modules::btcModules;
+
+bool Modules::shutDown;
 
 
 Modules::Modules()
 {
-    /*
-    Modules::btcRpcQt.reset(new BtcRpc());
-    Modules::btcJsonQt.reset(new BtcJsonQt());
-    Modules::btcInterface.reset(new BtcInterface());
-    */
-    Modules::sampleEscrowManager.reset(new SampleEscrowManager());
-    Modules::poolManager.reset(new PoolManager());
-    Modules::transactionManager.reset(new TransactionManager());
-    Modules::btcModules.reset(new BtcModules());
-    Modules::sampleEscrowClient.reset(new SampleEscrowClient(btcModules));
-    //Modules::mtBitcoin.reset(new MTBitcoin());
-    //btcJsonQt->Initialize();
+    sampleEscrowManager.reset(new SampleEscrowManager());
+    poolManager.reset(new PoolManager());
+    transactionManager.reset(new TransactionManager());
+    connectionManager = new BtcConnectDlg(0);
+    btcModules.reset(new BtcModules());
+    sampleEscrowClient.reset(new SampleEscrowClient(btcModules));
+
+    shutDown = false;
 }
 
 Modules::~Modules()

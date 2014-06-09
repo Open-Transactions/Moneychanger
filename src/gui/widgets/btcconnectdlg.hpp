@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include <bitcoin-api/btcrpccurl.hpp>
+
 namespace Ui
 {
     class BtcConnectDlg;
@@ -15,6 +17,10 @@ class BtcConnectDlg : public QWidget
 public:
     explicit BtcConnectDlg(QWidget *parent = 0);
     ~BtcConnectDlg();
+
+    void show();
+
+    BitcoinServerPtr rpcServer;
 
 private slots:
     void on_buttonConnect_clicked();

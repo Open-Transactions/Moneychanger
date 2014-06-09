@@ -1,6 +1,8 @@
 #include "btcpoolmanager.hpp"
 #include "ui_btcpoolmanager.h"
 
+#include "btcaddpoolserver.hpp"
+
 #include <core/modules.hpp>
 
 #include <bitcoin/poolmanager.hpp>
@@ -37,6 +39,9 @@ void BtcPoolManager::Update()
     std::string poolName = Modules::poolManager->selectedPool;
     SampleEscrowClientPtr client = Modules::sampleEscrowClient;
 
+    if(balanceCounter == 10)
+        SyncPoolList(true);
+
     if(poolName.empty())
         return;
 
@@ -58,7 +63,7 @@ void BtcPoolManager::Update()
     }
 }
 
-void BtcPoolManager::SyncPoolList()
+void BtcPoolManager::SyncPoolList(bool refreshAll)
 {
     btc::stringList poolNames = btc::stringList();
     foreach(EscrowPoolPtr pool, Modules::poolManager->escrowPools)
@@ -72,7 +77,7 @@ void BtcPoolManager::SyncPoolList()
         this->ui->listPools->addItem(QString::fromStdString(poolName));
     }
 
-    if(!Modules::poolManager->selectedPool.empty() && Modules::poolManager->selectedPool != this->ui->labelPoolname->text().toStdString())
+    if(!Modules::poolManager->selectedPool.empty()) // && Modules::poolManager->selectedPool != this->ui->labelPoolname->text().toStdString())
     {
         QStringList serverNames;
         EscrowPoolPtr pool = Modules::poolManager->GetPoolByName(Modules::poolManager->selectedPool);
@@ -89,27 +94,16 @@ void BtcPoolManager::SyncPoolList()
 }
 
 void BtcPoolManager::on_buttonAddSimPool_clicked()
-{
+{  
     // simulate a new pool
-    EscrowPoolPtr escrowPool = EscrowPoolPtr(new EscrowPool());
+    int32_t sigsRequired = this->ui->spinBoxSignatures->value();
+    EscrowPoolPtr escrowPool = EscrowPoolPtr(new EscrowPool(sigsRequired));
 
     // give pool a name
     escrowPool->poolName = "pool #" + btc::to_string(Modules::poolManager->escrowPools.size());
 
     // add pool to global pool list
     Modules::poolManager->AddPool(escrowPool);
-
-    // simulate servers in pool, each using its own instance of bitcoind/bitcoin-qt
-    BitcoinServerPtr rpcServer;
-    for(int i = 1; i < 4; i++)
-    {
-        // admin2..4, rpc port 19011, 19021, 19031
-        rpcServer = BitcoinServerPtr(new BitcoinServer(QString("admin"+QString::number(i+1)).toStdString(), "123", "http://127.0.0.1", 19001 + i * 10));
-
-        SampleEscrowServerPtr server = SampleEscrowServerPtr(new SampleEscrowServer(rpcServer));
-        server->serverPool = escrowPool;
-        escrowPool->AddEscrowServer(server);
-    }
 
     SyncPoolList();
 }
@@ -161,4 +155,10 @@ void BtcPoolManager::on_buttonRequestPayout_clicked()
         return;
 
     Modules::sampleEscrowClient->StartWithdrawal(amount, toAddress, pool);
+}
+
+void BtcPoolManager::on_buttonAddServer_clicked()
+{
+   BtcAddPoolServer* addServerDlg = new BtcAddPoolServer();
+    addServerDlg->show();
 }

@@ -9,11 +9,41 @@ BtcConnectDlg::BtcConnectDlg(QWidget *parent) :
     ui(new Ui::BtcConnectDlg)
 {
     this->ui->setupUi(this);
+
+    this->rpcServer = BitcoinServerPtr();
+
+    if(Modules::connectionManager != NULL && Modules::connectionManager.data() != this)
+    {
+        this->hide();
+        Modules::connectionManager->show();
+    }
+    else
+    {
+        QString url = "http://" + this->ui->editHost->text();
+        int port = this->ui->editPort->text().toInt();
+        QString username = this->ui->editUser->text();
+        QString password = this->ui->editPass->text();
+
+        this->rpcServer = BitcoinServerPtr(new BitcoinServer(username.toStdString(), password.toStdString(), url.toStdString(), port));
+    }
 }
 
 BtcConnectDlg::~BtcConnectDlg()
 {
     delete this->ui;
+}
+
+void BtcConnectDlg::show()
+{
+    if(Modules::connectionManager != NULL && Modules::connectionManager.data() != this)
+    {
+        QWidget::hide();
+        Modules::connectionManager->show();
+    }
+    else
+    {
+        QWidget::show();
+    }
 }
 
 void BtcConnectDlg::on_buttonConnect_clicked()
@@ -22,7 +52,9 @@ void BtcConnectDlg::on_buttonConnect_clicked()
     int port = this->ui->editPort->text().toInt();
     QString username = this->ui->editUser->text();
     QString password = this->ui->editPass->text();
-    if(Modules::btcModules->btcRpc->ConnectToBitcoin(username.toStdString(), password.toStdString(), url.toStdString(), port))
+
+    this->rpcServer = BitcoinServerPtr(new BitcoinServer(username.toStdString(), password.toStdString(), url.toStdString(), port));
+    if(Modules::btcModules->btcRpc->ConnectToBitcoin(this->rpcServer))
         this->ui->labelStatus->setText("Connected");
     else
         this->ui->labelStatus->setText("Failed to connect");
@@ -30,6 +62,7 @@ void BtcConnectDlg::on_buttonConnect_clicked()
 
 void BtcConnectDlg::on_buttonDisconnect_clicked()
 {
-    Modules::btcModules->btcRpc->ConnectToBitcoin(BitcoinServerPtr());
+    this->rpcServer = BitcoinServerPtr();
+    Modules::btcModules->btcRpc->ConnectToBitcoin(this->rpcServer);
     this->ui->labelStatus->setText("Disconnected");
 }

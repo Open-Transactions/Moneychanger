@@ -23,7 +23,7 @@ public:
     ~BtcPoolManager();
 
     // updates the list of pools in the GUI
-    void SyncPoolList();
+    void SyncPoolList(bool refreshAll = false);
 
     QTimerPtr updateTimer;
 
@@ -40,6 +40,8 @@ private slots:
     void on_buttonRequestPayout_clicked();
 
     void on_buttonRequestDeposit_clicked();
+
+    void on_buttonAddServer_clicked();
 
 private:
     Ui::BtcPoolManager *ui;

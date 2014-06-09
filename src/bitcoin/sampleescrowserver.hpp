@@ -27,7 +27,7 @@ class SampleEscrowServer : public QObject
 {
     Q_OBJECT
 public:
-    SampleEscrowServer(BitcoinServerPtr rpcServer, QObject* parent = NULL);
+    SampleEscrowServer(BitcoinServerPtr rpcServer, EscrowPoolPtr pool, QObject* parent = NULL);
     ~SampleEscrowServer();
 
     virtual void ClientConnected(SampleEscrowClient* client);
@@ -38,12 +38,8 @@ public:
     // returns the multisig address to deposit to
     virtual std::string RequestDepositAddress(const std::string &client);
 
-    virtual std::string CreatePubKey(const std::string &client);
-
     // called by other servers in the pool so they get eachothers' public keys for multi-sig
     virtual std::string GetPubKey(const std::string &client);
-
-    virtual void AddPubKey(const std::string &client, const std::string &key);
 
     virtual int64_t GetClientBalance(const std::string& client);
 
@@ -105,11 +101,14 @@ protected:
     ClientRequests clientRequests;
 
 private:
+    virtual std::string CreatePubKey(const std::string &client);
+    virtual void AddPubKey(const std::string &client, const std::string &key);
+
     BitcoinServerPtr rpcServer;     // login info for bitcoin-qt rpc
 
     BtcModulesPtr modules;
 
-    int minSignatures;          // minimum required signatures
+    int32_t minSignatures;          // minimum required signatures
 
     int minConfirms;            // minimum required confirmations
 

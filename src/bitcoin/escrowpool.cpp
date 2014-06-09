@@ -7,11 +7,13 @@
 #include <bitcoin/sampleescrowserver.hpp>
 
 
-EscrowPool::EscrowPool()
+EscrowPool::EscrowPool(int32_t sigsRequired)
 {
     this->escrowServers = QList<SampleEscrowServerPtr>();
 
     this->poolName = "unnamed";
+
+    this->sigsRequired = sigsRequired;
 
     this->serverNameMap = std::map<std::string, SampleEscrowServerPtr>();
 }
