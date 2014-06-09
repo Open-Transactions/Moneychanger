@@ -4,6 +4,10 @@
 
 #include <core/modules.hpp>
 #include <bitcoin-api/btcmodules.hpp>
+#include <bitcoin/sampleescrowclient.hpp>
+#include <bitcoin/poolmanager.hpp>
+
+#include <QTimer>
 
 BtcTransactionInfo* infoWindow = NULL;
 
@@ -12,6 +16,11 @@ BtcTransactionManager::BtcTransactionManager(QWidget *parent) :
     ui(new Ui::BtcTransactionManager)
 {
     this->ui->setupUi(this);
+
+    this->updateTimer = QTimerPtr(new QTimer(parent));
+    updateTimer->setInterval(1000);
+    updateTimer->start();
+    connect(updateTimer.get(), SIGNAL(timeout()), this, SLOT(Update()));
 }
 
 BtcTransactionManager::~BtcTransactionManager()
@@ -19,10 +28,38 @@ BtcTransactionManager::~BtcTransactionManager()
     delete ui;
 }
 
+int refreshTransactionsCount = 1;
+int refreshAllCount = 1;
+void BtcTransactionManager::Update()
+{
+    std::string poolName = Modules::poolManager->selectedPool;
+    SampleEscrowClientPtr client = Modules::sampleEscrowClient;
+
+    if(refreshTransactionsCount-- == 0)
+    {
+        refreshTransactionsCount = 15;
+        client->CheckPoolTransactions(Modules::poolManager->GetPoolByName(poolName));
+    }
+
+    if(static_cast<uint32_t>(this->ui->tableTxPool->rowCount()) < client->poolTxCountMap[poolName])
+    {
+            RefreshPoolTransactions();
+    }
+    else if(refreshAllCount-- == 0)
+    {
+        refreshAllCount = 15;
+        RefreshBitcoinTransactions();
+        RefreshPoolTransactions(true);
+    }
+}
+
 void BtcTransactionManager::on_buttonRefresh_clicked()
 {
+    if(!Modules::poolManager->selectedPool.empty())
+        Modules::sampleEscrowClient->CheckPoolTransactions(Modules::poolManager->GetPoolByName(Modules::poolManager->selectedPool));
+
     RefreshBitcoinTransactions();
-    RefreshPoolTransactions();
+    RefreshPoolTransactions(true);
 }
 
 void BtcTransactionManager::RefreshBitcoinTransactions()
@@ -71,12 +108,75 @@ void BtcTransactionManager::RefreshBitcoinTransactions()
         // txid
         item = new QTableWidgetItem(QString::fromStdString(tx->TxId));
         this->ui->tableTxBtc->setItem(row, column++, item);
+
+        // involves watchonly
+        item = new QTableWidgetItem(QString(tx->Details[0]->involvesWatchonly ? "true" : "false"));
+        this->ui->tableTxBtc->setItem(row, column++, item);
     }
 }
 
-void BtcTransactionManager::RefreshPoolTransactions()
+void BtcTransactionManager::RefreshPoolTransactions(bool refreshAll)
 {
+    std::string poolName = Modules::poolManager->selectedPool;
+    SampleEscrowClientPtr client = Modules::sampleEscrowClient;
 
+    if(poolName.empty())
+        return;
+
+    SampleEscrowTransactions::iterator txIter;
+
+    if(refreshAll)
+    {
+        for(txIter = client->poolTxMap[poolName].begin(); txIter != client->poolTxMap[poolName].end(); txIter++)
+        {
+            (*txIter)->CheckTransaction(BtcHelper::WaitForConfirms);
+        }
+    }
+
+    this->ui->tableTxPool->setRowCount(0);
+
+    for(SampleEscrowClient::PoolTxMap::iterator i = client->poolTxMap.begin(); i != client->poolTxMap.end(); i++)
+    {
+        for(txIter = i->second.begin(); txIter != i->second.end(); txIter++)
+        {
+            SampleEscrowTransactionPtr tx = (*txIter);
+
+            int column = 0;
+            this->ui->tableTxPool->insertRow(0);
+
+            QString status;
+            switch (tx->status)
+            {
+            case SampleEscrowTransaction::Successfull:
+                status = "Successful";
+                break;
+            case SampleEscrowTransaction::Pending:
+                status = "Pending";
+                break;
+            case SampleEscrowTransaction::NotStarted:
+                status = "Not started";
+            case SampleEscrowTransaction::Failed:
+                status = "Failed";
+                break;
+            }
+
+            // status
+            this->ui->tableTxPool->setItem(0, column++, new QTableWidgetItem(status));
+
+            // type
+            QString type = tx->type == SampleEscrowTransaction::Deposit ? "Deposit" : "Release";
+            this->ui->tableTxPool->setItem(0, column++, new QTableWidgetItem(type));
+
+            // amount
+            this->ui->tableTxPool->setItem(0, column++, new QTableWidgetItem(QString::number(tx->amountToSend)));
+
+            // pool
+            this->ui->tableTxPool->setItem(0, column++, new QTableWidgetItem(QString::fromStdString(i->first)));
+
+            // txid
+            this->ui->tableTxPool->setItem(0, column++, new QTableWidgetItem(QString::fromStdString(tx->txId)));
+        }
+    }
 }
 
 void BtcTransactionManager::on_buttonSearchTx_clicked()
@@ -98,6 +198,17 @@ void BtcTransactionManager::on_tableTxBtc_currentCellChanged(int currentRow, int
 {
     // get txid from 6th column:
     QTableWidgetItem* txIdItem = this->ui->tableTxBtc->item(currentRow, 5);
+    if(txIdItem == NULL)
+        return;
+
+    QString txId = txIdItem->text();
+    this->ui->editSearchTx->setText(txId);
+}
+
+void BtcTransactionManager::on_tableTxPool_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
+{
+    // get txid from 6th column:
+    QTableWidgetItem* txIdItem = this->ui->tableTxPool->item(currentRow, 4);
     if(txIdItem == NULL)
         return;
 

@@ -23,12 +23,6 @@ public:
 private slots:
     void on_buttonSend_clicked();
 
-    void OnPoolListUpdate();
-
-    void on_buttonRefresh_clicked();
-
-    void on_editAddress_textEdited(const QString &arg1);
-
     void on_buttonFindOutputs_clicked();
 
     void on_buttonCreateRawTx_clicked();

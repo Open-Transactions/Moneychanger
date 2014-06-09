@@ -12,8 +12,9 @@
 class SampleEscrowManager;
 class PoolManager; // has a list of all available pools
 class TransactionManager; // has a list of pending and finished transactions
-class BtcModules;
 class BtcConnectionManager;
+class SampleEscrowClient;
+class BtcModules;
 //class MTBitcoin;
 
 class Modules
@@ -24,11 +25,12 @@ public:
 
     // TODO: _maybe_ overload the :: operator to check if the pointer isn't NULL
     // and maybe use QSharedPointer?
-    static QScopedPointer<SampleEscrowManager> sampleEscrowManager;
-    static QScopedPointer<PoolManager> poolManager;
-    static QScopedPointer<TransactionManager> transactionManager;
-    static QScopedPointer<BtcModules> btcModules;
-    static QScopedPointer<BtcConnectionManager> connectionManager;
+    static _SharedPtr<SampleEscrowManager> sampleEscrowManager;
+    static _SharedPtr<PoolManager> poolManager;
+    static _SharedPtr<TransactionManager> transactionManager;
+    static _SharedPtr<BtcConnectionManager> connectionManager;
+    static _SharedPtr<SampleEscrowClient> sampleEscrowClient;
+    static _SharedPtr<BtcModules> btcModules;
     //static QScopedPointer<MTBitcoin> mtBitcoin;
 };
 

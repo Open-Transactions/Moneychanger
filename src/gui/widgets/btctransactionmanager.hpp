@@ -7,6 +7,9 @@ namespace Ui {
 class BtcTransactionManager;
 }
 
+class QTimer;
+typedef _SharedPtr<QTimer> QTimerPtr;
+
 class BtcTransactionManager : public QWidget
 {
     Q_OBJECT
@@ -22,11 +25,18 @@ private slots:
 
     void on_tableTxBtc_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
 
+    void on_tableTxPool_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
+
 private:
     void RefreshBitcoinTransactions();
-    void RefreshPoolTransactions();
+    void RefreshPoolTransactions(bool refreshAll = false);
 
     Ui::BtcTransactionManager *ui;
+
+    QTimerPtr updateTimer;
+
+public slots:
+    void Update();
 };
 
 #endif // BTCTRANSACTIONMANAGER_H

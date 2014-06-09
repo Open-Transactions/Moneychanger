@@ -52,6 +52,11 @@
      <string>Transaction ID</string>
     </property>
    </column>
+   <column>
+    <property name="text">
+     <string>Involves watchonly</string>
+    </property>
+   </column>
   </widget>
   <widget class="QLabel" name="label">
    <property name="geometry">
@@ -88,6 +93,31 @@
      <height>211</height>
     </rect>
    </property>
+   <column>
+    <property name="text">
+     <string>Status</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Type</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Amount</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Pool</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Transaction ID</string>
+    </property>
+   </column>
   </widget>
   <widget class="QPushButton" name="buttonRefresh">
    <property name="geometry">

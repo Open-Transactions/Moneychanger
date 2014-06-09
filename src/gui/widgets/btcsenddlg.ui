@@ -16,9 +16,9 @@
   <widget class="QDoubleSpinBox" name="spinBoxAmount">
    <property name="geometry">
     <rect>
-     <x>160</x>
-     <y>165</y>
-     <width>101</width>
+     <x>240</x>
+     <y>110</y>
+     <width>131</width>
      <height>27</height>
     </rect>
    </property>
@@ -38,8 +38,8 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>170</y>
+     <x>120</x>
+     <y>110</y>
      <width>111</width>
      <height>17</height>
     </rect>
@@ -48,25 +48,12 @@
     <string>Amount to send:</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>45</x>
-     <y>25</y>
-     <width>141</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Pool to deposit to:</string>
-   </property>
-  </widget>
   <widget class="QPushButton" name="buttonSend">
    <property name="geometry">
     <rect>
-     <x>410</x>
-     <y>165</y>
-     <width>101</width>
+     <x>320</x>
+     <y>160</y>
+     <width>141</width>
      <height>27</height>
     </rect>
    </property>
@@ -97,35 +84,12 @@
     <string>Transaction ID:</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="buttonRefresh">
-   <property name="geometry">
-    <rect>
-     <x>190</x>
-     <y>20</y>
-     <width>93</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Refresh</string>
-   </property>
-  </widget>
-  <widget class="QListWidget" name="listPools">
-   <property name="geometry">
-    <rect>
-     <x>40</x>
-     <y>55</y>
-     <width>291</width>
-     <height>91</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QLineEdit" name="editAddress">
    <property name="geometry">
     <rect>
-     <x>390</x>
-     <y>65</y>
-     <width>321</width>
+     <x>40</x>
+     <y>70</y>
+     <width>331</width>
      <height>27</height>
     </rect>
    </property>
@@ -133,24 +97,11 @@
     <string/>
    </property>
   </widget>
-  <widget class="QLabel" name="label_4">
-   <property name="geometry">
-    <rect>
-     <x>360</x>
-     <y>85</y>
-     <width>21</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>or</string>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_5">
    <property name="geometry">
     <rect>
-     <x>390</x>
-     <y>35</y>
+     <x>50</x>
+     <y>40</y>
      <width>161</width>
      <height>20</height>
     </rect>
@@ -178,7 +129,7 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>-227</y>
+      <y>0</y>
       <width>751</width>
       <height>1509</height>
      </rect>
@@ -530,7 +481,7 @@
    <property name="geometry">
     <rect>
      <x>390</x>
-     <y>115</y>
+     <y>70</y>
      <width>321</width>
      <height>27</height>
     </rect>
@@ -543,7 +494,7 @@
    <property name="geometry">
     <rect>
      <x>390</x>
-     <y>95</y>
+     <y>40</y>
      <width>62</width>
      <height>17</height>
     </rect>
@@ -555,9 +506,9 @@
   <widget class="QDoubleSpinBox" name="spinBoxFee">
    <property name="geometry">
     <rect>
-     <x>300</x>
-     <y>165</y>
-     <width>101</width>
+     <x>430</x>
+     <y>110</y>
+     <width>111</width>
      <height>27</height>
     </rect>
    </property>
@@ -574,8 +525,8 @@
   <widget class="QLabel" name="label_16">
    <property name="geometry">
     <rect>
-     <x>270</x>
-     <y>170</y>
+     <x>390</x>
+     <y>110</y>
      <width>31</width>
      <height>17</height>
     </rect>
@@ -587,14 +538,10 @@
   <zorder>scrollArea</zorder>
   <zorder>spinBoxAmount</zorder>
   <zorder>label</zorder>
-  <zorder>label_2</zorder>
   <zorder>buttonSend</zorder>
   <zorder>editTxid</zorder>
   <zorder>label_3</zorder>
-  <zorder>buttonRefresh</zorder>
-  <zorder>listPools</zorder>
   <zorder>editAddress</zorder>
-  <zorder>label_4</zorder>
   <zorder>label_5</zorder>
   <zorder>lineEdit</zorder>
   <zorder>label_14</zorder>
