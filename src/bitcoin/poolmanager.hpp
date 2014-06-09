@@ -23,14 +23,14 @@ public:
 
     void RemovePool(EscrowPoolPtr poolToRemove);
 
-    EscrowPoolPtr GetPoolByName(const QString &);
+    EscrowPoolPtr GetPoolByName(const std::string &);
 
     QList<EscrowPoolPtr> escrowPools;   // available pools
 
-    QString selectedPool;
+    std::string selectedPool;
 
 private:
-    QMap<QString, EscrowPoolPtr> poolNameMap;
+    QMap<std::string, EscrowPoolPtr> poolNameMap;
 };
 
 typedef _SharedPtr<PoolManager> PoolManagerPtr;

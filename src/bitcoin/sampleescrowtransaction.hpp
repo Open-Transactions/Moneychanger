@@ -43,6 +43,12 @@ public:
         Spent
     }status;
 
+    enum Type
+    {
+        Deposit,
+        Release
+    }type;
+
     //SampleEscrowClientPtr client;
 
 private:

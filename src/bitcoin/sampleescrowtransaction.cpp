@@ -14,6 +14,8 @@ SampleEscrowTransaction::SampleEscrowTransaction(int64_t amountToSend, BtcModule
     this->targetAddr = "";
     this->confirmations = 0;
 
+    this->type = SampleEscrowTransaction::Deposit;
+
     this->modules = modules;
 }
 

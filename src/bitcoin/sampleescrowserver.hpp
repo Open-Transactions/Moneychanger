@@ -45,7 +45,11 @@ public:
 
     virtual void AddPubKey(const std::string &client, const std::string &key);
 
-    //virtual void OnReceivePubKey(const std::string &sender, const std::string &key);
+    virtual int64_t GetClientBalance(const std::string& client);
+
+    virtual int32_t GetClientTransactionCount(const std::string &client);
+
+    virtual SampleEscrowTransactionPtr GetClientTransaction(const std::string &client, u_int32_t txIndex);
 
     virtual bool RequestEscrowWithdrawal(const std::string &client, const int64_t &amount, const std::string &toAddress);
 
@@ -80,18 +84,19 @@ public:
     typedef std::map<std::string, std::string> AddressClientMap;
     AddressClientMap addressToClientMap;    // maps clients to their multisig addresses
 
+    btc::stringList multiSigAddresses;
+
     //BtcMultiSigAddressPtr multiSigAddrInfo; // info required to withdraw from the address
 
     //SampleEscrowTransactionPtr transactionDeposit;      // info about deposit
     //SampleEscrowTransactionPtr transactionWithdrawal;   // info about withdrawal
 
 protected:
-    void Initialize(const std::string& client);
+    void InitializeClient(const std::string& client);
     void AddClientDeposit(const std::string &client, SampleEscrowTransactionPtr transaction);
     void RemoveClientDeposit(const std::string &client, SampleEscrowTransactionPtr transaction);
     void CheckTransactions();
     SampleEscrowTransactionPtr FindClientTransaction(const std::string &targetAddress, const std::string &txId, const std::string &client);
-    int64_t GetClientBalance(const std::string& client);
     BtcUnspentOutputs GetOutputsToSpend(const std::string &client, const int64_t &amountToSpend);
 
     struct ClientRequest;
@@ -110,7 +115,8 @@ private:
 
     std::map<std::string, SampleEscrowClientPtr> clientList;
     typedef std::map<std::string, SampleEscrowTransactions> ClientBalanceMap;
-    ClientBalanceMap clientBalances;  // list of transactions
+    ClientBalanceMap clientBalancesMap;  // list of deposit transactions
+    ClientBalanceMap clientHistoryMap;     // list of all transactions
 
     QTimer* updateTimer;
     QMutex* mutex;

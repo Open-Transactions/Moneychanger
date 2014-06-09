@@ -8,8 +8,8 @@
 PoolManager::PoolManager()
 {
     this->escrowPools = QList<EscrowPoolPtr>();
-    this->selectedPool = QString();
-    this->poolNameMap = QMap<QString, EscrowPoolPtr>();
+    this->selectedPool = std::string();
+    this->poolNameMap = QMap<std::string, EscrowPoolPtr>();
 }
 
 void PoolManager::AddPool(EscrowPoolPtr pool)
@@ -32,14 +32,14 @@ void PoolManager::RemovePool(EscrowPoolPtr poolToRemove)
     this->escrowPools.removeOne(poolToRemove);
     this->poolNameMap.remove(poolToRemove->poolName);
     if(this->selectedPool == poolToRemove->poolName)
-        this->selectedPool = QString();
+        this->selectedPool = std::string();
 
     // TODO: emit signal
 }
 
-EscrowPoolPtr PoolManager::GetPoolByName(const QString& name)
+EscrowPoolPtr PoolManager::GetPoolByName(const std::string& name)
 {
-    QMap<QString, EscrowPoolPtr>::const_iterator poolIter = this->poolNameMap.find(name);
+    QMap<std::string, EscrowPoolPtr>::const_iterator poolIter = this->poolNameMap.find(name);
     if(poolIter != this->poolNameMap.end())
         return poolIter.value();
 

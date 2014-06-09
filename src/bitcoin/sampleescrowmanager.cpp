@@ -27,7 +27,7 @@ void SampleEscrowManager::OnSimulateEscrowServers()
     this->escrowPool = EscrowPoolPtr(new EscrowPool());
 
     // give pool a name
-    this->escrowPool->poolName = "pool #" + QString::number(Modules::poolManager->escrowPools.size());
+    this->escrowPool->poolName = "pool #" + btc::to_string(Modules::poolManager->escrowPools.size());
 
     // add pool to global pool list
     Modules::poolManager->AddPool(this->escrowPool);
@@ -68,11 +68,8 @@ void SampleEscrowManager::OnInitializeEscrow(BtcGuiTest* btcGuiTest)
     client->StartDeposit(amountSatoshis, this->escrowPool); 
 }
 
-void SampleEscrowManager::OnRequestWithdrawal(BtcGuiTest *BtcGuiTest)
+void SampleEscrowManager::OnRequestWithdrawal(BtcGuiTest *btcGuiTest)
 {
-    if(client->transactionDeposit->status == SampleEscrowTransaction::Successfull)
-    {
-        // successfully deposited funds, so we can withdraw them now
-        client->StartWithdrawal(client->transactionDeposit->amountToSend - BtcHelper::FeeMultiSig);
-    }
+    std::string receiveAddress = Modules::btcModules->mtBitcoin->GetNewAddress("from pool");
+    client->StartWithdrawal(BtcHelper::CoinsToSatoshis(btcGuiTest->GetAmountToSend()) - BtcHelper::FeeMultiSig, receiveAddress, this->escrowPool);
 }

@@ -28,7 +28,7 @@ public:
 
     QList<SampleEscrowServerPtr> escrowServers;     // servers that are part of this pool
 
-    QString poolName;
+    std::string poolName;
 
     std::map<std::string, SampleEscrowServerPtr> serverNameMap;
 
