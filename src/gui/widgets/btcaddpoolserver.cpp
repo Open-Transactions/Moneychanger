@@ -4,6 +4,7 @@
 #include "btcconnectdlg.hpp"
 #include "btcpoolmanager.hpp"
 
+#include <bitcoin/sampleescrowserver.hpp>
 //#include <bitcoin/sampleescrowserverzmq.hpp>
 #include <bitcoin/poolmanager.hpp>
 

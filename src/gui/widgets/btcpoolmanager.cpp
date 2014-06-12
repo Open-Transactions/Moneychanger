@@ -6,7 +6,8 @@
 #include <core/modules.hpp>
 
 #include <bitcoin/poolmanager.hpp>
-#include <bitcoin/sampleescrowserverzmq.hpp>
+#include <bitcoin/sampleescrowserver.hpp>
+//#include <bitcoin/sampleescrowserverzmq.hpp>
 #include <bitcoin/sampleescrowclient.hpp>
 
 #include <QTimer>
@@ -174,6 +175,7 @@ void BtcPoolManager::on_buttonDelPool_clicked()
 
 void BtcPoolManager::on_buttonDeleteme_clicked()
 {
+    /*
     std::vector<BitcoinServerPtr> rpcServers = std::vector<BitcoinServerPtr>();
     std::vector<EscrowPoolPtr> pools = std::vector<EscrowPoolPtr>();
     std::vector<SampleEscrowServerZmqPtr> masterServers = std::vector<SampleEscrowServerZmqPtr>();
@@ -215,6 +217,7 @@ void BtcPoolManager::on_buttonDeleteme_clicked()
     Modules::poolManager->AddPool(clientPool);
 
     SyncPoolList();   
+    */
 }
 
 
