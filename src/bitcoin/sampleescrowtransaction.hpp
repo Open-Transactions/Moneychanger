@@ -12,12 +12,9 @@
 
 #include <string>
 
-//#include "sampleescrowclient.h"
-//#include "sampleescrowserver.h"
-
 
 // this class holds some information about pending transactions
-// to save/restore pending transactions we need txId, targetAddr and amountToSend
+// TODO: inherit from BtcUnspentOutput
 class SampleEscrowTransaction
 {
 public:
@@ -31,7 +28,9 @@ public:
     int64_t amountToSend;
     std::string targetAddr;             // address to which funds are sent
     std::string txId;                   // id of the pending transaction
-    int64_t confirmations;              // confirmations of pending transaction
+    int32_t vout;                       // output ID, used by the sample server
+    std::string scriptPubKey;
+    int32_t confirmations;              // confirmations of pending transaction
 
     enum SUCCESS
     {
@@ -49,11 +48,7 @@ public:
         Release
     }type;
 
-    //SampleEscrowClientPtr client;
-
-private:
     BtcModulesPtr modules;
-    //QList<SampleEscrowServerPtr> servers;
 };
 
 typedef _SharedPtr<SampleEscrowTransaction> SampleEscrowTransactionPtr;

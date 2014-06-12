@@ -168,7 +168,7 @@ void BtcTransactionManager::RefreshPoolTransactions(bool refreshAll)
             this->ui->tableTxPool->setItem(0, column++, new QTableWidgetItem(type));
 
             // amount
-            this->ui->tableTxPool->setItem(0, column++, new QTableWidgetItem(QString::number(tx->amountToSend)));
+            this->ui->tableTxPool->setItem(0, column++, new QTableWidgetItem(QString::number(BtcHelper::SatoshisToCoins(tx->amountToSend))));
 
             // pool
             this->ui->tableTxPool->setItem(0, column++, new QTableWidgetItem(QString::fromStdString(i->first)));

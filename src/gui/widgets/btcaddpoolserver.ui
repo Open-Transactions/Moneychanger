@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>http://127.0.0.1</string>
+    <string>127.0.0.1</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="editPort">

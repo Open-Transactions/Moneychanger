@@ -45,7 +45,7 @@ public:
     PoolBalanceMap poolBalanceMap;    
     typedef std::map<std::string, SampleEscrowTransactions> PoolTxMap;
     PoolTxMap poolTxMap;
-    typedef std::map<std::string, uint32_t> PoolTxCountMap;
+    typedef std::map<std::string, u_int64_t> PoolTxCountMap;
     PoolTxCountMap poolTxCountMap;
 
     std::string clientName;

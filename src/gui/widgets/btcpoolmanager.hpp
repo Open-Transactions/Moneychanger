@@ -6,6 +6,7 @@
 #include <opentxs/TR1_Wrapper.hpp>
 
 #include <QWidget>
+#include <QListWidgetItem>
 
 class QTimer;
 typedef _SharedPtr<QTimer> QTimerPtr;
@@ -35,13 +36,17 @@ private slots:
 
     void on_buttonRefreshPools_clicked();
 
-    void on_listPools_clicked(const QModelIndex &index);
-
     void on_buttonRequestPayout_clicked();
 
     void on_buttonRequestDeposit_clicked();
 
     void on_buttonAddServer_clicked();
+
+    void on_buttonDelPool_clicked();
+
+    void on_buttonDeleteme_clicked();
+
+    void on_listPools_itemClicked(QListWidgetItem *item);
 
 private:
     Ui::BtcPoolManager *ui;

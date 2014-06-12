@@ -6,7 +6,7 @@
 #include <core/modules.hpp>
 
 #include <bitcoin/poolmanager.hpp>
-#include <bitcoin/sampleescrowserver.hpp>
+#include <bitcoin/sampleescrowserverzmq.hpp>
 #include <bitcoin/sampleescrowclient.hpp>
 
 #include <QTimer>
@@ -65,6 +65,8 @@ void BtcPoolManager::Update()
 
 void BtcPoolManager::SyncPoolList(bool refreshAll)
 {
+    int currentRow = this->ui->listPools->currentRow();
+
     btc::stringList poolNames = btc::stringList();
     foreach(EscrowPoolPtr pool, Modules::poolManager->escrowPools)
     {
@@ -91,6 +93,8 @@ void BtcPoolManager::SyncPoolList(bool refreshAll)
         this->ui->listServers->addItems(serverNames);
         this->ui->labelPoolname->setText(QString::fromStdString(Modules::poolManager->selectedPool));
     }   
+
+    this->ui->listPools->setCurrentRow(currentRow);
 }
 
 void BtcPoolManager::on_buttonAddSimPool_clicked()
@@ -119,13 +123,6 @@ void BtcPoolManager::on_buttonRefreshPools_clicked()
     }
 }
 
-void BtcPoolManager::on_listPools_clicked(const QModelIndex &index)
-{
-    Modules::poolManager->selectedPool = this->ui->listPools->currentItem()->text().toStdString();
-
-    SyncPoolList();
-}
-
 void BtcPoolManager::on_buttonRequestDeposit_clicked()
 {
     // send to pool
@@ -138,7 +135,9 @@ void BtcPoolManager::on_buttonRequestDeposit_clicked()
 
     Modules::sampleEscrowClient->StartDeposit(BtcHelper::FeeMultiSig*2, pool);     // dummy value
 
+    this->lastDepositAddress = std::string();
     this->ui->editDepositAddr->setText(QString::fromStdString("Waiting for deposit address to pool " + pool->poolName));
+
     return;
 }
 
@@ -161,4 +160,67 @@ void BtcPoolManager::on_buttonAddServer_clicked()
 {
    BtcAddPoolServer* addServerDlg = new BtcAddPoolServer();
     addServerDlg->show();
+}
+
+void BtcPoolManager::on_buttonDelPool_clicked()
+{
+    if(Modules::poolManager->selectedPool.empty())
+        return;
+
+    Modules::poolManager->RemovePool(Modules::poolManager->GetPoolByName(Modules::poolManager->selectedPool));
+    SyncPoolList();
+    this->ui->listPools->setCurrentRow(0);
+}
+
+void BtcPoolManager::on_buttonDeleteme_clicked()
+{
+    std::vector<BitcoinServerPtr> rpcServers = std::vector<BitcoinServerPtr>();
+    std::vector<EscrowPoolPtr> pools = std::vector<EscrowPoolPtr>();
+    std::vector<SampleEscrowServerZmqPtr> masterServers = std::vector<SampleEscrowServerZmqPtr>();
+    std::vector<SampleEscrowServerZmqPtr> clientServers = std::vector<SampleEscrowServerZmqPtr>();
+
+    for(int i = 0; i < 4; i++)
+    {
+        BitcoinServerPtr rpcServer = BitcoinServerPtr(new BitcoinServer("admin" + btc::to_string(i+2), "123", "http://127.0.0.1", 19011 + i*10));
+        rpcServers.push_back(rpcServer);
+
+        EscrowPoolPtr pool = EscrowPoolPtr(new EscrowPool(3));
+        pool->poolName = "pool #" + btc::to_string(i);
+        pools.push_back(pool);
+
+        SampleEscrowServerZmqPtr master = SampleEscrowServerZmqPtr(new SampleEscrowServerZmq(rpcServer, pool, 20001 + i));
+        masterServers.push_back(master);
+
+        pool->AddEscrowServer(master);
+
+        Modules::poolManager->AddPool(pool);
+    }
+
+    BitcoinServerPtr rpcEmpty = BitcoinServerPtr();
+    for(int server = 0; server < 4; server++)
+    {
+        for(int pool = 0; pool < 4; pool++)
+        {
+            if(pool != server)
+                pools[pool]->AddEscrowServer(SampleEscrowServerZmqPtr(new SampleEscrowServerZmq(rpcEmpty, pools[pool], "opentxs.mooo.com", 20001 + server, masterServers[pool])));
+        }
+    }
+
+    EscrowPoolPtr clientPool = EscrowPoolPtr(new EscrowPool(3));
+    clientPool->poolName = "client pool";
+    for(int i = 0; i < 4; i++)
+    {
+        clientPool->AddEscrowServer(SampleEscrowServerZmqPtr(new SampleEscrowServerZmq(rpcEmpty, clientPool, "opentxs.mooo.com", 20001 + i)));
+    }
+    Modules::poolManager->AddPool(clientPool);
+
+    SyncPoolList();   
+}
+
+
+void BtcPoolManager::on_listPools_itemClicked(QListWidgetItem *item)
+{
+    Modules::poolManager->selectedPool = item->text().toStdString();
+
+    SyncPoolList();
 }

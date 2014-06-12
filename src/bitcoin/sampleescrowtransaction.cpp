@@ -12,6 +12,8 @@ SampleEscrowTransaction::SampleEscrowTransaction(int64_t amountToSend, BtcModule
     this->status = NotStarted;
     this->txId = "";
     this->targetAddr = "";
+    this->vout = -1;
+    this->scriptPubKey = std::string();
     this->confirmations = 0;
 
     this->type = SampleEscrowTransaction::Deposit;
@@ -21,9 +23,6 @@ SampleEscrowTransaction::SampleEscrowTransaction(int64_t amountToSend, BtcModule
 
 bool SampleEscrowTransaction::SendToTarget()
 {
-    std::printf("sending %f.8 BTC to %s\n", BtcHelper::SatoshisToCoins(this->amountToSend), this->targetAddr.c_str());
-    std::cout.flush();
-
     // send to this address, get transaction id
     this->txId = this->modules->mtBitcoin->SendToAddress(this->targetAddr, this->amountToSend);
 
@@ -59,8 +58,21 @@ void SampleEscrowTransaction::CheckTransaction(int minConfirms)
         return;
 
     // check if transaction has enough confirmations
-    if(this->modules->mtBitcoin->TransactionSuccessfull(this->amountToSend, rawTx, this->targetAddr, minConfirms))
+    if(this->modules->mtBitcoin->TransactionSuccessful(this->amountToSend, rawTx, this->targetAddr, minConfirms))
+    {
         this->status = Successfull;
+        if(this->vout < 0)
+        {
+            for(std::vector<BtcRawTransaction::VOUT>::iterator output = rawTx->outputs.begin(); output != rawTx->outputs.end(); output++)
+            {
+                if(output->addresses[0] == this->targetAddr)
+                {
+                    this->vout = static_cast<int32_t>(output->n);
+                    this->scriptPubKey = output->scriptPubKeyHex;
+                }
+            }
+        }
+    }
     else
     {
         this->status = Pending;

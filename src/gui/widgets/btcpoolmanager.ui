@@ -303,6 +303,19 @@
     <string>votes required</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="buttonDeleteme">
+   <property name="geometry">
+    <rect>
+     <x>390</x>
+     <y>260</y>
+     <width>93</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Testsetup</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

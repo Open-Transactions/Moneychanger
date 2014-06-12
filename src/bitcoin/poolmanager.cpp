@@ -3,6 +3,7 @@
 #endif
 
 #include <bitcoin/poolmanager.hpp>
+#include <bitcoin/sampleescrowserver.hpp>
 
 
 PoolManager::PoolManager()
@@ -29,6 +30,13 @@ void PoolManager::AddPool(EscrowPoolPtr pool)
 
 void PoolManager::RemovePool(EscrowPoolPtr poolToRemove)
 {
+    foreach(SampleEscrowServerPtr server, poolToRemove->escrowServers)
+    {
+        server->shutDown = true;
+        server->serverPool = EscrowPoolPtr();
+        server = SampleEscrowServerPtr();
+    }
+
     this->escrowPools.removeOne(poolToRemove);
     this->poolNameMap.remove(poolToRemove->poolName);
     if(this->selectedPool == poolToRemove->poolName)

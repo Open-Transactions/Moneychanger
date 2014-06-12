@@ -11,6 +11,7 @@
 
 
 // TransactionManager will watch pending transactions in the background and notify on event
+// currently it isn't used
 class TransactionManager
 {
 public:

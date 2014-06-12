@@ -13,13 +13,14 @@
 #include <map>
 
 class SampleEscrowServer;
+class QThread;
 
 typedef _SharedPtr<SampleEscrowServer> SampleEscrowServerPtr;
 
 class EscrowPool
 {
 public:
-    EscrowPool(int32_t sigsRequired);
+    EscrowPool(uint32_t sigsRequired);
 
     // add server to pool
     void AddEscrowServer(SampleEscrowServerPtr server);
@@ -31,8 +32,11 @@ public:
     std::string poolName;
 
     std::map<std::string, SampleEscrowServerPtr> serverNameMap;
+    std::map<std::string, QThread*> serverThreadMap;
 
-    int32_t sigsRequired;
+    uint32_t sigsRequired;
+
+    bool containsHostedServer;
 
 private:
 

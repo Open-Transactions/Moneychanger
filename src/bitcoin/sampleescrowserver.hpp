@@ -9,28 +9,43 @@
 #include <bitcoin/sampleescrowtransaction.hpp>
 
 #include <QObject>
+#include <QThread>
 
 #include _CINTTYPES
 #include _MEMORY
 
 #include <map>
 
-class SampleEscrowClient;
 class QTimer;
 class QMutex;
 
+class SampleEscrowClient;
 typedef _SharedPtr<SampleEscrowClient> SampleEscrowClientPtr;
+
+class CheckTxDaemon : public QObject
+{
+    Q_OBJECT
+
+public:
+    CheckTxDaemon(SampleEscrowServer* master, QObject* parent = NULL);
+public slots:
+    void StartDaemon();
+
+private:
+    SampleEscrowServer* master;
+};
 
 #include <map>
 
 class SampleEscrowServer : public QObject
 {
+    friend class CheckTxDaemon;
     Q_OBJECT
 public:
     SampleEscrowServer(BitcoinServerPtr rpcServer, EscrowPoolPtr pool, QObject* parent = NULL);
     ~SampleEscrowServer();
 
-    virtual void ClientConnected(SampleEscrowClient* client);
+    virtual bool ClientConnected(SampleEscrowClient* client);
 
     // called when someone wants to make a deposit
     virtual bool RequestEscrowDeposit(const std::string &client, const int64_t &amount);
@@ -43,9 +58,9 @@ public:
 
     virtual int64_t GetClientBalance(const std::string& client);
 
-    virtual int32_t GetClientTransactionCount(const std::string &client);
+    virtual u_int64_t GetClientTransactionCount(const std::string &client);
 
-    virtual SampleEscrowTransactionPtr GetClientTransaction(const std::string &client, u_int32_t txIndex);
+    virtual SampleEscrowTransactionPtr GetClientTransaction(const std::string &client, u_int64_t txIndex);
 
     virtual bool RequestEscrowWithdrawal(const std::string &client, const int64_t &amount, const std::string &toAddress);
 
@@ -82,16 +97,13 @@ public:
 
     btc::stringList multiSigAddresses;
 
-    //BtcMultiSigAddressPtr multiSigAddrInfo; // info required to withdraw from the address
-
-    //SampleEscrowTransactionPtr transactionDeposit;      // info about deposit
-    //SampleEscrowTransactionPtr transactionWithdrawal;   // info about withdrawal
+    bool isClient;
+    bool shutDown;
 
 protected:
     void InitializeClient(const std::string& client);
-    void AddClientDeposit(const std::string &client, SampleEscrowTransactionPtr transaction);
+    void AddClientDeposit(const std::string &client, SampleEscrowTransactionPtr transaction, bool oldTx);
     void RemoveClientDeposit(const std::string &client, SampleEscrowTransactionPtr transaction);
-    void CheckTransactions();
     SampleEscrowTransactionPtr FindClientTransaction(const std::string &targetAddress, const std::string &txId, const std::string &client);
     BtcUnspentOutputs GetOutputsToSpend(const std::string &client, const int64_t &amountToSpend);
 
@@ -100,13 +112,13 @@ protected:
     typedef std::list<ClientRequestPtr> ClientRequests;
     ClientRequests clientRequests;
 
+    BtcModulesPtr modules;
+
 private:
     virtual std::string CreatePubKey(const std::string &client);
     virtual void AddPubKey(const std::string &client, const std::string &key);
 
     BitcoinServerPtr rpcServer;     // login info for bitcoin-qt rpc
-
-    BtcModulesPtr modules;
 
     int32_t minSignatures;          // minimum required signatures
 
@@ -117,11 +129,12 @@ private:
     ClientBalanceMap clientBalancesMap;  // list of deposit transactions
     ClientBalanceMap clientHistoryMap;     // list of all transactions
 
-    QTimer* updateTimer;
     QMutex* mutex;
 
 public slots:
-    void Update();
+    virtual void Update();
+    void StartServerLoop();
+    void CheckTransactions();
 };
 
 typedef _SharedPtr<SampleEscrowServer> SampleEscrowServerPtr;
