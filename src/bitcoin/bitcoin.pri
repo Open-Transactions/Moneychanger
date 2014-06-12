@@ -3,7 +3,6 @@ HEADERS += \
     $${PWD}/escrowpool.hpp \
     $${PWD}/poolmanager.hpp \
     $${PWD}/sampleescrowclient.hpp \
-    $${PWD}/sampleescrowclientzmq.hpp \
     $${PWD}/sampleescrowmanager.hpp \
     $${PWD}/sampleescrowserver.hpp \
     $${PWD}/sampleescrowserverzmq.hpp \
@@ -16,7 +15,6 @@ SOURCES += \
     $${PWD}/escrowpool.cpp \
     $${PWD}/poolmanager.cpp \
     $${PWD}/sampleescrowclient.cpp \
-    $${PWD}/sampleescrowclientzmq.cpp \
     $${PWD}/sampleescrowmanager.cpp \
     $${PWD}/sampleescrowserver.cpp \
     $${PWD}/sampleescrowserverzmq.cpp \
