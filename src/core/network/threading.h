@@ -13,6 +13,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <functional>
+#include <atomic>
 #define OT_THREAD std::thread
 #define OT_MUTEX(MT) std::mutex MT
 #define INSTANTIATE_MLOCK(MT) std::unique_lock<std::mutex>mlock(MT)
