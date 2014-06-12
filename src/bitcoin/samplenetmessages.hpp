@@ -8,6 +8,7 @@
 enum NetMessageType
 {
     Unknown = 0,
+    Ping,
     Connect,
     ReqDeposit,
     DepositReply,
@@ -27,24 +28,27 @@ enum NetMessageType
     SignedTx
 };
 
-#define NetMsgSize 4 + 20
+
+// note: on my system if if an int64 follows an int32 the int32 will still take 8 bytes of memory
+
+#define NetMsgSize 8
 union BtcNetMsg
 {
     struct
     {
-        int32_t MessageType;
+        int64_t MessageType;
     };
     char data[NetMsgSize];
 
     BtcNetMsg();    // wow, unions can contain constructors.
 };
 
-#define NetMsgConnectSize 4 + 20
+#define NetMsgConnectSize 8 + 20
 union BtcNetMsgConnect
 {
     struct
     {
-        int32_t MessageType;
+        int64_t MessageType;
         char client[20];
     };
     char data[NetMsgConnectSize];
@@ -52,26 +56,26 @@ union BtcNetMsgConnect
     BtcNetMsgConnect();
 };
 
-#define NetMsgReqDepositSize 4 + 20 + 8
+#define NetMsgReqDepositSize 8 + 8 + 20
 union BtcNetMsgReqDeposit
 {
     struct
     {
-        int32_t MessageType;
-        char client[20];
+        int64_t MessageType;
         int64_t amount;
+        char client[20];
     };
-    char data[NetMsgSize];
+    char data[NetMsgReqDepositSize];
 
     BtcNetMsgReqDeposit();
 };
 
-#define NetMsgDepositReplySize 4 + 1
+#define NetMsgDepositReplySize 8 + 1
 union BtcNetMsgDepositReply
 {
     struct
     {
-        int32_t MessageType;
+        int64_t MessageType;
         int8_t accepted;
     };
     char data[NetMsgDepositReplySize];
@@ -79,12 +83,12 @@ union BtcNetMsgDepositReply
     BtcNetMsgDepositReply();
 };
 
-#define NetMsgGetDepositAddrSize 4 + 20
+#define NetMsgGetDepositAddrSize 8 + 20
 union BtcNetMsgGetDepositAddr
 {
     struct
     {
-        int32_t MessageType;
+        int64_t MessageType;
         char client[20];
     };
     char data[NetMsgGetDepositAddrSize];
@@ -92,25 +96,25 @@ union BtcNetMsgGetDepositAddr
     BtcNetMsgGetDepositAddr();
 };
 
-#define NetMsgDepositAddrSize 4 + 100
+#define NetMsgDepositAddrSize 8 + 72
 union BtcNetMsgDepositAddr
 {
     struct
     {
-        int32_t MessageType;
-        char address[100];
+        int64_t MessageType;
+        char address[72];
     };
     char data[NetMsgDepositAddrSize];
 
     BtcNetMsgDepositAddr();
 };
 
-#define NetMsgGetKeySize 4 + 20
+#define NetMsgGetKeySize 8 + 20
 union BtcNetMsgGetKey
 {
     struct
     {
-        int32_t MessageType;
+        int64_t MessageType;
         char client[20];
     };
     char data[NetMsgGetKeySize];
@@ -118,26 +122,26 @@ union BtcNetMsgGetKey
     BtcNetMsgGetKey();
 };
 
-#define NetMsgPubKeySize 4 + 200 + 4
+#define NetMsgPubKeySize 8 + 200 + 8
 union BtcNetMsgPubKey
 {
     struct
     {
-        int32_t MessageType;
+        int64_t MessageType;
         char pubKey[200];    // public keys are usually 66 characters
-        int32_t minSignatures;
+        int64_t minSignatures;
     };
     char data[NetMsgPubKeySize];
 
     BtcNetMsgPubKey();
 };
 
-#define NetMsgGetBalanceSize 4 + 20
+#define NetMsgGetBalanceSize 8 + 20
 union BtcNetMsgGetBalance
 {
     struct
     {
-        int32_t MessageType;
+        int64_t MessageType;
         char client[20];
     };
     char data[NetMsgGetBalanceSize];
@@ -145,12 +149,12 @@ union BtcNetMsgGetBalance
     BtcNetMsgGetBalance();
 };
 
-#define NetMsgBalanceSize 4 + 8
+#define NetMsgBalanceSize 8 + 8
 union BtcNetMsgBalance
 {
     struct
     {
-        int32_t MessageType;
+        int64_t MessageType;
         int64_t balance;
     };
     char data[NetMsgBalanceSize];
@@ -158,12 +162,12 @@ union BtcNetMsgBalance
     BtcNetMsgBalance();
 };
 
-#define NetMsgGetTxCountSize 4 + 20
+#define NetMsgGetTxCountSize 8 + 20
 union BtcNetMsgGetTxCount
 {
     struct
     {
-        int32_t MessageType;
+        u_int64_t MessageType;
         char client[20];
     };
     char data[NetMsgGetTxCountSize];
@@ -171,41 +175,41 @@ union BtcNetMsgGetTxCount
     BtcNetMsgGetTxCount();
 };
 
-#define NetMsgTxCountSize 4 + 4
+#define NetMsgTxCountSize 8 + 8
 union BtcNetMsgTxCount
 {
     struct
     {
-        int32_t MessageType;
-        int32_t txCount;
+        int64_t MessageType;
+        u_int64_t txCount;
     };
     char data[NetMsgTxCountSize];
 
     BtcNetMsgTxCount();
 };
 
-#define NetMsgGetTxSize 4 + 20 + 4
+#define NetMsgGetTxSize 8 + 8 + 20
 union BtcNetMsgGetTx
 {
     struct
     {
-        int32_t MessageType;
+        int64_t MessageType;
+        int64_t txIndex;
         char client[20];
-        int32_t txIndex;
     };
     char data[NetMsgGetTxSize];
 
     BtcNetMsgGetTx();
 };
 
-#define NetMsgTxSize 4 + 66 + 100 + 4 + 1 + 1
+#define NetMsgTxSize 8 + 72 + 72 + 8 + 1 + 1
 union BtcNetMsgTx
 {
     struct
     {
-        int32_t MessageType;
-        char txId[66];
-        char toAddress[100];
+        int64_t MessageType;
+        char txId[72];
+        char toAddress[72];
         int64_t amount;
         int8_t type;
         int8_t status;
@@ -215,27 +219,27 @@ union BtcNetMsgTx
     BtcNetMsgTx();
 };
 
-#define NetMsgReqWithdrawSize 4 + 20 + 100 + 4
+#define NetMsgReqWithdrawSize 8 + 8 + 72 + 20
 union BtcNetMsgReqWithdraw
 {
     struct
     {
-        int32_t MessageType;
-        char client[20];
-        char toAddress[100];
+        int64_t MessageType;
         int64_t amount;
+        char toAddress[72];
+        char client[20];
     };
     char data[NetMsgReqWithdrawSize];
 
     BtcNetMsgReqWithdraw();
 };
 
-#define NetMsgWithdrawReplySize 4 + 1
+#define NetMsgWithdrawReplySize 8 + 1
 union BtcNetMsgWithdrawReply
 {
     struct
     {
-        int32_t MessageType;
+        int64_t MessageType;
         int8_t accepted;
     };
     char data[NetMsgWithdrawReplySize];
@@ -243,12 +247,12 @@ union BtcNetMsgWithdrawReply
     BtcNetMsgWithdrawReply();
 };
 
-#define NetMsgReqSignedTxSize 4 + 20
+#define NetMsgReqSignedTxSize 8 + 20
 union BtcNetMsgReqSignedTx
 {
     struct
     {
-        int32_t MessageType;
+        int64_t MessageType;
         char client[20];
     };
     char data[NetMsgReqSignedTxSize];
@@ -256,12 +260,12 @@ union BtcNetMsgReqSignedTx
     BtcNetMsgReqSignedTx();
 };
 
-#define NetMsgSignedTxSize 4 + 10000
+#define NetMsgSignedTxSize 8 + 10000
 union BtcNetMsgSignedTx
 {
     struct
     {
-        int32_t MessageType;
+        int64_t MessageType;
         char rawTx[10000];
     };
     char data[NetMsgSignedTxSize];

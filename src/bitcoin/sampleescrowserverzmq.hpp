@@ -4,6 +4,10 @@
 #include "sampleescrowserver.hpp"
 #include "samplenetmessages.hpp"
 
+#include <zmq.hpp>
+
+class QTime;
+
 class SampleEscrowServerZmq : public SampleEscrowServer
 {
 public:
@@ -11,12 +15,16 @@ public:
 
     SampleEscrowServerZmq(BitcoinServerPtr bitcoind, EscrowPoolPtr pool, int port);
 
-    SampleEscrowServerZmq(BitcoinServerPtr bitcoind, EscrowPoolPtr pool, const std::string &url, int port);
+    typedef _SharedPtr<SampleEscrowServerZmq> SampleEscrowServerZmqPtr;
+    SampleEscrowServerZmq(BitcoinServerPtr bitcoind, EscrowPoolPtr pool, const std::string &url, int port, SampleEscrowServerZmqPtr master = SampleEscrowServerZmqPtr());
+
+    ~SampleEscrowServerZmq();
 
     void StartServer();
+    void UpdateServer();
 
-    void ClientConnected(SampleEscrowClient *client);
-    void ClientConnected(BtcNetMsgConnectPtr clientMsg);
+    bool ClientConnected(SampleEscrowClient *client);
+    bool ClientConnected(BtcNetMsgConnectPtr clientMsg);
 
     // called when someone wants to make a deposit
     virtual bool RequestEscrowDeposit(const std::string &client, const int64_t &amount);
@@ -32,10 +40,10 @@ public:
     virtual int64_t GetClientBalance(const std::string& client);
     virtual int64_t GetClientBalance(BtcNetMsgGetBalancePtr message);
 
-    virtual int32_t GetClientTransactionCount(const std::string &client);
-    virtual int32_t GetClientTransactionCount(BtcNetMsgGetTxCountPtr message);
+    virtual u_int64_t GetClientTransactionCount(const std::string &client);
+    virtual u_int64_t GetClientTransactionCount(BtcNetMsgGetTxCountPtr message);
 
-    virtual SampleEscrowTransactionPtr GetClientTransaction(const std::string &client, const uint32_t txIndex);
+    virtual SampleEscrowTransactionPtr GetClientTransaction(const std::string &client, const u_int64_t txIndex);
     virtual SampleEscrowTransactionPtr GetClientTransaction(BtcNetMsgGetTxPtr message);
 
     virtual bool RequestEscrowWithdrawal(const std::string &sender, const int64_t &amount, const std::string &toAddress);
@@ -46,7 +54,15 @@ public:
     virtual std::string RequestSignedWithdrawal(const std::string &client);
     virtual std::string RequestSignedWithdrawal(BtcNetMsgReqSignedTxPtr message);
 
-    void SendData(BtcNetMsg *message);
+    BtcNetMsg *SendData(BtcNetMsg *message);
+
+private:
+    zmq::socket_t* serverSocket;
+    zmq::context_t* context;
+    SampleEscrowServerZmqPtr master;
+
+public slots:
+    virtual void Update();
 };
 
 typedef _SharedPtr<SampleEscrowServerZmq> SampleEscrowServerZmqPtr;
