@@ -120,15 +120,17 @@ public:
     // addresses: list of receiving addresses
     // knownOutputs: list of unspent outputs that is already known
     // returns unknown outputs
-    BtcUnspentOutputs ListNewOutputs(const btc::stringList &addresses, BtcUnspentOutputs knownOutputs);
+    BtcUnspentOutputs ListNewOutputs(BtcUnspentOutputs knownOutputs, const btc::stringList &addresses = btc::stringList());
 
     // Looks through a list of txIds to find everything we can sign, including multisig addresses
     // Only works when bitcoind received the blocks containing those transactions.
     BtcUnspentOutputs FindSignableOutputs(const btc::stringList &txIds);
 
+    BtcUnspentOutputs FindUnspentOutputs(BtcUnspentOutputs possiblySpentOutputs);
+
     // Looks through a list of txIds to find everything we can sign and haven't spent yet
     // only works with own and imported addresses and up-to-date blockchain
-    BtcUnspentOutputs FindUnspentSignableOutputs(const btc::stringList &txIds);
+    BtcUnspentOutputs FindUnspentSignableOutputs(const btc::stringList &txIds, BtcUnspentOutputs outputsToSearch = BtcUnspentOutputs());
 
     // Creates the signing prerequisites corresponding to those outputs
     BtcSigningPrerequisites GetSigningPrerequisites(const BtcUnspentOutputs &outputs);

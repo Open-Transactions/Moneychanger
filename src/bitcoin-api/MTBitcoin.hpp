@@ -86,9 +86,9 @@ public:
     virtual BtcRawTransactionPtr WaitGetRawTransaction(const std::string &txId);
 
     // Returns the number of confirmations of a raw transaction
-    virtual int GetConfirmations(const std::string &txId);
+    virtual int32_t GetConfirmations(const std::string &txId);
 
-    virtual bool TransactionSuccessfull(int64_t amount, BtcRawTransactionPtr rawTransaction, const std::string &targetAddress, int64_t confirmations = 1);
+    virtual bool TransactionSuccessful(const int64_t &amount, BtcRawTransactionPtr rawTransaction, const std::string &targetAddress, const int32_t &confirmations = BtcHelper::WaitForConfirms);
 
     // sends funds from your wallet to targetAddress
     // returns the transaction id string or NULL

@@ -315,7 +315,7 @@ typedef _SharedPtr<BtcSigningPrerequisite> BtcSigningPrerequisitePtr;
 typedef _SharedPtr<BtcRpcPacket>           BtcRpcPacketPtr;
 
 typedef std::vector<BtcTxDetailPtr>        BtcTxDetails;
-typedef std::vector<BtcUnspentOutputPtr>   BtcUnspentOutputs;
+typedef std::list<BtcUnspentOutputPtr>     BtcUnspentOutputs;
 typedef std::vector<BtcAddressBalancePtr>  BtcAddressBalances;
 typedef std::vector<BtcTxIdVoutPtr>        BtcTxIdVouts;
 typedef std::vector<BtcTransactionPtr>     BtcTransactions;

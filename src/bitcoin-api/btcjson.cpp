@@ -39,6 +39,7 @@
 #define METHOD_GETBLOCKCOUNT         "getblockcount"
 #define METHOD_GETBLOCKHASH          "getblockhash"
 #define METHOD_GETBLOCK              "getblock"
+#define METHOD_SETGENERATE           "setgenerate"
 
 
 BtcJson::BtcJson(BtcModules *modules)
@@ -94,6 +95,7 @@ void BtcJson::ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json
     if(replyObj.isNull() || replyObj.empty())
         return;
 
+    // Outputs the entire JSON reply:
     //Json::StyledWriter writer;
     //printf("Received JSON:\n%s\n", writer.write(replyObj).c_str());
     //std::cout.flush();
@@ -379,10 +381,10 @@ BtcUnspentOutputs BtcJson::ListUnspent(const int32_t &minConf, const int32_t &ma
     Json::Value result = Json::Value();
     if(!ProcessRpcString(
                 this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_LISTUNSPENT, params)),result))
-        return std::vector<BtcUnspentOutputPtr>();     // error
+        return BtcUnspentOutputs();     // error
 
     if(!result.isArray())
-        return std::vector<BtcUnspentOutputPtr>();
+        return BtcUnspentOutputs();
 
 
     BtcUnspentOutputs outputs = BtcUnspentOutputs();
@@ -688,4 +690,18 @@ BtcBlockPtr BtcJson::GetBlock(const std::string &blockHash)
 
     BtcBlockPtr block = BtcBlockPtr(new BtcBlock(result));
     return block;
+}
+
+bool BtcJson::SetGenerate(const bool &generate)
+{
+    Json::Value params = Json::Value();
+    params.append(generate);
+
+    Json::Value result = Json::Value();
+    if(!ProcessRpcString(
+                this->modules->btcRpc->SendRpc(
+                    CreateJsonQuery(METHOD_SETGENERATE, params)), result))
+        return false;
+
+    return true;
 }

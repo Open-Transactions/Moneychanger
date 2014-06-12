@@ -130,6 +130,8 @@ public:
 
     virtual BtcBlockPtr GetBlock(const std::string &blockHash);
 
+    virtual bool SetGenerate(const bool &generate);
+
 private:
      virtual BtcRpcPacketPtr CreateJsonQuery(const std::string &command, Json::Value params = Json::Value(), std::string id = "");
 

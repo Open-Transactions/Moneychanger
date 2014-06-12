@@ -75,12 +75,12 @@ BtcRawTransactionPtr MTBitcoin::WaitGetRawTransaction(const std::string &txId)
     return this->modules->btcHelper->WaitGetRawTransaction(txId, 500, 20);
 }
 
-int MTBitcoin::GetConfirmations(const std::string &txId)
+int32_t MTBitcoin::GetConfirmations(const std::string &txId)
 {
     return this->modules->btcHelper->GetConfirmations(txId);
 }
 
-bool MTBitcoin::TransactionSuccessfull(int64_t amount, BtcRawTransactionPtr rawTransaction, const std::string &targetAddress, int64_t confirmations)
+bool MTBitcoin::TransactionSuccessful(const int64_t &amount, BtcRawTransactionPtr rawTransaction, const std::string &targetAddress, const int32_t &confirmations)
 {
     return this->modules->btcHelper->TransactionSuccessfull(amount, rawTransaction, targetAddress, confirmations);
 }

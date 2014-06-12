@@ -90,7 +90,7 @@ public:
     virtual BtcRawTransactionPtr WaitGetRawTransaction(const std::string &txId) = 0;
 
     // Returns the number of confirmations of a raw transaction
-    virtual int GetConfirmations(const std::string &txId) = 0;
+    virtual int32_t GetConfirmations(const std::string &txId) = 0;
 
     // Checks whether transaction sends correct amount and is confirmed
     // amount: amount (in satoshis)
@@ -98,7 +98,7 @@ public:
     // targetAddress:               the address into which funds were deposited (in case someone sent to multiple unrelated addresses in one tx)
     // confirmations [optional]:    minimum amount of confirmations (default: 1 (we should increase this))
     // returns true if amount and confirmations are equal or greater than required
-    virtual bool TransactionSuccessfull(int64_t amount, BtcRawTransactionPtr rawTransaction, const std::string &targetAddress, int64_t confirmations = 1) = 0;
+    virtual bool TransactionSuccessful(const int64_t &amount, BtcRawTransactionPtr rawTransaction, const std::string &targetAddress, const int32_t &confirmations = BtcHelper::WaitForConfirms) = 0;
 
     // sends funds from your wallet to targetAddress
     // lAmount: integer containing amount in satoshis

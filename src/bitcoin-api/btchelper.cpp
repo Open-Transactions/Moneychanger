@@ -46,7 +46,7 @@ namespace btc   // will probably put everything into this namespace
 
 int32_t BtcHelper::MinConfirms = 0;         // used for listunspent, should be zero or same as WaitForConfirms imho
 int32_t BtcHelper::MaxConfirms = 9999999;   // used for listunspent, it's 9999999 in bitcoin-qt
-int32_t BtcHelper::WaitForConfirms = 1;     // confirmations to wait for before accepting a transaction as confirmed. should be higher.
+int32_t BtcHelper::WaitForConfirms = 2;     // confirmations to wait for before accepting a transaction as confirmed. should be higher.
 int64_t BtcHelper::FeeMultiSig = BtcHelper::CoinsToSatoshis(0.001);
 
 BtcHelper::BtcHelper(BtcModules *modules)
@@ -282,9 +282,9 @@ const BtcRawTransactionPtr BtcHelper::TransactionSuccessfull(const int64_t &amou
     if(amount < 0 || outputs.empty() || targetAddress.empty() || minConfirms < 0)
         return BtcRawTransactionPtr();
 
-    for(size_t i = 0; i < outputs.size(); i++)
+    for(BtcUnspentOutputs::iterator output = outputs.begin(); output != outputs.end(); output++)
     {
-        BtcRawTransactionPtr transaction =  WaitGetRawTransaction(outputs[i]->txId);
+        BtcRawTransactionPtr transaction =  WaitGetRawTransaction((*output)->txId);
         if(TransactionSuccessfull(amount, transaction, targetAddress, minConfirms))
             return transaction;
     }
@@ -370,16 +370,16 @@ BtcRawTransactionPtr BtcHelper::WaitGetRawTransaction(const std::string &txId, c
     return rawTransaction;
 }
 
-BtcUnspentOutputs BtcHelper::ListNewOutputs(const btc::stringList &addresses, BtcUnspentOutputs knownOutputs)
+BtcUnspentOutputs BtcHelper::ListNewOutputs(BtcUnspentOutputs knownOutputs, const btc::stringList &addresses)
 {
     if(addresses.empty())
         return BtcUnspentOutputs();
 
     // extract txids from unspent outputs
-    std::vector<std::string> knownOutputTxIds = std::vector<std::string>();
-    for(size_t i = 0; i < knownOutputs.size(); i++)
+    btc::stringList knownOutputTxIds = btc::stringList();
+    for(BtcUnspentOutputs::iterator output = knownOutputs.begin(); output != knownOutputs.end(); output++)
     {
-        knownOutputTxIds.push_back(knownOutputs[i]->txId);
+        knownOutputTxIds.push_back((*output)->txId);
     }
 
     // get list of all unspent outputs
@@ -387,13 +387,13 @@ BtcUnspentOutputs BtcHelper::ListNewOutputs(const btc::stringList &addresses, Bt
 
     // iterate through them
     BtcUnspentOutputs newOutputs = BtcUnspentOutputs();
-    for(size_t i = 0; i < outputs.size(); i++)
+    for(BtcUnspentOutputs::iterator output = outputs.begin(); output != outputs.end(); output++)
     {
         // check if we already know about them
-        std::vector<std::string>::const_iterator it;
-        it = find (knownOutputTxIds.begin(), knownOutputTxIds.end(), outputs[i]->txId);
+        btc::stringList::const_iterator it;
+        it = find (knownOutputTxIds.begin(), knownOutputTxIds.end(), (*output)->txId);
         if(it == knownOutputTxIds.end())
-            newOutputs.push_back(outputs[i]);   // and add them if we don't
+            newOutputs.push_back((*output));   // and add them if we don't
     }
 
     return newOutputs;
@@ -439,7 +439,12 @@ BtcUnspentOutputs BtcHelper::FindSignableOutputs(const btc::stringList &txIds)
     return outputs;
 }
 
-BtcUnspentOutputs BtcHelper::FindUnspentSignableOutputs(const btc::stringList &txIds)
+BtcUnspentOutputs BtcHelper::FindUnspentOutputs(BtcUnspentOutputs possiblySpentOutputs)
+{
+    return BtcUnspentOutputs();
+}
+
+BtcUnspentOutputs BtcHelper::FindUnspentSignableOutputs(const btc::stringList &txIds, BtcUnspentOutputs outputsToSearch)
 {
     BtcUnspentOutputs signableOutputs = FindSignableOutputs(txIds);
     if(signableOutputs.empty())
@@ -451,17 +456,21 @@ BtcUnspentOutputs BtcHelper::FindUnspentSignableOutputs(const btc::stringList &t
         addresses.push_back((*output)->address);
     }
 
-    BtcUnspentOutputs unspentOutputs = this->modules->btcJson->ListUnspent(MinConfirms, MaxConfirms, addresses);
+    BtcUnspentOutputs unspentOutputs;
+    if(outputsToSearch.empty())
+        unspentOutputs = this->modules->btcJson->ListUnspent(MinConfirms, MaxConfirms, addresses);
+    else
+        unspentOutputs = outputsToSearch;
 
     BtcUnspentOutputs unspentSignableOutputs = BtcUnspentOutputs();
     for(BtcUnspentOutputs::iterator signableOutput = signableOutputs.begin(); signableOutput != signableOutputs.end(); signableOutput++)
     {
-        for(BtcUnspentOutputs::iterator output = unspentOutputs.begin(); output != unspentOutputs.end(); output++)
+        for(BtcUnspentOutputs::iterator output = outputsToSearch.begin(); output != outputsToSearch.end(); output++)
         {
             if((*output)->address == (*signableOutput)->address && (*output)->txId == (*signableOutput)->txId)
             {
                 unspentSignableOutputs.push_back((*signableOutput));
-                unspentOutputs.erase(output);
+                outputsToSearch.erase(output);
                 break;
             }
         }
@@ -498,7 +507,7 @@ BtcSignedTransactionPtr BtcHelper::CreateSpendTransaction(const BtcUnspentOutput
     }
 
     int64_t change = amountAvailable - amount - fee;
-    std::printf("Creating spend transaction:\n Amount: %ld\n Fee: %ld\n Available: %ld\n Change: %ld\n", amount, fee, amountAvailable, change);
+    std::printf("Creating spend transaction:\n To: %s\n Amount: %f\n Fee: %f\n Available: %f\n Change: %f\n", toAddress.c_str(), SatoshisToCoins(amount), SatoshisToCoins(fee), SatoshisToCoins(amountAvailable), SatoshisToCoins(change));
     std::cout.flush();
     if(change < 0)
        return BtcSignedTransactionPtr();  // invalid amount

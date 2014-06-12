@@ -9,18 +9,6 @@
 #include <cstdio>
 #include <iostream>
 
-#ifndef OT_USE_TR1
-    #include <thread>
-    #define Sleep(milliSeconds) std::this_thread::sleep_for(std::chrono::milliseconds(milliSeconds))
-    //std::this_thread::yield();  // let's also free some CPU
-#else
-    #include <unistd.h>
-    #define Sleep(milliSeconds) usleep(milliSeconds * 1000)
-#endif // OT_USE_TR1
-
-
-
-
 BtcModulesPtr BtcTest::modules;
 std::string BtcTest::multiSigAddress;
 std::string BtcTest::depositTxId;
@@ -178,11 +166,11 @@ bool BtcTest::TestBtcJson()
     // now to spend an output
     // create a list of txid/vout pairs as input for our raw transaction:
     BtcTxIdVouts outputsToSpend = BtcTxIdVouts();
-    outputsToSpend.push_back(BtcTxIdVoutPtr(new BtcTxIdVout(unspentOutputs[0]->txId, unspentOutputs[0]->vout)));
+    outputsToSpend.push_back(BtcTxIdVoutPtr(new BtcTxIdVout(unspentOutputs.front()->txId, unspentOutputs.front()->vout)));
 
     // create a list of address:vout mappings to which the inputs will be sent
     BtcTxTargets txTargets = BtcTxTargets();
-    txTargets[address] = (Json::Int64)(unspentOutputs[0]->amount - BtcHelper::FeeMultiSig);
+    txTargets[address] = (Json::Int64)(unspentOutputs.front()->amount - BtcHelper::FeeMultiSig);
 
     // create raw transaction
     std::string rawTx = modules->btcJson->CreateRawTransaction(outputsToSpend, txTargets);
@@ -320,9 +308,9 @@ bool BtcTest::TestMultiSigDeposit(int minConfirms)
         return false;
 
     // wait for confirmations and check for correct amount
-    while(!bitcoin1.mtBitcoin->TransactionSuccessfull(amountToSend, txToMultiSig, multiSigAddress, minConfirms))
+    while(!bitcoin1.mtBitcoin->TransactionSuccessful(amountToSend, txToMultiSig, multiSigAddress, minConfirms))
     {
-        Sleep(500);
+        btc::Sleep(500);
     }
 
     return true;
@@ -381,9 +369,9 @@ bool BtcTest::TestMultiSigWithdrawal(int minConfirms)
     int64_t amountToExpect = bitcoin1.btcHelper->GetTotalOutput(depositTxId, multiSigAddress) - BtcHelper::FeeMultiSig;
 
     // wait for confirmations and correct amount
-    while(!bitcoin2.mtBitcoin->TransactionSuccessfull(amountToExpect, releaseTx, targetAddress, minConfirms))
+    while(!bitcoin2.mtBitcoin->TransactionSuccessful(amountToExpect, releaseTx, targetAddress, minConfirms))
     {
-        Sleep(500);
+        btc::Sleep(500);
     }
 
     return true;
@@ -414,9 +402,9 @@ bool BtcTest::TestImportAddress(int32_t confirmations)
     while(!stop)
     {
         BtcUnspentOutputs outputs = bitcoin2.mtBitcoin->ListUnspentOutputs( {address} );
-        for(size_t i = 0; i < outputs.size(); i++)
+        for(BtcUnspentOutputs::iterator output = outputs.begin(); output != outputs.end(); output++)
         {
-            BtcTransactionPtr transaction = bitcoin2.btcHelper->WaitGetTransaction(outputs[i]->txId);
+            BtcTransactionPtr transaction = bitcoin2.btcHelper->WaitGetTransaction((*output)->txId);
             if(bitcoin2.btcHelper->TransactionSuccessfull(amount, transaction, address, confirmations))
             {
                 stop = true;
@@ -461,8 +449,8 @@ bool BtcTest::TestImportMultisig(int32_t confirmations)
     BtcUnspentOutputs newOutputs = BtcUnspentOutputs();
     while(true)
     {
-        newOutputs = bitcoin2.btcHelper->ListNewOutputs( {multiSig}, newOutputs);
-        Sleep(500);
+        newOutputs = bitcoin2.btcHelper->ListNewOutputs(newOutputs, {multiSig});
+        btc::Sleep(500);
         if(newOutputs.size() > 0)
             break;
     }

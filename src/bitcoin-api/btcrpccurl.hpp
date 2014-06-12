@@ -70,6 +70,7 @@ public:
     virtual BtcRpcPacketPtr SendRpc(BtcRpcPacketPtr jsonString);
 
 private:
+    void WaitMutex();
     void InitSession();         // Called in constructor, makes sure we have a network interface or something
     void InitNAM();             // Also called in constr, creates the Network Access Manager.
     void SetHeaderInformation(); // Called by ConnectToBitcoin, sets the HTTP header
@@ -97,6 +98,8 @@ private:
     BtcModules* modules;
 
     static BtcRpcPacketPtr connectString;
+
+    bool mutex;
 
 
     /*
