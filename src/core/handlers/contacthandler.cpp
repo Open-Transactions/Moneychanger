@@ -1379,7 +1379,7 @@ bool MTContactHandler::GetMsgMethodTypes(mapIDName & theMap, bool bAddServers/*=
 
     if (MTComms::types(mapTypes))
     {
-        FOR_EACH(mapOfCommTypes, mapTypes)
+        for(mapOfCommTypes::iterator it = mapTypes.begin(); it != mapTypes.end(); it++)
         {
             std::string strType = it->first;
             std::string strName = it->second;
