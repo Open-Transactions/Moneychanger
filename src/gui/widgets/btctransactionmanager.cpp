@@ -186,7 +186,11 @@ void BtcTransactionManager::on_buttonSearchTx_clicked()
         return;
 
     BtcTransactionPtr txInfo = Modules::btcModules->mtBitcoin->GetTransaction(txId.toStdString());
+    if(txInfo == NULL)
+        return;
     BtcRawTransactionPtr txRawInfo = Modules::btcModules->btcJson->DecodeRawTransaction(txInfo->Hex);
+    if(txRawInfo == NULL)
+        return;
 
     if(infoWindow == NULL)
         infoWindow = new BtcTransactionInfo();

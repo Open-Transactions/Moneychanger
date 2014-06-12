@@ -178,7 +178,6 @@ void BtcPoolManager::on_buttonDeleteme_clicked()
     std::vector<BitcoinServerPtr> rpcServers = std::vector<BitcoinServerPtr>();
     std::vector<EscrowPoolPtr> pools = std::vector<EscrowPoolPtr>();
     std::vector<SampleEscrowServerZmqPtr> masterServers = std::vector<SampleEscrowServerZmqPtr>();
-    std::vector<SampleEscrowServerZmqPtr> clientServers = std::vector<SampleEscrowServerZmqPtr>();
 
     for(int i = 0; i < 4; i++)
     {
