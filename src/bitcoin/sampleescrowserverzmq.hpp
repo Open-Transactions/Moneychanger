@@ -60,6 +60,7 @@ private:
     zmq::socket_t* serverSocket;
     zmq::context_t* context;
     SampleEscrowServerZmqPtr master;
+    std::string connectString;
 
 public slots:
     virtual void Update();

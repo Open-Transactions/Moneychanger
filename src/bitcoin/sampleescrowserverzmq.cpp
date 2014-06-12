@@ -83,7 +83,7 @@ bool SampleEscrowServerZmq::ClientConnected(SampleEscrowClient *client)
 
 bool SampleEscrowServerZmq::ClientConnected(BtcNetMsgConnectPtr clientMsg)
 { 
-    SampleEscrowClient* client = new SampleEscrowClientZmq();
+    SampleEscrowClient* client = new SampleEscrowClient();
     client->clientName = clientMsg->client;
     SampleEscrowServer::ClientConnected(client);
 }

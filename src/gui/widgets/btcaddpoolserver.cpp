@@ -5,7 +5,7 @@
 #include "btcpoolmanager.hpp"
 
 #include <bitcoin/sampleescrowserver.hpp>
-//#include <bitcoin/sampleescrowserverzmq.hpp>
+#include <bitcoin/sampleescrowserverzmq.hpp>
 #include <bitcoin/poolmanager.hpp>
 
 #include <core/modules.hpp>
@@ -25,7 +25,6 @@ BtcAddPoolServer::~BtcAddPoolServer()
 
 void BtcAddPoolServer::on_buttonConnect_clicked()
 {
-    /*
     if(Modules::poolManager->selectedPool.empty())
         return;
 
@@ -38,12 +37,10 @@ void BtcAddPoolServer::on_buttonConnect_clicked()
 
     this->hide();
     this->close();
-    */
 }
 
 void BtcAddPoolServer::on_buttonCreate_clicked()
 {
-    /*
     if(Modules::poolManager->selectedPool.empty())
         return;
 
@@ -55,7 +52,6 @@ void BtcAddPoolServer::on_buttonCreate_clicked()
 
     this->hide();
     this->close();
-    */
 }
 
 void BtcAddPoolServer::on_buttonSimulate_clicked()
