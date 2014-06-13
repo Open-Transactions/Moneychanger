@@ -122,7 +122,7 @@ std::string MTBitcoin::SendRawTransaction(const std::string &rawTransaction)
     return this->modules->btcJson->SendRawTransaction(rawTransaction);
 }
 
-BtcUnspentOutputs MTBitcoin::ListUnspentOutputs(const std::vector<std::string> &addresses)
+BtcUnspentOutputs MTBitcoin::ListUnspentOutputs(const btc::stringList &addresses)
 {
     return this->modules->btcJson->ListUnspent(BtcHelper::MinConfirms, BtcHelper::MaxConfirms, addresses);
 }

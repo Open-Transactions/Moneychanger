@@ -77,11 +77,9 @@ double BtcHelper::SatoshisToCoins(int64_t value)
 
 bool BtcHelper::IsMine(const std::string &address)
 {
-    BtcAddressInfoPtr addressInfo = this->modules->btcJson->ValidateAddress(address);
-
     // get address info
     BtcAddressInfoPtr addrInfo = this->modules->btcJson->ValidateAddress(address);
-    if(!addrInfo->isvalid)
+    if(addrInfo == NULL || !addrInfo->isvalid)
         return false;
 
     // is it ours and do we own the public key? then we also know the private key.
@@ -94,14 +92,17 @@ bool BtcHelper::IsMine(const std::string &address)
     if(addrInfo->isScript)
     {
         // iterate through the addresses that make up the multisig
-        for(btc::stringList::const_iterator multiSigAddr = addrInfo->addresses.begin(); multiSigAddr != addrInfo->addresses.end(); multiSigAddr++)
+        for(btc::stringList::const_iterator multiSigSigningAddr = addrInfo->addresses.begin(); multiSigSigningAddr != addrInfo->addresses.end(); multiSigSigningAddr++)
         {
-            if(IsMine((*multiSigAddr)))
+            // i hate recursions but this one is limited to one level because multisig addresses can't be made from multisig addresses
+            if(IsMine((*multiSigSigningAddr)))
             {
                 return true;
             }
         }
     }
+
+    return false;
 }
 
 BtcRawTransactionPtr BtcHelper::GetDecodedRawTransaction(const std::string &txId) const
@@ -255,18 +256,18 @@ bool BtcHelper::TransactionSuccessfull(int64_t amountRequested, BtcRawTransactio
         return false;       // use WaitForTransaction(txid) to prevent this.
 
     // check for sufficient confirms...
-    if(!TransactionConfirmed(transaction->txID, minConfirms))
+    if(!TransactionConfirmed(transaction->txId, minConfirms))
         return false;
 
     // check for sufficient amount...
     if(GetTotalOutput(transaction, targetAddress) >= amountRequested)
         return true;    // if we were sent at least as much money as requested, return true
 
-    btc::stringList doubleSpends = GetDoubleSpends(transaction->txID);
+    btc::stringList doubleSpends = GetDoubleSpends(transaction->txId);
     if(doubleSpends.size() <= 0)
         return true;
 
-    BtcTransactionPtr txToCheck = modules->btcJson->GetTransaction(transaction->txID);
+    BtcTransactionPtr txToCheck = modules->btcJson->GetTransaction(transaction->txId);
     for(btc::stringList::const_iterator txId = doubleSpends.begin(); txId != doubleSpends.end(); txId++)
     {
         BtcTransactionPtr doubleTx = this->modules->btcJson->GetTransaction((*txId));
@@ -401,81 +402,101 @@ BtcUnspentOutputs BtcHelper::ListNewOutputs(BtcUnspentOutputs knownOutputs, cons
 
 BtcUnspentOutputs BtcHelper::FindSignableOutputs(const btc::stringList &txIds)
 {
-    BtcUnspentOutputs outputs = BtcUnspentOutputs();
+    BtcUnspentOutputs outputsToCheck = BtcUnspentOutputs();
+    std::string lastTxId = std::string();   // prevent double inserts
 
     // iterate through txids
     for(btc::stringList::const_iterator txId = txIds.begin(); txId != txIds.end(); txId++)
     {
+        if((*txId) == lastTxId)
+            continue;
+        lastTxId = (*txId);
+
         // get transaction details
-        BtcTransactionPtr tx = this->modules->btcJson->GetTransaction((*txId));
-        BtcRawTransactionPtr txRaw;
-
-        // get raw transaction details
-        if(!tx->Hex.empty())
-            txRaw = this->modules->btcJson->DecodeRawTransaction(tx->Hex);
-        else
-            txRaw = this->GetDecodedRawTransaction((*txId));
-
+        BtcRawTransactionPtr txRaw = GetDecodedRawTransaction((*txId));
         // iterate through raw transaction VOUT array
         for(std::vector<BtcRawTransaction::VOUT>::const_iterator vout = txRaw->outputs.begin(); vout != txRaw->outputs.end(); vout++)
         {
-            // iterate through VOUT.addresses array (there should only be one address in that array)
-            for(btc::stringList::const_iterator outAddr = vout->addresses.begin(); outAddr != vout->addresses.end(); outAddr++)
-            {
-                if(!IsMine(*outAddr))
-                    continue;
-
-                BtcUnspentOutputPtr output = BtcUnspentOutputPtr(new BtcUnspentOutput(Json::Value()));
-                output->txId = (*txId);
-                output->address = (*outAddr);
-                output->scriptPubKey = vout->scriptPubKeyHex;
-                output->amount = vout->value;
-                output->vout = vout->n;
-                outputs.push_back(output);
-            }
+            BtcUnspentOutputPtr output = BtcUnspentOutputPtr(new BtcUnspentOutput(Json::Value()));
+            output->txId = (*txId);
+            if(vout->addresses.size() == 1)
+                output->address = vout->addresses.front();
+            output->scriptPubKey = vout->scriptPubKeyHex;
+            output->amount = vout->value;
+            output->vout = vout->n;
+            outputsToCheck.push_back(output);
         }
     }
 
-    return outputs;
+    return FindSignableOutputs(outputsToCheck);
+}
+
+BtcUnspentOutputs BtcHelper::FindSignableOutputs(const BtcUnspentOutputs &outputs)
+{
+    BtcUnspentOutputs signableOutputs = BtcUnspentOutputs();
+
+    for(BtcUnspentOutputs::const_iterator output = outputs.begin(); output != outputs.end(); output++)
+    {
+        if(IsMine((*output)->address))
+            signableOutputs.push_back((*output));
+    }
+
+    return signableOutputs;
 }
 
 BtcUnspentOutputs BtcHelper::FindUnspentOutputs(BtcUnspentOutputs possiblySpentOutputs)
 {
-    return BtcUnspentOutputs();
+    BtcUnspentOutputs unspentOutputs = BtcUnspentOutputs();
+    for(BtcUnspentOutputs::iterator outputToCheck = possiblySpentOutputs.begin(); outputToCheck != possiblySpentOutputs.end(); outputToCheck++)
+    {
+        BtcUnspentOutputPtr output = this->modules->btcJson->GetTxOut((*outputToCheck)->txId, (*outputToCheck)->vout);
+        if(output != NULL)
+        {
+            std::printf ("found unspent output %s : %ld, %f BTC\n", output->txId.c_str(), output->vout, SatoshisToCoins(output->amount));
+            unspentOutputs.push_back(output);
+        }
+    }
+
+    return unspentOutputs;
 }
 
-BtcUnspentOutputs BtcHelper::FindUnspentSignableOutputs(const btc::stringList &txIds, BtcUnspentOutputs outputsToSearch)
+BtcUnspentOutputs BtcHelper::FindUnspentOutputs(const btc::stringList &txIdsToCheck)
+{
+    BtcUnspentOutputs unspentOutputs = BtcUnspentOutputs();
+    std::string lastTxId = std::string();   // prevent double inserts
+
+    for(btc::stringList::const_iterator txId = txIdsToCheck.begin(); txId != txIdsToCheck.end(); txId++)
+    {
+        if((*txId) == lastTxId)
+            continue;
+        lastTxId = (*txId);
+
+        BtcRawTransactionPtr rawTx = GetDecodedRawTransaction((*txId));
+        if(rawTx == NULL)
+            continue;
+
+        // iterate through raw transaction VOUT array
+        for(std::vector<BtcRawTransaction::VOUT>::const_iterator vout = rawTx->outputs.begin(); vout != rawTx->outputs.end(); vout++)
+        {
+            BtcUnspentOutputPtr output = this->modules->btcJson->GetTxOut(rawTx->txId, vout->n);
+            if(output == NULL)
+                continue;
+
+            if(!output->address.empty())
+                unspentOutputs.push_back(output);
+        }
+    }
+
+    return unspentOutputs;
+}
+
+BtcUnspentOutputs BtcHelper::FindUnspentSignableOutputs(const btc::stringList &txIds)
 {
     BtcUnspentOutputs signableOutputs = FindSignableOutputs(txIds);
     if(signableOutputs.empty())
         return BtcUnspentOutputs();
 
-    btc::stringList addresses = btc::stringList();
-    for(BtcUnspentOutputs::iterator output = signableOutputs.begin(); output != signableOutputs.end(); output++)
-    {
-        addresses.push_back((*output)->address);
-    }
-
-    BtcUnspentOutputs unspentOutputs;
-    if(outputsToSearch.empty())
-        unspentOutputs = this->modules->btcJson->ListUnspent(MinConfirms, MaxConfirms, addresses);
-    else
-        unspentOutputs = outputsToSearch;
-
-    BtcUnspentOutputs unspentSignableOutputs = BtcUnspentOutputs();
-    for(BtcUnspentOutputs::iterator signableOutput = signableOutputs.begin(); signableOutput != signableOutputs.end(); signableOutput++)
-    {
-        for(BtcUnspentOutputs::iterator output = outputsToSearch.begin(); output != outputsToSearch.end(); output++)
-        {
-            if((*output)->address == (*signableOutput)->address && (*output)->txId == (*signableOutput)->txId)
-            {
-                unspentSignableOutputs.push_back((*signableOutput));
-                outputsToSearch.erase(output);
-                break;
-            }
-        }
-    }
-
+    BtcUnspentOutputs unspentSignableOutputs = FindUnspentOutputs(signableOutputs);
     return unspentSignableOutputs;
 }
 

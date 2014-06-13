@@ -10,7 +10,7 @@
 #include <map>
 #include <cstdio>
 
-// https://en.bitcoin.it/wiki/Proper_Money_Handling_%28JSON-RPC%29 on how to avoid rounding errors and such. might be worth a read someday.
+// https://en.bitcoin.it/wiki/Proper_Money_Handling_%28JSON-RPC%29
 
 // bitcoin rpc methods
 #define METHOD_GETINFO               "getinfo"
@@ -29,6 +29,7 @@
 #define METHOD_SETTXFEE              "settxfee"
 #define METHOD_ADDMULTISIGADDRESS    "addmultisigaddress"
 #define METHOD_CREATEMULTISIG        "createmultisig"
+#define METHOD_GETTXOUT              "gettxout"
 #define METHOD_GETTRANSACTION        "gettransaction"
 #define METHOD_GETRAWTRANSACTION     "getrawtransaction"
 #define METHOD_DECODERAWTRANSACTION  "decoderawtransaction"
@@ -57,7 +58,7 @@ void BtcJson::Initialize()
 
 }
 
-BtcRpcPacketPtr BtcJson::CreateJsonQuery(const std::string &command, Json::Value params, std::string id)
+BtcRpcPacketPtr BtcJson::CreateJsonQuery(const std::string &command, const Json::Value &params, std::string id)
 {
     if(id.empty())
         id = command;
@@ -133,12 +134,13 @@ void BtcJson::GetInfo()
     uint64_t balance = this->modules->btcHelper->CoinsToSatoshis(result["balance"].asDouble());
 }
 
-int64_t BtcJson::GetBalance(const char *account/*=NULL*/)
+int64_t BtcJson::GetBalance(const char *account/*=NULL*/, const int32_t &minConfirmations)
 {
-    // note: json and bitcoin- make a difference between NULL-strings and empty strings.
+    // note: json and bitcoind make a difference between NULL-strings and empty strings.
 
     Json::Value params = Json::Value();
     params.append(account != NULL ? account : Json::Value());      // account
+    params.append(minConfirmations);
     //params.append(1);       // min confirmations, 1 is default, we probably don't need this line.
 
     BtcRpcPacketPtr reply = this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_GETBALANCE));
@@ -160,11 +162,11 @@ std::string BtcJson::GetAccountAddress(const std::string &account)
     Json::Value result = Json::Value();
     if(!ProcessRpcString(this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_GETACCOUNTADDRESS, params)), result))
     {
-        return "";     // error
+        return std::string();     // error
     }
 
     if(!result.isString())
-        return "";     // this should never happen unless the protocol was changed
+        return std::string();     // this should never happen unless the protocol was changed
 
     return result.asString();
 }
@@ -183,11 +185,11 @@ std::string BtcJson::GetNewAddress(const std::string &account)
     Json::Value result = Json::Value();
     if(!ProcessRpcString(this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_GETNEWADDRESS, params)), result))
     {
-        return "";
+        return std::string();
     }
 
     if(!result.isString())
-        return "";     // this should never happen unless the protocol was changed
+        return std::string();     // this should never happen unless the protocol was changed
 
     return result.asString();
 }
@@ -223,7 +225,7 @@ std::string BtcJson::GetPublicKey(const std::string &address)
 {
     BtcAddressInfoPtr addrInfo = ValidateAddress(address);
     if(addrInfo == NULL)
-        return "";
+        return std::string();
 
     return addrInfo->pubkey;
 }
@@ -243,7 +245,7 @@ std::string BtcJson::DumpPrivKey(const std::string &address)
                 this->modules->btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_DUMPPRIVKEY, params)),
                 result))
-        return "";
+        return std::string();
 
     return result.asString();
 }
@@ -297,7 +299,7 @@ BtcMultiSigAddressPtr BtcJson::CreateMultiSigAddress(const int32_t &nRequired, c
     return multiSigAddr;
 }
 
-std::string BtcJson::GetRedeemScript(int nRequired, btc::stringList keys)
+std::string BtcJson::GetRedeemScript(const int32_t &nRequired, const btc::stringList &keys)
 {
     // we can also get it from 'validateaddress' if we used 'addmultisigaddress'
     return CreateMultiSigAddress(nRequired, keys)->redeemScript;
@@ -319,7 +321,7 @@ btc::stringList BtcJson::ListAccounts(const int32_t &minConf, const bool &includ
     return result.getMemberNames();      // each key is an account, each value is the account's balance
 }
 
-BtcAddressBalances BtcJson::ListReceivedByAddress(const int32_t &minConf, bool includeEmpty, bool includeWatchonly)
+BtcAddressBalances BtcJson::ListReceivedByAddress(const int32_t &minConf, const bool &includeEmpty, const bool &includeWatchonly)
 {
     Json::Value params = Json::Value();
     params.append(minConf);
@@ -399,7 +401,7 @@ BtcUnspentOutputs BtcJson::ListUnspent(const int32_t &minConf, const int32_t &ma
 
 
 
-std::string BtcJson::SendToAddress(const std::string &btcAddress, int64_t amount)
+std::string BtcJson::SendToAddress(const std::string &btcAddress, const int64_t &amount)
 {
     // TODO: handle lack of funds, need of transaction fees and unlocking of the wallet
 
@@ -410,15 +412,15 @@ std::string BtcJson::SendToAddress(const std::string &btcAddress, int64_t amount
     Json::Value result = Json::Value();
     if(!ProcessRpcString(
                 this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_SENDTOADDRESS, params)),result))
-        return "";   // error
+        return std::string();   // error
 
     if(!result.isString())
-        return "";    // shouldn't happen unless protocol was changed
+        return std::string();    // shouldn't happen unless protocol was changed
 
     return result.asString();
 }
 
-bool BtcJson::SetTxFee(int64_t fee)
+bool BtcJson::SetTxFee(const int64_t &fee)
 {
     Json::Value params = Json::Value();
     params.append(this->modules->btcHelper->SatoshisToCoins(fee));
@@ -446,18 +448,42 @@ std::string BtcJson::SendMany(BtcTxTargets txTargets, const std::string &fromAcc
                 this->modules->btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_SENDMANY, params)),
                 result))
-        return "";
+        return std::string();
 
     if(!result.isString())
-        return "";
+        return std::string();
 
     return result.asString();
 }
 
-BtcTransactionPtr BtcJson::GetTransaction(std::string txID)
+BtcUnspentOutputPtr BtcJson::GetTxOut(const std::string &txId, const int32_t &vout)
 {
     Json::Value params = Json::Value();
-    params.append(txID);
+    params.append(txId);
+    params.append(vout);
+
+    Json::Value result = Json::Value();
+    if(!ProcessRpcString(
+                this->modules->btcRpc->SendRpc(
+                    CreateJsonQuery(METHOD_GETTXOUT, params)), result))
+        return BtcUnspentOutputPtr();   // error
+
+    if(!result.isObject())
+        return BtcUnspentOutputPtr();   // error
+
+    if(result.empty())
+        return BtcUnspentOutputPtr();   // error
+
+    BtcUnspentOutputPtr transaction = BtcUnspentOutputPtr(new BtcUnspentOutput(result));
+    transaction->txId = txId;
+    transaction->vout = vout;
+    return transaction;
+}
+
+BtcTransactionPtr BtcJson::GetTransaction(const std::string &txId)
+{
+    Json::Value params = Json::Value();
+    params.append(txId);
 
     Json::Value result = Json::Value();
     if(!ProcessRpcString(
@@ -472,27 +498,27 @@ BtcTransactionPtr BtcJson::GetTransaction(std::string txID)
     return transaction;
 }
 
-std::string BtcJson::GetRawTransaction(std::string txID)
+std::string BtcJson::GetRawTransaction(const std::string &txId)
 {
     Json::Value params = Json::Value();
-    params.append(txID);
+    params.append(txId);
 
     Json::Value result = Json::Value();
     if(!ProcessRpcString(
                 this->modules->btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_GETRAWTRANSACTION, params)), result))
-        return "";    // error
+        return std::string();    // error
 
     if(!result.isString())
-        return "";    // error
+        return std::string();    // error
 
     return result.asString();
 }
 
-BtcRawTransactionPtr BtcJson::GetDecodedRawTransaction(std::string txID)
+BtcRawTransactionPtr BtcJson::GetDecodedRawTransaction(const std::string &txId)
 {
     Json::Value params = Json::Value();
-    params.append(txID);
+    params.append(txId);
     params.append(1);
 
     Json::Value result = Json::Value();
@@ -510,7 +536,7 @@ BtcRawTransactionPtr BtcJson::GetDecodedRawTransaction(std::string txID)
 
 }
 
-BtcRawTransactionPtr BtcJson::DecodeRawTransaction(std::string rawTransaction)
+BtcRawTransactionPtr BtcJson::DecodeRawTransaction(const std::string &rawTransaction)
 {
     Json::Value params = Json::Value();
     params.append(rawTransaction);
@@ -544,7 +570,7 @@ std::string BtcJson::CreateRawTransaction(BtcTxIdVouts unspentOutputs, BtcTxTarg
     if(!ProcessRpcString(
                 this->modules->btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_CREATERAWTRANSACTION, params)), result))
-        return "";  // error
+        return std::string();  // error
 
     return result.asString();
 }
@@ -625,7 +651,7 @@ std::string BtcJson::SendRawTransaction(const std::string &rawTransaction)
     if(!ProcessRpcString(
                 this->modules->btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_SENDRAWTRANSACTION, params)), result))
-        return "";  // error
+        return std::string();  // error
 
     return result.asString();
 }
@@ -660,7 +686,7 @@ int BtcJson::GetBlockCount()
     return (int)result.asInt();
 }
 
-std::string BtcJson::GetBlockHash(int blockNumber)
+std::string BtcJson::GetBlockHash(const int32_t &blockNumber)
 {
     Json::Value params = Json::Value();
     params.append(blockNumber);
@@ -669,7 +695,7 @@ std::string BtcJson::GetBlockHash(int blockNumber)
     if(!ProcessRpcString(
                 this->modules->btcRpc->SendRpc(
                     CreateJsonQuery(METHOD_GETBLOCKHASH, params)), result))
-        return "";
+        return std::string();
 
     return result.asString();
 }

@@ -116,7 +116,7 @@ public:
 
     // Lists unspent outputs, including watchonly addresses
     // addresses [optional]: limit results to addresses
-    virtual BtcUnspentOutputs ListUnspentOutputs(const std::vector<std::string> &addresses = std::vector<std::string>());
+    virtual BtcUnspentOutputs ListUnspentOutputs(const btc::stringList &addresses = btc::stringList());
 
     /*
         std::map<std::string, int64_t> GetAddressesAndBalances();

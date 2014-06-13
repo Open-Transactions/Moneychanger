@@ -43,7 +43,7 @@ class BtcHelper
 {
 public:
     // default min confirmations to wait for before displaying a transaction
-    static int MinConfirms;
+    static int32_t MinConfirms;
 
     // default max confirmations
     static int32_t MaxConfirms;
@@ -126,11 +126,16 @@ public:
     // Only works when bitcoind received the blocks containing those transactions.
     BtcUnspentOutputs FindSignableOutputs(const btc::stringList &txIds);
 
+    BtcUnspentOutputs FindSignableOutputs(const BtcUnspentOutputs &outputs);
+
+    // checks a list of tx outputs if they are spent, returns unspent
     BtcUnspentOutputs FindUnspentOutputs(BtcUnspentOutputs possiblySpentOutputs);
+
+    BtcUnspentOutputs FindUnspentOutputs(const btc::stringList &txIdsToCheck);
 
     // Looks through a list of txIds to find everything we can sign and haven't spent yet
     // only works with own and imported addresses and up-to-date blockchain
-    BtcUnspentOutputs FindUnspentSignableOutputs(const btc::stringList &txIds, BtcUnspentOutputs outputsToSearch = BtcUnspentOutputs());
+    BtcUnspentOutputs FindUnspentSignableOutputs(const btc::stringList &txIds);
 
     // Creates the signing prerequisites corresponding to those outputs
     BtcSigningPrerequisites GetSigningPrerequisites(const BtcUnspentOutputs &outputs);

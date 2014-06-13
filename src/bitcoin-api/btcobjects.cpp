@@ -95,7 +95,7 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
     this->inputs = std::vector<VIN>();
     this->outputs = std::vector<VOUT>();
 
-    this->txID = rawTx["txid"].asString();
+    this->txId = rawTx["txid"].asString();
     this->Version = rawTx["version"].asInt64();
     this->LockTime = rawTx["locktime"].asInt64();
 
@@ -140,12 +140,46 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
 
 BtcUnspentOutput::BtcUnspentOutput(Json::Value unspentOutput)
 {
+    Json::Value scriptPubKeyVal = unspentOutput["scriptPubKey"];
+    if(scriptPubKeyVal.isObject())
+    {
+        this->scriptPubKey = scriptPubKeyVal["hex"].asString();
+
+        // 'gettxout' returns addresses[] as array
+        Json::Value addresses = scriptPubKeyVal["addresses"];
+        if(!addresses.empty() && addresses.size() == 1)
+        {
+            Json::Value address = Json::Value(addresses[0]);
+            if(address.isString())
+            {
+                this->address = address.asString();
+            }
+            else
+            {
+                this->address = std::string();
+            }
+        }
+        else
+        {
+            this->address = std::string();
+        }
+
+        this->amount = BtcHelper::CoinsToSatoshis(unspentOutput["value"].asDouble());
+    }
+    else if(scriptPubKeyVal.isString())
+    {
+        this->address = unspentOutput["address"].asString();
+        this->scriptPubKey = scriptPubKeyVal.asString();
+        this->amount = BtcHelper::CoinsToSatoshis(unspentOutput["amount"].asDouble());
+    }
+    else
+    {
+        this->scriptPubKey = std::string();
+    }
+
     this->txId = unspentOutput["txid"].asString();
     this->vout = unspentOutput["vout"].asInt64();
-    this->address = unspentOutput["address"].asString();
     this->account = unspentOutput["account"].asString();
-    this->scriptPubKey = unspentOutput["scriptPubKey"].asString();
-    this->amount = BtcHelper::CoinsToSatoshis(unspentOutput["amount"].asDouble());
     this->confirmations = unspentOutput["confirmations"].asInt64();
     this->spendable = unspentOutput["spendable"].asBool();
 }
@@ -276,10 +310,14 @@ BtcSigningPrerequisite::BtcSigningPrerequisite()
 BtcSigningPrerequisite::BtcSigningPrerequisite(const std::string &txId, const int64_t &vout, const std::string &scriptPubKey, const std::string &redeemScript)
 {
     // all of these values must be set or else prerequisite is invalid
+    // or maybe not. maybe there's a difference between regular and multisig. the more you know...
+
     (*this)["txid"] = txId;
     (*this)["vout"] = static_cast<Json::Int64>(vout);
-    (*this)["scriptPubKey"] = scriptPubKey;
-    (*this)["redeemScript"] = redeemScript;
+    if(!scriptPubKey.empty())
+        (*this)["scriptPubKey"] = scriptPubKey;
+    if(!redeemScript.empty())
+        (*this)["redeemScript"] = redeemScript;
 }
 
 void BtcSigningPrerequisite::SetTxId(std::string txId)

@@ -465,8 +465,8 @@ bool BtcTest::TestImportMultisig(int32_t confirmations)
 
     // now spend from the multisig
     std::string receivingAddress = bitcoin2.mtBitcoin->GetNewAddress("multisigrelease");
-    BtcSignedTransactionPtr transaction1 = bitcoin1.mtBitcoin->VoteMultiSigRelease(txToMultisig->txID, multiSig, receivingAddress);
-    BtcSignedTransactionPtr transaction2 = bitcoin2.mtBitcoin->VoteMultiSigRelease(txToMultisig->txID, multiSig, receivingAddress);
+    BtcSignedTransactionPtr transaction1 = bitcoin1.mtBitcoin->VoteMultiSigRelease(txToMultisig->txId, multiSig, receivingAddress);
+    BtcSignedTransactionPtr transaction2 = bitcoin2.mtBitcoin->VoteMultiSigRelease(txToMultisig->txId, multiSig, receivingAddress);
     BtcSignedTransactionPtr transaction = bitcoin2.mtBitcoin->CombineTransactions(transaction1->signedTransaction + transaction2->signedTransaction);
     std::string txReleaseId = bitcoin2.mtBitcoin->SendRawTransaction(transaction->signedTransaction);
     if(txReleaseId.empty())

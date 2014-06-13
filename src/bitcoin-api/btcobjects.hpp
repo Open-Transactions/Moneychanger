@@ -91,7 +91,7 @@ private:
 
 struct BtcRawTransaction
 {
-    std::string txID;
+    std::string txId;
     int32_t Version;
     time_t LockTime;
 
@@ -115,7 +115,7 @@ struct BtcRawTransaction
         uint32_t n ;                     // outputs array index
         // std::string ScriptPubKeyAsm; // add this when you need it
         std::string scriptPubKeyHex;    // needed to spend offline transactions
-        uint32_t reqSigs;               // signatures required to spend the output I think?
+        uint32_t reqSigs;               // this is NOT the number of signatures needed for multisig.
         std::string Type;               // scripthash, pubkeyhash, ..
         btc::stringList addresses;      // an array of addresses receiving the value.
 
@@ -150,7 +150,7 @@ struct BtcUnspentOutput
     std::string scriptPubKey;
     int64_t amount;
     uint32_t confirmations;
-    bool spendable;
+    bool spendable;             // false if it's a watchonly address
 
     BtcUnspentOutput(Json::Value unspentOutput);
 };
