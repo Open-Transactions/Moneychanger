@@ -42,6 +42,12 @@ void SampleEscrowTransaction::CheckTransaction(int minConfirms)
     //if(this->status == Successfull)
     //    return;
 
+    if(txId.empty())
+    {
+        this->status = Failed;
+        return;
+    }
+
     // wait for the transaction to be broadcasted over the network
     // and get an object containing info
     // we have to use raw transactions here because bitcoin- doesn't properly support multi-sig yet
@@ -80,5 +86,5 @@ void SampleEscrowTransaction::CheckTransaction(int minConfirms)
             this->status = Conflicted;
     }
 
-    this->confirmations = this->modules->mtBitcoin->GetConfirmations(rawTx->txID);
+    this->confirmations = this->modules->mtBitcoin->GetConfirmations(rawTx->txId);
 }
