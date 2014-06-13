@@ -391,10 +391,12 @@ BtcUnspentOutputs BtcHelper::ListNewOutputs(BtcUnspentOutputs knownOutputs, cons
     for(BtcUnspentOutputs::iterator output = outputs.begin(); output != outputs.end(); output++)
     {
         // check if we already know about them
-        btc::stringList::const_iterator it;
+        btc::stringList::iterator it;
         it = find (knownOutputTxIds.begin(), knownOutputTxIds.end(), (*output)->txId);
         if(it == knownOutputTxIds.end())
-            newOutputs.push_back((*output));   // and add them if we don't
+            newOutputs.push_back((*output));   // add them if we don't
+        else
+            knownOutputTxIds.erase(it, it);
     }
 
     return newOutputs;
