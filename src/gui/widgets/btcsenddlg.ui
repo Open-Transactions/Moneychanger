@@ -241,12 +241,12 @@
           <rect>
            <x>20</x>
            <y>260</y>
-           <width>93</width>
+           <width>151</width>
            <height>27</height>
           </rect>
          </property>
          <property name="text">
-          <string>Find outputs</string>
+          <string>Find unspent outputs</string>
          </property>
         </widget>
         <widget class="QPlainTextEdit" name="textOutputs">
@@ -469,6 +469,38 @@
          </property>
          <property name="text">
           <string>0.0</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="buttonShowUnspentTxids">
+         <property name="geometry">
+          <rect>
+           <x>530</x>
+           <y>35</y>
+           <width>151</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Show spendable txids</string>
+         </property>
+        </widget>
+        <widget class="QCheckBox" name="checkExcludeUnsignable">
+         <property name="geometry">
+          <rect>
+           <x>180</x>
+           <y>265</y>
+           <width>161</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Exclude unsignable</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </widget>

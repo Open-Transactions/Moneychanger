@@ -129,7 +129,8 @@ void BtcTransactionManager::RefreshPoolTransactions(bool refreshAll)
     {
         for(txIter = client->poolTxMap[poolName].begin(); txIter != client->poolTxMap[poolName].end(); txIter++)
         {
-            (*txIter)->CheckTransaction(BtcHelper::WaitForConfirms);
+            if((*txIter)->status != SampleEscrowTransaction::Successfull)
+                (*txIter)->CheckTransaction(BtcHelper::WaitForConfirms);
         }
     }
 

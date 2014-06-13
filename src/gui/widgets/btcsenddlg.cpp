@@ -5,6 +5,8 @@
 #include <gui/widgets/btcsenddlg.hpp>
 #include <ui_btcsenddlg.h>
 
+#include <gui/widgets/btctxidlist.hpp>
+
 #include <core/modules.hpp>
 
 #include <bitcoin/poolmanager.hpp>
@@ -21,6 +23,8 @@ BtcSendDlg::BtcSendDlg(QWidget *parent) :
     ui->setupUi(this);
 
     this->client = Modules::sampleEscrowClient;
+
+    this->txIdList = NULL;
 }
 
 BtcSendDlg::~BtcSendDlg()
@@ -65,7 +69,12 @@ void BtcSendDlg::on_buttonFindOutputs_clicked()
     }
 
     // find outputs
-    BtcUnspentOutputs outputs = Modules::btcModules->btcHelper->FindSignableOutputs(txIds);
+    BtcUnspentOutputs outputs;
+    if(this->ui->checkExcludeUnsignable->isChecked())
+        outputs = Modules::btcModules->btcHelper->FindUnspentSignableOutputs(txIds);
+    else
+        outputs = Modules::btcModules->btcHelper->FindUnspentOutputs(txIds);
+
     int64_t spendableAmount = 0;
     for(BtcUnspentOutputs::const_iterator output = outputs.begin(); output != outputs.end(); output++)
     {
@@ -125,6 +134,18 @@ void BtcSendDlg::on_buttonSendRawTx_clicked()
     std::string txId = Modules::btcModules->btcJson->SendRawTransaction(this->ui->textRawTxSigned->toPlainText().toStdString());
     this->ui->editTxid->setText(QString::fromStdString(txId));
 
+    if(txId.empty())
+        return;
+
     this->ui->buttonSendRawTx->setEnabled(false);
     this->ui->labelMultisigSpendable->setText(txId.empty() ? "Not sent" : "Sent");
+}
+
+void BtcSendDlg::on_buttonShowUnspentTxids_clicked()
+{
+    if(this->txIdList == NULL)
+        this->txIdList = new BtcTxIdList();
+
+    this->txIdList->Update();
+    this->txIdList->show();
 }

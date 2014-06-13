@@ -8,6 +8,8 @@
 
 #include <QWidget>
 
+class BtcTxIdList;
+
 namespace Ui {
 class BtcSendDlg;
 }
@@ -31,6 +33,8 @@ private slots:
 
     void on_buttonSendRawTx_clicked();
 
+    void on_buttonShowUnspentTxids_clicked();
+
 private:
     Ui::BtcSendDlg *ui;
 
@@ -41,6 +45,8 @@ private:
     BtcSigningPrerequisites prereqs;
 
     SampleEscrowClientPtr client;
+
+    BtcTxIdList* txIdList;
 };
 
 #endif // BTCSENDDLG_HPP
