@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
+#include <cstdio>       // std::printf
+#include <cstdlib>      // std::find
 #include <algorithm>    // std::find
 
 #ifndef OT_USE_TR1
@@ -18,29 +20,27 @@
     #include <sstream>  // ostringstream
 #endif // OT_USE_TR1
 
-namespace btc   // will probably put everything into this namespace
-{
-    void Sleep(time_t milliSeconds)
-    {
-    #ifndef OT_USE_TR1
-        std::this_thread::sleep_for(std::chrono::milliseconds(milliSeconds));
-        std::this_thread::yield();  // let's also free some CPU because who cares about a few ms here?
-    #else
-        usleep(milliSeconds * 1000);
-    #endif // OT_USE_TR1
-    }
 
-    template <typename T>
-    std::string to_string(T number)
-    {
-    #ifndef OT_USE_TR1
-        return std::to_string(number);
-    #else
-         std::ostringstream oOStrStream;
-         oOStrStream << number;
-         return oOStrStream.str();
-    #endif
-    }
+void btc::Sleep(time_t milliSeconds)
+{
+#ifndef OT_USE_TR1
+    std::this_thread::sleep_for(std::chrono::milliseconds(milliSeconds));
+    std::this_thread::yield();  // let's also free some CPU because who cares about a few ms here?
+#else
+    usleep(milliSeconds * 1000);
+#endif // OT_USE_TR1
+}
+
+template <typename T>
+std::string btc::to_string(T number)
+{
+#ifndef OT_USE_TR1
+    return std::to_string(number);
+#else
+    std::ostringstream oOStrStream;
+    oOStrStream << number;
+    return oOStrStream.str();
+#endif
 }
 
 
@@ -141,7 +141,7 @@ int64_t BtcHelper::GetTotalOutput(BtcRawTransactionPtr transaction, const std::s
         // I don't know what outputs to multiple addresses mean so I'm not gonna trust them for now.
         if(transaction->outputs[i].addresses.size() > 1)
         {
-            printf("Multiple output addresses per output detected.");
+            std::printf("Multiple output addresses per output detected.");
             std::cout.flush();
             continue;
         }
@@ -392,7 +392,7 @@ BtcUnspentOutputs BtcHelper::ListNewOutputs(BtcUnspentOutputs knownOutputs, cons
     {
         // check if we already know about them
         btc::stringList::iterator it;
-        it = find (knownOutputTxIds.begin(), knownOutputTxIds.end(), (*output)->txId);
+        it = std::find (knownOutputTxIds.begin(), knownOutputTxIds.end(), (*output)->txId);
         if(it == knownOutputTxIds.end())
             newOutputs.push_back((*output));   // add them if we don't
         else

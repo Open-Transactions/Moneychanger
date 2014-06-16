@@ -9,8 +9,6 @@
 #include <iostream>
 #include <string.h>
 #include <cstdio>
-#include <cstdlib>
-
 
 BtcRpcPacketPtr BtcRpcCurl::connectString = BtcRpcPacketPtr(new BtcRpcPacket("{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }"));
 
@@ -103,7 +101,7 @@ static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userp)
 
     //if(pooh->data == NULL)
     //{
-    //    printf("realloc failed when reading data from bitcoin-qt\n");
+    //    std::printf("realloc failed when reading data from bitcoin-qt\n");
     //    std::cout.flush();
     //    return 0;
     //}
@@ -173,7 +171,6 @@ bool BtcRpcCurl::ConnectToBitcoin(const std::string &user, const std::string &pa
 {
     return ConnectToBitcoin(BitcoinServerPtr(new BitcoinServer(user, password, url, port)));
 }
-
 
 BtcRpcPacketPtr BtcRpcCurl::SendRpc(const std::string &jsonString)
 {
@@ -273,7 +270,7 @@ BtcRpcPacketPtr BtcRpcCurl::SendRpc(BtcRpcPacketPtr jsonString)
     curl_easy_getinfo(this->curl, CURLINFO_RESPONSE_CODE, &httpcode);
     if(httpcode == 401)
     {
-        printf("Error connecting to bitcoind: Wrong username or password\n");
+        std::printf("Error connecting to bitcoind: Wrong username or password\n");
         std::cout.flush();
         mutex = false;
         return BtcRpcPacketPtr();

@@ -75,6 +75,8 @@ license you like.
 
 #include <json/json.h>
 
+// #include <cstdio>  // uncomment if you want to use printf or some people will get compiler errors
+
 
 // //////////////////////////////////////////////////////////////////////
 // Beginning of content of file: src/lib_json/json_tool.h
@@ -1119,7 +1121,7 @@ public:
       : freeHead_( 0 )
       , objectsPerPage_( objectsPerPage )
    {
-//      printf( "Size: %d => %s\n", sizeof(AllocatedType), typeid(AllocatedType).name() );
+//      std::printf( "Size: %d => %s\n", sizeof(AllocatedType), typeid(AllocatedType).name() );
       assert( sizeof(AllocatedType) * objectPerAllocation >= sizeof(AllocatedType *) ); // We must be able to store a slist in the object free space.
       assert( objectsPerPage >= 16 );
       batches_ = allocateBatch( 0 );   // allocated a dummy page

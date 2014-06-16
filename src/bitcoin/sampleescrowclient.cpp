@@ -9,7 +9,8 @@
 
 #include <QTimer>
 
-#include <cstdlib>
+#include <cstdio>  // printf
+#include <cstdlib> // find
 
 // random name generator
 void gen_random(char *s, const int len)
@@ -48,29 +49,22 @@ struct SampleEscrowClient::Action
 SampleEscrowClient::SampleEscrowClient(QObject* parent)
     :QObject(parent)
 {   
-    this->modules = BtcModulesPtr(new BtcModules());
-
-    // generate random client name
-    this->clientName = "                   ";
-    gen_random((char*)this->clientName.c_str(), this->clientName.size());
-
-    this->updateTimer = new QTimer(parent);
-    updateTimer->setInterval(100);
-    updateTimer->start();
-    connect(updateTimer, SIGNAL(timeout()), this, SLOT(Update()));
-
-    Reset();
+    Initialize();
 }
 
 SampleEscrowClient::SampleEscrowClient(BitcoinServerPtr rpcServer, QObject *parent)
-    : SampleEscrowClient(parent)
+    :QObject(parent)
 {
+    Initialize();
+
     this->rpcServer = rpcServer;
 }
 
 SampleEscrowClient::SampleEscrowClient(BtcModulesPtr modules, QObject *parent)
-    : SampleEscrowClient(parent)
+    :QObject(parent)
 {
+    Initialize();
+
     this->modules = modules;
 }
 
@@ -79,6 +73,22 @@ SampleEscrowClient::~SampleEscrowClient()
     this->rpcServer.reset();
 
     delete this->updateTimer;
+}
+
+void SampleEscrowClient::Initialize()
+{
+    this->modules = BtcModulesPtr(new BtcModules());
+
+    // generate random client name
+    this->clientName = "                   ";
+    gen_random((char*)this->clientName.c_str(), this->clientName.size());
+
+    this->updateTimer = new QTimer();
+    updateTimer->setInterval(100);
+    updateTimer->start();
+    connect(updateTimer, SIGNAL(timeout()), this, SLOT(Update()));
+
+    Reset();
 }
 
 void SampleEscrowClient::Reset()
@@ -327,7 +337,7 @@ void SampleEscrowClient::GetPoolTxCount(ActionPtr action)
     SampleEscrowServerPtr server = action->pool->escrowServers.first();
     this->poolTxCountMap[action->pool->poolName] = server->GetClientTransactionCount(this->clientName);
 
-    printf("Pool Tx count: %lu\n", this->poolTxCountMap[action->pool->poolName]);
+    std::printf("Pool Tx count: %lu\n", this->poolTxCountMap[action->pool->poolName]);
     std::cout.flush();
 }
 

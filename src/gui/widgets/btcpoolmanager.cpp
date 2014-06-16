@@ -107,7 +107,8 @@ void BtcPoolManager::on_buttonAddSimPool_clicked()
     EscrowPoolPtr escrowPool = EscrowPoolPtr(new EscrowPool(sigsRequired));
 
     // give pool a name
-    escrowPool->poolName = "pool #" + btc::to_string(Modules::poolManager->escrowPools.size());
+    //escrowPool->poolName = "pool #" + btc::to_string(Modules::poolManager->escrowPools.size());
+    escrowPool->poolName = "pool #" + QString::number(Modules::poolManager->escrowPools.size()).toStdString();
 
     // add pool to global pool list
     Modules::poolManager->AddPool(escrowPool);
@@ -183,11 +184,13 @@ void BtcPoolManager::on_buttonDeleteme_clicked()
 
     for(int i = 0; i < 4; i++)
     {
-        BitcoinServerPtr rpcServer = BitcoinServerPtr(new BitcoinServer("admin" + btc::to_string(i+2), "123", "http://127.0.0.1", 19011 + i*10));
+        //BitcoinServerPtr rpcServer = BitcoinServerPtr(new BitcoinServer("admin" + btc::to_string(i+2), "123", "http://127.0.0.1", 19011 + i*10));
+        BitcoinServerPtr rpcServer = BitcoinServerPtr(new BitcoinServer("admin" + QString::number(i+2).toStdString(), "123", "http://127.0.0.1", 19011 + i*10));
         rpcServers.push_back(rpcServer);
 
         EscrowPoolPtr pool = EscrowPoolPtr(new EscrowPool(3));
-        pool->poolName = "pool #" + btc::to_string(i);
+        //pool->poolName = "pool #" + btc::to_string(i);
+        pool->poolName = "pool #" + QString::number(i).toStdString();
         pools.push_back(pool);
 
         SampleEscrowServerZmqPtr master = SampleEscrowServerZmqPtr(new SampleEscrowServerZmq(rpcServer, pool, 20001 + i));

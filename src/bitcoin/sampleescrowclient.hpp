@@ -24,6 +24,8 @@ public:
     SampleEscrowClient(BtcModulesPtr modules, QObject *parent = NULL);
     ~SampleEscrowClient();
 
+    virtual void Initialize();
+
     virtual void Reset();
 
     /** Deposit **/

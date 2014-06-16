@@ -10,7 +10,7 @@
 #include <zmq.hpp>
 
 #include <string>
-#include <cstdlib>
+#include <cstdio>
 #include <QTime>
 
 
@@ -41,7 +41,8 @@ SampleEscrowServerZmq::SampleEscrowServerZmq(BitcoinServerPtr bitcoind, EscrowPo
 
     this->connectString = "tcp://";
     this->connectString += this->serverInfo->url + ":";
-    this->connectString += btc::to_string(this->serverInfo->port);
+    //this->connectString += btc::to_string(this->serverInfo->port);
+    this->connectString = QString::number(this->serverInfo->port).toStdString();
 
     InitNetMessages();
 }
@@ -423,7 +424,8 @@ void SampleEscrowServerZmq::StartServer()
     std::string connectString = "tcp://";
     connectString += this->serverInfo->url;
     connectString += ":";
-    connectString += btc::to_string(this->serverInfo->port);
+    //connectString += btc::to_string(this->serverInfo->port);
+    connectString = QString::number(this->serverInfo->port).toStdString();
     this->serverSocket->bind(connectString.c_str());
 }
 
@@ -472,7 +474,7 @@ void SampleEscrowServerZmq::UpdateServer()
             BtcNetMsgConnectPtr message = BtcNetMsgConnectPtr(new BtcNetMsgConnect());
             memcpy(message->data, request->data(), NetMessageSizes[messageType]);
             ClientConnected(message);
-            printf("client connected\n");
+            std::printf("client connected\n");
             std::cout.flush();
             break;
         }
@@ -582,7 +584,7 @@ void SampleEscrowServerZmq::UpdateServer()
             break;
         }
         default:
-            printf("received malformed message\n");
+            std::printf("received malformed message\n");
             std::cout.flush();
             break;
         }

@@ -87,11 +87,11 @@ bool BtcTest::TestBtcRpc()
             if(c)
             {
                 data += *c;
-                printf("%c\n", *c);
+                std::printf("%c\n", *c);
             }
             std::cout.flush();
         }
-        printf("%s\n", data.c_str());
+        std::printf("%s\n", data.c_str());
         std::cout.flush();
     }
 
@@ -336,7 +336,7 @@ bool BtcTest::TestMultiSigWithdrawal(int minConfirms)
     if(targetAddress.empty())
         return false;
 
-    printf("releasing escrow from Tx #%s,\n address %s\nto address %s\n", depositTxId.c_str(), multiSigAddress.c_str(), targetAddress.c_str());
+    std::printf("releasing escrow from Tx #%s,\n address %s\nto address %s\n", depositTxId.c_str(), multiSigAddress.c_str(), targetAddress.c_str());
     std::cout.flush();
 
     // bitcoind #2 votes to release coins to his own address
@@ -401,7 +401,9 @@ bool BtcTest::TestImportAddress(int32_t confirmations)
     bool stop = false;
     while(!stop)
     {
-        BtcUnspentOutputs outputs = bitcoin2.mtBitcoin->ListUnspentOutputs( {address} );
+        btc::stringList addressList = btc::stringList();
+        addressList.push_back(address);
+        BtcUnspentOutputs outputs = bitcoin2.mtBitcoin->ListUnspentOutputs( addressList );
         for(BtcUnspentOutputs::iterator output = outputs.begin(); output != outputs.end(); output++)
         {
             BtcTransactionPtr transaction = bitcoin2.btcHelper->WaitGetTransaction((*output)->txId);
@@ -418,7 +420,7 @@ bool BtcTest::TestImportAddress(int32_t confirmations)
 
 bool BtcTest::TestImportMultisig(int32_t confirmations)
 {
-    printf("test needed conifirmations: %d\n", confirmations); std::cout.flush();
+    std::printf("test needed conifirmations: %d\n", confirmations); std::cout.flush();
     BtcModules bitcoin1;
     BtcModules bitcoin2;
     if(!bitcoin1.btcRpc->ConnectToBitcoin("admin1", "123", "http://127.0.0.1", 19001))
@@ -431,7 +433,7 @@ bool BtcTest::TestImportMultisig(int32_t confirmations)
     std::string addr2 = bitcoin2.mtBitcoin->GetNewAddress("multisig2");
     std::string pubkey2 = bitcoin2.mtBitcoin->GetPublicKey(addr2);
 
-    btc::stringList pubKeys = { pubkey1, pubkey2 };
+    btc::stringList pubKeys; pubKeys.push_back(pubkey1); pubKeys.push_back(pubkey2);
     std::string multiSig = bitcoin1.mtBitcoin->GetMultiSigAddress(2, pubKeys, true, "multisigAddress");
     bitcoin2.mtBitcoin->GetMultiSigAddress(2, pubKeys, true, "multisigAddress");
 
@@ -449,7 +451,9 @@ bool BtcTest::TestImportMultisig(int32_t confirmations)
     BtcUnspentOutputs newOutputs = BtcUnspentOutputs();
     while(true)
     {
-        newOutputs = bitcoin2.btcHelper->ListNewOutputs(newOutputs, {multiSig});
+        btc::stringList multiSigList = btc::stringList();
+        multiSigList.push_back(multiSig);
+        newOutputs = bitcoin2.btcHelper->ListNewOutputs(newOutputs, {multiSigList});
         btc::Sleep(500);
         if(newOutputs.size() > 0)
             break;

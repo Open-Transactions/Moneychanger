@@ -12,6 +12,10 @@
 #include <QTimer>
 #include <QMutex>
 
+#include <cstdio>
+#include <cstdlib>
+#include <algorithm>
+
 time_t prevTime = 0;
 
 struct SampleEscrowServer::ClientRequest
@@ -594,7 +598,8 @@ SampleEscrowTransactionPtr SampleEscrowServer::GetClientTransaction(const std::s
         return SampleEscrowTransactionPtr();
     }
 
-    SampleEscrowTransactions::iterator tx = std::next(clientHistory->second.begin(), txIndex);
+    SampleEscrowTransactions::iterator tx = clientHistory->second.begin();
+    std::advance(tx, txIndex);      // silly c++03
     if(tx == clientHistory->second.end())
     {
         this->mutex->unlock();

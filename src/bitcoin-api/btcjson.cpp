@@ -138,7 +138,7 @@ void BtcJson::ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json
 
     // Outputs the entire JSON reply:
     Json::StyledWriter writer;
-    printf("Received JSON:\n%s\n", writer.write(replyObj).c_str());
+    std::printf("Received JSON:\n%s\n", writer.write(replyObj).c_str());
     std::cout.flush();
 
     if(replyObj.isObject())
@@ -149,7 +149,7 @@ void BtcJson::ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json
         error = replyObj["error"];
         if(!error.isNull())
         {
-            printf("Error in reply to \"%s\": %s\n\n", id.c_str(), error.isObject() ? (error["message"]).asString().c_str() : "");
+            std::printf("Error in reply to \"%s\": %s\n\n", id.c_str(), error.isObject() ? (error["message"]).asString().c_str() : "");
             std::cout.flush();
         }
 
