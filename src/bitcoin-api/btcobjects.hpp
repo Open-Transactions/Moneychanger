@@ -282,6 +282,8 @@ struct BtcRpcPacket
 
     ~BtcRpcPacket();
 
+    void ResetOffset();
+
     // appends data to data
     bool AddData(const std::string strData);
 

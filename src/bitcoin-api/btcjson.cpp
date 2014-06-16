@@ -10,6 +10,11 @@
 #include <map>
 #include <cstdio>
 
+#include "FastDelegate.hpp"
+using namespace fastdelegate;
+
+using namespace btc::json;
+
 // https://en.bitcoin.it/wiki/Proper_Money_Handling_%28JSON-RPC%29
 
 // bitcoin rpc methods
@@ -41,11 +46,30 @@
 #define METHOD_GETBLOCKHASH          "getblockhash"
 #define METHOD_GETBLOCK              "getblock"
 #define METHOD_SETGENERATE           "setgenerate"
+#define METHOD_WALLETPASSPHRASE      "walletpassphrase"
 
+/*
+ * Methods requiring unlocked wallets:
+ *
+ *  dumpprivkey
+ *  importprivkey (but not importaddress)
+ *  keypoolrefill
+ *  sendfrom
+ *  sendmany
+ *  sendtoaddress
+ *  signmessage
+ *  sometimes signrawtransaction
+ *
+ **/
+
+
+int32_t BtcJson::walletUnlockTime = 2;
 
 BtcJson::BtcJson(BtcModules *modules)
 {
     this->modules = modules;
+
+    this->passwordCallback = NULL;
 }
 
 BtcJson::~BtcJson()
@@ -56,6 +80,22 @@ BtcJson::~BtcJson()
 void BtcJson::Initialize()
 {
 
+}
+
+void BtcJson::SetPasswordCallback(fastdelegate::FastDelegate0<std::string> callbackFunction)
+{
+    this->passwordCallback = callbackFunction;
+}
+
+bool BtcJson::SendJsonQuery(BtcRpcPacketPtr jsonString, Json::Value &result)
+{
+    Json::Value errorRef;
+    std::string idRef;
+    ProcessRpcString(this->modules->btcRpc->SendRpc(jsonString), idRef, errorRef, result);
+    if(errorRef.isNull())
+        return true;
+
+    return ProcessError(errorRef, jsonString, result);
 }
 
 BtcRpcPacketPtr BtcJson::CreateJsonQuery(const std::string &command, const Json::Value &params, std::string id)
@@ -97,9 +137,9 @@ void BtcJson::ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json
         return;
 
     // Outputs the entire JSON reply:
-    //Json::StyledWriter writer;
-    //printf("Received JSON:\n%s\n", writer.write(replyObj).c_str());
-    //std::cout.flush();
+    Json::StyledWriter writer;
+    printf("Received JSON:\n%s\n", writer.write(replyObj).c_str());
+    std::cout.flush();
 
     if(replyObj.isObject())
     {
@@ -115,6 +155,40 @@ void BtcJson::ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json
 
         result = replyObj["result"];
     }
+}
+
+bool BtcJson::ProcessError(Json::Value error, BtcRpcPacketPtr jsonString, Json::Value &result)
+{
+    jsonString->ResetOffset();
+
+    RPCErrorCode errorCode = static_cast<RPCErrorCode>(error["code"].asInt());
+
+    switch (errorCode)
+    {
+    case RPC_WALLET_UNLOCK_NEEDED:
+    {
+        if(this->passwordCallback == NULL)
+            break;
+
+        // see if we can get a password and retry
+        std::string password = this->passwordCallback();
+        if(password.empty())
+            return false;
+
+        if(WalletPassphrase(password, walletUnlockTime))
+            return SendJsonQuery(jsonString, result);
+        break;
+    }
+    case RPC_WALLET_ALREADY_UNLOCKED:
+    {
+        return true;    // everything went better than expected
+        break;
+    }
+    default:
+        break;
+    }
+
+    return false;
 }
 
 void BtcJson::GetInfo()
@@ -241,10 +315,7 @@ std::string BtcJson::DumpPrivKey(const std::string &address)
     params.append(address);
 
     Json::Value result = Json::Value();
-    if(!ProcessRpcString(
-                this->modules->btcRpc->SendRpc(
-                    CreateJsonQuery(METHOD_DUMPPRIVKEY, params)),
-                result))
+    if(!SendJsonQuery(CreateJsonQuery(METHOD_DUMPPRIVKEY, params), result))
         return std::string();
 
     return result.asString();
@@ -403,15 +474,12 @@ BtcUnspentOutputs BtcJson::ListUnspent(const int32_t &minConf, const int32_t &ma
 
 std::string BtcJson::SendToAddress(const std::string &btcAddress, const int64_t &amount)
 {
-    // TODO: handle lack of funds, need of transaction fees and unlocking of the wallet
-
     Json::Value params = Json::Value();
     params.append(btcAddress);
     params.append(this->modules->btcHelper->SatoshisToCoins(amount));
 
     Json::Value result = Json::Value();
-    if(!ProcessRpcString(
-                this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_SENDTOADDRESS, params)),result))
+    if(!SendJsonQuery(CreateJsonQuery(METHOD_SENDTOADDRESS, params), result))
         return std::string();   // error
 
     if(!result.isString())
@@ -437,6 +505,8 @@ bool BtcJson::SetTxFee(const int64_t &fee)
 
 std::string BtcJson::SendMany(BtcTxTargets txTargets, const std::string &fromAccount)
 {
+
+
     Json::Value params = Json::Value();
     params.append(fromAccount);     // account to send coins from
 
@@ -444,10 +514,7 @@ std::string BtcJson::SendMany(BtcTxTargets txTargets, const std::string &fromAcc
     params.append(txTargets);    // append map of addresses and btc amounts
 
     Json::Value result = Json::Value();
-    if(!ProcessRpcString(
-                this->modules->btcRpc->SendRpc(
-                    CreateJsonQuery(METHOD_SENDMANY, params)),
-                result))
+    if(!SendJsonQuery(CreateJsonQuery(METHOD_SENDMANY, params), result))
         return std::string();
 
     if(!result.isString())
@@ -580,7 +647,7 @@ BtcSignedTransactionPtr BtcJson::SignRawTransaction(const std::string &rawTransa
     Json::Value params = Json::Value();
     params.append(rawTransaction);
 
-    // add array of unspent outputs
+    // add array of unspent outputs, scriptPubKeys and redeemScripts
     if(previousTransactions.size() > 0)
     {
         Json::Value unspentArray = Json::Value();
@@ -598,7 +665,7 @@ BtcSignedTransactionPtr BtcJson::SignRawTransaction(const std::string &rawTransa
     // add array of private keys used to sign the transaction
     if(privateKeys.size() > 0)
     {
-        Json::Value privKeysArray;               // TODO: figure out how to properly parse a string list
+        Json::Value privKeysArray;
         for(btc::stringList::const_iterator i = privateKeys.begin(); i != privateKeys.end(); i++)
         {
             privKeysArray.append(*i);
@@ -609,12 +676,11 @@ BtcSignedTransactionPtr BtcJson::SignRawTransaction(const std::string &rawTransa
         params.append(Json::Value(Json::nullValue));            // if no private keys were given, append null
 
 
+    // there is an optional argument i didn't implement:
     // params.append(ALL|ANYONECANPAY, NONE|ANYONECANPAY, SINGLE|ANYONECANPAY)
 
     Json::Value result = Json::Value();
-    if(!ProcessRpcString(
-                this->modules->btcRpc->SendRpc(
-                    CreateJsonQuery(METHOD_SIGNRAWTRANSACTION, params)), result))
+    if(!SendJsonQuery(CreateJsonQuery(METHOD_SIGNRAWTRANSACTION, params), result))
         return BtcSignedTransactionPtr();   // error
 
     if(!result.isObject())
@@ -730,4 +796,25 @@ bool BtcJson::SetGenerate(const bool &generate)
         return false;
 
     return true;
+}
+
+bool BtcJson::WalletPassphrase(const std::string &password, const int32_t &unlockTime)
+{
+    Json::Value params = Json::Value();
+    params.append(password);
+    params.append(static_cast<Json::Int>(unlockTime));
+
+    Json::Value result = Json::Value();
+    if(!SendJsonQuery(CreateJsonQuery(METHOD_WALLETPASSPHRASE, params), result))
+        return false;
+
+    return true;
+}
+
+void BtcJson::UnlockWallet()
+{
+    if(this->passwordCallback.empty())
+        return;
+
+    WalletPassphrase(this->passwordCallback(), walletUnlockTime);
 }

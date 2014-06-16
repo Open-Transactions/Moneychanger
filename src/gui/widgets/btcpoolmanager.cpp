@@ -10,6 +10,8 @@
 #include <bitcoin/sampleescrowserverzmq.hpp>
 #include <bitcoin/sampleescrowclient.hpp>
 
+#include <bitcoin-api/btchelper.hpp>
+
 #include <QTimer>
 
 

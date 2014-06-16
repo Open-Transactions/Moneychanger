@@ -10,6 +10,8 @@
 
 #include <curl/curl.h>
 
+#include "FastDelegate.hpp"
+
 #include _CINTTYPES
 #include _MEMORY
 
@@ -43,6 +45,8 @@ class BtcRpcCurl : public IBtcRpc
 public:
     BtcRpcCurl(BtcModules* modules);
     ~BtcRpcCurl();
+
+    //void SetAuthenticationCallback(fastdelegate::fastd
 
     // Returns whether we're connected to bitcoin's http interface
     // Not implemented properly! And probably not necessary. Will have to check to be sure.

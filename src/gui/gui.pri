@@ -23,6 +23,7 @@ FORMS += \
     $${PWD}/widgets/btcsenddlg.ui \
     $${PWD}/widgets/btcpoolmanager.ui \
     $${PWD}/widgets/btcconnectdlg.ui \
+    $${PWD}/widgets/btcwalletpwdlg.ui \
     $${PWD}/widgets/btctransactionmanager.ui \
     $${PWD}/widgets/btctransactioninfo.ui \
     $${PWD}/widgets/btcreceivedlg.ui \
@@ -89,6 +90,7 @@ HEADERS += \
     $${PWD}/widgets/btcpoolmanager.hpp \
     $${PWD}/widgets/btctransactionmanager.hpp \
     $${PWD}/widgets/btcconnectdlg.hpp \
+    $${PWD}/widgets/btcwalletpwdlg.hpp \
     $${PWD}/widgets/btctransactioninfo.hpp \
     $${PWD}/widgets/btcreceivedlg.hpp \
     $${PWD}/widgets/btcaddpoolserver.hpp \
@@ -155,6 +157,7 @@ SOURCES += \
     $${PWD}/widgets/btcsenddlg.cpp \
     $${PWD}/widgets/btcpoolmanager.cpp \
     $${PWD}/widgets/btcconnectdlg.cpp \
+    $${PWD}/widgets/btcwalletpwdlg.cpp \
     $${PWD}/widgets/btctransactionmanager.cpp \
     $${PWD}/widgets/btctransactioninfo.cpp \
     $${PWD}/widgets/btcreceivedlg.cpp \

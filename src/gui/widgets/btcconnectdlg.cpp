@@ -5,7 +5,7 @@
 #include <bitcoin-api/btcmodules.hpp>
 
 BtcConnectDlg::BtcConnectDlg(QWidget *parent) :
-    QWidget(parent, Qt::Window),
+    QWidget(parent, Qt::Window | Qt::WindowStaysOnTopHint),
     ui(new Ui::BtcConnectDlg)
 {
     this->ui->setupUi(this);

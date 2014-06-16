@@ -377,6 +377,11 @@ void BtcRpcPacket::SetDefaults()
     this->pointerOffset = 0;
 }
 
+void BtcRpcPacket::ResetOffset()
+{
+    this->pointerOffset = 0;
+}
+
 bool BtcRpcPacket::AddData(const std::string strData)
 {
     // cut off the trailing '\0' as otherwise multipart messages won't work:

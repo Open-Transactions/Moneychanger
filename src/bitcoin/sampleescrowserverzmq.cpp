@@ -3,6 +3,8 @@
 
 #include <core/modules.hpp>
 
+#include <bitcoin-api/btchelper.hpp>
+
 #include <opentxs/OTLog.hpp>
 
 #include <zmq.hpp>

@@ -15,8 +15,10 @@ class PoolManager; // has a list of all available pools
 class TransactionManager; // has a list of pending and finished transactions
 class BtcConnectDlg;
 class SampleEscrowClient;
+class BtcWalletPwDlg;
+
 class BtcModules;
-//class MTBitcoin;
+
 
 class Modules
 {
@@ -28,6 +30,7 @@ public:
     static _SharedPtr<PoolManager> poolManager;
     static _SharedPtr<TransactionManager> transactionManager;
     static  QPointer<BtcConnectDlg> connectionManager;
+    static _SharedPtr<BtcWalletPwDlg> walletPwDlg;
     static _SharedPtr<SampleEscrowClient> sampleEscrowClient;
     static _SharedPtr<BtcModules> btcModules;
 

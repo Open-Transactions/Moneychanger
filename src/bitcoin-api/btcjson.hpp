@@ -8,6 +8,8 @@
 #include <bitcoin-api/ibtcjson.hpp>
 #include <bitcoin-api/btcmodules.hpp>
 
+#include "FastDelegate.hpp"
+
 #include _CINTTYPES
 #include _MEMORY
 
@@ -34,6 +36,8 @@
  *
 */
 
+///* https://en.bitcoin.it/wiki/Original_Bitcoin_client/API_Calls_list *\\\
+
 
 class BtcJson : public IBtcJson
 {
@@ -42,6 +46,9 @@ public:
     ~BtcJson();
 
     virtual void Initialize();       // should make this part of all modules
+    // when a function requires a password getPasswordFunc is called and expected to return the pw
+
+    virtual void SetPasswordCallback(fastdelegate::FastDelegate0<std::string> callbackFunction);
 
     virtual void GetInfo();
 
@@ -135,18 +142,80 @@ public:
 
     virtual bool SetGenerate(const bool &generate);
 
+    virtual bool WalletPassphrase(const std::string &password, const int32_t &unlockTime);
+
 private:
-     virtual BtcRpcPacketPtr CreateJsonQuery(const std::string &command, const Json::Value &params = Json::Value(), std::string id = "");
+    virtual BtcRpcPacketPtr CreateJsonQuery(const std::string &command, const Json::Value &params = Json::Value(), std::string id = "");
+
+    // sends a query and processes errors. useless now but maybe not in the future.
+    virtual bool SendJsonQuery(BtcRpcPacketPtr jsonString, Json::Value &result);
 
      // Checks the reply object received from bitcoin-qt for errors and returns the reply
     virtual bool ProcessRpcString(BtcRpcPacketPtr jsonString, Json::Value &result);
     // Splits the reply object received from bitcoin-qt into error and result objects
     virtual void ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json::Value& error, Json::Value& result);
 
+    virtual bool ProcessError(Json::Value error, BtcRpcPacketPtr jsonString, Json::Value &result);
+
+    void UnlockWallet();
+
     BtcModules* modules;
+
+    fastdelegate::FastDelegate0<std::string> passwordCallback;
+
+    // default time for which to unlock the wallet
+    static int32_t walletUnlockTime;
 };
 
 typedef _SharedPtr<BtcJson> BtcJsonPtr;
+
+
+namespace btc
+{
+    namespace json
+    {
+        // Bitcoin RPC error codes
+        enum RPCErrorCode
+        {
+            // Standard JSON-RPC 2.0 errors
+            RPC_INVALID_REQUEST = -32600,
+            RPC_METHOD_NOT_FOUND = -32601,
+            RPC_INVALID_PARAMS = -32602,
+            RPC_INTERNAL_ERROR = -32603,
+            RPC_PARSE_ERROR = -32700,
+
+            // General application defined errors
+            RPC_MISC_ERROR = -1,                    // std::exception thrown in command handling
+            RPC_FORBIDDEN_BY_SAFE_MODE = -2,        // Server is in safe mode, and command is not allowed in safe mode
+            RPC_TYPE_ERROR = -3,                    // Unexpected type was passed as parameter
+            RPC_INVALID_ADDRESS_OR_KEY = -5,        // Invalid address or key
+            RPC_OUT_OF_MEMORY = -7,                 // Ran out of memory during operation
+            RPC_INVALID_PARAMETER = -8,             // Invalid, missing or duplicate parameter
+            RPC_DATABASE_ERROR = -20,               // Database error
+            RPC_DESERIALIZATION_ERROR = -22,        // Error parsing or validating structure in raw format
+            RPC_TRANSACTION_ERROR = -25,            // General error during transaction submission
+            RPC_TRANSACTION_REJECTED = -26,         // Transaction was rejected by network rules
+            RPC_TRANSACTION_ALREADY_IN_CHAIN= -27,  // Transaction already in chain
+
+            // P2P client errors
+            RPC_CLIENT_NOT_CONNECTED = -9,          // Bitcoin is not connected
+            RPC_CLIENT_IN_INITIAL_DOWNLOAD = -10,   // Still downloading initial blocks
+            RPC_CLIENT_NODE_ALREADY_ADDED = -23,    // Node is already added
+            RPC_CLIENT_NODE_NOT_ADDED = -24,        // Node has not been added before
+
+            // Wallet errors
+            RPC_WALLET_ERROR = -4,                  // Unspecified problem with wallet (key not found etc.)
+            RPC_WALLET_INSUFFICIENT_FUNDS = -6,     // Not enough funds in wallet or account
+            RPC_WALLET_INVALID_ACCOUNT_NAME = -11,  // Invalid account name
+            RPC_WALLET_KEYPOOL_RAN_OUT = -12,       // Keypool ran out, call keypoolrefill first
+            RPC_WALLET_UNLOCK_NEEDED = -13,         // Enter the wallet passphrase with walletpassphrase first
+            RPC_WALLET_PASSPHRASE_INCORRECT = -14,  // The wallet passphrase entered was incorrect
+            RPC_WALLET_WRONG_ENC_STATE = -15,       // Command given in wrong wallet encryption state (encrypting an encrypted wallet etc.)
+            RPC_WALLET_ENCRYPTION_FAILED = -16,     // Failed to encrypt the wallet
+            RPC_WALLET_ALREADY_UNLOCKED = -17       // Wallet is already unlocked
+        };
+    }
+}
 
 
 #endif // BTCJSON_HPP

@@ -17,7 +17,7 @@
 #include <list>
 #include <map>
 
-
+#include "FastDelegate.hpp"
 
 
 
@@ -45,10 +45,16 @@
 */
 
 
+///* https://en.bitcoin.it/wiki/Original_Bitcoin_client/API_Calls_list *\\\
+
+
 class IBtcJson
 {
 public:
     virtual void Initialize() = 0;       // should make this part of all modules
+
+    // when a function requires a password getPasswordFunc is called and expected to return the pw
+    virtual void SetPasswordCallback(fastdelegate::FastDelegate0<std::string> getPasswordFunc) = 0;
 
     virtual void GetInfo() = 0;
 
@@ -142,13 +148,7 @@ public:
 
     virtual bool SetGenerate(const bool &generate) = 0;
 
-private:
-    virtual BtcRpcPacketPtr CreateJsonQuery(const std::string &command, const Json::Value &params = Json::Value(), std::string id = std::string()) = 0;
-
-    // Checks the reply object received from bitcoin-qt for errors and returns the reply
-    virtual bool ProcessRpcString(BtcRpcPacketPtr jsonString, Json::Value &result) = 0;
-    // Splits the reply object received from bitcoin-qt into error and result objects
-    virtual void ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json::Value& error, Json::Value& result) = 0;
+    virtual bool WalletPassphrase(const std::string &password, const int32_t &unlockTime) = 0;
 };
 
 typedef _SharedPtr<IBtcJson> IBtcJsonPtr;
