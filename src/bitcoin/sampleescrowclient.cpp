@@ -299,6 +299,8 @@ void SampleEscrowClient::RequestRelease(ActionPtr action)
             continue;
 
         bool accepted = server->RequestEscrowWithdrawal(this->clientName, action->amount, action->address);
+        if(!accepted)
+            return;
     }
 }
 
