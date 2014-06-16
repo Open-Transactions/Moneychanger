@@ -253,8 +253,8 @@ void SampleEscrowClient::RequestDeposit(ActionPtr action)
             continue;
 
         bool accepted = server->RequestEscrowDeposit(this->clientName, action->amount);
-        if(!accepted)
-            return;
+        //if(!accepted)
+        //    return;   currently doesn't work yet
     }
 
     ActionPtr requestAddr = ActionPtr(new Action());
@@ -280,6 +280,8 @@ void SampleEscrowClient::AskForDepositAddress(ActionPtr action)
             depositAddress = serverMultisig;
         else if(depositAddress != serverMultisig)
         {
+            std::printf("received deposit address %s, expected %s\n", serverMultisig.c_str(), depositAddress.c_str());
+            std::cout.flush();
             depositAddress = std::string();
             break;
         }
@@ -309,8 +311,8 @@ void SampleEscrowClient::RequestRelease(ActionPtr action)
             continue;
 
         bool accepted = server->RequestEscrowWithdrawal(this->clientName, action->amount, action->address);
-        if(!accepted)
-            return;
+        //if(!accepted)
+        //    return;   doesn't work yet
     }
 }
 

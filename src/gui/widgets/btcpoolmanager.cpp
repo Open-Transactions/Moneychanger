@@ -182,13 +182,15 @@ void BtcPoolManager::on_buttonDeleteme_clicked()
     std::vector<EscrowPoolPtr> pools = std::vector<EscrowPoolPtr>();
     std::vector<SampleEscrowServerZmqPtr> masterServers = std::vector<SampleEscrowServerZmqPtr>();
 
-    for(int i = 0; i < 4; i++)
+    int poolSize = 3;
+
+    for(int i = 0; i < poolSize; i++)
     {
         //BitcoinServerPtr rpcServer = BitcoinServerPtr(new BitcoinServer("admin" + btc::to_string(i+2), "123", "http://127.0.0.1", 19011 + i*10));
         BitcoinServerPtr rpcServer = BitcoinServerPtr(new BitcoinServer("admin" + QString::number(i+2).toStdString(), "123", "http://127.0.0.1", 19011 + i*10));
         rpcServers.push_back(rpcServer);
 
-        EscrowPoolPtr pool = EscrowPoolPtr(new EscrowPool(3));
+        EscrowPoolPtr pool = EscrowPoolPtr(new EscrowPool(poolSize - 1));
         //pool->poolName = "pool #" + btc::to_string(i);
         pool->poolName = "pool #" + QString::number(i).toStdString();
         pools.push_back(pool);
@@ -202,9 +204,9 @@ void BtcPoolManager::on_buttonDeleteme_clicked()
     }
 
     BitcoinServerPtr rpcEmpty = BitcoinServerPtr();
-    for(int server = 0; server < 4; server++)
+    for(int server = 0; server < poolSize; server++)
     {
-        for(int pool = 0; pool < 4; pool++)
+        for(int pool = 0; pool < poolSize; pool++)
         {
             if(pool != server)
                 pools[pool]->AddEscrowServer(SampleEscrowServerZmqPtr(new SampleEscrowServerZmq(rpcEmpty, pools[pool], "opentxs.mooo.com", 20001 + server, masterServers[pool])));
@@ -213,7 +215,7 @@ void BtcPoolManager::on_buttonDeleteme_clicked()
 
     EscrowPoolPtr clientPool = EscrowPoolPtr(new EscrowPool(3));
     clientPool->poolName = "client pool";
-    for(int i = 0; i < 4; i++)
+    for(int i = 0; i < poolSize; i++)
     {
         clientPool->AddEscrowServer(SampleEscrowServerZmqPtr(new SampleEscrowServerZmq(rpcEmpty, clientPool, "opentxs.mooo.com", 20001 + i)));
     }

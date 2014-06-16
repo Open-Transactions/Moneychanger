@@ -7,12 +7,22 @@
 
 #include <opentxs/OTLog.hpp>
 
-#include <zmq.hpp>
+#ifdef OT_USE_ZMQ4
+    #include <zmq.h>
+#else
+    #include <zmq.hpp>
+#endif
 
 #include <string>
 #include <cstdio>
 #include <QTime>
 
+
+void DeleteNetMsg(void* data, void* netMsg)
+{
+    // delete pointer after message has been sent
+    delete (BtcNetMsg*)netMsg;
+}
 
 SampleEscrowServerZmq::SampleEscrowServerZmq(BitcoinServerPtr bitcoind, EscrowPoolPtr pool, int port)
     :SampleEscrowServer(bitcoind, pool)
@@ -42,7 +52,7 @@ SampleEscrowServerZmq::SampleEscrowServerZmq(BitcoinServerPtr bitcoind, EscrowPo
     this->connectString = "tcp://";
     this->connectString += this->serverInfo->url + ":";
     //this->connectString += btc::to_string(this->serverInfo->port);
-    this->connectString = QString::number(this->serverInfo->port).toStdString();
+    this->connectString += QString::number(this->serverInfo->port).toStdString();
 
     InitNetMessages();
 }
@@ -52,12 +62,12 @@ SampleEscrowServerZmq::~SampleEscrowServerZmq()
     this->shutDown = true;
     wait();
 
-    if(this->serverSocket != NULL && this->serverSocket->connected())
-        this->serverSocket->close();
-    if(this->context != NULL)
-        this->context->close();
-    delete this->serverSocket;
-    delete this->context;
+    zmq_close(this->serverSocket);
+#ifdef OT_USE_ZMQ4
+    zmq_ctx_term(this->context);
+#else
+    zmq_term(this->context);
+#endif
 }
 
 void SampleEscrowServerZmq::Update()
@@ -79,7 +89,7 @@ bool SampleEscrowServerZmq::ClientConnected(SampleEscrowClient *client)
     memcpy(clientMsg->client, client->clientName.c_str(), 20);
     BtcNetMsg* rawReply = SendData((BtcNetMsg*)clientMsg.get());
 
-    delete rawReply;
+    delete[] rawReply;
 
     return rawReply != NULL;    // currently the server returns the NULL packet either way
 }
@@ -107,7 +117,7 @@ bool SampleEscrowServerZmq::RequestEscrowDeposit(const std::string &client, cons
     BtcNetMsgDepositReplyPtr reply = BtcNetMsgDepositReplyPtr(new BtcNetMsgDepositReply());
     memcpy(reply->data, rawReply->data, NetMsgDepositReplySize);
 
-    delete rawReply;
+    delete[] rawReply;
 
     return static_cast<bool>(reply->accepted);   
 }
@@ -135,7 +145,10 @@ std::string SampleEscrowServerZmq::RequestDepositAddress(const std::string &clie
     BtcNetMsgDepositAddrPtr reply = BtcNetMsgDepositAddrPtr(new BtcNetMsgDepositAddr());
     memcpy(reply->data, rawReply->data, NetMsgDepositAddrSize);
 
-    delete rawReply;
+    std::printf("received deposit address %s\n", reply->address);
+    std::cout.flush();
+
+    delete[] rawReply;
 
     return reply->address;
 }
@@ -160,7 +173,7 @@ std::string SampleEscrowServerZmq::GetPubKey(const std::string &client)
     BtcNetMsgPubKeyPtr reply = BtcNetMsgPubKeyPtr(new BtcNetMsgPubKey());
     memcpy(reply->data, rawReply->data, NetMsgPubKeySize);
 
-    delete rawReply;
+    delete[] rawReply;
 
     return reply->pubKey;
 }
@@ -185,7 +198,7 @@ int64_t SampleEscrowServerZmq::GetClientBalance(const std::string &client)
     BtcNetMsgBalancePtr reply = BtcNetMsgBalancePtr(new BtcNetMsgBalance());
     memcpy(reply->data, rawReply->data, NetMsgBalanceSize);
 
-    delete rawReply;
+    delete[] rawReply;
 
     return reply->balance;
 }
@@ -210,7 +223,7 @@ u_int64_t SampleEscrowServerZmq::GetClientTransactionCount(const std::string &cl
     BtcNetMsgTxCountPtr reply = BtcNetMsgTxCountPtr(new BtcNetMsgTxCount());
     memcpy(reply->data, rawReply->data, NetMsgTxCountSize);
 
-    delete rawReply;
+    delete[] rawReply;
 
     return reply->txCount;
 }
@@ -242,7 +255,7 @@ SampleEscrowTransactionPtr SampleEscrowServerZmq::GetClientTransaction(const std
     tx->type = (SampleEscrowTransaction::Type)reply->type;
     tx->status = (SampleEscrowTransaction::SUCCESS)reply->status;
 
-    delete rawReply;
+    delete[] rawReply;
 
     return tx;
 }
@@ -269,7 +282,7 @@ bool SampleEscrowServerZmq::RequestEscrowWithdrawal(const std::string &client, c
     BtcNetMsgWithdrawReplyPtr reply = BtcNetMsgWithdrawReplyPtr(new BtcNetMsgWithdrawReply());
     memcpy(reply->data, rawReply->data, NetMsgWithdrawReplySize);
 
-    delete rawReply;
+    delete[] rawReply;
 
     return static_cast<bool>(reply->accepted);
 }
@@ -294,7 +307,7 @@ std::string SampleEscrowServerZmq::RequestSignedWithdrawal(const std::string &cl
     BtcNetMsgSignedTxPtr reply = BtcNetMsgSignedTxPtr(new BtcNetMsgSignedTx());
     memcpy(reply->data, rawReply->data, NetMsgSignedTxSize);
 
-    delete rawReply;
+    delete[] rawReply;
 
     return reply->rawTx;
 }
@@ -307,41 +320,52 @@ std::string SampleEscrowServerZmq::RequestSignedWithdrawal(BtcNetMsgReqSignedTxP
 BtcNetMsg* SampleEscrowServerZmq::SendData(BtcNetMsg* message)
 {
     // Prepare our context and socket
-    zmq::context_t* context = new zmq::context_t(1);
-    zmq::socket_t socket (*context, ZMQ_REQ);
+    zmq_context_t* context = zmq_init(1);
+    zmq_socket_t* socket = zmq_socket(context, ZMQ_REQ);
 
     // Configure socket to not wait at close time
     int timeOut = 3000;
-    socket.setsockopt(ZMQ_RCVTIMEO, &timeOut, sizeof(timeOut));
-    socket.setsockopt(ZMQ_SNDTIMEO, &timeOut, sizeof(timeOut));
+#ifdef OT_USE_ZMQ4
+    // zmq_setsockopt(socket, ZMQ_RCVTIMEO, &timeOut, sizeof(timeOut));
+    // zmq_setsockopt(socket, ZMQ_SNDTIMEO, &timeOut, sizeof(timeOut));
+#endif
     int linger = 0;
-    socket.setsockopt(ZMQ_LINGER, &linger, sizeof (linger));
+    zmq_setsockopt(socket, ZMQ_LINGER, &linger, sizeof (linger));
 
     if(zmq_connect(socket, this->connectString.c_str()) != 0)
     {
         int error = zmq_errno();
 
-        if(socket.connected())
-            socket.close();
-        zmq_ctx_destroy(context);
-        delete context;
+        zmq_close(socket);
+        zmq_term(context);
         return NULL;
     }
 
     size_t size = NetMessageSizes[static_cast<NetMessageType>(message->MessageType)];
-    zmq::message_t* request = new zmq::message_t(size);
-    memcpy ((void *) request->data (), message->data, size);
+    zmq_msg_t* request = new zmq_msg_t();
+    zmq_msg_init_size(request, size);
+    zmq_msg_init_data(request, message->data, size, NULL, NULL);
 
-    socket.send (*request);
+#ifdef OT_USE_ZMQ4
+    if(zmq_msg_send(request, socket, 0) == -1)
+#else
+    if(zmq_send(socket, request, 0) == -1)
+#endif
+    {
+        zmq_close(socket);
+        zmq_term(context);
+        return NULL;
+    }
 
-    zmq::message_t* reply = new zmq::message_t();
+    zmq_msg_t reply;
+    zmq_msg_init(&reply);
 
     bool incomingData = false;
     for(int i = 0; i < 3; i++)
     {
         // Wait for response from server
-        zmq::pollitem_t items[] = { { socket, 0, ZMQ_POLLIN, 0 } };
-        zmq::poll (&items[0], 1, 1000);
+        zmq_pollitem_t items[] = { { socket, 0, ZMQ_POLLIN, 0 } };
+        zmq_poll (&items[0], 1, 1000);
 
         // Cancel if there is no response
         if ((items[0].revents & ZMQ_POLLIN))
@@ -358,48 +382,42 @@ BtcNetMsg* SampleEscrowServerZmq::SendData(BtcNetMsg* message)
 
     if(!incomingData)
     {
-        if(socket.connected())
-            socket.close();
-        zmq_ctx_destroy(context);
-        delete context;
-        delete reply;
+        zmq_close(socket);
+        zmq_term(context);
+        zmq_msg_close(&reply);
         return NULL;
     }
 
-    socket.recv (reply);
+#ifdef OT_USE_ZMQ4
+    zmq_msg_recv(&reply, socket, 0);
+#else
+    zmq_recv(socket, &reply, 0);
+#endif
 
-    if(reply->size() < NetMessageSizes[Unknown])
+    if(zmq_msg_size(&reply) < NetMessageSizes[Unknown])
     {
-        if(socket.connected())
-            socket.close();
-        zmq_ctx_destroy(context);
-        delete context;
-        delete reply;
+        zmq_close(socket);
+        zmq_term(context);
+        zmq_msg_close(&reply);
         return NULL;
     }
 
-    NetMessageType messageType = static_cast<NetMessageType>(static_cast<BtcNetMsg*>(reply->data())->MessageType);
+    NetMessageType messageType = static_cast<NetMessageType>(static_cast<BtcNetMsg*>(zmq_msg_data(&reply))->MessageType);
 
-    if(messageType == Unknown || reply->size() < NetMessageSizes[messageType])
+    if(messageType == Unknown || zmq_msg_size(&reply) < NetMessageSizes[messageType])
     {
-        if(socket.connected())
-            socket.close();
-        zmq_ctx_destroy(context);
-        delete context;
-        delete reply;
+        zmq_close(socket);
+        zmq_term(context);
+        zmq_msg_close(&reply);
         return NULL;
     }
-
-    BtcNetMsg* replyMsg = NULL;
 
     char* data = new char[NetMessageSizes[messageType]];
-    memcpy(data, reply->data(), NetMessageSizes[messageType]);
+    memcpy(data, zmq_msg_data(&reply), NetMessageSizes[messageType]);
 
-    if(socket.connected())
-        socket.close();
-    zmq_ctx_destroy(context);
-    delete context;
-    delete reply;
+    zmq_close(socket);
+    zmq_term(context);
+    zmq_msg_close(&reply);
 
     return (BtcNetMsg*) data;
 
@@ -411,57 +429,73 @@ void SampleEscrowServerZmq::StartServer()
     std::cout.flush();
 
     // Prepare our context and socket
-    this->context = new zmq::context_t(1);
-    this->serverSocket = new zmq::socket_t(*this->context, ZMQ_REP);
+    this->context = zmq_init(1);
+    this->serverSocket = zmq_socket(this->context, ZMQ_REP);
 
     // Configure socket to not wait at close time
     int timeOut = 3000;
+#ifdef OT_USE_ZMQ4
     zmq_setsockopt(this->serverSocket, ZMQ_RCVTIMEO, &timeOut, sizeof(timeOut));
     zmq_setsockopt(this->serverSocket, ZMQ_SNDTIMEO, &timeOut, sizeof(timeOut));
+#endif
     int linger = 0;
-    this->serverSocket->setsockopt (ZMQ_LINGER, &linger, sizeof (linger));
+    zmq_setsockopt(this->serverSocket, ZMQ_LINGER, &linger, sizeof (linger));
 
     std::string connectString = "tcp://";
     connectString += this->serverInfo->url;
     connectString += ":";
     //connectString += btc::to_string(this->serverInfo->port);
-    connectString = QString::number(this->serverInfo->port).toStdString();
-    this->serverSocket->bind(connectString.c_str());
+    connectString += QString::number(this->serverInfo->port).toStdString();
+    zmq_bind(serverSocket, connectString.c_str());
 }
 
 void SampleEscrowServerZmq::UpdateServer()
 {
     //while (!Modules::shutDown)
     {
-        zmq::message_t* request = new zmq::message_t();
+        zmq_msg_t request; // = new zmq_msg_t();
+        zmq_msg_init(&request);
 
         // Wait for next request from client
-        zmq::pollitem_t items[] = { { *this->serverSocket, 0, ZMQ_POLLIN, 0 } };
-        zmq::poll (&items[0], 1, 1000);
+        zmq_pollitem_t item;
+        item.socket = this->serverSocket;
+        item.fd = 0;
+        item.events = ZMQ_POLLIN;
+        item.revents = 0;
+        /*zmq_pollitem_t items[] = { item }; //{ this->serverSocket, 0, ZMQ_POLLIN, 0 } };
+        zmq_poll(&items[0], 1, 1000);
 
         // Return if no request
         if (!(items[0].revents & ZMQ_POLLIN))
         {
-            delete request;
+            zmq_msg_close(&request);
             return;
-        }
+        }*/
 
-        this->serverSocket->recv (request);
-
-        if(request->size() < NetMessageSizes[Unknown])
+#ifdef OT_USE_ZMQ4
+        if(zmq_msg_recv(&request, this->serverSocket, ZMQ_DONTWAIT) == -1)
+#else
+        if(zmq_recv(this->serverSocket, &request, ZMQ_NOBLOCK) == -1)
+#endif
         {
-            delete request;
+            zmq_msg_close(&request);
             return;
         }
 
-        NetMessageType messageType = static_cast<NetMessageType>(static_cast<BtcNetMsg*>(request->data())->MessageType);
-        if(request->size() != NetMessageSizes[messageType])
+        if(zmq_msg_size(&request) < NetMessageSizes[Unknown])
         {
-            delete request;
+            zmq_msg_close(&request);
             return;
         }
 
-        BtcNetMsgPtr replyPtr = BtcNetMsgPtr(new BtcNetMsg());
+        NetMessageType messageType = static_cast<NetMessageType>(static_cast<BtcNetMsg*>(zmq_msg_data(&request))->MessageType);
+        if(zmq_msg_size(&request) != NetMessageSizes[messageType])
+        {
+            zmq_msg_close(&request);
+            return;
+        }
+
+        BtcNetMsg* replyPtr = new BtcNetMsg();
 
         switch(messageType)
         {
@@ -472,7 +506,7 @@ void SampleEscrowServerZmq::UpdateServer()
         case Connect:
         {
             BtcNetMsgConnectPtr message = BtcNetMsgConnectPtr(new BtcNetMsgConnect());
-            memcpy(message->data, request->data(), NetMessageSizes[messageType]);
+            memcpy(message->data, zmq_msg_data(&request), NetMessageSizes[messageType]);
             ClientConnected(message);
             std::printf("client connected\n");
             std::cout.flush();
@@ -481,18 +515,18 @@ void SampleEscrowServerZmq::UpdateServer()
         case ReqDeposit:
         {
             BtcNetMsgReqDepositPtr message = BtcNetMsgReqDepositPtr(new BtcNetMsgReqDeposit());
-            memcpy(message->data, request->data(), NetMessageSizes[messageType]);
+            memcpy(message->data, zmq_msg_data(&request), NetMessageSizes[messageType]);
             bool accepted = RequestEscrowDeposit(message);
 
             BtcNetMsgDepositReply* replyMsg = new BtcNetMsgDepositReply();
             replyMsg->accepted = static_cast<int8_t>(accepted);
-            replyPtr.reset((BtcNetMsg*)replyMsg);
+            replyPtr = (BtcNetMsg*)replyMsg;
             break;
         }
         case GetMultiSigAddr:
         {
             BtcNetMsgGetDepositAddrPtr message = BtcNetMsgGetDepositAddrPtr(new BtcNetMsgGetDepositAddr());
-            memcpy(message->data, request->data(), NetMessageSizes[messageType]);
+            memcpy(message->data, zmq_msg_data(&request), NetMessageSizes[messageType]);
             std::string multiSigAddr = RequestDepositAddress(message);
 
             if(multiSigAddr.empty())
@@ -500,49 +534,51 @@ void SampleEscrowServerZmq::UpdateServer()
 
             BtcNetMsgDepositAddr* replyMsg = new BtcNetMsgDepositAddr();
             memcpy(replyMsg->address, multiSigAddr.c_str(), std::min(multiSigAddr.size(), sizeof(replyMsg->address)));
-            replyPtr.reset((BtcNetMsg*)replyMsg);
+            std::printf("server %s sending multisig addr %s\n", this->serverName.c_str(), replyMsg->address);
+            std::cout.flush();
+            replyPtr = (BtcNetMsg*)replyMsg;
             break;
         }
         case GetMultiSigKey:
         {
             BtcNetMsgGetKeyPtr message = BtcNetMsgGetKeyPtr(new BtcNetMsgGetKey());
-            memcpy(message->data, request->data(), NetMessageSizes[messageType]);
+            memcpy(message->data, zmq_msg_data(&request), NetMessageSizes[messageType]);
             std::string pubKey = GetPubKey(message);
 
             if(pubKey.empty())
                 break;
 
-            BtcNetMsgPubKey* msgPubKey = new BtcNetMsgPubKey();
-            memcpy(msgPubKey->pubKey, pubKey.c_str(), std::min(pubKey.size(), sizeof(msgPubKey->pubKey)));
-            replyPtr.reset((BtcNetMsg*)msgPubKey);
+            BtcNetMsgPubKey* replyMsg = new BtcNetMsgPubKey();
+            memcpy(replyMsg->pubKey, pubKey.c_str(), std::min(pubKey.size(), sizeof(replyMsg->pubKey)));
+            replyPtr = (BtcNetMsg*)replyMsg;
             break;
         }
         case GetBalance:
         {
             BtcNetMsgGetBalancePtr message = BtcNetMsgGetBalancePtr(new BtcNetMsgGetBalance());
-            memcpy(message->data, request->data(), NetMessageSizes[messageType]);
+            memcpy(message->data, zmq_msg_data(&request), NetMessageSizes[messageType]);
             int64_t balance = GetClientBalance(message);
 
             BtcNetMsgBalance* replyMsg = new BtcNetMsgBalance();
             replyMsg->balance = balance;
-            replyPtr.reset((BtcNetMsg*)replyMsg);
+            replyPtr = (BtcNetMsg*)replyMsg;
             break;
         }
         case GetTxCount:
         {
             BtcNetMsgGetTxCountPtr message = BtcNetMsgGetTxCountPtr(new BtcNetMsgGetTxCount());
-            memcpy(message->data, request->data(), NetMessageSizes[messageType]);
+            memcpy(message->data, zmq_msg_data(&request), NetMessageSizes[messageType]);
             int32_t txCount = GetClientTransactionCount(message);
 
             BtcNetMsgTxCount* replyMsg = new BtcNetMsgTxCount();
             replyMsg->txCount = txCount;
-            replyPtr.reset((BtcNetMsg*)replyMsg);
+            replyPtr = (BtcNetMsg*)replyMsg;
             break;
         }
         case GetTx:
         {
             BtcNetMsgGetTxPtr message = BtcNetMsgGetTxPtr(new BtcNetMsgGetTx());
-            memcpy(message->data, request->data(), NetMessageSizes[messageType]);
+            memcpy(message->data, zmq_msg_data(&request), NetMessageSizes[messageType]);
             SampleEscrowTransactionPtr tx = GetClientTransaction(message);
 
             if(tx == NULL)
@@ -555,24 +591,24 @@ void SampleEscrowServerZmq::UpdateServer()
             replyMsg->type = static_cast<int8_t>(tx->type);
             replyMsg->status = static_cast<int8_t>(tx->status);
 
-            replyPtr.reset((BtcNetMsg*)replyMsg);            
+            replyPtr = (BtcNetMsg*)replyMsg;
             break;
         }
         case RequestRelease:
         {      
             BtcNetMsgReqWithdrawPtr message = BtcNetMsgReqWithdrawPtr(new BtcNetMsgReqWithdraw());
-            memcpy(message->data, request->data(), NetMessageSizes[messageType]);
+            memcpy(message->data, zmq_msg_data(&request), NetMessageSizes[messageType]);
             bool accepted = RequestEscrowWithdrawal(message);
 
             BtcNetMsgWithdrawReply* replyMsg = new BtcNetMsgWithdrawReply();
             replyMsg->accepted = static_cast<int8_t>(accepted);
-            replyPtr.reset((BtcNetMsg*)replyMsg);
+            replyPtr = (BtcNetMsg*)replyMsg;
             break;
         }
         case ReqSignedTx:
         {
             BtcNetMsgReqSignedTxPtr message = BtcNetMsgReqSignedTxPtr(new BtcNetMsgReqSignedTx());
-            memcpy(message->data, request->data(), NetMessageSizes[messageType]);
+            memcpy(message->data, zmq_msg_data(&request), NetMessageSizes[messageType]);
             std::string partiallySignedTx = RequestSignedWithdrawal(message);
 
             if(partiallySignedTx.empty())
@@ -580,7 +616,7 @@ void SampleEscrowServerZmq::UpdateServer()
 
             BtcNetMsgSignedTx* replyMsg = new BtcNetMsgSignedTx();
             memcpy(replyMsg->rawTx, partiallySignedTx.c_str(), std::min(partiallySignedTx.size(), sizeof(replyMsg->rawTx)));
-            replyPtr.reset((BtcNetMsg*)replyMsg);
+            replyPtr = (BtcNetMsg*)replyMsg;
             break;
         }
         default:
@@ -589,14 +625,20 @@ void SampleEscrowServerZmq::UpdateServer()
             break;
         }
 
+        zmq_msg_close(&request);
+
         // Send reply back to client
         size_t size = NetMessageSizes[(NetMessageType)replyPtr->MessageType];
-        zmq::message_t* reply = new zmq::message_t(size);
+        zmq_msg_t reply;
+        zmq_msg_init_size(&reply, size);
+        zmq_msg_init_data(&reply, replyPtr->data, size, &DeleteNetMsg, replyPtr);
 
-        memcpy ((void *) reply->data(), replyPtr->data, size);
-        this->serverSocket->send(*reply);
+#ifdef OT_USE_ZMQ4
+        zmq_msg_send(&reply, this->serverSocket, 0);
+#else
+        zmq_send(this->serverSocket, &reply, 0);
+#endif
 
-        delete request;
-        delete reply;
+        // note: replyPtr is not deleted on purpose, see DeleteNetMsg()
     }
 }

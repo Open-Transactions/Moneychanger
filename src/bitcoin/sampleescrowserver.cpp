@@ -169,6 +169,7 @@ void SampleEscrowServer::Update()
 
                 // ask server for his public key
                 std::string pubKeyOther = server->GetPubKey(request->client);
+
                 this->AddPubKey(request->client, pubKeyOther);
             }
 
@@ -269,7 +270,7 @@ void SampleEscrowServer::Update()
             if(releaseTx == NULL || releaseTx->signedTransaction.empty())
                 break;
 
-            bool serverFailedToRespond = false;
+            bool serverReturnedNull = false;
             foreach(SampleEscrowServerPtr server, this->serverPool->escrowServers)
             {
                 if(server->serverName == this->serverName)
@@ -277,7 +278,7 @@ void SampleEscrowServer::Update()
 
                 std::string partiallySignedTx = server->RequestSignedWithdrawal(request->client);
                 if(partiallySignedTx.empty())
-                    serverFailedToRespond = true;
+                    serverReturnedNull = true;
 
                 releaseTx->signedTransaction += partiallySignedTx;
                 releaseTx = this->modules->btcJson->CombineSignedTransactions(releaseTx->signedTransaction);
@@ -289,7 +290,7 @@ void SampleEscrowServer::Update()
 
             if(releaseTx == NULL || !releaseTx->complete)
             {
-                if(serverFailedToRespond)
+                if(serverReturnedNull)
                 {
                     bool failed = false;
                     foreach (SampleEscrowServerPtr server, this->serverPool->escrowServers)

@@ -4,7 +4,11 @@
 #include "sampleescrowserver.hpp"
 #include "samplenetmessages.hpp"
 
-#include <zmq.hpp>
+#ifdef OT_USE_ZMQ4
+    #include <zmq.h>
+#else
+    #include <zmq.hpp>
+#endif
 
 class QTime;
 
@@ -57,8 +61,10 @@ public:
     BtcNetMsg *SendData(BtcNetMsg *message);
 
 private:
-    zmq::socket_t* serverSocket;
-    zmq::context_t* context;
+    typedef void zmq_socket_t;
+    typedef void zmq_context_t;
+    zmq_socket_t* serverSocket;
+    zmq_context_t* context;
     SampleEscrowServerZmqPtr master;
     std::string connectString;
 
