@@ -88,16 +88,16 @@ public:
     // keys: list of public keys (addresses work too, if the public key is known)
     // account [optional]: account to add the address to
     // Returns the multi-sig address
-    virtual BtcMultiSigAddressPtr AddMultiSigAddress(const int32_t &nRequired, const btc::stringList &keys, const std::string &account = "multisig") = 0;
+    virtual BtcMultiSigAddressPtr AddMultiSigAddress(const uint32_t &nRequired, const btc::stringList &keys, const std::string &account = "multisig") = 0;
 
     // Creates a multi-sig address without adding it to the wallet
     // nRequired: signatures required
     // keys: list of public keys (addresses work too, if the public key is known)
-    virtual BtcMultiSigAddressPtr CreateMultiSigAddress(const int32_t &nRequired, const btc::stringList &keys) = 0;
+    virtual BtcMultiSigAddressPtr CreateMultiSigAddress(const uint32_t &nRequired, const btc::stringList &keys) = 0;
 
     // Creates a multi-sig address and returns its redeemScript
     // the address will not be added to your address list, use AddMultiSigAddress for that
-    virtual std::string GetRedeemScript(const int32_t &nRequired, const btc::stringList &keys) = 0;
+    virtual std::string GetRedeemScript(const uint32_t &nRequired, const btc::stringList &keys) = 0;
 
     // Returns list of account names
     virtual btc::stringList ListAccounts(const int32_t &minConf = BtcHelper::MinConfirms, const bool &includeWatchonly = true) = 0;
@@ -120,7 +120,7 @@ public:
 
     virtual bool SetTxFee(const int64_t &fee) = 0;
 
-    virtual BtcUnspentOutputPtr GetTxOut(const std::string &txId, const int32_t &vout) = 0;
+    virtual BtcUnspentOutputPtr GetTxOut(const std::string &txId, const int64_t &vout) = 0;
 
     virtual BtcTransactionPtr GetTransaction(const std::string &txId) = 0;
 
@@ -136,11 +136,11 @@ public:
 
     virtual BtcSignedTransactionPtr CombineSignedTransactions(const std::string &rawTransaction) = 0;
 
-    virtual std::string SendRawTransaction(const std::string &rawTransaction) = 0;
+    virtual std::string SendRawTransaction(const std::string &rawTransaction, const bool &acceptHighFee = false) = 0;
 
-    virtual std::vector<std::string> GetRawMemPool() = 0;
+    virtual btc::stringList GetRawMemPool() = 0;
 
-    virtual int GetBlockCount() = 0;
+    virtual int32_t GetBlockCount() = 0;
 
     virtual std::string GetBlockHash(const int32_t &blockNumber) = 0;
 
@@ -148,7 +148,7 @@ public:
 
     virtual bool SetGenerate(const bool &generate) = 0;
 
-    virtual bool WalletPassphrase(const std::string &password, const int32_t &unlockTime) = 0;
+    virtual bool WalletPassphrase(const std::string &password, const time_t &unlockTime) = 0;
 };
 
 typedef _SharedPtr<IBtcJson> IBtcJsonPtr;

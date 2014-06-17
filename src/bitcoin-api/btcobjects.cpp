@@ -96,8 +96,8 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
     this->outputs = std::vector<VOUT>();
 
     this->txId = rawTx["txid"].asString();
-    this->Version = rawTx["version"].asInt64();
-    this->LockTime = rawTx["locktime"].asInt64();
+    this->Version = rawTx["version"].asInt();
+    this->LockTime = rawTx["locktime"].asInt();
 
     // inputs
     Json::Value vins = rawTx["vin"];
@@ -107,7 +107,7 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
         if(!inputObj["scriptSig"].isObject())
             continue;
         this->inputs.push_back(VIN(inputObj["txid"].asString(),
-                                    inputObj["vout"].asInt64(),
+                                    inputObj["vout"].asUInt(),
                                     inputObj["scriptSig"]["hex"].asString(),
                                     inputObj["sequence"].asInt64()));
     }
@@ -127,9 +127,9 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
         }
 
         VOUT output = VOUT(BtcHelper::CoinsToSatoshis(outputObj["value"].asDouble()),
-                            outputObj["n"].asInt(),
+                            outputObj["n"].asInt64(),
                             scriptPubKey["hex"].asString(),
-                            scriptPubKey["reqSigs"].asInt(),
+                            scriptPubKey["reqSigs"].asUInt(),
                             scriptPubKey["type"].asString(),
                             addresslist);
 
@@ -224,7 +224,7 @@ BtcAddressInfo::BtcAddressInfo(Json::Value result)
     {
         this->addresses.push_back(result["addresses"][i].asString());
     }
-    this->sigsRequired = result["sigsrequired"].asInt();
+    this->sigsRequired = result["sigsrequired"].asUInt();
 
     this->account = result["account"].asString();
 }
@@ -318,30 +318,6 @@ BtcSigningPrerequisite::BtcSigningPrerequisite(const std::string &txId, const in
         (*this)["scriptPubKey"] = scriptPubKey;
     if(!redeemScript.empty())
         (*this)["redeemScript"] = redeemScript;
-}
-
-void BtcSigningPrerequisite::SetTxId(std::string txId)
-{
-    // we can get this value from the transaction used to send funds to the p2sh
-    (*this)["txid"] = txId;
-}
-
-void BtcSigningPrerequisite::SetVout(Json::Int64 vout)
-{
-    // we can get this value from the transaction used to send funds to the p2sh
-    (*this)["vout"] = vout;
-}
-
-void BtcSigningPrerequisite::SetScriptPubKey(std::string scriptPubKey)
-{
-    // we can get this value from the transaction used to send funds to the p2sh
-    (*this)["scriptPubKey"] = scriptPubKey;
-}
-
-void BtcSigningPrerequisite::SetRedeemScript(std::string redeemScript)
-{
-    // we can get this from the createmultisig api function
-    (*this)["redeemScript"] = redeemScript;
 }
 
 BtcRpcPacket::BtcRpcPacket()

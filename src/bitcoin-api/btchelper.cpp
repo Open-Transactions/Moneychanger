@@ -105,6 +105,16 @@ bool BtcHelper::IsMine(const std::string &address)
     return false;
 }
 
+BtcRawTransactionPtr BtcHelper::GetDecodedRawTransaction(const BtcTransactionPtr &tx) const
+{
+    if(tx == NULL)
+        return BtcRawTransactionPtr();
+
+    if(!tx->Hex.empty())
+        return this->modules->btcJson->DecodeRawTransaction(tx->Hex);
+    return this->modules->btcJson->GetDecodedRawTransaction(tx->TxId);
+}
+
 BtcRawTransactionPtr BtcHelper::GetDecodedRawTransaction(const std::string &txId) const
 {
     if(txId.empty())

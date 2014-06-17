@@ -72,6 +72,10 @@ public:
     // Pub keys need to be shared to create multi signature addresses
     std::string GetPublicKey(const std::string &address);
 
+    // checks if tx contains the raw transaction (bitcoind v0.9.0)
+    // if it doesn't the transaction will be fetched from tx index
+    BtcRawTransactionPtr GetDecodedRawTransaction(const BtcTransactionPtr &tx) const;
+
     BtcRawTransactionPtr GetDecodedRawTransaction(const std::string &txId) const;
 
     // Counts how many coins are sent to targetAddress through this transaction

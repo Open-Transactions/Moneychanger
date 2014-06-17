@@ -83,25 +83,27 @@ public:
     // keys: list of public keys (addresses work too, if the public key is known)
     // account [optional]: account to add the address to
     // Returns the multi-sig address
-    virtual BtcMultiSigAddressPtr AddMultiSigAddress(const int32_t &nRequired, const btc::stringList &keys, const std::string &account = "multisig");
+    virtual BtcMultiSigAddressPtr AddMultiSigAddress(const uint32_t &nRequired, const btc::stringList &keys, const std::string &account = "multisig");
 
     // Creates a multi-sig address without adding it to the wallet
     // nRequired: signatures required
     // keys: list of public keys (addresses work too, if the public key is known)
-    virtual BtcMultiSigAddressPtr CreateMultiSigAddress(const int32_t &nRequired, const btc::stringList &keys);
+    virtual BtcMultiSigAddressPtr CreateMultiSigAddress(const uint32_t &nRequired, const btc::stringList &keys);
 
     // deprecated, use 'validateaddress' instead
     // Creates a multi-sig address and returns its redeemScript
     // the address will not be added to your address list, use AddMultiSigAddress for that
-    virtual std::string GetRedeemScript(const int32_t &nRequired, const btc::stringList &keys);
+    virtual std::string GetRedeemScript(const uint32_t &nRequired, const btc::stringList &keys);
 
     // Returns list of account names
     // Could also return the balance of each account
-    virtual btc::stringList ListAccounts(const int32_t &minConf = 1, const bool &includeWatchonly = true);
+    virtual btc::stringList ListAccounts(const int32_t &minConf = BtcHelper::MinConfirms, const bool &includeWatchonly = true);
 
     // Returns list of addresses, their balances and txids
     virtual BtcAddressBalances ListReceivedByAddress(const int32_t &minConf = BtcHelper::MinConfirms, const bool &includeEmpty = false, const bool &includeWatchonly = true);
 
+    // lists transactions
+    // account: "*" for all accounts, "" for default account, "<whatever> for <whatever>
     virtual BtcTransactions ListTransactions(const std::string &account = "*", const int32_t &count = 20, const int32_t &from = 0, const bool &includeWatchonly = true);
 
     virtual BtcUnspentOutputs ListUnspent(const int32_t &minConf = BtcHelper::MinConfirms, const int32_t &maxConf = BtcHelper::MaxConfirms, const btc::stringList &addresses = btc::stringList());
@@ -114,7 +116,7 @@ public:
 
     virtual bool SetTxFee(const int64_t &fee);
 
-    BtcUnspentOutputPtr GetTxOut(const std::string &txId, const int32_t &vout);
+    BtcUnspentOutputPtr GetTxOut(const std::string &txId, const int64_t &vout);
 
     virtual BtcTransactionPtr GetTransaction(const std::string &txId);
 
@@ -126,13 +128,23 @@ public:
 
     virtual std::string CreateRawTransaction(BtcTxIdVouts unspentOutputs, BtcTxTargets txTargets);
 
+    // sign a raw transaction
+    // rawTransaction: hex
+    // previousTransactions: array of json objects containing input's txid, vout, redeemScript (if p2sh) and scriptPubKey
+    // privateKeys: only sign with the keys provided (makes signing transactions too bcreated by someone else slightly more secure)
+    // i think bitcoind requires previousTransactions if privateKeys are given.
     virtual BtcSignedTransactionPtr SignRawTransaction(const std::string &rawTransaction, const BtcSigningPrerequisites &previousTransactions = BtcSigningPrerequisites(), const btc::stringList &privateKeys = btc::stringList());
 
+    // combines multiple transactions to one, does not do any signing for security reasons.
+    // used when various parties sign a multisig transaction.
+    // rawTransaction: concatenated string of the raw hex transactions
     virtual BtcSignedTransactionPtr CombineSignedTransactions(const std::string &rawTransaction);
 
-    virtual std::string SendRawTransaction(const std::string &rawTransaction);
+    virtual std::string SendRawTransaction(const std::string &rawTransaction, const bool &allowHighFees = false);
 
-    virtual std::vector<std::string> GetRawMemPool();
+    // list of unconfirmed transactions in memory
+    // returns txIds
+    virtual btc::stringList GetRawMemPool();
 
     virtual int GetBlockCount();
 
@@ -142,7 +154,7 @@ public:
 
     virtual bool SetGenerate(const bool &generate);
 
-    virtual bool WalletPassphrase(const std::string &password, const int32_t &unlockTime);
+    virtual bool WalletPassphrase(const std::string &password, const time_t &unlockTime);
 
 private:
     virtual BtcRpcPacketPtr CreateJsonQuery(const std::string &command, const Json::Value &params = Json::Value(), std::string id = "");

@@ -321,7 +321,7 @@ std::string BtcJson::DumpPrivKey(const std::string &address)
     return result.asString();
 }
 
-BtcMultiSigAddressPtr BtcJson::AddMultiSigAddress(const int32_t &nRequired, const btc::stringList &keys, const std::string &account)
+BtcMultiSigAddressPtr BtcJson::AddMultiSigAddress(const uint32_t &nRequired, const btc::stringList &keys, const std::string &account)
 {
     Json::Value params = Json::Value();
     params.append(nRequired);
@@ -347,7 +347,7 @@ BtcMultiSigAddressPtr BtcJson::AddMultiSigAddress(const int32_t &nRequired, cons
     return CreateMultiSigAddress(nRequired, keys);
 }
 
-BtcMultiSigAddressPtr BtcJson::CreateMultiSigAddress(const int32_t &nRequired, const btc::stringList &keys)
+BtcMultiSigAddressPtr BtcJson::CreateMultiSigAddress(const uint32_t &nRequired, const btc::stringList &keys)
 {
     Json::Value params = Json::Value();
     params.append(nRequired);
@@ -370,7 +370,7 @@ BtcMultiSigAddressPtr BtcJson::CreateMultiSigAddress(const int32_t &nRequired, c
     return multiSigAddr;
 }
 
-std::string BtcJson::GetRedeemScript(const int32_t &nRequired, const btc::stringList &keys)
+std::string BtcJson::GetRedeemScript(const uint32_t &nRequired, const btc::stringList &keys)
 {
     // we can also get it from 'validateaddress' if we used 'addmultisigaddress'
     return CreateMultiSigAddress(nRequired, keys)->redeemScript;
@@ -523,11 +523,11 @@ std::string BtcJson::SendMany(BtcTxTargets txTargets, const std::string &fromAcc
     return result.asString();
 }
 
-BtcUnspentOutputPtr BtcJson::GetTxOut(const std::string &txId, const int32_t &vout)
+BtcUnspentOutputPtr BtcJson::GetTxOut(const std::string &txId, const int64_t &vout)
 {
     Json::Value params = Json::Value();
     params.append(txId);
-    params.append(vout);
+    params.append(static_cast<Json::Int64>(vout));
 
     Json::Value result = Json::Value();
     if(!ProcessRpcString(
@@ -708,10 +708,12 @@ BtcSignedTransactionPtr BtcJson::CombineSignedTransactions(const std::string &ra
     return signedTransaction;
 }
 
-std::string BtcJson::SendRawTransaction(const std::string &rawTransaction)
+std::string BtcJson::SendRawTransaction(const std::string &rawTransaction, const bool &allowHighFees)
 {
     Json::Value params = Json::Value();
     params.append(rawTransaction);
+    if(allowHighFees)
+        params.append(allowHighFees);
 
     Json::Value result = Json::Value();
     if(!ProcessRpcString(
@@ -722,7 +724,7 @@ std::string BtcJson::SendRawTransaction(const std::string &rawTransaction)
     return result.asString();
 }
 
-std::vector<std::string> BtcJson::GetRawMemPool()
+btc::stringList BtcJson::GetRawMemPool()
 {
     Json::Value result = Json::Value();
     if(!ProcessRpcString(
@@ -798,11 +800,11 @@ bool BtcJson::SetGenerate(const bool &generate)
     return true;
 }
 
-bool BtcJson::WalletPassphrase(const std::string &password, const int32_t &unlockTime)
+bool BtcJson::WalletPassphrase(const std::string &password, const time_t &unlockTime)
 {
     Json::Value params = Json::Value();
     params.append(password);
-    params.append(static_cast<Json::Int>(unlockTime));
+    params.append(static_cast<Json::Int64>(unlockTime));
 
     Json::Value result = Json::Value();
     if(!SendJsonQuery(CreateJsonQuery(METHOD_WALLETPASSPHRASE, params), result))

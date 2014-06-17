@@ -42,7 +42,7 @@
 
 
 namespace btc
-{   // might make things easier to read. also maybe i should use vectors instead.
+{
     typedef std::vector<std::string> stringList;
 }
 
@@ -72,7 +72,7 @@ struct BtcTransaction
 {
     int64_t Amount;         // the sum of received/sent in Details[]
     int64_t Fee;            // optional
-    int32_t Confirmations;  // can be -1
+    int32_t Confirmations;  // is -1 in case of conflicts
     std::string Blockhash;  // optional
     int32_t BlockIndex;     // optional
     time_t Blocktime;       // optional
@@ -93,17 +93,17 @@ struct BtcRawTransaction
 {
     std::string txId;
     int32_t Version;
-    time_t LockTime;
+    int32_t LockTime;
 
     struct VIN
     {
         std::string txInID;
-        int64_t vout;                   // number of txInID's output to be used as input
-        // std::string ScriptSigAsm;    // add this when you need it
+        int64_t vout;                 // sequence number of the output that is being spent
+        // std::string ScriptSigAsm;  // add this when you need it
         std::string ScriptSigHex;
-        int64_t Sequence;
+        uint32_t Sequence;
 
-        VIN(const std::string &txInID, const int64_t &vout, const std::string &scriptSigHex, const int64_t &sequence)
+        VIN(const std::string &txInID, const int64_t &vout, const std::string &scriptSigHex, const uint32_t &sequence)
             :txInID(txInID), vout(vout), ScriptSigHex(scriptSigHex), Sequence(sequence)
         {}
     };
@@ -112,22 +112,22 @@ struct BtcRawTransaction
     struct VOUT
     {
         int64_t value;                  // amount of satoshis to be sent
-        uint32_t n ;                     // outputs array index
+        int64_t n ;                     // outputs array index, aka vout
         // std::string ScriptPubKeyAsm; // add this when you need it
         std::string scriptPubKeyHex;    // needed to spend offline transactions
-        uint32_t reqSigs;               // this is NOT the number of signatures needed for multisig.
+        uint32_t reqSigs;               // number of signatures needed for multisig
         std::string Type;               // scripthash, pubkeyhash, ..
         btc::stringList addresses;      // an array of addresses receiving the value.
-
-        int64_t sequence;
 
         VOUT()
         {
             this->value = 0;
-            this->n = -1;
-            this->reqSigs = 0;
+            this->n = 0;
             this->addresses = btc::stringList();
-            this->scriptPubKeyHex = "";
+            this->scriptPubKeyHex = std::string();
+            this->reqSigs = 0;
+            this->Type = std::string();
+            this->addresses = btc::stringList();
         }
 
         VOUT(const int64_t &value, const int64_t &n, const std::string &scriptPubKeyHex, const uint32_t &reqSigs, const std::string &type, const btc::stringList &addresses)
@@ -149,7 +149,7 @@ struct BtcUnspentOutput
     std::string account;
     std::string scriptPubKey;
     int64_t amount;
-    uint32_t confirmations;
+    int32_t confirmations;      // is -1 in case of conflicts
     bool spendable;             // false if it's a watchonly address
 
     BtcUnspentOutput(Json::Value unspentOutput);
@@ -162,7 +162,7 @@ struct BtcAddressBalance
     std::string address;
     std::string account;
     int64_t amount;
-    int32_t confirmations;
+    int32_t confirmations;      // is -1 in case of conflicts
     btc::stringList txIds;
 
     BtcAddressBalance(Json::Value addressBalance);
@@ -173,7 +173,7 @@ struct BtcAddressInfo
     bool isvalid;
     std::string address;
     bool ismine;
-    bool isWatchonly;
+    bool isWatchonly;       // doesn't work for multisig addresses yet (bitcoind bug)
     bool isScript;
 
     // regular addresses:
@@ -208,9 +208,9 @@ struct BtcMultiSigAddress
 
 struct BtcBlock
 {
-    int64_t confirmations;
+    int32_t confirmations;      // is -1 in case of conflicts
     btc::stringList transactions;
-    int64_t height;
+    int32_t height;
     std::string hash;
     std::string previousHash;
 
@@ -256,21 +256,8 @@ struct BtcSigningPrerequisite : Json::Value
     BtcSigningPrerequisite();
 
     BtcSigningPrerequisite(const std::string &txId, const int64_t &vout, const std::string &scriptPubKey, const std::string &redeemScript);
-
-    // all of these values must be set or else prerequisite is invalid
-    void SetTxId(std::string txId);
-
-    // all of these values must be set or else prerequisite is invalid
-    void SetVout(Json::Int64 vout);
-
-    // all of these values must be set or else prerequisite is invalid
-    void SetScriptPubKey(std::string scriptPubKey);
-
-    // all of these values must be set or else prerequisite is invalid
-    void SetRedeemScript(std::string redeemScript);
 };
 
-// not really a packet.
 struct BtcRpcPacket
 {
     BtcRpcPacket();
