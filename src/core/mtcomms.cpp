@@ -1,5 +1,6 @@
 #include <QObject>
 #include <QString>
+#include <QDebug>
 
 #include "mtcomms.h"
 
@@ -139,6 +140,8 @@ bool MTComms::it_add(const std::string type, const std::string commstring)
     //
     if (0 == type.compare("bitmessage"))
     {
+        qDebug() << QString("Trying to add Bitmessage module with commstring: %1").arg(QString::fromStdString(commstring));
+
         NetworkModule * pModule = new BitMessage(commstring);
 
         if (NULL != pModule)
@@ -166,7 +169,7 @@ bool MTComms::get(const std::string type, mapOfNetModules & mapOutput)
 //static
 NetworkModule * MTComms::find(const std::string commstring)
 {
-    return MTComms::it()->find(commstring);
+    return MTComms::it()->it_find(commstring);
 }
 
 //static

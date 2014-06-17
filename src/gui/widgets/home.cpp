@@ -735,113 +735,134 @@ void MTHome::PopulateRecords()
             //
             for (mapIDName::iterator ii = mapMethods.begin(); ii != mapMethods.end(); ++ii)
             {
-                QString qstrMethodID  = ii.key();
-                int nFilterByMethodID = qstrMethodID.toInt();
+                QString qstrID        = ii.key();
+                int nFilterByMethodID = 0;
 
-                if (nFilterByMethodID > 0)
+                QStringList stringlist = qstrID.split("|");
+
+                if (stringlist.size() >= 2) // Should always be 2...
                 {
-                    QString   qstrMethodType  = MTContactHandler::getInstance()->GetMethodType       (nFilterByMethodID);
-                    QString   qstrTypeDisplay = MTContactHandler::getInstance()->GetMethodTypeDisplay(nFilterByMethodID);
-                    QString   qstrConnectStr  = MTContactHandler::getInstance()->GetMethodConnectStr (nFilterByMethodID);
-
-                    if (!qstrConnectStr.isEmpty())
+//                  QString qstrType     = stringlist.at(0);
+                    QString qstrMethodID = stringlist.at(1);
+                    nFilterByMethodID    = qstrMethodID.isEmpty() ? 0 : qstrMethodID.toInt();
+                    // --------------------------------------
+                    if (nFilterByMethodID > 0)
                     {
-                        NetworkModule * pModule = MTComms::find(qstrConnectStr.toStdString());
+                        QString   qstrMethodType  = MTContactHandler::getInstance()->GetMethodType       (nFilterByMethodID);
+                        QString   qstrTypeDisplay = MTContactHandler::getInstance()->GetMethodTypeDisplay(nFilterByMethodID);
+                        QString   qstrConnectStr  = MTContactHandler::getInstance()->GetMethodConnectStr (nFilterByMethodID);
 
-                        if ((NULL != pModule) && pModule->accessible())
+                        if (!qstrConnectStr.isEmpty())
                         {
-                            if ((-1) == listCheckOnlyOnce.indexOf(qstrConnectStr)) // Not on the list yet.
-                            {
-                                pModule->checkMail();
-                                listCheckOnlyOnce.insert(0, qstrConnectStr);
-                            }
-                            // ------------------------------
-                            mapIDName mapAddresses;
+                            NetworkModule * pModule = MTComms::find(qstrConnectStr.toStdString());
 
-                            if (MTContactHandler::getInstance()->GetAddressesByNym(mapAddresses, filterByNym, nFilterByMethodID))
+                            if ((NULL == pModule) && MTComms::add(qstrMethodType.toStdString(), qstrConnectStr.toStdString()))
+                                pModule = MTComms::find(qstrConnectStr.toStdString());
+
+                            if (NULL == pModule)
+                                // todo probably need a messagebox here.
+                                qDebug() << QString("PopulateRecords: Unable to add a %1 interface with connection string: %2").arg(qstrMethodType).arg(qstrConnectStr);
+
+                          qDebug() << QString("qstrConnectStr: %1   NULL != pModule: %2").arg(qstrConnectStr).arg(QString((NULL != pModule) ? "true" : "false"));
+
+                          if (NULL != pModule)
+                              qDebug() << QString("pModule->accessible: %1").arg(QString(pModule->accessible() ? "true" : "false"));
+
+                            if ((NULL != pModule) && pModule->accessible())
                             {
-                                for (mapIDName::iterator jj = mapAddresses.begin(); jj != mapAddresses.end(); ++jj)
+                                if ((-1) == listCheckOnlyOnce.indexOf(qstrConnectStr)) // Not on the list yet.
                                 {
-                                    QString qstrAddress = jj.key();
+                                    pModule->checkMail();
+                                    listCheckOnlyOnce.insert(0, qstrConnectStr);
+                                }
+                                // ------------------------------
+                                mapIDName mapAddresses;
 
-                                    if (!qstrAddress.isEmpty())
+                                if (MTContactHandler::getInstance()->GetAddressesByNym(mapAddresses, filterByNym, nFilterByMethodID))
+                                {
+                                    for (mapIDName::iterator jj = mapAddresses.begin(); jj != mapAddresses.end(); ++jj)
                                     {
-                                        // --------------------------------------------------------------------------------------------
-                                        // INBOX
-                                        //
-                                        std::vector< _SharedPtr<NetworkMail> > theInbox = pModule->getInbox(qstrAddress.toStdString());
+                                        QString qstrAddress = jj.key();
 
-                                        for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theInbox.size(); ++nIndex)
+                                        if (!qstrAddress.isEmpty())
                                         {
-                                            _SharedPtr<NetworkMail> & theMsg = theInbox[nIndex];
+                                            // --------------------------------------------------------------------------------------------
+                                            // INBOX
+                                            //
+                                            std::vector< _SharedPtr<NetworkMail> > theInbox = pModule->getInbox(qstrAddress.toStdString());
 
-                                            std::string strSubject  = theMsg->getSubject();
-                                            std::string strContents = theMsg->getMessage();
-                                            // ----------------------------------------------------
-                                            QString qstrFinal;
+                                            for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theInbox.size(); ++nIndex)
+                                            {
+                                                _SharedPtr<NetworkMail> & theMsg = theInbox[nIndex];
 
-                                            if (!strSubject.empty())
-                                                qstrFinal = QString("%1: %2\n%3").
-                                                        arg(tr("Subject")).
-                                                        arg(QString::fromStdString(strSubject)).
-                                                        arg(QString::fromStdString(strContents));
-                                            else
-                                                qstrFinal = QString::fromStdString(strContents);
-                                            // ----------------------------------------------------
-                                            bNeedsReSorting = true;
+                                                std::string strSubject  = theMsg->getSubject();
+                                                std::string strContents = theMsg->getMessage();
+                                                // ----------------------------------------------------
+                                                QString qstrFinal;
 
-                                            m_list.AddSpecialMsg(theMsg->getMessageID(),
-                                                                 false, //bIsOutgoing=false
-                                                                 static_cast<int32_t>(nFilterByMethodID),
-                                                                 qstrFinal.toStdString(),
-                                                                 theMsg->getTo(),
-                                                                 theMsg->getFrom(),
-                                                                 qstrMethodType.toStdString(),
-                                                                 qstrTypeDisplay.toStdString(),
-                                                                 str_nym_id,
-                                                                 static_cast<time64_t>(theMsg->getSentTime()));
-                                        } // for (inbox)
-                                        // --------------------------------------------------------------------------------------------
-                                        // OUTBOX
-                                        //
-                                        std::vector< _SharedPtr<NetworkMail> > theOutbox = pModule->getOutbox(qstrAddress.toStdString());
+                                                if (!strSubject.empty())
+                                                    qstrFinal = QString("%1: %2\n%3").
+                                                            arg(tr("Subject")).
+                                                            arg(QString::fromStdString(strSubject)).
+                                                            arg(QString::fromStdString(strContents));
+                                                else
+                                                    qstrFinal = QString::fromStdString(strContents);
+                                                // ----------------------------------------------------
+                                                bNeedsReSorting = true;
 
-                                        for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theOutbox.size(); ++nIndex)
-                                        {
-                                            _SharedPtr<NetworkMail> & theMsg = theOutbox[nIndex];
+                                                m_list.AddSpecialMsg(theMsg->getMessageID(),
+                                                                     false, //bIsOutgoing=false
+                                                                     static_cast<int32_t>(nFilterByMethodID),
+                                                                     qstrFinal.toStdString(),
+                                                                     theMsg->getTo(),
+                                                                     theMsg->getFrom(),
+                                                                     qstrMethodType.toStdString(),
+                                                                     qstrTypeDisplay.toStdString(),
+                                                                     str_nym_id,
+                                                                     static_cast<time64_t>(theMsg->getSentTime()));
+                                            } // for (inbox)
+                                            // --------------------------------------------------------------------------------------------
+                                            // OUTBOX
+                                            //
+                                            std::vector< _SharedPtr<NetworkMail> > theOutbox = pModule->getOutbox(qstrAddress.toStdString());
 
-                                            std::string strSubject  = theMsg->getSubject();
-                                            std::string strContents = theMsg->getMessage();
-                                            // ----------------------------------------------------
-                                            QString qstrFinal;
+                                            for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theOutbox.size(); ++nIndex)
+                                            {
+                                                _SharedPtr<NetworkMail> & theMsg = theOutbox[nIndex];
 
-                                            if (!strSubject.empty())
-                                                qstrFinal = QString("%1: %2\n%3").
-                                                        arg(tr("Subject")).
-                                                        arg(QString::fromStdString(strSubject)).
-                                                        arg(QString::fromStdString(strContents));
-                                            else
-                                                qstrFinal = QString::fromStdString(strContents);
-                                            // ----------------------------------------------------
-                                            bNeedsReSorting = true;
+                                                std::string strSubject  = theMsg->getSubject();
+                                                std::string strContents = theMsg->getMessage();
+                                                // ----------------------------------------------------
+                                                QString qstrFinal;
 
-                                            m_list.AddSpecialMsg(theMsg->getMessageID(),
-                                                                 true, //bIsOutgoing=true
-                                                                 static_cast<int32_t>(nFilterByMethodID),
-                                                                 qstrFinal.toStdString(),
-                                                                 theMsg->getTo(),
-                                                                 theMsg->getFrom(),
-                                                                 qstrMethodType.toStdString(),
-                                                                 qstrTypeDisplay.toStdString(),
-                                                                 str_nym_id,
-                                                                 static_cast<time64_t>(theMsg->getSentTime()));
-                                        } // for (outbox)
-                                    } // if (!qstrAddress.isEmpty())
-                                } // for (addresses)
-                            } // if GetAddressesByNym
-                        } // if ((NULL != pModule) && pModule->accessible())
-                    } // if (!qstrConnectStr.isEmpty())
-                } // if nFilterByMethodID > 0
+                                                if (!strSubject.empty())
+                                                    qstrFinal = QString("%1: %2\n%3").
+                                                            arg(tr("Subject")).
+                                                            arg(QString::fromStdString(strSubject)).
+                                                            arg(QString::fromStdString(strContents));
+                                                else
+                                                    qstrFinal = QString::fromStdString(strContents);
+                                                // ----------------------------------------------------
+                                                bNeedsReSorting = true;
+
+                                                m_list.AddSpecialMsg(theMsg->getMessageID(),
+                                                                     true, //bIsOutgoing=true
+                                                                     static_cast<int32_t>(nFilterByMethodID),
+                                                                     qstrFinal.toStdString(),
+                                                                     theMsg->getFrom(),
+                                                                     theMsg->getTo(),
+                                                                     qstrMethodType.toStdString(),
+                                                                     qstrTypeDisplay.toStdString(),
+                                                                     str_nym_id,
+                                                                     static_cast<time64_t>(theMsg->getSentTime()));
+                                            } // for (outbox)
+                                        } // if (!qstrAddress.isEmpty())
+                                    } // for (addresses)
+                                } // if GetAddressesByNym
+                            } // if ((NULL != pModule) && pModule->accessible())
+                        } // if (!qstrConnectStr.isEmpty())
+                    } // if nFilterByMethodID > 0
+                } // if (stringlist.size() >= 2)
             } // for (methods)
         } // if bGotMethods
     } // for (nyms)
