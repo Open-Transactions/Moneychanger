@@ -27,9 +27,17 @@ public:
 
     void Initialize(BtcTransactionPtr tx, BtcRawTransactionPtr rawTx);
 
-private:
+protected:
+    void closeEvent(QCloseEvent *event);
 
+private slots:
+    void on_comboConflicts_currentIndexChanged(const QString &txId);
+
+private:
     Ui::BtcTransactionInfo *ui;
+
+    void SetTxInfo(const BtcTransactionPtr &tx);
+    void SetRawTxInfo(const BtcRawTransactionPtr &rawTx);
 };
 
 #endif // BTCTRANSACTIONINFO_HPP

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>732</width>
-    <height>434</height>
+    <width>721</width>
+    <height>693</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -133,17 +133,17 @@
    </column>
    <column>
     <property name="text">
+     <string>Amount</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
      <string>Destination</string>
     </property>
    </column>
    <column>
     <property name="text">
      <string>Address</string>
-    </property>
-   </column>
-   <column>
-    <property name="text">
-     <string>Amount</string>
     </property>
    </column>
    <column>
@@ -239,6 +239,102 @@
    <property name="readOnly">
     <bool>true</bool>
    </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>430</y>
+     <width>51</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Inputs</string>
+   </property>
+  </widget>
+  <widget class="QTableWidget" name="tableRawVout">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>570</y>
+     <width>701</width>
+     <height>101</height>
+    </rect>
+   </property>
+   <column>
+    <property name="text">
+     <string>vout</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>amount</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>to address</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>type</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>scriptPubKey</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>reqSigs</string>
+    </property>
+   </column>
+  </widget>
+  <widget class="QLabel" name="label_10">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>550</y>
+     <width>51</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Outputs</string>
+   </property>
+  </widget>
+  <widget class="QTableWidget" name="tableRawVin">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>450</y>
+     <width>701</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <column>
+    <property name="text">
+     <string>vout</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>txid</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>scriptSig</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>sequence</string>
+    </property>
+   </column>
   </widget>
  </widget>
  <resources/>

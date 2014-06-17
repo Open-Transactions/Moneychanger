@@ -9,7 +9,6 @@
 
 #include <QTimer>
 
-BtcTransactionInfo* infoWindow = NULL;
 
 BtcTransactionManager::BtcTransactionManager(QWidget *parent) :
     QWidget(parent, Qt::Window),
@@ -193,8 +192,7 @@ void BtcTransactionManager::on_buttonSearchTx_clicked()
     if(txRawInfo == NULL)
         return;
 
-    if(infoWindow == NULL)
-        infoWindow = new BtcTransactionInfo();
+    BtcTransactionInfo* infoWindow = new BtcTransactionInfo();
     infoWindow->show();
     infoWindow->Initialize(txInfo, txRawInfo);
 }
