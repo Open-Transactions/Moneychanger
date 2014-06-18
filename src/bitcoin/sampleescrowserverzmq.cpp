@@ -7,6 +7,7 @@
 
 #include <opentxs/OTLog.hpp>
 
+
 #ifdef OT_USE_ZMQ4
     #include <zmq.h>
 #else
