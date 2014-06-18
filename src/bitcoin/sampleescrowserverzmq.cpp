@@ -325,8 +325,8 @@ BtcNetMsg* SampleEscrowServerZmq::SendData(BtcNetMsg* message)
     // Configure socket to not wait at close time
     int timeOut = 3000;
 #ifdef OT_USE_ZMQ4
-    // zmq_setsockopt(socket, ZMQ_RCVTIMEO, &timeOut, sizeof(timeOut));
-    // zmq_setsockopt(socket, ZMQ_SNDTIMEO, &timeOut, sizeof(timeOut));
+    zmq_setsockopt(socket, ZMQ_RCVTIMEO, &timeOut, sizeof(timeOut));
+    zmq_setsockopt(socket, ZMQ_SNDTIMEO, &timeOut, sizeof(timeOut));
 #endif
     int linger = 0;
     zmq_setsockopt(socket, ZMQ_LINGER, &linger, sizeof (linger));
