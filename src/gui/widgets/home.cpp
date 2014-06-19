@@ -780,6 +780,10 @@ void MTHome::PopulateRecords()
 
                                 if (MTContactHandler::getInstance()->GetAddressesByNym(mapAddresses, filterByNym, nFilterByMethodID))
                                 {
+//                                    qDebug() << QString("ADDRESSES SIZE ================== ");
+//                                    qDebug() << mapAddresses.size();
+//                                    qDebug() << QString("ADDRESSES SIZE ================== ");
+
                                     for (mapIDName::iterator jj = mapAddresses.begin(); jj != mapAddresses.end(); ++jj)
                                     {
                                         QString qstrAddress = jj.key();
@@ -810,21 +814,27 @@ void MTHome::PopulateRecords()
                                                 // ----------------------------------------------------
                                                 bNeedsReSorting = true;
 
-                                                m_list.AddSpecialMsg(theMsg->getMessageID(),
-                                                                     false, //bIsOutgoing=false
-                                                                     static_cast<int32_t>(nFilterByMethodID),
-                                                                     qstrFinal.toStdString(),
-                                                                     theMsg->getTo(),
-                                                                     theMsg->getFrom(),
-                                                                     qstrMethodType.toStdString(),
-                                                                     qstrTypeDisplay.toStdString(),
-                                                                     str_nym_id,
-                                                                     static_cast<time64_t>(theMsg->getSentTime()));
+                                                if (!theMsg->getMessageID().empty())
+                                                    m_list.AddSpecialMsg(theMsg->getMessageID(),
+                                                                         false, //bIsOutgoing=false
+                                                                         static_cast<int32_t>(nFilterByMethodID),
+                                                                         qstrFinal.toStdString(),
+                                                                         theMsg->getTo(),
+                                                                         theMsg->getFrom(),
+                                                                         qstrMethodType.toStdString(),
+                                                                         qstrTypeDisplay.toStdString(),
+                                                                         str_nym_id,
+                                                                         static_cast<time64_t>(theMsg->getReceivedTime()));
                                             } // for (inbox)
                                             // --------------------------------------------------------------------------------------------
                                             // OUTBOX
                                             //
                                             std::vector< _SharedPtr<NetworkMail> > theOutbox = pModule->getOutbox(qstrAddress.toStdString());
+
+//                                            qDebug() << QString("OUTBOX SIZE ================== ");
+//                                            qDebug() << theOutbox.size();
+//                                            qDebug() << QString("OUTBOX SIZE ================== ");
+
 
                                             for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theOutbox.size(); ++nIndex)
                                             {
@@ -845,16 +855,25 @@ void MTHome::PopulateRecords()
                                                 // ----------------------------------------------------
                                                 bNeedsReSorting = true;
 
-                                                m_list.AddSpecialMsg(theMsg->getMessageID(),
-                                                                     true, //bIsOutgoing=true
-                                                                     static_cast<int32_t>(nFilterByMethodID),
-                                                                     qstrFinal.toStdString(),
-                                                                     theMsg->getFrom(),
-                                                                     theMsg->getTo(),
-                                                                     qstrMethodType.toStdString(),
-                                                                     qstrTypeDisplay.toStdString(),
-                                                                     str_nym_id,
-                                                                     static_cast<time64_t>(theMsg->getSentTime()));
+//                                                qDebug() << QString("Adding OUTGOING theMsg->getMessageID(): %1 \n filterByNym: %2 \n qstrAddress: %3 \n nIndex: %4")
+//                                                            .arg(QString::fromStdString(theMsg->getMessageID()))
+//                                                            .arg(filterByNym)
+//                                                            .arg(qstrAddress)
+//                                                            .arg(nIndex)
+//                                                            ;
+
+
+                                                if (!theMsg->getMessageID().empty())
+                                                    m_list.AddSpecialMsg(theMsg->getMessageID(),
+                                                                         true, //bIsOutgoing=true
+                                                                         static_cast<int32_t>(nFilterByMethodID),
+                                                                         qstrFinal.toStdString(),
+                                                                         theMsg->getFrom(),
+                                                                         theMsg->getTo(),
+                                                                         qstrMethodType.toStdString(),
+                                                                         qstrTypeDisplay.toStdString(),
+                                                                         str_nym_id,
+                                                                         static_cast<time64_t>(theMsg->getSentTime()));
                                             } // for (outbox)
                                         } // if (!qstrAddress.isEmpty())
                                     } // for (addresses)

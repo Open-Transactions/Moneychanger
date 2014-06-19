@@ -83,6 +83,15 @@ bool MTComms::it_get(const std::string type, mapOfNetModules & mapOutput)
 }
 
 
+
+std::string MTComms::it_connectPlaceholder(const std::string strType)
+{
+    if (0 == strType.compare("bitmessage"))
+        return "127.0.0.1,8442,username,password"; // todo hardcoded
+
+    return "";
+}
+
 std::string MTComms::it_displayName(const std::string strType)
 {
     mapOfCommTypes mapTypes;
@@ -177,6 +186,13 @@ std::string MTComms::displayName(const std::string strType)
 {
     return MTComms::it()->it_displayName(strType);
 }
+
+//static
+std::string MTComms::connectPlaceholder(const std::string strType)
+{
+    return MTComms::it()->it_connectPlaceholder(strType);
+}
+
 
 //static
 bool MTComms::types(mapOfCommTypes & mapTypes)

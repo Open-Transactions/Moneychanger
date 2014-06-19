@@ -345,7 +345,7 @@ std::vector<_SharedPtr<NetworkMail> > BitMessage::getOutbox(std::string address)
         if(address != ""){
             std::vector<_SharedPtr<NetworkMail> > outboxForAddress;
             for(int x=0; x<m_localOutbox.size(); x++){
-                if(m_localOutbox.at(x)->getTo() == address)
+                if(m_localOutbox.at(x)->getFrom() == address)
                     outboxForAddress.push_back(m_localOutbox.at(x));
             }
             mlock.unlock();
@@ -407,13 +407,13 @@ std::vector<_SharedPtr<NetworkMail> > BitMessage::getUnreadMail(std::string addr
 std::vector<_SharedPtr<NetworkMail> > BitMessage::getAllUnreadMail(){return getUnreadMail("");} // Note that this is just a passthrough way of calling getUnreadMail() to adhere to the interface.
 
 bool BitMessage::deleteMessage(std::string messageID){
-    
+
     if(m_localInbox.size() == 0){
         getAllInboxMessages();  // Blocking call, otherwise this may cause problems.
     }
     INSTANTIATE_MLOCK(m_localInboxMutex);
     for(int x=0; x<m_localInbox.size(); x++){
-        
+
         if(m_localInbox.at(x)->getMessageID() == messageID){
             m_localInbox.erase(m_localInbox.begin() + x);
         }
@@ -428,11 +428,39 @@ bool BitMessage::deleteMessage(std::string messageID){
             return false;
         }
     }
-    
+
     mlock.unlock();
     return false;
-    
+
 } // Any part of the message should be able to be used to delete it from an inbox
+
+bool BitMessage::deleteOutMessage(std::string messageID){
+
+    if(m_localOutbox.size() == 0){
+        getAllSentMessages();  // Blocking call, otherwise this may cause problems.
+    }
+    INSTANTIATE_MLOCK(m_localOutboxMutex);
+    for(int x=0; x<m_localOutbox.size(); x++){
+
+        if(m_localOutbox.at(x)->getMessageID() == messageID){
+            m_localOutbox.erase(m_localOutbox.begin() + x);
+        }
+        try{
+            OT_STD_FUNCTION(void()) command = OT_STD_BIND(&BitMessage::trashMessage, this, messageID);
+            bm_queue->addToQueue(command);
+            mlock.unlock();
+            return true;
+        }
+        catch(...){
+            mlock.unlock();
+            return false;
+        }
+    }
+
+    mlock.unlock();
+    return false;
+
+} // Any part of the message should be able to be used to delete it from an outbox
 
 bool BitMessage::markRead(std::string messageID, bool read){
     
@@ -691,6 +719,7 @@ void BitMessage::getInboxMessageByID(std::string msgID, bool setRead){
 
 void BitMessage::getAllSentMessages(){
     
+    /*
     Parameters params;
     
     XmlResponse result = m_xmllib->run("getAllSentMessages", params);
@@ -729,7 +758,15 @@ void BitMessage::getAllSentMessages(){
         dirtyMessage.erase(std::remove(dirtyMessage.begin(), dirtyMessage.end(), '\n'), dirtyMessage.end());
         base64 cleanMessage(dirtyMessage, true);
         
-        BitSentMessage message(sentMessages[index].get("msgid", "").asString(), sentMessages[index].get("toAddress", "").asString(), sentMessages[index].get("fromAddress", "").asString(), base64(sentMessages[index].get("subject", "").asString(), true), cleanMessage, sentMessages[index].get("encodingType", 0).asInt(), sentMessages[index].get("lastActionTime", 0).asInt(), sentMessages[index].get("status", false).asString(), sentMessages[index].get("ackData", false).asString());
+        BitSentMessage message(sentMessages[index].get("msgid", "").asString(),
+                               sentMessages[index].get("toAddress", "").asString(),
+                               sentMessages[index].get("fromAddress", "").asString(),
+                               base64(sentMessages[index].get("subject", "").asString(), true),
+                               cleanMessage,
+                               sentMessages[index].get("encodingType", 0).asInt(),
+                               sentMessages[index].get("lastActionTime", 0).asInt(),
+                               sentMessages[index].get("status", false).asString(),
+                               sentMessages[index].get("ackData", false).asString());
                 
         m_localUnformattedOutbox.push_back(message);
         
@@ -750,7 +787,88 @@ void BitMessage::getAllSentMessages(){
     
     std::reverse(m_localOutbox.begin(), m_localOutbox.end());  // New messages at the front
     mlock.unlock();
-    
+
+    */
+
+
+
+    Parameters params;
+    std::vector<BitSentMessage> outbox;
+
+    XmlResponse result = m_xmllib->run("getAllSentMessages", params);
+
+    if(result.first == false){
+        std::cerr << "Error: getAllSentMessages failed" << std::endl;
+    }
+    else if(result.second.type() == xmlrpc_c::value::TYPE_STRING){
+        std::size_t found;
+        found=std::string(ValueString(result.second)).find("API Error");
+        if(found!=std::string::npos){
+            std::cerr << std::string(ValueString(result.second)) << std::endl;
+        }
+    }
+
+    Json::Value root;
+    Json::Reader reader;
+
+    bool parsesuccess = reader.parse( ValueString(result.second), root );
+    if ( !parsesuccess )
+    {
+        std::cerr  << "Failed to parse outbox" << reader.getFormattedErrorMessages();
+    }
+
+    const Json::Value sentMessages = root["sentMessages"];
+    for ( int index = 0; index < sentMessages.size(); ++index ){  // Iterates over the sequence elements.
+
+        // We need to sanitize our string, or else it will get cut off because of the newlines.
+        std::string dirtyMessage = sentMessages[index].get("message", "").asString();
+        dirtyMessage.erase(std::remove(dirtyMessage.begin(), dirtyMessage.end(), '\n'), dirtyMessage.end());
+        base64 cleanMessage(dirtyMessage, true);
+
+        BitSentMessage message(sentMessages[index].get("msgid", "").asString(),
+                               sentMessages[index].get("toAddress", "").asString(),
+                               sentMessages[index].get("fromAddress", "").asString(),
+                               base64(sentMessages[index].get("subject", "").asString(), true),
+                               cleanMessage,
+                               sentMessages[index].get("encodingType", 0).asInt(),
+                               sentMessages[index].get("lastActionTime", 0).asInt(),
+                               sentMessages[index].get("status", false).asString(),
+                               sentMessages[index].get("ackData", false).asString());
+
+        outbox.push_back(message);
+    }
+
+    INSTANTIATE_MLOCK(m_localOutboxMutex); // Lock so that we dont have a race condition.
+    // Populate our local outbox.
+
+    m_localOutbox.clear();
+    m_localUnformattedOutbox.clear();
+    for(int x=0; x<outbox.size(); x++){
+        m_localUnformattedOutbox.push_back(outbox.at(x));
+
+//        NetworkMail(std::string from="",
+//                    std::string to="",
+//                    std::string subject="",
+//                    std::string message="",
+//                    bool isRead=false,
+//                    std::string messageID="",
+//                    std::time_t received=0,
+//                    std::time_t sent=0)
+
+        _SharedPtr<NetworkMail> l_mail( new NetworkMail(outbox.at(x).getFromAddress(),
+                                                        outbox.at(x).getToAddress(),
+                                                        outbox.at(x).getSubject().decoded(),
+                                                        outbox.at(x).getMessage().decoded(),
+                                                        true,
+                                                        outbox.at(x).getMessageID(),
+                                                        0,
+                                                        outbox.at(x).getLastActionTime()));
+
+        m_localOutbox.push_back(l_mail);
+    }
+    std::reverse(m_localOutbox.begin(), m_localOutbox.end());  // New messages at the front
+    mlock.unlock(); // Release our lock so that others can access the outbox
+
 }
 
 
@@ -865,7 +983,8 @@ std::vector<BitSentMessage> BitMessage::getSentMessagesBySender(std::string addr
         found=std::string(ValueString(result.second)).find("API Error");
         if(found!=std::string::npos){
             std::cerr << std::string(ValueString(result.second)) << std::endl;
-            BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
+            BitSentMessage message("", "", "", base64(""), base64(""), 0, 0, "", "");
+//          BitInboxMessage message("", "", "", base64(""), base64(""), 0, 0, false);
             return outbox;
         }
     }

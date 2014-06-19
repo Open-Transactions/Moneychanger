@@ -521,6 +521,8 @@ void MTContactDetails::on_pushButtonMsg_clicked()
     QVariant varContactID = ui->pushButtonMsg->property("contactid");
     int      nContactID   = varContactID.toInt();
 
+    //qDebug() << QString("nContactID: %1").arg(nContactID);
+
     if (nContactID > 0)
     {
         // --------------------------------------------------
@@ -638,7 +640,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
     // ----------------------------------
     QString     strDetails;
     QStringList qstrlistNymIDs;
-    // --------------------------------------------
+    // ------------------------------------------
     int nContactID = strID.toInt();
     // ------------------------------------------
     if (nContactID > 0)

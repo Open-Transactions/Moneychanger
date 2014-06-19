@@ -219,7 +219,15 @@ void MTCompose::setRecipientNameBasedOnAvailableData()
         QString qstrAddressPortion("");
 
         if (!this->m_recipientAddress.isEmpty())
+        {
             qstrAddressPortion = QString(" (%1)").arg(this->m_recipientAddress);
+            // ---------------------------
+            if (qstrContactName.isEmpty())
+            {
+                MTNameLookupQT theLookup;
+                qstrContactName = QString::fromStdString(theLookup.GetAddressName(this->m_recipientAddress.toStdString()));
+            }
+        }
         else if (!sendingThroughOTServer())
         {
             QString qstrMsgTypeDisplay = m_msgtype.isEmpty() ? QString(tr("transport or ")) :
@@ -742,6 +750,60 @@ void MTCompose::on_viaButton_clicked()
     // -----------------------------------------------
     MTContactHandler::getInstance()->GetMsgMethodTypes(the_map, true); //bAddServers=false by default
     // -----------------------------------------------
+    // Set the pre-selected ID on the chooser, if one is already set.
+    //
+    int32_t nIndex        = -1;
+    int32_t nDefaultIndex =  0;
+    bool    bFoundDefault = false;
+    QString qstrDefaultType("");
+    QString qstrDefaultID  ("");
+    QString qstrUseDefault ("");
+
+    for (mapIDName::iterator it = the_map.begin(); it != the_map.end(); ++it)
+    {
+        ++nIndex;
+        // ----------------------------------
+        QString qstrType(""); // msgtype
+        QString qstrID  (""); // server ID.
+
+        QString qstrKey = it.key();
+
+        if ((-1) != qstrKey.indexOf("|", 0)) // Pipe was found.
+        {
+            QStringList stringlist = qstrKey.split("|");
+
+            if (stringlist.size() >= 2) // Should always be 2...
+            {
+                qstrType = stringlist.at(0);
+                qstrID   = stringlist.at(1);
+            }
+        }
+        // ----------------------------
+        else // Pipe wasn't found.
+            qstrType = qstrKey;
+        // ----------------------------
+        if (!m_serverId.isEmpty() && !qstrID.isEmpty() && (0 == qstrID.compare(m_serverId)))
+        {
+            bFoundDefault   = true;
+            nDefaultIndex   = nIndex;
+            qstrDefaultType = QString("otserver");
+            qstrDefaultID   = qstrID;
+            qstrUseDefault  = QString("%1|%2").arg(qstrDefaultType).arg(qstrDefaultID);
+            break;
+        }
+        else if (!m_msgtype.isEmpty() && !qstrType.isEmpty() && (0 != m_msgtype.compare("otserver")) && (0 == m_msgtype.compare(qstrType)))
+        {
+            bFoundDefault   = true;
+            nDefaultIndex   = nIndex;
+            qstrDefaultType = qstrType;
+            qstrUseDefault  = qstrDefaultType;
+            break;
+        }
+    } //  for (find preselected)
+    // -----------------------------------------------
+    if (bFoundDefault)
+        theChooser.SetPreSelected(qstrUseDefault);
+    // -----------------------------------------------
     theChooser.setWindowTitle(tr("Select Messaging Type"));
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
@@ -767,18 +829,84 @@ void MTCompose::on_viaButton_clicked()
             else // Pipe wasn't found.
                 qstrType = theChooser.m_qstrCurrentID;
             // ----------------------------
+            QString qstrOldRecipientAddress = m_recipientAddress;
+            // ----------------------------
             this->setInitialMsgType(qstrType, qstrID);
             // ----------------------------
             // Since the message type just changed, whether to OT server
             // or to Bitmessage, either way any previous address that was
             // set needs to be cleared.
             //
-            this->setInitialSenderAddress(QString(""));
-            this->setInitialRecipientAddress(QString(""));
+            if (!qstrType.isEmpty()) // qstrType not empty (should always be true.)
+            {
+                if (!m_senderAddress.isEmpty())
+                {
+                    QString senderMethodType = MTContactHandler::getInstance()->GetMethodType(m_senderAddress);
 
+                    if (senderMethodType.isEmpty() || (0 != senderMethodType.compare(qstrType)) || (0 == senderMethodType.compare("otserver")))
+                        this->setInitialSenderAddress(QString(""));
+                }
+
+                qDebug() << QString(" m_recipientAddress: %1\n m_recipientNymId: %2\n m_recipientContactId: %3\n")
+                            .arg(m_recipientAddress)
+                            .arg(m_recipientNymId)
+                            .arg(m_recipientContactId);
+
+                if (!qstrOldRecipientAddress.isEmpty())
+                {
+                    QString recipientMethodType = MTContactHandler::getInstance()->GetMethodType(qstrOldRecipientAddress);
+
+                    if (recipientMethodType.isEmpty() || (0 != recipientMethodType.compare(qstrType)) || (0 == recipientMethodType.compare("otserver")))
+                    {
+                        // Since we above set the address to blank, let's consider that there MIGHT
+                        // be a blank recipient Nym ID (like if the recipient has only an address,
+                        // like from a Bitmessage, but no Nym ID set, we might still be able to
+                        // derive a NymID before we wipe the address clean. We might also instead
+                        // be able to derive a contactID before we wipe the address clean.
+                        //
+                        bool bAlreadySet = false;
+
+                        if (m_recipientNymId.isEmpty())
+                        {
+                            QString qstrNymByAddress = MTContactHandler::getInstance()->GetNymByAddress(qstrOldRecipientAddress);
+
+                            if (!qstrNymByAddress.isEmpty())
+                            {
+                                bAlreadySet = true;
+                                setInitialRecipientNym(qstrNymByAddress, QString(""));
+                            }
+                        }
+                        // -------------------------------
+                        if (m_recipientNymId.isEmpty())
+                        {
+                            int nContactIDByAddress = m_recipientContactId;
+
+                            if (0 == nContactIDByAddress)
+                            {
+                                nContactIDByAddress = MTContactHandler::getInstance()->GetContactByAddress(qstrOldRecipientAddress);
+
+                                if (0 != nContactIDByAddress)
+                                {
+                                    bAlreadySet = true;
+                                    setInitialRecipientContactID(nContactIDByAddress, QString(""));
+                                }
+                            }
+                        }
+                        // --------------------------------------------
+                        if (!bAlreadySet)
+                            this->setInitialRecipientAddress(QString(""));
+                    }
+                }
+            }
+            // else {} (should never happen.)
+            // --------------------------------------
             // These calls will select the right addresses, if appropriate.
-            this->hasSender();
+            this->hasSender();            
             this->hasRecipient();
+            // --------------------------------------
+            this->setSenderNameBasedOnAvailableData();
+            this->setRecipientNameBasedOnAvailableData();
+            this->setTransportDisplayBasedOnAvailableData();
         }
     }
     else
