@@ -124,6 +124,7 @@ public:
     virtual std::vector<_SharedPtr<NetworkMail> > getAllUnreadMail(){return std::vector<_SharedPtr<NetworkMail> >();}
     
     virtual bool deleteMessage(std::string messageID){return false;} // passed as a string, as different protocols handle message ID's differently (BitMessage for example)
+    virtual bool deleteOutMessage(std::string messageID){return false;} // passed as a string, as different protocols handle message ID's differently (BitMessage for example)
     virtual bool markRead(std::string messageID, bool read=true){return false;} // By default this marks a given message as read or not, not all API's will support this and should thus return false.
     
     virtual bool sendMail(NetworkMail message){return false;} // Need To, From, Subject and Message in formatted NetworkMail object

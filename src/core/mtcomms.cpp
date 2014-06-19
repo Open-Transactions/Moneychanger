@@ -1,5 +1,6 @@
 #include <QObject>
 #include <QString>
+#include <QDebug>
 
 #include "mtcomms.h"
 
@@ -82,6 +83,15 @@ bool MTComms::it_get(const std::string type, mapOfNetModules & mapOutput)
 }
 
 
+
+std::string MTComms::it_connectPlaceholder(const std::string strType)
+{
+    if (0 == strType.compare("bitmessage"))
+        return "127.0.0.1,8442,username,password"; // todo hardcoded
+
+    return "";
+}
+
 std::string MTComms::it_displayName(const std::string strType)
 {
     mapOfCommTypes mapTypes;
@@ -139,6 +149,8 @@ bool MTComms::it_add(const std::string type, const std::string commstring)
     //
     if (0 == type.compare("bitmessage"))
     {
+        qDebug() << QString("Trying to add Bitmessage module with commstring: %1").arg(QString::fromStdString(commstring));
+
         NetworkModule * pModule = new BitMessage(commstring);
 
         if (NULL != pModule)
@@ -166,7 +178,7 @@ bool MTComms::get(const std::string type, mapOfNetModules & mapOutput)
 //static
 NetworkModule * MTComms::find(const std::string commstring)
 {
-    return MTComms::it()->find(commstring);
+    return MTComms::it()->it_find(commstring);
 }
 
 //static
@@ -174,6 +186,13 @@ std::string MTComms::displayName(const std::string strType)
 {
     return MTComms::it()->it_displayName(strType);
 }
+
+//static
+std::string MTComms::connectPlaceholder(const std::string strType)
+{
+    return MTComms::it()->it_connectPlaceholder(strType);
+}
+
 
 //static
 bool MTComms::types(mapOfCommTypes & mapTypes)

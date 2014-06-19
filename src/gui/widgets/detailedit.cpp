@@ -865,7 +865,7 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
                     m_pDetailPane->refresh(m_qstrCurrentID, m_qstrCurrentName);
                 // ----------------------------------------
                 break; // <=== ONLY HAPPENS ONCE <=====
-            }//resume
+            }
         }
     }
     // -------------------------------------

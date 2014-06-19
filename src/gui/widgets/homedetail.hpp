@@ -81,6 +81,8 @@ private:
 
     QPointer<QLineEdit> m_pLineEdit_Nym_ID;
     QPointer<QLineEdit> m_pLineEdit_OtherNym_ID;
+    QPointer<QLineEdit> m_pLineEdit_Address;
+    QPointer<QLineEdit> m_pLineEdit_OtherAddress;
     QPointer<QLineEdit> m_pLineEdit_Acct_ID;
     QPointer<QLineEdit> m_pLineEdit_OtherAcct_ID;
     QPointer<QLineEdit> m_pLineEdit_Server_ID;
@@ -88,6 +90,8 @@ private:
 
     QPointer<QLineEdit> m_pLineEdit_Nym_Name;
     QPointer<QLineEdit> m_pLineEdit_OtherNym_Name;
+    QPointer<QLineEdit> m_pLineEdit_Address_Name;
+    QPointer<QLineEdit> m_pLineEdit_OtherAddress_Name;
     QPointer<QLineEdit> m_pLineEdit_Acct_Name;
     QPointer<QLineEdit> m_pLineEdit_OtherAcct_Name;
     QPointer<QLineEdit> m_pLineEdit_Server_Name;
