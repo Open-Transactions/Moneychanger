@@ -51,6 +51,8 @@ protected:
 
   QMutex m_Mutex;
 
+  static const std::string s_key_id;
+
 public:
   static MTContactHandler * getInstance();
 
@@ -76,12 +78,21 @@ public:
   static QString Encode(QString plaintext);
   static QString Decode(QString encoded);
   // ---------------------------------------------
-  QString GetValueByIDLowLevel(QString str_select);
+  static QString Encrypt(QString plaintext);
+  static QString Decrypt(QString ciphertext);
+  // ---------------------------------------------
+  QString GetValueByIDLowLevel         (QString str_select);
+  QString GetEncryptedValueByIDLowLevel(QString str_select);
 
   QString GetValueByID(QString qstrID,                 QString column, QString table, QString id_name);
   bool    SetValueByID(QString qstrID, QString value,  QString column, QString table, QString id_name);
   QString GetValueByID(int     nID,                    QString column, QString table, QString id_name);
   bool    SetValueByID(int     nID,    QString value,  QString column, QString table, QString id_name);
+
+  QString GetEncryptedValueByID(QString qstrID,                 QString column, QString table, QString id_name);
+  bool    SetEncryptedValueByID(QString qstrID, QString value,  QString column, QString table, QString id_name);
+  QString GetEncryptedValueByID(int     nID,                    QString column, QString table, QString id_name);
+  bool    SetEncryptedValueByID(int     nID,    QString value,  QString column, QString table, QString id_name);
 
   /*
   QString create_msg_method = "CREATE TABLE msg_method"

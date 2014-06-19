@@ -149,7 +149,7 @@ bool MTComms::it_add(const std::string type, const std::string commstring)
     //
     if (0 == type.compare("bitmessage"))
     {
-        qDebug() << QString("Trying to add Bitmessage module with commstring: %1").arg(QString::fromStdString(commstring));
+//      qDebug() << QString("Trying to add Bitmessage module with commstring: %1").arg(QString::fromStdString(commstring));
 
         NetworkModule * pModule = new BitMessage(commstring);
 

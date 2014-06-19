@@ -10,7 +10,9 @@
 
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OTAPI_Exec.hpp>
+#include <opentxs/OpenTransactions.hpp>
 #include <opentxs/OTASCIIArmor.hpp>
+#include <opentxs/OTWallet.hpp>
 
 #include <QDebug>
 #include <QObject>
@@ -103,6 +105,10 @@ std::string MTNameLookupQT::GetAddressName(const std::string & str_address) cons
 
 //static
 MTContactHandler * MTContactHandler::_instance = NULL;
+
+//static
+const std::string MTContactHandler::s_key_id("mc_sqlite");
+
 
 //protected
 MTContactHandler::MTContactHandler() : m_Mutex(QMutex::Recursive) // allows us to call it multiple times from same thread.
@@ -696,6 +702,121 @@ QString MTContactHandler::GetValueByIDLowLevel(QString str_select)
     return ""; // Didn't find any.
 }
 
+
+// Warning: this call only works after OT LoadWallet is finished.
+// (Because it uses keys from the wallet.)
+QString MTContactHandler::GetEncryptedValueByIDLowLevel(QString str_select)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    int nRows = DBHandler::getInstance()->querySize(str_select);
+
+    for(int ii=0; ii < nRows; ii++)
+    {
+        //Extract data
+        QString qstr_value = DBHandler::getInstance()->queryString(str_select, 0, ii);
+
+        if (!qstr_value.isEmpty())
+        {
+            //Decrypt
+            qstr_value = Decrypt(qstr_value);
+        }
+        //---------------------------------------------------
+        return qstr_value; // In practice there should only be one row.
+    }
+
+    return ""; // Didn't find any.
+}
+
+
+// Warning: this call only works after OT LoadWallet is finished.
+// (Because it uses keys from the wallet.)
+QString MTContactHandler::GetEncryptedValueByID(QString qstrID, QString column, QString table, QString id_name)
+{
+    // NOTE: No need to lock mutex, since GetEncryptedValueByIDLowLevel already locks it.
+    // -----------------------------------
+    // What do the parameters mean? They are for loading generic values from tables by ID.
+    //
+    // For example id might be 5,
+    // column might be 'nym_display_name',
+    // table might be 'nym'
+    // and id_name might be 'nym_id'
+    // For something like:
+    // QString("SELECT `nym_display_name` FROM `nym` WHERE `nym_id`='%1' LIMIT 0,1").arg(qstrNymID);
+    // ----------------------------------
+    QString str_select = QString("SELECT `%1` FROM `%2` WHERE `%3`='%4' LIMIT 0,1")
+            .arg(column)   // "nym_display_name"
+            .arg(table)    // "nym"
+            .arg(id_name)  // "nym_id"
+            .arg(qstrID);     // (actual Nym ID goes here as string)
+
+    return this->GetEncryptedValueByIDLowLevel(str_select);
+}
+
+// Warning: this call only works after OT LoadWallet is finished.
+// (Because it uses keys from the wallet.)
+bool MTContactHandler::SetEncryptedValueByID(QString qstrID, QString value, QString column, QString table, QString id_name)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString encrypted_value = Encrypt(value);
+    // ------------------------------------------
+    QString str_update = QString("UPDATE `%1` SET `%2`='%3' WHERE `%4`='%5'")
+            .arg(table)         // "contact"
+            .arg(column)        // "contact_display_name"
+            .arg(encrypted_value) // (encrypted bitmessage connect string (for example))
+            .arg(id_name)       // "contact_id"
+            .arg(qstrID);       // (actual contact ID goes here)
+
+    return DBHandler::getInstance()->runQuery(str_update);
+}
+
+
+// Warning: this call only works after OT LoadWallet is finished.
+// (Because it uses keys from the wallet.)
+QString MTContactHandler::GetEncryptedValueByID(int nID, QString column, QString table, QString id_name)
+{
+    // NOTE: No need to lock mutex, since GetEncryptedValueByIDLowLevel already locks it.
+    // -----------------------------------
+    // What do the parameters mean? They are for loading generic values from tables by ID.
+    //
+    // For example id might be 5,
+    // column might be 'contact_display_name',
+    // table might be 'contact'
+    // and id_name might be 'contact_id'
+    // For something like:
+    // QString("SELECT `contact_display_name` FROM `contact` WHERE `contact_id`=%1 LIMIT 0,1").arg(nContactID);
+    // ----------------------------------
+    QString str_select = QString("SELECT `%1` FROM `%2` WHERE `%3`=%4 LIMIT 0,1")
+            .arg(column)   // "contact_display_name"
+            .arg(table)    // "contact"
+            .arg(id_name)  // "contact_id"
+            .arg(nID);     // (actual integer ID goes here)
+
+    return this->GetEncryptedValueByIDLowLevel(str_select);
+}
+
+
+// Warning: this call only works after OT LoadWallet is finished.
+// (Because it uses keys from the wallet.)
+bool MTContactHandler::SetEncryptedValueByID(int nID, QString value, QString column, QString table, QString id_name)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString encrypted_value = Encrypt(value);
+    // ------------------------------------------
+    QString str_update = QString("UPDATE `%1` SET `%2`='%3' WHERE `%4`=%5")
+            .arg(table)         // "contact"
+            .arg(column)        // "contact_display_name"
+            .arg(encrypted_value) // (encrypted bitmessage connect string, say.)
+            .arg(id_name)       // "contact_id"
+            .arg(nID);          // (actual contact ID goes here)
+
+    return DBHandler::getInstance()->runQuery(str_update);
+}
+
+
+
 QString MTContactHandler::GetValueByID(QString qstrID, QString column, QString table, QString id_name)
 {
     // NOTE: No need to lock mutex, since GetValueByIDLowLevel already locks it.
@@ -716,6 +837,23 @@ QString MTContactHandler::GetValueByID(QString qstrID, QString column, QString t
             .arg(qstrID);     // (actual Nym ID goes here as string)
 
     return this->GetValueByIDLowLevel(str_select);
+}
+
+
+bool MTContactHandler::SetValueByID(QString qstrID, QString value, QString column, QString table, QString id_name)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString encoded_value = Encode(value);
+    // ------------------------------------------
+    QString str_update = QString("UPDATE `%1` SET `%2`='%3' WHERE `%4`='%5'")
+            .arg(table)         // "contact"
+            .arg(column)        // "contact_display_name"
+            .arg(encoded_value) // (base64-encoded display name)
+            .arg(id_name)       // "contact_id"
+            .arg(qstrID);       // (actual contact ID goes here)
+
+    return DBHandler::getInstance()->runQuery(str_update);
 }
 
 
@@ -759,23 +897,6 @@ bool MTContactHandler::SetValueByID(int nID, QString value, QString column, QStr
 }
 
 
-bool MTContactHandler::SetValueByID(QString qstrID, QString value, QString column, QString table, QString id_name)
-{
-    QMutexLocker locker(&m_Mutex);
-
-    QString encoded_value = Encode(value);
-    // ------------------------------------------
-    QString str_update = QString("UPDATE `%1` SET `%2`='%3' WHERE `%4`='%5'")
-            .arg(table)         // "contact"
-            .arg(column)        // "contact_display_name"
-            .arg(encoded_value) // (base64-encoded display name)
-            .arg(id_name)       // "contact_id"
-            .arg(qstrID);       // (actual contact ID goes here)
-
-    return DBHandler::getInstance()->runQuery(str_update);
-}
-
-
 QString MTContactHandler::GetContactName(int nContactID)
 {
     return this->GetValueByID(nContactID, "contact_display_name", "contact", "contact_id");
@@ -786,6 +907,59 @@ bool MTContactHandler::SetContactName(int nContactID, QString contact_name_strin
     return this->SetValueByID(nContactID, contact_name_string, "contact_display_name", "contact", "contact_id");
 }
 
+// ---------------------------------------------------
+
+//static
+QString MTContactHandler::Encrypt(QString plaintext)
+{
+    QString encrypted_value("");
+
+    if (!plaintext.isEmpty())
+    {
+        OTWallet * pWallet = OTAPI_Wrap::OTAPI()->GetWallet("MTContactHandler::Encrypt"); // This logs and ASSERTs already.
+
+        if (NULL != pWallet)
+        {
+            OTString strOutput, strPlaintext(plaintext.toStdString().c_str());
+
+            if (pWallet->Encrypt_ByKeyID(s_key_id, strPlaintext, strOutput))
+            {
+                std::string str_temp(strOutput.Get());
+                encrypted_value = QString::fromStdString(str_temp);
+            }
+        }
+    }
+
+    return encrypted_value;
+}
+
+//static
+QString MTContactHandler::Decrypt(QString ciphertext)
+{
+//  qDebug() << QString("Decrypting ciphertext: %1").arg(ciphertext);
+
+    QString decrypted_value("");
+
+    if (!ciphertext.isEmpty())
+    {
+        OTWallet * pWallet = OTAPI_Wrap::OTAPI()->GetWallet("MTContactHandler::Decrypt"); // This logs and ASSERTs already.
+
+        if (NULL != pWallet)
+        {
+            OTString strOutput, strCiphertext(ciphertext.toStdString().c_str());
+
+            if (pWallet->Decrypt_ByKeyID(s_key_id, strCiphertext, strOutput))
+            {
+                std::string str_temp(strOutput.Get());
+                decrypted_value = QString::fromStdString(str_temp);
+            }
+        }
+    }
+
+    return decrypted_value;
+}
+
+// ---------------------------------------------------
 
 //static
 QString MTContactHandler::Encode(QString plaintext)
@@ -1052,12 +1226,12 @@ bool MTContactHandler::SetMethodTypeDisplay(int nMethodID, QString input)
 
 QString MTContactHandler::GetMethodConnectStr (int nMethodID)
 {
-    return this->GetValueByID(nMethodID, "method_connect", "msg_method", "method_id");
+    return this->GetEncryptedValueByID(nMethodID, "method_connect", "msg_method", "method_id");
 }
 
 bool MTContactHandler::SetMethodConnectStr (int nMethodID, QString input)
 {
-    return this->SetValueByID(nMethodID, input, "method_connect", "msg_method", "method_id");
+    return this->SetEncryptedValueByID(nMethodID, input, "method_connect", "msg_method", "method_id");
 }
 
 
@@ -1155,7 +1329,7 @@ bool MTContactHandler::GetMsgMethods(mapIDName & theMap, bool bAddServers/*=fals
             QString qstrDisplayName    = Decode(qstrEncDisplayName);
             QString qstrType           = Decode(qstrEncType);
             QString qstrTypeDisplay    = Decode(qstrEncTypeDisplay);
-//          QString qstrConnect        = Decode(qstrEncConnect);
+//          QString qstrConnect        = Decrypt(qstrEncConnect);
             // -----------------------------------------------------
             // If a type filter is passed in, and it doesn't match the type of this record,
             // then continue.
@@ -1538,7 +1712,7 @@ bool MTContactHandler::GetMsgMethodsByNym(mapIDName & theMap, QString filterByNy
             QString qstrDisplayName    = Decode(qstrEncDisplayName);
             QString qstrType           = Decode(qstrEncType);
             QString qstrTypeDisplay    = Decode(qstrEncTypeDisplay);
-//          QString qstrConnect        = Decode(qstrEncConnect);
+//          QString qstrConnect        = Decrypt(qstrEncConnect);
             // -----------------------------------------------------
             // Whereas for a Bitmessage address, the ID would be:
             // "bitmessage|METHOD_ID"
@@ -1699,15 +1873,15 @@ int  MTContactHandler::AddMsgMethod(QString display_name, QString type, QString 
 {
     QMutexLocker locker(&m_Mutex);
 
-    QString encoded_display_name = Encode(display_name);
-    QString encoded_type         = Encode(type);
-    QString encoded_type_display = Encode(type_display);
-    QString encoded_connect_str  = Encode(connect);
+    QString encoded_display_name  = Encode(display_name);
+    QString encoded_type          = Encode(type);
+    QString encoded_type_display  = Encode(type_display);
+    QString encrypted_connect_str = Encrypt(connect);
 
     QString str_insert = QString("INSERT INTO `msg_method` "
                                  "(`method_id`, `method_display_name`, `method_type`, `method_type_display`, `method_connect`) "
                                  "VALUES(NULL, '%1', '%2', '%3', '%4')")
-            .arg(encoded_display_name).arg(encoded_type).arg(encoded_type_display).arg(encoded_connect_str);
+            .arg(encoded_display_name).arg(encoded_type).arg(encoded_type_display).arg(encrypted_connect_str);
 
     DBHandler::getInstance()->runQuery(str_insert);
 

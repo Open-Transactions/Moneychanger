@@ -763,10 +763,10 @@ void MTHome::PopulateRecords()
                                 // todo probably need a messagebox here.
                                 qDebug() << QString("PopulateRecords: Unable to add a %1 interface with connection string: %2").arg(qstrMethodType).arg(qstrConnectStr);
 
-                          qDebug() << QString("qstrConnectStr: %1   NULL != pModule: %2").arg(qstrConnectStr).arg(QString((NULL != pModule) ? "true" : "false"));
-
-                          if (NULL != pModule)
-                              qDebug() << QString("pModule->accessible: %1").arg(QString(pModule->accessible() ? "true" : "false"));
+//                        qDebug() << QString("qstrConnectStr: %1   NULL != pModule: %2").arg(qstrConnectStr).arg(QString((NULL != pModule) ? "true" : "false"));
+//
+//                        if (NULL != pModule)
+//                            qDebug() << QString("pModule->accessible: %1").arg(QString(pModule->accessible() ? "true" : "false"));
 
                             if ((NULL != pModule) && pModule->accessible())
                             {
