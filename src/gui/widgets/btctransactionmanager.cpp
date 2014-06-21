@@ -69,7 +69,7 @@ void BtcTransactionManager::RefreshBitcoinTransactions()
     // how many transactions to fetch
     int32_t txCount = this->ui->editTxCount->text().toInt();
 
-    // get transactions
+    // get transactions, includes watchonly by default
     BtcTransactions transactions = Modules::btcModules->btcJson->ListTransactions("*", txCount);
     foreach(BtcTransactionPtr tx, transactions)
     {

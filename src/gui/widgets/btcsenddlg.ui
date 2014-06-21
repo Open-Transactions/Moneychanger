@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>240</x>
-     <y>110</y>
+     <y>105</y>
      <width>131</width>
      <height>27</height>
     </rect>
@@ -45,7 +45,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Amount to send:</string>
+    <string>Amount to send</string>
    </property>
   </widget>
   <widget class="QPushButton" name="buttonSend">
@@ -107,7 +107,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Address to send to:</string>
+    <string>Address to send to</string>
    </property>
   </widget>
   <widget class="QScrollArea" name="scrollArea">
@@ -481,7 +481,7 @@
           </rect>
          </property>
          <property name="text">
-          <string>Show spendable txids</string>
+          <string>Show unspent txids</string>
          </property>
         </widget>
         <widget class="QCheckBox" name="checkExcludeUnsignable">
@@ -492,6 +492,9 @@
            <width>161</width>
            <height>22</height>
           </rect>
+         </property>
+         <property name="toolTip">
+          <string>This is slow. Only tick this bock if you used 'importaddress' on addresses to which you have no private keys.</string>
          </property>
          <property name="text">
           <string>Exclude unsignable</string>
@@ -532,14 +535,14 @@
     </rect>
    </property>
    <property name="text">
-    <string>Label:</string>
+    <string>Label</string>
    </property>
   </widget>
   <widget class="QDoubleSpinBox" name="spinBoxFee">
    <property name="geometry">
     <rect>
-     <x>430</x>
-     <y>110</y>
+     <x>420</x>
+     <y>105</y>
      <width>111</width>
      <height>27</height>
     </rect>
@@ -564,7 +567,20 @@
     </rect>
    </property>
    <property name="text">
-    <string>Fee:</string>
+    <string>Fee</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>140</y>
+     <width>131</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Spendable balance</string>
    </property>
   </widget>
   <zorder>scrollArea</zorder>
@@ -579,6 +595,7 @@
   <zorder>label_14</zorder>
   <zorder>spinBoxFee</zorder>
   <zorder>label_16</zorder>
+  <zorder>label_2</zorder>
  </widget>
  <resources/>
  <connections/>
