@@ -27,8 +27,7 @@ void SampleEscrowManager::OnSimulateEscrowServers()
     this->escrowPool = EscrowPoolPtr(new EscrowPool(2));
 
     // give pool a name
-    //this->escrowPool->poolName = "pool #" + btc::to_string(Modules::poolManager->escrowPools.size());
-    this->escrowPool->poolName = "pool #" + QString::number(Modules::poolManager->escrowPools.size()).toStdString();
+    this->escrowPool->poolName = "pool #" + btc::to_string(Modules::poolManager->escrowPools.size());
 
     // add pool to global pool list
     Modules::poolManager->AddPool(this->escrowPool);

@@ -52,8 +52,7 @@ SampleEscrowServerZmq::SampleEscrowServerZmq(BitcoinServerPtr bitcoind, EscrowPo
 
     this->connectString = "tcp://";
     this->connectString += this->serverInfo->url + ":";
-    //this->connectString += btc::to_string(this->serverInfo->port);
-    this->connectString += QString::number(this->serverInfo->port).toStdString();
+    this->connectString += btc::to_string(this->serverInfo->port);
 
     InitNetMessages();
 }
