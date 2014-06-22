@@ -9,6 +9,7 @@
 #include <QWidget>
 
 class BtcTxIdList;
+class QTimer;
 
 namespace Ui {
 class BtcSendDlg;
@@ -23,6 +24,8 @@ public:
     ~BtcSendDlg();
 
 private slots:
+    void Update();
+
     void on_buttonSend_clicked();
 
     void on_buttonFindOutputs_clicked();
@@ -36,6 +39,8 @@ private slots:
     void on_buttonShowUnspentTxids_clicked();
 
 private:
+    void RefreshBalances();
+
     Ui::BtcSendDlg *ui;
 
     // raw transaction utxos
@@ -47,6 +52,8 @@ private:
     SampleEscrowClientPtr client;
 
     BtcTxIdList* txIdList;
+
+    _SharedPtr<QTimer> updateTimer;
 };
 
 #endif // BTCSENDDLG_HPP

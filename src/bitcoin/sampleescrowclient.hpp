@@ -58,7 +58,7 @@ protected:
 
     BtcModulesPtr modules;
 
-    QTimer* updateTimer;
+    _SharedPtr<QTimer> updateTimer;
 
 private:
     struct Action;

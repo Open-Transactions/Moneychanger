@@ -28,6 +28,7 @@ private slots:
     void on_tableTxPool_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
 
 private:
+    void RefreshBalances();
     void RefreshBitcoinTransactions();
     void RefreshPoolTransactions(bool refreshAll = false);
 

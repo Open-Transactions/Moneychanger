@@ -13,7 +13,10 @@
 #include <bitcoin/sampleescrowclient.hpp>
 #include <bitcoin/transactionmanager.hpp>
 
+#include <bitcoin-api/btchelper.hpp>
+
 #include <QStringListModel>
+#include <QTimer>
 
 
 BtcSendDlg::BtcSendDlg(QWidget *parent) :
@@ -25,11 +28,35 @@ BtcSendDlg::BtcSendDlg(QWidget *parent) :
     this->client = Modules::sampleEscrowClient;
 
     this->txIdList = NULL;
+
+    this->updateTimer = _SharedPtr<QTimer>(new QTimer());
+    this->updateTimer->setInterval(15000);
+    this->updateTimer->start();
+    connect(this->updateTimer.get(), SIGNAL(timeout()), this, SLOT(Update()));
+
+    Update();
 }
 
 BtcSendDlg::~BtcSendDlg()
 {
     delete ui;
+}
+
+void BtcSendDlg::Update()
+{
+    RefreshBalances();
+}
+
+void BtcSendDlg::RefreshBalances()
+{
+    BtcBalancesPtr balances = Modules::btcModules->btcHelper->GetBalances();
+    if(balances == NULL)
+        return;
+
+    this->ui->labelBalanceC->setText(QString::fromStdString(btc::to_string(BtcHelper::SatoshisToCoins(balances->confirmed))));
+    this->ui->labelBalanceP->setText(QString::fromStdString(btc::to_string(BtcHelper::SatoshisToCoins(balances->pending))));
+    this->ui->labelBalanceWatC->setText(QString::fromStdString(btc::to_string(BtcHelper::SatoshisToCoins(balances->watchConfirmed))));
+    this->ui->labelBalanceWatP->setText(QString::fromStdString(btc::to_string(BtcHelper::SatoshisToCoins(balances->watchPending))));
 }
 
 void BtcSendDlg::on_buttonSend_clicked()

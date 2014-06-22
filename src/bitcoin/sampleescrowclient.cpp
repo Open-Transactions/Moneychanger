@@ -71,8 +71,6 @@ SampleEscrowClient::SampleEscrowClient(BtcModulesPtr modules, QObject *parent)
 SampleEscrowClient::~SampleEscrowClient()
 {
     this->rpcServer.reset();
-
-    delete this->updateTimer;
 }
 
 void SampleEscrowClient::Initialize()
@@ -83,10 +81,10 @@ void SampleEscrowClient::Initialize()
     this->clientName = "                   ";
     gen_random((char*)this->clientName.c_str(), this->clientName.size());
 
-    this->updateTimer = new QTimer();
-    updateTimer->setInterval(100);
-    updateTimer->start();
-    connect(updateTimer, SIGNAL(timeout()), this, SLOT(Update()));
+    this->updateTimer = _SharedPtr<QTimer>(new QTimer());
+    this->updateTimer->setInterval(100);
+    this->updateTimer->start();
+    connect(this->updateTimer.get(), SIGNAL(timeout()), this, SLOT(Update()));
 
     Reset();
 }

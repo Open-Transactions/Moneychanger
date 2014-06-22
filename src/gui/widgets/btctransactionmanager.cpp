@@ -17,7 +17,7 @@ BtcTransactionManager::BtcTransactionManager(QWidget *parent) :
     this->ui->setupUi(this);
 
     this->updateTimer = QTimerPtr(new QTimer(parent));
-    updateTimer->setInterval(1000);
+    updateTimer->setInterval(2000);
     updateTimer->start();
     connect(updateTimer.get(), SIGNAL(timeout()), this, SLOT(Update()));
 }
@@ -36,20 +36,34 @@ void BtcTransactionManager::Update()
 
     if(refreshTransactionsCount-- == 0)
     {
+        // ask pool for new transactions
         refreshTransactionsCount = 15;
         client->CheckPoolTransactions(Modules::poolManager->GetPoolByName(poolName));
     }
 
     if(static_cast<uint32_t>(this->ui->tableTxPool->rowCount()) < client->poolTxCountMap[poolName])
     {
-            RefreshPoolTransactions();
+        RefreshPoolTransactions();
     }
     else if(refreshAllCount-- == 0)
     {
         refreshAllCount = 15;
-        RefreshBitcoinTransactions();
-        RefreshPoolTransactions(true);
+        RefreshBitcoinTransactions();   // ask bitcoind for list of transactions
+        RefreshPoolTransactions(true);  // check confirmations of pool transactions
+        RefreshBalances();              // update balances
     }
+}
+
+void BtcTransactionManager::RefreshBalances()
+{
+    BtcBalancesPtr balances = Modules::btcModules->btcHelper->GetBalances();
+    if(balances == NULL)
+        return;
+
+    this->ui->labelBalanceC->setText(QString::fromStdString(btc::to_string(BtcHelper::SatoshisToCoins(balances->confirmed))));
+    this->ui->labelBalanceP->setText(QString::fromStdString(btc::to_string(BtcHelper::SatoshisToCoins(balances->pending))));
+    this->ui->labelBalanceWatC->setText(QString::fromStdString(btc::to_string(BtcHelper::SatoshisToCoins(balances->watchConfirmed))));
+    this->ui->labelBalanceWatP->setText(QString::fromStdString(btc::to_string(BtcHelper::SatoshisToCoins(balances->watchPending))));
 }
 
 void BtcTransactionManager::on_buttonRefresh_clicked()
