@@ -68,8 +68,11 @@ public:
     // returns true if we own the address or any address making up a multisig
     bool IsMine(const std::string &address);
 
+    BtcBalancesPtr GetBalances();
+
     // Returns the public key of an address (addresses are just hashes)
-    // Pub keys need to be shared to create multi signature addresses
+    // Public keys need to be shared to create multi signature addresses
+    // calls 'validateaddress' which is kinda slow so use in moderation.
     std::string GetPublicKey(const std::string &address);
 
     // checks if tx contains the raw transaction (bitcoind v0.9.0)

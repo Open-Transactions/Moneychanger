@@ -46,13 +46,18 @@ public:
     ~BtcJson();
 
     virtual void Initialize();       // should make this part of all modules
-    // when a function requires a password getPasswordFunc is called and expected to return the pw
 
+    // when a function requires a password getPasswordFunc is called and expected to return the pw
     virtual void SetPasswordCallback(fastdelegate::FastDelegate0<std::string> callbackFunction);
 
+    // asks bitcoind for details but doesn't do anything with the result yet
     virtual void GetInfo();
 
-    virtual int64_t GetBalance(const char *account = NULL, const int32_t &minConfirmations = BtcHelper::MinConfirms);
+    // returns account balance
+    // account: use NULL or "*" for all accounts and "" for the default account
+    // minConfirmations: duh.
+    // includeWatchonly: whether to include watchonly addresses in balance calculations (default = true)
+    virtual int64_t GetBalance(const char *account = NULL, const int32_t &minConfirmations = BtcHelper::MinConfirms, const bool &includeWatchonly = true);
 
     // Gets the default address for the specified account
     virtual std::string GetAccountAddress(const std::string &account = "");

@@ -208,21 +208,21 @@ void BtcJson::GetInfo()
     uint64_t balance = this->modules->btcHelper->CoinsToSatoshis(result["balance"].asDouble());
 }
 
-int64_t BtcJson::GetBalance(const char *account/*=NULL*/, const int32_t &minConfirmations)
+int64_t BtcJson::GetBalance(const char *account/*=NULL*/, const int32_t &minConfirmations, const bool &includeWatchonly)
 {
     // note: json and bitcoind make a difference between NULL-strings and empty strings.
 
     Json::Value params = Json::Value();
     params.append(account != NULL ? account : Json::Value());      // account
     params.append(minConfirmations);
-    //params.append(1);       // min confirmations, 1 is default, we probably don't need this line.
+    params.append(includeWatchonly);
 
     BtcRpcPacketPtr reply = this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_GETBALANCE));
 
     Json::Value result;
     if(!ProcessRpcString(reply, result) || !result.isDouble())
     {
-        return 0;  // error, TODO: throw error or return NaN
+        return 0;
     }
 
     return this->modules->btcHelper->CoinsToSatoshis(result.asDouble());

@@ -6,26 +6,26 @@
 
 #include <bitcoin-api/btcmodules.hpp>
 
+#include <vector>
 #include <stdio.h>
 #include <iostream>
-#include <vector>
+#include <iomanip>      // setprecision
+#include <sstream>      // ostringstream
 #include <cstdio>       // std::printf
 #include <cstdlib>      // std::find
 #include <algorithm>    // std::find
 
 #ifndef OT_USE_TR1
     #include <thread>   // sleep()
+    //#include <string>   // to_string
 #else
     #include <unistd.h> // usleep
-    #include <sstream>  // ostringstream
 #endif // OT_USE_TR1
-
 
 void btc::Sleep(time_t milliSeconds)
 {
 #ifndef OT_USE_TR1
     std::this_thread::sleep_for(std::chrono::milliseconds(milliSeconds));
-    std::this_thread::yield();  // let's also free some CPU because who cares about a few ms here?
 #else
     usleep(milliSeconds * 1000);
 #endif // OT_USE_TR1
@@ -34,14 +34,15 @@ void btc::Sleep(time_t milliSeconds)
 template <typename T>
 std::string btc::to_string(T number)
 {
-#ifndef OT_USE_TR1
-    return std::to_string(number);
-#else
     std::ostringstream oOStrStream;
-    oOStrStream << number;
+    oOStrStream << std::setprecision(8) << number;      // precision 8 because satoshis
     return oOStrStream.str();
-#endif
 }
+template std::string btc::to_string<int32_t>(int32_t);
+template std::string btc::to_string<uint32_t>(uint32_t);
+template std::string btc::to_string<int64_t>(int64_t);
+template std::string btc::to_string<uint64_t>(uint64_t);
+template std::string btc::to_string<double>(double);
 
 
 int32_t BtcHelper::MinConfirms = 0;         // used for listunspent, should be zero or same as WaitForConfirms imho
@@ -103,6 +104,22 @@ bool BtcHelper::IsMine(const std::string &address)
     }
 
     return false;
+}
+
+BtcBalancesPtr BtcHelper::GetBalances()
+{
+    BtcBalancesPtr balances = BtcBalancesPtr(new BtcBalances());
+
+    int64_t allConf = modules->btcJson->GetBalance("*", 1, true);               // include watchonly
+    int64_t all = modules->btcJson->GetBalance("*", 0, true);                   // include watchonly
+    int64_t allMine = modules->btcJson->GetBalance("*", 0, false);              // spendable total
+
+    balances->confirmed = this->modules->btcJson->GetBalance("*", 1, false);    // spendable confirmed
+    balances->pending = allMine - balances->confirmed;                          // spendable total - spendable confirmed
+    balances->watchConfirmed = allConf - allMine;                               // all confirmed - spendable total
+    balances->watchPending = all - allMine - balances->watchConfirmed;                    // all - allMine - watch confirmed
+
+    return balances;
 }
 
 BtcRawTransactionPtr BtcHelper::GetDecodedRawTransaction(const BtcTransactionPtr &tx) const

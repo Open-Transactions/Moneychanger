@@ -47,9 +47,13 @@ namespace btc
 }
 
 
-
-// TODO: error checking
-
+struct BtcBalances
+{
+    int64_t confirmed;
+    int64_t pending;
+    int64_t watchConfirmed;
+    int64_t watchPending;
+};
 
 struct BtcTxDetail
 {
@@ -289,6 +293,7 @@ private:
 };
 
 
+typedef _SharedPtr<BtcBalances>            BtcBalancesPtr;
 typedef _SharedPtr<BtcTxDetail>            BtcTxDetailPtr;
 typedef _SharedPtr<BtcTransaction>         BtcTransactionPtr;
 typedef _SharedPtr<BtcRawTransaction>      BtcRawTransactionPtr;
