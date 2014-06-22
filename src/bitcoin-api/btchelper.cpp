@@ -535,10 +535,16 @@ BtcSigningPrerequisites BtcHelper::GetSigningPrerequisites(const BtcUnspentOutpu
 
     for(BtcUnspentOutputs::const_iterator output = outputs.begin(); output != outputs.end(); output++)
     {
-        BtcAddressInfoPtr addrInfo = this->modules->btcJson->ValidateAddress((*output)->address);
-        if(addrInfo == NULL)
-            addrInfo = BtcAddressInfoPtr(new BtcAddressInfo(Json::Value(Json::objectValue)));
-        prereqs.push_back(BtcSigningPrerequisitePtr(new BtcSigningPrerequisite((*output)->txId, (*output)->vout, (*output)->scriptPubKey, addrInfo->redeemScript)));
+        std::string redeemScript = (*output)->redeemScript;
+
+        if(redeemScript.empty())
+        {
+            BtcAddressInfoPtr addrInfo = this->modules->btcJson->ValidateAddress((*output)->address);
+            if(addrInfo != NULL)
+                redeemScript = addrInfo->redeemScript;
+        }
+
+        prereqs.push_back(BtcSigningPrerequisitePtr(new BtcSigningPrerequisite((*output)->txId, (*output)->vout, (*output)->scriptPubKey, redeemScript)));
     }
 
     return prereqs;

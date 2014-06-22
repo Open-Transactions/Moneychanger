@@ -77,6 +77,8 @@ public:
     virtual bool ImportAddress(const std::string &address, const std::string &account = "watchonly", const bool &rescan = false) = 0;
 
     // Validate an address
+    // returns some useful info
+    // This function is quite slow so use in moderation
     virtual BtcAddressInfoPtr ValidateAddress(const std::string &address) = 0;
 
     virtual std::string GetPublicKey(const std::string& address) = 0;

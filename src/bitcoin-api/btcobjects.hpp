@@ -152,6 +152,7 @@ struct BtcUnspentOutput
     std::string address;
     std::string account;
     std::string scriptPubKey;
+    std::string redeemScript;   // optional, multisig
     int64_t amount;
     int32_t confirmations;      // is -1 in case of conflicts
     bool spendable;             // false if it's a watchonly address

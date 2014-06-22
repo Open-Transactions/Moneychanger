@@ -180,6 +180,7 @@ BtcUnspentOutput::BtcUnspentOutput(Json::Value unspentOutput)
     this->txId = unspentOutput["txid"].asString();
     this->vout = unspentOutput["vout"].asInt64();
     this->account = unspentOutput["account"].asString();
+    this->redeemScript = unspentOutput["redeemScript"].asString();
     this->confirmations = unspentOutput["confirmations"].asInt64();
     this->spendable = unspentOutput["spendable"].asBool();
 }
