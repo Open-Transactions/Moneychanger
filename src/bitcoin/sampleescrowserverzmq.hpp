@@ -4,7 +4,6 @@
 #include "sampleescrowserver.hpp"
 #include "samplenetmessages.hpp"
 
-#define OT_USE_ZMQ4
 #ifdef OT_USE_ZMQ4
     #include <zmq.h>
 #else
