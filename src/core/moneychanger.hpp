@@ -166,6 +166,7 @@ private:
     // ------------------------------------------------
     void mc_sendfunds_show_dialog(QString qstrAcct=QString(""));
     void mc_requestfunds_show_dialog(QString qstrAcct=QString(""));
+    void mc_composemessage_show_dialog();
     // ------------------------------------------------
     void mc_market_dialog();
     void mc_corporation_dialog();
@@ -204,8 +205,16 @@ private:
     
     QIcon mc_systrayIcon_sendfunds;
     QIcon mc_systrayIcon_requestfunds;
-    
+    QIcon mc_systrayIcon_contacts;
+    QIcon mc_systrayIcon_composemessage;
+
     QIcon mc_systrayIcon_markets;
+
+    QIcon mc_systrayIcon_crypto;
+    QIcon mc_systrayIcon_crypto_encrypt;
+    QIcon mc_systrayIcon_crypto_decrypt;
+    QIcon mc_systrayIcon_crypto_sign;
+    QIcon mc_systrayIcon_crypto_verify;
 
     QIcon mc_systrayIcon_advanced;
     QIcon mc_systrayIcon_advanced_agreements;
@@ -252,16 +261,25 @@ private:
     // ---------------------------------------------------------    
     QPointer<QAction> mc_systrayMenu_sendfunds;
     QPointer<QAction> mc_systrayMenu_requestfunds;
-    // ---------------------------------------------------------
-    QPointer<QAction> mc_systrayMenu_markets;
+    QPointer<QAction> mc_systrayMenu_contacts;
+    QPointer<QAction> mc_systrayMenu_composemessage;
     // ---------------------------------------------------------
     //Company submenu
     QPointer<QMenu>   mc_systrayMenu_company_create;
     QPointer<QAction> mc_systrayMenu_company_create_insurance;
     // ---------------------------------------------------------
+    //Crypto submenu
+    QPointer<QMenu> mc_systrayMenu_crypto;
+
+    QPointer<QAction> mc_systrayMenu_crypto_encrypt;
+    QPointer<QAction> mc_systrayMenu_crypto_decrypt;
+    QPointer<QAction> mc_systrayMenu_crypto_sign;
+    QPointer<QAction> mc_systrayMenu_crypto_verify;
+    // ---------------------------------------------------------
     //Advanced submenu
     QPointer<QMenu> mc_systrayMenu_advanced;
 
+    QPointer<QAction> mc_systrayMenu_advanced_markets;
     QPointer<QAction> mc_systrayMenu_advanced_agreements;
     QPointer<QAction> mc_systrayMenu_advanced_import;
     QPointer<QAction> mc_systrayMenu_advanced_settings;
@@ -325,9 +343,15 @@ public slots:
     // ---------------------------------------------------------------------------
     void mc_sendfunds_slot();               // Send Funds
     void mc_requestfunds_slot();            // Request Funds
+    void mc_composemessage_slot();          // Compose Message
     // ---------------------------------------------------------------------------
     void mc_send_from_acct (QString qstrAcct);
     void mc_request_to_acct(QString qstrAcct);
+    // ---------------------------------------------------------------------------   
+    void mc_crypto_encrypt_slot();
+    void mc_crypto_decrypt_slot();
+    void mc_crypto_sign_slot();
+    void mc_crypto_verify_slot();
     // ---------------------------------------------------------------------------
     void mc_market_slot();                  // Market Slot
     void mc_agreement_slot();               // Agreements Slot

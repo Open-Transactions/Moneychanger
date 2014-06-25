@@ -555,20 +555,26 @@ QWidget * MTHome::CreateUserBarWidget()
     currency_amount_label->setStyleSheet("QLabel { color : grey; }");
     currency_amount_label->setText(currency_amount);
     // ----------------------------------------------------------------
-    QToolButton *buttonSend     = new QToolButton;
-    QToolButton *buttonRequest  = new QToolButton;
-    QToolButton *buttonContacts = new QToolButton;
-    QToolButton *buttonRefresh  = new QToolButton;
+    QToolButton *buttonSend       = new QToolButton;
+//  QToolButton *buttonRequest    = new QToolButton;
+//  QToolButton *buttonContacts   = new QToolButton;
+    QToolButton *buttonCompose    = new QToolButton;
+    QToolButton *buttonIdentities = new QToolButton;
+    QToolButton *buttonRefresh    = new QToolButton;
     // ----------------------------------------------------------------
-    QPixmap pixmapSend    (":/icons/icons/send.png");
-    QPixmap pixmapRequest (":/icons/icons/request.png");
-    QPixmap pixmapContacts(":/icons/icons/user.png");
-    QPixmap pixmapRefresh (":/icons/icons/refresh.png");
+    QPixmap pixmapSend      (":/icons/icons/send.png");
+//  QPixmap pixmapRequest   (":/icons/icons/request.png");
+    QPixmap pixmapCompose   (":/icons/icons/compose.png");
+    QPixmap pixmapIdentities(":/icons/icons/user.png");
+    QPixmap pixmapContacts  (":/icons/addressbook");
+    QPixmap pixmapRefresh   (":/icons/icons/refresh.png");
     // ----------------------------------------------------------------
-    QIcon sendButtonIcon    (pixmapSend);
-    QIcon requestButtonIcon (pixmapRequest);
-    QIcon contactsButtonIcon(pixmapContacts);
-    QIcon refreshButtonIcon (pixmapRefresh);
+    QIcon sendButtonIcon      (pixmapSend);
+//  QIcon requestButtonIcon   (pixmapRequest);
+//  QIcon contactsButtonIcon  (pixmapContacts);
+    QIcon composeButtonIcon   (pixmapCompose);
+    QIcon identitiesButtonIcon(pixmapIdentities);
+    QIcon refreshButtonIcon   (pixmapRefresh);
     // ----------------------------------------------------------------
     buttonSend->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     buttonSend->setAutoRaise(true);
@@ -576,22 +582,34 @@ QWidget * MTHome::CreateUserBarWidget()
     buttonSend->setIconSize(pixmapSend.rect().size());
     buttonSend->setText(tr("Send"));
     // ----------------------------------------------------------------
-    buttonRequest->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    buttonRequest->setAutoRaise(true);
-    buttonRequest->setIcon(requestButtonIcon);
-    buttonRequest->setIconSize(pixmapRequest.rect().size());
-    buttonRequest->setText(tr("Request"));
+//    buttonRequest->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+//    buttonRequest->setAutoRaise(true);
+//    buttonRequest->setIcon(requestButtonIcon);
+//    buttonRequest->setIconSize(pixmapRequest.rect().size());
+//    buttonRequest->setText(tr("Request"));
     // ----------------------------------------------------------------
-    buttonContacts->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    buttonContacts->setAutoRaise(true);
-    buttonContacts->setIcon(contactsButtonIcon);
-    buttonContacts->setIconSize(pixmapContacts.rect().size());
-    buttonContacts->setText(tr("Contacts"));
+//    buttonContacts->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+//    buttonContacts->setAutoRaise(true);
+//    buttonContacts->setIcon(contactsButtonIcon);
+//    buttonContacts->setIconSize(pixmapContacts.rect().size());
+//    buttonContacts->setText(tr("Contacts"));
+    // ----------------------------------------------------------------
+    buttonCompose->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    buttonCompose->setAutoRaise(true);
+    buttonCompose->setIcon(composeButtonIcon);
+    buttonCompose->setIconSize(pixmapCompose.rect().size());
+    buttonCompose->setText(tr("Compose"));
+    // ----------------------------------------------------------------
+    buttonIdentities->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    buttonIdentities->setAutoRaise(true);
+    buttonIdentities->setIcon(identitiesButtonIcon);
+    buttonIdentities->setIconSize(pixmapIdentities.rect().size());
+    buttonIdentities->setText(tr("My Identities"));
     // ----------------------------------------------------------------
     buttonRefresh->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     buttonRefresh->setAutoRaise(true);
     buttonRefresh->setIcon(refreshButtonIcon);
-//    buttonRefresh->setIconSize(pixmapRefresh.rect().size());
+//  buttonRefresh->setIconSize(pixmapRefresh.rect().size());
     buttonRefresh->setIconSize(pixmapContacts.rect().size());
     buttonRefresh->setText(tr("Refresh"));
 
@@ -605,17 +623,21 @@ QWidget * MTHome::CreateUserBarWidget()
 
     pButtonLayout->addWidget(currency_amount_label);
     pButtonLayout->addWidget(buttonSend);
-    pButtonLayout->addWidget(buttonRequest);
-    pButtonLayout->addWidget(buttonContacts);
+//  pButtonLayout->addWidget(buttonRequest);
+//  pButtonLayout->addWidget(buttonContacts);
+    pButtonLayout->addWidget(buttonCompose);
+    pButtonLayout->addWidget(buttonIdentities);
     pButtonLayout->addWidget(buttonRefresh);
     // ----------------------------------------------------------------
     pUserBarWidget_layout->addLayout(pButtonLayout, 0, 1, 1,1, Qt::AlignRight);
 //  pUserBarWidget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
     // -------------------------------------------
-    connect(buttonRefresh,  SIGNAL(clicked()),  this, SLOT(on_refreshButton_clicked()));
-    connect(buttonContacts, SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_addressbook_slot()));
-    connect(buttonSend,     SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_sendfunds_slot()));
-    connect(buttonRequest,  SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_requestfunds_slot()));
+//  connect(buttonContacts,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_addressbook_slot()));
+//  connect(buttonRequest,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_requestfunds_slot()));
+    connect(buttonSend,       SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_sendfunds_slot()));
+    connect(buttonCompose,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_composemessage_slot()));
+    connect(buttonIdentities, SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_defaultnym_slot()));
+    connect(buttonRefresh,    SIGNAL(clicked()),  this,               SLOT(on_refreshButton_clicked()));
     // -------------------------------------------
     //Sub-info
     QWidget * row_content_container = new QWidget;
