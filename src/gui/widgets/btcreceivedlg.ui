@@ -17,8 +17,8 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>30</y>
-     <width>551</width>
+     <y>10</y>
+     <width>591</width>
      <height>192</height>
     </rect>
    </property>
@@ -46,8 +46,8 @@
   <widget class="QPushButton" name="buttonNewAddress">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>270</y>
+     <x>10</x>
+     <y>235</y>
      <width>181</width>
      <height>27</height>
     </rect>
@@ -60,7 +60,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>240</y>
+     <y>205</y>
      <width>111</width>
      <height>22</height>
     </rect>
@@ -73,7 +73,7 @@
    <property name="geometry">
     <rect>
      <x>130</x>
-     <y>240</y>
+     <y>205</y>
      <width>131</width>
      <height>22</height>
     </rect>
@@ -276,22 +276,22 @@
   <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
-     <x>210</x>
-     <y>275</y>
+     <x>20</x>
+     <y>270</y>
      <width>62</width>
      <height>17</height>
     </rect>
    </property>
    <property name="text">
-    <string>Account:</string>
+    <string>Account</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="editAccount">
    <property name="geometry">
     <rect>
-     <x>210</x>
-     <y>300</y>
-     <width>351</width>
+     <x>150</x>
+     <y>265</y>
+     <width>381</width>
      <height>27</height>
     </rect>
    </property>
@@ -302,27 +302,50 @@
   <widget class="QLabel" name="label_7">
    <property name="geometry">
     <rect>
-     <x>31</x>
-     <y>340</y>
+     <x>20</x>
+     <y>300</y>
      <width>131</width>
      <height>20</height>
     </rect>
    </property>
    <property name="text">
-    <string>Generated address:</string>
+    <string>Generated address</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="editNewAddress">
    <property name="geometry">
     <rect>
-     <x>210</x>
-     <y>340</y>
-     <width>351</width>
+     <x>150</x>
+     <y>295</y>
+     <width>381</width>
      <height>27</height>
     </rect>
    </property>
    <property name="readOnly">
     <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_8">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>330</y>
+     <width>71</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Public key</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="editPubKey">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>325</y>
+     <width>381</width>
+     <height>27</height>
+    </rect>
    </property>
   </widget>
   <zorder>checkShowEmpty</zorder>
@@ -334,6 +357,8 @@
   <zorder>editAccount</zorder>
   <zorder>label_7</zorder>
   <zorder>editNewAddress</zorder>
+  <zorder>label_8</zorder>
+  <zorder>editPubKey</zorder>
  </widget>
  <resources/>
  <connections/>

@@ -117,7 +117,7 @@ BtcBalancesPtr BtcHelper::GetBalances()
     balances->confirmed = this->modules->btcJson->GetBalance("*", 1, false);    // spendable confirmed
     balances->pending = allMine - balances->confirmed;                          // spendable total - spendable confirmed
     balances->watchConfirmed = allConf - allMine;                               // all confirmed - spendable total
-    balances->watchPending = all - allMine - balances->watchConfirmed;                    // all - allMine - watch confirmed
+    balances->watchPending = all - allMine - balances->watchConfirmed;          // all - allMine - watch confirmed
 
     return balances;
 }

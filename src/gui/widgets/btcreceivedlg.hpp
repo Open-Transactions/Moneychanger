@@ -26,6 +26,8 @@ private slots:
 
     void on_buttonCreateMultisig_clicked();
 
+    void on_tableAddresses_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
+
 private:
     void UpdateAddressList();
 

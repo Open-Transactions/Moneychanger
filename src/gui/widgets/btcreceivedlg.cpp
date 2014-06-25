@@ -48,6 +48,15 @@ void BtcReceiveDlg::on_buttonNewAddress_clicked()
     std::string address = Modules::btcModules->mtBitcoin->GetNewAddress(account.toStdString());
     this->ui->editNewAddress->setText(QString::fromStdString(address));
 
+    if(address.empty())
+        return;
+
+    BtcAddressInfoPtr addrInfo = Modules::btcModules->btcJson->ValidateAddress(address);
+    if(addrInfo == NULL)
+        return;
+
+    this->ui->editPubKey->setText(QString::fromStdString(addrInfo->pubkey));
+
     UpdateAddressList();
 }
 
@@ -96,4 +105,25 @@ void BtcReceiveDlg::on_buttonCreateMultisig_clicked()
     this->ui->editNewAddress->setText(QString::fromStdString(multiSigAddr));
 
     UpdateAddressList();
+}
+
+void BtcReceiveDlg::on_tableAddresses_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
+{
+    this->ui->editPubKey->clear();
+
+    QTableWidgetItem* item = this->ui->tableAddresses->item(currentRow, currentColumn);
+    if(item == NULL)
+        return;
+
+    std::string address = item->text().toStdString();
+    if(address.empty())
+        return;
+
+    BtcAddressInfoPtr addrInfo = Modules::btcModules->btcJson->ValidateAddress(address);
+    if(addrInfo == NULL)
+        return;
+
+    this->ui->editNewAddress->setText(QString::fromStdString(address));
+    this->ui->editPubKey->setText(QString::fromStdString(addrInfo->pubkey));
+
 }

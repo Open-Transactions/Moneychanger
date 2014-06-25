@@ -85,6 +85,14 @@ void BtcSendDlg::on_buttonSend_clicked()
 
 void BtcSendDlg::on_buttonFindOutputs_clicked()
 {
+    this->ui->textOutputs->clear();
+    this->ui->textVout->clear();
+    this->ui->textScriptPubKeys->clear();
+    this->ui->textRedeemScripts->clear();
+    this->ui->labelMultisigSpendable->clear();
+    this->prereqs = BtcSigningPrerequisites();
+    this->ui->buttonSendRawTx->setEnabled(false);
+
     QStringList txIdList = this->ui->textMultisigTxids->toPlainText().split("\n");
     if(txIdList.size() <= 0)
         return;
@@ -92,7 +100,7 @@ void BtcSendDlg::on_buttonFindOutputs_clicked()
     btc::stringList txIds = btc::stringList();
     foreach(QString txId, txIdList)
     {
-           txIds.push_back(txId.toStdString());
+        txIds.push_back(txId.toStdString());
     }
 
     // find outputs
@@ -123,7 +131,6 @@ void BtcSendDlg::on_buttonFindOutputs_clicked()
 
     this->outputsToSpend = outputs;
     this->prereqs = prereqs;
-    this->ui->buttonSendRawTx->setEnabled(false);
 }
 
 void BtcSendDlg::on_buttonCreateRawTx_clicked()
@@ -134,17 +141,21 @@ void BtcSendDlg::on_buttonCreateRawTx_clicked()
     std::string toAddress = this->ui->editAddressMultisig->text().toStdString();
     std::string changeAddress = this->ui->editChangeMultisig->text().toStdString();
 
+    this->ui->buttonSendRawTx->setEnabled(false);
+    this->ui->labelSigned->setText("Not signed");
+    this->ui->textRawTx->clear();
+
     BtcSignedTransactionPtr tx = Modules::btcModules->btcHelper->CreateSpendTransaction(this->outputsToSpend, amount, toAddress, changeAddress, fee);
     if(tx == NULL)
         return;
 
     this->ui->textRawTx->setPlainText(QString::fromStdString(tx->signedTransaction));
-    this->ui->buttonSendRawTx->setEnabled(false);
-    this->ui->labelMultisigSpendable->setText("Not signed");
 }
 
 void BtcSendDlg::on_buttonSignRawTx_clicked()
 {
+    this->ui->labelSigned->setText("Not signed");
+
     BtcSignedTransactionPtr tx = BtcSignedTransactionPtr(new BtcSignedTransaction(Json::Value(Json::objectValue)));
     tx = Modules::btcModules->btcJson->SignRawTransaction(this->ui->textRawTx->toPlainText().toStdString(), this->prereqs);
     if(tx == NULL)
