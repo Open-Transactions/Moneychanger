@@ -108,6 +108,8 @@ unix: {
             LIBS += -lboost_atomic-mt
         }
     }
+
+    LIBS += -lzmq   # needed for sampleescrowserverzmq
 }
 
 win32: {

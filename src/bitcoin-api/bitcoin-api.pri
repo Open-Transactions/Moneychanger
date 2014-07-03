@@ -1,6 +1,8 @@
 
 HEADERS += \
     $${PWD}/bitcoin-api_global.hpp \
+    $${PWD}/FastDelegate.hpp \
+    $${PWD}/FastDelegateBind.hpp \
     $${PWD}/bitcoinapi.hpp \
     $${PWD}/btchelper.hpp \
     $${PWD}/btcjson.hpp \

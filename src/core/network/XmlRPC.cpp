@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 #include <utility>
-
+#include <cstdio>
 
 XmlRPC::XmlRPC(std::string serverurl, int port, bool authrequired, int Timeout) : m_serverurl(serverurl), m_port(port), m_authrequired(authrequired), m_timeout(Timeout) {
     
@@ -38,7 +38,7 @@ XmlResponse XmlRPC::run(std::string methodName, std::vector<xmlrpc_c::value> par
         
         for(int i=0; i < parameters.size(); i++){
             xmlrpc_c::value newParameter(parameters.at(i));
-            params.addc(newParameter);
+            params.add(newParameter);
         }
         
         // Construct the Server URL

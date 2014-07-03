@@ -10,15 +10,17 @@
 
 #include <QList>
 #include <QString>
+#include <map>
 
 class SampleEscrowServer;
+class QThread;
 
 typedef _SharedPtr<SampleEscrowServer> SampleEscrowServerPtr;
 
 class EscrowPool
 {
 public:
-    EscrowPool();
+    EscrowPool(uint32_t sigsRequired);
 
     // add server to pool
     void AddEscrowServer(SampleEscrowServerPtr server);
@@ -27,7 +29,14 @@ public:
 
     QList<SampleEscrowServerPtr> escrowServers;     // servers that are part of this pool
 
-    QString poolName;
+    std::string poolName;
+
+    std::map<std::string, SampleEscrowServerPtr> serverNameMap;
+    std::map<std::string, QThread*> serverThreadMap;
+
+    uint32_t sigsRequired;
+
+    bool containsHostedServer;
 
 private:
 

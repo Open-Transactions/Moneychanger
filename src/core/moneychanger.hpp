@@ -22,6 +22,12 @@ class DlgMenu;
 class DlgMarkets;
 class Settings;
 class BtcGuiTest;
+class BtcPoolManager;
+class BtcTransactionManager;
+class BtcConnectDlg;
+class BtcSendDlg;
+class BtcReceiveDlg;
+
 class QMenu;
 class QSystemTrayIcon;
 class CreateInsuranceCompany;
@@ -135,6 +141,11 @@ private:
     QPointer<Settings> settingswindow;
 
     QPointer<BtcGuiTest> bitcoinwindow;
+    QPointer<BtcPoolManager> bitcoinPoolWindow;
+    QPointer<BtcTransactionManager> bitcoinTxWindow;
+    QPointer<BtcConnectDlg> bitcoinConnectWindow;
+    QPointer<BtcSendDlg> bitcoinSendWindow;
+    QPointer<BtcReceiveDlg> bitcoinReceiveWindow;
         
 private:
     void SetupMainMenu();
@@ -280,6 +291,11 @@ private:
     // Bitcoin
     QPointer<QMenu> mc_systrayMenu_bitcoin;
     QPointer<QAction> mc_systrayMenu_bitcoin_test;
+    QPointer<QAction> mc_systrayMenu_bitcoin_connect;
+    QPointer<QAction> mc_systrayMenu_bitcoin_pools;
+    QPointer<QAction> mc_systrayMenu_bitcoin_transactions;
+    QPointer<QAction> mc_systrayMenu_bitcoin_send;
+    QPointer<QAction> mc_systrayMenu_bitcoin_receive;
     
     
 public slots:
@@ -338,7 +354,12 @@ public slots:
     // ---------------------------------------------------------------------------
     void mc_settings_slot();                //Settings
     // ---------------------------------------------------------------------------
-    void mc_bitcoin_slot();                 // Bitcoin
+    void mc_bitcoin_slot();                 // Bitcoin -> Test
+    void mc_bitcoin_connect_slot();         // Bitcoin -> Connect to wallet
+    void mc_bitcoin_pools_slot();           // Bitcoin -> Mange Pools
+    void mc_bitcoin_transactions_slot();    // Bitcoin -> Transactions
+    void mc_bitcoin_send_slot();            // Bitcoin -> Send
+    void mc_bitcoin_receive_slot();            // Bitcoin -> Receive
 };
 
 #endif // MONEYCHANGER_HPP

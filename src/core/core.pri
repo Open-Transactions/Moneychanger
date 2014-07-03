@@ -3,8 +3,6 @@ HEADERS += \
     $${PWD}/stable.hpp \
     $${PWD}/applicationmc.hpp \
     $${PWD}/filedownloader.hpp \
-    $${PWD}/FastDelegate.hpp \
-    $${PWD}/FastDelegateBind.hpp \
     $${PWD}/httpinterface.hpp \
     $${PWD}/modules.hpp \
     $${PWD}/moneychanger.hpp \

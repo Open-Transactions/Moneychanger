@@ -19,11 +19,15 @@ private:
 
     static bool TestRawTransactions();
 
-    static bool TestMultiSig();
+    static bool TestMultiSig(bool waitForConfirmations);
 
     static bool TestMultiSigDeposit(int minConfirms);
 
     static bool TestMultiSigWithdrawal(int minConfirms);
+
+    static bool TestImportAddress(int32_t confirmations);
+
+    static bool TestImportMultisig(int32_t confirmations);
 
 
     static BtcModulesPtr modules;
