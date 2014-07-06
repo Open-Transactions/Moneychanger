@@ -32,6 +32,8 @@
 #include <gui/ui/dlgimport.hpp>
 #include <gui/ui/dlgmenu.hpp>
 #include <gui/ui/dlgmarkets.hpp>
+#include <gui/ui/dlgencrypt.hpp>
+#include <gui/ui/dlgdecrypt.hpp>
 
 #include <core/mtcomms.h>
 
@@ -569,21 +571,24 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu_crypto->setIcon(mc_systrayIcon_crypto);
     mc_systrayMenu->addMenu(mc_systrayMenu_crypto);
     // --------------------------------------------------------------
-    mc_systrayMenu_crypto_encrypt = new QAction(mc_systrayIcon_crypto_encrypt, tr("Encrypt"), mc_systrayMenu_crypto);
-    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_encrypt);
-    connect(mc_systrayMenu_crypto_encrypt, SIGNAL(triggered()), this, SLOT(mc_crypto_encrypt_slot()));
-    // --------------------------------------------------------------
-    mc_systrayMenu_crypto_decrypt = new QAction(mc_systrayIcon_crypto_decrypt, tr("Decrypt"), mc_systrayMenu_crypto);
-    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_decrypt);
-    connect(mc_systrayMenu_crypto_decrypt, SIGNAL(triggered()), this, SLOT(mc_crypto_decrypt_slot()));
-    // --------------------------------------------------------------
     mc_systrayMenu_crypto_sign = new QAction(mc_systrayIcon_crypto_sign, tr("Sign"), mc_systrayMenu_crypto);
     mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_sign);
     connect(mc_systrayMenu_crypto_sign, SIGNAL(triggered()), this, SLOT(mc_crypto_sign_slot()));
     // --------------------------------------------------------------
-    mc_systrayMenu_crypto_verify = new QAction(mc_systrayIcon_crypto_verify, tr("Verify"), mc_systrayMenu_crypto);
-    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_verify);
-    connect(mc_systrayMenu_crypto_verify, SIGNAL(triggered()), this, SLOT(mc_crypto_verify_slot()));
+    mc_systrayMenu_crypto_encrypt = new QAction(mc_systrayIcon_crypto_encrypt, tr("Encrypt"), mc_systrayMenu_crypto);
+    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_encrypt);
+    connect(mc_systrayMenu_crypto_encrypt, SIGNAL(triggered()), this, SLOT(mc_crypto_encrypt_slot()));
+    // --------------------------------------------------------------
+    //Separator
+    mc_systrayMenu_crypto->addSeparator();
+    // --------------------------------------------------------------
+    mc_systrayMenu_crypto_decrypt = new QAction(mc_systrayIcon_crypto_decrypt, tr("Decrypt / Verify"), mc_systrayMenu_crypto);
+    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_decrypt);
+    connect(mc_systrayMenu_crypto_decrypt, SIGNAL(triggered()), this, SLOT(mc_crypto_decrypt_slot()));
+    // --------------------------------------------------------------
+//    mc_systrayMenu_crypto_verify = new QAction(mc_systrayIcon_crypto_verify, tr("Verify"), mc_systrayMenu_crypto);
+//    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_verify);
+//    connect(mc_systrayMenu_crypto_verify, SIGNAL(triggered()), this, SLOT(mc_crypto_verify_slot()));
     // --------------------------------------------------------------
     //Advanced
     mc_systrayMenu_advanced = new QMenu(tr("Advanced"), mc_systrayMenu);
@@ -957,24 +962,46 @@ void Moneychanger::SetupAccountMenu()
 
 void Moneychanger::mc_crypto_encrypt_slot()
 {
-
-}
-
-void Moneychanger::mc_crypto_decrypt_slot()
-{
-
+    mc_encrypt_show_dialog(true, true);
 }
 
 void Moneychanger::mc_crypto_sign_slot()
 {
+    mc_encrypt_show_dialog(false, true);
+}
 
+void Moneychanger::mc_decrypt_show_dialog()
+{
+    // --------------------------------------------------
+    DlgDecrypt * decrypt_window = new DlgDecrypt(NULL);
+    decrypt_window->setAttribute(Qt::WA_DeleteOnClose);
+    // --------------------------------------------------
+    decrypt_window->dialog();
+    // --------------------------------------------------
+}
+
+void Moneychanger::mc_crypto_decrypt_slot()
+{
+    mc_decrypt_show_dialog();
 }
 
 void Moneychanger::mc_crypto_verify_slot()
 {
-
+ //nothing for now. prolly forever.
 }
 
+void Moneychanger::mc_encrypt_show_dialog(bool bEncrypt/*=true*/, bool bSign/*=true*/)
+{
+    // --------------------------------------------------
+    DlgEncrypt * encrypt_window = new DlgEncrypt(NULL);
+    encrypt_window->setAttribute(Qt::WA_DeleteOnClose);
+    // --------------------------------------------------
+    encrypt_window->SetEncrypt(bEncrypt);
+    encrypt_window->SetSign   (bSign);
+    // ---------------------------------------
+    encrypt_window->dialog();
+    // --------------------------------------------------
+}
 
 
 
@@ -1062,7 +1089,7 @@ void Moneychanger::mc_nymmanager_dialog(QString qstrPresetID/*=QString("")*/)
         // ------------------------------
     } // for
     // -------------------------------------
-    nymswindow->setWindowTitle(tr("Manage Nyms"));
+    nymswindow->setWindowTitle(tr("Manage Identities"));
     // -------------------------------------
     if (bFoundPreset)
         nymswindow->SetPreSelected(qstrPresetID);

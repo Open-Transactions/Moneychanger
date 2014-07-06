@@ -8,6 +8,7 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/mtcomms.h>
 
+#include <opentxs/OTStorage.hpp>
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OpenTransactions.hpp>

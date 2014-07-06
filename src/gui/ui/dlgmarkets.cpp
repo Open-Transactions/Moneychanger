@@ -1033,7 +1033,7 @@ bool DlgMarkets::eventFilter(QObject *obj, QEvent *event)\
     }
     // -------------------------------------------
     // standard event processing
-    return QObject::eventFilter(obj, event);
+    return QDialog::eventFilter(obj, event);
 }
 
 DlgMarkets::~DlgMarkets()

@@ -167,6 +167,9 @@ private:
     void mc_sendfunds_show_dialog(QString qstrAcct=QString(""));
     void mc_requestfunds_show_dialog(QString qstrAcct=QString(""));
     void mc_composemessage_show_dialog();
+
+    void mc_encrypt_show_dialog(bool bEncrypt=true, bool bSign=true);
+    void mc_decrypt_show_dialog();
     // ------------------------------------------------
     void mc_market_dialog();
     void mc_corporation_dialog();

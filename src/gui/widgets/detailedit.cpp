@@ -928,5 +928,5 @@ bool MTDetailEdit::eventFilter(QObject *obj, QEvent *event)\
     }
     // -------------------------------------------
     // standard event processing
-    return QObject::eventFilter(obj, event);
+    return QWidget::eventFilter(obj, event);
 }
