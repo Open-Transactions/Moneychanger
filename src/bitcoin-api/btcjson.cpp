@@ -406,7 +406,7 @@ BtcAddressBalances BtcJson::ListReceivedByAddress(const int32_t &minConf, const 
     if(!result.isArray())
         return BtcAddressBalances();
 
-    BtcAddressBalances addressBalances = BtcAddressBalances();
+    BtcAddressBalances addressBalances;
     for (Json::Value::ArrayIndex i = 0; i < result.size(); i++)
     {
         addressBalances.push_back(BtcAddressBalancePtr(new BtcAddressBalance(result[i])));
@@ -430,7 +430,7 @@ BtcTransactions BtcJson::ListTransactions(const std::string &account, const int3
     if(!result.isArray())
         return BtcTransactions();
 
-    BtcTransactions transactions = BtcTransactions();
+    BtcTransactions transactions;
     for (Json::Value::ArrayIndex i = 0; i < result.size(); i++)
     {
         transactions.push_back(BtcTransactionPtr(new BtcTransaction(result[i])));
@@ -460,7 +460,7 @@ BtcUnspentOutputs BtcJson::ListUnspent(const int32_t &minConf, const int32_t &ma
         return BtcUnspentOutputs();
 
 
-    BtcUnspentOutputs outputs = BtcUnspentOutputs();
+    BtcUnspentOutputs outputs;
 
     for (Json::Value::ArrayIndex i = 0; i < result.size(); i++)
     {

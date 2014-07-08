@@ -37,7 +37,7 @@ private:
 
 #include <map>
 
-class SampleEscrowServer : public QObject
+class SampleEscrowServer : public QThread
 {
     friend class CheckTxDaemon;
     Q_OBJECT

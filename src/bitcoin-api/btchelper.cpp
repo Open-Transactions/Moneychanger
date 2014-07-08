@@ -365,7 +365,7 @@ BtcTransactionPtr BtcHelper::WaitGetTransaction(const std::string &txId, const i
     if(txId.empty())
         return BtcTransactionPtr();
 
-    BtcTransactionPtr transaction = BtcTransactionPtr();
+    BtcTransactionPtr transaction;
     while(maxAttempts)
     {
         transaction = this->modules->btcJson->GetTransaction(txId);
@@ -383,7 +383,7 @@ BtcRawTransactionPtr BtcHelper::WaitGetRawTransaction(const std::string &txId, c
     if(txId.empty())
         return BtcRawTransactionPtr();
 
-    BtcRawTransactionPtr rawTransaction = BtcRawTransactionPtr();
+    BtcRawTransactionPtr rawTransaction;
 
     while(maxAttempts)
     {
@@ -414,7 +414,7 @@ BtcUnspentOutputs BtcHelper::ListNewOutputs(BtcUnspentOutputs knownOutputs, cons
     BtcUnspentOutputs outputs = this->modules->btcJson->ListUnspent(MinConfirms, MaxConfirms, addresses);
 
     // iterate through them
-    BtcUnspentOutputs newOutputs = BtcUnspentOutputs();
+    BtcUnspentOutputs newOutputs;
     for(BtcUnspentOutputs::iterator output = outputs.begin(); output != outputs.end(); output++)
     {
         // check if we already know about them
@@ -431,7 +431,7 @@ BtcUnspentOutputs BtcHelper::ListNewOutputs(BtcUnspentOutputs knownOutputs, cons
 
 BtcUnspentOutputs BtcHelper::FindSignableOutputs(const btc::stringList &txIds)
 {
-    BtcUnspentOutputs outputsToCheck = BtcUnspentOutputs();
+    BtcUnspentOutputs outputsToCheck;
     std::string lastTxId = std::string();   // prevent double inserts
 
     // iterate through txids
@@ -462,7 +462,7 @@ BtcUnspentOutputs BtcHelper::FindSignableOutputs(const btc::stringList &txIds)
 
 BtcUnspentOutputs BtcHelper::FindSignableOutputs(const BtcUnspentOutputs &outputs)
 {
-    BtcUnspentOutputs signableOutputs = BtcUnspentOutputs();
+    BtcUnspentOutputs signableOutputs;
 
     for(BtcUnspentOutputs::const_iterator output = outputs.begin(); output != outputs.end(); output++)
     {
@@ -475,7 +475,7 @@ BtcUnspentOutputs BtcHelper::FindSignableOutputs(const BtcUnspentOutputs &output
 
 BtcUnspentOutputs BtcHelper::FindUnspentOutputs(BtcUnspentOutputs possiblySpentOutputs)
 {
-    BtcUnspentOutputs unspentOutputs = BtcUnspentOutputs();
+    BtcUnspentOutputs unspentOutputs;
     for(BtcUnspentOutputs::iterator outputToCheck = possiblySpentOutputs.begin(); outputToCheck != possiblySpentOutputs.end(); outputToCheck++)
     {
         BtcUnspentOutputPtr output = this->modules->btcJson->GetTxOut((*outputToCheck)->txId, (*outputToCheck)->vout);
@@ -491,7 +491,7 @@ BtcUnspentOutputs BtcHelper::FindUnspentOutputs(BtcUnspentOutputs possiblySpentO
 
 BtcUnspentOutputs BtcHelper::FindUnspentOutputs(const btc::stringList &txIdsToCheck)
 {
-    BtcUnspentOutputs unspentOutputs = BtcUnspentOutputs();
+    BtcUnspentOutputs unspentOutputs;
     std::string lastTxId = std::string();   // prevent double inserts
 
     for(btc::stringList::const_iterator txId = txIdsToCheck.begin(); txId != txIdsToCheck.end(); txId++)
@@ -531,7 +531,7 @@ BtcUnspentOutputs BtcHelper::FindUnspentSignableOutputs(const btc::stringList &t
 
 BtcSigningPrerequisites BtcHelper::GetSigningPrerequisites(const BtcUnspentOutputs &outputs)
 {
-    BtcSigningPrerequisites prereqs = BtcSigningPrerequisites();
+    BtcSigningPrerequisites prereqs;
 
     for(BtcUnspentOutputs::const_iterator output = outputs.begin(); output != outputs.end(); output++)
     {
@@ -553,8 +553,8 @@ BtcSigningPrerequisites BtcHelper::GetSigningPrerequisites(const BtcUnspentOutpu
 BtcSignedTransactionPtr BtcHelper::CreateSpendTransaction(const BtcUnspentOutputs &outputs, const int64_t &amount, const std::string &toAddress, const std::string &changeAddress,
                                                 const int64_t &fee)
 {
-    BtcTxIdVouts vouts = BtcTxIdVouts();
-    BtcTxTargets targets = BtcTxTargets();
+    BtcTxIdVouts vouts;
+    BtcTxTargets targets;
     int64_t amountAvailable = 0;
     for(BtcUnspentOutputs::const_iterator output = outputs.begin(); output != outputs.end(); output++)
     {
@@ -593,8 +593,8 @@ BtcSignedTransactionPtr BtcHelper::WithdrawAllFromAddress(const std::string &txT
 
     // count funds in source address and list outputs leading to it
     int64_t funds = 0;
-    BtcTxIdVouts unspentOutputs = BtcTxIdVouts();
-    BtcSigningPrerequisites signingPrerequisites = BtcSigningPrerequisites();
+    BtcTxIdVouts unspentOutputs;
+    BtcSigningPrerequisites signingPrerequisites;
     for(uint64_t i = 0; i < rawTransaction->outputs.size(); i++)
     {
         BtcRawTransaction::VOUT output = rawTransaction->outputs[i];
@@ -617,7 +617,7 @@ BtcSignedTransactionPtr BtcHelper::WithdrawAllFromAddress(const std::string &txT
         return BtcSignedTransactionPtr();
 
     // map of output addresses and the amount each of them receives.
-    BtcTxTargets txTargets = BtcTxTargets();
+    BtcTxTargets txTargets;
     txTargets.SetTarget(destinationAddress, funds);
 
     // create raw transaction to send outputs to target address
