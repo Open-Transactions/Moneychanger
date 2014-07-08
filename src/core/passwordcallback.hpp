@@ -4,6 +4,8 @@
 #include <opentxs/WinsockWrapper.h>
 #include <opentxs/ExportWrapper.h>
 
+#include <opentxs/OTCallback.hpp>
+#include <opentxs/OTCaller.hpp>
 #include <opentxs/OTPassword.hpp>
 
 class MTPasswordCallback : public OTCallback
