@@ -267,14 +267,20 @@ BtcRpcPacketPtr BtcRpcCurl::SendRpc(BtcRpcPacketPtr jsonString)
 
     int httpcode = 0;
     curl_easy_getinfo(this->curl, CURLINFO_RESPONSE_CODE, &httpcode);
-    if(httpcode == 401)
+    if (httpcode == 401)
     {
         std::printf("Error connecting to bitcoind: Wrong username or password\n");
         std::cout.flush();
         mutex = false;
         return BtcRpcPacketPtr();
     }
-    //OTLog::vOutput(0, "HTTP response code: %d\n", httpcode);
+    else if (httpcode != 200)
+    {
+        std::printf("BtcRpc curl error:\nHTTP response code %d\n", httpcode);
+        std::cout.flush();
+        mutex = false;
+        return BtcRpcPacketPtr();
+    }
 
     mutex = false;
     return packetCopy;
