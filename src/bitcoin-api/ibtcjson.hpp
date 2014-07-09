@@ -56,7 +56,7 @@ public:
     // when a function requires a password getPasswordFunc() is called and expected to return the pw
     virtual void SetPasswordCallback(fastdelegate::FastDelegate0<std::string> getPasswordFunc) = 0;
 
-    virtual void GetInfo() = 0;
+    virtual BtcInfoPtr GetInfo() = 0;
 
     // returns account balance
     // account: use NULL or "*" for all accounts and "" for the default account
@@ -128,7 +128,7 @@ public:
 
     virtual BtcUnspentOutputPtr GetTxOut(const std::string &txId, const int64_t &vout) = 0;
 
-    virtual BtcTransactionPtr GetTransaction(const std::string &txId) = 0;
+    virtual BtcTransactionPtr GetTransaction(const std::string &txId, const bool& includeWatchonly = true) = 0;
 
     virtual std::string GetRawTransaction(const std::string &txId) = 0;
 

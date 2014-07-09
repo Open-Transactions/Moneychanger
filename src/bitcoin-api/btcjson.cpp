@@ -157,7 +157,7 @@ void BtcJson::ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json
     }
 }
 
-bool BtcJson::ProcessError(Json::Value error, BtcRpcPacketPtr jsonString, Json::Value &result)
+bool BtcJson::ProcessError(const Json::Value &error, BtcRpcPacketPtr jsonString, Json::Value &result)
 {
     jsonString->ResetOffset();
 
@@ -191,7 +191,7 @@ bool BtcJson::ProcessError(Json::Value error, BtcRpcPacketPtr jsonString, Json::
     return false;
 }
 
-void BtcJson::GetInfo()
+BtcInfoPtr BtcJson::GetInfo()
 {
     BtcRpcPacketPtr reply = this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_GETINFO));
     std::string id;
@@ -200,12 +200,9 @@ void BtcJson::GetInfo()
     ProcessRpcString(reply, id, error, result);
 
     if(!error.isNull())
-        return;
+        return BtcInfoPtr();
 
-    // TODO:: what is happening here!? (da2ce7)
-    // Bitcoin is returning the balance as double, e.g. 5.123 bitcoins, whereas we want it as an integer denominated in satoshis to avoid rounding errors.
-    // I'm not doing anything with the result because i haven't found any use for it yet. (JaSK)
-    uint64_t balance = this->modules->btcHelper->CoinsToSatoshis(result["balance"].asDouble());
+    return BtcInfoPtr(new BtcInfo(result));
 }
 
 int64_t BtcJson::GetBalance(const char *account/*=NULL*/, const int32_t &minConfirmations, const bool &includeWatchonly)
@@ -547,10 +544,11 @@ BtcUnspentOutputPtr BtcJson::GetTxOut(const std::string &txId, const int64_t &vo
     return transaction;
 }
 
-BtcTransactionPtr BtcJson::GetTransaction(const std::string &txId)
+BtcTransactionPtr BtcJson::GetTransaction(const std::string &txId, const bool &includeWatchonly)
 {
     Json::Value params = Json::Value();
     params.append(txId);
+    params.append(includeWatchonly);
 
     Json::Value result = Json::Value();
     if(!ProcessRpcString(

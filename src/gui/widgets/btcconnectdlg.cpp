@@ -3,6 +3,8 @@
 
 #include <core/modules.hpp>
 #include <bitcoin-api/btcmodules.hpp>
+#include <bitcoin-api/btcjson.hpp>
+#include <bitcoin-api/btcjsonlegacy.hpp>
 
 BtcConnectDlg::BtcConnectDlg(QWidget *parent) :
     QWidget(parent, Qt::Window | Qt::WindowStaysOnTopHint),
@@ -58,6 +60,13 @@ void BtcConnectDlg::on_buttonConnect_clicked()
         this->ui->labelStatus->setText("Connected");
     else
         this->ui->labelStatus->setText("Failed to connect");
+
+    // choose API version
+    BtcInfoPtr info = Modules::btcModules->btcJson->GetInfo();
+    if(info->version < 100000)
+    {
+        Modules::btcModules->btcJson = BtcJsonPtr(new BtcJsonLegacy(Modules::btcModules.get()));
+    }
 }
 
 void BtcConnectDlg::on_buttonDisconnect_clicked()

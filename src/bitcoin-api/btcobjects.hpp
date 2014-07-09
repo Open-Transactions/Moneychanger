@@ -55,6 +55,28 @@ struct BtcBalances
     int64_t watchPending;
 };
 
+struct BtcInfo
+{
+    int32_t version;
+    int32_t protocolversion;
+    int32_t walletversion;
+    int64_t balance;
+    int32_t blocks;
+    int32_t timeoffset;
+    int32_t connections;
+    std::string proxy;
+    int64_t difficulty;
+    bool testnet;
+    time_t keypoololdest;
+    int32_t keypoolsize;
+    time_t unlocked_until;
+    int64_t paytxfee;
+    int64_t relayfee;
+    std::string errors;     // e.g. "This is a pre-release test build - use at your own risk - do not use for mining or merchant applications"
+
+    BtcInfo(Json::Value result);
+};
+
 struct BtcTxDetail
 {
     bool involvesWatchonly;
@@ -294,6 +316,7 @@ private:
 };
 
 
+typedef _SharedPtr<BtcInfo>                BtcInfoPtr;
 typedef _SharedPtr<BtcBalances>            BtcBalancesPtr;
 typedef _SharedPtr<BtcTxDetail>            BtcTxDetailPtr;
 typedef _SharedPtr<BtcTransaction>         BtcTransactionPtr;
