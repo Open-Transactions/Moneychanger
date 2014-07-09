@@ -127,7 +127,10 @@ bool BtcJson::ProcessRpcString(BtcRpcPacketPtr jsonString, Json::Value &result)
 void BtcJson::ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json::Value &error, Json::Value &result)
 {
     if(jsonString == NULL || jsonString->GetData() == NULL || jsonString->size() <= 0)
+    {
+        error = Json::Value(true);
         return;
+    }
     Json::Value replyObj;
     Json::Reader reader;
     if(!reader.parse(jsonString->GetData(), jsonString->GetData() + jsonString->size(), replyObj))
@@ -214,7 +217,7 @@ int64_t BtcJson::GetBalance(const char *account/*=NULL*/, const int32_t &minConf
     params.append(minConfirmations);
     params.append(includeWatchonly);
 
-    BtcRpcPacketPtr reply = this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_GETBALANCE));
+    BtcRpcPacketPtr reply = this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_GETBALANCE, params));
 
     Json::Value result;
     if(!ProcessRpcString(reply, result) || !result.isDouble())

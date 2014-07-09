@@ -110,7 +110,7 @@ BtcBalancesPtr BtcHelper::GetBalances()
 {
     BtcBalancesPtr balances = BtcBalancesPtr(new BtcBalances());
 
-    int64_t allConf = modules->btcJson->GetBalance("*", 1, true);               // include watchonly
+    int64_t allConf = modules->btcJson->GetBalance("*", WaitForConfirms, true); // include watchonly
     int64_t all = modules->btcJson->GetBalance("*", 0, true);                   // include watchonly
     int64_t allMine = modules->btcJson->GetBalance("*", 0, false);              // spendable total
 

@@ -63,9 +63,16 @@ void BtcConnectDlg::on_buttonConnect_clicked()
 
     // choose API version
     BtcInfoPtr info = Modules::btcModules->btcJson->GetInfo();
-    if(info->version < 100000)
+    if(info == NULL)
+        return;
+
+    if(info->version < 99900)
     {
         Modules::btcModules->btcJson = BtcJsonPtr(new BtcJsonLegacy(Modules::btcModules.get()));
+    }
+    else
+    {
+        Modules::btcModules->btcJson = BtcJsonPtr(new BtcJson(Modules::btcModules.get()));
     }
 }
 
