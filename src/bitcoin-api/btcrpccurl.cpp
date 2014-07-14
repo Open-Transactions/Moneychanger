@@ -262,20 +262,31 @@ BtcRpcPacketPtr BtcRpcCurl::SendRpc(BtcRpcPacketPtr jsonString)
 
     // we have to copy the response because for some reason the next few lines set the smart pointer to NULL (?!?!??)
     BtcRpcPacketPtr packetCopy = BtcRpcPacketPtr(new BtcRpcPacket(receivedData));
-    {BtcRpcPacketPtr test = BtcRpcPacketPtr(new BtcRpcPacket(packetCopy));}     // i think this line can be removed
 
     receivedData.reset();
 
     int httpcode = 0;
     curl_easy_getinfo(this->curl, CURLINFO_RESPONSE_CODE, &httpcode);
-    if(httpcode == 401)
+    if (httpcode == 401)
     {
         std::printf("Error connecting to bitcoind: Wrong username or password\n");
         std::cout.flush();
         mutex = false;
         return BtcRpcPacketPtr();
     }
-    //OTLog::vOutput(0, "HTTP response code: %d\n", httpcode);
+    else if (httpcode == 500)
+    {
+        std::printf("Bitcoind internal server error\n");
+        std::cout.flush();
+        // don't return
+    }
+    else if (httpcode != 200)
+    {
+        std::printf("BtcRpc curl error:\nHTTP response code %d\n", httpcode);
+        std::cout.flush();
+        mutex = false;
+        return BtcRpcPacketPtr();
+    }
 
     mutex = false;
     return packetCopy;
@@ -293,6 +304,8 @@ bool BtcRpcCurl::IsConnected()
 
 void BtcRpcCurl::CleanUpCurl()
 {
+    this->currentServer.reset();
+
     if(curl)
     {
         curl_easy_cleanup(curl);

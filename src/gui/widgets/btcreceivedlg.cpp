@@ -91,7 +91,7 @@ void BtcReceiveDlg::on_buttonCreateMultisig_clicked()
     QStringList lines = pubKeysText.split("\n");
     if(lines.count() == 0)
         return;
-    btc::stringList pubKeys = btc::stringList();
+    btc::stringList pubKeys;
     foreach(QString line, lines)
     {
         pubKeys.push_back(line.toStdString());

@@ -56,13 +56,13 @@ public:
     // when a function requires a password getPasswordFunc() is called and expected to return the pw
     virtual void SetPasswordCallback(fastdelegate::FastDelegate0<std::string> getPasswordFunc) = 0;
 
-    virtual void GetInfo() = 0;
+    virtual BtcInfoPtr GetInfo() = 0;
 
     // returns account balance
     // account: use NULL or "*" for all accounts and "" for the default account
     // minConfirmations: duh.
     // includeWatchonly: whether to include watchonly addresses in balance calculations (default = true)
-    virtual int64_t GetBalance(const char *account = NULL, const int32_t &minConfirmations = BtcHelper::MinConfirms, const bool &includeWatchonly = true) = 0;
+    virtual int64_t GetBalance(const std::string &account = "*", const int32_t &minConfirmations = BtcHelper::MinConfirms, const bool &includeWatchonly = true) = 0;
 
     // Gets the default address for the specified account
     virtual std::string GetAccountAddress(const std::string &account = "") = 0;
@@ -128,7 +128,7 @@ public:
 
     virtual BtcUnspentOutputPtr GetTxOut(const std::string &txId, const int64_t &vout) = 0;
 
-    virtual BtcTransactionPtr GetTransaction(const std::string &txId) = 0;
+    virtual BtcTransactionPtr GetTransaction(const std::string &txId, const bool& includeWatchonly = true) = 0;
 
     virtual std::string GetRawTransaction(const std::string &txId) = 0;
 

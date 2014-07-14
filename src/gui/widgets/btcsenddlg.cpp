@@ -97,7 +97,7 @@ void BtcSendDlg::on_buttonFindOutputs_clicked()
     if(txIdList.size() <= 0)
         return;
 
-    btc::stringList txIds = btc::stringList();
+    btc::stringList txIds;
     foreach(QString txId, txIdList)
     {
         txIds.push_back(txId.toStdString());

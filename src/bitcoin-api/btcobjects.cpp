@@ -11,6 +11,27 @@
 #include <cstdlib>
 #include <cstdio>
 
+
+BtcInfo::BtcInfo(Json::Value result)
+{
+    version = result["version"].asInt();
+    protocolversion = result["protocolversion"].asInt();
+    walletversion = result["walletversion"].asInt();
+    balance = BtcHelper::CoinsToSatoshis(result["balance"].asDouble());
+    blocks = result["blocks"].asInt();
+    timeoffset = result["timeoffset"].asInt64();
+    connections = result["connections"].asInt();
+    proxy = result["proxy"].asString();
+    difficulty = result["difficulty"].asInt64();
+    testnet = result["testnet"].asBool();
+    keypoololdest = result["kepyoololdest"].asInt64();
+    keypoolsize = result["keypoolsize"].asInt();
+    unlocked_until = result["unlocked_until"].asInt64();
+    paytxfee = BtcHelper::CoinsToSatoshis(result["paytxfee"].asDouble());
+    relayfee = BtcHelper::CoinsToSatoshis(result["relayfee"].asDouble());
+    errors = result["errors"].asString();
+}
+
 BtcTxDetail::BtcTxDetail(const Json::Value &detail)
 {
     if(!detail.isObject())

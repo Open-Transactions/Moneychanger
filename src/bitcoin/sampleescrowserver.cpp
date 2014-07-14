@@ -53,24 +53,12 @@ void CheckTxDaemon::StartDaemon()
 }
 
 SampleEscrowServer::SampleEscrowServer(BitcoinServerPtr rpcServer, EscrowPoolPtr pool, QObject* parent)
-    :QObject(parent)
+    :QThread(parent)
 {
     this->rpcServer = rpcServer;
 
-    this->addressForMultiSig = ClientAddressMap();
-    this->pubKeyForMultiSig = ClientKeyMap();
-    this->multiSigAddress = ClientMultiSigMap();
-    this->publicKeys = ClientKeyListMap();
-    this->clientBalancesMap = ClientBalanceMap();
-    this->clientReleaseTxMap = ClientReleaseTxMap();
-    this->addressToClientMap = AddressClientMap();
-
-    this->multiSigAddresses = btc::stringList();
-
     this->serverPool = pool;
     this->minSignatures = this->serverPool->sigsRequired;
-
-    this->clientList = std::map<std::string, SampleEscrowClientPtr>();
 
     this->modules = BtcModulesPtr(new BtcModules());
 

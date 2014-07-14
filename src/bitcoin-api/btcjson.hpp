@@ -51,13 +51,13 @@ public:
     virtual void SetPasswordCallback(fastdelegate::FastDelegate0<std::string> callbackFunction);
 
     // asks bitcoind for details but doesn't do anything with the result yet
-    virtual void GetInfo();
+    virtual BtcInfoPtr GetInfo();
 
     // returns account balance
     // account: use NULL or "*" for all accounts and "" for the default account
     // minConfirmations: duh.
     // includeWatchonly: whether to include watchonly addresses in balance calculations (default = true)
-    virtual int64_t GetBalance(const char *account = NULL, const int32_t &minConfirmations = BtcHelper::MinConfirms, const bool &includeWatchonly = true);
+    virtual int64_t GetBalance(const std::string &account = "*", const int32_t &minConfirmations = BtcHelper::WaitForConfirms, const bool &includeWatchonly = true);
 
     // Gets the default address for the specified account
     virtual std::string GetAccountAddress(const std::string &account = "");
@@ -123,7 +123,7 @@ public:
 
     BtcUnspentOutputPtr GetTxOut(const std::string &txId, const int64_t &vout);
 
-    virtual BtcTransactionPtr GetTransaction(const std::string &txId);
+    virtual BtcTransactionPtr GetTransaction(const std::string &txId, const bool& includeWatchonly = true);
 
     virtual std::string GetRawTransaction(const std::string &txId);
 
@@ -161,8 +161,8 @@ public:
 
     virtual bool WalletPassphrase(const std::string &password, const time_t &unlockTime);
 
-private:
-    virtual BtcRpcPacketPtr CreateJsonQuery(const std::string &command, const Json::Value &params = Json::Value(), std::string id = "");
+protected:
+    virtual BtcRpcPacketPtr CreateJsonQuery(const std::string &command, const Json::Value &params = Json::Value(), std::string id = std::string());
 
     // sends a query and processes errors. useless now but maybe not in the future.
     virtual bool SendJsonQuery(BtcRpcPacketPtr jsonString, Json::Value &result);
@@ -172,7 +172,7 @@ private:
     // Splits the reply object received from bitcoin-qt into error and result objects
     virtual void ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json::Value& error, Json::Value& result);
 
-    virtual bool ProcessError(Json::Value error, BtcRpcPacketPtr jsonString, Json::Value &result);
+    virtual bool ProcessError(const Json::Value &error, BtcRpcPacketPtr jsonString, Json::Value &result);
 
     void UnlockWallet();
 

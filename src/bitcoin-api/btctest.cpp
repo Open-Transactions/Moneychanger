@@ -15,8 +15,6 @@ std::string BtcTest::depositTxId;
 
 BtcTest::BtcTest()
 {
-    modules = BtcModulesPtr();
-
     depositTxId = "";
     multiSigAddress = "";
 }
@@ -165,11 +163,11 @@ bool BtcTest::TestBtcJson()
 
     // now to spend an output
     // create a list of txid/vout pairs as input for our raw transaction:
-    BtcTxIdVouts outputsToSpend = BtcTxIdVouts();
+    BtcTxIdVouts outputsToSpend;
     outputsToSpend.push_back(BtcTxIdVoutPtr(new BtcTxIdVout(unspentOutputs.front()->txId, unspentOutputs.front()->vout)));
 
     // create a list of address:vout mappings to which the inputs will be sent
-    BtcTxTargets txTargets = BtcTxTargets();
+    BtcTxTargets txTargets;
     txTargets[address] = (Json::Int64)(unspentOutputs.front()->amount - BtcHelper::FeeMultiSig);
 
     // create raw transaction
@@ -401,7 +399,7 @@ bool BtcTest::TestImportAddress(int32_t confirmations)
     bool stop = false;
     while(!stop)
     {
-        btc::stringList addressList = btc::stringList();
+        btc::stringList addressList;
         addressList.push_back(address);
         BtcUnspentOutputs outputs = bitcoin2.mtBitcoin->ListUnspentOutputs( addressList );
         for(BtcUnspentOutputs::iterator output = outputs.begin(); output != outputs.end(); output++)
@@ -448,12 +446,12 @@ bool BtcTest::TestImportMultisig(int32_t confirmations)
         return false;
 
     // recipient waits for incoming transactions
-    BtcUnspentOutputs newOutputs = BtcUnspentOutputs();
+    BtcUnspentOutputs newOutputs;
     while(true)
     {
-        btc::stringList multiSigList = btc::stringList();
+        btc::stringList multiSigList;
         multiSigList.push_back(multiSig);
-        newOutputs = bitcoin2.btcHelper->ListNewOutputs(newOutputs, {multiSigList});
+        newOutputs = bitcoin2.btcHelper->ListNewOutputs(newOutputs, multiSigList);
         btc::Sleep(500);
         if(newOutputs.size() > 0)
             break;

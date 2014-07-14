@@ -6,7 +6,6 @@
 
 #include "threading.h"
 
-
 template <typename T>
 class MsgQueue
 {
@@ -19,7 +18,7 @@ public:
         {
             cond_.wait(mlock);
         }
-        auto item = queue_.front();
+        T item = queue_.front();
         queue_.pop();
         return item;
     }

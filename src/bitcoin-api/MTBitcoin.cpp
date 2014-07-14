@@ -17,7 +17,7 @@ MTBitcoin::~MTBitcoin()
     this->modules = NULL;
 }
 
-int64_t MTBitcoin::GetBalance(const char *account)
+int64_t MTBitcoin::GetBalance(const std::string &account)
 {
     return this->modules->btcJson->GetBalance(account);
 }

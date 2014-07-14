@@ -127,7 +127,10 @@ bool BtcJson::ProcessRpcString(BtcRpcPacketPtr jsonString, Json::Value &result)
 void BtcJson::ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json::Value &error, Json::Value &result)
 {
     if(jsonString == NULL || jsonString->GetData() == NULL || jsonString->size() <= 0)
+    {
+        error = Json::Value(true);
         return;
+    }
     Json::Value replyObj;
     Json::Reader reader;
     if(!reader.parse(jsonString->GetData(), jsonString->GetData() + jsonString->size(), replyObj))
@@ -157,11 +160,15 @@ void BtcJson::ProcessRpcString(BtcRpcPacketPtr jsonString, std::string &id, Json
     }
 }
 
-bool BtcJson::ProcessError(Json::Value error, BtcRpcPacketPtr jsonString, Json::Value &result)
+bool BtcJson::ProcessError(const Json::Value &error, BtcRpcPacketPtr jsonString, Json::Value &result)
 {
     jsonString->ResetOffset();
 
-    RPCErrorCode errorCode = static_cast<RPCErrorCode>(error["code"].asInt());
+    RPCErrorCode errorCode;
+    if(error["code"].isInt())
+        errorCode = static_cast<RPCErrorCode>(error["code"].asInt());
+    else
+        errorCode = static_cast<RPCErrorCode>(0);
 
     switch (errorCode)
     {
@@ -191,7 +198,7 @@ bool BtcJson::ProcessError(Json::Value error, BtcRpcPacketPtr jsonString, Json::
     return false;
 }
 
-void BtcJson::GetInfo()
+BtcInfoPtr BtcJson::GetInfo()
 {
     BtcRpcPacketPtr reply = this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_GETINFO));
     std::string id;
@@ -200,24 +207,21 @@ void BtcJson::GetInfo()
     ProcessRpcString(reply, id, error, result);
 
     if(!error.isNull())
-        return;
+        return BtcInfoPtr();
 
-    // TODO:: what is happening here!? (da2ce7)
-    // Bitcoin is returning the balance as double, e.g. 5.123 bitcoins, whereas we want it as an integer denominated in satoshis to avoid rounding errors.
-    // I'm not doing anything with the result because i haven't found any use for it yet. (JaSK)
-    uint64_t balance = this->modules->btcHelper->CoinsToSatoshis(result["balance"].asDouble());
+    return BtcInfoPtr(new BtcInfo(result));
 }
 
-int64_t BtcJson::GetBalance(const char *account/*=NULL*/, const int32_t &minConfirmations, const bool &includeWatchonly)
+int64_t BtcJson::GetBalance(const std::string &account, const int32_t &minConfirmations, const bool &includeWatchonly)
 {
     // note: json and bitcoind make a difference between NULL-strings and empty strings.
 
     Json::Value params = Json::Value();
-    params.append(account != NULL ? account : Json::Value());      // account
+    params.append(account);      // account
     params.append(minConfirmations);
     params.append(includeWatchonly);
 
-    BtcRpcPacketPtr reply = this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_GETBALANCE));
+    BtcRpcPacketPtr reply = this->modules->btcRpc->SendRpc(CreateJsonQuery(METHOD_GETBALANCE, params));
 
     Json::Value result;
     if(!ProcessRpcString(reply, result) || !result.isDouble())
@@ -406,7 +410,7 @@ BtcAddressBalances BtcJson::ListReceivedByAddress(const int32_t &minConf, const 
     if(!result.isArray())
         return BtcAddressBalances();
 
-    BtcAddressBalances addressBalances = BtcAddressBalances();
+    BtcAddressBalances addressBalances;
     for (Json::Value::ArrayIndex i = 0; i < result.size(); i++)
     {
         addressBalances.push_back(BtcAddressBalancePtr(new BtcAddressBalance(result[i])));
@@ -430,7 +434,7 @@ BtcTransactions BtcJson::ListTransactions(const std::string &account, const int3
     if(!result.isArray())
         return BtcTransactions();
 
-    BtcTransactions transactions = BtcTransactions();
+    BtcTransactions transactions;
     for (Json::Value::ArrayIndex i = 0; i < result.size(); i++)
     {
         transactions.push_back(BtcTransactionPtr(new BtcTransaction(result[i])));
@@ -460,7 +464,7 @@ BtcUnspentOutputs BtcJson::ListUnspent(const int32_t &minConf, const int32_t &ma
         return BtcUnspentOutputs();
 
 
-    BtcUnspentOutputs outputs = BtcUnspentOutputs();
+    BtcUnspentOutputs outputs;
 
     for (Json::Value::ArrayIndex i = 0; i < result.size(); i++)
     {
@@ -547,10 +551,11 @@ BtcUnspentOutputPtr BtcJson::GetTxOut(const std::string &txId, const int64_t &vo
     return transaction;
 }
 
-BtcTransactionPtr BtcJson::GetTransaction(const std::string &txId)
+BtcTransactionPtr BtcJson::GetTransaction(const std::string &txId, const bool &includeWatchonly)
 {
     Json::Value params = Json::Value();
     params.append(txId);
+    params.append(includeWatchonly);
 
     Json::Value result = Json::Value();
     if(!ProcessRpcString(

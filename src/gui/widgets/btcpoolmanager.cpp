@@ -70,7 +70,7 @@ void BtcPoolManager::SyncPoolList(bool refreshAll)
 {
     int currentRow = this->ui->listPools->currentRow();
 
-    btc::stringList poolNames = btc::stringList();
+    btc::stringList poolNames;
     foreach(EscrowPoolPtr pool, Modules::poolManager->escrowPools)
     {
         poolNames.push_back(pool->poolName);

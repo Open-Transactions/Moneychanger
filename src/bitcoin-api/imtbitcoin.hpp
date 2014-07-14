@@ -46,11 +46,11 @@ class IMTBitcoin
 public:
     // account [optional]: the account whose balance should be checked
     // returns total balance of all addresses.
-    virtual int64_t GetBalance(const char *account = NULL) = 0;
+    virtual int64_t GetBalance(const std::string &account = "*") = 0;
 
     // account [optional]: the account to which the address should be added.
     // returns new address
-    virtual std::string GetNewAddress(const std::string &account = "") = 0;
+    virtual std::string GetNewAddress(const std::string &account = "moneychanger") = 0;
 
     // address: watchonly address to import
     // label:   the name of the address and its accounts
