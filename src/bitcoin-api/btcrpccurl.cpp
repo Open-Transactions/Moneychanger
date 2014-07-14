@@ -274,6 +274,12 @@ BtcRpcPacketPtr BtcRpcCurl::SendRpc(BtcRpcPacketPtr jsonString)
         mutex = false;
         return BtcRpcPacketPtr();
     }
+    else if (httpcode == 500)
+    {
+        std::printf("Bitcoind internal server error\n");
+        std::cout.flush();
+        // don't return
+    }
     else if (httpcode != 200)
     {
         std::printf("BtcRpc curl error:\nHTTP response code %d\n", httpcode);
@@ -298,6 +304,8 @@ bool BtcRpcCurl::IsConnected()
 
 void BtcRpcCurl::CleanUpCurl()
 {
+    this->currentServer.reset();
+
     if(curl)
     {
         curl_easy_cleanup(curl);

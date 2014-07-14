@@ -57,7 +57,7 @@ public:
     // account: use NULL or "*" for all accounts and "" for the default account
     // minConfirmations: duh.
     // includeWatchonly: whether to include watchonly addresses in balance calculations (default = true)
-    virtual int64_t GetBalance(const char *account = NULL, const int32_t &minConfirmations = BtcHelper::MinConfirms, const bool &includeWatchonly = true);
+    virtual int64_t GetBalance(const std::string &account = "*", const int32_t &minConfirmations = BtcHelper::WaitForConfirms, const bool &includeWatchonly = true);
 
     // Gets the default address for the specified account
     virtual std::string GetAccountAddress(const std::string &account = "");

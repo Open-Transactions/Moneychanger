@@ -112,11 +112,11 @@ BtcBalancesPtr BtcHelper::GetBalances()
 
     int64_t allConf = modules->btcJson->GetBalance("*", WaitForConfirms, true); // include watchonly
     int64_t all = modules->btcJson->GetBalance("*", 0, true);                   // include watchonly
-    int64_t allMine = modules->btcJson->GetBalance("*", 0, false);              // spendable total
+    int64_t allMine = modules->btcJson->GetBalance("*", 0, false);              // spendable total, exclude watchonly
 
-    balances->confirmed = this->modules->btcJson->GetBalance("*", 1, false);    // spendable confirmed
+    balances->confirmed = this->modules->btcJson->GetBalance("*", WaitForConfirms, false);    // spendable confirmed
     balances->pending = allMine - balances->confirmed;                          // spendable total - spendable confirmed
-    balances->watchConfirmed = allConf - allMine;                               // all confirmed - spendable total
+    balances->watchConfirmed = allConf - balances->confirmed;                   // all confirmed - confirmed total
     balances->watchPending = all - allMine - balances->watchConfirmed;          // all - allMine - watch confirmed
 
     return balances;

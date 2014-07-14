@@ -51,11 +51,11 @@ public:
 
     // account (optional): the account whose balance should be checked
     // returns total balance of all addresses.
-    virtual int64_t GetBalance(const char *account = NULL);
+    virtual int64_t GetBalance(const std::string &account = "*");
 
     // account (optional): the account to which the address should be added.
     // returns new address
-    virtual std::string GetNewAddress(const std::string &account = "");
+    virtual std::string GetNewAddress(const std::string &account = "moneychanger");
 
     // address: watchonly address to import
     // label:   the name of the address and its accounts

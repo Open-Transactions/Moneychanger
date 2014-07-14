@@ -164,7 +164,11 @@ bool BtcJson::ProcessError(const Json::Value &error, BtcRpcPacketPtr jsonString,
 {
     jsonString->ResetOffset();
 
-    RPCErrorCode errorCode = static_cast<RPCErrorCode>(error["code"].asInt());
+    RPCErrorCode errorCode;
+    if(error["code"].isInt())
+        errorCode = static_cast<RPCErrorCode>(error["code"].asInt());
+    else
+        errorCode = static_cast<RPCErrorCode>(0);
 
     switch (errorCode)
     {
@@ -208,12 +212,12 @@ BtcInfoPtr BtcJson::GetInfo()
     return BtcInfoPtr(new BtcInfo(result));
 }
 
-int64_t BtcJson::GetBalance(const char *account/*=NULL*/, const int32_t &minConfirmations, const bool &includeWatchonly)
+int64_t BtcJson::GetBalance(const std::string &account, const int32_t &minConfirmations, const bool &includeWatchonly)
 {
     // note: json and bitcoind make a difference between NULL-strings and empty strings.
 
     Json::Value params = Json::Value();
-    params.append(account != NULL ? account : Json::Value());      // account
+    params.append(account);      // account
     params.append(minConfirmations);
     params.append(includeWatchonly);
 
