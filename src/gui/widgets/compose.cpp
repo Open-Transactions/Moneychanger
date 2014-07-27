@@ -2840,6 +2840,10 @@ MTCompose::MTCompose(QWidget *parent) :
 
     connect(this, SIGNAL(ShowContact(QString)), Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
     connect(this, SIGNAL(ShowNym(QString)),     Moneychanger::It(), SLOT(mc_show_nym_slot(QString)));
+
+    ui->toolButton  ->setStyleSheet("QToolButton { border: 0px solid #575757; }");
+    ui->toolButton_2->setStyleSheet("QToolButton { border: 0px solid #575757; }");
+    ui->toolButton_3->setStyleSheet("QToolButton { border: 0px solid #575757; }");
 }
 
 MTCompose::~MTCompose()

@@ -224,6 +224,7 @@ private:
 
     QIcon mc_systrayIcon_markets;
 
+    QIcon mc_systrayIcon_bitcoin;
     QIcon mc_systrayIcon_crypto;
     QIcon mc_systrayIcon_crypto_encrypt;
     QIcon mc_systrayIcon_crypto_decrypt;

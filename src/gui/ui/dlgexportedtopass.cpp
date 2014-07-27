@@ -9,12 +9,15 @@
 #include <QClipboard>
 
 
-DlgExportedToPass::DlgExportedToPass(QWidget *parent, QString qstrTheCash,
-                                     QString qstrLabelHeader1/*=QString("")*/,
-                                     QString qstrLabelHeader2/*=QString("")*/) :
+DlgExportedToPass::DlgExportedToPass(QWidget * parent,
+                                     QString   qstrTheCash,
+                                     QString   qstrLabelHeader1/*=QString("")*/,
+                                     QString   qstrLabelHeader2/*=QString("")*/,
+                                     bool      bShowWarning/*=true*/) :
     QDialog(parent),
-//    m_qstrLabelHeader1(qstrLabelHeader1),
-//    m_qstrLabelHeader2(qstrLabelHeader2),
+//  m_qstrLabelHeader1(qstrLabelHeader1),
+//  m_qstrLabelHeader2(qstrLabelHeader2),
+    m_bShowWarning(bShowWarning),
     ui(new Ui::DlgExportedToPass)
 {
     ui->setupUi(this);
@@ -36,12 +39,17 @@ DlgExportedToPass::~DlgExportedToPass()
 
 void DlgExportedToPass::on_buttonBox_accepted()
 {
-    QMessageBox::StandardButton reply;
+    if (m_bShowWarning)
+    {
+        QMessageBox::StandardButton reply;
 
-    reply = QMessageBox::question(this, "", QString("%1<br/><br/>%2").arg(tr("Are you sure you want to close this dialog?")).
-                                  arg(tr("WARNING: You are strongly advised to first SAVE A COPY!")),
-                                  QMessageBox::Yes|QMessageBox::No);
-    if (reply == QMessageBox::Yes)
+        reply = QMessageBox::question(this, "", QString("%1<br/><br/>%2").arg(tr("Are you sure you want to close this dialog?")).
+                                      arg(tr("WARNING: You are strongly advised to first SAVE A COPY!")),
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::Yes)
+            accept();
+    }
+    else
         accept();
 }
 
