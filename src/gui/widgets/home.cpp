@@ -557,7 +557,7 @@ QWidget * MTHome::CreateUserBarWidget()
     // ----------------------------------------------------------------
     QToolButton *buttonSend       = new QToolButton;
 //  QToolButton *buttonRequest    = new QToolButton;
-//  QToolButton *buttonContacts   = new QToolButton;
+    QToolButton *buttonContacts   = new QToolButton;
     QToolButton *buttonCompose    = new QToolButton;
     QToolButton *buttonIdentities = new QToolButton;
     QToolButton *buttonRefresh    = new QToolButton;
@@ -571,7 +571,7 @@ QWidget * MTHome::CreateUserBarWidget()
     // ----------------------------------------------------------------
     QIcon sendButtonIcon      (pixmapSend);
 //  QIcon requestButtonIcon   (pixmapRequest);
-//  QIcon contactsButtonIcon  (pixmapContacts);
+    QIcon contactsButtonIcon  (pixmapContacts);
     QIcon composeButtonIcon   (pixmapCompose);
     QIcon identitiesButtonIcon(pixmapIdentities);
     QIcon refreshButtonIcon   (pixmapRefresh);
@@ -588,12 +588,6 @@ QWidget * MTHome::CreateUserBarWidget()
 //    buttonRequest->setIconSize(pixmapRequest.rect().size());
 //    buttonRequest->setText(tr("Request"));
     // ----------------------------------------------------------------
-//    buttonContacts->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-//    buttonContacts->setAutoRaise(true);
-//    buttonContacts->setIcon(contactsButtonIcon);
-//    buttonContacts->setIconSize(pixmapContacts.rect().size());
-//    buttonContacts->setText(tr("Contacts"));
-    // ----------------------------------------------------------------
     buttonCompose->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     buttonCompose->setAutoRaise(true);
     buttonCompose->setIcon(composeButtonIcon);
@@ -604,7 +598,13 @@ QWidget * MTHome::CreateUserBarWidget()
     buttonIdentities->setAutoRaise(true);
     buttonIdentities->setIcon(identitiesButtonIcon);
     buttonIdentities->setIconSize(pixmapIdentities.rect().size());
-    buttonIdentities->setText(tr("My Identities"));
+    buttonIdentities->setText(tr("Identities"));
+    // ----------------------------------------------------------------
+    buttonContacts->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    buttonContacts->setAutoRaise(true);
+    buttonContacts->setIcon(contactsButtonIcon);
+    buttonContacts->setIconSize(pixmapContacts.rect().size());
+    buttonContacts->setText(tr("Contacts"));
     // ----------------------------------------------------------------
     buttonRefresh->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     buttonRefresh->setAutoRaise(true);
@@ -624,19 +624,19 @@ QWidget * MTHome::CreateUserBarWidget()
     pButtonLayout->addWidget(currency_amount_label);
     pButtonLayout->addWidget(buttonSend);
 //  pButtonLayout->addWidget(buttonRequest);
-//  pButtonLayout->addWidget(buttonContacts);
     pButtonLayout->addWidget(buttonCompose);
     pButtonLayout->addWidget(buttonIdentities);
+    pButtonLayout->addWidget(buttonContacts);
     pButtonLayout->addWidget(buttonRefresh);
     // ----------------------------------------------------------------
     pUserBarWidget_layout->addLayout(pButtonLayout, 0, 1, 1,1, Qt::AlignRight);
 //  pUserBarWidget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
     // -------------------------------------------
-//  connect(buttonContacts,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_addressbook_slot()));
 //  connect(buttonRequest,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_requestfunds_slot()));
     connect(buttonSend,       SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_sendfunds_slot()));
     connect(buttonCompose,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_composemessage_slot()));
     connect(buttonIdentities, SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_defaultnym_slot()));
+    connect(buttonContacts,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_addressbook_slot()));
     connect(buttonRefresh,    SIGNAL(clicked()),  this,               SLOT(on_refreshButton_clicked()));
     // -------------------------------------------
     //Sub-info

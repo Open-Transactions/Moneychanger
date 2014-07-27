@@ -41,5 +41,6 @@
         <file>icons/compose.png</file>
         <file>icons/signature-small.png</file>
         <file>icons/check-mark-small.png</file>
+        <file>icons/bitcoin.png</file>
     </qresource>
 </RCC>

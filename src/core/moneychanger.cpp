@@ -274,6 +274,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon_markets = QIcon(":/icons/markets");
 
     // ---------------------------------------------------------------
+    mc_systrayIcon_bitcoin  = QIcon(":/icons/icons/bitcoin.png");
     mc_systrayIcon_crypto   = QIcon(":/icons/icons/lock.png");
 
     //Submenu
@@ -515,6 +516,26 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu->addAction(mc_systrayMenu_overview);
     connect(mc_systrayMenu_overview, SIGNAL(triggered()), this, SLOT(mc_overview_slot()));
     // --------------------------------------------------------------
+    //Crypto
+    mc_systrayMenu_crypto = new QMenu(tr("Crypto"), mc_systrayMenu);
+    mc_systrayMenu_crypto->setIcon(mc_systrayIcon_crypto);
+    mc_systrayMenu->addMenu(mc_systrayMenu_crypto);
+    // --------------------------------------------------------------
+    mc_systrayMenu_crypto_sign = new QAction(mc_systrayIcon_crypto_sign, tr("Sign"), mc_systrayMenu_crypto);
+    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_sign);
+    connect(mc_systrayMenu_crypto_sign, SIGNAL(triggered()), this, SLOT(mc_crypto_sign_slot()));
+    // --------------------------------------------------------------
+    mc_systrayMenu_crypto_encrypt = new QAction(mc_systrayIcon_crypto_encrypt, tr("Encrypt"), mc_systrayMenu_crypto);
+    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_encrypt);
+    connect(mc_systrayMenu_crypto_encrypt, SIGNAL(triggered()), this, SLOT(mc_crypto_encrypt_slot()));
+    // --------------------------------------------------------------
+    //Separator
+    mc_systrayMenu_crypto->addSeparator();
+    // --------------------------------------------------------------
+    mc_systrayMenu_crypto_decrypt = new QAction(mc_systrayIcon_crypto_decrypt, tr("Decrypt / Verify"), mc_systrayMenu_crypto);
+    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_decrypt);
+    connect(mc_systrayMenu_crypto_decrypt, SIGNAL(triggered()), this, SLOT(mc_crypto_decrypt_slot()));
+    // --------------------------------------------------------------
     //Separator
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
@@ -537,7 +558,7 @@ void Moneychanger::SetupMainMenu()
     connect(mc_systrayMenu_composemessage, SIGNAL(triggered()), this, SLOT(mc_composemessage_slot()));
     // --------------------------------------------------------------
     //Contacts
-    mc_systrayMenu_contacts = new QAction(mc_systrayIcon_contacts, tr("Address Book"), mc_systrayMenu);
+    mc_systrayMenu_contacts = new QAction(mc_systrayIcon_contacts, tr("Contacts"), mc_systrayMenu);
     mc_systrayMenu->addAction(mc_systrayMenu_contacts);
     connect(mc_systrayMenu_contacts, SIGNAL(triggered()), this, SLOT(mc_addressbook_slot()));
     // --------------------------------------------------------------
@@ -571,29 +592,6 @@ void Moneychanger::SetupMainMenu()
 //    QPointer<QAction> mc_systrayMenu_crypto_sign;
 //    QPointer<QAction> mc_systrayMenu_crypto_verify;
 
-    //Crypto
-    mc_systrayMenu_crypto = new QMenu(tr("Crypto"), mc_systrayMenu);
-    mc_systrayMenu_crypto->setIcon(mc_systrayIcon_crypto);
-    mc_systrayMenu->addMenu(mc_systrayMenu_crypto);
-    // --------------------------------------------------------------
-    mc_systrayMenu_crypto_sign = new QAction(mc_systrayIcon_crypto_sign, tr("Sign"), mc_systrayMenu_crypto);
-    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_sign);
-    connect(mc_systrayMenu_crypto_sign, SIGNAL(triggered()), this, SLOT(mc_crypto_sign_slot()));
-    // --------------------------------------------------------------
-    mc_systrayMenu_crypto_encrypt = new QAction(mc_systrayIcon_crypto_encrypt, tr("Encrypt"), mc_systrayMenu_crypto);
-    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_encrypt);
-    connect(mc_systrayMenu_crypto_encrypt, SIGNAL(triggered()), this, SLOT(mc_crypto_encrypt_slot()));
-    // --------------------------------------------------------------
-    //Separator
-    mc_systrayMenu_crypto->addSeparator();
-    // --------------------------------------------------------------
-    mc_systrayMenu_crypto_decrypt = new QAction(mc_systrayIcon_crypto_decrypt, tr("Decrypt / Verify"), mc_systrayMenu_crypto);
-    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_decrypt);
-    connect(mc_systrayMenu_crypto_decrypt, SIGNAL(triggered()), this, SLOT(mc_crypto_decrypt_slot()));
-    // --------------------------------------------------------------
-//    mc_systrayMenu_crypto_verify = new QAction(mc_systrayIcon_crypto_verify, tr("Verify"), mc_systrayMenu_crypto);
-//    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_verify);
-//    connect(mc_systrayMenu_crypto_verify, SIGNAL(triggered()), this, SLOT(mc_crypto_verify_slot()));
     // --------------------------------------------------------------
     //Advanced
     mc_systrayMenu_advanced = new QMenu(tr("Advanced"), mc_systrayMenu);
@@ -634,11 +632,6 @@ void Moneychanger::SetupMainMenu()
 //    mc_systrayMenu_company_create_insurance = new QAction(mc_systrayIcon_advanced_agreements, tr("Insurance Company"), 0);
 //    mc_systrayMenu_company_create->addAction(mc_systrayMenu_company_create_insurance);
 //    connect(mc_systrayMenu_company_create_insurance, SIGNAL(triggered()), this, SLOT(mc_createinsurancecompany_slot()));
-    // --------------------------------------------------------------
-    // Transport
-    mc_systrayMenu_advanced_transport = new QAction(mc_systrayIcon_advanced_transport, tr("P2P Transport"), mc_systrayMenu_advanced);
-    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_transport);
-    connect(mc_systrayMenu_advanced_transport, SIGNAL(triggered()), this, SLOT(mc_transport_slot()));
 
     // --------------------------------------------------------------
     // Bazaar
@@ -669,29 +662,17 @@ void Moneychanger::SetupMainMenu()
     connect(mc_systrayMenu_advanced_settings, SIGNAL(triggered()), this, SLOT(mc_settings_slot()));
 
     // --------------------------------------------------------------
-    //Separator
-    mc_systrayMenu_advanced->addSeparator();
-    // --------------------------------------------------------------
+    // Transport
+    mc_systrayMenu_advanced_transport = new QAction(mc_systrayIcon_advanced_transport, tr("P2P Transport"), mc_systrayMenu_advanced);
+    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_transport);
+    connect(mc_systrayMenu_advanced_transport, SIGNAL(triggered()), this, SLOT(mc_transport_slot()));
 
-    // TODO: If the default isn't set, then choose the first one and select it.
-
-    // TODO: If there isn't even ONE to select, then this menu item should say "Create Nym..." with no sub-menu.
-
-    // TODO: When booting up, if there is already a default server and asset id, but no nyms exist, create a default nym.
-
-    // TODO: When booting up, if there is already a default nym, but no accounts exist, create a default account.
-
-    // --------------------------------------------------------------
-    //Server section
-    SetupServerMenu();
-
-    //Separator
-    mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
 
     // Bitcoin
     mc_systrayMenu_bitcoin = new QMenu(tr("Bitcoin"), mc_systrayMenu);
-    mc_systrayMenu->addMenu(mc_systrayMenu_bitcoin);
+    mc_systrayMenu_bitcoin->setIcon(mc_systrayIcon_bitcoin);
+    mc_systrayMenu_advanced->addMenu(mc_systrayMenu_bitcoin);
     mc_systrayMenu_bitcoin_test = new QAction(tr("Test"), mc_systrayMenu_bitcoin);
     mc_systrayMenu_bitcoin_connect = new QAction(tr("Connect to wallet"), mc_systrayMenu_bitcoin);
     mc_systrayMenu_bitcoin_pools = new QAction(tr("Pools"), mc_systrayMenu_bitcoin);
@@ -712,6 +693,21 @@ void Moneychanger::SetupMainMenu()
     connect(mc_systrayMenu_bitcoin_receive, SIGNAL(triggered()), this, SLOT(mc_bitcoin_receive_slot()));
 
     // --------------------------------------------------------------
+    //Separator
+    mc_systrayMenu_advanced->addSeparator();
+
+    // TODO: If the default isn't set, then choose the first one and select it.
+
+    // TODO: If there isn't even ONE to select, then this menu item should say "Create Nym..." with no sub-menu.
+
+    // TODO: When booting up, if there is already a default server and asset id, but no nyms exist, create a default nym.
+
+    // TODO: When booting up, if there is already a default nym, but no accounts exist, create a default account.
+
+    // --------------------------------------------------------------
+    //Server section
+    SetupServerMenu();
+
     //Separator
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------

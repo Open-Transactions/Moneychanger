@@ -43,6 +43,9 @@ DlgEncrypt::DlgEncrypt(QWidget *parent) :
     ui->setupUi(this);
     
     this->installEventFilter(this);
+
+    ui->toolButton  ->setStyleSheet("QToolButton { border: 0px solid #575757; }");
+    ui->toolButton_2->setStyleSheet("QToolButton { border: 0px solid #575757; }");
 }
 
 DlgEncrypt::~DlgEncrypt()
@@ -184,6 +187,7 @@ void DlgEncrypt::dialog()
 {
     if (!already_init)
     {
+        // ----------------------------
         show();
         // ----------------------------
         if (m_bEncrypt)
@@ -497,7 +501,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
             //
             DlgExportedToPass dlgExported(this, qstrText,
                                           qstrType,
-                                          qstrSubTitle);
+                                          qstrSubTitle, false);
             dlgExported.exec();
         }
     } // if (!qstrText.isEmpty())
@@ -556,6 +560,8 @@ void DlgEncrypt::on_pushButtonAdd_clicked()
         ui->listWidgetAdded   ->sortItems();
         ui->listWidgetNotAdded->sortItems();
     }
+
+    setEncryptBtnText();
 }
 
 
@@ -568,6 +574,8 @@ void DlgEncrypt::on_listWidgetNotAdded_itemDoubleClicked(QListWidgetItem *item)
         ui->listWidgetNotAdded->takeItem(row);
         ui->listWidgetAdded   ->insertItem(ui->listWidgetAdded->count(), item);
     }
+
+    setEncryptBtnText();
 }
 
 void DlgEncrypt::on_listWidgetAdded_itemDoubleClicked(QListWidgetItem *item)
@@ -579,6 +587,8 @@ void DlgEncrypt::on_listWidgetAdded_itemDoubleClicked(QListWidgetItem *item)
         ui->listWidgetAdded   ->takeItem(row);
         ui->listWidgetNotAdded->insertItem(ui->listWidgetNotAdded->count(), item);
     }
+
+    setEncryptBtnText();
 }
 
 void DlgEncrypt::on_pushButtonRemove_clicked()
@@ -614,6 +624,8 @@ void DlgEncrypt::on_pushButtonRemove_clicked()
         ui->listWidgetAdded   ->sortItems();
         ui->listWidgetNotAdded->sortItems();
     }
+
+    setEncryptBtnText();
 }
 
 
@@ -660,7 +672,7 @@ void DlgEncrypt::setEncryptBtnText()
 
     if (m_bEncrypt)
     {
-        bEnabled = true;
+        bEnabled = (ui->listWidgetAdded->count() > 0); //=true;
 
         ui->checkBoxAlso->setVisible(true);
 

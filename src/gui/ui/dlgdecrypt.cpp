@@ -271,7 +271,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                 //
                 DlgExportedToPass dlgExported(this, qstrText,
                                               qstrType,
-                                              qstrSubTitle);
+                                              qstrSubTitle, false);
                 dlgExported.exec();
             } // if (!qstrText.isEmpty())
         } // if strInput
