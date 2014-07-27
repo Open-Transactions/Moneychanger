@@ -34,7 +34,7 @@ bool DlgExportCash::eventFilter(QObject *obj, QEvent *event)
         return true;
     }else {
         // standard event processing
-        return QObject::eventFilter(obj, event);
+        return QDialog::eventFilter(obj, event);
     }
 }
 

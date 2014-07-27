@@ -15,7 +15,9 @@ class DlgExportedToPass : public QDialog
     Q_OBJECT
 
 public:
-    explicit DlgExportedToPass(QWidget *parent, QString qstrTheCash);
+    explicit DlgExportedToPass(QWidget *parent, QString qstrTheCash,
+                               QString qstrLabelHeader1=QString(""),
+                               QString qstrLabelHeader2=QString(""));
     ~DlgExportedToPass();
 
 protected:
@@ -27,6 +29,8 @@ private slots:
     void on_pushButton_clicked();
 
 private:
+//    QString m_qstrLabelHeader1;
+//    QString m_qstrLabelHeader2;
     Ui::DlgExportedToPass *ui;
 };
 

@@ -24,6 +24,7 @@ private slots:
     void on_toolButton_main_clicked();
     void on_toolButton_markets_clicked();
     void on_toolButton_importCash_clicked();
+    void on_toolButton_contacts_clicked();
     void on_toolButton_manageAccounts_clicked();
     void on_toolButton_manageAssets_clicked();
     void on_toolButton_manageNyms_clicked();
@@ -37,6 +38,7 @@ signals:
     void sig_on_toolButton_main_clicked();
     void sig_on_toolButton_markets_clicked();
     void sig_on_toolButton_importCash_clicked();
+    void sig_on_toolButton_contacts_clicked();
     void sig_on_toolButton_manageAccounts_clicked();
     void sig_on_toolButton_manageAssets_clicked();
     void sig_on_toolButton_manageNyms_clicked();

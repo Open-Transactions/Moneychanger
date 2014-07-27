@@ -153,7 +153,7 @@ bool MTServerDetails::eventFilter(QObject *obj, QEvent *event)
 //    else
 //    {
         // standard event processing
-//        return QObject::eventFilter(obj, event);
+//        return QWidget::eventFilter(obj, event);
         return MTEditDetails::eventFilter(obj, event);
 
         // NOTE: Since the base class has definitely already installed this

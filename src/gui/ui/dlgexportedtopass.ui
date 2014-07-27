@@ -15,14 +15,14 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="labelHeader1">
      <property name="text">
       <string>Exported Cash (encrypted to passphrase)</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="labelHeader2">
      <property name="font">
       <font>
        <pointsize>11</pointsize>
