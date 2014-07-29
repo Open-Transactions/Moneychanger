@@ -53,6 +53,9 @@ void BtcSendDlg::RefreshBalances()
     if(balances == NULL)
         return;
 
+    ui->scrollArea->setVisible(ui->checkBox->isChecked());
+    QSize s = sizeHint(); s.setWidth(width()); resize(s);
+
     this->ui->labelBalanceC->setText(QString::fromStdString(btc::to_string(BtcHelper::SatoshisToCoins(balances->confirmed))));
     this->ui->labelBalanceP->setText(QString::fromStdString(btc::to_string(BtcHelper::SatoshisToCoins(balances->pending))));
     this->ui->labelBalanceWatC->setText(QString::fromStdString(btc::to_string(BtcHelper::SatoshisToCoins(balances->watchConfirmed))));
@@ -186,4 +189,18 @@ void BtcSendDlg::on_buttonShowUnspentTxids_clicked()
 
     this->txIdList->Update();
     this->txIdList->show();
+}
+
+void BtcSendDlg::on_checkBox_toggled(bool checked)
+{
+    ui->scrollArea->setVisible(checked);
+
+    QSize s = sizeHint(); s.setWidth(width()); resize(s);
+
+//    if (checked)
+//    {
+//    }
+//    else
+//    {
+//    }
 }

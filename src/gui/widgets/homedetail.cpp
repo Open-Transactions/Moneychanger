@@ -1059,6 +1059,31 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(OTRecord & recordmt, bool bExte
             currency_amount = tr("sent msg");
         else
             currency_amount = tr("message");
+    // --------------------------------------
+        if (recordmt.IsSpecialMail())
+        {
+            std::string str_type_display = recordmt.GetMsgType();
+//          std::string str_type_display = recordmt.GetMsgTypeDisplay();
+
+            if (!str_type_display.empty())
+            {
+                if (recordmt.IsOutgoing())
+                    currency_amount = QString("%1 %2").arg(tr("sent")).arg(QString::fromStdString(str_type_display));
+                else
+                    currency_amount = QString::fromStdString(str_type_display);
+            }
+        }
+        // --------------------------------------
+//        EXPORT    int32_t GetMethodID() const; // Used by "special mail."
+
+//        EXPORT    const std::string & GetMsgID() const; // Used by "special mail."
+//        EXPORT    void                SetMsgID(const std::string & str_id);
+//            // ---------------------------------------
+//        EXPORT    const std::string & GetMsgType() const; // Used by "special mail."
+//        EXPORT    void                SetMsgType(const std::string & str_type);
+//            // ---------------------------------------
+//        EXPORT    const std::string & GetMsgTypeDisplay() const; // Used by "special mail."
+//        EXPORT    void                SetMsgTypeDisplay(const std::string & str_type);
         // ------------------------------------------
         if (!bExternal)
         {

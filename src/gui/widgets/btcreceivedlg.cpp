@@ -26,6 +26,11 @@ void BtcReceiveDlg::UpdateAddressList()
 
     this->ui->tableAddresses->setRowCount(0);
 
+    ui->groupBox->setVisible(ui->checkBox->isChecked());
+    QSize s = sizeHint(); s.setWidth(width()); resize(s);
+
+//    resize(sizeHint());
+
     if(balances.size() <= 0)
         return;
 
@@ -127,3 +132,18 @@ void BtcReceiveDlg::on_tableAddresses_currentCellChanged(int currentRow, int cur
     this->ui->editPubKey->setText(QString::fromStdString(addrInfo->pubkey));
 
 }
+
+void BtcReceiveDlg::on_checkBox_toggled(bool checked)
+{
+    ui->groupBox->setVisible(checked);
+//    resize(sizeHint());
+
+    QSize s = sizeHint(); s.setWidth(width());
+
+    if (!checked)
+       s.setHeight(380);
+
+    resize(s);
+}
+
+
