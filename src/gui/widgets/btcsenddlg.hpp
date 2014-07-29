@@ -38,6 +38,8 @@ private slots:
 
     void on_buttonShowUnspentTxids_clicked();
 
+    void on_checkBox_toggled(bool checked);
+
 private:
     void RefreshBalances();
 

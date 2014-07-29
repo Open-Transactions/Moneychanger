@@ -28,6 +28,8 @@ private slots:
 
     void on_tableAddresses_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
 
+    void on_checkBox_toggled(bool checked);
+
 private:
     void UpdateAddressList();
 

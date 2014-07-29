@@ -13,721 +13,661 @@
   <property name="windowTitle">
    <string>Send Bitcoin</string>
   </property>
-  <widget class="QDoubleSpinBox" name="spinBoxAmount">
-   <property name="geometry">
-    <rect>
-     <x>80</x>
-     <y>75</y>
-     <width>131</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>Amount in Bitcoin</string>
-   </property>
-   <property name="decimals">
-    <number>8</number>
-   </property>
-   <property name="maximum">
-    <double>20000000.000000000000000</double>
-   </property>
-   <property name="singleStep">
-    <double>0.001000000000000</double>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>80</y>
-     <width>51</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Amount</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="buttonSend">
-   <property name="geometry">
-    <rect>
-     <x>250</x>
-     <y>80</y>
-     <width>141</width>
-     <height>51</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Send</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="editTxid">
-   <property name="geometry">
-    <rect>
-     <x>40</x>
-     <y>200</y>
-     <width>671</width>
-     <height>27</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_3">
-   <property name="geometry">
-    <rect>
-     <x>40</x>
-     <y>170</y>
-     <width>111</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Transaction ID:</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="editAddress">
-   <property name="geometry">
-    <rect>
-     <x>80</x>
-     <y>15</y>
-     <width>331</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_5">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>20</y>
-     <width>51</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Address</string>
-   </property>
-  </widget>
-  <widget class="QScrollArea" name="scrollArea">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>275</y>
-     <width>771</width>
-     <height>561</height>
-    </rect>
-   </property>
-   <property name="verticalScrollBarPolicy">
-    <enum>Qt::ScrollBarAsNeeded</enum>
-   </property>
-   <property name="widgetResizable">
-    <bool>true</bool>
-   </property>
-   <widget class="QWidget" name="scrollAreaWidgetContents">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>751</width>
-      <height>1509</height>
-     </rect>
-    </property>
-    <layout class="QFormLayout" name="formLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetFixedSize</enum>
+     </property>
      <item row="0" column="0">
-      <widget class="QFrame" name="frameMultiSig">
+      <widget class="QLabel" name="label_5">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="minimumSize">
+       <property name="maximumSize">
         <size>
-         <width>721</width>
-         <height>1491</height>
+         <width>16777215</width>
+         <height>120</height>
         </size>
        </property>
-       <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
+       <property name="text">
+        <string>Address</string>
        </property>
-       <property name="frameShadow">
-        <enum>QFrame::Raised</enum>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="2">
+      <widget class="QLineEdit" name="editAddress">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
-       <widget class="QGroupBox" name="groupBox">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>10</y>
-          <width>691</width>
-          <height>1431</height>
-         </rect>
-        </property>
-        <property name="title">
-         <string>Multisig (advanced):</string>
-        </property>
-        <widget class="QPlainTextEdit" name="textMultisigTxids">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>160</y>
-           <width>671</width>
-           <height>84</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_7">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>130</y>
-           <width>171</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Input TxIds (one per line):</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_8">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>30</y>
-           <width>131</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Address to send to:</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_9">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>100</y>
-           <width>111</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Change address:</string>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="editAddressMultisig">
-         <property name="geometry">
-          <rect>
-           <x>160</x>
-           <y>20</y>
-           <width>341</width>
-           <height>27</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="editChangeMultisig">
-         <property name="geometry">
-          <rect>
-           <x>160</x>
-           <y>95</y>
-           <width>341</width>
-           <height>27</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="buttonFindOutputs">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>260</y>
-           <width>151</width>
-           <height>27</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Find unspent outputs</string>
-         </property>
-        </widget>
-        <widget class="QPlainTextEdit" name="textOutputs">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>290</y>
-           <width>621</width>
-           <height>131</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QPlainTextEdit" name="textVout">
-         <property name="geometry">
-          <rect>
-           <x>650</x>
-           <y>290</y>
-           <width>41</width>
-           <height>131</height>
-          </rect>
-         </property>
-         <property name="plainText">
-          <string/>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_12">
-         <property name="geometry">
-          <rect>
-           <x>110</x>
-           <y>60</y>
-           <width>41</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Label:</string>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="editAddressMultisigLabel">
-         <property name="geometry">
-          <rect>
-           <x>160</x>
-           <y>50</y>
-           <width>341</width>
-           <height>27</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>frommultisig</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="buttonCreateRawTx">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>470</y>
-           <width>201</width>
-           <height>27</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Generate raw transaction</string>
-         </property>
-        </widget>
-        <widget class="QPlainTextEdit" name="textRawTx">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>500</y>
-           <width>621</width>
-           <height>191</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="buttonSignRawTx">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>990</y>
-           <width>161</width>
-           <height>27</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Sign raw transaction</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_10">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>710</y>
-           <width>101</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>scriptPubKeys</string>
-         </property>
-        </widget>
-        <widget class="QPlainTextEdit" name="textScriptPubKeys">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>730</y>
-           <width>621</width>
-           <height>101</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_11">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>840</y>
-           <width>101</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>redeemScripts</string>
-         </property>
-        </widget>
-        <widget class="QPlainTextEdit" name="textRedeemScripts">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>860</y>
-           <width>621</width>
-           <height>111</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_13">
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>1030</y>
-           <width>51</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Status:</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="labelSigned">
-         <property name="geometry">
-          <rect>
-           <x>90</x>
-           <y>1030</y>
-           <width>81</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Not signed</string>
-         </property>
-        </widget>
-        <widget class="QPlainTextEdit" name="textRawTxSigned">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>1050</y>
-           <width>621</width>
-           <height>311</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_15">
-         <property name="geometry">
-          <rect>
-           <x>500</x>
-           <y>100</y>
-           <width>171</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>(leave empty to generate)</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="buttonSendRawTx">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>1370</y>
-           <width>141</width>
-           <height>27</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Send transaction</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_6">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>430</y>
-           <width>131</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Spendable amount:</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="labelMultisigSpendable">
-         <property name="geometry">
-          <rect>
-           <x>160</x>
-           <y>430</y>
-           <width>171</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>0.0</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="buttonShowUnspentTxids">
-         <property name="geometry">
-          <rect>
-           <x>530</x>
-           <y>35</y>
-           <width>151</width>
-           <height>27</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Show unspent txids</string>
-         </property>
-        </widget>
-        <widget class="QCheckBox" name="checkExcludeUnsignable">
-         <property name="geometry">
-          <rect>
-           <x>180</x>
-           <y>265</y>
-           <width>161</width>
-           <height>22</height>
-          </rect>
-         </property>
-         <property name="toolTip">
-          <string>This is slow. Only tick this bock if you used 'importaddress' on addresses to which you have no private keys.</string>
-         </property>
-         <property name="text">
-          <string>Exclude unsignable</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </widget>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="4" rowspan="2">
+      <widget class="QLabel" name="label_18">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Wallet</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="6" rowspan="2">
+      <widget class="QLabel" name="label_19">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Watchonly</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" rowspan="2" colspan="2">
+      <widget class="QLineEdit" name="lineEdit">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>someone</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_14">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Label</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3" rowspan="2">
+      <widget class="QLabel" name="label_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Confirmed</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="4" rowspan="2">
+      <widget class="QLabel" name="labelBalanceC">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>000.00000000</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="5" rowspan="2">
+      <widget class="QLabel" name="label_20">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>BTC</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="6" rowspan="2">
+      <widget class="QLabel" name="labelBalanceWatC">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>000.00000000</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" rowspan="2">
+      <widget class="QDoubleSpinBox" name="spinBoxAmount">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Amount in Bitcoin</string>
+       </property>
+       <property name="decimals">
+        <number>8</number>
+       </property>
+       <property name="maximum">
+        <double>20000000.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.001000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Amount</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2" rowspan="3">
+      <widget class="QPushButton" name="buttonSend">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Send</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="3" rowspan="2">
+      <widget class="QLabel" name="label_4">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Pending</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="4" rowspan="2">
+      <widget class="QLabel" name="labelBalanceP">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>000.00000000</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="5" rowspan="2">
+      <widget class="QLabel" name="label_22">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>BTC</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="6" rowspan="2">
+      <widget class="QLabel" name="labelBalanceWatP">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>000.00000000</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1" rowspan="2">
+      <widget class="QDoubleSpinBox" name="spinBoxFee">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Fee in Bitcoin</string>
+       </property>
+       <property name="decimals">
+        <number>8</number>
+       </property>
+       <property name="maximum">
+        <double>0.100000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.000100000000000</double>
+       </property>
+       <property name="value">
+        <double>0.001000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_16">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Fee</string>
+       </property>
       </widget>
      </item>
     </layout>
-   </widget>
-  </widget>
-  <widget class="QLineEdit" name="lineEdit">
-   <property name="geometry">
-    <rect>
-     <x>80</x>
-     <y>45</y>
-     <width>331</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>someone</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_14">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>50</y>
-     <width>41</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Label</string>
-   </property>
-  </widget>
-  <widget class="QDoubleSpinBox" name="spinBoxFee">
-   <property name="geometry">
-    <rect>
-     <x>80</x>
-     <y>105</y>
-     <width>131</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>Fee in Bitcoin</string>
-   </property>
-   <property name="decimals">
-    <number>8</number>
-   </property>
-   <property name="maximum">
-    <double>0.100000000000000</double>
-   </property>
-   <property name="singleStep">
-    <double>0.000100000000000</double>
-   </property>
-   <property name="value">
-    <double>0.001000000000000</double>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_16">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>110</y>
-     <width>31</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Fee</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>440</x>
-     <y>60</y>
-     <width>81</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Confirmed</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_4">
-   <property name="geometry">
-    <rect>
-     <x>440</x>
-     <y>90</y>
-     <width>62</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Pending</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_18">
-   <property name="geometry">
-    <rect>
-     <x>550</x>
-     <y>30</y>
-     <width>62</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Wallet</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_19">
-   <property name="geometry">
-    <rect>
-     <x>680</x>
-     <y>30</y>
-     <width>71</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Watchonly</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="labelBalanceC">
-   <property name="geometry">
-    <rect>
-     <x>530</x>
-     <y>60</y>
-     <width>111</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>000.00000000</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="labelBalanceWatC">
-   <property name="geometry">
-    <rect>
-     <x>660</x>
-     <y>60</y>
-     <width>111</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>000.00000000</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="labelBalanceP">
-   <property name="geometry">
-    <rect>
-     <x>530</x>
-     <y>90</y>
-     <width>111</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>000.00000000</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="labelBalanceWatP">
-   <property name="geometry">
-    <rect>
-     <x>660</x>
-     <y>90</y>
-     <width>111</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>000.00000000</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_20">
-   <property name="geometry">
-    <rect>
-     <x>630</x>
-     <y>60</y>
-     <width>31</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>BTC</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_22">
-   <property name="geometry">
-    <rect>
-     <x>630</x>
-     <y>90</y>
-     <width>31</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>BTC</string>
-   </property>
-  </widget>
-  <zorder>scrollArea</zorder>
-  <zorder>spinBoxAmount</zorder>
-  <zorder>label</zorder>
-  <zorder>buttonSend</zorder>
-  <zorder>editTxid</zorder>
-  <zorder>label_3</zorder>
-  <zorder>editAddress</zorder>
-  <zorder>label_5</zorder>
-  <zorder>lineEdit</zorder>
-  <zorder>label_14</zorder>
-  <zorder>spinBoxFee</zorder>
-  <zorder>label_16</zorder>
-  <zorder>label_2</zorder>
-  <zorder>label_4</zorder>
-  <zorder>label_18</zorder>
-  <zorder>label_19</zorder>
-  <zorder>labelBalanceC</zorder>
-  <zorder>labelBalanceWatC</zorder>
-  <zorder>labelBalanceP</zorder>
-  <zorder>labelBalanceWatP</zorder>
-  <zorder>label_20</zorder>
-  <zorder>label_22</zorder>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Transaction ID:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLineEdit" name="editTxid">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QCheckBox" name="checkBox">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>120</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Show Multisig</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAsNeeded</enum>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>764</width>
+        <height>1515</height>
+       </rect>
+      </property>
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0">
+        <widget class="QFrame" name="frameMultiSig">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>721</width>
+           <height>1491</height>
+          </size>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QGroupBox" name="groupBox">
+            <property name="title">
+             <string>Multisig (advanced):</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_3">
+             <item row="0" column="0" colspan="2">
+              <widget class="QLabel" name="label_8">
+               <property name="text">
+                <string>Address to send to:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2" colspan="2">
+              <widget class="QLineEdit" name="editAddressMultisig"/>
+             </item>
+             <item row="0" column="4" rowspan="2" colspan="2">
+              <widget class="QPushButton" name="buttonShowUnspentTxids">
+               <property name="text">
+                <string>Show unspent txids</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLabel" name="label_12">
+               <property name="text">
+                <string>Label:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2" colspan="2">
+              <widget class="QLineEdit" name="editAddressMultisigLabel">
+               <property name="text">
+                <string>frommultisig</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0" colspan="2">
+              <widget class="QLabel" name="label_9">
+               <property name="text">
+                <string>Change address:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="2" colspan="2">
+              <widget class="QLineEdit" name="editChangeMultisig"/>
+             </item>
+             <item row="2" column="4" colspan="2">
+              <widget class="QLabel" name="label_15">
+               <property name="text">
+                <string>(leave empty to generate)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0" colspan="4">
+              <widget class="QLabel" name="label_7">
+               <property name="text">
+                <string>Input TxIds (one per line):</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0" colspan="6">
+              <widget class="QPlainTextEdit" name="textMultisigTxids"/>
+             </item>
+             <item row="5" column="0" colspan="3">
+              <widget class="QPushButton" name="buttonFindOutputs">
+               <property name="text">
+                <string>Find unspent outputs</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="3">
+              <widget class="QCheckBox" name="checkExcludeUnsignable">
+               <property name="toolTip">
+                <string>This is slow. Only tick this bock if you used 'importaddress' on addresses to which you have no private keys.</string>
+               </property>
+               <property name="text">
+                <string>Exclude unsignable</string>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0" colspan="5">
+              <widget class="QPlainTextEdit" name="textOutputs"/>
+             </item>
+             <item row="6" column="5">
+              <widget class="QPlainTextEdit" name="textVout">
+               <property name="plainText">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="0" colspan="2">
+              <widget class="QLabel" name="label_6">
+               <property name="text">
+                <string>Spendable amount:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="2" colspan="2">
+              <widget class="QLabel" name="labelMultisigSpendable">
+               <property name="text">
+                <string>0.0</string>
+               </property>
+              </widget>
+             </item>
+             <item row="8" column="0" colspan="4">
+              <widget class="QPushButton" name="buttonCreateRawTx">
+               <property name="text">
+                <string>Generate raw transaction</string>
+               </property>
+              </widget>
+             </item>
+             <item row="9" column="0" colspan="5">
+              <widget class="QPlainTextEdit" name="textRawTx"/>
+             </item>
+             <item row="10" column="0" colspan="2">
+              <widget class="QLabel" name="label_10">
+               <property name="text">
+                <string>scriptPubKeys</string>
+               </property>
+              </widget>
+             </item>
+             <item row="11" column="0" colspan="5">
+              <widget class="QPlainTextEdit" name="textScriptPubKeys"/>
+             </item>
+             <item row="12" column="0" colspan="2">
+              <widget class="QLabel" name="label_11">
+               <property name="text">
+                <string>redeemScripts</string>
+               </property>
+              </widget>
+             </item>
+             <item row="13" column="0" colspan="5">
+              <widget class="QPlainTextEdit" name="textRedeemScripts"/>
+             </item>
+             <item row="14" column="0" colspan="3">
+              <widget class="QPushButton" name="buttonSignRawTx">
+               <property name="text">
+                <string>Sign raw transaction</string>
+               </property>
+              </widget>
+             </item>
+             <item row="15" column="0">
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>Status:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="15" column="1" colspan="2">
+              <widget class="QLabel" name="labelSigned">
+               <property name="text">
+                <string>Not signed</string>
+               </property>
+              </widget>
+             </item>
+             <item row="16" column="0" colspan="5">
+              <widget class="QPlainTextEdit" name="textRawTxSigned"/>
+             </item>
+             <item row="17" column="0" colspan="3">
+              <widget class="QPushButton" name="buttonSendRawTx">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Send transaction</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

@@ -679,12 +679,13 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu_bitcoin_transactions = new QAction(tr("Transactions"), mc_systrayMenu_bitcoin);
     mc_systrayMenu_bitcoin_send = new QAction(tr("Send"), mc_systrayMenu_bitcoin);
     mc_systrayMenu_bitcoin_receive = new QAction(tr("Receive"), mc_systrayMenu_bitcoin);
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_test);
     mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_connect);
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_pools);
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_transactions);
     mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_send);
     mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_receive);
+    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_transactions);
+    mc_systrayMenu_bitcoin->addSeparator();
+    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_test);
+    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_pools);
     connect(mc_systrayMenu_bitcoin_test, SIGNAL(triggered()), this, SLOT(mc_bitcoin_slot()));
     connect(mc_systrayMenu_bitcoin_connect, SIGNAL(triggered()), this, SLOT(mc_bitcoin_connect_slot()));
     connect(mc_systrayMenu_bitcoin_pools, SIGNAL(triggered()), this, SLOT(mc_bitcoin_pools_slot()));
