@@ -46,11 +46,18 @@ class IMTBitcoin
 public:
     // account [optional]: the account whose balance should be checked
     // returns total balance of all addresses.
-    virtual int64_t GetBalance(const char *account = NULL) = 0;
+    virtual int64_t GetBalance(const std::string &account = "*") = 0;
 
     // account [optional]: the account to which the address should be added.
     // returns new address
-    virtual std::string GetNewAddress(const std::string &account = "") = 0;
+    virtual std::string GetNewAddress(const std::string &account = "moneychanger") = 0;
+
+    // address: watchonly address to import
+    // label:   the name of the address and its accounts
+    // rescan:  rescan the entire blockchain for old transactions
+    // returns false if an error occurs, e.g. the command is not supported yet
+    // Can be called multiple times to change address label
+    virtual bool ImportAddress(const std::string &address, const std::string &label = "watchonly", bool rescan = false) = 0;
 
     // returns public key for address (works only if public key is known...)
     virtual std::string GetPublicKey(const std::string &address) = 0;
@@ -61,7 +68,7 @@ public:
     // addToWallet [optional]:  whether or not to add address to wallet
     // account [optional]:      account to which the address should be added
     // returns the multi-sig address
-    virtual std::string GetMultiSigAddress(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = false, const std::string &account = "") = 0;
+    virtual std::string GetMultiSigAddress(int32_t minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = "") = 0;
 
     // Creates a multi-sig address from public keys
     // minSignatures:           signatures required to release funds
@@ -69,7 +76,11 @@ public:
     // addToWallet [optional]:  whether or not to add address to wallet
     // account [optional]:      account to which the address should be added
     // returns an object containing the address and additional info
-    virtual BtcMultiSigAddressPtr GetMultiSigAddressInfo(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = true, const std::string &account = "") = 0;
+    virtual BtcMultiSigAddressPtr GetMultiSigAddressInfo(int32_t minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = "") = 0;
+
+    // Returns information about a transaction
+    // Only works for your own and imported watchonly addresses
+    virtual BtcTransactionPtr GetTransaction(const std::string &txId) = 0;
 
     // Returns an object containing information about a raw transaction
     virtual BtcRawTransactionPtr GetRawTransaction(const std::string &txId) = 0;
@@ -79,7 +90,7 @@ public:
     virtual BtcRawTransactionPtr WaitGetRawTransaction(const std::string &txId) = 0;
 
     // Returns the number of confirmations of a raw transaction
-    virtual int GetConfirmations(const std::string &txId) = 0;
+    virtual int32_t GetConfirmations(const std::string &txId) = 0;
 
     // Checks whether transaction sends correct amount and is confirmed
     // amount: amount (in satoshis)
@@ -87,7 +98,7 @@ public:
     // targetAddress:               the address into which funds were deposited (in case someone sent to multiple unrelated addresses in one tx)
     // confirmations [optional]:    minimum amount of confirmations (default: 1 (we should increase this))
     // returns true if amount and confirmations are equal or greater than required
-    virtual bool TransactionSuccessfull(int64_t amount, BtcRawTransactionPtr rawTransaction, const std::string &targetAddress, int64_t confirmations = 1) = 0;
+    virtual bool TransactionSuccessful(const int64_t &amount, BtcRawTransactionPtr rawTransaction, const std::string &targetAddress, const int32_t &confirmations = BtcHelper::WaitForConfirms) = 0;
 
     // sends funds from your wallet to targetAddress
     // lAmount: integer containing amount in satoshis
@@ -100,7 +111,7 @@ public:
     // nRequired:       number of signatures required
     // to_publicKeys:   an array containing the public keys of the addresses
     // returns the transaction id string or ""
-    virtual std::string SendToMultisig(int64_t lAmount, int nRequired, const std::list<std::string> &to_publicKeys) = 0;
+    virtual std::string SendToMultisig(int64_t lAmount, int nRequired, const btc::stringList &to_publicKeys) = 0;
 
     // creates a partially signed raw transaction to withdraw funds
     // every escrow participant who wants to vote "yes" has to call this
@@ -118,6 +129,10 @@ public:
     // Broadcasts a raw transaction to the network
     // returns txId or ""
     virtual std::string SendRawTransaction(const std::string &rawTransaction) = 0;
+
+    // Lists unspent outputs, including watchonly addresses
+    // addresses [optional]: limit results to addresses
+    virtual BtcUnspentOutputs ListUnspentOutputs(const btc::stringList &addresses = btc::stringList()) = 0;
 
     /*
         std::map<std::string, int64_t> GetAddressesAndBalances() = 0;

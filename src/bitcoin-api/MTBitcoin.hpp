@@ -51,22 +51,32 @@ public:
 
     // account (optional): the account whose balance should be checked
     // returns total balance of all addresses.
-    virtual int64_t GetBalance(const char *account = NULL);
+    virtual int64_t GetBalance(const std::string &account = "*");
 
     // account (optional): the account to which the address should be added.
     // returns new address
-    virtual std::string GetNewAddress(const std::string &account = NULL);
+    virtual std::string GetNewAddress(const std::string &account = "moneychanger");
+
+    // address: watchonly address to import
+    // label:   the name of the address and its accounts
+    // rescan:  rescan the entire blockchain for old transactions
+    // Can be called multiple times to change the label
+    virtual bool ImportAddress(const std::string &address, const std::string &label = "watchonly", bool rescan = false);
 
     // returns public key for address (works only if public key is known)
     virtual std::string GetPublicKey(const std::string &address);
 
     // Creates a multi-sig address from public keys
     // returns the address string
-    virtual std::string GetMultiSigAddress(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = true, const std::string &account = NULL);
+    virtual std::string GetMultiSigAddress(int32_t minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = NULL);
 
     // Creates a multi-sig address from public keys
     // returns an object containing info required to withdraw from that address
-    virtual BtcMultiSigAddressPtr GetMultiSigAddressInfo(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet = true, const std::string &account = NULL);
+    virtual BtcMultiSigAddressPtr GetMultiSigAddressInfo(int32_t minSignatures, const btc::stringList& publicKeys, bool addToWallet = true, const std::string &account = NULL);
+
+    // Returns information about a transaction
+    // Only works for your own and imported watchonly addresses
+    virtual BtcTransactionPtr GetTransaction(const std::string &txId);
 
     // Returns an object containing information about a raw transaction
     virtual BtcRawTransactionPtr GetRawTransaction(const std::string &txId);
@@ -76,9 +86,9 @@ public:
     virtual BtcRawTransactionPtr WaitGetRawTransaction(const std::string &txId);
 
     // Returns the number of confirmations of a raw transaction
-    virtual int GetConfirmations(const std::string &txId);
+    virtual int32_t GetConfirmations(const std::string &txId);
 
-    virtual bool TransactionSuccessfull(int64_t amount, BtcRawTransactionPtr rawTransaction, const std::string &targetAddress, int64_t confirmations = 1);
+    virtual bool TransactionSuccessful(const int64_t &amount, BtcRawTransactionPtr rawTransaction, const std::string &targetAddress, const int32_t &confirmations = BtcHelper::WaitForConfirms);
 
     // sends funds from your wallet to targetAddress
     // returns the transaction id string or NULL
@@ -89,7 +99,7 @@ public:
     // If the multisig address is already known, we can instead just call SendToAddress(multiSigAddress)
     // as bitcoin makes no difference between those and regular addresses.
     // returns the transaction id string or NULL
-    virtual std::string SendToMultisig(int64_t lAmount, int nRequired, const std::list<std::string> &to_publicKeys);
+    virtual std::string SendToMultisig(int64_t lAmount, int nRequired, const btc::stringList &to_publicKeys);
 
     // creates a partially signed raw transaction to withdraw funds
     // txToSourceId: transaction id that was used to fund the pool
@@ -103,6 +113,10 @@ public:
     virtual BtcSignedTransactionPtr CombineTransactions(const std::string &concatenatedRawTransactions);
 
     virtual std::string SendRawTransaction(const std::string &rawTransaction);
+
+    // Lists unspent outputs, including watchonly addresses
+    // addresses [optional]: limit results to addresses
+    virtual BtcUnspentOutputs ListUnspentOutputs(const btc::stringList &addresses = btc::stringList());
 
     /*
         std::map<std::string, int64_t> GetAddressesAndBalances();

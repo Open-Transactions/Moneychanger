@@ -22,6 +22,12 @@ class DlgMenu;
 class DlgMarkets;
 class Settings;
 class BtcGuiTest;
+class BtcPoolManager;
+class BtcTransactionManager;
+class BtcConnectDlg;
+class BtcSendDlg;
+class BtcReceiveDlg;
+
 class QMenu;
 class QSystemTrayIcon;
 class CreateInsuranceCompany;
@@ -126,6 +132,7 @@ private:
     QPointer<MTDetailEdit> accountswindow;
     QPointer<MTDetailEdit> corporation_window;
     QPointer<MTDetailEdit> agreement_window;
+    QPointer<MTDetailEdit> transport_window;
 
     QPointer<DlgMarkets  > market_window;
 
@@ -134,6 +141,11 @@ private:
     QPointer<Settings> settingswindow;
 
     QPointer<BtcGuiTest> bitcoinwindow;
+    QPointer<BtcPoolManager> bitcoinPoolWindow;
+    QPointer<BtcTransactionManager> bitcoinTxWindow;
+    QPointer<BtcConnectDlg> bitcoinConnectWindow;
+    QPointer<BtcSendDlg> bitcoinSendWindow;
+    QPointer<BtcReceiveDlg> bitcoinReceiveWindow;
         
 private:
     void SetupMainMenu();
@@ -165,10 +177,15 @@ private:
     // ------------------------------------------------
     void mc_sendfunds_show_dialog(QString qstrAcct=QString(""));
     void mc_requestfunds_show_dialog(QString qstrAcct=QString(""));
+    void mc_composemessage_show_dialog();
+
+    void mc_encrypt_show_dialog(bool bEncrypt=true, bool bSign=true);
+    void mc_decrypt_show_dialog();
     // ------------------------------------------------
     void mc_market_dialog();
     void mc_corporation_dialog();
     void mc_agreement_dialog();
+    void mc_transport_dialog(QString qstrPresetID=QString(""));
     void mc_createinsurancecompany_dialog();
     // ------------------------------------------------    
     QList<QVariant> * nym_list_id;
@@ -202,8 +219,17 @@ private:
     
     QIcon mc_systrayIcon_sendfunds;
     QIcon mc_systrayIcon_requestfunds;
-    
+    QIcon mc_systrayIcon_contacts;
+    QIcon mc_systrayIcon_composemessage;
+
     QIcon mc_systrayIcon_markets;
+
+    QIcon mc_systrayIcon_bitcoin;
+    QIcon mc_systrayIcon_crypto;
+    QIcon mc_systrayIcon_crypto_encrypt;
+    QIcon mc_systrayIcon_crypto_decrypt;
+    QIcon mc_systrayIcon_crypto_sign;
+    QIcon mc_systrayIcon_crypto_verify;
 
     QIcon mc_systrayIcon_advanced;
     QIcon mc_systrayIcon_advanced_agreements;
@@ -211,6 +237,7 @@ private:
     QIcon mc_systrayIcon_advanced_settings;
     
     QIcon mc_systrayIcon_advanced_corporations;
+    QIcon mc_systrayIcon_advanced_transport;
     QIcon mc_systrayIcon_advanced_bazaar;
     // ------------------------------------------------
     /**
@@ -249,20 +276,30 @@ private:
     // ---------------------------------------------------------    
     QPointer<QAction> mc_systrayMenu_sendfunds;
     QPointer<QAction> mc_systrayMenu_requestfunds;
-    // ---------------------------------------------------------
-    QPointer<QAction> mc_systrayMenu_markets;
+    QPointer<QAction> mc_systrayMenu_contacts;
+    QPointer<QAction> mc_systrayMenu_composemessage;
     // ---------------------------------------------------------
     //Company submenu
     QPointer<QMenu>   mc_systrayMenu_company_create;
     QPointer<QAction> mc_systrayMenu_company_create_insurance;
     // ---------------------------------------------------------
+    //Crypto submenu
+    QPointer<QMenu> mc_systrayMenu_crypto;
+
+    QPointer<QAction> mc_systrayMenu_crypto_encrypt;
+    QPointer<QAction> mc_systrayMenu_crypto_decrypt;
+    QPointer<QAction> mc_systrayMenu_crypto_sign;
+    QPointer<QAction> mc_systrayMenu_crypto_verify;
+    // ---------------------------------------------------------
     //Advanced submenu
     QPointer<QMenu> mc_systrayMenu_advanced;
 
+    QPointer<QAction> mc_systrayMenu_advanced_markets;
     QPointer<QAction> mc_systrayMenu_advanced_agreements;
     QPointer<QAction> mc_systrayMenu_advanced_import;
     QPointer<QAction> mc_systrayMenu_advanced_settings;
     QPointer<QAction> mc_systrayMenu_advanced_corporations;
+    QPointer<QAction> mc_systrayMenu_advanced_transport;
     QPointer<QMenu>   mc_systrayMenu_advanced_bazaar;
     // ---------------------------------------------------------
     // Bazaar
@@ -276,6 +313,11 @@ private:
     // Bitcoin
     QPointer<QMenu> mc_systrayMenu_bitcoin;
     QPointer<QAction> mc_systrayMenu_bitcoin_test;
+    QPointer<QAction> mc_systrayMenu_bitcoin_connect;
+    QPointer<QAction> mc_systrayMenu_bitcoin_pools;
+    QPointer<QAction> mc_systrayMenu_bitcoin_transactions;
+    QPointer<QAction> mc_systrayMenu_bitcoin_send;
+    QPointer<QAction> mc_systrayMenu_bitcoin_receive;
     
     
 public slots:
@@ -289,14 +331,16 @@ public slots:
      * Systray Menu Slots
      **/
     
-    //Shutdown
-    void mc_shutdown_slot();
+    void mc_shutdown_slot(); //Shutdown
     // ---------------------------------------------------------------------------
     void mc_overview_slot();                // Overview
     void mc_main_menu_slot();               // Main Menu
     // ---------------------------------------------------------------------------
     void mc_addressbook_slot();             // Address Book
     void mc_showcontact_slot(QString text); // Address Book, Select a Contact
+    // ---------------------------------------------------------------------------
+    void mc_transport_slot();                 // Various Transport connection strings
+    void mc_showtransport_slot(QString text); // Same, except choose a specific one when opening.
     // ---------------------------------------------------------------------------
     void mc_defaultnym_slot();              // Nym
     void mc_nymselection_triggered(QAction*); //new default nym selected
@@ -319,9 +363,15 @@ public slots:
     // ---------------------------------------------------------------------------
     void mc_sendfunds_slot();               // Send Funds
     void mc_requestfunds_slot();            // Request Funds
+    void mc_composemessage_slot();          // Compose Message
     // ---------------------------------------------------------------------------
     void mc_send_from_acct (QString qstrAcct);
     void mc_request_to_acct(QString qstrAcct);
+    // ---------------------------------------------------------------------------   
+    void mc_crypto_encrypt_slot();
+    void mc_crypto_decrypt_slot();
+    void mc_crypto_sign_slot();
+    void mc_crypto_verify_slot();
     // ---------------------------------------------------------------------------
     void mc_market_slot();                  // Market Slot
     void mc_agreement_slot();               // Agreements Slot
@@ -332,7 +382,12 @@ public slots:
     // ---------------------------------------------------------------------------
     void mc_settings_slot();                //Settings
     // ---------------------------------------------------------------------------
-    void mc_bitcoin_slot();                 // Bitcoin
+    void mc_bitcoin_slot();                 // Bitcoin -> Test
+    void mc_bitcoin_connect_slot();         // Bitcoin -> Connect to wallet
+    void mc_bitcoin_pools_slot();           // Bitcoin -> Mange Pools
+    void mc_bitcoin_transactions_slot();    // Bitcoin -> Transactions
+    void mc_bitcoin_send_slot();            // Bitcoin -> Send
+    void mc_bitcoin_receive_slot();            // Bitcoin -> Receive
 };
 
 #endif // MONEYCHANGER_HPP

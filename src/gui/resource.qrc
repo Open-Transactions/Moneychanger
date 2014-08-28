@@ -37,5 +37,10 @@
         <file>icons/safe_box.png</file>
         <file>icons/safe.png</file>
         <file>icons/buildings.png</file>
+        <file>icons/p2p.png</file>
+        <file>icons/compose.png</file>
+        <file>icons/signature-small.png</file>
+        <file>icons/check-mark-small.png</file>
+        <file>icons/bitcoin.png</file>
     </qresource>
 </RCC>

@@ -5,6 +5,8 @@ HEADERS += \
     $${PWD}/sampleescrowclient.hpp \
     $${PWD}/sampleescrowmanager.hpp \
     $${PWD}/sampleescrowserver.hpp \
+    $${PWD}/sampleescrowserverzmq.hpp \
+    $${PWD}/samplenetmessages.hpp \
     $${PWD}/sampleescrowtransaction.hpp \
     $${PWD}/sampletypedefs.hpp \
     $${PWD}/transactionmanager.hpp
@@ -15,5 +17,7 @@ SOURCES += \
     $${PWD}/sampleescrowclient.cpp \
     $${PWD}/sampleescrowmanager.cpp \
     $${PWD}/sampleescrowserver.cpp \
+    $${PWD}/sampleescrowserverzmq.cpp \
+    $${PWD}/samplenetmessages.cpp \
     $${PWD}/sampleescrowtransaction.cpp \
     $${PWD}/transactionmanager.cpp

@@ -117,7 +117,7 @@ void MTOfferDetails::AddButtonClicked()
 //      const QString qstrExpire             (theWizard.field("expirationStr")      .toString());
         const int     nExpire                (theWizard.field("expiration")         .toInt   ());
         // --------------------------------------------
-        const int     timespan_array_len                  = 7;
+        const int     timespan_array_len                  = 7;        
         const int64_t array_timespan[timespan_array_len]  = {
             OT_TIME_MINUTE_IN_SECONDS,
             OT_TIME_HOUR_IN_SECONDS,
@@ -945,7 +945,7 @@ bool MTOfferDetails::eventFilter(QObject *obj, QEvent *event)
 //    else
 //    {
         // standard event processing
-//        return QObject::eventFilter(obj, event);
+//        return QWidget::eventFilter(obj, event);
         return MTEditDetails::eventFilter(obj, event);
 
         // NOTE: Since the base class has definitely already installed this

@@ -13,71 +13,82 @@
 
 #include <QObject>
 
+class QTimer;
 
 class SampleEscrowClient : public QObject
 {
         Q_OBJECT
 public:
     explicit SampleEscrowClient(QObject* parent = 0);
+    SampleEscrowClient(BitcoinServerPtr rpcServer, QObject *parent = NULL);
+    SampleEscrowClient(BtcModulesPtr modules, QObject *parent = NULL);
     ~SampleEscrowClient();
 
+    virtual void Initialize();
+
+    virtual void Reset();
 
     /** Deposit **/
     // client asks servers for public keys
     // amountToSend: amount in satoshis
     void StartDeposit(int64_t amountToSend, EscrowPoolPtr targetPool);
 
-    // client receives public keys
-    void OnReceivePubKey(const std::string& publicKey, int minSignatures);
-
-    // returns true when the transaction finished
-    bool CheckDepositFinished();
-
     /** Release **/
     // client asks server for release of escrow
-    void StartWithdrawal();
+    void StartWithdrawal(const int64_t &amountToWithdraw, const std::string &toAddress, EscrowPoolPtr fromPool);
 
-    // client receives partially signed tx
-    void OnReceiveSignedTx(const std::string &signedTx);
+    /** Balance **/
+    virtual void CheckPoolBalance(EscrowPoolPtr pool);
+    virtual void CheckPoolTransactions(EscrowPoolPtr pool);
 
-    bool CheckWithdrawalFinished();
+    typedef std::map<std::string, std::string> PoolAddressMap;
+    PoolAddressMap poolAddressMap;
+    typedef std::map<std::string, int64_t> PoolBalanceMap;
+    PoolBalanceMap poolBalanceMap;    
+    typedef std::map<std::string, SampleEscrowTransactions> PoolTxMap;
+    PoolTxMap poolTxMap;
+    typedef std::map<std::string, u_int64_t> PoolTxCountMap;
+    PoolTxCountMap poolTxCountMap;
 
-    bool CheckTransactionFinished(SampleEscrowTransactionPtr transaction);
+    std::string clientName;
 
 
-    std::list<std::string> pubKeyList;
-    int minSignatures;
+protected:
+    BitcoinServerPtr rpcServer;
+
+    BtcModulesPtr modules;
+
+    _SharedPtr<QTimer> updateTimer;
+
+private:
+    struct Action;
+    typedef _SharedPtr<Action> ActionPtr;
+    typedef std::list<ActionPtr> Actions;
+    Actions actionsToDo;
+
+    virtual void ContactServer(ActionPtr action);
+    virtual void RequestDeposit(ActionPtr action);
+    virtual void AskForDepositAddress(ActionPtr action);
+    virtual void SendToEscrow(ActionPtr action);
+    virtual void RequestRelease(ActionPtr action);
+    virtual void CheckBalance(ActionPtr action);
+    virtual void GetPoolTxCount(ActionPtr action);
+    virtual void FetchPoolTx(ActionPtr action);
+
+    void InitializePool(EscrowPoolPtr pool);
+
 
     int minConfirms;  // minimum number of confirmations before tx is considered successfull
 
-    SampleEscrowTransactionPtr transactionDeposit;      // holds info about the transaction to the pool
-    SampleEscrowTransactionPtr transactionWithdrawal;   // holds info about the transaction from the pool
-
-private:
-    BitcoinServerPtr rpcServer;
-    EscrowPoolPtr targetPool;
-
-    BtcModules* modules;
-
-    // client sends bitcoin to escrow
-    void SendToEscrow();
-
-    signals:    // used to update the GUI
-        // deposit
-        void SetMultiSigAddress(const std::string& address);
-        void SetTxIdDeposit(const std::string& txId);
-        void SetConfirmationsDeposit(int confirms);
-        void SetStatusDeposit(SampleEscrowTransaction::SUCCESS status);
-        // withdrawal
-        void SetWithdrawalAddress(const std::string& address);
-        void SetTxIdWithdrawal(const std::string& txId);
-        void SetConfirmationsWithdrawal(int confirms);
-        void SetStatusWithdrawal(SampleEscrowTransaction::SUCCESS status);
+public slots:
+    void Update();
 };
 
 typedef _SharedPtr<SampleEscrowClient> SampleEscrowClientPtr;
 
 
+// random name generator
+void gen_random(char *s, const int len);
 
 
 

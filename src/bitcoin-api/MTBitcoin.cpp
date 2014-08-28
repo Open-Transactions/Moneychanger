@@ -17,7 +17,7 @@ MTBitcoin::~MTBitcoin()
     this->modules = NULL;
 }
 
-int64_t MTBitcoin::GetBalance(const char *account)
+int64_t MTBitcoin::GetBalance(const std::string &account)
 {
     return this->modules->btcJson->GetBalance(account);
 }
@@ -27,18 +27,23 @@ std::string MTBitcoin::GetNewAddress(const std::string &account)
     return this->modules->btcJson->GetNewAddress(account);
 }
 
+bool MTBitcoin::ImportAddress(const std::string &address, const std::string &label, bool rescan)
+{
+    return this->modules->btcJson->ImportAddress(address, label, rescan);
+}
+
 std::string MTBitcoin::GetPublicKey(const std::string& address)
 {
     return this->modules->btcJson->GetPublicKey(address);
 }
 
-std::string MTBitcoin::GetMultiSigAddress(int minSignatures, const std::list<std::string>& publicKeys, bool addToWallet, const std::string &account)
+std::string MTBitcoin::GetMultiSigAddress(int32_t minSignatures, const btc::stringList& publicKeys, bool addToWallet, const std::string &account)
 {
     BtcMultiSigAddressPtr multiSigAddr;
     return (multiSigAddr = GetMultiSigAddressInfo(minSignatures, publicKeys, addToWallet, account)) == NULL ? "" : multiSigAddr->address;
 }
 
-BtcMultiSigAddressPtr MTBitcoin::GetMultiSigAddressInfo(int minSignatures, const std::list<std::string> &publicKeys, bool addToWallet, const std::string &account)
+BtcMultiSigAddressPtr MTBitcoin::GetMultiSigAddressInfo(int32_t minSignatures, const btc::stringList &publicKeys, bool addToWallet, const std::string &account)
 {
     BtcMultiSigAddressPtr multiSigAddr;
     if(addToWallet)
@@ -53,6 +58,11 @@ BtcMultiSigAddressPtr MTBitcoin::GetMultiSigAddressInfo(int minSignatures, const
     return multiSigAddr;
 }
 
+BtcTransactionPtr MTBitcoin::GetTransaction(const std::string &txId)
+{
+    return this->modules->btcJson->GetTransaction(txId);
+}
+
 BtcRawTransactionPtr MTBitcoin::GetRawTransaction(const std::string &txId)
 {
     return this->modules->btcJson->GetDecodedRawTransaction(txId);
@@ -65,12 +75,12 @@ BtcRawTransactionPtr MTBitcoin::WaitGetRawTransaction(const std::string &txId)
     return this->modules->btcHelper->WaitGetRawTransaction(txId, 500, 20);
 }
 
-int MTBitcoin::GetConfirmations(const std::string &txId)
+int32_t MTBitcoin::GetConfirmations(const std::string &txId)
 {
     return this->modules->btcHelper->GetConfirmations(txId);
 }
 
-bool MTBitcoin::TransactionSuccessfull(int64_t amount, BtcRawTransactionPtr rawTransaction, const std::string &targetAddress, int64_t confirmations)
+bool MTBitcoin::TransactionSuccessful(const int64_t &amount, BtcRawTransactionPtr rawTransaction, const std::string &targetAddress, const int32_t &confirmations)
 {
     return this->modules->btcHelper->TransactionSuccessfull(amount, rawTransaction, targetAddress, confirmations);
 }
@@ -80,7 +90,7 @@ std::string MTBitcoin::SendToAddress(const std::string &to_address, int64_t lAmo
     return this->modules->btcJson->SendToAddress(to_address, lAmount);
 }
 
-std::string MTBitcoin::SendToMultisig(int64_t lAmount, int nRequired, const std::list<std::string> &to_publicKeys)
+std::string MTBitcoin::SendToMultisig(int64_t lAmount, int nRequired, const btc::stringList &to_publicKeys)
 {
     // will send to a multi-sig address without adding it to the wallet.
     // if you want the address to be added to your wallet, use AddMultiSigAddress() and SendToAddress()
@@ -110,6 +120,11 @@ BtcSignedTransactionPtr MTBitcoin::CombineTransactions(const std::string &concat
 std::string MTBitcoin::SendRawTransaction(const std::string &rawTransaction)
 {
     return this->modules->btcJson->SendRawTransaction(rawTransaction);
+}
+
+BtcUnspentOutputs MTBitcoin::ListUnspentOutputs(const btc::stringList &addresses)
+{
+    return this->modules->btcJson->ListUnspent(BtcHelper::MinConfirms, BtcHelper::MaxConfirms, addresses);
 }
 
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>144</width>
-    <height>379</height>
+    <height>412</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,6 +54,19 @@
     </widget>
    </item>
    <item>
+    <widget class="QToolButton" name="toolButton_contacts">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Address Book</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QToolButton" name="toolButton_manageAccounts">
@@ -90,7 +103,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Manage Nyms</string>
+        <string>Manage Identities</string>
        </property>
       </widget>
      </item>

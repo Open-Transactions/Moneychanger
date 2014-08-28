@@ -13,6 +13,7 @@
 #include <opentxs/OTAPI_Exec.hpp>
 #include <opentxs/OTAsymmetricKey.hpp>
 #include <opentxs/OTRecordList.hpp>
+#include <opentxs/OTCaller.hpp>
 
 #include <QVBoxLayout>
 #include <QDebug>

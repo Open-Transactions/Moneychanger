@@ -9,13 +9,25 @@
 #include <QClipboard>
 
 
-DlgExportedToPass::DlgExportedToPass(QWidget *parent, QString qstrTheCash) :
+DlgExportedToPass::DlgExportedToPass(QWidget * parent,
+                                     QString   qstrTheCash,
+                                     QString   qstrLabelHeader1/*=QString("")*/,
+                                     QString   qstrLabelHeader2/*=QString("")*/,
+                                     bool      bShowWarning/*=true*/) :
     QDialog(parent),
+//  m_qstrLabelHeader1(qstrLabelHeader1),
+//  m_qstrLabelHeader2(qstrLabelHeader2),
+    m_bShowWarning(bShowWarning),
     ui(new Ui::DlgExportedToPass)
 {
     ui->setupUi(this);
 
     this->installEventFilter(this);
+
+    if (!qstrLabelHeader1.isEmpty())
+        ui->labelHeader1->setText(qstrLabelHeader1);
+    if (!qstrLabelHeader2.isEmpty())
+        ui->labelHeader2->setText(qstrLabelHeader2);
 
     ui->plainTextEdit->setPlainText(qstrTheCash);
 }
@@ -27,12 +39,17 @@ DlgExportedToPass::~DlgExportedToPass()
 
 void DlgExportedToPass::on_buttonBox_accepted()
 {
-    QMessageBox::StandardButton reply;
+    if (m_bShowWarning)
+    {
+        QMessageBox::StandardButton reply;
 
-    reply = QMessageBox::question(this, "", QString("%1<br/><br/>%2").arg(tr("Are you sure you want to close this dialog?")).
-                                  arg(tr("WARNING: You are strongly advised to first SAVE A COPY of the exported cash!")),
-                                  QMessageBox::Yes|QMessageBox::No);
-    if (reply == QMessageBox::Yes)
+        reply = QMessageBox::question(this, "", QString("%1<br/><br/>%2").arg(tr("Are you sure you want to close this dialog?")).
+                                      arg(tr("WARNING: You are strongly advised to first SAVE A COPY!")),
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::Yes)
+            accept();
+    }
+    else
         accept();
 }
 
@@ -44,7 +61,7 @@ void DlgExportedToPass::on_pushButton_clicked()
     {
         clipboard->setText(ui->plainTextEdit->toPlainText());
 
-        QMessageBox::information(this, tr("Cash Copied"), tr("Copied exported cash to the clipboard"));
+        QMessageBox::information(this, tr("Copied"), tr("Copied to the clipboard"));
     }
 }
 
@@ -59,6 +76,6 @@ bool DlgExportedToPass::eventFilter(QObject *obj, QEvent *event)
         return true;
     }else {
         // standard event processing
-        return QObject::eventFilter(obj, event);
+        return QDialog::eventFilter(obj, event);
     }
 }

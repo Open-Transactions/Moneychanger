@@ -9,8 +9,6 @@
 #include <iostream>
 #include <string.h>
 #include <cstdio>
-#include <cstdlib>
-
 
 BtcRpcPacketPtr BtcRpcCurl::connectString = BtcRpcPacketPtr(new BtcRpcPacket("{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getinfo\", \"params\": [] }"));
 
@@ -24,6 +22,8 @@ BtcRpcCurl::BtcRpcCurl(BtcModules *modules)
     this->res = curl_global_init(CURL_GLOBAL_DEFAULT);
 
     this->currentServer = BitcoinServerPtr();
+
+    this->mutex = false;
 }
 
 BtcRpcCurl::~BtcRpcCurl()
@@ -35,6 +35,15 @@ BtcRpcCurl::~BtcRpcCurl()
     this->CleanUpCurl();
 }
 
+void BtcRpcCurl::WaitMutex()
+{
+    while (this->mutex)
+    {
+        btc::Sleep(5);
+    }
+    this->mutex = true;
+}
+
 static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *userp)
 {
     BtcRpcPacket *pooh = (BtcRpcPacket *)userp;
@@ -42,7 +51,7 @@ static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *userp)
     if(size*nmemb < 1)
         return 0;
 
-    const char* dataPtr = pooh->ReadNextChar();
+    const char* dataPtr = pooh->ReadNextChar();  
 
     if(dataPtr == NULL)
         return 0;
@@ -92,7 +101,7 @@ static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userp)
 
     //if(pooh->data == NULL)
     //{
-    //    printf("realloc failed when reading data from bitcoin-qt\n");
+    //    std::printf("realloc failed when reading data from bitcoin-qt\n");
     //    std::cout.flush();
     //    return 0;
     //}
@@ -106,8 +115,15 @@ static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *userp)
 
 bool BtcRpcCurl::ConnectToBitcoin(BitcoinServerPtr server)
 {
+    WaitMutex();
+
     if(server == NULL)
+    {
+        this->currentServer = server;
+        CleanUpCurl();
+        mutex = false;
         return false;
+    }
 
     if(this->currentServer != server || !this->curl || this->res != CURLE_OK)
     {
@@ -122,6 +138,7 @@ bool BtcRpcCurl::ConnectToBitcoin(BitcoinServerPtr server)
         {
           fprintf(stderr, "curl_global_init() failed: %s\n",
                   curl_easy_strerror(res));
+          mutex = false;
           return false;
         }
 
@@ -129,7 +146,10 @@ bool BtcRpcCurl::ConnectToBitcoin(BitcoinServerPtr server)
         curl = curl_easy_init();
 
         if(!curl)
+        {
+            mutex = false;
             return false;
+        }
     }
 
     /* First set the URL that is about to receive our POST. */
@@ -143,14 +163,14 @@ bool BtcRpcCurl::ConnectToBitcoin(BitcoinServerPtr server)
 
     curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 
+    mutex = false;
     return SendRpc(BtcRpcPacketPtr(new BtcRpcPacket(connectString))) != NULL;
 }
 
-bool BtcRpcCurl::ConnectToBitcoin(const std::string &user, const std::string &password, const std::string &url, int port)
+bool BtcRpcCurl::ConnectToBitcoin(const std::string &user, const std::string &password, const std::string &url, int32_t port)
 {
     return ConnectToBitcoin(BitcoinServerPtr(new BitcoinServer(user, password, url, port)));
 }
-
 
 BtcRpcPacketPtr BtcRpcCurl::SendRpc(const std::string &jsonString)
 {
@@ -163,6 +183,8 @@ BtcRpcPacketPtr BtcRpcCurl::SendRpc(BtcRpcPacketPtr jsonString)
     {
         return BtcRpcPacketPtr();
     }
+
+    WaitMutex();
 
     BtcRpcPacketPtr receivedData = BtcRpcPacketPtr(new BtcRpcPacket()); // used when receiving data
 
@@ -180,7 +202,7 @@ BtcRpcPacketPtr BtcRpcCurl::SendRpc(BtcRpcPacketPtr jsonString)
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, receivedData.get());
 
     /* get verbose debug output please */
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
 
     /*
         If you use POST to a HTTP 1.1 server, you can send data without knowing
@@ -231,6 +253,7 @@ BtcRpcPacketPtr BtcRpcCurl::SendRpc(BtcRpcPacketPtr jsonString)
         fprintf(stderr, "curl_easy_perform() failed: %s\n",
             curl_easy_strerror(res));
 
+        mutex = false;
         return BtcRpcPacketPtr();
     }
 
@@ -239,20 +262,33 @@ BtcRpcPacketPtr BtcRpcCurl::SendRpc(BtcRpcPacketPtr jsonString)
 
     // we have to copy the response because for some reason the next few lines set the smart pointer to NULL (?!?!??)
     BtcRpcPacketPtr packetCopy = BtcRpcPacketPtr(new BtcRpcPacket(receivedData));
-    {BtcRpcPacketPtr test = BtcRpcPacketPtr(new BtcRpcPacket(packetCopy));}
 
     receivedData.reset();
 
     int httpcode = 0;
     curl_easy_getinfo(this->curl, CURLINFO_RESPONSE_CODE, &httpcode);
-    if(httpcode == 401)
+    if (httpcode == 401)
     {
-        printf("Error connecting to bitcoind: Wrong username or password\n");
+        std::printf("Error connecting to bitcoind: Wrong username or password\n");
         std::cout.flush();
+        mutex = false;
         return BtcRpcPacketPtr();
     }
-    //OTLog::vOutput(0, "HTTP response code: %d\n", httpcode);
+    else if (httpcode == 500)
+    {
+        std::printf("Bitcoind internal server error\n");
+        std::cout.flush();
+        // don't return
+    }
+    else if (httpcode != 200)
+    {
+        std::printf("BtcRpc curl error:\nHTTP response code %d\n", httpcode);
+        std::cout.flush();
+        mutex = false;
+        return BtcRpcPacketPtr();
+    }
 
+    mutex = false;
     return packetCopy;
 }
 
@@ -268,6 +304,8 @@ bool BtcRpcCurl::IsConnected()
 
 void BtcRpcCurl::CleanUpCurl()
 {
+    this->currentServer.reset();
+
     if(curl)
     {
         curl_easy_cleanup(curl);

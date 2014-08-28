@@ -17,7 +17,7 @@ public:
 
     void OnInitializeEscrow(BtcGuiTest* btcGuiTest);
 
-    void OnRequestWithdrawal(BtcGuiTest* BtcGuiTest);
+    void OnRequestWithdrawal(BtcGuiTest* btcGuiTest);
 
 private:    
     SampleEscrowClientPtr client;

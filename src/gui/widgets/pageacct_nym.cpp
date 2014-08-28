@@ -160,7 +160,7 @@ void MTPageAcct_Nym::on_pushButtonManage_clicked()
             bFoundPreselected = true;
     } // for
     // -------------------------------------
-    pWindow->setWindowTitle(tr("Manage Nyms (Identities)"));
+    pWindow->setWindowTitle(tr("Manage Identities"));
     // -------------------------------------
     if (bFoundPreselected)
         pWindow->SetPreSelected(qstrPreSelected);

@@ -14,6 +14,7 @@
 #include <gui/widgets/offerdetails.hpp>
 #include <gui/widgets/marketdetails.hpp>
 #include <gui/widgets/accountdetails.hpp>
+#include <gui/widgets/transportdetails.hpp>
 #include <gui/widgets/home.hpp>
 
 #include <core/moneychanger.hpp>
@@ -175,6 +176,7 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         case MTDetailEdit::DetailEditTypeAsset:       m_pDetailPane = new MTAssetDetails      (this, *this); break;
         case MTDetailEdit::DetailEditTypeAgreement:   m_pDetailPane = new MTAgreementDetails  (this, *this); break;
         case MTDetailEdit::DetailEditTypeCorporation: m_pDetailPane = new MTCorporationDetails(this, *this); break;
+        case MTDetailEdit::DetailEditTypeTransport:   m_pDetailPane = new TransportDetails    (this, *this); break;
 
         case MTDetailEdit::DetailEditTypeOffer:
             ui->comboBox->setHidden(false);
@@ -587,6 +589,11 @@ void MTDetailEdit::RefreshRecords()
 //          pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "", ":/icons/icons/user.png");
             break;
 
+        case MTDetailEdit::DetailEditTypeTransport:
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "");
+//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "", ":/icons/icons/user.png");
+            break;
+
         case MTDetailEdit::DetailEditTypeNym:
             pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "");
 //          pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "", ":/icons/icons/identity_BW.png");
@@ -858,7 +865,7 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
                     m_pDetailPane->refresh(m_qstrCurrentID, m_qstrCurrentName);
                 // ----------------------------------------
                 break; // <=== ONLY HAPPENS ONCE <=====
-            }//resume
+            }
         }
     }
     // -------------------------------------
@@ -921,5 +928,5 @@ bool MTDetailEdit::eventFilter(QObject *obj, QEvent *event)\
     }
     // -------------------------------------------
     // standard event processing
-    return QObject::eventFilter(obj, event);
+    return QWidget::eventFilter(obj, event);
 }

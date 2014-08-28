@@ -73,6 +73,11 @@ void DlgMenu::on_toolButton_importCash_clicked()
     emit sig_on_toolButton_importCash_clicked();
 }
 
+void DlgMenu::on_toolButton_contacts_clicked()
+{
+    emit sig_on_toolButton_contacts_clicked();
+}
+
 void DlgMenu::on_toolButton_manageAccounts_clicked()
 {
     emit sig_on_toolButton_manageAccounts_clicked();
@@ -112,7 +117,4 @@ void DlgMenu::on_toolButton_quit_clicked()
 {
     emit sig_on_toolButton_quit_clicked();
 }
-
-
-
 

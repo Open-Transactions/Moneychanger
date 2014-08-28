@@ -13,6 +13,7 @@
 
 #include <core/moneychanger.hpp>
 #include <core/handlers/contacthandler.hpp>
+#include <core/mtcomms.h>
 
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OTAPI_Exec.hpp>
@@ -76,17 +77,21 @@ void MTHomeDetail::FavorLeftSideForIDs()
 {
     if (m_pLineEdit_Nym_ID)         m_pLineEdit_Nym_ID->home(false);
     if (m_pLineEdit_OtherNym_ID)    m_pLineEdit_OtherNym_ID->home(false);
+    if (m_pLineEdit_Address)        m_pLineEdit_Address->home(false);
+    if (m_pLineEdit_OtherAddress)   m_pLineEdit_OtherAddress->home(false);
     if (m_pLineEdit_Acct_ID)        m_pLineEdit_Acct_ID->home(false);
     if (m_pLineEdit_OtherAcct_ID)   m_pLineEdit_OtherAcct_ID->home(false);
     if (m_pLineEdit_Server_ID)      m_pLineEdit_Server_ID->home(false);
     if (m_pLineEdit_AssetType_ID)   m_pLineEdit_AssetType_ID->home(false);
     // --------------------------------------------------------------------
-    if (m_pLineEdit_Nym_Name)       m_pLineEdit_Nym_Name->home(false);
-    if (m_pLineEdit_OtherNym_Name)  m_pLineEdit_OtherNym_Name->home(false);
-    if (m_pLineEdit_Acct_Name)      m_pLineEdit_Acct_Name->home(false);
-    if (m_pLineEdit_OtherAcct_Name) m_pLineEdit_OtherAcct_Name->home(false);
-    if (m_pLineEdit_Server_Name)    m_pLineEdit_Server_Name->home(false);
-    if (m_pLineEdit_AssetType_Name) m_pLineEdit_AssetType_Name->home(false);
+    if (m_pLineEdit_Nym_Name)          m_pLineEdit_Nym_Name->home(false);
+    if (m_pLineEdit_OtherNym_Name)     m_pLineEdit_OtherNym_Name->home(false);
+    if (m_pLineEdit_Address_Name)      m_pLineEdit_Address_Name->home(false);
+    if (m_pLineEdit_OtherAddress_Name) m_pLineEdit_OtherAddress_Name->home(false);
+    if (m_pLineEdit_Acct_Name)         m_pLineEdit_Acct_Name->home(false);
+    if (m_pLineEdit_OtherAcct_Name)    m_pLineEdit_OtherAcct_Name->home(false);
+    if (m_pLineEdit_Server_Name)       m_pLineEdit_Server_Name->home(false);
+    if (m_pLineEdit_AssetType_Name)    m_pLineEdit_AssetType_Name->home(false);
 }
 
 //if (QResizeEvent *resizeEvent = static_cast<QResizeEvent*>(event))
@@ -304,7 +309,50 @@ void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
     {
         OTRecord & recordmt = *m_record;
         // -----------------------------------
-        bool bSuccess = recordmt.DeleteRecord();
+        bool bSuccess = false;
+
+        if (recordmt.IsSpecialMail())
+        {
+            int32_t     nMethodID   = recordmt.GetMethodID();
+            std::string strMsgID    = recordmt.GetMsgID();
+            std::string strMsgType  = recordmt.GetMsgType();
+
+//            qDebug() << QString(" nMethodID: %1 \n strMsgID: %2\n strMsgType: %3").arg(nMethodID).arg(QString::fromStdString(strMsgID)).
+//                        arg(QString::fromStdString(strMsgType));
+
+            if ((nMethodID > 0) && !strMsgID.empty())
+            {
+                // Get the comm string for this message ID.
+
+                QString qstrConnect = MTContactHandler::getInstance()->GetMethodConnectStr(static_cast<int>(nMethodID));
+
+                // Then find the NetworkModule based on the comm string:
+                //
+                if (!qstrConnect.isEmpty())
+                {
+                    NetworkModule * pModule = MTComms::find(qstrConnect.toStdString());
+
+                    // Use net module to delete msg ID
+                    //
+                    if (NULL != pModule)
+                    {
+                        if (recordmt.IsOutgoing())
+                        {
+                            if (pModule->deleteOutMessage(strMsgID))
+                                bSuccess = true;
+                        }
+                        else // incoming
+                        {
+                            if (pModule->deleteMessage(strMsgID))
+                                bSuccess = true;
+                        }
+                    }
+                }
+            }
+        }
+        //else
+
+        recordmt.DeleteRecord();
 
         if (bSuccess)
         {
@@ -793,21 +841,80 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
     {
         OTRecord & recordmt = *m_record;
         // --------------------------------------------------
-        const std::string str_my_nym_id    = recordmt.GetNymID();
-        const std::string str_other_nym_id = recordmt.GetOtherNymID();
-        const std::string str_server_id    = recordmt.GetServerID();
+        const std::string str_my_nym_id     = recordmt.GetNymID();
+        const std::string str_other_nym_id  = recordmt.GetOtherNymID();
+        const std::string str_server_id     = recordmt.GetServerID();
+              std::string str_my_address;
+              std::string str_other_address;
+//            std::string str_msg_id;
+              std::string str_msg_type;
+//            std::string str_msg_type_display;
         // --------------------------------------------------
-        QString myNymID    = QString::fromStdString(str_my_nym_id);
-        QString otherNymID = QString::fromStdString(str_other_nym_id);
-        QString serverID   = QString::fromStdString(str_server_id);
+        QString myNymID      = QString::fromStdString(str_my_nym_id);
+        QString otherNymID   = QString::fromStdString(str_other_nym_id);
+        QString serverID     = QString::fromStdString(str_server_id);
+        QString myAddress;
+        QString otherAddress;
+//      QString qstrMsgID;
+        QString qstrMsgType;
+//      QString qstrMsgTypeDisplay;
+//      int32_t nMethodID = 0;
+        // --------------------------------------------------
+        if (recordmt.IsSpecialMail())
+        {
+            str_my_address       = recordmt.GetAddress();
+            str_other_address    = recordmt.GetOtherAddress();
+//          str_msg_id           = recordmt.GetMsgID();
+            str_msg_type         = recordmt.GetMsgType();
+//          str_msg_type_display = recordmt.GetMsgTypeDisplay();
+            // --------------------------------------------------
+            myAddress            = QString::fromStdString(str_my_address);
+            otherAddress         = QString::fromStdString(str_other_address);
+//          qstrMsgID            = QString::fromStdString(str_msg_id);
+            qstrMsgType          = QString::fromStdString(str_msg_type);
+//          qstrMsgTypeDisplay   = QString::fromStdString(str_msg_type_display);
+            // --------------------------------------------------
+//          nMethodID            = recordmt.GetMethodID();
+        }
         // --------------------------------------------------
         MTCompose * compose_window = new MTCompose;
         compose_window->setAttribute(Qt::WA_DeleteOnClose);
         // --------------------------------------------------
-        compose_window->setInitialSenderNym   (myNymID);
-        compose_window->setInitialRecipientNym(otherNymID);
-        compose_window->setInitialServer      (serverID);
+//        if (!serverID.isEmpty())
+//        {
+//            if (!qstrMsgType.isEmpty())
+//                compose_window->setInitialMsgType(qstrMsgType, serverID);
+//            else
+//                compose_window->setInitialServer(serverID);
+//        }
+//        else if (!qstrMsgType.isEmpty())
+//            compose_window->setInitialMsgType(qstrMsgType);
         // ---------------------------------------
+        if (!myNymID.isEmpty()) // If there's a nym ID.
+        {
+            if (!myAddress.isEmpty())
+                compose_window->setInitialSenderNym(myNymID, myAddress);
+            else
+                compose_window->setInitialSenderNym(myNymID);
+        }
+        else if (!myAddress.isEmpty())
+            compose_window->setInitialSenderAddress(myAddress);
+        // ---------------------------------------
+        if (!otherNymID.isEmpty()) // If there's an "other nym ID".
+        {
+            if (!otherAddress.isEmpty())
+                compose_window->setInitialRecipientNym(otherNymID, otherAddress);
+            else
+                compose_window->setInitialRecipientNym(otherNymID);
+        }
+        else if (!otherAddress.isEmpty())
+            compose_window->setInitialRecipientAddress(otherAddress);
+        // ---------------------------------------
+
+        // --------------------------------------------------
+        if (!serverID.isEmpty())
+            compose_window->setInitialServer(serverID);
+        // --------------------------------------------------
         // Set subject, if one is available.
         std::string str_desc;
 
@@ -952,6 +1059,31 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(OTRecord & recordmt, bool bExte
             currency_amount = tr("sent msg");
         else
             currency_amount = tr("message");
+    // --------------------------------------
+        if (recordmt.IsSpecialMail())
+        {
+            std::string str_type_display = recordmt.GetMsgType();
+//          std::string str_type_display = recordmt.GetMsgTypeDisplay();
+
+            if (!str_type_display.empty())
+            {
+                if (recordmt.IsOutgoing())
+                    currency_amount = QString("%1 %2").arg(tr("sent")).arg(QString::fromStdString(str_type_display));
+                else
+                    currency_amount = QString::fromStdString(str_type_display);
+            }
+        }
+        // --------------------------------------
+//        EXPORT    int32_t GetMethodID() const; // Used by "special mail."
+
+//        EXPORT    const std::string & GetMsgID() const; // Used by "special mail."
+//        EXPORT    void                SetMsgID(const std::string & str_id);
+//            // ---------------------------------------
+//        EXPORT    const std::string & GetMsgType() const; // Used by "special mail."
+//        EXPORT    void                SetMsgType(const std::string & str_type);
+//            // ---------------------------------------
+//        EXPORT    const std::string & GetMsgTypeDisplay() const; // Used by "special mail."
+//        EXPORT    void                SetMsgTypeDisplay(const std::string & str_type);
         // ------------------------------------------
         if (!bExternal)
         {
@@ -1168,7 +1300,7 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
         sec->setReadOnly(true);
         // -----------------------------------------
         QHBoxLayout * pHLayout = new QHBoxLayout;
-        QLabel * labelMemo = new QLabel(QString("Memo: "));
+        QLabel * labelMemo = new QLabel(QString(tr("Memo: ")));
 
         pHLayout->addWidget(labelMemo);
         pHLayout->addWidget(sec);
@@ -1421,7 +1553,7 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
 
     }
 
-    if (!(recordmt.GetOtherNymID().empty()))
+    if (!recordmt.GetOtherNymID().empty() || !recordmt.GetOtherAddress().empty())
     {
         QString msgUser;
 
@@ -1429,7 +1561,6 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
             msgUser = tr("Message the Recipient");
         else
             msgUser = tr("Message the Sender");
-
 
         QPushButton * msgButton = new QPushButton(((recordmt.IsMail() && !recordmt.IsOutgoing()) ? tr("Reply to this Message") : msgUser));
 
@@ -1439,7 +1570,6 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
         increment_cell(nCurrentRow, nCurrentColumn);
 
         connect(msgButton, SIGNAL(clicked()), this, SLOT(on_msgButton_clicked()));
-
     }
 
     // ----------------------------------
@@ -1451,12 +1581,14 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
     // ----------------------------------
     // TRANSACTION IDs DISPLAYED HERE
 
-    QString qstr_NymID       = QString::fromStdString(recordmt.GetNymID());
-    QString qstr_OtherNymID  = QString::fromStdString(recordmt.GetOtherNymID());
-    QString qstr_AccountID   = QString::fromStdString(recordmt.GetAccountID());
-    QString qstr_OtherAcctID = QString::fromStdString(recordmt.GetOtherAccountID());
-    QString qstr_ServerID    = QString::fromStdString(recordmt.GetServerID());
-    QString qstr_AssetTypeID = QString::fromStdString(recordmt.GetAssetID());
+    QString qstr_NymID        = QString::fromStdString(recordmt.GetNymID());
+    QString qstr_OtherNymID   = QString::fromStdString(recordmt.GetOtherNymID());
+    QString qstr_Address      = QString::fromStdString(recordmt.GetAddress());
+    QString qstr_OtherAddress = QString::fromStdString(recordmt.GetOtherAddress());
+    QString qstr_AccountID    = QString::fromStdString(recordmt.GetAccountID());
+    QString qstr_OtherAcctID  = QString::fromStdString(recordmt.GetOtherAccountID());
+    QString qstr_ServerID     = QString::fromStdString(recordmt.GetServerID());
+    QString qstr_AssetTypeID  = QString::fromStdString(recordmt.GetAssetID());
 
     QString qstr_OtherType;
 
@@ -1529,6 +1661,49 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
         pGridLayout->addWidget(pLabel,    nGridRow,   0);
         pGridLayout->addWidget(m_pLineEdit_OtherNym_Name,    nGridRow,   1);
         pGridLayout->addWidget(m_pLineEdit_OtherNym_ID, nGridRow++, 2);
+    }
+    // --------------------------------------------------
+
+    if (!qstr_Address.isEmpty())
+    {
+        QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(tr("My")).arg(tr("Address")) );
+
+        MTNameLookupQT theLookup;
+        QString qstr_name = QString::fromStdString(theLookup.GetAddressName(qstr_Address.toStdString()));
+
+        m_pLineEdit_Address        = new QLineEdit(qstr_Address);
+        m_pLineEdit_Address_Name   = new QLineEdit(qstr_name);
+
+        m_pLineEdit_Address     ->setReadOnly(true);
+        m_pLineEdit_Address_Name->setReadOnly(true);
+
+        m_pLineEdit_Address     ->setStyleSheet("QLineEdit { background-color: lightgray }");
+        m_pLineEdit_Address_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+        pGridLayout->addWidget(pLabel, nGridRow,   0);
+        pGridLayout->addWidget(m_pLineEdit_Address_Name, nGridRow,   1);
+        pGridLayout->addWidget(m_pLineEdit_Address, nGridRow++, 2);
+    }
+
+    if (!qstr_OtherAddress.isEmpty())
+    {
+        QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(qstr_OtherType).arg(tr("Address")));
+
+        MTNameLookupQT theLookup;
+        QString qstr_name = QString::fromStdString(theLookup.GetAddressName(qstr_OtherAddress.toStdString()));
+
+        m_pLineEdit_OtherAddress      = new QLineEdit(qstr_OtherAddress);
+        m_pLineEdit_OtherAddress_Name = new QLineEdit(qstr_name);
+
+        m_pLineEdit_OtherAddress     ->setReadOnly(true);
+        m_pLineEdit_OtherAddress_Name->setReadOnly(true);
+
+        m_pLineEdit_OtherAddress     ->setStyleSheet("QLineEdit { background-color: lightgray }");
+        m_pLineEdit_OtherAddress_Name->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+        pGridLayout->addWidget(pLabel,    nGridRow,   0);
+        pGridLayout->addWidget(m_pLineEdit_OtherAddress_Name, nGridRow,   1);
+        pGridLayout->addWidget(m_pLineEdit_OtherAddress,      nGridRow++, 2);
     }
 
     if (!qstr_AccountID.isEmpty())

@@ -21,6 +21,14 @@ FORMS += \
     $${PWD}/widgets/btcguitest.ui \
     $${PWD}/widgets/btcguitestp2p.ui \
     $${PWD}/widgets/btcsenddlg.ui \
+    $${PWD}/widgets/btcpoolmanager.ui \
+    $${PWD}/widgets/btcconnectdlg.ui \
+    $${PWD}/widgets/btcwalletpwdlg.ui \
+    $${PWD}/widgets/btctransactionmanager.ui \
+    $${PWD}/widgets/btctransactioninfo.ui \
+    $${PWD}/widgets/btcreceivedlg.ui \
+    $${PWD}/widgets/btcaddpoolserver.ui \
+    $${PWD}/widgets/btctxidlist.ui \
     $${PWD}/widgets/cashpurse.ui \
     $${PWD}/widgets/compose.ui \
     $${PWD}/widgets/contactdetails.ui \
@@ -59,7 +67,10 @@ FORMS += \
     $${PWD}/widgets/wizardaddaccount.ui \
     $${PWD}/widgets/wizardaddcontract.ui \
     $${PWD}/widgets/wizardaddnym.ui \
-    $${PWD}/widgets/wizardnewoffer.ui
+    $${PWD}/widgets/wizardnewoffer.ui \
+    $${PWD}/widgets/transportdetails.ui \
+    $${PWD}/ui/dlgencrypt.ui \
+    ../../src/gui/ui/dlgdecrypt.ui
 
 HEADERS += \
     $${PWD}/ui/dlgexportcash.hpp \
@@ -78,6 +89,14 @@ HEADERS += \
     $${PWD}/widgets/btcguitest.hpp \
     $${PWD}/widgets/btcguitestp2p.hpp \
     $${PWD}/widgets/btcsenddlg.hpp \
+    $${PWD}/widgets/btcpoolmanager.hpp \
+    $${PWD}/widgets/btctransactionmanager.hpp \
+    $${PWD}/widgets/btcconnectdlg.hpp \
+    $${PWD}/widgets/btcwalletpwdlg.hpp \
+    $${PWD}/widgets/btctransactioninfo.hpp \
+    $${PWD}/widgets/btcreceivedlg.hpp \
+    $${PWD}/widgets/btcaddpoolserver.hpp \
+    $${PWD}/widgets/btctxidlist.hpp \
     $${PWD}/widgets/cashpurse.hpp \
     $${PWD}/widgets/compose.hpp \
     $${PWD}/widgets/contactdetails.hpp \
@@ -118,7 +137,10 @@ HEADERS += \
     $${PWD}/widgets/wizardaddaccount.hpp \
     $${PWD}/widgets/wizardaddcontract.hpp \
     $${PWD}/widgets/wizardaddnym.hpp \
-    $${PWD}/widgets/wizardnewoffer.hpp
+    $${PWD}/widgets/wizardnewoffer.hpp \
+    $${PWD}/widgets/transportdetails.hpp \
+    $${PWD}/ui/dlgencrypt.hpp \
+    ../../src/gui/ui/dlgdecrypt.hpp
 
 SOURCES += \
     $${PWD}/ui/dlgexportcash.cpp \
@@ -137,6 +159,14 @@ SOURCES += \
     $${PWD}/widgets/btcguitest.cpp \
     $${PWD}/widgets/btcguitestp2p.cpp \
     $${PWD}/widgets/btcsenddlg.cpp \
+    $${PWD}/widgets/btcpoolmanager.cpp \
+    $${PWD}/widgets/btcconnectdlg.cpp \
+    $${PWD}/widgets/btcwalletpwdlg.cpp \
+    $${PWD}/widgets/btctransactionmanager.cpp \
+    $${PWD}/widgets/btctransactioninfo.cpp \
+    $${PWD}/widgets/btcreceivedlg.cpp \
+    $${PWD}/widgets/btcaddpoolserver.cpp \
+    $${PWD}/widgets/btctxidlist.cpp \
     $${PWD}/widgets/cashpurse.cpp \
     $${PWD}/widgets/compose.cpp \
     $${PWD}/widgets/contactdetails.cpp \
@@ -177,7 +207,10 @@ SOURCES += \
     $${PWD}/widgets/wizardaddaccount.cpp \
     $${PWD}/widgets/wizardaddcontract.cpp \
     $${PWD}/widgets/wizardaddnym.cpp \
-    $${PWD}/widgets/wizardnewoffer.cpp
+    $${PWD}/widgets/wizardnewoffer.cpp \
+    $${PWD}/widgets/transportdetails.cpp \
+    $${PWD}/ui/dlgencrypt.cpp \
+    ../../src/gui/ui/dlgdecrypt.cpp
 
 TRANSLATIONS += $${PWD}/translations/en_US.ts \
                 $${PWD}/translations/de_DE.ts

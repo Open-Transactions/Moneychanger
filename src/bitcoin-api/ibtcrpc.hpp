@@ -45,9 +45,9 @@ struct BitcoinServer
     std::string user;
     std::string password;
     std::string url;
-    int port;
+    int32_t port;
 
-    BitcoinServer(const std::string account, std::string password, std::string url, int port):
+    BitcoinServer(const std::string &account, const std::string &password, const std::string &url, const uint32_t &port):
         user(account), password(password), url(url), port(port)
     {}
 };
@@ -64,7 +64,7 @@ public:
 
     // Connects to bitcoin, sets some http header information and sends a test query (getinfo)
     // The whole connected/disconnected implementation is poorly done (my fault) but it works.
-    // This function can be called again and again and nothing will crash if it fails.
+    // This function can be called multiple times, it will only reconnect if necessary.
     virtual bool ConnectToBitcoin(const std::string &user, const std::string &password, const std::string &url, int port) = 0;
 
     // Overload to make code that switches between bitcoin servers more readable

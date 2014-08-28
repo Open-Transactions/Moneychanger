@@ -11,62 +11,104 @@
 #include <cstdlib>
 #include <cstdio>
 
+
+BtcInfo::BtcInfo(Json::Value result)
+{
+    version = result["version"].asInt();
+    protocolversion = result["protocolversion"].asInt();
+    walletversion = result["walletversion"].asInt();
+    balance = BtcHelper::CoinsToSatoshis(result["balance"].asDouble());
+    blocks = result["blocks"].asInt();
+    timeoffset = result["timeoffset"].asInt64();
+    connections = result["connections"].asInt();
+    proxy = result["proxy"].asString();
+    difficulty = result["difficulty"].asInt64();
+    testnet = result["testnet"].asBool();
+    keypoololdest = result["kepyoololdest"].asInt64();
+    keypoolsize = result["keypoolsize"].asInt();
+    unlocked_until = result["unlocked_until"].asInt64();
+    paytxfee = BtcHelper::CoinsToSatoshis(result["paytxfee"].asDouble());
+    relayfee = BtcHelper::CoinsToSatoshis(result["relayfee"].asDouble());
+    errors = result["errors"].asString();
+}
+
+BtcTxDetail::BtcTxDetail(const Json::Value &detail)
+{
+    if(!detail.isObject())
+    {
+        this->involvesWatchonly = false;
+        this->account = std::string();
+        this->address = std::string();
+        this->category = std::string();
+        this->amount = 0;
+        this->fee = 0;
+        return;
+    }
+    this->involvesWatchonly = detail["involvesWatchonly"].asBool();
+    this->account = detail["account"].asString();
+    this->address = detail["address"].asString();
+    this->category = detail["category"].asString();
+    this->amount = BtcHelper::CoinsToSatoshis(detail["amount"].asDouble());
+    this->fee = BtcHelper::CoinsToSatoshis(detail["fee"].asDouble());
+}
+
 BtcTransaction::BtcTransaction(Json::Value reply)
 {
     SetDefaults();
 
-    if(!reply["error"].isNull())
+    if(!reply.isObject() || !reply["error"].isNull())
         return;
 
-    this->Confirmations = reply["confirmations"].asInt64();
     this->Amount = BtcHelper::CoinsToSatoshis(reply["amount"].asDouble());
-
     this->Fee = BtcHelper::CoinsToSatoshis(reply["fee"].asDouble());
-    this->TxID = reply["txid"].asString();
-    this->Time = reply["time"].asDouble();
+    this->Confirmations = reply["confirmations"].asInt();
+    this->Blockhash = reply["blockhash"].asString();
+    this->BlockIndex = reply["blockindex"].asInt();
+    this->Blocktime = reply["blocktime"].asInt64();
+    this->TxId = reply["txid"].asString();
+    this->Time = reply["time"].asInt64();
+    this->TimeReceived = reply["timereceived"].asInt64();
+    this->Hex = reply["hex"].asString();
 
-    // details
-    if(!reply["details"].isArray())
-        return;
-    Json::Value details = reply["details"];
-    if(details.size() == 0)
-        return;
-
-    for (Json::Value::ArrayIndex i = 0; i < details.size(); i++)
+    if(reply["walletconflicts"].isArray())
     {
-        Json::Value detail = details[i];
-        std::string address = detail["address"].asString();
-        std::string category = detail["category"].asString();
-        int64_t amount = BtcHelper::CoinsToSatoshis(detail["amount"].asDouble());
-        if(category == "send")
+        for(Json::ArrayIndex i = 0; i < reply["walletconflicts"].size(); i++)
         {
-            this->AddressesSent.push_back(address);
-            this->AmountSent += amount; // will be 0 or less
+            this->walletConflicts.push_back(reply["walletconflicts"][i].asString());
         }
-        else if(category == "receive")
+    }
+
+    // details array returned by 'gettransaction'
+    if(reply["details"].isArray() && reply["details"].size() > 0)
+    {
+        Json::Value details = reply["details"];
+        for (Json::Value::ArrayIndex i = 0; i < details.size(); i++)
         {
-            this->AddressesRecv.push_back(address);
-            this->AmountReceived += amount; // will be 0 or more
+            if(!details[i].isObject())
+                continue;
+            this->Details.push_back(BtcTxDetailPtr(new BtcTxDetail(details[i])));
         }
-        else if(category == "immature")
-        {
-            // that's block reward.
-        }
+    }
+    else    // details directly contained in reply when calling 'listtransactions'
+    {
+        BtcTxDetailPtr detail = BtcTxDetailPtr(new BtcTxDetail(reply));
+        this->Details.push_back(detail);
     }
 }
 
 void BtcTransaction::SetDefaults()
 {
-    //TotalAmount = 0.0;
+    this->Amount = 0;
+    this->Fee = 0;
     this->Confirmations = 0;
-    this->AmountReceived = 0.0;
-    this->AmountSent = 0.0;
-    this->Amount = 0.0;
-    this->Fee = 0.0;
-    this->TxID = std::string();
+    this->Blockhash = std::string();
+    this->BlockIndex = 0;
+    this->Blocktime = 0;
+    this->TxId = std::string();
     this->Time = 0;
-    this->AddressesRecv = std::list<std::string>();
-    this->AddressesSent = std::list<std::string>();
+    this->TimeReceived = 0;
+    this->Hex = std::string();
+    this->Details = BtcTxDetails();
 }
 
 BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
@@ -74,32 +116,43 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
     this->inputs = std::vector<VIN>();
     this->outputs = std::vector<VOUT>();
 
-    this->txID = rawTx["txid"].asString();
+    this->txId = rawTx["txid"].asString();
+    this->Version = rawTx["version"].asInt();
+    this->LockTime = rawTx["locktime"].asInt();
 
-    Json::Value vin = rawTx["vin"];
-    for (Json::Value::ArrayIndex i = 0; i < vin.size(); i++)
+    // inputs
+    Json::Value vins = rawTx["vin"];
+    for (Json::Value::ArrayIndex i = 0; i < vins.size(); i++)
     {
-        Json::Value inputObj = vin[i];
-        this->inputs.push_back(VIN(inputObj["txid"].asString(), inputObj["vout"].asInt64()));
+        Json::Value inputObj = vins[i];
+        if(!inputObj["scriptSig"].isObject())
+            continue;
+        this->inputs.push_back(VIN(inputObj["txid"].asString(),
+                                    inputObj["vout"].asUInt(),
+                                    inputObj["scriptSig"]["hex"].asString(),
+                                    inputObj["sequence"].asInt64()));
     }
 
+    // outputs
     Json::Value vouts  = rawTx["vout"];
     for (Json::Value::ArrayIndex i = 0; i < vouts.size(); i++)
     {
         Json::Value outputObj = vouts[i];
-        VOUT output;
-
-        output.value = BtcHelper::CoinsToSatoshis(outputObj["value"].asDouble());
-        output.n = outputObj["n"].asInt64();      // JSON doesn't know integers
-
         Json::Value scriptPubKey = outputObj["scriptPubKey"];
-        output.reqSigs = scriptPubKey["reqSigs"].asInt64();
+
         Json::Value addresses = scriptPubKey["addresses"];
+        btc::stringList addresslist;
         for (Json::Value::ArrayIndex i = 0; i < addresses.size(); i++)
         {
-            output.addresses.push_back(addresses[i].asString());
+            addresslist.push_back(addresses[i].asString());
         }
-        output.scriptPubKeyHex = scriptPubKey["hex"].asString();
+
+        VOUT output = VOUT(BtcHelper::CoinsToSatoshis(outputObj["value"].asDouble()),
+                            outputObj["n"].asInt64(),
+                            scriptPubKey["hex"].asString(),
+                            scriptPubKey["reqSigs"].asUInt(),
+                            scriptPubKey["type"].asString(),
+                            addresslist);
 
         this->outputs.push_back(output);
     }
@@ -108,13 +161,66 @@ BtcRawTransaction::BtcRawTransaction(Json::Value rawTx)
 
 BtcUnspentOutput::BtcUnspentOutput(Json::Value unspentOutput)
 {
+    Json::Value scriptPubKeyVal = unspentOutput["scriptPubKey"];
+    if(scriptPubKeyVal.isObject())
+    {
+        this->scriptPubKey = scriptPubKeyVal["hex"].asString();
+
+        // 'gettxout' returns addresses[] as array
+        Json::Value addresses = scriptPubKeyVal["addresses"];
+        if(!addresses.empty() && addresses.size() == 1)
+        {
+            Json::Value address = Json::Value(addresses[0]);
+            if(address.isString())
+            {
+                this->address = address.asString();
+            }
+            else
+            {
+                this->address = std::string();
+            }
+        }
+        else
+        {
+            this->address = std::string();
+        }
+
+        this->amount = BtcHelper::CoinsToSatoshis(unspentOutput["value"].asDouble());
+    }
+    else if(scriptPubKeyVal.isString())
+    {
+        this->address = unspentOutput["address"].asString();
+        this->scriptPubKey = scriptPubKeyVal.asString();
+        this->amount = BtcHelper::CoinsToSatoshis(unspentOutput["amount"].asDouble());
+    }
+    else
+    {
+        this->scriptPubKey = std::string();
+    }
+
     this->txId = unspentOutput["txid"].asString();
     this->vout = unspentOutput["vout"].asInt64();
-    this->address = unspentOutput["address"].asString();
     this->account = unspentOutput["account"].asString();
-    this->scriptPubKey = unspentOutput["scriptPubKey"].asString();
-    this->amount = BtcHelper::CoinsToSatoshis(unspentOutput["amount"].asDouble());
+    this->redeemScript = unspentOutput["redeemScript"].asString();
     this->confirmations = unspentOutput["confirmations"].asInt64();
+    this->spendable = unspentOutput["spendable"].asBool();
+}
+
+BtcAddressBalance::BtcAddressBalance(Json::Value addressBalance)
+{
+    if(!addressBalance.isObject())
+        addressBalance = Json::Value(Json::objectValue);
+    this->involvesWatchonly = addressBalance["involvesWatchonly"].asBool();
+    this->address = addressBalance["address"].asString();
+    this->account = addressBalance["account"].asString();
+    this->amount = BtcHelper::CoinsToSatoshis(addressBalance["amount"].asDouble());
+    this->confirmations = addressBalance["confirmations"].asInt();
+    this->txIds = btc::stringList();
+    Json::Value txids = addressBalance["txids"];
+    for(Json::ArrayIndex i = 0; i < txids.size(); i++)
+    {
+        this->txIds.push_back(txids[i].asString());
+    }
 }
 
 BtcAddressInfo::BtcAddressInfo(Json::Value result)
@@ -122,18 +228,30 @@ BtcAddressInfo::BtcAddressInfo(Json::Value result)
     this->sigsRequired = 0;
 
     // it seems we don't need to do any error checking. thanks, .
-    this->address = result["address"].asString();   // if wrong type, default value will be returned
-    this->pubkey = result["pubkey"].asString();
-    this->account = result["account"].asString();
-    this->ismine = result["ismine"].asBool();
     this->isvalid = result["isvalid"].asBool();
-
-    // multi-sig properties:
+    this->address = result["address"].asString();
+    this->ismine = result["ismine"].asBool();
+    this->isWatchonly = result["iswatchonly"].asBool();
     this->isScript = result["isscript"].asBool();
-    this->addresses = result["addresses"];
+
+    // regular addresses
+    this->pubkey = result["pubkey"].asString();
+    this->isCompressed = result["iscompressed"].asBool();
+
+    // p2sh:
+    this->script = result["script"].asString();
+    this->redeemScript = result["hex"].asString();
+    this->addresses = btc::stringList();
+    for(Json::ArrayIndex i = 0; i < result["addresses"].size(); i++)
+    {
+        this->addresses.push_back(result["addresses"][i].asString());
+    }
+    this->sigsRequired = result["sigsrequired"].asUInt();
+
+    this->account = result["account"].asString();
 }
 
-BtcMultiSigAddress::BtcMultiSigAddress(Json::Value result, const std::stringList &publicKeys)
+BtcMultiSigAddress::BtcMultiSigAddress(Json::Value result, const btc::stringList &publicKeys)
 {
     this->address = result["address"].asString();
     this->redeemScript = result["redeemScript"].asString();
@@ -144,7 +262,7 @@ BtcMultiSigAddress::BtcMultiSigAddress(Json::Value result, const std::stringList
 BtcBlock::BtcBlock()
 {
     this->confirmations = 0;
-    this->transactions = std::list<std::string>();
+    this->transactions = btc::stringList();
     this->height = 0;
     this->hash = std::string();
     this->previousHash = std::string();
@@ -169,23 +287,28 @@ BtcBlock::BtcBlock(Json::Value block)
     }
 }
 
-BtcTxIdVout::BtcTxIdVout(std::string txID, int64_t vout)
+BtcTxIdVout::BtcTxIdVout(const std::string &txID, const int64_t &vout)
 {
     (*this)["txid"] = txID;
     (*this)["vout"] = static_cast<Json::Int64>(vout);
 }
 
-BtcTxTarget::BtcTxTarget()
+BtcTxTargets::BtcTxTargets()
 {
 
 }
 
-BtcTxTarget::BtcTxTarget(const std::string &toAddress, int64_t amount)
+BtcTxTargets::BtcTxTargets(const std::string &toAddress, int64_t amount)
 {
     (*this)[toAddress] = static_cast<Json::Int64>(amount);
 }
 
-void BtcTxTarget::ConvertSatoshisToBitcoin()
+void BtcTxTargets::SetTarget(const std::string &toAddress, int64_t amount)
+{
+    (*this)[toAddress] = static_cast<Json::Int64>(amount);
+}
+
+void BtcTxTargets::ConvertSatoshisToBitcoin()
 {
     Members targetAddresses = this->getMemberNames();
     for (Json::Value::ArrayIndex i = 0; i < targetAddresses.size(); i++)
@@ -201,42 +324,22 @@ BtcSignedTransaction::BtcSignedTransaction(Json::Value signedTransactionObj)
     this->complete = signedTransactionObj["complete"].asBool();
 }
 
-BtcSigningPrequisite::BtcSigningPrequisite()
+BtcSigningPrerequisite::BtcSigningPrerequisite()
 {
 
 }
 
-BtcSigningPrequisite::BtcSigningPrequisite(std::string txId, int64_t vout, std::string scriptPubKey, std::string redeemScript)
+BtcSigningPrerequisite::BtcSigningPrerequisite(const std::string &txId, const int64_t &vout, const std::string &scriptPubKey, const std::string &redeemScript)
 {
-    // all of these values must be set or else prequisite is invalid
+    // all of these values must be set or else prerequisite is invalid
+    // or maybe not. maybe there's a difference between regular and multisig. the more you know...
+
     (*this)["txid"] = txId;
     (*this)["vout"] = static_cast<Json::Int64>(vout);
-    (*this)["scriptPubKey"] = scriptPubKey;
-    (*this)["redeemScript"] = redeemScript;
-}
-
-void BtcSigningPrequisite::SetTxId(std::string txId)
-{
-    // we can get this value from the transaction used to send funds to the p2sh
-    (*this)["txid"] = txId;
-}
-
-void BtcSigningPrequisite::SetVout(Json::Int64 vout)
-{
-    // we can get this value from the transaction used to send funds to the p2sh
-    (*this)["vout"] = vout;
-}
-
-void BtcSigningPrequisite::SetScriptPubKey(std::string scriptPubKey)
-{
-    // we can get this value from the transaction used to send funds to the p2sh
-    (*this)["scriptPubKey"] = scriptPubKey;
-}
-
-void BtcSigningPrequisite::SetRedeemScript(std::string redeemScript)
-{
-    // we can get this from the createmultisig api function
-    (*this)["redeemScript"] = redeemScript;
+    if(!scriptPubKey.empty())
+        (*this)["scriptPubKey"] = scriptPubKey;
+    if(!redeemScript.empty())
+        (*this)["redeemScript"] = redeemScript;
 }
 
 BtcRpcPacket::BtcRpcPacket()
@@ -246,15 +349,17 @@ BtcRpcPacket::BtcRpcPacket()
 }
 
 BtcRpcPacket::BtcRpcPacket(const std::string &strData)
-: data(strData.begin(), strData.end()), pointerOffset(0)
+    :data(strData.begin(), strData.end()), pointerOffset(0)
 {
-    this->data.push_back('\0');
+    if(*(data.end()-1) != '\0')
+        this->data.push_back('\0');
 }
 
 BtcRpcPacket::BtcRpcPacket(const BtcRpcPacketPtr packet)
-: data(packet->data.begin(), packet->data.end()), pointerOffset(0)
+    : data(packet->data.begin(), packet->data.end()), pointerOffset(0)
 {
-    this->data.push_back('\0');
+    if(*(data.end()-1) != '\0')
+        this->data.push_back('\0');
 }
 
 BtcRpcPacket::~BtcRpcPacket()
@@ -266,31 +371,38 @@ BtcRpcPacket::~BtcRpcPacket()
 void BtcRpcPacket::SetDefaults()
 {
     this->data.clear();
+    this->data.push_back('\0');
     this->pointerOffset = 0;
 }
 
-bool BtcRpcPacket::AddData(const std::string &strData)
+void BtcRpcPacket::ResetOffset()
 {
-    std::string data(this->data.begin(), this->data.end());
-    data.append(strData);
+    this->pointerOffset = 0;
+}
 
+bool BtcRpcPacket::AddData(const std::string strData)
+{
+    // cut off the trailing '\0' as otherwise multipart messages won't work:
+    std::string data(this->data.begin(), this->data.end() - 1);
+    data.append(strData.begin(), strData.end());
     this->data.clear();
     this->data = std::vector<char>(data.begin(), data.end());
-    this->data.push_back('\0');
+    if(*(data.end()-1) != '\0')
+        this->data.push_back('\0');
 
     return true;
 }
 
 const char *BtcRpcPacket::ReadNextChar()
 {
-    if (this->pointerOffset <= this->data.size())
+    if (this->pointerOffset < size())
         return &this->data.at(this->pointerOffset++);
-    else return "";
+    else return NULL;
 }
 
 size_t BtcRpcPacket::size()
 {
-    return this->data.size();
+    return this->data.size()-1;
 }
 
 const char* BtcRpcPacket::GetData()

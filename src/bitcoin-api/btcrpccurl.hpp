@@ -10,6 +10,8 @@
 
 #include <curl/curl.h>
 
+#include "FastDelegate.hpp"
+
 #include _CINTTYPES
 #include _MEMORY
 
@@ -44,6 +46,8 @@ public:
     BtcRpcCurl(BtcModules* modules);
     ~BtcRpcCurl();
 
+    //void SetAuthenticationCallback(fastdelegate::fastd
+
     // Returns whether we're connected to bitcoin's http interface
     // Not implemented properly! And probably not necessary. Will have to check to be sure.
     virtual bool IsConnected();
@@ -51,7 +55,7 @@ public:
     // Connects to bitcoin, sets some http header information and sends a test query (getinfo)
     // The whole connected/disconnected implementation is poorly done (my fault) but it works.
     // This function can be called again and again and nothing will crash if it fails.
-    virtual bool ConnectToBitcoin(const std::string &user, const std::string &password, const std::string &url = "http://127.0.0.1", int port = 8332);
+    virtual bool ConnectToBitcoin(const std::string &user, const std::string &password, const std::string &url = "http://127.0.0.1", int32_t port = 8332);
 
     // Overload to make code that switches between bitcoin servers more readable
     virtual bool ConnectToBitcoin(BitcoinServerPtr server);
@@ -70,6 +74,7 @@ public:
     virtual BtcRpcPacketPtr SendRpc(BtcRpcPacketPtr jsonString);
 
 private:
+    void WaitMutex();
     void InitSession();         // Called in constructor, makes sure we have a network interface or something
     void InitNAM();             // Also called in constr, creates the Network Access Manager.
     void SetHeaderInformation(); // Called by ConnectToBitcoin, sets the HTTP header
@@ -97,6 +102,8 @@ private:
     BtcModules* modules;
 
     static BtcRpcPacketPtr connectString;
+
+    bool mutex;
 
 
     /*

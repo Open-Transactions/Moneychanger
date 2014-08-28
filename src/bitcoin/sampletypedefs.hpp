@@ -5,10 +5,10 @@
 #include <opentxs/ExportWrapper.h>
 #include <opentxs/TR1_Wrapper.hpp>
 
+#include <list>
+
 #include _CINTTYPES
 #include _MEMORY
-
-// this whole header file is wrong. TODO: figure out how to circular dependency and get rid of it.
 
 class SampleEscrowServer;
 typedef _SharedPtr<SampleEscrowServer> SampleEscrowServerPtr;
@@ -18,6 +18,7 @@ typedef _SharedPtr<SampleEscrowClient> SampleEscrowClientPtr;
 
 class SampleEscrowTransaction;
 typedef _SharedPtr<SampleEscrowTransaction> SampleEscrowTransactionPtr;
+typedef std::list<SampleEscrowTransactionPtr> EscrowTransactionList;
 
 class EscrowPool;
 typedef _SharedPtr<EscrowPool> EscrowPoolPtr;

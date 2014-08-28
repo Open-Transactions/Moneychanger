@@ -100,7 +100,7 @@ bool DlgImport::eventFilter(QObject *obj, QEvent *event)
     else
     {
         // standard event processing
-        return QObject::eventFilter(obj, event);
+        return QDialog::eventFilter(obj, event);
     }
 }
 

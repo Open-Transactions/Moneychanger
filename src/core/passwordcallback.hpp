@@ -5,6 +5,7 @@
 #include <opentxs/ExportWrapper.h>
 
 #include <opentxs/OTPassword.hpp>
+#include <opentxs/OTCallback.hpp>
 
 class MTPasswordCallback : public OTCallback
 {

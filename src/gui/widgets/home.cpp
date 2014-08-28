@@ -10,6 +10,8 @@
 
 #include <core/moneychanger.hpp>
 #include <core/handlers/contacthandler.hpp>
+#include <core/mtcomms.h>
+#include <core/network/Network.h>
 
 #include <opentxs/OTAPI.hpp>
 #include <opentxs/OTAPI_Exec.hpp>
@@ -272,11 +274,11 @@ void MTHome::RefreshAll()
 //  int nRowCount    = ui->tableWidget->rowCount();
     int nCurrentRow  = ui->tableWidget->currentRow();
     // -----------------------------------------
-    m_list.Populate(); // Refreshes the data from local storage.
+    PopulateRecords(); // Refreshes the data from local storage.
     // -----------------------------------------
     RefreshUserBar();
     // -------------------------------------------
-    RefreshRecords(); // Refreshes the list of records on the left-hand side, from the data.
+    RefreshRecords(); // Refreshes the list of records on the left-hand side in the GUI, from the data.
     // -----------------------------------------
     if (nCurrentRow >= 0)
     {
@@ -553,20 +555,26 @@ QWidget * MTHome::CreateUserBarWidget()
     currency_amount_label->setStyleSheet("QLabel { color : grey; }");
     currency_amount_label->setText(currency_amount);
     // ----------------------------------------------------------------
-    QToolButton *buttonSend     = new QToolButton;
-    QToolButton *buttonRequest  = new QToolButton;
-    QToolButton *buttonContacts = new QToolButton;
-    QToolButton *buttonRefresh  = new QToolButton;
+    QToolButton *buttonSend       = new QToolButton;
+//  QToolButton *buttonRequest    = new QToolButton;
+    QToolButton *buttonContacts   = new QToolButton;
+    QToolButton *buttonCompose    = new QToolButton;
+    QToolButton *buttonIdentities = new QToolButton;
+    QToolButton *buttonRefresh    = new QToolButton;
     // ----------------------------------------------------------------
-    QPixmap pixmapSend    (":/icons/icons/send.png");
-    QPixmap pixmapRequest (":/icons/icons/request.png");
-    QPixmap pixmapContacts(":/icons/icons/user.png");
-    QPixmap pixmapRefresh (":/icons/icons/refresh.png");
+    QPixmap pixmapSend      (":/icons/icons/send.png");
+//  QPixmap pixmapRequest   (":/icons/icons/request.png");
+    QPixmap pixmapCompose   (":/icons/icons/compose.png");
+    QPixmap pixmapIdentities(":/icons/icons/user.png");
+    QPixmap pixmapContacts  (":/icons/addressbook");
+    QPixmap pixmapRefresh   (":/icons/icons/refresh.png");
     // ----------------------------------------------------------------
-    QIcon sendButtonIcon    (pixmapSend);
-    QIcon requestButtonIcon (pixmapRequest);
-    QIcon contactsButtonIcon(pixmapContacts);
-    QIcon refreshButtonIcon (pixmapRefresh);
+    QIcon sendButtonIcon      (pixmapSend);
+//  QIcon requestButtonIcon   (pixmapRequest);
+    QIcon contactsButtonIcon  (pixmapContacts);
+    QIcon composeButtonIcon   (pixmapCompose);
+    QIcon identitiesButtonIcon(pixmapIdentities);
+    QIcon refreshButtonIcon   (pixmapRefresh);
     // ----------------------------------------------------------------
     buttonSend->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     buttonSend->setAutoRaise(true);
@@ -574,11 +582,23 @@ QWidget * MTHome::CreateUserBarWidget()
     buttonSend->setIconSize(pixmapSend.rect().size());
     buttonSend->setText(tr("Send"));
     // ----------------------------------------------------------------
-    buttonRequest->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    buttonRequest->setAutoRaise(true);
-    buttonRequest->setIcon(requestButtonIcon);
-    buttonRequest->setIconSize(pixmapRequest.rect().size());
-    buttonRequest->setText(tr("Request"));
+//    buttonRequest->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+//    buttonRequest->setAutoRaise(true);
+//    buttonRequest->setIcon(requestButtonIcon);
+//    buttonRequest->setIconSize(pixmapRequest.rect().size());
+//    buttonRequest->setText(tr("Request"));
+    // ----------------------------------------------------------------
+    buttonCompose->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    buttonCompose->setAutoRaise(true);
+    buttonCompose->setIcon(composeButtonIcon);
+    buttonCompose->setIconSize(pixmapCompose.rect().size());
+    buttonCompose->setText(tr("Compose"));
+    // ----------------------------------------------------------------
+    buttonIdentities->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    buttonIdentities->setAutoRaise(true);
+    buttonIdentities->setIcon(identitiesButtonIcon);
+    buttonIdentities->setIconSize(pixmapIdentities.rect().size());
+    buttonIdentities->setText(tr("Identities"));
     // ----------------------------------------------------------------
     buttonContacts->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     buttonContacts->setAutoRaise(true);
@@ -589,7 +609,7 @@ QWidget * MTHome::CreateUserBarWidget()
     buttonRefresh->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     buttonRefresh->setAutoRaise(true);
     buttonRefresh->setIcon(refreshButtonIcon);
-//    buttonRefresh->setIconSize(pixmapRefresh.rect().size());
+//  buttonRefresh->setIconSize(pixmapRefresh.rect().size());
     buttonRefresh->setIconSize(pixmapContacts.rect().size());
     buttonRefresh->setText(tr("Refresh"));
 
@@ -603,17 +623,21 @@ QWidget * MTHome::CreateUserBarWidget()
 
     pButtonLayout->addWidget(currency_amount_label);
     pButtonLayout->addWidget(buttonSend);
-    pButtonLayout->addWidget(buttonRequest);
+//  pButtonLayout->addWidget(buttonRequest);
+    pButtonLayout->addWidget(buttonCompose);
+    pButtonLayout->addWidget(buttonIdentities);
     pButtonLayout->addWidget(buttonContacts);
     pButtonLayout->addWidget(buttonRefresh);
     // ----------------------------------------------------------------
     pUserBarWidget_layout->addLayout(pButtonLayout, 0, 1, 1,1, Qt::AlignRight);
 //  pUserBarWidget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
     // -------------------------------------------
-    connect(buttonRefresh,  SIGNAL(clicked()),  this, SLOT(on_refreshButton_clicked()));
-    connect(buttonContacts, SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_addressbook_slot()));
-    connect(buttonSend,     SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_sendfunds_slot()));
-    connect(buttonRequest,  SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_requestfunds_slot()));
+//  connect(buttonRequest,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_requestfunds_slot()));
+    connect(buttonSend,       SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_sendfunds_slot()));
+    connect(buttonCompose,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_composemessage_slot()));
+    connect(buttonIdentities, SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_defaultnym_slot()));
+    connect(buttonContacts,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_addressbook_slot()));
+    connect(buttonRefresh,    SIGNAL(clicked()),  this,               SLOT(on_refreshButton_clicked()));
     // -------------------------------------------
     //Sub-info
     QWidget * row_content_container = new QWidget;
@@ -675,7 +699,7 @@ void MTHome::OnDeletedRecord()
             // We do this because the individual records keep track of their index inside their box.
             // Once a record is deleted, all the others now have bad indices, and must be reloaded.
             //
-            m_list.Populate();
+            PopulateRecords(); // Refreshes the data from local storage.
 
             RefreshRecords();
             // -----------------------------------------
@@ -698,6 +722,196 @@ void MTHome::OnDeletedRecord()
             qDebug() << QString("Failure removing OTRecord at index %1.").arg(nCurrentRow);
     }
 }
+
+
+// Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
+//
+void MTHome::PopulateRecords()
+{
+    m_list.Populate(); // Refreshes the OT data from local storage.
+    // ---------------------------------------------------------------------
+    QList<QString> listCheckOnlyOnce; // So we don't call checkMail more than once for the same connect string.
+    // ---------------------------------------------------------------------
+    // Let's see if, additionally, there are any Bitmessage records (etc)
+    // for the Nyms that we care about. (If we didn't add a Nym ID to m_list's
+    // list of Nyms, then we don't care about any Bitmessages for that Nym.)
+    //
+    bool bNeedsReSorting = false;
+
+    const list_of_strings & the_nyms = m_list.GetNyms();
+
+    for (list_of_strings::const_iterator it = the_nyms.begin(); it != the_nyms.end(); ++it)
+    {
+        const std::string str_nym_id = *it;
+        // -----------------------------
+        mapIDName mapMethods;
+        QString   filterByNym = QString::fromStdString(str_nym_id);
+
+        bool bGotMethods = !filterByNym.isEmpty() ? MTContactHandler::getInstance()->GetMsgMethodsByNym(mapMethods, filterByNym, false, QString("")) : false;
+
+        if (bGotMethods)
+        {
+            // Loop through mapMethods and for each methodID, call GetAddressesByNym.
+            // Then for each address, grab the inbox and outbox from MTComms, and add
+            // the messages to m_list.
+            //
+            for (mapIDName::iterator ii = mapMethods.begin(); ii != mapMethods.end(); ++ii)
+            {
+                QString qstrID        = ii.key();
+                int nFilterByMethodID = 0;
+
+                QStringList stringlist = qstrID.split("|");
+
+                if (stringlist.size() >= 2) // Should always be 2...
+                {
+//                  QString qstrType     = stringlist.at(0);
+                    QString qstrMethodID = stringlist.at(1);
+                    nFilterByMethodID    = qstrMethodID.isEmpty() ? 0 : qstrMethodID.toInt();
+                    // --------------------------------------
+                    if (nFilterByMethodID > 0)
+                    {
+                        QString   qstrMethodType  = MTContactHandler::getInstance()->GetMethodType       (nFilterByMethodID);
+                        QString   qstrTypeDisplay = MTContactHandler::getInstance()->GetMethodTypeDisplay(nFilterByMethodID);
+                        QString   qstrConnectStr  = MTContactHandler::getInstance()->GetMethodConnectStr (nFilterByMethodID);
+
+                        if (!qstrConnectStr.isEmpty())
+                        {
+                            NetworkModule * pModule = MTComms::find(qstrConnectStr.toStdString());
+
+                            if ((NULL == pModule) && MTComms::add(qstrMethodType.toStdString(), qstrConnectStr.toStdString()))
+                                pModule = MTComms::find(qstrConnectStr.toStdString());
+
+                            if (NULL == pModule)
+                                // todo probably need a messagebox here.
+                                qDebug() << QString("PopulateRecords: Unable to add a %1 interface with connection string: %2").arg(qstrMethodType).arg(qstrConnectStr);
+
+//                        qDebug() << QString("qstrConnectStr: %1   NULL != pModule: %2").arg(qstrConnectStr).arg(QString((NULL != pModule) ? "true" : "false"));
+//
+//                        if (NULL != pModule)
+//                            qDebug() << QString("pModule->accessible: %1").arg(QString(pModule->accessible() ? "true" : "false"));
+
+                            if ((NULL != pModule) && pModule->accessible())
+                            {
+                                if ((-1) == listCheckOnlyOnce.indexOf(qstrConnectStr)) // Not on the list yet.
+                                {
+                                    pModule->checkMail();
+                                    listCheckOnlyOnce.insert(0, qstrConnectStr);
+                                }
+                                // ------------------------------
+                                mapIDName mapAddresses;
+
+                                if (MTContactHandler::getInstance()->GetAddressesByNym(mapAddresses, filterByNym, nFilterByMethodID))
+                                {
+//                                    qDebug() << QString("ADDRESSES SIZE ================== ");
+//                                    qDebug() << mapAddresses.size();
+//                                    qDebug() << QString("ADDRESSES SIZE ================== ");
+
+                                    for (mapIDName::iterator jj = mapAddresses.begin(); jj != mapAddresses.end(); ++jj)
+                                    {
+                                        QString qstrAddress = jj.key();
+
+                                        if (!qstrAddress.isEmpty())
+                                        {
+                                            // --------------------------------------------------------------------------------------------
+                                            // INBOX
+                                            //
+                                            std::vector< _SharedPtr<NetworkMail> > theInbox = pModule->getInbox(qstrAddress.toStdString());
+
+                                            for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theInbox.size(); ++nIndex)
+                                            {
+                                                _SharedPtr<NetworkMail> & theMsg = theInbox[nIndex];
+
+                                                std::string strSubject  = theMsg->getSubject();
+                                                std::string strContents = theMsg->getMessage();
+                                                // ----------------------------------------------------
+                                                QString qstrFinal;
+
+                                                if (!strSubject.empty())
+                                                    qstrFinal = QString("%1: %2\n%3").
+                                                            arg(tr("Subject")).
+                                                            arg(QString::fromStdString(strSubject)).
+                                                            arg(QString::fromStdString(strContents));
+                                                else
+                                                    qstrFinal = QString::fromStdString(strContents);
+                                                // ----------------------------------------------------
+                                                bNeedsReSorting = true;
+
+                                                if (!theMsg->getMessageID().empty())
+                                                    m_list.AddSpecialMsg(theMsg->getMessageID(),
+                                                                         false, //bIsOutgoing=false
+                                                                         static_cast<int32_t>(nFilterByMethodID),
+                                                                         qstrFinal.toStdString(),
+                                                                         theMsg->getTo(),
+                                                                         theMsg->getFrom(),
+                                                                         qstrMethodType.toStdString(),
+                                                                         qstrTypeDisplay.toStdString(),
+                                                                         str_nym_id,
+                                                                         static_cast<time64_t>(theMsg->getReceivedTime()));
+                                            } // for (inbox)
+                                            // --------------------------------------------------------------------------------------------
+                                            // OUTBOX
+                                            //
+                                            std::vector< _SharedPtr<NetworkMail> > theOutbox = pModule->getOutbox(qstrAddress.toStdString());
+
+//                                            qDebug() << QString("OUTBOX SIZE ================== ");
+//                                            qDebug() << theOutbox.size();
+//                                            qDebug() << QString("OUTBOX SIZE ================== ");
+
+
+                                            for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theOutbox.size(); ++nIndex)
+                                            {
+                                                _SharedPtr<NetworkMail> & theMsg = theOutbox[nIndex];
+
+                                                std::string strSubject  = theMsg->getSubject();
+                                                std::string strContents = theMsg->getMessage();
+                                                // ----------------------------------------------------
+                                                QString qstrFinal;
+
+                                                if (!strSubject.empty())
+                                                    qstrFinal = QString("%1: %2\n%3").
+                                                            arg(tr("Subject")).
+                                                            arg(QString::fromStdString(strSubject)).
+                                                            arg(QString::fromStdString(strContents));
+                                                else
+                                                    qstrFinal = QString::fromStdString(strContents);
+                                                // ----------------------------------------------------
+                                                bNeedsReSorting = true;
+
+//                                                qDebug() << QString("Adding OUTGOING theMsg->getMessageID(): %1 \n filterByNym: %2 \n qstrAddress: %3 \n nIndex: %4")
+//                                                            .arg(QString::fromStdString(theMsg->getMessageID()))
+//                                                            .arg(filterByNym)
+//                                                            .arg(qstrAddress)
+//                                                            .arg(nIndex)
+//                                                            ;
+
+
+                                                if (!theMsg->getMessageID().empty())
+                                                    m_list.AddSpecialMsg(theMsg->getMessageID(),
+                                                                         true, //bIsOutgoing=true
+                                                                         static_cast<int32_t>(nFilterByMethodID),
+                                                                         qstrFinal.toStdString(),
+                                                                         theMsg->getFrom(),
+                                                                         theMsg->getTo(),
+                                                                         qstrMethodType.toStdString(),
+                                                                         qstrTypeDisplay.toStdString(),
+                                                                         str_nym_id,
+                                                                         static_cast<time64_t>(theMsg->getSentTime()));
+                                            } // for (outbox)
+                                        } // if (!qstrAddress.isEmpty())
+                                    } // for (addresses)
+                                } // if GetAddressesByNym
+                            } // if ((NULL != pModule) && pModule->accessible())
+                        } // if (!qstrConnectStr.isEmpty())
+                    } // if nFilterByMethodID > 0
+                } // if (stringlist.size() >= 2)
+            } // for (methods)
+        } // if bGotMethods
+    } // for (nyms)
+    // -----------------------------------------------------
+    if (bNeedsReSorting)
+        m_list.SortRecords();
+}
+
 
 void MTHome::RefreshRecords()
 {
@@ -733,7 +947,7 @@ void MTHome::RefreshRecords()
         if (weakRecord.expired())
         {
             OTLog::Output(2, "Reloading table due to expired pointer.\n");
-            m_list.Populate();
+            PopulateRecords(); // Refreshes the data from local storage.
             listSize = m_list.size();
             nIndex = 0;
         }

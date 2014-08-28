@@ -33,7 +33,7 @@ void BtcGuiTest::on_testButton_clicked()
 {
     if(BtcTest::TestBitcoinFunctions())
     {
-        OTLog::Output(0, "Successfully tested bitcoin functionality.");
+        OTLog::Output(0, "Successfully tested bitcoin functionality.\n");
     }
     else
     {

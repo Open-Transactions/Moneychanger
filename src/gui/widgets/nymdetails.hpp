@@ -6,6 +6,7 @@
 
 #include <gui/widgets/editdetails.hpp>
 
+#include <QGroupBox>
 
 namespace Ui {
 class MTNymDetails;
@@ -42,16 +43,23 @@ private:
 
 private slots:
     void on_lineEditName_editingFinished();
-
     void on_toolButton_clicked();
+
+    void on_btnAddressAdd_clicked();
+    void on_btnAddressDelete_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
     void FavorLeftSideForIDs();
 
+    QGroupBox * createAddressGroupBox    (QString strNymID);
+    QWidget   * createSingleAddressWidget(QString strNymID, int nMethodID, QString qstrAddress, QString qstrDisplayAddr);
+    QWidget   * createNewAddressWidget   (QString strNymID);
+
 private:
-    QPointer<QWidget> m_pHeaderWidget;
+    QPointer<QWidget>   m_pHeaderWidget;
+    QPointer<QGroupBox> m_pAddresses;
 
     Ui::MTNymDetails *ui;
 };

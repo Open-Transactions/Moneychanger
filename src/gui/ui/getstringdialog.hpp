@@ -17,7 +17,7 @@ class MTGetStringDialog : public QDialog
     QString m_Output;
 
 public:
-    explicit MTGetStringDialog(QWidget *parent = 0);
+    explicit MTGetStringDialog(QWidget *parent = 0, QString qstrLabel=QString(""), QString qstrPlaceholder=QString(""));
     ~MTGetStringDialog();
 
     QString GetOutputString() { return m_Output; }
