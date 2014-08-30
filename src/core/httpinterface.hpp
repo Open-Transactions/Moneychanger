@@ -12,7 +12,7 @@ public:
     HTTPInterface();
 
 private:
-    OT_ME   mMadeEasy;
+    opentxs::OT_ME   mMadeEasy;
 };
 
 #endif // HTTPINTERFACE_HPP

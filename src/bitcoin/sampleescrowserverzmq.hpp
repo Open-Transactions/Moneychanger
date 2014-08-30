@@ -4,11 +4,11 @@
 #include "sampleescrowserver.hpp"
 #include "samplenetmessages.hpp"
 
-#ifdef OT_USE_ZMQ4
+//#ifdef OT_USE_ZMQ4
     #include <zmq.h>
-#else
-    #include <zmq.hpp>
-#endif
+//#else
+//    #include <zmq.hpp>
+//#endif
 
 class QTime;
 

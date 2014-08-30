@@ -12,7 +12,7 @@
 #include <QDebug>
 
 
-void MTPasswordCallback::runOne(const char * szDisplay, OTPassword & theOutput)
+void MTPasswordCallback::runOne(const char * szDisplay, opentxs::OTPassword & theOutput)
 {
     if (NULL == szDisplay)
     {
@@ -31,7 +31,7 @@ void MTPasswordCallback::runOne(const char * szDisplay, OTPassword & theOutput)
     pDlg->exec();
 }
 
-void MTPasswordCallback::runTwo(const char * szDisplay, OTPassword & theOutput)
+void MTPasswordCallback::runTwo(const char * szDisplay, opentxs::OTPassword & theOutput)
 {
     if (NULL == szDisplay)
     {

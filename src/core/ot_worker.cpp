@@ -6,9 +6,9 @@
 
 #include <core/handlers/contacthandler.hpp>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OTLog.hpp>
+#include <opentxs/api/OTAPI.hpp>
+#include <opentxs/api/OTAPI_Exec.hpp>
+#include <opentxs/core/OTLog.hpp>
 
 #include <QVariant>
 
@@ -19,32 +19,32 @@ ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookup
      **/
     overview_list = new QList< QMap<QString,QVariant> >();
     
-    int nServerCount  = OTAPI_Wrap::It()->GetServerCount();
-    int nAssetCount   = OTAPI_Wrap::It()->GetAssetTypeCount();
-    int nNymCount     = OTAPI_Wrap::It()->GetNymCount();
-    int nAccountCount = OTAPI_Wrap::It()->GetAccountCount();
+    int nServerCount  = opentxs::OTAPI_Wrap::It()->GetServerCount();
+    int nAssetCount   = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
+    int nNymCount     = opentxs::OTAPI_Wrap::It()->GetNymCount();
+    int nAccountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
     // ----------------------------------------------------
     for (int ii = 0; ii < nServerCount; ++ii)
     {
-        std::string serverId = OTAPI_Wrap::It()->GetServer_ID(ii);
+        std::string serverId = opentxs::OTAPI_Wrap::It()->GetServer_ID(ii);
         list.AddServerID(serverId);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAssetCount; ++ii)
     {
-        std::string assetId = OTAPI_Wrap::It()->GetAssetType_ID(ii);
+        std::string assetId = opentxs::OTAPI_Wrap::It()->GetAssetType_ID(ii);
         list.AddAssetID(assetId);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nNymCount; ++ii)
     {
-        std::string nymId = OTAPI_Wrap::It()->GetNym_ID(ii);
+        std::string nymId = opentxs::OTAPI_Wrap::It()->GetNym_ID(ii);
         list.AddNymID(nymId);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAccountCount; ++ii)
     {
-        std::string accountID = OTAPI_Wrap::It()->GetAccountWallet_ID(ii);
+        std::string accountID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(ii);
         list.AddAccountID(accountID);
     }
     // ----------------------------------------------------
@@ -72,16 +72,16 @@ void ot_worker::mc_overview_ping(){
     
     //REadd to the backend memory to the visual table.
     for(int a = 0;a < listSize;a++){
-        weak_ptr_OTRecord weakRecord = list.GetRecord(a);
-        shared_ptr_OTRecord record = weakRecord.lock();
+        opentxs::weak_ptr_OTRecord weakRecord = list.GetRecord(a);
+        opentxs::shared_ptr_OTRecord record = weakRecord.lock();
         if (weakRecord.expired()) {
-            OTLog::Output(2, "Reloading table due to expired pointer");
+            opentxs::OTLog::Output(2, "Reloading table due to expired pointer");
             list.Populate();
             listSize = list.size();
             a = 0;
             
         }else{
-            OTRecord recordmt = *record;
+            opentxs::OTRecord recordmt = *record;
             
             /** Refernce Comment/Code **
              qDebug() << recordmt.IsOutgoing();

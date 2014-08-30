@@ -1,6 +1,8 @@
 #ifndef BTCTRANSACTIONMANAGER_H
 #define BTCTRANSACTIONMANAGER_H
 
+#include "core/TR1_Wrapper.hpp"
+
 #include <QWidget>
 
 namespace Ui {

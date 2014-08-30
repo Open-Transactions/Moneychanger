@@ -15,9 +15,9 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OT_ME.hpp>
+#include <opentxs/api/OTAPI.hpp>
+#include <opentxs/api/OTAPI_Exec.hpp>
+#include <opentxs/api/OT_ME.hpp>
 
 #include <QMessageBox>
 #include <QDebug>

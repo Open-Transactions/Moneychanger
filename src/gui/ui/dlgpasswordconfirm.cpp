@@ -7,10 +7,10 @@
 
 #include <gui/widgets/overridecursor.hpp>
 
-#include <opentxs/OTPassword.hpp>
+#include <opentxs/core/OTPassword.hpp>
 
 
-MTDlgPasswordConfirm::MTDlgPasswordConfirm(QWidget *parent, OTPassword & thePassword) :
+MTDlgPasswordConfirm::MTDlgPasswordConfirm(QWidget *parent, opentxs::OTPassword & thePassword) :
     QDialog(parent),
     m_pPassword(&thePassword),
     m_pCursor(MTOverrideCursor::Exists()),

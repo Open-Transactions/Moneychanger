@@ -1,10 +1,10 @@
 #ifndef MTHOMEDETAIL_HPP
 #define MTHOMEDETAIL_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
-#include <opentxs/OTRecordList.hpp>
+#include <opentxs/api/OTRecordList.hpp>
 
 #include <QPointer>
 #include <QWidget>
@@ -74,7 +74,7 @@ private:
     void refresh(int nRow, OTRecordList & theList);
 
     int m_nContactID; // If there's a known Contact ID for this record, it will be set here when discovered, for later use.
-    shared_ptr_OTRecord m_record;
+    opentxs::shared_ptr_OTRecord m_record;
 
     QPointer<QGridLayout> m_pDetailLayout;
     QPointer<MTHome> m_pHome;

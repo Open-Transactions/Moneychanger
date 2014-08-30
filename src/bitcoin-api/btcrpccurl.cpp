@@ -258,7 +258,7 @@ BtcRpcPacketPtr BtcRpcCurl::SendRpc(BtcRpcPacketPtr jsonString)
     }
 
     //if(receivedData->data != NULL)
-    //    OTLog::Output(0, receivedData->data);
+    //    opentxs::OTLog::Output(0, receivedData->data);
 
     // we have to copy the response because for some reason the next few lines set the smart pointer to NULL (?!?!??)
     BtcRpcPacketPtr packetCopy = BtcRpcPacketPtr(new BtcRpcPacket(receivedData));

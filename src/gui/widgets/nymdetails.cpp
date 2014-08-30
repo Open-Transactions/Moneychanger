@@ -13,9 +13,9 @@
 
 #include <namecoin/Namecoin.hpp>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OT_ME.hpp>
+#include <opentxs/api/OTAPI.hpp>
+#include <opentxs/api/OTAPI_Exec.hpp>
+#include <opentxs/api/OT_ME.hpp>
 
 #include <QMessageBox>
 #include <QStringList>
@@ -485,7 +485,7 @@ void MTNymDetails::refresh(QString strID, QString strName)
         //
         if (m_pPlainTextEdit)
         {
-            QString strContents = QString::fromStdString(OTAPI_Wrap::It()->GetNym_Stats(strID.toStdString()));
+            QString strContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Stats(strID.toStdString()));
             m_pPlainTextEdit->setPlainText(strContents);
         }
         // -----------------------------------
@@ -573,7 +573,7 @@ void MTNymDetails::DeleteButtonClicked()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         // ----------------------------------------------------
-        bool bCanRemove = OTAPI_Wrap::It()->Wallet_CanRemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
+        bool bCanRemove = opentxs::OTAPI_Wrap::It()->Wallet_CanRemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
 
         if (!bCanRemove)
         {
@@ -591,7 +591,7 @@ void MTNymDetails::DeleteButtonClicked()
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
-            bool bSuccess = OTAPI_Wrap::It()->Wallet_RemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
+            bool bSuccess = opentxs::OTAPI_Wrap::It()->Wallet_RemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
 
             if (bSuccess)
             {
@@ -663,7 +663,7 @@ void MTNymDetails::AddButtonClicked()
 
         // Create Nym here...
         //
-        OT_ME madeEasy;
+        opentxs::OT_ME madeEasy;
 
         std::string str_id = madeEasy.create_pseudonym(nKeybits, NYM_ID_SOURCE, ALT_LOCATION);
 
@@ -683,7 +683,7 @@ void MTNymDetails::AddButtonClicked()
         // Register the Namecoin name.
         if (nAuthorityIndex == 1)
         {
-            const unsigned cnt = OTAPI_Wrap::It()->GetNym_CredentialCount (str_id);
+            const unsigned cnt = opentxs::OTAPI_Wrap::It()->GetNym_CredentialCount (str_id);
             if (cnt != 1)
             {
                 qDebug () << "Expected one master credential, got " << cnt
@@ -691,7 +691,7 @@ void MTNymDetails::AddButtonClicked()
             }
             else
             {
-                const std::string cred = OTAPI_Wrap::It()->GetNym_CredentialID (str_id, 0);
+                const std::string cred = opentxs::OTAPI_Wrap::It()->GetNym_CredentialID (str_id, 0);
                 const QString qCred = QString::fromStdString (cred);
                 NMC_NameManager& nmc = NMC_NameManager::getInstance ();
                 nmc.startRegistration (qstrID, qCred);
@@ -702,7 +702,7 @@ void MTNymDetails::AddButtonClicked()
         // Set the Name of the new Nym.
         //
         //bool bNameSet =
-                OTAPI_Wrap::It()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
+                opentxs::OTAPI_Wrap::It()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
         // -----------------------------------------------
         // Commenting this out for now.
         //
@@ -724,7 +724,7 @@ void MTNymDetails::on_lineEditName_editingFinished()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = OTAPI_Wrap::It()->SetNym_Name(m_pOwner->m_qstrCurrentID.toStdString(), // Nym
+        bool bSuccess = opentxs::OTAPI_Wrap::It()->SetNym_Name(m_pOwner->m_qstrCurrentID.toStdString(), // Nym
                                                 m_pOwner->m_qstrCurrentID.toStdString(), // Signer
                                                 ui->lineEditName->text(). toStdString()); // New Name
         if (bSuccess)

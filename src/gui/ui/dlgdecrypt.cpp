@@ -8,12 +8,12 @@
 
 #include <core/moneychanger.hpp>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OT_ME.hpp>
-#include <opentxs/OpenTransactions.hpp>
+#include <opentxs/api/OTAPI.hpp>
+#include <opentxs/api/OTAPI_Exec.hpp>
+#include <opentxs/api/OT_ME.hpp>
+#include <opentxs/api/OpenTransactions.hpp>
 
-#include <opentxs/OTASCIIArmor.hpp>
+#include <opentxs/core/OTASCIIArmor.hpp>
 #include <opentxs/OTEnvelope.hpp>
 #include <opentxs/OTPseudonym.hpp>
 #include <opentxs/OTPasswordData.hpp>
@@ -92,7 +92,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
     else //qstrText not empty.
     {
         std::string str_input(qstrText.toStdString());
-        OTString    strInput (str_input.c_str());
+        opentxs::OTString    strInput (str_input.c_str());
 
         if (strInput.Exists())
         {
@@ -102,7 +102,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
 
                 if (theEnvelope.SetFromBookendedString(strInput))
                 {
-                    OTString strOutput;
+                    opentxs::OTString strOutput;
                     // -------------------------
                     // First we'll try the default nym, if one is available.
                     //
@@ -111,14 +111,14 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                     if (!qstrTempID.isEmpty()) // Default Nym IS available.
                     {
                         std::string  str_nym    (qstrTempID.toStdString());
-                        OTString     strNym     (str_nym.c_str());
+                        opentxs::OTString     strNym     (str_nym.c_str());
                         OTIdentifier nym_id     (strNym);
 
                         if (!nym_id.IsEmpty())
                         {
                             OTPasswordData thePWData("Recipient passphrase");
 
-                            OTPseudonym * pNym = OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
+                            OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
                                                                                    false, //bChecking=false
                                                                                    "DlgEncrypt::on_pushButtonDecrypt_clicked",
                                                                                    &thePWData);
@@ -138,24 +138,24 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                     // ------------
                     else // Default nym is NOT available. Okay let's loop through all the Nyms in the wallet then, and try then all...
                     {
-                        const int32_t nym_count = OTAPI_Wrap::It()->GetNymCount();
+                        const int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
                         // -----------------------------------------------
                         for (int32_t ii = 0; ii < nym_count; ++ii)
                         {
                             //Get OT Nym ID
-                            QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::It()->GetNym_ID(ii));
+                            QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(ii));
 
                             if (!OT_nym_id.isEmpty())
                             {
                                 std::string  str_nym    (OT_nym_id.toStdString());
-                                OTString     strNym     (str_nym.c_str());
+                                opentxs::OTString     strNym     (str_nym.c_str());
                                 OTIdentifier nym_id     (strNym);
 
                                 if (!nym_id.IsEmpty())
                                 {
                                     OTPasswordData thePWData("Recipient passphrase");
 
-                                    OTPseudonym * pNym = OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
+                                    OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
                                                                                            false, //bChecking=false
                                                                                            "DlgEncrypt::on_pushButtonDecrypt_clicked",
                                                                                            &thePWData);
@@ -213,7 +213,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
 
                     if (theSignedFile.LoadContractFromString(strInput))
                     {
-                        OTString strSignerNymID = theSignedFile.GetSignerNymID();
+                        opentxs::OTString strSignerNymID = theSignedFile.GetSignerNymID();
                         std::string str_signer_nym(strSignerNymID.Get());
                         QString qstrSignerNym(QString::fromStdString(str_signer_nym));
 
@@ -221,7 +221,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                         {
                             OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
 
-                            OTPseudonym * pNym = OTAPI_Wrap::OTAPI()->GetOrLoadNym(str_signer_nym,
+                            OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(str_signer_nym,
                                                                                    false, //bChecking=false
                                                                                    "DlgEncrypt::on_pushButtonDecrypt_clicked",
                                                                                    &thePWData);
@@ -231,7 +231,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                                 {
                                     bSuccessVerifying = true;
 
-                                    OTString strContents = theSignedFile.GetFilePayload();
+                                    opentxs::OTString strContents = theSignedFile.GetFilePayload();
 
                                     if (strContents.Exists())
                                     {

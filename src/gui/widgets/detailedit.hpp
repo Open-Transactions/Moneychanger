@@ -1,8 +1,8 @@
 #ifndef DETAILEDIT_HPP
 #define DETAILEDIT_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <core/handlers/contacthandler.hpp>
 

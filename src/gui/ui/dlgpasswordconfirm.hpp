@@ -1,18 +1,23 @@
 #ifndef DLGPASSWORDCONFIRM_HPP
 #define DLGPASSWORDCONFIRM_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <QString>
 #include <QDialog>
 #include <QCloseEvent>
 
+#include <opentxs/core/OTPassword.hpp>
+
+
 namespace Ui {
 class MTDlgPasswordConfirm;
 }
 
+namespace opentxs {
 class OTPassword;
+}
 
 class MTOverrideCursor;
 
@@ -21,7 +26,7 @@ class MTDlgPasswordConfirm : public QDialog
     Q_OBJECT
 
 public:
-    explicit MTDlgPasswordConfirm(QWidget *parent, OTPassword & thePassword);
+    explicit MTDlgPasswordConfirm(QWidget *parent, opentxs::OTPassword & thePassword);
     ~MTDlgPasswordConfirm();
 
     void setDisplay(QString qstrDisplay);
@@ -33,7 +38,7 @@ private slots:
     void on_MTDlgPasswordConfirm_accepted();
 
 private:
-    OTPassword * m_pPassword;
+    opentxs::OTPassword * m_pPassword;
 
     MTOverrideCursor * m_pCursor; // Do not delete. Here for reference only.
 

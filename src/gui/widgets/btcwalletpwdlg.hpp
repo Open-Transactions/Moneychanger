@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include <opentxs/TR1_Wrapper.hpp>
+#include "core/TR1_Wrapper.hpp"
 
 namespace Ui {
 class BtcWalletPwDlg;

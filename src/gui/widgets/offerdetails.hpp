@@ -1,8 +1,8 @@
 #ifndef OFFERDETAILS_HPP
 #define OFFERDETAILS_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <QWidget>
 
@@ -12,9 +12,11 @@ namespace Ui {
 class MTOfferDetails;
 }
 
+namespace opentxs{
 namespace OTDB {
 class TradeListNym;
 class OfferDataNym;
+}
 }
 
 class MTOfferDetails : public MTEditDetails
@@ -39,7 +41,7 @@ protected:
     void PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, QMap<QString, QVariant> & OFFER_MAP);
     void ClearTradesGrid();
 
-    OTDB::TradeListNym * LoadTradeListForNym(OTDB::OfferDataNym & offerData, QString qstrServerID, QString qstrNymID);
+    opentxs::OTDB::TradeListNym * LoadTradeListForNym(opentxs::OTDB::OfferDataNym & offerData, QString qstrServerID, QString qstrNymID);
 
     bool ChooseServer(QString & qstrServerID, QString & qstrServerName);
 

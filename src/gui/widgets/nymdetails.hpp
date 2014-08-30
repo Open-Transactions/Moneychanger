@@ -1,8 +1,8 @@
 #ifndef NYMDETAILS_HPP
 #define NYMDETAILS_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <gui/widgets/editdetails.hpp>
 

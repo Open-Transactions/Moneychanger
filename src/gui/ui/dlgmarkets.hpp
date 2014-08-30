@@ -1,8 +1,8 @@
 #ifndef DLGMARKETS_HPP
 #define DLGMARKETS_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <core/handlers/contacthandler.hpp>
 
@@ -14,10 +14,14 @@ namespace Ui {
 class DlgMarkets;
 }
 
-namespace OTDB {
-class MarketList;
-class OfferListNym;
+namespace opentxs{
+
+    namespace OTDB {
+        class MarketList;
+        class OfferListNym;
+    }
 }
+
 
 class MTDetailEdit;
 
@@ -65,7 +69,7 @@ protected:
     bool LoadMarketList(mapIDName & the_map);
     bool LowLevelLoadMarketList(QString qstrServerID, QString qstrNymID, mapIDName & the_map);
     // -----------------------------------------------
-    OTDB::MarketList * LoadMarketListForServer(const std::string & serverID);
+    opentxs::OTDB::MarketList * LoadMarketListForServer(const std::string & serverID);
     // -----------------------------------------------
     bool RetrieveOfferList(mapIDName & the_map, QString qstrMarketID);
     bool LowLevelRetrieveOfferList(QString qstrServerID, QString qstrNymID, mapIDName & the_map, QString qstrMarketID);
@@ -73,7 +77,7 @@ protected:
     bool LoadOfferList(mapIDName & the_map, QString qstrMarketID);
     bool LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, mapIDName & the_map, QString qstrMarketID);
     // -----------------------------------------------
-    OTDB::OfferListNym * LoadOfferListForServer(const std::string & serverID, const std::string & nymID);
+    opentxs::OTDB::OfferListNym * LoadOfferListForServer(const std::string & serverID, const std::string & nymID);
     // -----------------------------------------------
     bool GetMarket_AssetCurrencyScale(QString qstrMarketID, QString & qstrAssetID, QString & qstrCurrencyID, QString & qstrScale);
 

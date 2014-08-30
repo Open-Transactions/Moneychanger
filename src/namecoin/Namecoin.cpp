@@ -25,9 +25,9 @@
 
 #include <nmcrpc/RpcSettings.hpp>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OTPassword.hpp>
+#include <opentxs/api/OTAPI.hpp>
+#include <opentxs/api/OTAPI_Exec.hpp>
+#include <opentxs/core/OTPassword.hpp>
 
 #include <QDebug>
 #include <QSqlField>
@@ -209,7 +209,7 @@ NMC_NameManager::startRegistration (const QString& nym, const QString& cred)
 bool
 NMC_NameManager::updateName (const QString& nym, const QString& cred)
 {
-  std::string addrStr = OTAPI_Wrap::It()->GetNym_SourceForID (nym.toStdString ());
+  std::string addrStr = opentxs::OTAPI_Wrap::It()->GetNym_SourceForID (nym.toStdString ());
   const nmcrpc::NamecoinInterface::Address addr = nc.queryAddress (addrStr);
 
   if (!addr.isValid () || !addr.isMine ())

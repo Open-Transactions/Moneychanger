@@ -10,11 +10,12 @@
 
 #include <core/moneychanger.hpp>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OT_ME.hpp>
-#include <opentxs/OTStorage.hpp>
-#include <opentxs/OTData.hpp>
+#include <opentxs/api/OTAPI.hpp>
+#include <opentxs/api/OTAPI_Exec.hpp>
+#include <opentxs/api/OT_ME.hpp>
+#include <opentxs/core/OTStorage.hpp>
+#include <opentxs/core/OTData.hpp>
+#include <opentxs/core/OTCleanup.hpp>
 
 #include <QKeyEvent>
 
@@ -40,7 +41,7 @@ void DlgMarkets::ClearMarketMap()
     for (QMultiMap<QString, QVariant>::iterator it_map = temp_map.begin();
          it_map != temp_map.end(); ++it_map)
     {
-        OTDB::MarketData * pMarketData = VPtr<OTDB::MarketData>::asPtr(it_map.value());
+        opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_map.value());
 
         if (NULL != pMarketData) // should never be NULL.
             delete pMarketData;
@@ -58,7 +59,7 @@ void DlgMarkets::ClearOfferMap()
     for (QMap<QString, QVariant>::iterator it_map = temp_map.begin();
          it_map != temp_map.end(); ++it_map)
     {
-        OTDB::OfferDataNym * pOfferData = VPtr<OTDB::OfferDataNym>::asPtr(it_map.value());
+        opentxs::OTDB::OfferDataNym * pOfferData = VPtr<opentxs::OTDB::OfferDataNym>::asPtr(it_map.value());
 
         if (NULL != pOfferData) // should never be NULL.
             delete pOfferData;
@@ -364,7 +365,7 @@ bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrServerID, QString qstrNym
     if (qstrServerID.isEmpty() || qstrNymID.isEmpty())
         return false;
     // -----------------
-    OT_ME madeEasy;
+    opentxs::OT_ME madeEasy;
 
     bool bSuccess = false;
     {
@@ -425,7 +426,7 @@ bool DlgMarkets::GetMarket_AssetCurrencyScale(QString qstrMarketID, QString & qs
     if (m_mapMarkets.end() != it_market)
     {
         // ------------------------------------------------------
-        OTDB::MarketData * pMarketData = VPtr<OTDB::MarketData>::asPtr(it_market.value());
+        opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
 
         if (NULL != pMarketData) // Should never be NULL.
         {
@@ -451,8 +452,8 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, 
     // -----------------------------------
     if (bGotIDs)
     {
-        OTDB::OfferListNym * pOfferList = LoadOfferListForServer(qstrServerID.toStdString(), qstrNymID.toStdString());
-        OTCleanup<OTDB::OfferListNym> theAngel(pOfferList);
+        opentxs::OTDB::OfferListNym * pOfferList = LoadOfferListForServer(qstrServerID.toStdString(), qstrNymID.toStdString());
+        opentxs::OTCleanup<opentxs::OTDB::OfferListNym> theAngel(pOfferList);
 
         if (NULL != pOfferList)
         {
@@ -460,7 +461,7 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, 
 
             for (size_t ii = 0; ii < nOfferDataCount; ++ii)
             {
-                OTDB::OfferDataNym * pOfferData = pOfferList->GetOfferDataNym(ii);
+                opentxs::OTDB::OfferDataNym * pOfferData = pOfferList->GetOfferDataNym(ii);
 
                 if (NULL == pOfferData) // Should never happen.
                     continue;
@@ -480,13 +481,13 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, 
                 // -----------------------------------------------------------------------
                 QString qstrBuySell = pOfferData->selling ? tr("Sell") : tr("Buy");
 
-                const std::string str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(pOfferData->asset_type_id);
+                const std::string str_asset_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pOfferData->asset_type_id);
                 // --------------------------
-                int64_t lTotalAssets   = OTAPI_Wrap::It()->StringToLong(pOfferData->total_assets);
-                int64_t lFinishedSoFar = OTAPI_Wrap::It()->StringToLong(pOfferData->finished_so_far);
+                int64_t lTotalAssets   = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->total_assets);
+                int64_t lFinishedSoFar = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->finished_so_far);
                 // --------------------------
-                const std::string str_total_assets    = OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lTotalAssets);
-                const std::string str_finished_so_far = OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lFinishedSoFar);
+                const std::string str_total_assets    = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lTotalAssets);
+                const std::string str_finished_so_far = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lFinishedSoFar);
                 // --------------------------
                 QString qstrAmounts;
 
@@ -517,7 +518,7 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, 
                 // multimap) and each offer is uniquely identified by that same key on both maps.
                 // (That's why you see an insert() here instead of insertMulti.)
                 //
-                m_mapOffers.insert(qstrCompositeID, VPtr<OTDB::OfferDataNym>::asQVariant(pOfferData->clone()));
+                m_mapOffers.insert(qstrCompositeID, VPtr<opentxs::OTDB::OfferDataNym>::asQVariant(pOfferData->clone()));
                 // -----------------------------------------------------------------------
             } // for
         }
@@ -526,21 +527,21 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, 
     return true;
 }
 // -----------------------------------------------
-OTDB::OfferListNym * DlgMarkets::LoadOfferListForServer(const std::string & serverID, const std::string & nymID)
+opentxs::OTDB::OfferListNym * DlgMarkets::LoadOfferListForServer(const std::string & serverID, const std::string & nymID)
 {
-    OTDB::OfferListNym * pOfferList = NULL;
-    OTDB::Storable     * pStorable  = NULL;
+    opentxs::OTDB::OfferListNym * pOfferList = NULL;
+    opentxs::OTDB::Storable     * pStorable  = NULL;
     // ------------------------------------------
     QString qstrFilename = QString("%1.bin").arg(QString::fromStdString(nymID));
 
-    if (OTDB::Exists("nyms", serverID, "offers", qstrFilename.toStdString()))
+    if (opentxs::OTDB::Exists("nyms", serverID, "offers", qstrFilename.toStdString()))
     {
-        pStorable = OTDB::QueryObject(OTDB::STORED_OBJ_OFFER_LIST_NYM, "nyms", serverID, "offers", qstrFilename.toStdString());
+        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_OFFER_LIST_NYM, "nyms", serverID, "offers", qstrFilename.toStdString());
 
         if (NULL == pStorable)
             return NULL;
         // -------------------------------
-        pOfferList = OTDB::OfferListNym::ot_dynamic_cast(pStorable);
+        pOfferList = opentxs::OTDB::OfferListNym::ot_dynamic_cast(pStorable);
 
         if (NULL == pOfferList)
             delete pStorable;
@@ -588,8 +589,8 @@ bool DlgMarkets::LowLevelLoadMarketList(QString qstrServerID, QString qstrNymID,
     if (qstrServerID.isEmpty() || qstrNymID.isEmpty())
         return false;
     // -----------------------------------
-    OTDB::MarketList * pMarketList = LoadMarketListForServer(qstrServerID.toStdString());
-    OTCleanup<OTDB::MarketList> theAngel(pMarketList);
+    opentxs::OTDB::MarketList * pMarketList = LoadMarketListForServer(qstrServerID.toStdString());
+    opentxs::OTCleanup<opentxs::OTDB::MarketList> theAngel(pMarketList);
 
     if (NULL != pMarketList)
     {
@@ -597,7 +598,7 @@ bool DlgMarkets::LowLevelLoadMarketList(QString qstrServerID, QString qstrNymID,
 
         for (size_t ii = 0; ii < nMarketDataCount; ++ii)
         {
-            OTDB::MarketData * pMarketData = pMarketList->GetMarketData(ii);
+            opentxs::OTDB::MarketData * pMarketData = pMarketList->GetMarketData(ii);
 
             if (NULL == pMarketData) // Should never happen.
                 continue;
@@ -610,7 +611,7 @@ bool DlgMarkets::LowLevelLoadMarketList(QString qstrServerID, QString qstrNymID,
             // This multimap will have multiple markets of the same key (from
             // different servers.)
             //
-            m_mapMarkets.insertMulti(qstrCompositeID, VPtr<OTDB::MarketData>::asQVariant(pMarketData->clone()));
+            m_mapMarkets.insertMulti(qstrCompositeID, VPtr<opentxs::OTDB::MarketData>::asQVariant(pMarketData->clone()));
             // -----------------------------------------------------------------------
             // Whereas this map will only have a single entry for each key. (Thus
             // we only add it here if it's not already present.)
@@ -619,8 +620,8 @@ bool DlgMarkets::LowLevelLoadMarketList(QString qstrServerID, QString qstrNymID,
 
             if (the_map.end() == it_map)
             {
-                const std::string str_asset_name    = OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->asset_type_id);
-                const std::string str_currency_name = OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->currency_type_id);
+                const std::string str_asset_name    = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->asset_type_id);
+                const std::string str_currency_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->currency_type_id);
                 // --------------------------
                 QString qstrMarketName = QString("%1 for %2").
                         arg(QString::fromStdString(str_asset_name)).
@@ -671,7 +672,7 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrServerID, QString qstrNy
     if (qstrServerID.isEmpty() || qstrNymID.isEmpty())
         return false;
     // -----------------
-    OT_ME madeEasy;
+    opentxs::OT_ME madeEasy;
 
     bool bSuccess = false;
     {
@@ -698,19 +699,19 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrServerID, QString qstrNy
 
 // Caller responsible to delete!
 //
-OTDB::MarketList * DlgMarkets::LoadMarketListForServer(const std::string & serverID)
+opentxs::OTDB::MarketList * DlgMarkets::LoadMarketListForServer(const std::string & serverID)
 {
-    OTDB::MarketList * pMarketList = NULL;
-    OTDB::Storable   * pStorable   = NULL;
+    opentxs::OTDB::MarketList * pMarketList = NULL;
+    opentxs::OTDB::Storable   * pStorable   = NULL;
     // ------------------------------------------
-    if (OTDB::Exists("markets", serverID, "market_data.bin"))
+    if (opentxs::OTDB::Exists("markets", serverID, "market_data.bin"))
     {
-        pStorable = OTDB::QueryObject(OTDB::STORED_OBJ_MARKET_LIST, "markets", serverID, "market_data.bin");
+        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_MARKET_LIST, "markets", serverID, "market_data.bin");
 
         if (NULL == pStorable)
             return NULL;
         // -------------------------------
-        pMarketList = OTDB::MarketList::ot_dynamic_cast(pStorable);
+        pMarketList = opentxs::OTDB::MarketList::ot_dynamic_cast(pStorable);
 
         if (NULL == pMarketList)
             delete pStorable;
@@ -788,15 +789,15 @@ void DlgMarkets::LoadOrRetrieveMarkets()
                 if (m_mapMarkets.end() != it_market)
                 {
                     // ------------------------------------------------------
-                    OTDB::MarketData * pMarketData = VPtr<OTDB::MarketData>::asPtr(it_market.value());
+                    opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
 
                     if (NULL != pMarketData) // Should never be NULL.
                     {
                         // ------------------------------------------------------
-                        int64_t     lScale    = OTAPI_Wrap::It()->StringToLong(pMarketData->scale);
+                        int64_t     lScale    = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->scale);
                         if (lScale > 1)
                         {
-                            std::string str_scale = OTAPI_Wrap::It()->FormatAmount(pMarketData->asset_type_id, lScale);
+                            std::string str_scale = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->asset_type_id, lScale);
                             // ------------------------------------------------------
                             QString qstrFormattedScale = QString::fromStdString(str_scale);
                             // ------------------------------------------------------
@@ -941,13 +942,13 @@ void DlgMarkets::RefreshRecords()
         nDefaultServerIndex = 0;
     }
     // ----------------------------
-    const int32_t server_count = OTAPI_Wrap::It()->GetServerCount();
+    const int32_t server_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < server_count; ++ii)
     {
         //Get OT Server ID
         //
-        QString OT_server_id = QString::fromStdString(OTAPI_Wrap::It()->GetServer_ID(ii));
+        QString OT_server_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(ii));
         QString OT_server_name("");
         // -----------------------------------------------
         if (!OT_server_id.isEmpty())
@@ -958,7 +959,7 @@ void DlgMarkets::RefreshRecords()
                 nDefaultServerIndex = ii+1; // the +1 is because of "all" in the 0 position. (Servers only.)
             }
             // -----------------------------------------------
-            OT_server_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(OT_server_id.toStdString()));
+            OT_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_server_id.toStdString()));
             // -----------------------------------------------
             m_mapServers.insert(OT_server_id, OT_server_name);
             ui->comboBoxServer->insertItem(ii+1, OT_server_name);
@@ -968,12 +969,12 @@ void DlgMarkets::RefreshRecords()
 
     // -----------------------------------------------
     bool bFoundNymDefault = false;
-    const int32_t nym_count = OTAPI_Wrap::It()->GetNymCount();
+    const int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < nym_count; ++ii)
     {
         //Get OT Nym ID
-        QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::It()->GetNym_ID(ii));
+        QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(ii));
         QString OT_nym_name("");
         // -----------------------------------------------
         if (!OT_nym_id.isEmpty())

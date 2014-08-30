@@ -8,12 +8,12 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/mtcomms.h>
 
-#include <opentxs/OTStorage.hpp>
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OpenTransactions.hpp>
-#include <opentxs/OTASCIIArmor.hpp>
-#include <opentxs/OTWallet.hpp>
+#include <opentxs/core/OTStorage.hpp>
+#include <opentxs/api/OTAPI.hpp>
+#include <opentxs/api/OTAPI_Exec.hpp>
+#include <opentxs/api/OpenTransactions.hpp>
+#include <opentxs/core/OTASCIIArmor.hpp>
+#include <opentxs/core/OTWallet.hpp>
 
 #include <QDebug>
 #include <QObject>
@@ -235,7 +235,7 @@ bool MTContactHandler::GetServers(mapIDName & theMap, QString filterByNym, bool 
 
         if (!server_id.isEmpty())
         {
-            QString server_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(server_id.toStdString()));
+            QString server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(server_id.toStdString()));
 
             if (!server_name.isEmpty())
             {
@@ -272,12 +272,12 @@ bool MTContactHandler::GetServers(mapIDName & theMap, QString filterByNym, bool 
 bool MTContactHandler::GetServers(mapIDName & theMap, bool bPrependOTType/*=false*/)
 {
     bool    bFoundAny    = false;
-    int32_t nServerCount = OTAPI_Wrap::It()->GetServerCount();
+    int32_t nServerCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
 
     for (int32_t ii = 0; ii < nServerCount; ++ii)
     {
-        std::string str_server_id   = OTAPI_Wrap::It()->GetServer_ID(ii);
-        std::string str_server_name = OTAPI_Wrap::It()->GetServer_Name(str_server_id);
+        std::string str_server_id   = opentxs::OTAPI_Wrap::It()->GetServer_ID(ii);
+        std::string str_server_name = opentxs::OTAPI_Wrap::It()->GetServer_Name(str_server_id);
 
         QString qstrServerID   = QString::fromStdString(str_server_id);
         QString qstrServerName = QString::fromStdString(str_server_name);
@@ -322,7 +322,7 @@ bool MTContactHandler::GetServers(mapIDName & theMap, int nFilterByContact, bool
 
         if (!server_id.isEmpty())
         {
-            QString server_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(server_id.toStdString()));
+            QString server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(server_id.toStdString()));
 
             if (!server_name.isEmpty())
             {
@@ -422,7 +422,7 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact)
                 nym_name = Decode(nym_name);
             }
             else
-                nym_name = QString::fromStdString(OTAPI_Wrap::It()->GetNym_Name(nym_id.toStdString()));
+                nym_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(nym_id.toStdString()));
             // ----------------------------
             // At this point we have the nym ID *and* the nym name.
             // So we can add them to our map...
@@ -917,11 +917,11 @@ QString MTContactHandler::Encrypt(QString plaintext)
 
     if (!plaintext.isEmpty())
     {
-        OTWallet * pWallet = OTAPI_Wrap::OTAPI()->GetWallet("MTContactHandler::Encrypt"); // This logs and ASSERTs already.
+        opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet("MTContactHandler::Encrypt"); // This logs and ASSERTs already.
 
         if (NULL != pWallet)
         {
-            OTString strOutput, strPlaintext(plaintext.toStdString().c_str());
+            opentxs::OTString strOutput, strPlaintext(plaintext.toStdString().c_str());
 
             if (pWallet->Encrypt_ByKeyID(s_key_id, strPlaintext, strOutput))
             {
@@ -943,11 +943,11 @@ QString MTContactHandler::Decrypt(QString ciphertext)
 
     if (!ciphertext.isEmpty())
     {
-        OTWallet * pWallet = OTAPI_Wrap::OTAPI()->GetWallet("MTContactHandler::Decrypt"); // This logs and ASSERTs already.
+        opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet("MTContactHandler::Decrypt"); // This logs and ASSERTs already.
 
         if (NULL != pWallet)
         {
-            OTString strOutput, strCiphertext(ciphertext.toStdString().c_str());
+            opentxs::OTString strOutput, strCiphertext(ciphertext.toStdString().c_str());
 
             if (pWallet->Decrypt_ByKeyID(s_key_id, strCiphertext, strOutput))
             {
@@ -970,8 +970,8 @@ QString MTContactHandler::Encode(QString plaintext)
     if (!plaintext.isEmpty())
     {
         // Encode base64.
-        OTString        strValue(plaintext.toStdString());
-        OTASCIIArmor    ascValue;
+        opentxs::OTString        strValue(plaintext.toStdString());
+        opentxs::OTASCIIArmor    ascValue;
         ascValue.SetString(strValue, false); //bLineBreaks=true by default
         encoded_value = QString(ascValue.Get());
     }
@@ -987,9 +987,9 @@ QString MTContactHandler::Decode(QString encoded)
     if (!encoded.isEmpty())
     {
         // Decode base64.
-        OTASCIIArmor ascValue;
+        opentxs::OTASCIIArmor ascValue;
         ascValue.Set(encoded.toStdString().c_str());
-        OTString strValue;
+        opentxs::OTString strValue;
         ascValue.GetString(strValue, false); //bLineBreaks=true by default
         decoded_value = QString(strValue.Get());
     }

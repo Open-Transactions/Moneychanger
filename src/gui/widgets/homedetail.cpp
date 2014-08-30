@@ -15,10 +15,10 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OT_ME.hpp>
-#include <opentxs/OTLog.hpp>
+#include <opentxs/api/OTAPI.hpp>
+#include <opentxs/api/OTAPI_Exec.hpp>
+#include <opentxs/api/OT_ME.hpp>
+#include <opentxs/core/OTLog.hpp>
 
 #include <QGridLayout>
 #include <QMessageBox>
@@ -409,11 +409,11 @@ QString MTHomeDetail::FindAppropriateDepositAccount(OTRecord & recordmt)
         // account in the first place.)
         // -----------------------------------
         str_acct_id      = qstr_acct_id.toStdString();
-        str_acct_nym     = OTAPI_Wrap::It()->GetAccountWallet_NymID      (str_acct_id);
-        str_acct_server  = OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
-        str_acct_asset   = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+        str_acct_nym     = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID      (str_acct_id);
+        str_acct_server  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
+        str_acct_asset   = opentxs::OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
         // -----------------------------------
-        str_acct_type    = OTAPI_Wrap::It()->GetAccountWallet_Type(str_acct_id);
+        str_acct_type    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Type(str_acct_id);
         // -----------------------------------
         qstr_acct_nym    = QString::fromStdString(str_acct_nym);
         qstr_acct_server = QString::fromStdString(str_acct_server);
@@ -454,12 +454,12 @@ QString MTHomeDetail::FindAppropriateDepositAccount(OTRecord & recordmt)
         // -----------------------------------------------
         mapIDName & the_map = theChooser.m_map;
         // -----------------------------------------------
-        const int32_t acct_count = OTAPI_Wrap::It()->GetAccountCount();
+        const int32_t acct_count = opentxs::OTAPI_Wrap::It()->GetAccountCount();
         // -----------------------------------------------
         for (int32_t ii = 0; ii < acct_count; ++ii)
         {
             //Get OT Acct ID
-            QString OT_acct_id = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
+            QString OT_acct_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
             QString OT_acct_name("");
             // -----------------------------------------------
             if (!OT_acct_id.isEmpty()) // Should never be empty.
@@ -467,11 +467,11 @@ QString MTHomeDetail::FindAppropriateDepositAccount(OTRecord & recordmt)
                 qstr_acct_id     = OT_acct_id;
                 // -----------------------------------
                 str_acct_id      = qstr_acct_id.toStdString();
-                str_acct_nym     = OTAPI_Wrap::It()->GetAccountWallet_NymID      (str_acct_id);
-                str_acct_server  = OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
-                str_acct_asset   = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+                str_acct_nym     = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID      (str_acct_id);
+                str_acct_server  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
+                str_acct_asset   = opentxs::OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
                 // -----------------------------------
-                str_acct_type    = OTAPI_Wrap::It()->GetAccountWallet_Type(str_acct_id);
+                str_acct_type    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Type(str_acct_id);
                 // -----------------------------------
                 qstr_acct_nym    = QString::fromStdString(str_acct_nym);
                 qstr_acct_server = QString::fromStdString(str_acct_server);
@@ -677,7 +677,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
             {
                 bool bSuccess = false;
                 {
-                    OT_ME     madeEasy;
+                    opentxs::OT_ME     madeEasy;
                     MTSpinner theSpinner;
                     // -----------------------------------------
                     const int32_t nDepositCash = madeEasy.deposit_cash(recordmt.GetServerID(), recordmt.GetNymID(),
@@ -949,8 +949,8 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(OTRecord & recordmt, bool bExte
     //
     if (recordmt.IsInvoice() || recordmt.IsPaymentPlan() ||
         ((0 == recordmt.GetInstrumentType().compare("chequeReceipt")) &&
-         (( recordmt.IsOutgoing() && (OTAPI_Wrap::It()->StringToLong(recordmt.GetAmount()) > 0)) ||
-          (!recordmt.IsOutgoing() && (OTAPI_Wrap::It()->StringToLong(recordmt.GetAmount()) < 0)))
+         (( recordmt.IsOutgoing() && (opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetAmount()) > 0)) ||
+          (!recordmt.IsOutgoing() && (opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetAmount()) < 0)))
          ))
         cellType = (recordmt.IsOutgoing() ?
                     (recordmt.IsPending() ?
@@ -963,7 +963,7 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(OTRecord & recordmt, bool bExte
     // --------------------------------------------------------------------------------------------
     if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
     {
-        const int64_t lAmount = OTAPI_Wrap::It()->StringToAmount(recordmt.GetAssetID(), recordmt.GetAmount());
+        const int64_t lAmount = opentxs::OTAPI_Wrap::It()->StringToAmount(recordmt.GetAssetID(), recordmt.GetAmount());
 
         cellType = (lAmount > 0) ? TransactionTableViewCellTypeReceived : TransactionTableViewCellTypeSent;
     }
@@ -1130,7 +1130,7 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(OTRecord & recordmt, bool bExte
     //Calc/convert date/times
     QDateTime timestamp;
 
-    long lDate = OTAPI_Wrap::It()->StringToLong(recordmt.GetDate());
+    long lDate = opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetDate());
 
     timestamp.setTime_t(lDate);
 
@@ -1199,8 +1199,8 @@ void MTHomeDetail::refresh(int nRow, OTRecordList & theList)
 
     if ((nRow >= 0) && (nRow < theList.size()))
     {
-        weak_ptr_OTRecord   weakRecord = theList.GetRecord(nRow);
-        shared_ptr_OTRecord record     = weakRecord.lock();
+        opentxs::weak_ptr_OTRecord   weakRecord = theList.GetRecord(nRow);
+        opentxs::shared_ptr_OTRecord record     = weakRecord.lock();
 
         if (weakRecord.expired())
         {
@@ -1752,7 +1752,7 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
     {
         QLabel    * pLabel    = new QLabel(QString("%1: ").arg(tr("Server")));
 
-        QString qstr_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(qstr_ServerID.toStdString()));
+        QString qstr_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(qstr_ServerID.toStdString()));
 
         m_pLineEdit_Server_ID       = new QLineEdit(qstr_ServerID);
         m_pLineEdit_Server_Name     = new QLineEdit(qstr_name);
@@ -1772,7 +1772,7 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
     {
         QLabel    * pLabel    = new QLabel(QString("%1: ").arg(tr("Asset Type")));
 
-        QString qstr_name = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_Name(qstr_AssetTypeID.toStdString()));
+        QString qstr_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(qstr_AssetTypeID.toStdString()));
 
         m_pLineEdit_AssetType_ID    = new QLineEdit(qstr_AssetTypeID);
         m_pLineEdit_AssetType_Name  = new QLineEdit(qstr_name);
@@ -1902,7 +1902,7 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
     {
         if (recordmt.HasInitialPayment() || recordmt.HasPaymentPlan())
         {
-            std::string str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(recordmt.GetAssetID().c_str());
+            std::string str_asset_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(recordmt.GetAssetID().c_str());
             // ---------------------------------
             std::stringstream sss;
             sss << "Payments use the currency: " << str_asset_name << "\n";
@@ -1920,7 +1920,7 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
                 dateString = [formatter stringFromDate:[NSDate date]];
 
                 long        lAmount    = recordmt.GetInitialPaymentAmount();
-                std::string str_output = OTAPI_Wrap::It()->FormatAmount(recordmt.GetAssetID().c_str(),
+                std::string str_output = opentxs::OTAPI_Wrap::It()->FormatAmount(recordmt.GetAssetID().c_str(),
                                                                         static_cast<int64_t>(lAmount));
                 sss << "Initial payment of " << str_output << " due: " << dateString.UTF8String << "\n";
             }
@@ -1932,7 +1932,7 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
                 dateString = [formatter stringFromDate:[NSDate date]];
 
                 long        lAmount    = recordmt.GetPaymentPlanAmount();
-                std::string str_output = OTAPI_Wrap::It()->FormatAmount(recordmt.GetAssetID().c_str(),
+                std::string str_output = opentxs::OTAPI_Wrap::It()->FormatAmount(recordmt.GetAssetID().c_str(),
                                                                         static_cast<int64_t>(lAmount));
                 sss << "Recurring payments of " << str_output << " begin: " << dateString.UTF8String << " ";
                 // ----------------------------------------------------------------

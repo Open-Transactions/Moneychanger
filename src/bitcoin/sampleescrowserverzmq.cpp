@@ -5,13 +5,13 @@
 
 #include <bitcoin-api/btchelper.hpp>
 
-#include <opentxs/OTLog.hpp>
+#include <opentxs/core/OTLog.hpp>
 
-#ifdef OT_USE_ZMQ4
+//#ifdef OT_USE_ZMQ4
     #include <zmq.h>
-#else
-    #include <zmq.hpp>
-#endif
+//#else
+//    #include <zmq.hpp>
+//#endif
 
 #include <string>
 #include <cstdio>

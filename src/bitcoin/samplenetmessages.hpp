@@ -2,7 +2,7 @@
 #define SAMPLENETMESSAGES_H
 
 #include <map>
-#include <opentxs/TR1_Wrapper.hpp>
+#include "core/TR1_Wrapper.hpp"
 
 
 enum NetMessageType
