@@ -52,7 +52,7 @@ void MTHomeDetail::SetHomePointer(MTHome & theHome)
     // NOTE: ALWAYS pass false to recordDeletedBalanceChanged, since Moneychanger::onBalancesChanged refreshes
     // it anyway, so we don't want MTHome::recordDeleted() to unnecessarily refresh it a second time.
     // --------------------------------------------------------
-    connect(m_pHome, SIGNAL(needToRefreshDetails(int, OTRecordList&)), this, SLOT(onRefresh(int, OTRecordList&)));
+    connect(m_pHome, SIGNAL(needToRefreshDetails(int, opentxs::OTRecordList&)), this, SLOT(onRefresh(int, opentxs::OTRecordList&)));
 }
 
 
@@ -134,7 +134,7 @@ void MTHomeDetail::on_addContactButton_clicked(bool checked /*=false*/)
 
     if (m_record)
     {
-        OTRecord & recordmt = *m_record;
+        opentxs::OTRecord& recordmt = *m_record;
         // --------------------------------------------------
         MTGetStringDialog nameDlg(this);
 
@@ -205,7 +205,7 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
 
     if (m_record)
     {
-        OTRecord & recordmt = *m_record;
+        opentxs::OTRecord& recordmt = *m_record;
 
         const std::string str_acct_id    = recordmt.GetOtherAccountID();
         const std::string str_nym_id     = recordmt.GetOtherNymID();
@@ -307,7 +307,7 @@ void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
     // --------------------------------
     if (m_record)
     {
-        OTRecord & recordmt = *m_record;
+        opentxs::OTRecord& recordmt = *m_record;
         // -----------------------------------
         bool bSuccess = false;
 
@@ -363,7 +363,7 @@ void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
 
 
 
-QString MTHomeDetail::FindAppropriateDepositAccount(OTRecord & recordmt)
+QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
 {
     // -----------------------------------------
     const std::string str_record_asset  = recordmt.GetAssetID();
@@ -557,10 +557,10 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
 
     if (m_record)
     {
-        OTRecord & recordmt = *m_record;
+        opentxs::OTRecord& recordmt = *m_record;
         // -------------------------------------------------
-        const bool bIsTransfer = (recordmt.GetRecordType() == OTRecord::Transfer);
-        const bool bIsReceipt  = (recordmt.GetRecordType() == OTRecord::Receipt);
+        const bool bIsTransfer = (recordmt.GetRecordType() == opentxs::OTRecord::Transfer);
+        const bool bIsReceipt  = (recordmt.GetRecordType() == opentxs::OTRecord::Receipt);
         // -------------------------------------------------
         if (bIsTransfer)
         {
@@ -600,7 +600,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
             }
         }
         // -------------------------------------------------
-        else if (OTRecord::Instrument == recordmt.GetRecordType())
+        else if (opentxs::OTRecord::Instrument == recordmt.GetRecordType())
         {
             // --------------------------------
             if (recordmt.IsInvoice())
@@ -653,7 +653,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
 
     if (m_record)
     {
-        OTRecord & recordmt = *m_record;
+        opentxs::OTRecord& recordmt = *m_record;
         // ---------------------------------------
         if (recordmt.IsCash())
         {
@@ -757,7 +757,7 @@ void MTHomeDetail::on_discardOutgoingButton_clicked(bool checked /*=false*/)
 
     if (m_record)
     {
-        OTRecord & recordmt = *m_record;
+        opentxs::OTRecord& recordmt = *m_record;
         // ---------------------------------------
         QMessageBox::StandardButton reply;
 
@@ -799,7 +799,7 @@ void MTHomeDetail::on_discardIncomingButton_clicked(bool checked /*=false*/)
 
     if (m_record)
     {
-        OTRecord & recordmt = *m_record;
+        opentxs::OTRecord& recordmt = *m_record;
         // ---------------------------------------
         QMessageBox::StandardButton reply;
 
@@ -839,7 +839,7 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
 
     if (m_record)
     {
-        OTRecord & recordmt = *m_record;
+        opentxs::OTRecord& recordmt = *m_record;
         // --------------------------------------------------
         const std::string str_my_nym_id     = recordmt.GetNymID();
         const std::string str_other_nym_id  = recordmt.GetOtherNymID();
@@ -933,7 +933,7 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
 
 
 //static
-QWidget * MTHomeDetail::CreateDetailHeaderWidget(OTRecord & recordmt, bool bExternal/*=true*/)
+QWidget * MTHomeDetail::CreateDetailHeaderWidget(opentxs::OTRecord& recordmt, bool bExternal/*=true*/)
 {
     TransactionTableViewCellType cellType = (recordmt.IsOutgoing() ?
                                                  // -------------------------------------------------
@@ -1188,12 +1188,12 @@ void increment_cell(int & nCurrentRow, int & nCurrentColumn)
     }
 }
 
-void MTHomeDetail::onRefresh(int nRow, OTRecordList & theList)
+void MTHomeDetail::onRefresh(int nRow, opentxs::OTRecordList & theList)
 {
     refresh(nRow, theList);
 }
 
-void MTHomeDetail::refresh(int nRow, OTRecordList & theList)
+void MTHomeDetail::refresh(int nRow, opentxs::OTRecordList & theList)
 {
 //  qDebug() << QString("MTHomeDetail::refresh: nRow: %1").arg(nRow);
 
@@ -1209,7 +1209,7 @@ void MTHomeDetail::refresh(int nRow, OTRecordList & theList)
         }
         // --------------------------------------------------
         m_record = record;
-        OTRecord & recordmt = *record;
+        opentxs::OTRecord& recordmt = *record;
         // --------------------------------------------------
         refresh(recordmt);
     }
@@ -1257,7 +1257,7 @@ void MTHomeDetail::RecreateLayout()
 }
 
 
-void MTHomeDetail::refresh(OTRecord & recordmt)
+void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
 {
     RecreateLayout(); // (This sets *this to visible=false.)
     // --------------------------------------------------
@@ -1403,8 +1403,8 @@ void MTHomeDetail::refresh(OTRecord & recordmt)
 
     if (recordmt.CanAcceptIncoming())
     {
-//      const bool bIsTransfer = (recordmt.GetRecordType() == OTRecord::Transfer);
-//      const bool bIsReceipt  = (recordmt.GetRecordType() == OTRecord::Receipt);
+//      const bool bIsTransfer = (recordmt.GetRecordType() == opentxs::OTRecord::Transfer);
+//      const bool bIsReceipt  = (recordmt.GetRecordType() == opentxs::OTRecord::Receipt);
 
         QString nameString;
         QString actionString;

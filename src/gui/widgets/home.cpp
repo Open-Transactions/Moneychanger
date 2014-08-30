@@ -719,7 +719,7 @@ void MTHome::OnDeletedRecord()
             // -----------------------------------------
         }
         else
-            qDebug() << QString("Failure removing OTRecord at index %1.").arg(nCurrentRow);
+            qDebug() << QString("Failure removing opentxs::OTRecordat index %1.").arg(nCurrentRow);
     }
 }
 
@@ -738,9 +738,9 @@ void MTHome::PopulateRecords()
     //
     bool bNeedsReSorting = false;
 
-    const list_of_strings & the_nyms = m_list.GetNyms();
+    const opentxs::list_of_strings & the_nyms = m_list.GetNyms();
 
-    for (list_of_strings::const_iterator it = the_nyms.begin(); it != the_nyms.end(); ++it)
+    for (opentxs::list_of_strings::const_iterator it = the_nyms.begin(); it != the_nyms.end(); ++it)
     {
         const std::string str_nym_id = *it;
         // -----------------------------
@@ -953,7 +953,7 @@ void MTHome::RefreshRecords()
         }
         else
         {
-            OTRecord & recordmt = *record;
+            opentxs::OTRecord& recordmt = *record;
             QWidget  * pWidget  = MTHomeDetail::CreateDetailHeaderWidget(recordmt);
             // -------------------------------------------
             if (NULL != pWidget)

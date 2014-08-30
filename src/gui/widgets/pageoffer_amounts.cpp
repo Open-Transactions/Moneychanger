@@ -7,7 +7,7 @@
 
 #include <opentxs/api/OTAPI.hpp>
 #include <opentxs/api/OTAPI_Exec.hpp>
-#include <opentxs/OTPaymentPlan.hpp>
+#include <opentxs/core/OTPaymentPlan.hpp>
 
 #include <cmath>
 

@@ -16,7 +16,8 @@
 #include <opentxs/api/OT_ME.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/OTData.hpp>
-#include <opentxs/OTPaymentPlan.hpp>
+#include <opentxs/core/OTPaymentPlan.hpp>
+#include <opentxs/core/OTCleanup.hpp>
 
 #include <QMessageBox>
 #include <QDateTime>

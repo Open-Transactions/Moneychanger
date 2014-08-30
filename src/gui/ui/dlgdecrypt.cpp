@@ -14,10 +14,10 @@
 #include <opentxs/api/OpenTransactions.hpp>
 
 #include <opentxs/core/OTASCIIArmor.hpp>
-#include <opentxs/OTEnvelope.hpp>
-#include <opentxs/OTPseudonym.hpp>
-#include <opentxs/OTPasswordData.hpp>
-#include <opentxs/OTSignedFile.hpp>
+#include <opentxs/core/OTEnvelope.hpp>
+#include <opentxs/core/OTPseudonym.hpp>
+#include <opentxs/core/OTPasswordData.hpp>
+#include <opentxs/core/OTSignedFile.hpp>
 
 
 DlgDecrypt::DlgDecrypt(QWidget *parent) :
@@ -98,7 +98,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
         {
             if (strInput.Contains("-----BEGIN OT ARMORED ENVELOPE-----"))
             {
-                OTEnvelope theEnvelope;
+                opentxs::OTEnvelope theEnvelope;
 
                 if (theEnvelope.SetFromBookendedString(strInput))
                 {
@@ -112,13 +112,13 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                     {
                         std::string  str_nym    (qstrTempID.toStdString());
                         opentxs::OTString     strNym     (str_nym.c_str());
-                        OTIdentifier nym_id     (strNym);
+                        opentxs::OTIdentifier nym_id     (strNym);
 
                         if (!nym_id.IsEmpty())
                         {
-                            OTPasswordData thePWData("Recipient passphrase");
+                            opentxs::OTPasswordData thePWData("Recipient passphrase");
 
-                            OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
+                            opentxs::OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
                                                                                    false, //bChecking=false
                                                                                    "DlgEncrypt::on_pushButtonDecrypt_clicked",
                                                                                    &thePWData);
@@ -149,13 +149,13 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                             {
                                 std::string  str_nym    (OT_nym_id.toStdString());
                                 opentxs::OTString     strNym     (str_nym.c_str());
-                                OTIdentifier nym_id     (strNym);
+                                opentxs::OTIdentifier nym_id     (strNym);
 
                                 if (!nym_id.IsEmpty())
                                 {
-                                    OTPasswordData thePWData("Recipient passphrase");
+                                    opentxs::OTPasswordData thePWData("Recipient passphrase");
 
-                                    OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
+                                    opentxs::OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
                                                                                            false, //bChecking=false
                                                                                            "DlgEncrypt::on_pushButtonDecrypt_clicked",
                                                                                            &thePWData);
@@ -219,9 +219,9 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
 
                         if (!str_signer_nym.empty())
                         {
-                            OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
+                            opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
 
-                            OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(str_signer_nym,
+                            opentxs::OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(str_signer_nym,
                                                                                    false, //bChecking=false
                                                                                    "DlgEncrypt::on_pushButtonDecrypt_clicked",
                                                                                    &thePWData);

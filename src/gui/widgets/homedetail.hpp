@@ -36,7 +36,7 @@ public:
     explicit MTHomeDetail(QWidget *parent = 0);
     ~MTHomeDetail();
     
-    static QWidget * CreateDetailHeaderWidget(OTRecord & recordmt, bool bExternal=true);
+    static QWidget * CreateDetailHeaderWidget(opentxs::OTRecord& recordmt, bool bExternal=true);
 
     void SetHomePointer(MTHome & theHome);
 
@@ -55,7 +55,7 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
 public slots:
-    void onRefresh(int nRow, OTRecordList & theList);
+    void onRefresh(int nRow, opentxs::OTRecordList & theList);
 
 private slots:
     void on_viewContactButton_clicked(bool checked = false);
@@ -70,8 +70,8 @@ private slots:
     void on_msgButton_clicked(bool checked = false);
 
 private:
-    void refresh(OTRecord & recordmt);
-    void refresh(int nRow, OTRecordList & theList);
+    void refresh(opentxs::OTRecord& recordmt);
+    void refresh(int nRow, opentxs::OTRecordList & theList);
 
     int m_nContactID; // If there's a known Contact ID for this record, it will be set here when discovered, for later use.
     opentxs::shared_ptr_OTRecord m_record;
@@ -99,7 +99,7 @@ private:
 
     void FavorLeftSideForIDs();
 
-    QString FindAppropriateDepositAccount(OTRecord & recordmt);
+    QString FindAppropriateDepositAccount(opentxs::OTRecord& recordmt);
     void    RecreateLayout();
 
 private:

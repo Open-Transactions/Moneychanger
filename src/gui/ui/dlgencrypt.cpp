@@ -18,16 +18,18 @@
 #include <opentxs/api/OpenTransactions.hpp>
 
 #include <opentxs/core/OTASCIIArmor.hpp>
-#include <opentxs/OTEnvelope.hpp>
-#include <opentxs/OTPseudonym.hpp>
-#include <opentxs/OTPasswordData.hpp>
-#include <opentxs/OTSignedFile.hpp>
+#include <opentxs/core/OTEnvelope.hpp>
+#include <opentxs/core/OTPseudonym.hpp>
+#include <opentxs/core/OTPasswordData.hpp>
+#include <opentxs/core/OTSignedFile.hpp>
 
 #include <QKeyEvent>
 #include <QApplication>
 #include <QClipboard>
 #include <QListWidgetItem>
 #include <QMessageBox>
+
+#include <set>
 
 #include <string>
 
@@ -255,7 +257,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                 //
                 std::string  str_nym    (m_nymId.toStdString());
                 opentxs::OTString     strNym     (str_nym.c_str());
-                OTIdentifier nym_id     (strNym);
+                opentxs::OTIdentifier nym_id     (strNym);
 
                 std::string  str_text   (qstrText.toStdString());
                 opentxs::OTString     strText    (str_text.c_str());
@@ -266,9 +268,9 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
 
                 if (!nym_id.IsEmpty())
                 {
-                    OTPasswordData thePWData("Signer passphrase");
+                    opentxs::OTPasswordData thePWData("Signer passphrase");
 
-                    OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
+                    opentxs::OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
                                                                            false, //bChecking=false
                                                                            "DlgEncrypt::on_pushButtonEncrypt_clicked",
                                                                            &thePWData);
@@ -284,7 +286,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
     //                  inline opentxs::OTString & OTSignedFile::GetFilePayload()                       { return m_strSignedFilePayload;   }
 
                         opentxs::OTString     strSignedOutput;
-                        OTSignedFile theSignedFile;
+                        opentxs::OTSignedFile theSignedFile;
 
                         theSignedFile.SetSignerNymID(strNym);
 
@@ -332,11 +334,11 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
         {
             if (ui->listWidgetAdded->count() > 0)
             {
-                setOfNyms setRecipients;
+                std::set<opentxs::OTPseudonym*> setRecipients;
                 bool      bRecipientsShouldBeAvailable = false;
 
-                // Loop through each NymID in listWidgetAdded, and put them on a setOfNyms
-                // so we can pass them along to OTEnvelope (and so we can clean them up afterwards.)
+                // Loop through each NymID in listWidgetAdded, and put them on a opentxs::setOfNyms
+                // so we can pass them along to opentxs::OTEnvelope (and so we can clean them up afterwards.)
                 // UPDATE: Can't clean them up! Because the wallet only owns private nyms, not public
                 // ones, we never know for sure which ones are safe to erase. TODO: Fix in OT by using
                 // shared_ptr.
@@ -350,13 +352,13 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     QString           qstrNymID(qvarItem.toString());
                     std::string       str_nym(qstrNymID.toStdString());
                     opentxs::OTString          strNym(str_nym.c_str());
-                    OTIdentifier      nym_id(strNym);
+                    opentxs::OTIdentifier      nym_id(strNym);
 
                     if (!nym_id.IsEmpty())
                     {
-                        OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
+                        opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
 
-                        OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(nym_id,
+                        opentxs::OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(nym_id,
                                                                                false, //bChecking=false
                                                                                "DlgEncrypt::on_pushButtonEncrypt_clicked",
                                                                                &thePWData);
@@ -371,7 +373,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                             setRecipients.insert(setRecipients.begin(), pNym);
                         }
                     }
-                    // qstrNymID will be passed to OTEnvelope on its recipient list.
+                    // qstrNymID will be passed to opentxs::OTEnvelope on its recipient list.
                 } // for (selected Nyms.)
                 // ---------------------------------------------------
                 // We might also want to encrypt to the Signer's Nym, if there is one.
@@ -386,9 +388,9 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     opentxs::OTString strSignerNymID(str_signer_nym.c_str());
                     bool bSignerIsAlreadyThere = false;
 
-                    FOR_EACH(setOfNyms, setRecipients) // See if it's already there, in which case we don't need to do anything else.
+                    FOR_EACH(setRecipients, opentxs::setOfNyms) // See if it's already there, in which case we don't need to do anything else.
                     {
-                        OTPseudonym       * pNym = *it;
+                        opentxs::OTPseudonym       * pNym = *it;
                         opentxs::OTString            strNymID;
                         pNym->GetIdentifier(strNymID);
 
@@ -400,13 +402,13 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     {
                         bRecipientsShouldBeAvailable = true;
 
-                        OTIdentifier signer_nym_id(strSignerNymID);
+                        opentxs::OTIdentifier signer_nym_id(strSignerNymID);
 
                         if (!signer_nym_id.IsEmpty())
                         {
-                            OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
+                            opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
 
-                            OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(signer_nym_id,
+                            opentxs::OTPseudonym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(signer_nym_id,
                                                                                    false, //bChecking=false
                                                                                    "DlgEncrypt::on_pushButtonEncrypt_clicked",
                                                                                    &thePWData);
@@ -426,7 +428,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                 // ---------------------------------------------------
                 if (setRecipients.size() > 0)
                 {
-                    OTEnvelope theEnvelope;
+                    opentxs::OTEnvelope theEnvelope;
                     opentxs::OTString   strInput(qstrText.toStdString().c_str());
 
                     if (!theEnvelope.Seal(setRecipients, strInput))
