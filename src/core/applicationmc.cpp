@@ -9,11 +9,11 @@
 
 #include <core/handlers/contacthandler.hpp>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OTAsymmetricKey.hpp>
-#include <opentxs/OTRecordList.hpp>
-#include <opentxs/OTCaller.hpp>
+#include <opentxs/api/OTAPI.hpp>
+#include <opentxs/api/OTAPI_Exec.hpp>
+#include <opentxs/core/OTAsymmetricKey.hpp>
+#include <opentxs/api/OTRecordList.hpp>
+#include <opentxs/core/OTCaller.hpp>
 
 #include <QVBoxLayout>
 #include <QDebug>
@@ -23,7 +23,7 @@
 
 
 
-bool SetupPasswordCallback(OTCaller & passwordCaller, OTCallback & passwordCallback)
+bool SetupPasswordCallback(opentxs::OTCaller & passwordCaller, opentxs::OTCallback & passwordCallback)
 {
     passwordCaller.setCallback(&passwordCallback);
 
@@ -39,7 +39,7 @@ bool SetupPasswordCallback(OTCaller & passwordCaller, OTCallback & passwordCallb
 }
 
 
-bool SetupAddressBookCallback(OTLookupCaller & theCaller, OTNameLookup & theCallback)
+bool SetupAddressBookCallback(opentxs::OTLookupCaller & theCaller, opentxs::OTNameLookup & theCallback)
 {
     theCaller.setCallback(&theCallback);
 
@@ -79,7 +79,7 @@ void MTApplicationMC::appStarting()
     // ----------------------------------------
     // Set Password Callback.
     //
-    static OTCaller           passwordCaller;
+    static opentxs::OTCaller           passwordCaller;
     static MTPasswordCallback passwordCallback;
 
     if (!SetupPasswordCallback(passwordCaller, passwordCallback))
@@ -90,7 +90,7 @@ void MTApplicationMC::appStarting()
     // ----------------------------------------
     // Set Address Book Callback.
     //
-    static OTLookupCaller theCaller;
+    static opentxs::OTLookupCaller theCaller;
     static MTNameLookupQT theCallback;
 
     if (!SetupAddressBookCallback(theCaller, theCallback))
@@ -101,7 +101,7 @@ void MTApplicationMC::appStarting()
     // ----------------------------------------
     // Load OTAPI Wallet
     //
-    OTAPI_Wrap::It()->LoadWallet();
+    opentxs::OTAPI_Wrap::It()->LoadWallet();
     // ----------------------------------------
     /** Init Moneychanger code (Start when necessary below) **/
 

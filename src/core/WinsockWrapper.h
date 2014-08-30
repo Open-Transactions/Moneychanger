@@ -1,0 +1,26 @@
+#ifndef __WINSOCK_WRAPPER_H__
+#define __WINSOCK_WRAPPER_H__
+
+#ifdef _WIN32
+
+#if _MSC_VER > 1000
+#pragma once
+#endif
+ 
+#ifndef _WINDOWS_
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#endif
+
+ 
+#ifndef _WINSOCK_
+#define _WINSOCK_
+#include <winsock2.h>
+#endif
+ 
+#pragma comment(lib, "ws2_32.lib")
+ 
+#endif
+#endif
