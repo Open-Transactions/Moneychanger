@@ -209,7 +209,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                 //
                 if (strInput.Contains("-----BEGIN SIGNED FILE-----"))
                 {
-                    OTSignedFile theSignedFile;
+                    opentxs::OTSignedFile theSignedFile;
 
                     if (theSignedFile.LoadContractFromString(strInput))
                     {

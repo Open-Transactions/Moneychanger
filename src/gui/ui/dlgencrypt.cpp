@@ -283,7 +283,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     else
                     {
                         // FOR VERIFY STEP:
-    //                  inline opentxs::OTString & OTSignedFile::GetFilePayload()                       { return m_strSignedFilePayload;   }
+    //                  inline opentxs::OTString & opentxs::OTSignedFile::GetFilePayload()                       { return m_strSignedFilePayload;   }
 
                         opentxs::OTString     strSignedOutput;
                         opentxs::OTSignedFile theSignedFile;
@@ -388,7 +388,8 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     opentxs::OTString strSignerNymID(str_signer_nym.c_str());
                     bool bSignerIsAlreadyThere = false;
 
-                    FOR_EACH(setRecipients, opentxs::setOfNyms) // See if it's already there, in which case we don't need to do anything else.
+                    //FOR_EACH(opentxs::setOfNyms(), setRecipients) // See if it's already there, in which case we don't need to do anything else.
+                    for(opentxs::setOfNyms::iterator it = setRecipients.begin(); it != setRecipients.end(); ++ it)
                     {
                         opentxs::OTPseudonym       * pNym = *it;
                         opentxs::OTString            strNymID;
