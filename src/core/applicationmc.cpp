@@ -9,11 +9,11 @@
 
 #include <core/handlers/contacthandler.hpp>
 
-#include <opentxs/api/OTAPI.hpp>
-#include <opentxs/api/OTAPI_Exec.hpp>
-#include <opentxs/core/OTAsymmetricKey.hpp>
-#include <opentxs/api/OTRecordList.hpp>
-#include <opentxs/core/OTCaller.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/crypto/OTAsymmetricKey.hpp>
+#include <opentxs/client/OTRecordList.hpp>
+#include <opentxs/core/crypto/OTCaller.hpp>
 
 #include <QVBoxLayout>
 #include <QDebug>

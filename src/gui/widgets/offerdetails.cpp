@@ -11,13 +11,12 @@
 
 #include <core/moneychanger.hpp>
 
-#include <opentxs/api/OTAPI.hpp>
-#include <opentxs/api/OTAPI_Exec.hpp>
-#include <opentxs/api/OT_ME.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/OTData.hpp>
 #include <opentxs/core/OTPaymentPlan.hpp>
-#include <opentxs/core/OTCleanup.hpp>
 
 #include <QMessageBox>
 #include <QDateTime>
@@ -789,7 +788,7 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
             opentxs::OTDB::TradeListNym * pTradeList = LoadTradeListForNym(*pOfferData,
                                                                   QString::fromStdString(str_server),
                                                                   qstrNymID);
-            opentxs::OTCleanup<opentxs::OTDB::TradeListNym> theAngel(pTradeList);
+            std::unique_ptr<opentxs::OTDB::TradeListNym> theAngel(pTradeList);
 
             if (NULL != pTradeList)
             {

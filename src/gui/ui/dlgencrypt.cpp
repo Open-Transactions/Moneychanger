@@ -12,16 +12,16 @@
 #include <gui/ui/dlgexportedtopass.hpp>
 
 #include <opentxs/core/OTStorage.hpp>
-#include <opentxs/api/OTAPI.hpp>
-#include <opentxs/api/OTAPI_Exec.hpp>
-#include <opentxs/api/OT_ME.hpp>
-#include <opentxs/api/OpenTransactions.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OT_ME.hpp>
+#include <opentxs/client/OpenTransactions.hpp>
 
-#include <opentxs/core/OTASCIIArmor.hpp>
-#include <opentxs/core/OTEnvelope.hpp>
+#include <opentxs/core/crypto/OTASCIIArmor.hpp>
+#include <opentxs/core/crypto/OTEnvelope.hpp>
 #include <opentxs/core/OTPseudonym.hpp>
-#include <opentxs/core/OTPasswordData.hpp>
-#include <opentxs/core/OTSignedFile.hpp>
+#include <opentxs/core/crypto/OTPasswordData.hpp>
+#include <opentxs/core/crypto/OTSignedFile.hpp>
 
 #include <QKeyEvent>
 #include <QApplication>

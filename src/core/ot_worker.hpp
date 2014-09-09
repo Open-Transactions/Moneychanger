@@ -4,7 +4,7 @@
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
 
-#include <opentxs/api/OTRecordList.hpp>
+#include <opentxs/client/OTRecordList.hpp>
 
 #include <QObject>
 #include <QMap>

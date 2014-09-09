@@ -9,8 +9,8 @@
 #include <gui/widgets/detailedit.hpp>
 #include <gui/widgets/wizardnewoffer.hpp>
 
-#include <opentxs/api/OTAPI.hpp>
-#include <opentxs/api/OTAPI_Exec.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
 
 
 PageOffer_Accounts::PageOffer_Accounts(QWidget *parent) :

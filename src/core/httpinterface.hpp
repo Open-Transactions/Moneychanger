@@ -4,7 +4,7 @@
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
 
-#include <opentxs/api/OT_ME.hpp>
+#include <opentxs/client/OT_ME.hpp>
 
 class HTTPInterface
 {

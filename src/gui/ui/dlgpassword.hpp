@@ -8,7 +8,7 @@
 #include <QDialog>
 #include <QCloseEvent>
 
-#include <opentxs/core/OTPassword.hpp>
+#include <opentxs/core/crypto/OTPassword.hpp>
 
 
 namespace Ui {

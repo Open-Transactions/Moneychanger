@@ -6,8 +6,8 @@
 
 #include <core/handlers/contacthandler.hpp>
 
-#include <opentxs/api/OTAPI.hpp>
-#include <opentxs/api/OTAPI_Exec.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/OTLog.hpp>
 
 #include <QVariant>

@@ -7,7 +7,7 @@
 
 #include <gui/widgets/overridecursor.hpp>
 
-#include <opentxs/core/OTPassword.hpp>
+#include <opentxs/core/crypto/OTPassword.hpp>
 
 
 

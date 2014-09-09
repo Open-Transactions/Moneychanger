@@ -9,12 +9,11 @@
 
 #include <core/moneychanger.hpp>
 
-#include <opentxs/api/OTAPI.hpp>
-#include <opentxs/api/OTAPI_Exec.hpp>
-#include <opentxs/api/OT_ME.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/OTData.hpp>
-#include <opentxs/core/OTCleanup.hpp>
 
 #include <QDateTime>
 #include <QDebug>
@@ -301,7 +300,7 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
             }
             // -----------------------------------------
             opentxs::OTDB::OfferListMarket * pOfferList = LoadOfferListForMarket(*pMarketData);
-            opentxs::OTCleanup<opentxs::OTDB::OfferListMarket> theAngel(pOfferList);
+            std::unique_ptr<opentxs::OTDB::OfferListMarket> theAngel(pOfferList);
 
             if (NULL != pOfferList)
             {
@@ -602,7 +601,7 @@ void MTMarketDetails::PopulateRecentTradesGrid(QString & qstrID, QMultiMap<QStri
             }
             // -----------------------------------------
             opentxs::OTDB::TradeListMarket * pTradeList = LoadTradeListForMarket(*pMarketData);
-            opentxs::OTCleanup<opentxs::OTDB::TradeListMarket> theAngel(pTradeList);
+            std::unique_ptr<opentxs::OTDB::TradeListMarket> theAngel(pTradeList);
 
             if (NULL != pTradeList)
             {

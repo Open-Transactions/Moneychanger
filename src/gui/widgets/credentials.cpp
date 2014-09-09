@@ -12,8 +12,8 @@
 
 #include <QSqlField>
 
-#include <opentxs/api/OTAPI.hpp>
-#include <opentxs/api/OTAPI_Exec.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
 
 
 MTCredentials::MTCredentials(QWidget *parent, MTDetailEdit & theOwner) :

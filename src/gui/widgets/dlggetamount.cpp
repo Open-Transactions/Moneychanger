@@ -10,8 +10,8 @@
 #include <QMessageBox>
 #include <QKeyEvent>
 
-#include <opentxs/api/OTAPI.hpp>
-#include <opentxs/api/OTAPI_Exec.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
 
 
 DlgGetAmount::DlgGetAmount(QWidget *parent, QString qstrAcctId, QString qstrAssetId, QString qstrReason) :

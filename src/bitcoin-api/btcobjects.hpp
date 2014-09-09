@@ -1,8 +1,8 @@
 #ifndef BTCOBJECTS_HPP
 #define BTCOBJECTS_HPP
 
-#include <opentxs/core/WinsockWrapper.h>
-#include <opentxs/core/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 //#include "core/TR1_Wrapper.hpp"
 #include "core/TR1_Wrapper.hpp"
 

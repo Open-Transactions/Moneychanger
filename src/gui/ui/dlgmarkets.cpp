@@ -10,12 +10,11 @@
 
 #include <core/moneychanger.hpp>
 
-#include <opentxs/api/OTAPI.hpp>
-#include <opentxs/api/OTAPI_Exec.hpp>
-#include <opentxs/api/OT_ME.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/OTData.hpp>
-#include <opentxs/core/OTCleanup.hpp>
 
 #include <QKeyEvent>
 
@@ -453,7 +452,7 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, 
     if (bGotIDs)
     {
         opentxs::OTDB::OfferListNym * pOfferList = LoadOfferListForServer(qstrServerID.toStdString(), qstrNymID.toStdString());
-        opentxs::OTCleanup<opentxs::OTDB::OfferListNym> theAngel(pOfferList);
+        std::unique_ptr<opentxs::OTDB::OfferListNym> theAngel(pOfferList);
 
         if (NULL != pOfferList)
         {
@@ -590,7 +589,7 @@ bool DlgMarkets::LowLevelLoadMarketList(QString qstrServerID, QString qstrNymID,
         return false;
     // -----------------------------------
     opentxs::OTDB::MarketList * pMarketList = LoadMarketListForServer(qstrServerID.toStdString());
-    opentxs::OTCleanup<opentxs::OTDB::MarketList> theAngel(pMarketList);
+    std::unique_ptr<opentxs::OTDB::MarketList> theAngel(pMarketList);
 
     if (NULL != pMarketList)
     {

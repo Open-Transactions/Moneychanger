@@ -9,11 +9,11 @@
 #include <core/mtcomms.h>
 
 #include <opentxs/core/OTStorage.hpp>
-#include <opentxs/api/OTAPI.hpp>
-#include <opentxs/api/OTAPI_Exec.hpp>
-#include <opentxs/api/OpenTransactions.hpp>
-#include <opentxs/core/OTASCIIArmor.hpp>
-#include <opentxs/core/OTWallet.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OpenTransactions.hpp>
+#include <opentxs/core/crypto/OTASCIIArmor.hpp>
+#include <opentxs/client/OTWallet.hpp>
 
 #include <QDebug>
 #include <QObject>

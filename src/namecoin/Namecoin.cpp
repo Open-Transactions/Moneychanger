@@ -25,9 +25,9 @@
 
 #include <nmcrpc/RpcSettings.hpp>
 
-#include <opentxs/api/OTAPI.hpp>
-#include <opentxs/api/OTAPI_Exec.hpp>
-#include <opentxs/core/OTPassword.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/crypto/OTPassword.hpp>
 
 #include <QDebug>
 #include <QSqlField>
@@ -431,7 +431,7 @@ NMC_WalletUnlocker::unlock ()
   /* If we need a password, show the dialog.  */
   if (nc.needWalletPassphrase ())
     {
-      OTPassword otPwd;
+        opentxs::OTPassword otPwd;
 
       MTDlgPassword dlg (nullptr, otPwd);
       dlg.setDisplay ("Your Namecoin wallet is locked.  For the operations to"
