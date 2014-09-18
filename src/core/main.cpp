@@ -15,6 +15,8 @@
 #include <opentxs/core/OTPaths.hpp>
 
 #include <QTimer>
+#include <QApplication>
+#include <QDir>
 
 
 void shutdown_app()

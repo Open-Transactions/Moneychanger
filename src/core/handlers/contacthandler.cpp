@@ -922,13 +922,13 @@ QString MTContactHandler::Encrypt(QString plaintext)
         if (NULL != pWallet)
         {
             opentxs::OTString strOutput, strPlaintext(plaintext.toStdString().c_str());
-/*
+
             if (pWallet->Encrypt_ByKeyID(s_key_id, strPlaintext, strOutput))
             {
                 std::string str_temp(strOutput.Get());
                 encrypted_value = QString::fromStdString(str_temp);
             }
- */
+
         }
     }
 
@@ -949,13 +949,13 @@ QString MTContactHandler::Decrypt(QString ciphertext)
         if (NULL != pWallet)
         {
             opentxs::OTString strOutput, strCiphertext(ciphertext.toStdString().c_str());
-/*
+
             if (pWallet->Decrypt_ByKeyID(s_key_id, strCiphertext, strOutput))
             {
                 std::string str_temp(strOutput.Get());
                 decrypted_value = QString::fromStdString(str_temp);
             }
- */
+ 
         }
     }
 
