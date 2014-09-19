@@ -9,12 +9,14 @@
 
 #include <bitcoin-api/btcmodules.hpp>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OTLog.hpp>
-#include <opentxs/OTPaths.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/OTLog.hpp>
+#include <opentxs/core/OTPaths.hpp>
 
 #include <QTimer>
+#include <QApplication>
+#include <QDir>
 
 
 void shutdown_app()
@@ -29,12 +31,12 @@ public:
     __OTclient_RAII()
     {
         // SSL gets initialized in here, before any keys are loaded.
-        OTAPI_Wrap::AppInit();
+        opentxs::OTAPI_Wrap::AppInit();
     }
     ~__OTclient_RAII()
     {
         
-        OTAPI_Wrap::AppCleanup();
+        opentxs::OTAPI_Wrap::AppCleanup();
     }
 };
 
@@ -60,9 +62,9 @@ int main(int argc, char *argv[])
     //
     __OTclient_RAII the_client_cleanup;  // <===== SECOND constructor is called here.
     // ----------------------------------------
-    if (NULL == OTAPI_Wrap::It())
+    if (NULL == opentxs::OTAPI_Wrap::It())
     {
-        OTLog::vError(0, "Error, exiting: OTAPI_Wrap::AppInit() call must have failed.\n");
+        opentxs::OTLog::vError(0, "Error, exiting: opentxs::OTAPI_Wrap::AppInit() call must have failed.\n");
         return -1;
     }
     // ----------------------------------------
@@ -124,9 +126,9 @@ int main(int argc, char *argv[])
         int nIndexBuild = qstrAppDirPath.indexOf("build", 0);
 
         if ((-1 == nIndexClang) && (-1 == nIndexBuild))
-            OTPaths::SetAppBinaryFolder(qstrAppDirPath.toStdString().c_str());
+            opentxs::OTPaths::SetAppBinaryFolder(qstrAppDirPath.toStdString().c_str());
     }
-//  QMessageBox::information(NULL, "", QString::fromStdString(std::string(OTPaths::ScriptsFolder().Get())));
+//  QMessageBox::information(NULL, "", QString::fromStdString(std::string(opentxs::OTPaths::ScriptsFolder().Get())));
 #endif
 // ----------------------------------------------------------------
     int nExec = theApplication.exec(); // <=== Here's where we run the QApplication...
@@ -135,7 +137,7 @@ int main(int argc, char *argv[])
     Moneychanger::It(NULL, true); // bShuttingDown=true.
 
     // ----------------------------------------------------------------
-    OTLog::vOutput(0, "Finished executing the QApplication!\n(AppCleanup should occur "
+    opentxs::OTLog::vOutput(0, "Finished executing the QApplication!\n(AppCleanup should occur "
                    "immediately after this point.)\nReturning: %d\n", nExec);
     // ----------------------------------------------------------------
     return nExec;

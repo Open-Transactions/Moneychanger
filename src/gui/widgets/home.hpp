@@ -1,10 +1,10 @@
 #ifndef MTHOME_HPP
 #define MTHOME_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
-#include <opentxs/OTRecordList.hpp>
+#include <opentxs/client/OTRecordList.hpp>
 
 #include <QPointer>
 #include <QWidget>
@@ -39,7 +39,7 @@ private:
     // ------------------------------------------------
     QPointer<QFrame>        m_pHeaderFrame;
     // ------------------------------------------------
-    OTRecordList   m_list;
+    opentxs::OTRecordList   m_list;
     // ------------------------------------------------
     bool    m_bTurnRefreshBtnRed;
     // ------------------------------------------------
@@ -63,7 +63,7 @@ public:
 
 signals:
     void needToDownloadAccountData();
-    void needToRefreshDetails(int nRow, OTRecordList & theList);
+    void needToRefreshDetails(int nRow, opentxs::OTRecordList & theList);
 
 public slots:
     void onAccountDataDownloaded();

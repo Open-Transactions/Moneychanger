@@ -5,13 +5,13 @@
 
 #include <bitcoin-api/btchelper.hpp>
 
-#include <opentxs/OTLog.hpp>
+#include <opentxs/core/OTLog.hpp>
 
-#ifdef OT_USE_ZMQ4
+//#ifdef OT_USE_ZMQ4
     #include <zmq.h>
-#else
-    #include <zmq.hpp>
-#endif
+//#else
+//    #include <zmq.hpp>
+//#endif
 
 #include <string>
 #include <cstdio>
@@ -345,11 +345,11 @@ BtcNetMsg* SampleEscrowServerZmq::SendData(BtcNetMsg* message)
     zmq_msg_init_size(request, size);
     zmq_msg_init_data(request, message->data, size, NULL, NULL);
 
-#ifdef OT_USE_ZMQ4
+//#ifdef OT_USE_ZMQ4
     if(zmq_msg_send(request, socket, 0) == -1)
-#else
-    if(zmq_send(socket, request, 0) == -1)
-#endif
+//#else
+//    if(zmq_send(socket, request, 0 ) == -1)
+//#endif
     {
         zmq_close(socket);
         zmq_term(context);
@@ -387,11 +387,11 @@ BtcNetMsg* SampleEscrowServerZmq::SendData(BtcNetMsg* message)
         return NULL;
     }
 
-#ifdef OT_USE_ZMQ4
+//#ifdef OT_USE_ZMQ4
     zmq_msg_recv(&reply, socket, 0);
-#else
-    zmq_recv(socket, &reply, 0);
-#endif
+//#else
+//    zmq_recv(socket, &reply, 0);
+//#endif
 
     if(zmq_msg_size(&reply) < NetMessageSizes[Unknown])
     {
@@ -471,11 +471,11 @@ void SampleEscrowServerZmq::UpdateServer()
             return;
         }*/
 
-#ifdef OT_USE_ZMQ4
+//#ifdef OT_USE_ZMQ4
         if(zmq_msg_recv(&request, this->serverSocket, ZMQ_DONTWAIT) == -1)
-#else
-        if(zmq_recv(this->serverSocket, &request, ZMQ_NOBLOCK) == -1)
-#endif
+//#else
+//        if(zmq_recv(this->serverSocket, &request, ZMQ_NOBLOCK) == -1)
+//#endif
         {
             zmq_msg_close(&request);
             return;
@@ -632,11 +632,11 @@ void SampleEscrowServerZmq::UpdateServer()
         zmq_msg_init_size(&reply, size);
         zmq_msg_init_data(&reply, replyPtr->data, size, &DeleteNetMsg, replyPtr);
 
-#ifdef OT_USE_ZMQ4
+//#ifdef OT_USE_ZMQ4
         zmq_msg_send(&reply, this->serverSocket, 0);
-#else
-        zmq_send(this->serverSocket, &reply, 0);
-#endif
+//#else
+//        zmq_send(this->serverSocket, &reply, 0);
+//#endif
 
         // note: replyPtr is not deleted on purpose, see DeleteNetMsg()
     }

@@ -1,8 +1,9 @@
 #ifndef SETTINGS_HPP
 #define SETTINGS_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
+#include "core/TR1_Wrapper.hpp"
 
 #include <QWidget>
 

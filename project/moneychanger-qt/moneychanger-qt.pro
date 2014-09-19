@@ -87,7 +87,8 @@ unix: {
 
     LIBS += -L$${OUT_PWD}/../nmcrpc
     LIBS += -lnmcrpc
-
+    
+    LIBS += -L/usr/local/lib
 
     mac:{
         !contains(MAC_OS_VERSION, 10.9):{

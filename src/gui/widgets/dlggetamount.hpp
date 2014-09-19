@@ -1,9 +1,9 @@
 #ifndef DLGGETAMOUNT_HPP
 #define DLGGETAMOUNT_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
-#include <opentxs/TR1_Wrapper.hpp>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
+#include "core/TR1_Wrapper.hpp"
 
 #include _CINTTYPES
 #include _MEMORY

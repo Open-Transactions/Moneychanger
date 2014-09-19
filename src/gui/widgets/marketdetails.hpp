@@ -1,8 +1,8 @@
 #ifndef MARKETDETAILS_HPP
 #define MARKETDETAILS_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <gui/widgets/editdetails.hpp>
 
@@ -11,10 +11,12 @@ namespace Ui {
 class MTMarketDetails;
 }
 
+namespace opentxs{
 namespace OTDB {
 class MarketData;
 class OfferListMarket;
 class TradeListMarket;
+}
 }
 
 
@@ -52,11 +54,11 @@ protected:
     void RetrieveMarketOffers(QString & qstrID, QMultiMap<QString, QVariant> & multimap);
     void RetrieveMarketTrades(QString & qstrID, QMultiMap<QString, QVariant> & multimap);
     // ----------------------------------
-    bool LowLevelRetrieveMarketOffers(OTDB::MarketData & marketData);
-    bool LowLevelRetrieveMarketTrades(OTDB::MarketData & marketData);
+    bool LowLevelRetrieveMarketOffers(opentxs::OTDB::MarketData & marketData);
+    bool LowLevelRetrieveMarketTrades(opentxs::OTDB::MarketData & marketData);
     // ----------------------------------
-    OTDB::OfferListMarket * LoadOfferListForMarket(OTDB::MarketData & marketData);
-    OTDB::TradeListMarket * LoadTradeListForMarket(OTDB::MarketData & marketData);
+    opentxs::OTDB::OfferListMarket * LoadOfferListForMarket(opentxs::OTDB::MarketData & marketData);
+    opentxs::OTDB::TradeListMarket * LoadTradeListForMarket(opentxs::OTDB::MarketData & marketData);
     // ----------------------------------
     void PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QString, QVariant> & multimap);
     void PopulateRecentTradesGrid (QString & qstrID, QMultiMap<QString, QVariant> & multimap);

@@ -13,9 +13,9 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OT_ME.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OT_ME.hpp>
 
 #include <QMessageBox>
 #include <QDebug>
@@ -131,7 +131,7 @@ void MTCompose::setTransportDisplayBasedOnAvailableData()
 
         if (sendingThroughOTServer() && !m_serverId.isEmpty())
         {
-            qstrMsgTypeDisplay = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(m_serverId.toStdString()));
+            qstrMsgTypeDisplay = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(m_serverId.toStdString()));
 
             if (qstrMsgTypeDisplay.isEmpty())
                 qstrMsgTypeDisplay = m_serverId;
@@ -471,7 +471,7 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
     // ----------------------------------------------------
     if (0 == viaTransport.compare("otserver"))
     {
-        OT_ME madeEasy;
+        opentxs::OT_ME madeEasy;
 
         std::string strResponse;
         {
@@ -1323,7 +1323,7 @@ void MTCompose::FindSenderMsgMethod()
                         std::string server_id    = qstrServerID.toStdString();
                         std::string sender_id    = m_senderNymId.toStdString();
 
-                        if (OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
+                        if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
                         {
                             setInitialServer(qstrServerID);
                             return; // SUCCESS!
@@ -1614,7 +1614,7 @@ void MTCompose::FindRecipientMsgMethod()
                         std::string server_id    = qstrServerID.toStdString();
                         std::string sender_id    = m_senderNymId.toStdString();
 
-                        if (OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
+                        if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
                         {
                             setInitialServer(qstrServerID);
                             return; // SUCCESS!
@@ -2368,7 +2368,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrServer
     std::string server_id    = qstrServerID .toStdString();
     std::string sender_id    = m_senderNymId.toStdString();
 
-    if (!OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
+    if (!opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
     {
         if (bAsk)
         {
@@ -2378,7 +2378,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrServer
                                           QMessageBox::Yes|QMessageBox::No);
             if (reply == QMessageBox::Yes)
             {
-                OT_ME       madeEasy;
+                opentxs::OT_ME       madeEasy;
                 std::string response;
                 {
                     MTSpinner theSpinner;
@@ -2440,7 +2440,7 @@ bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrSer
                                               QMessageBox::Yes|QMessageBox::No);
                 if (reply == QMessageBox::Yes)
                 {
-                    OT_ME       madeEasy;
+                    opentxs::OT_ME       madeEasy;
                     std::string response;
                     {
                         MTSpinner theSpinner;
@@ -2490,12 +2490,12 @@ void MTCompose::on_fromButton_clicked()
     mapIDName & the_map = theChooser.m_map;
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t nym_count = OTAPI_Wrap::It()->GetNymCount();
+    const int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < nym_count; ++ii)
     {
         //Get OT Nym ID
-        QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::It()->GetNym_ID(ii));
+        QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(ii));
         QString OT_nym_name("");
         // -----------------------------------------------
         if (!OT_nym_id.isEmpty())

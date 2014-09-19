@@ -1,13 +1,13 @@
 #ifndef OVERRIDECURSOR_HPP
 #define OVERRIDECURSOR_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <QObject>
 
 
-// Use:  OTCleanup<MTOverrideCursor> theCursorAngel(MTOverrideCursor::It());
+// Use:  opentxs::OTCleanup<MTOverrideCursor> theCursorAngel(MTOverrideCursor::It());
 //
 // Actually even better, use:  MTSpinner theSpinner;
 //

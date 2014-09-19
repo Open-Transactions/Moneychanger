@@ -4,7 +4,7 @@
 
 #include <core/handlers/DBHandler.hpp>
 
-#include <opentxs/OTPaths.hpp>
+#include <opentxs/core/OTPaths.hpp>
 
 #include <QSqlRecord>
 
@@ -40,8 +40,8 @@ DBHandler::DBHandler()
     db = QSqlDatabase::addDatabase(dbDriverStr, dbConnNameStr);
     
     bool flag = isDbExist();
-    qDebug() << QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr;
-    db.setDatabaseName( QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr);
+    qDebug() << QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr;
+    db.setDatabaseName( QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
     if(!dbConnect())
         qDebug() << "Error Opening Database";
     
@@ -85,13 +85,13 @@ bool DBHandler::dbDisconnect()
 
 bool DBHandler::isDbExist()
 {
-    return dbFile.isFileExist(QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr);
+    return dbFile.isFileExist(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 }
 
 
 bool DBHandler::dbRemove()
 {
-    return dbFile.removeFile(QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr);
+    return dbFile.removeFile(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 }
 
 /*
@@ -177,7 +177,7 @@ bool DBHandler::dbCreateInstance()
             FileHandler rm;
             db.close();
 
-            rm.removeFile(QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr);
+            rm.removeFile(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 //          rm.removeFile(QCoreApplication::applicationDirPath() + dbFileNameStr);
         }
         else

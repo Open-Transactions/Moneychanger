@@ -1,10 +1,10 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
-#include <opentxs/Timer.hpp>
+#include <opentxs/core/util/Timer.hpp>
 
 #include <QMutex>
 #include <QWaitCondition>

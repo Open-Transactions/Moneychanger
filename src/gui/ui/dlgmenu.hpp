@@ -1,8 +1,8 @@
 #ifndef DLGMENU_HPP
 #define DLGMENU_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <QDialog>
 

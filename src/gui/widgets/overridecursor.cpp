@@ -49,7 +49,7 @@ MTOverrideCursor * MTOverrideCursor::s_pCursor = NULL;
 //static
 MTOverrideCursor * MTOverrideCursor::It()
 {
-    // Use:  OTCleanup<MTOverrideCursor> theCursorAngel(MTOverrideCursor::It());
+    // Use:  opentxs::OTCleanup<MTOverrideCursor> theCursorAngel(MTOverrideCursor::It());
     //
     // Oooo even better, use:  MTSpinner theSpinner;
     // ----------------------------
@@ -57,7 +57,7 @@ MTOverrideCursor * MTOverrideCursor::It()
     //
     // MTOverrideCursor::s_pCursor is instantiated, if NULL, and a pointer returned.
     //
-    // If it's returned, it should be stored in an OTCleanup instance, which will destroy
+    // If it's returned, it should be stored in an opentxs::OTCleanup instance, which will destroy
     // it when it goes out of scope.
     //
     // Meanwhile our destructor, ~MTOverrideCursor, sets MTOverrideCursor::s_pCursor back

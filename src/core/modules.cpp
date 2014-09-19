@@ -4,7 +4,7 @@
 
 #include <core/modules.hpp>
 
-#include <opentxs/TR1_Wrapper.hpp>
+#include "core/TR1_Wrapper.hpp"
 
 #include <bitcoin/sampleescrowmanager.hpp>
 #include <bitcoin/poolmanager.hpp>

@@ -1,9 +1,9 @@
 #ifndef SAMPLEESCROWSERVER_HPP
 #define SAMPLEESCROWSERVER_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
-#include <opentxs/TR1_Wrapper.hpp>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
+#include "core/TR1_Wrapper.hpp"
 
 #include <bitcoin/escrowpool.hpp>
 #include <bitcoin/sampleescrowtransaction.hpp>

@@ -1,10 +1,10 @@
 #ifndef HTTPINTERFACE_HPP
 #define HTTPINTERFACE_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
-#include <opentxs/OT_ME.hpp>
+#include <opentxs/client/OT_ME.hpp>
 
 class HTTPInterface
 {
@@ -12,7 +12,7 @@ public:
     HTTPInterface();
 
 private:
-    OT_ME   mMadeEasy;
+    opentxs::OT_ME   mMadeEasy;
 };
 
 #endif // HTTPINTERFACE_HPP

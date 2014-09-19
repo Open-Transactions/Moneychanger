@@ -12,8 +12,8 @@
 
 #include <QSqlField>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
 
 
 MTCredentials::MTCredentials(QWidget *parent, MTDetailEdit & theOwner) :
@@ -75,7 +75,7 @@ void MTCredentials::on_treeWidget_itemSelectionChanged()
     {
         QString qstrNymID = pItem->text(1);
         // --------------------------------
-        const std::string str_source = OTAPI_Wrap::It()->GetNym_SourceForID(qstrNymID.toStdString());
+        const std::string str_source = opentxs::OTAPI_Wrap::It()->GetNym_SourceForID(qstrNymID.toStdString());
         // --------------------------------
         ui->label->setText(tr("Nym Source:"));
         ui->plainTextEdit->setPlainText(QString::fromStdString(str_source));
@@ -86,7 +86,7 @@ void MTCredentials::on_treeWidget_itemSelectionChanged()
         QString qstrNymID  = pParent->text(1);
         QString qstrCredID = pItem  ->text(1);
         // --------------------------------
-        const std::string str_contents = OTAPI_Wrap::It()->GetNym_CredentialContents(qstrNymID .toStdString(),
+        const std::string str_contents = opentxs::OTAPI_Wrap::It()->GetNym_CredentialContents(qstrNymID .toStdString(),
                                                                                qstrCredID.toStdString());
         // --------------------------------
         ui->label->setText(tr("Master Credential Contents:"));
@@ -99,7 +99,7 @@ void MTCredentials::on_treeWidget_itemSelectionChanged()
         QString qstrCredID = pParent      ->text(1);
         QString qstrSubID  = pItem        ->text(1);
         // --------------------------------
-        const std::string str_contents = OTAPI_Wrap::It()->GetNym_SubCredentialContents(qstrNymID .toStdString(),
+        const std::string str_contents = opentxs::OTAPI_Wrap::It()->GetNym_SubCredentialContents(qstrNymID .toStdString(),
                                                                                   qstrCredID.toStdString(),
                                                                                   qstrSubID .toStdString());
         // --------------------------------
@@ -156,11 +156,11 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
             // ------------------------------------------
             // Next: any credentials under this Nym?
             //
-            const int32_t nCountCredentials = OTAPI_Wrap::It()->GetNym_CredentialCount(str_nym_id);
+            const int32_t nCountCredentials = opentxs::OTAPI_Wrap::It()->GetNym_CredentialCount(str_nym_id);
 
             for (int nCred = 0; nCred < nCountCredentials; ++nCred)
             {
-                std::string str_cred_id = OTAPI_Wrap::It()->GetNym_CredentialID(str_nym_id, nCred);
+                std::string str_cred_id = opentxs::OTAPI_Wrap::It()->GetNym_CredentialID(str_nym_id, nCred);
 
                 if (str_cred_id.empty()) // should never happen.
                     continue;
@@ -180,15 +180,15 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
                 // ---------------------------------------
                 // If you need the credential contents later, you can use this:
                 //
-                // std::string OTAPI_Wrap::It()->GetNym_CredentialContents(const std::string & NYM_ID, const std::string & CREDENTIAL_ID);
+                // std::string opentxs::OTAPI_Wrap::It()->GetNym_CredentialContents(const std::string & NYM_ID, const std::string & CREDENTIAL_ID);
                 // ---------------------------------------
                 // Next: any subcredentials under this credential?
                 //
-                const int32_t nCountSubcred = OTAPI_Wrap::It()->GetNym_SubcredentialCount(str_nym_id, str_cred_id);
+                const int32_t nCountSubcred = opentxs::OTAPI_Wrap::It()->GetNym_SubcredentialCount(str_nym_id, str_cred_id);
 
                 for (int nSubcred = 0; nSubcred < nCountSubcred; ++nSubcred)
                 {
-                    std::string str_sub_cred_id = OTAPI_Wrap::It()->GetNym_SubCredentialID(str_nym_id, str_cred_id, nSubcred);
+                    std::string str_sub_cred_id = opentxs::OTAPI_Wrap::It()->GetNym_SubCredentialID(str_nym_id, str_cred_id, nSubcred);
 
                     if (str_sub_cred_id.empty()) // should never happen.
                         continue;
@@ -210,8 +210,8 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
                     // std::string GetNym_SubCredentialContents(const std::string & NYM_ID, const std::string & MASTER_CRED_ID, const std::string & SUB_CRED_ID);
                     //
                     // Also useful:
-                    // std::string OTAPI_Wrap::It()->AddSubcredential(const std::string & NYM_ID, const std::string & MASTER_CRED_ID, const int32_t & nKeySize);
-                    // bool        OTAPI_Wrap::It()->RevokeSubcredential(const std::string & NYM_ID, const std::string & MASTER_CRED_ID, const std::string & SUB_CRED_ID);
+                    // std::string opentxs::OTAPI_Wrap::It()->AddSubcredential(const std::string & NYM_ID, const std::string & MASTER_CRED_ID, const int32_t & nKeySize);
+                    // bool        opentxs::OTAPI_Wrap::It()->RevokeSubcredential(const std::string & NYM_ID, const std::string & MASTER_CRED_ID, const std::string & SUB_CRED_ID);
                     //
                 } // for (subcredentials.)
             } // for (credentials.)
@@ -330,7 +330,7 @@ MTCredentials::NameStatusFunctor::operator() (const QSqlRecord& rec)
       nm = nc.queryName (name.toStdString ());
 
       std::string nymSrc;
-      nymSrc = OTAPI_Wrap::It()->GetNym_SourceForID (nym);
+      nymSrc = opentxs::OTAPI_Wrap::It()->GetNym_SourceForID (nym);
 
       NMC_Verifier verify(nc);
       if (!verify.verifyCredentialHashAtSource (cred, nymSrc))

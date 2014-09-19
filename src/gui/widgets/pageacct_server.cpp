@@ -10,8 +10,8 @@
 
 #include <core/moneychanger.hpp>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
 
 
 MTPageAcct_Server::MTPageAcct_Server(QWidget *parent) :
@@ -46,8 +46,8 @@ void MTPageAcct_Server::on_pushButtonSelect_clicked()
     if (qstr_current_id.isEmpty())
         qstr_current_id = qstr_default_id;
     // -------------------------------------------
-    if (qstr_current_id.isEmpty() && (OTAPI_Wrap::It()->GetServerCount() > 0))
-        qstr_current_id = QString::fromStdString(OTAPI_Wrap::It()->GetServer_ID(0));
+    if (qstr_current_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0))
+        qstr_current_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(0));
     // -------------------------------------------
     // Select from Servers in local wallet.
     //
@@ -57,11 +57,11 @@ void MTPageAcct_Server::on_pushButtonSelect_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t the_count = OTAPI_Wrap::It()->GetServerCount();
+    const int32_t the_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < the_count; ++ii)
     {
-        QString OT_id = QString::fromStdString(OTAPI_Wrap::It()->GetServer_ID(ii));
+        QString OT_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(ii));
         QString OT_name("");
         // -----------------------------------------------
         if (!OT_id.isEmpty())
@@ -69,7 +69,7 @@ void MTPageAcct_Server::on_pushButtonSelect_clicked()
             if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
                 bFoundDefault = true;
             // -----------------------------------------------
-            OT_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(OT_id.toStdString()));
+            OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_id.toStdString()));
             // -----------------------------------------------
             the_map.insert(OT_id, OT_name);
         }
@@ -107,11 +107,11 @@ void MTPageAcct_Server::initializePage() //virtual
     // -------------------------------------------
     qstr_id = qstr_current_id.isEmpty() ? qstr_default_id : qstr_current_id;
     // -------------------------------------------
-    if (qstr_id.isEmpty() && (OTAPI_Wrap::It()->GetServerCount() > 0))
-        qstr_id = QString::fromStdString(OTAPI_Wrap::It()->GetServer_ID(0));
+    if (qstr_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0))
+        qstr_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(0));
     // -------------------------------------------
     if (!qstr_id.isEmpty())
-        str_name = OTAPI_Wrap::It()->GetServer_Name(qstr_id.toStdString());
+        str_name = opentxs::OTAPI_Wrap::It()->GetServer_Name(qstr_id.toStdString());
     // -------------------------------------------
     if (str_name.empty() || qstr_id.isEmpty())
         SetFieldsBlank();
@@ -143,13 +143,13 @@ void MTPageAcct_Server::on_pushButtonManage_clicked()
     QString qstrPreSelected   = field("ServerID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
-    int32_t the_count = OTAPI_Wrap::It()->GetServerCount();
+    int32_t the_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
     bool    bStartingWithNone = (the_count < 1);
 
     for (int32_t ii = 0; ii < the_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(OTAPI_Wrap::It()->GetServer_ID(ii));
-        QString OT_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
 
@@ -164,13 +164,13 @@ void MTPageAcct_Server::on_pushButtonManage_clicked()
     // -------------------------------------
     pWindow->dialog(MTDetailEdit::DetailEditTypeServer, true);
     // -------------------------------------
-    if (bStartingWithNone && (OTAPI_Wrap::It()->GetServerCount() > 0))
+    if (bStartingWithNone && (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0))
     {
-        std::string str_id = OTAPI_Wrap::It()->GetServer_ID(0);
+        std::string str_id = opentxs::OTAPI_Wrap::It()->GetServer_ID(0);
 
         if (!str_id.empty())
         {
-            std::string str_name = OTAPI_Wrap::It()->GetServer_Name(str_id);
+            std::string str_name = opentxs::OTAPI_Wrap::It()->GetServer_Name(str_id);
 
             if (str_name.empty())
                 str_name = str_id;
@@ -182,7 +182,7 @@ void MTPageAcct_Server::on_pushButtonManage_clicked()
         }
     }
     // -------------------------------------
-    else if (OTAPI_Wrap::It()->GetServerCount() < 1)
+    else if (opentxs::OTAPI_Wrap::It()->GetServerCount() < 1)
         SetFieldsBlank();
 }
 

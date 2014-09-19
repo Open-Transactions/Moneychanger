@@ -7,7 +7,7 @@
 
 #include <core/modules.hpp>
 
-#include <opentxs/OTLog.hpp>
+#include <opentxs/core/OTLog.hpp>
 
 #include <QTimer>
 #include <QMutex>
@@ -438,7 +438,7 @@ void SampleEscrowServer::AddClientDeposit(const std::string &client, SampleEscro
     if(!oldTx)
         this->clientHistoryMap[client].push_back(transaction);
 
-    OTLog::vOutput(0, "Added %s\n to %s\nClient %s now has %d deposit transaction(s)\n", transaction->txId.c_str(), transaction->targetAddr.c_str(), client.c_str(), this->clientBalancesMap[client].size());
+    opentxs::OTLog::vOutput(0, "Added %s\n to %s\nClient %s now has %d deposit transaction(s)\n", transaction->txId.c_str(), transaction->targetAddr.c_str(), client.c_str(), this->clientBalancesMap[client].size());
 
     this->mutex->unlock();
 }

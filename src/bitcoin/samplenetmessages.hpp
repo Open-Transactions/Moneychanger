@@ -2,7 +2,8 @@
 #define SAMPLENETMESSAGES_H
 
 #include <map>
-#include <opentxs/TR1_Wrapper.hpp>
+#include "core/TR1_Wrapper.hpp"
+#include <stdint.h>
 
 
 enum NetMessageType
@@ -167,7 +168,7 @@ union BtcNetMsgGetTxCount
 {
     struct
     {
-        u_int64_t MessageType;
+        uint64_t MessageType;
         char client[20];
     };
     char data[NetMsgGetTxCountSize];
@@ -181,7 +182,7 @@ union BtcNetMsgTxCount
     struct
     {
         int64_t MessageType;
-        u_int64_t txCount;
+        uint64_t txCount;
     };
     char data[NetMsgTxCountSize];
 

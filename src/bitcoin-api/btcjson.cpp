@@ -111,7 +111,7 @@ BtcRpcPacketPtr BtcJson::CreateJsonQuery(const std::string &command, const Json:
 
     Json::FastWriter writer;
     //Json::StyledWriter debugWriter;
-    //OTLog::Output(0, debugWriter.write(jsonObj).c_str());
+    //opentxs::OTLog::Output(0, debugWriter.write(jsonObj).c_str());
     return BtcRpcPacketPtr(new BtcRpcPacket(writer.write(jsonObj)));
 }
 
