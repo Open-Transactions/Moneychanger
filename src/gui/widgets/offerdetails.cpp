@@ -16,7 +16,7 @@
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/OTData.hpp>
-#include <opentxs/core/OTPaymentPlan.hpp>
+#include <opentxs/core/recurring/OTPaymentPlan.hpp>
 
 #include <QMessageBox>
 #include <QDateTime>
