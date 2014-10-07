@@ -18,6 +18,7 @@
 #endif
 
 #ifndef OT_USE_TR1
+#include _MEMORY
 #define _SharedPtr std::shared_ptr
 #define _WeakPtr std::weak_ptr
 #define _UniquePtr std::unique_ptr
