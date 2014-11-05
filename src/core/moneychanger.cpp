@@ -47,7 +47,7 @@
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
-#include <opentxs/core/OTPaths.hpp>
+#include <opentxs/core/util/OTPaths.hpp>
 
 #include <QMenu>
 #include <QApplication>
@@ -1225,7 +1225,7 @@ void Moneychanger::onNeedToDownloadAccountData()
 
             std::string strSource(""), strAlt("");
 
-            std::string newNymId = madeEasy.create_pseudonym(1024, strSource, strAlt);
+            std::string newNymId = madeEasy.create_nym(1024, strSource, strAlt);
 
             if (!newNymId.empty())
             {

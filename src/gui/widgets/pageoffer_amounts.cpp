@@ -225,7 +225,7 @@ void PageOffer_Amounts::initializePage()
         float   dValue = std::pow(10.0, ii);
         long    lScale = static_cast<long>(dValue);
 
-        opentxs::OTString strTemp;
+        opentxs::String strTemp;
         strTemp.Format("%ld.", lScale); // So 1 becomes "1." which StringToAmount makes into 1.000 which is actually 1000
 
         const std::string str_input(strTemp.Get());

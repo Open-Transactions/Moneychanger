@@ -92,7 +92,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
     else //qstrText not empty.
     {
         std::string str_input(qstrText.toStdString());
-        opentxs::OTString    strInput (str_input.c_str());
+        opentxs::String    strInput (str_input.c_str());
 
         if (strInput.Exists())
         {
@@ -102,7 +102,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
 
                 if (theEnvelope.SetFromBookendedString(strInput))
                 {
-                    opentxs::OTString strOutput;
+                    opentxs::String strOutput;
                     // -------------------------
                     // First we'll try the default nym, if one is available.
                     //
@@ -111,7 +111,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                     if (!qstrTempID.isEmpty()) // Default Nym IS available.
                     {
                         std::string  str_nym    (qstrTempID.toStdString());
-                        opentxs::OTString     strNym     (str_nym.c_str());
+                        opentxs::String     strNym     (str_nym.c_str());
                         opentxs::OTIdentifier nym_id     (strNym);
 
                         if (!nym_id.IsEmpty())
@@ -148,7 +148,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                             if (!OT_nym_id.isEmpty())
                             {
                                 std::string  str_nym    (OT_nym_id.toStdString());
-                                opentxs::OTString     strNym     (str_nym.c_str());
+                                opentxs::String     strNym     (str_nym.c_str());
                                 opentxs::OTIdentifier nym_id     (strNym);
 
                                 if (!nym_id.IsEmpty())
@@ -213,7 +213,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
 
                     if (theSignedFile.LoadContractFromString(strInput))
                     {
-                        opentxs::OTString strSignerNymID = theSignedFile.GetSignerNymID();
+                        opentxs::String strSignerNymID = theSignedFile.GetSignerNymID();
                         std::string str_signer_nym(strSignerNymID.Get());
                         QString qstrSignerNym(QString::fromStdString(str_signer_nym));
 
@@ -231,7 +231,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                                 {
                                     bSuccessVerifying = true;
 
-                                    opentxs::OTString strContents = theSignedFile.GetFilePayload();
+                                    opentxs::String strContents = theSignedFile.GetFilePayload();
 
                                     if (strContents.Exists())
                                     {

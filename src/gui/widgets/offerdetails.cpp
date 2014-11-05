@@ -272,7 +272,7 @@ void MTOfferDetails::DeleteButtonClicked()
                 const std::string str_nym_id        (m_pOwner->GetMarketNymID().toStdString());
                 const std::string str_asset_acct_id (pOfferData->asset_acct_id);
                 // ---------------------------------
-                opentxs::OTString      strTransID(pOfferData->transaction_id);
+                opentxs::String      strTransID(pOfferData->transaction_id);
                 const int64_t lTransID  (strTransID.ToLong());
                 // ---------------------------------
                 opentxs::OT_ME        madeEasy;

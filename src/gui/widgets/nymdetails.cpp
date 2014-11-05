@@ -665,7 +665,7 @@ void MTNymDetails::AddButtonClicked()
         //
         opentxs::OT_ME madeEasy;
 
-        std::string str_id = madeEasy.create_pseudonym(nKeybits, NYM_ID_SOURCE, ALT_LOCATION);
+        std::string str_id = madeEasy.create_nym(nKeybits, NYM_ID_SOURCE, ALT_LOCATION);
 
         if (str_id.empty())
         {

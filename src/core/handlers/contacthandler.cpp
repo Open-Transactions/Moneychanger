@@ -921,7 +921,7 @@ QString MTContactHandler::Encrypt(QString plaintext)
 
         if (NULL != pWallet)
         {
-            opentxs::OTString strOutput, strPlaintext(plaintext.toStdString().c_str());
+            opentxs::String strOutput, strPlaintext(plaintext.toStdString().c_str());
 
             if (pWallet->Encrypt_ByKeyID(s_key_id, strPlaintext, strOutput))
             {
@@ -948,7 +948,7 @@ QString MTContactHandler::Decrypt(QString ciphertext)
 
         if (NULL != pWallet)
         {
-            opentxs::OTString strOutput, strCiphertext(ciphertext.toStdString().c_str());
+            opentxs::String strOutput, strCiphertext(ciphertext.toStdString().c_str());
 
             if (pWallet->Decrypt_ByKeyID(s_key_id, strCiphertext, strOutput))
             {
@@ -972,7 +972,7 @@ QString MTContactHandler::Encode(QString plaintext)
     if (!plaintext.isEmpty())
     {
         // Encode base64.
-        opentxs::OTString        strValue(plaintext.toStdString());
+        opentxs::String        strValue(plaintext.toStdString());
         opentxs::OTASCIIArmor    ascValue;
         ascValue.SetString(strValue, false); //bLineBreaks=true by default
         encoded_value = QString(ascValue.Get());
@@ -991,7 +991,7 @@ QString MTContactHandler::Decode(QString encoded)
         // Decode base64.
         opentxs::OTASCIIArmor ascValue;
         ascValue.Set(encoded.toStdString().c_str());
-        opentxs::OTString strValue;
+        opentxs::String strValue;
         ascValue.GetString(strValue, false); //bLineBreaks=true by default
         decoded_value = QString(strValue.Get());
     }

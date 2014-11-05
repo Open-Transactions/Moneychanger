@@ -89,7 +89,7 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString fromAcctId, QS
     {
         MTSpinner theSpinner;
 
-        bReturnValue = madeEasy.withdraw_and_send_cash(str_fromAcctId, str_toNymId, note.toStdString(), SignedAmount);
+        bReturnValue = madeEasy.withdraw_and_send_cash(str_fromAcctId, str_toNymId, SignedAmount);
     }
     // ------------------------------------------------------------
     if (!bReturnValue)
