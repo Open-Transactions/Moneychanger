@@ -256,14 +256,14 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                 // Sign the contents.
                 //
                 std::string  str_nym    (m_nymId.toStdString());
-                opentxs::OTString     strNym     (str_nym.c_str());
+                opentxs::String     strNym     (str_nym.c_str());
                 opentxs::OTIdentifier nym_id     (strNym);
 
                 std::string  str_text   (qstrText.toStdString());
-                opentxs::OTString     strText    (str_text.c_str());
+                opentxs::String     strText    (str_text.c_str());
 //              opentxs::OTASCIIArmor ascText    (strText);
 //              std::string  str_encoded(ascText.Get());
-//              opentxs::OTString     strEncoded (str_encoded.c_str());
+//              opentxs::String     strEncoded (str_encoded.c_str());
 //              std::string  str_type   ("MESSAGE");
 
                 if (!nym_id.IsEmpty())
@@ -283,9 +283,9 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     else
                     {
                         // FOR VERIFY STEP:
-    //                  inline opentxs::OTString & opentxs::OTSignedFile::GetFilePayload()                       { return m_strSignedFilePayload;   }
+    //                  inline opentxs::String & opentxs::OTSignedFile::GetFilePayload()                       { return m_strSignedFilePayload;   }
 
-                        opentxs::OTString     strSignedOutput;
+                        opentxs::String     strSignedOutput;
                         opentxs::OTSignedFile theSignedFile;
 
                         theSignedFile.SetSignerNymID(strNym);
@@ -351,7 +351,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     QVariant          qvarItem = pItem->data(Qt::UserRole);
                     QString           qstrNymID(qvarItem.toString());
                     std::string       str_nym(qstrNymID.toStdString());
-                    opentxs::OTString          strNym(str_nym.c_str());
+                    opentxs::String          strNym(str_nym.c_str());
                     opentxs::OTIdentifier      nym_id(strNym);
 
                     if (!nym_id.IsEmpty())
@@ -385,14 +385,14 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     !m_nymId.isEmpty())
                 {
                     std::string str_signer_nym(m_nymId.toStdString());
-                    opentxs::OTString strSignerNymID(str_signer_nym.c_str());
+                    opentxs::String strSignerNymID(str_signer_nym.c_str());
                     bool bSignerIsAlreadyThere = false;
 
                     //FOR_EACH(opentxs::setOfNyms(), setRecipients) // See if it's already there, in which case we don't need to do anything else.
                     for(opentxs::setOfNyms::iterator it = setRecipients.begin(); it != setRecipients.end(); ++ it)
                     {
                         opentxs::OTPseudonym       * pNym = *it;
-                        opentxs::OTString            strNymID;
+                        opentxs::String            strNymID;
                         pNym->GetIdentifier(strNymID);
 
                         if (strSignerNymID.Compare(strNymID))
@@ -430,7 +430,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                 if (setRecipients.size() > 0)
                 {
                     opentxs::OTEnvelope theEnvelope;
-                    opentxs::OTString   strInput(qstrText.toStdString().c_str());
+                    opentxs::String   strInput(qstrText.toStdString().c_str());
 
                     if (!theEnvelope.Seal(setRecipients, strInput))
                     {
@@ -442,7 +442,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     {
                         // Success encrypting!
                         //
-                        opentxs::OTString     strOutput;
+                        opentxs::String     strOutput;
                         opentxs::OTASCIIArmor ascCiphertext(theEnvelope);
 
                         if (ascCiphertext.WriteArmoredString(strOutput, "ENVELOPE")) // -----BEGIN OT ARMORED ENVELOPE-----
@@ -468,8 +468,8 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
         else if (m_bSign && !qstrText.isEmpty())
         {
             std::string  str_text(qstrText.toStdString());
-            opentxs::OTString     strText (str_text.c_str());
-            opentxs::OTString     strOutput;
+            opentxs::String     strText (str_text.c_str());
+            opentxs::String     strOutput;
             opentxs::OTASCIIArmor ascText (strText);
 
             if (ascText.WriteArmoredString(strOutput, "SIGNED FILE")) // -----BEGIN OT ARMORED SIGNED FILE-----

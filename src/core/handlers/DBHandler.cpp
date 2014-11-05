@@ -4,7 +4,7 @@
 
 #include <core/handlers/DBHandler.hpp>
 
-#include <opentxs/core/OTPaths.hpp>
+#include <opentxs/core/util/OTPaths.hpp>
 
 #include <QSqlRecord>
 
