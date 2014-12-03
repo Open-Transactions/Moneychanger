@@ -675,12 +675,12 @@ void MTDetailEdit::RefreshRecords()
             if (m_pmapOffers)
             {
                 // -------------------------------------
-                QString     qstrServerID, qstrTransactionID;
-                QStringList theIDs = qstrID.split(","); // theIDs.at(0) ServerID, at(1) transaction ID
+                QString     qstrNotaryID, qstrTransactionID;
+                QStringList theIDs = qstrID.split(","); // theIDs.at(0) NotaryID, at(1) transaction ID
 
                 if (2 == theIDs.size()) // Should always be 2...
                 {
-                    qstrServerID      = theIDs.at(0);
+                    qstrNotaryID      = theIDs.at(0);
                     qstrTransactionID = theIDs.at(1);
                 }
                 // -------------------------------------

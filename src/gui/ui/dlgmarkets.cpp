@@ -174,19 +174,19 @@ void DlgMarkets::FirstRun()
 
         // Whenever the GUI refreshes (say, the list of servers is cleared
         // and re-populated) then we will set the CURRENT selection as whatever
-        // is in m_serverId / m_nymId.
+        // is in m_NotaryID / m_nymId.
         //
         // The initial state for this comes from the defaults, but once the user
         // starts changing the selection of the combo box, the new current selection
         // will go into these variables.
         //
         m_nymId    = Moneychanger::It()->get_default_nym_id();
-        m_serverId = Moneychanger::It()->get_default_server_id();
+        m_NotaryID = Moneychanger::It()->get_default_server_id();
 
         m_pMarketDetails->SetMarketNymID   (m_nymId);
         m_pOfferDetails ->SetMarketNymID   (m_nymId);
-        m_pMarketDetails->SetMarketServerID(m_serverId);
-        m_pOfferDetails ->SetMarketServerID(m_serverId);
+        m_pMarketDetails->SetMarketNotaryID(m_NotaryID);
+        m_pOfferDetails ->SetMarketNotaryID(m_NotaryID);
     }
 }
 
@@ -266,7 +266,7 @@ void DlgMarkets::SetCurrentNymIDBasedOnIndex(int index)
     // ------------------------------------------
 }
 
-void DlgMarkets::SetCurrentServerIDBasedOnIndex(int index)
+void DlgMarkets::SetCurrentNotaryIDBasedOnIndex(int index)
 {
     if ((m_mapServers.size() > 0) && (index >= 0))
     {
@@ -278,19 +278,19 @@ void DlgMarkets::SetCurrentServerIDBasedOnIndex(int index)
 
             if (nCurrentIndex == index)
             {
-                m_serverId = it_map.key();
+                m_NotaryID = it_map.key();
                 break;
             }
         }
     }
     else
-        m_serverId = QString("");
+        m_NotaryID = QString("");
     // ------------------------------------------
     if (m_pMarketDetails)
-        m_pMarketDetails->SetMarketServerID(m_serverId);
+        m_pMarketDetails->SetMarketNotaryID(m_NotaryID);
     // ------------------------------------------
     if (m_pOfferDetails)
-        m_pOfferDetails->SetMarketServerID(m_serverId);
+        m_pOfferDetails->SetMarketNotaryID(m_NotaryID);
     // ------------------------------------------
 }
 
@@ -302,7 +302,7 @@ void DlgMarkets::on_comboBoxServer_currentIndexChanged(int index)
     ClearMarketMap();
     ClearOfferMap();
 
-    SetCurrentServerIDBasedOnIndex(index);
+    SetCurrentNotaryIDBasedOnIndex(index);
 
     m_pOfferDetails->SetMarketID("");
 
@@ -331,14 +331,14 @@ void DlgMarkets::on_comboBoxNym_currentIndexChanged(int index)
 // -----------------------------------------------
 bool DlgMarkets::RetrieveOfferList(mapIDName & the_map, QString qstrMarketID)
 {
-    if (m_serverId.isEmpty() || m_nymId.isEmpty())
+    if (m_NotaryID.isEmpty() || m_nymId.isEmpty())
         return false;
     // -----------------
     bool bSuccess = true;
     QString qstrAll(tr("all"));
     // -----------------
-    if (m_serverId != qstrAll)
-        return LowLevelRetrieveOfferList(m_serverId, m_nymId, the_map, qstrMarketID);
+    if (m_NotaryID != qstrAll)
+        return LowLevelRetrieveOfferList(m_NotaryID, m_nymId, the_map, qstrMarketID);
     else
     {
         int nCurrentIndex = -1;
@@ -350,18 +350,18 @@ bool DlgMarkets::RetrieveOfferList(mapIDName & the_map, QString qstrMarketID)
             if (0 == nCurrentIndex)
                 continue; // Skipping the "all" option. (Looping through all the ACTUAL servers.)
             // ---------------
-            QString qstrServerID = it_map.key();
+            QString qstrNotaryID = it_map.key();
             // ---------------
-            if (false == LowLevelRetrieveOfferList(qstrServerID, m_nymId, the_map, qstrMarketID))
+            if (false == LowLevelRetrieveOfferList(qstrNotaryID, m_nymId, the_map, qstrMarketID))
                 bSuccess = false; // Failure here just means ONE of the servers failed.
         }
     }
     return bSuccess;
 }
 // -----------------------------------------------
-bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrServerID, QString qstrNymID, mapIDName & the_map, QString qstrMarketID)
+bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrNotaryID, QString qstrNymID, mapIDName & the_map, QString qstrMarketID)
 {
-    if (qstrServerID.isEmpty() || qstrNymID.isEmpty())
+    if (qstrNotaryID.isEmpty() || qstrNymID.isEmpty())
         return false;
     // -----------------
     opentxs::OT_ME madeEasy;
@@ -370,7 +370,7 @@ bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrServerID, QString qstrNym
     {
         MTSpinner theSpinner;
 
-        const std::string str_reply = madeEasy.get_nym_market_offers(qstrServerID.toStdString(),
+        const std::string str_reply = madeEasy.get_nym_market_offers(qstrNotaryID.toStdString(),
                                                                      qstrNymID   .toStdString());
         const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
 
@@ -379,24 +379,24 @@ bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrServerID, QString qstrNym
     // -----------------------------------
     if (bSuccess)
     {
-        return LowLevelLoadOfferList(qstrServerID, m_nymId, the_map, qstrMarketID);
+        return LowLevelLoadOfferList(qstrNotaryID, m_nymId, the_map, qstrMarketID);
     }
     else
-        Moneychanger::HasUsageCredits(this, qstrServerID, qstrNymID);
+        Moneychanger::HasUsageCredits(this, qstrNotaryID, qstrNymID);
     // -----------------------------------
     return bSuccess;
 }
 // -----------------------------------------------
 bool DlgMarkets::LoadOfferList(mapIDName & the_map, QString qstrMarketID)
 {
-    if (m_serverId.isEmpty() || m_nymId.isEmpty())
+    if (m_NotaryID.isEmpty() || m_nymId.isEmpty())
         return false;
     // -----------------
     bool bSuccess = true;
     QString qstrAll(tr("all"));
     // -----------------
-    if (m_serverId != qstrAll)
-        return LowLevelLoadOfferList(m_serverId, m_nymId, the_map, qstrMarketID);
+    if (m_NotaryID != qstrAll)
+        return LowLevelLoadOfferList(m_NotaryID, m_nymId, the_map, qstrMarketID);
     else
     {
         int nCurrentIndex = -1;
@@ -408,16 +408,16 @@ bool DlgMarkets::LoadOfferList(mapIDName & the_map, QString qstrMarketID)
             if (0 == nCurrentIndex)
                 continue; // Skipping the "all" option. (Looping through all the ACTUAL servers.)
             // ---------------
-            QString qstrServerID = it_map.key();
+            QString qstrNotaryID = it_map.key();
             // ---------------
-            if (false == LowLevelLoadOfferList(qstrServerID, m_nymId, the_map, qstrMarketID))
+            if (false == LowLevelLoadOfferList(qstrNotaryID, m_nymId, the_map, qstrMarketID))
                 bSuccess = false; // Failure here just means ONE of the servers failed.
         }
     }
     return bSuccess;
 }
 // -----------------------------------------------
-bool DlgMarkets::GetMarket_AssetCurrencyScale(QString qstrMarketID, QString & qstrAssetID, QString & qstrCurrencyID, QString & qstrScale)
+bool DlgMarkets::GetMarket_AssetCurrencyScale(QString qstrMarketID, QString & qstrInstrumentDefinitionID, QString & qstrCurrencyID, QString & qstrScale)
 {
     // -------------------------------------------------------------
     QMap<QString, QVariant>::iterator it_market = m_mapMarkets.find(qstrMarketID);
@@ -429,7 +429,7 @@ bool DlgMarkets::GetMarket_AssetCurrencyScale(QString qstrMarketID, QString & qs
 
         if (NULL != pMarketData) // Should never be NULL.
         {
-            qstrAssetID    = QString::fromStdString(pMarketData->asset_type_id);
+            qstrInstrumentDefinitionID    = QString::fromStdString(pMarketData->asset_type_id);
             qstrCurrencyID = QString::fromStdString(pMarketData->currency_type_id);
             qstrScale      = QString::fromStdString(pMarketData->scale);
 
@@ -440,18 +440,18 @@ bool DlgMarkets::GetMarket_AssetCurrencyScale(QString qstrMarketID, QString & qs
     return false;
 }
 // -----------------------------------------------
-bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, mapIDName & the_map, QString qstrMarketID)
+bool DlgMarkets::LowLevelLoadOfferList(QString qstrNotaryID, QString qstrNymID, mapIDName & the_map, QString qstrMarketID)
 {
-    if (qstrServerID.isEmpty() || qstrNymID.isEmpty() || qstrMarketID.isEmpty())
+    if (qstrNotaryID.isEmpty() || qstrNymID.isEmpty() || qstrMarketID.isEmpty())
         return false;
     // -----------------------------------
-    QString qstrAssetID, qstrCurrencyID, qstrMarketScale;
+    QString qstrInstrumentDefinitionID, qstrCurrencyID, qstrMarketScale;
 
-    const bool bGotIDs = GetMarket_AssetCurrencyScale(qstrMarketID, qstrAssetID, qstrCurrencyID, qstrMarketScale);
+    const bool bGotIDs = GetMarket_AssetCurrencyScale(qstrMarketID, qstrInstrumentDefinitionID, qstrCurrencyID, qstrMarketScale);
     // -----------------------------------
     if (bGotIDs)
     {
-        opentxs::OTDB::OfferListNym * pOfferList = LoadOfferListForServer(qstrServerID.toStdString(), qstrNymID.toStdString());
+        opentxs::OTDB::OfferListNym * pOfferList = LoadOfferListForServer(qstrNotaryID.toStdString(), qstrNymID.toStdString());
         std::unique_ptr<opentxs::OTDB::OfferListNym> theAngel(pOfferList);
 
         if (NULL != pOfferList)
@@ -465,18 +465,18 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, 
                 if (NULL == pOfferData) // Should never happen.
                     continue;
                 // -----------------------------------------------------------------------
-                QString qstrOfferAssetID    = QString::fromStdString(pOfferData->asset_type_id);
+                QString qstrOfferInstrumentDefinitionID    = QString::fromStdString(pOfferData->asset_type_id);
                 QString qstrOfferCurrencyID = QString::fromStdString(pOfferData->currency_type_id);
                 QString qstrOfferScale      = QString::fromStdString(pOfferData->scale);
                 // -----------------------------------------------------------------------
-                if ((qstrAssetID     != qstrOfferAssetID)    ||
+                if ((qstrInstrumentDefinitionID     != qstrOfferInstrumentDefinitionID)    ||
                     (qstrCurrencyID  != qstrOfferCurrencyID) ||
                     (qstrMarketScale != qstrOfferScale))
                     continue;
                 // -----------------------------------------------------------------------
                 QString qstrTransactionID = QString::fromStdString(pOfferData->transaction_id);
                 // -----------------------------------------------------------------------
-                QString qstrCompositeID = QString("%1,%2").arg(qstrServerID).arg(qstrTransactionID);
+                QString qstrCompositeID = QString("%1,%2").arg(qstrNotaryID).arg(qstrTransactionID);
                 // -----------------------------------------------------------------------
                 QString qstrBuySell = pOfferData->selling ? tr("Sell") : tr("Buy");
 
@@ -513,7 +513,7 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, 
                 // is then mapped to a group of entries in m_mapMarkets, or to a single entry by cross-referencing
                 // the server ID.
                 // Whereas in m_mapOffers, each Offer can be uniquely identified (regardless of server) by its unique key:
-                // serverID,transactionID. Therefore MTOfferDetails::m_map and m_mapOffers are both maps (neither is a
+                // NotaryID,transactionID. Therefore MTOfferDetails::m_map and m_mapOffers are both maps (neither is a
                 // multimap) and each offer is uniquely identified by that same key on both maps.
                 // (That's why you see an insert() here instead of insertMulti.)
                 //
@@ -526,16 +526,16 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrServerID, QString qstrNymID, 
     return true;
 }
 // -----------------------------------------------
-opentxs::OTDB::OfferListNym * DlgMarkets::LoadOfferListForServer(const std::string & serverID, const std::string & nymID)
+opentxs::OTDB::OfferListNym * DlgMarkets::LoadOfferListForServer(const std::string & NotaryID, const std::string & nymID)
 {
     opentxs::OTDB::OfferListNym * pOfferList = NULL;
     opentxs::OTDB::Storable     * pStorable  = NULL;
     // ------------------------------------------
     QString qstrFilename = QString("%1.bin").arg(QString::fromStdString(nymID));
 
-    if (opentxs::OTDB::Exists("nyms", serverID, "offers", qstrFilename.toStdString()))
+    if (opentxs::OTDB::Exists("nyms", NotaryID, "offers", qstrFilename.toStdString()))
     {
-        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_OFFER_LIST_NYM, "nyms", serverID, "offers", qstrFilename.toStdString());
+        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_OFFER_LIST_NYM, "nyms", NotaryID, "offers", qstrFilename.toStdString());
 
         if (NULL == pStorable)
             return NULL;
@@ -554,14 +554,14 @@ opentxs::OTDB::OfferListNym * DlgMarkets::LoadOfferListForServer(const std::stri
 
 bool DlgMarkets::LoadMarketList(mapIDName & the_map)
 {
-    if (m_serverId.isEmpty() || m_nymId.isEmpty())
+    if (m_NotaryID.isEmpty() || m_nymId.isEmpty())
         return false;
     // -----------------
     bool bSuccess = true;
     QString qstrAll(tr("all"));
     // -----------------
-    if (m_serverId != qstrAll)
-        return LowLevelLoadMarketList(m_serverId, m_nymId, the_map);
+    if (m_NotaryID != qstrAll)
+        return LowLevelLoadMarketList(m_NotaryID, m_nymId, the_map);
     else
     {
         int nCurrentIndex = -1;
@@ -573,9 +573,9 @@ bool DlgMarkets::LoadMarketList(mapIDName & the_map)
             if (0 == nCurrentIndex)
                 continue; // Skipping the "all" option. (Looping through all the ACTUAL servers.)
             // ---------------
-            QString qstrServerID = it_map.key();
+            QString qstrNotaryID = it_map.key();
             // ---------------
-            if (false == LowLevelLoadMarketList(qstrServerID, m_nymId, the_map))
+            if (false == LowLevelLoadMarketList(qstrNotaryID, m_nymId, the_map))
                 bSuccess = false; // Failure here just means ONE of the servers failed.
         }
     }
@@ -583,12 +583,12 @@ bool DlgMarkets::LoadMarketList(mapIDName & the_map)
 }
 
 
-bool DlgMarkets::LowLevelLoadMarketList(QString qstrServerID, QString qstrNymID, mapIDName & the_map)
+bool DlgMarkets::LowLevelLoadMarketList(QString qstrNotaryID, QString qstrNymID, mapIDName & the_map)
 {
-    if (qstrServerID.isEmpty() || qstrNymID.isEmpty())
+    if (qstrNotaryID.isEmpty() || qstrNymID.isEmpty())
         return false;
     // -----------------------------------
-    opentxs::OTDB::MarketList * pMarketList = LoadMarketListForServer(qstrServerID.toStdString());
+    opentxs::OTDB::MarketList * pMarketList = LoadMarketListForServer(qstrNotaryID.toStdString());
     std::unique_ptr<opentxs::OTDB::MarketList> theAngel(pMarketList);
 
     if (NULL != pMarketList)
@@ -637,14 +637,14 @@ bool DlgMarkets::LowLevelLoadMarketList(QString qstrServerID, QString qstrNymID,
 
 bool DlgMarkets::RetrieveMarketList(mapIDName & the_map)
 {
-    if (m_serverId.isEmpty() || m_nymId.isEmpty())
+    if (m_NotaryID.isEmpty() || m_nymId.isEmpty())
         return false;
     // -----------------
     bool bSuccess = true;
     QString qstrAll(tr("all"));
     // -----------------
-    if (m_serverId != qstrAll)
-        return LowLevelRetrieveMarketList(m_serverId, m_nymId, the_map);
+    if (m_NotaryID != qstrAll)
+        return LowLevelRetrieveMarketList(m_NotaryID, m_nymId, the_map);
     else
     {
         int nCurrentIndex = -1;
@@ -656,9 +656,9 @@ bool DlgMarkets::RetrieveMarketList(mapIDName & the_map)
             if (0 == nCurrentIndex)
                 continue; // Skipping the "all" option. (Looping through all the ACTUAL servers.)
             // ---------------
-            QString qstrServerID = it_map.key();
+            QString qstrNotaryID = it_map.key();
             // ---------------
-            if (false == LowLevelRetrieveMarketList(qstrServerID, m_nymId, the_map))
+            if (false == LowLevelRetrieveMarketList(qstrNotaryID, m_nymId, the_map))
                 bSuccess = false; // Failure here just means ONE of the servers failed.
         }
     }
@@ -666,9 +666,9 @@ bool DlgMarkets::RetrieveMarketList(mapIDName & the_map)
 }
 
 
-bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrServerID, QString qstrNymID, mapIDName & the_map)
+bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrNotaryID, QString qstrNymID, mapIDName & the_map)
 {
-    if (qstrServerID.isEmpty() || qstrNymID.isEmpty())
+    if (qstrNotaryID.isEmpty() || qstrNymID.isEmpty())
         return false;
     // -----------------
     opentxs::OT_ME madeEasy;
@@ -677,7 +677,7 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrServerID, QString qstrNy
     {
         MTSpinner theSpinner;
 
-        const std::string str_reply = madeEasy.get_market_list(qstrServerID.toStdString(),
+        const std::string str_reply = madeEasy.get_market_list(qstrNotaryID.toStdString(),
                                                                qstrNymID   .toStdString());
         const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
 
@@ -686,10 +686,10 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrServerID, QString qstrNy
     // -----------------------------------
     if (bSuccess)
     {
-        return LowLevelLoadMarketList(qstrServerID, m_nymId, the_map);
+        return LowLevelLoadMarketList(qstrNotaryID, m_nymId, the_map);
     }
     else
-        Moneychanger::HasUsageCredits(this, qstrServerID, qstrNymID);
+        Moneychanger::HasUsageCredits(this, qstrNotaryID, qstrNymID);
     // -----------------------------------
     return bSuccess;
 }
@@ -698,14 +698,14 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrServerID, QString qstrNy
 
 // Caller responsible to delete!
 //
-opentxs::OTDB::MarketList * DlgMarkets::LoadMarketListForServer(const std::string & serverID)
+opentxs::OTDB::MarketList * DlgMarkets::LoadMarketListForServer(const std::string & NotaryID)
 {
     opentxs::OTDB::MarketList * pMarketList = NULL;
     opentxs::OTDB::Storable   * pStorable   = NULL;
     // ------------------------------------------
-    if (opentxs::OTDB::Exists("markets", serverID, "market_data.bin"))
+    if (opentxs::OTDB::Exists("markets", NotaryID, "market_data.bin"))
     {
-        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_MARKET_LIST, "markets", serverID, "market_data.bin");
+        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_MARKET_LIST, "markets", NotaryID, "market_data.bin");
 
         if (NULL == pStorable)
             return NULL;
@@ -935,7 +935,7 @@ void DlgMarkets::RefreshRecords()
     m_mapServers.insert(qstrAllID, qstrAllName);
     ui->comboBoxServer->insertItem(0, qstrAllName);
     // ----------------------------
-    if (!m_serverId.isEmpty() && (m_serverId == qstrAllID))
+    if (!m_NotaryID.isEmpty() && (m_NotaryID == qstrAllID))
     {
         bFoundServerDefault = true;
         nDefaultServerIndex = 0;
@@ -952,7 +952,7 @@ void DlgMarkets::RefreshRecords()
         // -----------------------------------------------
         if (!OT_server_id.isEmpty())
         {
-            if (!m_serverId.isEmpty() && (OT_server_id == m_serverId))
+            if (!m_NotaryID.isEmpty() && (OT_server_id == m_NotaryID))
             {
                 bFoundServerDefault = true;
                 nDefaultServerIndex = ii+1; // the +1 is because of "all" in the 0 position. (Servers only.)
@@ -1005,11 +1005,11 @@ void DlgMarkets::RefreshRecords()
     // -----------------------------------------------
     if (m_mapServers.size() > 0)
     {
-        SetCurrentServerIDBasedOnIndex(nDefaultServerIndex);
+        SetCurrentNotaryIDBasedOnIndex(nDefaultServerIndex);
         ui->comboBoxServer->setCurrentIndex(nDefaultServerIndex);
     }
     else
-        SetCurrentServerIDBasedOnIndex(-1);
+        SetCurrentNotaryIDBasedOnIndex(-1);
     // -----------------------------------------------
     ui->comboBoxServer->blockSignals(false);
     ui->comboBoxNym   ->blockSignals(false);

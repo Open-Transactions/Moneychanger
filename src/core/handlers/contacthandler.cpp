@@ -279,15 +279,15 @@ bool MTContactHandler::GetServers(mapIDName & theMap, bool bPrependOTType/*=fals
         std::string str_server_id   = opentxs::OTAPI_Wrap::It()->GetServer_ID(ii);
         std::string str_server_name = opentxs::OTAPI_Wrap::It()->GetServer_Name(str_server_id);
 
-        QString qstrServerID   = QString::fromStdString(str_server_id);
+        QString qstrNotaryID   = QString::fromStdString(str_server_id);
         QString qstrServerName = QString::fromStdString(str_server_name);
 
-        QString qstrFinalID   = qstrServerID;
+        QString qstrFinalID   = qstrNotaryID;
         QString qstrFinalName = qstrServerName;
 
         if (bPrependOTType)
         {
-            qstrFinalID   = QString("%1|%2").arg("otserver").arg(qstrServerID);
+            qstrFinalID   = QString("%1|%2").arg("otserver").arg(qstrNotaryID);
             qstrFinalName = QString("%1: %2").arg(QObject::tr("OT Server")).arg(qstrServerName);
         }
 
@@ -1939,7 +1939,7 @@ void MTContactHandler::NotifyOfNymServerPair(QString nym_id_string, QString serv
 // NOTE: if an account isn't ALREADY found in my contact list, I am
 // very unlikely to find it in my wallet (since it's still most likely
 // someone else's account) and so I am not able to look up its associated
-// nymId, serverId, and assetTypeIds. Therefore if I have those available
+// nymId, NotaryID, and assetTypeIds. Therefore if I have those available
 // when I call this function, then I NEED to pass them in, so that if the
 // account CAN be added to some existing contact, we will have its IDs to
 // add.

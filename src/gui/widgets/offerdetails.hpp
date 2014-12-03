@@ -41,9 +41,9 @@ protected:
     void PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, QMap<QString, QVariant> & OFFER_MAP);
     void ClearTradesGrid();
 
-    opentxs::OTDB::TradeListNym * LoadTradeListForNym(opentxs::OTDB::OfferDataNym & offerData, QString qstrServerID, QString qstrNymID);
+    opentxs::OTDB::TradeListNym * LoadTradeListForNym(opentxs::OTDB::OfferDataNym & offerData, QString qstrNotaryID, QString qstrNymID);
 
-    bool ChooseServer(QString & qstrServerID, QString & qstrServerName);
+    bool ChooseServer(QString & qstrNotaryID, QString & qstrServerName);
 
 private slots:
     void on_toolButtonAssetAcct_clicked();

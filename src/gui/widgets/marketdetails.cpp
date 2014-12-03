@@ -100,7 +100,7 @@ MTMarketDetails::MTMarketDetails(QWidget *parent, MTDetailEdit & theOwner) :
     ui->tableWidgetTrades ->verticalHeader()->hide();
     // ----------------------------------
     ui->lineEditAsset     ->setStyleSheet("QLineEdit { background-color: lightgray }");
-    ui->lineEditAssetID   ->setStyleSheet("QLineEdit { background-color: lightgray }");
+    ui->lineEditInstrumentDefinitionID   ->setStyleSheet("QLineEdit { background-color: lightgray }");
     ui->lineEditCurrency  ->setStyleSheet("QLineEdit { background-color: lightgray }");
     ui->lineEditCurrencyID->setStyleSheet("QLineEdit { background-color: lightgray }");
     // ----------------------------------
@@ -109,8 +109,8 @@ MTMarketDetails::MTMarketDetails(QWidget *parent, MTDetailEdit & theOwner) :
 
 void MTMarketDetails::on_toolButtonAsset_clicked()
 {
-    if (!ui->lineEditAssetID->text().isEmpty())
-        emit ShowAsset(ui->lineEditAssetID->text());
+    if (!ui->lineEditInstrumentDefinitionID->text().isEmpty())
+        emit ShowAsset(ui->lineEditInstrumentDefinitionID->text());
 }
 
 void MTMarketDetails::on_toolButtonCurrency_clicked()
@@ -787,7 +787,7 @@ void MTMarketDetails::refresh(QString strID, QString strName)
                     ui->lineEditAsset       ->setText(QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->asset_type_id)));
                     ui->lineEditCurrency    ->setText(QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->currency_type_id)));
                     // ------------------------------------------------------
-                    ui->lineEditAssetID     ->setText(QString::fromStdString(pMarketData->asset_type_id));
+                    ui->lineEditInstrumentDefinitionID     ->setText(QString::fromStdString(pMarketData->asset_type_id));
                     ui->lineEditCurrencyID  ->setText(QString::fromStdString(pMarketData->currency_type_id));
                     // ------------------------------------------------------
                     QString qstrNumberBids    = CalculateNumberBids    (strID, *(m_pOwner->m_pmapMarkets));
@@ -1018,7 +1018,7 @@ QString MTMarketDetails::CalculateCurrentAsk(QString & qstrID, QMultiMap<QString
 
 void MTMarketDetails::ClearContents()
 {
-    ui->lineEditAssetID     ->setText("");
+    ui->lineEditInstrumentDefinitionID     ->setText("");
     ui->lineEditCurrencyID  ->setText("");
     // -------------------------------------
     ui->lineEditAsset       ->setText("");
@@ -1040,7 +1040,7 @@ void MTMarketDetails::FavorLeftSideForIDs()
     {
         ui->lineEditAsset     ->home(false);
         ui->lineEditCurrency  ->home(false);
-        ui->lineEditAssetID   ->home(false);
+        ui->lineEditInstrumentDefinitionID   ->home(false);
         ui->lineEditCurrencyID->home(false);
     }
 }

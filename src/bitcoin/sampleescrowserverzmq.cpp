@@ -5,7 +5,7 @@
 
 #include <bitcoin-api/btchelper.hpp>
 
-#include <opentxs/core/OTLog.hpp>
+#include <opentxs/core/Log.hpp>
 
 //#ifdef OT_USE_ZMQ4
     #include <zmq.h>

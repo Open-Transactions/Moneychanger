@@ -11,7 +11,7 @@
 
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/core/OTLog.hpp>
+#include <opentxs/core/Log.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
 
 #include <QTimer>
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
     // ----------------------------------------
     if (NULL == opentxs::OTAPI_Wrap::It())
     {
-        opentxs::OTLog::vError(0, "Error, exiting: opentxs::OTAPI_Wrap::AppInit() call must have failed.\n");
+        opentxs::Log::vError(0, "Error, exiting: opentxs::OTAPI_Wrap::AppInit() call must have failed.\n");
         return -1;
     }
     // ----------------------------------------
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
     Moneychanger::It(NULL, true); // bShuttingDown=true.
 
     // ----------------------------------------------------------------
-    opentxs::OTLog::vOutput(0, "Finished executing the QApplication!\n(AppCleanup should occur "
+    opentxs::Log::vOutput(0, "Finished executing the QApplication!\n(AppCleanup should occur "
                    "immediately after this point.)\nReturning: %d\n", nExec);
     // ----------------------------------------------------------------
     return nExec;

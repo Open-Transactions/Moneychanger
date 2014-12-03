@@ -18,7 +18,7 @@
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
-#include <opentxs/core/OTLog.hpp>
+#include <opentxs/core/Log.hpp>
 
 #include <QGridLayout>
 #include <QMessageBox>
@@ -144,29 +144,29 @@ void MTHomeDetail::on_addContactButton_clicked(bool checked /*=false*/)
             // --------------------------------------------------
             const std::string str_acct_id    = recordmt.GetOtherAccountID();
             const std::string str_nym_id     = recordmt.GetOtherNymID();
-            const std::string str_server_id  = recordmt.GetServerID();
-            const std::string str_asset_id   = recordmt.GetAssetID();
+            const std::string str_server_id  = recordmt.GetNotaryID();
+            const std::string str_asset_id   = recordmt.GetInstrumentDefinitionID();
             // --------------------------------------------------
             int nContactID = 0;
 
             if (!str_nym_id.empty())
             {
                 QString nymID     = QString::fromStdString(str_nym_id);
-                QString serverID  = QString::fromStdString(str_server_id);
-                QString assetID   = QString::fromStdString(str_asset_id);
+                QString NotaryID  = QString::fromStdString(str_server_id);
+                QString InstrumentDefinitionID   = QString::fromStdString(str_asset_id);
                 QString accountID = QString::fromStdString(str_acct_id);
                 // --------------------------------------------------
-                nContactID = MTContactHandler::getInstance()->CreateContactBasedOnNym(nymID, serverID);
+                nContactID = MTContactHandler::getInstance()->CreateContactBasedOnNym(nymID, NotaryID);
                 // --------------------------------------------------
                 if (!str_acct_id.empty())
                 {
-                    int nAcctContactID = MTContactHandler::getInstance()->FindContactIDByAcctID(accountID, nymID, serverID, assetID);
+                    int nAcctContactID = MTContactHandler::getInstance()->FindContactIDByAcctID(accountID, nymID, NotaryID, InstrumentDefinitionID);
 
                     if (!(nContactID > 0))
                         nContactID = nAcctContactID;
                 }
                 else if (!str_server_id.empty())
-                    MTContactHandler::getInstance()->NotifyOfNymServerPair(nymID, serverID);
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(nymID, NotaryID);
                 // --------------------------------------------------
                 if (nContactID > 0)
                 {
@@ -209,8 +209,8 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
 
         const std::string str_acct_id    = recordmt.GetOtherAccountID();
         const std::string str_nym_id     = recordmt.GetOtherNymID();
-        const std::string str_server_id  = recordmt.GetServerID();
-        const std::string str_asset_id   = recordmt.GetAssetID();
+        const std::string str_server_id  = recordmt.GetNotaryID();
+        const std::string str_asset_id   = recordmt.GetInstrumentDefinitionID();
         // --------------------------------------------------
         if (str_nym_id.empty())
         {
@@ -220,8 +220,8 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
         // else...
         //
         QString nymID     = QString::fromStdString(str_nym_id);
-        QString serverID  = QString::fromStdString(str_server_id);
-        QString assetID   = QString::fromStdString(str_asset_id);
+        QString NotaryID  = QString::fromStdString(str_server_id);
+        QString InstrumentDefinitionID   = QString::fromStdString(str_asset_id);
         QString accountID = QString::fromStdString(str_acct_id);
 
         if (MTContactHandler::getInstance()->ContactExists(nymID.toInt()))
@@ -265,9 +265,9 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
                 //
                 if (!str_acct_id.empty())
                     //int nAcctContactID =
-                    MTContactHandler::getInstance()->FindContactIDByAcctID(accountID, nymID, serverID, assetID);
+                    MTContactHandler::getInstance()->FindContactIDByAcctID(accountID, nymID, NotaryID, InstrumentDefinitionID);
                 else if (!str_server_id.empty())
-                    MTContactHandler::getInstance()->NotifyOfNymServerPair(nymID, serverID);
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(nymID, NotaryID);
                 // --------------------------------------------------
                 m_nContactID = nContactID;
                 // ---------------------------------
@@ -366,9 +366,9 @@ void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
 QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
 {
     // -----------------------------------------
-    const std::string str_record_asset  = recordmt.GetAssetID();
+    const std::string str_record_asset  = recordmt.GetInstrumentDefinitionID();
     const std::string str_record_nym    = recordmt.GetNymID();
-    const std::string str_record_server = recordmt.GetServerID();
+    const std::string str_record_server = recordmt.GetNotaryID();
     // -----------------------------------------
     QString qstr_record_asset  = QString::fromStdString(str_record_asset);
     QString qstr_record_nym    = QString::fromStdString(str_record_nym);
@@ -410,8 +410,8 @@ QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
         // -----------------------------------
         str_acct_id      = qstr_acct_id.toStdString();
         str_acct_nym     = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID      (str_acct_id);
-        str_acct_server  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
-        str_acct_asset   = opentxs::OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+        str_acct_server  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID   (str_acct_id);
+        str_acct_asset   = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
         // -----------------------------------
         str_acct_type    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Type(str_acct_id);
         // -----------------------------------
@@ -468,8 +468,8 @@ QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
                 // -----------------------------------
                 str_acct_id      = qstr_acct_id.toStdString();
                 str_acct_nym     = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID      (str_acct_id);
-                str_acct_server  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
-                str_acct_asset   = opentxs::OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+                str_acct_server  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID   (str_acct_id);
+                str_acct_asset   = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
                 // -----------------------------------
                 str_acct_type    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Type(str_acct_id);
                 // -----------------------------------
@@ -680,7 +680,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
                     opentxs::OT_ME     madeEasy;
                     MTSpinner theSpinner;
                     // -----------------------------------------
-                    const int32_t nDepositCash = madeEasy.deposit_cash(recordmt.GetServerID(), recordmt.GetNymID(),
+                    const int32_t nDepositCash = madeEasy.deposit_cash(recordmt.GetNotaryID(), recordmt.GetNymID(),
                                                                        qstr_acct_id.toStdString(), recordmt.GetContents());
                     // -----------------------------------------
                     if (1 == nDepositCash)
@@ -693,7 +693,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
                 if (!bSuccess)
                 {
                     const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this,
-                                                                                recordmt.GetServerID(),
+                                                                                recordmt.GetNotaryID(),
                                                                                 recordmt.GetNymID());
                     // In the cases of -2 and 0, HasUsageCredits already pops up an error box.
                     // Otherwise, we pop one up ourselves here.
@@ -843,7 +843,7 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
         // --------------------------------------------------
         const std::string str_my_nym_id     = recordmt.GetNymID();
         const std::string str_other_nym_id  = recordmt.GetOtherNymID();
-        const std::string str_server_id     = recordmt.GetServerID();
+        const std::string str_server_id     = recordmt.GetNotaryID();
               std::string str_my_address;
               std::string str_other_address;
 //            std::string str_msg_id;
@@ -852,7 +852,7 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
         // --------------------------------------------------
         QString myNymID      = QString::fromStdString(str_my_nym_id);
         QString otherNymID   = QString::fromStdString(str_other_nym_id);
-        QString serverID     = QString::fromStdString(str_server_id);
+        QString NotaryID     = QString::fromStdString(str_server_id);
         QString myAddress;
         QString otherAddress;
 //      QString qstrMsgID;
@@ -880,12 +880,12 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
         MTCompose * compose_window = new MTCompose;
         compose_window->setAttribute(Qt::WA_DeleteOnClose);
         // --------------------------------------------------
-//        if (!serverID.isEmpty())
+//        if (!NotaryID.isEmpty())
 //        {
 //            if (!qstrMsgType.isEmpty())
-//                compose_window->setInitialMsgType(qstrMsgType, serverID);
+//                compose_window->setInitialMsgType(qstrMsgType, NotaryID);
 //            else
-//                compose_window->setInitialServer(serverID);
+//                compose_window->setInitialServer(NotaryID);
 //        }
 //        else if (!qstrMsgType.isEmpty())
 //            compose_window->setInitialMsgType(qstrMsgType);
@@ -912,8 +912,8 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
         // ---------------------------------------
 
         // --------------------------------------------------
-        if (!serverID.isEmpty())
-            compose_window->setInitialServer(serverID);
+        if (!NotaryID.isEmpty())
+            compose_window->setInitialServer(NotaryID);
         // --------------------------------------------------
         // Set subject, if one is available.
         std::string str_desc;
@@ -963,7 +963,7 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(opentxs::OTRecord& recordmt, bo
     // --------------------------------------------------------------------------------------------
     if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
     {
-        const int64_t lAmount = opentxs::OTAPI_Wrap::It()->StringToAmount(recordmt.GetAssetID(), recordmt.GetAmount());
+        const int64_t lAmount = opentxs::OTAPI_Wrap::It()->StringToAmount(recordmt.GetInstrumentDefinitionID(), recordmt.GetAmount());
 
         cellType = (lAmount > 0) ? TransactionTableViewCellTypeReceived : TransactionTableViewCellTypeSent;
     }
@@ -1284,10 +1284,10 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
 
 //        const std::string str_acct_id    = recordmt.GetOtherAccountID();
 //        const std::string str_nym_id     = recordmt.GetOtherNymID();
-//        const std::string str_server_id  = recordmt.GetServerID();
-//        const std::string str_asset_id   = recordmt.GetAssetID();
+//        const std::string str_server_id  = recordmt.GetNotaryID();
+//        const std::string str_asset_id   = recordmt.GetInstrumentDefinitionID();
 //
-//        QString strMemo = QString("AcctID: %1 NymID: %2 ServerID: %3 AssetID: %4").
+//        QString strMemo = QString("AcctID: %1 NymID: %2 NotaryID: %3 InstrumentDefinitionID: %4").
 //                arg(QString::fromStdString(str_acct_id)).
 //                arg(QString::fromStdString(str_nym_id)).
 //                arg(QString::fromStdString(str_server_id)).
@@ -1331,8 +1331,8 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     // --------------------------------------------------
     const std::string str_acct_id    = recordmt.GetOtherAccountID();
     const std::string str_nym_id     = recordmt.GetOtherNymID();
-    const std::string str_server_id  = recordmt.GetServerID();
-    const std::string str_asset_id   = recordmt.GetAssetID();
+    const std::string str_server_id  = recordmt.GetNotaryID();
+    const std::string str_asset_id   = recordmt.GetInstrumentDefinitionID();
 
     if (!str_nym_id.empty() && !str_server_id.empty())
         MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_nym_id),
@@ -1587,8 +1587,8 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     QString qstr_OtherAddress = QString::fromStdString(recordmt.GetOtherAddress());
     QString qstr_AccountID    = QString::fromStdString(recordmt.GetAccountID());
     QString qstr_OtherAcctID  = QString::fromStdString(recordmt.GetOtherAccountID());
-    QString qstr_ServerID     = QString::fromStdString(recordmt.GetServerID());
-    QString qstr_AssetTypeID  = QString::fromStdString(recordmt.GetAssetID());
+    QString qstr_NotaryID     = QString::fromStdString(recordmt.GetNotaryID());
+    QString qstr_AssetTypeID  = QString::fromStdString(recordmt.GetInstrumentDefinitionID());
 
     QString qstr_OtherType;
 
@@ -1748,13 +1748,13 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         pGridLayout->addWidget(m_pLineEdit_OtherAcct_ID, nGridRow++, 2);
     }
 
-    if (!qstr_ServerID.isEmpty())
+    if (!qstr_NotaryID.isEmpty())
     {
         QLabel    * pLabel    = new QLabel(QString("%1: ").arg(tr("Server")));
 
-        QString qstr_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(qstr_ServerID.toStdString()));
+        QString qstr_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(qstr_NotaryID.toStdString()));
 
-        m_pLineEdit_Server_ID       = new QLineEdit(qstr_ServerID);
+        m_pLineEdit_Server_ID       = new QLineEdit(qstr_NotaryID);
         m_pLineEdit_Server_Name     = new QLineEdit(qstr_name);
 
         m_pLineEdit_Server_ID->setReadOnly(true);
@@ -1902,7 +1902,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     {
         if (recordmt.HasInitialPayment() || recordmt.HasPaymentPlan())
         {
-            std::string str_asset_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(recordmt.GetAssetID().c_str());
+            std::string str_asset_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(recordmt.GetInstrumentDefinitionID().c_str());
             // ---------------------------------
             std::stringstream sss;
             sss << "Payments use the currency: " << str_asset_name << "\n";
@@ -1920,7 +1920,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
                 dateString = [formatter stringFromDate:[NSDate date]];
 
                 long        lAmount    = recordmt.GetInitialPaymentAmount();
-                std::string str_output = opentxs::OTAPI_Wrap::It()->FormatAmount(recordmt.GetAssetID().c_str(),
+                std::string str_output = opentxs::OTAPI_Wrap::It()->FormatAmount(recordmt.GetInstrumentDefinitionID().c_str(),
                                                                         static_cast<int64_t>(lAmount));
                 sss << "Initial payment of " << str_output << " due: " << dateString.UTF8String << "\n";
             }
@@ -1932,7 +1932,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
                 dateString = [formatter stringFromDate:[NSDate date]];
 
                 long        lAmount    = recordmt.GetPaymentPlanAmount();
-                std::string str_output = opentxs::OTAPI_Wrap::It()->FormatAmount(recordmt.GetAssetID().c_str(),
+                std::string str_output = opentxs::OTAPI_Wrap::It()->FormatAmount(recordmt.GetInstrumentDefinitionID().c_str(),
                                                                         static_cast<int64_t>(lAmount));
                 sss << "Recurring payments of " << str_output << " begin: " << dateString.UTF8String << " ";
                 // ----------------------------------------------------------------

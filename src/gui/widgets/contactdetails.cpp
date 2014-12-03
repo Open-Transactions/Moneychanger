@@ -678,14 +678,14 @@ void MTContactDetails::refresh(QString strID, QString strName)
 
                     for (mapIDName::iterator iii = theServerMap.begin(); iii != theServerMap.end(); iii++)
                     {
-                        QString qstrServerID    = iii.key();
+                        QString qstrNotaryID    = iii.key();
                         QString qstrServerValue = iii.value();
                         // -------------------------------------
-                        strDetails += QString("%1\n").arg(qstrServerID);
+                        strDetails += QString("%1\n").arg(qstrNotaryID);
                         // -------------------------------------
                         mapIDName theAccountMap;
 
-                        if (MTContactHandler::getInstance()->GetAccounts(theAccountMap, qstrNymID, qstrServerID, QString("")))
+                        if (MTContactHandler::getInstance()->GetAccounts(theAccountMap, qstrNymID, qstrNotaryID, QString("")))
                         {
                             strDetails += tr("Where he owns the accounts:\n");
 

@@ -184,8 +184,8 @@ void MTAccountDetails::refresh(QString strID, QString strName)
 //      ui->lineEditID  ->setText(strID);
         ui->lineEditName->setText(strName);
         // ----------------------------------
-        std::string str_server_id = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ServerID   (strID.toStdString());
-        std::string str_asset_id  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(strID.toStdString());
+        std::string str_server_id = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID   (strID.toStdString());
+        std::string str_asset_id  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(strID.toStdString());
         std::string str_nym_id    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID      (strID.toStdString());
         // ----------------------------------
         QString qstr_server_id    = QString::fromStdString(str_server_id);
@@ -288,7 +288,7 @@ void MTAccountDetails::on_toolButtonAsset_clicked()
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
-        QString qstr_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id));
+        QString qstr_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(str_acct_id));
         // --------------------------------------------------
         emit ShowAsset(qstr_id);
     }
@@ -312,7 +312,7 @@ void MTAccountDetails::on_toolButtonServer_clicked()
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
-        QString qstr_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ServerID(str_acct_id));
+        QString qstr_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_acct_id));
         // --------------------------------------------------
         emit ShowServer(qstr_id);
     }
@@ -381,13 +381,13 @@ void MTAccountDetails::AddButtonClicked()
     if (QDialog::Accepted == theWizard.exec())
     {
         QString qstrName     = theWizard.field("Name") .toString();
-        QString qstrAssetID  = theWizard.field("AssetID") .toString();
+        QString qstrInstrumentDefinitionID  = theWizard.field("InstrumentDefinitionID") .toString();
         QString qstrNymID    = theWizard.field("NymID")   .toString();
-        QString qstrServerID = theWizard.field("ServerID").toString();
+        QString qstrNotaryID = theWizard.field("NotaryID").toString();
         // ---------------------------------------------------
-        QString qstrAssetName  = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(qstrAssetID .toStdString()));
+        QString qstrAssetName  = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(qstrInstrumentDefinitionID .toStdString()));
         QString qstrNymName    = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name      (qstrNymID   .toStdString()));
-        QString qstrServerName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name   (qstrServerID.toStdString()));
+        QString qstrServerName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name   (qstrNotaryID.toStdString()));
         // ---------------------------------------------------
         QMessageBox::information(this, tr("Confirm Create Account"),
                                  QString("%1: '%2'<br/>%3: %4<br/>%5: %6<br/>%7: %8").arg(tr("Confirm Create Account:<br/>Name")).
@@ -400,7 +400,7 @@ void MTAccountDetails::AddButtonClicked()
         // First make sure the Nym is registered at the server, and if not, register him.
         //
         bool bIsRegiseredAtServer = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(qstrNymID.toStdString(),
-                                                                         qstrServerID.toStdString());
+                                                                         qstrNotaryID.toStdString());
         if (!bIsRegiseredAtServer)
         {
             opentxs::OT_ME madeEasy;
@@ -411,7 +411,7 @@ void MTAccountDetails::AddButtonClicked()
             {
                 MTSpinner theSpinner;
 
-                std::string strResponse = madeEasy.register_nym(qstrServerID.toStdString(),
+                std::string strResponse = madeEasy.register_nym(qstrNotaryID.toStdString(),
                                                                 qstrNymID   .toStdString()); // This also does getRequest internally, if success.
                 nSuccess                = madeEasy.VerifyMessageSuccess(strResponse);
             }
@@ -442,7 +442,7 @@ void MTAccountDetails::AddButtonClicked()
             // --------------------------
             if (1 != nSuccess)
             {
-                Moneychanger::HasUsageCredits(this, qstrServerID, qstrNymID);
+                Moneychanger::HasUsageCredits(this, qstrNotaryID, qstrNymID);
                 return;
             }
         }
@@ -458,15 +458,15 @@ void MTAccountDetails::AddButtonClicked()
         {
             MTSpinner theSpinner;
 
-            strResponse = madeEasy.create_asset_acct(qstrServerID.toStdString(),
+            strResponse = madeEasy.create_asset_acct(qstrNotaryID.toStdString(),
                                                      qstrNymID   .toStdString(),
-                                                     qstrAssetID .toStdString());
+                                                     qstrInstrumentDefinitionID .toStdString());
         }
         // -1 error, 0 failure, 1 success.
         //
         if (1 != madeEasy.VerifyMessageSuccess(strResponse))
         {
-            const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, qstrServerID, qstrNymID);
+            const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, qstrNotaryID, qstrNymID);
 
             // HasUsageCredits already pops up an error box in the cases of -2 and 0.
             //

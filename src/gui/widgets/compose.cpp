@@ -129,12 +129,12 @@ void MTCompose::setTransportDisplayBasedOnAvailableData()
     {
         QString qstrMsgTypeDisplay("");
 
-        if (sendingThroughOTServer() && !m_serverId.isEmpty())
+        if (sendingThroughOTServer() && !m_NotaryID.isEmpty())
         {
-            qstrMsgTypeDisplay = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(m_serverId.toStdString()));
+            qstrMsgTypeDisplay = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(m_NotaryID.toStdString()));
 
             if (qstrMsgTypeDisplay.isEmpty())
-                qstrMsgTypeDisplay = m_serverId;
+                qstrMsgTypeDisplay = m_NotaryID;
         }
         // --------------------------------------------------
         else if (!m_msgtype.isEmpty() && !sendingThroughOTServer())
@@ -345,25 +345,25 @@ void MTCompose::setInitialMsgType(QString msgtype, QString server/*=""*/)
     setInitialServer(sendingThroughOTServer() ? server : QString(""));
 }
 
-void MTCompose::setInitialServer(QString serverId)
+void MTCompose::setInitialServer(QString NotaryID)
 {
     // If someone passed in an empty server Id, but the msgType IS set,
-    // then if msgType is "otserver", we keep the serverId we already had,
+    // then if msgType is "otserver", we keep the NotaryID we already had,
     // and we don't blank it out. But if msgtype is "bitmessage" or something,
     // then we blank out the OT Server ID.
     //
-    if (serverId.isEmpty() && !m_msgtype.isEmpty())
+    if (NotaryID.isEmpty() && !m_msgtype.isEmpty())
     {
         if (0 != m_msgtype.compare("otserver"))
-            m_serverId = QString("");
-        // else if msgtype IS "otserver" (and serverId arg is empty) then we
-        // preserve whatever value was already in m_serverId.
+            m_NotaryID = QString("");
+        // else if msgtype IS "otserver" (and NotaryID arg is empty) then we
+        // preserve whatever value was already in m_NotaryID.
     }
     // -------------------
-    if (!serverId.isEmpty())
+    if (!NotaryID.isEmpty())
     {
         m_msgtype  = QString("otserver");
-        m_serverId = serverId;
+        m_NotaryID = NotaryID;
 
         // These aren't used in the case of OT server, so we blank them out.
         // (Only Server ID and NymIDs are necessary in this case.)
@@ -458,7 +458,7 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
     if (body.isEmpty())
         body = tr("From the desktop client. (Empty message body.)");
     // ----------------------------------------------------
-    std::string str_serverId  (viaServer  .toStdString());
+    std::string str_NotaryID  (viaServer  .toStdString());
     std::string str_fromNymId (fromNymId  .toStdString());
     std::string str_fromAddr  (fromAddress.toStdString());
     std::string str_toNymId   (toNymId    .toStdString());
@@ -477,7 +477,7 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
         {
             MTSpinner theSpinner;
 
-            strResponse = madeEasy.send_user_msg(str_serverId, str_fromNymId, str_toNymId, contents.toStdString());
+            strResponse = madeEasy.send_user_msg(str_NotaryID, str_fromNymId, str_toNymId, contents.toStdString());
         }
 
         int32_t nReturnVal = madeEasy.VerifyMessageSuccess(strResponse);
@@ -486,7 +486,7 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
         {
             qDebug() << "OT send_message: Failed.";
 
-            Moneychanger::HasUsageCredits(this, str_serverId, str_fromNymId);
+            Moneychanger::HasUsageCredits(this, str_NotaryID, str_fromNymId);
 
             return false;
         }
@@ -782,7 +782,7 @@ void MTCompose::on_viaButton_clicked()
         else // Pipe wasn't found.
             qstrType = qstrKey;
         // ----------------------------
-        if (!m_serverId.isEmpty() && !qstrID.isEmpty() && (0 == qstrID.compare(m_serverId)))
+        if (!m_NotaryID.isEmpty() && !qstrID.isEmpty() && (0 == qstrID.compare(m_NotaryID)))
         {
             bFoundDefault   = true;
             nDefaultIndex   = nIndex;
@@ -1045,7 +1045,7 @@ void MTCompose::on_sendButton_clicked()
     QString toNymId      = m_recipientNymId;
     QString fromAddress  = m_senderAddress;
     QString toAddress    = m_recipientAddress;
-    QString viaServer    = m_serverId;
+    QString viaServer    = m_NotaryID;
     QString viaTransport = m_msgtype;
     int     viaMethodID  = m_senderMethodId;
 
@@ -1274,7 +1274,7 @@ void MTCompose::FindSenderMsgMethod()
     if (bUpdatedRecipientDetails)
         this->setRecipientNameBasedOnAvailableData();
     // -------------------------------------------------
-    if (!m_serverId.isEmpty() && m_msgtype.isEmpty())
+    if (!m_NotaryID.isEmpty() && m_msgtype.isEmpty())
         setInitialMsgType("otserver");
     // -------------------------------------------------
     if (sendingThroughOTServer())
@@ -1286,7 +1286,7 @@ void MTCompose::FindSenderMsgMethod()
                 // If we already have a server ID, let's see if they both support it.
                 // If we don't already have a server ID, let's find one they both agree on.
 
-                if (!m_serverId.isEmpty()) // server ID not empty. Let's see if they both support it.
+                if (!m_NotaryID.isEmpty()) // server ID not empty. Let's see if they both support it.
                 {
                     if (verifySenderAgainstServer() && verifyRecipientAgainstServer())
                         return;  // SUCCESS!
@@ -1296,7 +1296,7 @@ void MTCompose::FindSenderMsgMethod()
                     // dump this server and try to find another one.
                     else
                     {
-                        m_serverId = QString("");  // We force this here, since setInitialServer won't normally blank out a serverID even if you pass a blank one.
+                        m_NotaryID = QString("");  // We force this here, since setInitialServer won't normally blank out a NotaryID even if you pass a blank one.
                         setInitialServer(QString(""));
                     }
                 }
@@ -1318,14 +1318,14 @@ void MTCompose::FindSenderMsgMethod()
                 {
                     for (mapIDName::iterator it = mapServers.begin(); it != mapServers.end(); ++it)
                     {
-                        QString qstrServerID = it.key();
+                        QString qstrNotaryID = it.key();
 
-                        std::string server_id    = qstrServerID.toStdString();
+                        std::string server_id    = qstrNotaryID.toStdString();
                         std::string sender_id    = m_senderNymId.toStdString();
 
                         if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
                         {
-                            setInitialServer(qstrServerID);
+                            setInitialServer(qstrNotaryID);
                             return; // SUCCESS!
                         }
                     }
@@ -1565,7 +1565,7 @@ void MTCompose::FindRecipientMsgMethod()
     if (bUpdatedRecipientDetails)
         this->setRecipientNameBasedOnAvailableData();
     // -------------------------------------------------
-    if (!m_serverId.isEmpty() && m_msgtype.isEmpty())
+    if (!m_NotaryID.isEmpty() && m_msgtype.isEmpty())
         setInitialMsgType("otserver");
     // -------------------------------------------------
     if (sendingThroughOTServer())
@@ -1577,7 +1577,7 @@ void MTCompose::FindRecipientMsgMethod()
                 // If we already have a server ID, let's see if they both support it.
                 // If we don't already have a server ID, let's find one they both agree on.
 
-                if (!m_serverId.isEmpty()) // server ID not empty. Let's see if they both support it.
+                if (!m_NotaryID.isEmpty()) // server ID not empty. Let's see if they both support it.
                 {
                     if (verifySenderAgainstServer() && verifyRecipientAgainstServer())
                         return;  // SUCCESS!
@@ -1587,7 +1587,7 @@ void MTCompose::FindRecipientMsgMethod()
                     // dump this server and try to find another one.
                     else
                     {
-                        m_serverId = QString("");  // We force this here, since setInitialServer won't normally blank out a serverID even if you pass a blank one.
+                        m_NotaryID = QString("");  // We force this here, since setInitialServer won't normally blank out a NotaryID even if you pass a blank one.
                         setInitialServer(QString(""));
                     }
                 }
@@ -1609,14 +1609,14 @@ void MTCompose::FindRecipientMsgMethod()
                 {
                     for (mapIDName::iterator it = mapServers.begin(); it != mapServers.end(); ++it)
                     {
-                        QString qstrServerID = it.key();
+                        QString qstrNotaryID = it.key();
 
-                        std::string server_id    = qstrServerID.toStdString();
+                        std::string server_id    = qstrNotaryID.toStdString();
                         std::string sender_id    = m_senderNymId.toStdString();
 
                         if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
                         {
-                            setInitialServer(qstrServerID);
+                            setInitialServer(qstrNotaryID);
                             return; // SUCCESS!
                         }
                     }
@@ -2049,7 +2049,7 @@ bool MTCompose::MakeSureCommonMsgMethod()
     {
         // LOGIC:
         //
-        // if m_serverId is set, and senderNymId is set (which it definitely is, by this point), and recipientNymId is set,
+        // if m_NotaryID is set, and senderNymId is set (which it definitely is, by this point), and recipientNymId is set,
         // then set m_msgtype to "otserver."
         //
         // Else if all that is true but we are missing recipientNymID, and since we already know there is not going to BE a
@@ -2066,10 +2066,10 @@ bool MTCompose::MakeSureCommonMsgMethod()
         // error and ask the user to click the "Via" button.
         //
         // -------------------------------------------
-        if (!m_serverId.isEmpty() && !m_recipientNymId.isEmpty()) // No need to check if senderNymID isn't empty, since we already know it isn't, by this point.
+        if (!m_NotaryID.isEmpty() && !m_recipientNymId.isEmpty()) // No need to check if senderNymID isn't empty, since we already know it isn't, by this point.
         {
             this->setInitialMsgType(QString("otserver")); // arg server="" by default.
-            // BUT: If m_serverId is already set, and blank is passed, then m_serverId's
+            // BUT: If m_NotaryID is already set, and blank is passed, then m_NotaryID's
             // value is preserved (not overwritten by the blank "")
         }
         else
@@ -2078,7 +2078,7 @@ bool MTCompose::MakeSureCommonMsgMethod()
             // or the recipientNymId is still empty) we go ahead and blank out any server ID that might be
             // there, and proceed to find a msgtype that they DO have in common.
             //
-//          m_serverId = QString(""); // Now done farther below.
+//          m_NotaryID = QString(""); // Now done farther below.
             // -------------------------------------
             mapOfCommTypes mapTypes;
             bool bFoundOneInCommon = false;
@@ -2153,7 +2153,7 @@ bool MTCompose::MakeSureCommonMsgMethod()
     // By this point we know for a fact:
     //
     // -- We know that m_msgtype is definitely set to a specific messagetype.
-    // -- If that type is "otserver", we know m_serverId is set.
+    // -- If that type is "otserver", we know m_NotaryID is set.
     // -- We know, no matter what, that the sender Nym ID is set by now.
     // -- If the type is "otserver", then we know the recipient Nym IDs is set.
     // -- If the type is NOT "otserver", then we know the recipient Nym ID MIGHT be set...
@@ -2321,12 +2321,12 @@ bool MTCompose::MakeSureCommonMsgMethod()
             return false;
         }
         // ----------------------------------------------------------
-        m_serverId = QString("");
+        m_NotaryID = QString("");
     }
     else // Sending through an OT server
     {
         // server id is set?
-        if (m_serverId.isEmpty())
+        if (m_NotaryID.isEmpty())
         {
             QMessageBox::warning(this, tr("Missing OT Server"),
                                  tr("OT Server ID missing. Please click 'Via' and choose a server."));
@@ -2358,14 +2358,14 @@ bool MTCompose::MakeSureCommonMsgMethod()
 }
 
 
-bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrServerID/*=QString("")*/)   // Assumes senderNymId and serverId are set.
+bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotaryID/*=QString("")*/)   // Assumes senderNymId and NotaryID are set.
 {
-    if (qstrServerID.isEmpty())
-        qstrServerID = m_serverId;
+    if (qstrNotaryID.isEmpty())
+        qstrNotaryID = m_NotaryID;
 
     // sender nym is registered there? Warn if not and give option to register there.
     //
-    std::string server_id    = qstrServerID .toStdString();
+    std::string server_id    = qstrNotaryID .toStdString();
     std::string sender_id    = m_senderNymId.toStdString();
 
     if (!opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
@@ -2405,15 +2405,15 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrServer
     return true;
 }
 
-bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrServerID/*=QString("")*/) // Assumes m_senderNymId, m_recipientNymId and serverId are set.
+bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrNotaryID/*=QString("")*/) // Assumes m_senderNymId, m_recipientNymId and NotaryID are set.
 {
-    if (qstrServerID.isEmpty())
-        qstrServerID = m_serverId;
+    if (qstrNotaryID.isEmpty())
+        qstrNotaryID = m_NotaryID;
 
     // recipient nym is known to frequent that server? if not, warn the user and give him
     // the option to just look it up directly on the server.
     //
-    std::string server_id    = qstrServerID    .toStdString();
+    std::string server_id    = qstrNotaryID    .toStdString();
     std::string sender_id    = m_senderNymId   .toStdString();
     std::string recipient_id = m_recipientNymId.toStdString();
 
@@ -2428,7 +2428,7 @@ bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrSer
 
     if (bGotServers)
     {
-        mapIDName::iterator it = mapServers.find(qstrServerID);
+        mapIDName::iterator it = mapServers.find(qstrNotaryID);
 
         if (mapServers.end() == it)
         {

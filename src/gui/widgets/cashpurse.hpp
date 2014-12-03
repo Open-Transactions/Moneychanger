@@ -49,7 +49,7 @@ private slots:
 
 private:
     QString   m_qstrAcctId;
-    QString   m_qstrAssetId;
+    QString   m_qstrInstrumentDefinitionID;
     QString   m_qstrAcctName;
 
     QPointer<MTDetailEdit> m_pOwner;

@@ -29,7 +29,7 @@ MTPageAcct_Asset::MTPageAcct_Asset(QWidget *parent) :
 
     ui->lineEditID->setStyleSheet("QLineEdit { background-color: lightgray }");
 
-    this->registerField("AssetID*",  ui->lineEditID);
+    this->registerField("InstrumentDefinitionID*",  ui->lineEditID);
     this->registerField("AssetName", ui->pushButtonSelect, "text");
     // -----------------------------------------------
     connect(this, SIGNAL(SetDefaultAsset(QString, QString)), Moneychanger::It(), SLOT(setDefaultAsset(QString,QString)));
@@ -41,7 +41,7 @@ void MTPageAcct_Asset::on_pushButtonSelect_clicked()
     // --------------------------------------------------
     QString     qstr_default_id = Moneychanger::It()->get_default_asset_id();
     // -------------------------------------------
-    QString     qstr_current_id = field("AssetID").toString();
+    QString     qstr_current_id = field("InstrumentDefinitionID").toString();
     // -------------------------------------------
     if (qstr_current_id.isEmpty())
         qstr_current_id = qstr_default_id;
@@ -85,7 +85,7 @@ void MTPageAcct_Asset::on_pushButtonSelect_clicked()
         if (!theChooser.m_qstrCurrentID  .isEmpty() &&
             !theChooser.m_qstrCurrentName.isEmpty())
         {
-            setField("AssetID",   theChooser.m_qstrCurrentID);
+            setField("InstrumentDefinitionID",   theChooser.m_qstrCurrentID);
             setField("AssetName", theChooser.m_qstrCurrentName);
             // -----------------------------------------
             ui->lineEditID->home(false);
@@ -108,7 +108,7 @@ void MTPageAcct_Asset::initializePage()
     // -------------------------------------------
     QString     qstr_default_id = Moneychanger::It()->get_default_asset_id();
     // -------------------------------------------
-    QString qstr_current_id = field("AssetID").toString();
+    QString qstr_current_id = field("InstrumentDefinitionID").toString();
     // -------------------------------------------
     qstr_id = qstr_current_id.isEmpty() ? qstr_default_id : qstr_current_id;
     // -------------------------------------------
@@ -124,7 +124,7 @@ void MTPageAcct_Asset::initializePage()
     {
         QString qstrName = QString::fromStdString(str_name);
         // ---------------------------
-        setField("AssetID",   qstr_id);
+        setField("InstrumentDefinitionID",   qstr_id);
         setField("AssetName", qstrName);
         // ---------------------------
         ui->lineEditID->home(false);
@@ -145,7 +145,7 @@ void MTPageAcct_Asset::on_pushButtonManage_clicked()
     // -------------------------------------
     the_map.clear();
     // -------------------------------------
-    QString qstrPreSelected   = field("AssetID").toString();
+    QString qstrPreSelected   = field("InstrumentDefinitionID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
     int32_t the_count = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
@@ -180,7 +180,7 @@ void MTPageAcct_Asset::on_pushButtonManage_clicked()
             if (str_name.empty())
                 str_name = str_id;
             // --------------------------------
-            setField("AssetID",   QString::fromStdString(str_id));
+            setField("InstrumentDefinitionID",   QString::fromStdString(str_id));
             setField("AssetName", QString::fromStdString(str_name));
             // --------------------------------
             ui->lineEditID->home(false);
@@ -194,7 +194,7 @@ void MTPageAcct_Asset::on_pushButtonManage_clicked()
 
 void MTPageAcct_Asset::SetFieldsBlank()
 {
-    setField("AssetID",   "");
+    setField("InstrumentDefinitionID",   "");
     setField("AssetName", QString("<%1>").arg(tr("Click to choose Asset Type")));
 }
 

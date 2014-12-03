@@ -30,7 +30,7 @@ void MTOfferDetails::AddButtonClicked()
     Q_ASSERT(NULL != m_pOwner);
     // ---------------------------------------------------
     QString qstrMarketNymID    = m_pOwner->GetMarketNymID();
-    QString qstrMarketServerID = m_pOwner->GetMarketServerID();
+    QString qstrMarketNotaryID = m_pOwner->GetMarketNotaryID();
     // ---------------------------------------------------
     if (qstrMarketNymID.isEmpty())
     {
@@ -44,23 +44,23 @@ void MTOfferDetails::AddButtonClicked()
     // ---------------------------------------------------
     const QString qstrAll(tr("all"));
 
-    if (qstrMarketServerID.isEmpty() || (qstrAll == qstrMarketServerID))
+    if (qstrMarketNotaryID.isEmpty() || (qstrAll == qstrMarketNotaryID))
     {
-        if (false == ChooseServer(qstrMarketServerID, qstrMarketServerName))
+        if (false == ChooseServer(qstrMarketNotaryID, qstrMarketServerName))
             return;
     }
     else
-        qstrMarketServerName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(qstrMarketServerID.toStdString()));
+        qstrMarketServerName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(qstrMarketNotaryID.toStdString()));
     // ---------------------------------------------------
     WizardNewOffer theWizard(this);
 
     theWizard.SetNymID     (qstrMarketNymID);
     theWizard.SetNymName   (qstrMarketNymName);
-    theWizard.SetServerID  (qstrMarketServerID);
+    theWizard.SetNotaryID  (qstrMarketNotaryID);
     theWizard.SetServerName(qstrMarketServerName);
     // ---------------------------------------------------
     const std::string str_nym_id   (qstrMarketNymID   .toStdString());
-    const std::string str_server_id(qstrMarketServerID.toStdString());
+    const std::string str_server_id(qstrMarketNotaryID.toStdString());
     // ---------------------------------------------------
     theWizard.setWindowTitle(tr("Create Offer"));
 
@@ -73,10 +73,10 @@ void MTOfferDetails::AddButtonClicked()
         const bool    bIsMarketOrder         (theWizard.field("isMarketOrder")      .toBool());
         const bool    bIsFillOrKill          (theWizard.field("isFillOrKill")       .toBool());
         // --------------------------------------------
-        const QString qstrAssetID            (theWizard.field("AssetID")            .toString());
+        const QString qstrInstrumentDefinitionID            (theWizard.field("InstrumentDefinitionID")            .toString());
         const QString qstrCurrencyID         (theWizard.field("CurrencyID")         .toString());
         // --------------------------------------------
-        const std::string str_asset_id       (qstrAssetID                           .toStdString());
+        const std::string str_asset_id       (qstrInstrumentDefinitionID                           .toStdString());
         const std::string str_currency_id    (qstrCurrencyID                        .toStdString());
         // --------------------------------------------
 //      const QString qstrAssetName          (theWizard.field("AssetName")          .toString());
@@ -250,12 +250,12 @@ void MTOfferDetails::DeleteButtonClicked()
     {
         // Make sure it works without this before I erase it.
         //
-//        QString     qstrServerID, qstrTransactionID;
-//        QStringList theIDs = m_pOwner->m_qstrCurrentID.split(","); // theIDs.at(0) ServerID, at(1) transaction ID
+//        QString     qstrNotaryID, qstrTransactionID;
+//        QStringList theIDs = m_pOwner->m_qstrCurrentID.split(","); // theIDs.at(0) NotaryID, at(1) transaction ID
 
 //        if (2 == theIDs.size()) // Should always be 2...
 //        {
-//            qstrServerID      = theIDs.at(0);
+//            qstrNotaryID      = theIDs.at(0);
 //            qstrTransactionID = theIDs.at(1);
 //        }
         // -------------------------------------
@@ -327,11 +327,11 @@ void MTOfferDetails::DeleteButtonClicked()
 
 // -----------------------------------------------------------------
 
-bool MTOfferDetails::ChooseServer(QString & qstrServerID, QString & qstrServerName)
+bool MTOfferDetails::ChooseServer(QString & qstrNotaryID, QString & qstrServerName)
 {
     QString qstr_default_id = Moneychanger::It()->get_default_server_id();
     // -------------------------------------------
-    QString qstr_current_id = m_pOwner->GetMarketServerID();
+    QString qstr_current_id = m_pOwner->GetMarketNotaryID();
     // -------------------------------------------
     const QString qstrAll(tr("all"));
 
@@ -377,7 +377,7 @@ bool MTOfferDetails::ChooseServer(QString & qstrServerID, QString & qstrServerNa
         if (!theChooser.m_qstrCurrentID  .isEmpty() &&
             !theChooser.m_qstrCurrentName.isEmpty())
         {
-            qstrServerID   = theChooser.m_qstrCurrentID;
+            qstrNotaryID   = theChooser.m_qstrCurrentID;
             qstrServerName = theChooser.m_qstrCurrentName;
 
             return true;
@@ -474,14 +474,14 @@ void MTOfferDetails::refresh(QString strID, QString strName)
     if (!strID.isEmpty() && (NULL != ui))
     {
         // FYI, contents of strID:
-//      QString qstrCompositeID = QString("%1,%2").arg(qstrServerID).arg(qstrTransactionID);
+//      QString qstrCompositeID = QString("%1,%2").arg(qstrNotaryID).arg(qstrTransactionID);
 
-        QString     qstrServerID, qstrTransactionID;
-        QStringList theIDs = strID.split(","); // theIDs.at(0) ServerID, at(1) transaction ID
+        QString     qstrNotaryID, qstrTransactionID;
+        QStringList theIDs = strID.split(","); // theIDs.at(0) NotaryID, at(1) transaction ID
 
         if (2 == theIDs.size()) // Should always be 2...
         {
-            qstrServerID      = theIDs.at(0);
+            qstrNotaryID      = theIDs.at(0);
             qstrTransactionID = theIDs.at(1);
         }
         // -------------------------------------
@@ -648,14 +648,14 @@ message TradeListNym_InternalPB {
 
 
 // Caller must delete.
-opentxs::OTDB::TradeListNym * MTOfferDetails::LoadTradeListForNym(opentxs::OTDB::OfferDataNym & offerData, QString qstrServerID, QString qstrNymID)
+opentxs::OTDB::TradeListNym * MTOfferDetails::LoadTradeListForNym(opentxs::OTDB::OfferDataNym & offerData, QString qstrNotaryID, QString qstrNymID)
 {
     opentxs::OTDB::TradeListNym * pTradeList = NULL;
     opentxs::OTDB::Storable     * pStorable  = NULL;
     // ------------------------------------------
     QString qstrMarketID = m_pOwner->GetMarketID();
     // ------------------------------------------
-    if (!m_pOwner || qstrServerID.isEmpty() || qstrNymID.isEmpty() || qstrMarketID.isEmpty())
+    if (!m_pOwner || qstrNotaryID.isEmpty() || qstrNymID.isEmpty() || qstrMarketID.isEmpty())
         return NULL;
     // ------------------------------------------
     if (opentxs::OTDB::Exists("nyms", "trades", offerData.server_id, qstrNymID.toStdString()))
