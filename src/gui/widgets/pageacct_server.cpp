@@ -39,7 +39,7 @@ MTPageAcct_Server::MTPageAcct_Server(QWidget *parent) :
 
 void MTPageAcct_Server::on_pushButtonSelect_clicked()
 {
-    QString qstr_default_id = Moneychanger::It()->get_default_server_id();
+    QString qstr_default_id = Moneychanger::It()->get_default_notary_id();
     // -------------------------------------------
     QString qstr_current_id = field("NotaryID").toString();
     // -------------------------------------------
@@ -101,7 +101,7 @@ void MTPageAcct_Server::initializePage() //virtual
     std::string str_name;
     QString     qstr_id;
     // -------------------------------------------
-    QString qstr_default_id = Moneychanger::It()->get_default_server_id();
+    QString qstr_default_id = Moneychanger::It()->get_default_notary_id();
     // -------------------------------------------
     QString qstr_current_id = field("NotaryID").toString();
     // -------------------------------------------

@@ -184,15 +184,15 @@ void MTAccountDetails::refresh(QString strID, QString strName)
 //      ui->lineEditID  ->setText(strID);
         ui->lineEditName->setText(strName);
         // ----------------------------------
-        std::string str_server_id = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID   (strID.toStdString());
+        std::string str_notary_id = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID   (strID.toStdString());
         std::string str_asset_id  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(strID.toStdString());
         std::string str_nym_id    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID      (strID.toStdString());
         // ----------------------------------
-        QString qstr_server_id    = QString::fromStdString(str_server_id);
+        QString qstr_notary_id    = QString::fromStdString(str_notary_id);
         QString qstr_asset_id     = QString::fromStdString(str_asset_id);
         QString qstr_nym_id       = QString::fromStdString(str_nym_id);
         // ----------------------------------
-        QString qstr_server_name  = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name   (str_server_id));
+        QString qstr_server_name  = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name   (str_notary_id));
         QString qstr_asset_name   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(str_asset_id));
         QString qstr_nym_name     = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name      (str_nym_id));
         // ----------------------------------

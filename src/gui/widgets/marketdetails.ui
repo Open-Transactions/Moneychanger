@@ -31,7 +31,7 @@
           <bool>true</bool>
          </property>
          <property name="text">
-          <string>asset_type_id</string>
+          <string>instrument_definition_id</string>
          </property>
          <property name="frame">
           <bool>false</bool>

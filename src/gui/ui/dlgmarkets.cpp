@@ -181,7 +181,7 @@ void DlgMarkets::FirstRun()
         // will go into these variables.
         //
         m_nymId    = Moneychanger::It()->get_default_nym_id();
-        m_NotaryID = Moneychanger::It()->get_default_server_id();
+        m_NotaryID = Moneychanger::It()->get_default_notary_id();
 
         m_pMarketDetails->SetMarketNymID   (m_nymId);
         m_pOfferDetails ->SetMarketNymID   (m_nymId);
@@ -429,7 +429,7 @@ bool DlgMarkets::GetMarket_AssetCurrencyScale(QString qstrMarketID, QString & qs
 
         if (NULL != pMarketData) // Should never be NULL.
         {
-            qstrInstrumentDefinitionID    = QString::fromStdString(pMarketData->asset_type_id);
+            qstrInstrumentDefinitionID    = QString::fromStdString(pMarketData->instrument_definition_id);
             qstrCurrencyID = QString::fromStdString(pMarketData->currency_type_id);
             qstrScale      = QString::fromStdString(pMarketData->scale);
 
@@ -465,7 +465,7 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrNotaryID, QString qstrNymID, 
                 if (NULL == pOfferData) // Should never happen.
                     continue;
                 // -----------------------------------------------------------------------
-                QString qstrOfferInstrumentDefinitionID    = QString::fromStdString(pOfferData->asset_type_id);
+                QString qstrOfferInstrumentDefinitionID    = QString::fromStdString(pOfferData->instrument_definition_id);
                 QString qstrOfferCurrencyID = QString::fromStdString(pOfferData->currency_type_id);
                 QString qstrOfferScale      = QString::fromStdString(pOfferData->scale);
                 // -----------------------------------------------------------------------
@@ -480,13 +480,13 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrNotaryID, QString qstrNymID, 
                 // -----------------------------------------------------------------------
                 QString qstrBuySell = pOfferData->selling ? tr("Sell") : tr("Buy");
 
-                const std::string str_asset_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pOfferData->asset_type_id);
+                const std::string str_asset_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pOfferData->instrument_definition_id);
                 // --------------------------
                 int64_t lTotalAssets   = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->total_assets);
                 int64_t lFinishedSoFar = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->finished_so_far);
                 // --------------------------
-                const std::string str_total_assets    = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lTotalAssets);
-                const std::string str_finished_so_far = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lFinishedSoFar);
+                const std::string str_total_assets    = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lTotalAssets);
+                const std::string str_finished_so_far = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lFinishedSoFar);
                 // --------------------------
                 QString qstrAmounts;
 
@@ -619,7 +619,7 @@ bool DlgMarkets::LowLevelLoadMarketList(QString qstrNotaryID, QString qstrNymID,
 
             if (the_map.end() == it_map)
             {
-                const std::string str_asset_name    = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->asset_type_id);
+                const std::string str_asset_name    = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->instrument_definition_id);
                 const std::string str_currency_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->currency_type_id);
                 // --------------------------
                 QString qstrMarketName = QString("%1 for %2").
@@ -796,7 +796,7 @@ void DlgMarkets::LoadOrRetrieveMarkets()
                         int64_t     lScale    = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->scale);
                         if (lScale > 1)
                         {
-                            std::string str_scale = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->asset_type_id, lScale);
+                            std::string str_scale = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id, lScale);
                             // ------------------------------------------------------
                             QString qstrFormattedScale = QString::fromStdString(str_scale);
                             // ------------------------------------------------------
@@ -947,20 +947,20 @@ void DlgMarkets::RefreshRecords()
     {
         //Get OT Server ID
         //
-        QString OT_server_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(ii));
+        QString OT_notary_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(ii));
         QString OT_server_name("");
         // -----------------------------------------------
-        if (!OT_server_id.isEmpty())
+        if (!OT_notary_id.isEmpty())
         {
-            if (!m_NotaryID.isEmpty() && (OT_server_id == m_NotaryID))
+            if (!m_NotaryID.isEmpty() && (OT_notary_id == m_NotaryID))
             {
                 bFoundServerDefault = true;
                 nDefaultServerIndex = ii+1; // the +1 is because of "all" in the 0 position. (Servers only.)
             }
             // -----------------------------------------------
-            OT_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_server_id.toStdString()));
+            OT_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_notary_id.toStdString()));
             // -----------------------------------------------
-            m_mapServers.insert(OT_server_id, OT_server_name);
+            m_mapServers.insert(OT_notary_id, OT_server_name);
             ui->comboBoxServer->insertItem(ii+1, OT_server_name);
         }
     }

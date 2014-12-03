@@ -45,11 +45,11 @@ public:
     static Moneychanger * It(QWidget *parent = 0, bool bShuttingDown = false);
 
     static int64_t HasUsageCredits(      QWidget     * parent,
-                                   const std::string & SERVER_ID,
+                                   const std::string & notary_id,
                                    const std::string & NYM_ID);
 
     static int64_t HasUsageCredits(QWidget * parent,
-                                   QString   SERVER_ID,
+                                   QString   notary_id,
                                    QString   NYM_ID);
     /** Start **/
     void bootTray();
@@ -96,9 +96,9 @@ public:
     QString get_account_id_at(int a){return account_list_id->at(a).toString();}
     QString get_account_name_at(int a){return account_list_name->at(a).toString();}
     
-    QString get_default_server_id(){return default_server_id;}
+    QString get_default_notary_id(){return default_notary_id;}
     int get_server_list_id_size(){return server_list_id->size();}
-    QString get_server_id_at(int a){return server_list_id->at(a).toString();}
+    QString get_notary_id_at(int a){return server_list_id->at(a).toString();}
     QString get_server_name_at(int a){return server_list_name->at(a).toString();}
     
     
@@ -197,7 +197,7 @@ private:
     QList<QVariant> * server_list_id;
     QList<QVariant> * server_list_name;
     // ---------------------------------------------------------
-    QString default_server_id;
+    QString default_notary_id;
     QString default_server_name;
     // ---------------------------------------------------------
     

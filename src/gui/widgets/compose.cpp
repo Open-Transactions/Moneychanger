@@ -335,7 +335,7 @@ void MTCompose::setInitialRecipient(QString nymId, int contactid/*=0*/, QString 
 }
 
 
-// If you call as:   setInitialMsgType("", SERVER_ID);
+// If you call as:   setInitialMsgType("", notary_id);
 // it will work, and set "otserver" as msgtype.
 //
 void MTCompose::setInitialMsgType(QString msgtype, QString server/*=""*/)
@@ -1320,10 +1320,10 @@ void MTCompose::FindSenderMsgMethod()
                     {
                         QString qstrNotaryID = it.key();
 
-                        std::string server_id    = qstrNotaryID.toStdString();
+                        std::string notary_id    = qstrNotaryID.toStdString();
                         std::string sender_id    = m_senderNymId.toStdString();
 
-                        if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
+                        if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, notary_id))
                         {
                             setInitialServer(qstrNotaryID);
                             return; // SUCCESS!
@@ -1611,10 +1611,10 @@ void MTCompose::FindRecipientMsgMethod()
                     {
                         QString qstrNotaryID = it.key();
 
-                        std::string server_id    = qstrNotaryID.toStdString();
+                        std::string notary_id    = qstrNotaryID.toStdString();
                         std::string sender_id    = m_senderNymId.toStdString();
 
-                        if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
+                        if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, notary_id))
                         {
                             setInitialServer(qstrNotaryID);
                             return; // SUCCESS!
@@ -2040,7 +2040,7 @@ bool MTCompose::MakeSureCommonMsgMethod()
     // Either way, if we DO have a method now, then we next make sure
     // the sender/recipient are compatible with it. This is where we
     // insure we have chosen the right methodID for sender and address
-    // for recipient. If method type is "otserver|SERVER_ID" then
+    // for recipient. If method type is "otserver|notary_id" then
     // we see if both are known to be on that server. Whereas if
     // the type is "bitmessage" then we look up the methodID and
     // address appropriately.
@@ -2365,10 +2365,10 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
 
     // sender nym is registered there? Warn if not and give option to register there.
     //
-    std::string server_id    = qstrNotaryID .toStdString();
+    std::string notary_id    = qstrNotaryID .toStdString();
     std::string sender_id    = m_senderNymId.toStdString();
 
-    if (!opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, server_id))
+    if (!opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, notary_id))
     {
         if (bAsk)
         {
@@ -2383,7 +2383,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
                 {
                     MTSpinner theSpinner;
 
-                    response = madeEasy.register_nym(server_id, sender_id);
+                    response = madeEasy.register_nym(notary_id, sender_id);
                 }
 
                 qDebug() << QString("Nym Creation Response: %1").arg(QString::fromStdString(response));
@@ -2392,7 +2392,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
 
                 if (1 != nReturnVal)
                 {
-                    Moneychanger::HasUsageCredits(this, server_id, sender_id);
+                    Moneychanger::HasUsageCredits(this, notary_id, sender_id);
                     return false;
                 }
             }
@@ -2413,7 +2413,7 @@ bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrNot
     // recipient nym is known to frequent that server? if not, warn the user and give him
     // the option to just look it up directly on the server.
     //
-    std::string server_id    = qstrNotaryID    .toStdString();
+    std::string notary_id    = qstrNotaryID    .toStdString();
     std::string sender_id    = m_senderNymId   .toStdString();
     std::string recipient_id = m_recipientNymId.toStdString();
 
@@ -2445,7 +2445,7 @@ bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrNot
                     {
                         MTSpinner theSpinner;
 
-                        response = madeEasy.check_user(server_id, sender_id, recipient_id);
+                        response = madeEasy.check_nym(notary_id, sender_id, recipient_id);
                     }
 
                     int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
@@ -2454,7 +2454,7 @@ bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrNot
                     {
                         QMessageBox::warning(this, tr("Recipient Not Found on Server"),
                                              tr("Recipient Nym not found on selected OT server. Please click 'Via' and choose a different server or a different transport method."));
-                        Moneychanger::HasUsageCredits(this, server_id, sender_id);
+                        Moneychanger::HasUsageCredits(this, notary_id, sender_id);
                         return false;
                     }
                 }

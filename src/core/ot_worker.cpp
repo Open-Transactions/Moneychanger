@@ -72,16 +72,9 @@ void ot_worker::mc_overview_ping(){
     
     //REadd to the backend memory to the visual table.
     for(int a = 0;a < listSize;a++){
-        opentxs::weak_ptr_OTRecord weakRecord = list.GetRecord(a);
-        opentxs::shared_ptr_OTRecord record = weakRecord.lock();
-        if (weakRecord.expired()) {
-            opentxs::Log::Output(2, "Reloading table due to expired pointer");
-            list.Populate();
-            listSize = list.size();
-            a = 0;
-            
-        }else{
-            opentxs::OTRecord recordmt = *record;
+        opentxs::OTRecord record = list.GetRecord(a);
+            {
+            opentxs::OTRecord recordmt = record;
             
             /** Refernce Comment/Code **
              qDebug() << recordmt.IsOutgoing();

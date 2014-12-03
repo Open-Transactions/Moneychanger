@@ -568,7 +568,7 @@ void MTContactDetails::on_pushButtonMsg_clicked()
             // No? Okay then let's try the default OT server, if one is available.
             else
             {
-                QString qstrDefaultServer = Moneychanger::It()->get_default_server_id();
+                QString qstrDefaultServer = Moneychanger::It()->get_default_notary_id();
 
                 if (!qstrDefaultServer.isEmpty() && compose_window->setRecipientNymBasedOnContact() &&
                     compose_window->verifySenderAgainstServer   (false, qstrDefaultServer) &&

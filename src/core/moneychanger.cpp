@@ -158,18 +158,18 @@ Moneychanger::Moneychanger(QWidget *parent)
     {
         if (DBHandler::getInstance()->runQuery("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1"))
         {
-            default_server_id = DBHandler::getInstance()->queryString("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
+            default_notary_id = DBHandler::getInstance()->queryString("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
         // -------------------------------------------------
-//        if (default_server_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0))
+//        if (default_notary_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0))
 //        {
-//            default_server_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(0));
+//            default_notary_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(0));
 //        }
 //        // -------------------------------------------------
 //        //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
-//        if (!default_server_id.isEmpty())
+//        if (!default_notary_id.isEmpty())
 //        {
-//            default_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(default_server_id.toStdString()));
+//            default_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(default_notary_id.toStdString()));
 //        }
 //        else
 //            qDebug() << "Error loading DEFAULT SERVER from SQL";
@@ -311,7 +311,7 @@ Moneychanger::~Moneychanger()
 // Return value: -2 for error, -1 for "unlimited" (or "server isn't enforcing"),
 //                0 for "exhausted", and non-zero for the exact number of credits available.
 int64_t Moneychanger::HasUsageCredits(      QWidget     * parent,
-                                      const std::string & SERVER_ID,
+                                      const std::string & notary_id,
                                       const std::string & NYM_ID)
 {
     opentxs::OT_ME madeEasy;
@@ -322,7 +322,7 @@ int64_t Moneychanger::HasUsageCredits(      QWidget     * parent,
     {
         MTSpinner theSpinner;
 
-        strMessage = madeEasy.adjust_usage_credits(SERVER_ID, NYM_ID, NYM_ID, strAdjustment);
+        strMessage = madeEasy.adjust_usage_credits(notary_id, NYM_ID, NYM_ID, strAdjustment);
     }
     if (strMessage.empty())
     {
@@ -378,10 +378,10 @@ int64_t Moneychanger::HasUsageCredits(      QWidget     * parent,
 
 //static
 int64_t Moneychanger::HasUsageCredits(QWidget * parent,
-                                      QString   SERVER_ID,
+                                      QString   notary_id,
                                       QString   NYM_ID)
 {
-    const std::string str_server(SERVER_ID.toStdString());
+    const std::string str_server(notary_id.toStdString());
     const std::string str_nym   (NYM_ID   .toStdString());
 
     return Moneychanger::HasUsageCredits(parent, str_server, str_nym);
@@ -796,19 +796,19 @@ void Moneychanger::SetupServerMenu()
     mc_systrayMenu_server->addSeparator();
 
     // -------------------------------------------------
-    if (default_server_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0))
+    if (default_notary_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0))
     {
-        default_server_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(0));
+        default_notary_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(0));
     }
     // -------------------------------------------------
     //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
-    if (!default_server_id.isEmpty())
+    if (!default_notary_id.isEmpty())
     {
-        default_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(default_server_id.toStdString()));
+        default_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(default_notary_id.toStdString()));
     }
     // -------------------------------------------------
     //Load "default" server
-    setDefaultServer(default_server_id, default_server_name);
+    setDefaultServer(default_notary_id, default_server_name);
 
     //Init server submenu
     server_list_id   = new QList<QVariant>;
@@ -818,15 +818,15 @@ void Moneychanger::SetupServerMenu()
 
     for (int32_t aa = 0; aa < server_count; aa++)
     {
-        QString OT_server_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(aa));
-        QString OT_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_server_id.toStdString()));
+        QString OT_notary_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(aa));
+        QString OT_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_notary_id.toStdString()));
 
-        server_list_id  ->append(QVariant(OT_server_id));
+        server_list_id  ->append(QVariant(OT_notary_id));
         server_list_name->append(QVariant(OT_server_name));
 
         //Append to submenu of server
         QAction * next_server_action = new QAction(mc_systrayIcon_server, OT_server_name, mc_systrayMenu_server);
-        next_server_action->setData(QVariant(OT_server_id));
+        next_server_action->setData(QVariant(OT_notary_id));
         mc_systrayMenu_server->addAction(next_server_action);
     }
 }
@@ -1209,11 +1209,11 @@ void Moneychanger::onNeedToDownloadAccountData()
 
     if ((get_server_list_id_size() > 0) && (get_asset_list_id_size() > 0) )
     {
-        std::string defaultNotaryID(get_default_server_id().toStdString());
+        std::string defaultNotaryID(get_default_notary_id().toStdString());
         // ----------------------------------------------------------------
         if (defaultNotaryID.empty())
         {
-            defaultNotaryID = get_server_id_at(0).toStdString();
+            defaultNotaryID = get_notary_id_at(0).toStdString();
             DBHandler::getInstance()->AddressBookUpdateDefaultServer(QString::fromStdString(defaultNotaryID));
         }
         // ----------------------------------------------------------------
@@ -1701,7 +1701,7 @@ void Moneychanger::mc_defaultserver_slot()
 
 void Moneychanger::mc_servermanager_dialog(QString qstrPresetID/*=QString("")*/)
 {
-    QString qstr_default_id = this->get_default_server_id();
+    QString qstr_default_id = this->get_default_notary_id();
     // -------------------------------------
     if (qstrPresetID.isEmpty())
         qstrPresetID = qstr_default_id;
@@ -1739,17 +1739,17 @@ void Moneychanger::mc_servermanager_dialog(QString qstrPresetID/*=QString("")*/)
 
 
 
-void Moneychanger::setDefaultServer(QString server_id, QString server_name)
+void Moneychanger::setDefaultServer(QString notary_id, QString server_name)
 {
     //Set default server internal memory
-    default_server_id = server_id;
+    default_notary_id = notary_id;
     default_server_name = server_name;
     
-    qDebug() << default_server_id;
+    qDebug() << default_notary_id;
     qDebug() << default_server_name;
     
     //SQL UPDATE default server
-    DBHandler::getInstance()->AddressBookUpdateDefaultServer(default_server_id);
+    DBHandler::getInstance()->AddressBookUpdateDefaultServer(default_notary_id);
     
     //Update visuals
     QString new_server_title = default_server_name;
@@ -2053,13 +2053,13 @@ void Moneychanger::mc_import_slot()
         {
             std::string str_acct_nym_id    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID      (OT_acct_id.toStdString());
             std::string str_acct_asset_id  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(OT_acct_id.toStdString());
-            std::string str_acct_server_id = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID   (OT_acct_id.toStdString());
+            std::string str_acct_notary_id = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID   (OT_acct_id.toStdString());
 
             if (!strPurseOwner.empty() && (0 != strPurseOwner.compare(str_acct_nym_id)))
                 continue;
             if (0 != strInstrumentDefinitionID.compare(str_acct_asset_id))
                 continue;
-            if (0 != strNotaryID.compare(str_acct_server_id))
+            if (0 != strNotaryID.compare(str_acct_notary_id))
                 continue;
             // -----------------------------------------------
             if (!default_account_id.isEmpty() && (OT_acct_id == default_account_id))
@@ -2182,7 +2182,7 @@ void Moneychanger::mc_composemessage_show_dialog()
     if (!qstrDefaultNym.isEmpty()) // Sender Nym is set.
         compose_window->setInitialSenderNym(qstrDefaultNym);
     // --------------------------------------------------
-    QString qstrDefaultServer = this->get_default_server_id();
+    QString qstrDefaultServer = this->get_default_notary_id();
 
     if (!qstrDefaultServer.isEmpty())
         compose_window->setInitialServer(qstrDefaultServer);

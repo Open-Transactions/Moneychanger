@@ -60,7 +60,7 @@ void MTOfferDetails::AddButtonClicked()
     theWizard.SetServerName(qstrMarketServerName);
     // ---------------------------------------------------
     const std::string str_nym_id   (qstrMarketNymID   .toStdString());
-    const std::string str_server_id(qstrMarketNotaryID.toStdString());
+    const std::string str_notary_id(qstrMarketNotaryID.toStdString());
     // ---------------------------------------------------
     theWizard.setWindowTitle(tr("Create Offer"));
 
@@ -210,7 +210,7 @@ void MTOfferDetails::AddButtonClicked()
         // --------------------------------------------------------
         const std::string strAttempt("create_market_offer");
 
-        int32_t nInterpretReply = madeEasy.InterpretTransactionMsgReply(str_server_id,
+        int32_t nInterpretReply = madeEasy.InterpretTransactionMsgReply(str_notary_id,
                                                                         str_nym_id,
                                                                         str_asset_acct_id,
                                                                         strAttempt, strResponse);
@@ -218,7 +218,7 @@ void MTOfferDetails::AddButtonClicked()
         // ---------------------------------------------------------
         if (!bPlacedOffer)
         {
-            const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, str_server_id, str_nym_id);
+            const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, str_notary_id, str_nym_id);
 
             // In the cases of -2 and 0, HasUsageCredits already pops up a message box.
             //
@@ -268,7 +268,7 @@ void MTOfferDetails::DeleteButtonClicked()
 
             if (NULL != pOfferData) // Should never be NULL.
             {
-                const std::string str_server_id     (pOfferData->server_id);
+                const std::string str_notary_id     (pOfferData->notary_id);
                 const std::string str_nym_id        (m_pOwner->GetMarketNymID().toStdString());
                 const std::string str_asset_acct_id (pOfferData->asset_acct_id);
                 // ---------------------------------
@@ -280,7 +280,7 @@ void MTOfferDetails::DeleteButtonClicked()
                 {
                     MTSpinner theSpinner;
                     // --------------------------------------------------------------
-                    strResponse = madeEasy.kill_market_offer(str_server_id,
+                    strResponse = madeEasy.kill_market_offer(str_notary_id,
                                                              str_nym_id,
                                                              str_asset_acct_id,
                                                              lTransID);
@@ -288,7 +288,7 @@ void MTOfferDetails::DeleteButtonClicked()
                 // --------------------------------------------------------
                 const std::string strAttempt("kill_market_offer");
 
-                int32_t nInterpretReply = madeEasy.InterpretTransactionMsgReply(str_server_id,
+                int32_t nInterpretReply = madeEasy.InterpretTransactionMsgReply(str_notary_id,
                                                                                 str_nym_id,
                                                                                 str_asset_acct_id,
                                                                                 strAttempt, strResponse);
@@ -296,7 +296,7 @@ void MTOfferDetails::DeleteButtonClicked()
                 // ---------------------------------------------------------
                 if (!bKilledOffer)
                 {
-                    const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, str_server_id, str_nym_id);
+                    const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, str_notary_id, str_nym_id);
 
                     // In the cases of -2 and 0, HasUsageCredits already pops up a message box.
                     //
@@ -329,7 +329,7 @@ void MTOfferDetails::DeleteButtonClicked()
 
 bool MTOfferDetails::ChooseServer(QString & qstrNotaryID, QString & qstrServerName)
 {
-    QString qstr_default_id = Moneychanger::It()->get_default_server_id();
+    QString qstr_default_id = Moneychanger::It()->get_default_notary_id();
     // -------------------------------------------
     QString qstr_current_id = m_pOwner->GetMarketNotaryID();
     // -------------------------------------------
@@ -506,7 +506,7 @@ void MTOfferDetails::refresh(QString strID, QString strName)
                     int64_t     lMinimumIncrement = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->minimum_increment);
                     // ------------------------------------------------------
                     int64_t     lScale            = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->scale);
-                    std::string str_scale         = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lScale);
+                    std::string str_scale         = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lScale);
                     // ------------------------------------------------------
                     int64_t     lPrice            = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->price_per_scale);
                     std::string str_price         = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->currency_type_id, lPrice);
@@ -521,12 +521,12 @@ void MTOfferDetails::refresh(QString strID, QString strName)
                     if (lScale > 1)
                         qstrPrice += QString(" (%1 %2)").arg(tr("per")).arg(qstrFormattedScale);
                     // ------------------------------------------------------
-                    QString qstrMinimumIncrement  = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lMinimumIncrement));
-                    QString qstrTotalAssets       = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lTotalAssets));
-                    QString qstrSoldOrPurchased   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lFinished));
-                    QString qstrStillAvailable    = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lStillAvailable));
+                    QString qstrMinimumIncrement  = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lMinimumIncrement));
+                    QString qstrTotalAssets       = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lTotalAssets));
+                    QString qstrSoldOrPurchased   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lFinished));
+                    QString qstrStillAvailable    = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lStillAvailable));
                     // ------------------------------------------------------
-                    std::string str_asset_name    = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pOfferData->asset_type_id);
+                    std::string str_asset_name    = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pOfferData->instrument_definition_id);
                     // -----------------------------------------------------------------------
                     time_t tValidFrom      = static_cast<time_t>(opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->valid_from));
                     time_t tValidTo        = static_cast<time_t>(opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->valid_to));
@@ -598,7 +598,7 @@ void MTOfferDetails::refresh(QString strID, QString strName)
                     const int64_t lAcctBalance     = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance(pOfferData->asset_acct_id);
                     const int64_t lCurrencyBalance = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance(pOfferData->currency_acct_id);
 
-                    const std::string str_acct_balance     = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id,    lAcctBalance);
+                    const std::string str_acct_balance     = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id,    lAcctBalance);
                     const std::string str_currency_balance = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->currency_type_id, lCurrencyBalance);
 
                     ui->lineEditAcctBalance    ->setText(QString::fromStdString(str_acct_balance));
@@ -658,10 +658,10 @@ opentxs::OTDB::TradeListNym * MTOfferDetails::LoadTradeListForNym(opentxs::OTDB:
     if (!m_pOwner || qstrNotaryID.isEmpty() || qstrNymID.isEmpty() || qstrMarketID.isEmpty())
         return NULL;
     // ------------------------------------------
-    if (opentxs::OTDB::Exists("nyms", "trades", offerData.server_id, qstrNymID.toStdString()))
+    if (opentxs::OTDB::Exists("nyms", "trades", offerData.notary_id, qstrNymID.toStdString()))
     {
         pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_TRADE_LIST_NYM, "nyms", "trades",
-                                      offerData.server_id, qstrNymID.toStdString());
+                                      offerData.notary_id, qstrNymID.toStdString());
         if (NULL == pStorable)
             return NULL;
         // -------------------------------
@@ -683,8 +683,8 @@ message OfferDataNym_InternalPB {
     optional string valid_from = 2;
     optional string valid_to = 3;
 
-    optional string server_id = 4;
-    optional string asset_type_id = 5;		// the asset type on offer.
+    optional string notary_id = 4;
+    optional string instrument_definition_id = 5;		// the asset type on offer.
     optional string asset_acct_id = 6;		// the account where asset is.
     optional string currency_type_id = 7;	// the currency being used to purchase the asset.
     optional string currency_acct_id = 8;	// the account where currency is.
@@ -749,7 +749,7 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
 
         if (NULL != pOfferData) // Should never be NULL.
         {
-            std::string & str_server         = pOfferData->server_id;
+            std::string & str_server         = pOfferData->notary_id;
             std::string   str_server_display = opentxs::OTAPI_Wrap::It()->GetServer_Name(str_server);
             QString       qstrServerName     = QString::fromStdString(str_server_display);
             // -----------------------------------------
@@ -759,7 +759,7 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
 
             if (NULL != pPriceHeader)
             {
-                const std::string str_price_per_scale(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id,
+                const std::string str_price_per_scale(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id,
                                                                                lScale));
                 pPriceHeader->setText(QString("%1 %2").arg(tr("Actual Price per")).
                                       arg(QString::fromStdString(str_price_per_scale)));
@@ -838,7 +838,7 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
                     if (lQuantity < 0)
                         lQuantity *= (-1);
 
-                    std::string   str_amount_display = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lQuantity);
+                    std::string   str_amount_display = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lQuantity);
 
                     QString qstrAmountSold = QString::fromStdString(str_amount_display);
                     // -----------------------------------------------------------------------

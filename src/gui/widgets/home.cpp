@@ -334,13 +334,13 @@ void MTHome::on_refreshButton_clicked()
 // ----------------------------------------------------------------------
 
 //static
-QString MTHome::cashBalance(QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id)
+QString MTHome::cashBalance(QString qstr_notary_id, QString qstr_asset_id, QString qstr_nym_id)
 {
     int64_t     balance      = 0;
     QString     return_value = QString("");
     std::string str_output;
 
-    balance    = MTHome::rawCashBalance(qstr_server_id, qstr_asset_id, qstr_nym_id);
+    balance    = MTHome::rawCashBalance(qstr_notary_id, qstr_asset_id, qstr_nym_id);
     str_output = opentxs::OTAPI_Wrap::It()->FormatAmount(qstr_asset_id.toStdString(), balance);
 
     if (!str_output.empty())
@@ -352,11 +352,11 @@ QString MTHome::cashBalance(QString qstr_server_id, QString qstr_asset_id, QStri
 // ----------------------------------------------------------------------
 
 //static
-int64_t MTHome::rawCashBalance(QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id)
+int64_t MTHome::rawCashBalance(QString qstr_notary_id, QString qstr_asset_id, QString qstr_nym_id)
 {
     int64_t balance = 0;
 
-    std::string NotaryID(qstr_server_id.toStdString());
+    std::string NotaryID(qstr_notary_id.toStdString());
     std::string InstrumentDefinitionID (qstr_asset_id.toStdString());
     std::string nymId   (qstr_nym_id.toStdString());
 
@@ -486,7 +486,7 @@ QWidget * MTHome::CreateUserBarWidget()
         qstr_acct_name   = tr("(Default Account Isn't Set Yet)");
         // -----------------------------------
         qstr_acct_nym    = Moneychanger::It()->get_default_nym_id();
-        qstr_acct_server = Moneychanger::It()->get_default_server_id();
+        qstr_acct_server = Moneychanger::It()->get_default_notary_id();
         qstr_acct_asset  = Moneychanger::It()->get_default_asset_id();
     }
     else
@@ -941,19 +941,9 @@ void MTHome::RefreshRecords()
     // -------------------------------------------------------
     for (int nIndex = 0; nIndex < listSize; ++nIndex)
     {
-        opentxs::weak_ptr_OTRecord   weakRecord = m_list.GetRecord(nIndex);
-        opentxs::shared_ptr_OTRecord record     = weakRecord.lock();
-
-        if (weakRecord.expired())
+        opentxs::OTRecord record = m_list.GetRecord(nIndex);
         {
-            opentxs::Log::Output(2, "Reloading table due to expired pointer.\n");
-            PopulateRecords(); // Refreshes the data from local storage.
-            listSize = m_list.size();
-            nIndex = 0;
-        }
-        else
-        {
-            opentxs::OTRecord& recordmt = *record;
+            opentxs::OTRecord& recordmt = record;
             QWidget  * pWidget  = MTHomeDetail::CreateDetailHeaderWidget(recordmt);
             // -------------------------------------------
             if (NULL != pWidget)

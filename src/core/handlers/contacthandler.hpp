@@ -25,11 +25,11 @@ public:
     virtual ~MTNameLookupQT() {}
 
     virtual std::string GetNymName(const std::string & str_id,
-                                   const std::string * p_server_id=NULL) const;
+                                   const std::string * p_notary_id=NULL) const;
 
     virtual std::string GetAcctName(const std::string & str_id,
                                     const std::string * p_nym_id=NULL,
-                                    const std::string * p_server_id=NULL,
+                                    const std::string * p_notary_id=NULL,
                                     const std::string * p_asset_id=NULL) const;
 
     virtual std::string GetAddressName(const std::string & str_address) const; // Used for Bitmessage addresses (etc.)
@@ -59,15 +59,15 @@ public:
   int FindContactIDByNymID (QString nym_id_string);
   int FindContactIDByAcctID(QString acct_id_string,
                             QString nym_id_string=QString(""),
-                            QString server_id_string=QString(""),
+                            QString notary_id_string=QString(""),
                             QString asset_id_string=QString(""));
 
   QString GetContactName(int nContactID);
   bool    SetContactName(int nContactID, QString contact_name_string);
 
-  void NotifyOfNymServerPair(QString nym_id_string, QString server_id_string);
+  void NotifyOfNymServerPair(QString nym_id_string, QString notary_id_string);
 
-  int  CreateContactBasedOnNym(QString nym_id_string, QString server_id_string=QString(""));
+  int  CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string=QString(""));
 
   bool AddNymToExistingContact   (int nContactID, QString nym_id_string);
   bool VerifyNymOnExistingContact(int nContactID, QString nym_id_string); // See if a given Contact ID is associated with a given NymID.

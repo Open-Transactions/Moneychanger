@@ -38,10 +38,10 @@ public:
     void dialog();
     // --------------------------
     int64_t rawAcctBalance();
-    int64_t rawCashBalance(QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id);
+    int64_t rawCashBalance(QString qstr_notary_id, QString qstr_asset_id, QString qstr_nym_id);
 
 //  QString shortAcctBalance(QString qstr_acct_id, QString qstr_asset_id);
-    QString cashBalance     (QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id);
+    QString cashBalance     (QString qstr_notary_id, QString qstr_asset_id, QString qstr_nym_id);
     // --------------------------
     bool sendFunds(QString memo, QString amount);
 
