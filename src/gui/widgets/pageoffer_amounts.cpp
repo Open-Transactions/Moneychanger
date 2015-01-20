@@ -58,7 +58,7 @@ bool PageOffer_Amounts::isComplete() const
     if (qstrPrice.isEmpty())
         return false;
     // ------------------------
-    std::string str_asset = (field("AssetID").toString()).toStdString();
+    std::string str_asset = (field("InstrumentDefinitionID").toString()).toStdString();
     std::string str_price = qstrPrice.toStdString();
 
     int64_t lAmount = opentxs::OTAPI_Wrap::It()->StringToAmount(str_asset, str_price);
@@ -96,8 +96,8 @@ void PageOffer_Amounts::on_lineEditQuantity_textChanged(const QString &arg1)
 
     int64_t lQuantity = static_cast<int64_t>(qstrQuantity.toLong());
     // ----------------------------------------------
-    QString qstrAssetID = field("AssetID").toString();
-    const std::string str_asset(qstrAssetID.toStdString());
+    QString qstrInstrumentDefinitionID = field("InstrumentDefinitionID").toString();
+    const std::string str_asset(qstrInstrumentDefinitionID.toStdString());
     // ----------------------------------------------
     if (!qstrCombo.isEmpty())
     {
@@ -120,8 +120,8 @@ void PageOffer_Amounts::on_comboBox_currentIndexChanged(const QString &arg1)
 
     int64_t lQuantity = static_cast<int64_t>(qstrQuantity.toLong());
     // ----------------------------------------------
-    QString qstrAssetID = field("AssetID").toString();
-    const std::string str_asset(qstrAssetID.toStdString());
+    QString qstrInstrumentDefinitionID = field("InstrumentDefinitionID").toString();
+    const std::string str_asset(qstrInstrumentDefinitionID.toStdString());
     // ----------------------------------------------
     if (!qstrCombo.isEmpty())
     {
@@ -211,8 +211,8 @@ void PageOffer_Amounts::initializePage()
 //    ui->labelAssetName   ->setText(qstrAssetName);
 //    ui->labelCurrencyName->setText(qstrCurrencyName);
     // ----------------------------------------------
-    QString qstrAssetID = field("AssetID").toString();
-    const std::string str_asset(qstrAssetID.toStdString());
+    QString qstrInstrumentDefinitionID = field("InstrumentDefinitionID").toString();
+    const std::string str_asset(qstrInstrumentDefinitionID.toStdString());
     // ----------------------------------------------
     // Populate the Combo Box
     //

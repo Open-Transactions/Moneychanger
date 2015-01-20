@@ -97,7 +97,7 @@
       </layout>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="labelAssetID">
+      <widget class="QLabel" name="labelInstrumentDefinitionID">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -110,7 +110,7 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEditAssetID">
+      <widget class="QLineEdit" name="lineEditInstrumentDefinitionID">
        <property name="enabled">
         <bool>true</bool>
        </property>

@@ -85,7 +85,7 @@ private:
     QPointer<QLineEdit> m_pLineEdit_OtherAddress;
     QPointer<QLineEdit> m_pLineEdit_Acct_ID;
     QPointer<QLineEdit> m_pLineEdit_OtherAcct_ID;
-    QPointer<QLineEdit> m_pLineEdit_Server_ID;
+    QPointer<QLineEdit> m_pLineEdit_notary_id;
     QPointer<QLineEdit> m_pLineEdit_AssetType_ID;
 
     QPointer<QLineEdit> m_pLineEdit_Nym_Name;

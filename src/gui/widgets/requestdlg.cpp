@@ -62,19 +62,19 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString f
     std::string str_fromAcctId(fromAcctId.toStdString());
     // ------------------------------------------------------------
     std::string str_fromNymId(opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (str_fromAcctId));
-    std::string str_serverId (opentxs::OTAPI_Wrap::It()->GetAccountWallet_ServerID(str_fromAcctId));
+    std::string str_NotaryID (opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_fromAcctId));
     // ------------------------------------------------------------
     int64_t SignedAmount = amount;
     int64_t trueAmount   = isInvoice ? (SignedAmount*(-1)) : SignedAmount;
     // ------------------------------------------------------------
     qDebug() << QString("Sending %1:\n Server:'%2'\n Nym:'%3'\n Acct:'%4'\n ToNym:'%5'\n Amount:'%6'\n Note:'%7'").
-                arg(nsChequeType).arg(QString::fromStdString(str_serverId)).arg(QString::fromStdString(str_fromNymId)).
+                arg(nsChequeType).arg(QString::fromStdString(str_NotaryID)).arg(QString::fromStdString(str_fromNymId)).
                 arg(fromAcctId).arg(toNymId).arg(SignedAmount).arg(note);
     // ------------------------------------------------------------
     time_t tFrom = opentxs::OTAPI_Wrap::It()->GetTime();
     time_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
     // ------------------------------------------------------------
-    std::string strCheque = opentxs::OTAPI_Wrap::It()->WriteCheque(str_serverId, trueAmount, tFrom, tTo,
+    std::string strCheque = opentxs::OTAPI_Wrap::It()->WriteCheque(str_NotaryID, trueAmount, tFrom, tTo,
                                                     str_fromAcctId, str_fromNymId, note.toStdString(),
                                                     str_toNymId);
     if (strCheque.empty())
@@ -89,7 +89,7 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString f
     {
         MTSpinner theSpinner;
 
-        strResponse = madeEasy.send_user_payment(str_serverId, str_fromNymId, str_toNymId, strCheque);
+        strResponse = madeEasy.send_user_payment(str_NotaryID, str_fromNymId, str_toNymId, strCheque);
     }
 
     int32_t nReturnVal  = madeEasy.VerifyMessageSuccess(strResponse);
@@ -98,7 +98,7 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString f
     {
         qDebug() << QString("send %1: failed.").arg(nsChequeType);
 
-        Moneychanger::HasUsageCredits(this, str_serverId, str_fromNymId);
+        Moneychanger::HasUsageCredits(this, str_NotaryID, str_fromNymId);
     }
     else
     {
@@ -118,18 +118,18 @@ void MTRequestDlg::on_amountEdit_editingFinished()
 {
     if (!m_myAcctId.isEmpty() && !m_bSent)
     {
-        std::string str_assetId(opentxs::OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(m_myAcctId.toStdString()));
+        std::string str_InstrumentDefinitionID(opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
         QString     amt = ui->amountEdit->text();
 
-        if (!amt.isEmpty() && !str_assetId.empty())
+        if (!amt.isEmpty() && !str_InstrumentDefinitionID.empty())
         {
             std::string str_temp(amt.toStdString());
 
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
 
-            int64_t     amount               = opentxs::OTAPI_Wrap::It()->StringToAmount(str_assetId, str_temp);
-            std::string str_formatted_amount = opentxs::OTAPI_Wrap::It()->FormatAmount(str_assetId, static_cast<int64_t>(amount));
+            int64_t     amount               = opentxs::OTAPI_Wrap::It()->StringToAmount(str_InstrumentDefinitionID, str_temp);
+            std::string str_formatted_amount = opentxs::OTAPI_Wrap::It()->FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
             QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
 
             ui->amountEdit->setText(qstr_FinalAmount);
@@ -165,16 +165,16 @@ bool MTRequestDlg::requestFunds(QString memo, QString qstr_amount)
         qstr_amount = QString("0");
     // ----------------------------------------------------
     int64_t     amount = 0;
-    std::string str_assetId(opentxs::OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(fromAcctId.toStdString()));
+    std::string str_InstrumentDefinitionID(opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(fromAcctId.toStdString()));
 
-    if (!str_assetId.empty())
+    if (!str_InstrumentDefinitionID.empty())
     {
         std::string str_amount(qstr_amount.toStdString());
 
         if (std::string::npos == str_amount.find(".")) // not found
             str_amount += '.';
 
-        amount = opentxs::OTAPI_Wrap::It()->StringToAmount(str_assetId, str_amount);
+        amount = opentxs::OTAPI_Wrap::It()->StringToAmount(str_InstrumentDefinitionID, str_amount);
     }
     // ----------------------------------------------------
     if (amount <= 0)

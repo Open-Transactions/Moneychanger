@@ -25,13 +25,13 @@ PageOffer_Assets::PageOffer_Assets(QWidget *parent) :
     ui->pushButtonSelectAsset   ->setStyleSheet(style_sheet);
     ui->pushButtonSelectCurrency->setStyleSheet(style_sheet);
 
-    ui->labelAssetID   ->setStyleSheet("QLabel { color : gray; }");
+    ui->labelInstrumentDefinitionID   ->setStyleSheet("QLabel { color : gray; }");
     ui->labelCurrencyID->setStyleSheet("QLabel { color : gray; }");
 
-    ui->lineEditAssetID   ->setStyleSheet("QLineEdit { background-color: lightgray }");
+    ui->lineEditInstrumentDefinitionID   ->setStyleSheet("QLineEdit { background-color: lightgray }");
     ui->lineEditCurrencyID->setStyleSheet("QLineEdit { background-color: lightgray }");
 
-    this->registerField("AssetID*",    ui->lineEditAssetID);
+    this->registerField("InstrumentDefinitionID*",    ui->lineEditInstrumentDefinitionID);
     this->registerField("CurrencyID*", ui->lineEditCurrencyID);
 
     this->registerField("AssetName",    ui->pushButtonSelectAsset,    "text");
@@ -49,7 +49,7 @@ void PageOffer_Assets::on_pushButtonManageAsset_clicked()
     // -------------------------------------
     the_map.clear();
     // -------------------------------------
-    QString qstrPreselected   = field("AssetID").toString();
+    QString qstrPreselected   = field("InstrumentDefinitionID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
     int32_t the_count = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
@@ -85,9 +85,9 @@ void PageOffer_Assets::on_pushButtonManageAsset_clicked()
                 str_name = str_id;
             // --------------------------------
             setField("AssetName", QString::fromStdString(str_name));
-            setField("AssetID",   QString::fromStdString(str_id));
+            setField("InstrumentDefinitionID",   QString::fromStdString(str_id));
             // --------------------------------
-            ui->lineEditAssetID->home(false);
+            ui->lineEditInstrumentDefinitionID->home(false);
         }
     }
     // -------------------------------------
@@ -154,7 +154,7 @@ void PageOffer_Assets::on_pushButtonManageCurrency_clicked()
 void PageOffer_Assets::on_pushButtonSelectAsset_clicked()
 {
     // -------------------------------------------
-    QString qstr_current_id = field("AssetID").toString();
+    QString qstr_current_id = field("InstrumentDefinitionID").toString();
     // -------------------------------------------
     if (qstr_current_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetAssetTypeCount() > 0))
         qstr_current_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_ID(0));
@@ -196,9 +196,9 @@ void PageOffer_Assets::on_pushButtonSelectAsset_clicked()
             !theChooser.m_qstrCurrentName.isEmpty())
         {
             setField("AssetName", theChooser.m_qstrCurrentName);
-            setField("AssetID",   theChooser.m_qstrCurrentID);
+            setField("InstrumentDefinitionID",   theChooser.m_qstrCurrentID);
             // -----------------------------------------
-            ui->lineEditAssetID->home(false);
+            ui->lineEditInstrumentDefinitionID->home(false);
             // -----------------------------------------
         }
     }
@@ -260,7 +260,7 @@ void PageOffer_Assets::on_pushButtonSelectCurrency_clicked()
 void PageOffer_Assets::SetAssetBlank()
 {
     setField("AssetName", QString("<%1>").arg(tr("Click to choose Asset Type")));
-    setField("AssetID",   "");
+    setField("InstrumentDefinitionID",   "");
 }
 
 void PageOffer_Assets::SetCurrencyBlank()

@@ -29,7 +29,7 @@ MTPageAcct_Server::MTPageAcct_Server(QWidget *parent) :
 
     ui->lineEditID->setStyleSheet("QLineEdit { background-color: lightgray }");
 
-    this->registerField("ServerID*",  ui->lineEditID);
+    this->registerField("NotaryID*",  ui->lineEditID);
     this->registerField("ServerName", ui->pushButtonSelect, "text");
     // -----------------------------------------------
     connect(this, SIGNAL(SetDefaultServer(QString, QString)), Moneychanger::It(), SLOT(setDefaultServer(QString,QString)));
@@ -39,9 +39,9 @@ MTPageAcct_Server::MTPageAcct_Server(QWidget *parent) :
 
 void MTPageAcct_Server::on_pushButtonSelect_clicked()
 {
-    QString qstr_default_id = Moneychanger::It()->get_default_server_id();
+    QString qstr_default_id = Moneychanger::It()->get_default_notary_id();
     // -------------------------------------------
-    QString qstr_current_id = field("ServerID").toString();
+    QString qstr_current_id = field("NotaryID").toString();
     // -------------------------------------------
     if (qstr_current_id.isEmpty())
         qstr_current_id = qstr_default_id;
@@ -85,7 +85,7 @@ void MTPageAcct_Server::on_pushButtonSelect_clicked()
         if (!theChooser.m_qstrCurrentID  .isEmpty() &&
             !theChooser.m_qstrCurrentName.isEmpty())
         {
-            setField("ServerID",   theChooser.m_qstrCurrentID);
+            setField("NotaryID",   theChooser.m_qstrCurrentID);
             setField("ServerName", theChooser.m_qstrCurrentName);
             // -----------------------------------------
             ui->lineEditID->home(false);
@@ -101,9 +101,9 @@ void MTPageAcct_Server::initializePage() //virtual
     std::string str_name;
     QString     qstr_id;
     // -------------------------------------------
-    QString qstr_default_id = Moneychanger::It()->get_default_server_id();
+    QString qstr_default_id = Moneychanger::It()->get_default_notary_id();
     // -------------------------------------------
-    QString qstr_current_id = field("ServerID").toString();
+    QString qstr_current_id = field("NotaryID").toString();
     // -------------------------------------------
     qstr_id = qstr_current_id.isEmpty() ? qstr_default_id : qstr_current_id;
     // -------------------------------------------
@@ -119,7 +119,7 @@ void MTPageAcct_Server::initializePage() //virtual
     {
         QString qstrName = QString::fromStdString(str_name);
         // ---------------------------
-        setField("ServerID",   qstr_id);
+        setField("NotaryID",   qstr_id);
         setField("ServerName", qstrName);
         // ---------------------------
         ui->lineEditID->home(false);
@@ -140,7 +140,7 @@ void MTPageAcct_Server::on_pushButtonManage_clicked()
     // -------------------------------------
     the_map.clear();
     // -------------------------------------
-    QString qstrPreSelected   = field("ServerID").toString();
+    QString qstrPreSelected   = field("NotaryID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
     int32_t the_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
@@ -175,7 +175,7 @@ void MTPageAcct_Server::on_pushButtonManage_clicked()
             if (str_name.empty())
                 str_name = str_id;
             // --------------------------------
-            setField("ServerID",   QString::fromStdString(str_id));
+            setField("NotaryID",   QString::fromStdString(str_id));
             setField("ServerName", QString::fromStdString(str_name));
             // --------------------------------
             ui->lineEditID->home(false);
@@ -188,7 +188,7 @@ void MTPageAcct_Server::on_pushButtonManage_clicked()
 
 void MTPageAcct_Server::SetFieldsBlank()
 {
-    setField("ServerID",   "");
+    setField("NotaryID",   "");
     setField("ServerName", QString("<%1>").arg(tr("Click to choose Server")));
 }
 

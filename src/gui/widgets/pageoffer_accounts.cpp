@@ -34,7 +34,7 @@ PageOffer_Accounts::PageOffer_Accounts(QWidget *parent) :
     ui->lineEditAssetAcctBalance   ->setStyleSheet("QLineEdit { border: none; background-color: lightgray }");
     ui->lineEditCurrencyAcctBalance->setStyleSheet("QLineEdit { border: none; background-color: lightgray }");
 
-    ui->lineEditServerID           ->setStyleSheet("QLineEdit { border: none; background-color: lightgray }");
+    ui->lineEditNotaryID           ->setStyleSheet("QLineEdit { border: none; background-color: lightgray }");
     ui->lineEditServerName         ->setStyleSheet("QLineEdit { border: none; background-color: lightgray }");
     ui->lineEditNymID              ->setStyleSheet("QLineEdit { border: none; background-color: lightgray }");
     ui->lineEditNymName            ->setStyleSheet("QLineEdit { border: none; background-color: lightgray }");
@@ -56,7 +56,7 @@ PageOffer_Accounts::PageOffer_Accounts(QWidget *parent) :
     this->registerField("AssetAcctName",       ui->pushButtonSelectAssetAcct,    "text");
     this->registerField("CurrencyAcctName",    ui->pushButtonSelectCurrencyAcct, "text");
 
-    this->registerField("ServerID",            ui->lineEditServerID);
+    this->registerField("NotaryID",            ui->lineEditNotaryID);
     this->registerField("ServerName",          ui->lineEditServerName);
     this->registerField("NymID",               ui->lineEditNymID);
     this->registerField("NymName",             ui->lineEditNymName);
@@ -74,7 +74,7 @@ void PageOffer_Accounts::on_pushButtonManageServer_clicked()
     // -------------------------------------
     the_map.clear();
     // -------------------------------------
-    QString qstrPreselected   = field("ServerID").toString();
+    QString qstrPreselected   = field("NotaryID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
     int32_t the_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
@@ -206,8 +206,8 @@ void PageOffer_Accounts::on_pushButtonManageCurrencyAcct_clicked()
 void PageOffer_Accounts::on_pushButtonSelectAssetAcct_clicked()
 {
     QString qstrNymID    = field("NymID")   .toString();
-    QString qstrAssetID  = field("AssetID") .toString();
-    QString qstrServerID = field("ServerID").toString();
+    QString qstrInstrumentDefinitionID  = field("InstrumentDefinitionID") .toString();
+    QString qstrNotaryID = field("NotaryID").toString();
     // -------------------------------------------
     QString qstr_current_id = field("AssetAcctID").toString();
     // -------------------------------------------
@@ -234,12 +234,12 @@ void PageOffer_Accounts::on_pushButtonSelectAssetAcct_clicked()
             // Filter the accounts shown based on asset type, server ID, and Nym ID.
             //
             QString qstrAcctNymID    = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID       (OT_id.toStdString()));
-            QString qstrAcctAssetID  = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID (OT_id.toStdString()));
-            QString qstrAcctServerID = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ServerID    (OT_id.toStdString()));
+            QString qstrAcctInstrumentDefinitionID  = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID (OT_id.toStdString()));
+            QString qstrAcctNotaryID = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID    (OT_id.toStdString()));
             // -----------------------------------------------
             if ((qstrAcctNymID    != qstrNymID)   ||
-                (qstrAcctAssetID  != qstrAssetID) ||
-                (qstrAcctServerID != qstrServerID))
+                (qstrAcctInstrumentDefinitionID  != qstrInstrumentDefinitionID) ||
+                (qstrAcctNotaryID != qstrNotaryID))
                 continue;
             // -----------------------------------------------
             if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
@@ -267,7 +267,7 @@ void PageOffer_Accounts::on_pushButtonSelectAssetAcct_clicked()
             ui->lineEditAssetAcctID->home(false);
             // -----------------------------------------
             int64_t     lBalance      = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance(theChooser.m_qstrCurrentID.toStdString());
-            std::string str_formatted = opentxs::OTAPI_Wrap::It()->FormatAmount(qstrAssetID.toStdString(), lBalance);
+            std::string str_formatted = opentxs::OTAPI_Wrap::It()->FormatAmount(qstrInstrumentDefinitionID.toStdString(), lBalance);
             QString     qstrBalance   = QString::fromStdString(str_formatted);
 
             setField("AssetAcctBalance", qstrBalance);
@@ -278,8 +278,8 @@ void PageOffer_Accounts::on_pushButtonSelectAssetAcct_clicked()
 void PageOffer_Accounts::on_pushButtonSelectCurrencyAcct_clicked()
 {
     QString qstrNymID    = field("NymID")      .toString();
-    QString qstrAssetID  = field("CurrencyID") .toString();
-    QString qstrServerID = field("ServerID")   .toString();
+    QString qstrInstrumentDefinitionID  = field("CurrencyID") .toString();
+    QString qstrNotaryID = field("NotaryID")   .toString();
     // -------------------------------------------
     QString qstr_current_id = field("CurrencyAcctID").toString();
     // -------------------------------------------
@@ -306,12 +306,12 @@ void PageOffer_Accounts::on_pushButtonSelectCurrencyAcct_clicked()
             // Filter the accounts shown based on asset type, server ID, and Nym ID.
             //
             QString qstrAcctNymID    = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID       (OT_id.toStdString()));
-            QString qstrAcctAssetID  = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID (OT_id.toStdString()));
-            QString qstrAcctServerID = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ServerID    (OT_id.toStdString()));
+            QString qstrAcctInstrumentDefinitionID  = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID (OT_id.toStdString()));
+            QString qstrAcctNotaryID = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID    (OT_id.toStdString()));
             // -----------------------------------------------
             if ((qstrAcctNymID    != qstrNymID)   ||
-                (qstrAcctAssetID  != qstrAssetID) ||
-                (qstrAcctServerID != qstrServerID))
+                (qstrAcctInstrumentDefinitionID  != qstrInstrumentDefinitionID) ||
+                (qstrAcctNotaryID != qstrNotaryID))
                 continue;
             // -----------------------------------------------
             if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
@@ -339,7 +339,7 @@ void PageOffer_Accounts::on_pushButtonSelectCurrencyAcct_clicked()
             ui->lineEditCurrencyAcctID->home(false);
             // -----------------------------------------
             int64_t     lBalance      = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance(theChooser.m_qstrCurrentID.toStdString());
-            std::string str_formatted = opentxs::OTAPI_Wrap::It()->FormatAmount(qstrAssetID.toStdString(), lBalance);
+            std::string str_formatted = opentxs::OTAPI_Wrap::It()->FormatAmount(qstrInstrumentDefinitionID.toStdString(), lBalance);
             QString     qstrBalance   = QString::fromStdString(str_formatted);
 
             setField("CurrencyAcctBalance", qstrBalance);
@@ -377,10 +377,10 @@ void PageOffer_Accounts::initializePage()
     {
         setField("NymID",      pWizardNewOffer->GetNymID     ());
         setField("NymName",    pWizardNewOffer->GetNymName   ());
-        setField("ServerID",   pWizardNewOffer->GetServerID  ());
+        setField("NotaryID",   pWizardNewOffer->GetNotaryID  ());
         setField("ServerName", pWizardNewOffer->GetServerName());
 
-        ui->lineEditServerID->home(false);
+        ui->lineEditNotaryID->home(false);
         ui->lineEditNymID   ->home(false);
     }
 }

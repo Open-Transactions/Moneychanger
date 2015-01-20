@@ -655,7 +655,7 @@ void MTDetailEdit::RefreshRecords()
                     {
                         // ------------------------------------------------------
                         int64_t     lScale    = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->scale);
-                        std::string str_scale = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->asset_type_id, lScale);
+                        std::string str_scale = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id, lScale);
                         // ------------------------------------------------------
                         QString qstrFormattedScale = QString::fromStdString(str_scale);
                         // ------------------------------------------------------
@@ -675,12 +675,12 @@ void MTDetailEdit::RefreshRecords()
             if (m_pmapOffers)
             {
                 // -------------------------------------
-                QString     qstrServerID, qstrTransactionID;
-                QStringList theIDs = qstrID.split(","); // theIDs.at(0) ServerID, at(1) transaction ID
+                QString     qstrNotaryID, qstrTransactionID;
+                QStringList theIDs = qstrID.split(","); // theIDs.at(0) NotaryID, at(1) transaction ID
 
                 if (2 == theIDs.size()) // Should always be 2...
                 {
-                    qstrServerID      = theIDs.at(0);
+                    qstrNotaryID      = theIDs.at(0);
                     qstrTransactionID = theIDs.at(1);
                 }
                 // -------------------------------------
@@ -699,7 +699,7 @@ void MTDetailEdit::RefreshRecords()
                         int64_t     lFinished         = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->finished_so_far);
                         // ------------------------------------------------------
                         int64_t     lScale            = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->scale);
-                        std::string str_scale         = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lScale);
+                        std::string str_scale         = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lScale);
                         // ------------------------------------------------------
                         int64_t     lPrice            = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->price_per_scale);
                         std::string str_price         = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->currency_type_id, lPrice);
@@ -713,10 +713,10 @@ void MTDetailEdit::RefreshRecords()
 
                         qstrPrice += QString(" (%1 %2)").arg(tr("per")).arg(qstrFormattedScale);
                         // ------------------------------------------------------
-                        QString qstrTotalAssets       = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lTotalAssets));
-                        QString qstrSoldOrPurchased   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lFinished));
+                        QString qstrTotalAssets       = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lTotalAssets));
+                        QString qstrSoldOrPurchased   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lFinished));
                         // ------------------------------------------------------
-                        std::string str_asset_name    = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pOfferData->asset_type_id);
+                        std::string str_asset_name    = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pOfferData->instrument_definition_id);
                         // -----------------------------------------------------------------------
                         QString qstrBuySell = bSelling ? tr("Sell") : tr("Buy");
                         QString qstrAmounts;
