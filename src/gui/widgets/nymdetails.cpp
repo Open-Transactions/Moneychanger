@@ -422,6 +422,7 @@ QGroupBox * MTNymDetails::createAddressGroupBox(QString strNymID)
             }
         }
     }
+
     // -----------------------------------------------------------------
     QWidget * pWidget = this->createNewAddressWidget(strNymID);
 
