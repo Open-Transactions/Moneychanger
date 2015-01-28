@@ -25,7 +25,7 @@ public:
     virtual ~MTNameLookupQT() {}
 
     virtual std::string GetNymName(const std::string & str_id,
-                                   const std::string * p_notary_id=NULL) const;
+                                   const std::string p_notary_id="") const;
 
     virtual std::string GetAcctName(const std::string & str_id,
                                     const std::string * p_nym_id=NULL,

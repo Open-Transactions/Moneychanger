@@ -21,11 +21,15 @@
 
 
 std::string MTNameLookupQT::GetNymName(const std::string & str_id,
-                                       const std::string * p_notary_id/*=NULL*/) const
+                                       const std::string p_notary_id/*=""*/) const
 {
-    std::string str_result("");
     // ------------------------
-    str_result = this->OTNameLookup::GetNymName(str_id, *p_notary_id);
+    qDebug() << QString("Attempting Name Lookup on: ") << QString(str_id.c_str());
+
+    std::string str_result = this->OTNameLookup::GetNymName(str_id, p_notary_id);
+
+    qDebug() << QString("Result of Name Lookup: ") << QString(str_result.c_str());
+
     // ------------------------
     if (str_result.empty())
     {
@@ -38,9 +42,9 @@ std::string MTNameLookupQT::GetNymName(const std::string & str_id,
             if (!contact_name.isEmpty())
                 str_result = contact_name.toStdString();
             // -----------------------------------------------
-            if ((NULL != p_notary_id) && !p_notary_id->empty())
+            if (p_notary_id != "")
                 MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
-                                                                       QString::fromStdString(*p_notary_id));
+                                                                       QString::fromStdString(p_notary_id));
         }
     }
     // ------------------------
