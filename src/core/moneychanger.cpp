@@ -1981,7 +1981,7 @@ void Moneychanger::mc_import_slot()
                     // -----------------------------------------------
                     MTNameLookupQT theLookup;
 
-                    OT_nym_name = QString::fromStdString(theLookup.GetNymName(OT_nym_id.toStdString()));
+                    OT_nym_name = QString::fromStdString(theLookup.GetNymName(OT_nym_id.toStdString(), ""));
                     // -----------------------------------------------
                     the_map.insert(OT_nym_id, OT_nym_name);
                 }
@@ -2067,7 +2067,7 @@ void Moneychanger::mc_import_slot()
             // -----------------------------------------------
             MTNameLookupQT theLookup;
 
-            OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString()));
+            OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString(), "", "", ""));
             // -----------------------------------------------
             the_map.insert(OT_acct_id, OT_acct_name);
         }

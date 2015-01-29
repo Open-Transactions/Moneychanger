@@ -65,7 +65,7 @@ win32:{
 }
 
 mac:{
-    !contains(MAC_OS_VERSION, 10.9): {
+    !contains(MAC_OS_VERSION, 10.9):!contains(MAC_OS_VERSION, 10.10): {
         INCLUDEPATH += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
     }
 }
@@ -91,7 +91,7 @@ unix: {
     LIBS += -L/usr/local/lib
 
     mac:{
-        !contains(MAC_OS_VERSION, 10.9):{
+        !contains(MAC_OS_VERSION, 10.9):!contains(MAC_OS_VERSION, 10.10):{
             # if not on Mavericks
             LIBS += -lboost_system-mt
             LIBS += -lboost_thread-mt

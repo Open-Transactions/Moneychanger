@@ -357,6 +357,13 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
     time_t tFrom = opentxs::OTAPI_Wrap::It()->GetTime();
     time_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
     // ------------------------------------------------------------
+    opentxs::OT_ME madeEasy;
+
+    if (!madeEasy.make_sure_enough_trans_nums(1, str_NotaryID, str_fromNymId)) {
+        qDebug() << QString("Failed trying to acquire a transaction number to write the cheque with.");
+        return false;
+    }
+    // ------------------------------------------------------------
     std::string strCheque = opentxs::OTAPI_Wrap::It()->WriteCheque(str_NotaryID, trueAmount, tFrom, tTo,
                                                     str_fromAcctId, str_fromNymId, note.toStdString(),
                                                     str_toNymId);
@@ -366,8 +373,6 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
         return false;
     }
     // ------------------------------------------------------------
-    opentxs::OT_ME madeEasy;
-
     std::string  strResponse;
     {
         MTSpinner theSpinner;
@@ -621,7 +626,7 @@ void MTSendDlg::on_fromButton_clicked()
             // -----------------------------------------------
             MTNameLookupQT theLookup;
 
-            OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString()));
+            OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString(), "", "", ""));
             // -----------------------------------------------
             the_map.insert(OT_acct_id, OT_acct_name);
         }
@@ -837,7 +842,7 @@ void MTSendDlg::dialog()
         {
             MTNameLookupQT theLookup;
 
-            str_my_name = theLookup.GetAcctName(m_myAcctId.toStdString());
+            str_my_name = theLookup.GetAcctName(m_myAcctId.toStdString(), "", "", "");
 
             if (str_my_name.empty())
                 str_my_name = m_myAcctId.toStdString();
@@ -864,7 +869,7 @@ void MTSendDlg::dialog()
         {
             MTNameLookupQT theLookup;
 
-            str_his_name = theLookup.GetNymName(m_hisNymId.toStdString());
+            str_his_name = theLookup.GetNymName(m_hisNymId.toStdString(), "");
 
             if (str_his_name.empty())
                 str_his_name = m_hisNymId.toStdString();

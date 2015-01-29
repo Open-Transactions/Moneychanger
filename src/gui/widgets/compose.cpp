@@ -159,7 +159,7 @@ void MTCompose::setSenderNameBasedOnAvailableData()
         {
             MTNameLookupQT theLookup;
 
-            qstrNymName = QString::fromStdString(theLookup.GetNymName(m_senderNymId.toStdString()));
+            qstrNymName = QString::fromStdString(theLookup.GetNymName(m_senderNymId.toStdString(), ""));
         }
         // ---------------------------
         QString qstrAddressPortion("");
@@ -205,7 +205,7 @@ void MTCompose::setRecipientNameBasedOnAvailableData()
         {
             MTNameLookupQT theLookup;
 
-            qstrNymName = QString::fromStdString(theLookup.GetNymName(m_recipientNymId.toStdString()));
+            qstrNymName = QString::fromStdString(theLookup.GetNymName(m_recipientNymId.toStdString(), ""));
         }
         // ---------------------------
         QString qstrContactName;
@@ -2505,7 +2505,7 @@ void MTCompose::on_fromButton_clicked()
             // -----------------------------------------------
             MTNameLookupQT theLookup;
 
-            OT_nym_name = QString::fromStdString(theLookup.GetNymName(OT_nym_id.toStdString()));
+            OT_nym_name = QString::fromStdString(theLookup.GetNymName(OT_nym_id.toStdString(), ""));
             // -----------------------------------------------
             the_map.insert(OT_nym_id, OT_nym_name);
         }

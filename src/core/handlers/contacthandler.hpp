@@ -25,12 +25,12 @@ public:
     virtual ~MTNameLookupQT() {}
 
     virtual std::string GetNymName(const std::string & str_id,
-                                   const std::string p_notary_id="") const;
+                                   const std::string   p_notary_id) const;
 
     virtual std::string GetAcctName(const std::string & str_id,
-                                    const std::string * p_nym_id=NULL,
-                                    const std::string * p_notary_id=NULL,
-                                    const std::string * p_asset_id=NULL) const;
+                                    const std::string   p_nym_id,
+                                    const std::string   p_notary_id,
+                                    const std::string   p_asset_id) const;
 
     virtual std::string GetAddressName(const std::string & str_address) const; // Used for Bitmessage addresses (etc.)
 };

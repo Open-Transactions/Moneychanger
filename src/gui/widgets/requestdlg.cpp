@@ -306,7 +306,7 @@ void MTRequestDlg::on_toButton_clicked()
             // -----------------------------------------------
             MTNameLookupQT theLookup;
 
-            OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString()));
+            OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString(), "", "", ""));
             // -----------------------------------------------
             the_map.insert(OT_acct_id, OT_acct_name);
         }
@@ -522,7 +522,7 @@ void MTRequestDlg::dialog()
         {
             MTNameLookupQT theLookup;
 
-            str_my_name = theLookup.GetAcctName(m_myAcctId.toStdString());
+            str_my_name = theLookup.GetAcctName(m_myAcctId.toStdString(), "", "", "");
 
             if (str_my_name.empty())
                 str_my_name = m_myAcctId.toStdString();
@@ -546,7 +546,7 @@ void MTRequestDlg::dialog()
         {
             MTNameLookupQT theLookup;
 
-            str_his_name = theLookup.GetNymName(m_hisNymId.toStdString());
+            str_his_name = theLookup.GetNymName(m_hisNymId.toStdString(), "");
 
             if (str_his_name.empty())
                 str_his_name = m_hisNymId.toStdString();
