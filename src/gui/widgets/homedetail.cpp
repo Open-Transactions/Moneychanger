@@ -484,7 +484,7 @@ QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
                 {
                     MTNameLookupQT theLookup;
 
-                    OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString()));
+                    OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString(), "", "", ""));
                     // -----------------------------------------------
                     the_map.insert(OT_acct_id, OT_acct_name);
                 }
@@ -1199,10 +1199,10 @@ void MTHomeDetail::refresh(int nRow, opentxs::OTRecordList & theList)
 
     if ((nRow >= 0) && (nRow < theList.size()))
     {
-        opentxs::OTRecord record = theList.GetRecord(nRow);
+        opentxs::OTRecord * pRecord = new opentxs::OTRecord(theList.GetRecord(nRow));
         // --------------------------------------------------
-        m_record = std::shared_ptr<opentxs::OTRecord>(&record);
-        opentxs::OTRecord& recordmt = record;
+        m_record = std::shared_ptr<opentxs::OTRecord>(pRecord);
+        opentxs::OTRecord& recordmt = *pRecord;
         // --------------------------------------------------
         refresh(recordmt);
     }
@@ -1619,7 +1619,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(tr("My")).arg(tr("Nym")) );
 
         MTNameLookupQT theLookup;
-        QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_NymID.toStdString()));
+        QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_NymID.toStdString(), ""));
 
         m_pLineEdit_Nym_ID          = new QLineEdit(qstr_NymID);
         m_pLineEdit_Nym_Name        = new QLineEdit(qstr_name);
@@ -1640,7 +1640,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(qstr_OtherType).arg(tr("Nym")));
 
         MTNameLookupQT theLookup;
-        QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_OtherNymID.toStdString()));
+        QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_OtherNymID.toStdString(), ""));
 
         m_pLineEdit_OtherNym_ID     = new QLineEdit(qstr_OtherNymID);
         m_pLineEdit_OtherNym_Name   = new QLineEdit(qstr_name);
@@ -1704,7 +1704,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(tr("My")).arg(tr("Account")) );
 
         MTNameLookupQT theLookup;
-        QString qstr_name = QString::fromStdString(theLookup.GetAcctName(qstr_AccountID.toStdString()));
+        QString qstr_name = QString::fromStdString(theLookup.GetAcctName(qstr_AccountID.toStdString(), "", "", ""));
 
         m_pLineEdit_Acct_ID         = new QLineEdit(qstr_AccountID);
         m_pLineEdit_Acct_Name       = new QLineEdit(qstr_name);
@@ -1725,7 +1725,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(qstr_OtherType).arg(tr("Acct")));
 
         MTNameLookupQT theLookup;
-        QString qstr_name = QString::fromStdString(theLookup.GetAcctName(qstr_OtherAcctID.toStdString()));
+        QString qstr_name = QString::fromStdString(theLookup.GetAcctName(qstr_OtherAcctID.toStdString(), "", "", ""));
 
         m_pLineEdit_OtherAcct_ID    = new QLineEdit(qstr_OtherAcctID);
         m_pLineEdit_OtherAcct_Name  = new QLineEdit(qstr_name);
