@@ -45,6 +45,16 @@ libidn-devel
 libcurl4
 libcurl-devel
 
+### Menu workaround for some window managers
+
+Some window managers do not show the MoneyChanger icon in the
+systray. If Moneychanger starts and there's no tray menu icon, the
+following workaround will show the main menu in a separate window.
+
+`touch ~/.ot/knotworkpigeons`
+
+Then restart Moneychanger. 
+
 ### Contributing
 
 All development goes in develop branch - please don't submit pull requests to master.
