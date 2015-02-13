@@ -21,7 +21,7 @@
 
 
 std::string MTNameLookupQT::GetNymName(const std::string & str_id,
-                                       const std::string p_notary_id/*=""*/) const
+                                       const std::string   p_notary_id) const
 {
     // ------------------------
     qDebug() << QString("Attempting Name Lookup on: ") << QString(str_id.c_str());
@@ -52,20 +52,20 @@ std::string MTNameLookupQT::GetNymName(const std::string & str_id,
 }
 
 std::string MTNameLookupQT::GetAcctName(const std::string & str_id,
-                                        const std::string * p_nym_id/*=NULL*/,
-                                        const std::string * p_notary_id/*=NULL*/,
-                                        const std::string * p_asset_id/*=NULL*/) const
+                                        const std::string   p_nym_id,
+                                        const std::string   p_notary_id,
+                                        const std::string   p_asset_id) const
 {
     std::string str_result("");
     // ------------------------
-    str_result = this->OTNameLookup::GetAcctName(str_id, *p_nym_id, *p_notary_id, *p_asset_id);
+    str_result = this->OTNameLookup::GetAcctName(str_id, p_nym_id, p_notary_id, p_asset_id);
     // ------------------------
     if (str_result.empty())
     {
         int nContactID = MTContactHandler::getInstance()->FindContactIDByAcctID(QString::fromStdString(str_id),
-                                                                                (NULL == p_nym_id)    ? QString("") : QString::fromStdString(*p_nym_id),
-                                                                                (NULL == p_notary_id) ? QString("") : QString::fromStdString(*p_notary_id),
-                                                                                (NULL == p_asset_id)  ? QString("") : QString::fromStdString(*p_asset_id));
+                                                                                QString::fromStdString(p_nym_id),
+                                                                                QString::fromStdString(p_notary_id),
+                                                                                QString::fromStdString(p_asset_id));
         if (nContactID > 0)
         {
             QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
@@ -100,7 +100,7 @@ std::string MTNameLookupQT::GetAddressName(const std::string & str_address) cons
             QString qstrNymID = MTContactHandler::getInstance()->GetNymByAddress(QString::fromStdString(str_address));
 
             if (!qstrNymID.isEmpty())
-                str_result = this->GetNymName(qstrNymID.toStdString());
+                str_result = this->GetNymName(qstrNymID.toStdString(), "");
         }
     }
     // ------------------------
