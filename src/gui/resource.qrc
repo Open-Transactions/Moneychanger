@@ -42,5 +42,13 @@
         <file>icons/signature-small.png</file>
         <file>icons/check-mark-small.png</file>
         <file>icons/bitcoin.png</file>
+        <file>icons/rolodex.png</file>
+        <file>icons/rolodex_small.png</file>
+        <file>icons/rolodex_card.png</file>
+        <file>icons/rolodex_card2.png</file>
+        <file>icons/pencil.png</file>
+        <file>icons/money_fist.png</file>
+        <file>icons/identity_BW2.png</file>
+        <file>icons/money_fist2.png</file>
     </qresource>
 </RCC>
