@@ -562,11 +562,15 @@ QWidget * MTHome::CreateUserBarWidget()
     QToolButton *buttonIdentities = new QToolButton;
     QToolButton *buttonRefresh    = new QToolButton;
     // ----------------------------------------------------------------
-    QPixmap pixmapSend      (":/icons/icons/send.png");
+    QPixmap pixmapSend      (":/icons/icons/money_fist2.png");
+//  QPixmap pixmapSend      (":/icons/icons/send.png");
 //  QPixmap pixmapRequest   (":/icons/icons/request.png");
-    QPixmap pixmapCompose   (":/icons/icons/compose.png");
-    QPixmap pixmapIdentities(":/icons/icons/user.png");
-    QPixmap pixmapContacts  (":/icons/addressbook");
+    QPixmap pixmapCompose   (":/icons/icons/pencil.png");
+//  QPixmap pixmapCompose   (":/icons/icons/compose.png");
+    QPixmap pixmapIdentities(":/icons/icons/identity_BW2.png");
+//  QPixmap pixmapIdentities(":/icons/icons/user.png");
+//  QPixmap pixmapContacts  (":/icons/addressbook");
+    QPixmap pixmapContacts  (":/icons/icons/rolodex_small");
     QPixmap pixmapRefresh   (":/icons/icons/refresh.png");
     // ----------------------------------------------------------------
     QIcon sendButtonIcon      (pixmapSend);
@@ -580,7 +584,7 @@ QWidget * MTHome::CreateUserBarWidget()
     buttonSend->setAutoRaise(true);
     buttonSend->setIcon(sendButtonIcon);
     buttonSend->setIconSize(pixmapSend.rect().size());
-    buttonSend->setText(tr("Send"));
+    buttonSend->setText(tr("Pay"));
     // ----------------------------------------------------------------
 //    buttonRequest->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 //    buttonRequest->setAutoRaise(true);

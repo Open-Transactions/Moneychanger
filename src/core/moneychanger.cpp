@@ -260,16 +260,19 @@ Moneychanger::Moneychanger(QWidget *parent)
     
     mc_systrayIcon_overview = QIcon(":/icons/overview");
     
-    mc_systrayIcon_nym = QIcon(":/icons/icons/identity_BW.png");
+    mc_systrayIcon_nym = QIcon(":/icons/icons/identity_BW2.png");
     mc_systrayIcon_server = QIcon(":/icons/server");
     
     mc_systrayIcon_goldaccount = QIcon(":/icons/icons/safe_box.png");
     mc_systrayIcon_purse = QIcon(":/icons/icons/assets.png");
     
-    mc_systrayIcon_sendfunds      = QIcon(":/icons/sendfunds");
+    mc_systrayIcon_sendfunds      = QIcon(":/icons/icons/money_fist.png");
+//  mc_systrayIcon_sendfunds      = QIcon(":/icons/sendfunds");
     mc_systrayIcon_requestfunds   = QIcon(":/icons/requestpayment");
-    mc_systrayIcon_contacts       = QIcon(":/icons/addressbook");
-    mc_systrayIcon_composemessage = QIcon(":/icons/icons/compose.png");
+//  mc_systrayIcon_contacts       = QIcon(":/icons/addressbook");
+    mc_systrayIcon_contacts       = QIcon(":/icons/icons/rolodex_card2");
+    mc_systrayIcon_composemessage = QIcon(":/icons/icons/pencil.png");
+//  mc_systrayIcon_composemessage = QIcon(":/icons/icons/compose.png");
 
     mc_systrayIcon_markets = QIcon(":/icons/markets");
 
@@ -540,7 +543,7 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
     //Send funds
-    mc_systrayMenu_sendfunds = new QAction(mc_systrayIcon_sendfunds, tr("Send Funds..."), mc_systrayMenu);
+    mc_systrayMenu_sendfunds = new QAction(mc_systrayIcon_sendfunds, tr("Pay Funds..."), mc_systrayMenu);
     mc_systrayMenu->addAction(mc_systrayMenu_sendfunds);
     connect(mc_systrayMenu_sendfunds, SIGNAL(triggered()), this, SLOT(mc_sendfunds_slot()));
     // --------------------------------------------------------------

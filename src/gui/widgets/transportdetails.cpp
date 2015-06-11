@@ -34,6 +34,8 @@ TransportDetails::TransportDetails(QWidget *parent, MTDetailEdit & theOwner) :
 
     ui->lineEditID  ->setStyleSheet("QLineEdit { background-color: lightgray }");
     ui->lineEditType->setStyleSheet("QLineEdit { background-color: lightgray }");
+
+    ui->toolButton->setStyleSheet("QToolButton { border: 0px solid #575757; }");
     // ----------------------------------
     // Note: This is a placekeeper, so later on I can just erase
     // the widget at 0 and replace it with the real header widget.
