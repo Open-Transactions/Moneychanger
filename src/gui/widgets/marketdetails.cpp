@@ -217,7 +217,7 @@ opentxs::OTDB::OfferListMarket * MTMarketDetails::LoadOfferListForMarket(opentxs
     {
         pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_OFFER_LIST_MARKET, "markets",
                                       marketData.notary_id, "offers", qstrFilename.toStdString());
-        if (NULL == pStorable)
+        if (nullptr == pStorable)
             return NULL;
         // -------------------------------
         pOfferList = opentxs::OTDB::OfferListMarket::ot_dynamic_cast(pStorable);
@@ -545,7 +545,7 @@ opentxs::OTDB::TradeListMarket * MTMarketDetails::LoadTradeListForMarket(opentxs
     {
         pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_TRADE_LIST_MARKET, "markets",
                                       marketData.notary_id, "recent", qstrFilename.toStdString());
-        if (NULL == pStorable)
+        if (nullptr == pStorable)
             return NULL;
         // -------------------------------
         pTradeList = opentxs::OTDB::TradeListMarket::ot_dynamic_cast(pStorable);
@@ -615,7 +615,7 @@ void MTMarketDetails::PopulateRecentTradesGrid(QString & qstrID, QMultiMap<QStri
                 {
                     opentxs::OTDB::TradeDataMarket * pData = pTradeList->GetTradeDataMarket(trade_index);
 
-                    if (NULL == pData) // Should never happen.
+                    if (nullptr == pData) // Should never happen.
                         continue;
                     // -----------------------------------------------------------------------
                     QString qstrTransactionID = QString::fromStdString(pData->transaction_id);

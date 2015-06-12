@@ -50,5 +50,7 @@
         <file>icons/money_fist.png</file>
         <file>icons/identity_BW2.png</file>
         <file>icons/money_fist2.png</file>
+        <file>icons/money_fist3_small.png</file>
+        <file>icons/money_fist4_small.png</file>
     </qresource>
 </RCC>

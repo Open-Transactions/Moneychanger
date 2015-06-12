@@ -300,7 +300,7 @@ void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
     // --------------------------------
     QMessageBox::StandardButton reply;
 
-    reply = QMessageBox::question(this, "", tr("Are you sure you want to archive this record?"),
+    reply = QMessageBox::question(this, "", tr("Are you sure you want to delete this record?"),
                                   QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::No)
       return;
@@ -309,10 +309,12 @@ void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
     {
         opentxs::OTRecord& recordmt = *m_record;
         // -----------------------------------
-        bool bSuccess = false;
+        bool bSuccess = true;
 
         if (recordmt.IsSpecialMail())
         {
+            bSuccess = false;
+
             int32_t     nMethodID   = recordmt.GetMethodID();
             std::string strMsgID    = recordmt.GetMsgID();
             std::string strMsgType  = recordmt.GetMsgType();
@@ -1382,7 +1384,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     // *************************************************************
     if (recordmt.CanDeleteRecord())
     {
-        QString deleteActionName = recordmt.IsMail() ? tr("Archive this Message") : tr("Archive this Record");
+        QString deleteActionName = recordmt.IsMail() ? tr("Delete this Message") : tr("Delete this Record");
         QPushButton * deleteButton = new QPushButton(deleteActionName);
 
         m_pDetailLayout->addWidget(deleteButton, nCurrentRow, nCurrentColumn,1,1);

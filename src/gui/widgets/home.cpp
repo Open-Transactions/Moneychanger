@@ -22,6 +22,8 @@
 #include <QToolButton>
 #include <QKeyEvent>
 
+#include <QMessageBox>
+
 
 
 MTHome::MTHome(QWidget *parent) :
@@ -562,7 +564,7 @@ QWidget * MTHome::CreateUserBarWidget()
     QToolButton *buttonIdentities = new QToolButton;
     QToolButton *buttonRefresh    = new QToolButton;
     // ----------------------------------------------------------------
-    QPixmap pixmapSend      (":/icons/icons/money_fist2.png");
+    QPixmap pixmapSend      (":/icons/icons/money_fist4_small.png");
 //  QPixmap pixmapSend      (":/icons/icons/send.png");
 //  QPixmap pixmapRequest   (":/icons/icons/request.png");
     QPixmap pixmapCompose   (":/icons/icons/pencil.png");

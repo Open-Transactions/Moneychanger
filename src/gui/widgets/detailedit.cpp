@@ -783,12 +783,12 @@ void MTDetailEdit::RefreshRecords()
 
         if ((nPreselectedIndex > (-1)) && (nPreselectedIndex < ui->tableWidget->rowCount()))
         {
-            qDebug() << QString("SETTING current row to %1 on the tableWidget.").arg(nPreselectedIndex);
+//            qDebug() << QString("SETTING current row to %1 on the tableWidget.").arg(nPreselectedIndex);
             ui->tableWidget->setCurrentCell(nPreselectedIndex, 1);
         }
         else
         {
-            qDebug() << "SETTING current row to 0 on the tableWidget.";
+//            qDebug() << "SETTING current row to 0 on the tableWidget.";
             ui->tableWidget->setCurrentCell(0, 1);
         }
     }
@@ -857,7 +857,7 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
                 if (m_bEnableDelete)
                     ui->deleteButton->setEnabled(true);
 
-                qDebug() << "SETTING current row to " << nIndex << " on the tableWidget.";
+//                qDebug() << "SETTING current row to " << nIndex << " on the tableWidget.";
                 // ----------------------------------------
                 m_PreSelected = m_qstrCurrentID;
 

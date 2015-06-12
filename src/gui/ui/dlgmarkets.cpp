@@ -537,7 +537,7 @@ opentxs::OTDB::OfferListNym * DlgMarkets::LoadOfferListForServer(const std::stri
     {
         pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_OFFER_LIST_NYM, "nyms", NotaryID, "offers", qstrFilename.toStdString());
 
-        if (NULL == pStorable)
+        if (nullptr == pStorable)
             return NULL;
         // -------------------------------
         pOfferList = opentxs::OTDB::OfferListNym::ot_dynamic_cast(pStorable);
@@ -707,7 +707,7 @@ opentxs::OTDB::MarketList * DlgMarkets::LoadMarketListForServer(const std::strin
     {
         pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_MARKET_LIST, "markets", NotaryID, "market_data.bin");
 
-        if (NULL == pStorable)
+        if (nullptr == pStorable)
             return NULL;
         // -------------------------------
         pMarketList = opentxs::OTDB::MarketList::ot_dynamic_cast(pStorable);
