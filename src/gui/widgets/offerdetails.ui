@@ -282,7 +282,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Trans#</string>
+       <string>Receipt#</string>
       </property>
      </column>
      <column>

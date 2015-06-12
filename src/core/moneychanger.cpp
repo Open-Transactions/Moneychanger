@@ -266,7 +266,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon_goldaccount = QIcon(":/icons/icons/safe_box.png");
     mc_systrayIcon_purse = QIcon(":/icons/icons/assets.png");
     
-    mc_systrayIcon_sendfunds      = QIcon(":/icons/icons/money_fist.png");
+    mc_systrayIcon_sendfunds      = QIcon(":/icons/icons/money_fist4_small.png");
 //  mc_systrayIcon_sendfunds      = QIcon(":/icons/sendfunds");
     mc_systrayIcon_requestfunds   = QIcon(":/icons/requestpayment");
 //  mc_systrayIcon_contacts       = QIcon(":/icons/addressbook");
@@ -560,11 +560,6 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu->addAction(mc_systrayMenu_composemessage);
     connect(mc_systrayMenu_composemessage, SIGNAL(triggered()), this, SLOT(mc_composemessage_slot()));
     // --------------------------------------------------------------
-    //Contacts
-    mc_systrayMenu_contacts = new QAction(mc_systrayIcon_contacts, tr("Contacts"), mc_systrayMenu);
-    mc_systrayMenu->addAction(mc_systrayMenu_contacts);
-    connect(mc_systrayMenu_contacts, SIGNAL(triggered()), this, SLOT(mc_addressbook_slot()));
-    // --------------------------------------------------------------
     //Separator
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
@@ -579,6 +574,15 @@ void Moneychanger::SetupMainMenu()
     // --------------------------------------------------------------
     //Nym section
     SetupNymMenu();
+    // --------------------------------------------------------------
+    //Contacts
+    mc_systrayMenu_contacts = new QAction(mc_systrayIcon_contacts, tr("Contacts"), mc_systrayMenu);
+    mc_systrayMenu->addAction(mc_systrayMenu_contacts);
+    connect(mc_systrayMenu_contacts, SIGNAL(triggered()), this, SLOT(mc_addressbook_slot()));
+    // --------------------------------------------------------------
+
+
+
     // --------------------------------------------------------------
     //Separator
     mc_systrayMenu->addSeparator();

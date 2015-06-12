@@ -646,7 +646,6 @@ message TradeListNym_InternalPB {
 /*/
 
 
-
 // Caller must delete.
 opentxs::OTDB::TradeListNym * MTOfferDetails::LoadTradeListForNym(opentxs::OTDB::OfferDataNym & offerData, QString qstrNotaryID, QString qstrNymID)
 {
@@ -662,13 +661,15 @@ opentxs::OTDB::TradeListNym * MTOfferDetails::LoadTradeListForNym(opentxs::OTDB:
     {
         pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_TRADE_LIST_NYM, "nyms", "trades",
                                       offerData.notary_id, qstrNymID.toStdString());
-        if (NULL == pStorable)
+        if (nullptr == pStorable) {
             return NULL;
+        }
         // -------------------------------
         pTradeList = opentxs::OTDB::TradeListNym::ot_dynamic_cast(pStorable);
 
-        if (NULL == pTradeList)
+        if (NULL == pTradeList) {
             delete pStorable;
+        }
     }
 
     return pTradeList;
@@ -803,26 +804,33 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
                     opentxs::OTDB::TradeDataNym * pTradeData = pTradeList->GetTradeDataNym(trade_index);
 
                     if (NULL == pTradeData) // Should never happen.
+                    {
+                        ui->tableWidgetTrades->setRowCount(ui->tableWidgetTrades->rowCount() - 1);
                         continue;
+                    }
                     // -----------------------------------------------------------------------
                     int64_t lOfferID = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->transaction_id);
                     int64_t lTradeID = opentxs::OTAPI_Wrap::It()->StringToLong(pTradeData->transaction_id);
 
                     if (lOfferID != lTradeID)
                     {
-                        qDebug() << QString("Showing trades for Offer %1; skipping trade receipt with trans number %2.")
-                                    .arg(lOfferID).arg(lTradeID);
+//                        qDebug() << QString("Showing trades for Offer %1; skipping trade receipt with trans number %2.")
+//                                    .arg(lOfferID).arg(lTradeID);
+
+                        ui->tableWidgetTrades->setRowCount(ui->tableWidgetTrades->rowCount() - 1);
                         continue;
                     }
                     // -----------------------------------------------------------------------
                     QString qstrUpdatedID     = QString::fromStdString(pTradeData->updated_id);
                     // -----------------------------------------------------------------------
-                    time_t tDate = static_cast<time_t>(opentxs::OTAPI_Wrap::It()->StringToLong(pTradeData->date));
+//                  time_t tDate = static_cast<time_t>(opentxs::OTAPI_Wrap::It()->StringToLong(pTradeData->date));
+                    time64_t tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::It()->StringToLong(pTradeData->date));
 
                     QDateTime qdate_added   = QDateTime::fromTime_t(tDate);
                     QString   qstrDateAdded = qdate_added.toString(QString("MMM d yyyy hh:mm:ss"));
                     // -----------------------------------------------------------------------
                     std::string & str_price         = pTradeData->price;
+
                     int64_t       lPrice            = opentxs::OTAPI_Wrap::It()->StringToLong(str_price); // this price is "per scale"
 
                     if (lPrice < 0)
@@ -852,6 +860,19 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
 
                     QString qstrCurrencyPaid = QString::fromStdString(str_paid_display);
                     // -----------------------------------------------------------------------
+                    // If the "actual price" is zero, we'll interpolate it.
+                    //
+                    if (0 == lPrice)
+                    {
+                        if ((lQuantity != 0) && (lPayQuantity != 0) && (lScale != 0))
+                        {
+                            lPrice = lPayQuantity / (lQuantity / lScale);
+
+                            str_price_display = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->currency_type_id, lPrice);
+                            qstrPrice = QString::fromStdString(str_price_display);
+                        }
+                    }
+                    // -----------------------------------------------------------------------
                     QLabel * pLabelPrice        = new QLabel(qstrPrice);
                     QLabel * pLabelAmountSold   = new QLabel(qstrAmountSold);
                     QLabel * pLabelCurrencyPaid = new QLabel(qstrCurrencyPaid);
@@ -859,12 +880,12 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
                     QLabel * pLabelTransID      = new QLabel(qstrUpdatedID);
                     QLabel * pLabelServer       = new QLabel(qstrServerName);
                     // -----------------------------------------------------------------------
-                    pLabelPrice     ->setAlignment(Qt::AlignCenter);
-                    pLabelAmountSold->setAlignment(Qt::AlignCenter);
+                    pLabelPrice       ->setAlignment(Qt::AlignCenter);
+                    pLabelAmountSold  ->setAlignment(Qt::AlignCenter);
                     pLabelCurrencyPaid->setAlignment(Qt::AlignCenter);
-                    pLabelDateAdded ->setAlignment(Qt::AlignCenter);
-                    pLabelTransID   ->setAlignment(Qt::AlignCenter);
-                    pLabelServer    ->setAlignment(Qt::AlignLeft);
+                    pLabelDateAdded   ->setAlignment(Qt::AlignCenter);
+                    pLabelTransID     ->setAlignment(Qt::AlignCenter);
+                    pLabelServer      ->setAlignment(Qt::AlignCenter);
                     // -----------------------------------------------------------------------
                     ui->tableWidgetTrades->setCellWidget ( nTradesGridIndex, 0, pLabelPrice     );
                     ui->tableWidgetTrades->setCellWidget ( nTradesGridIndex, 1, pLabelAmountSold);

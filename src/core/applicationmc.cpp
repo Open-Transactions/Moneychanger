@@ -115,6 +115,8 @@ void MTApplicationMC::appStarting()
     //
     if (!QSystemTrayIcon::isSystemTrayAvailable())
     {
+//        QString qstrMenuFileExists = QString(opentxs::OTPaths::AppDataFolder().Get()) + QString("/knotworkpigeons");
+
         /* ** ** **
          *Open dialog that will tell the user system tray is not available
          */
