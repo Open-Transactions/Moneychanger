@@ -24,11 +24,11 @@ std::string MTNameLookupQT::GetNymName(const std::string & str_id,
                                        const std::string   p_notary_id) const
 {
     // ------------------------
-    qDebug() << QString("Attempting Name Lookup on: ") << QString(str_id.c_str());
+//    qDebug() << QString("Attempting Name Lookup on: ") << QString(str_id.c_str());
 
     std::string str_result = this->OTNameLookup::GetNymName(str_id, p_notary_id);
 
-    qDebug() << QString("Result of Name Lookup: ") << QString(str_result.c_str());
+//    qDebug() << QString("Result of Name Lookup: ") << QString(str_result.c_str());
 
     // ------------------------
     if (str_result.empty())
