@@ -302,6 +302,26 @@ void MTAssetDetails::AddButtonClicked()
     QVariant varDefault(qstrDefaultValue);
 
     theWizard.setField(QString("URL"), varDefault);
+    theWizard.setField(QString("contractType"), QString("asset")); // So the wizard knows it's creating an asset contract.
+
+    QString qstrDefaultContract(
+                "<digitalAssetContract version=\"2.0\">\n"
+                "\n"
+                "<entity shortname=\"Fed\"\n"
+                " longname=\"The Rothschilds\"\n"
+                " email=\"satan@highplaces.com\"/>\n"
+                        "\n"
+                "<issue company=\"Federal Reserve, a private company\"\n"
+                " email=\"bubbles@fed.gov\"\n"
+                " contractUrl=\"https://fed.gov/sucker\"\n"
+                " type=\"currency\"/>\n"
+                       "\n"
+                "<currency name=\"US Dollars\" tla=\"USD\" symbol=\"$\" type=\"decimal\" factor=\"100\" decimalPower=\"2\" fraction=\"cents\"/>\n"
+                                "\n"
+                "</digitalAssetContract>\n"
+    );
+
+    theWizard.setField(QString("contractXML"), qstrDefaultContract);
 
     if (QDialog::Accepted == theWizard.exec())
     {
@@ -396,7 +416,37 @@ void MTAssetDetails::AddButtonClicked()
         // --------------------------------
         else if (bIsCreating)
         {
-            // Todo
+            QString qstrXMLContents = theWizard.field("contractXML").toString();
+            QString qstrNymID       = theWizard.field("NymID").toString();
+
+            std::string strContractID = opentxs::OTAPI_Wrap::It()->CreateAssetContract(qstrNymID.toStdString(),
+                                                                                       qstrXMLContents.toStdString());
+
+            if ("" == strContractID) {
+                QMessageBox::warning(this, tr("Failed Creating Contract"),
+                                     tr("Unable to create contract. Perhaps the XML contents were bad?"));
+                return;
+            }
+            else {
+                std::string strNewContract = opentxs::OTAPI_Wrap::It()->GetAssetType_Contract(strContractID);
+
+                if ("" == strNewContract) {
+                    QMessageBox::warning(this, tr("Unable to Load"),
+                                         tr("While the contract was apparently created, Moneychanger is unable to load it up. (Strange.)"));
+                    return;
+                }
+                else { // Success.
+                    QString qstrContractID   = QString::fromStdString(strContractID);
+                    QString qstrContractName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(strContractID));
+
+                    m_pOwner->m_map.insert(qstrContractID,
+                                           qstrContractName);
+                    m_pOwner->SetPreSelected(qstrContractID);
+                    // ------------------------------------------------
+                    emit RefreshRecordsAndUpdateMenu();
+                    return;
+                }
+            }
         }
     }
 }

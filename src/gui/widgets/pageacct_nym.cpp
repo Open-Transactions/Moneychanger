@@ -98,6 +98,13 @@ void MTPageAcct_Nym::on_pushButtonSelect_clicked()
     // -------------------------------------------
 }
 
+void MTPageAcct_Nym::SetFieldsBlank()
+{
+    setField("NymID",   "");
+    setField("NymName", QString("<%1>").arg(tr("Click to choose Nym")));
+}
+
+
 void MTPageAcct_Nym::initializePage() //virtual
 {
     std::string str_name;
@@ -187,12 +194,6 @@ void MTPageAcct_Nym::on_pushButtonManage_clicked()
     // -------------------------------------
     else if (opentxs::OTAPI_Wrap::It()->GetNymCount() < 1)
         SetFieldsBlank();
-}
-
-void MTPageAcct_Nym::SetFieldsBlank()
-{
-    setField("NymID",   "");
-    setField("NymName", QString("<%1>").arg(tr("Click to choose Nym")));
 }
 
 MTPageAcct_Nym::~MTPageAcct_Nym()

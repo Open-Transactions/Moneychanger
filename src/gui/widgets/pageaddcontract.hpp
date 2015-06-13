@@ -21,6 +21,9 @@ public:
     //virtual
     int nextId() const;
 
+    //virtual
+    bool validatePage();
+
 private:
     Ui::MTPageAddContract *ui;
 };

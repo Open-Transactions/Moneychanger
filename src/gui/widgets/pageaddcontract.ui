@@ -51,9 +51,12 @@
     </spacer>
    </item>
    <item>
+    <widget class="QLineEdit" name="lineEdit"/>
+   </item>
+   <item>
     <widget class="QRadioButton" name="radioButton_2">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="text">
       <string>Create a New Contract</string>
@@ -66,7 +69,7 @@
    <item>
     <widget class="QLabel" name="label_2">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="text">
       <string>Create a new contract from scratch.</string>

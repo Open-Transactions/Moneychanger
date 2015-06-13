@@ -295,6 +295,24 @@ void MTServerDetails::AddButtonClicked()
     QVariant varDefault(qstrDefaultValue);
 
     theWizard.setField(QString("URL"), varDefault);
+    theWizard.setField(QString("contractType"), QString("server")); // So the wizard knows it's creating a server contract.
+
+    QString qstrDefaultContract(
+                "<notaryProviderContract version=\"2.0\">\n"
+                "\n"
+                "<entity shortname=\"localhost\"\n"
+                " longname=\"Localhost Test Contract\"\n"
+                " email=\"serverfarm@blahcloudcomputing.com\"\n"
+                " serverURL=\"https://blahtransactions.com/vers/1/\"/>\n"
+                           "\n"
+                "<notaryServer hostname=\"localhost\"\n"
+                " port=\"7085\"\n"
+                " URL=\"https://blahtransactions.com/vers/1/\" />\n"
+                      "\n"
+                "</notaryProviderContract>\n"
+    );
+
+    theWizard.setField(QString("contractXML"), qstrDefaultContract);
 
     if (QDialog::Accepted == theWizard.exec())
     {
@@ -343,7 +361,6 @@ void MTServerDetails::AddButtonClicked()
                 {
                     QMessageBox::warning(this, tr("Filename is Empty"),
                         tr("No filename was provided."));
-
                     return;
                 }
                 // -----------------------------------------------
@@ -392,9 +409,48 @@ void MTServerDetails::AddButtonClicked()
         // --------------------------------
         else if (bIsCreating)
         {
+            QString qstrXMLContents = theWizard.field("contractXML").toString();
+            QString qstrNymID       = theWizard.field("NymID").toString();
 
-        }
-    }
+            std::string strContractID = opentxs::OTAPI_Wrap::It()->CreateServerContract(qstrNymID.toStdString(),
+                                                                                        qstrXMLContents.toStdString());
+
+            if ("" == strContractID) {
+                QMessageBox::warning(this, tr("Failed Creating Contract"),
+                                     tr("Unable to create contract. Perhaps the XML contents were bad?"));
+                return;
+            }
+            else {
+                std::string strNewContract = opentxs::OTAPI_Wrap::It()->GetServer_Contract(strContractID);
+
+                if ("" == strNewContract) {
+                    QMessageBox::warning(this, tr("Unable to Load"),
+                                         tr("While the contract was apparently created, Moneychanger is unable to load it up. (Strange.)"));
+                    return;
+                }
+                else { // Success.
+                    // TODO: need to zip up whatever extra files will be needed by the server.
+                    // Including the transport keys and the master key from the wallet.
+
+                    // Let's make a list, based on the opentxs-notary when you start up
+                    // with empty data folder:
+
+                    //
+
+                    // ------------------------------------------------
+                    QString qstrContractID   = QString::fromStdString(strContractID);
+                    QString qstrContractName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(strContractID));
+
+                    m_pOwner->m_map.insert(qstrContractID,
+                                           qstrContractName);
+                    m_pOwner->SetPreSelected(qstrContractID);
+                    // ------------------------------------------------
+                    emit RefreshRecordsAndUpdateMenu();
+                    return;
+                }
+            }
+        } // bIsCreating is true.
+    } // Wizard "OK" was clicked.
 }
 
 // ------------------------------------------------------
