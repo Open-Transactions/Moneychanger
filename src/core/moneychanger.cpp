@@ -764,9 +764,7 @@ void Moneychanger::SetupAssetMenu()
     mc_systrayMenu_asset->addAction(manage_assets);
     connect(mc_systrayMenu_asset, SIGNAL(triggered(QAction*)), this, SLOT(mc_assetselection_triggered(QAction*)));
     // -------------------------------------------------
-
     mc_systrayMenu_asset->addSeparator();
-
     // -------------------------------------------------
     if (default_asset_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetAssetTypeCount() > 0))
     {
@@ -797,6 +795,15 @@ void Moneychanger::SetupAssetMenu()
 
         QAction * next_asset_action = new QAction(mc_systrayIcon_purse, OT_asset_name, mc_systrayMenu_asset);
         next_asset_action->setData(QVariant(OT_asset_id));
+        next_asset_action->setCheckable(true);
+
+        if (0 == OT_asset_id.compare(default_asset_id)) {
+            next_asset_action->setChecked(true);
+        }
+        else {
+            next_asset_action->setChecked(false);
+        }
+
         mc_systrayMenu_asset->addAction(next_asset_action);
     }
 }
@@ -813,9 +820,7 @@ void Moneychanger::SetupServerMenu()
     mc_systrayMenu_server->addAction(manage_servers);
     connect(mc_systrayMenu_server, SIGNAL(triggered(QAction*)), this, SLOT(mc_serverselection_triggered(QAction*)));
     // -------------------------------------------------
-
     mc_systrayMenu_server->addSeparator();
-
     // -------------------------------------------------
     if (default_notary_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0))
     {
@@ -848,6 +853,15 @@ void Moneychanger::SetupServerMenu()
         //Append to submenu of server
         QAction * next_server_action = new QAction(mc_systrayIcon_server, OT_server_name, mc_systrayMenu_server);
         next_server_action->setData(QVariant(OT_notary_id));
+        next_server_action->setCheckable(true);
+
+        if (0 == OT_notary_id.compare(default_notary_id)) {
+            next_server_action->setChecked(true);
+        }
+        else {
+            next_server_action->setChecked(false);
+        }
+
         mc_systrayMenu_server->addAction(next_server_action);
     }
 }
@@ -864,9 +878,7 @@ void Moneychanger::SetupNymMenu()
     mc_systrayMenu_nym->addAction(manage_nyms);
     connect(mc_systrayMenu_nym, SIGNAL(triggered(QAction*)), this, SLOT(mc_nymselection_triggered(QAction*)));
     // -------------------------------------------------
-
     mc_systrayMenu_nym->addSeparator();
-
     // -------------------------------------------------
     if (default_nym_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetNymCount() > 0))
     {
@@ -879,9 +891,6 @@ void Moneychanger::SetupNymMenu()
         default_nym_name =  QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(default_nym_id.toStdString()));
     }
     // -------------------------------------------------
-    //Load "default" nym
-    setDefaultNym(default_nym_id, default_nym_name);
-
     //Init nym submenu
     nym_list_id = new QList<QVariant>;
     nym_list_name = new QList<QVariant>;
@@ -901,10 +910,20 @@ void Moneychanger::SetupNymMenu()
         //Append to submenu of nym
         QAction * next_nym_action = new QAction(mc_systrayIcon_nym, OT_nym_name, mc_systrayMenu_nym);
         next_nym_action->setData(QVariant(OT_nym_id));
+        next_nym_action->setCheckable(true);
+
+        if (0 == OT_nym_id.compare(default_nym_id)) {
+            next_nym_action->setChecked(true);
+        }
+        else {
+            next_nym_action->setChecked(false);
+        }
+
         mc_systrayMenu_nym->addAction(next_nym_action);
 
     } // for
-    // ------------------------------------------
+    // -------------------------------------------------
+    setDefaultNym(default_nym_id, default_nym_name);
 }
 
 void Moneychanger::SetupAccountMenu()
@@ -919,9 +938,7 @@ void Moneychanger::SetupAccountMenu()
     mc_systrayMenu_account->addAction(manage_accounts);
     connect(mc_systrayMenu_account, SIGNAL(triggered(QAction*)), this, SLOT(mc_accountselection_triggered(QAction*)));
     // -------------------------------------------------
-
     mc_systrayMenu_account->addSeparator();
-
     // -------------------------------------------------
     if (default_account_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetAccountCount() > 0))
     {
@@ -934,9 +951,6 @@ void Moneychanger::SetupAccountMenu()
         default_account_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(default_account_id.toStdString()));
     }
     // -------------------------------------------------
-    //Load "default" account
-    setDefaultAccount(default_account_id, default_account_name);
-
     //Init account submenu
     account_list_id   = new QList<QVariant>;
     account_list_name = new QList<QVariant>;
@@ -953,8 +967,19 @@ void Moneychanger::SetupAccountMenu()
 
         QAction * next_account_action = new QAction(mc_systrayIcon_goldaccount, OT_account_name, mc_systrayMenu_account);
         next_account_action->setData(QVariant(OT_account_id));
+        next_account_action->setCheckable(true);
+
+        if (0 == OT_account_id.compare(default_account_id)) {
+            next_account_action->setChecked(true);
+        }
+        else {
+            next_account_action->setChecked(false);
+        }
+
         mc_systrayMenu_account->addAction(next_account_action);
     }
+    // -------------------------------------------------
+    setDefaultAccount(default_account_id, default_account_name);
 }
 
 
@@ -1148,9 +1173,30 @@ void Moneychanger::setDefaultNym(QString nym_id, QString nym_name)
     DBHandler::getInstance()->AddressBookUpdateDefaultNym(nym_id);
     
     //Rename "NYM:" if a nym is loaded
-    if (!nym_id.isEmpty())
+    if (nym_id != "")
     {
         mc_systrayMenu_nym->setTitle(tr("Identity: ")+nym_name);
+
+        if (mc_overall_init)
+        {
+            // Loop through actions in mc_systrayMenu_nym.
+            // Ignore the "openmanager" action.
+            // For all others, compare the data to the default nym ID.
+            // If one matches, set the "checked" property to true, and for
+            // all others, set to false.
+
+            foreach (QAction* a, mc_systrayMenu_nym->actions())
+            {
+                QString qstrActionData = a->data().toString();
+
+                if (0 == qstrActionData.compare(default_nym_id)) {
+                    a->setChecked(true);
+                }
+                else {
+                    a->setChecked(false);
+                }
+            }
+        }
     }
 }
 
@@ -1160,7 +1206,7 @@ void Moneychanger::mc_nymselection_triggered(QAction*action_triggered)
 {
     //Check if the user wants to open the nym manager (or) select a different default nym
     QString action_triggered_string = QVariant(action_triggered->data()).toString();
-    qDebug() << "NYM TRIGGERED" << action_triggered_string;
+//    qDebug() << "NYM TRIGGERED" << action_triggered_string;
 
     if (action_triggered_string == "openmanager")
     {
@@ -1488,9 +1534,30 @@ void Moneychanger::setDefaultAsset(QString asset_id, QString asset_name)
     DBHandler::getInstance()->AddressBookUpdateDefaultAsset(asset_id);
     
     //Rename "ASSET:" if a asset is loaded
-    if (!asset_id.isEmpty())
+    if (asset_id != "")
     {
         mc_systrayMenu_asset->setTitle(tr("Asset Type: ")+asset_name);
+
+        if (mc_overall_init)
+        {
+            // Loop through actions in mc_systrayMenu_asset.
+            // Ignore the "openmanager" action.
+            // For all others, compare the data to the default asset ID.
+            // If one matches, set the "checked" property to true, and for
+            // all others, set to false.
+
+            foreach (QAction* a, mc_systrayMenu_asset->actions())
+            {
+                QString qstrActionData = a->data().toString();
+
+                if (0 == qstrActionData.compare(default_asset_id)) {
+                    a->setChecked(true);
+                }
+                else {
+                    a->setChecked(false);
+                }
+            }
+        }
     }
 }
 
@@ -1622,7 +1689,7 @@ void Moneychanger::mc_accountselection_triggered(QAction*action_triggered)
 {
     //Check if the user wants to open the account manager (or) select a different default account
     QString action_triggered_string = QVariant(action_triggered->data()).toString();
-    qDebug() << "account TRIGGERED" << action_triggered_string;
+//    qDebug() << "account TRIGGERED" << action_triggered_string;
 
     if (action_triggered_string == "openmanager")
     {
@@ -1636,14 +1703,15 @@ void Moneychanger::mc_accountselection_triggered(QAction*action_triggered)
         setDefaultAccount(action_triggered_string, action_triggered_string_account_name);
         // ------------------------------
         //Refresh the account default selection in the account manager (ONLY if it is open)
-        //Check if account manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
+        //Check if account manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opened before]
         //
         if (accountswindow && !accountswindow->isHidden())
         {
             mc_accountmanager_dialog();
         }
         // ------------------------------
-        emit downloadedAccountData();
+        // NOTE: I just commented this out because it's already done in setDefaultAccount (above.)
+//      emit downloadedAccountData();
         // ------------------------------
     }
 }
@@ -1694,9 +1762,9 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
                 QString qstrAssetName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(strAsset));
 
                 if (!qstrAssetName.isEmpty() && (mc_systrayMenu_asset))
-                    mc_systrayMenu_asset->setTitle(tr("Asset Type: ")+qstrAssetName);
-//                  setDefaultAsset(QString::fromStdString(strAsset),
-//                                  QString::fromStdString(strAssetName));
+//                  mc_systrayMenu_asset->setTitle(tr("Asset Type: ")+qstrAssetName);
+                    setDefaultAsset(QString::fromStdString(strAsset),
+                                    qstrAssetName);
             }
             // -----------------------------------------------------------
             if (!strNym.empty())
@@ -1704,9 +1772,9 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
                 QString qstrNymName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(strNym));
 
                 if (!qstrNymName.isEmpty() && (mc_systrayMenu_nym))
-                    mc_systrayMenu_nym->setTitle(tr("Identity: ")+qstrNymName);
-//                  setDefaultNym(QString::fromStdString(strNym),
-//                                QString::fromStdString(strNymName));
+//                  mc_systrayMenu_nym->setTitle(tr("Identity: ")+qstrNymName);
+                    setDefaultNym(QString::fromStdString(strNym),
+                                  qstrNymName);
             }
             // -----------------------------------------------------------
             if (!strServer.empty())
@@ -1714,9 +1782,28 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
                 QString qstrServerName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(strServer));
 
                 if (!qstrServerName.isEmpty() && (mc_systrayMenu_server))
-                    mc_systrayMenu_server->setTitle(tr("Server: ")+qstrServerName);
-//                  setDefaultServer(QString::fromStdString(strServer),
-//                                   QString::fromStdString(strServerName));
+//                  mc_systrayMenu_server->setTitle(tr("Server: ")+qstrServerName);
+                    setDefaultServer(QString::fromStdString(strServer),
+                                     qstrServerName);
+            }
+            // -----------------------------------------------------------
+
+            // Loop through actions in mc_systrayMenu_account.
+            // Ignore the "openmanager" action.
+            // For all others, compare the data to the default account ID.
+            // If one matches, set the "checked" property to true, and for
+            // all others, set to false.
+
+            foreach (QAction* a, mc_systrayMenu_account->actions())
+            {
+                QString qstrActionData = a->data().toString();
+
+                if (0 == qstrActionData.compare(default_account_id)) {
+                    a->setChecked(true);
+                }
+                else {
+                    a->setChecked(false);
+                }
             }
             // -----------------------------------------------------------
             emit downloadedAccountData();
@@ -1798,8 +1885,8 @@ void Moneychanger::setDefaultServer(QString notary_id, QString server_name)
     default_notary_id = notary_id;
     default_server_name = server_name;
     
-    qDebug() << default_notary_id;
-    qDebug() << default_server_name;
+//    qDebug() << default_notary_id;
+//    qDebug() << default_server_name;
     
     //SQL UPDATE default server
     DBHandler::getInstance()->AddressBookUpdateDefaultServer(default_notary_id);
@@ -1812,7 +1899,28 @@ void Moneychanger::setDefaultServer(QString notary_id, QString server_name)
         new_server_title = tr("Set Default...");
     }
     
-    mc_systrayMenu_server->setTitle(tr("Server: ")+new_server_title);
+    if (mc_overall_init)
+    {
+        mc_systrayMenu_server->setTitle(tr("Server: ")+new_server_title);
+
+        // Loop through actions in mc_systrayMenu_server.
+        // Ignore the "openmanager" action.
+        // For all others, compare the data to the default server ID.
+        // If one matches, set the "checked" property to true, and for
+        // all others, set to false.
+
+        foreach (QAction* a, mc_systrayMenu_server->actions())
+        {
+            QString qstrActionData = a->data().toString();
+
+            if (0 == qstrActionData.compare(default_notary_id)) {
+                a->setChecked(true);
+            }
+            else {
+                a->setChecked(false);
+            }
+        }
+    }
 }
 
 //Server Slots
@@ -1821,20 +1929,23 @@ void Moneychanger::mc_serverselection_triggered(QAction * action_triggered)
 {
     //Check if the user wants to open the nym manager (or) select a different default nym
     QString action_triggered_string = QVariant(action_triggered->data()).toString();
-    qDebug() << "SERVER TRIGGERED" << action_triggered_string;
+//    qDebug() << "SERVER TRIGGERED" << action_triggered_string;
+
     if(action_triggered_string == "openmanager"){
         //Open server-list manager
         mc_defaultserver_slot();
-    }else{
+    }
+    else
+    {
         //Set new server default
         QString action_triggered_string_server_name = QVariant(action_triggered->text()).toString();
         setDefaultServer(action_triggered_string, action_triggered_string_server_name);
         
-            //Refresh if the server manager is currently open
-            if (serverswindow && !serverswindow->isHidden())
-            {
-                mc_servermanager_dialog();
-            }
+        //Refresh if the server manager is currently open
+        if (serverswindow && !serverswindow->isHidden())
+        {
+            mc_servermanager_dialog();
+        }
     }
 }
 // End Server Manager
