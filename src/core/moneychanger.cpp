@@ -50,6 +50,11 @@
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
 
+// TEST
+#include <quazip/quazip.h>
+#include <quazip/quazipfile.h>
+// END TEST
+
 #include <QMenu>
 #include <QApplication>
 #include <QFile>
