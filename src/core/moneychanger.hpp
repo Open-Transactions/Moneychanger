@@ -18,6 +18,7 @@
 
 class MTHome;
 class MTDetailEdit;
+class DlgLog;
 class DlgMenu;
 class DlgMarkets;
 class Settings;
@@ -44,19 +45,18 @@ public:
     
     static Moneychanger * It(QWidget *parent = 0, bool bShuttingDown = false);
 
-    static int64_t HasUsageCredits(      QWidget     * parent,
-                                   const std::string & notary_id,
-                                   const std::string & NYM_ID);
+    int64_t HasUsageCredits(const std::string & notary_id,
+                            const std::string & NYM_ID);
 
-    static int64_t HasUsageCredits(QWidget * parent,
-                                   QString   notary_id,
-                                   QString   NYM_ID);
+    int64_t HasUsageCredits(QString   notary_id,
+                            QString   NYM_ID);
     /** Start **/
     void bootTray();
     
 signals:
     void balancesChanged();
     void downloadedAccountData();
+    void appendToLog(QString);
 
 public slots:
 
@@ -134,6 +134,8 @@ private:
     QPointer<MTDetailEdit> agreement_window;
     QPointer<MTDetailEdit> transport_window;
 
+    QPointer<DlgLog      > log_window;
+
     QPointer<DlgMarkets  > market_window;
 
 
@@ -186,6 +188,7 @@ private:
     void mc_corporation_dialog();
     void mc_agreement_dialog();
     void mc_transport_dialog(QString qstrPresetID=QString(""));
+    void mc_log_dialog(QString qstrAppend=QString(""));
     void mc_createinsurancecompany_dialog();
     // ------------------------------------------------    
     QList<QVariant> * nym_list_id;
@@ -238,6 +241,7 @@ private:
     
     QIcon mc_systrayIcon_advanced_corporations;
     QIcon mc_systrayIcon_advanced_transport;
+    QIcon mc_systrayIcon_advanced_log;
     QIcon mc_systrayIcon_advanced_bazaar;
     // ------------------------------------------------
     /**
@@ -300,6 +304,7 @@ private:
     QPointer<QAction> mc_systrayMenu_advanced_settings;
     QPointer<QAction> mc_systrayMenu_advanced_corporations;
     QPointer<QAction> mc_systrayMenu_advanced_transport;
+    QPointer<QAction> mc_systrayMenu_advanced_log;
     QPointer<QMenu>   mc_systrayMenu_advanced_bazaar;
     // ---------------------------------------------------------
     // Bazaar
@@ -341,6 +346,9 @@ public slots:
     // ---------------------------------------------------------------------------
     void mc_transport_slot();                 // Various Transport connection strings
     void mc_showtransport_slot(QString text); // Same, except choose a specific one when opening.
+    // ---------------------------------------------------------------------------
+    void mc_log_slot();
+    void mc_showlog_slot(QString text);     // Same, except appends a string when opening.
     // ---------------------------------------------------------------------------
     void mc_defaultnym_slot();              // Nym
     void mc_nymselection_triggered(QAction*); //new default nym selected

@@ -200,7 +200,7 @@ bool MTMarketDetails::LowLevelRetrieveMarketOffers(opentxs::OTDB::MarketData & m
     }
     // -----------------------------------
     if (!bSuccess)
-        Moneychanger::HasUsageCredits(this, marketData.notary_id, strNymID);
+        Moneychanger::It()->HasUsageCredits(marketData.notary_id, strNymID);
     // -----------------------------------
     return bSuccess;
 }
@@ -528,7 +528,7 @@ bool MTMarketDetails::LowLevelRetrieveMarketTrades(opentxs::OTDB::MarketData & m
     }
     // ---------------
     if (!bSuccess)
-        Moneychanger::HasUsageCredits(this, marketData.notary_id, strNymID);
+        Moneychanger::It()->HasUsageCredits(marketData.notary_id, strNymID);
     // -----------------------------------
     return bSuccess;
 }

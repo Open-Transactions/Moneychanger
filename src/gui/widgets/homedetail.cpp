@@ -694,7 +694,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
                 // -----------------------------------------
                 if (!bSuccess)
                 {
-                    const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this,
+                    const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(
                                                                                 recordmt.GetNotaryID(),
                                                                                 recordmt.GetNymID());
                     // In the cases of -2 and 0, HasUsageCredits already pops up an error box.

@@ -486,7 +486,7 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
         {
             qDebug() << "OT send_message: Failed.";
 
-            Moneychanger::HasUsageCredits(this, str_NotaryID, str_fromNymId);
+            Moneychanger::It()->HasUsageCredits(str_NotaryID, str_fromNymId);
 
             return false;
         }
@@ -2392,7 +2392,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
 
                 if (1 != nReturnVal)
                 {
-                    Moneychanger::HasUsageCredits(this, notary_id, sender_id);
+                    Moneychanger::It()->HasUsageCredits(notary_id, sender_id);
                     return false;
                 }
             }
@@ -2454,7 +2454,7 @@ bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrNot
                     {
                         QMessageBox::warning(this, tr("Recipient Not Found on Server"),
                                              tr("Recipient Nym not found on selected OT server. Please click 'Via' and choose a different server or a different transport method."));
-                        Moneychanger::HasUsageCredits(this, notary_id, sender_id);
+                        Moneychanger::It()->HasUsageCredits(notary_id, sender_id);
                         return false;
                     }
                 }
