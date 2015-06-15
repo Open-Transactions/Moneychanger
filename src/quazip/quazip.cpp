@@ -25,7 +25,6 @@ quazip/(un)zip.h files for details, basically it's zlib license.
 #include <QFile>
 #include <QFlags>
 #include <QHash>
-
 #include "quazip.h"
 
 /// All the internal stuff for the QuaZip class.

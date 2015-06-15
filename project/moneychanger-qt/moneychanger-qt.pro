@@ -29,13 +29,14 @@ include(../common.pri)
 #-------------------------------------------------
 # Source
 
-PRECOMPILED_HEADER = $${SOLUTION_DIR}../src/core/stable.hpp
+
+#PRECOMPILED_HEADER = $${SOLUTION_DIR}../src/core/stable.hpp
 
 include($${SOLUTION_DIR}../src/core/core.pri)
 include($${SOLUTION_DIR}../src/gui/gui.pri)
 include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
 include($${SOLUTION_DIR}../src/namecoin/namecoin.pri)
-
+include($${SOLUTION_DIR}../src/quazip/quazip.pri)
 
 
 #-------------------------------------------------
@@ -89,6 +90,9 @@ unix: {
     LIBS += -lnmcrpc
     
     LIBS += -L/usr/local/lib
+
+    LIBS += -L$${OUT_PWD}/../quazip
+    LIBS += -lquazip -lz
 
     mac:{
         !contains(MAC_OS_VERSION, 10.9):!contains(MAC_OS_VERSION, 10.10):{
@@ -145,6 +149,7 @@ win32: {
     LIBS += jsoncpp.lib
     LIBS += curl.lib
     LIBS += nmcrpc.lib
+    LIBS += quazip.lib
 
     LIBS += otlib.lib
     LIBS += otapi.lib
