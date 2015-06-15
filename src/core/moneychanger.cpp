@@ -35,6 +35,7 @@
 #include <gui/widgets/btcsenddlg.hpp>
 #include <gui/widgets/btcreceivedlg.hpp>
 #include <gui/ui/dlgimport.hpp>
+#include <gui/ui/dlglog.hpp>
 #include <gui/ui/dlgmenu.hpp>
 #include <gui/ui/dlgmarkets.hpp>
 #include <gui/ui/dlgencrypt.hpp>
@@ -293,6 +294,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon_advanced_agreements = QIcon(":/icons/agreements");
     mc_systrayIcon_advanced_corporations = QIcon(":/icons/icons/buildings.png");
     mc_systrayIcon_advanced_transport = QIcon(":/icons/icons/p2p.png");
+    mc_systrayIcon_advanced_log = QIcon(":/icons/icons/p2p.png");
     mc_systrayIcon_advanced_settings = QIcon(":/icons/settings");
     
     // ----------------------------------------------------------------------------
@@ -309,14 +311,25 @@ Moneychanger::~Moneychanger()
 }
 
 // ---------------------------------------------------------------
-// Static method to check and see if the Nym has exhausted his usage credits.
+// Check and see if the Nym has exhausted his usage credits.
 //
 // Return value: -2 for error, -1 for "unlimited" (or "server isn't enforcing"),
 //                0 for "exhausted", and non-zero for the exact number of credits available.
-int64_t Moneychanger::HasUsageCredits(      QWidget     * parent,
-                                      const std::string & notary_id,
+int64_t Moneychanger::HasUsageCredits(const std::string & notary_id,
                                       const std::string & NYM_ID)
 {
+    // Usually when a message fails, Moneychanger calls HasUsageCredits because it assumes
+    // the failure probably happened due to a lack of usage credits.
+    // ...But what if there was a network failure? What if messages can't even get out?
+    //
+    if (opentxs::OTAPI_Wrap::networkFailure())
+    {
+        QString qstrErrorMsg;
+        qstrErrorMsg = tr("HasUsageCredits: Failed trying to contact the notary. Perhaps it is down, or there might be a network problem.");
+        emit appendToLog(qstrErrorMsg);
+        return -2;
+    }
+    // --------------------------------------------------------
     opentxs::OT_ME madeEasy;
     // --------------------------------------------------------
     const std::string strAdjustment("0");
@@ -329,38 +342,33 @@ int64_t Moneychanger::HasUsageCredits(      QWidget     * parent,
     }
     if (strMessage.empty())
     {
-        QString qstrErrorHeader, qstrErrorMsg;
-        qstrErrorHeader = tr("Moneychanger::HasUsageCredits: Error 'strMessage' is Empty!");
-        qstrErrorMsg = tr("This should not happen. Please Report!");
-        QMessageBox::warning(parent, qstrErrorHeader, qstrErrorMsg);
+        QString qstrErrorMsg;
+        qstrErrorMsg = tr("Moneychanger::HasUsageCredits: Error 'strMessage' is Empty!");
+        emit appendToLog(qstrErrorMsg);
         return -2;
     }
 
     // --------------------------------------------------------
     const int64_t lReturnValue = opentxs::OTAPI_Wrap::It()->Message_GetUsageCredits(strMessage);
     // --------------------------------------------------------
-    QString qstrErrorHeader, qstrErrorMsg;
+    QString qstrErrorMsg;
 
     switch (lReturnValue)
     {
     case (-2): // error
-        qstrErrorHeader = tr("Error Checking Usage Credits");
         qstrErrorMsg    = tr("Error checking usage credits. Perhaps the server is down or inaccessible?");
         break;
         // --------------------------------
     case (-1): // unlimited, or server isn't enforcing
-        qstrErrorHeader = tr("Unlimited Usage Credits");
         qstrErrorMsg    = tr("Nym has unlimited usage credits (or the server isn't enforcing credits.')");
         break;
         // --------------------------------
     case (0): // Exhausted
-        qstrErrorHeader = tr("Usage Credits Exhausted!");
         qstrErrorMsg    = tr("Sorry, but the Nym attempting this action is all out of usage credits on the server. "
                              "(You should contact the server operator and purchase more usage credits.)");
         break;
         // --------------------------------
     default: // Nym has X usage credits remaining.
-        qstrErrorHeader = tr("Nym Still Has Usage Credits");
         qstrErrorMsg    = tr("The Nym still has usage credits remaining. Should be fine.");
         break;
     }
@@ -369,7 +377,7 @@ int64_t Moneychanger::HasUsageCredits(      QWidget     * parent,
     {
     case (-2): // Error
     case (0):  // Exhausted
-        QMessageBox::warning(parent, qstrErrorHeader, qstrErrorMsg);
+        emit appendToLog(qstrErrorMsg);
         // --------------------------------
     default: // Nym has X usage credits remaining, or server isn't enforcing credits.
         break;
@@ -379,15 +387,13 @@ int64_t Moneychanger::HasUsageCredits(      QWidget     * parent,
 }
 
 
-//static
-int64_t Moneychanger::HasUsageCredits(QWidget * parent,
-                                      QString   notary_id,
+int64_t Moneychanger::HasUsageCredits(QString   notary_id,
                                       QString   NYM_ID)
 {
     const std::string str_server(notary_id.toStdString());
     const std::string str_nym   (NYM_ID   .toStdString());
 
-    return Moneychanger::HasUsageCredits(parent, str_server, str_nym);
+    return HasUsageCredits(str_server, str_nym);
 }
 
 // ---------------------------------------------------------------
@@ -674,6 +680,14 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_transport);
     connect(mc_systrayMenu_advanced_transport, SIGNAL(triggered()), this, SLOT(mc_transport_slot()));
 
+    // --------------------------------------------------------------
+    // Error Log
+    mc_systrayMenu_advanced_log = new QAction(mc_systrayIcon_advanced_log, tr("Error Log"), mc_systrayMenu_advanced);
+    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_log);
+    connect(mc_systrayMenu_advanced_log, SIGNAL(triggered()), this, SLOT(mc_log_slot()));
+
+    connect(this, SIGNAL(appendToLog(QString)),
+            this, SLOT(mc_showlog_slot(QString)));
     // --------------------------------------------------------------
 
     // Bitcoin
@@ -1199,10 +1213,14 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID)
     // ----------------------------------------------------------------
     if (bRetrievalAttempted)
     {
-        if (!bRetrievalSucceeded)
-            Moneychanger::HasUsageCredits(NULL, acctSvrID, acctNymID);
-        else
+        if (!bRetrievalSucceeded) {
+            Moneychanger::It()->HasUsageCredits(acctSvrID, acctNymID);
+            return;
+        }
+        else {
             emit downloadedAccountData();
+            return;
+        }
     }
 }
 
@@ -1212,6 +1230,9 @@ void Moneychanger::onNeedToDownloadAccountData()
 {
     //Also refreshes/initializes client data
 
+    QString qstrErrorMsg;
+    qstrErrorMsg = tr("Failed trying to contact the notary. Perhaps it is down, or there might be a network problem.");
+    // -----------------------------
     opentxs::OT_ME madeEasy;
 
     if ((get_server_list_id_size() > 0) && (get_asset_list_id_size() > 0) )
@@ -1257,12 +1278,20 @@ void Moneychanger::onNeedToDownloadAccountData()
                     MTSpinner theSpinner;
 
                     response = madeEasy.register_nym(defaultNotaryID, defaultNymID);
+
+                    if (opentxs::OTAPI_Wrap::networkFailure())
+                    {
+                        emit appendToLog(qstrErrorMsg);
+                        return;
+                    }
                 }
 
-                if (!madeEasy.VerifyMessageSuccess(response))
-                    Moneychanger::HasUsageCredits(NULL, defaultNotaryID, defaultNymID);
+                if (!madeEasy.VerifyMessageSuccess(response)) {
+                    Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
+                    return;
+                }
 
-                qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
+//              qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
             }
         }
         // ----------------------------------------------------------------
@@ -1286,12 +1315,18 @@ void Moneychanger::onNeedToDownloadAccountData()
                 {
                     MTSpinner theSpinner;
                     response = madeEasy.create_asset_acct(defaultNotaryID, defaultNymID, defaultInstrumentDefinitionID);
+
+                    if (opentxs::OTAPI_Wrap::networkFailure())
+                    {
+                        emit appendToLog(qstrErrorMsg);
+                        return;
+                    }
                 }
 
-                if (!madeEasy.VerifyMessageSuccess(response))
-                    Moneychanger::HasUsageCredits(NULL, defaultNotaryID, defaultNymID);
-
-                qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
+                if (!madeEasy.VerifyMessageSuccess(response)) {
+                    Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
+                    return;
+                }
 
                 accountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
 
@@ -1326,10 +1361,18 @@ void Moneychanger::onNeedToDownloadAccountData()
 
                     bRetrievalAttempted = true;
                     bRetrievalSucceeded = madeEasy.retrieve_nym(NotaryID, nymId, true);
+
+                    if (opentxs::OTAPI_Wrap::networkFailure())
+                    {
+                        emit appendToLog(qstrErrorMsg);
+                        return;
+                    }
                 }
                 // ----------------------------------------------------------------
-                if (bRetrievalAttempted && !bRetrievalSucceeded)
-                    Moneychanger::HasUsageCredits(NULL, NotaryID, nymId);
+                if (bRetrievalAttempted && !bRetrievalSucceeded) {
+                    Moneychanger::It()->HasUsageCredits(NotaryID, nymId);
+                    return;
+                }
             }
         }
         // ----------------------------------------------------------------
@@ -1347,19 +1390,22 @@ void Moneychanger::onNeedToDownloadAccountData()
 
                 bRetrievalAttempted = true;
                 bRetrievalSucceeded = madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
+
+                if (opentxs::OTAPI_Wrap::networkFailure())
+                {
+                    emit appendToLog(qstrErrorMsg);
+                    return;
+                }
             }
 
-            // NOTE: the HasUsageCredits call is commented-out here because we already do this
-            // just above while retrieving the Nyms. (No point calling it redundantly.)
-            //
-//            if (bRetrievalAttempted && !bRetrievalSucceeded)
-//                Moneychanger::HasUsageCredits(NULL, acctSvrID, acctNymID);
-
-//            std::string statAccount = madeEasy.stat_asset_account(accountId);
-//            qDebug() << QString("statAccount: %1").arg(QString::fromStdString(statAccount));
+            if (bRetrievalAttempted && !bRetrievalSucceeded) {
+                Moneychanger::It()->HasUsageCredits(acctSvrID, acctNymID);
+                return;
+            }
         }
         // ----------------------------------------------------------------
         emit downloadedAccountData();
+        return;
     }
     else
     {
@@ -2119,14 +2165,16 @@ void Moneychanger::mc_import_slot()
             }
             else
             {
-                const int64_t lUsageCredits = Moneychanger::HasUsageCredits(NULL, strNotaryID, strPurseOwner);
+                const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(strNotaryID, strPurseOwner);
 
                 // In the case of -2 and 0, the problem has to do with the usage credits,
                 // and it already pops up an error box. Otherwise, the user had enough usage
                 // credits, so there must have been some other problem, so we pop up an error box.
                 //
-                if ((lUsageCredits != (-2)) && (lUsageCredits != 0))
-                    QMessageBox::warning(this, tr("Failed Import"), tr("Failed trying to deposit cash purse."));
+                if ((lUsageCredits != (-2)) && (lUsageCredits != 0)) {
+                    QMessageBox::information(this, tr("Import Failure"), tr("Failed trying to deposit cash purse."));
+                    return;
+                }
             }
         }
     }
@@ -2380,6 +2428,33 @@ void Moneychanger::mc_market_dialog()
 }
 
 
+
+
+// LOG:  The Error Log dialog.
+
+void Moneychanger::mc_log_slot()
+{
+    mc_log_dialog();
+}
+
+// Same, except choose a specific one when opening.
+void Moneychanger::mc_showlog_slot(QString text)
+{
+    mc_log_dialog(text);
+}
+
+void Moneychanger::mc_log_dialog(QString qstrAppend/*=QString("")*/)
+{
+    if (!log_window)
+        log_window = new DlgLog(this);
+    // -------------------------------------
+    if (!qstrAppend.isEmpty())
+        log_window->appendToLog(qstrAppend);
+    // -------------------------------------
+//    log_window->setWindowTitle(tr("Error Log"));
+    // -------------------------------------
+    log_window->dialog();
+}
 
 
 

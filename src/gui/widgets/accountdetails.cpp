@@ -442,7 +442,7 @@ void MTAccountDetails::AddButtonClicked()
             // --------------------------
             if (1 != nSuccess)
             {
-                Moneychanger::HasUsageCredits(this, qstrNotaryID, qstrNymID);
+                Moneychanger::It()->HasUsageCredits(qstrNotaryID, qstrNymID);
                 return;
             }
         }
@@ -466,7 +466,7 @@ void MTAccountDetails::AddButtonClicked()
         //
         if (1 != madeEasy.VerifyMessageSuccess(strResponse))
         {
-            const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, qstrNotaryID, qstrNymID);
+            const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(qstrNotaryID, qstrNymID);
 
             // HasUsageCredits already pops up an error box in the cases of -2 and 0.
             //

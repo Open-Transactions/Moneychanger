@@ -274,7 +274,7 @@ void MTCashPurse::on_pushButtonWithdraw_clicked()
         const std::string str_server = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(accountID);
         const std::string str_nym    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (accountID);
 
-        const int64_t lUsageCredits  = Moneychanger::HasUsageCredits(this, str_server, str_nym);
+        const int64_t lUsageCredits  = Moneychanger::It()->HasUsageCredits(str_server, str_nym);
 
         // In the cases of -2 and 0, HasUsageCredits already pops up its own message box.
         //
@@ -468,7 +468,7 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
         // -----------------------------------------------------------------
         if (!bSent)
         {
-            const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, str_acct_server, str_acct_nym);
+            const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(str_acct_server, str_acct_nym);
 
             // In the cases of -2 and 0, HasUsageCredits already pops up its own error box.
             //

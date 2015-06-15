@@ -382,7 +382,7 @@ bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrNotaryID, QString qstrNym
         return LowLevelLoadOfferList(qstrNotaryID, m_nymId, the_map, qstrMarketID);
     }
     else
-        Moneychanger::HasUsageCredits(this, qstrNotaryID, qstrNymID);
+        Moneychanger::It()->HasUsageCredits(qstrNotaryID, qstrNymID);
     // -----------------------------------
     return bSuccess;
 }
@@ -689,7 +689,7 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrNotaryID, QString qstrNy
         return LowLevelLoadMarketList(qstrNotaryID, m_nymId, the_map);
     }
     else
-        Moneychanger::HasUsageCredits(this, qstrNotaryID, qstrNymID);
+        Moneychanger::It()->HasUsageCredits(qstrNotaryID, qstrNymID);
     // -----------------------------------
     return bSuccess;
 }
@@ -1018,7 +1018,7 @@ void DlgMarkets::RefreshRecords()
 }
 
 
-bool DlgMarkets::eventFilter(QObject *obj, QEvent *event)\
+bool DlgMarkets::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress)
     {

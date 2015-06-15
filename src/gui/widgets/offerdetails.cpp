@@ -218,7 +218,7 @@ void MTOfferDetails::AddButtonClicked()
         // ---------------------------------------------------------
         if (!bPlacedOffer)
         {
-            const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, str_notary_id, str_nym_id);
+            const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(str_notary_id, str_nym_id);
 
             // In the cases of -2 and 0, HasUsageCredits already pops up a message box.
             //
@@ -296,7 +296,7 @@ void MTOfferDetails::DeleteButtonClicked()
                 // ---------------------------------------------------------
                 if (!bKilledOffer)
                 {
-                    const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, str_notary_id, str_nym_id);
+                    const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(str_notary_id, str_nym_id);
 
                     // In the cases of -2 and 0, HasUsageCredits already pops up a message box.
                     //

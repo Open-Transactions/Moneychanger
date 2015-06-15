@@ -98,7 +98,7 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString f
     {
         qDebug() << QString("send %1: failed.").arg(nsChequeType);
 
-        Moneychanger::HasUsageCredits(this, str_NotaryID, str_fromNymId);
+        Moneychanger::It()->HasUsageCredits(str_NotaryID, str_fromNymId);
     }
     else
     {

@@ -93,7 +93,7 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString fromAcctId, QS
     }
     // ------------------------------------------------------------
     if (!bReturnValue)
-        Moneychanger::HasUsageCredits(this, str_NotaryID, str_fromNymId);
+        Moneychanger::It()->HasUsageCredits(str_NotaryID, str_fromNymId);
     // ------------------------------------------------------------
     return bReturnValue;
 
@@ -155,7 +155,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     {
         qDebug() << QString("Failure withdrawing voucher.");
 
-        Moneychanger::HasUsageCredits(this, str_NotaryID, str_fromNymId);
+        Moneychanger::It()->HasUsageCredits(str_NotaryID, str_fromNymId);
 
         return false;
     }
@@ -214,7 +214,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
                 arg(bRetrieved ? QString("Success") : QString("Failed")).arg(str_fromAcctId.c_str());
     // -------------
     if (!bRetrieved)
-        Moneychanger::HasUsageCredits(this, str_NotaryID, str_fromNymId);
+        Moneychanger::It()->HasUsageCredits(str_NotaryID, str_fromNymId);
     // ---------------------------------------------------------
     // We try to send it, even if the retrieve_account failed.
     // That way we insure that a copy of the voucher is stored
@@ -239,7 +239,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     {
         qDebug() << QString("send %1: Failed.").arg(nsChequeType);
 
-        Moneychanger::HasUsageCredits(this, str_NotaryID, str_fromNymId);
+        Moneychanger::It()->HasUsageCredits(str_NotaryID, str_fromNymId);
     }
     else
     {
@@ -386,7 +386,7 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
     {
         qDebug() << QString("send %1: failed.").arg(nsChequeType);
 
-        Moneychanger::HasUsageCredits(this, str_NotaryID, str_fromNymId);
+        Moneychanger::It()->HasUsageCredits(str_NotaryID, str_fromNymId);
     }
     else
     {
