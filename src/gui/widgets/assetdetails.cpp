@@ -25,7 +25,8 @@ MTAssetDetails::MTAssetDetails(QWidget *parent, MTDetailEdit & theOwner) :
     this->setContentsMargins(0, 0, 0, 0);
 //  this->installEventFilter(this); // NOTE: Successfully tested theory that the base class has already installed this.
 
-    ui->lineEditID->setStyleSheet("QLineEdit { background-color: lightgray }");
+    ui->lineEditID   ->setStyleSheet("QLineEdit { background-color: lightgray }");
+    ui->lineEditNymID->setStyleSheet("QLineEdit { background-color: lightgray }");
 
     // ----------------------------------
     // Note: This is a placekeeper, so later on I can just erase
@@ -41,6 +42,11 @@ MTAssetDetails::~MTAssetDetails()
     delete ui;
 }
 
+
+void MTAssetDetails::on_pushButton_clicked()
+{
+
+}
 
 
 // ----------------------------------
@@ -128,15 +134,17 @@ void MTAssetDetails::FavorLeftSideForIDs()
 {
     if (NULL != ui)
     {
-        ui->lineEditID  ->home(false);
-        ui->lineEditName->home(false);
+        ui->lineEditID   ->home(false);
+        ui->lineEditName ->home(false);
+        ui->lineEditNymID->home(false);
     }
 }
 
 void MTAssetDetails::ClearContents()
 {
-    ui->lineEditID  ->setText("");
-    ui->lineEditName->setText("");
+    ui->lineEditID   ->setText("");
+    ui->lineEditName ->setText("");
+    ui->lineEditNymID->setText("");
 
     if (m_pPlainTextEdit)
         m_pPlainTextEdit->setPlainText("");
@@ -475,18 +483,32 @@ void MTAssetDetails::refresh(QString strID, QString strName)
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
-        ui->lineEditID  ->setText(strID);
-        ui->lineEditName->setText(strName);
+        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LoadAssetContract(strID.toStdString()));
 
-        FavorLeftSideForIDs();
-        // --------------------------
         if (m_pPlainTextEdit)
-        {
-            QString strContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LoadAssetContract(strID.toStdString()));
+            m_pPlainTextEdit->setPlainText(qstrContents);
+        // --------------------------
+        QString qstrNymID("");
 
-            m_pPlainTextEdit->setPlainText(strContents);
+        ui->pushButton->setVisible(false);
+
+        if (!qstrContents.isEmpty()) {
+            std::string str_signer_nym = opentxs::OTAPI_Wrap::It()->GetSignerNymID(qstrContents.toStdString());
+
+            if (!str_signer_nym.empty()) {
+                qstrNymID = QString::fromStdString(str_signer_nym);
+                // --------------------------
+                if (opentxs::OTAPI_Wrap::It()->VerifyUserPrivateKey(str_signer_nym)) {
+                    ui->pushButton->setVisible(true);
+                }
+            }
         }
         // --------------------------
+        ui->lineEditID   ->setText(strID);
+        ui->lineEditName ->setText(strName);
+        ui->lineEditNymID->setText(qstrNymID);
+
+        FavorLeftSideForIDs();
     }
 }
 
