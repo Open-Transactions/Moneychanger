@@ -50,9 +50,6 @@
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
 
-#include <quazip/quazip.h>
-#include <quazip/quazipfile.h>
-
 #include <QMenu>
 #include <QApplication>
 #include <QFile>
@@ -105,9 +102,6 @@ Moneychanger::Moneychanger(QWidget *parent)
   account_list_id(NULL),
   account_list_name(NULL)
 {
-    QString filepath("/Users/au/blah.zip");
-    QuaZip zip(filepath);
-
     /**
      ** Init variables *
      **/
@@ -273,6 +267,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon_goldaccount = QIcon(":/icons/icons/safe_box.png");
     mc_systrayIcon_purse = QIcon(":/icons/icons/assets.png");
     
+//  mc_systrayIcon_sendfunds      = QIcon(":/icons/icons/fistful_of_cash_72.png");
     mc_systrayIcon_sendfunds      = QIcon(":/icons/icons/money_fist4_small.png");
 //  mc_systrayIcon_sendfunds      = QIcon(":/icons/sendfunds");
     mc_systrayIcon_requestfunds   = QIcon(":/icons/requestpayment");

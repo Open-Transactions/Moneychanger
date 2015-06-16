@@ -52,5 +52,6 @@
         <file>icons/money_fist2.png</file>
         <file>icons/money_fist3_small.png</file>
         <file>icons/money_fist4_small.png</file>
+        <file>icons/fistful_of_cash_72.png</file>
     </qresource>
 </RCC>
