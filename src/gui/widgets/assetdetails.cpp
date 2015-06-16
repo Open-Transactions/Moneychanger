@@ -602,7 +602,7 @@ void MTAssetDetails::AddButtonClicked()
                 "\n"
                 "<entity shortname=\"Fed\"\n"
                 " longname=\"The Rothschilds\"\n"
-                " email=\"satan@highplaces.com\"/>\n"
+                " email=\"rulers@highplaces.com\"/>\n"
                         "\n"
                 "<issue company=\"Federal Reserve, a private company\"\n"
                 " email=\"bubbles@fed.gov\"\n"

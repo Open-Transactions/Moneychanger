@@ -10,11 +10,23 @@
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 
+#include <opentxs/core/OTStorage.hpp>
+
+#include <opentxs/core/util/OTFolders.hpp>
+
+#include <opentxs/core/crypto/OTASCIIArmor.hpp>
+#include <opentxs/core/crypto/OTCachedKey.hpp>
+
+#include <quazip/quazip.h>
+#include <quazip/quazipfile.h>
+
 #include <QFile>
+#include <QTextStream>
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QDebug>
 #include <QClipboard>
+#include <QFileDialog>
 
 
 MTServerDetails::MTServerDetails(QWidget *parent, MTDetailEdit & theOwner) :
@@ -318,6 +330,210 @@ void MTServerDetails::ImportContract(QString qstrContents)
 }
 
 // ------------------------------------------------------
+/*
+// Source: http://stackoverflow.com/questions/2598117/zipping-a-folder-file-using-qt
+static bool extract(const QString & filePath, const QString & extDirPath, const QString & singleFileName = QString(""))
+{
+    QuaZip zip(filePath);
+
+    if (!zip.open(QuaZip::mdUnzip)) {
+        qWarning("testRead(): zip.open(): %d", zip.getZipError());
+        return false;
+    }
+
+    zip.setFileNameCodec("IBM866");
+
+    qWarning("%d entries\n", zip.getEntriesCount());
+    qWarning("Global comment: %s\n", zip.getComment().toLocal8Bit().constData());
+
+    QuaZipFileInfo info;
+
+    QuaZipFile file(&zip);
+
+    QFile out;
+    QString name;
+    char c;
+    for (bool more = zip.goToFirstFile(); more; more = zip.goToNextFile())
+    {
+        if (!zip.getCurrentFileInfo(&info)) {
+            qWarning("testRead(): getCurrentFileInfo(): %d\n", zip.getZipError());
+            return false;
+        }
+
+        if (!singleFileName.isEmpty())
+            if (!info.name.contains(singleFileName))
+                continue;
+
+        if (!file.open(QIODevice::ReadOnly)) {
+            qWarning("testRead(): file.open(): %d", file.getZipError());
+            return false;
+        }
+
+        name = QString("%1/%2").arg(extDirPath).arg(file.getActualFileName());
+
+        if (file.getZipError() != UNZ_OK) {
+            qWarning("testRead(): file.getFileName(): %d", file.getZipError());
+            return false;
+        }
+
+        //out.setFileName("out/" + name);
+        out.setFileName(name);
+
+        // this will fail if "name" contains subdirectories, but we don't mind that
+        out.open(QIODevice::WriteOnly);
+        // Slow like hell (on GNU/Linux at least), but it is not my fault.
+        // Not ZIP/UNZIP package's fault either.
+        // The slowest thing here is out.putChar(c).
+        while (file.getChar(&c)) out.putChar(c);
+
+        out.close();
+
+        if (file.getZipError() != UNZ_OK) {
+            qWarning("testRead(): file.getFileName(): %d", file.getZipError());
+            return false;
+        }
+
+        if (!file.atEnd()) {
+            qWarning("testRead(): read all but not EOF");
+            return false;
+        }
+
+        file.close();
+
+        if (file.getZipError() != UNZ_OK) {
+            qWarning("testRead(): file.close(): %d", file.getZipError());
+            return false;
+        }
+    } // for
+
+    zip.close();
+
+    if (zip.getZipError() != UNZ_OK) {
+        qWarning("testRead(): zip.close(): %d", zip.getZipError());
+        return false;
+    }
+
+    return true;
+}
+*/
+
+
+static void recurseAddDir(QDir d, QStringList & list)
+{
+    QStringList qsl = d.entryList(QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files);
+
+    foreach (QString file, qsl)
+    {
+        QFileInfo finfo(QString("%1/%2").arg(d.path()).arg(file));
+
+        if (finfo.isSymLink())
+            return;
+
+        if (finfo.isDir()) {
+
+            QString dirname = finfo.fileName();
+            QDir sd(finfo.filePath());
+
+            recurseAddDir(sd, list);
+
+        } else
+            list << QDir::toNativeSeparators(finfo.filePath());
+    }
+}
+
+
+bool MTServerDetails::archive(const QString & filePath, const QDir & dir, const QString & comment/*=QString("")*/)
+{
+    QuaZip zip(filePath);
+    zip.setFileNameCodec("IBM866");
+
+    if (!zip.open(QuaZip::mdCreate))
+    {
+        QMessageBox::information(this, tr("Failure Creating Zipfile"), QString("archive(): zip.open(): %1").arg(zip.getZipError()));
+        return false;
+    }
+
+    if (!dir.exists())
+    {
+        QMessageBox::information(this, tr("Directory to be Zipped Doesn't Exist"), QString("dir.exists(%1)=FALSE").arg(dir.absolutePath()));
+        return false;
+    }
+
+    QFile inFile;
+
+    // Получаем список файлов и папок рекурсивно
+    QStringList sl;
+    recurseAddDir(dir, sl);
+
+    // Создаем массив состоящий из QFileInfo объектов
+    QFileInfoList files;
+    foreach (QString fn, sl) files << QFileInfo(fn);
+
+    QuaZipFile outFile(&zip);
+
+    char c;
+    foreach(QFileInfo fileInfo, files)
+    {
+        if (!fileInfo.isFile())
+            continue;
+
+        // Если файл в поддиректории, то добавляем имя этой поддиректории к именам файлов
+        // например: fileInfo.filePath() = "D:\Work\Sources\SAGO\svn\sago\Release\tmp_DOCSWIN\Folder\123.opn"
+        // тогда после удаления части строки fileNameWithSubFolders будет равен "Folder\123.opn" и т.д.
+        QString fileNameWithRelativePath = fileInfo.filePath().remove(0, dir.absolutePath().length() + 1);
+
+        inFile.setFileName(fileInfo.filePath());
+
+        if (!inFile.open(QIODevice::ReadOnly)) {
+            QMessageBox::information(this, tr("Failure opening an Input File"),
+                                     QString("archive(): inFile.open(): %1").arg(inFile.errorString().toLocal8Bit().constData()));
+            return false;
+        }
+
+        if (!outFile.open(QIODevice::WriteOnly, QuaZipNewInfo(fileNameWithRelativePath, fileInfo.filePath()))) {
+            QMessageBox::information(this, tr("Failure opening Output File"),
+                                     QString("archive(): outFile.open(): %1").arg(outFile.getZipError()));
+            return false;
+        }
+
+        while (inFile.getChar(&c) && outFile.putChar(c)) {
+            // blank on purpose.
+        }
+
+        if (outFile.getZipError() != UNZ_OK) {
+            QMessageBox::information(this, tr("Error writing to Output File"),
+                                     QString("archive(): outFile.putChar(): %1").arg(outFile.getZipError()));
+            return false;
+        }
+
+        outFile.close();
+
+        if (outFile.getZipError() != UNZ_OK) {
+            QMessageBox::information(this, tr("Error after closing Output File"),
+                                     QString("archive(): outFile.close(): %1").arg(outFile.getZipError()));
+            return false;
+        }
+
+        inFile.close();
+    }
+
+    // + комментарий
+    if (!comment.isEmpty())
+        zip.setComment(comment);
+
+    zip.close();
+
+    if (zip.getZipError() != 0)
+    {
+        QMessageBox::information(this, tr("Error after closing ZipFile"),
+                                 QString("archive(): zip.close(): %1").arg(zip.getZipError()));
+        return false;
+    }
+
+    return true;
+}
+
+
 
 //virtual
 void MTServerDetails::AddButtonClicked()
@@ -463,15 +679,102 @@ void MTServerDetails::AddButtonClicked()
                                          tr("While the contract was apparently created, Moneychanger is unable to load it up. (Strange.)"));
                     return;
                 }
-                else { // Success.
-                    // TODO: need to zip up whatever extra files will be needed by the server.
+                else // Success.
+                {
+                    // Need to zip up whatever extra files will be needed by the server.
                     // Including the transport keys and the master key from the wallet.
 
-                    // Let's make a list, based on the opentxs-notary when you start up
-                    // with empty data folder:
+                    // Let's make a list, based on the opentxs-notary when you start it up
+                    // with an empty data folder:
 
+                    /*
+                     *  1. A wallet where you have already created one nym and a new notary server contract.
+                        2. The entire credentials folder. OR at least, the Signer Nym’s credentials folder.
+                     */
+                     // 3. The Notary ID.
+                     // 4. The Signer Nym ID for the notary server contract.
+                     // 5. The Cached key from the wallet.
+                     // 6. Notary Contract. (Signed by Signer.)
+
+                    // 2. The entire credentials folder. OR at least, the Signer Nym’s credentials folder.
                     //
+                    std::string str_formed_path;
+                    int64_t nFormPath = opentxs::OTDB::FormPathString(str_formed_path, opentxs::OTFolders::Credential().Get(),
+                                                                      qstrNymID.toStdString());
+                    QString dir_path(QString::fromStdString(str_formed_path));
 
+                    QDir dirToZip(dir_path);
+                    // --------------------------
+                    QString filenameZipFile;
+
+                    while (filenameZipFile.isEmpty())
+                        filenameZipFile = QFileDialog::getSaveFileName(this, tr("Save Credentials Zipfile"),
+                                                                       "New_Notary_SignerNym_Credentials.zip",
+                                                                       tr("Zipfiles (*.zip)"));
+
+                    if (!archive(filenameZipFile, dirToZip, QString("New Notary Signer Nym Credentials")))
+                        QMessageBox::information(this, tr("Failed Zipping Credentials"),
+                                                 QString("%1%2").arg(tr("There was an error while trying to zip up the new Signer Nym's credential directory. "
+                                                    "(The new server will need those credentials.) "
+                                                    "Therefore you will have to copy the directory yourself by hand. Its location: ")).arg(dir_path));
+                    // --------------------------
+                    // 3. The Notary ID.
+                    //
+                    // std::string strContractID
+                    // --------------------------
+                    // 4. The Signer Nym ID for the notary server contract.
+                    //
+                    // QString qstrNymID
+                    // ------------------------------------------------
+                    // 5. The Cached key from the wallet.
+                    //
+                    opentxs::OTASCIIArmor ascCachedKey;
+
+                    if (!opentxs::OTCachedKey::It()->SerializeTo(ascCachedKey))
+                        QMessageBox::information(this, tr("Failed getting cached master key"),
+                                                 tr("Failed to retrieve the cached master key from wallet.xml in the client_data folder. "
+                                                    "You will have to base64-decode that file yourself (using 'opentxs decode') and then "
+                                                    "copy the base64-encoded cached master key from it, since the new server will need that key. "
+                                                    "Just look for the <cachedKey> tag inside the wallet.xml file."));
+                    // --------------------------
+                    // 6. Notary Contract. (Signed by Signer.)
+                    //
+                    // std::string strNewContract
+                    // ------------------------------------------------
+                    // Write the IDs, etc to an output file to be pasted into the notary's creation process.
+                    //
+                    QString outputFilename;
+
+                    while (outputFilename.isEmpty())
+                        outputFilename = QFileDialog::getSaveFileName(this, tr("Save Results File"),
+                                                                      "New_Notary_Creation_File.txt",
+                                                                      tr("Text files (*.txt)"));
+                    QFile outputFile(outputFilename);
+                    outputFile.open(QIODevice::WriteOnly);
+
+                    // Check it opened OK
+                    if(!outputFile.isOpen())
+                    {
+                        QMessageBox::information(this, tr("Failed opening output file"), QString(tr("Unable to open '%1' for output.")).arg(outputFilename));
+                    }
+                    else
+                    {
+                        // Point a QTextStream object at the file
+                        QTextStream outStream(&outputFile);
+
+                        // Write the lines to the file
+
+                        outStream << "Notary ID: " << strContractID.c_str() << "\n\n"; // Notary ID
+
+                        outStream << "Signer Nym ID: " << qstrNymID << "\n\n"; // Signer Nym ID
+
+                        outStream << "Cached Master Key:\n" << ascCachedKey.Get() << "\n\n"; // Cached master key from the wallet.
+
+                        outStream << strNewContract.c_str() << "\n";  // The new server contract.
+
+                        // Close the file
+                        outputFile.close();
+                    }
                     // ------------------------------------------------
                     QString qstrContractID   = QString::fromStdString(strContractID);
                     QString qstrContractName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(strContractID));

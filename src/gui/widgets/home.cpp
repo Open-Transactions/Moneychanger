@@ -561,8 +561,9 @@ QWidget * MTHome::CreateUserBarWidget()
     QToolButton *buttonCompose    = new QToolButton;
     QToolButton *buttonIdentities = new QToolButton;
     QToolButton *buttonRefresh    = new QToolButton;
-    // ----------------------------------------------------------------
-    QPixmap pixmapSend      (":/icons/icons/money_fist4_small.png");
+    // ----------------------------------------------------------------  
+    QPixmap pixmapSend      (":/icons/icons/fistful_of_cash_72.png");
+//  QPixmap pixmapSend      (":/icons/icons/money_fist4_small.png");
 //  QPixmap pixmapSend      (":/icons/icons/send.png");
 //  QPixmap pixmapRequest   (":/icons/icons/request.png");
     QPixmap pixmapCompose   (":/icons/icons/pencil.png");

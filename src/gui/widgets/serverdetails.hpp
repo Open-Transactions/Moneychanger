@@ -39,6 +39,8 @@ public:
     void ImportContract(QString qstrContents);
 
 private:
+    bool archive(const QString & filePath, const QDir & dir, const QString & comment = QString(""));
+
     QPointer<QPlainTextEdit> m_pPlainTextEdit;
 
 private slots:
