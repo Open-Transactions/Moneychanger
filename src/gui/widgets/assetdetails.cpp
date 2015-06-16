@@ -5,16 +5,22 @@
 #include <gui/widgets/assetdetails.hpp>
 #include <ui_assetdetails.h>
 
+#include <gui/widgets/dlgchooser.hpp>
 #include <gui/widgets/wizardaddcontract.hpp>
+#include <gui/widgets/overridecursor.hpp>
+
+#include <core/moneychanger.hpp>
 
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OT_ME.hpp>
 
 #include <QPlainTextEdit>
 #include <QMessageBox>
 #include <QDebug>
 #include <QFile>
 #include <QTextStream>
+#include <QClipboard>
 
 
 MTAssetDetails::MTAssetDetails(QWidget *parent, MTDetailEdit & theOwner) :
@@ -43,11 +49,290 @@ MTAssetDetails::~MTAssetDetails()
 }
 
 
+// Issue a currency onto a notary based on the currently-selected contract.
+//
 void MTAssetDetails::on_pushButton_clicked()
 {
+//    if (m_pPlainTextEdit)
+//        qstrContents = m_pPlainTextEdit->toPlainText();
+    // --------------------------
+    if (opentxs::OTAPI_Wrap::It()->GetServerCount() <= 0)
+    {
+        QMessageBox::information(this, tr("Moneychanger"),
+                                 tr("There are no server contracts in this wallet. "
+                                    "(The notary is the server.) Please add a server contract (aka notary "
+                                    "contract) to your wallet, and then come back here and try to issue an asset onto that server."));
+        return;
+    }
+    // --------------------------
+    QString qstrAssetID = ui->lineEditID->text();
+    QString qstrNymID;
 
+    if (!qstrAssetID.isEmpty())
+    {
+        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LoadAssetContract(qstrAssetID.toStdString()));
+
+        if (!qstrContents.isEmpty())
+        {
+            // First we get the "signer nym" ID from the asset contract.
+            std::string str_signer_nym = opentxs::OTAPI_Wrap::It()->GetSignerNymID(qstrContents.toStdString());
+
+            if (!str_signer_nym.empty())
+            {
+                qstrNymID = QString::fromStdString(str_signer_nym);
+                // --------------------------
+                // Then we see if the local wallet actually contains the private key
+                // for that Nym.
+                if (opentxs::OTAPI_Wrap::It()->VerifyUserPrivateKey(str_signer_nym))
+                {
+                    // Ideally at this point, we will already have some way of differentiating
+                    // between the notaries where the assets have, and have not, already been
+                    // issued.
+                    // This is really OT client's responsibility to track this by keeping a copy
+                    // of it's issuing receipt. (The notary should keep this receipt as well.)
+                    // The notary needs this receipt so it can prove later that the currency
+                    // really was issued onto his notary (and how many units the issuer authorized.)
+                    // Whereas the client should keep these receipts so he can know which ones are
+                    // issued on which servers.
+                    //
+                    // In the meantime, the best we can do is ask the servers to tell us what they
+                    // know about certain currencies. It's a bit slower but it will work.
+                    //
+                    // But I'm not coding that tonight. Instead, I'll just ask the server and
+                    // try it -- whether it succeeds or not I'll just pop up a message box.
+                    //
+
+                    // TODO: Need a dialog to pop up here
+
+                    // We already have the asset ID, and the Nym ID.
+                    // We'll let the user choose the server.
+                    // Then check to see if that Nym is registered on that server.
+                    // Then actually call the issue message.
+                    //
+                    QString qstr_default_id = Moneychanger::It()->get_default_notary_id();
+                    // -------------------------------------------
+                    QString qstr_current_id = qstr_default_id;
+                    // -------------------------------------------
+                    if (qstr_current_id.isEmpty())
+                        //&& (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0)) // Already checked at the top of this function.
+                        qstr_current_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(0));
+                    // -------------------------------------------
+                    // Select from Servers in local wallet.
+                    //
+                    DlgChooser theChooser(this);
+                    // -----------------------------------------------
+                    mapIDName & the_map = theChooser.m_map;
+
+                    bool bFoundDefault = false;
+                    // -----------------------------------------------
+                    const int32_t the_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
+                    // -----------------------------------------------
+                    for (int32_t ii = 0; ii < the_count; ++ii)
+                    {
+                        QString OT_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(ii));
+                        QString OT_name("");
+                        // -----------------------------------------------
+                        if (!OT_id.isEmpty())
+                        {
+                            if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
+                                bFoundDefault = true;
+                            // -----------------------------------------------
+                            OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_id.toStdString()));
+                            // -----------------------------------------------
+                            the_map.insert(OT_id, OT_name);
+                        }
+                     }
+                    // -----------------------------------------------
+                    if (bFoundDefault)
+                        theChooser.SetPreSelected(qstr_current_id);
+                    // -----------------------------------------------
+                    theChooser.setWindowTitle(tr("Select the Notary"));
+                    // -----------------------------------------------
+                    if (theChooser.exec() == QDialog::Accepted)
+                    {
+                        if (!theChooser.m_qstrCurrentID.isEmpty())
+                        {
+//                            setField("NotaryID",   theChooser.m_qstrCurrentID);
+//                            setField("ServerName", theChooser.m_qstrCurrentName);
+                            // -----------------------------------------
+                            QString qstrNotaryID = theChooser.m_qstrCurrentID;
+
+                            // Then check to see if that Nym is registered on that server.
+                            //
+                            bool bIsRegiseredAtServer =
+                                    opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(qstrNymID   .toStdString(),
+                                                                                        qstrNotaryID.toStdString());
+                            if (!bIsRegiseredAtServer)
+                            {
+                                opentxs::OT_ME madeEasy;
+
+                                // If the Nym's not registered at the server, then register him first.
+                                //
+                                int32_t nSuccess = 0;
+                                {
+                                    MTSpinner theSpinner;
+
+                                    std::string strResponse = madeEasy.register_nym(qstrNotaryID.toStdString(),
+                                                                                    qstrNymID   .toStdString()); // This also does getRequest internally, if success.
+                                    nSuccess                = madeEasy.VerifyMessageSuccess(strResponse);
+                                }
+                                // -1 is error,
+                                //  0 is reply received: failure
+                                //  1 is reply received: success
+                                //
+                                switch (nSuccess)
+                                {
+                                case (1):
+                                    {
+                                        bIsRegiseredAtServer = true;
+                                        break; // SUCCESS
+                                    }
+                                case (0):
+                                    {
+                                        QMessageBox::warning(this, tr("Failed Registration"),
+                                            tr("Failed while trying to register Nym at Server."));
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        QMessageBox::warning(this, tr("Error in Registration"),
+                                            tr("Error while trying to register Nym at Server."));
+                                        break;
+                                    }
+                                } // switch
+                                // --------------------------
+                                if (1 != nSuccess)
+                                {
+                                    Moneychanger::It()->HasUsageCredits(qstrNotaryID, qstrNymID);
+                                    return;
+                                }
+                            } // is registered at server.
+
+                            // ----------------------------------------
+                            // Then actually call the issue message.
+                            //
+                            if (bIsRegiseredAtServer)
+                            {
+                                // -----------------------------------
+                                {
+                                    opentxs::OT_ME madeEasy;
+
+                                    bool bSuccess = false;
+                                    {
+                                        MTSpinner theSpinner;
+
+                                        const std::string str_reply = madeEasy.retrieve_contract(qstrNotaryID.toStdString(),
+                                                                                                 qstrNymID   .toStdString(),
+                                                                                                 qstrContents.toStdString());
+                                        const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+
+                                        bSuccess = (1 == nResult);
+                                    }
+                                    // -----------------------------------
+                                    if (bSuccess)
+                                    {
+                                        QMessageBox::information(this, tr("Moneychanger"),
+                                                                 tr("Apparently this asset is already registered on the selected notary. "
+                                                                    "(I just asked the notary.)"));
+                                        return;
+                                    }
+                                }
+                                // -----------------------------------
+                                {
+                                    opentxs::OT_ME madeEasy;
+                                    std::string str_issuer_acct;
+
+                                    bool bSuccess = false;
+                                    {
+                                        MTSpinner theSpinner;
+
+                                        const std::string str_reply = madeEasy.issue_asset_type(qstrNotaryID.toStdString(),
+                                                                                                qstrNymID   .toStdString(),
+                                                                                                qstrContents.toStdString());
+                                        const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+
+                                        bSuccess = (1 == nResult);
+
+                                        if (bSuccess)
+                                            str_issuer_acct = opentxs::OTAPI_Wrap::It()->Message_GetNewIssuerAcctID(str_reply);
+                                    }
+                                    // -----------------------------------
+                                    if (!bSuccess)
+                                    {
+                                        QMessageBox::information(this, tr("Moneychanger"),
+                                                                 QString(tr("%1 '%2' %3 '%4'. %5")).
+                                                                 arg(tr("Failed to register")).
+                                                                 arg(ui->lineEditName->text()).
+                                                                 arg(tr("on notary")).
+                                                                 arg(theChooser.m_qstrCurrentName).
+                                                                 arg(tr("<br>Perhaps it is already registered there? Alternately, the notary "
+                                                                        " admin may have the permissions turned off.")));
+
+                                        Moneychanger::It()->HasUsageCredits(qstrNotaryID, qstrNymID);
+                                        return;
+                                    }
+
+                                    QString qstrNewIssuerAcct(QString::fromStdString(str_issuer_acct));
+
+                                    QMessageBox::information(this, tr("Moneychanger"),
+                                                             QString(tr("%1 '%2' %3 '%4'. %5: %6")).
+                                                             arg(tr("Successfully registered")).
+                                                             arg(ui->lineEditName->text()).
+                                                             arg(tr("on notary")).
+                                                             arg(theChooser.m_qstrCurrentName).
+                                                             arg(tr("Your new issuer account was created with the ID")).
+                                                             arg(qstrNewIssuerAcct));
+
+                                    QString qstrAcctNewName(tr("New Issuer Account"));
+                                    opentxs::OTAPI_Wrap::It()->SetAccountWallet_Name(str_issuer_acct, str_signer_nym,
+                                                                                    qstrAcctNewName.toStdString());
+                                    emit ShowAccount(qstrNewIssuerAcct);
+                                    return;
+                                }
+                                // -----------------------------------
+                            }
+                        }
+                    }
+                }
+                else // There's no private key in this wallet, for this asset contract.
+                {
+                    QMessageBox::information(this, tr("Moneychanger"),
+                                             tr("Sorry, but only the Nym who signed that asset contract can register it onto a notary."));
+                    return;
+                }
+            }
+        }
+    }
 }
 
+
+void MTAssetDetails::on_toolButtonAsset_clicked()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+
+    if (NULL != clipboard)
+    {
+        clipboard->setText(ui->lineEditID->text());
+
+        QMessageBox::information(this, tr("ID copied"), QString("%1:<br/>%2").
+                                 arg(tr("Copied Asset ID to the clipboard")).
+                                 arg(ui->lineEditID->text()));
+    }
+}
+
+void MTAssetDetails::on_toolButtonSigner_clicked()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+
+    if (NULL != clipboard)
+    {
+        clipboard->setText(ui->lineEditNymID->text());
+
+        QMessageBox::information(this, tr("ID copied"), QString("%1:<br/>%2").
+                                 arg(tr("Copied Signer Nym ID to the clipboard")).
+                                 arg(ui->lineEditNymID->text()));
+    }
+}
 
 // ----------------------------------
 //virtual

@@ -78,7 +78,7 @@
        </property>
        <property name="icon">
         <iconset resource="../resource.qrc">
-         <normaloff>:/icons/addressbook</normaloff>:/icons/addressbook</iconset>
+         <normaloff>:/icons/icons/rolodex_card2.png</normaloff>:/icons/icons/rolodex_card2.png</iconset>
        </property>
       </widget>
      </item>
@@ -142,6 +142,9 @@
        <property name="icon">
         <iconset resource="../resource.qrc">
          <normaloff>:/icons/icons/user.png</normaloff>:/icons/icons/user.png</iconset>
+       </property>
+       <property name="toolButtonStyle">
+        <enum>Qt::ToolButtonTextOnly</enum>
        </property>
       </widget>
      </item>

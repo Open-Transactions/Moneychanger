@@ -14,6 +14,7 @@
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QDebug>
+#include <QClipboard>
 
 
 MTServerDetails::MTServerDetails(QWidget *parent, MTDetailEdit & theOwner) :
@@ -24,7 +25,8 @@ MTServerDetails::MTServerDetails(QWidget *parent, MTDetailEdit & theOwner) :
     this->setContentsMargins(0, 0, 0, 0);
 //  this->installEventFilter(this); // NOTE: Successfully tested theory that the base class has already installed this.
 
-    ui->lineEditID->setStyleSheet("QLineEdit { background-color: lightgray }");
+    ui->lineEditID   ->setStyleSheet("QLineEdit { background-color: lightgray }");
+    ui->lineEditNymID->setStyleSheet("QLineEdit { background-color: lightgray }");
     // ----------------------------------
     // Note: This is a placekeeper, so later on I can just erase
     // the widget at 0 and replace it with the real header widget.
@@ -39,6 +41,37 @@ MTServerDetails::~MTServerDetails()
     delete ui;
 }
 
+
+
+
+void MTServerDetails::on_toolButtonNotary_clicked()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+
+    if (NULL != clipboard)
+    {
+        clipboard->setText(ui->lineEditID->text());
+
+        QMessageBox::information(this, tr("ID copied"), QString("%1:<br/>%2").
+                                 arg(tr("Copied Notary ID to the clipboard")).
+                                 arg(ui->lineEditID->text()));
+    }
+}
+
+
+void MTServerDetails::on_toolButtonNym_clicked()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+
+    if (NULL != clipboard)
+    {
+        clipboard->setText(ui->lineEditNymID->text());
+
+        QMessageBox::information(this, tr("ID copied"), QString("%1:<br/>%2").
+                                 arg(tr("Copied Signer Nym ID to the clipboard")).
+                                 arg(ui->lineEditNymID->text()));
+    }
+}
 
 // ----------------------------------
 //virtual
@@ -124,15 +157,17 @@ void MTServerDetails::FavorLeftSideForIDs()
 {
     if (NULL != ui)
     {
-        ui->lineEditID  ->home(false);
-        ui->lineEditName->home(false);
+        ui->lineEditID   ->home(false);
+        ui->lineEditName ->home(false);
+        ui->lineEditNymID->home(false);
     }
 }
 
 void MTServerDetails::ClearContents()
 {
-    ui->lineEditID  ->setText("");
-    ui->lineEditName->setText("");
+    ui->lineEditID   ->setText("");
+    ui->lineEditName ->setText("");
+    ui->lineEditNymID->setText("");
 
     if (m_pPlainTextEdit)
         m_pPlainTextEdit->setPlainText("");
@@ -477,17 +512,25 @@ void MTServerDetails::refresh(QString strID, QString strName)
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
-        ui->lineEditID  ->setText(strID);
-        ui->lineEditName->setText(strName);
+        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LoadServerContract(strID.toStdString()));
+
+        if (m_pPlainTextEdit)
+            m_pPlainTextEdit->setPlainText(qstrContents);
+        // ----------------------------------
+        QString qstrNymID("");
+
+        if (!qstrContents.isEmpty()) {
+            std::string str_signer_nym = opentxs::OTAPI_Wrap::It()->GetSignerNymID(qstrContents.toStdString());
+
+            if (!str_signer_nym.empty())
+                qstrNymID = QString::fromStdString(str_signer_nym);
+        }
+        // ----------------------------------
+        ui->lineEditID   ->setText(strID);
+        ui->lineEditName ->setText(strName);
+        ui->lineEditNymID->setText(qstrNymID);
 
         FavorLeftSideForIDs();
-        // --------------------------
-        if (m_pPlainTextEdit)
-        {
-            QString strContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LoadServerContract(strID.toStdString()));
-            m_pPlainTextEdit->setPlainText(strContents);
-        }
-        // --------------------------
     }
 }
 
