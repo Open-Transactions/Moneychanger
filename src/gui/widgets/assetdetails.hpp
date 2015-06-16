@@ -45,6 +45,8 @@ private slots:
 
     void DownloadedURL();
 
+    void on_pushButton_clicked();
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 

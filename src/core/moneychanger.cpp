@@ -50,6 +50,9 @@
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
 
+#include <quazip/quazip.h>
+#include <quazip/quazipfile.h>
+
 #include <QMenu>
 #include <QApplication>
 #include <QFile>
@@ -102,6 +105,9 @@ Moneychanger::Moneychanger(QWidget *parent)
   account_list_id(NULL),
   account_list_name(NULL)
 {
+    QString filepath("/Users/au/blah.zip");
+    QuaZip zip(filepath);
+
     /**
      ** Init variables *
      **/
@@ -1351,7 +1357,7 @@ void Moneychanger::onNeedToDownloadAccountData()
         // ----------------------------------------------------------------
         int32_t accountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
 
-        qDebug() << QString("Account Count: %1").arg(accountCount);
+//        qDebug() << QString("Account Count: %1").arg(accountCount);
 
         if (0 == accountCount)
         {
@@ -1762,7 +1768,6 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
                 QString qstrAssetName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(strAsset));
 
                 if (!qstrAssetName.isEmpty() && (mc_systrayMenu_asset))
-//                  mc_systrayMenu_asset->setTitle(tr("Asset Type: ")+qstrAssetName);
                     setDefaultAsset(QString::fromStdString(strAsset),
                                     qstrAssetName);
             }
@@ -1772,7 +1777,6 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
                 QString qstrNymName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(strNym));
 
                 if (!qstrNymName.isEmpty() && (mc_systrayMenu_nym))
-//                  mc_systrayMenu_nym->setTitle(tr("Identity: ")+qstrNymName);
                     setDefaultNym(QString::fromStdString(strNym),
                                   qstrNymName);
             }
@@ -1782,7 +1786,6 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
                 QString qstrServerName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(strServer));
 
                 if (!qstrServerName.isEmpty() && (mc_systrayMenu_server))
-//                  mc_systrayMenu_server->setTitle(tr("Server: ")+qstrServerName);
                     setDefaultServer(QString::fromStdString(strServer),
                                      qstrServerName);
             }

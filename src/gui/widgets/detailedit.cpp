@@ -569,12 +569,12 @@ void MTDetailEdit::RefreshRecords()
     {
         ++nIndex; // 0 on first iteration.
 
-        qDebug() << "MTDetailEdit Iteration: " << nIndex;
+//        qDebug() << "MTDetailEdit Iteration: " << nIndex;
         // -------------------------------------
         QString qstrID    = ii.key();
         QString qstrValue = ii.value();
 
-        qDebug() << QString("MTDetailEdit::RefreshRecords: Name: %1, ID: %2").arg(qstrValue, qstrID);
+//        qDebug() << QString("MTDetailEdit::RefreshRecords: Name: %1, ID: %2").arg(qstrValue, qstrID);
         // -------------------------------------
         if (!m_PreSelected.isEmpty() && (m_PreSelected == qstrID))
             nPreselectedIndex = nIndex;
