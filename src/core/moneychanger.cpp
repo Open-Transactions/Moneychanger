@@ -348,9 +348,9 @@ int64_t Moneychanger::HasUsageCredits(const std::string & notary_id,
     }
     if (strMessage.empty())
     {
-        QString qstrErrorMsg;
-        qstrErrorMsg = tr("Moneychanger::HasUsageCredits: Error 'strMessage' is Empty!");
-        emit appendToLog(qstrErrorMsg);
+//        QString qstrErrorMsg;
+//        qstrErrorMsg = tr("Moneychanger::HasUsageCredits: Error 'strMessage' is Empty!");
+//        emit appendToLog(qstrErrorMsg);
         return -2;
     }
 

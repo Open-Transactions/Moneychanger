@@ -46,6 +46,10 @@ private slots:
 
     void DownloadedURL();
 
+    void on_toolButtonNotary_clicked();
+
+    void on_toolButtonNym_clicked();
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
