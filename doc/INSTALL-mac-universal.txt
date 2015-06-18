@@ -20,6 +20,15 @@ $ brew switch openssl 1.0.1h
 $ brew install openssl
 $ brew link --force openssl
 
+# install libsodium from brew
+$ brew install --universal libsodium
+
+# There have been compatibility issues using zeromq that comes through homebrew
+# It is therefore recommended to install and use libzmq from the deps directory inside of the
+# opentxs project.
+
+
+
 # install QT
 
 $ brew install libpng qt5
