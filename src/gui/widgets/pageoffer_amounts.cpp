@@ -5,9 +5,9 @@
 #include <gui/widgets/pageoffer_amounts.hpp>
 #include <ui_pageoffer_amounts.h>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OTPaymentPlan.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/recurring/OTPaymentPlan.hpp>
 
 #include <cmath>
 
@@ -58,10 +58,10 @@ bool PageOffer_Amounts::isComplete() const
     if (qstrPrice.isEmpty())
         return false;
     // ------------------------
-    std::string str_asset = (field("AssetID").toString()).toStdString();
+    std::string str_asset = (field("InstrumentDefinitionID").toString()).toStdString();
     std::string str_price = qstrPrice.toStdString();
 
-    int64_t lAmount = OTAPI_Wrap::It()->StringToAmount(str_asset, str_price);
+    int64_t lAmount = opentxs::OTAPI_Wrap::It()->StringToAmount(str_asset, str_price);
 
     if (lAmount < 1)
         return false;
@@ -78,9 +78,9 @@ void PageOffer_Amounts::on_lineEditPrice_textChanged(const QString &arg1)
     QString qstrPrice = arg1;
     std::string str_price = qstrPrice.toStdString();
     // ----------------------------------------------
-    int64_t lPrice = OTAPI_Wrap::It()->StringToAmount(str_currency, str_price);
+    int64_t lPrice = opentxs::OTAPI_Wrap::It()->StringToAmount(str_currency, str_price);
 
-    std::string str_final(OTAPI_Wrap::It()->FormatAmount(str_currency, lPrice));
+    std::string str_final(opentxs::OTAPI_Wrap::It()->FormatAmount(str_currency, lPrice));
     QString qstrFinal(QString::fromStdString(str_final));
 
     ui->labelCalculatedPrice->setText(qstrFinal);
@@ -96,15 +96,15 @@ void PageOffer_Amounts::on_lineEditQuantity_textChanged(const QString &arg1)
 
     int64_t lQuantity = static_cast<int64_t>(qstrQuantity.toLong());
     // ----------------------------------------------
-    QString qstrAssetID = field("AssetID").toString();
-    const std::string str_asset(qstrAssetID.toStdString());
+    QString qstrInstrumentDefinitionID = field("InstrumentDefinitionID").toString();
+    const std::string str_asset(qstrInstrumentDefinitionID.toStdString());
     // ----------------------------------------------
     if (!qstrCombo.isEmpty())
     {
-        int64_t lCombo  = OTAPI_Wrap::It()->StringToAmount(str_asset, qstrCombo.toStdString());
+        int64_t lCombo  = opentxs::OTAPI_Wrap::It()->StringToAmount(str_asset, qstrCombo.toStdString());
         int64_t lResult = (lQuantity * lCombo);
 
-        std::string str_result = OTAPI_Wrap::It()->FormatAmount(str_asset, lResult);
+        std::string str_result = opentxs::OTAPI_Wrap::It()->FormatAmount(str_asset, lResult);
 
         ui->lineEditTotal->setText(QString::fromStdString(str_result));
     }
@@ -120,15 +120,15 @@ void PageOffer_Amounts::on_comboBox_currentIndexChanged(const QString &arg1)
 
     int64_t lQuantity = static_cast<int64_t>(qstrQuantity.toLong());
     // ----------------------------------------------
-    QString qstrAssetID = field("AssetID").toString();
-    const std::string str_asset(qstrAssetID.toStdString());
+    QString qstrInstrumentDefinitionID = field("InstrumentDefinitionID").toString();
+    const std::string str_asset(qstrInstrumentDefinitionID.toStdString());
     // ----------------------------------------------
     if (!qstrCombo.isEmpty())
     {
-        int64_t lCombo  = OTAPI_Wrap::It()->StringToAmount(str_asset, qstrCombo.toStdString());
+        int64_t lCombo  = opentxs::OTAPI_Wrap::It()->StringToAmount(str_asset, qstrCombo.toStdString());
         int64_t lResult = (lQuantity * lCombo);
 
-        std::string str_result = OTAPI_Wrap::It()->FormatAmount(str_asset, lResult);
+        std::string str_result = opentxs::OTAPI_Wrap::It()->FormatAmount(str_asset, lResult);
 
         ui->lineEditTotal->setText(QString::fromStdString(str_result));
     }
@@ -211,8 +211,8 @@ void PageOffer_Amounts::initializePage()
 //    ui->labelAssetName   ->setText(qstrAssetName);
 //    ui->labelCurrencyName->setText(qstrCurrencyName);
     // ----------------------------------------------
-    QString qstrAssetID = field("AssetID").toString();
-    const std::string str_asset(qstrAssetID.toStdString());
+    QString qstrInstrumentDefinitionID = field("InstrumentDefinitionID").toString();
+    const std::string str_asset(qstrInstrumentDefinitionID.toStdString());
     // ----------------------------------------------
     // Populate the Combo Box
     //
@@ -225,14 +225,14 @@ void PageOffer_Amounts::initializePage()
         float   dValue = std::pow(10.0, ii);
         long    lScale = static_cast<long>(dValue);
 
-        OTString strTemp;
+        opentxs::String strTemp;
         strTemp.Format("%ld.", lScale); // So 1 becomes "1." which StringToAmount makes into 1.000 which is actually 1000
 
         const std::string str_input(strTemp.Get());
 
-        int64_t lAmount = OTAPI_Wrap::It()->StringToAmount(str_asset, str_input);
+        int64_t lAmount = opentxs::OTAPI_Wrap::It()->StringToAmount(str_asset, str_input);
 
-        std::string str_formatted = OTAPI_Wrap::It()->FormatAmount(str_asset, lAmount);
+        std::string str_formatted = opentxs::OTAPI_Wrap::It()->FormatAmount(str_asset, lAmount);
         QString qstrFormatted(QString::fromStdString(str_formatted));
 
         QVariant qvarVal(static_cast<qlonglong>(lAmount));

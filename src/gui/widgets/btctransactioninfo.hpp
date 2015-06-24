@@ -5,7 +5,7 @@
 #include <QObject>
 
 // forward declare bitcoin-api objects
-#include <opentxs/TR1_Wrapper.hpp>
+#include "core/TR1_Wrapper.hpp"
 class BtcTransaction;
 class BtcRawTransaction;
 typedef _SharedPtr<BtcTransaction>         BtcTransactionPtr;

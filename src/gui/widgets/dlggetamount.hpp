@@ -1,9 +1,9 @@
 #ifndef DLGGETAMOUNT_HPP
 #define DLGGETAMOUNT_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
-#include <opentxs/TR1_Wrapper.hpp>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
+#include "core/TR1_Wrapper.hpp"
 
 #include _CINTTYPES
 #include _MEMORY
@@ -19,7 +19,7 @@ class DlgGetAmount : public QDialog
     Q_OBJECT
 
 public:
-    explicit DlgGetAmount(QWidget *parent, QString qstrAcctId, QString qstrAssetId, QString qstrReason);
+    explicit DlgGetAmount(QWidget *parent, QString qstrAcctId, QString qstrInstrumentDefinitionID, QString qstrReason);
     ~DlgGetAmount();
 
     int64_t GetAmount() { return m_lAmount; }
@@ -39,7 +39,7 @@ private slots:
 
 private:
     QString m_qstrAcctId;
-    QString m_qstrAssetId;
+    QString m_qstrInstrumentDefinitionID;
 
     QString m_qstrReason;
 

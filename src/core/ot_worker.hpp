@@ -1,10 +1,10 @@
 #ifndef OT_WORKER_HPP
 #define OT_WORKER_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
-#include <opentxs/OTRecordList.hpp>
+#include <opentxs/client/OTRecordList.hpp>
 
 #include <QObject>
 #include <QMap>
@@ -24,7 +24,7 @@ public:
     QMutex overview_list_mutex;
     
 private:
-    OTRecordList list;
+    opentxs::OTRecordList list;
     QList< QMap<QString,QVariant> > * overview_list;
     
 signals:

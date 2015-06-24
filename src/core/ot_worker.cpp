@@ -6,9 +6,9 @@
 
 #include <core/handlers/contacthandler.hpp>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OTLog.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/Log.hpp>
 
 #include <QVariant>
 
@@ -19,32 +19,32 @@ ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookup
      **/
     overview_list = new QList< QMap<QString,QVariant> >();
     
-    int nServerCount  = OTAPI_Wrap::It()->GetServerCount();
-    int nAssetCount   = OTAPI_Wrap::It()->GetAssetTypeCount();
-    int nNymCount     = OTAPI_Wrap::It()->GetNymCount();
-    int nAccountCount = OTAPI_Wrap::It()->GetAccountCount();
+    int nServerCount  = opentxs::OTAPI_Wrap::It()->GetServerCount();
+    int nAssetCount   = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
+    int nNymCount     = opentxs::OTAPI_Wrap::It()->GetNymCount();
+    int nAccountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
     // ----------------------------------------------------
     for (int ii = 0; ii < nServerCount; ++ii)
     {
-        std::string serverId = OTAPI_Wrap::It()->GetServer_ID(ii);
-        list.AddServerID(serverId);
+        std::string NotaryID = opentxs::OTAPI_Wrap::It()->GetServer_ID(ii);
+        list.AddNotaryID(NotaryID);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAssetCount; ++ii)
     {
-        std::string assetId = OTAPI_Wrap::It()->GetAssetType_ID(ii);
-        list.AddAssetID(assetId);
+        std::string InstrumentDefinitionID = opentxs::OTAPI_Wrap::It()->GetAssetType_ID(ii);
+        list.AddInstrumentDefinitionID(InstrumentDefinitionID);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nNymCount; ++ii)
     {
-        std::string nymId = OTAPI_Wrap::It()->GetNym_ID(ii);
+        std::string nymId = opentxs::OTAPI_Wrap::It()->GetNym_ID(ii);
         list.AddNymID(nymId);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAccountCount; ++ii)
     {
-        std::string accountID = OTAPI_Wrap::It()->GetAccountWallet_ID(ii);
+        std::string accountID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(ii);
         list.AddAccountID(accountID);
     }
     // ----------------------------------------------------
@@ -72,16 +72,9 @@ void ot_worker::mc_overview_ping(){
     
     //REadd to the backend memory to the visual table.
     for(int a = 0;a < listSize;a++){
-        weak_ptr_OTRecord weakRecord = list.GetRecord(a);
-        shared_ptr_OTRecord record = weakRecord.lock();
-        if (weakRecord.expired()) {
-            OTLog::Output(2, "Reloading table due to expired pointer");
-            list.Populate();
-            listSize = list.size();
-            a = 0;
-            
-        }else{
-            OTRecord recordmt = *record;
+        opentxs::OTRecord record = list.GetRecord(a);
+            {
+            opentxs::OTRecord recordmt = record;
             
             /** Refernce Comment/Code **
              qDebug() << recordmt.IsOutgoing();
@@ -90,14 +83,14 @@ void ot_worker::mc_overview_ping(){
              qDebug() << recordmt.IsRecord();
              qDebug() << QString::fromStdString(recordmt.GetAccountID());
              qDebug() << QString::fromStdString(recordmt.GetAmount());
-             qDebug() << QString::fromStdString(recordmt.GetAssetID());
+             qDebug() << QString::fromStdString(recordmt.GetInstrumentDefinitionID());
              qDebug() << QString::fromStdString(recordmt.GetCurrencyTLA());
              qDebug() << QString::fromStdString(recordmt.GetDate());
              qDebug() << QString::fromStdString(recordmt.GetInstrumentType());
              qDebug() << QString::fromStdString(recordmt.GetName());
              qDebug() << QString::fromStdString(recordmt.GetNymID());
              qDebug() << recordmt.GetRecordType();
-             qDebug() << QString::fromStdString(recordmt.GetServerID());
+             qDebug() << QString::fromStdString(recordmt.GetNotaryID());
              ** End of Reference Comment/Code **/
             
             //Add to overview list
@@ -138,8 +131,8 @@ void ot_worker::mc_overview_ping(){
              
              OTRecordType  GetRecordType() const;
              // ---------------------------------------
-             const std::string & GetServerID()       const;
-             const std::string & GetAssetID()        const;
+             const std::string & GetNotaryID()       const;
+             const std::string & GetInstrumentDefinitionID()        const;
              const std::string & GetCurrencyTLA()    const; // BTC, USD, etc.
              const std::string & GetNymID()          const;
              const std::string & GetAccountID()      const;
@@ -196,14 +189,14 @@ void ot_worker::mc_overview_ping(){
                 record_map.insert("shortMail", qstrDesc);
             }
             
-            record_map.insert("assetId", QString::fromStdString(recordmt.GetAssetID()));
+            record_map.insert("InstrumentDefinitionID", QString::fromStdString(recordmt.GetInstrumentDefinitionID()));
             record_map.insert("currencyTLA", QString::fromStdString(recordmt.GetCurrencyTLA()));
             record_map.insert("date", QString::fromStdString(recordmt.GetDate()));
             record_map.insert("instrumentType", QString::fromStdString(recordmt.GetInstrumentType()));
             record_map.insert("name", QString::fromStdString(recordmt.GetName()));
             record_map.insert("nymId", QString::fromStdString(recordmt.GetNymID()));
             record_map.insert("recordType", recordmt.GetRecordType());
-            record_map.insert("serverId", QString::fromStdString(recordmt.GetServerID()));
+            record_map.insert("NotaryID", QString::fromStdString(recordmt.GetNotaryID()));
             
             //Special retrieval
             //Format Description

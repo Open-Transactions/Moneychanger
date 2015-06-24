@@ -1,10 +1,10 @@
 #ifndef MTHOMEDETAIL_HPP
 #define MTHOMEDETAIL_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
-#include <opentxs/OTRecordList.hpp>
+#include <opentxs/client/OTRecordList.hpp>
 
 #include <QPointer>
 #include <QWidget>
@@ -36,7 +36,7 @@ public:
     explicit MTHomeDetail(QWidget *parent = 0);
     ~MTHomeDetail();
     
-    static QWidget * CreateDetailHeaderWidget(OTRecord & recordmt, bool bExternal=true);
+    static QWidget * CreateDetailHeaderWidget(opentxs::OTRecord& recordmt, bool bExternal=true);
 
     void SetHomePointer(MTHome & theHome);
 
@@ -55,7 +55,7 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
 public slots:
-    void onRefresh(int nRow, OTRecordList & theList);
+    void onRefresh(int nRow, opentxs::OTRecordList & theList);
 
 private slots:
     void on_viewContactButton_clicked(bool checked = false);
@@ -70,11 +70,11 @@ private slots:
     void on_msgButton_clicked(bool checked = false);
 
 private:
-    void refresh(OTRecord & recordmt);
-    void refresh(int nRow, OTRecordList & theList);
+    void refresh(opentxs::OTRecord& recordmt);
+    void refresh(int nRow, opentxs::OTRecordList & theList);
 
     int m_nContactID; // If there's a known Contact ID for this record, it will be set here when discovered, for later use.
-    shared_ptr_OTRecord m_record;
+    opentxs::shared_ptr_OTRecord m_record;
 
     QPointer<QGridLayout> m_pDetailLayout;
     QPointer<MTHome> m_pHome;
@@ -85,7 +85,7 @@ private:
     QPointer<QLineEdit> m_pLineEdit_OtherAddress;
     QPointer<QLineEdit> m_pLineEdit_Acct_ID;
     QPointer<QLineEdit> m_pLineEdit_OtherAcct_ID;
-    QPointer<QLineEdit> m_pLineEdit_Server_ID;
+    QPointer<QLineEdit> m_pLineEdit_notary_id;
     QPointer<QLineEdit> m_pLineEdit_AssetType_ID;
 
     QPointer<QLineEdit> m_pLineEdit_Nym_Name;
@@ -99,7 +99,7 @@ private:
 
     void FavorLeftSideForIDs();
 
-    QString FindAppropriateDepositAccount(OTRecord & recordmt);
+    QString FindAppropriateDepositAccount(opentxs::OTRecord& recordmt);
     void    RecreateLayout();
 
 private:

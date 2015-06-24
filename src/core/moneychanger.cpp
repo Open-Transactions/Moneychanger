@@ -35,6 +35,7 @@
 #include <gui/widgets/btcsenddlg.hpp>
 #include <gui/widgets/btcreceivedlg.hpp>
 #include <gui/ui/dlgimport.hpp>
+#include <gui/ui/dlglog.hpp>
 #include <gui/ui/dlgmenu.hpp>
 #include <gui/ui/dlgmarkets.hpp>
 #include <gui/ui/dlgencrypt.hpp>
@@ -44,10 +45,10 @@
 
 #include <core/handlers/DBHandler.hpp>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OT_ME.hpp>
-#include <opentxs/OTPaths.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OT_ME.hpp>
+#include <opentxs/core/util/OTPaths.hpp>
 
 #include <QMenu>
 #include <QApplication>
@@ -133,15 +134,15 @@ Moneychanger::Moneychanger(QWidget *parent)
             default_nym_id = DBHandler::getInstance()->queryString("SELECT `nym` FROM `default_nym` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
         // -------------------------------------------------
-//        if (default_nym_id.isEmpty() && (OTAPI_Wrap::It()->GetNymCount() > 0))
+//        if (default_nym_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetNymCount() > 0))
 //        {
-//            default_nym_id = QString::fromStdString(OTAPI_Wrap::It()->GetNym_ID(0));
+//            default_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(0));
 //        }
 //        // -------------------------------------------------
 //        //Ask OT what the display name of this nym is and store it for quick retrieval later on(mostly for "Default Nym" displaying purposes)
 //        if (!default_nym_id.isEmpty())
 //        {
-//            default_nym_name =  QString::fromStdString(OTAPI_Wrap::It()->GetNym_Name(default_nym_id.toStdString()));
+//            default_nym_name =  QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(default_nym_id.toStdString()));
 //        }
 //        else
 //            qDebug() << "Error loading DEFAULT NYM from SQL";
@@ -158,18 +159,18 @@ Moneychanger::Moneychanger(QWidget *parent)
     {
         if (DBHandler::getInstance()->runQuery("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1"))
         {
-            default_server_id = DBHandler::getInstance()->queryString("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
+            default_notary_id = DBHandler::getInstance()->queryString("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
         // -------------------------------------------------
-//        if (default_server_id.isEmpty() && (OTAPI_Wrap::It()->GetServerCount() > 0))
+//        if (default_notary_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0))
 //        {
-//            default_server_id = QString::fromStdString(OTAPI_Wrap::It()->GetServer_ID(0));
+//            default_notary_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(0));
 //        }
 //        // -------------------------------------------------
 //        //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
-//        if (!default_server_id.isEmpty())
+//        if (!default_notary_id.isEmpty())
 //        {
-//            default_server_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(default_server_id.toStdString()));
+//            default_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(default_notary_id.toStdString()));
 //        }
 //        else
 //            qDebug() << "Error loading DEFAULT SERVER from SQL";
@@ -190,15 +191,15 @@ Moneychanger::Moneychanger(QWidget *parent)
             default_asset_id = DBHandler::getInstance()->queryString("SELECT `asset` FROM `default_asset` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
         // -------------------------------------------------
-//        if (default_asset_id.isEmpty() && (OTAPI_Wrap::It()->GetAssetTypeCount() > 0))
+//        if (default_asset_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetAssetTypeCount() > 0))
 //        {
-//            default_asset_id = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_ID(0));
+//            default_asset_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_ID(0));
 //        }
 //        // -------------------------------------------------
 //        //Ask OT what the display name of this asset type is and store it for a quick retrieval later on(mostly for "Default Asset" displaying purposes)
 //        if (!default_asset_id.isEmpty())
 //        {
-//            default_asset_name = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_Name(default_asset_id.toStdString()));
+//            default_asset_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(default_asset_id.toStdString()));
 //        }
 //        else
 //            qDebug() << "Error loading DEFAULT ASSET from SQL";
@@ -219,15 +220,15 @@ Moneychanger::Moneychanger(QWidget *parent)
             default_account_id = DBHandler::getInstance()->queryString("SELECT `account` FROM `default_account` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
         // -------------------------------------------------
-//        if (default_account_id.isEmpty() && (OTAPI_Wrap::It()->GetAccountCount() > 0))
+//        if (default_account_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetAccountCount() > 0))
 //        {
-//            default_account_id = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ID(0));
+//            default_account_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(0));
 //        }
 //        // -------------------------------------------------
 //        //Ask OT what the display name of this account is and store it for a quick retrieval later on(mostly for "Default Account" displaying purposes)
 //        if (!default_account_id.isEmpty())
 //        {
-//            default_account_name = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_Name(default_account_id.toStdString()));
+//            default_account_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(default_account_id.toStdString()));
 //        }
 //        else
 //            qDebug() << "Error loading DEFAULT ACCOUNT from SQL";
@@ -260,16 +261,20 @@ Moneychanger::Moneychanger(QWidget *parent)
     
     mc_systrayIcon_overview = QIcon(":/icons/overview");
     
-    mc_systrayIcon_nym = QIcon(":/icons/icons/identity_BW.png");
+    mc_systrayIcon_nym = QIcon(":/icons/icons/identity_BW2.png");
     mc_systrayIcon_server = QIcon(":/icons/server");
     
     mc_systrayIcon_goldaccount = QIcon(":/icons/icons/safe_box.png");
     mc_systrayIcon_purse = QIcon(":/icons/icons/assets.png");
     
-    mc_systrayIcon_sendfunds      = QIcon(":/icons/sendfunds");
+//  mc_systrayIcon_sendfunds      = QIcon(":/icons/icons/fistful_of_cash_72.png");
+    mc_systrayIcon_sendfunds      = QIcon(":/icons/icons/money_fist4_small.png");
+//  mc_systrayIcon_sendfunds      = QIcon(":/icons/sendfunds");
     mc_systrayIcon_requestfunds   = QIcon(":/icons/requestpayment");
-    mc_systrayIcon_contacts       = QIcon(":/icons/addressbook");
-    mc_systrayIcon_composemessage = QIcon(":/icons/icons/compose.png");
+//  mc_systrayIcon_contacts       = QIcon(":/icons/addressbook");
+    mc_systrayIcon_contacts       = QIcon(":/icons/icons/rolodex_card2");
+    mc_systrayIcon_composemessage = QIcon(":/icons/icons/pencil.png");
+//  mc_systrayIcon_composemessage = QIcon(":/icons/icons/compose.png");
 
     mc_systrayIcon_markets = QIcon(":/icons/markets");
 
@@ -290,6 +295,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon_advanced_agreements = QIcon(":/icons/agreements");
     mc_systrayIcon_advanced_corporations = QIcon(":/icons/icons/buildings.png");
     mc_systrayIcon_advanced_transport = QIcon(":/icons/icons/p2p.png");
+    mc_systrayIcon_advanced_log = QIcon(":/icons/icons/p2p.png");
     mc_systrayIcon_advanced_settings = QIcon(":/icons/settings");
     
     // ----------------------------------------------------------------------------
@@ -306,15 +312,26 @@ Moneychanger::~Moneychanger()
 }
 
 // ---------------------------------------------------------------
-// Static method to check and see if the Nym has exhausted his usage credits.
+// Check and see if the Nym has exhausted his usage credits.
 //
 // Return value: -2 for error, -1 for "unlimited" (or "server isn't enforcing"),
 //                0 for "exhausted", and non-zero for the exact number of credits available.
-int64_t Moneychanger::HasUsageCredits(      QWidget     * parent,
-                                      const std::string & SERVER_ID,
+int64_t Moneychanger::HasUsageCredits(const std::string & notary_id,
                                       const std::string & NYM_ID)
 {
-    OT_ME madeEasy;
+    // Usually when a message fails, Moneychanger calls HasUsageCredits because it assumes
+    // the failure probably happened due to a lack of usage credits.
+    // ...But what if there was a network failure? What if messages can't even get out?
+    //
+    if (opentxs::OTAPI_Wrap::networkFailure())
+    {
+        QString qstrErrorMsg;
+        qstrErrorMsg = tr("HasUsageCredits: Failed trying to contact the notary. Perhaps it is down, or there might be a network problem.");
+        emit appendToLog(qstrErrorMsg);
+        return -2;
+    }
+    // --------------------------------------------------------
+    opentxs::OT_ME madeEasy;
     // --------------------------------------------------------
     const std::string strAdjustment("0");
     // --------------------------------------------------------
@@ -322,42 +339,37 @@ int64_t Moneychanger::HasUsageCredits(      QWidget     * parent,
     {
         MTSpinner theSpinner;
 
-        strMessage = madeEasy.adjust_usage_credits(SERVER_ID, NYM_ID, NYM_ID, strAdjustment);
+        strMessage = madeEasy.adjust_usage_credits(notary_id, NYM_ID, NYM_ID, strAdjustment);
     }
     if (strMessage.empty())
     {
-        QString qstrErrorHeader, qstrErrorMsg;
-        qstrErrorHeader = tr("Moneychanger::HasUsageCredits: Error 'strMessage' is Empty!");
-        qstrErrorMsg = tr("This should not happen. Please Report!");
-        QMessageBox::warning(parent, qstrErrorHeader, qstrErrorMsg);
+//        QString qstrErrorMsg;
+//        qstrErrorMsg = tr("Moneychanger::HasUsageCredits: Error 'strMessage' is Empty!");
+//        emit appendToLog(qstrErrorMsg);
         return -2;
     }
 
     // --------------------------------------------------------
-    const int64_t lReturnValue = OTAPI_Wrap::It()->Message_GetUsageCredits(strMessage);
+    const int64_t lReturnValue = opentxs::OTAPI_Wrap::It()->Message_GetUsageCredits(strMessage);
     // --------------------------------------------------------
-    QString qstrErrorHeader, qstrErrorMsg;
+    QString qstrErrorMsg;
 
     switch (lReturnValue)
     {
     case (-2): // error
-        qstrErrorHeader = tr("Error Checking Usage Credits");
         qstrErrorMsg    = tr("Error checking usage credits. Perhaps the server is down or inaccessible?");
         break;
         // --------------------------------
     case (-1): // unlimited, or server isn't enforcing
-        qstrErrorHeader = tr("Unlimited Usage Credits");
         qstrErrorMsg    = tr("Nym has unlimited usage credits (or the server isn't enforcing credits.')");
         break;
         // --------------------------------
     case (0): // Exhausted
-        qstrErrorHeader = tr("Usage Credits Exhausted!");
         qstrErrorMsg    = tr("Sorry, but the Nym attempting this action is all out of usage credits on the server. "
                              "(You should contact the server operator and purchase more usage credits.)");
         break;
         // --------------------------------
     default: // Nym has X usage credits remaining.
-        qstrErrorHeader = tr("Nym Still Has Usage Credits");
         qstrErrorMsg    = tr("The Nym still has usage credits remaining. Should be fine.");
         break;
     }
@@ -366,7 +378,7 @@ int64_t Moneychanger::HasUsageCredits(      QWidget     * parent,
     {
     case (-2): // Error
     case (0):  // Exhausted
-        QMessageBox::warning(parent, qstrErrorHeader, qstrErrorMsg);
+        emit appendToLog(qstrErrorMsg);
         // --------------------------------
     default: // Nym has X usage credits remaining, or server isn't enforcing credits.
         break;
@@ -376,15 +388,13 @@ int64_t Moneychanger::HasUsageCredits(      QWidget     * parent,
 }
 
 
-//static
-int64_t Moneychanger::HasUsageCredits(QWidget * parent,
-                                      QString   SERVER_ID,
+int64_t Moneychanger::HasUsageCredits(QString   notary_id,
                                       QString   NYM_ID)
 {
-    const std::string str_server(SERVER_ID.toStdString());
+    const std::string str_server(notary_id.toStdString());
     const std::string str_nym   (NYM_ID   .toStdString());
 
-    return Moneychanger::HasUsageCredits(parent, str_server, str_nym);
+    return HasUsageCredits(str_server, str_nym);
 }
 
 // ---------------------------------------------------------------
@@ -405,7 +415,7 @@ void Moneychanger::bootTray()
     // Pop up the home screen.
     mc_overview_dialog();
     // ----------------------------------------------------------------------------
-    QString qstrMenuFileExists = QString(OTPaths::AppDataFolder().Get()) + QString("/knotworkpigeons");
+    QString qstrMenuFileExists = QString(opentxs::OTPaths::AppDataFolder().Get()) + QString("/knotworkpigeons");
 
     if (QFile::exists(qstrMenuFileExists))
         mc_main_menu_dialog();
@@ -540,7 +550,7 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
     //Send funds
-    mc_systrayMenu_sendfunds = new QAction(mc_systrayIcon_sendfunds, tr("Send Funds..."), mc_systrayMenu);
+    mc_systrayMenu_sendfunds = new QAction(mc_systrayIcon_sendfunds, tr("Pay Funds..."), mc_systrayMenu);
     mc_systrayMenu->addAction(mc_systrayMenu_sendfunds);
     connect(mc_systrayMenu_sendfunds, SIGNAL(triggered()), this, SLOT(mc_sendfunds_slot()));
     // --------------------------------------------------------------
@@ -557,11 +567,6 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu->addAction(mc_systrayMenu_composemessage);
     connect(mc_systrayMenu_composemessage, SIGNAL(triggered()), this, SLOT(mc_composemessage_slot()));
     // --------------------------------------------------------------
-    //Contacts
-    mc_systrayMenu_contacts = new QAction(mc_systrayIcon_contacts, tr("Contacts"), mc_systrayMenu);
-    mc_systrayMenu->addAction(mc_systrayMenu_contacts);
-    connect(mc_systrayMenu_contacts, SIGNAL(triggered()), this, SLOT(mc_addressbook_slot()));
-    // --------------------------------------------------------------
     //Separator
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
@@ -576,6 +581,15 @@ void Moneychanger::SetupMainMenu()
     // --------------------------------------------------------------
     //Nym section
     SetupNymMenu();
+    // --------------------------------------------------------------
+    //Contacts
+    mc_systrayMenu_contacts = new QAction(mc_systrayIcon_contacts, tr("Contacts"), mc_systrayMenu);
+    mc_systrayMenu->addAction(mc_systrayMenu_contacts);
+    connect(mc_systrayMenu_contacts, SIGNAL(triggered()), this, SLOT(mc_addressbook_slot()));
+    // --------------------------------------------------------------
+
+
+
     // --------------------------------------------------------------
     //Separator
     mc_systrayMenu->addSeparator();
@@ -668,6 +682,14 @@ void Moneychanger::SetupMainMenu()
     connect(mc_systrayMenu_advanced_transport, SIGNAL(triggered()), this, SLOT(mc_transport_slot()));
 
     // --------------------------------------------------------------
+    // Error Log
+    mc_systrayMenu_advanced_log = new QAction(mc_systrayIcon_advanced_log, tr("Error Log"), mc_systrayMenu_advanced);
+    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_log);
+    connect(mc_systrayMenu_advanced_log, SIGNAL(triggered()), this, SLOT(mc_log_slot()));
+
+    connect(this, SIGNAL(appendToLog(QString)),
+            this, SLOT(mc_showlog_slot(QString)));
+    // --------------------------------------------------------------
 
     // Bitcoin
     mc_systrayMenu_bitcoin = new QMenu(tr("Bitcoin"), mc_systrayMenu);
@@ -743,18 +765,16 @@ void Moneychanger::SetupAssetMenu()
     mc_systrayMenu_asset->addAction(manage_assets);
     connect(mc_systrayMenu_asset, SIGNAL(triggered(QAction*)), this, SLOT(mc_assetselection_triggered(QAction*)));
     // -------------------------------------------------
-
     mc_systrayMenu_asset->addSeparator();
-
     // -------------------------------------------------
-    if (default_asset_id.isEmpty() && (OTAPI_Wrap::It()->GetAssetTypeCount() > 0))
+    if (default_asset_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetAssetTypeCount() > 0))
     {
-        default_asset_id = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_ID(0));
+        default_asset_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_ID(0));
     }
     // -------------------------------------------------
     if (!default_asset_id.isEmpty())
     {
-        default_asset_name = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_Name(default_asset_id.toStdString()));
+        default_asset_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(default_asset_id.toStdString()));
     }
     // -------------------------------------------------
     //Load "default" asset type
@@ -764,18 +784,27 @@ void Moneychanger::SetupAssetMenu()
     asset_list_id   = new QList<QVariant>;
     asset_list_name = new QList<QVariant>;
     // ------------------------------------------
-    int32_t asset_count = OTAPI_Wrap::It()->GetAssetTypeCount();
+    int32_t asset_count = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
 
     for (int aa = 0; aa < asset_count; aa++)
     {
-        QString OT_asset_id   = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_ID(aa));
-        QString OT_asset_name = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_Name(OT_asset_id.toStdString()));
+        QString OT_asset_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_ID(aa));
+        QString OT_asset_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(OT_asset_id.toStdString()));
 
         asset_list_id  ->append(QVariant(OT_asset_id));
         asset_list_name->append(QVariant(OT_asset_name));
 
         QAction * next_asset_action = new QAction(mc_systrayIcon_purse, OT_asset_name, mc_systrayMenu_asset);
         next_asset_action->setData(QVariant(OT_asset_id));
+        next_asset_action->setCheckable(true);
+
+        if (0 == OT_asset_id.compare(default_asset_id)) {
+            next_asset_action->setChecked(true);
+        }
+        else {
+            next_asset_action->setChecked(false);
+        }
+
         mc_systrayMenu_asset->addAction(next_asset_action);
     }
 }
@@ -792,41 +821,48 @@ void Moneychanger::SetupServerMenu()
     mc_systrayMenu_server->addAction(manage_servers);
     connect(mc_systrayMenu_server, SIGNAL(triggered(QAction*)), this, SLOT(mc_serverselection_triggered(QAction*)));
     // -------------------------------------------------
-
     mc_systrayMenu_server->addSeparator();
-
     // -------------------------------------------------
-    if (default_server_id.isEmpty() && (OTAPI_Wrap::It()->GetServerCount() > 0))
+    if (default_notary_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0))
     {
-        default_server_id = QString::fromStdString(OTAPI_Wrap::It()->GetServer_ID(0));
+        default_notary_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(0));
     }
     // -------------------------------------------------
     //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
-    if (!default_server_id.isEmpty())
+    if (!default_notary_id.isEmpty())
     {
-        default_server_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(default_server_id.toStdString()));
+        default_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(default_notary_id.toStdString()));
     }
     // -------------------------------------------------
     //Load "default" server
-    setDefaultServer(default_server_id, default_server_name);
+    setDefaultServer(default_notary_id, default_server_name);
 
     //Init server submenu
     server_list_id   = new QList<QVariant>;
     server_list_name = new QList<QVariant>;
     // ------------------------------------------
-    int32_t server_count = OTAPI_Wrap::It()->GetServerCount();
+    int32_t server_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
 
     for (int32_t aa = 0; aa < server_count; aa++)
     {
-        QString OT_server_id   = QString::fromStdString(OTAPI_Wrap::It()->GetServer_ID(aa));
-        QString OT_server_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(OT_server_id.toStdString()));
+        QString OT_notary_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(aa));
+        QString OT_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_notary_id.toStdString()));
 
-        server_list_id  ->append(QVariant(OT_server_id));
+        server_list_id  ->append(QVariant(OT_notary_id));
         server_list_name->append(QVariant(OT_server_name));
 
         //Append to submenu of server
         QAction * next_server_action = new QAction(mc_systrayIcon_server, OT_server_name, mc_systrayMenu_server);
-        next_server_action->setData(QVariant(OT_server_id));
+        next_server_action->setData(QVariant(OT_notary_id));
+        next_server_action->setCheckable(true);
+
+        if (0 == OT_notary_id.compare(default_notary_id)) {
+            next_server_action->setChecked(true);
+        }
+        else {
+            next_server_action->setChecked(false);
+        }
+
         mc_systrayMenu_server->addAction(next_server_action);
     }
 }
@@ -843,36 +879,31 @@ void Moneychanger::SetupNymMenu()
     mc_systrayMenu_nym->addAction(manage_nyms);
     connect(mc_systrayMenu_nym, SIGNAL(triggered(QAction*)), this, SLOT(mc_nymselection_triggered(QAction*)));
     // -------------------------------------------------
-
     mc_systrayMenu_nym->addSeparator();
-
     // -------------------------------------------------
-    if (default_nym_id.isEmpty() && (OTAPI_Wrap::It()->GetNymCount() > 0))
+    if (default_nym_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetNymCount() > 0))
     {
-        default_nym_id = QString::fromStdString(OTAPI_Wrap::It()->GetNym_ID(0));
+        default_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(0));
     }
     // -------------------------------------------------
     //Ask OT what the display name of this nym is and store it for quick retrieval later on(mostly for "Default Nym" displaying purposes)
     if (!default_nym_id.isEmpty())
     {
-        default_nym_name =  QString::fromStdString(OTAPI_Wrap::It()->GetNym_Name(default_nym_id.toStdString()));
+        default_nym_name =  QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(default_nym_id.toStdString()));
     }
     // -------------------------------------------------
-    //Load "default" nym
-    setDefaultNym(default_nym_id, default_nym_name);
-
     //Init nym submenu
     nym_list_id = new QList<QVariant>;
     nym_list_name = new QList<QVariant>;
     // --------------------------------------------------------
     //Count nyms
-    int32_t nym_count = OTAPI_Wrap::It()->GetNymCount();
+    int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
 
     //Add/append to the id + name lists
     for (int32_t a = 0; a < nym_count; a++)
     {
-        QString OT_nym_id   = QString::fromStdString(OTAPI_Wrap::It()->GetNym_ID(a));
-        QString OT_nym_name = QString::fromStdString(OTAPI_Wrap::It()->GetNym_Name(OT_nym_id.toStdString()));
+        QString OT_nym_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(a));
+        QString OT_nym_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(OT_nym_id.toStdString()));
 
         nym_list_id  ->append(QVariant(OT_nym_id));
         nym_list_name->append(QVariant(OT_nym_name));
@@ -880,10 +911,20 @@ void Moneychanger::SetupNymMenu()
         //Append to submenu of nym
         QAction * next_nym_action = new QAction(mc_systrayIcon_nym, OT_nym_name, mc_systrayMenu_nym);
         next_nym_action->setData(QVariant(OT_nym_id));
+        next_nym_action->setCheckable(true);
+
+        if (0 == OT_nym_id.compare(default_nym_id)) {
+            next_nym_action->setChecked(true);
+        }
+        else {
+            next_nym_action->setChecked(false);
+        }
+
         mc_systrayMenu_nym->addAction(next_nym_action);
 
     } // for
-    // ------------------------------------------
+    // -------------------------------------------------
+    setDefaultNym(default_nym_id, default_nym_name);
 }
 
 void Moneychanger::SetupAccountMenu()
@@ -898,42 +939,48 @@ void Moneychanger::SetupAccountMenu()
     mc_systrayMenu_account->addAction(manage_accounts);
     connect(mc_systrayMenu_account, SIGNAL(triggered(QAction*)), this, SLOT(mc_accountselection_triggered(QAction*)));
     // -------------------------------------------------
-
     mc_systrayMenu_account->addSeparator();
-
     // -------------------------------------------------
-    if (default_account_id.isEmpty() && (OTAPI_Wrap::It()->GetAccountCount() > 0))
+    if (default_account_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetAccountCount() > 0))
     {
-        default_account_id = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ID(0));
+        default_account_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(0));
     }
     // -------------------------------------------------
     //Ask OT what the display name of this account is and store it for a quick retrieval later on(mostly for "Default Account" displaying purposes)
     if (!default_account_id.isEmpty())
     {
-        default_account_name = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_Name(default_account_id.toStdString()));
+        default_account_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(default_account_id.toStdString()));
     }
     // -------------------------------------------------
-    //Load "default" account
-    setDefaultAccount(default_account_id, default_account_name);
-
     //Init account submenu
     account_list_id   = new QList<QVariant>;
     account_list_name = new QList<QVariant>;
     // ------------------------------------------
-    int32_t account_count = OTAPI_Wrap::It()->GetAccountCount();
+    int32_t account_count = opentxs::OTAPI_Wrap::It()->GetAccountCount();
 
     for (int aa = 0; aa < account_count; aa++)
     {
-        QString OT_account_id   = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ID(aa));
-        QString OT_account_name = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_Name(OT_account_id.toStdString()));
+        QString OT_account_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(aa));
+        QString OT_account_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(OT_account_id.toStdString()));
 
         account_list_id  ->append(QVariant(OT_account_id));
         account_list_name->append(QVariant(OT_account_name));
 
         QAction * next_account_action = new QAction(mc_systrayIcon_goldaccount, OT_account_name, mc_systrayMenu_account);
         next_account_action->setData(QVariant(OT_account_id));
+        next_account_action->setCheckable(true);
+
+        if (0 == OT_account_id.compare(default_account_id)) {
+            next_account_action->setChecked(true);
+        }
+        else {
+            next_account_action->setChecked(false);
+        }
+
         mc_systrayMenu_account->addAction(next_account_action);
     }
+    // -------------------------------------------------
+    setDefaultAccount(default_account_id, default_account_name);
 }
 
 
@@ -1091,13 +1138,13 @@ void Moneychanger::mc_nymmanager_dialog(QString qstrPresetID/*=QString("")*/)
     // -------------------------------------
     the_map.clear();
     // -------------------------------------
-    int32_t nym_count = OTAPI_Wrap::It()->GetNymCount();
+    int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
     bool bFoundPreset = false;
 
     for (int32_t ii = 0; ii < nym_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(OTAPI_Wrap::It()->GetNym_ID(ii));
-        QString OT_name = QString::fromStdString(OTAPI_Wrap::It()->GetNym_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
         // ------------------------------
@@ -1127,9 +1174,30 @@ void Moneychanger::setDefaultNym(QString nym_id, QString nym_name)
     DBHandler::getInstance()->AddressBookUpdateDefaultNym(nym_id);
     
     //Rename "NYM:" if a nym is loaded
-    if (!nym_id.isEmpty())
+    if (nym_id != "")
     {
         mc_systrayMenu_nym->setTitle(tr("Identity: ")+nym_name);
+
+        if (mc_overall_init)
+        {
+            // Loop through actions in mc_systrayMenu_nym.
+            // Ignore the "openmanager" action.
+            // For all others, compare the data to the default nym ID.
+            // If one matches, set the "checked" property to true, and for
+            // all others, set to false.
+
+            foreach (QAction* a, mc_systrayMenu_nym->actions())
+            {
+                QString qstrActionData = a->data().toString();
+
+                if (0 == qstrActionData.compare(default_nym_id)) {
+                    a->setChecked(true);
+                }
+                else {
+                    a->setChecked(false);
+                }
+            }
+        }
     }
 }
 
@@ -1139,7 +1207,7 @@ void Moneychanger::mc_nymselection_triggered(QAction*action_triggered)
 {
     //Check if the user wants to open the nym manager (or) select a different default nym
     QString action_triggered_string = QVariant(action_triggered->data()).toString();
-    qDebug() << "NYM TRIGGERED" << action_triggered_string;
+//    qDebug() << "NYM TRIGGERED" << action_triggered_string;
 
     if (action_triggered_string == "openmanager")
     {
@@ -1173,11 +1241,11 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID)
     if (qstrAcctID.isEmpty())
         return;
     // ------------------------------
-    OT_ME madeEasy;
+    opentxs::OT_ME madeEasy;
 
     std::string accountId = qstrAcctID.toStdString();
-    std::string acctNymID = OTAPI_Wrap::It()->GetAccountWallet_NymID   (accountId);
-    std::string acctSvrID = OTAPI_Wrap::It()->GetAccountWallet_ServerID(accountId);
+    std::string acctNymID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (accountId);
+    std::string acctSvrID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(accountId);
 
     bool bRetrievalAttempted = false;
     bool bRetrievalSucceeded = false;
@@ -1192,10 +1260,14 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID)
     // ----------------------------------------------------------------
     if (bRetrievalAttempted)
     {
-        if (!bRetrievalSucceeded)
-            Moneychanger::HasUsageCredits(NULL, acctSvrID, acctNymID);
-        else
+        if (!bRetrievalSucceeded) {
+            Moneychanger::It()->HasUsageCredits(acctSvrID, acctNymID);
+            return;
+        }
+        else {
             emit downloadedAccountData();
+            return;
+        }
     }
 }
 
@@ -1205,19 +1277,22 @@ void Moneychanger::onNeedToDownloadAccountData()
 {
     //Also refreshes/initializes client data
 
-    OT_ME madeEasy;
+    QString qstrErrorMsg;
+    qstrErrorMsg = tr("Failed trying to contact the notary. Perhaps it is down, or there might be a network problem.");
+    // -----------------------------
+    opentxs::OT_ME madeEasy;
 
     if ((get_server_list_id_size() > 0) && (get_asset_list_id_size() > 0) )
     {
-        std::string defaultServerId(get_default_server_id().toStdString());
+        std::string defaultNotaryID(get_default_notary_id().toStdString());
         // ----------------------------------------------------------------
-        if (defaultServerId.empty())
+        if (defaultNotaryID.empty())
         {
-            defaultServerId = get_server_id_at(0).toStdString();
-            DBHandler::getInstance()->AddressBookUpdateDefaultServer(QString::fromStdString(defaultServerId));
+            defaultNotaryID = get_notary_id_at(0).toStdString();
+            DBHandler::getInstance()->AddressBookUpdateDefaultServer(QString::fromStdString(defaultNotaryID));
         }
         // ----------------------------------------------------------------
-        int32_t nymCount = OTAPI_Wrap::It()->GetNymCount();
+        int32_t nymCount = opentxs::OTAPI_Wrap::It()->GetNymCount();
 
         if (0 == nymCount)
         {
@@ -1225,23 +1300,23 @@ void Moneychanger::onNeedToDownloadAccountData()
 
             std::string strSource(""), strAlt("");
 
-            std::string newNymId = madeEasy.create_pseudonym(1024, strSource, strAlt);
+            std::string newNymId = madeEasy.create_nym(1024, strSource, strAlt);
 
             if (!newNymId.empty())
             {
-                OTAPI_Wrap::It()->SetNym_Name(newNymId, newNymId, tr("Me").toLatin1().data());
+                opentxs::OTAPI_Wrap::It()->SetNym_Name(newNymId, newNymId, tr("Me").toLatin1().data());
                 DBHandler::getInstance()->AddressBookUpdateDefaultNym(QString::fromStdString(newNymId));
                 qDebug() << "Finished Making Nym";
             }
 
-            nymCount = OTAPI_Wrap::It()->GetNymCount();
+            nymCount = opentxs::OTAPI_Wrap::It()->GetNymCount();
         }
         // ----------------------------------------------------------------
         std::string defaultNymID(get_default_nym_id().toStdString());
         // ----------------------------------------------------------------
-        if (!defaultNymID.empty() && !defaultServerId.empty())
+        if (!defaultNymID.empty() && !defaultNotaryID.empty())
         {
-            bool isReg = OTAPI_Wrap::It()->IsNym_RegisteredAtServer(defaultNymID, defaultServerId);
+            bool isReg = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(defaultNymID, defaultNotaryID);
 
             if (!isReg)
             {
@@ -1249,49 +1324,63 @@ void Moneychanger::onNeedToDownloadAccountData()
                 {
                     MTSpinner theSpinner;
 
-                    response = madeEasy.register_nym(defaultServerId, defaultNymID);
+                    response = madeEasy.register_nym(defaultNotaryID, defaultNymID);
+
+                    if (opentxs::OTAPI_Wrap::networkFailure())
+                    {
+                        emit appendToLog(qstrErrorMsg);
+                        return;
+                    }
                 }
 
-                if (!madeEasy.VerifyMessageSuccess(response))
-                    Moneychanger::HasUsageCredits(NULL, defaultServerId, defaultNymID);
+                if (!madeEasy.VerifyMessageSuccess(response)) {
+                    Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
+                    return;
+                }
 
-                qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
+//              qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
             }
         }
         // ----------------------------------------------------------------
-        std::string defaultAssetId (get_default_asset_id().toStdString());
+        std::string defaultInstrumentDefinitionID (get_default_asset_id().toStdString());
         // ----------------------------------------------------------------
-        if (defaultAssetId.empty())
+        if (defaultInstrumentDefinitionID.empty())
         {
-            defaultAssetId = get_asset_id_at(0).toStdString();
-            DBHandler::getInstance()->AddressBookUpdateDefaultAsset(QString::fromStdString(defaultAssetId));
+            defaultInstrumentDefinitionID = get_asset_id_at(0).toStdString();
+            DBHandler::getInstance()->AddressBookUpdateDefaultAsset(QString::fromStdString(defaultInstrumentDefinitionID));
         }
         // ----------------------------------------------------------------
-        int32_t accountCount = OTAPI_Wrap::It()->GetAccountCount();
+        int32_t accountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
 
-        qDebug() << QString("Account Count: %1").arg(accountCount);
+//        qDebug() << QString("Account Count: %1").arg(accountCount);
 
         if (0 == accountCount)
         {
-            if (!defaultNymID.empty() && !defaultServerId.empty() && !defaultAssetId.empty())
+            if (!defaultNymID.empty() && !defaultNotaryID.empty() && !defaultInstrumentDefinitionID.empty())
             {
                 std::string response;
                 {
                     MTSpinner theSpinner;
-                    response = madeEasy.create_asset_acct(defaultServerId, defaultNymID, defaultAssetId);
+                    response = madeEasy.create_asset_acct(defaultNotaryID, defaultNymID, defaultInstrumentDefinitionID);
+
+                    if (opentxs::OTAPI_Wrap::networkFailure())
+                    {
+                        emit appendToLog(qstrErrorMsg);
+                        return;
+                    }
                 }
 
-                if (!madeEasy.VerifyMessageSuccess(response))
-                    Moneychanger::HasUsageCredits(NULL, defaultServerId, defaultNymID);
+                if (!madeEasy.VerifyMessageSuccess(response)) {
+                    Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
+                    return;
+                }
 
-                qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
-
-                accountCount = OTAPI_Wrap::It()->GetAccountCount();
+                accountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
 
                 if (accountCount > 0)
                 {
-                    std::string accountID = OTAPI_Wrap::It()->GetAccountWallet_ID(0);
-                    OTAPI_Wrap::It()->SetAccountWallet_Name(accountID, defaultNymID, tr("My Acct").toLatin1().data());
+                    std::string accountID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(0);
+                    opentxs::OTAPI_Wrap::It()->SetAccountWallet_Name(accountID, defaultNymID, tr("My Acct").toLatin1().data());
 
                     DBHandler::getInstance()->AddressBookUpdateDefaultAccount(QString::fromStdString(accountID));
                 }
@@ -1300,37 +1389,45 @@ void Moneychanger::onNeedToDownloadAccountData()
         // ----------------------------------------------------------------
         // Retrieve Nyms
         //
-        int32_t serverCount = OTAPI_Wrap::It()->GetServerCount();
+        int32_t serverCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
 
         for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
         {
-            std::string serverId = OTAPI_Wrap::It()->GetServer_ID(serverIndex);
+            std::string NotaryID = opentxs::OTAPI_Wrap::It()->GetServer_ID(serverIndex);
 
             for (int32_t nymIndex = 0; nymIndex < nymCount; ++nymIndex)
             {
-                std::string nymId = OTAPI_Wrap::It()->GetNym_ID(nymIndex);
+                std::string nymId = opentxs::OTAPI_Wrap::It()->GetNym_ID(nymIndex);
 
                 bool bRetrievalAttempted = false;
                 bool bRetrievalSucceeded = false;
 
-                if (OTAPI_Wrap::It()->IsNym_RegisteredAtServer(nymId, serverId))
+                if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(nymId, NotaryID))
                 {
                     MTSpinner theSpinner;
 
                     bRetrievalAttempted = true;
-                    bRetrievalSucceeded = madeEasy.retrieve_nym(serverId, nymId, true);
+                    bRetrievalSucceeded = madeEasy.retrieve_nym(NotaryID, nymId, true);
+
+                    if (opentxs::OTAPI_Wrap::networkFailure())
+                    {
+                        emit appendToLog(qstrErrorMsg);
+                        return;
+                    }
                 }
                 // ----------------------------------------------------------------
-                if (bRetrievalAttempted && !bRetrievalSucceeded)
-                    Moneychanger::HasUsageCredits(NULL, serverId, nymId);
+                if (bRetrievalAttempted && !bRetrievalSucceeded) {
+                    Moneychanger::It()->HasUsageCredits(NotaryID, nymId);
+                    return;
+                }
             }
         }
         // ----------------------------------------------------------------
         for (int32_t i = 0; i < accountCount; i++)
         {
-            std::string accountId = OTAPI_Wrap::It()->GetAccountWallet_ID(i);
-            std::string acctNymID = OTAPI_Wrap::It()->GetAccountWallet_NymID(accountId);
-            std::string acctSvrID = OTAPI_Wrap::It()->GetAccountWallet_ServerID(accountId);
+            std::string accountId = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(i);
+            std::string acctNymID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(accountId);
+            std::string acctSvrID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(accountId);
 
             bool bRetrievalAttempted = false;
             bool bRetrievalSucceeded = false;
@@ -1340,19 +1437,22 @@ void Moneychanger::onNeedToDownloadAccountData()
 
                 bRetrievalAttempted = true;
                 bRetrievalSucceeded = madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
+
+                if (opentxs::OTAPI_Wrap::networkFailure())
+                {
+                    emit appendToLog(qstrErrorMsg);
+                    return;
+                }
             }
 
-            // NOTE: the HasUsageCredits call is commented-out here because we already do this
-            // just above while retrieving the Nyms. (No point calling it redundantly.)
-            //
-//            if (bRetrievalAttempted && !bRetrievalSucceeded)
-//                Moneychanger::HasUsageCredits(NULL, acctSvrID, acctNymID);
-
-//            std::string statAccount = madeEasy.stat_asset_account(accountId);
-//            qDebug() << QString("statAccount: %1").arg(QString::fromStdString(statAccount));
+            if (bRetrievalAttempted && !bRetrievalSucceeded) {
+                Moneychanger::It()->HasUsageCredits(acctSvrID, acctNymID);
+                return;
+            }
         }
         // ----------------------------------------------------------------
         emit downloadedAccountData();
+        return;
     }
     else
     {
@@ -1393,13 +1493,13 @@ void Moneychanger::mc_assetmanager_dialog(QString qstrPresetID/*=QString("")*/)
     // -------------------------------------
     the_map.clear();
     // -------------------------------------
-    int32_t  asset_count = OTAPI_Wrap::It()->GetAssetTypeCount();
+    int32_t  asset_count = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
     bool    bFoundPreset = false;
 
     for (int32_t ii = 0; ii < asset_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_ID(ii));
-        QString OT_name = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
         // ------------------------------
@@ -1435,9 +1535,30 @@ void Moneychanger::setDefaultAsset(QString asset_id, QString asset_name)
     DBHandler::getInstance()->AddressBookUpdateDefaultAsset(asset_id);
     
     //Rename "ASSET:" if a asset is loaded
-    if (!asset_id.isEmpty())
+    if (asset_id != "")
     {
         mc_systrayMenu_asset->setTitle(tr("Asset Type: ")+asset_name);
+
+        if (mc_overall_init)
+        {
+            // Loop through actions in mc_systrayMenu_asset.
+            // Ignore the "openmanager" action.
+            // For all others, compare the data to the default asset ID.
+            // If one matches, set the "checked" property to true, and for
+            // all others, set to false.
+
+            foreach (QAction* a, mc_systrayMenu_asset->actions())
+            {
+                QString qstrActionData = a->data().toString();
+
+                if (0 == qstrActionData.compare(default_asset_id)) {
+                    a->setChecked(true);
+                }
+                else {
+                    a->setChecked(false);
+                }
+            }
+        }
     }
 }
 
@@ -1538,13 +1659,13 @@ void Moneychanger::mc_accountmanager_dialog(QString qstrAcctID/*=QString("")*/)
     // -------------------------------------
     the_map.clear();
     // -------------------------------------
-    int32_t acct_count = OTAPI_Wrap::It()->GetAccountCount();
+    int32_t acct_count = opentxs::OTAPI_Wrap::It()->GetAccountCount();
     bool bFoundDefault = false;
 
     for (int32_t ii = 0; ii < acct_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
-        QString OT_name = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
         // ------------------------------
@@ -1569,7 +1690,7 @@ void Moneychanger::mc_accountselection_triggered(QAction*action_triggered)
 {
     //Check if the user wants to open the account manager (or) select a different default account
     QString action_triggered_string = QVariant(action_triggered->data()).toString();
-    qDebug() << "account TRIGGERED" << action_triggered_string;
+//    qDebug() << "account TRIGGERED" << action_triggered_string;
 
     if (action_triggered_string == "openmanager")
     {
@@ -1583,14 +1704,15 @@ void Moneychanger::mc_accountselection_triggered(QAction*action_triggered)
         setDefaultAccount(action_triggered_string, action_triggered_string_account_name);
         // ------------------------------
         //Refresh the account default selection in the account manager (ONLY if it is open)
-        //Check if account manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
+        //Check if account manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opened before]
         //
         if (accountswindow && !accountswindow->isHidden())
         {
             mc_accountmanager_dialog();
         }
         // ------------------------------
-        emit downloadedAccountData();
+        // NOTE: I just commented this out because it's already done in setDefaultAccount (above.)
+//      emit downloadedAccountData();
         // ------------------------------
     }
 }
@@ -1610,21 +1732,21 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
     {
         QString result = tr("Account: ") + account_name;
         
-        int64_t     lBalance  = OTAPI_Wrap::It()->GetAccountWallet_Balance    (account_id.toStdString());
-        std::string strAsset  = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(account_id.toStdString());
+        int64_t     lBalance  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance    (account_id.toStdString());
+        std::string strAsset  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(account_id.toStdString());
         // ----------------------------------------------------------
         std::string str_amount;
         
         if (!strAsset.empty())
         {
-            str_amount = OTAPI_Wrap::It()->FormatAmount(strAsset, lBalance);
+            str_amount = opentxs::OTAPI_Wrap::It()->FormatAmount(strAsset, lBalance);
             result += " ("+ QString::fromStdString(str_amount) +")";
         }
         
         mc_systrayMenu_account->setTitle(result);
         // -----------------------------------------------------------
-        std::string strNym    = OTAPI_Wrap::It()->GetAccountWallet_NymID   (account_id.toStdString());
-        std::string strServer = OTAPI_Wrap::It()->GetAccountWallet_ServerID(account_id.toStdString());
+        std::string strNym    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (account_id.toStdString());
+        std::string strServer = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(account_id.toStdString());
 
         if (!strAsset.empty())
             DBHandler::getInstance()->AddressBookUpdateDefaultAsset (QString::fromStdString(strAsset));
@@ -1638,32 +1760,48 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
             // -----------------------------------------------------------
             if (!strAsset.empty())
             {
-                QString qstrAssetName = QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_Name(strAsset));
+                QString qstrAssetName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(strAsset));
 
                 if (!qstrAssetName.isEmpty() && (mc_systrayMenu_asset))
-                    mc_systrayMenu_asset->setTitle(tr("Asset Type: ")+qstrAssetName);
-//                  setDefaultAsset(QString::fromStdString(strAsset),
-//                                  QString::fromStdString(strAssetName));
+                    setDefaultAsset(QString::fromStdString(strAsset),
+                                    qstrAssetName);
             }
             // -----------------------------------------------------------
             if (!strNym.empty())
             {
-                QString qstrNymName = QString::fromStdString(OTAPI_Wrap::It()->GetNym_Name(strNym));
+                QString qstrNymName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(strNym));
 
                 if (!qstrNymName.isEmpty() && (mc_systrayMenu_nym))
-                    mc_systrayMenu_nym->setTitle(tr("Identity: ")+qstrNymName);
-//                  setDefaultNym(QString::fromStdString(strNym),
-//                                QString::fromStdString(strNymName));
+                    setDefaultNym(QString::fromStdString(strNym),
+                                  qstrNymName);
             }
             // -----------------------------------------------------------
             if (!strServer.empty())
             {
-                QString qstrServerName = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(strServer));
+                QString qstrServerName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(strServer));
 
                 if (!qstrServerName.isEmpty() && (mc_systrayMenu_server))
-                    mc_systrayMenu_server->setTitle(tr("Server: ")+qstrServerName);
-//                  setDefaultServer(QString::fromStdString(strServer),
-//                                   QString::fromStdString(strServerName));
+                    setDefaultServer(QString::fromStdString(strServer),
+                                     qstrServerName);
+            }
+            // -----------------------------------------------------------
+
+            // Loop through actions in mc_systrayMenu_account.
+            // Ignore the "openmanager" action.
+            // For all others, compare the data to the default account ID.
+            // If one matches, set the "checked" property to true, and for
+            // all others, set to false.
+
+            foreach (QAction* a, mc_systrayMenu_account->actions())
+            {
+                QString qstrActionData = a->data().toString();
+
+                if (0 == qstrActionData.compare(default_account_id)) {
+                    a->setChecked(true);
+                }
+                else {
+                    a->setChecked(false);
+                }
             }
             // -----------------------------------------------------------
             emit downloadedAccountData();
@@ -1701,7 +1839,7 @@ void Moneychanger::mc_defaultserver_slot()
 
 void Moneychanger::mc_servermanager_dialog(QString qstrPresetID/*=QString("")*/)
 {
-    QString qstr_default_id = this->get_default_server_id();
+    QString qstr_default_id = this->get_default_notary_id();
     // -------------------------------------
     if (qstrPresetID.isEmpty())
         qstrPresetID = qstr_default_id;
@@ -1713,13 +1851,13 @@ void Moneychanger::mc_servermanager_dialog(QString qstrPresetID/*=QString("")*/)
     // -------------------------------------
     the_map.clear();
     // -------------------------------------
-    int32_t server_count = OTAPI_Wrap::It()->GetServerCount();
+    int32_t server_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
     bool    bFoundPreset = false;
 
     for (int32_t ii = 0; ii < server_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(OTAPI_Wrap::It()->GetServer_ID(ii));
-        QString OT_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
         // ------------------------------
@@ -1739,17 +1877,17 @@ void Moneychanger::mc_servermanager_dialog(QString qstrPresetID/*=QString("")*/)
 
 
 
-void Moneychanger::setDefaultServer(QString server_id, QString server_name)
+void Moneychanger::setDefaultServer(QString notary_id, QString server_name)
 {
     //Set default server internal memory
-    default_server_id = server_id;
+    default_notary_id = notary_id;
     default_server_name = server_name;
     
-    qDebug() << default_server_id;
-    qDebug() << default_server_name;
+//    qDebug() << default_notary_id;
+//    qDebug() << default_server_name;
     
     //SQL UPDATE default server
-    DBHandler::getInstance()->AddressBookUpdateDefaultServer(default_server_id);
+    DBHandler::getInstance()->AddressBookUpdateDefaultServer(default_notary_id);
     
     //Update visuals
     QString new_server_title = default_server_name;
@@ -1759,7 +1897,28 @@ void Moneychanger::setDefaultServer(QString server_id, QString server_name)
         new_server_title = tr("Set Default...");
     }
     
-    mc_systrayMenu_server->setTitle(tr("Server: ")+new_server_title);
+    if (mc_overall_init)
+    {
+        mc_systrayMenu_server->setTitle(tr("Server: ")+new_server_title);
+
+        // Loop through actions in mc_systrayMenu_server.
+        // Ignore the "openmanager" action.
+        // For all others, compare the data to the default server ID.
+        // If one matches, set the "checked" property to true, and for
+        // all others, set to false.
+
+        foreach (QAction* a, mc_systrayMenu_server->actions())
+        {
+            QString qstrActionData = a->data().toString();
+
+            if (0 == qstrActionData.compare(default_notary_id)) {
+                a->setChecked(true);
+            }
+            else {
+                a->setChecked(false);
+            }
+        }
+    }
 }
 
 //Server Slots
@@ -1768,20 +1927,23 @@ void Moneychanger::mc_serverselection_triggered(QAction * action_triggered)
 {
     //Check if the user wants to open the nym manager (or) select a different default nym
     QString action_triggered_string = QVariant(action_triggered->data()).toString();
-    qDebug() << "SERVER TRIGGERED" << action_triggered_string;
+//    qDebug() << "SERVER TRIGGERED" << action_triggered_string;
+
     if(action_triggered_string == "openmanager"){
         //Open server-list manager
         mc_defaultserver_slot();
-    }else{
+    }
+    else
+    {
         //Set new server default
         QString action_triggered_string_server_name = QVariant(action_triggered->text()).toString();
         setDefaultServer(action_triggered_string, action_triggered_string_server_name);
         
-            //Refresh if the server manager is currently open
-            if (serverswindow && !serverswindow->isHidden())
-            {
-                mc_servermanager_dialog();
-            }
+        //Refresh if the server manager is currently open
+        if (serverswindow && !serverswindow->isHidden())
+        {
+            mc_servermanager_dialog();
+        }
     }
 }
 // End Server Manager
@@ -1877,7 +2039,7 @@ void Moneychanger::mc_import_slot()
     //
     std::string strInstrument = qstrContents.toStdString();
     // ---------------------------------------------
-    std::string strType = OTAPI_Wrap::It()->Instrmnt_GetType(strInstrument);
+    std::string strType = opentxs::OTAPI_Wrap::It()->Instrmnt_GetType(strInstrument);
 
     if (strType.empty())
     {
@@ -1886,41 +2048,41 @@ void Moneychanger::mc_import_slot()
         return;
     }
     // -----------------------
-    std::string strServerID = OTAPI_Wrap::It()->Instrmnt_GetServerID(strInstrument);
+    std::string strNotaryID = opentxs::OTAPI_Wrap::It()->Instrmnt_GetNotaryID(strInstrument);
 
-    if (strServerID.empty())
+    if (strNotaryID.empty())
     {
         QMessageBox::warning(this, tr("Indeterminate Server"),
                              tr("Unable to determine server ID for this instrument. Are you sure it's properly formed?"));
         return;
     }
     // -----------------------
-    std::string strAssetID = OTAPI_Wrap::It()->Instrmnt_GetAssetID(strInstrument);
+    std::string strInstrumentDefinitionID = opentxs::OTAPI_Wrap::It()->Instrmnt_GetInstrumentDefinitionID(strInstrument);
 
-    if (strAssetID.empty())
+    if (strInstrumentDefinitionID.empty())
     {
         QMessageBox::warning(this, tr("Indeterminate Asset Type"),
                              tr("Unable to determine asset ID for this instrument. Are you sure it's properly formed?"));
         return;
     }
     // -----------------------
-    std::string strServerContract = OTAPI_Wrap::It()->LoadServerContract(strServerID);
+    std::string strServerContract = opentxs::OTAPI_Wrap::It()->LoadServerContract(strNotaryID);
 
     if (strServerContract.empty())
     {
         QMessageBox::warning(this, tr("No Server Contract Found"),
                              QString("%1 '%2'<br/>%3").arg(tr("Unable to load the server contract for server ID")).
-                             arg(QString::fromStdString(strServerID)).arg(tr("Are you sure that server contract is even in your wallet?")));
+                             arg(QString::fromStdString(strNotaryID)).arg(tr("Are you sure that server contract is even in your wallet?")));
         return;
     }
     // -----------------------
-    std::string strAssetContract = OTAPI_Wrap::It()->LoadAssetContract(strAssetID);
+    std::string strAssetContract = opentxs::OTAPI_Wrap::It()->LoadAssetContract(strInstrumentDefinitionID);
 
     if (strAssetContract.empty())
     {
         QMessageBox::warning(this, tr("No Asset Contract Found"),
                              QString("%1 '%2'<br/>%3").arg(tr("Unable to load the asset contract for asset ID")).
-                             arg(QString::fromStdString(strAssetID)).arg(tr("Are you sure that asset type is even in your wallet?")));
+                             arg(QString::fromStdString(strInstrumentDefinitionID)).arg(tr("Are you sure that asset type is even in your wallet?")));
         return;
     }
     // -----------------------
@@ -1938,7 +2100,7 @@ void Moneychanger::mc_import_slot()
     // Next, let's see if the purse is password-protected, and if not,
     // let's see if the recipient Nym is named on the instrument. (He may not be.)
     //
-    const bool  bHasPassword = OTAPI_Wrap::It()->Purse_HasPassword(strServerID, strInstrument);
+    const bool  bHasPassword = opentxs::OTAPI_Wrap::It()->Purse_HasPassword(strNotaryID, strInstrument);
     std::string strPurseOwner("");
 
     if (!bHasPassword)
@@ -1949,7 +2111,7 @@ void Moneychanger::mc_import_slot()
         // The purse MAY include the NymID for this Nym, but it MAY also be blank, in
         // which case the user will have to select a Nym to TRY.
         //
-        strPurseOwner = OTAPI_Wrap::It()->Instrmnt_GetRecipientUserID(strInstrument); // TRY and get the Nym ID (it may have been left blank.)
+        strPurseOwner = opentxs::OTAPI_Wrap::It()->Instrmnt_GetRecipientNymID(strInstrument); // TRY and get the Nym ID (it may have been left blank.)
 
         if (strPurseOwner.empty())
         {
@@ -1966,12 +2128,12 @@ void Moneychanger::mc_import_slot()
 
             bool bFoundDefault = false;
             // -----------------------------------------------
-            const int32_t nym_count = OTAPI_Wrap::It()->GetNymCount();
+            const int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
             // -----------------------------------------------
             for (int32_t ii = 0; ii < nym_count; ++ii)
             {
                 //Get OT Nym ID
-                QString OT_nym_id = QString::fromStdString(OTAPI_Wrap::It()->GetNym_ID(ii));
+                QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(ii));
                 QString OT_nym_name("");
                 // -----------------------------------------------
                 if (!OT_nym_id.isEmpty())
@@ -1981,7 +2143,7 @@ void Moneychanger::mc_import_slot()
                     // -----------------------------------------------
                     MTNameLookupQT theLookup;
 
-                    OT_nym_name = QString::fromStdString(theLookup.GetNymName(OT_nym_id.toStdString()));
+                    OT_nym_name = QString::fromStdString(theLookup.GetNymName(OT_nym_id.toStdString(), ""));
                     // -----------------------------------------------
                     the_map.insert(OT_nym_id, OT_nym_name);
                 }
@@ -2003,14 +2165,14 @@ void Moneychanger::mc_import_slot()
             }
         } // if strPurseOwner is empty (above the user selects him then.)
         // --------------------------------------
-        if (!OTAPI_Wrap::It()->IsNym_RegisteredAtServer(strPurseOwner, strServerID))
+        if (!opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(strPurseOwner, strNotaryID))
         {
             QMessageBox::warning(this, tr("Nym Isn't Registered at Server"),
                                  QString("%1 '%2'<br/>%3 '%4'<br/>%5").
                                  arg(tr("The Nym with ID")).
                                  arg(QString::fromStdString(strPurseOwner)).
                                  arg(tr("isn't registered at the Server with ID")).
-                                 arg(QString::fromStdString(strServerID)).
+                                 arg(QString::fromStdString(strNotaryID)).
                                  arg(tr("Try using that nym to create an asset account on that server, and then try importing this cash again.")));
             return;
         }
@@ -2025,7 +2187,7 @@ void Moneychanger::mc_import_slot()
     // We can't just import it to the wallet because the cash tokens aren't truly safe
     // until they are redeemed. (Until then, the sender still has a copy of them.)
     //
-    // Use OT_ME::deposit_cash (vs deposit_local_purse) since the cash is external.
+    // Use opentxs::OT_ME::deposit_cash (vs deposit_local_purse) since the cash is external.
     // Otherwise if the deposit fails, OT will try to "re-import" them, even though
     // they were never in the purse in the first place.
     //
@@ -2041,25 +2203,25 @@ void Moneychanger::mc_import_slot()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t acct_count = OTAPI_Wrap::It()->GetAccountCount();
+    const int32_t acct_count = opentxs::OTAPI_Wrap::It()->GetAccountCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < acct_count; ++ii)
     {
         //Get OT Acct ID
-        QString OT_acct_id = QString::fromStdString(OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
+        QString OT_acct_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
         QString OT_acct_name("");
         // -----------------------------------------------
         if (!OT_acct_id.isEmpty())
         {
-            std::string str_acct_nym_id    = OTAPI_Wrap::It()->GetAccountWallet_NymID      (OT_acct_id.toStdString());
-            std::string str_acct_asset_id  = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(OT_acct_id.toStdString());
-            std::string str_acct_server_id = OTAPI_Wrap::It()->GetAccountWallet_ServerID   (OT_acct_id.toStdString());
+            std::string str_acct_nym_id    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID      (OT_acct_id.toStdString());
+            std::string str_acct_asset_id  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(OT_acct_id.toStdString());
+            std::string str_acct_notary_id = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID   (OT_acct_id.toStdString());
 
             if (!strPurseOwner.empty() && (0 != strPurseOwner.compare(str_acct_nym_id)))
                 continue;
-            if (0 != strAssetID.compare(str_acct_asset_id))
+            if (0 != strInstrumentDefinitionID.compare(str_acct_asset_id))
                 continue;
-            if (0 != strServerID.compare(str_acct_server_id))
+            if (0 != strNotaryID.compare(str_acct_notary_id))
                 continue;
             // -----------------------------------------------
             if (!default_account_id.isEmpty() && (OT_acct_id == default_account_id))
@@ -2067,7 +2229,7 @@ void Moneychanger::mc_import_slot()
             // -----------------------------------------------
             MTNameLookupQT theLookup;
 
-            OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString()));
+            OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString(), "", "", ""));
             // -----------------------------------------------
             the_map.insert(OT_acct_id, OT_acct_name);
         }
@@ -2091,16 +2253,16 @@ void Moneychanger::mc_import_slot()
         if (!theChooser.m_qstrCurrentID.isEmpty())
         {
             if (strPurseOwner.empty())
-                strPurseOwner = OTAPI_Wrap::It()->GetAccountWallet_NymID(theChooser.m_qstrCurrentID.toStdString());
+                strPurseOwner = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(theChooser.m_qstrCurrentID.toStdString());
             // -------------------------------------------
-            OT_ME madeEasy;
-//          const bool bImported = OTAPI_Wrap::It()->Wallet_ImportPurse(strServerID, strAssetID, strPurseOwner, strInstrument);
+            opentxs::OT_ME madeEasy;
+//          const bool bImported = opentxs::OTAPI_Wrap::It()->Wallet_ImportPurse(strNotaryID, strInstrumentDefinitionID, strPurseOwner, strInstrument);
 
             int32_t nDepositCash = 0;
             {
                 MTSpinner theSpinner;
 
-                nDepositCash = madeEasy.deposit_cash(strServerID, strPurseOwner,
+                nDepositCash = madeEasy.deposit_cash(strNotaryID, strPurseOwner,
                                                      theChooser.m_qstrCurrentID.toStdString(), // AcctID.
                                                      strInstrument);
             }
@@ -2112,14 +2274,16 @@ void Moneychanger::mc_import_slot()
             }
             else
             {
-                const int64_t lUsageCredits = Moneychanger::HasUsageCredits(NULL, strServerID, strPurseOwner);
+                const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(strNotaryID, strPurseOwner);
 
                 // In the case of -2 and 0, the problem has to do with the usage credits,
                 // and it already pops up an error box. Otherwise, the user had enough usage
                 // credits, so there must have been some other problem, so we pop up an error box.
                 //
-                if ((lUsageCredits != (-2)) && (lUsageCredits != 0))
-                    QMessageBox::warning(this, tr("Failed Import"), tr("Failed trying to deposit cash purse."));
+                if ((lUsageCredits != (-2)) && (lUsageCredits != 0)) {
+                    QMessageBox::information(this, tr("Import Failure"), tr("Failed trying to deposit cash purse."));
+                    return;
+                }
             }
         }
     }
@@ -2182,7 +2346,7 @@ void Moneychanger::mc_composemessage_show_dialog()
     if (!qstrDefaultNym.isEmpty()) // Sender Nym is set.
         compose_window->setInitialSenderNym(qstrDefaultNym);
     // --------------------------------------------------
-    QString qstrDefaultServer = this->get_default_server_id();
+    QString qstrDefaultServer = this->get_default_notary_id();
 
     if (!qstrDefaultServer.isEmpty())
         compose_window->setInitialServer(qstrDefaultServer);
@@ -2373,6 +2537,33 @@ void Moneychanger::mc_market_dialog()
 }
 
 
+
+
+// LOG:  The Error Log dialog.
+
+void Moneychanger::mc_log_slot()
+{
+    mc_log_dialog();
+}
+
+// Same, except choose a specific one when opening.
+void Moneychanger::mc_showlog_slot(QString text)
+{
+    mc_log_dialog(text);
+}
+
+void Moneychanger::mc_log_dialog(QString qstrAppend/*=QString("")*/)
+{
+    if (!log_window)
+        log_window = new DlgLog(this);
+    // -------------------------------------
+    if (!qstrAppend.isEmpty())
+        log_window->appendToLog(qstrAppend);
+    // -------------------------------------
+//    log_window->setWindowTitle(tr("Error Log"));
+    // -------------------------------------
+    log_window->dialog();
+}
 
 
 

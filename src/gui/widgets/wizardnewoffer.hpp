@@ -1,8 +1,8 @@
 #ifndef WIZARDNEWOFFER_HPP
 #define WIZARDNEWOFFER_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <QWizard>
 
@@ -20,18 +20,18 @@ public:
 
     void SetNymID     (QString qstrID)   { m_nymID      = qstrID;   }
     void SetNymName   (QString qstrName) { m_nymName    = qstrName; }
-    void SetServerID  (QString qstrID)   { m_serverID   = qstrID;   }
+    void SetNotaryID  (QString qstrID)   { m_NotaryID   = qstrID;   }
     void SetServerName(QString qstrName) { m_serverName = qstrName; }
 
     QString GetNymID()      const { return m_nymID;      }
     QString GetNymName()    const { return m_nymName;    }
-    QString GetServerID()   const { return m_serverID;   }
+    QString GetNotaryID()   const { return m_NotaryID;   }
     QString GetServerName() const { return m_serverName; }
 
 private:
     QString m_nymID;
     QString m_nymName;
-    QString m_serverID;
+    QString m_NotaryID;
     QString m_serverName;
 
     Ui::WizardNewOffer *ui;

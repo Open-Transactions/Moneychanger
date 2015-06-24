@@ -1,8 +1,8 @@
 #ifndef COMPOSE_HPP
 #define COMPOSE_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <QWidget>
 
@@ -18,7 +18,7 @@ class MTCompose : public QWidget
     
     QString m_subject;            // Message subject line.
     QString m_msgtype;            // Will be "otserver" or "bitmessage" etc.
-    QString m_serverId;           // If msgtype is "otserver" then the OT Server ID must be set here.
+    QString m_NotaryID;           // If msgtype is "otserver" then the OT Server ID must be set here.
 
     QString m_senderNymId;        // Sender NymID should always be available.
     int     m_senderMethodId;     // Method #5 might be the sender's Bitmessage connection. Mandatory if msgtype is "bitmessage" (or anything other than otserver.)
@@ -42,7 +42,7 @@ public:
 
     void setInitialSubject(QString subject);
     void setInitialMsgType(QString msgtype, QString server="");
-    void setInitialServer(QString serverId);
+    void setInitialServer(QString NotaryID);
     void setInitialSenderNym(QString nymId, QString address="");
     void setInitialSenderAddress(QString address);
     void setInitialRecipient(QString nymId, int contactid=0, QString address="");
@@ -62,8 +62,8 @@ public:
     bool chooseRecipientNym    (mapIDName & theMap);
     bool chooseServer          (mapIDName & theMap);
 
-    bool verifySenderAgainstServer   (bool bAsk=true, QString qstrServerID=QString("")); // Assumes senderNymId and serverId are set.
-    bool verifyRecipientAgainstServer(bool bAsk=true, QString qstrServerID=QString("")); // Assumes recipientNymId and serverId are set.
+    bool verifySenderAgainstServer   (bool bAsk=true, QString qstrNotaryID=QString("")); // Assumes senderNymId and NotaryID are set.
+    bool verifyRecipientAgainstServer(bool bAsk=true, QString qstrNotaryID=QString("")); // Assumes recipientNymId and NotaryID are set.
 
     void dialog();
 

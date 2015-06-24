@@ -1,8 +1,8 @@
 #ifndef DETAILEDIT_HPP
 #define DETAILEDIT_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <core/handlers/contacthandler.hpp>
 
@@ -58,8 +58,8 @@ public:
     // NOTE:    Used by marketdetails and offerdetails.
     // WARNING: THIS MAY CONTAIN "all" instead of a server ID!
     //
-    void    SetMarketServerID(QString qstrServerID) { m_qstrMarketServerID = qstrServerID; }
-    QString GetMarketServerID() const { return m_qstrMarketServerID; }
+    void    SetMarketNotaryID(QString qstrNotaryID) { m_qstrMarketNotaryID = qstrNotaryID; }
+    QString GetMarketNotaryID() const { return m_qstrMarketNotaryID; }
     // --------------------------------
     void    SetMarketID(QString qstrMarketID) { m_qstrMarketID = qstrMarketID; }
     QString GetMarketID() const { return m_qstrMarketID; }
@@ -118,7 +118,7 @@ public slots:
 protected:
     // --------------------------------
     QString     m_qstrMarketNymID;    // used by marketdetails and offerdetails.
-    QString     m_qstrMarketServerID; // used by marketdetails and offerdetails.
+    QString     m_qstrMarketNotaryID; // used by marketdetails and offerdetails.
     // ----------------------------------
     bool        m_bEnableAdd;
     bool        m_bEnableDelete;

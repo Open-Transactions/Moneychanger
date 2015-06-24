@@ -13,14 +13,16 @@
 #include <core/mtcomms.h>
 #include <core/network/Network.h>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OTLog.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/Log.hpp>
 
 #include <QLabel>
 #include <QDebug>
 #include <QToolButton>
 #include <QKeyEvent>
+
+#include <QMessageBox>
 
 
 
@@ -135,10 +137,10 @@ void MTHome::on_tableWidget_currentCellChanged(int row, int column, int previous
 
 void MTHome::setupRecordList()
 {
-    int nServerCount  = OTAPI_Wrap::It()->GetServerCount();
-    int nAssetCount   = OTAPI_Wrap::It()->GetAssetTypeCount();
-    int nNymCount     = OTAPI_Wrap::It()->GetNymCount();
-    int nAccountCount = OTAPI_Wrap::It()->GetAccountCount();
+    int nServerCount  = opentxs::OTAPI_Wrap::It()->GetServerCount();
+    int nAssetCount   = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
+    int nNymCount     = opentxs::OTAPI_Wrap::It()->GetNymCount();
+    int nAccountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
     // ----------------------------------------------------
     m_list.ClearServers();
     m_list.ClearAssets();
@@ -147,25 +149,25 @@ void MTHome::setupRecordList()
     // ----------------------------------------------------
     for (int ii = 0; ii < nServerCount; ++ii)
     {
-        std::string serverId = OTAPI_Wrap::It()->GetServer_ID(ii);
-        m_list.AddServerID(serverId);
+        std::string NotaryID = opentxs::OTAPI_Wrap::It()->GetServer_ID(ii);
+        m_list.AddNotaryID(NotaryID);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAssetCount; ++ii)
     {
-        std::string assetId = OTAPI_Wrap::It()->GetAssetType_ID(ii);
-        m_list.AddAssetID(assetId);
+        std::string InstrumentDefinitionID = opentxs::OTAPI_Wrap::It()->GetAssetType_ID(ii);
+        m_list.AddInstrumentDefinitionID(InstrumentDefinitionID);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nNymCount; ++ii)
     {
-        std::string nymId = OTAPI_Wrap::It()->GetNym_ID(ii);
+        std::string nymId = opentxs::OTAPI_Wrap::It()->GetNym_ID(ii);
         m_list.AddNymID(nymId);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAccountCount; ++ii)
     {
-        std::string accountID = OTAPI_Wrap::It()->GetAccountWallet_ID(ii);
+        std::string accountID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(ii);
         m_list.AddAccountID(accountID);
     }
     // ----------------------------------------------------
@@ -324,9 +326,7 @@ void MTHome::RefreshAll()
 void MTHome::on_refreshButton_clicked()
 {
     MTSpinner theSpinner;
-    // -----------------------------------------
-    qDebug() << QString("Refreshing records from transaction servers.");
-    // -----------------------------------------
+//    qDebug() << QString("Refreshing records from transaction servers.");
     emit needToDownloadAccountData();
 }
 
@@ -334,14 +334,14 @@ void MTHome::on_refreshButton_clicked()
 // ----------------------------------------------------------------------
 
 //static
-QString MTHome::cashBalance(QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id)
+QString MTHome::cashBalance(QString qstr_notary_id, QString qstr_asset_id, QString qstr_nym_id)
 {
     int64_t     balance      = 0;
     QString     return_value = QString("");
     std::string str_output;
 
-    balance    = MTHome::rawCashBalance(qstr_server_id, qstr_asset_id, qstr_nym_id);
-    str_output = OTAPI_Wrap::It()->FormatAmount(qstr_asset_id.toStdString(), balance);
+    balance    = MTHome::rawCashBalance(qstr_notary_id, qstr_asset_id, qstr_nym_id);
+    str_output = opentxs::OTAPI_Wrap::It()->FormatAmount(qstr_asset_id.toStdString(), balance);
 
     if (!str_output.empty())
         return_value = QString::fromStdString(str_output);
@@ -352,19 +352,19 @@ QString MTHome::cashBalance(QString qstr_server_id, QString qstr_asset_id, QStri
 // ----------------------------------------------------------------------
 
 //static
-int64_t MTHome::rawCashBalance(QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id)
+int64_t MTHome::rawCashBalance(QString qstr_notary_id, QString qstr_asset_id, QString qstr_nym_id)
 {
     int64_t balance = 0;
 
-    std::string serverId(qstr_server_id.toStdString());
-    std::string assetId (qstr_asset_id.toStdString());
+    std::string NotaryID(qstr_notary_id.toStdString());
+    std::string InstrumentDefinitionID (qstr_asset_id.toStdString());
     std::string nymId   (qstr_nym_id.toStdString());
 
-    std::string str_purse = OTAPI_Wrap::It()->LoadPurse(serverId, assetId, nymId);
+    std::string str_purse = opentxs::OTAPI_Wrap::It()->LoadPurse(NotaryID, InstrumentDefinitionID, nymId);
 
     if (!str_purse.empty())
     {
-        int64_t temp_balance = OTAPI_Wrap::It()->Purse_GetTotalValue(serverId, assetId, str_purse);
+        int64_t temp_balance = opentxs::OTAPI_Wrap::It()->Purse_GetTotalValue(NotaryID, InstrumentDefinitionID, str_purse);
 
         if (temp_balance >= 0)
             balance = temp_balance;
@@ -384,25 +384,25 @@ QString MTHome::shortAcctBalance(QString qstr_acct_id, QString qstr_asset_id/*=Q
         return return_value; // Might want to assert here... (returns blank string.)
     // -------------------------------------------
     std::string  acctID     = qstr_acct_id.toStdString();
-    int64_t      balance    = OTAPI_Wrap::It()->GetAccountWallet_Balance(acctID);
-    std::string  assetId;
+    int64_t      balance    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance(acctID);
+    std::string  InstrumentDefinitionID;
     // -------------------------------------------
     if (!qstr_asset_id.isEmpty())
-        assetId = qstr_asset_id.toStdString();
+        InstrumentDefinitionID = qstr_asset_id.toStdString();
     else
-        assetId = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(acctID);
+        InstrumentDefinitionID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(acctID);
     // -------------------------------------------
     std::string  str_output;
 
-    if (!assetId.empty())
+    if (!InstrumentDefinitionID.empty())
     {
-        str_output = OTAPI_Wrap::It()->FormatAmount(assetId, balance);
+        str_output = opentxs::OTAPI_Wrap::It()->FormatAmount(InstrumentDefinitionID, balance);
 
         if (!str_output.empty())
             return_value = QString::fromStdString(str_output);
         else
         {
-            std::string  str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(assetId);
+            std::string  str_asset_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(InstrumentDefinitionID);
             return_value = QString("%1 %2").arg(balance).arg(QString::fromStdString(str_asset_name));
         }
     }
@@ -415,7 +415,7 @@ QString MTHome::shortAcctBalance(QString qstr_acct_id, QString qstr_asset_id/*=Q
 //static
 int64_t MTHome::rawAcctBalance(QString qstrAcctId)
 {
-    int64_t ret = qstrAcctId.isEmpty() ? 0 : OTAPI_Wrap::It()->GetAccountWallet_Balance(qstrAcctId.toStdString());
+    int64_t ret = qstrAcctId.isEmpty() ? 0 : opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance(qstrAcctId.toStdString());
     return ret;
 }
 
@@ -433,9 +433,9 @@ QString MTHome::FormDisplayLabelForAcctButton(QString qstr_acct_id, QString qstr
         display_name = qstr_display_name;
     // -----------------------------------------
     std::string str_acct_id     = qstr_acct_id.toStdString();
-    std::string str_acct_nym    = OTAPI_Wrap::It()->GetAccountWallet_NymID      (str_acct_id);
-    std::string str_acct_server = OTAPI_Wrap::It()->GetAccountWallet_ServerID   (str_acct_id);
-    std::string str_acct_asset  = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+    std::string str_acct_nym    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID      (str_acct_id);
+    std::string str_acct_server = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID   (str_acct_id);
+    std::string str_acct_asset  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
     // -----------------------------------------
     QString qstr_acct_nym    = QString::fromStdString(str_acct_nym);
     QString qstr_acct_server = QString::fromStdString(str_acct_server);
@@ -486,21 +486,21 @@ QWidget * MTHome::CreateUserBarWidget()
         qstr_acct_name   = tr("(Default Account Isn't Set Yet)");
         // -----------------------------------
         qstr_acct_nym    = Moneychanger::It()->get_default_nym_id();
-        qstr_acct_server = Moneychanger::It()->get_default_server_id();
+        qstr_acct_server = Moneychanger::It()->get_default_notary_id();
         qstr_acct_asset  = Moneychanger::It()->get_default_asset_id();
     }
     else
     {
         std::string str_acct_id     = qstr_acct_id.toStdString();
-        std::string str_acct_nym    = OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
-        std::string str_acct_server = OTAPI_Wrap::It()->GetAccountWallet_ServerID(str_acct_id);
-        std::string str_acct_asset  = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+        std::string str_acct_nym    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
+        std::string str_acct_server = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_acct_id);
+        std::string str_acct_asset  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
         // -----------------------------------
         qstr_acct_nym    = QString::fromStdString(str_acct_nym);
         qstr_acct_server = QString::fromStdString(str_acct_server);
         qstr_acct_asset  = QString::fromStdString(str_acct_asset);
         // -----------------------------------
-        std::string str_acct_name  = OTAPI_Wrap::It()->GetAccountWallet_Name(str_acct_id);
+        std::string str_acct_name  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(str_acct_id);
         // -----------------------------------
         if (!str_acct_name.empty())
         {
@@ -509,7 +509,7 @@ QWidget * MTHome::CreateUserBarWidget()
         // -----------------------------------
         if (!str_acct_asset.empty())
         {
-            std::string str_asset_name = OTAPI_Wrap::It()->GetAssetType_Name(str_acct_asset);
+            std::string str_asset_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(str_acct_asset);
             qstr_acct_asset_name = QString("<small><font color=grey>(%1)</font></small>").arg(QString::fromStdString(str_asset_name));
         }
     }
@@ -561,12 +561,17 @@ QWidget * MTHome::CreateUserBarWidget()
     QToolButton *buttonCompose    = new QToolButton;
     QToolButton *buttonIdentities = new QToolButton;
     QToolButton *buttonRefresh    = new QToolButton;
-    // ----------------------------------------------------------------
-    QPixmap pixmapSend      (":/icons/icons/send.png");
+    // ----------------------------------------------------------------  
+    QPixmap pixmapSend      (":/icons/icons/fistful_of_cash_72.png");
+//  QPixmap pixmapSend      (":/icons/icons/money_fist4_small.png");
+//  QPixmap pixmapSend      (":/icons/icons/send.png");
 //  QPixmap pixmapRequest   (":/icons/icons/request.png");
-    QPixmap pixmapCompose   (":/icons/icons/compose.png");
-    QPixmap pixmapIdentities(":/icons/icons/user.png");
-    QPixmap pixmapContacts  (":/icons/addressbook");
+    QPixmap pixmapCompose   (":/icons/icons/pencil.png");
+//  QPixmap pixmapCompose   (":/icons/icons/compose.png");
+    QPixmap pixmapIdentities(":/icons/icons/identity_BW2.png");
+//  QPixmap pixmapIdentities(":/icons/icons/user.png");
+//  QPixmap pixmapContacts  (":/icons/addressbook");
+    QPixmap pixmapContacts  (":/icons/icons/rolodex_small");
     QPixmap pixmapRefresh   (":/icons/icons/refresh.png");
     // ----------------------------------------------------------------
     QIcon sendButtonIcon      (pixmapSend);
@@ -580,7 +585,7 @@ QWidget * MTHome::CreateUserBarWidget()
     buttonSend->setAutoRaise(true);
     buttonSend->setIcon(sendButtonIcon);
     buttonSend->setIconSize(pixmapSend.rect().size());
-    buttonSend->setText(tr("Send"));
+    buttonSend->setText(tr("Pay"));
     // ----------------------------------------------------------------
 //    buttonRequest->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 //    buttonRequest->setAutoRaise(true);
@@ -719,7 +724,7 @@ void MTHome::OnDeletedRecord()
             // -----------------------------------------
         }
         else
-            qDebug() << QString("Failure removing OTRecord at index %1.").arg(nCurrentRow);
+            qDebug() << QString("Failure removing opentxs::OTRecordat index %1.").arg(nCurrentRow);
     }
 }
 
@@ -738,9 +743,9 @@ void MTHome::PopulateRecords()
     //
     bool bNeedsReSorting = false;
 
-    const list_of_strings & the_nyms = m_list.GetNyms();
+    const opentxs::list_of_strings & the_nyms = m_list.GetNyms();
 
-    for (list_of_strings::const_iterator it = the_nyms.begin(); it != the_nyms.end(); ++it)
+    for (opentxs::list_of_strings::const_iterator it = the_nyms.begin(); it != the_nyms.end(); ++it)
     {
         const std::string str_nym_id = *it;
         // -----------------------------
@@ -941,19 +946,9 @@ void MTHome::RefreshRecords()
     // -------------------------------------------------------
     for (int nIndex = 0; nIndex < listSize; ++nIndex)
     {
-        weak_ptr_OTRecord   weakRecord = m_list.GetRecord(nIndex);
-        shared_ptr_OTRecord record     = weakRecord.lock();
-
-        if (weakRecord.expired())
+        opentxs::OTRecord record = m_list.GetRecord(nIndex);
         {
-            OTLog::Output(2, "Reloading table due to expired pointer.\n");
-            PopulateRecords(); // Refreshes the data from local storage.
-            listSize = m_list.size();
-            nIndex = 0;
-        }
-        else
-        {
-            OTRecord & recordmt = *record;
+            opentxs::OTRecord& recordmt = record;
             QWidget  * pWidget  = MTHomeDetail::CreateDetailHeaderWidget(recordmt);
             // -------------------------------------------
             if (NULL != pWidget)

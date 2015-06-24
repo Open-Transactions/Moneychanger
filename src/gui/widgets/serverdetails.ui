@@ -23,13 +23,6 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="1" column="0">
-      <widget class="QLabel" name="labelID">
-       <property name="text">
-        <string>Server ID:</string>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="labelName">
        <property name="layoutDirection">
@@ -43,7 +36,57 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="1" column="0">
+      <widget class="QLabel" name="labelID">
+       <property name="text">
+        <string>Notary ID:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLineEdit" name="lineEditID">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QToolButton" name="toolButtonNotary">
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../resource.qrc">
+         <normaloff>:/icons/icons/Basic-Copy-icon.png</normaloff>:/icons/icons/Basic-Copy-icon.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0" colspan="2">
+      <widget class="QLabel" name="labelNymID">
+       <property name="text">
+        <string>Signer Nym ID:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLineEdit" name="lineEditNymID">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QToolButton" name="toolButtonNym">
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../resource.qrc">
+         <normaloff>:/icons/icons/Basic-Copy-icon.png</normaloff>:/icons/icons/Basic-Copy-icon.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2" colspan="2">
       <widget class="QLineEdit" name="lineEditName">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
@@ -56,13 +99,6 @@
        </property>
        <property name="readOnly">
         <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEditID">
-       <property name="readOnly">
-        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -91,6 +127,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

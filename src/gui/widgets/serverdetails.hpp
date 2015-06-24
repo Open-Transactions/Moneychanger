@@ -1,8 +1,8 @@
 #ifndef SERVERDETAILS_HPP
 #define SERVERDETAILS_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <gui/widgets/editdetails.hpp>
 #include <core/filedownloader.hpp>
@@ -39,12 +39,18 @@ public:
     void ImportContract(QString qstrContents);
 
 private:
+    bool archive(const QString & filePath, const QDir & dir, const QString & comment = QString(""));
+
     QPointer<QPlainTextEdit> m_pPlainTextEdit;
 
 private slots:
     void on_lineEditName_editingFinished();
 
     void DownloadedURL();
+
+    void on_toolButtonNotary_clicked();
+
+    void on_toolButtonNym_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

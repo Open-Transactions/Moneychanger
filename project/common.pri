@@ -5,6 +5,7 @@ SOLUTION_DIR=$${PWD}/
 
 INCLUDEPATH += $${SOLUTION_DIR}../src
 INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
+INCLUDEPATH += $${SOLUTION_DIR}../src/quazip
 
 #-------------------------------------------------
 # Output
@@ -79,7 +80,7 @@ unix:{
         PKG_CONFIG_LIBDIR = "$${PKG_CONFIG_LIBDIR}:" #end with a colon.
 
 
-        contains(MAC_OS_VERSION, 10.9):{
+        contains(MAC_OS_VERSION, 10.9)|contains(MAC_OS_VERSION, 10.10):{
             # NOTE: below line copied from unix section:
             QMAKE_CXXFLAGS += -std=c++11 -DCXX_11
 

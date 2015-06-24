@@ -1,17 +1,17 @@
 #ifndef PASSWORDCALLBACK_HPP
 #define PASSWORDCALLBACK_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
-#include <opentxs/OTPassword.hpp>
-#include <opentxs/OTCallback.hpp>
+#include <opentxs/core/crypto/OTPassword.hpp>
+#include <opentxs/core/crypto/OTCallback.hpp>
 
-class MTPasswordCallback : public OTCallback
+class MTPasswordCallback : public opentxs::OTCallback
 {
 public:
-    void runOne(const char * szDisplay, OTPassword & theOutput);
-    void runTwo(const char * szDisplay, OTPassword & theOutput);
+    void runOne(const char * szDisplay, opentxs::OTPassword & theOutput) const;
+    void runTwo(const char * szDisplay, opentxs::OTPassword & theOutput) const;
 };
 
 #endif // PASSWORDCALLBACK_HPP

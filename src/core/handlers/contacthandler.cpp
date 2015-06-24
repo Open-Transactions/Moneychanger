@@ -8,12 +8,12 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/mtcomms.h>
 
-#include <opentxs/OTStorage.hpp>
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OpenTransactions.hpp>
-#include <opentxs/OTASCIIArmor.hpp>
-#include <opentxs/OTWallet.hpp>
+#include <opentxs/core/OTStorage.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OpenTransactions.hpp>
+#include <opentxs/core/crypto/OTASCIIArmor.hpp>
+#include <opentxs/client/OTWallet.hpp>
 
 #include <QDebug>
 #include <QObject>
@@ -21,11 +21,15 @@
 
 
 std::string MTNameLookupQT::GetNymName(const std::string & str_id,
-                                       const std::string * p_server_id/*=NULL*/) const
+                                       const std::string   p_notary_id) const
 {
-    std::string str_result("");
     // ------------------------
-    str_result = this->OTNameLookup::GetNymName(str_id, p_server_id);
+//    qDebug() << QString("Attempting Name Lookup on: ") << QString(str_id.c_str());
+
+    std::string str_result = this->OTNameLookup::GetNymName(str_id, p_notary_id);
+
+//    qDebug() << QString("Result of Name Lookup: ") << QString(str_result.c_str());
+
     // ------------------------
     if (str_result.empty())
     {
@@ -38,9 +42,9 @@ std::string MTNameLookupQT::GetNymName(const std::string & str_id,
             if (!contact_name.isEmpty())
                 str_result = contact_name.toStdString();
             // -----------------------------------------------
-            if ((NULL != p_server_id) && !p_server_id->empty())
+            if (p_notary_id != "")
                 MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
-                                                                       QString::fromStdString(*p_server_id));
+                                                                       QString::fromStdString(p_notary_id));
         }
     }
     // ------------------------
@@ -48,20 +52,20 @@ std::string MTNameLookupQT::GetNymName(const std::string & str_id,
 }
 
 std::string MTNameLookupQT::GetAcctName(const std::string & str_id,
-                                        const std::string * p_nym_id/*=NULL*/,
-                                        const std::string * p_server_id/*=NULL*/,
-                                        const std::string * p_asset_id/*=NULL*/) const
+                                        const std::string   p_nym_id,
+                                        const std::string   p_notary_id,
+                                        const std::string   p_asset_id) const
 {
     std::string str_result("");
     // ------------------------
-    str_result = this->OTNameLookup::GetAcctName(str_id, p_nym_id, p_server_id, p_asset_id);
+    str_result = this->OTNameLookup::GetAcctName(str_id, p_nym_id, p_notary_id, p_asset_id);
     // ------------------------
     if (str_result.empty())
     {
         int nContactID = MTContactHandler::getInstance()->FindContactIDByAcctID(QString::fromStdString(str_id),
-                                                                                (NULL == p_nym_id)    ? QString("") : QString::fromStdString(*p_nym_id),
-                                                                                (NULL == p_server_id) ? QString("") : QString::fromStdString(*p_server_id),
-                                                                                (NULL == p_asset_id)  ? QString("") : QString::fromStdString(*p_asset_id));
+                                                                                QString::fromStdString(p_nym_id),
+                                                                                QString::fromStdString(p_notary_id),
+                                                                                QString::fromStdString(p_asset_id));
         if (nContactID > 0)
         {
             QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
@@ -96,7 +100,7 @@ std::string MTNameLookupQT::GetAddressName(const std::string & str_address) cons
             QString qstrNymID = MTContactHandler::getInstance()->GetNymByAddress(QString::fromStdString(str_address));
 
             if (!qstrNymID.isEmpty())
-                str_result = this->GetNymName(qstrNymID.toStdString());
+                str_result = this->GetNymName(qstrNymID.toStdString(), "");
         }
     }
     // ------------------------
@@ -224,32 +228,32 @@ bool MTContactHandler::GetServers(mapIDName & theMap, QString filterByNym, bool 
 {
     QMutexLocker locker(&m_Mutex);
 
-    QString str_select = QString("SELECT (`server_id`) FROM `nym_server` WHERE `nym_id`='%1'").arg(filterByNym);
+    QString str_select = QString("SELECT (`notary_id`) FROM `nym_server` WHERE `nym_id`='%1'").arg(filterByNym);
 
     bool bFoundAny = false;
     int  nRows     = DBHandler::getInstance()->querySize(str_select);
 
     for(int ii=0; ii < nRows; ii++)
     {
-        QString server_id = DBHandler::getInstance()->queryString(str_select, 0, ii);
+        QString notary_id = DBHandler::getInstance()->queryString(str_select, 0, ii);
 
-        if (!server_id.isEmpty())
+        if (!notary_id.isEmpty())
         {
-            QString server_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(server_id.toStdString()));
+            QString server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(notary_id.toStdString()));
 
             if (!server_name.isEmpty())
             {
                 bFoundAny = true;
 
-                // Some callers need "otserver|SERVER_ID" instead of just "SERVER_ID"
+                // Some callers need "otserver|notary_id" instead of just "notary_id"
                 // We prepend here, if necessary.
                 //
-                QString qstrFinalID   = server_id;
+                QString qstrFinalID   = notary_id;
                 QString qstrFinalName = server_name;
 
                 if (bPrependOTType)
                 {
-                    qstrFinalID   = QString("%1|%2").arg("otserver").arg(server_id);
+                    qstrFinalID   = QString("%1|%2").arg("otserver").arg(notary_id);
                     qstrFinalName = QString("%1: %2").arg(QObject::tr("OT Server")).arg(server_name);
                 }
                 // At this point we have the server ID *and* the server name.
@@ -265,29 +269,29 @@ bool MTContactHandler::GetServers(mapIDName & theMap, QString filterByNym, bool 
 
 //QString create_contact = "CREATE TABLE contact(contact_id INTEGER PRIMARY KEY, contact_display_name TEXT)";
 //QString create_nym     = "CREATE TABLE nym(nym_id TEXT PRIMARY KEY, contact_id INTEGER, nym_display_name TEXT)";
-//QString create_server  = "CREATE TABLE nym_server(nym_id TEXT, server_id TEXT, PRIMARY KEY(nym_id, server_id))";
-//QString create_account = "CREATE TABLE nym_account(account_id TEXT PRIMARY KEY, server_id TEXT, nym_id TEXT, asset_id TEXT, account_display_name TEXT)";
+//QString create_server  = "CREATE TABLE nym_server(nym_id TEXT, notary_id TEXT, PRIMARY KEY(nym_id, notary_id))";
+//QString create_account = "CREATE TABLE nym_account(account_id TEXT PRIMARY KEY, notary_id TEXT, nym_id TEXT, asset_id TEXT, account_display_name TEXT)";
 
 // ---------------------------------------------------------------------
 bool MTContactHandler::GetServers(mapIDName & theMap, bool bPrependOTType/*=false*/)
 {
     bool    bFoundAny    = false;
-    int32_t nServerCount = OTAPI_Wrap::It()->GetServerCount();
+    int32_t nServerCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
 
     for (int32_t ii = 0; ii < nServerCount; ++ii)
     {
-        std::string str_server_id   = OTAPI_Wrap::It()->GetServer_ID(ii);
-        std::string str_server_name = OTAPI_Wrap::It()->GetServer_Name(str_server_id);
+        std::string str_notary_id   = opentxs::OTAPI_Wrap::It()->GetServer_ID(ii);
+        std::string str_server_name = opentxs::OTAPI_Wrap::It()->GetServer_Name(str_notary_id);
 
-        QString qstrServerID   = QString::fromStdString(str_server_id);
+        QString qstrNotaryID   = QString::fromStdString(str_notary_id);
         QString qstrServerName = QString::fromStdString(str_server_name);
 
-        QString qstrFinalID   = qstrServerID;
+        QString qstrFinalID   = qstrNotaryID;
         QString qstrFinalName = qstrServerName;
 
         if (bPrependOTType)
         {
-            qstrFinalID   = QString("%1|%2").arg("otserver").arg(qstrServerID);
+            qstrFinalID   = QString("%1|%2").arg("otserver").arg(qstrNotaryID);
             qstrFinalName = QString("%1: %2").arg(QObject::tr("OT Server")).arg(qstrServerName);
         }
 
@@ -307,7 +311,7 @@ bool MTContactHandler::GetServers(mapIDName & theMap, int nFilterByContact, bool
 {
     QMutexLocker locker(&m_Mutex);
 
-    QString str_select = QString("SELECT (`server_id`) "
+    QString str_select = QString("SELECT (`notary_id`) "
                                  "FROM `nym_server` "
                                  "INNER JOIN `nym` "
                                  "ON nym.nym_id=nym_server.nym_id "
@@ -318,25 +322,25 @@ bool MTContactHandler::GetServers(mapIDName & theMap, int nFilterByContact, bool
 
     for(int ii=0; ii < nRows; ii++)
     {
-        QString server_id = DBHandler::getInstance()->queryString(str_select, 0, ii);
+        QString notary_id = DBHandler::getInstance()->queryString(str_select, 0, ii);
 
-        if (!server_id.isEmpty())
+        if (!notary_id.isEmpty())
         {
-            QString server_name = QString::fromStdString(OTAPI_Wrap::It()->GetServer_Name(server_id.toStdString()));
+            QString server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(notary_id.toStdString()));
 
             if (!server_name.isEmpty())
             {
                 bFoundAny = true;
 
-                // Some callers need "otserver|SERVER_ID" instead of just "SERVER_ID"
+                // Some callers need "otserver|notary_id" instead of just "notary_id"
                 // We prepend here, if necessary.
                 //
-                QString qstrFinalID   = server_id;
+                QString qstrFinalID   = notary_id;
                 QString qstrFinalName = server_name;
 
                 if (bPrependOTType)
                 {
-                    qstrFinalID   = QString("%1|%2").arg("otserver").arg(server_id);
+                    qstrFinalID   = QString("%1|%2").arg("otserver").arg(notary_id);
                     qstrFinalName = QString("%1: %2").arg(QObject::tr("OT Server")).arg(server_name);
                 }
 
@@ -422,7 +426,7 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact)
                 nym_name = Decode(nym_name);
             }
             else
-                nym_name = QString::fromStdString(OTAPI_Wrap::It()->GetNym_Name(nym_id.toStdString()));
+                nym_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(nym_id.toStdString()));
             // ----------------------------
             // At this point we have the nym ID *and* the nym name.
             // So we can add them to our map...
@@ -445,7 +449,7 @@ bool MTContactHandler::GetAccounts(mapIDName & theMap, QString filterByNym, QStr
         parameters.insert("nym_id", filterByNym);
     // -------------------------
     if (!filterByServer.isEmpty())
-        parameters.insert("server_id", filterByServer);
+        parameters.insert("notary_id", filterByServer);
     // -------------------------
     if (!filterByAsset.isEmpty())
         parameters.insert("asset_id", filterByAsset);
@@ -537,7 +541,7 @@ bool MTContactHandler::GetAccounts(mapIDName & theMap, QString filterByNym, QStr
 // Notice there is no "CreateContactBasedOnAcct" because you can call this first,
 // and then just call FindContactIDByAcctID.
 //
-int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString server_id_string/*=QString("")*/)
+int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string/*=QString("")*/)
 {
     QMutexLocker locker(&m_Mutex);
 
@@ -547,7 +551,7 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString ser
     // If no contact exists for this Nym, then create the contact and Nym.
     // (And save the contact ID, and return at the bottom.)
     //
-    // Finally, do the same actions found in NotifyOfNymServerPair, only if server_id_string
+    // Finally, do the same actions found in NotifyOfNymServerPair, only if notary_id_string
     // !isEmpty(), to make sure we record the server as well, when appropriate.
     //
     // -----------------------------------------------------------------------
@@ -614,19 +618,19 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString ser
         }
     }
     // ---------------------------------------------------------------------
-    // Finally, do the same actions found in NotifyOfNymServerPair, only if server_id_string
+    // Finally, do the same actions found in NotifyOfNymServerPair, only if notary_id_string
     // !isEmpty(), to make sure we record the server as well, when appropriate.
     //
-    if (!server_id_string.isEmpty())
+    if (!notary_id_string.isEmpty())
     {
-        QString str_select_server = QString("SELECT `server_id` FROM `nym_server` WHERE `nym_id`='%1' AND `server_id`='%2' LIMIT 0,1").arg(nym_id_string).arg(server_id_string);
+        QString str_select_server = QString("SELECT `notary_id` FROM `nym_server` WHERE `nym_id`='%1' AND `notary_id`='%2' LIMIT 0,1").arg(nym_id_string).arg(notary_id_string);
         int nRowsServer = DBHandler::getInstance()->querySize(str_select_server);
 
         if (0 == nRowsServer) // It wasn't already there. (Add it.)
         {
             QString str_insert_server = QString("INSERT INTO `nym_server` "
-                                                "(`nym_id`, `server_id`) "
-                                                "VALUES('%1', '%2')").arg(nym_id_string).arg(server_id_string);
+                                                "(`nym_id`, `notary_id`) "
+                                                "VALUES('%1', '%2')").arg(nym_id_string).arg(notary_id_string);
 
             qDebug() << QString("Running query: %1").arg(str_insert_server);
 
@@ -917,17 +921,18 @@ QString MTContactHandler::Encrypt(QString plaintext)
 
     if (!plaintext.isEmpty())
     {
-        OTWallet * pWallet = OTAPI_Wrap::OTAPI()->GetWallet("MTContactHandler::Encrypt"); // This logs and ASSERTs already.
+        opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet("MTContactHandler::Encrypt"); // This logs and ASSERTs already.
 
         if (NULL != pWallet)
         {
-            OTString strOutput, strPlaintext(plaintext.toStdString().c_str());
+            opentxs::String strOutput, strPlaintext(plaintext.toStdString().c_str());
 
             if (pWallet->Encrypt_ByKeyID(s_key_id, strPlaintext, strOutput))
             {
                 std::string str_temp(strOutput.Get());
                 encrypted_value = QString::fromStdString(str_temp);
             }
+
         }
     }
 
@@ -943,17 +948,18 @@ QString MTContactHandler::Decrypt(QString ciphertext)
 
     if (!ciphertext.isEmpty())
     {
-        OTWallet * pWallet = OTAPI_Wrap::OTAPI()->GetWallet("MTContactHandler::Decrypt"); // This logs and ASSERTs already.
+        opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet("MTContactHandler::Decrypt"); // This logs and ASSERTs already.
 
         if (NULL != pWallet)
         {
-            OTString strOutput, strCiphertext(ciphertext.toStdString().c_str());
+            opentxs::String strOutput, strCiphertext(ciphertext.toStdString().c_str());
 
             if (pWallet->Decrypt_ByKeyID(s_key_id, strCiphertext, strOutput))
             {
                 std::string str_temp(strOutput.Get());
                 decrypted_value = QString::fromStdString(str_temp);
             }
+ 
         }
     }
 
@@ -970,8 +976,8 @@ QString MTContactHandler::Encode(QString plaintext)
     if (!plaintext.isEmpty())
     {
         // Encode base64.
-        OTString        strValue(plaintext.toStdString());
-        OTASCIIArmor    ascValue;
+        opentxs::String        strValue(plaintext.toStdString());
+        opentxs::OTASCIIArmor    ascValue;
         ascValue.SetString(strValue, false); //bLineBreaks=true by default
         encoded_value = QString(ascValue.Get());
     }
@@ -987,9 +993,9 @@ QString MTContactHandler::Decode(QString encoded)
     if (!encoded.isEmpty())
     {
         // Decode base64.
-        OTASCIIArmor ascValue;
+        opentxs::OTASCIIArmor ascValue;
         ascValue.Set(encoded.toStdString().c_str());
-        OTString strValue;
+        opentxs::String strValue;
         ascValue.GetString(strValue, false); //bLineBreaks=true by default
         decoded_value = QString(strValue.Get());
     }
@@ -1916,19 +1922,19 @@ bool MTContactHandler::DeleteMsgMethod(int nMethodID)
 // happens whether there is a CONTACT for that Nym, or not.
 // If the pairing is not found, a record is added.
 //
-void MTContactHandler::NotifyOfNymServerPair(QString nym_id_string, QString server_id_string)
+void MTContactHandler::NotifyOfNymServerPair(QString nym_id_string, QString notary_id_string)
 {
     QMutexLocker locker(&m_Mutex);
 
-    QString str_select_server = QString("SELECT `server_id` FROM `nym_server` WHERE `nym_id`='%1' AND `server_id`='%2' LIMIT 0,1").
-            arg(nym_id_string).arg(server_id_string);
+    QString str_select_server = QString("SELECT `notary_id` FROM `nym_server` WHERE `nym_id`='%1' AND `notary_id`='%2' LIMIT 0,1").
+            arg(nym_id_string).arg(notary_id_string);
     int nRowsServer = DBHandler::getInstance()->querySize(str_select_server);
 
     if (0 == nRowsServer) // It wasn't already there. (Add it.)
     {
         QString str_insert_server = QString("INSERT INTO `nym_server` "
-                                            "(`nym_id`, `server_id`) "
-                                            "VALUES('%1', '%2')").arg(nym_id_string).arg(server_id_string);
+                                            "(`nym_id`, `notary_id`) "
+                                            "VALUES('%1', '%2')").arg(nym_id_string).arg(notary_id_string);
         DBHandler::getInstance()->runQuery(str_insert_server);
     }
 }
@@ -1937,7 +1943,7 @@ void MTContactHandler::NotifyOfNymServerPair(QString nym_id_string, QString serv
 // NOTE: if an account isn't ALREADY found in my contact list, I am
 // very unlikely to find it in my wallet (since it's still most likely
 // someone else's account) and so I am not able to look up its associated
-// nymId, serverId, and assetTypeIds. Therefore if I have those available
+// nymId, NotaryID, and assetTypeIds. Therefore if I have those available
 // when I call this function, then I NEED to pass them in, so that if the
 // account CAN be added to some existing contact, we will have its IDs to
 // add.
@@ -1946,7 +1952,7 @@ void MTContactHandler::NotifyOfNymServerPair(QString nym_id_string, QString serv
 //
 int MTContactHandler::FindContactIDByAcctID(QString acct_id_string,
                                             QString nym_id_string/*=QString("")*/,
-                                            QString server_id_string/*=QString("")*/,
+                                            QString notary_id_string/*=QString("")*/,
                                             QString asset_id_string/*=QString("")*/)
 {
     QMutexLocker locker(&m_Mutex);
@@ -2008,7 +2014,7 @@ int MTContactHandler::FindContactIDByAcctID(QString acct_id_string,
     // that first, and then if the following piece applies, it can always
     // assume to do an update instead of an insert.
     // ---------------------------------
-    QString final_server_id = server_id_string;
+    QString final_notary_id = notary_id_string;
     QString final_nym_id    = nym_id_string;
     // ---------------------------------
     QString str_select_acct = QString("SELECT * "
@@ -2021,27 +2027,27 @@ int MTContactHandler::FindContactIDByAcctID(QString acct_id_string,
     {
         // Update it IF we have values worth sticking in there.
         //
-        if (!server_id_string.isEmpty() || !asset_id_string.isEmpty() || !nym_id_string.isEmpty())
+        if (!notary_id_string.isEmpty() || !asset_id_string.isEmpty() || !nym_id_string.isEmpty())
         {
-      //    nym_account(account_id TEXT PRIMARY KEY, server_id TEXT, nym_id TEXT, asset_id TEXT,
+      //    nym_account(account_id TEXT PRIMARY KEY, notary_id TEXT, nym_id TEXT, asset_id TEXT,
       //                account_display_name TEXT)";
-            QString existing_server_id = DBHandler::getInstance()->queryString(str_select_acct, 1, 0);
+            QString existing_notary_id = DBHandler::getInstance()->queryString(str_select_acct, 1, 0);
             QString existing_asset_id  = DBHandler::getInstance()->queryString(str_select_acct, 3, 0);
             QString existing_nym_id    = DBHandler::getInstance()->queryString(str_select_acct, 2, 0);
 
             // Here we're just making sure we don't run an update unless we've
             // actually added some new data.
             //
-            if ((existing_server_id.isEmpty() && !server_id_string.isEmpty()) ||
+            if ((existing_notary_id.isEmpty() && !notary_id_string.isEmpty()) ||
                 (existing_asset_id.isEmpty()  && !asset_id_string.isEmpty())  ||
                 (existing_asset_id.isEmpty()  && !asset_id_string.isEmpty()) )
             {
-                        final_server_id    = !existing_server_id.isEmpty() ? existing_server_id : server_id_string;
+                        final_notary_id    = !existing_notary_id.isEmpty() ? existing_notary_id : notary_id_string;
                 QString final_asset_id     = !existing_asset_id.isEmpty()  ? existing_asset_id  : asset_id_string;
                         final_nym_id       = !existing_nym_id.isEmpty()    ? existing_nym_id    : nym_id_string;
                 // -----------------------------------------------------------------
-                QString str_update_acct = QString("UPDATE `nym_account` SET `server_id`='%1',`asset_id`='%2',`nym_id`='%3' WHERE `account_id`='%4'").
-                        arg(final_server_id).arg(final_asset_id).arg(final_nym_id).arg(acct_id_string);
+                QString str_update_acct = QString("UPDATE `nym_account` SET `notary_id`='%1',`asset_id`='%2',`nym_id`='%3' WHERE `account_id`='%4'").
+                        arg(final_notary_id).arg(final_asset_id).arg(final_nym_id).arg(acct_id_string);
 
                 DBHandler::getInstance()->runQuery(str_update_acct);
             }
@@ -2052,8 +2058,8 @@ int MTContactHandler::FindContactIDByAcctID(QString acct_id_string,
         // Add it then.
         //
         QString str_insert_acct = QString("INSERT INTO `nym_account` "
-                                          "(`account_id`, `server_id`, `nym_id`, `asset_id`) "
-                                          "VALUES('%1', '%2', '%3', '%4')").arg(acct_id_string).arg(server_id_string).arg(nym_id_string).arg(asset_id_string);
+                                          "(`account_id`, `notary_id`, `nym_id`, `asset_id`) "
+                                          "VALUES('%1', '%2', '%3', '%4')").arg(acct_id_string).arg(notary_id_string).arg(nym_id_string).arg(asset_id_string);
         DBHandler::getInstance()->runQuery(str_insert_acct);
     }
     // By this point, the record of this account definitely exists, though we may not have previously
@@ -2106,19 +2112,19 @@ int MTContactHandler::FindContactIDByAcctID(QString acct_id_string,
 //          DBHandler::getInstance()->runQuery(str_update_nym);
         }
         // ---------------------------------------------------------------------
-        // Finally, do the same actions found in NotifyOfNymServerPair, only if final_server_id
+        // Finally, do the same actions found in NotifyOfNymServerPair, only if final_notary_id
         // !isEmpty(), to make sure we record the server as well, when appropriate.
         //
-        if (!final_server_id.isEmpty())
+        if (!final_notary_id.isEmpty())
         {
-            QString str_select_server = QString("SELECT `server_id` FROM `nym_server` WHERE `nym_id`='%1' AND `server_id`='%2' LIMIT 0,1").arg(final_nym_id).arg(final_server_id);
+            QString str_select_server = QString("SELECT `notary_id` FROM `nym_server` WHERE `nym_id`='%1' AND `notary_id`='%2' LIMIT 0,1").arg(final_nym_id).arg(final_notary_id);
             int nRowsServer = DBHandler::getInstance()->querySize(str_select_server);
 
             if (0 == nRowsServer) // It wasn't already there. (Add it.)
             {
                 QString str_insert_server = QString("INSERT INTO `nym_server` "
-                                                    "(`nym_id`, `server_id`) "
-                                                    "VALUES('%1', '%2')").arg(final_nym_id).arg(final_server_id);
+                                                    "(`nym_id`, `notary_id`) "
+                                                    "VALUES('%1', '%2')").arg(final_nym_id).arg(final_notary_id);
                 DBHandler::getInstance()->runQuery(str_insert_server);
             }
         }

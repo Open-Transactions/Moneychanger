@@ -1,10 +1,10 @@
 #ifndef MTHOME_HPP
 #define MTHOME_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
-#include <opentxs/OTRecordList.hpp>
+#include <opentxs/client/OTRecordList.hpp>
 
 #include <QPointer>
 #include <QWidget>
@@ -39,7 +39,7 @@ private:
     // ------------------------------------------------
     QPointer<QFrame>        m_pHeaderFrame;
     // ------------------------------------------------
-    OTRecordList   m_list;
+    opentxs::OTRecordList   m_list;
     // ------------------------------------------------
     bool    m_bTurnRefreshBtnRed;
     // ------------------------------------------------
@@ -55,15 +55,15 @@ public:
     void OnDeletedRecord();
 
     static QString shortAcctBalance(QString qstr_acct_id,   QString qstr_asset_id=QString(""));
-    static QString cashBalance     (QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id);
-    static int64_t rawCashBalance  (QString qstr_server_id, QString qstr_asset_id, QString qstr_nym_id);
+    static QString cashBalance     (QString qstr_notary_id, QString qstr_asset_id, QString qstr_nym_id);
+    static int64_t rawCashBalance  (QString qstr_notary_id, QString qstr_asset_id, QString qstr_nym_id);
     static int64_t rawAcctBalance  (QString qstrAcctId);
 
     static QString FormDisplayLabelForAcctButton(QString qstr_acct_id, QString qstr_display_name);
 
 signals:
     void needToDownloadAccountData();
-    void needToRefreshDetails(int nRow, OTRecordList & theList);
+    void needToRefreshDetails(int nRow, opentxs::OTRecordList & theList);
 
 public slots:
     void onAccountDataDownloaded();

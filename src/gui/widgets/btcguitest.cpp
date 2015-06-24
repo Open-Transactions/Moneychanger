@@ -11,7 +11,7 @@
 
 #include <bitcoin-api/btctest.hpp>
 
-#include <opentxs/OTLog.hpp>
+#include <opentxs/core/Log.hpp>
 
 
 BtcGuiTest::BtcGuiTest(QWidget *parent) :
@@ -33,23 +33,23 @@ void BtcGuiTest::on_testButton_clicked()
 {
     if(BtcTest::TestBitcoinFunctions())
     {
-        OTLog::Output(0, "Successfully tested bitcoin functionality.\n");
+        opentxs::Log::Output(0, "Successfully tested bitcoin functionality.\n");
     }
     else
     {
-        OTLog::Output(0, "Error testing bitcoin functionality.\nMaybe test environment is not set up properly?");
+        opentxs::Log::Output(0, "Error testing bitcoin functionality.\nMaybe test environment is not set up properly?");
     }
 
     /*  deprecated:
     if(!Modules::btcInterface->TestBtcJson())
-        OTLog::vOutput(0, "Error testing bitcoin integration. Maybe test environment is not set up.\n");
+        opentxs::Log::vOutput(0, "Error testing bitcoin integration. Maybe test environment is not set up.\n");
     else
-        OTLog::vOutput(0, "Bitcoin integration successfully tested.\n");
+        opentxs::Log::vOutput(0, "Bitcoin integration successfully tested.\n");
 
     if(!Modules::btcInterface->TestBtcJsonEscrowTwoOfTwo())
-        OTLog::vOutput(0, "Error testing bitcoin escrow functions. Maybe test environment is not set up.\n");
+        opentxs::Log::vOutput(0, "Error testing bitcoin escrow functions. Maybe test environment is not set up.\n");
     else
-        OTLog::vOutput(0, "Bitcoin escrow integration sucessfully tested.\n");
+        opentxs::Log::vOutput(0, "Bitcoin escrow integration sucessfully tested.\n");
     */
 }
 

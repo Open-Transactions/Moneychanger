@@ -16,9 +16,9 @@
 
 #include <core/moneychanger.hpp>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OT_ME.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OT_ME.hpp>
 
 #include <QDateTime>
 #include <QCheckBox>
@@ -29,7 +29,7 @@
 MTCashPurse::MTCashPurse(QWidget *parent, MTDetailEdit & theOwner) :
     QWidget(parent),
     m_qstrAcctId(""),
-    m_qstrAssetId(""),
+    m_qstrInstrumentDefinitionID(""),
     m_pOwner(&theOwner),
     ui(new Ui::MTCashPurse)
 {
@@ -120,21 +120,21 @@ void MTCashPurse::refresh(QString strID, QString strName)
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
         std::string str_acct_id     = strID.toStdString();
-        std::string str_acct_nym    = OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
-        std::string str_acct_server = OTAPI_Wrap::It()->GetAccountWallet_ServerID(str_acct_id);
-        std::string str_acct_asset  = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+        std::string str_acct_nym    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
+        std::string str_acct_server = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_acct_id);
+        std::string str_acct_asset  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
         // -----------------------------------
         QString qstr_acct_nym    = QString::fromStdString(str_acct_nym);
         QString qstr_acct_server = QString::fromStdString(str_acct_server);
         QString qstr_acct_asset  = QString::fromStdString(str_acct_asset);
         // -----------------------------------
-        m_qstrAssetId = qstr_acct_asset;
+        m_qstrInstrumentDefinitionID = qstr_acct_asset;
         // -----------------------------------
         QString qstr_asset_name;
 
         if (!qstr_acct_asset.isEmpty())
             qstr_asset_name = QString("   (%1)").arg(
-                    QString::fromStdString(OTAPI_Wrap::It()->GetAssetType_Name(str_acct_asset)));
+                    QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(str_acct_asset)));
         // -----------------------------------
         int64_t  raw_cash_balance = MTHome::rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
 
@@ -145,29 +145,29 @@ void MTCashPurse::refresh(QString strID, QString strName)
         if (raw_cash_balance > 0)
         {
             // --------------------------------------
-            std::string str_purse = OTAPI_Wrap::It()->LoadPurse(str_acct_server, str_acct_asset, str_acct_nym);
+            std::string str_purse = opentxs::OTAPI_Wrap::It()->LoadPurse(str_acct_server, str_acct_asset, str_acct_nym);
 
             if (!str_purse.empty())
             {
-                int32_t purse_count = OTAPI_Wrap::It()->Purse_Count(str_acct_server, str_acct_asset, str_purse);
+                int32_t purse_count = opentxs::OTAPI_Wrap::It()->Purse_Count(str_acct_server, str_acct_asset, str_purse);
                 // -------------------------------------------------------
                 ui->tableWidget->setRowCount(static_cast<int>(purse_count));
                 // -------------------------------------------------------
                 for (int ii = 0; ii < purse_count; ii++)
                 {
-                    std::string cash_token = OTAPI_Wrap::It()->Purse_Peek(str_acct_server, str_acct_asset, str_acct_nym, str_purse);
+                    std::string cash_token = opentxs::OTAPI_Wrap::It()->Purse_Peek(str_acct_server, str_acct_asset, str_acct_nym, str_purse);
 
                     if (!cash_token.empty())
                     {
-                        std::string str_amount = OTAPI_Wrap::It()->FormatAmount(str_acct_asset,
-                                                                          OTAPI_Wrap::It()->Token_GetDenomination(str_acct_server,
+                        std::string str_amount = opentxs::OTAPI_Wrap::It()->FormatAmount(str_acct_asset,
+                                                                          opentxs::OTAPI_Wrap::It()->Token_GetDenomination(str_acct_server,
                                                                                                             str_acct_asset,
                                                                                                             cash_token));
                         // ------------------------------------------------------
-                        QDateTime qdate_expires     = QDateTime::fromTime_t(OTAPI_Wrap::It()->Token_GetValidTo(str_acct_server, str_acct_asset, cash_token));
-                        QString   qstr_token_id     = QString::fromStdString(OTAPI_Wrap::It()->Token_GetID(str_acct_server, str_acct_asset, cash_token));
+                        QDateTime qdate_expires     = QDateTime::fromTime_t(opentxs::OTAPI_Wrap::It()->Token_GetValidTo(str_acct_server, str_acct_asset, cash_token));
+                        QString   qstr_token_id     = QString::fromStdString(opentxs::OTAPI_Wrap::It()->Token_GetID(str_acct_server, str_acct_asset, cash_token));
                         QString   qstr_denomination = QString::fromStdString(str_amount);
-                        QString   qstr_series       = QString("%1").arg(OTAPI_Wrap::It()->Token_GetSeries(str_acct_server, str_acct_asset, cash_token));
+                        QString   qstr_series       = QString("%1").arg(opentxs::OTAPI_Wrap::It()->Token_GetSeries(str_acct_server, str_acct_asset, cash_token));
                         QString   qstr_expires      = qdate_expires.toString(QString("MMM d yyyy hh:mm:ss"));
 
                         QLabel * pLabelDenomination = new QLabel(qstr_denomination);
@@ -205,7 +205,7 @@ void MTCashPurse::refresh(QString strID, QString strName)
                         connect(pCheckbox, SIGNAL(stateChanged(int) ), this, SLOT(checkboxClicked(int)));
                     }
 
-                    str_purse = OTAPI_Wrap::It()->Purse_Pop(str_acct_server, str_acct_asset, str_acct_nym, str_purse);
+                    str_purse = opentxs::OTAPI_Wrap::It()->Purse_Pop(str_acct_server, str_acct_asset, str_acct_nym, str_purse);
                 } // for
                 // -------------------------------------------------------
             } // if purse not empty.
@@ -237,7 +237,7 @@ void MTCashPurse::checkboxClicked(int state)
 void MTCashPurse::on_pushButtonWithdraw_clicked()
 {
     // ----------------------------------------------------------------
-    if (m_qstrAcctId.isEmpty() || m_qstrAssetId.isEmpty())
+    if (m_qstrAcctId.isEmpty() || m_qstrInstrumentDefinitionID.isEmpty())
     {
         qDebug() << "MTCashPurse::on_pushButtonWithdraw_clicked: Strange: Acct ID or Asset ID was empty.";
         return;
@@ -249,7 +249,7 @@ void MTCashPurse::on_pushButtonWithdraw_clicked()
     // ----------------------------------------------------------------
     // Let's find out the withdrawal amount.
     //
-    DlgGetAmount dlgAmount(this, m_qstrAcctId, m_qstrAssetId, qstrReason);
+    DlgGetAmount dlgAmount(this, m_qstrAcctId, m_qstrInstrumentDefinitionID, qstrReason);
 
     dlgAmount.setWindowTitle("Withdrawal Amount");
 
@@ -261,7 +261,7 @@ void MTCashPurse::on_pushButtonWithdraw_clicked()
     //
     bool bSent = false;
     {
-        OT_ME   madeEasy;
+        opentxs::OT_ME   madeEasy;
         int64_t lAmount = dlgAmount.GetAmount();
 
         MTSpinner theSpinner;
@@ -271,10 +271,10 @@ void MTCashPurse::on_pushButtonWithdraw_clicked()
     // -----------------------------------------------------------------
     if (!bSent)
     {
-        const std::string str_server = OTAPI_Wrap::It()->GetAccountWallet_ServerID(accountID);
-        const std::string str_nym    = OTAPI_Wrap::It()->GetAccountWallet_NymID   (accountID);
+        const std::string str_server = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(accountID);
+        const std::string str_nym    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (accountID);
 
-        const int64_t lUsageCredits  = Moneychanger::HasUsageCredits(this, str_server, str_nym);
+        const int64_t lUsageCredits  = Moneychanger::It()->HasUsageCredits(str_server, str_nym);
 
         // In the cases of -2 and 0, HasUsageCredits already pops up its own message box.
         //
@@ -305,9 +305,9 @@ void MTCashPurse::on_pushButtonExport_clicked()
             this->TallySelections(selectedIndices, lAmount);
     // ------------------------------------------------------------------
     std::string str_acct_id     = m_qstrAcctId.toStdString();
-    std::string str_acct_nym    = OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
-    std::string str_acct_server = OTAPI_Wrap::It()->GetAccountWallet_ServerID(str_acct_id);
-    std::string str_acct_asset  = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+    std::string str_acct_nym    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
+    std::string str_acct_server = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_acct_id);
+    std::string str_acct_asset  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
     // ------------------------------------------------------------------
     QString qstrSelectedIndices = selectedIndices.join(","); // Create a comma-separated list of selected indices.
 
@@ -317,7 +317,7 @@ void MTCashPurse::on_pushButtonExport_clicked()
     if (qstrSelectedIndices.isEmpty())
         return;
     // ------------------------------------
-    std::string str_amount = OTAPI_Wrap::It()->FormatAmount(str_acct_asset, lAmount);
+    std::string str_amount = opentxs::OTAPI_Wrap::It()->FormatAmount(str_acct_asset, lAmount);
     // ------------------------------------
     // Find out if they want it to be password-protected, and if not,
     // find out who the recipient Nym is meant to be.
@@ -361,7 +361,7 @@ void MTCashPurse::on_pushButtonExport_clicked()
     // ------------------------------------
     if (reply == QMessageBox::Yes)
     {
-        OT_ME       madeEasy;
+        opentxs::OT_ME       madeEasy;
         std::string str_selected_indices(qstrSelectedIndices.toStdString()); // (FYI, you can also use "all" for all indices.)
 
         std::string str_exported,  // The exported cash, encrypted to recipient (or passphrase.)
@@ -429,9 +429,9 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
             this->TallySelections(selectedIndices, lAmount);
     // ------------------------------------------------------------------
     std::string str_acct_id     = m_qstrAcctId.toStdString();
-    std::string str_acct_nym    = OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
-    std::string str_acct_server = OTAPI_Wrap::It()->GetAccountWallet_ServerID(str_acct_id);
-    std::string str_acct_asset  = OTAPI_Wrap::It()->GetAccountWallet_AssetTypeID(str_acct_id);
+    std::string str_acct_nym    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
+    std::string str_acct_server = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_acct_id);
+    std::string str_acct_asset  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
     // ------------------------------------------------------------------
     QString qstrSelectedIndices = selectedIndices.join(","); // Create a comma-separated list of selected indices.
 
@@ -441,7 +441,7 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
     if (qstrSelectedIndices.isEmpty())
         return;
     // ------------------------------------
-    std::string str_amount = OTAPI_Wrap::It()->FormatAmount(str_acct_asset, lAmount);
+    std::string str_amount = opentxs::OTAPI_Wrap::It()->FormatAmount(str_acct_asset, lAmount);
     // ------------------------------------
     QMessageBox::StandardButton reply;
 
@@ -456,7 +456,7 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
     {
         bool bSent = false;
         {
-            OT_ME        madeEasy;
+            opentxs::OT_ME        madeEasy;
             MTSpinner    theSpinner;
             std::string  str_selected_indices(qstrSelectedIndices.toStdString()); // (FYI, you can also use "all" for all indices.)
 
@@ -468,7 +468,7 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
         // -----------------------------------------------------------------
         if (!bSent)
         {
-            const int64_t lUsageCredits = Moneychanger::HasUsageCredits(this, str_acct_server, str_acct_nym);
+            const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(str_acct_server, str_acct_nym);
 
             // In the cases of -2 and 0, HasUsageCredits already pops up its own error box.
             //
@@ -536,7 +536,7 @@ int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmoun
                 // -------------------------
                 if (NULL != pValueLabel)
                 {
-                    int64_t lTokenAmount = OTAPI_Wrap::It()->StringToAmount(m_qstrAssetId.toStdString(),
+                    int64_t lTokenAmount = opentxs::OTAPI_Wrap::It()->StringToAmount(m_qstrInstrumentDefinitionID.toStdString(),
                                                                       pValueLabel->text().toStdString());
                     lSelectedAmount += lTokenAmount;
                 }
@@ -558,10 +558,10 @@ int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmoun
         // ---------------------------------------
         QString qstr_amount("");
 
-        if (m_qstrAssetId.isEmpty())
+        if (m_qstrInstrumentDefinitionID.isEmpty())
             qstr_amount = QString("%1").arg(lAmount);
         else
-            qstr_amount = QString::fromStdString(OTAPI_Wrap::It()->FormatAmount(m_qstrAssetId.toStdString(), lAmount));
+            qstr_amount = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(m_qstrInstrumentDefinitionID.toStdString(), lAmount));
         // ---------------------------------------
         ui->pushButtonDeposit ->setText(QString("%1: %2").arg(tr("Deposit Cash")).arg(qstr_amount));
     }
@@ -608,7 +608,7 @@ void MTCashPurse::ClearContents()
     ui->pushButtonExport  ->setEnabled(false);
     ui->pushButtonWithdraw->setEnabled(false);
     // ----------------------------------
-    m_qstrAssetId  = QString("");
+    m_qstrInstrumentDefinitionID  = QString("");
     m_qstrAcctId   = QString("");
     m_qstrAcctName = QString("");
     // ----------------------------------

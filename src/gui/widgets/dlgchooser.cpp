@@ -189,12 +189,12 @@ void DlgChooser::showEvent(QShowEvent * event)
         {
             if (nPreselectedIndex > (-1))
             {
-                qDebug() << QString("SETTING current row to %1 on the tableWidget.").arg(nPreselectedIndex);
+//                qDebug() << QString("SETTING current row to %1 on the tableWidget.").arg(nPreselectedIndex);
                 ui->tableWidget->setCurrentCell(nPreselectedIndex, 1);
             }
             else
             {
-                qDebug() << "SETTING current row to 0 on the tableWidget.";
+//                qDebug() << "SETTING current row to 0 on the tableWidget.";
                 ui->tableWidget->setCurrentCell(0, 1);
             }
         }
@@ -250,7 +250,7 @@ void DlgChooser::on_tableWidget_currentCellChanged(int currentRow, int currentCo
 
                 ui->pushButton->setEnabled(true);
 
-                qDebug() << "SETTING current row to " << nIndex << " on the tableWidget.";
+//                qDebug() << "SETTING current row to " << nIndex << " on the tableWidget.";
 
                 return;
             }

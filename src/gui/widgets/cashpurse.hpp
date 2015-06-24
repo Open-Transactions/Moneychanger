@@ -1,9 +1,9 @@
 #ifndef CASHPURSE_HPP
 #define CASHPURSE_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
-#include <opentxs/TR1_Wrapper.hpp>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
+#include "core/TR1_Wrapper.hpp"
 
 #include _CINTTYPES
 #include _MEMORY
@@ -49,7 +49,7 @@ private slots:
 
 private:
     QString   m_qstrAcctId;
-    QString   m_qstrAssetId;
+    QString   m_qstrInstrumentDefinitionID;
     QString   m_qstrAcctName;
 
     QPointer<MTDetailEdit> m_pOwner;

@@ -14,6 +14,19 @@ $ brew install libidn
 
 
 #########
+# Open-Transactions (opentxs) requires openssl-1.0.0 or greater, so we will need to install a newer version to accomodate it
+
+$ brew tap homebrew/versions
+$ brew tap homebrew/boneyard
+$ cd /usr/local/Library/Formula/
+$ git checkout d915ce8
+$ cd -
+$ brew switch openssl 1.0.1h
+$ brew install openssl
+$ brew link --force openssl
+
+
+#########
 # install QT
 $ brew install libpng qt5
 $ brew unlink qt

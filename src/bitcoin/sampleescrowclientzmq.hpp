@@ -4,7 +4,7 @@
 #include "sampleescrowclient.hpp"
 #include "samplenetmessages.hpp"
 
-#include <opentxs/TR1_Wrapper.hpp>
+#include "core/TR1_Wrapper.hpp"
 
 class SampleEscrowClientZmq : public SampleEscrowClient
 {

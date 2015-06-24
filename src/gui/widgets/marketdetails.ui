@@ -31,7 +31,7 @@
           <bool>true</bool>
          </property>
          <property name="text">
-          <string>asset_type_id</string>
+          <string>instrument_definition_id</string>
          </property>
          <property name="frame">
           <bool>false</bool>
@@ -42,7 +42,7 @@
         </widget>
        </item>
        <item row="0" column="2">
-        <widget class="QLineEdit" name="lineEditAssetID">
+        <widget class="QLineEdit" name="lineEditInstrumentDefinitionID">
          <property name="enabled">
           <bool>true</bool>
          </property>

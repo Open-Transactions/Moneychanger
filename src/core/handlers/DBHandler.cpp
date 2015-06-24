@@ -4,7 +4,7 @@
 
 #include <core/handlers/DBHandler.hpp>
 
-#include <opentxs/OTPaths.hpp>
+#include <opentxs/core/util/OTPaths.hpp>
 
 #include <QSqlRecord>
 
@@ -40,8 +40,8 @@ DBHandler::DBHandler()
     db = QSqlDatabase::addDatabase(dbDriverStr, dbConnNameStr);
     
     bool flag = isDbExist();
-    qDebug() << QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr;
-    db.setDatabaseName( QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr);
+    qDebug() << QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr;
+    db.setDatabaseName( QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
     if(!dbConnect())
         qDebug() << "Error Opening Database";
     
@@ -85,13 +85,13 @@ bool DBHandler::dbDisconnect()
 
 bool DBHandler::isDbExist()
 {
-    return dbFile.isFileExist(QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr);
+    return dbFile.isFileExist(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 }
 
 
 bool DBHandler::dbRemove()
 {
-    return dbFile.removeFile(QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr);
+    return dbFile.removeFile(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 }
 
 /*
@@ -119,8 +119,8 @@ bool DBHandler::dbCreateInstance()
         // --------------------------------------------
         QString create_contact = "CREATE TABLE contact(contact_id INTEGER PRIMARY KEY, contact_display_name TEXT)";
         QString create_nym     = "CREATE TABLE nym(nym_id TEXT PRIMARY KEY, contact_id INTEGER, nym_display_name TEXT)";
-        QString create_server  = "CREATE TABLE nym_server(nym_id TEXT, server_id TEXT, PRIMARY KEY(nym_id, server_id))";
-        QString create_account = "CREATE TABLE nym_account(account_id TEXT PRIMARY KEY, server_id TEXT, nym_id TEXT, asset_id TEXT, account_display_name TEXT)";
+        QString create_server  = "CREATE TABLE nym_server(nym_id TEXT, notary_id TEXT, PRIMARY KEY(nym_id, notary_id))";
+        QString create_account = "CREATE TABLE nym_account(account_id TEXT PRIMARY KEY, notary_id TEXT, nym_id TEXT, asset_id TEXT, account_display_name TEXT)";
         // --------------------------------------------
         QString create_msg_method = "CREATE TABLE msg_method"
                 " (method_id INTEGER PRIMARY KEY,"   // 1, 2, etc.
@@ -177,7 +177,7 @@ bool DBHandler::dbCreateInstance()
             FileHandler rm;
             db.close();
 
-            rm.removeFile(QString(OTPaths::AppDataFolder().Get()) + dbFileNameStr);
+            rm.removeFile(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 //          rm.removeFile(QCoreApplication::applicationDirPath() + dbFileNameStr);
         }
         else

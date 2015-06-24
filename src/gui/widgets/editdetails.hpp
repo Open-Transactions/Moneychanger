@@ -1,8 +1,8 @@
 #ifndef EDITDETAILS_HPP
 #define EDITDETAILS_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <gui/widgets/detailedit.hpp>
 

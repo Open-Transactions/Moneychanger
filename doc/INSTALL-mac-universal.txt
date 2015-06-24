@@ -1,0 +1,198 @@
+############################################
+# Building a Universal DMG of Moneychanger #
+############################################
+
+# Updating brew and installing dependencies
+
+$ brew update
+$ brew upgrade
+$ brew install libidn
+$ brew install -build-bottle protobuf
+
+# Open-Transactions (opentxs) requires openssl-1.0.0 or greater, so we will need to install a newer version to accomodate it
+
+$ brew tap homebrew/versions
+$ brew tap homebrew/boneyard
+$ cd /usr/local/Library/Formula/
+$ git checkout d915ce8
+$ cd -
+$ brew switch openssl 1.0.1h
+$ brew install openssl
+$ brew link --force openssl
+
+# install libsodium from brew
+$ brew install --universal libsodium
+
+# There have been compatibility issues using zeromq that comes through homebrew
+# It is therefore recommended to install and use libzmq from the deps directory inside of the
+# opentxs project.
+
+
+
+# install QT
+
+$ brew install libpng qt5
+$ brew unlink qt
+$ brew link —-force qt5
+
+
+
+
+# Building Moneychanger 
+
+# This may be redundant if you have already cloned the Moneychanger repository locally.
+
+$ git clone https://github.com/open-transactions/Moneychanger
+$ cd Moneychanger/project/
+$ qmake && make 
+$ cd moneychanger-qt
+
+
+
+
+# A first pass of ‘macdeployqt’ to copy our dependencies into the application bundle
+
+$ macdeployqt moneychanger-qt.app
+$ cd moneychanger-qt.app/Contents/MacOS/
+$ mkdir -p lib/opentxs/
+$ cp /usr/local/lib/opentxs/* lib/opentxs/
+
+
+# At this point we have an app bundle built, however there’s a good 
+# chance that our installation paths for our dependencies are not configured properly.
+# There’s also a good chance that our opentxs libraries have not been copied over.
+# So we are going to copy our remaining dependencies over and configure them by hand
+
+$ cd ../Frameworks/
+
+# Note in these copies the version number of the library being copied, 
+# they will change as time goes on.
+# If you get errors at this step, you may have more than one copy of opentxs installed
+# Or you have a newer version installed.
+
+$ cp /usr/local/lib/libopentxs-basket.0.94.* ./libopentxs-basket.dylib
+$ cp /usr/local/lib/libopentxs-cash.0.94.* ./libopentxs-cash.dylib
+$ cp /usr/local/lib/libopentxs-client.0.94.* ./libopentxs-client.dylib
+$ cp /usr/local/lib/libopentxs-core.0.94.* ./libopentxs-core.dylib
+$ cp /usr/local/lib/libopentxs-ext.0.94.* ./libopentxs-ext.dylib
+$ cp /usr/local/lib/libopentxs-server.0.94.* ./libopentxs-server.dylib
+$ cp /usr/local/lib/libssl.1.0.0.dylib ./
+$ cp /usr/local/lib/libcrypto.1.0.0.dylib ./
+$ cp /usr/local/lib/liblucre.dylib ./
+$ cp /usr/local/lib/libczmq.dylib ./
+$ cp /usr/local/lib/libprotobuf.9.dylib ./
+$ chmod 755 ./*.dylib 
+$ cd ../../../
+$ macdeployqt moneychanger-qt.app 
+
+
+
+
+# Now we have to change the install paths on the libraries in the bundle.
+# Two tools useful to us through this process are “otool" and “install_name_tool”
+# otool will let us see the install paths of the libraries referenced from our dylib’s
+# install_name_tool will allow us to modify those paths.
+
+# As an example, here we use otool to check the install paths of the libraries it references
+
+$ otool -L liblucre.dylib
+
+liblucre.dylib:
+	@rpath/liblucre.dylib (compatibility version 0.0.0, current version 0.0.0)
+	/usr/local/opt/openssl/lib/libssl.1.0.0.dylib (compatibility version 1.0.0, current version 1.0.0)
+	/usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib (compatibility version 1.0.0, current version 1.0.0)
+	/usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1) 
+
+
+# As you can see, we have two references to libraries in /usr/local/ that we need to repair
+# We do this as follows:
+
+$ install_name_tool -change /usr/local/opt/openssl/lib/libssl.1.0.0.dylib @executable_path/../Frameworks/libssl.1.0.0.dylib liblucre.dylib
+$ install_name_tool -change /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib @executable_path/../Frameworks/libcrypto.1.0.0.dylib liblucre.dylib
+
+# Running otool again, we can see our install paths have been changed properly
+
+$ otool -L liblucre.dylib
+liblucre.dylib:
+	@rpath/liblucre.dylib (compatibility version 0.0.0, current version 0.0.0)
+	@executable_path/../Frameworks/libssl.dylib (compatibility version 1.0.0, current version 1.0.0)
+	@executable_path/../Frameworks/libcrypto.dylib (compatibility version 1.0.0, current version 1.0.0)
+	/usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
+
+
+# Let’s continue with updating the rest of our libraries
+
+
+$ install_name_tool -change @rpath/libopentxs-core.0.dylib @executable_path/../Frameworks/libopentxs-core.dylib ./libopentxs-basket.dylib
+$ install_name_tool -change @rpath/libopentxs-core.0.dylib @executable_path/../Frameworks/libopentxs-core.dylib ./libopentxs-cash.dylib
+$ install_name_tool -change @rpath/liblucre.dylib @executable_path/../Frameworks/liblucre.dylib libopentxs-cash.dylib
+$ install_name_tool -change @rpath/libopentxs-core.0.dylib @executable_path/../Frameworks/libopentxs-core.dylib ./libopentxs-client.dylib
+$ install_name_tool -change @rpath/liblucre.dylib @executable_path/../Frameworks/liblucre.dylib libopentxs-client.dylib
+$ install_name_tool -change @rpath/libopentxs-cash.0.dylib @executable_path/../Frameworks/libopentxs-cash.dylib ./libopentxs-client.dylib
+$ install_name_tool -change @rpath/libopentxs-ext.0.dylib @executable_path/../Frameworks/libopentxs-ext.dylib ./libopentxs-client.dylib
+$ install_name_tool -change @rpath/libopentxs-basket.0.dylib @executable_path/../Frameworks/libopentxs-basket.dylib ./libopentxs-client.dylib
+$ install_name_tool -change @rpath/libopentxs-cash.0.dylib @executable_path/../Frameworks/libopentxs-cash.dylib ./libopentxs-ext.dylib
+$ install_name_tool -change @rpath/liblucre.dylib @executable_path/../Frameworks/liblucre.dylib libopentxs-ext.dylib
+$ install_name_tool -change @rpath/libopentxs-core.0.dylib @executable_path/../Frameworks/libopentxs-core.dylib ./libopentxs-ext.dylib
+$ install_name_tool -change @rpath/libopentxs-ext.0.dylib @executable_path/../Frameworks/libopentxs-ext.dylib ./libopentxs-server.dylib
+$ install_name_tool -change @rpath/libopentxs-core.0.dylib @executable_path/../Frameworks/libopentxs-core.dylib ./libopentxs-server.dylib
+$  install_name_tool -change @rpath/liblucre.dylib @executable_path/../Frameworks/liblucre.dylib libopentxs-server.dylib
+$ install_name_tool -change @rpath/libopentxs-cash.0.dylib @executable_path/../Frameworks/libopentxs-cash.dylib ./libopentxs-server.dylib
+$ install_name_tool -change @rpath/libopentxs-basket.0.dylib @executable_path/../Frameworks/libopentxs-basket.dylib ./libopentxs-server.dylib
+
+
+
+#At this point we should be able to force macdeployqt into repairing the rest of the 
+# installation paths to their proper bundle locations. 
+# Note that you can ignore this warning
+# “WARNING: Could not find any external Qt frameworks to deploy in "moneychanger-qt.app””
+
+$ cd ../../../
+$ macdeployqt moneychanger-qt.app
+
+# At this point we have one final pass to repair our actual moneychanger executable:
+
+$ cd moneychanger-qt.app/Contents/MacOS
+$ install_name_tool -change @rpath/libopentxs-server.0.dylib @executable_path/../Frameworks/libopentxs-server.dylib moneychanger-qt
+$ install_name_tool -change @rpath/libopentxs-client.0.dylib @executable_path/../Frameworks/libopentxs-client.dylib moneychanger-qt
+$ install_name_tool -change @rpath/libopentxs-ext.0.dylib @executable_path/../Frameworks/libopentxs-ext.dylib moneychanger-qt
+$ install_name_tool -change @rpath/libopentxs-basket.0.dylib @executable_path/../Frameworks/libopentxs-basket.dylib moneychanger-qt
+$ install_name_tool -change @rpath/libopentxs-cash.0.dylib @executable_path/../Frameworks/libopentxs-cash.dylib moneychanger-qt
+$ install_name_tool -change @rpath/libopentxs-core.0.dylib @executable_path/../Frameworks/libopentxs-core.dylib moneychanger-qt
+
+# We can make one final check to verify that our install paths are correct, here is the output of my 
+# verification pass:
+
+$ otool -L moneychanger-qt
+moneychanger-qt:
+	@executable_path/../Frameworks/libzmq.4.dylib (compatibility version 5.0.0, current version 5.0.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1213.0.0)
+	/usr/lib/libcurl.4.dylib (compatibility version 7.0.0, current version 8.0.0)
+	@executable_path/../Frameworks/libxmlrpc.3.37.dylib (compatibility version 0.0.0, current version 0.0.0)
+	@executable_path/../Frameworks/libxmlrpc++.8.37.dylib (compatibility version 0.0.0, current version 0.0.0)
+	@executable_path/../Frameworks/libxmlrpc_client++.8.37.dylib (compatibility version 0.0.0, current version 0.0.0)
+	@executable_path/../Frameworks/libopentxs-server.dylib (compatibility version 0.0.0, current version 0.94.0)
+	@executable_path/../Frameworks/libopentxs-client.dylib (compatibility version 0.0.0, current version 0.94.0)
+	@executable_path/../Frameworks/libopentxs-ext.dylib (compatibility version 0.0.0, current version 0.94.0)
+	@executable_path/../Frameworks/libopentxs-basket.dylib (compatibility version 0.0.0, current version 0.94.0)
+	@executable_path/../Frameworks/libopentxs-cash.dylib (compatibility version 0.0.0, current version 0.94.0)
+	@executable_path/../Frameworks/libopentxs-core.dylib (compatibility version 0.0.0, current version 0.94.0)
+	@executable_path/../Frameworks/QtWidgets.framework/Versions/5/QtWidgets (compatibility version 5.3.0, current version 5.3.1)
+	@executable_path/../Frameworks/QtGui.framework/Versions/5/QtGui (compatibility version 5.3.0, current version 5.3.1)
+	@executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore (compatibility version 5.3.0, current version 5.3.1)
+	@executable_path/../Frameworks/QtNetwork.framework/Versions/5/QtNetwork (compatibility version 5.3.0, current version 5.3.1)
+	@executable_path/../Frameworks/QtSql.framework/Versions/5/QtSql (compatibility version 5.3.0, current version 5.3.1)
+	/System/Library/Frameworks/OpenGL.framework/Versions/A/OpenGL (compatibility version 1.0.0, current version 1.0.0)
+	/System/Library/Frameworks/AGL.framework/Versions/A/AGL (compatibility version 1.0.0, current version 1.0.0)
+	/usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+
+# Note that there are no references to /usr/local in the binary.
+# We can now assemble our DMG (once again ignoring the warning)
+
+$ cd ../../../
+$ macdeployqt moneychanger-qt.app -dmg
+$ mv moneychanger-qt.dmg Moneychanger.dmg
+
+

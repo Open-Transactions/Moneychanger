@@ -19,9 +19,9 @@
 
 #include <core/moneychanger.hpp>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OTStorage.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/OTStorage.hpp>
 
 #include <QDialog>
 #include <QKeyEvent>
@@ -569,12 +569,12 @@ void MTDetailEdit::RefreshRecords()
     {
         ++nIndex; // 0 on first iteration.
 
-        qDebug() << "MTDetailEdit Iteration: " << nIndex;
+//        qDebug() << "MTDetailEdit Iteration: " << nIndex;
         // -------------------------------------
         QString qstrID    = ii.key();
         QString qstrValue = ii.value();
 
-        qDebug() << QString("MTDetailEdit::RefreshRecords: Name: %1, ID: %2").arg(qstrValue, qstrID);
+//        qDebug() << QString("MTDetailEdit::RefreshRecords: Name: %1, ID: %2").arg(qstrValue, qstrID);
         // -------------------------------------
         if (!m_PreSelected.isEmpty() && (m_PreSelected == qstrID))
             nPreselectedIndex = nIndex;
@@ -649,13 +649,13 @@ void MTDetailEdit::RefreshRecords()
                 if (m_pmapMarkets->end() != it_market)
                 {
                     // ------------------------------------------------------
-                    OTDB::MarketData * pMarketData = VPtr<OTDB::MarketData>::asPtr(it_market.value());
+                    opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
 
                     if (NULL != pMarketData) // Should never be NULL.
                     {
                         // ------------------------------------------------------
-                        int64_t     lScale    = OTAPI_Wrap::It()->StringToLong(pMarketData->scale);
-                        std::string str_scale = OTAPI_Wrap::It()->FormatAmount(pMarketData->asset_type_id, lScale);
+                        int64_t     lScale    = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->scale);
+                        std::string str_scale = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id, lScale);
                         // ------------------------------------------------------
                         QString qstrFormattedScale = QString::fromStdString(str_scale);
                         // ------------------------------------------------------
@@ -675,12 +675,12 @@ void MTDetailEdit::RefreshRecords()
             if (m_pmapOffers)
             {
                 // -------------------------------------
-                QString     qstrServerID, qstrTransactionID;
-                QStringList theIDs = qstrID.split(","); // theIDs.at(0) ServerID, at(1) transaction ID
+                QString     qstrNotaryID, qstrTransactionID;
+                QStringList theIDs = qstrID.split(","); // theIDs.at(0) NotaryID, at(1) transaction ID
 
                 if (2 == theIDs.size()) // Should always be 2...
                 {
-                    qstrServerID      = theIDs.at(0);
+                    qstrNotaryID      = theIDs.at(0);
                     qstrTransactionID = theIDs.at(1);
                 }
                 // -------------------------------------
@@ -689,20 +689,20 @@ void MTDetailEdit::RefreshRecords()
                 if (m_pmapOffers->end() != it_offer)
                 {
                     // ------------------------------------------------------
-                    OTDB::OfferDataNym * pOfferData = VPtr<OTDB::OfferDataNym>::asPtr(it_offer.value());
+                    opentxs::OTDB::OfferDataNym * pOfferData = VPtr<opentxs::OTDB::OfferDataNym>::asPtr(it_offer.value());
 
                     if (NULL != pOfferData) // Should never be NULL.
                     {
                         bool        bSelling          = pOfferData->selling;
                         // ------------------------------------------------------
-                        int64_t     lTotalAssets      = OTAPI_Wrap::It()->StringToLong(pOfferData->total_assets);
-                        int64_t     lFinished         = OTAPI_Wrap::It()->StringToLong(pOfferData->finished_so_far);
+                        int64_t     lTotalAssets      = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->total_assets);
+                        int64_t     lFinished         = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->finished_so_far);
                         // ------------------------------------------------------
-                        int64_t     lScale            = OTAPI_Wrap::It()->StringToLong(pOfferData->scale);
-                        std::string str_scale         = OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lScale);
+                        int64_t     lScale            = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->scale);
+                        std::string str_scale         = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lScale);
                         // ------------------------------------------------------
-                        int64_t     lPrice            = OTAPI_Wrap::It()->StringToLong(pOfferData->price_per_scale);
-                        std::string str_price         = OTAPI_Wrap::It()->FormatAmount(pOfferData->currency_type_id, lPrice);
+                        int64_t     lPrice            = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->price_per_scale);
+                        std::string str_price         = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->currency_type_id, lPrice);
                         // ------------------------------------------------------
                         QString qstrPrice(tr("market order"));
 
@@ -713,10 +713,10 @@ void MTDetailEdit::RefreshRecords()
 
                         qstrPrice += QString(" (%1 %2)").arg(tr("per")).arg(qstrFormattedScale);
                         // ------------------------------------------------------
-                        QString qstrTotalAssets       = QString::fromStdString(OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lTotalAssets));
-                        QString qstrSoldOrPurchased   = QString::fromStdString(OTAPI_Wrap::It()->FormatAmount(pOfferData->asset_type_id, lFinished));
+                        QString qstrTotalAssets       = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lTotalAssets));
+                        QString qstrSoldOrPurchased   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lFinished));
                         // ------------------------------------------------------
-                        std::string str_asset_name    = OTAPI_Wrap::It()->GetAssetType_Name(pOfferData->asset_type_id);
+                        std::string str_asset_name    = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pOfferData->instrument_definition_id);
                         // -----------------------------------------------------------------------
                         QString qstrBuySell = bSelling ? tr("Sell") : tr("Buy");
                         QString qstrAmounts;
@@ -783,12 +783,12 @@ void MTDetailEdit::RefreshRecords()
 
         if ((nPreselectedIndex > (-1)) && (nPreselectedIndex < ui->tableWidget->rowCount()))
         {
-            qDebug() << QString("SETTING current row to %1 on the tableWidget.").arg(nPreselectedIndex);
+//            qDebug() << QString("SETTING current row to %1 on the tableWidget.").arg(nPreselectedIndex);
             ui->tableWidget->setCurrentCell(nPreselectedIndex, 1);
         }
         else
         {
-            qDebug() << "SETTING current row to 0 on the tableWidget.";
+//            qDebug() << "SETTING current row to 0 on the tableWidget.";
             ui->tableWidget->setCurrentCell(0, 1);
         }
     }
@@ -857,7 +857,7 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
                 if (m_bEnableDelete)
                     ui->deleteButton->setEnabled(true);
 
-                qDebug() << "SETTING current row to " << nIndex << " on the tableWidget.";
+//                qDebug() << "SETTING current row to " << nIndex << " on the tableWidget.";
                 // ----------------------------------------
                 m_PreSelected = m_qstrCurrentID;
 

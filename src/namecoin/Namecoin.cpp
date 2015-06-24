@@ -25,9 +25,9 @@
 
 #include <nmcrpc/RpcSettings.hpp>
 
-#include <opentxs/OTAPI.hpp>
-#include <opentxs/OTAPI_Exec.hpp>
-#include <opentxs/OTPassword.hpp>
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/crypto/OTPassword.hpp>
 
 #include <QDebug>
 #include <QSqlField>
@@ -209,7 +209,7 @@ NMC_NameManager::startRegistration (const QString& nym, const QString& cred)
 bool
 NMC_NameManager::updateName (const QString& nym, const QString& cred)
 {
-  std::string addrStr = OTAPI_Wrap::It()->GetNym_SourceForID (nym.toStdString ());
+  std::string addrStr = opentxs::OTAPI_Wrap::It()->GetNym_SourceForID (nym.toStdString ());
   const nmcrpc::NamecoinInterface::Address addr = nc.queryAddress (addrStr);
 
   if (!addr.isValid () || !addr.isMine ())
@@ -431,7 +431,7 @@ NMC_WalletUnlocker::unlock ()
   /* If we need a password, show the dialog.  */
   if (nc.needWalletPassphrase ())
     {
-      OTPassword otPwd;
+        opentxs::OTPassword otPwd;
 
       MTDlgPassword dlg (nullptr, otPwd);
       dlg.setDisplay ("Your Namecoin wallet is locked.  For the operations to"

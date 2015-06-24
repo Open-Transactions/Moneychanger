@@ -568,7 +568,7 @@ void MTContactDetails::on_pushButtonMsg_clicked()
             // No? Okay then let's try the default OT server, if one is available.
             else
             {
-                QString qstrDefaultServer = Moneychanger::It()->get_default_server_id();
+                QString qstrDefaultServer = Moneychanger::It()->get_default_notary_id();
 
                 if (!qstrDefaultServer.isEmpty() && compose_window->setRecipientNymBasedOnContact() &&
                     compose_window->verifySenderAgainstServer   (false, qstrDefaultServer) &&
@@ -602,7 +602,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
         return;
     }
 
-    QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName, "", "", ":/icons/addressbook", false);
+    QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName, "", "", ":/icons/icons/rolodex_small", false);
 
     pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
@@ -678,14 +678,14 @@ void MTContactDetails::refresh(QString strID, QString strName)
 
                     for (mapIDName::iterator iii = theServerMap.begin(); iii != theServerMap.end(); iii++)
                     {
-                        QString qstrServerID    = iii.key();
+                        QString qstrNotaryID    = iii.key();
                         QString qstrServerValue = iii.value();
                         // -------------------------------------
-                        strDetails += QString("%1\n").arg(qstrServerID);
+                        strDetails += QString("%1\n").arg(qstrNotaryID);
                         // -------------------------------------
                         mapIDName theAccountMap;
 
-                        if (MTContactHandler::getInstance()->GetAccounts(theAccountMap, qstrNymID, qstrServerID, QString("")))
+                        if (MTContactHandler::getInstance()->GetAccounts(theAccountMap, qstrNymID, qstrNotaryID, QString("")))
                         {
                             strDetails += tr("Where he owns the accounts:\n");
 

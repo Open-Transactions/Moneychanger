@@ -1,8 +1,8 @@
 #ifndef PAGECREATECONTRACT_HPP
 #define PAGECREATECONTRACT_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <QWizardPage>
 
@@ -21,8 +21,25 @@ public:
     //virtual
     int nextId() const;
 
+signals:
+    void SetDefaultNym(QString, QString);
+
+protected:
+    void initializePage(); //virtual
+
+    void SetFieldsBlank();
+
+private slots:
+    void on_pushButton_clicked();
+
+    void on_pushButtonManage_clicked();
+
+    void on_pushButtonSelect_clicked();
+
 private:
     Ui::MTPageCreateContract *ui;
+
+    bool m_bFirstRun;
 };
 
 #endif // PAGECREATECONTRACT_HPP

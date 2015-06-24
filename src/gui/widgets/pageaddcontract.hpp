@@ -1,8 +1,8 @@
 #ifndef PAGEADDCONTRACT_HPP
 #define PAGEADDCONTRACT_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <QWizardPage>
 
@@ -20,6 +20,9 @@ public:
 
     //virtual
     int nextId() const;
+
+    //virtual
+    bool validatePage();
 
 private:
     Ui::MTPageAddContract *ui;

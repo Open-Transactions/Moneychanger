@@ -1,8 +1,8 @@
 #ifndef CREDENTIALS_HPP
 #define CREDENTIALS_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <QWidget>
 #include <QSqlRecord>

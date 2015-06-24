@@ -1,8 +1,8 @@
 #ifndef ASSETDETAILS_HPP
 #define ASSETDETAILS_HPP
 
-#include <opentxs/WinsockWrapper.h>
-#include <opentxs/ExportWrapper.h>
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <gui/widgets/editdetails.hpp>
 #include <core/filedownloader.hpp>
@@ -44,6 +44,12 @@ private slots:
     void on_lineEditName_editingFinished();
 
     void DownloadedURL();
+
+    void on_pushButton_clicked();
+
+    void on_toolButtonAsset_clicked();
+
+    void on_toolButtonSigner_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
