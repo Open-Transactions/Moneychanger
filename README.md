@@ -11,18 +11,13 @@ git clone https://github.com/Open-Transactions/Moneychanger.git
 
 #### IDE
 
-Download QT tools (Qt Core Version 5.1.0+; 64bit compiling support Recomended for OT)
+Download QT tools (Qt Core Version 5.4.0+; 64bit compiling support Recomended for OT)
 
 Open the moneychanger.pro file and press run.
 
-(First make sure you have installed the OT library
+First make sure you have installed the OT library
 
-https://github.com/Open-Transactions/Open-Transactions
-
-or
-
-https://github.com/FellowTraveler/Open-Transactions )
-
+https://github.com/Open-Transactions/opentxs
 
 #### Manual
 
