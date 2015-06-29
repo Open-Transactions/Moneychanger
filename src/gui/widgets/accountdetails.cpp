@@ -20,8 +20,6 @@
 #include <QDebug>
 
 
-
-
 MTAccountDetails::MTAccountDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
     m_qstrID(""),
@@ -502,7 +500,7 @@ void MTAccountDetails::AddButtonClicked()
         m_pOwner->m_map.insert(qstrID, qstrName);
         m_pOwner->SetPreSelected(qstrID);
         // ------------------------------------------------
-        emit RefreshRecordsAndUpdateMenu();
+        emit newAccountAdded(qstrID);
         // ------------------------------------------------
     }
 }

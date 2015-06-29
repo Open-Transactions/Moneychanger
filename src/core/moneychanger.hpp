@@ -74,7 +74,13 @@ public slots:
     void setDefaultAccount(QString, QString);
     void setDefaultServer(QString, QString);
     
+    void onNewServerAdded(QString qstrID);
+    void onNewAssetAdded(QString qstrID);
+    void onNewNymAdded(QString qstrID);
+    void onNewAccountAdded(QString qstrID);
     
+    void onRunSmartContract(QString qstrTemplate, QString qstrLawyer, int32_t index);
+
 public:
 
     /**
@@ -134,12 +140,12 @@ private:
     QPointer<MTDetailEdit> agreement_window;
     QPointer<MTDetailEdit> transport_window;
 
+    QPointer<CreateInsuranceCompany> createinsurancecompany_window;
+
     QPointer<DlgLog      > log_window;
 
     QPointer<DlgMarkets  > market_window;
 
-
-    QPointer<CreateInsuranceCompany> createinsurancecompany_window;
     QPointer<Settings> settingswindow;
 
     QPointer<BtcGuiTest> bitcoinwindow;
@@ -166,6 +172,17 @@ private:
     void SetupServerMenu();
     void SetupNymMenu();
     void SetupAccountMenu();
+    // ------------------------------------------------
+    // Used for smart contracts.
+
+    bool showPartyAccounts(const std::string& contract, const std::string& name, std::string & str_output);
+    int32_t sendToNextParty(const std::string& server, const std::string& mynym,
+                            const std::string& hisnym,
+                            const std::string& contract);
+    int32_t activateContract(const std::string& server, const std::string& mynym,
+                             const std::string& contract, const std::string& name,
+                             std::string myAcctID,
+                             std::string myAcctAgentName);
     // ------------------------------------------------
 
 private:

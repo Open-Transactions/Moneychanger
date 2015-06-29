@@ -68,6 +68,7 @@ public:
   void NotifyOfNymServerPair(QString nym_id_string, QString notary_id_string);
 
   int  CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string=QString(""));
+  int  CreateSmartContractTemplate(QString template_string);
 
   bool AddNymToExistingContact   (int nContactID, QString nym_id_string);
   bool VerifyNymOnExistingContact(int nContactID, QString nym_id_string); // See if a given Contact ID is associated with a given NymID.
@@ -194,6 +195,10 @@ public:
 
   bool GetContacts(mapIDName & theMap);
   bool GetNyms    (mapIDName & theMap, int nFilterByContact);
+
+  bool GetSmartContracts(mapIDName & theMap);
+  QString GetSmartContract(int nID);
+  bool DeleteSmartContract(int nID);
 
   public:
     ~MTContactHandler();

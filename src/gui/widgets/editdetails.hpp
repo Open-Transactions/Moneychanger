@@ -78,6 +78,13 @@ signals:
     void SendFromAcct (QString qstrAcct);
     void RequestToAcct(QString qstrAcct);
 
+    void newServerAdded(QString qstrID);
+    void newAssetAdded(QString qstrID);
+    void newNymAdded(QString qstrID);
+    void newAccountAdded(QString qstrID);
+
+    void runSmartContract(QString qstrTemplate, QString qstrLawyer, int32_t index);
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
