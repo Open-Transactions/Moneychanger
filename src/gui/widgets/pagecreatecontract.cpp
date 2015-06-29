@@ -67,6 +67,15 @@ void MTPageCreateContract::initializePage() //virtual
     if (!qstr_id.isEmpty())
         str_name = opentxs::OTAPI_Wrap::It()->GetNym_Name(qstr_id.toStdString());
     // -------------------------------------------
+    QString qstrContractType = field("contractType").toString();
+
+    if (0 == qstrContractType.compare("smart"))
+    {
+        ui->pushButton->setVisible(false);
+        ui->plainTextEdit->setVisible(false);
+        ui->label->setVisible(false);
+    }
+    // -------------------------------------------
     if (str_name.empty() || qstr_id.isEmpty())
         SetFieldsBlank();
     else

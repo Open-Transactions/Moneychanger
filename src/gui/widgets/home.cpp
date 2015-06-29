@@ -177,6 +177,25 @@ void MTHome::setupRecordList()
 }
 
 
+void MTHome::onNewServerAdded(QString qstrID)
+{
+    m_list.AddNotaryID(qstrID.toStdString());
+}
+
+void MTHome::onNewAssetAdded(QString qstrID)
+{
+    m_list.AddInstrumentDefinitionID(qstrID.toStdString());
+}
+
+void MTHome::onNewNymAdded(QString qstrID)
+{
+    m_list.AddNymID(qstrID.toStdString());
+}
+
+void MTHome::onNewAccountAdded(QString qstrID)
+{
+    m_list.AddAccountID(qstrID.toStdString());
+}
 
 
 

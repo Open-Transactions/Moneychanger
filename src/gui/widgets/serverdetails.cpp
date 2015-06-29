@@ -324,7 +324,7 @@ void MTServerDetails::ImportContract(QString qstrContents)
         m_pOwner->m_map.insert(qstrContractID, qstrContractName);
         m_pOwner->SetPreSelected(qstrContractID);
         // ------------------------------------------------
-        emit RefreshRecordsAndUpdateMenu();
+        emit newServerAdded(qstrContractID);
         // ------------------------------------------------
     } // if (!qstrContractID.isEmpty())
 }
@@ -783,7 +783,7 @@ void MTServerDetails::AddButtonClicked()
                                            qstrContractName);
                     m_pOwner->SetPreSelected(qstrContractID);
                     // ------------------------------------------------
-                    emit RefreshRecordsAndUpdateMenu();
+                    emit newServerAdded(qstrContractID);
                     return;
                 }
             }

@@ -73,6 +73,11 @@ public slots:
     void onNeedToRefreshRecords();
     void onRecordDeleted(bool bNeedToRefreshUserBar);
 
+    void onNewServerAdded(QString qstrID);
+    void onNewAssetAdded(QString qstrID);
+    void onNewNymAdded(QString qstrID);
+    void onNewAccountAdded(QString qstrID);
+
 private slots:
     void on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn);
 

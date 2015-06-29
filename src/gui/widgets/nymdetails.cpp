@@ -398,8 +398,6 @@ QGroupBox * MTNymDetails::createAddressGroupBox(QString strNymID)
     // known for this Nym,
     mapIDName theMap;
 
-    qDebug() << QString("NYM ID: %1").arg(strNymID);
-
     if (!strNymID.isEmpty() && MTContactHandler::getInstance()->GetMethodsAndAddrByNym(theMap, strNymID))
     {
         for (mapIDName::iterator it = theMap.begin(); it != theMap.end(); ++it)
@@ -588,7 +586,7 @@ void MTNymDetails::DeleteButtonClicked()
         // ----------------------------------------------------
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, "", "Are you sure you want to delete this Nym?",
+        reply = QMessageBox::question(this, tr("Moneychanger"), tr("Are you sure you want to delete this Nym?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
@@ -602,11 +600,10 @@ void MTNymDetails::DeleteButtonClicked()
                 // ------------------------------------------------
             }
             else
-                QMessageBox::warning(this, tr("Failure Deleting Nym"),
+                QMessageBox::warning(this, tr("Moneychanger"),
                                      tr("Failed trying to delete this Nym."));
         }
     }
-    // ----------------------------------------------------
 }
 
 
@@ -713,7 +710,7 @@ void MTNymDetails::AddButtonClicked()
         m_pOwner->m_map.insert(qstrID, qstrName);
         m_pOwner->SetPreSelected(qstrID);
         // ------------------------------------------------
-        emit RefreshRecordsAndUpdateMenu();
+        emit newNymAdded(qstrID);
         // ------------------------------------------------
     }
 }

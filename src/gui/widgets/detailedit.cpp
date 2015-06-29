@@ -170,13 +170,66 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
 
         switch (m_Type)
         {
-        case MTDetailEdit::DetailEditTypeNym:         m_pDetailPane = new MTNymDetails        (this, *this); break;
+        case MTDetailEdit::DetailEditTypeServer:
+            m_pDetailPane = new MTServerDetails(this, *this);
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(newServerAdded(QString)),
+                    Moneychanger::It(), SLOT  (onNewServerAdded(QString)));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(newServerAdded(QString)),
+                    m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
+            // -------------------------------------------
+            break;
+
+        case MTDetailEdit::DetailEditTypeAsset:
+            m_pDetailPane = new MTAssetDetails(this, *this);
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(newAssetAdded(QString)),
+                    Moneychanger::It(), SLOT  (onNewAssetAdded(QString)));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(newAssetAdded(QString)),
+                    m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
+            // -------------------------------------------
+
+            // For new issuer accounts: (which are created on the assets page when a user registers the currency onto a server.)
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(newAccountAdded(QString)),
+                    Moneychanger::It(), SLOT  (onNewAccountAdded(QString)));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(newAccountAdded(QString)),
+                    m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(newAccountAdded(QString)),
+                    m_pDetailPane,      SIGNAL(ShowAccount(QString)));
+            // -------------------------------------------
+            break;
+
+        case MTDetailEdit::DetailEditTypeNym:
+            m_pDetailPane = new MTNymDetails(this, *this);
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(newNymAdded(QString)),
+                    Moneychanger::It(), SLOT  (onNewNymAdded(QString)));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(newNymAdded(QString)),
+                    m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
+            // -------------------------------------------
+            break;
+
         case MTDetailEdit::DetailEditTypeContact:     m_pDetailPane = new MTContactDetails    (this, *this); break;
-        case MTDetailEdit::DetailEditTypeServer:      m_pDetailPane = new MTServerDetails     (this, *this); break;
-        case MTDetailEdit::DetailEditTypeAsset:       m_pDetailPane = new MTAssetDetails      (this, *this); break;
-        case MTDetailEdit::DetailEditTypeAgreement:   m_pDetailPane = new MTAgreementDetails  (this, *this); break;
         case MTDetailEdit::DetailEditTypeCorporation: m_pDetailPane = new MTCorporationDetails(this, *this); break;
         case MTDetailEdit::DetailEditTypeTransport:   m_pDetailPane = new TransportDetails    (this, *this); break;
+
+        case MTDetailEdit::DetailEditTypeAgreement:
+            ui->comboBox->setHidden(false);
+            m_pDetailPane = new MTAgreementDetails  (this, *this);
+            // -------------------------------------------
+            connect(ui->comboBox, SIGNAL(currentIndexChanged(int)),
+                    this,         SLOT  (on_comboBox_currentIndexChanged(int)));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(runSmartContract(QString, QString, int32_t)),
+                    Moneychanger::It(), SLOT  (onRunSmartContract(QString, QString, int32_t)));
+            // -------------------------------------------
+            break;
 
         case MTDetailEdit::DetailEditTypeOffer:
             ui->comboBox->setHidden(false);
@@ -203,6 +256,12 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
             // -------------------------------------------
             connect(m_pDetailPane,      SIGNAL(RequestToAcct(QString)),
                     Moneychanger::It(), SLOT  (mc_request_to_acct(QString)));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(newAccountAdded(QString)),
+                    Moneychanger::It(), SLOT  (onNewAccountAdded(QString)));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(newAccountAdded(QString)),
+                    m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
             // -------------------------------------------
             break;
 
@@ -232,6 +291,7 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         connect(m_pDetailPane,      SIGNAL(ShowAccount(QString)),
                 Moneychanger::It(), SLOT  (mc_show_account_slot(QString)));
         // -------------------------------------------
+
         m_pDetailPane->SetOwnerPointer(*this);
         m_pDetailPane->SetEditType(theType);
         // -------------------------------------------
@@ -281,6 +341,11 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         // ----------------------------------
         if (!m_bEnableDelete)
             ui->deleteButton->setVisible(false);
+        // ----------------------------------
+        if (m_pDetailPane)
+            m_pDetailPane->setVisible(false);
+
+        m_pTabWidget->setVisible(false);
         // ----------------------------------
         m_bFirstRun = false;
     } // first run.
@@ -457,6 +522,86 @@ void MTDetailEdit::RefreshMarketCombo()
     // -----------------------------------------------
 }
 
+void MTDetailEdit::RefreshLawyerCombo()
+{
+    if (MTDetailEdit::DetailEditTypeAgreement != m_Type)
+        return;
+    // ----------------------------
+    ui->comboBox->blockSignals(true);
+    // ----------------------------
+    ui->comboBox->clear();
+    // -----------------------------------------------
+    m_mapLawyers.clear();
+    // -----------------------------------------------
+    const int32_t the_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
+    // -----------------------------------------------
+    for (int32_t ii = 0; ii < the_count; ++ii)
+    {
+        QString OT_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(ii));
+        QString OT_name("");
+        // -----------------------------------------------
+        if (!OT_id.isEmpty())
+        {
+            OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(OT_id.toStdString()));
+            // -----------------------------------------------
+            m_mapLawyers.insert(OT_id, OT_name);
+        }
+     }
+    // -----------------------------------------------
+    int32_t nCurrentLawyerIndex = 0;
+    bool    bFoundCurrentLawyer = false;
+    // ----------------------------
+    int nIndex = -1;
+    for (mapIDName::iterator ii = m_mapLawyers.begin(); ii != m_mapLawyers.end(); ++ii)
+    {
+        ++nIndex; // 0 on first iteration.
+        // ------------------------------
+        QString OT_lawyer_id   = ii.key();   // This is a nym ID.
+        QString OT_lawyer_name = ii.value(); // This is the display name aka "Trader Bob"
+        // ------------------------------
+        if (!m_qstrLawyerID.isEmpty() && (OT_lawyer_id == m_qstrLawyerID))
+        {
+            bFoundCurrentLawyer = true;
+            nCurrentLawyerIndex = nIndex;
+        }
+        // ------------------------------
+        ui->comboBox->insertItem(nIndex, OT_lawyer_name);
+    }
+    // -----------------------------------------------
+    if (m_mapLawyers.size() > 0)
+    {
+        SetCurrentLawyerIDBasedOnIndex(nCurrentLawyerIndex);
+        ui->comboBox->setCurrentIndex (nCurrentLawyerIndex);
+    }
+    else
+        SetCurrentLawyerIDBasedOnIndex(-1);
+    // -----------------------------------------------
+    ui->comboBox->blockSignals(false);
+    // -----------------------------------------------
+}
+
+
+void MTDetailEdit::SetCurrentLawyerIDBasedOnIndex(int index)
+{
+    if ((m_mapLawyers.size() > 0) && (index >= 0) && (index < m_mapLawyers.size()))
+    {
+        int nCurrentIndex = -1;
+
+        for (mapIDName::iterator it_map = m_mapLawyers.begin(); it_map != m_mapLawyers.end(); ++it_map)
+        {
+            ++nCurrentIndex; // zero on first iteration.
+
+            if (nCurrentIndex == index)
+            {
+                m_qstrLawyerID = it_map.key();
+                break;
+            }
+        }
+    }
+    // ------------------------------------------
+    else
+        m_qstrLawyerID = QString("");
+}
 
 void MTDetailEdit::SetCurrentMarketIDBasedOnIndex(int index)
 {
@@ -483,6 +628,11 @@ void MTDetailEdit::SetCurrentMarketIDBasedOnIndex(int index)
 // Market is selected from combo box, on Offers page.
 void MTDetailEdit::on_comboBox_currentIndexChanged(int index)
 {
+    if (ui && (MTDetailEdit::DetailEditTypeAgreement == m_Type))
+    {
+        SetCurrentLawyerIDBasedOnIndex(index);
+    }
+    // --------------------------------------------------------
     if (ui && (MTDetailEdit::DetailEditTypeOffer == m_Type))
     {
         // -----------------------------
@@ -490,7 +640,7 @@ void MTDetailEdit::on_comboBox_currentIndexChanged(int index)
         // -----------------------------
 
         // -----------------------------
-//        emit NeedToLoadOrRetrieveOffers(m_qstrMarketID);
+//      emit NeedToLoadOrRetrieveOffers(m_qstrMarketID);
         emit CurrentMarketChanged(m_qstrMarketID);
         // ----------------------------
     }
@@ -526,8 +676,10 @@ void MTDetailEdit::ClearRecords()
 
     ui->deleteButton->setEnabled(false);
 
-    if (m_pDetailPane)
+    if (m_pDetailPane) {
         m_pDetailPane->ClearContents();
+        m_pDetailPane->setVisible(false);
+    }
 
     m_pTabWidget->setVisible(false);
 }
@@ -540,6 +692,10 @@ void MTDetailEdit::ClearContents()
 
 void MTDetailEdit::RefreshRecords()
 {
+    // -------------------------------------------
+    // This does nothing unless it's a smart contract DetailEdit.
+    RefreshLawyerCombo();
+    // -------------------------------------------
     ui->tableWidget->blockSignals(true);
     // ----------------------------------------------------------------------
     int mapSize = m_map.size();
@@ -563,6 +719,22 @@ void MTDetailEdit::RefreshRecords()
     ui->tableWidget->setRowCount(nTotalRecords);
     // -------------------------------------------------------
     int nPreselectedIndex = -1;
+    // --------------------------------
+    if (m_map.size() > 0)
+    {
+        if (m_pDetailPane)
+            m_pDetailPane->setVisible(true);
+        m_pTabWidget->setVisible(true);
+    }
+    else
+    {
+        if (m_pDetailPane)
+        {
+            m_pDetailPane->ClearContents();
+            m_pDetailPane->setVisible(false);
+        }
+        m_pTabWidget->setVisible(false);
+    }
     // --------------------------------
     int nIndex = -1;
     for (mapIDName::iterator ii = m_map.begin(); ii != m_map.end(); ii++)
@@ -757,6 +929,7 @@ void MTDetailEdit::RefreshRecords()
 
         default:
             qDebug() << "MTDetailEdit::RefreshRecords: MTDetailEdit::DetailEditTypeError";
+            ui->tableWidget->blockSignals(true);
             return;
         }
         // -------------------------------------------
@@ -766,50 +939,40 @@ void MTDetailEdit::RefreshRecords()
             qDebug() << "Failed creating detail header widget in MTDetailEdit::RefreshRecords()";
         // -------------------------------------------
     } // For loop
-    // ------------------------
-    // We are doing this here so onCurrentCellChanged can respond even if we set the current cell to -1.
-    // TODO: If I end up having to remove the -1, then I will have to remove this here as well.
-    //
-    ui->tableWidget->blockSignals(false);
-
-    if (ui->tableWidget->rowCount() > 0)
+    // -----------------------------------
+    if (ui->tableWidget->rowCount() <= 0)
     {
-//        ui->tableWidget->blockSignals(false);
 
-        // Unnecessary, since the below call to setCurrentCell already triggers onCellChanged,
-        // which already sets the tab widget visible or not, based on the new cell index.
-        //
-//        m_pTabWidget->setVisible(true);
-
+        ui->tableWidget->setCurrentCell(-1, 1); // NEW -- If this doesn't work, we'll maybe call this by hand:
+        ui->tableWidget->blockSignals(false);
+        on_tableWidget_currentCellChanged(-1, 1, 0, 1);
+    }
+    else
+    {
         if ((nPreselectedIndex > (-1)) && (nPreselectedIndex < ui->tableWidget->rowCount()))
         {
-//            qDebug() << QString("SETTING current row to %1 on the tableWidget.").arg(nPreselectedIndex);
             ui->tableWidget->setCurrentCell(nPreselectedIndex, 1);
+            ui->tableWidget->blockSignals(false);
+            on_tableWidget_currentCellChanged(nPreselectedIndex, 1, 0, 1);
         }
         else
         {
-//            qDebug() << "SETTING current row to 0 on the tableWidget.";
             ui->tableWidget->setCurrentCell(0, 1);
+            ui->tableWidget->blockSignals(false);
+            on_tableWidget_currentCellChanged(0, 1, 0, 1);
         }
     }
-    // ------------------------    
-    // This is all handled in ui->tableWidget=>on_currentCell_changed.
-    else
-        ui->tableWidget->setCurrentCell(-1, -1); // NEW -- If this doesn't work, we'll maybe call this by hand:
-//    void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
-
-//    else
-//    {
-//        ui->deleteButton->setEnabled(false);
-
-//        if (m_pDetailPane)
-//            m_pDetailPane->ClearContents();
-
-//        m_pTabWidget->setVisible(false);
-//    }
-    // --------------------------------------
-//    if (!m_qstrCurrentID.isEmpty() && (MTDetailEdit::DetailEditTypeMarket == m_Type))
-//        emit CurrentMarketChanged(m_qstrCurrentID);
+    // ------------------------
+    // NOTE: Why am I blocking the signal, then setting the current cell, and then unblocking
+    // the signal, and then calling currentCellChanged by HAND?
+    // The reason is that currentCellChanged doesn't always get triggered when I want it to.
+    // (For various different reasons.) It usually gets triggered when a user has clicked on
+    // the grid, but sometimes it doesn't when programmatically. Like when the grid is programmatically
+    // cleared, and then setCurrentCell is called to -1, it was already -1, and so there was no "change"
+    // and thus the currentCellChanged event doesn't get triggered. That's just one example. So what
+    // I'm doing is, I'm letting the event handle the clicks, but when I set the current cell by HAND,
+    // then I'm blocking signals to do it, and then I unblock and call currentCellChanged by HAND as well.
+    //
 }
 
 
@@ -837,6 +1000,7 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
     // -------------------------------------
     if ((currentRow >= 0) && (currentRow < m_map.size()))
     {
+        m_pDetailPane->setVisible(true);
         m_pTabWidget->setVisible(true);
 
         int nIndex = -1;
@@ -877,8 +1041,10 @@ void MTDetailEdit::on_tableWidget_currentCellChanged(int currentRow, int current
 
         ui->deleteButton->setEnabled(false);
 
-        if (m_pDetailPane)
+        if (m_pDetailPane) {
             m_pDetailPane->ClearContents();
+            m_pDetailPane->setVisible(false);
+        }
 
         m_pTabWidget->setVisible(false);
     }
