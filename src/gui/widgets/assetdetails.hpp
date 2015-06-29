@@ -46,9 +46,7 @@ private slots:
     void DownloadedURL();
 
     void on_pushButton_clicked();
-
     void on_toolButtonAsset_clicked();
-
     void on_toolButtonSigner_clicked();
 
 protected:

@@ -354,6 +354,59 @@ bool MTContactHandler::GetServers(mapIDName & theMap, int nFilterByContact, bool
     return bFoundAny;
 }
 
+
+bool MTContactHandler::GetSmartContracts(mapIDName & theMap)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_select = QString("SELECT `template_id`,`template_display_name` FROM `smart_contract`");
+
+    bool bFoundAny = false;
+    int  nRows     = DBHandler::getInstance()->querySize(str_select);
+
+    for(int ii=0; ii < nRows; ii++)
+    {
+        int     template_id   = DBHandler::getInstance()->queryInt   (str_select, 0, ii);
+        QString template_name = DBHandler::getInstance()->queryString(str_select, 1, ii);
+
+        if (template_id > 0)
+        {
+            bFoundAny = true;
+
+            QString str_template_id;
+            str_template_id = QString("%1").arg(template_id);
+
+            if (!template_name.isEmpty())
+            {
+//              qDebug() << QString("About to decode name: %1").arg(template_name);
+
+                //Decode base64.
+                template_name = Decode(template_name);
+            }
+            // --------------------------------------------------
+            // At this point we have the template ID (in string form) *and* the template name.
+            // So we can add them to our map...
+            theMap.insert(str_template_id, template_name);
+        }
+    }
+    // ---------------------------------------------------------------------
+    return bFoundAny;
+}
+
+bool MTContactHandler::DeleteSmartContract(int nID)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_delete = QString("DELETE FROM `smart_contract` WHERE `template_id`=%1").arg(nID);
+
+    return DBHandler::getInstance()->runQuery(str_delete);
+}
+
+QString MTContactHandler::GetSmartContract(int nID)
+{
+    return MTContactHandler::GetValueByID(nID, "template_contents", "smart_contract", "template_id");
+}
+
 // The contact ID (unlike all the other IDs) is an int instead of a string.
 // Therefore we just convert it to a string and return it in a map in the same
 // format as all the others.
@@ -536,6 +589,38 @@ bool MTContactHandler::GetAccounts(mapIDName & theMap, QString filterByNym, QStr
     } // for
     // ---------------------------------
     return bFoundAccounts;
+}
+
+
+int  MTContactHandler::CreateSmartContractTemplate(QString template_string)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_insert = QString("INSERT INTO `smart_contract` "
+                             "(`template_id`) "
+                             "VALUES(NULL)");
+//    QString str_insert = QString("INSERT INTO `smart_contract` "
+//                             "(`template_id`, `template_contents`) "
+//                             "VALUES(NULL, %1)").arg(encoded_value);
+
+    qDebug() << QString("Running query: %1").arg(str_insert);
+
+    DBHandler::getInstance()->runQuery(str_insert); //resume
+    // ----------------------------------------
+    int nTemplateID = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `smart_contract`", 0, 0);
+
+    if (nTemplateID > 0)
+    {
+        QString encoded_value = Encode(template_string);
+
+        str_insert = QString("UPDATE smart_contract SET template_contents='%1' WHERE template_id='%2'").arg(encoded_value).arg(nTemplateID);
+
+        qDebug() << QString("Running query: %1").arg(str_insert);
+
+        DBHandler::getInstance()->runQuery(str_insert);
+    }
+
+    return nTemplateID;
 }
 
 // Notice there is no "CreateContactBasedOnAcct" because you can call this first,

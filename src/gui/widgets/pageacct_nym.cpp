@@ -31,6 +31,7 @@ MTPageAcct_Nym::MTPageAcct_Nym(QWidget *parent) :
 
     this->registerField("NymID*",  ui->lineEditID);
     this->registerField("NymName", ui->pushButtonSelect, "text");
+    this->registerField("NymPrompt", ui->label, "text");
     // -----------------------------------------------
     connect(this, SIGNAL(SetDefaultNym(QString, QString)), Moneychanger::It(), SLOT(setDefaultNym(QString,QString)));
 }

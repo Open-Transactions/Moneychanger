@@ -286,7 +286,7 @@ void MTAssetDetails::on_pushButton_clicked()
                                     QString qstrAcctNewName(tr("New Issuer Account"));
                                     opentxs::OTAPI_Wrap::It()->SetAccountWallet_Name(str_issuer_acct, str_signer_nym,
                                                                                     qstrAcctNewName.toStdString());
-                                    emit ShowAccount(qstrNewIssuerAcct);
+                                    emit newAccountAdded(qstrNewIssuerAcct);
                                     return;
                                 }
                                 // -----------------------------------
@@ -577,7 +577,7 @@ void MTAssetDetails::ImportContract(QString qstrContents)
         m_pOwner->m_map.insert(qstrContractID, qstrContractName);
         m_pOwner->SetPreSelected(qstrContractID);
         // ------------------------------------------------
-        emit RefreshRecordsAndUpdateMenu();
+        emit newAssetAdded(qstrContractID);
         // ------------------------------------------------
     } // if (!qstrContractID.isEmpty())
 }
@@ -598,7 +598,7 @@ void MTAssetDetails::AddButtonClicked()
     theWizard.setField(QString("contractType"), QString("asset")); // So the wizard knows it's creating an asset contract.
 
     QString qstrDefaultContract(
-                "<digitalAssetContract version=\"2.0\">\n"
+                "<instrumentDefinition version=\"2.0\">\n"
                 "\n"
                 "<entity shortname=\"Fed\"\n"
                 " longname=\"The Rothschilds\"\n"
@@ -611,7 +611,7 @@ void MTAssetDetails::AddButtonClicked()
                        "\n"
                 "<currency name=\"US Dollars\" tla=\"USD\" symbol=\"$\" type=\"decimal\" factor=\"100\" decimalPower=\"2\" fraction=\"cents\"/>\n"
                                 "\n"
-                "</digitalAssetContract>\n"
+                "</instrumentDefinition>\n"
     );
 
     theWizard.setField(QString("contractXML"), qstrDefaultContract);
@@ -736,7 +736,7 @@ void MTAssetDetails::AddButtonClicked()
                                            qstrContractName);
                     m_pOwner->SetPreSelected(qstrContractID);
                     // ------------------------------------------------
-                    emit RefreshRecordsAndUpdateMenu();
+                    emit newAssetAdded(qstrContractID);
                     return;
                 }
             }

@@ -64,6 +64,9 @@ public:
     void    SetMarketID(QString qstrMarketID) { m_qstrMarketID = qstrMarketID; }
     QString GetMarketID() const { return m_qstrMarketID; }
     // --------------------------------
+    void    SetLawyerID(QString qstrLawyerID) { m_qstrLawyerID = qstrLawyerID; }
+    QString GetLawyerID() const { return m_qstrLawyerID; }
+    // --------------------------------
     // Use for modeless or modal dialogs.
     void dialog(DetailEditType theType, bool bIsModal=false);
 
@@ -78,6 +81,9 @@ public:
     // --------------------------------
     void RefreshMarketCombo();
     void SetCurrentMarketIDBasedOnIndex(int index);
+    // --------------------------------
+    void RefreshLawyerCombo();
+    void SetCurrentLawyerIDBasedOnIndex(int index);
     // --------------------------------
     QMultiMap<QString, QVariant> * m_pmapMarkets; // do not delete. For reference only.
     QMap     <QString, QVariant> * m_pmapOffers;  // do not delete. For reference only.
@@ -95,6 +101,11 @@ public:
     //
     mapIDName m_mapMarkets;
     QString   m_qstrMarketID;
+    // ----------------------------------
+    // Only used in DetailEdit for Smart Contracts.
+    //
+    mapIDName m_mapLawyers;
+    QString   m_qstrLawyerID;
     // ----------------------------------
     void SetType(DetailEditType theType) { m_Type = theType; }
 

@@ -71,7 +71,14 @@ FORMS += \
     $${PWD}/widgets/transportdetails.ui \
     $${PWD}/ui/dlgencrypt.ui \
     ../../src/gui/ui/dlgdecrypt.ui \
-    $$PWD/ui/dlglog.ui
+    $$PWD/ui/dlglog.ui \
+    $$PWD/ui/dlgcreatevariable.ui \
+    $$PWD/widgets/wizardrunsmartcontract.ui \
+    $$PWD/widgets/pagesmart_party.ui \
+    $$PWD/widgets/dlgsmartpartyacct.ui \
+    $$PWD/widgets/wizardpartyacct.ui \
+    $$PWD/widgets/pagesmart_partyacct.ui \
+    $$PWD/widgets/pagesmart_nymacct.ui
 
 HEADERS += \
     $${PWD}/ui/dlgexportcash.hpp \
@@ -142,7 +149,13 @@ HEADERS += \
     $${PWD}/widgets/transportdetails.hpp \
     $${PWD}/ui/dlgencrypt.hpp \
     ../../src/gui/ui/dlgdecrypt.hpp \
-    $$PWD/ui/dlglog.hpp
+    $$PWD/ui/dlglog.hpp \
+    $$PWD/ui/dlgcreatevariable.hpp \
+    $$PWD/widgets/wizardrunsmartcontract.hpp \
+    $$PWD/widgets/pagesmart_party.hpp \
+    $$PWD/widgets/wizardpartyacct.hpp \
+    $$PWD/widgets/pagesmart_partyacct.hpp \
+    $$PWD/widgets/pagesmart_nymacct.hpp
 
 SOURCES += \
     $${PWD}/ui/dlgexportcash.cpp \
@@ -213,7 +226,13 @@ SOURCES += \
     $${PWD}/widgets/transportdetails.cpp \
     $${PWD}/ui/dlgencrypt.cpp \
     ../../src/gui/ui/dlgdecrypt.cpp \
-    $$PWD/ui/dlglog.cpp
+    $$PWD/ui/dlglog.cpp \
+    $$PWD/ui/dlgcreatevariable.cpp \
+    $$PWD/widgets/wizardrunsmartcontract.cpp \
+    $$PWD/widgets/pagesmart_party.cpp \
+    $$PWD/widgets/wizardpartyacct.cpp \
+    $$PWD/widgets/pagesmart_partyacct.cpp \
+    $$PWD/widgets/pagesmart_nymacct.cpp
 
 TRANSLATIONS += $${PWD}/translations/en_US.ts \
                 $${PWD}/translations/de_DE.ts

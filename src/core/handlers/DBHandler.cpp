@@ -134,6 +134,9 @@ bool DBHandler::dbCreateInstance()
         QString create_nym_method      = "CREATE TABLE nym_method(nym_id TEXT, method_id INTEGER, address TEXT, PRIMARY KEY(nym_id, method_id, address))";
         QString create_contact_method  = "CREATE TABLE contact_method(contact_id INTEGER, method_type TEXT, address TEXT, PRIMARY KEY(contact_id, method_type, address))";
         // --------------------------------------------
+        // Smart Contracts
+        QString create_smart_contract  = "CREATE TABLE smart_contract(template_id INTEGER PRIMARY KEY, template_display_name TEXT, template_contents TEXT)";
+        // --------------------------------------------
         /* Keep track of Namecoin names registered for the purpose of
            Moneychanger.  They are always related to a Nym and credential
            hash, so those are kept here, too, so we can easily find
@@ -168,10 +171,11 @@ bool DBHandler::dbCreateInstance()
         error += query.exec(create_msg_method);
         error += query.exec(create_nym_method);
         error += query.exec(create_contact_method);
+        error += query.exec(create_smart_contract);
         // ------------------------------------------
         error += query.exec(create_nmc);
         // ------------------------------------------
-        if(error != 14)  //every query passed?
+        if(error != 15)  //every query passed?
         {
             qDebug() << "dbCreateInstance Error: " << dbConnectErrorStr + " " + dbCreationStr;
             FileHandler rm;

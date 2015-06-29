@@ -1029,9 +1029,7 @@ bool DlgMarkets::eventFilter(QObject *obj, QEvent *event)
             close(); // This is caught by this same filter.
             return true;
         }
-        return true;
     }
-    // -------------------------------------------
     // standard event processing
     return QDialog::eventFilter(obj, event);
 }

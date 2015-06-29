@@ -57,13 +57,9 @@ bool DlgGetAmount::eventFilter(QObject *obj, QEvent *event)
             close(); // This is caught by this same filter.
             return true;
         }
-        return true;
     }
-    else
-    {
-        // standard event processing
-        return QDialog::eventFilter(obj, event);
-    }
+    // standard event processing
+    return QDialog::eventFilter(obj, event);
 }
 
 

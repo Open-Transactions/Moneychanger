@@ -67,15 +67,16 @@ void DlgExportedToPass::on_pushButton_clicked()
 
 bool DlgExportedToPass::eventFilter(QObject *obj, QEvent *event)
 {
-    if (event->type() == QEvent::KeyPress) {
+    if (event->type() == QEvent::KeyPress)
+    {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if(keyEvent->key() == Qt::Key_Escape){
+
+        if (keyEvent->key() == Qt::Key_Escape)
+        {
             close(); // This is caught by this same filter.
             return true;
         }
-        return true;
-    }else {
-        // standard event processing
-        return QDialog::eventFilter(obj, event);
     }
+    // standard event processing
+    return QDialog::eventFilter(obj, event);
 }
