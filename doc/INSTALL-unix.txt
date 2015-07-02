@@ -4,6 +4,11 @@ Have the QT bin folder on your path.
 
 Open a command prompt.
 
+navigate to the cloned repository (most likely the Moneychanger directory unless you specified otherwise while retrieving the repo)
+
+update the git submodules:
+$ git submodule init && git submodule update
+
 navigate to the ‘project’ dir.
 
 run:  qmake
