@@ -36,6 +36,7 @@ include($${SOLUTION_DIR}../src/core/core.pri)
 include($${SOLUTION_DIR}../src/gui/gui.pri)
 include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
 include($${SOLUTION_DIR}../src/namecoin/namecoin.pri)
+include($${SOLUTION_DIR}../src/qjsonrpc/qjsonrpc.pri)
 include($${SOLUTION_DIR}../src/quazip/quazip.pri)
 
 
@@ -85,6 +86,9 @@ unix: {
 
     LIBS += -L$${OUT_PWD}/../jsoncpp
     LIBS += -ljsoncpp
+
+    LIBS += -L$${OUT_PWD}/../qjsonrpc
+    LIBS += -lqjsonrpc
 
     LIBS += -L$${OUT_PWD}/../nmcrpc
     LIBS += -lnmcrpc
@@ -147,6 +151,7 @@ win32: {
 
     LIBS += bitcoin-api.lib
     LIBS += jsoncpp.lib
+    LIBS += qjsonrpc.lib
     LIBS += curl.lib
     LIBS += nmcrpc.lib
     LIBS += quazip.lib
