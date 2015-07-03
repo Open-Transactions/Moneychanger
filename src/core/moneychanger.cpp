@@ -18,6 +18,9 @@
 #endif
 
 #include <core/moneychanger.hpp>
+#include <core/mtcomms.h>
+#include <core/handlers/DBHandler.hpp>
+#include <core/network/rpcserver.h>
 
 #include <gui/widgets/compose.hpp>
 #include <gui/widgets/home.hpp>
@@ -44,9 +47,7 @@
 #include <gui/ui/dlgdecrypt.hpp>
 #include <gui/ui/dlgpassphrasemanager.hpp>
 
-#include <core/mtcomms.h>
 
-#include <core/handlers/DBHandler.hpp>
 
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -239,10 +240,37 @@ Moneychanger::Moneychanger(QWidget *parent)
 //            qDebug() << "Error loading DEFAULT ACCOUNT from SQL";
     }
 
+    // Check for RPCServer Settings
 
+    QString rpcserver_autorun;
+
+    if (DBHandler::getInstance()->querySize("SELECT `setting`,`parameter1` FROM `settings` WHERE `setting`='rpcserver_autorun'") <= 0)
+    {
+        DBHandler::getInstance()->runQuery(QString("INSERT INTO `settings` (`setting`, `parameter1`) VALUES('rpcserver_autorun','false')"));
+        qDebug() << "rpcserver_autorun setting wasn't set in the database. Inserting default: false";
+    }
+    else
+    {
+        if (DBHandler::getInstance()->runQuery("SELECT `setting`,`parameter1` FROM `settings` WHERE `setting`='rpcserver_autorun'"))
+        {
+            rpcserver_autorun = DBHandler::getInstance()->queryString("SELECT `parameter1` FROM `settings` WHERE `setting`='rpcserver_autorun'", 0, 0);
+        }
+        if (rpcserver_autorun.isEmpty())
+        {
+            rpcserver_autorun = "false";
+            qDebug() << "Error loading rpcserver_autorun setting from SQL, using default: false";
+        }
+    }
 
     qDebug() << "Database Populated";
-    
+
+    // Initialize our RPC Server
+    // Config read will occur regardless of the autorun setting
+    if(rpcserver_autorun == "true")
+        RPCServer::getInstance()->startListener();
+    else
+        RPCServer::getInstance()->readConfig();
+
     
     // ----------------------------------------------------------------------------
 
