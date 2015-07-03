@@ -1,3 +1,0 @@
-[submodule "src/qjsonrpc"]
-	path = src/qjsonrpc
-	url = https://bitbucket.org/devonit/qjsonrpc

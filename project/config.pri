@@ -1,0 +1,1 @@
+QJSONRPC_LIBRARY_TYPE = staticlib

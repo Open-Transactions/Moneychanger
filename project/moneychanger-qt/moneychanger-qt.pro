@@ -27,16 +27,31 @@ DEFINES    += "OT_ZMQ_MODE=1"
 include(../common.pri)
 
 #-------------------------------------------------
-# Source
+# Pre-Build Scripts
 
+unix:{
+
+prebuild.target = prebuildscripts
+    prebuild.commands = echo "Setting up Submodules and Installing Dependencies..."; \
+                            cd ../../deps; \
+                            ./buildnixdeps.sh
+    prebuild.depends =
+    QMAKE_EXTRA_TARGETS += prebuild
+    PRE_TARGETDEPS = prebuildscripts
+
+}
+
+
+#-------------------------------------------------
+# Source
 
 #PRECOMPILED_HEADER = $${SOLUTION_DIR}../src/core/stable.hpp
 
+include($${SOLUTION_DIR}../deps/qjsonrpc/qjsonrpc.pri)
 include($${SOLUTION_DIR}../src/core/core.pri)
 include($${SOLUTION_DIR}../src/gui/gui.pri)
 include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
 include($${SOLUTION_DIR}../src/namecoin/namecoin.pri)
-include($${SOLUTION_DIR}../src/qjsonrpc/qjsonrpc.pri)
 include($${SOLUTION_DIR}../src/quazip/quazip.pri)
 
 
@@ -46,6 +61,7 @@ include($${SOLUTION_DIR}../src/quazip/quazip.pri)
 # MAC AND LINUX:
 unix:{
     PKGCONFIG += opentxs
+
 }
 
 
@@ -87,7 +103,7 @@ unix: {
     LIBS += -L$${OUT_PWD}/../jsoncpp
     LIBS += -ljsoncpp
 
-    LIBS += -L$${OUT_PWD}/../qjsonrpc
+    LIBS += -L$${SOLUTION_DIR}../deps/qjsonrpc/src
     LIBS += -lqjsonrpc
 
     LIBS += -L$${OUT_PWD}/../nmcrpc
@@ -99,6 +115,9 @@ unix: {
     LIBS += -lquazip -lz
 
     mac:{
+
+        QMAKE_LFLAGS_SONAME  = -Wl,-install_name,@executable_path/../Frameworks/
+
         !contains(MAC_OS_VERSION, 10.9):!contains(MAC_OS_VERSION, 10.10):{
             # if not on Mavericks
             LIBS += -lboost_system-mt

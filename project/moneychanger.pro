@@ -2,11 +2,13 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
 
+#-------------------------------------------------
+# Subdirectories
+
 win32: SUBDIRS += curl
 win32: SUBDIRS += libidn
 
 SUBDIRS += jsoncpp
-SUBDIRS += qjsonrpc
 SUBDIRS += bitcoin-api
 SUBDIRS += nmcrpc
 SUBDIRS += quazip

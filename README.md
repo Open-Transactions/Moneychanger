@@ -47,6 +47,7 @@ openssl > 1.0.0 (== 1.0.1h on OSX)
 libzmq
 libsodium
 ```
+Note: qjsonrpc will be installed automatically as part of the 'make' command
 
 ### Menu workaround for some window managers
 
