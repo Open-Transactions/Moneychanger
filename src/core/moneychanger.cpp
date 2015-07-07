@@ -20,7 +20,7 @@
 #include <core/moneychanger.hpp>
 #include <core/mtcomms.h>
 #include <core/handlers/DBHandler.hpp>
-#include <core/network/rpcserver.h>
+#include <rpc/rpcserver.h>
 
 #include <gui/widgets/compose.hpp>
 #include <gui/widgets/home.hpp>
@@ -240,36 +240,11 @@ Moneychanger::Moneychanger(QWidget *parent)
 //            qDebug() << "Error loading DEFAULT ACCOUNT from SQL";
     }
 
-    // Check for RPCServer Settings
+    // Check for RPCServer Settings (Config read will populate the database)
 
-    QString rpcserver_autorun;
-
-    if (DBHandler::getInstance()->querySize("SELECT `setting`,`parameter1` FROM `settings` WHERE `setting`='rpcserver_autorun'") <= 0)
-    {
-        DBHandler::getInstance()->runQuery(QString("INSERT INTO `settings` (`setting`, `parameter1`) VALUES('rpcserver_autorun','false')"));
-        qDebug() << "rpcserver_autorun setting wasn't set in the database. Inserting default: false";
-    }
-    else
-    {
-        if (DBHandler::getInstance()->runQuery("SELECT `setting`,`parameter1` FROM `settings` WHERE `setting`='rpcserver_autorun'"))
-        {
-            rpcserver_autorun = DBHandler::getInstance()->queryString("SELECT `parameter1` FROM `settings` WHERE `setting`='rpcserver_autorun'", 0, 0);
-        }
-        if (rpcserver_autorun.isEmpty())
-        {
-            rpcserver_autorun = "false";
-            qDebug() << "Error loading rpcserver_autorun setting from SQL, using default: false";
-        }
-    }
+    RPCServer::getInstance()->init();
 
     qDebug() << "Database Populated";
-
-    // Initialize our RPC Server
-    // Config read will occur regardless of the autorun setting
-    if(rpcserver_autorun == "true")
-        RPCServer::getInstance()->startListener();
-    else
-        RPCServer::getInstance()->readConfig();
 
     
     // ----------------------------------------------------------------------------
@@ -2370,6 +2345,58 @@ void Moneychanger::mc_sendfunds_show_dialog(QString qstrAcct/*=QString("")*/)
 
     if (!qstr_acct_id.isEmpty())
         send_window->setInitialMyAcct(qstr_acct_id);
+    // ---------------------------------------
+    send_window->dialog();
+    // --------------------------------------------------
+}
+
+void Moneychanger::mc_rpc_sendfunds_show_dialog(QString qstrAcct/*=QString("")*/, QString qstrRecipientNym/*=QString("")*/,
+                                                QString qstrAsset/*=QString("")*/, QString qstrAmount/*=QString("")*/)
+{
+    // --------------------------------------------------
+    MTSendDlg * send_window = new MTSendDlg(NULL);
+    send_window->setAttribute(Qt::WA_DeleteOnClose);
+    // --------------------------------------------------
+    QString qstr_acct_id;
+    QString qstr_recipient_id;
+
+
+    if(!qstrAcct.isEmpty())
+    {
+        qstr_acct_id = qstrAcct;
+    }
+    else if(qstrAcct.isEmpty() && qstrAsset.isEmpty())
+    {
+        qstr_acct_id = this->get_default_account_id();
+    }
+    else if(qstrAcct.isEmpty() && !qstrAsset.isEmpty())
+    {
+        mapIDName theAccountMap;
+
+        if (MTContactHandler::getInstance()->GetAccounts(theAccountMap, QString(""), QString(""), qstrAsset))
+        {
+            // This will be replaced with a popup dialog to select
+            // from the accounts rather than using the first in the map.
+            qstr_acct_id = theAccountMap.begin().key();
+        }
+
+        // If the asset is empty and the account is empty,
+        // or no account exists for the asset given, use the default account id.
+        if(qstrAsset.isEmpty())
+        {
+            qstr_acct_id = this->get_default_account_id();
+        }
+    }
+
+    if (!qstr_acct_id.isEmpty())
+        send_window->setInitialMyAcct(qstr_acct_id);
+
+    if (!qstrAmount.isEmpty())
+        send_window->setInitialAmount(qstrAmount);
+
+    if(!qstrRecipientNym.isEmpty())
+        send_window->setInitialHisNym(qstrRecipientNym);
+
     // ---------------------------------------
     send_window->dialog();
     // --------------------------------------------------

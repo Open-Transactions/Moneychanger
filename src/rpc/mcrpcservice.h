@@ -14,7 +14,13 @@ public:
 
 public Q_SLOTS:
 
-    void testMethod();
+    // opentxs::OTAPI methods
+    QJsonValue getAccountCount();
+
+    // Moneychanger::It() methods
+    QString mcSendDialog(QString Account, QString Recipient,
+                         QString Asset, QString Amount);
+
 
 };
 

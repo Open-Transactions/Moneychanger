@@ -50,6 +50,7 @@ prebuild.target = prebuildscripts
 include($${SOLUTION_DIR}../deps/qjsonrpc/qjsonrpc.pri)
 include($${SOLUTION_DIR}../src/core/core.pri)
 include($${SOLUTION_DIR}../src/gui/gui.pri)
+include($${SOLUTION_DIR}../src/rpc/rpc.pri)
 include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
 include($${SOLUTION_DIR}../src/namecoin/namecoin.pri)
 include($${SOLUTION_DIR}../src/quazip/quazip.pri)
