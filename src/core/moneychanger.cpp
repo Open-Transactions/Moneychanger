@@ -2018,10 +2018,6 @@ void Moneychanger::mc_requestfunds_show_dialog(QString qstrAcct/*=QString("")*/)
 
 
 
-
-
-
-
 /**
  * Import Cash
  **/
@@ -2350,57 +2346,6 @@ void Moneychanger::mc_sendfunds_show_dialog(QString qstrAcct/*=QString("")*/)
     // --------------------------------------------------
 }
 
-void Moneychanger::mc_rpc_sendfunds_show_dialog(QString qstrAcct/*=QString("")*/, QString qstrRecipientNym/*=QString("")*/,
-                                                QString qstrAsset/*=QString("")*/, QString qstrAmount/*=QString("")*/)
-{
-    // --------------------------------------------------
-    MTSendDlg * send_window = new MTSendDlg(NULL);
-    send_window->setAttribute(Qt::WA_DeleteOnClose);
-    // --------------------------------------------------
-    QString qstr_acct_id;
-    QString qstr_recipient_id;
-
-
-    if(!qstrAcct.isEmpty())
-    {
-        qstr_acct_id = qstrAcct;
-    }
-    else if(qstrAcct.isEmpty() && qstrAsset.isEmpty())
-    {
-        qstr_acct_id = this->get_default_account_id();
-    }
-    else if(qstrAcct.isEmpty() && !qstrAsset.isEmpty())
-    {
-        mapIDName theAccountMap;
-
-        if (MTContactHandler::getInstance()->GetAccounts(theAccountMap, QString(""), QString(""), qstrAsset))
-        {
-            // This will be replaced with a popup dialog to select
-            // from the accounts rather than using the first in the map.
-            qstr_acct_id = theAccountMap.begin().key();
-        }
-
-        // If the asset is empty and the account is empty,
-        // or no account exists for the asset given, use the default account id.
-        if(qstrAsset.isEmpty())
-        {
-            qstr_acct_id = this->get_default_account_id();
-        }
-    }
-
-    if (!qstr_acct_id.isEmpty())
-        send_window->setInitialMyAcct(qstr_acct_id);
-
-    if (!qstrAmount.isEmpty())
-        send_window->setInitialAmount(qstrAmount);
-
-    if(!qstrRecipientNym.isEmpty())
-        send_window->setInitialHisNym(qstrRecipientNym);
-
-    // ---------------------------------------
-    send_window->dialog();
-    // --------------------------------------------------
-}
 
 void Moneychanger::mc_send_from_acct(QString qstrAcct)
 {
@@ -3319,5 +3264,112 @@ void Moneychanger::mc_bitcoin_receive_slot()
     bitcoinReceiveWindow->show();
 }
 
+/*
+ * Moneychanger RPC Callback Functions
+ *
+ */
 
+
+void Moneychanger::mc_rpc_sendfunds_show_dialog(QString qstrAcct/*=QString("")*/, QString qstrRecipientNym/*=QString("")*/,
+                                                QString qstrAsset/*=QString("")*/, QString qstrAmount/*=QString("")*/)
+{
+    // --------------------------------------------------
+    MTSendDlg * send_window = new MTSendDlg(NULL);
+    send_window->setAttribute(Qt::WA_DeleteOnClose);
+    // --------------------------------------------------
+    QString qstr_acct_id;
+    QString qstr_recipient_id;
+
+
+    if(!qstrAcct.isEmpty())
+    {
+        qstr_acct_id = qstrAcct;
+    }
+    else if(qstrAcct.isEmpty() && qstrAsset.isEmpty())
+    {
+        qstr_acct_id = this->get_default_account_id();
+    }
+    else if(qstrAcct.isEmpty() && !qstrAsset.isEmpty())
+    {
+        mapIDName theAccountMap;
+
+        if (MTContactHandler::getInstance()->GetAccounts(theAccountMap, QString(""), QString(""), qstrAsset))
+        {
+            // This will be replaced with a popup dialog to select
+            // from the accounts rather than using the first in the map.
+            qstr_acct_id = theAccountMap.begin().key();
+        }
+
+        // If the asset is empty and the account is empty,
+        // or no account exists for the asset given, use the default account id.
+        if(qstrAsset.isEmpty())
+        {
+            qstr_acct_id = this->get_default_account_id();
+        }
+    }
+
+    if (!qstr_acct_id.isEmpty())
+        send_window->setInitialMyAcct(qstr_acct_id);
+
+    if (!qstrAmount.isEmpty())
+        send_window->setInitialAmount(qstrAmount);
+
+    if(!qstrRecipientNym.isEmpty())
+        send_window->setInitialHisNym(qstrRecipientNym);
+
+    // ---------------------------------------
+    send_window->dialog();
+    // --------------------------------------------------
+}
+
+void Moneychanger::mc_rpc_requestfunds_show_dialog(QString qstrAcct/*=QString("")*/, QString qstrRecipientNym/*=QString("")*/,
+                                                   QString qstrAsset/*=QString("")*/, QString qstrAmount/*=QString("")*/)
+{
+    // --------------------------------------------------
+    MTRequestDlg * request_window = new MTRequestDlg(NULL);
+    request_window->setAttribute(Qt::WA_DeleteOnClose);
+    // --------------------------------------------------
+
+    QString qstr_acct_id;
+
+    if(!qstrAcct.isEmpty())
+    {
+        qstr_acct_id = qstrAcct;
+    }
+    else if(qstrAcct.isEmpty() && qstrAsset.isEmpty())
+    {
+        qstr_acct_id = this->get_default_account_id();
+    }
+    else if(qstrAcct.isEmpty() && !qstrAsset.isEmpty())
+    {
+        mapIDName theAccountMap;
+
+        if (MTContactHandler::getInstance()->GetAccounts(theAccountMap, QString(""), QString(""), qstrAsset))
+        {
+            // This will be replaced with a popup dialog to select
+            // from the accounts rather than using the first in the map.
+            qstr_acct_id = theAccountMap.begin().key();
+        }
+
+        // If the asset is empty and the account is empty,
+        // or no account exists for the asset given, use the default account id.
+        if(qstrAsset.isEmpty())
+        {
+            qstr_acct_id = this->get_default_account_id();
+        }
+    }
+
+    if (!qstr_acct_id.isEmpty())
+        request_window->setInitialMyAcct(qstr_acct_id);
+
+    if (!qstrAmount.isEmpty())
+        request_window->setInitialAmount(qstrAmount);
+
+    if(!qstrRecipientNym.isEmpty())
+        request_window->setInitialHisNym(qstrRecipientNym);
+
+    // ---------------------------------------
+    request_window->dialog();
+    // --------------------------------------------------
+}
 
