@@ -281,7 +281,7 @@ QJsonValue MCRPCService::stringToAmountLocale(QString InstrumentDefinitionID, QS
                                                                                     Input.toStdString(),
                                                                                     ThousandsSep.toStdString(),
                                                                                     DecimalPoint.toStdString());
-    QJsonObject object{{"StringToAmountLocaleResult", result}};
+    QJsonObject object{{"StringToAmountLocaleResult", QString(std::to_string(result).c_str())}};
     return QJsonValue(object);
 }
 
@@ -312,7 +312,7 @@ QJsonValue MCRPCService::stringToAmount(QString InstrumentDefinitionID,
 {
     int64_t result = opentxs::OTAPI_Wrap::It()->StringToAmount(InstrumentDefinitionID.toStdString(),
                                                                Input.toStdString());
-    QJsonObject object{{"StringToAmountResult", result}};
+    QJsonObject object{{"StringToAmountResult", QString(std::to_string(result).c_str())}};
     return QJsonValue(object);
 }
 
@@ -754,14 +754,14 @@ QJsonValue MCRPCService::instrumentGetTransactionNumber(QString Instrument)
 QJsonValue MCRPCService::instrumentGetValidFrom(QString Instrument)
 {
     time64_t result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetValidFrom(Instrument.toStdString());
-    QJsonObject object{{"InstrumentValidFrom", result}};
+    QJsonObject object{{"InstrumentValidFrom", QString(std::to_string(result).c_str())}};
     return QJsonValue(object);
 }
 
 QJsonValue MCRPCService::instrumentGetValidTo(QString Instrument)
 {
     time64_t result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetValidTo(Instrument.toStdString());
-    QJsonObject object{{"InstrumentValidTo", result}};
+    QJsonObject object{{"InstrumentValidTo", QString(std::to_string(result).c_str())}};
     return QJsonValue(object);
 }
 
