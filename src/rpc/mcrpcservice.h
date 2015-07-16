@@ -146,6 +146,31 @@ public Q_SLOTS:
     QJsonValue getAccountWalletInboxHash(QString AccountWalletID);
     QJsonValue getAccountWalletOutboxHash(QString AccountWalletID);
     QJsonValue getTime(void);
+    QJsonValue encode(QString Plaintext, bool LineBreaks);
+    QJsonValue decode(QString Plaintext, bool LineBreaks);
+    QJsonValue encrypt(QString RecipientNymID, QString Plaintext);
+    QJsonValue decrypt(QString RecipientNymID, QString CipherText);
+    QJsonValue createSymmetricKey(void);
+    QJsonValue symmetricEncrypt(QString SymmetricKey, QString Plaintext);
+    QJsonValue symmetricDecrypt(QString SymmetricKey, QString CipherTextEnvelope);
+    QJsonValue signContract(QString SignerNymID, QString Contract);
+    QJsonValue flatSign(QString SignerNymID, QString Input,
+                        QString ContractType);
+    QJsonValue addSignature(QString SignerNymID, QString Contract);
+    QJsonValue verifySignature(QString SignerNymID, QString Contract);
+    QJsonValue verifyAndRetrieveXMLContents(QString Contract, QString SignerID);
+    QJsonValue verifyAccountReceipt(QString NotaryID, QString NymID,
+                                    QString AccountID);
+    QJsonValue setAccountWalletName(QString AccountID, QString SignerNymID,
+                                    QString AccountName);
+    QJsonValue getAccountWalletBalance(QString AccountWalletID);
+    QJsonValue getAccountWalletType(QString AccountWalletID);
+    QJsonValue getAccountWalletInstrumentDefinitionID(QString AccountWalletID);
+    QJsonValue getAccountWalletNotaryID(QString AccountWalletID);
+    QJsonValue getAccountWalletNymID(QString AccountWalletID);
+
+
+
 
 
 

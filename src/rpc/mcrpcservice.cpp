@@ -941,6 +941,159 @@ QJsonValue MCRPCService::getTime(void)
     return QJsonValue(object);
 }
 
+QJsonValue MCRPCService::encode(QString Plaintext, bool LineBreaks)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Encode(Plaintext.toStdString(),
+                                                           LineBreaks);
+    QJsonObject object{{"EncodedText", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::decode(QString Plaintext, bool LineBreaks)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Decode(Plaintext.toStdString(),
+                                                           LineBreaks);
+    QJsonObject object{{"DecodedText", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::encrypt(QString RecipientNymID, QString Plaintext)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Encrypt(RecipientNymID.toStdString(),
+                                                            Plaintext.toStdString());
+    QJsonObject object{{"EncryptedText", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::decrypt(QString RecipientNymID, QString CipherText)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Decrypt(RecipientNymID.toStdString(),
+                                                            CipherText.toStdString());
+    QJsonObject object{{"DecryptedText", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::createSymmetricKey(void)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->CreateSymmetricKey();
+    QJsonObject object{{"SymmetricKey", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::symmetricEncrypt(QString SymmetricKey, QString Plaintext)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SymmetricEncrypt(SymmetricKey.toStdString(),
+                                                                     Plaintext.toStdString());
+    QJsonObject object{{"EncryptedText", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::symmetricDecrypt(QString SymmetricKey, QString CipherTextEnvelope)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SymmetricDecrypt(SymmetricKey.toStdString(),
+                                                                     CipherTextEnvelope.toStdString());
+    QJsonObject object{{"DecryptedText", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::signContract(QString SignerNymID, QString Contract)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SignContract(SignerNymID.toStdString(),
+                                                                 Contract.toStdString());
+    QJsonObject object{{"SignedContract", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::flatSign(QString SignerNymID, QString Input, QString ContractType)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->FlatSign(SignerNymID.toStdString(),
+                                                             Input.toStdString(),
+                                                             ContractType.toStdString());
+    QJsonObject object{{"FlatSignedText", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::addSignature(QString SignerNymID, QString Contract)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->AddSignature(SignerNymID.toStdString(),
+                                                                 Contract.toStdString());
+    QJsonObject object{{"SignedContract", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::verifySignature(QString SignerNymID, QString Contract)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->VerifySignature(SignerNymID.toStdString(),
+                                                             Contract.toStdString());
+    QJsonObject object{{"VerifySignatureResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::verifyAndRetrieveXMLContents(QString Contract, QString SignerID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->VerifyAndRetrieveXMLContents(Contract.toStdString(),
+                                                                                 SignerID.toStdString());
+    QJsonObject object{{"ContractXMLContents", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::verifyAccountReceipt(QString NotaryID, QString NymID, QString AccountID)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->VerifyAccountReceipt(NotaryID.toStdString(),
+                                                                  NymID.toStdString(),
+                                                                  AccountID.toStdString());
+    QJsonObject object{{"VerifyAccountReceiptResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::setAccountWalletName(QString AccountID, QString SignerNymID, QString AccountName)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->SetAccountWallet_Name(AccountID.toStdString(),
+                                                                   SignerNymID.toStdString(),
+                                                                   AccountName.toStdString());
+    QJsonObject object{{"SetAccountWalletNameResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getAccountWalletBalance(QString AccountWalletID)
+{
+    int64_t result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance(AccountWalletID.toStdString());
+    QJsonObject object{{"AccountWalletBalance", QString(std::to_string(result).c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getAccountWalletType(QString AccountWalletID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Type(AccountWalletID.toStdString());
+    QJsonObject object{{"AccountWalletType", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getAccountWalletInstrumentDefinitionID(QString AccountWalletID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(AccountWalletID.toStdString());
+    QJsonObject object{{"AccountWalletInstrumentDefinitionID", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getAccountWalletNotaryID(QString AccountWalletID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(AccountWalletID.toStdString());
+    QJsonObject object{{"AccountWalletNotaryID", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getAccountWalletNymID(QString AccountWalletID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(AccountWalletID.toStdString());
+    QJsonObject object{{"AccountWalletNymID", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+
+
+
+
 
 
 
