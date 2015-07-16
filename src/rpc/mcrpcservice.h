@@ -1,10 +1,15 @@
 #ifndef MCRPCSERVICE_H
 #define MCRPCSERVICE_H
 
+
+
 #include <qjsonrpcservice.h>
 
 class MCRPCService : public QJsonRpcService
 {
+
+    typedef int64_t time64_t;
+
 private:
     Q_OBJECT
     Q_CLASSINFO("serviceName", "moneychanger")
@@ -168,7 +173,28 @@ public Q_SLOTS:
     QJsonValue getAccountWalletInstrumentDefinitionID(QString AccountWalletID);
     QJsonValue getAccountWalletNotaryID(QString AccountWalletID);
     QJsonValue getAccountWalletNymID(QString AccountWalletID);
-
+    QJsonValue writeCheque(QString NotaryID, int64_t ChequeAmount,
+                           time64_t ValidFrom, time64_t ValidTo,
+                           QString SenderAccountID, QString SenderNymID,
+                           QString ChequeMemo, QString RecipientNymID);
+    QJsonValue discardCheque(QString NotaryId, QString NymID,
+                             QString AccountID, QString Cheque);
+    QJsonValue proposePaymentPlan(QString NotaryID, time64_t ValidFrom,
+                                  time64_t ValidTo, QString SenderAccountID,
+                                  QString SenderNymID, QString PlanConsideration,
+                                  QString RecipientAccountID, QString RecipientNymID,
+                                  int64_t InitialPaymentAmount, time64_t InitialPaymentDelay,
+                                  int64_t PaymentPlanAmount, time64_t PaymentPlanDelay,
+                                  time64_t PaymentPlanPeriod, time64_t PaymentPlanLength,
+                                  int32_t MaxPayments);
+    QJsonValue easyProposePlan(QString NotaryID, QString DateRange,
+                               QString SenderAccountID, QString SenderNymID,
+                               QString PlanConsideration, QString RecipientAccountID,
+                               QString RecipientNymID, QString InitialPayment,
+                               QString PaymentPlan, QString PlanExpiry);
+    QJsonValue confirmPaymentPlan(QString NotaryID, QString SenderNymID,
+                                  QString SenderAccountID, QString RecipientNymID,
+                                  QString PaymentPlan);
 
 
 

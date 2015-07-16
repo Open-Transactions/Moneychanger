@@ -64,7 +64,8 @@ QJsonValue MCRPCService::numListCount(QString NumList)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::createNym(int32_t KeySize, QString NymIDSource, QString AltLocation)
+QJsonValue MCRPCService::createNym(int32_t KeySize, QString NymIDSource,
+                                   QString AltLocation)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->CreateNym(KeySize,
                                                               NymIDSource.toStdString(),
@@ -158,7 +159,8 @@ QJsonValue MCRPCService::getNymSubCredentialCount(QString NymID, QString MasterC
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymSubCredentialID(QString NymID, QString MasterCredID, int32_t Index)
+QJsonValue MCRPCService::getNymSubCredentialID(QString NymID, QString MasterCredID,
+                                               int32_t Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_SubCredentialID(NymID.toStdString(),
                                                                            MasterCredID.toStdString(),
@@ -167,7 +169,8 @@ QJsonValue MCRPCService::getNymSubCredentialID(QString NymID, QString MasterCred
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymSubCredentialContents(QString NymID, QString MasterCredID, QString SubCredID)
+QJsonValue MCRPCService::getNymSubCredentialContents(QString NymID, QString MasterCredID,
+                                                     QString SubCredID)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_SubCredentialContents(NymID.toStdString(),
                                                                                  MasterCredID.toStdString(),
@@ -177,7 +180,8 @@ QJsonValue MCRPCService::getNymSubCredentialContents(QString NymID, QString Mast
 }
 
 
-QJsonValue MCRPCService::addSubCredential(QString NymID, QString MasterCredID, int32_t KeySize)
+QJsonValue MCRPCService::addSubCredential(QString NymID, QString MasterCredID,
+                                          int32_t KeySize)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->AddSubcredential(NymID.toStdString(),
                                                                      MasterCredID.toStdString(),
@@ -186,7 +190,8 @@ QJsonValue MCRPCService::addSubCredential(QString NymID, QString MasterCredID, i
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::revokeSubcredential(QString NymID, QString MasterCredID, QString SubCredID)
+QJsonValue MCRPCService::revokeSubcredential(QString NymID, QString MasterCredID,
+                                             QString SubCredID)
 {
     bool result = opentxs::OTAPI_Wrap::It()->RevokeSubcredential(NymID.toStdString(),
                                                                  MasterCredID.toStdString(),
@@ -275,7 +280,7 @@ QJsonValue MCRPCService::getCurrencySymbol(QString InstrumentDefinitionID)
 }
 
 QJsonValue MCRPCService::stringToAmountLocale(QString InstrumentDefinitionID, QString Input,
-                                                   QString ThousandsSep, QString DecimalPoint)
+                                              QString ThousandsSep, QString DecimalPoint)
 {
     int64_t result = opentxs::OTAPI_Wrap::It()->StringToAmountLocale(InstrumentDefinitionID.toStdString(),
                                                                                     Input.toStdString(),
@@ -286,7 +291,7 @@ QJsonValue MCRPCService::stringToAmountLocale(QString InstrumentDefinitionID, QS
 }
 
 QJsonValue MCRPCService::formatAmountLocale(QString InstrumentDefinitionID, int64_t Amount,
-                                                   QString ThousandsSep, QString DecimalPoint)
+                                            QString ThousandsSep, QString DecimalPoint)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->FormatAmountLocale(InstrumentDefinitionID.toStdString(),
                                                                                     Amount,
@@ -297,7 +302,7 @@ QJsonValue MCRPCService::formatAmountLocale(QString InstrumentDefinitionID, int6
 }
 
 QJsonValue MCRPCService::formatAmountWithoutSymbolLocale(QString InstrumentDefinitionID, int64_t Amount,
-                                                   QString ThousandsSep, QString DecimalPoint)
+                                                         QString ThousandsSep, QString DecimalPoint)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->FormatAmountWithoutSymbolLocale(InstrumentDefinitionID.toStdString(),
                                                                                     Amount,
@@ -307,8 +312,7 @@ QJsonValue MCRPCService::formatAmountWithoutSymbolLocale(QString InstrumentDefin
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::stringToAmount(QString InstrumentDefinitionID,
-                                                   QString Input)
+QJsonValue MCRPCService::stringToAmount(QString InstrumentDefinitionID, QString Input)
 {
     int64_t result = opentxs::OTAPI_Wrap::It()->StringToAmount(InstrumentDefinitionID.toStdString(),
                                                                Input.toStdString());
@@ -316,8 +320,7 @@ QJsonValue MCRPCService::stringToAmount(QString InstrumentDefinitionID,
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::formatAmount(QString InstrumentDefinitionID,
-                                                   int64_t Amount)
+QJsonValue MCRPCService::formatAmount(QString InstrumentDefinitionID, int64_t Amount)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->FormatAmount(InstrumentDefinitionID.toStdString(),
                                                                  Amount);
@@ -325,8 +328,7 @@ QJsonValue MCRPCService::formatAmount(QString InstrumentDefinitionID,
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::formatAmountWithoutSymbol(QString InstrumentDefinitionID,
-                                                   int64_t Amount)
+QJsonValue MCRPCService::formatAmountWithoutSymbol(QString InstrumentDefinitionID, int64_t Amount)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->FormatAmountWithoutSymbol(InstrumentDefinitionID.toStdString(),
                                                                               Amount);
@@ -433,8 +435,8 @@ QJsonValue MCRPCService::walletCanRemoveAccount(QString AccountID)
 }
 
 QJsonValue MCRPCService::doesBoxReceiptExist(QString NotaryID, QString NymID,
-                               QString AccountID, int32_t BoxType,
-                               int64_t TransactionNumber)
+                                             QString AccountID, int32_t BoxType,
+                                             int64_t TransactionNumber)
 {
     bool result = opentxs::OTAPI_Wrap::It()->DoesBoxReceiptExist(NotaryID.toStdString(),
                                                                  NymID.toStdString(),
@@ -446,8 +448,8 @@ QJsonValue MCRPCService::doesBoxReceiptExist(QString NotaryID, QString NymID,
 }
 
 QJsonValue MCRPCService::getBoxReceipt(QString NotaryID, QString NymID,
-                               QString AccountID, int32_t BoxType,
-                               int64_t TransactionNumber)
+                                       QString AccountID, int32_t BoxType,
+                                       int64_t TransactionNumber)
 {
     int32_t result = opentxs::OTAPI_Wrap::It()->getBoxReceipt(NotaryID.toStdString(),
                                                                  NymID.toStdString(),
@@ -458,8 +460,7 @@ QJsonValue MCRPCService::getBoxReceipt(QString NotaryID, QString NymID,
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::deleteAssetAccount(QString NotaryID,
-                                            QString NymID,
+QJsonValue MCRPCService::deleteAssetAccount(QString NotaryID, QString NymID,
                                             QString AccountID)
 {
     int32_t result = opentxs::OTAPI_Wrap::It()->deleteAssetAccount(NotaryID.toStdString(),
@@ -835,8 +836,7 @@ QJsonValue MCRPCService::instrumentGetRecipientAccountID(QString Instrument)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::setNymName(QString NymID,
-                                    QString SignerNymID,
+QJsonValue MCRPCService::setNymName(QString NymID, QString SignerNymID,
                                     QString NewName)
 {
     bool result = opentxs::OTAPI_Wrap::It()->SetNym_Name(NymID.toStdString(),
@@ -1004,7 +1004,8 @@ QJsonValue MCRPCService::signContract(QString SignerNymID, QString Contract)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::flatSign(QString SignerNymID, QString Input, QString ContractType)
+QJsonValue MCRPCService::flatSign(QString SignerNymID, QString Input,
+                                  QString ContractType)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->FlatSign(SignerNymID.toStdString(),
                                                              Input.toStdString(),
@@ -1037,7 +1038,8 @@ QJsonValue MCRPCService::verifyAndRetrieveXMLContents(QString Contract, QString 
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::verifyAccountReceipt(QString NotaryID, QString NymID, QString AccountID)
+QJsonValue MCRPCService::verifyAccountReceipt(QString NotaryID, QString NymID,
+                                              QString AccountID)
 {
     bool result = opentxs::OTAPI_Wrap::It()->VerifyAccountReceipt(NotaryID.toStdString(),
                                                                   NymID.toStdString(),
@@ -1046,7 +1048,8 @@ QJsonValue MCRPCService::verifyAccountReceipt(QString NotaryID, QString NymID, Q
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::setAccountWalletName(QString AccountID, QString SignerNymID, QString AccountName)
+QJsonValue MCRPCService::setAccountWalletName(QString AccountID, QString SignerNymID,
+                                              QString AccountName)
 {
     bool result = opentxs::OTAPI_Wrap::It()->SetAccountWallet_Name(AccountID.toStdString(),
                                                                    SignerNymID.toStdString(),
@@ -1089,6 +1092,96 @@ QJsonValue MCRPCService::getAccountWalletNymID(QString AccountWalletID)
     QJsonObject object{{"AccountWalletNymID", QString(result.c_str())}};
     return QJsonValue(object);
 }
+
+QJsonValue MCRPCService::writeCheque(QString NotaryID, int64_t ChequeAmount,
+                                     time64_t ValidFrom, time64_t ValidTo,
+                                     QString SenderAccountID, QString SenderNymID,
+                                     QString ChequeMemo, QString RecipientNymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->WriteCheque(NotaryID.toStdString(),
+                                                                ChequeAmount,
+                                                                ValidFrom,
+                                                                ValidTo,
+                                                                SenderAccountID.toStdString(),
+                                                                SenderNymID.toStdString(),
+                                                                ChequeMemo.toStdString(),
+                                                                RecipientNymID.toStdString());
+    QJsonObject object{{"Cheque", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::discardCheque(QString NotaryId, QString NymID,
+                                       QString AccountID, QString Cheque)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->DiscardCheque(NotaryId.toStdString(),
+                                                                  NymID.toStdString(),
+                                                                  AccountID.toStdString(),
+                                                                  Cheque.toStdString());
+    QJsonObject object{{"DiscardChequeResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::proposePaymentPlan(QString NotaryID, time64_t ValidFrom,
+                                            time64_t ValidTo, QString SenderAccountID,
+                                            QString SenderNymID, QString PlanConsideration,
+                                            QString RecipientAccountID, QString RecipientNymID,
+                                            int64_t InitialPaymentAmount, time64_t InitialPaymentDelay,
+                                            int64_t PaymentPlanAmount, time64_t PaymentPlanDelay,
+                                            time64_t PaymentPlanPeriod, time64_t PaymentPlanLength,
+                                            int32_t MaxPayments)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->ProposePaymentPlan(NotaryID.toStdString(),
+                                                                       ValidFrom,
+                                                                       ValidTo,
+                                                                       SenderAccountID.toStdString(),
+                                                                       SenderNymID.toStdString(),
+                                                                       PlanConsideration.toStdString(),
+                                                                       RecipientAccountID.toStdString(),
+                                                                       RecipientNymID.toStdString(),
+                                                                       InitialPaymentAmount,
+                                                                       InitialPaymentDelay,
+                                                                       PaymentPlanAmount,
+                                                                       PaymentPlanDelay,
+                                                                       PaymentPlanPeriod,
+                                                                       PaymentPlanLength,
+                                                                       MaxPayments);
+    QJsonObject object{{"ProposePaymentPlanResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::easyProposePlan(QString NotaryID, QString DateRange,
+                                         QString SenderAccountID, QString SenderNymID,
+                                         QString PlanConsideration, QString RecipientAccountID,
+                                         QString RecipientNymID, QString InitialPayment,
+                                         QString PaymentPlan, QString PlanExpiry)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->EasyProposePlan(NotaryID.toStdString(),
+                                                                    DateRange.toStdString(),
+                                                                    SenderAccountID.toStdString(),
+                                                                    SenderNymID.toStdString(),
+                                                                    PlanConsideration.toStdString(),
+                                                                    RecipientAccountID.toStdString(),
+                                                                    RecipientNymID.toStdString(),
+                                                                    InitialPayment.toStdString(),
+                                                                    PaymentPlan.toStdString(),
+                                                                    PlanExpiry.toStdString());
+    QJsonObject object{{"EasyProposePlanResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::confirmPaymentPlan(QString NotaryID, QString SenderNymID,
+                                            QString SenderAccountID, QString RecipientNymID,
+                                            QString PaymentPlan)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->ConfirmPaymentPlan(NotaryID.toStdString(),
+                                                                       SenderNymID.toStdString(),
+                                                                       SenderAccountID.toStdString(),
+                                                                       RecipientNymID.toStdString(),
+                                                                       PaymentPlan.toStdString());
+    QJsonObject object{{"ConfirmPaymentPlanResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
 
 
 
