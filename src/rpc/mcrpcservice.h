@@ -195,6 +195,139 @@ public Q_SLOTS:
     QJsonValue confirmPaymentPlan(QString NotaryID, QString SenderNymID,
                                   QString SenderAccountID, QString RecipientNymID,
                                   QString PaymentPlan);
+    QJsonValue createSmartContract(QString SignerNymID, time64_t ValidFrom,
+                                   time64_t ValidTo, bool SpecifyAssets,
+                                   bool SpecifyParties);
+    QJsonValue smartContractSetDates(QString Contract, QString SignerNymID,
+                                     time64_t ValidFrom, time64_t ValidTo);
+    QJsonValue smartArePartiesSpecified(QString Contract);
+    QJsonValue smartAreAssetTypesSpecified(QString Contract);
+    QJsonValue smartContractAddBylaw(QString Contract, QString SignerNymID,
+                                     QString BylawName);
+    QJsonValue smartContractAddClause(QString Contract, QString SignerNymID,
+                                      QString BylawName, QString ClauseName,
+                                      QString SourceCode);
+    QJsonValue smartContractAddVariable(QString Contract, QString SignerNymID,
+                                        QString BylawName, QString VarName,
+                                        QString VarAccess, QString VarType,
+                                        QString VarValue);
+    QJsonValue smartContractAddCallback(QString Contract, QString SignerNymID,
+                                        QString BylawName, QString CallbackName,
+                                        QString ClauseName);
+    QJsonValue smartContractAddHook(QString Contract, QString SignerNymID,
+                                    QString BylawName, QString HookName,
+                                    QString ClauseName);
+    QJsonValue smartContractAddParty(QString Contract, QString SignerNymID,
+                                     QString PartyNymID, QString PartyName,
+                                     QString AgentName);
+    QJsonValue smartContractAddAccount(QString Contract, QString SignerNymID,
+                                      QString PartyName, QString AccountName,
+                                      QString InstrumentDefinitionID);
+    QJsonValue smartContractRemoveBylaw(QString Contract, QString SignerNymID,
+                                        QString BylawName);
+    QJsonValue smartContractUpdateClause(QString Contract, QString SignerNymID,
+                                         QString BylawName, QString ClauseName,
+                                         QString SourceCode);
+    QJsonValue smartContractRemoveClause(QString Contract, QString SignerNymID,
+                                         QString BylawName, QString ClauseName);
+    QJsonValue smartContractRemoveVariable(QString Contract, QString SignerNymID,
+                                           QString BylawName, QString VarName);
+    QJsonValue smartContractRemoveCallback(QString Contract, QString SignerNymID,
+                                           QString BylawName, QString CallbackName);
+    QJsonValue smartContractRemoveHook(QString Contract, QString SignerNymID,
+                                       QString BylawName, QString HookName,
+                                       QString ClauseName);
+    QJsonValue smartContractRemoveParty(QString Contract, QString SignerNymID,
+                                        QString PartyName);
+    QJsonValue smartContractCountNumbersNeeded(QString Contract, QString AgentName);
+    QJsonValue smartContractConfirmAccount(QString Contract, QString SignerNymID,
+                                           QString PartyName, QString AccountName,
+                                           QString AgentName, QString AccountID);
+    QJsonValue smartContractConfirmParty(QString Contract, QString PartyName,
+                                         QString NymID);
+    QJsonValue smartAreAllPartiesConfirmed(QString Contract);
+    QJsonValue smartIsPartyConfirmed(QString Contract, QString PartyName);
+    QJsonValue smartGetPartyCount(QString Contract);
+    QJsonValue smartGetBylawCount(QString Contract);
+    QJsonValue smartGetPartyByIndex(QString Contract, int32_t Index);
+    QJsonValue smartGetBylawByIndex(QString Contract, int32_t Index);
+    QJsonValue bylawGetLanguage(QString Contract, QString BylawName);
+    QJsonValue bylawGetClauseCount(QString Contract, QString BylawName);
+    QJsonValue bylawGetVariableCount(QString Contract, QString BylawName);
+    QJsonValue bylawGetHookCount(QString Contract, QString BylawName);
+    QJsonValue bylawGetCallbackCount(QString Contract, QString BylawName);
+    QJsonValue clauseGetNameByIndex(QString Contract, QString BylawName,
+                                    int32_t Index);
+    QJsonValue clauseGetContents(QString Contract, QString BylawName,
+                                 QString ClauseName);
+    QJsonValue variableGetNameByIndex(QString Contract, QString BylawName,
+                                      int32_t Index);
+    QJsonValue variableGetType(QString Contract, QString BylawName,
+                               QString VariableName);
+    QJsonValue variableGetAccess(QString Contract, QString BylawName,
+                                 QString VariableName);
+    QJsonValue variableGetContents(QString Contract, QString BylawName,
+                                   QString VariableName);
+    QJsonValue hookGetNameByIndex(QString Contract, QString BylawName,
+                                  int32_t Index);
+    QJsonValue hookGetClauseCount(QString Contract, QString BylawName,
+                                  QString HookName);
+    QJsonValue hookGetClauseAtIndex(QString Contract, QString BylawName,
+                                    QString HookName, int32_t Index);
+    QJsonValue callbackGetNameByIndex(QString Contract, QString BylawName,
+                                      int32_t Index);
+    QJsonValue callbackGetClause(QString Contract, QString BylawName,
+                                 QString ClauseName);
+    QJsonValue partyGetAccountCount(QString Contract, QString PartyName);
+    QJsonValue partyGetAgentCount(QString Contract, QString PartyName);
+    QJsonValue partyGetID(QString Contract, QString PartyName);
+    QJsonValue partyGetAccountNameByIndex(QString Contract, QString PartyName,
+                                          int32_t Index);
+    QJsonValue partyGetAccountID(QString Contract, QString PartyName,
+                                 QString AccountName);
+    QJsonValue partyGetAccountInstrumentDefinitionID(QString Contract, QString PartyName,
+                                                     QString AccountName);
+    QJsonValue partyGetAccountAgentName(QString Contract, QString PartyName,
+                                        QString AccountName);
+    QJsonValue partyGetAgentNameByIndex(QString Contract, QString PartyName,
+                                        int32_t Index);
+    QJsonValue partyGetAgentID(QString Contract, QString PartyName,
+                               QString AgentName);
+    QJsonValue activateSmartContract(QString NotaryID, QString NymID,
+                                     QString SmartContract);
+    QJsonValue triggerClause(QString NotaryID, QString NymID,
+                             int64_t TransactionNumber, QString ClauseName,
+                             QString Parameter);
+    QJsonValue messageHarvestTransactionNumbers(QString Message, QString NymID,
+                                                bool HarvestingForRetry, bool ReplyWasSuccess,
+                                                bool ReplyWasFailure, bool TransactionWasSuccess,
+                                                bool TransactionWasFailure);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

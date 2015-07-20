@@ -1182,11 +1182,564 @@ QJsonValue MCRPCService::confirmPaymentPlan(QString NotaryID, QString SenderNymI
     return QJsonValue(object);
 }
 
+QJsonValue MCRPCService::createSmartContract(QString SignerNymID, time64_t ValidFrom,
+                                             time64_t ValidTo, bool SpecifyAssets,
+                                             bool SpecifyParties)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Create_SmartContract(SignerNymID.toStdString(),
+                                                                         ValidFrom,
+                                                                         ValidTo,
+                                                                         SpecifyAssets,
+                                                                         SpecifyParties);
+    QJsonObject object{{"CreateSmartContractResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
 
+QJsonValue MCRPCService::smartContractSetDates(QString Contract, QString SignerNymID,
+                                               time64_t ValidFrom, time64_t ValidTo)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_SetDates(Contract.toStdString(),
+                                                                           SignerNymID.toStdString(),
+                                                                           ValidFrom,
+                                                                           ValidTo);
+    QJsonObject object{{"SmartContractSetDatesResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
 
+QJsonValue MCRPCService::smartArePartiesSpecified(QString Contract)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Smart_ArePartiesSpecified(Contract.toStdString());
+    QJsonObject object{{"SmartArePartiesSpecifiedResult", result}};
+    return QJsonValue(object);
+}
 
+QJsonValue MCRPCService::smartAreAssetTypesSpecified(QString Contract)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Smart_AreAssetTypesSpecified(Contract.toStdString());
+    QJsonObject object{{"SmartAreAssetTypesSpecifiedResult", result}};
+    return QJsonValue(object);
+}
 
+QJsonValue MCRPCService::smartContractAddBylaw(QString Contract, QString SignerNymID,
+                                               QString BylawName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_AddBylaw(Contract.toStdString(),
+                                                                           SignerNymID.toStdString(),
+                                                                           BylawName.toStdString());
+    QJsonObject object{{"SmartContractAddBylawResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
 
+QJsonValue MCRPCService::smartContractAddClause(QString Contract, QString SignerNymID,
+                                                QString BylawName, QString ClauseName,
+                                                QString SourceCode)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_AddClause(Contract.toStdString(),
+                                                                            SignerNymID.toStdString(),
+                                                                            BylawName.toStdString(),
+                                                                            ClauseName.toStdString(),
+                                                                            SourceCode.toStdString());
+    QJsonObject object{{"SmartContractAddClauseResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractAddVariable(QString Contract, QString SignerNymID,
+                                                  QString BylawName, QString VarName,
+                                                  QString VarAccess, QString VarType,
+                                                  QString VarValue)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_AddVariable(Contract.toStdString(),
+                                                                              SignerNymID.toStdString(),
+                                                                              BylawName.toStdString(),
+                                                                              VarName.toStdString(),
+                                                                              VarAccess.toStdString(),
+                                                                              VarType.toStdString(),
+                                                                              VarValue.toStdString());
+    QJsonObject object{{"SmartContractAddVariableResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractAddCallback(QString Contract, QString SignerNymID,
+                                                  QString BylawName, QString CallbackName,
+                                                  QString ClauseName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_AddCallback(Contract.toStdString(),
+                                                                              SignerNymID.toStdString(),
+                                                                              BylawName.toStdString(),
+                                                                              CallbackName.toStdString(),
+                                                                              ClauseName.toStdString());
+    QJsonObject object{{"SmartContractAddCallbackResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractAddHook(QString Contract, QString SignerNymID,
+                                              QString BylawName, QString HookName,
+                                              QString ClauseName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_AddHook(Contract.toStdString(),
+                                                                          SignerNymID.toStdString(),
+                                                                          BylawName.toStdString(),
+                                                                          HookName.toStdString(),
+                                                                          ClauseName.toStdString());
+    QJsonObject object{{"SmartContractAddHookResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractAddParty(QString Contract, QString SignerNymID,
+                                               QString PartyNymID, QString PartyName,
+                                               QString AgentName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_AddParty(Contract.toStdString(),
+                                                                           SignerNymID.toStdString(),
+                                                                           PartyNymID.toStdString(),
+                                                                           PartyName.toStdString(),
+                                                                           AgentName.toStdString());
+    QJsonObject object{{"SmartContractAddPartyResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractAddAccount(QString Contract, QString SignerNymID,
+                                                 QString PartyName, QString AccountName,
+                                                 QString InstrumentDefinitionID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_AddAccount(Contract.toStdString(),
+                                                                             SignerNymID.toStdString(),
+                                                                             PartyName.toStdString(),
+                                                                             AccountName.toStdString(),
+                                                                             InstrumentDefinitionID.toStdString());
+    QJsonObject object{{"SmartContractAddAccountResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractRemoveBylaw(QString Contract, QString SignerNymID,
+                                                  QString BylawName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_RemoveBylaw(Contract.toStdString(),
+                                                                              SignerNymID.toStdString(),
+                                                                              BylawName.toStdString());
+    QJsonObject object{{"SmartContractRemoveBylawResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractUpdateClause(QString Contract, QString SignerNymID,
+                                                   QString BylawName, QString ClauseName,
+                                                   QString SourceCode)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_UpdateClause(Contract.toStdString(),
+                                                                               SignerNymID.toStdString(),
+                                                                               BylawName.toStdString(),
+                                                                               ClauseName.toStdString(),
+                                                                               SourceCode.toStdString());
+    QJsonObject object{{"SmartContractUpdateClauseResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractRemoveClause(QString Contract, QString SignerNymID,
+                                                   QString BylawName, QString ClauseName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_RemoveClause(Contract.toStdString(),
+                                                                               SignerNymID.toStdString(),
+                                                                               BylawName.toStdString(),
+                                                                               ClauseName.toStdString());
+    QJsonObject object{{"SmartContractRemoveClauseResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractRemoveVariable(QString Contract, QString SignerNymID,
+                                                     QString BylawName, QString VarName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_RemoveVariable(Contract.toStdString(),
+                                                                                 SignerNymID.toStdString(),
+                                                                                 BylawName.toStdString(),
+                                                                                 VarName.toStdString());
+    QJsonObject object{{"SmartContractRemoveVariableResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractRemoveCallback(QString Contract, QString SignerNymID,
+                                                     QString BylawName, QString CallbackName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_RemoveCallback(Contract.toStdString(),
+                                                                                 SignerNymID.toStdString(),
+                                                                                 BylawName.toStdString(),
+                                                                                 CallbackName.toStdString());
+    QJsonObject object{{"SmartContractRemoveCallbackResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractRemoveHook(QString Contract, QString SignerNymID,
+                                                 QString BylawName, QString HookName,
+                                                 QString ClauseName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_RemoveHook(Contract.toStdString(),
+                                                                             SignerNymID.toStdString(),
+                                                                             BylawName.toStdString(),
+                                                                             HookName.toStdString(),
+                                                                             ClauseName.toStdString());
+    QJsonObject object{{"SmartContractRemoveHookResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractRemoveParty(QString Contract, QString SignerNymID,
+                                                  QString PartyName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_RemoveParty(Contract.toStdString(),
+                                                                              SignerNymID.toStdString(),
+                                                                              PartyName.toStdString());
+    QJsonObject object{{"SmartContractRemovePartyResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractCountNumbersNeeded(QString Contract, QString AgentName)
+{
+    int32_t result = opentxs::OTAPI_Wrap::It()->SmartContract_CountNumsNeeded(Contract.toStdString(),
+                                                                              AgentName.toStdString());
+    QJsonObject object{{"SmartContractNumbersNeeded", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractConfirmAccount(QString Contract, QString SignerNymID,
+                                                     QString PartyName, QString AccountName,
+                                                     QString AgentName, QString AccountID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_ConfirmAccount(Contract.toStdString(),
+                                                                                 SignerNymID.toStdString(),
+                                                                                 PartyName.toStdString(),
+                                                                                 AccountName.toStdString(),
+                                                                                 AgentName.toStdString(),
+                                                                                 AccountID.toStdString());
+    QJsonObject object{{"SmartContractConfirmAccountResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartContractConfirmParty(QString Contract, QString PartyName,
+                                                   QString NymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_ConfirmParty(Contract.toStdString(),
+                                                                               PartyName.toStdString(),
+                                                                               NymID.toStdString());
+    QJsonObject object{{"SmartContractConfirmPartyResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartAreAllPartiesConfirmed(QString Contract)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Smart_AreAllPartiesConfirmed(Contract.toStdString());
+    QJsonObject object{{"SmartAreAllPartiesConfirmedResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartIsPartyConfirmed(QString Contract, QString PartyName)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Smart_IsPartyConfirmed(Contract.toStdString(),
+                                                                    PartyName.toStdString());
+    QJsonObject object{{"SmartIsPartyConfirmedResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartGetPartyCount(QString Contract)
+{
+    int32_t result = opentxs::OTAPI_Wrap::It()->Smart_GetPartyCount(Contract.toStdString());
+    QJsonObject object{{"SmartPartyCount", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartGetBylawCount(QString Contract)
+{
+    int32_t result = opentxs::OTAPI_Wrap::It()->Smart_GetBylawCount(Contract.toStdString());
+    QJsonObject object{{"SmartBylawCount", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartGetPartyByIndex(QString Contract, int32_t Index)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Smart_GetPartyByIndex(Contract.toStdString(),
+                                                                          Index);
+    QJsonObject object{{"SmartGetPartyByIndexResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::smartGetBylawByIndex(QString Contract, int32_t Index)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Smart_GetBylawByIndex(Contract.toStdString(),
+                                                                          Index);
+    QJsonObject object{{"SmartGetBylawByIndexResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::bylawGetLanguage(QString Contract, QString BylawName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Bylaw_GetLanguage(Contract.toStdString(),
+                                                                      BylawName.toStdString());
+    QJsonObject object{{"BylawLanguage", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::bylawGetClauseCount(QString Contract, QString BylawName)
+{
+    int32_t result = opentxs::OTAPI_Wrap::It()->Bylaw_GetClauseCount(Contract.toStdString(),
+                                                                     BylawName.toStdString());
+    QJsonObject object{{"BylawClauseCount", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::bylawGetVariableCount(QString Contract, QString BylawName)
+{
+    int32_t result = opentxs::OTAPI_Wrap::It()->Bylaw_GetVariableCount(Contract.toStdString(),
+                                                                       BylawName.toStdString());
+    QJsonObject object{{"BylawVariableCount", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::bylawGetHookCount(QString Contract, QString BylawName)
+{
+    int32_t result = opentxs::OTAPI_Wrap::It()->Bylaw_GetHookCount(Contract.toStdString(),
+                                                                   BylawName.toStdString());
+    QJsonObject object{{"BylawHookCount", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::bylawGetCallbackCount(QString Contract, QString BylawName)
+{
+    int32_t result = opentxs::OTAPI_Wrap::It()->Bylaw_GetCallbackCount(Contract.toStdString(),
+                                                                       BylawName.toStdString());
+    QJsonObject object{{"BylawCallbackCount", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::clauseGetNameByIndex(QString Contract, QString BylawName,
+                                              int32_t Index)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Clause_GetNameByIndex(Contract.toStdString(),
+                                                                          BylawName.toStdString(),
+                                                                          Index);
+    QJsonObject object{{"ClauseGetNameByIndexResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::clauseGetContents(QString Contract, QString BylawName,
+                                           QString ClauseName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Clause_GetContents(Contract.toStdString(),
+                                                                       BylawName.toStdString(),
+                                                                       ClauseName.toStdString());
+    QJsonObject object{{"ClauseContents", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::variableGetNameByIndex(QString Contract, QString BylawName,
+                                                int32_t Index)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Variable_GetNameByIndex(Contract.toStdString(),
+                                                                            BylawName.toStdString(),
+                                                                            Index);
+    QJsonObject object{{"VariableGetNameByIndexResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::variableGetType(QString Contract, QString BylawName,
+                                         QString VariableName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Variable_GetType(Contract.toStdString(),
+                                                                     BylawName.toStdString(),
+                                                                     VariableName.toStdString());
+    QJsonObject object{{"VariableType", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::variableGetAccess(QString Contract, QString BylawName,
+                                           QString VariableName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Variable_GetAccess(Contract.toStdString(),
+                                                                       BylawName.toStdString(),
+                                                                       VariableName.toStdString());
+    QJsonObject object{{"VariableAccess", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::variableGetContents(QString Contract, QString BylawName,
+                                             QString VariableName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Variable_GetContents(Contract.toStdString(),
+                                                                         BylawName.toStdString(),
+                                                                         VariableName.toStdString());
+    QJsonObject object{{"VariableContents", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::hookGetNameByIndex(QString Contract, QString BylawName,
+                                            int32_t Index)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Hook_GetNameByIndex(Contract.toStdString(),
+                                                                        BylawName.toStdString(),
+                                                                        Index);
+    QJsonObject object{{"HookGetNameByIndexResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::hookGetClauseCount(QString Contract, QString BylawName,
+                                            QString HookName)
+{
+    int32_t result = opentxs::OTAPI_Wrap::It()->Hook_GetClauseCount(Contract.toStdString(),
+                                                                    BylawName.toStdString(),
+                                                                    HookName.toStdString());
+    QJsonObject object{{"HookClauseCount", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::hookGetClauseAtIndex(QString Contract, QString BylawName,
+                                              QString HookName, int32_t Index)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Hook_GetClauseAtIndex(Contract.toStdString(),
+                                                                          BylawName.toStdString(),
+                                                                          HookName.toStdString(),
+                                                                          Index);
+    QJsonObject object{{"HookGetClauseAtIndexResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::callbackGetNameByIndex(QString Contract, QString BylawName,
+                                                int32_t Index)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Callback_GetNameByIndex(Contract.toStdString(),
+                                                                            BylawName.toStdString(),
+                                                                            Index);
+    QJsonObject object{{"CallbackGetNameByIndexResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::callbackGetClause(QString Contract, QString BylawName,
+                                           QString ClauseName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Callback_GetClause(Contract.toStdString(),
+                                                                       BylawName.toStdString(),
+                                                                       ClauseName.toStdString());
+    QJsonObject object{{"CallbackGetClauseResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::partyGetAccountCount(QString Contract, QString PartyName)
+{
+    int32_t result = opentxs::OTAPI_Wrap::It()->Party_GetAcctCount(Contract.toStdString(),
+                                                                   PartyName.toStdString());
+    QJsonObject object{{"PartyAccountCount", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::partyGetAgentCount(QString Contract, QString PartyName)
+{
+    int32_t result = opentxs::OTAPI_Wrap::It()->Party_GetAgentCount(Contract.toStdString(),
+                                                                   PartyName.toStdString());
+    QJsonObject object{{"PartyAgentCount", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::partyGetID(QString Contract, QString PartyName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Party_GetID(Contract.toStdString(),
+                                                                PartyName.toStdString());
+    QJsonObject object{{"PartyID", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::partyGetAccountNameByIndex(QString Contract, QString PartyName,
+                                                    int32_t Index)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Party_GetAcctNameByIndex(Contract.toStdString(),
+                                                                             PartyName.toStdString(),
+                                                                             Index);
+    QJsonObject object{{"PartyGetAccountNameByIndexResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::partyGetAccountID(QString Contract, QString PartyName,
+                                           QString AccountName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Party_GetAcctID(Contract.toStdString(),
+                                                                    PartyName.toStdString(),
+                                                                    AccountName.toStdString());
+    QJsonObject object{{"PartyGetAccountIDResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::partyGetAccountInstrumentDefinitionID(QString Contract, QString PartyName,
+                                                               QString AccountName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Party_GetAcctInstrumentDefinitionID(Contract.toStdString(),
+                                                                                        PartyName.toStdString(),
+                                                                                        AccountName.toStdString());
+    QJsonObject object{{"PartyGetAccountInstrumentDefinitionIDResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::partyGetAccountAgentName(QString Contract, QString PartyName,
+                                                  QString AccountName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Party_GetAcctAgentName(Contract.toStdString(),
+                                                                           PartyName.toStdString(),
+                                                                           AccountName.toStdString());
+    QJsonObject object{{"PartyAccountAgentName", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::partyGetAgentNameByIndex(QString Contract, QString PartyName,
+                                                  int32_t Index)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Party_GetAgentNameByIndex(Contract.toStdString(),
+                                                                              PartyName.toStdString(),
+                                                                              Index);
+    QJsonObject object{{"PartyGetAgentNameByIndexResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::partyGetAgentID(QString Contract, QString PartyName,
+                                         QString AgentName)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Party_GetAgentID(Contract.toStdString(),
+                                                                     PartyName.toStdString(),
+                                                                     AgentName.toStdString());
+    QJsonObject object{{"PartyGetAgentIDResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::activateSmartContract(QString NotaryID, QString NymID,
+                                               QString SmartContract)
+{
+    int32_t result = opentxs::OTAPI_Wrap::It()->activateSmartContract(NotaryID.toStdString(),
+                                                                      NymID.toStdString(),
+                                                                      SmartContract.toStdString());
+    QJsonObject object{{"ActivateSmartContractResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::triggerClause(QString NotaryID, QString NymID,
+                                       int64_t TransactionNumber, QString ClauseName,
+                                       QString Parameter)
+{
+    int32_t result = opentxs::OTAPI_Wrap::It()->triggerClause(NotaryID.toStdString(),
+                                                              NymID.toStdString(),
+                                                              TransactionNumber,
+                                                              ClauseName.toStdString(),
+                                                              Parameter.toStdString());
+    QJsonObject object{{"TriggerClauseResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::messageHarvestTransactionNumbers(QString Message, QString NymID,
+                                                          bool HarvestingForRetry, bool ReplyWasSuccess,
+                                                          bool ReplyWasFailure, bool TransactionWasSuccess,
+                                                          bool TransactionWasFailure)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(Message.toStdString(),
+                                                                           NymID.toStdString(),
+                                                                           HarvestingForRetry,
+                                                                           ReplyWasSuccess,
+                                                                           ReplyWasFailure,
+                                                                           TransactionWasSuccess,
+                                                                           TransactionWasFailure);
+    QJsonObject object{{"MessageHarvestTransactionNumbersResult", result}};
+    return QJsonValue(object);
+}
 
 
 
