@@ -59,12 +59,12 @@ QJsonValue MCRPCService::numListVerifyAll(QString NumList, QString Numbers)
 
 QJsonValue MCRPCService::numListCount(QString NumList)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->NumList_Count(NumList.toStdString());
+    int result = opentxs::OTAPI_Wrap::It()->NumList_Count(NumList.toStdString());
     QJsonObject object{{"NumListCount", result}};
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::createNym(int32_t KeySize, QString NymIDSource,
+QJsonValue MCRPCService::createNym(int KeySize, QString NymIDSource,
                                    QString AltLocation)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->CreateNym(KeySize,
@@ -82,7 +82,7 @@ QJsonValue MCRPCService::getNymActiveCronItemIDs(QString NymID, QString NotaryID
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getActiveCronItem(QString NotaryID, int64_t TransNum)
+QJsonValue MCRPCService::getActiveCronItem(QString NotaryID, qint64 TransNum)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetActiveCronItem(NotaryID.toStdString(),
                                                                       TransNum);
@@ -106,12 +106,12 @@ QJsonValue MCRPCService::getNymAltSourceLocation(QString NymID)
 
 QJsonValue MCRPCService::getNymCredentialCount(QString NymID)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->GetNym_CredentialCount(NymID.toStdString());
+    int result = opentxs::OTAPI_Wrap::It()->GetNym_CredentialCount(NymID.toStdString());
     QJsonObject object{{"NymCredentialCount", result}};
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymCredentialID(QString NymID, int32_t Index)
+QJsonValue MCRPCService::getNymCredentialID(QString NymID, int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_CredentialID(NymID.toStdString(),
                                                                         Index);
@@ -130,12 +130,12 @@ QJsonValue MCRPCService::getNymCredentialContents(QString NymID, QString Credent
 
 QJsonValue MCRPCService::getNymRevokedCount(QString NymID)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->GetNym_RevokedCredCount(NymID.toStdString());
+    int result = opentxs::OTAPI_Wrap::It()->GetNym_RevokedCredCount(NymID.toStdString());
     QJsonObject object{{"NymRevokedCredCount", result}};
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymRevokedCredID(QString NymID, int32_t Index)
+QJsonValue MCRPCService::getNymRevokedCredID(QString NymID, int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_RevokedCredID(NymID.toStdString(),
                                                                          Index);
@@ -153,14 +153,14 @@ QJsonValue MCRPCService::getNymRevokedCredContents(QString NymID, QString Creden
 
 QJsonValue MCRPCService::getNymSubCredentialCount(QString NymID, QString MasterCredID)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->GetNym_SubcredentialCount(NymID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::It()->GetNym_SubcredentialCount(NymID.toStdString(),
                                                                           MasterCredID.toStdString());
     QJsonObject object{{"NymSubCredentialCount", result}};
     return QJsonValue(object);
 }
 
 QJsonValue MCRPCService::getNymSubCredentialID(QString NymID, QString MasterCredID,
-                                               int32_t Index)
+                                               int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_SubCredentialID(NymID.toStdString(),
                                                                            MasterCredID.toStdString(),
@@ -181,7 +181,7 @@ QJsonValue MCRPCService::getNymSubCredentialContents(QString NymID, QString Mast
 
 
 QJsonValue MCRPCService::addSubCredential(QString NymID, QString MasterCredID,
-                                          int32_t KeySize)
+                                          int KeySize)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->AddSubcredential(NymID.toStdString(),
                                                                      MasterCredID.toStdString(),
@@ -253,14 +253,14 @@ QJsonValue MCRPCService::getServerContract(QString NotaryID)
 
 QJsonValue MCRPCService::getCurrencyFactor(QString InstrumentDefinitionID)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->GetCurrencyFactor(InstrumentDefinitionID.toStdString());
+    int result = opentxs::OTAPI_Wrap::It()->GetCurrencyFactor(InstrumentDefinitionID.toStdString());
     QJsonObject object{{"CurrencyFactor", result}};
     return QJsonValue(object);
 }
 
 QJsonValue MCRPCService::getCurrencyDecimalPower(QString InstrumentDefinitionID)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->GetCurrencyDecimalPower(InstrumentDefinitionID.toStdString());
+    int result = opentxs::OTAPI_Wrap::It()->GetCurrencyDecimalPower(InstrumentDefinitionID.toStdString());
     QJsonObject object{{"CurrencyDecimalPower", result}};
     return QJsonValue(object);
 }
@@ -282,7 +282,7 @@ QJsonValue MCRPCService::getCurrencySymbol(QString InstrumentDefinitionID)
 QJsonValue MCRPCService::stringToAmountLocale(QString InstrumentDefinitionID, QString Input,
                                               QString ThousandsSep, QString DecimalPoint)
 {
-    int64_t result = opentxs::OTAPI_Wrap::It()->StringToAmountLocale(InstrumentDefinitionID.toStdString(),
+    qint64 result = opentxs::OTAPI_Wrap::It()->StringToAmountLocale(InstrumentDefinitionID.toStdString(),
                                                                                     Input.toStdString(),
                                                                                     ThousandsSep.toStdString(),
                                                                                     DecimalPoint.toStdString());
@@ -290,7 +290,7 @@ QJsonValue MCRPCService::stringToAmountLocale(QString InstrumentDefinitionID, QS
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::formatAmountLocale(QString InstrumentDefinitionID, int64_t Amount,
+QJsonValue MCRPCService::formatAmountLocale(QString InstrumentDefinitionID, qint64 Amount,
                                             QString ThousandsSep, QString DecimalPoint)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->FormatAmountLocale(InstrumentDefinitionID.toStdString(),
@@ -301,7 +301,7 @@ QJsonValue MCRPCService::formatAmountLocale(QString InstrumentDefinitionID, int6
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::formatAmountWithoutSymbolLocale(QString InstrumentDefinitionID, int64_t Amount,
+QJsonValue MCRPCService::formatAmountWithoutSymbolLocale(QString InstrumentDefinitionID, qint64 Amount,
                                                          QString ThousandsSep, QString DecimalPoint)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->FormatAmountWithoutSymbolLocale(InstrumentDefinitionID.toStdString(),
@@ -314,13 +314,13 @@ QJsonValue MCRPCService::formatAmountWithoutSymbolLocale(QString InstrumentDefin
 
 QJsonValue MCRPCService::stringToAmount(QString InstrumentDefinitionID, QString Input)
 {
-    int64_t result = opentxs::OTAPI_Wrap::It()->StringToAmount(InstrumentDefinitionID.toStdString(),
+    qint64 result = opentxs::OTAPI_Wrap::It()->StringToAmount(InstrumentDefinitionID.toStdString(),
                                                                Input.toStdString());
     QJsonObject object{{"StringToAmountResult", QString(std::to_string(result).c_str())}};
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::formatAmount(QString InstrumentDefinitionID, int64_t Amount)
+QJsonValue MCRPCService::formatAmount(QString InstrumentDefinitionID, qint64 Amount)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->FormatAmount(InstrumentDefinitionID.toStdString(),
                                                                  Amount);
@@ -328,7 +328,7 @@ QJsonValue MCRPCService::formatAmount(QString InstrumentDefinitionID, int64_t Am
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::formatAmountWithoutSymbol(QString InstrumentDefinitionID, int64_t Amount)
+QJsonValue MCRPCService::formatAmountWithoutSymbol(QString InstrumentDefinitionID, qint64 Amount)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->FormatAmountWithoutSymbol(InstrumentDefinitionID.toStdString(),
                                                                               Amount);
@@ -435,8 +435,8 @@ QJsonValue MCRPCService::walletCanRemoveAccount(QString AccountID)
 }
 
 QJsonValue MCRPCService::doesBoxReceiptExist(QString NotaryID, QString NymID,
-                                             QString AccountID, int32_t BoxType,
-                                             int64_t TransactionNumber)
+                                             QString AccountID, int BoxType,
+                                             qint64 TransactionNumber)
 {
     bool result = opentxs::OTAPI_Wrap::It()->DoesBoxReceiptExist(NotaryID.toStdString(),
                                                                  NymID.toStdString(),
@@ -448,10 +448,10 @@ QJsonValue MCRPCService::doesBoxReceiptExist(QString NotaryID, QString NymID,
 }
 
 QJsonValue MCRPCService::getBoxReceipt(QString NotaryID, QString NymID,
-                                       QString AccountID, int32_t BoxType,
-                                       int64_t TransactionNumber)
+                                       QString AccountID, int BoxType,
+                                       qint64 TransactionNumber)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->getBoxReceipt(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::It()->getBoxReceipt(NotaryID.toStdString(),
                                                                  NymID.toStdString(),
                                                                  AccountID.toStdString(),
                                                                  BoxType,
@@ -463,7 +463,7 @@ QJsonValue MCRPCService::getBoxReceipt(QString NotaryID, QString NymID,
 QJsonValue MCRPCService::deleteAssetAccount(QString NotaryID, QString NymID,
                                             QString AccountID)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->deleteAssetAccount(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::It()->deleteAssetAccount(NotaryID.toStdString(),
                                                                  NymID.toStdString(),
                                                                  AccountID.toStdString());
     QJsonObject object{{"DeleteAssetAccountResult", result}};
@@ -536,7 +536,7 @@ QJsonValue MCRPCService::walletGetAccountIdFromPartial(QString PartialID)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymID(int32_t Index)
+QJsonValue MCRPCService::getNymID(int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_ID(Index);
     QJsonObject object{{"NymID", QString(result.c_str())}};
@@ -599,12 +599,12 @@ QJsonValue MCRPCService::getNymOutboxHash(QString NotaryID, QString NymID)
 
 QJsonValue MCRPCService::getNymMailCount(QString NymID)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->GetNym_MailCount(NymID.toStdString());
+    int result = opentxs::OTAPI_Wrap::It()->GetNym_MailCount(NymID.toStdString());
     QJsonObject object{{"NymMailCount", result}};
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymContentsByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::getNymContentsByIndex(QString NymID, int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_MailContentsByIndex(NymID.toStdString(),
                                                                                Index);
@@ -612,7 +612,7 @@ QJsonValue MCRPCService::getNymContentsByIndex(QString NymID, int32_t Index)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymMailSenderIDByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::getNymMailSenderIDByIndex(QString NymID, int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_MailSenderIDByIndex(NymID.toStdString(),
                                                                                Index);
@@ -620,7 +620,7 @@ QJsonValue MCRPCService::getNymMailSenderIDByIndex(QString NymID, int32_t Index)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymMailNotaryIDByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::getNymMailNotaryIDByIndex(QString NymID, int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_MailNotaryIDByIndex(NymID.toStdString(),
                                                                                Index);
@@ -628,7 +628,7 @@ QJsonValue MCRPCService::getNymMailNotaryIDByIndex(QString NymID, int32_t Index)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::nymRemoveMailByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::nymRemoveMailByIndex(QString NymID, int Index)
 {
     bool result = opentxs::OTAPI_Wrap::It()->Nym_RemoveMailByIndex(NymID.toStdString(),
                                                                    Index);
@@ -636,7 +636,7 @@ QJsonValue MCRPCService::nymRemoveMailByIndex(QString NymID, int32_t Index)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::nymVerifyMailByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::nymVerifyMailByIndex(QString NymID, int Index)
 {
     bool result = opentxs::OTAPI_Wrap::It()->Nym_VerifyMailByIndex(NymID.toStdString(),
                                                                    Index);
@@ -646,12 +646,12 @@ QJsonValue MCRPCService::nymVerifyMailByIndex(QString NymID, int32_t Index)
 
 QJsonValue MCRPCService::getNymOutmailCount(QString NymID)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->GetNym_OutmailCount(NymID.toStdString());
+    int result = opentxs::OTAPI_Wrap::It()->GetNym_OutmailCount(NymID.toStdString());
     QJsonObject object{{"NymOutmailCount", result}};
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymOutmailContentsByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::getNymOutmailContentsByIndex(QString NymID, int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_OutmailContentsByIndex(NymID.toStdString(),
                                                                                   Index);
@@ -659,7 +659,7 @@ QJsonValue MCRPCService::getNymOutmailContentsByIndex(QString NymID, int32_t Ind
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymOutmailRecipientIDByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::getNymOutmailRecipientIDByIndex(QString NymID, int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_OutmailRecipientIDByIndex(NymID.toStdString(),
                                                                                      Index);
@@ -667,7 +667,7 @@ QJsonValue MCRPCService::getNymOutmailRecipientIDByIndex(QString NymID, int32_t 
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymOutmailNotaryIDByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::getNymOutmailNotaryIDByIndex(QString NymID, int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_OutmailNotaryIDByIndex(NymID.toStdString(),
                                                                                   Index);
@@ -675,7 +675,7 @@ QJsonValue MCRPCService::getNymOutmailNotaryIDByIndex(QString NymID, int32_t Ind
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::nymRemoveOutmailByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::nymRemoveOutmailByIndex(QString NymID, int Index)
 {
     bool result = opentxs::OTAPI_Wrap::It()->Nym_RemoveOutmailByIndex(NymID.toStdString(),
                                                                       Index);
@@ -683,7 +683,7 @@ QJsonValue MCRPCService::nymRemoveOutmailByIndex(QString NymID, int32_t Index)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::nymVerifyOutmailByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::nymVerifyOutmailByIndex(QString NymID, int Index)
 {
     bool result = opentxs::OTAPI_Wrap::It()->Nym_VerifyOutmailByIndex(NymID.toStdString(),
                                                                       Index);
@@ -693,12 +693,12 @@ QJsonValue MCRPCService::nymVerifyOutmailByIndex(QString NymID, int32_t Index)
 
 QJsonValue MCRPCService::getNymOutpaymentsCount(QString NymID)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->GetNym_OutpaymentsCount(NymID.toStdString());
+    int result = opentxs::OTAPI_Wrap::It()->GetNym_OutpaymentsCount(NymID.toStdString());
     QJsonObject object{{"NymOutpaymentsCount", result}};
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymOutpaymentsContentsByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::getNymOutpaymentsContentsByIndex(QString NymID, int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_OutpaymentsContentsByIndex(NymID.toStdString(),
                                                                                       Index);
@@ -706,7 +706,7 @@ QJsonValue MCRPCService::getNymOutpaymentsContentsByIndex(QString NymID, int32_t
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymOutpaymentsRecipientIDByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::getNymOutpaymentsRecipientIDByIndex(QString NymID, int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_OutpaymentsRecipientIDByIndex(NymID.toStdString(),
                                                                                          Index);
@@ -714,7 +714,7 @@ QJsonValue MCRPCService::getNymOutpaymentsRecipientIDByIndex(QString NymID, int3
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymOutpaymentsNotaryIDByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::getNymOutpaymentsNotaryIDByIndex(QString NymID, int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetNym_OutpaymentsNotaryIDByIndex(NymID.toStdString(),
                                                                                       Index);
@@ -722,7 +722,7 @@ QJsonValue MCRPCService::getNymOutpaymentsNotaryIDByIndex(QString NymID, int32_t
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::nymRemoveOutpaymentsByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::nymRemoveOutpaymentsByIndex(QString NymID, int Index)
 {
     bool result = opentxs::OTAPI_Wrap::It()->Nym_RemoveOutpaymentsByIndex(NymID.toStdString(),
                                                                           Index);
@@ -730,7 +730,7 @@ QJsonValue MCRPCService::nymRemoveOutpaymentsByIndex(QString NymID, int32_t Inde
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::nymVerifyOutpaymentsByIndex(QString NymID, int32_t Index)
+QJsonValue MCRPCService::nymVerifyOutpaymentsByIndex(QString NymID, int Index)
 {
     bool result = opentxs::OTAPI_Wrap::It()->Nym_VerifyOutpaymentsByIndex(NymID.toStdString(),
                                                                           Index);
@@ -740,14 +740,14 @@ QJsonValue MCRPCService::nymVerifyOutpaymentsByIndex(QString NymID, int32_t Inde
 
 QJsonValue MCRPCService::instrumentGetAmount(QString Instrument)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetAmount(Instrument.toStdString());
+    int result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetAmount(Instrument.toStdString());
     QJsonObject object{{"InstrumentAmount", result}};
     return QJsonValue(object);
 }
 
 QJsonValue MCRPCService::instrumentGetTransactionNumber(QString Instrument)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetTransNum(Instrument.toStdString());
+    int result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetTransNum(Instrument.toStdString());
     QJsonObject object{{"InstrumentTransactionNumber", result}};
     return QJsonValue(object);
 }
@@ -866,12 +866,12 @@ QJsonValue MCRPCService::setAssetTypeName(QString InstrumentDefinitionID,
 
 QJsonValue MCRPCService::getNymTransactionNumberCount(QString NotaryID, QString NymID)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->GetNym_TransactionNumCount(NotaryID.toStdString(), NymID.toStdString());
+    int result = opentxs::OTAPI_Wrap::It()->GetNym_TransactionNumCount(NotaryID.toStdString(), NymID.toStdString());
     QJsonObject object{{"NymTransactionNumberCount", result}};
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getServerID(int32_t Index)
+QJsonValue MCRPCService::getServerID(int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetServer_ID(Index);
     QJsonObject object{{"ServerID", QString(result.c_str())}};
@@ -885,7 +885,7 @@ QJsonValue MCRPCService::getServerName(QString ServerID)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getAssetTypeID(int32_t Index)
+QJsonValue MCRPCService::getAssetTypeID(int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetAssetType_ID(Index);
     QJsonObject object{{"AssetTypeID", QString(result.c_str())}};
@@ -906,7 +906,7 @@ QJsonValue MCRPCService::getAssetTypeTLA(QString AssetTypeID)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getAccountWalletID(int32_t Index)
+QJsonValue MCRPCService::getAccountWalletID(int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(Index);
     QJsonObject object{{"AccountWalletID", QString(result.c_str())}};
@@ -936,7 +936,7 @@ QJsonValue MCRPCService::getAccountWalletOutboxHash(QString AccountWalletID)
 
 QJsonValue MCRPCService::getTime(void)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->GetTime();
+    int result = opentxs::OTAPI_Wrap::It()->GetTime();
     QJsonObject object{{"Time", result}};
     return QJsonValue(object);
 }
@@ -1060,7 +1060,7 @@ QJsonValue MCRPCService::setAccountWalletName(QString AccountID, QString SignerN
 
 QJsonValue MCRPCService::getAccountWalletBalance(QString AccountWalletID)
 {
-    int64_t result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance(AccountWalletID.toStdString());
+    qint64 result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance(AccountWalletID.toStdString());
     QJsonObject object{{"AccountWalletBalance", QString(std::to_string(result).c_str())}};
     return QJsonValue(object);
 }
@@ -1093,7 +1093,7 @@ QJsonValue MCRPCService::getAccountWalletNymID(QString AccountWalletID)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::writeCheque(QString NotaryID, int64_t ChequeAmount,
+QJsonValue MCRPCService::writeCheque(QString NotaryID, qint64 ChequeAmount,
                                      time64_t ValidFrom, time64_t ValidTo,
                                      QString SenderAccountID, QString SenderNymID,
                                      QString ChequeMemo, QString RecipientNymID)
@@ -1125,10 +1125,10 @@ QJsonValue MCRPCService::proposePaymentPlan(QString NotaryID, time64_t ValidFrom
                                             time64_t ValidTo, QString SenderAccountID,
                                             QString SenderNymID, QString PlanConsideration,
                                             QString RecipientAccountID, QString RecipientNymID,
-                                            int64_t InitialPaymentAmount, time64_t InitialPaymentDelay,
-                                            int64_t PaymentPlanAmount, time64_t PaymentPlanDelay,
+                                            qint64 InitialPaymentAmount, time64_t InitialPaymentDelay,
+                                            qint64 PaymentPlanAmount, time64_t PaymentPlanDelay,
                                             time64_t PaymentPlanPeriod, time64_t PaymentPlanLength,
-                                            int32_t MaxPayments)
+                                            int MaxPayments)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->ProposePaymentPlan(NotaryID.toStdString(),
                                                                        ValidFrom,
@@ -1392,7 +1392,7 @@ QJsonValue MCRPCService::smartContractRemoveParty(QString Contract, QString Sign
 
 QJsonValue MCRPCService::smartContractCountNumbersNeeded(QString Contract, QString AgentName)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->SmartContract_CountNumsNeeded(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::It()->SmartContract_CountNumsNeeded(Contract.toStdString(),
                                                                               AgentName.toStdString());
     QJsonObject object{{"SmartContractNumbersNeeded", result}};
     return QJsonValue(object);
@@ -1439,19 +1439,19 @@ QJsonValue MCRPCService::smartIsPartyConfirmed(QString Contract, QString PartyNa
 
 QJsonValue MCRPCService::smartGetPartyCount(QString Contract)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->Smart_GetPartyCount(Contract.toStdString());
+    int result = opentxs::OTAPI_Wrap::It()->Smart_GetPartyCount(Contract.toStdString());
     QJsonObject object{{"SmartPartyCount", result}};
     return QJsonValue(object);
 }
 
 QJsonValue MCRPCService::smartGetBylawCount(QString Contract)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->Smart_GetBylawCount(Contract.toStdString());
+    int result = opentxs::OTAPI_Wrap::It()->Smart_GetBylawCount(Contract.toStdString());
     QJsonObject object{{"SmartBylawCount", result}};
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::smartGetPartyByIndex(QString Contract, int32_t Index)
+QJsonValue MCRPCService::smartGetPartyByIndex(QString Contract, int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->Smart_GetPartyByIndex(Contract.toStdString(),
                                                                           Index);
@@ -1459,7 +1459,7 @@ QJsonValue MCRPCService::smartGetPartyByIndex(QString Contract, int32_t Index)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::smartGetBylawByIndex(QString Contract, int32_t Index)
+QJsonValue MCRPCService::smartGetBylawByIndex(QString Contract, int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->Smart_GetBylawByIndex(Contract.toStdString(),
                                                                           Index);
@@ -1477,7 +1477,7 @@ QJsonValue MCRPCService::bylawGetLanguage(QString Contract, QString BylawName)
 
 QJsonValue MCRPCService::bylawGetClauseCount(QString Contract, QString BylawName)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->Bylaw_GetClauseCount(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::It()->Bylaw_GetClauseCount(Contract.toStdString(),
                                                                      BylawName.toStdString());
     QJsonObject object{{"BylawClauseCount", result}};
     return QJsonValue(object);
@@ -1485,7 +1485,7 @@ QJsonValue MCRPCService::bylawGetClauseCount(QString Contract, QString BylawName
 
 QJsonValue MCRPCService::bylawGetVariableCount(QString Contract, QString BylawName)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->Bylaw_GetVariableCount(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::It()->Bylaw_GetVariableCount(Contract.toStdString(),
                                                                        BylawName.toStdString());
     QJsonObject object{{"BylawVariableCount", result}};
     return QJsonValue(object);
@@ -1493,7 +1493,7 @@ QJsonValue MCRPCService::bylawGetVariableCount(QString Contract, QString BylawNa
 
 QJsonValue MCRPCService::bylawGetHookCount(QString Contract, QString BylawName)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->Bylaw_GetHookCount(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::It()->Bylaw_GetHookCount(Contract.toStdString(),
                                                                    BylawName.toStdString());
     QJsonObject object{{"BylawHookCount", result}};
     return QJsonValue(object);
@@ -1501,14 +1501,14 @@ QJsonValue MCRPCService::bylawGetHookCount(QString Contract, QString BylawName)
 
 QJsonValue MCRPCService::bylawGetCallbackCount(QString Contract, QString BylawName)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->Bylaw_GetCallbackCount(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::It()->Bylaw_GetCallbackCount(Contract.toStdString(),
                                                                        BylawName.toStdString());
     QJsonObject object{{"BylawCallbackCount", result}};
     return QJsonValue(object);
 }
 
 QJsonValue MCRPCService::clauseGetNameByIndex(QString Contract, QString BylawName,
-                                              int32_t Index)
+                                              int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->Clause_GetNameByIndex(Contract.toStdString(),
                                                                           BylawName.toStdString(),
@@ -1528,7 +1528,7 @@ QJsonValue MCRPCService::clauseGetContents(QString Contract, QString BylawName,
 }
 
 QJsonValue MCRPCService::variableGetNameByIndex(QString Contract, QString BylawName,
-                                                int32_t Index)
+                                                int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->Variable_GetNameByIndex(Contract.toStdString(),
                                                                             BylawName.toStdString(),
@@ -1568,7 +1568,7 @@ QJsonValue MCRPCService::variableGetContents(QString Contract, QString BylawName
 }
 
 QJsonValue MCRPCService::hookGetNameByIndex(QString Contract, QString BylawName,
-                                            int32_t Index)
+                                            int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->Hook_GetNameByIndex(Contract.toStdString(),
                                                                         BylawName.toStdString(),
@@ -1580,7 +1580,7 @@ QJsonValue MCRPCService::hookGetNameByIndex(QString Contract, QString BylawName,
 QJsonValue MCRPCService::hookGetClauseCount(QString Contract, QString BylawName,
                                             QString HookName)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->Hook_GetClauseCount(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::It()->Hook_GetClauseCount(Contract.toStdString(),
                                                                     BylawName.toStdString(),
                                                                     HookName.toStdString());
     QJsonObject object{{"HookClauseCount", result}};
@@ -1588,7 +1588,7 @@ QJsonValue MCRPCService::hookGetClauseCount(QString Contract, QString BylawName,
 }
 
 QJsonValue MCRPCService::hookGetClauseAtIndex(QString Contract, QString BylawName,
-                                              QString HookName, int32_t Index)
+                                              QString HookName, int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->Hook_GetClauseAtIndex(Contract.toStdString(),
                                                                           BylawName.toStdString(),
@@ -1599,7 +1599,7 @@ QJsonValue MCRPCService::hookGetClauseAtIndex(QString Contract, QString BylawNam
 }
 
 QJsonValue MCRPCService::callbackGetNameByIndex(QString Contract, QString BylawName,
-                                                int32_t Index)
+                                                int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->Callback_GetNameByIndex(Contract.toStdString(),
                                                                             BylawName.toStdString(),
@@ -1620,7 +1620,7 @@ QJsonValue MCRPCService::callbackGetClause(QString Contract, QString BylawName,
 
 QJsonValue MCRPCService::partyGetAccountCount(QString Contract, QString PartyName)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->Party_GetAcctCount(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::It()->Party_GetAcctCount(Contract.toStdString(),
                                                                    PartyName.toStdString());
     QJsonObject object{{"PartyAccountCount", result}};
     return QJsonValue(object);
@@ -1628,7 +1628,7 @@ QJsonValue MCRPCService::partyGetAccountCount(QString Contract, QString PartyNam
 
 QJsonValue MCRPCService::partyGetAgentCount(QString Contract, QString PartyName)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->Party_GetAgentCount(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::It()->Party_GetAgentCount(Contract.toStdString(),
                                                                    PartyName.toStdString());
     QJsonObject object{{"PartyAgentCount", result}};
     return QJsonValue(object);
@@ -1643,7 +1643,7 @@ QJsonValue MCRPCService::partyGetID(QString Contract, QString PartyName)
 }
 
 QJsonValue MCRPCService::partyGetAccountNameByIndex(QString Contract, QString PartyName,
-                                                    int32_t Index)
+                                                    int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->Party_GetAcctNameByIndex(Contract.toStdString(),
                                                                              PartyName.toStdString(),
@@ -1683,7 +1683,7 @@ QJsonValue MCRPCService::partyGetAccountAgentName(QString Contract, QString Part
 }
 
 QJsonValue MCRPCService::partyGetAgentNameByIndex(QString Contract, QString PartyName,
-                                                  int32_t Index)
+                                                  int Index)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->Party_GetAgentNameByIndex(Contract.toStdString(),
                                                                               PartyName.toStdString(),
@@ -1705,7 +1705,7 @@ QJsonValue MCRPCService::partyGetAgentID(QString Contract, QString PartyName,
 QJsonValue MCRPCService::activateSmartContract(QString NotaryID, QString NymID,
                                                QString SmartContract)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->activateSmartContract(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::It()->activateSmartContract(NotaryID.toStdString(),
                                                                       NymID.toStdString(),
                                                                       SmartContract.toStdString());
     QJsonObject object{{"ActivateSmartContractResult", result}};
@@ -1713,10 +1713,10 @@ QJsonValue MCRPCService::activateSmartContract(QString NotaryID, QString NymID,
 }
 
 QJsonValue MCRPCService::triggerClause(QString NotaryID, QString NymID,
-                                       int64_t TransactionNumber, QString ClauseName,
+                                       qint64 TransactionNumber, QString ClauseName,
                                        QString Parameter)
 {
-    int32_t result = opentxs::OTAPI_Wrap::It()->triggerClause(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::It()->triggerClause(NotaryID.toStdString(),
                                                               NymID.toStdString(),
                                                               TransactionNumber,
                                                               ClauseName.toStdString(),

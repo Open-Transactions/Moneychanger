@@ -74,8 +74,8 @@ void RPCServer::readAutorun()
 {
     if (DBHandler::getInstance()->querySize("SELECT `setting`,`parameter1` FROM `settings` WHERE `setting`='rpcserver_autorun'") <= 0)
     {
-        DBHandler::getInstance()->runQuery(QString("INSERT INTO `settings` (`setting`, `parameter1`) VALUES('rpcserver_autorun','false')"));
-        qDebug() << "rpcserver_autorun setting wasn't set in the database. Inserting default: false";
+        DBHandler::getInstance()->runQuery(QString("INSERT INTO `settings` (`setting`, `parameter1`) VALUES('rpcserver_autorun','true')"));
+        qDebug() << "rpcserver_autorun setting wasn't set in the database. Inserting default: true";
     }
     else
     {
@@ -85,8 +85,8 @@ void RPCServer::readAutorun()
         }
         if (m_rpcserver_autorun.isEmpty())
         {
-            m_rpcserver_autorun = "false";
-            qDebug() << "Error loading rpcserver_autorun setting from SQL, using default: false";
+            m_rpcserver_autorun = "true";
+            qDebug() << "Error loading rpcserver_autorun setting from SQL, using default: true";
         }
     }
 }

@@ -8,7 +8,7 @@
 class MCRPCService : public QJsonRpcService
 {
 
-    typedef int64_t time64_t;
+    typedef qint64 time64_t;
 
 private:
     Q_OBJECT
@@ -25,25 +25,25 @@ public Q_SLOTS:
     QJsonValue numListVerifyQuery(QString NumList, QString Numbers);
     QJsonValue numListVerifyAll(QString NumList, QString Numbers);
     QJsonValue numListCount(QString NumList);
-    QJsonValue createNym(int32_t KeySize, QString NymIDSource,
+    QJsonValue createNym(int KeySize, QString NymIDSource,
                          QString AltLocation);
     QJsonValue getNymActiveCronItemIDs(QString NymID, QString NotaryID);
-    QJsonValue getActiveCronItem(QString NotaryID, int64_t TransNum);
+    QJsonValue getActiveCronItem(QString NotaryID, qint64 TransNum);
     QJsonValue getNymSourceForID(QString NymID);
     QJsonValue getNymAltSourceLocation(QString NymID);
     QJsonValue getNymCredentialCount(QString NymID);
-    QJsonValue getNymCredentialID(QString NymID, int32_t Index);
+    QJsonValue getNymCredentialID(QString NymID, int Index);
     QJsonValue getNymCredentialContents(QString NymID, QString CredentialID);
     QJsonValue getNymRevokedCount(QString NymID);
-    QJsonValue getNymRevokedCredID(QString NymID, int32_t Index);
+    QJsonValue getNymRevokedCredID(QString NymID, int Index);
     QJsonValue getNymRevokedCredContents(QString NymID, QString CredentialID);
     QJsonValue getNymSubCredentialCount(QString NymID, QString MasterCredID);
     QJsonValue getNymSubCredentialID(QString NymID, QString MasterCredID,
-                                     int32_t Index);
+                                     int Index);
     QJsonValue getNymSubCredentialContents(QString NymID, QString MasterCredID,
                                            QString SubCredID);
     QJsonValue addSubCredential(QString NymID, QString MasterCredID,
-                                int32_t KeySize);
+                                int KeySize);
     QJsonValue revokeSubcredential(QString NymID, QString MasterCredID,
                                    QString SubCredID);
     QJsonValue getSignerNymID(QString Contract);
@@ -59,13 +59,13 @@ public Q_SLOTS:
     QJsonValue getCurrencySymbol(QString InstrumentDefinitionID);
     QJsonValue stringToAmountLocale(QString InstrumentDefinitionID, QString Input,
                                     QString ThousandsSep, QString DecimalPoint);
-    QJsonValue formatAmountLocale(QString InstrumentDefinitionID, int64_t Amount,
+    QJsonValue formatAmountLocale(QString InstrumentDefinitionID, qint64 Amount,
                                   QString ThousandsSep, QString DecimalPoint);
-    QJsonValue formatAmountWithoutSymbolLocale(QString InstrumentDefinitionID, int64_t Amount,
+    QJsonValue formatAmountWithoutSymbolLocale(QString InstrumentDefinitionID, qint64 Amount,
                                                QString ThousandsSep, QString DecimalPoint);
     QJsonValue stringToAmount(QString InstrumentDefinitionID, QString Input);
-    QJsonValue formatAmount(QString InstrumentDefinitionID, int64_t Amount);
-    QJsonValue formatAmountWithoutSymbol(QString InstrumentDefinitionID, int64_t Amount);
+    QJsonValue formatAmount(QString InstrumentDefinitionID, qint64 Amount);
+    QJsonValue formatAmountWithoutSymbol(QString InstrumentDefinitionID, qint64 Amount);
     QJsonValue getAssetTypeContract(QString InstrumentDefinitionID);
     QJsonValue addServerContract(QString Contract);
     QJsonValue addAssetContract(QString Contract);
@@ -81,11 +81,11 @@ public Q_SLOTS:
     QJsonValue walletRemoveNym(QString NymID);
     QJsonValue walletCanRemoveAccount(QString AccountID);
     QJsonValue doesBoxReceiptExist(QString NotaryID, QString NymID,
-                                   QString AccountID, int32_t BoxType,
-                                   int64_t TransactionNumber);
+                                   QString AccountID, int BoxType,
+                                   qint64 TransactionNumber);
     QJsonValue getBoxReceipt(QString NotaryID, QString NymID,
-                                   QString AccountID, int32_t BoxType,
-                                   int64_t TransactionNumber);
+                                   QString AccountID, int BoxType,
+                                   qint64 TransactionNumber);
     QJsonValue deleteAssetAccount(QString NotaryID, QString NymID, QString AccountID);
     QJsonValue walletExportNym(QString NymID);
     QJsonValue walletExportCert(QString NymID);
@@ -96,7 +96,7 @@ public Q_SLOTS:
     QJsonValue walletGetNotaryIdFromPartial(QString PartialID);
     QJsonValue walletGetInstrumentDefinitionIdFromPartial(QString PartialID);
     QJsonValue walletGetAccountIdFromPartial(QString PartialID);
-    QJsonValue getNymID(int32_t Index);
+    QJsonValue getNymID(int Index);
     QJsonValue getNymName(QString NymID);
     QJsonValue isNymRegisteredAtServer(QString NymID, QString NotaryID);
     QJsonValue getNymStats(QString NymID);
@@ -105,23 +105,23 @@ public Q_SLOTS:
     QJsonValue getNymInboxHash(QString NotaryID, QString NymID);
     QJsonValue getNymOutboxHash(QString NotaryID, QString NymID);
     QJsonValue getNymMailCount(QString NymID);
-    QJsonValue getNymContentsByIndex(QString NymID, int32_t Index);
-    QJsonValue getNymMailSenderIDByIndex(QString NymID, int32_t Index);
-    QJsonValue getNymMailNotaryIDByIndex(QString NymID, int32_t Index);
-    QJsonValue nymRemoveMailByIndex(QString NymID, int32_t Index);
-    QJsonValue nymVerifyMailByIndex(QString NymID, int32_t Index);
+    QJsonValue getNymContentsByIndex(QString NymID, int Index);
+    QJsonValue getNymMailSenderIDByIndex(QString NymID, int Index);
+    QJsonValue getNymMailNotaryIDByIndex(QString NymID, int Index);
+    QJsonValue nymRemoveMailByIndex(QString NymID, int Index);
+    QJsonValue nymVerifyMailByIndex(QString NymID, int Index);
     QJsonValue getNymOutmailCount(QString NymID);
-    QJsonValue getNymOutmailContentsByIndex(QString NymID, int32_t Index);
-    QJsonValue getNymOutmailRecipientIDByIndex(QString NymID, int32_t Index);
-    QJsonValue getNymOutmailNotaryIDByIndex(QString NymID, int32_t Index);
-    QJsonValue nymRemoveOutmailByIndex(QString NymID, int32_t Index);
-    QJsonValue nymVerifyOutmailByIndex(QString NymID, int32_t Index);
+    QJsonValue getNymOutmailContentsByIndex(QString NymID, int Index);
+    QJsonValue getNymOutmailRecipientIDByIndex(QString NymID, int Index);
+    QJsonValue getNymOutmailNotaryIDByIndex(QString NymID, int Index);
+    QJsonValue nymRemoveOutmailByIndex(QString NymID, int Index);
+    QJsonValue nymVerifyOutmailByIndex(QString NymID, int Index);
     QJsonValue getNymOutpaymentsCount(QString NymID);
-    QJsonValue getNymOutpaymentsContentsByIndex(QString NymID, int32_t Index);
-    QJsonValue getNymOutpaymentsRecipientIDByIndex(QString NymID, int32_t Index);
-    QJsonValue getNymOutpaymentsNotaryIDByIndex(QString NymID, int32_t Index);
-    QJsonValue nymRemoveOutpaymentsByIndex(QString NymID, int32_t Index);
-    QJsonValue nymVerifyOutpaymentsByIndex(QString NymID, int32_t Index);
+    QJsonValue getNymOutpaymentsContentsByIndex(QString NymID, int Index);
+    QJsonValue getNymOutpaymentsRecipientIDByIndex(QString NymID, int Index);
+    QJsonValue getNymOutpaymentsNotaryIDByIndex(QString NymID, int Index);
+    QJsonValue nymRemoveOutpaymentsByIndex(QString NymID, int Index);
+    QJsonValue nymVerifyOutpaymentsByIndex(QString NymID, int Index);
     QJsonValue instrumentGetAmount(QString Instrument);
     QJsonValue instrumentGetTransactionNumber(QString Instrument);
     QJsonValue instrumentGetValidFrom(QString Instrument);
@@ -141,12 +141,12 @@ public Q_SLOTS:
     QJsonValue setServerName(QString NotaryID, QString NewName);
     QJsonValue setAssetTypeName(QString InstrumentDefinitionID, QString NewName);
     QJsonValue getNymTransactionNumberCount(QString NotaryID, QString NymID);
-    QJsonValue getServerID(int32_t Index);
+    QJsonValue getServerID(int Index);
     QJsonValue getServerName(QString ServerID);
-    QJsonValue getAssetTypeID(int32_t Index);
+    QJsonValue getAssetTypeID(int Index);
     QJsonValue getAssetTypeName(QString AssetTypeID);
     QJsonValue getAssetTypeTLA(QString AssetTypeID);
-    QJsonValue getAccountWalletID(int32_t Index);
+    QJsonValue getAccountWalletID(int Index);
     QJsonValue getAccountWalletName(QString AccountWalletID);
     QJsonValue getAccountWalletInboxHash(QString AccountWalletID);
     QJsonValue getAccountWalletOutboxHash(QString AccountWalletID);
@@ -173,7 +173,7 @@ public Q_SLOTS:
     QJsonValue getAccountWalletInstrumentDefinitionID(QString AccountWalletID);
     QJsonValue getAccountWalletNotaryID(QString AccountWalletID);
     QJsonValue getAccountWalletNymID(QString AccountWalletID);
-    QJsonValue writeCheque(QString NotaryID, int64_t ChequeAmount,
+    QJsonValue writeCheque(QString NotaryID, qint64 ChequeAmount,
                            time64_t ValidFrom, time64_t ValidTo,
                            QString SenderAccountID, QString SenderNymID,
                            QString ChequeMemo, QString RecipientNymID);
@@ -183,10 +183,10 @@ public Q_SLOTS:
                                   time64_t ValidTo, QString SenderAccountID,
                                   QString SenderNymID, QString PlanConsideration,
                                   QString RecipientAccountID, QString RecipientNymID,
-                                  int64_t InitialPaymentAmount, time64_t InitialPaymentDelay,
-                                  int64_t PaymentPlanAmount, time64_t PaymentPlanDelay,
+                                  qint64 InitialPaymentAmount, time64_t InitialPaymentDelay,
+                                  qint64 PaymentPlanAmount, time64_t PaymentPlanDelay,
                                   time64_t PaymentPlanPeriod, time64_t PaymentPlanLength,
-                                  int32_t MaxPayments);
+                                  int MaxPayments);
     QJsonValue easyProposePlan(QString NotaryID, QString DateRange,
                                QString SenderAccountID, QString SenderNymID,
                                QString PlanConsideration, QString RecipientAccountID,
@@ -249,19 +249,19 @@ public Q_SLOTS:
     QJsonValue smartIsPartyConfirmed(QString Contract, QString PartyName);
     QJsonValue smartGetPartyCount(QString Contract);
     QJsonValue smartGetBylawCount(QString Contract);
-    QJsonValue smartGetPartyByIndex(QString Contract, int32_t Index);
-    QJsonValue smartGetBylawByIndex(QString Contract, int32_t Index);
+    QJsonValue smartGetPartyByIndex(QString Contract, int Index);
+    QJsonValue smartGetBylawByIndex(QString Contract, int Index);
     QJsonValue bylawGetLanguage(QString Contract, QString BylawName);
     QJsonValue bylawGetClauseCount(QString Contract, QString BylawName);
     QJsonValue bylawGetVariableCount(QString Contract, QString BylawName);
     QJsonValue bylawGetHookCount(QString Contract, QString BylawName);
     QJsonValue bylawGetCallbackCount(QString Contract, QString BylawName);
     QJsonValue clauseGetNameByIndex(QString Contract, QString BylawName,
-                                    int32_t Index);
+                                    int Index);
     QJsonValue clauseGetContents(QString Contract, QString BylawName,
                                  QString ClauseName);
     QJsonValue variableGetNameByIndex(QString Contract, QString BylawName,
-                                      int32_t Index);
+                                      int Index);
     QJsonValue variableGetType(QString Contract, QString BylawName,
                                QString VariableName);
     QJsonValue variableGetAccess(QString Contract, QString BylawName,
@@ -269,20 +269,20 @@ public Q_SLOTS:
     QJsonValue variableGetContents(QString Contract, QString BylawName,
                                    QString VariableName);
     QJsonValue hookGetNameByIndex(QString Contract, QString BylawName,
-                                  int32_t Index);
+                                  int Index);
     QJsonValue hookGetClauseCount(QString Contract, QString BylawName,
                                   QString HookName);
     QJsonValue hookGetClauseAtIndex(QString Contract, QString BylawName,
-                                    QString HookName, int32_t Index);
+                                    QString HookName, int Index);
     QJsonValue callbackGetNameByIndex(QString Contract, QString BylawName,
-                                      int32_t Index);
+                                      int Index);
     QJsonValue callbackGetClause(QString Contract, QString BylawName,
                                  QString ClauseName);
     QJsonValue partyGetAccountCount(QString Contract, QString PartyName);
     QJsonValue partyGetAgentCount(QString Contract, QString PartyName);
     QJsonValue partyGetID(QString Contract, QString PartyName);
     QJsonValue partyGetAccountNameByIndex(QString Contract, QString PartyName,
-                                          int32_t Index);
+                                          int Index);
     QJsonValue partyGetAccountID(QString Contract, QString PartyName,
                                  QString AccountName);
     QJsonValue partyGetAccountInstrumentDefinitionID(QString Contract, QString PartyName,
@@ -290,13 +290,13 @@ public Q_SLOTS:
     QJsonValue partyGetAccountAgentName(QString Contract, QString PartyName,
                                         QString AccountName);
     QJsonValue partyGetAgentNameByIndex(QString Contract, QString PartyName,
-                                        int32_t Index);
+                                        int Index);
     QJsonValue partyGetAgentID(QString Contract, QString PartyName,
                                QString AgentName);
     QJsonValue activateSmartContract(QString NotaryID, QString NymID,
                                      QString SmartContract);
     QJsonValue triggerClause(QString NotaryID, QString NymID,
-                             int64_t TransactionNumber, QString ClauseName,
+                             qint64 TransactionNumber, QString ClauseName,
                              QString Parameter);
     QJsonValue messageHarvestTransactionNumbers(QString Message, QString NymID,
                                                 bool HarvestingForRetry, bool ReplyWasSuccess,
