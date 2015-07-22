@@ -302,6 +302,41 @@ public Q_SLOTS:
                                                 bool HarvestingForRetry, bool ReplyWasSuccess,
                                                 bool ReplyWasFailure, bool TransactionWasSuccess,
                                                 bool TransactionWasFailure);
+    QJsonValue loadPubkeyEncryption(QString NymID);
+    QJsonValue loadPubkeySigning(QString NymID);
+    QJsonValue loadUserPubkeyEncryption(QString NymID);
+    QJsonValue loadUserPubkeySigning(QString NymID);
+    QJsonValue verifyUserPrivateKey(QString NymID);
+    QJsonValue mintIsStillGood(QString NotaryID, QString InstrumentDefinitionID);
+    QJsonValue loadMint(QString NotaryID, QString InstrumentDefinitionID);
+    QJsonValue loadAssetContract(QString InstrumentDefinitionID);
+    QJsonValue loadServerContract(QString NotaryID);
+    QJsonValue loadAssetAccount(QString NotaryID, QString NymID,
+                                QString AccountID);
+    QJsonValue nymboxGetReplyNotice(QString NotaryID, QString NymID,
+                                    qint64 RequestNumber);
+    QJsonValue haveAlreadySeenReply(QString NotaryID, QString NymID,
+                                    qint64 RequestNumber);
+    QJsonValue loadNymbox(QString NotaryID, QString NymID);
+    QJsonValue loadNymboxNoVerify(QString NotaryID, QString NymID);
+    QJsonValue loadInbox(QString NotaryID, QString NymID,
+                         QString AccountID);
+    QJsonValue loadInboxNoVerify(QString NotaryID, QString NymID,
+                                 QString AccountID);
+    QJsonValue loadOutbox(QString NotaryID, QString NymID,
+                          QString AccountID);
+    QJsonValue loadOutboxNoVerify(QString NotaryID, QString NymID,
+                                  QString AccountID);
+    QJsonValue loadPaymentInbox(QString NotaryID, QString NymID);
+    QJsonValue loadPaymentInboxNoVerify(QString NotaryID, QString NymID);
+    QJsonValue loadRecordBox(QString NotaryID, QString NymID,
+                             QString AccountID);
+    QJsonValue loadRecordBoxNoVerify(QString NotaryID, QString NymID,
+                                     QString AccountID);
+    QJsonValue loadExpiredBox(QString NotaryID, QString NymID);
+    QJsonValue loadExpiredBoxNoVerify(QString NotaryID, QString NymID);
+
+
 
 
 

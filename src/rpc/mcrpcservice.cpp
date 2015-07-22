@@ -1741,6 +1741,209 @@ QJsonValue MCRPCService::messageHarvestTransactionNumbers(QString Message, QStri
     return QJsonValue(object);
 }
 
+QJsonValue MCRPCService::loadPubkeyEncryption(QString NymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadPubkey_Encryption(NymID.toStdString());
+    QJsonObject object{{"LoadPubkeyEncryptionResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadPubkeySigning(QString NymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadPubkey_Signing(NymID.toStdString());
+    QJsonObject object{{"LoadPubkeySigningResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadUserPubkeyEncryption(QString NymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadUserPubkey_Encryption(NymID.toStdString());
+    QJsonObject object{{"LoadUserPubkeyEncryptionResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadUserPubkeySigning(QString NymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadUserPubkey_Signing(NymID.toStdString());
+    QJsonObject object{{"LoadUserPubkeySigningResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::verifyUserPrivateKey(QString NymID)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->VerifyUserPrivateKey(NymID.toStdString());
+    QJsonObject object{{"VerifyUserPrivateKeyResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::mintIsStillGood(QString NotaryID, QString InstrumentDefinitionID)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Mint_IsStillGood(NotaryID.toStdString(),
+                                                              InstrumentDefinitionID.toStdString());
+    QJsonObject object{{"MintIsStillGoodResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadMint(QString NotaryID, QString InstrumentDefinitionID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadMint(NotaryID.toStdString(),
+                                                             InstrumentDefinitionID.toStdString());
+    QJsonObject object{{"LoadMintResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadAssetContract(QString InstrumentDefinitionID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadAssetContract(InstrumentDefinitionID.toStdString());
+    QJsonObject object{{"LoadAssetContractResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadServerContract(QString NotaryID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadServerContract(NotaryID.toStdString());
+    QJsonObject object{{"LoadServerContractResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadAssetAccount(QString NotaryID, QString NymID,
+                                          QString AccountID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadAssetAccount(NotaryID.toStdString(),
+                                                                     NymID.toStdString(),
+                                                                     AccountID.toStdString());
+    QJsonObject object{{"LoadAssetAccountResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::nymboxGetReplyNotice(QString NotaryID, QString NymID,
+                                              qint64 RequestNumber)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Nymbox_GetReplyNotice(NotaryID.toStdString(),
+                                                                          NymID.toStdString(),
+                                                                          RequestNumber);
+    QJsonObject object{{"NymboxGetReplyNoticeResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::haveAlreadySeenReply(QString NotaryID, QString NymID,
+                                              qint64 RequestNumber)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->HaveAlreadySeenReply(NotaryID.toStdString(),
+                                                                  NymID.toStdString(),
+                                                                  RequestNumber);
+    QJsonObject object{{"HaveAlreadySeenReplyResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadNymbox(QString NotaryID, QString NymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadNymbox(NotaryID.toStdString(),
+                                                               NymID.toStdString());
+    QJsonObject object{{"LoadNymboxResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadNymboxNoVerify(QString NotaryID, QString NymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadNymboxNoVerify(NotaryID.toStdString(),
+                                                                       NymID.toStdString());
+    QJsonObject object{{"LoadNymboxNoVerifyResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadInbox(QString NotaryID, QString NymID,
+                                   QString AccountID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadInbox(NotaryID.toStdString(),
+                                                              NymID.toStdString(),
+                                                              AccountID.toStdString());
+    QJsonObject object{{"LoadInboxResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadInboxNoVerify(QString NotaryID, QString NymID,
+                                           QString AccountID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadInboxNoVerify(NotaryID.toStdString(),
+                                                                      NymID.toStdString(),
+                                                                      AccountID.toStdString());
+    QJsonObject object{{"LoadInboxResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadOutbox(QString NotaryID, QString NymID,
+                                   QString AccountID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadOutbox(NotaryID.toStdString(),
+                                                               NymID.toStdString(),
+                                                               AccountID.toStdString());
+    QJsonObject object{{"LoadOutboxResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadOutboxNoVerify(QString NotaryID, QString NymID,
+                                           QString AccountID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadOutboxNoVerify(NotaryID.toStdString(),
+                                                                       NymID.toStdString(),
+                                                                       AccountID.toStdString());
+    QJsonObject object{{"LoadOutboxNoVerifyResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadPaymentInbox(QString NotaryID, QString NymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadPaymentInbox(NotaryID.toStdString(),
+                                                                     NymID.toStdString());
+    QJsonObject object{{"LoadPaymentInboxResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadPaymentInboxNoVerify(QString NotaryID, QString NymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadPaymentInboxNoVerify(NotaryID.toStdString(),
+                                                                             NymID.toStdString());
+    QJsonObject object{{"LoadPaymentInboxNoVerifyResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadRecordBox(QString NotaryID, QString NymID,
+                                       QString AccountID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadRecordBox(NotaryID.toStdString(),
+                                                                  NymID.toStdString(),
+                                                                  AccountID.toStdString());
+    QJsonObject object{{"LoadRecordBoxResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadRecordBoxNoVerify(QString NotaryID, QString NymID,
+                                               QString AccountID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadRecordBoxNoVerify(NotaryID.toStdString(),
+                                                                          NymID.toStdString(),
+                                                                          AccountID.toStdString());
+    QJsonObject object{{"LoadRecordBoxNoVerifyResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadExpiredBox(QString NotaryID, QString NymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadExpiredBox(NotaryID.toStdString(),
+                                                                   NymID.toStdString());
+    QJsonObject object{{"LoadExpiredBoxResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadExpiredBoxNoVerify(QString NotaryID, QString NymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadExpiredBoxNoVerify(NotaryID.toStdString(),
+                                                                           NymID.toStdString());
+    QJsonObject object{{"LoadExpiredBoxNoVerifyResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
 
 
 
