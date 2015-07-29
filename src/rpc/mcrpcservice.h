@@ -335,33 +335,60 @@ public Q_SLOTS:
                                      QString AccountID);
     QJsonValue loadExpiredBox(QString NotaryID, QString NymID);
     QJsonValue loadExpiredBoxNoVerify(QString NotaryID, QString NymID);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    QJsonValue recordPayment(QString NotaryID, QString NymID,
+                             bool IsInbox, int Index,
+                             bool SaveCopy);
+    QJsonValue clearRecord(QString NotaryID, QString NymID,
+                           QString AccountID, int Index,
+                           bool ClearAll);
+    QJsonValue clearExpired(QString NotaryID, QString NymID,
+                            int Index, bool ClearAll);
+    QJsonValue ledgerGetCount(QString NotaryID, QString NymID,
+                              QString AccountID, QString Ledger);
+    QJsonValue ledgerCreateResponse(QString NotaryID, QString NymID,
+                                    QString AccountID, QString OriginalLedger);
+    QJsonValue ledgerGetTransactionByIndex(QString NotaryID, QString NymID,
+                                           QString AccountID, QString Ledger,
+                                           int Index);
+    QJsonValue ledgerGetTransactionByID(QString NotaryID, QString NymID,
+                                        QString AccountID, QString Ledger,
+                                        qint64 TransactionNumber);
+    QJsonValue ledgerGetInstrument(QString NotaryID, QString NymID,
+                                   QString AccountID, QString Ledger,
+                                   int Index);
+    QJsonValue ledgerGetTransactionIDByIndex(QString NotaryID, QString NymID,
+                                             QString AccountID, QString Ledger,
+                                             int Index);
+    QJsonValue ledgerAddTransaction(QString NotaryID, QString NymID,
+                                    QString AccountID, QString Ledger,
+                                    QString Transaction);
+    QJsonValue transactionCreateResponse(QString NotaryID, QString NymID,
+                                         QString AccountID, QString Ledger,
+                                         QString Transaction, bool DoIAccept);
+    QJsonValue ledgerFinalizeResponse(QString NotaryID, QString NymID,
+                                      QString AccountID, QString Ledger);
+    QJsonValue transactionGetVoucher(QString NotaryID, QString NymID,
+                                     QString AccountID, QString Transaction);
+    QJsonValue transactionGetSenderNymID(QString NotaryID, QString NymID,
+                                         QString AccountID, QString Transaction);
+    QJsonValue transactionGetRecipientNymID(QString NotaryID, QString NymID,
+                                            QString AccountID, QString Transaction);
+    QJsonValue transactionGetSenderAccountID(QString NotaryID, QString NymID,
+                                             QString AccountID, QString Transaction);
+    QJsonValue transactionGetRecipientAccountID(QString NotaryID, QString NymID,
+                                                QString AccountID, QString Transaction);
+    QJsonValue pendingGetNote(QString NotaryID, QString NymID,
+                              QString AccountID, QString Transaction);
+    QJsonValue transactionGetAmount(QString NotaryID, QString NymID,
+                                    QString AccountID, QString Transaction);
+    QJsonValue transactionGetDisplayReferenceToNumber(QString NotaryID, QString NymID,
+                                                      QString AccountID, QString Transaction);
+    QJsonValue transactionGetType(QString NotaryID, QString NymID,
+                                  QString AccountID, QString Transaction);
+    QJsonValue replyNoticeGetRequestNumber(QString NotaryID, QString NymID,
+                                           QString Transaction);
+    QJsonValue transactionGetDateSigned(QString NotaryID, QString NymID,
+                                        QString AccountID, QString Transaction);
 
 
 
