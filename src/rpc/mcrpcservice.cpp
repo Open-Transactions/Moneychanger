@@ -2213,6 +2213,304 @@ QJsonValue MCRPCService::transactionGetDateSigned(QString NotaryID, QString NymI
     return QJsonValue(object);
 }
 
+QJsonValue MCRPCService::transactionGetSuccess(QString NotaryID, QString NymID,
+                                               QString AccountID, QString Transaction)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Transaction_GetSuccess(NotaryID.toStdString(),
+                                                                    NymID.toStdString(),
+                                                                    AccountID.toStdString(),
+                                                                    Transaction.toStdString());
+    QJsonObject object{{"TransactionSuccess", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::transactionIsCanceled(QString NotaryID, QString NymID,
+                                               QString AccountID, QString Transaction)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Transaction_IsCanceled(NotaryID.toStdString(),
+                                                                    NymID.toStdString(),
+                                                                    AccountID.toStdString(),
+                                                                    Transaction.toStdString());
+    QJsonObject object{{"TransactionIsCanceled", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::transactionGetBalanceAgreementSuccess(QString NotaryID, QString NymID,
+                                                               QString AccountID, QString Transaction)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Transaction_GetBalanceAgreementSuccess(NotaryID.toStdString(),
+                                                                                    NymID.toStdString(),
+                                                                                    AccountID.toStdString(),
+                                                                                    Transaction.toStdString());
+    QJsonObject object{{"TransactionBalanceAgreementSuccess", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::messageGetBalanceAgreementSuccess(QString NotaryID, QString NymID,
+                                                           QString AccountID, QString Message)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Message_GetBalanceAgreementSuccess(NotaryID.toStdString(),
+                                                                                NymID.toStdString(),
+                                                                                AccountID.toStdString(),
+                                                                                Message.toStdString());
+    QJsonObject object{{"MessageBalanceAgreementSuccess", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::savePurse(QString NotaryID, QString InstrumentDefinitionID,
+                                   QString NymID, QString Purse)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->SavePurse(NotaryID.toStdString(),
+                                                       InstrumentDefinitionID.toStdString(),
+                                                       NymID.toStdString(),
+                                                       Purse.toStdString());
+    QJsonObject object{{"SavePurseResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::loadPurse(QString NotaryID, QString InstrumentDefinitionID,
+                                   QString NymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->LoadPurse(NotaryID.toStdString(),
+                                                       InstrumentDefinitionID.toStdString(),
+                                                       NymID.toStdString());
+    QJsonObject object{{"Purse", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::purseGetTotalValue(QString NotaryID, QString InstrumentDefinitionID,
+                                            QString Purse)
+{
+    qint64 result = opentxs::OTAPI_Wrap::It()->Purse_GetTotalValue(NotaryID.toStdString(),
+                                                                   InstrumentDefinitionID.toStdString(),
+                                                                   Purse.toStdString());
+    QJsonObject object{{"PurseTotalValue", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::purseCount(QString NotaryID, QString InstrumentDefinitionID,
+                                    QString Purse)
+{
+    int result = opentxs::OTAPI_Wrap::It()->Purse_Count(NotaryID.toStdString(),
+                                                           InstrumentDefinitionID.toStdString(),
+                                                           Purse.toStdString());
+    QJsonObject object{{"PurseCount", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::purseHasPassword(QString NotaryID, QString Purse)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Purse_HasPassword(NotaryID.toStdString(),
+                                                               Purse.toStdString());
+    QJsonObject object{{"PurseHasPassword", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::createPurse(QString NotaryID, QString InstrumentDefinitionID,
+                                     QString OwnerID, QString SignerID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->CreatePurse(NotaryID.toStdString(),
+                                                                InstrumentDefinitionID.toStdString(),
+                                                                OwnerID.toStdString(),
+                                                                SignerID.toStdString());
+    QJsonObject object{{"Purse", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::createPursePassphrase(QString NotaryID, QString InstrumentDefinitionID,
+                                               QString SignerID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->CreatePurse_Passphrase(NotaryID.toStdString(),
+                                                                           InstrumentDefinitionID.toStdString(),
+                                                                           SignerID.toStdString());
+    QJsonObject object{{"PursePassphrase", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::pursePeek(QString NotaryID, QString InstrumentDefinitionID,
+                                   QString OwnerID, QString Purse)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Purse_Peek(NotaryID.toStdString(),
+                                                               InstrumentDefinitionID.toStdString(),
+                                                               OwnerID.toStdString(),
+                                                               Purse.toStdString());
+    QJsonObject object{{"PursePeek", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::pursePop(QString NotaryID, QString InstrumentDefinitionID,
+                                  QString OwnerOrSignerID, QString Purse)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Purse_Pop(NotaryID.toStdString(),
+                                                              InstrumentDefinitionID.toStdString(),
+                                                              OwnerOrSignerID.toStdString(),
+                                                              Purse.toStdString());
+    QJsonObject object{{"PursePop", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::purseEmpty(QString NotaryID, QString InstrumentDefinitionID,
+                                    QString SignerID, QString Purse)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Purse_Empty(NotaryID.toStdString(),
+                                                                InstrumentDefinitionID.toStdString(),
+                                                                SignerID.toStdString(),
+                                                                Purse.toStdString());
+    QJsonObject object{{"PurseEmpty", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::pursePush(QString NotaryID, QString InstrumentDefinitionID,
+                                   QString SignerID, QString OwnerID,
+                                   QString Purse, QString Token)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Purse_Push(NotaryID.toStdString(),
+                                                               InstrumentDefinitionID.toStdString(),
+                                                               SignerID.toStdString(),
+                                                               OwnerID.toStdString(),
+                                                               Purse.toStdString(),
+                                                               Token.toStdString());
+    QJsonObject object{{"PursePurse", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::walletImportPurse(QString NotaryID, QString InstrumentDefinitionID,
+                                           QString NymID, QString Purse)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Wallet_ImportPurse(NotaryID.toStdString(),
+                                                                InstrumentDefinitionID.toStdString(),
+                                                                NymID.toStdString(),
+                                                                Purse.toStdString());
+    QJsonObject object{{"WalletImportPurseResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::exchangePurse(QString NotaryID, QString InstrumentDefinitionID,
+                                       QString NymID, QString Purse)
+{
+    int result = opentxs::OTAPI_Wrap::It()->exchangePurse(NotaryID.toStdString(),
+                                                          InstrumentDefinitionID.toStdString(),
+                                                          NymID.toStdString(),
+                                                          Purse.toStdString());
+    QJsonObject object{{"ExchangePurseResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::tokenChangeOwner(QString NotaryID, QString InstrumentDefinitionID,
+                                          QString Token, QString SignerNymID,
+                                          QString OldOwner, QString NewOwner)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Token_ChangeOwner(NotaryID.toStdString(),
+                                                                      InstrumentDefinitionID.toStdString(),
+                                                                      Token.toStdString(),
+                                                                      SignerNymID.toStdString(),
+                                                                      OldOwner.toStdString(),
+                                                                      NewOwner.toStdString());
+    QJsonObject object{{"TokenChangerOwnerResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::tokenGetID(QString NotaryID, QString InstrumentDefinitionID,
+                                    QString Token)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Token_GetID(NotaryID.toStdString(),
+                                                                InstrumentDefinitionID.toStdString(),
+                                                                Token.toStdString());
+    QJsonObject object{{"TokenID", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::tokenGetDenomination(QString NotaryID, QString InstrumentDefinitionID,
+                                              QString Token)
+{
+    qint64 result = opentxs::OTAPI_Wrap::It()->Token_GetDenomination(NotaryID.toStdString(),
+                                                                     InstrumentDefinitionID.toStdString(),
+                                                                     Token.toStdString());
+    QJsonObject object{{"TokenDenomination", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::tokenGetSeries(QString NotaryID, QString InstrumentDefinitionID,
+                                        QString Token)
+{
+    int result = opentxs::OTAPI_Wrap::It()->Token_GetSeries(NotaryID.toStdString(),
+                                                            InstrumentDefinitionID.toStdString(),
+                                                            Token.toStdString());
+    QJsonObject object{{"TokenSeries", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::tokenGetValidFrom(QString NotaryID, QString InstrumentDefinitionID,
+                                           QString Token)
+{
+    time64_t result = opentxs::OTAPI_Wrap::It()->Token_GetValidFrom(NotaryID.toStdString(),
+                                                                    InstrumentDefinitionID.toStdString(),
+                                                                    Token.toStdString());
+    QJsonObject object{{"TokenValidFrom", QString(std::to_string(result).c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::tokenGetValidTo(QString NotaryID, QString InstrumentDefinitionID,
+                                         QString Token)
+{
+    time64_t result = opentxs::OTAPI_Wrap::It()->Token_GetValidTo(NotaryID.toStdString(),
+                                                                  InstrumentDefinitionID.toStdString(),
+                                                                  Token.toStdString());
+    QJsonObject object{{"TokenValidTo", QString(std::to_string(result).c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::tokenGetInstrumentDefinitionID(QString Token)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Token_GetInstrumentDefinitionID(Token.toStdString());
+    QJsonObject object{{"TokenInstrumentDefinitionID", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::tokenGetNotaryID(QString Token)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Token_GetNotaryID(Token.toStdString());
+    QJsonObject object{{"TokenNotaryID", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::isBasketCurrency(QString InstrumentDefinitionID)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->IsBasketCurrency(InstrumentDefinitionID.toStdString());
+    QJsonObject object{{"IsBasketCurrency", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::basketGetMemberCount(QString InstrumentDefinitionID)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Basket_GetMemberCount(InstrumentDefinitionID.toStdString());
+    QJsonObject object{{"BasketMemberCount", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::basketGetMemberType(QString BasketInstrumentDefinitionID, int Index)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Basket_GetMemberType(BasketInstrumentDefinitionID.toStdString(),
+                                                                         Index);
+    QJsonObject object{{"BasketMemberType", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::basketGetMinimumTransferAmount(QString BasketInstrumentDefinitionID)
+{
+    qint64 result = opentxs::OTAPI_Wrap::It()->Basket_GetMinimumTransferAmount(BasketInstrumentDefinitionID.toStdString());
+    QJsonObject object{{"BasketMinimumTransferAmount", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::basketGetMemberMinimumTransferAmount(QString BasketInstrumentDefinitionID, int Index)
+{
+    qint64 result = opentxs::OTAPI_Wrap::It()->Basket_GetMemberMinimumTransferAmount(BasketInstrumentDefinitionID.toStdString(),
+                                                                                     Index);
+    QJsonObject object{{"BasketMemberMinimumTransferAmount", result}};
+    return QJsonValue(object);
+}
+
 
 
 

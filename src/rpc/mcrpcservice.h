@@ -389,6 +389,62 @@ public Q_SLOTS:
                                            QString Transaction);
     QJsonValue transactionGetDateSigned(QString NotaryID, QString NymID,
                                         QString AccountID, QString Transaction);
+    QJsonValue transactionGetSuccess(QString NotaryID, QString NymID,
+                                     QString AccountID, QString Transaction);
+    QJsonValue transactionIsCanceled(QString NotaryID, QString NymID,
+                                     QString AccountID, QString Transaction);
+    QJsonValue transactionGetBalanceAgreementSuccess(QString NotaryID, QString NymID,
+                                                     QString AccountID, QString Transaction);
+    QJsonValue messageGetBalanceAgreementSuccess(QString NotaryID, QString NymID,
+                                                 QString AccountID, QString Message);
+    QJsonValue savePurse(QString NotaryID, QString InstrumentDefinitionID,
+                         QString NymID, QString Purse);
+    QJsonValue loadPurse(QString NotaryID, QString InstrumentDefinitionID,
+                         QString NymID);
+    QJsonValue purseGetTotalValue(QString NotaryID, QString InstrumentDefinitionID,
+                                  QString Purse);
+    QJsonValue purseCount(QString NotaryID, QString InstrumentDefinitionID,
+                          QString Purse);
+    QJsonValue purseHasPassword(QString NotaryID, QString Purse);
+    QJsonValue createPurse(QString NotaryID, QString InstrumentDefinitionID,
+                           QString OwnerID, QString SignerID);
+    QJsonValue createPursePassphrase(QString NotaryID, QString InstrumentDefinitionID,
+                                     QString SignerID);
+    QJsonValue pursePeek(QString NotaryID, QString InstrumentDefinitionID,
+                         QString OwnerID, QString Purse);
+    QJsonValue pursePop(QString NotaryID, QString InstrumentDefinitionID,
+                        QString OwnerOrSignerID, QString Purse);
+    QJsonValue purseEmpty(QString NotaryID, QString InstrumentDefinitionID,
+                          QString SignerID, QString Purse);
+    QJsonValue pursePush(QString NotaryID, QString InstrumentDefinitionID,
+                         QString SignerID, QString OwnerID,
+                         QString Purse, QString Token);
+    QJsonValue walletImportPurse(QString NotaryID, QString InstrumentDefinitionID,
+                                 QString NymID, QString Purse);
+    QJsonValue exchangePurse(QString NotaryID, QString InstrumentDefinitionID,
+                             QString NymID, QString Purse);
+    QJsonValue tokenChangeOwner(QString NotaryID, QString InstrumentDefinitionID,
+                                QString Token, QString SignerNymID,
+                                QString OldOwner, QString NewOwner);
+    QJsonValue tokenGetID(QString NotaryID, QString InstrumentDefinitionID,
+                          QString Token);
+    QJsonValue tokenGetDenomination(QString NotaryID, QString InstrumentDefinitionID,
+                                    QString Token);
+    QJsonValue tokenGetSeries(QString NotaryID, QString InstrumentDefinitionID,
+                              QString Token);
+    QJsonValue tokenGetValidFrom(QString NotaryID, QString InstrumentDefinitionID,
+                                 QString Token);
+    QJsonValue tokenGetValidTo(QString NotaryID, QString InstrumentDefinitionID,
+                               QString Token);
+    QJsonValue tokenGetInstrumentDefinitionID(QString Token);
+    QJsonValue tokenGetNotaryID(QString Token);
+    QJsonValue isBasketCurrency(QString InstrumentDefinitionID);
+    QJsonValue basketGetMemberCount(QString InstrumentDefinitionID);
+    QJsonValue basketGetMemberType(QString BasketInstrumentDefinitionID, int Index);
+    QJsonValue basketGetMinimumTransferAmount(QString BasketInstrumentDefinitionID);
+    QJsonValue basketGetMemberMinimumTransferAmount(QString BasketInstrumentDefinitionID, int Index);
+
+
 
 
 
