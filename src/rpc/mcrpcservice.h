@@ -443,6 +443,60 @@ public Q_SLOTS:
     QJsonValue basketGetMemberType(QString BasketInstrumentDefinitionID, int Index);
     QJsonValue basketGetMinimumTransferAmount(QString BasketInstrumentDefinitionID);
     QJsonValue basketGetMemberMinimumTransferAmount(QString BasketInstrumentDefinitionID, int Index);
+    QJsonValue pingNotary(QString NotaryID, QString NymID);
+    QJsonValue registerNym(QString NotaryID, QString NymID);
+    QJsonValue unregisterNym(QString NotaryID, QString NymID);
+    QJsonValue messageGetUsageCredits(QString Message);
+    QJsonValue usageCredits(QString NotaryID, QString NymID,
+                            QString NymIDCheck, qint64 Adjustment);
+    QJsonValue checkNym(QString NotaryID, QString NymID,
+                        QString NymIDCheck);
+    QJsonValue sendNymMessage(QString NotaryID, QString NymID,
+                              QString NymIDRecipient, QString RecipientPubkey,
+                              QString Message);
+    QJsonValue sendNymInstrument(QString NotaryID, QString NymID,
+                                 QString NymIDRecipient, QString RecipientPubkey,
+                                 QString Instrument, QString InstrumentForSender);
+    QJsonValue getRequestNumber(QString NotaryID, QString NymID);
+    QJsonValue registerInstrumentDefinition(QString NotaryID, QString NymID,
+                                            QString Contract);
+    QJsonValue getInstrumentDefinition(QString NotaryID, QString NymID,
+                                       QString InstrumentDefinitionID);
+    QJsonValue getMint(QString NotaryID, QString NymID,
+                       QString InstrumentDefinitionID);
+    QJsonValue registerAccount(QString NotaryID, QString NymID,
+                               QString InstrumentDefinitionID);
+    QJsonValue getAccountData(QString NotaryID, QString NymID,
+                              QString AccountID);
+    QJsonValue generateBasketCreation(QString NymID, qint64 MinimumTransfer);
+    QJsonValue addBasketCreationItem(QString NymID, QString Basket,
+                                     QString InstrumentDefinitionID, qint64 MinimumTransfer);
+    QJsonValue issueBasket(QString NotaryID, QString NymID,
+                           QString Basket);
+    QJsonValue generateBasketExchange(QString NotaryID, QString NymID,
+                                      QString BasketInstrumentDefinitionID, QString BasketAssetAccountID,
+                                      int TransferMultiple);
+    QJsonValue addBasketExchangeItem(QString NotaryID, QString NymID,
+                                     QString Basket, QString InstrumentDefinitionID,
+                                     QString AssetAccountID);
+    QJsonValue exchangeBasket(QString NotaryID, QString NymID,
+                              QString BasketInstrumentDefinitionID, QString Basket,
+                              bool ExchangeDirection);
+    QJsonValue getTransactionNumbers(QString NotaryID, QString NymID);
+    QJsonValue notarizeWithdrawal(QString NotaryID, QString NymID,
+                                  QString AccountID, qint64 Amount);
+    QJsonValue notarizeDeposit(QString NotaryID, QString NymID,
+                               QString AccountID, QString Purse);
+    QJsonValue notarizeTransfer(QString NotaryID, QString NymID,
+                                QString AccountFrom, QString AccountTo,
+                                qint64 Amount, QString Note);
+    QJsonValue getNymbox(QString NotaryID, QString NymID);
+    QJsonValue processInbox(QString NotaryID, QString NymID,
+                            QString AccountID, QString AccountLedger);
+    QJsonValue processNymbox(QString NotaryID, QString NymID);
+    QJsonValue withdrawVoucher(QString NotaryID, QString NymID,
+                               QString AccountID, QString RecipientNymID,
+                               QString ChequeMemo, qint64 Amount);
 
 
 

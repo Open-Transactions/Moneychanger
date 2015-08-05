@@ -2511,6 +2511,300 @@ QJsonValue MCRPCService::basketGetMemberMinimumTransferAmount(QString BasketInst
     return QJsonValue(object);
 }
 
+QJsonValue MCRPCService::pingNotary(QString NotaryID, QString NymID)
+{
+    int result = opentxs::OTAPI_Wrap::It()->pingNotary(NotaryID.toStdString(),
+                                                       NymID.toStdString());
+    QJsonObject object{{"PingNotaryResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::registerNym(QString NotaryID, QString NymID)
+{
+    int result = opentxs::OTAPI_Wrap::It()->registerNym(NotaryID.toStdString(),
+                                                        NymID.toStdString());
+    QJsonObject object{{"RegisterNymResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::unregisterNym(QString NotaryID, QString NymID)
+{
+    int result = opentxs::OTAPI_Wrap::It()->unregisterNym(NotaryID.toStdString(),
+                                                          NymID.toStdString());
+    QJsonObject object{{"UnregisterNymResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::messageGetUsageCredits(QString Message)
+{
+    qint64 result = opentxs::OTAPI_Wrap::It()->Message_GetUsageCredits(Message.toStdString());
+    QJsonObject object{{"MessageUsageCredits", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::usageCredits(QString NotaryID, QString NymID,
+                                      QString NymIDCheck, qint64 Adjustment)
+{
+    int result = opentxs::OTAPI_Wrap::It()->usageCredits(NotaryID.toStdString(),
+                                                         NymID.toStdString(),
+                                                         NymIDCheck.toStdString(),
+                                                         Adjustment);
+    QJsonObject object{{"MessageUsageCredits", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::checkNym(QString NotaryID, QString NymID,
+                                  QString NymIDCheck)
+{
+    int result = opentxs::OTAPI_Wrap::It()->checkNym(NotaryID.toStdString(),
+                                                     NymID.toStdString(),
+                                                     NymIDCheck.toStdString());
+    QJsonObject object{{"CheckNymResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::sendNymMessage(QString NotaryID, QString NymID,
+                                        QString NymIDRecipient, QString RecipientPubkey,
+                                        QString Message)
+{
+    int result = opentxs::OTAPI_Wrap::It()->sendNymMessage(NotaryID.toStdString(),
+                                                           NymID.toStdString(),
+                                                           NymIDRecipient.toStdString(),
+                                                           RecipientPubkey.toStdString(),
+                                                           Message.toStdString());
+    QJsonObject object{{"SendNymMessageResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::sendNymInstrument(QString NotaryID, QString NymID,
+                                           QString NymIDRecipient, QString RecipientPubkey,
+                                           QString Instrument, QString InstrumentForSender)
+{
+    int result = opentxs::OTAPI_Wrap::It()->sendNymInstrument(NotaryID.toStdString(),
+                                                              NymID.toStdString(),
+                                                              NymIDRecipient.toStdString(),
+                                                              RecipientPubkey.toStdString(),
+                                                              Instrument.toStdString(),
+                                                              InstrumentForSender.toStdString());
+    QJsonObject object{{"SendNymInstrumentResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getRequestNumber(QString NotaryID, QString NymID)
+{
+    int result = opentxs::OTAPI_Wrap::It()->getRequestNumber(NotaryID.toStdString(),
+                                                             NymID.toStdString());
+    QJsonObject object{{"RequestNumber", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::registerInstrumentDefinition(QString NotaryID, QString NymID,
+                                                      QString Contract)
+{
+    int result = opentxs::OTAPI_Wrap::It()->registerInstrumentDefinition(NotaryID.toStdString(),
+                                                                         NymID.toStdString(),
+                                                                         Contract.toStdString());
+    QJsonObject object{{"RegisterInstrumentDefinitionResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getInstrumentDefinition(QString NotaryID, QString NymID,
+                                                 QString InstrumentDefinitionID)
+{
+    int result = opentxs::OTAPI_Wrap::It()->getInstrumentDefinition(NotaryID.toStdString(),
+                                                                    NymID.toStdString(),
+                                                                    InstrumentDefinitionID.toStdString());
+    QJsonObject object{{"InstrumentDefinition", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getMint(QString NotaryID, QString NymID,
+                                 QString InstrumentDefinitionID)
+{
+    int result = opentxs::OTAPI_Wrap::It()->getMint(NotaryID.toStdString(),
+                                                    NymID.toStdString(),
+                                                    InstrumentDefinitionID.toStdString());
+    QJsonObject object{{"Mint", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::registerAccount(QString NotaryID, QString NymID,
+                                         QString InstrumentDefinitionID)
+{
+    int result = opentxs::OTAPI_Wrap::It()->registerAccount(NotaryID.toStdString(),
+                                                            NymID.toStdString(),
+                                                            InstrumentDefinitionID.toStdString());
+    QJsonObject object{{"RegisterAccountResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getAccountData(QString NotaryID, QString NymID,
+                                        QString AccountID)
+{
+    int result = opentxs::OTAPI_Wrap::It()->getAccountData(NotaryID.toStdString(),
+                                                           NymID.toStdString(),
+                                                           AccountID.toStdString());
+    QJsonObject object{{"AccountData", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::generateBasketCreation(QString NymID, qint64 MinimumTransfer)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->GenerateBasketCreation(NymID.toStdString(),
+                                                                           MinimumTransfer);
+    QJsonObject object{{"BasketCreation", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::addBasketCreationItem(QString NymID, QString Basket,
+                                               QString InstrumentDefinitionID, qint64 MinimumTransfer)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->AddBasketCreationItem(NymID.toStdString(),
+                                                                          Basket.toStdString(),
+                                                                          InstrumentDefinitionID.toStdString(),
+                                                                          MinimumTransfer);
+    QJsonObject object{{"AddBasketCreationItemResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::issueBasket(QString NotaryID, QString NymID,
+                                     QString Basket)
+{
+    int result = opentxs::OTAPI_Wrap::It()->issueBasket(NotaryID.toStdString(),
+                                                        NymID.toStdString(),
+                                                        Basket.toStdString());
+    QJsonObject object{{"IssueBasketResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::generateBasketExchange(QString NotaryID, QString NymID,
+                                                QString BasketInstrumentDefinitionID, QString BasketAssetAccountID,
+                                                int TransferMultiple)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->GenerateBasketExchange(NotaryID.toStdString(),
+                                                                           NymID.toStdString(),
+                                                                           BasketInstrumentDefinitionID.toStdString(),
+                                                                           BasketAssetAccountID.toStdString(),
+                                                                           TransferMultiple);
+    QJsonObject object{{"BasketExchange", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::addBasketExchangeItem(QString NotaryID, QString NymID,
+                                               QString Basket, QString InstrumentDefinitionID,
+                                               QString AssetAccountID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->AddBasketExchangeItem(NotaryID.toStdString(),
+                                                                          NymID.toStdString(),
+                                                                          Basket.toStdString(),
+                                                                          InstrumentDefinitionID.toStdString(),
+                                                                          AssetAccountID.toStdString());
+    QJsonObject object{{"AddBasketExchangeItemResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::exchangeBasket(QString NotaryID, QString NymID,
+                                        QString BasketInstrumentDefinitionID, QString Basket,
+                                        bool ExchangeDirection)
+{
+    int result = opentxs::OTAPI_Wrap::It()->exchangeBasket(NotaryID.toStdString(),
+                                                           NymID.toStdString(),
+                                                           BasketInstrumentDefinitionID.toStdString(),
+                                                           Basket.toStdString(),
+                                                           ExchangeDirection);
+    QJsonObject object{{"ExchangeBasketResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getTransactionNumbers(QString NotaryID, QString NymID)
+{
+    int result = opentxs::OTAPI_Wrap::It()->getTransactionNumbers(NotaryID.toStdString(),
+                                                                  NymID.toStdString());
+    QJsonObject object{{"TransactionNumbers", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::notarizeWithdrawal(QString NotaryID, QString NymID,
+                                            QString AccountID, qint64 Amount)
+{
+    int result = opentxs::OTAPI_Wrap::It()->notarizeWithdrawal(NotaryID.toStdString(),
+                                                               NymID.toStdString(),
+                                                               AccountID.toStdString(),
+                                                               Amount);
+    QJsonObject object{{"NotarizeWithdrawalResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::notarizeDeposit(QString NotaryID, QString NymID,
+                                         QString AccountID, QString Purse)
+{
+    int result = opentxs::OTAPI_Wrap::It()->notarizeDeposit(NotaryID.toStdString(),
+                                                            NymID.toStdString(),
+                                                            AccountID.toStdString(),
+                                                            Purse.toStdString());
+    QJsonObject object{{"NotarizeDepositResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::notarizeTransfer(QString NotaryID, QString NymID,
+                                          QString AccountFrom, QString AccountTo,
+                                          qint64 Amount, QString Note)
+{
+    int result = opentxs::OTAPI_Wrap::It()->notarizeTransfer(NotaryID.toStdString(),
+                                                             NymID.toStdString(),
+                                                             AccountFrom.toStdString(),
+                                                             AccountTo.toStdString(),
+                                                             Amount,
+                                                             Note.toStdString());
+    QJsonObject object{{"NotarizeTransferResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getNymbox(QString NotaryID, QString NymID)
+{
+    int result = opentxs::OTAPI_Wrap::It()->getNymbox(NotaryID.toStdString(),
+                                                      NymID.toStdString());
+    QJsonObject object{{"NymBox", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::processInbox(QString NotaryID, QString NymID,
+                                      QString AccountID, QString AccountLedger)
+{
+    int result = opentxs::OTAPI_Wrap::It()->processInbox(NotaryID.toStdString(),
+                                                         NymID.toStdString(),
+                                                         AccountID.toStdString(),
+                                                         AccountLedger.toStdString());
+    QJsonObject object{{"ProcessInboxResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::processNymbox(QString NotaryID, QString NymID)
+{
+    int result = opentxs::OTAPI_Wrap::It()->processNymbox(NotaryID.toStdString(),
+                                                          NymID.toStdString());
+    QJsonObject object{{"ProcessNymBoxResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::withdrawVoucher(QString NotaryID, QString NymID,
+                                         QString AccountID, QString RecipientNymID,
+                                         QString ChequeMemo, qint64 Amount)
+{
+    int result = opentxs::OTAPI_Wrap::It()->withdrawVoucher(NotaryID.toStdString(),
+                                                            NymID.toStdString(),
+                                                            AccountID.toStdString(),
+                                                            RecipientNymID.toStdString(),
+                                                            ChequeMemo.toStdString(),
+                                                            Amount);
+    QJsonObject object{{"WithdrawVoucherResult", result}};
+    return QJsonValue(object);
+}
+
+
+
+
+
 
 
 
