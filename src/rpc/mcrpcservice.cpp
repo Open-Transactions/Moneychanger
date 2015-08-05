@@ -2801,6 +2801,279 @@ QJsonValue MCRPCService::withdrawVoucher(QString NotaryID, QString NymID,
     return QJsonValue(object);
 }
 
+QJsonValue MCRPCService::payDividend(QString NotaryID, QString IssuerNymID,
+                                     QString DividendFromAccountID, QString SharesInstrumentDefinitionID,
+                                     QString DividendMemo, qint64 AmountPerShare)
+{
+    int result = opentxs::OTAPI_Wrap::It()->payDividend(NotaryID.toStdString(),
+                                                        IssuerNymID.toStdString(),
+                                                        DividendFromAccountID.toStdString(),
+                                                        SharesInstrumentDefinitionID.toStdString(),
+                                                        DividendMemo.toStdString(),
+                                                        AmountPerShare);
+    QJsonObject object{{"PayDividendResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::depositCheque(QString NotaryID, QString NymID,
+                                       QString AccountID, QString Cheque)
+{
+    int result = opentxs::OTAPI_Wrap::It()->depositCheque(NotaryID.toStdString(),
+                                                          NymID.toStdString(),
+                                                          AccountID.toStdString(),
+                                                          Cheque.toStdString());
+    QJsonObject object{{"DepositChequeResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::depositPaymentPlan(QString NotaryID, QString NymID,
+                                            QString PaymentPlan)
+{
+    int result = opentxs::OTAPI_Wrap::It()->depositPaymentPlan(NotaryID.toStdString(),
+                                                               NymID.toStdString(),
+                                                               PaymentPlan.toStdString());
+    QJsonObject object{{"DepositPaymentPlanResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::killMarketOffer(QString NotaryID, QString NymID,
+                                         QString AssetAccountID, qint64 TransactionNumber)
+{
+    int result = opentxs::OTAPI_Wrap::It()->killMarketOffer(NotaryID.toStdString(),
+                                                            NymID.toStdString(),
+                                                            AssetAccountID.toStdString(),
+                                                            TransactionNumber);
+    QJsonObject object{{"KillMarketOfferResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::killPaymentPlan(QString NotaryID, QString NymID,
+                                         QString FromAccountID, qint64 TransactionNumber)
+{
+    int result = opentxs::OTAPI_Wrap::It()->killPaymentPlan(NotaryID.toStdString(),
+                                                            NymID.toStdString(),
+                                                            FromAccountID.toStdString(),
+                                                            TransactionNumber);
+    QJsonObject object{{"KillPaymentPlanResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::issueMarketOffer(QString AssetAccountID, QString CurrencyAccountID,
+                                          qint64 MarketScale, qint64 MinimumIncrement,
+                                          qint64 TotalAssetsOnOffer, qint64 PriceLimit,
+                                          bool BuyingOrSelling, time64_t LifeSpanInSeconds,
+                                          QString StopSign, qint64 ActivationPrice)
+{
+    int result = opentxs::OTAPI_Wrap::It()->issueMarketOffer(AssetAccountID.toStdString(),
+                                                             CurrencyAccountID.toStdString(),
+                                                             MarketScale,
+                                                             MinimumIncrement,
+                                                             TotalAssetsOnOffer,
+                                                             PriceLimit,
+                                                             BuyingOrSelling,
+                                                             LifeSpanInSeconds,
+                                                             StopSign.toStdString(),
+                                                             ActivationPrice);
+    QJsonObject object{{"IssueMarketOfferResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getMarketList(QString NotaryID, QString NymID)
+{
+    int result = opentxs::OTAPI_Wrap::It()->getMarketList(NotaryID.toStdString(),
+                                                          NymID.toStdString());
+    QJsonObject object{{"GetMarketListResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getMarketOffers(QString NotaryID, QString NymID,
+                                         QString MarketID, qint64 MaxDepth)
+{
+    int result = opentxs::OTAPI_Wrap::It()->getMarketOffers(NotaryID.toStdString(),
+                                                            NymID.toStdString(),
+                                                            MarketID.toStdString(),
+                                                            MaxDepth);
+    QJsonObject object{{"GetMarketOffersResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getMarketRecentTrades(QString NotaryID, QString NymID,
+                                               QString MarketID)
+{
+    int result = opentxs::OTAPI_Wrap::It()->getMarketRecentTrades(NotaryID.toStdString(),
+                                                                  NymID.toStdString(),
+                                                                  MarketID.toStdString());
+    QJsonObject object{{"GetMarketRecentTradesResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getNymMarketOffers(QString NotaryID, QString NymID)
+{
+    int result = opentxs::OTAPI_Wrap::It()->getNymMarketOffers(NotaryID.toStdString(),
+                                                               NymID.toStdString());
+    QJsonObject object{{"GetNymMarketOffersResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::popMessageBuffer(qint64 RequestNumber, QString NotaryID,
+                                          QString NymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->PopMessageBuffer(RequestNumber,
+                                                                     NotaryID.toStdString(),
+                                                                     NymID.toStdString());
+    QJsonObject object{{"PopMessageBufferResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::flushMessageBuffer()
+{
+    opentxs::OTAPI_Wrap::It()->FlushMessageBuffer();
+    QJsonObject object{{"MessageBufferFlushed", "True"}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::getSentMessage(qint64 RequestNumber, QString NotaryID,
+                                        QString NymID)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->GetSentMessage(RequestNumber,
+                                                                   NotaryID.toStdString(),
+                                                                   NymID.toStdString());
+    QJsonObject object{{"SentMessage", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::removeSentMessage(qint64 RequestNumber, QString NotaryID,
+                                           QString NymID)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->RemoveSentMessage(RequestNumber,
+                                                               NotaryID.toStdString(),
+                                                               NymID.toStdString());
+    QJsonObject object{{"RemoveSentMessageResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::flushSentMessages(bool HarvestingForRetry, QString NotaryID,
+                                           QString NymID, QString NymBox)
+{
+    opentxs::OTAPI_Wrap::It()->FlushSentMessages(HarvestingForRetry,
+                                                 NotaryID.toStdString(),
+                                                 NymID.toStdString(),
+                                                 NymBox.toStdString());
+    QJsonObject object{{"FlushedSentMessages", "True"}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::sleep(qint64 Milliseconds)
+{
+    opentxs::OTAPI_Wrap::It()->Sleep(Milliseconds);
+    QJsonObject object{{"Sleep", Milliseconds}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::resyncNymWithServer(QString NotaryID, QString NymID,
+                                             QString Message)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->ResyncNymWithServer(NotaryID.toStdString(),
+                                                                 NymID.toStdString(),
+                                                                 Message.toStdString());
+    QJsonObject object{{"ResyncNymWithServerResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::queryInstrumentDefinitions(QString NotaryID, QString NymID,
+                                                    QString EncodedMap)
+{
+    int result = opentxs::OTAPI_Wrap::It()->queryInstrumentDefinitions(NotaryID.toStdString(),
+                                                                       NymID.toStdString(),
+                                                                       EncodedMap.toStdString());
+    QJsonObject object{{"QueryInstrumentDefinitionsResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::messageGetPayload(QString Message)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Message_GetPayload(Message.toStdString());
+    QJsonObject object{{"MessagePayload", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::messageGetCommand(QString Message)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Message_GetCommand(Message.toStdString());
+    QJsonObject object{{"MessageCommand", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::messageGetLedger(QString Message)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Message_GetLedger(Message.toStdString());
+    QJsonObject object{{"MessageLedger", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::messageGetNewInstrumentDefinitionID(QString Message)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Message_GetNewInstrumentDefinitionID(Message.toStdString());
+    QJsonObject object{{"MessageNewInstrumentDefinitionID", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::messageGetNewIssuerAccountID(QString Message)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Message_GetNewIssuerAcctID(Message.toStdString());
+    QJsonObject object{{"MessageNewIssuerAccountID", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::messageGetNewAccountID(QString Message)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Message_GetNewAcctID(Message.toStdString());
+    QJsonObject object{{"MessageNewAccountID", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::messageGetNymboxHash(QString Message)
+{
+    std::string result = opentxs::OTAPI_Wrap::It()->Message_GetNymboxHash(Message.toStdString());
+    QJsonObject object{{"MessageNymboxHash", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::messageGetSuccess(QString Message)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Message_GetSuccess(Message.toStdString());
+    QJsonObject object{{"MessageNymboxHash", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::messageGetDepth(QString Message)
+{
+    int result = opentxs::OTAPI_Wrap::It()->Message_GetDepth(Message.toStdString());
+    QJsonObject object{{"MessageDepth", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::messageIsTransactionCanceled(QString NotaryID, QString NymID,
+                                                      QString AccountID, QString Message)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Message_IsTransactionCanceled(NotaryID.toStdString(),
+                                                                           NymID.toStdString(),
+                                                                           AccountID.toStdString(),
+                                                                           Message.toStdString());
+    QJsonObject object{{"MessageIsTransactionCanceledResult", result}};
+    return QJsonValue(object);
+}
+
+QJsonValue MCRPCService::messageGetTransactionSuccess(QString NotaryID, QString NymID,
+                                                      QString AccountID, QString Message)
+{
+    bool result = opentxs::OTAPI_Wrap::It()->Message_GetTransactionSuccess(NotaryID.toStdString(),
+                                                                           NymID.toStdString(),
+                                                                           AccountID.toStdString(),
+                                                                           Message.toStdString());
+    QJsonObject object{{"MessageTransactionSuccess", result}};
+    return QJsonValue(object);
+}
 
 
 

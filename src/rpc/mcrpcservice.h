@@ -497,6 +497,56 @@ public Q_SLOTS:
     QJsonValue withdrawVoucher(QString NotaryID, QString NymID,
                                QString AccountID, QString RecipientNymID,
                                QString ChequeMemo, qint64 Amount);
+    QJsonValue payDividend(QString NotaryID, QString IssuerNymID,
+                           QString DividendFromAccountID, QString SharesInstrumentDefinitionID,
+                           QString DividendMemo, qint64 AmountPerShare);
+    QJsonValue depositCheque(QString NotaryID, QString NymID,
+                             QString AccountID, QString Cheque);
+    QJsonValue depositPaymentPlan(QString NotaryID, QString NymID,
+                                  QString PaymentPlan);
+    QJsonValue killMarketOffer(QString NotaryID, QString NymID,
+                               QString AssetAccountID, qint64 TransactionNumber);
+    QJsonValue killPaymentPlan(QString NotaryID, QString NymID,
+                               QString FromAccountID, qint64 TransactionNumber);
+    QJsonValue issueMarketOffer(QString AssetAccountID, QString CurrencyAccountID,
+                                qint64 MarketScale, qint64 MinimumIncrement,
+                                qint64 TotalAssetsOnOffer, qint64 PriceLimit,
+                                bool BuyingOrSelling, time64_t LifeSpanInSeconds,
+                                QString StopSign, qint64 ActivationPrice);
+    QJsonValue getMarketList(QString NotaryID, QString NymID);
+    QJsonValue getMarketOffers(QString NotaryID, QString NymID,
+                               QString MarketID, qint64 MaxDepth);
+    QJsonValue getMarketRecentTrades(QString NotaryID, QString NymID,
+                                     QString MarketID);
+    QJsonValue getNymMarketOffers(QString NotaryID, QString NymID);
+    QJsonValue popMessageBuffer(qint64 RequestNumber, QString NotaryID,
+                                QString NymID);
+    QJsonValue flushMessageBuffer();
+    QJsonValue getSentMessage(qint64 RequestNumber, QString NotaryID,
+                              QString NymID);
+    QJsonValue removeSentMessage(qint64 RequestNumber, QString NotaryID,
+                                 QString NymID);
+    QJsonValue flushSentMessages(bool HarvestingForRetry, QString NotaryID,
+                                 QString NymID, QString NymBox);
+    QJsonValue sleep(qint64 Milliseconds);
+    QJsonValue resyncNymWithServer(QString NotaryID, QString NymID,
+                                   QString Message);
+    QJsonValue queryInstrumentDefinitions(QString NotaryID, QString NymID,
+                                          QString EncodedMap);
+    QJsonValue messageGetPayload(QString Message);
+    QJsonValue messageGetCommand(QString Message);
+    QJsonValue messageGetLedger(QString Message);
+    QJsonValue messageGetNewInstrumentDefinitionID(QString Message);
+    QJsonValue messageGetNewIssuerAccountID(QString Message);
+    QJsonValue messageGetNewAccountID(QString Message);
+    QJsonValue messageGetNymboxHash(QString Message);
+    QJsonValue messageGetSuccess(QString Message);
+    QJsonValue messageGetDepth(QString Message);
+    QJsonValue messageIsTransactionCanceled(QString NotaryID, QString NymID,
+                                            QString AccountID, QString Message);
+    QJsonValue messageGetTransactionSuccess(QString NotaryID, QString NymID,
+                                            QString AccountID, QString Message);
+
 
 
 
