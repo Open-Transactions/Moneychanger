@@ -74,6 +74,7 @@ void RPCServer::readAutorun()
 {
     if (DBHandler::getInstance()->querySize("SELECT `setting`,`parameter1` FROM `settings` WHERE `setting`='rpcserver_autorun'") <= 0)
     {
+        m_rpcserver_autorun = "true";
         DBHandler::getInstance()->runQuery(QString("INSERT INTO `settings` (`setting`, `parameter1`) VALUES('rpcserver_autorun','true')"));
         qDebug() << "rpcserver_autorun setting wasn't set in the database. Inserting default: true";
     }

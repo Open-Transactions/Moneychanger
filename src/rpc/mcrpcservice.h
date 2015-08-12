@@ -1,9 +1,12 @@
 #ifndef MCRPCSERVICE_H
 #define MCRPCSERVICE_H
 
-
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
 
 #include <qjsonrpcservice.h>
+#include <opentxs/client/OTRecordList.hpp>
+
 
 class MCRPCService : public QJsonRpcService
 {
@@ -16,6 +19,7 @@ private:
 
 public:
     MCRPCService(QObject *parent = 0);
+    ~MCRPCService();
 
 public Q_SLOTS:
 
@@ -549,12 +553,6 @@ public Q_SLOTS:
 
 
 
-
-
-
-
-
-
     // Moneychanger::It() methods
     QString mcSendDialog(QString Account, QString Recipient,
                          QString Asset, QString Amount);
@@ -564,6 +562,17 @@ public Q_SLOTS:
     bool mcActivateSmartContract(); // Init Wizard
     QJsonValue mcListSmartContracts();
 
+
+    // RecordList Methods
+    QJsonValue recordListPopulate();
+    QJsonValue recordListCount();
+    QJsonValue recordListRetrieve();
+    QJsonValue recordListRetrieve(int BeginIndex, int EndIndex);
+
+private:
+
+    opentxs::OTRecordList * m_RecordList;
+    void createRecordList();
 
 };
 

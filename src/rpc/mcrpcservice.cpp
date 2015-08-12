@@ -17,6 +17,7 @@
 #include <opentxs/core/Log.hpp>
 
 #include <core/moneychanger.cpp>
+#include <core/handlers/contacthandler.hpp>
 
 
 MCRPCService::MCRPCService(QObject *parent)
@@ -24,6 +25,15 @@ MCRPCService::MCRPCService(QObject *parent)
 {
     QThreadPool::globalInstance()->setMaxThreadCount(10);
 }
+
+MCRPCService::~MCRPCService(){
+
+    if(m_RecordList != nullptr)
+        delete m_RecordList;
+
+}
+
+
 
 QJsonValue MCRPCService::numListAdd(QString NumList, QString Numbers)
 {
@@ -3077,10 +3087,7 @@ QJsonValue MCRPCService::messageGetTransactionSuccess(QString NotaryID, QString 
 
 
 
-
-
-
-
+// Moneychanger::It() methods
 
 QString MCRPCService::mcSendDialog(QString Account, QString Recipient,
                                    QString Asset, QString Amount)
@@ -3131,4 +3138,156 @@ QJsonValue MCRPCService::mcListSmartContracts()
     QJsonObject object{{"SmartContractsList", Contracts}};
 
     return object;
+}
+
+
+
+// RecordList Methods
+
+
+QJsonValue MCRPCService::recordListPopulate()
+{
+    if(m_RecordList == nullptr)
+        createRecordList();
+
+    int nServerCount  = opentxs::OTAPI_Wrap::It()->GetServerCount();
+    int nAssetCount   = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
+    int nNymCount     = opentxs::OTAPI_Wrap::It()->GetNymCount();
+    int nAccountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
+    // ----------------------------------------------------
+    for (int ii = 0; ii < nServerCount; ++ii)
+    {
+        std::string NotaryID = opentxs::OTAPI_Wrap::It()->GetServer_ID(ii);
+        m_RecordList->AddNotaryID(NotaryID);
+    }
+    // ----------------------------------------------------
+    for (int ii = 0; ii < nAssetCount; ++ii)
+    {
+        std::string InstrumentDefinitionID = opentxs::OTAPI_Wrap::It()->GetAssetType_ID(ii);
+        m_RecordList->AddInstrumentDefinitionID(InstrumentDefinitionID);
+    }
+    // ----------------------------------------------------
+    for (int ii = 0; ii < nNymCount; ++ii)
+    {
+        std::string nymId = opentxs::OTAPI_Wrap::It()->GetNym_ID(ii);
+        m_RecordList->AddNymID(nymId);
+    }
+    // ----------------------------------------------------
+    for (int ii = 0; ii < nAccountCount; ++ii)
+    {
+        std::string accountID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(ii);
+        m_RecordList->AddAccountID(accountID);
+    }
+    // ----------------------------------------------------
+    m_RecordList->AcceptChequesAutomatically  (true);
+    m_RecordList->AcceptReceiptsAutomatically (true);
+    m_RecordList->AcceptTransfersAutomatically(false);
+
+    m_RecordList->Populate();
+
+    QJsonObject object{{"RecordListPopulated", "True"}};
+
+    return object;
+}
+
+QJsonValue MCRPCService::recordListCount()
+{
+    if(m_RecordList == nullptr)
+        recordListPopulate();
+
+    int count = m_RecordList->size();
+
+    QJsonObject object{{"RecordListCount", count}};
+
+    return object;
+}
+
+QJsonValue MCRPCService::recordListRetrieve()
+{
+    if(m_RecordList == nullptr)
+        recordListPopulate();
+
+    //m_RecordList->GetRecord()
+
+    QJsonObject object{{"RecordList", "Data"}};
+
+    return object;
+}
+
+QJsonValue MCRPCService::recordListRetrieve(int BeginIndex, int EndIndex)
+{
+
+    //enum OTRecordType { Mail = 0, Transfer, Receipt, Instrument, ErrorState };
+
+    if(m_RecordList == nullptr)
+        recordListPopulate();
+
+    int count = m_RecordList->size();
+
+    // Swap if Begin > End
+    if(BeginIndex > EndIndex){
+            BeginIndex^=EndIndex;
+            EndIndex^=BeginIndex;
+            BeginIndex^=EndIndex;
+    }
+
+    if(BeginIndex < 0)
+            BeginIndex = 0;
+
+    if(BeginIndex > count){
+            QJsonObject object{{"Error", "Out of Bound Request"}};
+            return object;
+    }
+
+    if(EndIndex > count)
+        EndIndex = count-1;
+
+    QJsonObject object;
+    for(auto x = BeginIndex; x < EndIndex; x++){
+
+        QJsonObject record{{"AccountID", QString(m_RecordList->GetRecord(x).GetAccountID().c_str())},
+           {"Address", QString(m_RecordList->GetRecord(x).GetAddress().c_str())},
+           {"Amount", QString(m_RecordList->GetRecord(x).GetAmount().c_str())},
+           {"BoxIndex", m_RecordList->GetRecord(x).GetBoxIndex()},
+           {"Contents", QString(m_RecordList->GetRecord(x).GetContents().c_str())},
+           {"CurrencyTLA", QString(m_RecordList->GetRecord(x).GetCurrencyTLA().c_str())},
+           {"Date", QString(m_RecordList->GetRecord(x).GetDate().c_str())},
+           {"InitialPaymentAmount", qint64(m_RecordList->GetRecord(x).GetInitialPaymentAmount())},
+           {"InitialPaymentDate", qint64(m_RecordList->GetRecord(x).GetInitialPaymentDate())},
+           {"InstrumentDefinitionID", QString(m_RecordList->GetRecord(x).GetInstrumentDefinitionID().c_str())},
+           {"InstrumentType", QString(m_RecordList->GetRecord(x).GetInstrumentType().c_str())},
+           {"MaximumNoPayments", m_RecordList->GetRecord(x).GetMaximumNoPayments()},
+           {"Memo", QString(m_RecordList->GetRecord(x).GetMemo().c_str())},
+           {"MethodID", m_RecordList->GetRecord(x).GetMethodID()},
+           {"MesssageID", QString(m_RecordList->GetRecord(x).GetMsgID().c_str())},
+           {"MessageType", QString(m_RecordList->GetRecord(x).GetMsgType().c_str())},
+           {"MessageTypeDisplay", QString(m_RecordList->GetRecord(x).GetMsgTypeDisplay().c_str())},
+           {"Name", QString(m_RecordList->GetRecord(x).GetName().c_str())},
+           {"NotaryID", QString(m_RecordList->GetRecord(x).GetNotaryID().c_str())},
+           {"NymID", QString(m_RecordList->GetRecord(x).GetNymID().c_str())},
+           {"OtherAccountID", QString(m_RecordList->GetRecord(x).GetOtherAccountID().c_str())},
+           {"OtherAddress", QString(m_RecordList->GetRecord(x).GetOtherAddress().c_str())},
+           {"OtherNymID", QString(m_RecordList->GetRecord(x).GetOtherNymID().c_str())},
+           {"PaymentPlanAmount", qint64(m_RecordList->GetRecord(x).GetPaymentPlanAmount())},
+           {"PaymentPlanStartDate", qint64(m_RecordList->GetRecord(x).GetPaymentPlanStartDate())},
+           {"RecordType", m_RecordList->GetRecord(x).GetRecordType()},
+           {"TimeBetweenPayments", qint64(m_RecordList->GetRecord(x).GetTimeBetweenPayments())},
+           {"TransactionNum", qint64(m_RecordList->GetRecord(x).GetTransactionNum())},
+           {"TransNumForDisplay", qint64(m_RecordList->GetRecord(x).GetTransNumForDisplay())},
+           {"ValidFrom", qint64(m_RecordList->GetRecord(x).GetValidFrom())},
+           {"ValidTo", qint64(m_RecordList->GetRecord(x).GetValidTo())}
+        };
+
+        object.insert(QString(x), record);
+
+    }
+
+    return object;
+}
+
+
+void MCRPCService::createRecordList()
+{
+    if(m_RecordList == nullptr)
+        m_RecordList = new opentxs::OTRecordList(*(new MTNameLookupQT));
 }
