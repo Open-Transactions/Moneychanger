@@ -566,7 +566,7 @@ public Q_SLOTS:
     // RecordList Methods
     QJsonValue recordListPopulate();
     QJsonValue recordListCount();
-    QJsonValue recordListRetrieve();
+    QJsonValue recordListRetrieve(int Index);
     QJsonValue recordListRetrieve(int BeginIndex, int EndIndex);
 
 private:

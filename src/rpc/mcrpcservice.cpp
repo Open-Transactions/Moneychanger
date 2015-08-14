@@ -3202,14 +3202,58 @@ QJsonValue MCRPCService::recordListCount()
     return object;
 }
 
-QJsonValue MCRPCService::recordListRetrieve()
+QJsonValue MCRPCService::recordListRetrieve(int Index)
 {
     if(m_RecordList == nullptr)
         recordListPopulate();
 
-    //m_RecordList->GetRecord()
+    int count = m_RecordList->size();
 
-    QJsonObject object{{"RecordList", "Data"}};
+    if(Index >= count)
+        Index = count-1;
+
+    if(Index < 0)
+        Index = 0;
+
+
+
+    QJsonObject object;
+
+    QJsonObject record{{"AccountID", QString(m_RecordList->GetRecord(Index).GetAccountID().c_str())},
+       {"Address", QString(m_RecordList->GetRecord(Index).GetAddress().c_str())},
+       {"Amount", QString(m_RecordList->GetRecord(Index).GetAmount().c_str())},
+       {"BoxIndex", m_RecordList->GetRecord(Index).GetBoxIndex()},
+       {"Contents", QString(m_RecordList->GetRecord(Index).GetContents().c_str())},
+       {"CurrencyTLA", QString(m_RecordList->GetRecord(Index).GetCurrencyTLA().c_str())},
+       {"Date", QString(m_RecordList->GetRecord(Index).GetDate().c_str())},
+       {"InitialPaymentAmount", qint64(m_RecordList->GetRecord(Index).GetInitialPaymentAmount())},
+       {"InitialPaymentDate", qint64(m_RecordList->GetRecord(Index).GetInitialPaymentDate())},
+       {"InstrumentDefinitionID", QString(m_RecordList->GetRecord(Index).GetInstrumentDefinitionID().c_str())},
+       {"InstrumentType", QString(m_RecordList->GetRecord(Index).GetInstrumentType().c_str())},
+       {"MaximumNoPayments", m_RecordList->GetRecord(Index).GetMaximumNoPayments()},
+       {"Memo", QString(m_RecordList->GetRecord(Index).GetMemo().c_str())},
+       {"MethodID", m_RecordList->GetRecord(Index).GetMethodID()},
+       {"MesssageID", QString(m_RecordList->GetRecord(Index).GetMsgID().c_str())},
+       {"MessageType", QString(m_RecordList->GetRecord(Index).GetMsgType().c_str())},
+       {"MessageTypeDisplay", QString(m_RecordList->GetRecord(Index).GetMsgTypeDisplay().c_str())},
+       {"Name", QString(m_RecordList->GetRecord(Index).GetName().c_str())},
+       {"NotaryID", QString(m_RecordList->GetRecord(Index).GetNotaryID().c_str())},
+       {"NymID", QString(m_RecordList->GetRecord(Index).GetNymID().c_str())},
+       {"OtherAccountID", QString(m_RecordList->GetRecord(Index).GetOtherAccountID().c_str())},
+       {"OtherAddress", QString(m_RecordList->GetRecord(Index).GetOtherAddress().c_str())},
+       {"OtherNymID", QString(m_RecordList->GetRecord(Index).GetOtherNymID().c_str())},
+       {"PaymentPlanAmount", qint64(m_RecordList->GetRecord(Index).GetPaymentPlanAmount())},
+       {"PaymentPlanStartDate", qint64(m_RecordList->GetRecord(Index).GetPaymentPlanStartDate())},
+       {"RecordType", m_RecordList->GetRecord(Index).GetRecordType()},
+       {"TimeBetweenPayments", qint64(m_RecordList->GetRecord(Index).GetTimeBetweenPayments())},
+       {"TransactionNum", qint64(m_RecordList->GetRecord(Index).GetTransactionNum())},
+       {"TransNumForDisplay", qint64(m_RecordList->GetRecord(Index).GetTransNumForDisplay())},
+       {"ValidFrom", qint64(m_RecordList->GetRecord(Index).GetValidFrom())},
+       {"ValidTo", qint64(m_RecordList->GetRecord(Index).GetValidTo())}
+    };
+
+    object.insert(QString(Index), record);
+
 
     return object;
 }
