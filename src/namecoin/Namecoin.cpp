@@ -254,7 +254,7 @@ NMC_NameManager::updateName (const QString& nym, const QString& cred)
       qu->bind (":txid", txid.c_str ());
       qu->bind (":name", nm.getName ().c_str ());
       DBHandler::getInstance ()->runQuery (qu.release ());
-      qu.release ();
+//    qu.release ();
     }
   catch (const nmcrpc::NamecoinInterface::NoPrivateKey& exc)
     {
@@ -341,7 +341,7 @@ NMC_NameManager::timerUpdate ()
               qu.reset (db.prepareQuery (queryStr));
               qu->bind (":name", i->getName ().c_str ());
               db.runQuery (qu.release ());
-              qu.release ();
+//            qu.release ();
 
               queryStr = "SELECT `nym`, `cred` FROM `nmc_names`"
                          "  WHERE `name` = :name";

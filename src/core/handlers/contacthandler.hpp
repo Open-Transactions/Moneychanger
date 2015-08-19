@@ -18,6 +18,9 @@
 
 #define DEFAULT_CHEQUE_EXPIRATION 60*60*24*30 // 2592000 seconds == 30 days
 
+namespace opentxs {
+    class OTPassword;
+}
 
 class MTNameLookupQT : public opentxs::OTNameLookup
 {
@@ -70,6 +73,25 @@ public:
   int  CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string=QString(""));
   int  CreateSmartContractTemplate(QString template_string);
 
+  int CreateManagedPassphrase(const QString & qstrTitle, const QString & qstrUsername, const opentxs::OTPassword & thePassphrase,
+                              const QString & qstrURL,   const QString & qstrNotes);
+
+  bool UpdateManagedPassphrase(int nPassphraseID,
+                               const QString & qstrTitle, const QString & qstrUsername, const opentxs::OTPassword & thePassphrase,
+                               const QString & qstrURL,   const QString & qstrNotes);
+
+  bool GetManagedPassphrase(int nPassphraseID,
+                            QString & qstrTitle, QString & qstrUsername, opentxs::OTPassword & thePassphrase,
+                            QString & qstrURL,   QString & qstrNotes);
+
+  bool GetManagedPassphrases(mapIDName & mapTitle, mapIDName & mapURL, QString searchStr="");
+
+protected:
+  bool LowLevelUpdateManagedPassphrase(int nPassphraseID,
+                                       const QString & qstrTitle, const QString & qstrUsername, const opentxs::OTPassword & thePassphrase,
+                                       const QString & qstrURL,   const QString & qstrNotes);
+
+public:
   bool AddNymToExistingContact   (int nContactID, QString nym_id_string);
   bool VerifyNymOnExistingContact(int nContactID, QString nym_id_string); // See if a given Contact ID is associated with a given NymID.
 
@@ -197,8 +219,9 @@ public:
   bool GetNyms    (mapIDName & theMap, int nFilterByContact);
 
   bool GetSmartContracts(mapIDName & theMap);
-  QString GetSmartContract(int nID);
-  bool DeleteSmartContract(int nID);
+  QString GetSmartContract    (int nID);
+  bool DeleteSmartContract    (int nID);
+  bool DeleteManagedPassphrase(int nID);
 
   public:
     ~MTContactHandler();
