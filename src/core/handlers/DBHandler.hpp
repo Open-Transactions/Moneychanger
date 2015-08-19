@@ -61,6 +61,8 @@ class DBHandler
   public:
     static DBHandler * getInstance();
 
+    QString formatValue(QSqlField & sqlField);
+
     class PreparedQuery;
 
     /**
@@ -145,7 +147,7 @@ class DBHandler::PreparedQuery
     inline PreparedQuery (QSqlDatabase& db, const QString& run)
       : query(db), queryStr(run)
     {
-      query.prepare (run);
+      query.prepare (queryStr);
     }
 
     // Disable copying.
@@ -162,6 +164,8 @@ class DBHandler::PreparedQuery
     bool execute ();
 
   public:
+
+    QString lastQuery();
 
     // No copying.
 #ifdef CXX_11

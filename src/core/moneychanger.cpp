@@ -42,6 +42,7 @@
 #include <gui/ui/dlgmarkets.hpp>
 #include <gui/ui/dlgencrypt.hpp>
 #include <gui/ui/dlgdecrypt.hpp>
+#include <gui/ui/dlgpassphrasemanager.hpp>
 
 #include <core/mtcomms.h>
 
@@ -550,6 +551,14 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu_crypto_decrypt = new QAction(mc_systrayIcon_crypto_decrypt, tr("Decrypt / Verify"), mc_systrayMenu_crypto);
     mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_decrypt);
     connect(mc_systrayMenu_crypto_decrypt, SIGNAL(triggered()), this, SLOT(mc_crypto_decrypt_slot()));
+    // --------------------------------------------------------------
+    //Separator
+    mc_systrayMenu->addSeparator();
+    // --------------------------------------------------------------
+    //Passphrase Manager
+    mc_systrayMenu_passphrase_manager = new QAction(mc_systrayIcon_crypto, tr("Passphrase Manager"), mc_systrayMenu);
+    mc_systrayMenu->addAction(mc_systrayMenu_passphrase_manager);
+    connect(mc_systrayMenu_passphrase_manager, SIGNAL(triggered()), this, SLOT(mc_passphrase_manager_slot()));
     // --------------------------------------------------------------
     //Separator
     mc_systrayMenu->addSeparator();
@@ -1070,6 +1079,22 @@ void Moneychanger::mc_encrypt_show_dialog(bool bEncrypt/*=true*/, bool bSign/*=t
     // ---------------------------------------
     encrypt_window->dialog();
     // --------------------------------------------------
+}
+
+
+
+void Moneychanger::mc_passphrase_manager_slot()
+{
+    mc_passphrase_manager_show_dialog();
+}
+
+
+void Moneychanger::mc_passphrase_manager_show_dialog()
+{
+    if (!passphrase_window)
+        passphrase_window = new DlgPassphraseManager(this);
+    // --------------------------------------------------
+    passphrase_window->dialog();
 }
 
 
@@ -2025,7 +2050,7 @@ void Moneychanger::mc_import_slot()
             // ----------------------------
             if (qstrContents.isEmpty())
             {
-                QMessageBox::warning(this, tr("File Was Empty"),
+                QMessageBox::warning(this, tr("Moneychanger"),
                                      QString("%1: %2").arg(tr("File was apparently empty")).arg(fileName));
                 return;
             }
@@ -2033,7 +2058,7 @@ void Moneychanger::mc_import_slot()
         }
         else
         {
-            QMessageBox::warning(this, tr("Failed Reading File"),
+            QMessageBox::warning(this, tr("Moneychanger"),
                                  QString("%1: %2").arg(tr("Failed trying to read file")).arg(fileName));
             return;
         }
@@ -2048,7 +2073,7 @@ void Moneychanger::mc_import_slot()
 
     if (strType.empty())
     {
-        QMessageBox::warning(this, tr("Indeterminate Instrument"),
+        QMessageBox::warning(this, tr("Moneychanger"),
                              tr("Unable to determine instrument type. Are you sure this is a financial instrument?"));
         return;
     }

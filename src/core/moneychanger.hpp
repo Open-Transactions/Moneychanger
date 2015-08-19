@@ -28,6 +28,7 @@ class BtcTransactionManager;
 class BtcConnectDlg;
 class BtcSendDlg;
 class BtcReceiveDlg;
+class DlgPassphraseManager;
 
 class QMenu;
 class QSystemTrayIcon;
@@ -139,6 +140,7 @@ private:
     QPointer<MTDetailEdit> corporation_window;
     QPointer<MTDetailEdit> agreement_window;
     QPointer<MTDetailEdit> transport_window;
+    QPointer<DlgPassphraseManager> passphrase_window;
 
     QPointer<CreateInsuranceCompany> createinsurancecompany_window;
 
@@ -200,6 +202,8 @@ private:
 
     void mc_encrypt_show_dialog(bool bEncrypt=true, bool bSign=true);
     void mc_decrypt_show_dialog();
+    // ------------------------------------------------
+    void mc_passphrase_manager_show_dialog();
     // ------------------------------------------------
     void mc_market_dialog();
     void mc_corporation_dialog();
@@ -299,6 +303,7 @@ private:
     QPointer<QAction> mc_systrayMenu_requestfunds;
     QPointer<QAction> mc_systrayMenu_contacts;
     QPointer<QAction> mc_systrayMenu_composemessage;
+    QPointer<QAction> mc_systrayMenu_passphrase_manager;
     // ---------------------------------------------------------
     //Company submenu
     QPointer<QMenu>   mc_systrayMenu_company_create;
@@ -392,7 +397,8 @@ public slots:
     // ---------------------------------------------------------------------------
     void mc_send_from_acct (QString qstrAcct);
     void mc_request_to_acct(QString qstrAcct);
-    // ---------------------------------------------------------------------------   
+    // ---------------------------------------------------------------------------
+    void mc_passphrase_manager_slot();
     void mc_crypto_encrypt_slot();
     void mc_crypto_decrypt_slot();
     void mc_crypto_sign_slot();
