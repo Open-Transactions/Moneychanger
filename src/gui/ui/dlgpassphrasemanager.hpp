@@ -1,66 +1,81 @@
-#ifndef DLGENCRYPT_H
-#define DLGENCRYPT_H
+#ifndef DLGPASSPHRASE_MANAGER_H
+#define DLGPASSPHRASE_MANAGER_H
 
 #include <core/handlers/contacthandler.hpp>
 
 #include <QDialog>
+#include <QMenu>
+#include <QScopedPointer>
+#include <QTimer>
+#include <QPointer>
 
 namespace Ui {
-class DlgEncrypt;
+class DlgPassphraseManager;
 }
 
 class QListWidgetItem;
+class QString;
 
-class DlgEncrypt : public QDialog
+class DlgPassphraseManager : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit DlgEncrypt(QWidget *parent = 0);
-    ~DlgEncrypt();
+    explicit DlgPassphraseManager(QWidget *parent = 0);
+    ~DlgPassphraseManager();
 
     void dialog();
-
-    void SetEncrypt(bool bEncrypt=true);
-    void SetSign   (bool bSign   =true);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
+    void PopulateTableWidget(mapIDName & mapTitle, mapIDName & mapURL);
+
+    void doSearch(QString qstrInput);
+
 private slots:
-    void on_checkBoxEncrypt_toggled(bool checked);
-
-    void on_checkBoxSign_toggled(bool checked);
-
-    void on_pushButtonClipboard_clicked();
-
-    void on_pushButtonEncrypt_clicked();
-
     void on_pushButtonAdd_clicked();
+    void on_pushButtonDelete_clicked();
+    void on_lineEdit_returnPressed();
+    void on_pushButtonSearch_clicked();
+    void on_tableWidget_customContextMenuRequested(const QPoint &pos);
+    void on_tableWidget_itemSelectionChanged();
+    void on_pushButtonEdit_clicked();
+    void on_tableWidget_cellDoubleClicked(int row, int column);
 
-    void on_pushButtonRemove_clicked();
-
-    void on_comboBoxNym_currentIndexChanged(int index);
-
-    void on_listWidgetNotAdded_itemDoubleClicked(QListWidgetItem *item);
-
-    void on_listWidgetAdded_itemDoubleClicked(QListWidgetItem *item);
+    void on_lineEdit_textChanged(const QString &arg1);
 
 private:
-    void PopulateCombo();
-    void PopulateWidgetNotAdded();
-    void SetCurrentNymIDBasedOnIndex(int index);
-
-    void setEncryptBtnText();
-
-    Ui::DlgEncrypt *ui;
+    Ui::DlgPassphraseManager *ui;
     bool already_init;
 
-    bool m_bEncrypt;
-    bool m_bSign;
+    QScopedPointer<QMenu> popupMenu_;
 
-    QString   m_nymId;
-    mapIDName m_mapNyms;
+    QAction * pActionCopyUsername;
+    QAction * pActionCopyPassword;
+    QAction * pActionCopyURL;
 };
 
-#endif // DLGENCRYPT_H
+class ClipboardWrapper : public QObject
+{
+    Q_OBJECT
+
+public:
+    static ClipboardWrapper * It();
+
+    void set(const QString & strNewText);
+
+private slots:
+    void onDestroy();
+    void clearContents();
+
+private:
+    static ClipboardWrapper * s_it; // The singleton instance.
+
+    explicit ClipboardWrapper(QObject * parent = 0); // This class is a singleton. You can't construct it yourself; you have to call It().
+
+    QString m_qstrPreviousSetContents;
+    QPointer<QTimer> m_pTimer;
+};
+
+#endif // DLGPASSPHRASE_MANAGER_H
