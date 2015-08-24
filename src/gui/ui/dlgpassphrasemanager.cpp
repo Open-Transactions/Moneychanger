@@ -2,727 +2,464 @@
 #include <core/stable.hpp>
 #endif
 
-#include <gui/ui/dlgencrypt.hpp>
-#include <ui_dlgencrypt.h>
+#include <gui/ui/dlgpassphrasemanager.hpp>
+#include <ui_dlgpassphrasemanager.h>
+
+#include <gui/ui/dlgcreatepassphrase.hpp>
 
 #include <core/moneychanger.hpp>
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 
-#include <gui/ui/dlgexportedtopass.hpp>
-
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
+#include <opentxs/core/util/Assert.hpp>
 #include <opentxs/client/OpenTransactions.hpp>
-
-#include <opentxs/core/crypto/OTASCIIArmor.hpp>
-#include <opentxs/core/crypto/OTEnvelope.hpp>
-#include <opentxs/core/Nym.hpp>
-#include <opentxs/core/crypto/OTPasswordData.hpp>
-#include <opentxs/core/crypto/OTSignedFile.hpp>
+#include <opentxs/core/crypto/OTPassword.hpp>
 
 #include <QKeyEvent>
 #include <QApplication>
 #include <QClipboard>
-#include <QListWidgetItem>
 #include <QMessageBox>
-
-#include <set>
+#include <QMenu>
+#include <QTimer>
 
 #include <string>
 
+// -------------------------------------------------------------
+//static
+ClipboardWrapper* ClipboardWrapper::s_it = NULL;
 
-DlgEncrypt::DlgEncrypt(QWidget *parent) :
+ClipboardWrapper::ClipboardWrapper(QObject * parent/*=0*/)
+    : QObject(parent), m_pTimer(new QTimer(this))
+{
+    QCoreApplication * pCore = QCoreApplication::instance();
+    connect(m_pTimer, SIGNAL(timeout()), SLOT(clearContents()));
+    connect(pCore, SIGNAL(aboutToQuit()), SLOT(onDestroy()));
+    m_pTimer->setSingleShot(true);
+}
+
+//static
+ClipboardWrapper * ClipboardWrapper::It()
+{
+    if (NULL == ClipboardWrapper::s_it)
+    {
+        QCoreApplication * pCore = QCoreApplication::instance();
+        ClipboardWrapper::s_it = new ClipboardWrapper(pCore);
+    }
+
+    return ClipboardWrapper::s_it;
+}
+
+void ClipboardWrapper::set(const QString & strNewText)
+{
+    QClipboard * clipboard = QApplication::clipboard();
+    OT_ASSERT(NULL != clipboard);
+    clipboard->setText(strNewText, QClipboard::Clipboard);
+    if (clipboard->supportsSelection()) { clipboard->setText(strNewText, QClipboard::Selection); }
+    const int nTimeoutSeconds = 10; // say, 10 seconds until the passphrase times out. (TODO: hardcoding. Make this configurable.)
+    m_qstrPreviousSetContents = strNewText;
+    m_pTimer->start(nTimeoutSeconds * 1000); // milliseconds.
+}
+
+void ClipboardWrapper::onDestroy()
+{
+    if (m_pTimer->isActive())
+    {
+        m_pTimer->stop();
+        clearContents();
+    }
+}
+
+void ClipboardWrapper::clearContents()
+{
+    QClipboard* clipboard = QApplication::clipboard();
+    OT_ASSERT(NULL != clipboard);
+    if (clipboard->text(QClipboard::Clipboard) == m_qstrPreviousSetContents)
+        clipboard->clear(QClipboard::Clipboard);
+    if (clipboard->supportsSelection() &&
+        clipboard->text(QClipboard::Selection) == m_qstrPreviousSetContents)
+        clipboard->clear(QClipboard::Selection);
+    m_qstrPreviousSetContents.clear();
+}
+
+// -------------------------------------------------------------
+
+DlgPassphraseManager::DlgPassphraseManager(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::DlgEncrypt),
+    ui(new Ui::DlgPassphraseManager),
     already_init(false),
-    m_bEncrypt(false),
-    m_bSign(false),
-    m_nymId("")
+    pActionCopyUsername(NULL),
+    pActionCopyPassword(NULL),
+    pActionCopyURL(NULL)
 {
     ui->setupUi(this);
     
     this->installEventFilter(this);
+    // ----------------------------------
+    ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    // ----------------------------------
+    ui->tableWidget->verticalHeader()->hide();
+    // ----------------------------------
+    ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
+    ui->tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+    // ----------------------------------
+    ui->tableWidget->setSelectionMode    (QAbstractItemView::SingleSelection);
+    ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    // ----------------------------------
+    ui->tableWidget->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignCenter);
+    ui->tableWidget->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignCenter);
+    // ----------------------------------
+    popupMenu_.reset(new QMenu(this));
 
-    ui->toolButton  ->setStyleSheet("QToolButton { border: 0px solid #575757; }");
-    ui->toolButton_2->setStyleSheet("QToolButton { border: 0px solid #575757; }");
+    //popupMenu_->addAction("Menu Item 1", this, SLOT(menuItemActivated()));
+    pActionCopyUsername = popupMenu_->addAction(tr("Copy username to clipboard"));
+    pActionCopyPassword = popupMenu_->addAction(tr("Copy password to clipboard"));
+    pActionCopyURL      = popupMenu_->addAction(tr("Copy URL to clipboard"));
 }
 
-DlgEncrypt::~DlgEncrypt()
+DlgPassphraseManager::~DlgPassphraseManager()
 {
     delete ui;
 }
 
-void DlgEncrypt::SetEncrypt(bool bEncrypt/*=true*/)
+void DlgPassphraseManager::on_pushButtonAdd_clicked()
 {
-    m_bEncrypt = bEncrypt;
-}
+    // Pop up new dialog to collect Title, URL, Username, Passphrase, and Notes.
+    // Then create a new Passphrase with that data and add it to the table widget, and select it.
 
-void DlgEncrypt::SetSign(bool bSign/*=true*/)
-{
-    m_bSign = bSign;
-}
+    DlgCreatePassphrase theDlg(this);
 
-void DlgEncrypt::SetCurrentNymIDBasedOnIndex(int index)
-{
-    if ((m_mapNyms.size() > 0) && (index >= 0))
+    theDlg.setWindowTitle("Add Passphrase");
+
+    if (QDialog::Accepted == theDlg.exec())
     {
-        int nCurrentIndex = -1;
+        theDlg.m_qstrNotes.truncate(500);
 
-        for (mapIDName::iterator it_map = m_mapNyms.begin(); it_map != m_mapNyms.end(); ++it_map)
+        int nPassphraseID = MTContactHandler::getInstance()->CreateManagedPassphrase(theDlg.m_qstrTitle, theDlg.m_qstrUsername,
+                                                                                     *(theDlg.m_pPassphrase),
+                                                                                     theDlg.m_qstrURL, theDlg.m_qstrNotes);
+        // If I got a passphrase ID back, then add it to the list on the screen.
+        if (nPassphraseID > 0)
         {
-            ++nCurrentIndex; // zero on first iteration.
+            QString qstrTitle, qstrUsername, qstrURL, qstrNotes;
+            opentxs::OTPassword thePassphrase;
 
-            if (nCurrentIndex == index)
+            if (MTContactHandler::getInstance()->GetManagedPassphrase(nPassphraseID, qstrTitle, qstrUsername, thePassphrase, qstrURL, qstrNotes))
             {
-                m_nymId = it_map.key();
-                break;
+                // ----------------------------
+                ui->tableWidget->blockSignals(true);
+                // ----------------------------
+                int column = 0;
+                // ----------------------------------
+                ui->tableWidget->insertRow(0);
+                // ----------------------------------
+                ui->tableWidget->setItem(0, column++, new QTableWidgetItem(qstrTitle));
+                ui->tableWidget->setItem(0, column++, new QTableWidgetItem(qstrURL));
+                // ----------------------------------
+                ui->tableWidget->item(0,0)->setData(Qt::UserRole, QVariant(nPassphraseID));
+                // ----------------------------------
+                ui->tableWidget->setCurrentCell(0,0);
+                ui->pushButtonDelete->setEnabled(true);
+                ui->pushButtonEdit  ->setEnabled(true);
+                // -----------------------------------------------
+                ui->tableWidget->blockSignals(false);
+            } // GetManagedPassphrase
+            else
+                QMessageBox::warning(this, tr("Moneychanger"), tr("Strange: I just created a new "
+                                                                  "passphrase entry, but then couldn't retrieve it from the local database."));
+        } // Passphrase ID >0
+        else
+            QMessageBox::warning(this, tr("Moneychanger"), tr("An error occurred while trying to create a new passphrase entry."));
+    } // Dialog accepted.
+}
+
+
+void DlgPassphraseManager::on_tableWidget_cellDoubleClicked(int row, int column)
+{
+    ui->tableWidget->setCurrentCell(row, 0);
+    on_pushButtonEdit_clicked();
+}
+
+void DlgPassphraseManager::on_pushButtonEdit_clicked()
+{
+    int nRow = ui->tableWidget->currentRow();
+
+    if (nRow >= 0)
+    {
+        // Get the Passphrase ID.
+        int nPassphraseID = ui->tableWidget->item(nRow, 0)->data(Qt::UserRole).toInt();
+
+        if (nPassphraseID > 0)
+        {
+            // Get the data members from the database for that Passphrase ID.
+            QString qstrTitle, qstrUsername, qstrURL, qstrNotes;
+            opentxs::OTPassword thePassphrase;
+
+            if (MTContactHandler::getInstance()->GetManagedPassphrase(nPassphraseID, qstrTitle, qstrUsername, thePassphrase, qstrURL, qstrNotes))
+            {
+                // Now let's pop up an edit dialog and give it those data members.
+                //
+                DlgCreatePassphrase theDlg(qstrTitle, qstrUsername, qstrURL, qstrNotes, thePassphrase, this);
+
+                theDlg.setWindowTitle(tr("View/Edit Passphrase"));
+
+                if (QDialog::Accepted == theDlg.exec())
+                {
+                    theDlg.m_qstrNotes.truncate(500);
+
+                    if (MTContactHandler::getInstance()->UpdateManagedPassphrase(nPassphraseID,
+                                                                                 theDlg.m_qstrTitle, theDlg.m_qstrUsername,
+                                                                                 *(theDlg.m_pPassphrase),
+                                                                                 theDlg.m_qstrURL, theDlg.m_qstrNotes))
+                    {
+                        ui->tableWidget->item(nRow, 0)->setText(theDlg.m_qstrTitle);
+                        ui->tableWidget->item(nRow, 1)->setText(theDlg.m_qstrURL);
+                    }
+                    else
+                        QMessageBox::warning(this, tr("Moneychanger"),
+                                             tr("An error occurred while trying to update a passphrase entry."));
+                } // Dialog accepted.
+            } // Found passphrase in db.
+        } // passphrase ID > 0
+    } // nRow is a valid row.
+}
+
+void DlgPassphraseManager::on_pushButtonDelete_clicked()
+{
+    // Get (index of?) current table widget item.
+    int nRow = ui->tableWidget->currentRow();
+
+    if (nRow >= 0)
+    {
+        // Get the Passphrase ID.
+        int nPassphraseID = ui->tableWidget->item(nRow, 0)->data(Qt::UserRole).toInt();
+
+        if (nPassphraseID > 0)
+        {
+            // Then ask the user "are you sure?"
+            // Then delete it from the database.
+            //
+            if (QMessageBox::Yes == QMessageBox::question(this, tr("Moneychanger"), tr("PERMAMENT: Are you sure you want to delete this entry?"),
+                                                          QMessageBox::Yes|QMessageBox::No))
+            {
+                // Delete it from the database.
+                // Then select something else in the table widget.
+                //
+                if (MTContactHandler::getInstance()->DeleteManagedPassphrase(nPassphraseID))
+                {
+                    ui->tableWidget->blockSignals(true);
+                    // ----------------------------------
+                    ui->tableWidget->removeRow(nRow);  // Remove the selected row from the tableWidget.
+                    // ----------------------------------
+                    if (nRow < ui->tableWidget->rowCount()) // Next, select another row (since the previously-selected row was just deleted.)
+                    {
+                        ui->tableWidget->setCurrentCell(nRow,0);
+                        ui->pushButtonDelete->setEnabled(true);
+                        ui->pushButtonEdit  ->setEnabled(true);
+                    }
+                    else if (ui->tableWidget->rowCount() > 0)
+                    {
+                        ui->tableWidget->setCurrentCell(nRow-1,0);
+                        ui->pushButtonDelete->setEnabled(true);
+                        ui->pushButtonEdit  ->setEnabled(true);
+                    }
+                    else
+                    {
+                        ui->pushButtonDelete->setEnabled(false);
+                        ui->pushButtonEdit  ->setEnabled(false);
+                    }
+                    // -----------------------------------------------
+                    ui->tableWidget->blockSignals(false);
+                }
+                else
+                    QMessageBox::warning(this, tr("Moneychanger"),
+                                         QString("%1: %2").arg("DlgPassphraseManager::on_pushButtonDelete_clicked")
+                                         .arg(tr("Error occurred while trying to delete the passphrase entry from the local database.")));
             }
         }
     }
-    else
-        m_nymId = QString("");
+}
+
+// TODO: Finish out the right-click menu. (Below.)
+
+void DlgPassphraseManager::on_tableWidget_customContextMenuRequested(const QPoint &pos)
+{
+    QTableWidgetItem * pItem = ui->tableWidget->itemAt(pos);
+
+    if (NULL != pItem)
+    {
+        int nRow = pItem->row();
+
+        if (nRow >= 0)
+        {
+            int nPassphraseID = ui->tableWidget->item(nRow, 0)->data(Qt::UserRole).toInt();
+            // ------------------------
+            QPoint globalPos = ui->tableWidget->mapToGlobal(pos);
+            // ------------------------
+            const QAction* selectedAction = popupMenu_->exec(globalPos); // Here we popup the menu, and get the user's click.
+            // ------------------------
+            // Get the data members from the database for that Passphrase ID.
+            QString qstrTitle, qstrUsername, qstrURL, qstrNotes;
+            opentxs::OTPassword thePassphrase;
+
+            if (MTContactHandler::getInstance()->GetManagedPassphrase(nPassphraseID, qstrTitle, qstrUsername, thePassphrase, qstrURL, qstrNotes))
+            {
+                if (selectedAction == pActionCopyUsername)
+                {
+                    // Copy the username to clipboard.
+                    ClipboardWrapper::It()->set(qstrUsername);
+//                  QMessageBox::information(this, QString("Passphrase Manager"), QString("Copy the username! For ID: %1").arg(nPassphraseID));
+                }
+                else if (selectedAction == pActionCopyPassword)
+                {
+                    // Copy the password to clipboard.
+                    ClipboardWrapper::It()->set(QString::fromUtf8(thePassphrase.getPassword()));
+//                  QMessageBox::information(this, QString("Passphrase Manager"), QString("Copy the password! For ID: %1").arg(nPassphraseID));
+                }
+                else if (selectedAction == pActionCopyURL)
+                {
+                    // Copy the URL to clipboard.
+                    QClipboard *clipboard = QApplication::clipboard();
+
+                    if (NULL != clipboard)
+                    {
+                        clipboard->setText(qstrURL);
+                    }
+//                  QMessageBox::information(this, QString("Passphrase Manager"), QString("Copy the URL! For ID: %1").arg(nPassphraseID));
+                }
+            } // Found managed passphrase in local db.
+        } // nRow >= 0
+    } // pItem not NULL.
 }
 
 
-void DlgEncrypt::PopulateCombo()
+// This was the only way I could figure out to do it, that would
+// work even when DESELECTING an item on the tableWidget.
+// Probably could adapt this trick to other parts of Moneychanger,
+// where the details fields are left populated even when the list is
+// deselected on the left.
+void DlgPassphraseManager::on_tableWidget_itemSelectionChanged()
+{
+    QList<QTableWidgetItem *> theList = ui->tableWidget->selectedItems();
+
+//  qDebug() << "Item selection changed to: " << ui->tableWidget->currentRow();
+//  qDebug() << "Number of selected items: " << theList.size();
+//  QTableWidgetItem * pCurrentItem = ui->tableWidget->currentItem();
+
+    if (theList.size() > 0)
+    {
+        ui->pushButtonDelete->setEnabled(true);
+        ui->pushButtonEdit  ->setEnabled(true);
+    }
+    else
+    {
+        ui->pushButtonDelete->setEnabled(false);
+        ui->pushButtonEdit  ->setEnabled(false);
+    }
+}
+
+
+void DlgPassphraseManager::on_lineEdit_textChanged(const QString &arg1)
+{
+    // This means someone clicked the "clear" button on the search box.
+    if (arg1.isEmpty())
+        doSearch(arg1);
+}
+
+void DlgPassphraseManager::on_lineEdit_returnPressed()
+{
+    QString qstrSearchText = ui->lineEdit->text();
+
+    this->doSearch(qstrSearchText.simplified());
+}
+
+void DlgPassphraseManager::on_pushButtonSearch_clicked()
+{
+    QString qstrSearchText = ui->lineEdit->text();
+
+    this->doSearch(qstrSearchText.simplified());
+}
+
+void DlgPassphraseManager::doSearch(QString qstrInput)
+{
+    // Retrieve all passphrases, using the input string as a
+    // filter on the title, URL, username, and notes fields.
+    //
+    mapIDName mapTitle, mapURL;
+    bool bSuccess = MTContactHandler::getInstance()->GetManagedPassphrases(mapTitle, mapURL, qstrInput);
+    Q_UNUSED(bSuccess);
+
+    // Use the results to populate the table widget.
+    // We do this even if the results are empty, since it still clears the tableWidget in that case.
+    PopulateTableWidget(mapTitle, mapURL);
+}
+
+void DlgPassphraseManager::PopulateTableWidget(mapIDName & mapTitle, mapIDName & mapURL)
 {
     if (ui)
     {
-        ui->comboBoxNym->blockSignals(true);
+        ui->tableWidget->blockSignals(true);
         // ----------------------------
-        int nDefaultNymIndex    = 0;
-        bool bFoundNymDefault   = false;
-        // -----------------------------------------------
-        const int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
-        // -----------------------------------------------
-        for (int32_t ii = 0; ii < nym_count; ++ii)
-        {
-            QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(ii));
-            QString OT_nym_name("");
-            // -----------------------------------------------
-            if (!OT_nym_id.isEmpty())
-            {
-                if (!m_nymId.isEmpty() && (OT_nym_id == m_nymId))
-                {
-                    bFoundNymDefault = true;
-                    nDefaultNymIndex = ii;
-                }
-                // -----------------------------------------------
-                MTNameLookupQT theLookup;
+        // Remove all items
+        ui->tableWidget->clearContents();
+        ui->tableWidget->setRowCount(0);
+        // ----------------------------
+        mapIDName::iterator it_title = mapTitle.begin();
+        mapIDName::iterator it_url   = mapURL  .begin();
 
-                OT_nym_name = QString::fromStdString(theLookup.GetNymName(OT_nym_id.toStdString(), ""));
-                // -----------------------------------------------
-                m_mapNyms.insert(OT_nym_id, OT_nym_name);
-                ui->comboBoxNym->insertItem(ii, OT_nym_name);
-            }
-         }
-        // -----------------------------------------------
-        if (m_mapNyms.size() > 0)
+        for (; it_title != mapTitle.end() && it_url != mapURL.end(); ++it_title, ++it_url)
         {
-            SetCurrentNymIDBasedOnIndex(nDefaultNymIndex);
-            ui->comboBoxNym->setCurrentIndex(nDefaultNymIndex);
+            QString qstrID    = it_title.key();
+            QString qstrTitle = it_title.value();
+            QString qstrURL   = it_url  .value();
+            // ----------------------------------
+            int nPassphraseID = qstrID.toInt();
+            int column        = 0;
+            // ----------------------------------
+            ui->tableWidget->insertRow(0);
+            // ----------------------------------
+            ui->tableWidget->setItem(0, column++, new QTableWidgetItem(qstrTitle));
+            ui->tableWidget->setItem(0, column++, new QTableWidgetItem(qstrURL));
+            // ----------------------------------
+            ui->tableWidget->item(0,0)->setData(Qt::UserRole, QVariant(nPassphraseID));
+        }
+        // ----------------------------------
+        if (ui->tableWidget->rowCount() > 0)
+        {
+            ui->tableWidget->setCurrentCell(0,0);
+            ui->pushButtonDelete->setEnabled(true);
+            ui->pushButtonEdit  ->setEnabled(true);
         }
         else
-            SetCurrentNymIDBasedOnIndex(-1);
-        // -----------------------------------------------
-        ui->comboBoxNym->blockSignals(false);
-    }
-}
-
-
-void DlgEncrypt::PopulateWidgetNotAdded()
-{
-    mapIDName theContactMap;
-
-    if (MTContactHandler::getInstance()->GetContacts(theContactMap))
-    {
-        // loop through contact map and get Nyms.
-        for (mapIDName::iterator it_contact = theContactMap.begin();
-             it_contact != theContactMap.end();
-             ++it_contact)
         {
-            QString qstrContactID   = it_contact.key  ();
-            QString qstrContactName = it_contact.value();
-
-            if (!qstrContactID.isEmpty())
-            {
-                int       nContactID = qstrContactID.toInt();
-                mapIDName theNymMap;
-
-                if ((nContactID > 0) && (MTContactHandler::getInstance()->GetNyms(theNymMap, nContactID) > 0))
-                {
-                    // Loop through the nyms for this contact, and add each to the Widget
-                    // for "Not Added" contacts.
-                    //
-                    for (mapIDName::iterator it_nym = theNymMap.begin();
-                         it_nym != theNymMap.end();
-                         ++it_nym)
-                    {
-                        QString qstrNymID   = it_nym.key  ();
-//                      QString qstrNymName = it_nym.value();
-
-                        QString qstrRecipientName = QString("%1 (%2)").arg(qstrContactName).arg(qstrNymID);
-                        // --------------------------------------
-                        QListWidgetItem * pRecipItem = new QListWidgetItem(qstrRecipientName);
-                        ui->listWidgetNotAdded->insertItem(ui->listWidgetNotAdded->count(), pRecipItem);
-                        pRecipItem->setData(Qt::UserRole, QVariant(qstrNymID));
-
-//                      connect(this, SIGNAL(), )
-                    }
-                }
-            }
+            ui->pushButtonDelete->setEnabled(false);
+            ui->pushButtonEdit  ->setEnabled(false);
         }
+        // -----------------------------------------------
+        ui->tableWidget->blockSignals(false);
     }
-
-    if (ui->listWidgetNotAdded->count() > 0)
-        ui->listWidgetNotAdded->setCurrentRow(0);
 }
 
 
-
-
-
-void DlgEncrypt::dialog()
+void DlgPassphraseManager::dialog()
 {
     if (!already_init)
     {
+        doSearch("");
         // ----------------------------
-        show();
-        // ----------------------------
-        if (m_bEncrypt)
-        {
-            ui->checkBoxEncrypt->toggle();
-        }
-        else
-        {
-            ui->checkBoxEncrypt->toggle();
-            ui->checkBoxEncrypt->toggle();
-        }
-        // ----------------------------
-        if (m_bSign)
-        {
-            ui->checkBoxSign->toggle();
-        }
-        else
-        {
-            ui->checkBoxSign->toggle();
-            ui->checkBoxSign->toggle();
-        }
-
-//        ui->fromButton->setFocus();
-
-        QString qstrTempID = Moneychanger::It()->get_default_nym_id();
-
-        if (!qstrTempID.isEmpty())
-            m_nymId = qstrTempID;
-
-        PopulateCombo();
-        PopulateWidgetNotAdded();
-
         already_init = true;
     }
+    // ----------------------------
+    show();
+    // ----------------------------
+    ui->lineEdit->setFocus();
 }
 
 
-
-
-void DlgEncrypt::on_pushButtonEncrypt_clicked()
-{
-    QString qstrText = ui->plainTextEdit->toPlainText().trimmed();
-    // --------------------------------
-    if (qstrText.isEmpty())
-    {
-        // pop up a message box warning that the input text is empty.
-        //
-        QMessageBox::warning(this, tr("Input Text is Empty"),
-                             tr("Please paste some text to be signed/encrypted."));
-        return;
-    }
-    else
-    {
-        if (m_bSign)
-        {
-            if (m_nymId.isEmpty())
-            {
-                QMessageBox::warning(this, tr("Missing Signer"),
-                                     tr("No signer is selected. Perhaps you need to create an identity first, to sign with."));
-                return;
-            }
-            else
-            {
-                // Sign the contents.
-                //
-                std::string  str_nym    (m_nymId.toStdString());
-                opentxs::String     strNym     (str_nym.c_str());
-                opentxs::Identifier nym_id     (strNym);
-
-                std::string  str_text   (qstrText.toStdString());
-                opentxs::String     strText    (str_text.c_str());
-//              opentxs::OTASCIIArmor ascText    (strText);
-//              std::string  str_encoded(ascText.Get());
-//              opentxs::String     strEncoded (str_encoded.c_str());
-//              std::string  str_type   ("MESSAGE");
-
-                if (!nym_id.IsEmpty())
-                {
-                    opentxs::OTPasswordData thePWData("Signer passphrase");
-
-                    opentxs::Nym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
-                                                                           false, //bChecking=false
-                                                                           "DlgEncrypt::on_pushButtonEncrypt_clicked",
-                                                                           &thePWData);
-                    if (NULL == pNym)
-                    {
-                        QString qstrErrorMsg = QString("%1: %2").arg(tr("Failed loading the signer; unable to continue. NymID")).arg(m_nymId);
-                        QMessageBox::warning(this, tr("Failed Loading Signer"), qstrErrorMsg);
-                        return;
-                    }
-                    else
-                    {
-                        // FOR VERIFY STEP:
-    //                  inline opentxs::String & opentxs::OTSignedFile::GetFilePayload()                       { return m_strSignedFilePayload;   }
-
-                        opentxs::String     strSignedOutput;
-                        opentxs::OTSignedFile theSignedFile;
-
-                        theSignedFile.SetSignerNymID(strNym);
-
-                        theSignedFile.SetFilePayload(strText);
-                        theSignedFile.SignContract(*pNym, &thePWData);
-                        theSignedFile.SaveContract();
-                        theSignedFile.SaveContractRaw(strSignedOutput);
-
-                        // Set the result onto qstrText
-                        //
-                        if (!strSignedOutput.Exists())
-                        {
-                            QMessageBox::warning(this, tr("Signing Failed"),
-                                                 tr("Failed trying to sign, using the selected identity."));
-                            return;
-                        }
-                        else if (!theSignedFile.VerifySignature(*pNym))
-                        {
-                            QMessageBox::warning(this, tr("Test Verification Failed"),
-                                                 tr("Failed trying to test verify, immediately after signing. Trying authentication key..."));
-
-                            if (!theSignedFile.VerifySigAuthent(*pNym))
-                            {
-                                QMessageBox::warning(this, tr("Authent Test Also Failed"),
-                                                     tr("Failed trying to verify signature with authentication key as well."));
-                                return;
-                            }
-                            else
-                                QMessageBox::information(this, tr("SUCCESS USING AUTHENTICATION KEY"), tr("Tried authent key instead of signing key, and it worked!"));
-                        }
-                        else
-                        {
-                            std::string str_signed_output(strSignedOutput.Get());
-                            qstrText = QString::fromStdString(str_signed_output);
-                        }
-                    } // else (we have pNym.)
-                }
-//              std::string  str_output (opentxs::OTAPI_Wrap::It()->FlatSign(str_nym, str_encoded, str_type));
-            }
-        }
-        // --------------------------------
-        // Encrypt qstrText and pop up a dialog with the encrypted result.
-        //
-        if (m_bEncrypt)
-        {
-            if (ui->listWidgetAdded->count() > 0)
-            {
-                std::set<opentxs::Nym*> setRecipients;
-                bool      bRecipientsShouldBeAvailable = false;
-
-                // Loop through each NymID in listWidgetAdded, and put them on a opentxs::setOfNyms
-                // so we can pass them along to opentxs::OTEnvelope (and so we can clean them up afterwards.)
-                // UPDATE: Can't clean them up! Because the wallet only owns private nyms, not public
-                // ones, we never know for sure which ones are safe to erase. TODO: Fix in OT by using
-                // shared_ptr.
-                //
-                for (int nIndex = 0; nIndex < ui->listWidgetAdded->count(); ++nIndex)
-                {
-                    bRecipientsShouldBeAvailable = true;
-
-                    QListWidgetItem * pItem    = ui->listWidgetAdded->item(nIndex);
-                    QVariant          qvarItem = pItem->data(Qt::UserRole);
-                    QString           qstrNymID(qvarItem.toString());
-                    std::string       str_nym(qstrNymID.toStdString());
-                    opentxs::String          strNym(str_nym.c_str());
-                    opentxs::Identifier      nym_id(strNym);
-
-                    if (!nym_id.IsEmpty())
-                    {
-                        opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
-
-                        opentxs::Nym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(nym_id,
-                                                                               false, //bChecking=false
-                                                                               "DlgEncrypt::on_pushButtonEncrypt_clicked",
-                                                                               &thePWData);
-                        if (NULL == pNym)
-                        {
-                            QString qstrErrorMsg = QString("%1: %2").arg(tr("Failed loading a recipient; attempting to continue without. NymID")).arg(qstrNymID);
-
-                            QMessageBox::warning(this, tr("Failed Loading Recipient"), qstrErrorMsg);
-                        }
-                        else
-                        {
-                            setRecipients.insert(setRecipients.begin(), pNym);
-                        }
-                    }
-                    // qstrNymID will be passed to opentxs::OTEnvelope on its recipient list.
-                } // for (selected Nyms.)
-                // ---------------------------------------------------
-                // We might also want to encrypt to the Signer's Nym, if there is one.
-                // We'll default this to ON, but give users the choice to deactivate it.
-                //
-                if (ui->checkBoxAlso->isVisible() &&
-                    ui->checkBoxAlso->isEnabled() &&
-                    ui->checkBoxAlso->isChecked() &&
-                    !m_nymId.isEmpty())
-                {
-                    std::string str_signer_nym(m_nymId.toStdString());
-                    opentxs::String strSignerNymID(str_signer_nym.c_str());
-                    bool bSignerIsAlreadyThere = false;
-
-                    //FOR_EACH(opentxs::setOfNyms(), setRecipients) // See if it's already there, in which case we don't need to do anything else.
-                    for(opentxs::setOfNyms::iterator it = setRecipients.begin(); it != setRecipients.end(); ++ it)
-                    {
-                        opentxs::Nym       * pNym = *it;
-                        opentxs::String            strNymID;
-                        pNym->GetIdentifier(strNymID);
-
-                        if (strSignerNymID.Compare(strNymID))
-                            bSignerIsAlreadyThere = true;
-                    }
-                    // -------------------------
-                    if (!bSignerIsAlreadyThere) // Not already there? Add signer to list of recipients.
-                    {
-                        bRecipientsShouldBeAvailable = true;
-
-                        opentxs::Identifier signer_nym_id(strSignerNymID);
-
-                        if (!signer_nym_id.IsEmpty())
-                        {
-                            opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
-
-                            opentxs::Nym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(signer_nym_id,
-                                                                                   false, //bChecking=false
-                                                                                   "DlgEncrypt::on_pushButtonEncrypt_clicked",
-                                                                                   &thePWData);
-                            if (NULL == pNym)
-                            {
-                                QString qstrErrorMsg = QString("%1: %2").
-                                        arg(tr("Failed trying to load the signer; attempting to continue without. NymID")).arg(m_nymId);
-                                QMessageBox::warning(this, tr("Failed Loading Signer"), qstrErrorMsg);
-                            }
-                            else
-                            {
-                                setRecipients.insert(setRecipients.begin(), pNym);
-                            }
-                        }
-                    }
-                }
-                // ---------------------------------------------------
-                if (setRecipients.size() > 0)
-                {
-                    opentxs::OTEnvelope theEnvelope;
-                    opentxs::String   strInput(qstrText.toStdString().c_str());
-
-                    if (!theEnvelope.Seal(setRecipients, strInput))
-                    {
-                        QMessageBox::warning(this, tr("Encryption Failed"),
-                                             tr("Failed trying to encrypt message."));
-                        return;
-                    }
-                    else
-                    {
-                        // Success encrypting!
-                        //
-                        opentxs::String     strOutput;
-                        opentxs::OTASCIIArmor ascCiphertext(theEnvelope);
-
-                        if (ascCiphertext.WriteArmoredString(strOutput, "ENVELOPE")) // -----BEGIN OT ARMORED ENVELOPE-----
-                        {
-                            std::string str_output(strOutput.Get());
-                            qstrText = QString::fromStdString(str_output);
-                        }
-                    }
-                }
-                else if (bRecipientsShouldBeAvailable) // They should be, but they weren't.
-                {
-                    QMessageBox::warning(this, tr("Failed Loading Recipients"),
-                                         tr("Due to failure loading any of the recipients, unable to commence."));
-                    return;
-                }
-            } // if (listItems.size() > 0)
-        } // if (m_bEncrypt)
-        // -------------------
-        // If it's NOT encrypted, but it IS signed, then we want to OT ARMOR it as well.
-        // (We don't have to if it's encrypted, since that process already armors it for us.
-        //  But this is for the case where it's signed and NOT encrypted.)
-        //
-        else if (m_bSign && !qstrText.isEmpty())
-        {
-            std::string  str_text(qstrText.toStdString());
-            opentxs::String     strText (str_text.c_str());
-            opentxs::String     strOutput;
-            opentxs::OTASCIIArmor ascText (strText);
-
-            if (ascText.WriteArmoredString(strOutput, "SIGNED FILE")) // -----BEGIN OT ARMORED SIGNED FILE-----
-            {
-                std::string str_output(strOutput.Get());
-                qstrText = QString::fromStdString(str_output);
-            }
-        }
-        // -----------------------------------------------
-        // if qstrText still contains something, pop up a dialog to display the result to the user.
-        //
-        if (!qstrText.isEmpty())
-        {
-            QString qstrType("Output:");
-
-            if (m_bSign)
-            {
-                qstrType = QString(tr("Signed Output:"));
-            }
-            // -----------
-            if (m_bEncrypt)
-            {
-                if (m_bSign)
-                    qstrType = QString(tr("Signed and Encrypted Output:"));
-                else
-                    qstrType = QString(tr("Encrypted Output:"));
-            }
-            // -----------
-            QString qstrSubTitle(tr("Be sure to copy it somewhere before closing this dialog."));
-            // -----------
-            // Pop up the result dialog.
-            //
-            DlgExportedToPass dlgExported(this, qstrText,
-                                          qstrType,
-                                          qstrSubTitle, false);
-            dlgExported.exec();
-        }
-    } // if (!qstrText.isEmpty())
-}
-
-
-
-void DlgEncrypt::on_pushButtonClipboard_clicked()
-{
-    // Get text from the clipboard, and add it to the plainTextEdit widget
-    //
-    QClipboard *clipboard = QApplication::clipboard();
-
-    if (NULL != clipboard)
-    {
-        QString qstrClipText = clipboard->text();
-
-        if (!qstrClipText.isEmpty())
-            ui->plainTextEdit->insertPlainText(qstrClipText);
-    }
-}
-
-
-
-
-void DlgEncrypt::on_pushButtonAdd_clicked()
-{
-    bool bNeedToSort = false;
-
-    // See if something is selected in listWidgetNotAdded
-    QList<QListWidgetItem *>  listItems =  ui->listWidgetNotAdded->selectedItems();
-
-    if (listItems.size() > 0)
-    {
-        // If something is selected, move it/them to listWidgetAdded
-        for (QList<QListWidgetItem *>::iterator it = listItems.begin(); it != listItems.end(); ++it)
-        {
-            // For each item on the list, remove it from listWidgetNotAdded
-            // and add it to listWidgetAdded.
-            //
-            QListWidgetItem * pItem = *it;
-
-            if (NULL != pItem)
-            {
-                bNeedToSort = true;
-                int row = ui->listWidgetNotAdded->row(pItem);
-
-                ui->listWidgetNotAdded->takeItem(row);
-                ui->listWidgetAdded   ->insertItem(ui->listWidgetAdded->count(), pItem);
-            }
-        }
-    }
-
-    if (bNeedToSort)
-    {
-        ui->listWidgetAdded   ->sortItems();
-        ui->listWidgetNotAdded->sortItems();
-    }
-
-    setEncryptBtnText();
-}
-
-
-void DlgEncrypt::on_listWidgetNotAdded_itemDoubleClicked(QListWidgetItem *item)
-{
-    int row = ui->listWidgetNotAdded->row(item);
-
-    if (row >= 0)
-    {
-        ui->listWidgetNotAdded->takeItem(row);
-        ui->listWidgetAdded   ->insertItem(ui->listWidgetAdded->count(), item);
-    }
-
-    setEncryptBtnText();
-}
-
-void DlgEncrypt::on_listWidgetAdded_itemDoubleClicked(QListWidgetItem *item)
-{
-    int row = ui->listWidgetAdded->row(item);
-
-    if (row >= 0)
-    {
-        ui->listWidgetAdded   ->takeItem(row);
-        ui->listWidgetNotAdded->insertItem(ui->listWidgetNotAdded->count(), item);
-    }
-
-    setEncryptBtnText();
-}
-
-void DlgEncrypt::on_pushButtonRemove_clicked()
-{
-    bool bNeedToSort = false;
-
-    // See if something is selected in listWidgetAdded (so we can remove it.)
-    QList<QListWidgetItem *>  listItems =  ui->listWidgetAdded->selectedItems();
-
-    if (listItems.size() > 0)
-    {
-        // If something is selected, move it/them to listWidgetAdded
-        for (QList<QListWidgetItem *>::iterator it = listItems.begin(); it != listItems.end(); ++it)
-        {
-            // For each item on the list, remove it from listWidgetAdded
-            // and add it to listWidgetNotAdded.
-            //
-            QListWidgetItem * pItem = *it;
-
-            if (NULL != pItem)
-            {
-                bNeedToSort = true;
-                int row = ui->listWidgetAdded->row(pItem);
-
-                ui->listWidgetAdded   ->takeItem(row);
-                ui->listWidgetNotAdded->insertItem(ui->listWidgetNotAdded->count(), pItem);
-            }
-        }
-    }
-
-    if (bNeedToSort)
-    {
-        ui->listWidgetAdded   ->sortItems();
-        ui->listWidgetNotAdded->sortItems();
-    }
-
-    setEncryptBtnText();
-}
-
-
-
-void DlgEncrypt::on_checkBoxEncrypt_toggled(bool checked)
-{
-    if (checked)
-    {
-        // Turn the stuff black
-        ui->labelRecipients   ->setEnabled(true);
-        ui->listWidgetAdded   ->setEnabled(true);
-        ui->listWidgetNotAdded->setEnabled(true);
-        ui->pushButtonAdd     ->setEnabled(true);
-        ui->pushButtonRemove  ->setEnabled(true);
-
-        m_bEncrypt = true;
-    }
-    else
-    {
-        // Turn the stuff grey
-        ui->labelRecipients   ->setEnabled(false);
-        ui->listWidgetAdded   ->setEnabled(false);
-        ui->listWidgetNotAdded->setEnabled(false);
-        ui->pushButtonAdd     ->setEnabled(false);
-        ui->pushButtonRemove  ->setEnabled(false);
-
-        m_bEncrypt = false;
-    }
-    // ---------------
-    setEncryptBtnText();
-}
-
-void DlgEncrypt::setEncryptBtnText()
-{
-    bool    bEnabled = false;
-    QString qstrButtonTitle("Sign / Encrypt");
-
-    if (m_bSign)
-    {
-        bEnabled = true;
-
-        qstrButtonTitle = "Sign";
-    }
-
-    if (m_bEncrypt)
-    {
-        bEnabled = (ui->listWidgetAdded->count() > 0); //=true;
-
-        ui->checkBoxAlso->setVisible(true);
-
-        if (m_bSign)
-        {
-            qstrButtonTitle = "Sign and Encrypt";
-            ui->checkBoxAlso->setEnabled(true);
-        }
-        else
-        {
-            qstrButtonTitle = "Encrypt";
-            ui->checkBoxAlso->setEnabled(false);
-        }
-    }
-    else
-        ui->checkBoxAlso->setVisible(false);
-
-    ui->pushButtonEncrypt->setText   (qstrButtonTitle);
-    ui->pushButtonEncrypt->setEnabled(bEnabled);
-}
-
-void DlgEncrypt::on_checkBoxSign_toggled(bool checked)
-{
-    if (checked)
-    {
-        // Turn the stuff black
-        ui->comboBoxNym->setEnabled(true);
-        ui->labelAs    ->setEnabled(true);
-
-        m_bSign = true;
-    }
-    else
-    {
-        // Turn the stuff grey
-        ui->comboBoxNym->setEnabled(false);
-        ui->labelAs    ->setEnabled(false);
-
-        m_bSign = false;
-    }
-
-    setEncryptBtnText();
-}
-
-
-
-
-bool DlgEncrypt::eventFilter(QObject *obj, QEvent *event)
+bool DlgPassphraseManager::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress)
     {
@@ -739,8 +476,4 @@ bool DlgEncrypt::eventFilter(QObject *obj, QEvent *event)
 }
 
 
-void DlgEncrypt::on_comboBoxNym_currentIndexChanged(int index)
-{
-    SetCurrentNymIDBasedOnIndex(index);
-}
 
