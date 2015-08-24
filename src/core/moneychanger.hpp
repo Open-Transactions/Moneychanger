@@ -419,6 +419,16 @@ public slots:
     void mc_bitcoin_transactions_slot();    // Bitcoin -> Transactions
     void mc_bitcoin_send_slot();            // Bitcoin -> Send
     void mc_bitcoin_receive_slot();            // Bitcoin -> Receive
+
+    // ---------------------------------------------------------------------------
+    // RPC callback functions
+    // ---------------------------------------------------------------------------
+
+    void mc_rpc_sendfunds_show_dialog(QString qstrAcct=QString(""), QString qstrRecipientNym=QString(""),
+                                      QString qstrAsset=QString(""), QString qstrAmount=QString(""));
+
+    void mc_rpc_requestfunds_show_dialog(QString qstrAcct=QString(""), QString qstrRecipientNym=QString(""),
+                                         QString qstrAsset=QString(""), QString qstrAmount=QString(""));
 };
 
 #endif // MONEYCHANGER_HPP
