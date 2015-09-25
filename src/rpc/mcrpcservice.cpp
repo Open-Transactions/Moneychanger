@@ -21,9 +21,9 @@
 
 
 MCRPCService::MCRPCService(QObject *parent)
-    : QJsonRpcService(parent)
+    : QJsonRpcService(parent)//, m_RecordList(nullptr)
 {
-    QThreadPool::globalInstance()->setMaxThreadCount(10);
+    QThreadPool::globalInstance()->setMaxThreadCount(1);
 }
 
 MCRPCService::~MCRPCService(){
@@ -3174,9 +3174,27 @@ QJsonValue MCRPCService::recordListPopulate()
 
 QJsonValue MCRPCService::recordListCount()
 {
+    QJsonObject reply_obj;
     if(m_RecordList == nullptr)
-        recordListPopulate();
+    {
+        qDebug() << QString("Record List Null");
+        QJsonValue reply_val = recordListPopulate();
+        reply_obj.insert("RecordListPopulated", reply_val);
+    }
 
+    if (m_RecordList == nullptr)
+    {
+        QJsonObject object{{"Error", "Recordlist is a null pointer."}};
+        return object;
+    }
+/*
+    if (QJsonValue("True") != reply_obj.value("RecordListPopulated"))
+    {
+        qDebug() << QString("Recordlist didn't populate properly: %1").arg(reply_obj.value("RecordListPopulated").toString());
+        QJsonObject object{{"Error", QString("Recordlist didn't populate properly: %1").arg(reply_obj.value("RecordListPopulated").toString())}};
+        return object;
+    }
+*/
     int count = m_RecordList->size();
 
     QJsonObject object{{"RecordListCount", count}};
@@ -3242,13 +3260,29 @@ QJsonValue MCRPCService::recordListRetrieve(int Index)
 
 QJsonValue MCRPCService::recordListRetrieve(int BeginIndex, int EndIndex)
 {
+   //enum OTRecordType { Mail = 0, Transfer, Receipt, Instrument,ErrorState };
 
-    //enum OTRecordType { Mail = 0, Transfer, Receipt, Instrument, ErrorState };
+   QJsonObject reply_obj;
+   if(m_RecordList == nullptr)
+   {
+       QJsonValue reply_val = recordListPopulate();
+       reply_obj.insert("RecordListPopulated", reply_val);
+   }
 
-    if(m_RecordList == nullptr)
-        recordListPopulate();
+   if (m_RecordList == nullptr)
+   {
+       QJsonObject object{{"Error", "Recordlist is a null pointer."}};
+       return object;
+   }
 
-    int count = m_RecordList->size();
+   if (QJsonValue("True") != reply_obj.value("RecordListPopulated"))
+   {
+       qDebug() << QString("Recordlist didn't populate properly: %1").arg(reply_obj.value("RecordListPopulated").toString());
+       QJsonObject object{{"Error", QString("Recordlist didn't populate properly: %1").arg(reply_obj.value("RecordListPopulated").toString())}};
+       return object;
+   }
+
+   int count = m_RecordList->size();
 
     // Swap if Begin > End
     if(BeginIndex > EndIndex){
@@ -3316,4 +3350,38 @@ void MCRPCService::createRecordList()
 {
     if(m_RecordList == nullptr)
         m_RecordList = new opentxs::OTRecordList(*(new MTNameLookupQT));
+    qDebug() << QString("Record List Created");
+}
+
+
+QJsonValue MCRPCService::userLogin(QString Username, QString PlaintextPassword)
+{
+
+
+
+}
+
+
+QJsonValue MCRPCService::userLogout(QString Username, QString PlaintextPassword,
+                      QString APIKey)
+{
+
+
+
+}
+
+
+
+QString MCRPCService::generateAPIKey(QString User){
+
+    opentxs::OTPassword::BlockSize passwordSize = opentxs::OTPassword::BlockSize(32);
+    opentxs::OTPassword password(passwordSize);
+
+
+    password.randomizePassword(32);
+
+    QString outputString(password.getPassword());
+
+    return outputString;
+
 }

@@ -3,9 +3,11 @@
 
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
+#include "rpcuser.h"
 
 #include <qjsonrpcservice.h>
 #include <opentxs/client/OTRecordList.hpp>
+#include <opentxs/core/crypto/OTPassword.hpp>
 
 
 class MCRPCService : public QJsonRpcService
@@ -560,6 +562,11 @@ public Q_SLOTS:
     QJsonValue mcListSmartContracts();
 
 
+    // API Key Methods
+    QJsonValue userLogin(QString Username, QString PlaintextPassword);
+    QJsonValue userLogout(QString Username, QString PlaintextPassword,
+                          QString APIKey);
+
     // RecordList Methods
     QJsonValue recordListPopulate();
     QJsonValue recordListCount();
@@ -568,8 +575,14 @@ public Q_SLOTS:
 
 private:
 
-    opentxs::OTRecordList * m_RecordList;
+    // RecordList Methods
+    opentxs::OTRecordList * m_RecordList=nullptr;
     void createRecordList();
+
+    // API Key Methods
+    QString generateAPIKey(QString User);
+
+
 
 };
 

@@ -148,6 +148,10 @@ bool DBHandler::dbCreateInstance()
                 " passphrase_notes TEXT"
                 ")";
         // --------------------------------------------
+        // RPC User Manager
+        QString create_rpcusers_table = "CREATE TABLE rpc_users(user_id TEXT PRIMARY KEY, password TEXT)";
+
+
         /* Keep track of Namecoin names registered for the purpose of
            Moneychanger.  They are always related to a Nym and credential
            hash, so those are kept here, too, so we can easily find
@@ -184,6 +188,8 @@ bool DBHandler::dbCreateInstance()
         error += query.exec(create_contact_method);
         error += query.exec(create_smart_contract);
         error += query.exec(create_managed_passphrase);
+        // ------------------------------------------
+        error += query.exec(create_rpcusers_table);
         // ------------------------------------------
         error += query.exec(create_nmc);
         // ------------------------------------------
