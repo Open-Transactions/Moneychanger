@@ -568,8 +568,9 @@ public Q_SLOTS:
 
     // API Key Methods
     QJsonValue userLogin(QString Username, QString PlaintextPassword);
-    QJsonValue userLogout(QString Username, QString PlaintextPassword,
-                          QString APIKey);
+    QJsonValue userLogout(QString Username, QString PlaintextPassword);
+    QJsonValue refreshAPIKey(QString Username, QString PlaintextPassword);
+
 
     // RecordList Methods
     QJsonValue recordListPopulate();
@@ -583,11 +584,9 @@ private:
     opentxs::OTRecordList * m_RecordList=nullptr;
     void createRecordList();
 
-    // API Key Methods
-    QString generateAPIKey(QString User);
-
     RPCUserManager m_userManager;
 
+    bool validateAPIKey(QString Username, QString APIKey);
 
 };
 

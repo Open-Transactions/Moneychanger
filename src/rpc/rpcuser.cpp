@@ -5,6 +5,8 @@ RPCUser::RPCUser(QString Username, QString Password)
 {
     m_username = Username;
     m_password = Password;
+    m_keyLength = 32;
+    setKeyTimeout(300); // 5 Minute Default
 }
 
 RPCUser::~RPCUser()
@@ -23,7 +25,7 @@ bool RPCUser::checkAPIKey(QString APIKey)
         else{
             if(APIKey == m_APIKey){
                 // 300,000 ms to 5 minutes
-                if(m_APIKeyTimestamp.elapsed() < 300000)
+                if(m_APIKeyTimestamp.elapsed() < m_keyTimeout)
                 {
                     resetTimeStamp();
                     return true;
@@ -53,6 +55,7 @@ void RPCUser::resetTimeStamp()
 
 QString RPCUser::generateAPIKey(int length)
 {
+    m_keyLength = length;
 
     opentxs::OTPassword::BlockSize passwordSize = opentxs::OTPassword::BlockSize(length);
     opentxs::OTPassword password(passwordSize);
@@ -67,5 +70,17 @@ QString RPCUser::generateAPIKey(int length)
     m_APIKey = outputString;
 
     return outputString;
+
+}
+
+void RPCUser::refreshAPIKey()
+{
+    m_APIKey = generateAPIKey(m_keyLength);
+}
+
+void RPCUser::setKeyTimeout(int seconds)
+{
+    // m_keyTimeout is time in milliseconds
+    m_keyTimeout = seconds * 1000;
 
 }

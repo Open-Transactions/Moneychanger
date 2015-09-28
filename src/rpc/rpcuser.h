@@ -20,9 +20,13 @@ public:
 
     QString generateAPIKey(int length=32);
     bool checkAPIKey(QString APIKey);
+    void refreshAPIKey();
+    QString getAPIKey(){return m_APIKey;}
+
     QString getUsername(){return m_username;}
     QString getPassword(){return m_password;}
-    void resetTimeStamp();
+
+    void setKeyTimeout(int seconds); // timeout in seconds
 
 
 private:
@@ -31,7 +35,11 @@ private:
     QString m_password;
 
     QTime m_APIKeyTimestamp;
+    int m_keyLength;
+    int m_keyTimeout;
     QString m_APIKey;
+
+    void resetTimeStamp();
 
 };
 

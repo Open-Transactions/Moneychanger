@@ -65,7 +65,6 @@ bool RPCUserManager::deactivateUserAccount(QString Username)
 
 bool RPCUserManager::validateAPIKey(QString Username, QString APIKey)
 {
-
     if(checkUserActivated(Username))
     {
         for(size_t x = 0; x < m_userList.size(); x++){
@@ -85,17 +84,49 @@ bool RPCUserManager::validateAPIKey(QString Username, QString APIKey)
 
 }
 
+QString RPCUserManager::getAPIKey(QString Username)
+{
+    if(!checkUserActivated(Username))
+        return "Error: User Not Activated";
+
+    else{
+        for(size_t x = 0; x < m_userList.size(); x++){
+            if(m_userList.at(x).getUsername() == Username){
+                return m_userList.at(x).getAPIKey();
+            }
+        }
+        return "Error: RPCUserManager::getAPIKey("+Username+") - User Not Found";
+    }
+}
+
+
+void RPCUserManager::setTimeoutForUser(QString Username, int seconds)
+{
+    for(size_t x = 0; x < m_userList.size(); x++){
+        if(m_userList.at(x).getUsername() == Username){
+            m_userList.at(x).setKeyTimeout(seconds);
+            return;
+        }
+    }
+}
+
+
+void RPCUserManager::setGlobalTimeout(int seconds)
+{
+    for(size_t x = 0; x < m_userList.size(); x++){
+        m_userList.at(x).setKeyTimeout(seconds);
+    }
+}
+
 
 bool RPCUserManager::validateUserInDatabase(QString Username, QString Password)
 {
-
     auto user_check = DBHandler::getInstance()->runQuery(QString("SELECT `user_id` FROM `rpc_users` WHERE `user_id`='%1' AND `password`='%2'").arg(Username).arg(Password));
 
     if(user_check)
         return true;
     else
         return false;
-
 }
 
 bool RPCUserManager::checkUserActivated(QString Username)
@@ -129,3 +160,4 @@ bool RPCUserManager::addUserToDatabase(QString Username, QString Password)
     else
         return false;
 }
+
