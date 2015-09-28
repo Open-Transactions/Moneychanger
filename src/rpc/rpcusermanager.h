@@ -19,12 +19,13 @@ public:
 
 private:
 
+    // Container for activated Users
     std::vector<RPCUser> m_userList;
 
     bool validateUserInDatabase(QString Username, QString Password);
     bool checkUserExistsInDatabase(QString Username);
     bool addUserToDatabase(QString Username, QString Password);
-
+    bool checkUserActivated(QString Username);
 
 
 };

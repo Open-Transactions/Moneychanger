@@ -1,7 +1,7 @@
 #include "rpcuser.h"
 #include <QDebug>
 
-RPCUser::RPCUser(std::string Username, std::string Password)
+RPCUser::RPCUser(QString Username, QString Password)
 {
     m_username = Username;
     m_password = Password;
@@ -13,7 +13,7 @@ RPCUser::~RPCUser()
 }
 
 
-bool RPCUser::checkAPIKey(std::string APIKey)
+bool RPCUser::checkAPIKey(QString APIKey)
 {
     if(APIKey != ""){
         if(m_APIKey == ""){
@@ -51,7 +51,7 @@ void RPCUser::resetTimeStamp()
 }
 
 
-std::string RPCUser::generateAPIKey(int length)
+QString RPCUser::generateAPIKey(int length)
 {
 
     opentxs::OTPassword::BlockSize passwordSize = opentxs::OTPassword::BlockSize(length);
@@ -60,7 +60,7 @@ std::string RPCUser::generateAPIKey(int length)
 
     password.randomizePassword(length);
 
-    std::string outputString(password.getPassword());
+    QString outputString(password.getPassword());
 
     m_APIKeyTimestamp.start();
 

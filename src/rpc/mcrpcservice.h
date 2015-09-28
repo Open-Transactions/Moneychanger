@@ -4,6 +4,7 @@
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
 #include "rpcuser.h"
+#include "rpcusermanager.h"
 
 #include <qjsonrpcservice.h>
 #include <opentxs/client/OTRecordList.hpp>
@@ -582,6 +583,7 @@ private:
     // API Key Methods
     QString generateAPIKey(QString User);
 
+    RPCUserManager m_userManager;
 
 
 };
