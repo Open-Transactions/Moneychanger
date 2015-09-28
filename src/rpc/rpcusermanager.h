@@ -32,6 +32,8 @@ private:
     bool checkUserExistsInDatabase(QString Username);
     bool addUserToDatabase(QString Username, QString Password);
 
+    bool isStringSanitized(QString input);
+
 
 };
 

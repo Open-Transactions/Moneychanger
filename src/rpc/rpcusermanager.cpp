@@ -121,6 +121,9 @@ void RPCUserManager::setGlobalTimeout(int seconds)
 
 bool RPCUserManager::validateUserInDatabase(QString Username, QString Password)
 {
+    if(!isStringSanitized(Username))
+        return false;
+
     auto user_check = DBHandler::getInstance()->runQuery(QString("SELECT `user_id` FROM `rpc_users` WHERE `user_id`='%1' AND `password`='%2'").arg(Username).arg(Password));
 
     if(user_check)
@@ -140,8 +143,24 @@ bool RPCUserManager::checkUserActivated(QString Username)
 }
 
 
+bool RPCUserManager::isStringSanitized(QString input)
+{
+    std::string s(input.toStdString());
+    std::string illegalChars = "\\/:?\"<>|";
+    for (auto it = s.begin(); it < s.end() ; ++it){
+        bool found = illegalChars.find(*it) != std::string::npos;
+        if(found){
+            return false;
+        }
+    }
+    return true;
+}
+
 bool RPCUserManager::checkUserExistsInDatabase(QString Username)
 {
+    if(!isStringSanitized(Username))
+        return false;
+
     auto user_check = DBHandler::getInstance()->queryString(QString("SELECT `user_id` FROM `rpc_users` WHERE `user_id`='%1'").arg(Username), 0, 0);
 
     if(user_check.isEmpty())
@@ -153,6 +172,9 @@ bool RPCUserManager::checkUserExistsInDatabase(QString Username)
 
 bool RPCUserManager::addUserToDatabase(QString Username, QString Password)
 {
+    if(!isStringSanitized(Username))
+        return false;
+
     auto added_user = DBHandler::getInstance()->runQuery(QString("INSERT INTO `rpc_users` (`user_id`,`rpc_users`) VALUES('%1','%2')").arg(Username).arg(Password));
 
     if(added_user)
