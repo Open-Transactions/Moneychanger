@@ -15,17 +15,22 @@ public:
     bool activateUserAccount(QString Username, QString Password);
     bool deactivateUserAccount(QString Username);
 
+    bool checkUserActivated(QString Username);
+
+    void setTimeoutForUser(QString Username, int seconds);
+    void setGlobalTimeout(int seconds);
+
+    QString getAPIKey(QString Username);
     bool validateAPIKey(QString Username, QString APIKey);
+    bool validateUserInDatabase(QString Username, QString Password);
 
 private:
 
     // Container for activated Users
     std::vector<RPCUser> m_userList;
 
-    bool validateUserInDatabase(QString Username, QString Password);
     bool checkUserExistsInDatabase(QString Username);
     bool addUserToDatabase(QString Username, QString Password);
-    bool checkUserActivated(QString Username);
 
 
 };
