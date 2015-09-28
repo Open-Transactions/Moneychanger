@@ -15,23 +15,23 @@ class RPCUser
 
 public:
 
-    RPCUser(std::string Username, std::string Password);
+    RPCUser(QString Username, QString Password);
     ~RPCUser();
 
-    std::string generateAPIKey(int length=32);
-    bool checkAPIKey(std::string APIKey);
-    std::string getUsername(){return m_username;}
-    std::string getPassword(){return m_password;}
+    QString generateAPIKey(int length=32);
+    bool checkAPIKey(QString APIKey);
+    QString getUsername(){return m_username;}
+    QString getPassword(){return m_password;}
     void resetTimeStamp();
 
 
 private:
 
-    std::string m_username;
-    std::string m_password;
+    QString m_username;
+    QString m_password;
 
     QTime m_APIKeyTimestamp;
-    std::string m_APIKey;
+    QString m_APIKey;
 
 };
 

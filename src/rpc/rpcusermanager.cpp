@@ -15,26 +15,73 @@ RPCUserManager::~RPCUserManager()
 bool RPCUserManager::activateUserAccount(QString Username, QString Password)
 {
 
-    return false;
+    if(checkUserExistsInDatabase(Username)){
+        if(validateUserInDatabase(Username, Password)){
+            if(!checkUserActivated(Username))
+                m_userList.push_back(RPCUser(Username, Password));
+            return true;
+        }
+        else{
+            qDebug() << "RPC Username / Password combination incorrect";
+            return false;
+        }
+    }
+    else{
+        /*
+        if(addUserToDatabase(Username, Password)){
+            if(!checkUserActivated(Username))
+                m_userList.push_back(RPCUser(Username, Password));
+            return true;
+        }
+        else{
+            qDebug() << "Error adding User to Database";
+            return false;
+        }
+        */
+        qDebug() << "Error: activateUserAccount() called for User that does not exist in Database: " + Username;
+        return false;
+    }
 }
 
 
 bool RPCUserManager::deactivateUserAccount(QString Username)
 {
-
-    return false;
+    if(checkUserActivated(Username)){
+        for(size_t x = 0; x < m_userList.size(); x++){
+            if(m_userList.at(x).getUsername() == Username){
+                m_userList.erase(m_userList.begin() + x);
+                return true;
+            }
+        }
+        qDebug() << "Error: Could not find User - " + Username + " in Userlist";
+        return false;
+    }
+    else{
+        qDebug() << "Error: deactivateUserAccount() called for inactive user";
+        return false;
+    }
 }
 
 
 bool RPCUserManager::validateAPIKey(QString Username, QString APIKey)
 {
 
-    if(checkUserExistsInDatabase(Username))
+    if(checkUserActivated(Username))
     {
+        for(size_t x = 0; x < m_userList.size(); x++){
+            if(m_userList.at(x).getUsername() == Username){
+                if(m_userList.at(x).checkAPIKey(APIKey))
+                    return true;
+                else
+                    return false;
+            }
+        }
         return true;
     }
-    else
+    else{
+        qDebug() << "Error: validateAPIKey() called on inactive User: " + Username;
         return false;
+    }
 
 }
 
@@ -49,6 +96,16 @@ bool RPCUserManager::validateUserInDatabase(QString Username, QString Password)
     else
         return false;
 
+}
+
+bool RPCUserManager::checkUserActivated(QString Username)
+{
+    for(size_t x = 0; x < m_userList.size(); x++){
+        if(m_userList.at(x).getUsername() == Username){
+            return true;
+        }
+    }
+    return false;
 }
 
 
