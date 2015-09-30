@@ -71,8 +71,11 @@ bool RPCUserManager::validateAPIKey(QString Username, QString APIKey)
             if(m_userList.at(x).getUsername() == Username){
                 if(m_userList.at(x).checkAPIKey(APIKey))
                     return true;
-                else
+                else{
+                    if(!m_userList.at(x).isKeyActive())
+                        deactivateUserAccount(Username);
                     return false;
+                }
             }
         }
         return true;
@@ -173,6 +176,10 @@ bool RPCUserManager::checkUserExistsInDatabase(QString Username)
 bool RPCUserManager::addUserToDatabase(QString Username, QString Password)
 {
     if(!isStringSanitized(Username))
+        return false;
+
+    // No duplicate users
+    if(checkUserExistsInDatabase(Username))
         return false;
 
     auto added_user = DBHandler::getInstance()->runQuery(QString("INSERT INTO `rpc_users` (`user_id`,`rpc_users`) VALUES('%1','%2')").arg(Username).arg(Password));

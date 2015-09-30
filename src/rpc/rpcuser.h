@@ -27,6 +27,7 @@ public:
     QString getPassword(){return m_password;}
 
     void setKeyTimeout(int seconds); // timeout in seconds
+    bool isKeyActive(){return m_keyActive;}
 
 
 private:
@@ -39,6 +40,7 @@ private:
     int m_keyTimeout;
     QString m_APIKey;
 
+    bool m_keyActive;
     void resetTimeStamp();
 
 };

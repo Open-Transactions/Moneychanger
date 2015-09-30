@@ -27,54 +27,94 @@ public:
 public Q_SLOTS:
 
     // opentxs::OTAPI methods
-    QJsonValue numListAdd(QString NumList, QString Numbers);
-    QJsonValue numListRemove(QString NumList, QString Numbers);
-    QJsonValue numListVerifyQuery(QString NumList, QString Numbers);
-    QJsonValue numListVerifyAll(QString NumList, QString Numbers);
-    QJsonValue numListCount(QString NumList);
-    QJsonValue createNymLegacy(int KeySize, QString NymIDSource,
+    QJsonValue numListAdd(QString Username, QString APIKey,
+                          QString NumList, QString Numbers);
+    QJsonValue numListRemove(QString Username, QString APIKey,
+                             QString NumList, QString Numbers);
+    QJsonValue numListVerifyQuery(QString Username, QString APIKey,
+                                  QString NumList, QString Numbers);
+    QJsonValue numListVerifyAll(QString Username, QString APIKey,
+                                QString NumList, QString Numbers);
+    QJsonValue numListCount(QString Username, QString APIKey,
+                            QString NumList);
+    QJsonValue createNymLegacy(QString Username, QString APIKey,
+                         int KeySize, QString NymIDSource,
                          QString AltLocation);
-    QJsonValue getNymActiveCronItemIDs(QString NymID, QString NotaryID);
-    QJsonValue getActiveCronItem(QString NotaryID, qint64 TransNum);
-    QJsonValue getNymSourceForID(QString NymID);
-    QJsonValue getNymAltSourceLocation(QString NymID);
-    QJsonValue getNymMasterCredentialCount(QString NymID);
-    QJsonValue getNymMasterCredentialID(QString NymID, int Index);
-    QJsonValue getNymMasterCredentialContents(QString NymID, QString CredentialID);
-    QJsonValue getNymRevokedCount(QString NymID);
-    QJsonValue getNymRevokedCredID(QString NymID, int Index);
-    QJsonValue getNymRevokedCredContents(QString NymID, QString CredentialID);
-    QJsonValue getNymChildCredentialCount(QString NymID, QString MasterCredID);
-    QJsonValue getNymChildCredentialID(QString NymID, QString MasterCredID,
+    QJsonValue getNymActiveCronItemIDs(QString Username, QString APIKey,
+                                       QString NymID, QString NotaryID);
+    QJsonValue getActiveCronItem(QString Username, QString APIKey,
+                                 QString NotaryID, qint64 TransNum);
+    QJsonValue getNymSourceForID(QString Username, QString APIKey,
+                                 QString NymID);
+    QJsonValue getNymAltSourceLocation(QString Username, QString APIKey,
+                                       QString NymID);
+    QJsonValue getNymMasterCredentialCount(QString Username, QString APIKey,
+                                     QString NymID);
+    QJsonValue getNymMasterCredentialID(QString Username, QString APIKey,
+                                  QString NymID, int Index);
+    QJsonValue getNymMasterCredentialContents(QString Username, QString APIKey,
+                                        QString NymID, QString CredentialID);
+    QJsonValue getNymRevokedCount(QString Username, QString APIKey,
+                                  QString NymID);
+    QJsonValue getNymRevokedCredID(QString Username, QString APIKey,
+                                   QString NymID, int Index);
+    QJsonValue getNymRevokedCredContents(QString Username, QString APIKey,
+                                         QString NymID, QString CredentialID);
+    QJsonValue getNymChildCredentialCount(QString Username, QString APIKey,
+                                        QString NymID, QString MasterCredID);
+    QJsonValue getNymChildCredentialID(QString Username, QString APIKey,
+                                     QString NymID, QString MasterCredID,
                                      int Index);
-    QJsonValue getNymChildCredentialContents(QString NymID, QString MasterCredID,
+    QJsonValue getNymChildCredentialContents(QString Username, QString APIKey,
+                                           QString NymID, QString MasterCredID,
                                            QString SubCredID);
-    QJsonValue addChildCredentialLegacy(QString NymID, QString MasterCredID,
+    QJsonValue addChildCredential(QString Username, QString APIKey,
+                                QString NymID, QString MasterCredID,
                                 int KeySize);
-    QJsonValue revokeChildCredential(QString NymID, QString MasterCredID,
+    QJsonValue revokeChildcredential(QString Username, QString APIKey,
+                                   QString NymID, QString MasterCredID,
                                    QString SubCredID);
-    QJsonValue getSignerNymID(QString Contract);
-    QJsonValue calculateAssetContractID(QString Contract);
-    QJsonValue calculateServerContractID(QString Contract);
-    QJsonValue calculateContractID(QString Contract);
-    QJsonValue createServerContract(QString NymID, QString XMLContents);
-    QJsonValue createAssetContract(QString NymID, QString XMLContents);
-    QJsonValue getServerContract(QString NotaryID);
-    QJsonValue getCurrencyFactor(QString InstrumentDefinitionID);
-    QJsonValue getCurrencyDecimalPower(QString InstrumentDefinitionID);
-    QJsonValue getCurrencyTLA(QString InstrumentDefinitionID);
-    QJsonValue getCurrencySymbol(QString InstrumentDefinitionID);
-    QJsonValue stringToAmountLocale(QString InstrumentDefinitionID, QString Input,
+    QJsonValue getSignerNymID(QString Username, QString APIKey,
+                              QString Contract);
+    QJsonValue calculateAssetContractID(QString Username, QString APIKey,
+                                        QString Contract);
+    QJsonValue calculateServerContractID(QString Username, QString APIKey,
+                                         QString Contract);
+    QJsonValue calculateContractID(QString Username, QString APIKey,
+                                   QString Contract);
+    QJsonValue createServerContract(QString Username, QString APIKey,
+                                    QString NymID, QString XMLContents);
+    QJsonValue createAssetContract(QString Username, QString APIKey,
+                                   QString NymID, QString XMLContents);
+    QJsonValue getServerContract(QString Username, QString APIKey,
+                                 QString NotaryID);
+    QJsonValue getCurrencyFactor(QString Username, QString APIKey,
+                                 QString InstrumentDefinitionID);
+    QJsonValue getCurrencyDecimalPower(QString Username, QString APIKey,
+                                       QString InstrumentDefinitionID);
+    QJsonValue getCurrencyTLA(QString Username, QString APIKey,
+                              QString InstrumentDefinitionID);
+    QJsonValue getCurrencySymbol(QString Username, QString APIKey,
+                                 QString InstrumentDefinitionID);
+    QJsonValue stringToAmountLocale(QString Username, QString APIKey,
+                                    QString InstrumentDefinitionID, QString Input,
                                     QString ThousandsSep, QString DecimalPoint);
-    QJsonValue formatAmountLocale(QString InstrumentDefinitionID, qint64 Amount,
+    QJsonValue formatAmountLocale(QString Username, QString APIKey,
+                                  QString InstrumentDefinitionID, qint64 Amount,
                                   QString ThousandsSep, QString DecimalPoint);
-    QJsonValue formatAmountWithoutSymbolLocale(QString InstrumentDefinitionID, qint64 Amount,
+    QJsonValue formatAmountWithoutSymbolLocale(QString Username, QString APIKey,
+                                               QString InstrumentDefinitionID, qint64 Amount,
                                                QString ThousandsSep, QString DecimalPoint);
-    QJsonValue stringToAmount(QString InstrumentDefinitionID, QString Input);
-    QJsonValue formatAmount(QString InstrumentDefinitionID, qint64 Amount);
-    QJsonValue formatAmountWithoutSymbol(QString InstrumentDefinitionID, qint64 Amount);
-    QJsonValue getAssetTypeContract(QString InstrumentDefinitionID);
-    QJsonValue addServerContract(QString Contract);
+    QJsonValue stringToAmount(QString Username, QString APIKey,
+                              QString InstrumentDefinitionID, QString Input);
+    QJsonValue formatAmount(QString Username, QString APIKey,
+                            QString InstrumentDefinitionID, qint64 Amount);
+    QJsonValue formatAmountWithoutSymbol(QString Username, QString APIKey,
+                                         QString InstrumentDefinitionID, qint64 Amount);
+    QJsonValue getAssetTypeContract(QString Username, QString APIKey,
+                                    QString InstrumentDefinitionID);
+    QJsonValue addServerContract(QString Username, QString APIKey,
+                                 QString Contract);
     QJsonValue addAssetContract(QString Contract);
     QJsonValue getNymCount();
     QJsonValue getServerCount();
