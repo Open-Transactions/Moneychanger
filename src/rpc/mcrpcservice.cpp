@@ -3826,10 +3826,16 @@ QJsonValue MCRPCService::refreshAPIKey(QString Username, QString PlaintextPasswo
         return object;
     }
     else{
-        QString l_apiKey = m_userManager.getAPIKey(Username);
-        QJsonObject object {{"Username", Username},
-                            {"APIKey", l_apiKey}};
-        return object;
+        if(m_userManager.validateUserInDatabase(Username, PlaintextPassword)){
+            QString l_apiKey = m_userManager.getAPIKey(Username);
+            QJsonObject object {{"Username", Username},
+                                {"APIKey", l_apiKey}};
+            return object;
+        }
+        else{
+            QJsonObject object{{"Error", "User Credentials Invalid"}};
+            return object;
+        }
     }
 }
 
