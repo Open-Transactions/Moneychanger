@@ -7,6 +7,7 @@ RPCUser::RPCUser(QString Username, QString Password)
     m_password = Password;
     m_keyLength = 32;
     setKeyTimeout(300); // 5 Minute Default
+    m_keyActive = false;
 }
 
 RPCUser::~RPCUser()
@@ -30,8 +31,10 @@ bool RPCUser::checkAPIKey(QString APIKey)
                     resetTimeStamp();
                     return true;
                 }
-                else
+                else{
+                    m_keyActive = false;
                     return false;
+                }
             }
             else
                 return false;
@@ -68,6 +71,8 @@ QString RPCUser::generateAPIKey(int length)
     m_APIKeyTimestamp.start();
 
     m_APIKey = outputString;
+
+    m_keyActive = true;
 
     return outputString;
 
