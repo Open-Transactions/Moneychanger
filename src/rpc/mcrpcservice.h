@@ -115,41 +115,67 @@ public Q_SLOTS:
                                     QString InstrumentDefinitionID);
     QJsonValue addServerContract(QString Username, QString APIKey,
                                  QString Contract);
-    QJsonValue addAssetContract(QString Contract);
-    QJsonValue getNymCount();
-    QJsonValue getServerCount();
-    QJsonValue getAssetTypeCount();
-    QJsonValue getAccountCount();
-    QJsonValue walletCanRemoveServer(QString NotaryID);
-    QJsonValue walletRemoveServer(QString NotaryID);
-    QJsonValue walletCanRemoveAssetType(QString InstrumentDefinitionID);
-    QJsonValue walletRemoveAssetType(QString InstrumentDefinitionID);
-    QJsonValue walletCanRemoveNym(QString NymID);
-    QJsonValue walletRemoveNym(QString NymID);
-    QJsonValue walletCanRemoveAccount(QString AccountID);
-    QJsonValue doesBoxReceiptExist(QString NotaryID, QString NymID,
+    QJsonValue addAssetContract(QString Username, QString APIKey,
+                                QString Contract);
+    QJsonValue getNymCount(QString Username, QString APIKey);
+    QJsonValue getServerCount(QString Username, QString APIKey);
+    QJsonValue getAssetTypeCount(QString Username, QString APIKey);
+    QJsonValue getAccountCount(QString Username, QString APIKey);
+    QJsonValue walletCanRemoveServer(QString Username, QString APIKey,
+                                     QString NotaryID);
+    QJsonValue walletRemoveServer(QString Username, QString APIKey,
+                                  QString NotaryID);
+    QJsonValue walletCanRemoveAssetType(QString Username, QString APIKey,
+                                        QString InstrumentDefinitionID);
+    QJsonValue walletRemoveAssetType(QString Username, QString APIKey,
+                                     QString InstrumentDefinitionID);
+    QJsonValue walletCanRemoveNym(QString Username, QString APIKey,
+                                  QString NymID);
+    QJsonValue walletRemoveNym(QString Username, QString APIKey,
+                               QString NymID);
+    QJsonValue walletCanRemoveAccount(QString Username, QString APIKey,
+                                      QString AccountID);
+    QJsonValue doesBoxReceiptExist(QString Username, QString APIKey,
+                                   QString NotaryID, QString NymID,
                                    QString AccountID, int BoxType,
                                    qint64 TransactionNumber);
-    QJsonValue getBoxReceipt(QString NotaryID, QString NymID,
-                                   QString AccountID, int BoxType,
-                                   qint64 TransactionNumber);
-    QJsonValue deleteAssetAccount(QString NotaryID, QString NymID, QString AccountID);
-    QJsonValue walletExportNym(QString NymID);
-    QJsonValue walletExportCert(QString NymID);
-    QJsonValue walletImportNym(QString FileContents);
-    QJsonValue walletImportCert(QString DisplayName, QString FileContents);
+    QJsonValue getBoxReceipt(QString Username, QString APIKey,
+                             QString NotaryID, QString NymID,
+                             QString AccountID, int BoxType,
+                             qint64 TransactionNumber);
+    QJsonValue deleteAssetAccount(QString Username, QString APIKey,
+                                  QString NotaryID, QString NymID, QString AccountID);
+    QJsonValue walletExportNym(QString Username, QString APIKey,
+                               QString NymID);
+    QJsonValue walletExportCert(QString Username, QString APIKey,
+                                QString NymID);
+    QJsonValue walletImportNym(QString Username, QString APIKey,
+                               QString FileContents);
+    QJsonValue walletImportCert(QString Username, QString APIKey,
+                                QString DisplayName, QString FileContents);
 // QJsonValue walletChangePassphrase(void);
-    QJsonValue walletGetNymIdFromPartial(QString PartialID);
-    QJsonValue walletGetNotaryIdFromPartial(QString PartialID);
-    QJsonValue walletGetInstrumentDefinitionIdFromPartial(QString PartialID);
-    QJsonValue walletGetAccountIdFromPartial(QString PartialID);
-    QJsonValue getNymID(int Index);
-    QJsonValue getNymName(QString NymID);
-    QJsonValue isNymRegisteredAtServer(QString NymID, QString NotaryID);
-    QJsonValue getNymStats(QString NymID);
-    QJsonValue getNymNymboxHash(QString NotaryID, QString NymID);
-    QJsonValue getNymRecentHash(QString NotaryID, QString NymID);
-    QJsonValue getNymInboxHash(QString NotaryID, QString NymID);
+    QJsonValue walletGetNymIdFromPartial(QString Username, QString APIKey,
+                                         QString PartialID);
+    QJsonValue walletGetNotaryIdFromPartial(QString Username, QString APIKey,
+                                            QString PartialID);
+    QJsonValue walletGetInstrumentDefinitionIdFromPartial(QString Username, QString APIKey,
+                                                          QString PartialID);
+    QJsonValue walletGetAccountIdFromPartial(QString Username, QString APIKey,
+                                             QString PartialID);
+    QJsonValue getNymID(QString Username, QString APIKey,
+                        int Index);
+    QJsonValue getNymName(QString Username, QString APIKey,
+                          QString NymID);
+    QJsonValue isNymRegisteredAtServer(QString Username, QString APIKey,
+                                       QString NymID, QString NotaryID);
+    QJsonValue getNymStats(QString Username, QString APIKey,
+                           QString NymID);
+    QJsonValue getNymNymboxHash(QString Username, QString APIKey,
+                                QString NotaryID, QString NymID);
+    QJsonValue getNymRecentHash(QString Username, QString APIKey,
+                                QString NotaryID, QString NymID);
+    QJsonValue getNymInboxHash(QString Username, QString APIKey,
+                               QString NotaryID, QString NymID);
     QJsonValue getNymOutboxHash(QString NotaryID, QString NymID);
     QJsonValue getNymMailCount(QString NymID);
     QJsonValue getNymContentsByIndex(QString NymID, int Index);
