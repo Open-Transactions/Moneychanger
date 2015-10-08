@@ -1333,7 +1333,7 @@ void Moneychanger::onNeedToDownloadAccountData()
 
             std::string strSource(""), strAlt("");
 
-            std::string newNymId = madeEasy.create_nym(1024, strSource, strAlt);
+            std::string newNymId = madeEasy.create_nym_legacy(1024, strSource, strAlt);
 
             if (!newNymId.empty())
             {

@@ -74,10 +74,10 @@ QJsonValue MCRPCService::numListCount(QString NumList)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::createNym(int KeySize, QString NymIDSource,
+QJsonValue MCRPCService::createNymLegacy(int KeySize, QString NymIDSource,
                                    QString AltLocation)
 {
-    std::string result = opentxs::OTAPI_Wrap::It()->CreateNym(KeySize,
+    std::string result = opentxs::OTAPI_Wrap::It()->CreateNymLegacy(KeySize,
                                                               NymIDSource.toStdString(),
                                                               AltLocation.toStdString());
     QJsonObject object{{"CreateNymResult", QString(result.c_str())}};
@@ -190,10 +190,10 @@ QJsonValue MCRPCService::getNymSubCredentialContents(QString NymID, QString Mast
 }
 
 
-QJsonValue MCRPCService::addSubCredential(QString NymID, QString MasterCredID,
+QJsonValue MCRPCService::addSubCredentialLegacy(QString NymID, QString MasterCredID,
                                           int KeySize)
 {
-    std::string result = opentxs::OTAPI_Wrap::It()->AddSubcredential(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::It()->AddSubcredentialLegacy(NymID.toStdString(),
                                                                      MasterCredID.toStdString(),
                                                                      KeySize);
     QJsonObject object{{"AddSubCredentialResult", QString(result.c_str())}};
@@ -487,25 +487,10 @@ QJsonValue MCRPCService::walletExportNym(QString NymID)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::walletExportCert(QString NymID)
-{
-    std::string result = opentxs::OTAPI_Wrap::It()->Wallet_ExportCert(NymID.toStdString());
-    QJsonObject object{{"ExportedCert", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
 QJsonValue MCRPCService::walletImportNym(QString FileContents)
 {
     std::string result = opentxs::OTAPI_Wrap::It()->Wallet_ImportNym(FileContents.toStdString());
     QJsonObject object{{"WalletImportNymResult", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::walletImportCert(QString DisplayName, QString FileContents)
-{
-    std::string result = opentxs::OTAPI_Wrap::It()->Wallet_ImportCert(DisplayName.toStdString(),
-                                                                      FileContents.toStdString());
-    QJsonObject object{{"WalletImportCertResult", QString(result.c_str())}};
     return QJsonValue(object);
 }
 
@@ -2574,26 +2559,23 @@ QJsonValue MCRPCService::checkNym(QString NotaryID, QString NymID,
 }
 
 QJsonValue MCRPCService::sendNymMessage(QString NotaryID, QString NymID,
-                                        QString NymIDRecipient, QString RecipientPubkey,
-                                        QString Message)
+                                        QString NymIDRecipient, QString Message)
 {
     int result = opentxs::OTAPI_Wrap::It()->sendNymMessage(NotaryID.toStdString(),
                                                            NymID.toStdString(),
                                                            NymIDRecipient.toStdString(),
-                                                           RecipientPubkey.toStdString(),
                                                            Message.toStdString());
     QJsonObject object{{"SendNymMessageResult", result}};
     return QJsonValue(object);
 }
 
 QJsonValue MCRPCService::sendNymInstrument(QString NotaryID, QString NymID,
-                                           QString NymIDRecipient, QString RecipientPubkey,
+                                           QString NymIDRecipient, 
                                            QString Instrument, QString InstrumentForSender)
 {
     int result = opentxs::OTAPI_Wrap::It()->sendNymInstrument(NotaryID.toStdString(),
                                                               NymID.toStdString(),
                                                               NymIDRecipient.toStdString(),
-                                                              RecipientPubkey.toStdString(),
                                                               Instrument.toStdString(),
                                                               InstrumentForSender.toStdString());
     QJsonObject object{{"SendNymInstrumentResult", result}};
