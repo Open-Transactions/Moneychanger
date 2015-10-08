@@ -27,27 +27,11 @@ DEFINES    += "OT_ZMQ_MODE=1"
 include(../common.pri)
 
 #-------------------------------------------------
-# Pre-Build Scripts
-
-unix:{
-
-prebuild.target = prebuildscripts
-    prebuild.commands = echo "Setting up Submodules and Installing Dependencies..."; \
-                            cd ../../deps; \
-                            ./buildnixdeps.sh
-    prebuild.depends =
-    QMAKE_EXTRA_TARGETS += prebuild
-    PRE_TARGETDEPS = prebuildscripts
-
-}
-
-
-#-------------------------------------------------
 # Source
 
 #PRECOMPILED_HEADER = $${SOLUTION_DIR}../src/core/stable.hpp
 
-include($${SOLUTION_DIR}../deps/qjsonrpc/qjsonrpc.pri)
+include($${SOLUTION_DIR}../project/qjsonrpc/qjsonrpc.pri)
 include($${SOLUTION_DIR}../src/core/core.pri)
 include($${SOLUTION_DIR}../src/gui/gui.pri)
 include($${SOLUTION_DIR}../src/rpc/rpc.pri)
@@ -104,7 +88,8 @@ unix: {
     LIBS += -L$${OUT_PWD}/../jsoncpp
     LIBS += -ljsoncpp
 
-    LIBS += -L$${SOLUTION_DIR}../deps/qjsonrpc/src
+    INCLUDEPATH += $${PWD}/../qjsonrpc/src
+    LIBS += -L$${OUT_PWD}/../qjsonrpc/src
     LIBS += -lqjsonrpc
 
     LIBS += -L$${OUT_PWD}/../nmcrpc

@@ -12,4 +12,7 @@ SUBDIRS += jsoncpp
 SUBDIRS += bitcoin-api
 SUBDIRS += nmcrpc
 SUBDIRS += quazip
+
+unix: SUBDIRS += qjsonrpc
+
 SUBDIRS += moneychanger-qt
