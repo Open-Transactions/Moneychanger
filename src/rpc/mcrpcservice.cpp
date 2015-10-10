@@ -114,25 +114,25 @@ QJsonValue MCRPCService::getNymAltSourceLocation(QString NymID)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymCredentialCount(QString NymID)
+QJsonValue MCRPCService::getNymMasterCredentialCount(QString NymID)
 {
-    int result = opentxs::OTAPI_Wrap::It()->GetNym_CredentialCount(NymID.toStdString());
+    int result = opentxs::OTAPI_Wrap::It()->GetNym_MasterCredentialCount(NymID.toStdString());
     QJsonObject object{{"NymCredentialCount", result}};
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymCredentialID(QString NymID, int Index)
+QJsonValue MCRPCService::getNymMasterCredentialID(QString NymID, int Index)
 {
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_CredentialID(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_MasterCredentialID(NymID.toStdString(),
                                                                         Index);
     QJsonObject object{{"NymCredentialID", QString(result.c_str())}};
     return QJsonValue(object);
 }
 
 
-QJsonValue MCRPCService::getNymCredentialContents(QString NymID, QString CredentialID)
+QJsonValue MCRPCService::getNymMasterCredentialContents(QString NymID, QString CredentialID)
 {
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_CredentialContents(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_MasterCredentialContents(NymID.toStdString(),
                                                                               CredentialID.toStdString());
     QJsonObject object{{"NymCredentialContents", QString(result.c_str())}};
     return QJsonValue(object);
@@ -161,52 +161,52 @@ QJsonValue MCRPCService::getNymRevokedCredContents(QString NymID, QString Creden
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymSubCredentialCount(QString NymID, QString MasterCredID)
+QJsonValue MCRPCService::getNymChildCredentialCount(QString NymID, QString MasterCredID)
 {
-    int result = opentxs::OTAPI_Wrap::It()->GetNym_SubcredentialCount(NymID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::It()->GetNym_ChildCredentialCount(NymID.toStdString(),
                                                                           MasterCredID.toStdString());
-    QJsonObject object{{"NymSubCredentialCount", result}};
+    QJsonObject object{{"NymChildCredentialCount", result}};
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymSubCredentialID(QString NymID, QString MasterCredID,
+QJsonValue MCRPCService::getNymChildCredentialID(QString NymID, QString MasterCredID,
                                                int Index)
 {
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_SubCredentialID(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_ChildCredentialID(NymID.toStdString(),
                                                                            MasterCredID.toStdString(),
                                                               Index);
-    QJsonObject object{{"NymSubCredentialID", QString(result.c_str())}};
+    QJsonObject object{{"NymChildCredentialID", QString(result.c_str())}};
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymSubCredentialContents(QString NymID, QString MasterCredID,
+QJsonValue MCRPCService::getNymChildCredentialContents(QString NymID, QString MasterCredID,
                                                      QString SubCredID)
 {
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_SubCredentialContents(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_ChildCredentialContents(NymID.toStdString(),
                                                                                  MasterCredID.toStdString(),
                                                                                  SubCredID.toStdString());
-    QJsonObject object{{"NymSubCredentialContents", QString(result.c_str())}};
+    QJsonObject object{{"NymChildCredentialContents", QString(result.c_str())}};
     return QJsonValue(object);
 }
 
 
-QJsonValue MCRPCService::addSubCredentialLegacy(QString NymID, QString MasterCredID,
+QJsonValue MCRPCService::addChildCredentialLegacy(QString NymID, QString MasterCredID,
                                           int KeySize)
 {
-    std::string result = opentxs::OTAPI_Wrap::It()->AddSubcredentialLegacy(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::It()->AddChildCredentialLegacy(NymID.toStdString(),
                                                                      MasterCredID.toStdString(),
                                                                      KeySize);
-    QJsonObject object{{"AddSubCredentialResult", QString(result.c_str())}};
+    QJsonObject object{{"AddChildCredentialResult", QString(result.c_str())}};
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::revokeSubcredential(QString NymID, QString MasterCredID,
+QJsonValue MCRPCService::revokeChildCredential(QString NymID, QString MasterCredID,
                                              QString SubCredID)
 {
-    bool result = opentxs::OTAPI_Wrap::It()->RevokeSubcredential(NymID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::It()->RevokeChildCredential(NymID.toStdString(),
                                                                  MasterCredID.toStdString(),
                                                                  SubCredID.toStdString());
-    QJsonObject object{{"RevokeSubcredentialResult", result}};
+    QJsonObject object{{"RevokeChildCredentialResult", result}};
     return QJsonValue(object);
 }
 

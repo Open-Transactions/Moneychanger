@@ -35,20 +35,20 @@ public Q_SLOTS:
     QJsonValue getActiveCronItem(QString NotaryID, qint64 TransNum);
     QJsonValue getNymSourceForID(QString NymID);
     QJsonValue getNymAltSourceLocation(QString NymID);
-    QJsonValue getNymCredentialCount(QString NymID);
-    QJsonValue getNymCredentialID(QString NymID, int Index);
-    QJsonValue getNymCredentialContents(QString NymID, QString CredentialID);
+    QJsonValue getNymMasterCredentialCount(QString NymID);
+    QJsonValue getNymMasterCredentialID(QString NymID, int Index);
+    QJsonValue getNymMasterCredentialContents(QString NymID, QString CredentialID);
     QJsonValue getNymRevokedCount(QString NymID);
     QJsonValue getNymRevokedCredID(QString NymID, int Index);
     QJsonValue getNymRevokedCredContents(QString NymID, QString CredentialID);
-    QJsonValue getNymSubCredentialCount(QString NymID, QString MasterCredID);
-    QJsonValue getNymSubCredentialID(QString NymID, QString MasterCredID,
+    QJsonValue getNymChildCredentialCount(QString NymID, QString MasterCredID);
+    QJsonValue getNymChildCredentialID(QString NymID, QString MasterCredID,
                                      int Index);
-    QJsonValue getNymSubCredentialContents(QString NymID, QString MasterCredID,
+    QJsonValue getNymChildCredentialContents(QString NymID, QString MasterCredID,
                                            QString SubCredID);
-    QJsonValue addSubCredentialLegacy(QString NymID, QString MasterCredID,
+    QJsonValue addChildCredentialLegacy(QString NymID, QString MasterCredID,
                                 int KeySize);
-    QJsonValue revokeSubcredential(QString NymID, QString MasterCredID,
+    QJsonValue revokeChildCredential(QString NymID, QString MasterCredID,
                                    QString SubCredID);
     QJsonValue getSignerNymID(QString Contract);
     QJsonValue calculateAssetContractID(QString Contract);
