@@ -60,22 +60,40 @@ QString RPCUser::generateAPIKey(int length)
 {
     m_keyLength = length;
 
-    opentxs::OTPassword::BlockSize passwordSize = opentxs::OTPassword::BlockSize(length);
-    opentxs::OTPassword password(passwordSize);
-
+    //opentxs::OTPassword::BlockSize passwordSize = opentxs::OTPassword::BlockSize(length);
+    opentxs::OTPassword password;
 
     password.randomizePassword(length);
 
-    QString outputString(password.getPassword());
+    std::string sanitizedString(password.getPassword());
+    std::string illegalChars = "\\/:;%$!@*`'?\"<>|";
+    for (auto it = sanitizedString.begin(); it < sanitizedString.end() ; ++it){
+        bool found = illegalChars.find(*it) != std::string::npos;
+        if(found){
+            sanitizedString.erase(it);
+        }
+    }
+
+    QString outputString(sanitizedString.c_str());
 
     m_APIKeyTimestamp.start();
 
     m_APIKey = outputString;
 
+    qDebug() << "User API Key: " + QString(outputString);
+
     m_keyActive = true;
 
     return outputString;
 
+}
+
+QString RPCUser::getAPIKey()
+{
+    if(!m_keyActive)
+        generateAPIKey();
+
+    return m_APIKey;
 }
 
 void RPCUser::refreshAPIKey()

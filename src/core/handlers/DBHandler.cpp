@@ -48,6 +48,7 @@ DBHandler::DBHandler()
     
     if (!flag)
     {
+        qDebug() << "Running dbCreateInstance";
         dbCreateInstance();
     }
 }
@@ -86,6 +87,7 @@ bool DBHandler::dbDisconnect()
 
 bool DBHandler::isDbExist()
 {
+    qDebug() << QString((opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
     return dbFile.isFileExist(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 }
 
@@ -193,13 +195,13 @@ bool DBHandler::dbCreateInstance()
         // ------------------------------------------
         error += query.exec(create_nmc);
         // ------------------------------------------
-        if (error != 16)  //every query passed?
+        if (error != 17)  //every query passed?
         {
             qDebug() << "dbCreateInstance Error: " << dbConnectErrorStr + " " + dbCreationStr;
             FileHandler rm;
             db.close();
 
-            rm.removeFile(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
+//            rm.removeFile(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 //          rm.removeFile(QCoreApplication::applicationDirPath() + dbFileNameStr);
         }
         else

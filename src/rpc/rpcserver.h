@@ -37,7 +37,7 @@ class RPCServer
     int readListenPort();
     void setListenPort(int port);
 
-
+    void setupDebugUser();
 
     ~RPCServer();
 };
