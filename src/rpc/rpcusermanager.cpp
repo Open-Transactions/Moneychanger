@@ -182,7 +182,7 @@ bool RPCUserManager::addUserToDatabase(QString Username, QString Password)
     if(checkUserExistsInDatabase(Username))
         return false;
 
-    auto added_user = DBHandler::getInstance()->runQuery(QString("INSERT INTO `rpc_users` (`user_id`,`rpc_users`) VALUES('%1','%2')").arg(Username).arg(Password));
+    auto added_user = DBHandler::getInstance()->runQuery(QString("INSERT INTO `rpc_users` (`user_id`,`password`) VALUES('%1','%2')").arg(Username).arg(Password));
 
     if(added_user)
         return true;

@@ -21,8 +21,7 @@ public:
     QString generateAPIKey(int length=32);
     bool checkAPIKey(QString APIKey);
     void refreshAPIKey();
-    QString getAPIKey(){return m_APIKey;}
-
+    QString getAPIKey();
     QString getUsername(){return m_username;}
     QString getPassword(){return m_password;}
 
