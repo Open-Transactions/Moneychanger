@@ -95,8 +95,6 @@ unix: {
     LIBS += -L$${OUT_PWD}/../nmcrpc
     LIBS += -lnmcrpc
     
-    LIBS += -L/usr/local/lib
-
     LIBS += -L$${OUT_PWD}/../quazip
     LIBS += -lquazip -lz
 

@@ -29,26 +29,26 @@ public Q_SLOTS:
     QJsonValue numListVerifyQuery(QString NumList, QString Numbers);
     QJsonValue numListVerifyAll(QString NumList, QString Numbers);
     QJsonValue numListCount(QString NumList);
-    QJsonValue createNym(int KeySize, QString NymIDSource,
+    QJsonValue createNymLegacy(int KeySize, QString NymIDSource,
                          QString AltLocation);
     QJsonValue getNymActiveCronItemIDs(QString NymID, QString NotaryID);
     QJsonValue getActiveCronItem(QString NotaryID, qint64 TransNum);
     QJsonValue getNymSourceForID(QString NymID);
     QJsonValue getNymAltSourceLocation(QString NymID);
-    QJsonValue getNymCredentialCount(QString NymID);
-    QJsonValue getNymCredentialID(QString NymID, int Index);
-    QJsonValue getNymCredentialContents(QString NymID, QString CredentialID);
+    QJsonValue getNymMasterCredentialCount(QString NymID);
+    QJsonValue getNymMasterCredentialID(QString NymID, int Index);
+    QJsonValue getNymMasterCredentialContents(QString NymID, QString CredentialID);
     QJsonValue getNymRevokedCount(QString NymID);
     QJsonValue getNymRevokedCredID(QString NymID, int Index);
     QJsonValue getNymRevokedCredContents(QString NymID, QString CredentialID);
-    QJsonValue getNymSubCredentialCount(QString NymID, QString MasterCredID);
-    QJsonValue getNymSubCredentialID(QString NymID, QString MasterCredID,
+    QJsonValue getNymChildCredentialCount(QString NymID, QString MasterCredID);
+    QJsonValue getNymChildCredentialID(QString NymID, QString MasterCredID,
                                      int Index);
-    QJsonValue getNymSubCredentialContents(QString NymID, QString MasterCredID,
+    QJsonValue getNymChildCredentialContents(QString NymID, QString MasterCredID,
                                            QString SubCredID);
-    QJsonValue addSubCredential(QString NymID, QString MasterCredID,
+    QJsonValue addChildCredentialLegacy(QString NymID, QString MasterCredID,
                                 int KeySize);
-    QJsonValue revokeSubcredential(QString NymID, QString MasterCredID,
+    QJsonValue revokeChildCredential(QString NymID, QString MasterCredID,
                                    QString SubCredID);
     QJsonValue getSignerNymID(QString Contract);
     QJsonValue calculateAssetContractID(QString Contract);
@@ -92,9 +92,7 @@ public Q_SLOTS:
                                    qint64 TransactionNumber);
     QJsonValue deleteAssetAccount(QString NotaryID, QString NymID, QString AccountID);
     QJsonValue walletExportNym(QString NymID);
-    QJsonValue walletExportCert(QString NymID);
     QJsonValue walletImportNym(QString FileContents);
-    QJsonValue walletImportCert(QString DisplayName, QString FileContents);
 // QJsonValue walletChangePassphrase(void);
     QJsonValue walletGetNymIdFromPartial(QString PartialID);
     QJsonValue walletGetNotaryIdFromPartial(QString PartialID);
@@ -456,10 +454,9 @@ public Q_SLOTS:
     QJsonValue checkNym(QString NotaryID, QString NymID,
                         QString NymIDCheck);
     QJsonValue sendNymMessage(QString NotaryID, QString NymID,
-                              QString NymIDRecipient, QString RecipientPubkey,
-                              QString Message);
+                              QString NymIDRecipient, QString Message);
     QJsonValue sendNymInstrument(QString NotaryID, QString NymID,
-                                 QString NymIDRecipient, QString RecipientPubkey,
+                                 QString NymIDRecipient, 
                                  QString Instrument, QString InstrumentForSender);
     QJsonValue getRequestNumber(QString NotaryID, QString NymID);
     QJsonValue registerInstrumentDefinition(QString NotaryID, QString NymID,
