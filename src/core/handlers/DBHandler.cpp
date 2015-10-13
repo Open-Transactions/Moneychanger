@@ -48,6 +48,7 @@ DBHandler::DBHandler()
     
     if (!flag)
     {
+        qDebug() << "Running dbCreateInstance";
         dbCreateInstance();
     }
 }
@@ -86,6 +87,7 @@ bool DBHandler::dbDisconnect()
 
 bool DBHandler::isDbExist()
 {
+    qDebug() << QString((opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
     return dbFile.isFileExist(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 }
 
@@ -148,6 +150,10 @@ bool DBHandler::dbCreateInstance()
                 " passphrase_notes TEXT"
                 ")";
         // --------------------------------------------
+        // RPC User Manager
+        QString create_rpcusers_table = "CREATE TABLE rpc_users(user_id TEXT PRIMARY KEY, password TEXT)";
+
+
         /* Keep track of Namecoin names registered for the purpose of
            Moneychanger.  They are always related to a Nym and credential
            hash, so those are kept here, too, so we can easily find
@@ -185,15 +191,17 @@ bool DBHandler::dbCreateInstance()
         error += query.exec(create_smart_contract);
         error += query.exec(create_managed_passphrase);
         // ------------------------------------------
+        error += query.exec(create_rpcusers_table);
+        // ------------------------------------------
         error += query.exec(create_nmc);
         // ------------------------------------------
-        if (error != 16)  //every query passed?
+        if (error != 17)  //every query passed?
         {
             qDebug() << "dbCreateInstance Error: " << dbConnectErrorStr + " " + dbCreationStr;
             FileHandler rm;
             db.close();
 
-            rm.removeFile(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
+//            rm.removeFile(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 //          rm.removeFile(QCoreApplication::applicationDirPath() + dbFileNameStr);
         }
         else
