@@ -663,7 +663,7 @@ void MTNymDetails::AddButtonClicked()
         //
         opentxs::OT_ME madeEasy;
 
-        std::string str_id = madeEasy.create_nym(nKeybits, NYM_ID_SOURCE, ALT_LOCATION);
+        std::string str_id = madeEasy.create_nym_legacy(nKeybits, NYM_ID_SOURCE, ALT_LOCATION);
 
         if (str_id.empty())
         {
@@ -681,7 +681,7 @@ void MTNymDetails::AddButtonClicked()
         // Register the Namecoin name.
         if (nAuthorityIndex == 1)
         {
-            const unsigned cnt = opentxs::OTAPI_Wrap::It()->GetNym_CredentialCount (str_id);
+            const unsigned cnt = opentxs::OTAPI_Wrap::It()->GetNym_MasterCredentialCount (str_id);
             if (cnt != 1)
             {
                 qDebug () << "Expected one master credential, got " << cnt
@@ -689,7 +689,7 @@ void MTNymDetails::AddButtonClicked()
             }
             else
             {
-                const std::string cred = opentxs::OTAPI_Wrap::It()->GetNym_CredentialID (str_id, 0);
+                const std::string cred = opentxs::OTAPI_Wrap::It()->GetNym_MasterCredentialID (str_id, 0);
                 const QString qCred = QString::fromStdString (cred);
                 NMC_NameManager& nmc = NMC_NameManager::getInstance ();
                 nmc.startRegistration (qstrID, qCred);
