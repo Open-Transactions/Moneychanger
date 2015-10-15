@@ -21,6 +21,7 @@ RPCServer::RPCServer()
     m_httpserver.addService(new MCRPCService);
 
     readConfig();
+    setupDebugUser();
 
     if(m_rpcserver_autorun == "true")
         startListener();
@@ -160,6 +161,14 @@ void RPCServer::setListenPort(int port)
     readListenPort();
 }
 
+
+void RPCServer::setupDebugUser()
+{
+
+    qDebug() << "Debug RPC User Setup - debugUser:debugPass";
+    DBHandler::getInstance()->runQuery(QString("INSERT INTO `rpc_users` (`user_id`,`password`) VALUES('debugUser','debugPass')"));
+
+}
 
 
 

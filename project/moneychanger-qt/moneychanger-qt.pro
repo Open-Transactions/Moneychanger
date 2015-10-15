@@ -46,7 +46,7 @@ include($${SOLUTION_DIR}../src/quazip/quazip.pri)
 # MAC AND LINUX:
 unix:{
     PKGCONFIG += opentxs
-
+    PKGCONFIG += libzmq
 }
 
 
@@ -109,7 +109,9 @@ unix: {
             LIBS += -lboost_chrono-mt
             LIBS += -lboost_atomic-mt
         }
+        LIBS += -L/usr/local/lib/
     } 
+
     # LINUX:
     else: {
         lessThan(GCC_VERSION, 4.7):{
@@ -122,6 +124,7 @@ unix: {
     }
 
     LIBS += -lzmq   # needed for sampleescrowserverzmq
+
 }
 
 win32: {
@@ -175,7 +178,6 @@ unix:{
     LIBS += -lxmlrpc
     LIBS += -lxmlrpc++
     LIBS += -lxmlrpc_client++
-
 }
 
 
