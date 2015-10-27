@@ -5202,8 +5202,8 @@ QJsonValue MCRPCService::recordListRetrieve(QString Username, QString APIKey,
     }
 
 
-    if(m_RecordList == nullptr)
-        recordListPopulate(Username, APIKey);
+    //if(m_RecordList == nullptr)
+    //    recordListPopulate(Username, APIKey);
 
     int count = m_RecordList->size();
 
@@ -5280,12 +5280,12 @@ QJsonValue MCRPCService::recordListRetrieve(QString Username, QString APIKey,
         return object;
     }
 
-    if (QJsonValue("True") != reply_obj.value("RecordListPopulated"))
+    /*if (QJsonValue("True") != reply_obj.value("RecordListPopulated"))
     {
         qDebug() << QString("Recordlist didn't populate properly: %1").arg(reply_obj.value("RecordListPopulated").toString());
         QJsonObject object{{"Error", QString("Recordlist didn't populate properly: %1").arg(reply_obj.value("RecordListPopulated").toString())}};
         return object;
-    }
+    }*/
 
     int count = m_RecordList->size();
 
