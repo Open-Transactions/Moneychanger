@@ -5208,7 +5208,7 @@ QJsonValue MCRPCService::recordListRetrieve(QString Username, QString APIKey,
     int count = m_RecordList->size();
 
     if(Index >= count)
-        Index = count-1;
+        Index = count;
 
     if(Index < 0)
         Index = 0;
@@ -5305,7 +5305,7 @@ QJsonValue MCRPCService::recordListRetrieve(QString Username, QString APIKey,
     }
 
     if(EndIndex > count)
-        EndIndex = count-1;
+        EndIndex = count;
 
     QJsonObject object;
     for(auto x = BeginIndex; x < EndIndex; x++){
