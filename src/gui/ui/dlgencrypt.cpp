@@ -427,12 +427,12 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     }
                 }
                 // ---------------------------------------------------
-                if (setRecipients.size() > 0 && setRecipients.begin() != setRecipients.end())
+                if (setRecipients.size() > 0)
                 {
                     opentxs::OTEnvelope theEnvelope;
                     opentxs::String   strInput(qstrText.toStdString().c_str());
 
-                    if (!theEnvelope.Seal(**setRecipients.begin(), strInput))
+                    if (!theEnvelope.Seal(setRecipients, strInput))
                     {
                         QMessageBox::warning(this, tr("Encryption Failed"),
                                              tr("Failed trying to encrypt message."));
