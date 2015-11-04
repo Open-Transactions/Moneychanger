@@ -53,7 +53,6 @@ FORMS += \
     $${PWD}/widgets/pageimportcontract.ui \
     $${PWD}/widgets/pagenym_altlocation.ui \
     $${PWD}/widgets/pagenym_authority.ui \
-    $${PWD}/widgets/pagenym_keysize.ui \
     $${PWD}/widgets/pagenym_source.ui \
     $${PWD}/widgets/pageoffer_accounts.ui \
     $${PWD}/widgets/pageoffer_amounts.ui \
@@ -133,7 +132,6 @@ HEADERS += \
     $${PWD}/widgets/pageimportcontract.hpp \
     $${PWD}/widgets/pagenym_altlocation.hpp \
     $${PWD}/widgets/pagenym_authority.hpp \
-    $${PWD}/widgets/pagenym_keysize.hpp \
     $${PWD}/widgets/pagenym_source.hpp \
     $${PWD}/widgets/pageoffer_accounts.hpp \
     $${PWD}/widgets/pageoffer_amounts.hpp \
@@ -212,7 +210,6 @@ SOURCES += \
     $${PWD}/widgets/pageimportcontract.cpp \
     $${PWD}/widgets/pagenym_altlocation.cpp \
     $${PWD}/widgets/pagenym_authority.cpp \
-    $${PWD}/widgets/pagenym_keysize.cpp \
     $${PWD}/widgets/pagenym_source.cpp \
     $${PWD}/widgets/pageoffer_accounts.cpp \
     $${PWD}/widgets/pageoffer_amounts.cpp \
