@@ -3,7 +3,7 @@
  *  moneychanger.cpp
  *
  *  File organized as follows:
- *  
+ *
  *      /-- Constructor (Lengthy)--/
  *      /-- Destructor --/
  *
@@ -111,7 +111,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     /**
      ** Init variables *
      **/
-        
+
     /* Set up Namecoin name manager.  */
     nmc_names = new NMC_NameManager (*nmc);
 
@@ -121,11 +121,11 @@ Moneychanger::Moneychanger(QWidget *parent)
              this, SLOT(nmc_timer_event()));
     nmc_update_timer->start (1000 * 60 * 10);
     nmc_timer_event ();
-    
+
     //SQLite database
     // This can be moved very easily into a different class
     // Which I will inevitably end up doing.
-    
+
     /** Default Nym **/
     qDebug() << "Setting up Nym table";
     if (DBHandler::getInstance()->querySize("SELECT `nym` FROM `default_nym` WHERE `default_id`='1' LIMIT 0,1") == 0)
@@ -153,7 +153,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 //        else
 //            qDebug() << "Error loading DEFAULT NYM from SQL";
     }
-    
+
     /** Default Server **/
     //Query for the default server (So we know for setting later on -- Auto select server associations on later dialogs)
     if (DBHandler::getInstance()->querySize("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1") == 0)
@@ -246,35 +246,35 @@ Moneychanger::Moneychanger(QWidget *parent)
 
     qDebug() << "Database Populated";
 
-    
+
     // ----------------------------------------------------------------------------
 
     //Ask OT for "cash account" information (might be just "Account" balance)
     //Ask OT the purse information
-    
-    
+
+
     /* *** *** ***
      * Init Memory Trackers (there may be other int below than just memory trackers but generally there will be mostly memory trackers below)
      * Allows the program to boot with a low footprint -- keeps start times low no matter the program complexity;
      * Memory will expand as the operator opens dialogs;
      * Also prevents HTTP requests from overloading or spamming the operators device by only allowing one window of that request;
      * *** *** ***/
-    
+
     //Init MC System Tray Icon
     mc_systrayIcon = new QSystemTrayIcon(this);
     mc_systrayIcon->setIcon(QIcon(":/icons/moneychanger"));
-    
+
     //Init Icon resources (Loading resources/access Harddrive first; then send to GPU; This specific order will in theory prevent bottle necking between HDD/GPU)
     mc_systrayIcon_shutdown = QIcon(":/icons/quit");
-    
+
     mc_systrayIcon_overview = QIcon(":/icons/overview");
-    
+
     mc_systrayIcon_nym = QIcon(":/icons/icons/identity_BW2.png");
     mc_systrayIcon_server = QIcon(":/icons/server");
-    
+
     mc_systrayIcon_goldaccount = QIcon(":/icons/icons/safe_box.png");
     mc_systrayIcon_purse = QIcon(":/icons/icons/assets.png");
-    
+
 //  mc_systrayIcon_sendfunds      = QIcon(":/icons/icons/fistful_of_cash_72.png");
     mc_systrayIcon_sendfunds      = QIcon(":/icons/icons/money_fist4_small.png");
 //  mc_systrayIcon_sendfunds      = QIcon(":/icons/sendfunds");
@@ -305,7 +305,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon_advanced_transport = QIcon(":/icons/icons/p2p.png");
     mc_systrayIcon_advanced_log = QIcon(":/icons/icons/p2p.png");
     mc_systrayIcon_advanced_settings = QIcon(":/icons/settings");
-    
+
     // ----------------------------------------------------------------------------
 
     mc_overall_init = true;
@@ -1021,9 +1021,9 @@ void Moneychanger::SetupAccountMenu()
  * QEvent Handler for the class in question.
  *
  ****
- * 
+ *
  * At a minimum, a Window needs three Functions to operate in the Systray:
- * 
+ *
  *  1) Startup Slot to connect to Moneychanger Buttons (mc_classname_slot)
  *  2) Dialog Function to launch the Window (mc_classname_dialog)
  *  3) A Function to handled the Close Event Handlers (close_classname_dialog)
@@ -1102,8 +1102,8 @@ void Moneychanger::mc_passphrase_manager_show_dialog()
 
 
 
-/** 
- * Address Book 
+/**
+ * Address Book
  **/
 
 // text may contain a "pre-selected" Contact ID (an integer in string form.)
@@ -1140,8 +1140,8 @@ void Moneychanger::mc_showcontact_slot(QString text)
 
 
 
-/**  
- * Nym Manager 
+/**
+ * Nym Manager
  **/
 
 //Nym manager "clicked"
@@ -1202,10 +1202,10 @@ void Moneychanger::setDefaultNym(QString nym_id, QString nym_name)
     //Set default nym internal memory
     default_nym_id   = nym_id;
     default_nym_name = nym_name;
-    
+
     //SQL UPDATE default nym
     DBHandler::getInstance()->AddressBookUpdateDefaultNym(nym_id);
-    
+
     //Rename "NYM:" if a nym is loaded
     if (nym_id != "")
     {
@@ -1252,7 +1252,7 @@ void Moneychanger::mc_nymselection_triggered(QAction*action_triggered)
         //Set new nym default
         QString action_triggered_string_nym_name = QVariant(action_triggered->text()).toString();
         setDefaultNym(action_triggered_string, action_triggered_string_nym_name);
-        
+
         //Refresh the nym default selection in the nym manager (ONLY if it is open)
         //Check if nym manager has ever been opened (then apply logic) [prevents crash if the dialog hasen't be opend before]
         //
@@ -1333,7 +1333,7 @@ void Moneychanger::onNeedToDownloadAccountData()
 
             std::string strSource(""), strAlt("");
 
-            std::string newNymId = madeEasy.create_nym_legacy(1024, strSource, strAlt);
+            std::string newNymId = madeEasy.create_nym_ecdsa(strSource, strAlt);
 
             if (!newNymId.empty())
             {
@@ -1500,8 +1500,8 @@ void Moneychanger::onNeedToDownloadAccountData()
 
 
 
-/** 
- * Asset Manager 
+/**
+ * Asset Manager
  **/
 
 //Asset manager "clicked"
@@ -1563,10 +1563,10 @@ void Moneychanger::setDefaultAsset(QString asset_id, QString asset_name)
     //Set default asset internal memory
     default_asset_id = asset_id;
     default_asset_name = asset_name;
-    
+
     //SQL UPDATE default asset
     DBHandler::getInstance()->AddressBookUpdateDefaultAsset(asset_id);
-    
+
     //Rename "ASSET:" if a asset is loaded
     if (asset_id != "")
     {
@@ -1609,14 +1609,14 @@ void Moneychanger::mc_assetselection_triggered(QAction*action_triggered)
         //Set new asset default
         QString action_triggered_string_asset_name = QVariant(action_triggered->text()).toString();
         setDefaultAsset(action_triggered_string, action_triggered_string_asset_name);
-        
+
         //Refresh if the asset manager is currently open
         if (assetswindow && !assetswindow->isHidden())
         {
             mc_assetmanager_dialog();
         }
     }
-    
+
 }
 
 // End Asset Manager
@@ -1639,8 +1639,8 @@ void Moneychanger::onNeedToUpdateMenu()
 }
 
 
-/** 
- * Account Manager 
+/**
+ * Account Manager
  **/
 
 //Account manager "clicked"
@@ -1756,26 +1756,26 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
     //Set default account internal memory
     default_account_id   = account_id;
     default_account_name = account_name;
-    
+
     //SQL UPDATE default account
     DBHandler::getInstance()->AddressBookUpdateDefaultAccount(account_id);
-    
+
     //Rename "ACCOUNT:" if a account is loaded
     if (account_id != "")
     {
         QString result = tr("Account: ") + account_name;
-        
+
         int64_t     lBalance  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance    (account_id.toStdString());
         std::string strAsset  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(account_id.toStdString());
         // ----------------------------------------------------------
         std::string str_amount;
-        
+
         if (!strAsset.empty())
         {
             str_amount = opentxs::OTAPI_Wrap::It()->FormatAmount(strAsset, lBalance);
             result += " ("+ QString::fromStdString(str_amount) +")";
         }
-        
+
         mc_systrayMenu_account->setTitle(result);
         // -----------------------------------------------------------
         std::string strNym    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (account_id.toStdString());
@@ -1860,8 +1860,8 @@ void Moneychanger::mc_show_server_slot(QString text)
 
 
 
-/** 
- * Server Manager 
+/**
+ * Server Manager
  **/
 
 void Moneychanger::mc_defaultserver_slot()
@@ -1915,13 +1915,13 @@ void Moneychanger::setDefaultServer(QString notary_id, QString server_name)
     //Set default server internal memory
     default_notary_id = notary_id;
     default_server_name = server_name;
-    
+
 //    qDebug() << default_notary_id;
 //    qDebug() << default_server_name;
-    
+
     //SQL UPDATE default server
     DBHandler::getInstance()->AddressBookUpdateDefaultServer(default_notary_id);
-    
+
     //Update visuals
     QString new_server_title = default_server_name;
 
@@ -1929,7 +1929,7 @@ void Moneychanger::setDefaultServer(QString notary_id, QString server_name)
     {
         new_server_title = tr("Set Default...");
     }
-    
+
     if (mc_overall_init)
     {
         mc_systrayMenu_server->setTitle(tr("Server: ")+new_server_title);
@@ -1971,7 +1971,7 @@ void Moneychanger::mc_serverselection_triggered(QAction * action_triggered)
         //Set new server default
         QString action_triggered_string_server_name = QVariant(action_triggered->text()).toString();
         setDefaultServer(action_triggered_string, action_triggered_string_server_name);
-        
+
         //Refresh if the server manager is currently open
         if (serverswindow && !serverswindow->isHidden())
         {
@@ -1987,8 +1987,8 @@ void Moneychanger::mc_serverselection_triggered(QAction * action_triggered)
 
 
 
-/** 
- * Request Funds 
+/**
+ * Request Funds
  **/
 
 void Moneychanger::mc_requestfunds_slot()
@@ -2725,7 +2725,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     }
     // ------------------------------------------------
     std::string str_server = opentxs::OTAPI_Wrap::It()->Instrmnt_GetNotaryID(str_template);
-    // ------------------------------------------------    
+    // ------------------------------------------------
     WizardRunSmartContract theWizard(this);
 
     theWizard.setWindowTitle(tr("Run smart contract"));

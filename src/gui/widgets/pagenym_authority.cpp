@@ -22,9 +22,9 @@ MTPageNym_Authority::MTPageNym_Authority(QWidget *parent) :
 int MTPageNym_Authority::nextId() const
 {
     if (0 == ui->comboBoxAuthority->currentIndex()) // Self-Signed
-        return 4; // Skip source and go straight to alternate location.
+        return 3; // Skip source and go straight to alternate location.
 
-    return 3; // Get the source and then the alternate location.
+    return 2; // Get the source and then the alternate location.
 }
 
 MTPageNym_Authority::~MTPageNym_Authority()
