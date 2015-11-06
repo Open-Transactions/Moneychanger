@@ -110,6 +110,7 @@ unix: {
             LIBS += -lboost_atomic-mt
         }
         LIBS += -L/usr/local/lib/
+        LIBS += -framework Cocoa -framework CoreFoundation
     } 
 
     # LINUX:
@@ -167,6 +168,7 @@ win32: {
 
     LIBS += Advapi32.lib
 }
+
 
 
 
