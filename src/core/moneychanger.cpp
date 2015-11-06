@@ -3313,10 +3313,13 @@ void Moneychanger::mc_rpc_sendfunds_show_dialog(QString qstrAcct/*=QString("")*/
 
     if (!qstrAmount.isEmpty())
         send_window->setInitialAmount(qstrAmount);
+    else
+        send_window->setInitialAmount("0");
 
     if(!qstrRecipientNym.isEmpty())
         send_window->setInitialHisNym(qstrRecipientNym);
 
+    Focuser f(send_window);
     // ---------------------------------------
     send_window->dialog();
     // --------------------------------------------------

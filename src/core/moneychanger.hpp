@@ -5,6 +5,8 @@
 #include "core/ExportWrapper.h"
 #include "core/TR1_Wrapper.hpp"
 
+#include <core/handlers/focuser.h>
+
 #include <namecoin/Namecoin.hpp>
 
 #include _CINTTYPES
