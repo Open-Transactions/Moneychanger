@@ -5186,6 +5186,7 @@ QJsonValue MCRPCService::recordListCount(QString Username, QString APIKey)
         return object;
     }
 */
+    m_RecordList->Populate();
     int count = m_RecordList->size();
 
     QJsonObject object{{"RecordListCount", count}};
@@ -5204,7 +5205,7 @@ QJsonValue MCRPCService::recordListRetrieve(QString Username, QString APIKey,
 
     //if(m_RecordList == nullptr)
     //    recordListPopulate(Username, APIKey);
-
+    m_RecordList->Populate();
     int count = m_RecordList->size();
 
     if(Index >= count)
@@ -5287,6 +5288,7 @@ QJsonValue MCRPCService::recordListRetrieve(QString Username, QString APIKey,
         return object;
     }*/
 
+    m_RecordList->Populate();
     int count = m_RecordList->size();
 
     // Swap if Begin > End
