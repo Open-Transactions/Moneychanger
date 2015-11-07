@@ -2,6 +2,8 @@
 #include "ui_btctransactionmanager.h"
 #include "btctransactioninfo.hpp"
 
+#include <core/handlers/focuser.h>
+
 #include <core/modules.hpp>
 #include <bitcoin-api/btcmodules.hpp>
 #include <bitcoin/sampleescrowclient.hpp>
@@ -207,7 +209,9 @@ void BtcTransactionManager::on_buttonSearchTx_clicked()
         return;
 
     BtcTransactionInfo* infoWindow = new BtcTransactionInfo();
-    infoWindow->show();
+    Focuser f(infoWindow);
+    f.show();
+    f.focus();
     infoWindow->Initialize(txInfo, txRawInfo);
 }
 

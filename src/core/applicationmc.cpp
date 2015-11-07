@@ -8,6 +8,7 @@
 #include <core/moneychanger.hpp>
 
 #include <core/handlers/contacthandler.hpp>
+#include <core/handlers/focuser.h>
 
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -136,7 +137,9 @@ void MTApplicationMC::appStarting()
         systray_notsupported_vboxlayout->addWidget(systray_notsupported_main_msg_label);
 
         //Show dialog
-        systray_notsupported->show();
+        Focuser f(systray_notsupported);
+        f.show();
+        f.focus();
     }
     else
     {

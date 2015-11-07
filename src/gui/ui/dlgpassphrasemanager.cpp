@@ -10,6 +10,7 @@
 #include <core/moneychanger.hpp>
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
+#include <core/handlers/focuser.h>
 
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/client/OTAPI.hpp>
@@ -453,7 +454,9 @@ void DlgPassphraseManager::dialog()
         already_init = true;
     }
     // ----------------------------
-    show();
+    Focuser f(this);
+    f.show();
+    f.focus();
     // ----------------------------
     ui->lineEdit->setFocus();
 }

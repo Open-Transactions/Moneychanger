@@ -579,7 +579,10 @@ void MTContactDetails::on_pushButtonMsg_clicked()
         }
         // --------------------------------------------------
         compose_window->dialog();
-        compose_window->show();
+
+        Focuser f(compose_window);
+        f.show();
+        f.focus();
         // --------------------------------------------------
         // Recipient has just changed. Does Sender exist? If so, make sure he is
         // compatible with msgtype or find a new one that matches both. We call this

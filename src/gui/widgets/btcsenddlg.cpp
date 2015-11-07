@@ -8,6 +8,7 @@
 #include <gui/widgets/btctxidlist.hpp>
 
 #include <core/modules.hpp>
+#include <core/handlers/focuser.h>
 
 #include <bitcoin/poolmanager.hpp>
 #include <bitcoin/sampleescrowclient.hpp>
@@ -188,7 +189,10 @@ void BtcSendDlg::on_buttonShowUnspentTxids_clicked()
         this->txIdList = new BtcTxIdList();
 
     this->txIdList->Update();
-    this->txIdList->show();
+
+    Focuser f(this->txIdList);
+    f.show();
+    f.focus();
 }
 
 void BtcSendDlg::on_checkBox_toggled(bool checked)

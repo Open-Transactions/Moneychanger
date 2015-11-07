@@ -18,6 +18,7 @@
 #include <gui/widgets/home.hpp>
 
 #include <core/moneychanger.hpp>
+#include <core/handlers/focuser.h>
 
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -116,8 +117,9 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType, bool bIsModal/*=
     {
         this->installEventFilter(this);
 
-        show();
-        setFocus();
+        Focuser f(this);
+        f.show();
+        f.focus();
     }
     // -------------------------------------------
 }

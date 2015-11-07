@@ -8,6 +8,7 @@
 #include <core/moneychanger.hpp>
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
+#include <core/handlers/focuser.h>
 
 #include <gui/ui/dlgexportedtopass.hpp>
 
@@ -190,7 +191,9 @@ void DlgEncrypt::dialog()
     if (!already_init)
     {
         // ----------------------------
-        show();
+        Focuser f(this);
+        f.show();
+        f.focus();
         // ----------------------------
         if (m_bEncrypt)
         {

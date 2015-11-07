@@ -12,6 +12,7 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
 #include <core/network/Network.h>
+#include <core/handlers/focuser.h>
 
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -113,8 +114,9 @@ void MTHome::dialog()
     // -------------------------------------------
     RefreshAll();
 
-    show();
-    setFocus();
+    Focuser f(this);
+    f.show();
+    f.focus();
 }
 
 

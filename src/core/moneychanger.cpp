@@ -2382,7 +2382,9 @@ void Moneychanger::mc_composemessage_show_dialog()
         compose_window->setInitialServer(qstrDefaultServer);
     // --------------------------------------------------
     compose_window->dialog();
-    compose_window->show();
+    Focuser f(compose_window);
+    f.show();
+    f.focus();
     // --------------------------------------------------
 }
 
@@ -2698,7 +2700,9 @@ void Moneychanger::mc_createinsurancecompany_dialog()
     if(!createinsurancecompany_window)
         createinsurancecompany_window = new CreateInsuranceCompany(this);
     // ------------------------------------
-    createinsurancecompany_window->show();
+    Focuser f(createinsurancecompany_window);
+    f.show();
+    f.focus();
 }
 
 
@@ -3191,7 +3195,9 @@ void Moneychanger::mc_settings_slot()
     if (!settingswindow)
         settingswindow = new Settings(this);
     // ------------------------------------
-    settingswindow->show();
+    Focuser f(settingswindow);
+    f.show();
+    f.focus();
 }
 
 
@@ -3211,7 +3217,9 @@ void Moneychanger::mc_bitcoin_slot()
 {
     if(!bitcoinwindow)
         bitcoinwindow = new BtcGuiTest(this);
-    bitcoinwindow->show();
+    Focuser f(bitcoinwindow);
+    f.show();
+    f.focus();
 }
 
 /**
@@ -3221,7 +3229,9 @@ void Moneychanger::mc_bitcoin_connect_slot()
 {
     if(!bitcoinConnectWindow)
         bitcoinConnectWindow = new BtcConnectDlg(this);
-    bitcoinConnectWindow->show();
+    Focuser f(bitcoinConnectWindow);
+    f.show();
+    f.focus();
 }
 
 /**
@@ -3231,7 +3241,9 @@ void Moneychanger::mc_bitcoin_pools_slot()
 {
     if(!bitcoinPoolWindow)
         bitcoinPoolWindow = new BtcPoolManager(this);
-    bitcoinPoolWindow->show();
+    Focuser f(bitcoinPoolWindow);
+    f.show();
+    f.focus();
 }
 
 /**
@@ -3241,7 +3253,9 @@ void Moneychanger::mc_bitcoin_transactions_slot()
 {
     if(!bitcoinTxWindow)
         bitcoinTxWindow = new BtcTransactionManager(this);
-    bitcoinTxWindow->show();
+    Focuser f(bitcoinTxWindow);
+    f.show();
+    f.focus();
 }
 
 /**
@@ -3251,7 +3265,9 @@ void Moneychanger::mc_bitcoin_send_slot()
 {
     if(!bitcoinSendWindow)
         bitcoinSendWindow = new BtcSendDlg(this);
-    bitcoinSendWindow->show();
+    Focuser f(bitcoinSendWindow);
+    f.show();
+    f.focus();
 }
 
 /**
@@ -3318,9 +3334,8 @@ void Moneychanger::mc_rpc_sendfunds_show_dialog(QString qstrAcct/*=QString("")*/
 
     if(!qstrRecipientNym.isEmpty())
         send_window->setInitialHisNym(qstrRecipientNym);
-
-    Focuser f(send_window);
     // ---------------------------------------
+//    Focuser f(send_window);
     send_window->dialog();
     // --------------------------------------------------
 }
