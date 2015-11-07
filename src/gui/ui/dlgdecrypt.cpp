@@ -7,6 +7,7 @@
 #include <QMessageBox>
 
 #include <core/moneychanger.hpp>
+#include <core/handlers/focuser.h>
 
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -279,7 +280,9 @@ void DlgDecrypt::dialog()
 {
     if (!already_init)
     {
-        show();
+        Focuser f(this);
+        f.show();
+        f.focus();
 
         already_init = true;
     }

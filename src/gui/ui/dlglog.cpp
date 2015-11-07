@@ -2,6 +2,7 @@
 #include "ui_dlglog.h"
 
 #include <core/moneychanger.hpp>
+#include <core/handlers/focuser.h>
 
 #include <QDate>
 #include <QKeyEvent>
@@ -54,8 +55,9 @@ bool DlgLog::eventFilter(QObject *obj, QEvent *event)
 void DlgLog::dialog()
 {
     FirstRun();
-    show();
-    setFocus();
+    Focuser f(this);
+    f.show();
+    f.focus();
 }
 
 void DlgLog::FirstRun()

@@ -9,6 +9,7 @@
 #include <gui/widgets/overridecursor.hpp>
 
 #include <core/moneychanger.hpp>
+#include <core/handlers/focuser.h>
 
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -73,8 +74,9 @@ void DlgMarkets::dialog()
     // -------------------------------------------
     RefreshRecords();
     // -------------------------------------------
-    show();
-    setFocus();
+    Focuser f(this);
+    f.show();
+    f.focus();
 }
 
 void DlgMarkets::FirstRun()
