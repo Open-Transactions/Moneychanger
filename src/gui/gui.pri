@@ -53,7 +53,6 @@ FORMS += \
     $${PWD}/widgets/pageimportcontract.ui \
     $${PWD}/widgets/pagenym_altlocation.ui \
     $${PWD}/widgets/pagenym_authority.ui \
-    $${PWD}/widgets/pagenym_keysize.ui \
     $${PWD}/widgets/pagenym_source.ui \
     $${PWD}/widgets/pageoffer_accounts.ui \
     $${PWD}/widgets/pageoffer_amounts.ui \
@@ -78,7 +77,9 @@ FORMS += \
     $$PWD/widgets/dlgsmartpartyacct.ui \
     $$PWD/widgets/wizardpartyacct.ui \
     $$PWD/widgets/pagesmart_partyacct.ui \
-    $$PWD/widgets/pagesmart_nymacct.ui
+    $$PWD/widgets/pagesmart_nymacct.ui \
+    $$PWD/ui/dlgpassphrasemanager.ui \
+    $$PWD/ui/dlgcreatepassphrase.ui
 
 HEADERS += \
     $${PWD}/ui/dlgexportcash.hpp \
@@ -131,7 +132,6 @@ HEADERS += \
     $${PWD}/widgets/pageimportcontract.hpp \
     $${PWD}/widgets/pagenym_altlocation.hpp \
     $${PWD}/widgets/pagenym_authority.hpp \
-    $${PWD}/widgets/pagenym_keysize.hpp \
     $${PWD}/widgets/pagenym_source.hpp \
     $${PWD}/widgets/pageoffer_accounts.hpp \
     $${PWD}/widgets/pageoffer_amounts.hpp \
@@ -155,7 +155,9 @@ HEADERS += \
     $$PWD/widgets/pagesmart_party.hpp \
     $$PWD/widgets/wizardpartyacct.hpp \
     $$PWD/widgets/pagesmart_partyacct.hpp \
-    $$PWD/widgets/pagesmart_nymacct.hpp
+    $$PWD/widgets/pagesmart_nymacct.hpp \
+    $$PWD/ui/dlgpassphrasemanager.hpp \
+    $$PWD/ui/dlgcreatepassphrase.hpp
 
 SOURCES += \
     $${PWD}/ui/dlgexportcash.cpp \
@@ -208,7 +210,6 @@ SOURCES += \
     $${PWD}/widgets/pageimportcontract.cpp \
     $${PWD}/widgets/pagenym_altlocation.cpp \
     $${PWD}/widgets/pagenym_authority.cpp \
-    $${PWD}/widgets/pagenym_keysize.cpp \
     $${PWD}/widgets/pagenym_source.cpp \
     $${PWD}/widgets/pageoffer_accounts.cpp \
     $${PWD}/widgets/pageoffer_amounts.cpp \
@@ -232,7 +233,9 @@ SOURCES += \
     $$PWD/widgets/pagesmart_party.cpp \
     $$PWD/widgets/wizardpartyacct.cpp \
     $$PWD/widgets/pagesmart_partyacct.cpp \
-    $$PWD/widgets/pagesmart_nymacct.cpp
+    $$PWD/widgets/pagesmart_nymacct.cpp \
+    $$PWD/ui/dlgpassphrasemanager.cpp \
+    $$PWD/ui/dlgcreatepassphrase.cpp
 
 TRANSLATIONS += $${PWD}/translations/en_US.ts \
                 $${PWD}/translations/de_DE.ts

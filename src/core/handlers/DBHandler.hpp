@@ -22,7 +22,7 @@
  * Note that the filename path assignment is going to need to be fixed.
  */
 static const QString dbDriverStr = "QSQLITE";
-static const QString dbFileNameStr = "/mc_db"; // Changed this from db/mc_db due to directory not existing.
+static const QString dbFileNameStr = "mc_db"; // Changed this from db/mc_db due to directory not existing.
 static const QString dbConnNameStr = "addressBook";
 
 static const int PBAR_MAX_STEPS =7;
@@ -60,6 +60,8 @@ class DBHandler
 
   public:
     static DBHandler * getInstance();
+
+    QString formatValue(QSqlField & sqlField);
 
     class PreparedQuery;
 
@@ -145,7 +147,7 @@ class DBHandler::PreparedQuery
     inline PreparedQuery (QSqlDatabase& db, const QString& run)
       : query(db), queryStr(run)
     {
-      query.prepare (run);
+      query.prepare (queryStr);
     }
 
     // Disable copying.
@@ -162,6 +164,8 @@ class DBHandler::PreparedQuery
     bool execute ();
 
   public:
+
+    QString lastQuery();
 
     // No copying.
 #ifdef CXX_11

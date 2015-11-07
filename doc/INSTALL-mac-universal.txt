@@ -43,7 +43,9 @@ $ brew link —-force qt5
 # This may be redundant if you have already cloned the Moneychanger repository locally.
 
 $ git clone https://github.com/open-transactions/Moneychanger
-$ cd Moneychanger/project/
+$ cd Moneychanger
+$ git submodule init && git submodule update
+$ cd project
 $ qmake && make 
 $ cd moneychanger-qt
 

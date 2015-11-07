@@ -2196,9 +2196,6 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
                 return;
             }
             // ----------------------------------------------
-
-            qDebug() << "DEBUGGING: qstrAccess: " << qstrAccess << ". qstrType: " << qstrType;
-
             strSmartResult = opentxs::OTAPI_Wrap::It()->SmartContract_AddVariable(str_template, str_lawyer_id,
                                                                                   bylaw_name, qstrNewName.toStdString(),
                                                                                   qstrAccess.toStdString(), qstrType.toStdString(),

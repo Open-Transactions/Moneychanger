@@ -5,6 +5,8 @@
 #include <gui/ui/dlgmenu.hpp>
 #include <ui_dlgmenu.h>
 
+#include <core/handlers/focuser.h>
+
 #include <QKeyEvent>
 #include <QMessageBox>
 
@@ -53,8 +55,9 @@ DlgMenu::~DlgMenu()
 
 void DlgMenu::dialog()
 {
-    show();
-    setFocus();
+    Focuser f(this);
+    f.show();
+    f.focus();
 }
 
 

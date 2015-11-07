@@ -928,7 +928,9 @@ void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
         compose_window->setInitialSubject(QString::fromStdString(str_desc));
         // --------------------------------------------------
         compose_window->dialog();
-        compose_window->show();
+        Focuser f(compose_window);
+        f.show();
+        f.focus();
         // --------------------------------------------------
     }
 }

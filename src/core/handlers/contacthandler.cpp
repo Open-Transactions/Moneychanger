@@ -13,11 +13,13 @@
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OpenTransactions.hpp>
 #include <opentxs/core/crypto/OTASCIIArmor.hpp>
+#include <opentxs/core/crypto/OTPassword.hpp>
 #include <opentxs/client/OTWallet.hpp>
 
 #include <QDebug>
 #include <QObject>
 #include <QStringList>
+#include <QSqlField>
 
 
 std::string MTNameLookupQT::GetNymName(const std::string & str_id,
@@ -402,6 +404,15 @@ bool MTContactHandler::DeleteSmartContract(int nID)
     return DBHandler::getInstance()->runQuery(str_delete);
 }
 
+bool MTContactHandler::DeleteManagedPassphrase(int nID)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_delete = QString("DELETE FROM `managed_passphrase` WHERE `passphrase_id`=%1").arg(nID);
+
+    return DBHandler::getInstance()->runQuery(str_delete);
+}
+
 QString MTContactHandler::GetSmartContract(int nID)
 {
     return MTContactHandler::GetValueByID(nID, "template_contents", "smart_contract", "template_id");
@@ -591,6 +602,207 @@ bool MTContactHandler::GetAccounts(mapIDName & theMap, QString filterByNym, QStr
     return bFoundAccounts;
 }
 
+int MTContactHandler::CreateManagedPassphrase(const QString & qstrTitle, const QString & qstrUsername, const opentxs::OTPassword & thePassphrase,
+                                              const QString & qstrURL,   const QString & qstrNotes)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_insert = QString("INSERT INTO `managed_passphrase` "
+                                 "(`passphrase_id`) "
+                                 "VALUES(NULL)");
+
+    DBHandler::getInstance()->runQuery(str_insert);
+    // ----------------------------------------
+    int nPassphraseID = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `managed_passphrase`", 0, 0);
+
+    if (nPassphraseID > 0)
+    {
+        bool bUpdated = LowLevelUpdateManagedPassphrase(nPassphraseID, qstrTitle, qstrUsername, thePassphrase, qstrURL,  qstrNotes);
+
+        if (!bUpdated)
+            qDebug() << QString("Failed updating passphrase entry: %1").arg(nPassphraseID);
+    }
+
+    return nPassphraseID;
+}
+
+
+bool MTContactHandler::LowLevelUpdateManagedPassphrase(int nPassphraseID,
+                                                       const QString & qstrTitle, const QString & qstrUsername, const opentxs::OTPassword & thePassphrase,
+                                                       const QString & qstrURL,   const QString & qstrNotes)
+{
+//  NOTE: This function ASSUMES that the calling function already locked the Mutex.
+//  QMutexLocker locker(&m_Mutex);
+
+    try
+    {
+        QString queryStr = "UPDATE `managed_passphrase`"
+                           "  SET `passphrase_title` = :passtitle,`passphrase_username` = :passusername,`passphrase_url` = :passurl"
+                           "  WHERE `passphrase_id` = :passid";
+    #ifdef CXX_11
+        std::unique_ptr<DBHandler::PreparedQuery> qu;
+    #else /* CXX_11?  */
+        std::auto_ptr<DBHandler::PreparedQuery> qu;
+    #endif /* CXX_11?  */
+        qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+        qu->bind (":passid", nPassphraseID);
+        qu->bind (":passtitle", qstrTitle);
+        qu->bind (":passusername", qstrUsername);
+        qu->bind (":passurl", qstrURL);
+        DBHandler::getInstance ()->runQuery (qu.release ());
+        // ----------------------------------
+        // Set the passphrase itself (encrypted.)
+        //
+        bool bSetValue = SetEncryptedValueByID(nPassphraseID, QString::fromUtf8(thePassphrase.getPassword()),
+                                               "passphrase_passphrase", "managed_passphrase", "passphrase_id");
+        bSetValue = SetEncryptedValueByID(nPassphraseID, qstrNotes,
+                                          "passphrase_notes", "managed_passphrase", "passphrase_id");
+        Q_UNUSED(bSetValue);
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return false;
+    }
+
+    return true;
+}
+
+bool MTContactHandler::UpdateManagedPassphrase(int nPassphraseID,
+                                               const QString & qstrTitle, const QString & qstrUsername, const opentxs::OTPassword & thePassphrase,
+                                               const QString & qstrURL,   const QString & qstrNotes)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    return LowLevelUpdateManagedPassphrase(nPassphraseID, qstrTitle, qstrUsername, thePassphrase, qstrURL,  qstrNotes);
+}
+
+bool MTContactHandler::GetManagedPassphrase(int nPassphraseID,
+                                            QString & qstrTitle, QString & qstrUsername, opentxs::OTPassword & thePassphrase,
+                                            QString & qstrURL,   QString & qstrNotes)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    try
+    {
+        DBHandler & db = *DBHandler::getInstance();
+
+        QString queryStr = "SELECT `passphrase_title`, `passphrase_username`, `passphrase_url` FROM `managed_passphrase`"
+                           "  WHERE `passphrase_id` = :passid";
+#ifdef CXX_11
+        std::unique_ptr<DBHandler::PreparedQuery> qu;
+#else /* CXX_11?  */
+        std::auto_ptr<DBHandler::PreparedQuery> qu;
+#endif /* CXX_11?  */
+        qu.reset (db.prepareQuery (queryStr));
+        qu->bind (":passid", nPassphraseID);
+        QSqlRecord rec = db.queryOne (qu.release ());
+
+        qstrTitle    = rec.field ("passphrase_title")   .value ().toString ();
+        qstrUsername = rec.field ("passphrase_username").value ().toString ();
+        qstrURL      = rec.field ("passphrase_url")     .value ().toString ();
+        // ----------------------------------------
+        QString qstrPassphrase = GetEncryptedValueByID(nPassphraseID, "passphrase_passphrase", "managed_passphrase", "passphrase_id");
+        thePassphrase.setPassword(qstrPassphrase.toUtf8(), qstrPassphrase.length());
+        // ----------------------------------------
+        qstrNotes = GetEncryptedValueByID(nPassphraseID, "passphrase_notes", "managed_passphrase", "passphrase_id");
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return false;
+    }
+    // ----------------------------------------
+    return true;
+}
+
+class ManagedPassphraseFunctor
+{
+private:
+    mapIDName & m_mapTitle;
+    mapIDName & m_mapURL;
+    bool      & m_bFound;
+
+    // No default constructor.
+    ManagedPassphraseFunctor();
+
+public:
+    inline
+    ManagedPassphraseFunctor(mapIDName & mapTitle, mapIDName & mapURL, bool & bFound)
+      : m_mapTitle(mapTitle), m_mapURL(mapURL), m_bFound(bFound)
+    {}
+
+    void operator() (const QSqlRecord& rec)
+    {
+        m_bFound = true;
+
+        const int     nPassphraseID = rec.field ("passphrase_id")   .value().toInt();
+        const QString qstrTitle     = rec.field ("passphrase_title").value().toString();
+        const QString qstrURL       = rec.field ("passphrase_url")  .value().toString();
+        // -------------------------------------------------------------
+        const QString qstrID        = QString("%1").arg(nPassphraseID);
+        // -------------------------------------------------------------
+        m_mapTitle.insert(qstrID, qstrTitle);
+        m_mapURL  .insert(qstrID, qstrURL);
+    }
+};
+
+
+bool MTContactHandler::GetManagedPassphrases(mapIDName & mapTitle, mapIDName & mapURL, QString searchStr/*=""*/)
+{
+    // Get ALL managed passphrases, unless searchStr is provided, in which case use that to filter the results.
+    // Return TWO mapIDNames. One is passphraseID mapped to Title, and the other is passphraseID mapped to URL.
+    //
+    QMutexLocker locker(&m_Mutex);
+    // ----------------------------
+    bool bFound = false, bSearchStringExists = !searchStr.isEmpty();
+    DBHandler& db = *DBHandler::getInstance ();
+    // ----------------------------
+    // This is a hack I'm doing to sanitize searchStr since the way it's SUPPOSED to work
+    // (named bound values) isn't working at all.
+    //
+    QSqlField sqlField;
+
+    if (bSearchStringExists)
+    {
+        sqlField.setType(QVariant::String);
+        sqlField.setValue(searchStr);
+
+        searchStr = db.formatValue(sqlField);
+        searchStr.remove(QChar('\''));
+        searchStr.remove(QChar('\"'));
+    }
+    // ----------------------------
+    ManagedPassphraseFunctor passphraseHandler(mapTitle, mapURL, bFound);
+    QString queryStr;
+
+    if (bSearchStringExists)
+        queryStr = QString("SELECT `passphrase_id`,`passphrase_title`,`passphrase_url` FROM `managed_passphrase` "
+                             "WHERE `passphrase_title` LIKE '%1%2%1' "
+                             "OR `passphrase_username` LIKE '%1%2%1' "
+                             "OR `passphrase_url` LIKE '%1%2%1' "
+                             ).arg("%").arg(searchStr);
+    else
+        queryStr = QString("SELECT `passphrase_id`,`passphrase_title`,`passphrase_url` FROM `managed_passphrase` ");
+
+  #ifdef CXX_11
+    std::unique_ptr<DBHandler::PreparedQuery> qu;
+  #else /* CXX_11?  */
+    std::auto_ptr<DBHandler::PreparedQuery> qu;
+  #endif /* CXX_11?  */
+    qu.reset (db.prepareQuery (queryStr));
+
+    try
+    {
+        db.queryMultiple (qu.release(), passphraseHandler);
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+    }
+
+    return bFound;
+}
 
 int  MTContactHandler::CreateSmartContractTemplate(QString template_string)
 {
@@ -599,13 +811,10 @@ int  MTContactHandler::CreateSmartContractTemplate(QString template_string)
     QString str_insert = QString("INSERT INTO `smart_contract` "
                              "(`template_id`) "
                              "VALUES(NULL)");
-//    QString str_insert = QString("INSERT INTO `smart_contract` "
-//                             "(`template_id`, `template_contents`) "
-//                             "VALUES(NULL, %1)").arg(encoded_value);
 
     qDebug() << QString("Running query: %1").arg(str_insert);
 
-    DBHandler::getInstance()->runQuery(str_insert); //resume
+    DBHandler::getInstance()->runQuery(str_insert);
     // ----------------------------------------
     int nTemplateID = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `smart_contract`", 0, 0);
 

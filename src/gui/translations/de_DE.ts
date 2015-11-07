@@ -1706,39 +1706,6 @@
     </message>
 </context>
 <context>
-    <name>MTPageNym_Keysize</name>
-    <message>
-        <location filename="../widgets/pagenym_keysize.ui" line="14"/>
-        <source>WizardPage</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/pagenym_keysize.ui" line="20"/>
-        <source>Keysize:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/pagenym_keysize.ui" line="31"/>
-        <source>1024</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/pagenym_keysize.ui" line="36"/>
-        <source>2048</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/pagenym_keysize.ui" line="41"/>
-        <source>4096</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/pagenym_keysize.ui" line="49"/>
-        <source>NOTE:   Only 1024 has been tested.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>MTPageNym_Source</name>
     <message>
         <location filename="../widgets/pagenym_source.ui" line="14"/>

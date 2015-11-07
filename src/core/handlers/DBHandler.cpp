@@ -7,6 +7,7 @@
 #include <opentxs/core/util/OTPaths.hpp>
 
 #include <QSqlRecord>
+#include <QSqlDriver>
 
 #include <sstream>
 #include <stdexcept>
@@ -47,6 +48,7 @@ DBHandler::DBHandler()
     
     if (!flag)
     {
+        qDebug() << "Running dbCreateInstance";
         dbCreateInstance();
     }
 }
@@ -85,6 +87,7 @@ bool DBHandler::dbDisconnect()
 
 bool DBHandler::isDbExist()
 {
+    qDebug() << QString((opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
     return dbFile.isFileExist(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 }
 
@@ -137,6 +140,20 @@ bool DBHandler::dbCreateInstance()
         // Smart Contracts
         QString create_smart_contract  = "CREATE TABLE smart_contract(template_id INTEGER PRIMARY KEY, template_display_name TEXT, template_contents TEXT)";
         // --------------------------------------------
+        // Passphrase Manager
+        QString create_managed_passphrase  = "CREATE TABLE managed_passphrase"
+                "(passphrase_id INTEGER PRIMARY KEY,"
+                " passphrase_title TEXT,"
+                " passphrase_username TEXT,"
+                " passphrase_passphrase TEXT,"
+                " passphrase_url TEXT,"
+                " passphrase_notes TEXT"
+                ")";
+        // --------------------------------------------
+        // RPC User Manager
+        QString create_rpcusers_table = "CREATE TABLE rpc_users(user_id TEXT PRIMARY KEY, password TEXT)";
+
+
         /* Keep track of Namecoin names registered for the purpose of
            Moneychanger.  They are always related to a Nym and credential
            hash, so those are kept here, too, so we can easily find
@@ -172,16 +189,19 @@ bool DBHandler::dbCreateInstance()
         error += query.exec(create_nym_method);
         error += query.exec(create_contact_method);
         error += query.exec(create_smart_contract);
+        error += query.exec(create_managed_passphrase);
+        // ------------------------------------------
+        error += query.exec(create_rpcusers_table);
         // ------------------------------------------
         error += query.exec(create_nmc);
         // ------------------------------------------
-        if(error != 15)  //every query passed?
+        if (error != 17)  //every query passed?
         {
             qDebug() << "dbCreateInstance Error: " << dbConnectErrorStr + " " + dbCreationStr;
             FileHandler rm;
             db.close();
 
-            rm.removeFile(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
+//            rm.removeFile(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 //          rm.removeFile(QCoreApplication::applicationDirPath() + dbFileNameStr);
         }
         else
@@ -195,9 +215,25 @@ bool DBHandler::isConnected()
     return db.isOpen();
 }
 
+QString DBHandler::PreparedQuery::lastQuery()
+{
+    return query.lastQuery();
+}
+
 DBHandler::PreparedQuery* DBHandler::prepareQuery(const QString& run)
 {
   return new PreparedQuery (db, run);
+}
+
+
+QString DBHandler::formatValue(QSqlField & sqlField)
+{
+    QMutexLocker locker(&dbMutex);
+
+    if (!db.isOpen ())
+      return "";
+
+    return db.driver()->formatValue(sqlField);
 }
 
 bool DBHandler::runQuery(PreparedQuery* query)

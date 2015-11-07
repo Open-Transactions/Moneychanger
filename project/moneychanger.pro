@@ -2,14 +2,17 @@
 TEMPLATE = subdirs
 CONFIG  += ordered
 
+#-------------------------------------------------
+# Subdirectories
+
 win32: SUBDIRS += curl
 win32: SUBDIRS += libidn
-
-
-#SUBDIRS += qjsonrpc ## Put this back in when someone wants to use it.
 
 SUBDIRS += jsoncpp
 SUBDIRS += bitcoin-api
 SUBDIRS += nmcrpc
 SUBDIRS += quazip
+
+unix: SUBDIRS += qjsonrpc
+
 SUBDIRS += moneychanger-qt

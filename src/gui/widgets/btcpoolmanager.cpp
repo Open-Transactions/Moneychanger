@@ -4,6 +4,7 @@
 #include "btcaddpoolserver.hpp"
 
 #include <core/modules.hpp>
+#include <core/handlers/focuser.h>
 
 #include <bitcoin/poolmanager.hpp>
 #include <bitcoin/sampleescrowserver.hpp>
@@ -162,7 +163,9 @@ void BtcPoolManager::on_buttonRequestPayout_clicked()
 void BtcPoolManager::on_buttonAddServer_clicked()
 {
    BtcAddPoolServer* addServerDlg = new BtcAddPoolServer();
-    addServerDlg->show();
+   Focuser f(addServerDlg);
+   f.show();
+   f.focus();
 }
 
 void BtcPoolManager::on_buttonDelPool_clicked()

@@ -11,6 +11,7 @@
 
 #include <core/moneychanger.hpp>
 #include <core/handlers/contacthandler.hpp>
+#include <core/handlers/focuser.h>
 
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -591,7 +592,9 @@ void MTRequestDlg::dialog()
         already_init = true;
     }
 
-    show();
+    Focuser f(this);
+    f.show();
+    f.focus();
 }
 
 

@@ -619,7 +619,6 @@ void MTNymDetails::AddButtonClicked()
     if (QDialog::Accepted == theWizard.exec())
     {
         QString qstrName        = theWizard.field("Name")     .toString();
-        int     nKeysizeIndex   = theWizard.field("Keysize")  .toInt();
         int     nAuthorityIndex = theWizard.field("Authority").toInt();
         QString qstrSource      = theWizard.field("Source")   .toString();
         QString qstrLocation    = theWizard.field("Location") .toString();
@@ -627,26 +626,6 @@ void MTNymDetails::AddButtonClicked()
         // NOTE: theWizard won't allow each page to finish unless the data is provided.
         // (Therefore we don't have to check here to see if any of the data is empty.)
 
-        int32_t nKeybits = 1024;
-
-        switch (nKeysizeIndex)
-        {
-        case 0: // 1024
-            nKeybits = 1024;
-            break;
-
-        case 1: // 2048
-            nKeybits = 2048;
-            break;
-
-        case 2: // 4096
-            nKeybits = 4096;
-            break;
-
-        default:
-            qDebug() << QString("%1: %2").arg(tr("Error in keysize selection. Using default")).arg(nKeybits);
-            break;
-        }
         // -------------------------------------------
         std::string NYM_ID_SOURCE("");
 
@@ -663,7 +642,7 @@ void MTNymDetails::AddButtonClicked()
         //
         opentxs::OT_ME madeEasy;
 
-        std::string str_id = madeEasy.create_nym(nKeybits, NYM_ID_SOURCE, ALT_LOCATION);
+        std::string str_id = madeEasy.create_nym_ecdsa(NYM_ID_SOURCE, ALT_LOCATION);
 
         if (str_id.empty())
         {
@@ -681,7 +660,7 @@ void MTNymDetails::AddButtonClicked()
         // Register the Namecoin name.
         if (nAuthorityIndex == 1)
         {
-            const unsigned cnt = opentxs::OTAPI_Wrap::It()->GetNym_CredentialCount (str_id);
+            const unsigned cnt = opentxs::OTAPI_Wrap::It()->GetNym_MasterCredentialCount (str_id);
             if (cnt != 1)
             {
                 qDebug () << "Expected one master credential, got " << cnt
@@ -689,7 +668,7 @@ void MTNymDetails::AddButtonClicked()
             }
             else
             {
-                const std::string cred = opentxs::OTAPI_Wrap::It()->GetNym_CredentialID (str_id, 0);
+                const std::string cred = opentxs::OTAPI_Wrap::It()->GetNym_MasterCredentialID (str_id, 0);
                 const QString qCred = QString::fromStdString (cred);
                 NMC_NameManager& nmc = NMC_NameManager::getInstance ();
                 nmc.startRegistration (qstrID, qCred);

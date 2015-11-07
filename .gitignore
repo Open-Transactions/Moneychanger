@@ -10,6 +10,11 @@
 *.dll
 *.dylib
 
+# Merge error files
+
+*.orig
+*.rej
+
 # Qt-es
 
 *.pro.user

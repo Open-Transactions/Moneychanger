@@ -1,0 +1,3 @@
+[submodule "project/qjsonrpc"]
+	path = project/qjsonrpc
+	url = https://bitbucket.org/devonit/qjsonrpc
