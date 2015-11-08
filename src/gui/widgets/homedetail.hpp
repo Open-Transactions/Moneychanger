@@ -9,6 +9,7 @@
 #include <QPointer>
 #include <QWidget>
 #include <QLineEdit>
+#include <QToolButton>
 
 
 class QGraphicsLayout;
@@ -69,9 +70,20 @@ private slots:
     void on_discardIncomingButton_clicked(bool checked = false);
     void on_msgButton_clicked(bool checked = false);
 
+    void copyNymClicked();
+    void copyOtherNymClicked();
+    void copyAddressClicked();
+    void copyOtherAddressClicked();
+    void copyAcctClicked();
+    void copyOtherAcctClicked();
+    void copyServerClicked();
+    void copyAssetTypeClicked();
+
 private:
     void refresh(opentxs::OTRecord& recordmt);
     void refresh(int nRow, opentxs::OTRecordList & theList);
+
+    void copyIDToClipboard(const QString qstr_field, const QString & text);
 
     int m_nContactID; // If there's a known Contact ID for this record, it will be set here when discovered, for later use.
     opentxs::shared_ptr_OTRecord m_record;
@@ -96,6 +108,15 @@ private:
     QPointer<QLineEdit> m_pLineEdit_OtherAcct_Name;
     QPointer<QLineEdit> m_pLineEdit_Server_Name;
     QPointer<QLineEdit> m_pLineEdit_AssetType_Name;
+
+    QPointer<QToolButton> m_pToolbutton_Nym_Name;
+    QPointer<QToolButton> m_pToolbutton_OtherNym_Name;
+    QPointer<QToolButton> m_pToolbutton_Address_Name;
+    QPointer<QToolButton> m_pToolbutton_OtherAddress_Name;
+    QPointer<QToolButton> m_pToolbutton_Acct_Name;
+    QPointer<QToolButton> m_pToolbutton_OtherAcct_Name;
+    QPointer<QToolButton> m_pToolbutton_Server_Name;
+    QPointer<QToolButton> m_pToolbutton_AssetType_Name;
 
     void FavorLeftSideForIDs();
 
