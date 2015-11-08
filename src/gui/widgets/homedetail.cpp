@@ -22,11 +22,13 @@
 
 #include <QGridLayout>
 #include <QMessageBox>
+#include <QClipboard>
 #include <QLabel>
 #include <QDebug>
 #include <QDateTime>
 #include <QPlainTextEdit>
 #include <QPushButton>
+#include <QIcon>
 
 
 void MTHomeDetail::SetHomePointer(MTHome & theHome)
@@ -835,6 +837,70 @@ void MTHomeDetail::on_discardIncomingButton_clicked(bool checked /*=false*/)
 
 
 
+void MTHomeDetail::copyIDToClipboard(const QString qstr_field, const QString & text)
+{
+    QClipboard *clipboard = QApplication::clipboard();
+
+    if (NULL != clipboard)
+    {
+        clipboard->setText(text);
+
+        QMessageBox::information(this, tr("Moneychanger"), QString("%1 %2 %3:<br/>%4").
+                                 arg(tr("Copied")).arg(qstr_field).arg(tr("to the clipboard")).
+                                 arg(text));
+    }
+}
+
+
+void MTHomeDetail::copyNymClicked()
+{
+    copyIDToClipboard(tr("Nym ID"), m_pLineEdit_Nym_ID->text());
+}
+
+void MTHomeDetail::copyOtherNymClicked()
+{
+    copyIDToClipboard(tr("Other Nym ID"), m_pLineEdit_OtherNym_ID->text());
+}
+
+
+void MTHomeDetail::copyAddressClicked()
+{
+    copyIDToClipboard(tr("Address"), m_pLineEdit_Address->text());
+}
+
+
+void MTHomeDetail::copyOtherAddressClicked()
+{
+    copyIDToClipboard(tr("Other Address"), m_pLineEdit_OtherAddress->text());
+}
+
+
+void MTHomeDetail::copyAcctClicked()
+{
+    copyIDToClipboard(tr("Account ID"), m_pLineEdit_Acct_ID->text());
+}
+
+
+void MTHomeDetail::copyOtherAcctClicked()
+{
+    copyIDToClipboard(tr("Other Account ID"), m_pLineEdit_OtherAcct_ID->text());
+}
+
+
+void MTHomeDetail::copyServerClicked()
+{
+    copyIDToClipboard(tr("Notary ID"), m_pLineEdit_notary_id->text());
+}
+
+
+void MTHomeDetail::copyAssetTypeClicked()
+{
+    copyIDToClipboard(tr("Asset Type ID"), m_pLineEdit_AssetType_ID->text());
+}
+
+
+
+
 void MTHomeDetail::on_msgButton_clicked(bool checked /*=false*/)
 {
     Q_UNUSED(checked);
@@ -1249,6 +1315,16 @@ void MTHomeDetail::RecreateLayout()
     m_pLineEdit_OtherAcct_Name = NULL;
     m_pLineEdit_Server_Name = NULL;
     m_pLineEdit_AssetType_Name = NULL;
+
+    m_pToolbutton_Nym_Name = NULL;
+    m_pToolbutton_OtherNym_Name = NULL;
+    m_pToolbutton_Address_Name = NULL;
+    m_pToolbutton_OtherAddress_Name = NULL;
+    m_pToolbutton_Acct_Name = NULL;
+    m_pToolbutton_OtherAcct_Name = NULL;
+    m_pToolbutton_Server_Name = NULL;
+    m_pToolbutton_AssetType_Name = NULL;
+
     // --------------------------------------------------
     this->blockSignals(false);
 }
@@ -1613,7 +1689,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     {
         pIDHeader->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 
-        pGridLayout->addWidget(pIDHeader, nGridRow++, 0, 1, 3);
+        pGridLayout->addWidget(pIDHeader, nGridRow++, 0, 1, 4);
         pGridLayout->setAlignment(pIDHeader, Qt::AlignTop);
     }
     // --------------------------------------------------
@@ -1636,7 +1712,14 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
 
         pGridLayout->addWidget(pLabel, nGridRow,   0);
         pGridLayout->addWidget(m_pLineEdit_Nym_Name, nGridRow,   1);
-        pGridLayout->addWidget(m_pLineEdit_Nym_ID, nGridRow++, 2);
+        pGridLayout->addWidget(m_pLineEdit_Nym_ID, nGridRow, 2);
+
+        m_pToolbutton_Nym_Name = new QToolButton;
+        m_pToolbutton_Nym_Name->setIcon(QIcon(":/icons/icons/Basic-Copy-icon.png"));
+
+        pGridLayout->addWidget(m_pToolbutton_Nym_Name, nGridRow++, 3);
+
+        connect(m_pToolbutton_Nym_Name, SIGNAL(clicked()), this, SLOT(copyNymClicked()) );
     }
 
     if (!qstr_OtherNymID.isEmpty())
@@ -1657,7 +1740,15 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
 
         pGridLayout->addWidget(pLabel,    nGridRow,   0);
         pGridLayout->addWidget(m_pLineEdit_OtherNym_Name,    nGridRow,   1);
-        pGridLayout->addWidget(m_pLineEdit_OtherNym_ID, nGridRow++, 2);
+        pGridLayout->addWidget(m_pLineEdit_OtherNym_ID, nGridRow, 2);
+
+
+        m_pToolbutton_OtherNym_Name = new QToolButton;
+        m_pToolbutton_OtherNym_Name->setIcon(QIcon(":/icons/icons/Basic-Copy-icon.png"));
+
+        pGridLayout->addWidget(m_pToolbutton_OtherNym_Name, nGridRow++, 3);
+
+        connect(m_pToolbutton_OtherNym_Name, SIGNAL(clicked()), this, SLOT(copyOtherNymClicked()) );
     }
     // --------------------------------------------------
 
@@ -1679,7 +1770,15 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
 
         pGridLayout->addWidget(pLabel, nGridRow,   0);
         pGridLayout->addWidget(m_pLineEdit_Address_Name, nGridRow,   1);
-        pGridLayout->addWidget(m_pLineEdit_Address, nGridRow++, 2);
+        pGridLayout->addWidget(m_pLineEdit_Address, nGridRow, 2);
+
+
+        m_pToolbutton_Address_Name = new QToolButton;
+        m_pToolbutton_Address_Name->setIcon(QIcon(":/icons/icons/Basic-Copy-icon.png"));
+
+        pGridLayout->addWidget(m_pToolbutton_Address_Name, nGridRow++, 3);
+
+        connect(m_pToolbutton_Address_Name, SIGNAL(clicked()), this, SLOT(copyAddressClicked()) );
     }
 
     if (!qstr_OtherAddress.isEmpty())
@@ -1700,7 +1799,15 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
 
         pGridLayout->addWidget(pLabel,    nGridRow,   0);
         pGridLayout->addWidget(m_pLineEdit_OtherAddress_Name, nGridRow,   1);
-        pGridLayout->addWidget(m_pLineEdit_OtherAddress,      nGridRow++, 2);
+        pGridLayout->addWidget(m_pLineEdit_OtherAddress,      nGridRow, 2);
+
+
+        m_pToolbutton_OtherAddress_Name = new QToolButton;
+        m_pToolbutton_OtherAddress_Name->setIcon(QIcon(":/icons/icons/Basic-Copy-icon.png"));
+
+        pGridLayout->addWidget(m_pToolbutton_OtherAddress_Name, nGridRow++, 3);
+
+        connect(m_pToolbutton_OtherAddress_Name, SIGNAL(clicked()), this, SLOT(copyOtherAddressClicked()) );
     }
 
     if (!qstr_AccountID.isEmpty())
@@ -1721,7 +1828,15 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
 
         pGridLayout->addWidget(pLabel,    nGridRow,   0);
         pGridLayout->addWidget(m_pLineEdit_Acct_Name,    nGridRow,   1);
-        pGridLayout->addWidget(m_pLineEdit_Acct_ID, nGridRow++, 2);
+        pGridLayout->addWidget(m_pLineEdit_Acct_ID, nGridRow, 2);
+
+
+        m_pToolbutton_Acct_Name = new QToolButton;
+        m_pToolbutton_Acct_Name->setIcon(QIcon(":/icons/icons/Basic-Copy-icon.png"));
+
+        pGridLayout->addWidget(m_pToolbutton_Acct_Name, nGridRow++, 3);
+
+        connect(m_pToolbutton_Acct_Name, SIGNAL(clicked()), this, SLOT(copyAcctClicked()) );
     }
 
     if (!qstr_OtherAcctID.isEmpty())
@@ -1742,7 +1857,15 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
 
         pGridLayout->addWidget(pLabel,    nGridRow,   0);
         pGridLayout->addWidget(m_pLineEdit_OtherAcct_Name,    nGridRow,   1);
-        pGridLayout->addWidget(m_pLineEdit_OtherAcct_ID, nGridRow++, 2);
+        pGridLayout->addWidget(m_pLineEdit_OtherAcct_ID, nGridRow, 2);
+
+
+        m_pToolbutton_OtherAcct_Name = new QToolButton;
+        m_pToolbutton_OtherAcct_Name->setIcon(QIcon(":/icons/icons/Basic-Copy-icon.png"));
+
+        pGridLayout->addWidget(m_pToolbutton_OtherAcct_Name, nGridRow++, 3);
+
+        connect(m_pToolbutton_OtherAcct_Name, SIGNAL(clicked()), this, SLOT(copyOtherAcctClicked()) );
     }
 
     if (!qstr_NotaryID.isEmpty())
@@ -1762,7 +1885,15 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
 
         pGridLayout->addWidget(pLabel,    nGridRow,   0);
         pGridLayout->addWidget(m_pLineEdit_Server_Name,    nGridRow,   1);
-        pGridLayout->addWidget(m_pLineEdit_notary_id, nGridRow++, 2);
+        pGridLayout->addWidget(m_pLineEdit_notary_id, nGridRow, 2);
+
+
+        m_pToolbutton_Server_Name = new QToolButton;
+        m_pToolbutton_Server_Name->setIcon(QIcon(":/icons/icons/Basic-Copy-icon.png"));
+
+        pGridLayout->addWidget(m_pToolbutton_Server_Name, nGridRow++, 3);
+
+        connect(m_pToolbutton_Server_Name, SIGNAL(clicked()), this, SLOT(copyServerClicked()) );
     }
 
     if (!qstr_AssetTypeID.isEmpty())
@@ -1782,7 +1913,15 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
 
         pGridLayout->addWidget(pLabel, nGridRow, 0);
         pGridLayout->addWidget(m_pLineEdit_AssetType_Name, nGridRow, 1);
-        pGridLayout->addWidget(m_pLineEdit_AssetType_ID, nGridRow++, 2);
+        pGridLayout->addWidget(m_pLineEdit_AssetType_ID, nGridRow, 2);
+
+
+        m_pToolbutton_AssetType_Name = new QToolButton;
+        m_pToolbutton_AssetType_Name->setIcon(QIcon(":/icons/icons/Basic-Copy-icon.png"));
+
+        pGridLayout->addWidget(m_pToolbutton_AssetType_Name, nGridRow++, 3);
+
+        connect(m_pToolbutton_AssetType_Name, SIGNAL(clicked()), this, SLOT(copyAssetTypeClicked()) );
     }
     // ----------------------------------
     FavorLeftSideForIDs();

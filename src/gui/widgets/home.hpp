@@ -54,7 +54,7 @@ public:
 
     void OnDeletedRecord();
 
-    static QString shortAcctBalance(QString qstr_acct_id,   QString qstr_asset_id=QString(""));
+    static QString shortAcctBalance(QString qstr_acct_id,   QString qstr_asset_id=QString(""), bool bWithSymbol=true);
     static QString cashBalance     (QString qstr_notary_id, QString qstr_asset_id, QString qstr_nym_id);
     static int64_t rawCashBalance  (QString qstr_notary_id, QString qstr_asset_id, QString qstr_nym_id);
     static int64_t rawAcctBalance  (QString qstrAcctId);
