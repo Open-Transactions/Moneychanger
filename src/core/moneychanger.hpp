@@ -172,10 +172,14 @@ private:
     void mc_overview_dialog_refresh();
 
 private:
-    void SetupAssetMenu();
-    void SetupServerMenu();
-    void SetupNymMenu();
-    void SetupAccountMenu();
+    void SetupAssetMenu(QPointer<QMenu> & parent_menu);
+    void SetupServerMenu(QPointer<QMenu> & parent_menu);
+    void SetupNymMenu(QPointer<QMenu> & parent_menu);
+    void SetupAccountMenu(QPointer<QMenu> & parent_menu);
+    void SetupPaymentsMenu(QPointer<QMenu> & parent_menu);
+    void SetupContractsMenu(QPointer<QMenu> & parent_menu);
+    void SetupMessagingMenu(QPointer<QMenu> & parent_menu);
+    void SetupToolsMenu(QPointer<QMenu> & parent_menu);
     // ------------------------------------------------
     // Used for smart contracts.
 
@@ -288,6 +292,9 @@ private:
     QString default_asset_name;
     // ---------------------------------------------------------        
     QPointer<QMenu> mc_systrayMenu_account;
+    QPointer<QMenu> mc_systrayMenu_payments;
+    QPointer<QMenu> mc_systrayMenu_contracts;
+    QPointer<QMenu> mc_systrayMenu_messaging;
     // ---------------------------------------------------------
     QList<QVariant> * account_list_id;
     QList<QVariant> * account_list_name;
@@ -312,7 +319,7 @@ private:
     QPointer<QAction> mc_systrayMenu_company_create_insurance;
     // ---------------------------------------------------------
     //Crypto submenu
-    QPointer<QMenu> mc_systrayMenu_crypto;
+    QPointer<QMenu> mc_systrayMenu_tools;
 
     QPointer<QAction> mc_systrayMenu_crypto_encrypt;
     QPointer<QAction> mc_systrayMenu_crypto_decrypt;
@@ -322,13 +329,13 @@ private:
     //Advanced submenu
     QPointer<QMenu> mc_systrayMenu_advanced;
 
-    QPointer<QAction> mc_systrayMenu_advanced_markets;
-    QPointer<QAction> mc_systrayMenu_advanced_agreements;
-    QPointer<QAction> mc_systrayMenu_advanced_import;
-    QPointer<QAction> mc_systrayMenu_advanced_settings;
+    QPointer<QAction> mc_systrayMenu_markets;
+    QPointer<QAction> mc_systrayMenu_smart_contracts;
+    QPointer<QAction> mc_systrayMenu_import_cash;
+    QPointer<QAction> mc_systrayMenu_settings;
     QPointer<QAction> mc_systrayMenu_advanced_corporations;
-    QPointer<QAction> mc_systrayMenu_advanced_transport;
-    QPointer<QAction> mc_systrayMenu_advanced_log;
+    QPointer<QAction> mc_systrayMenu_p2p_transport;
+    QPointer<QAction> mc_systrayMenu_error_log;
     QPointer<QMenu>   mc_systrayMenu_advanced_bazaar;
     // ---------------------------------------------------------
     // Bazaar

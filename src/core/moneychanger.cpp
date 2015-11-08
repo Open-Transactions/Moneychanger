@@ -517,10 +517,28 @@ void Moneychanger::SetupMainMenu()
     mc_systrayMenu = new QMenu(this);
 
     //Init Skeleton of system tray menu
+
     //App name
-    mc_systrayMenu_headertext = new QAction(tr("Moneychanger"), mc_systrayMenu);
-    mc_systrayMenu_headertext->setDisabled(1);
-    mc_systrayMenu->addAction(mc_systrayMenu_headertext);
+//    mc_systrayMenu_headertext = new QAction(tr("Moneychanger"), mc_systrayMenu);
+//    mc_systrayMenu_headertext->setDisabled(1);
+//    mc_systrayMenu->addAction(mc_systrayMenu_headertext);
+    // --------------------------------------------------------------
+    SetupAccountMenu(mc_systrayMenu);
+    SetupNymMenu(mc_systrayMenu);
+    // --------------------------------------------------------------
+    mc_systrayMenu->addSeparator();
+    // --------------------------------------------------------------
+    SetupPaymentsMenu(mc_systrayMenu);
+    SetupMessagingMenu(mc_systrayMenu);
+    // --------------------------------------------------------------
+    mc_systrayMenu->addSeparator();
+    // --------------------------------------------------------------
+    //Passphrase Manager
+    mc_systrayMenu_passphrase_manager = new QAction(mc_systrayIcon_crypto, tr("Secrets"), mc_systrayMenu);
+    mc_systrayMenu->addAction(mc_systrayMenu_passphrase_manager);
+    connect(mc_systrayMenu_passphrase_manager, SIGNAL(triggered()), this, SLOT(mc_passphrase_manager_slot()));
+    // --------------------------------------------------------------
+    mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
     //Blank
     //            mc_systrayMenu_aboveBlank = new QAction(" ", 0);
@@ -530,85 +548,16 @@ void Moneychanger::SetupMainMenu()
     //Separator
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
-    //Overview button
-    mc_systrayMenu_overview = new QAction(mc_systrayIcon_overview, tr("Transaction History"), mc_systrayMenu);
-    mc_systrayMenu->addAction(mc_systrayMenu_overview);
-    connect(mc_systrayMenu_overview, SIGNAL(triggered()), this, SLOT(mc_overview_slot()));
+    mc_systrayMenu_markets = new QAction(mc_systrayIcon_markets, tr("Exchange"), mc_systrayMenu);
+    mc_systrayMenu->addAction(mc_systrayMenu_markets);
+    connect(mc_systrayMenu_markets, SIGNAL(triggered()), this, SLOT(mc_market_slot()));
     // --------------------------------------------------------------
-    //Crypto
-    mc_systrayMenu_crypto = new QMenu(tr("Crypto"), mc_systrayMenu);
-    mc_systrayMenu_crypto->setIcon(mc_systrayIcon_crypto);
-    mc_systrayMenu->addMenu(mc_systrayMenu_crypto);
+    SetupContractsMenu(mc_systrayMenu);
     // --------------------------------------------------------------
-    mc_systrayMenu_crypto_sign = new QAction(mc_systrayIcon_crypto_sign, tr("Sign"), mc_systrayMenu_crypto);
-    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_sign);
-    connect(mc_systrayMenu_crypto_sign, SIGNAL(triggered()), this, SLOT(mc_crypto_sign_slot()));
-    // --------------------------------------------------------------
-    mc_systrayMenu_crypto_encrypt = new QAction(mc_systrayIcon_crypto_encrypt, tr("Encrypt"), mc_systrayMenu_crypto);
-    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_encrypt);
-    connect(mc_systrayMenu_crypto_encrypt, SIGNAL(triggered()), this, SLOT(mc_crypto_encrypt_slot()));
-    // --------------------------------------------------------------
-    //Separator
-    mc_systrayMenu_crypto->addSeparator();
-    // --------------------------------------------------------------
-    mc_systrayMenu_crypto_decrypt = new QAction(mc_systrayIcon_crypto_decrypt, tr("Decrypt / Verify"), mc_systrayMenu_crypto);
-    mc_systrayMenu_crypto->addAction(mc_systrayMenu_crypto_decrypt);
-    connect(mc_systrayMenu_crypto_decrypt, SIGNAL(triggered()), this, SLOT(mc_crypto_decrypt_slot()));
-    // --------------------------------------------------------------
-    //Separator
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
-    //Passphrase Manager
-    mc_systrayMenu_passphrase_manager = new QAction(mc_systrayIcon_crypto, tr("Passphrase Manager"), mc_systrayMenu);
-    mc_systrayMenu->addAction(mc_systrayMenu_passphrase_manager);
-    connect(mc_systrayMenu_passphrase_manager, SIGNAL(triggered()), this, SLOT(mc_passphrase_manager_slot()));
+    SetupToolsMenu(mc_systrayMenu);
     // --------------------------------------------------------------
-    //Separator
-    mc_systrayMenu->addSeparator();
-    // --------------------------------------------------------------
-    //Send funds
-    mc_systrayMenu_sendfunds = new QAction(mc_systrayIcon_sendfunds, tr("Pay Funds..."), mc_systrayMenu);
-    mc_systrayMenu->addAction(mc_systrayMenu_sendfunds);
-    connect(mc_systrayMenu_sendfunds, SIGNAL(triggered()), this, SLOT(mc_sendfunds_slot()));
-    // --------------------------------------------------------------
-    //Request payment
-    mc_systrayMenu_requestfunds = new QAction(mc_systrayIcon_requestfunds, tr("Request Payment..."), mc_systrayMenu);
-    mc_systrayMenu->addAction(mc_systrayMenu_requestfunds);
-    connect(mc_systrayMenu_requestfunds, SIGNAL(triggered()), this, SLOT(mc_requestfunds_slot()));
-    // --------------------------------------------------------------
-    //Separator
-    mc_systrayMenu->addSeparator();
-    // --------------------------------------------------------------
-    //Compose Message
-    mc_systrayMenu_composemessage = new QAction(mc_systrayIcon_composemessage, tr("Compose Message"), mc_systrayMenu);
-    mc_systrayMenu->addAction(mc_systrayMenu_composemessage);
-    connect(mc_systrayMenu_composemessage, SIGNAL(triggered()), this, SLOT(mc_composemessage_slot()));
-    // --------------------------------------------------------------
-    //Separator
-    mc_systrayMenu->addSeparator();
-    // --------------------------------------------------------------
-    //Account section
-    SetupAccountMenu();
-    // --------------------------------------------------------------
-    //Asset section
-    SetupAssetMenu();
-    // --------------------------------------------------------------
-    //Separator
-    mc_systrayMenu->addSeparator();
-    // --------------------------------------------------------------
-    //Nym section
-    SetupNymMenu();
-    // --------------------------------------------------------------
-    //Contacts
-    mc_systrayMenu_contacts = new QAction(mc_systrayIcon_contacts, tr("Contacts"), mc_systrayMenu);
-    mc_systrayMenu->addAction(mc_systrayMenu_contacts);
-    connect(mc_systrayMenu_contacts, SIGNAL(triggered()), this, SLOT(mc_addressbook_slot()));
-    // --------------------------------------------------------------
-
-
-
-    // --------------------------------------------------------------
-    //Separator
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
     //Company
@@ -625,26 +574,21 @@ void Moneychanger::SetupMainMenu()
 
     // --------------------------------------------------------------
     //Advanced
-    mc_systrayMenu_advanced = new QMenu(tr("Advanced"), mc_systrayMenu);
+    mc_systrayMenu_advanced = new QMenu(tr("Experimental"), mc_systrayMenu);
     mc_systrayMenu_advanced->setIcon(mc_systrayIcon_advanced);
     mc_systrayMenu->addMenu(mc_systrayMenu_advanced);
     //Advanced submenu
     // --------------------------------------------------------------
-    mc_systrayMenu_advanced_import = new QAction(mc_systrayIcon_advanced_import, tr("Import Cash..."), mc_systrayMenu_advanced);
-    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_import);
-    connect(mc_systrayMenu_advanced_import, SIGNAL(triggered()), this, SLOT(mc_import_slot()));
+    // Settings
+
+    mc_systrayMenu_settings = new QAction(mc_systrayIcon_advanced_settings, tr("Settings"), mc_systrayMenu_advanced);
+    mc_systrayMenu_settings->setMenuRole(QAction::NoRole);
+    mc_systrayMenu_advanced->addAction(mc_systrayMenu_settings);
+    connect(mc_systrayMenu_settings, SIGNAL(triggered()), this, SLOT(mc_settings_slot()));
     // --------------------------------------------------------------
     //Separator
     mc_systrayMenu_advanced->addSeparator();
     // ------------------------------------------------
-    mc_systrayMenu_advanced_markets = new QAction(mc_systrayIcon_markets, tr("Markets"), mc_systrayMenu_advanced);
-    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_markets);
-    connect(mc_systrayMenu_advanced_markets, SIGNAL(triggered()), this, SLOT(mc_market_slot()));
-    // --------------------------------------------------------------
-    mc_systrayMenu_advanced_agreements = new QAction(mc_systrayIcon_advanced_agreements, tr("Smart Contracts"), mc_systrayMenu_advanced);
-    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_agreements);
-    connect(mc_systrayMenu_advanced_agreements, SIGNAL(triggered()), this, SLOT(mc_agreement_slot()));
-    // --------------------------------------------------------------
     // Corporations
     mc_systrayMenu_advanced_corporations = new QAction(mc_systrayIcon_advanced_corporations, tr("Corporations"), mc_systrayMenu_advanced);
     mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_corporations);
@@ -685,29 +629,6 @@ void Moneychanger::SetupMainMenu()
     // -------------------------------------------------
     mc_systrayMenu_advanced->addSeparator();
     // -------------------------------------------------
-    // Settings
-
-    mc_systrayMenu_advanced_settings = new QAction(mc_systrayIcon_advanced_settings, tr("Settings"), mc_systrayMenu_advanced);
-    mc_systrayMenu_advanced_settings->setMenuRole(QAction::NoRole);
-    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_settings);
-    connect(mc_systrayMenu_advanced_settings, SIGNAL(triggered()), this, SLOT(mc_settings_slot()));
-
-    // --------------------------------------------------------------
-    // Transport
-    mc_systrayMenu_advanced_transport = new QAction(mc_systrayIcon_advanced_transport, tr("P2P Transport"), mc_systrayMenu_advanced);
-    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_transport);
-    connect(mc_systrayMenu_advanced_transport, SIGNAL(triggered()), this, SLOT(mc_transport_slot()));
-
-    // --------------------------------------------------------------
-    // Error Log
-    mc_systrayMenu_advanced_log = new QAction(mc_systrayIcon_advanced_log, tr("Error Log"), mc_systrayMenu_advanced);
-    mc_systrayMenu_advanced->addAction(mc_systrayMenu_advanced_log);
-    connect(mc_systrayMenu_advanced_log, SIGNAL(triggered()), this, SLOT(mc_log_slot()));
-
-    connect(this, SIGNAL(appendToLog(QString)),
-            this, SLOT(mc_showlog_slot(QString)));
-    // --------------------------------------------------------------
-
     // Bitcoin
     mc_systrayMenu_bitcoin = new QMenu(tr("Bitcoin"), mc_systrayMenu);
     mc_systrayMenu_bitcoin->setIcon(mc_systrayIcon_bitcoin);
@@ -745,8 +666,6 @@ void Moneychanger::SetupMainMenu()
     // TODO: When booting up, if there is already a default nym, but no accounts exist, create a default account.
 
     // --------------------------------------------------------------
-    //Server section
-    SetupServerMenu();
 
     //Separator
     mc_systrayMenu->addSeparator();
@@ -770,11 +689,11 @@ void Moneychanger::SetupMainMenu()
 }
 
 
-void Moneychanger::SetupAssetMenu()
+void Moneychanger::SetupAssetMenu(QPointer<QMenu> & parent_menu)
 {
-    mc_systrayMenu_asset = new QMenu(tr("Set Default Asset Type..."), mc_systrayMenu);
+    mc_systrayMenu_asset = new QMenu(tr("Set default asset..."), parent_menu);
     mc_systrayMenu_asset->setIcon(mc_systrayIcon_purse);
-    mc_systrayMenu->addMenu(mc_systrayMenu_asset);
+    parent_menu->addMenu(mc_systrayMenu_asset);
     // --------------------------------------------------
     //Add a "Manage asset types" action button (and connection)
     QAction * manage_assets = new QAction(tr("Manage Asset Contracts..."), mc_systrayMenu_asset);
@@ -826,14 +745,14 @@ void Moneychanger::SetupAssetMenu()
     }
 }
 
-void Moneychanger::SetupServerMenu()
+void Moneychanger::SetupServerMenu(QPointer<QMenu> & parent_menu)
 {
-    mc_systrayMenu_server = new QMenu(tr("Set Default Server..."), mc_systrayMenu_advanced);
+    mc_systrayMenu_server = new QMenu(tr("Set default server..."), parent_menu);
     mc_systrayMenu_server->setIcon(mc_systrayIcon_server);
-    mc_systrayMenu_advanced->addMenu(mc_systrayMenu_server);
+    parent_menu->addMenu(mc_systrayMenu_server);
     // --------------------------------------------------
     //Add a "Manage Servers" action button (and connection)
-    QAction * manage_servers = new QAction(tr("Manage Servers..."), mc_systrayMenu_server);
+    QAction * manage_servers = new QAction(tr("Manage Server Contracts..."), mc_systrayMenu_server);
     manage_servers->setData(QVariant(QString("openmanager")));
     mc_systrayMenu_server->addAction(manage_servers);
     connect(mc_systrayMenu_server, SIGNAL(triggered(QAction*)), this, SLOT(mc_serverselection_triggered(QAction*)));
@@ -884,11 +803,11 @@ void Moneychanger::SetupServerMenu()
     }
 }
 
-void Moneychanger::SetupNymMenu()
+void Moneychanger::SetupNymMenu(QPointer<QMenu> & parent_menu)
 {
-    mc_systrayMenu_nym = new QMenu("Set Default Identity...", mc_systrayMenu);
+    mc_systrayMenu_nym = new QMenu("Set default identity...", parent_menu);
     mc_systrayMenu_nym->setIcon(mc_systrayIcon_nym);
-    mc_systrayMenu->addMenu(mc_systrayMenu_nym);
+    parent_menu->addMenu(mc_systrayMenu_nym);
 
     //Add a "Manage pseudonym" action button (and connection)
     QAction * manage_nyms = new QAction(tr("Manage Identities..."), mc_systrayMenu_nym);
@@ -944,11 +863,113 @@ void Moneychanger::SetupNymMenu()
     setDefaultNym(default_nym_id, default_nym_name);
 }
 
-void Moneychanger::SetupAccountMenu()
+
+void Moneychanger::SetupPaymentsMenu(QPointer<QMenu> & parent_menu)
 {
-    mc_systrayMenu_account = new QMenu(tr("Set Default Account..."), mc_systrayMenu);
+    mc_systrayMenu_payments = new QMenu(tr("Payments"), parent_menu);
+    mc_systrayMenu_payments->setIcon(mc_systrayIcon_sendfunds);
+    parent_menu->addMenu(mc_systrayMenu_payments);
+    // --------------------------------------------------------------
+    //Send funds
+    mc_systrayMenu_sendfunds = new QAction(mc_systrayIcon_sendfunds, tr("Pay Funds..."), mc_systrayMenu_payments);
+    mc_systrayMenu_payments->addAction(mc_systrayMenu_sendfunds);
+    connect(mc_systrayMenu_sendfunds, SIGNAL(triggered()), this, SLOT(mc_sendfunds_slot()));
+    // --------------------------------------------------------------
+    //Transaction History
+    mc_systrayMenu_overview = new QAction(mc_systrayIcon_overview, tr("Transaction History"), mc_systrayMenu_payments);
+    mc_systrayMenu_payments->addAction(mc_systrayMenu_overview);
+    connect(mc_systrayMenu_overview, SIGNAL(triggered()), this, SLOT(mc_overview_slot()));
+    // -------------------------------------------------
+    mc_systrayMenu_payments->addSeparator();
+    // -------------------------------------------------
+    //Request payment
+    mc_systrayMenu_requestfunds = new QAction(mc_systrayIcon_requestfunds, tr("Request Payment..."), mc_systrayMenu_payments);
+    mc_systrayMenu_payments->addAction(mc_systrayMenu_requestfunds);
+    connect(mc_systrayMenu_requestfunds, SIGNAL(triggered()), this, SLOT(mc_requestfunds_slot()));
+    // --------------------------------------------------------------
+    mc_systrayMenu_import_cash = new QAction(mc_systrayIcon_advanced_import, tr("Import Cash..."), mc_systrayMenu_payments);
+    mc_systrayMenu_payments->addAction(mc_systrayMenu_import_cash);
+    connect(mc_systrayMenu_import_cash, SIGNAL(triggered()), this, SLOT(mc_import_slot()));
+}
+
+void Moneychanger::SetupContractsMenu(QPointer<QMenu> & parent_menu)
+{
+    mc_systrayMenu_contracts = new QMenu(tr("Contracts"), parent_menu);
+    mc_systrayMenu_contracts->setIcon(mc_systrayIcon_advanced_agreements);
+    parent_menu->addMenu(mc_systrayMenu_contracts);
+    // --------------------------------------------------------------
+    SetupAssetMenu(mc_systrayMenu_contracts);
+    SetupServerMenu(mc_systrayMenu_contracts);
+    // -------------------------------------------------
+    mc_systrayMenu_contracts->addSeparator();
+    // -------------------------------------------------
+    mc_systrayMenu_smart_contracts = new QAction(mc_systrayIcon_advanced_agreements, tr("Smart Contract Editor"), mc_systrayMenu_contracts);
+    mc_systrayMenu_contracts->addAction(mc_systrayMenu_smart_contracts);
+    connect(mc_systrayMenu_smart_contracts, SIGNAL(triggered()), this, SLOT(mc_agreement_slot()));
+}
+
+void Moneychanger::SetupToolsMenu(QPointer<QMenu> & parent_menu)
+{
+    mc_systrayMenu_tools = new QMenu(tr("Tools"), parent_menu);
+    mc_systrayMenu_tools->setIcon(mc_systrayIcon_crypto_sign);
+    parent_menu->addMenu(mc_systrayMenu_tools);
+    // --------------------------------------------------------------
+    mc_systrayMenu_crypto_sign = new QAction(mc_systrayIcon_crypto_sign, tr("Sign"), mc_systrayMenu_tools);
+    mc_systrayMenu_tools->addAction(mc_systrayMenu_crypto_sign);
+    connect(mc_systrayMenu_crypto_sign, SIGNAL(triggered()), this, SLOT(mc_crypto_sign_slot()));
+    // --------------------------------------------------------------
+    mc_systrayMenu_crypto_encrypt = new QAction(mc_systrayIcon_crypto_encrypt, tr("Encrypt"), mc_systrayMenu_tools);
+    mc_systrayMenu_tools->addAction(mc_systrayMenu_crypto_encrypt);
+    connect(mc_systrayMenu_crypto_encrypt, SIGNAL(triggered()), this, SLOT(mc_crypto_encrypt_slot()));
+    // --------------------------------------------------------------
+    //Separator
+    mc_systrayMenu_tools->addSeparator();
+    // --------------------------------------------------------------
+    mc_systrayMenu_crypto_decrypt = new QAction(mc_systrayIcon_crypto_decrypt, tr("Decrypt / Verify"), mc_systrayMenu_tools);
+    mc_systrayMenu_tools->addAction(mc_systrayMenu_crypto_decrypt);
+    connect(mc_systrayMenu_crypto_decrypt, SIGNAL(triggered()), this, SLOT(mc_crypto_decrypt_slot()));
+    // --------------------------------------------------------------
+}
+
+void Moneychanger::SetupMessagingMenu(QPointer<QMenu> & parent_menu)
+{
+    mc_systrayMenu_messaging = new QMenu(tr("Messages"), parent_menu);
+    mc_systrayMenu_messaging->setIcon(mc_systrayIcon_composemessage);
+    parent_menu->addMenu(mc_systrayMenu_messaging);
+    // --------------------------------------------------------------
+    //Compose Message
+    mc_systrayMenu_composemessage = new QAction(mc_systrayIcon_composemessage, tr("Compose Message"), mc_systrayMenu_messaging);
+    mc_systrayMenu_messaging->addAction(mc_systrayMenu_composemessage);
+    connect(mc_systrayMenu_composemessage, SIGNAL(triggered()), this, SLOT(mc_composemessage_slot()));
+    // --------------------------------------------------------------
+    //Address Book
+    mc_systrayMenu_contacts = new QAction(mc_systrayIcon_contacts, tr("Address Book"), mc_systrayMenu_messaging);
+    mc_systrayMenu_messaging->addAction(mc_systrayMenu_contacts);
+    connect(mc_systrayMenu_contacts, SIGNAL(triggered()), this, SLOT(mc_addressbook_slot()));
+    // --------------------------------------------------------------
+    //Separator
+    mc_systrayMenu_messaging->addSeparator();
+    // --------------------------------------------------------------
+    // Transport
+    mc_systrayMenu_p2p_transport = new QAction(mc_systrayIcon_advanced_transport, tr("P2P Transport"), mc_systrayMenu_messaging);
+    mc_systrayMenu_messaging->addAction(mc_systrayMenu_p2p_transport);
+    connect(mc_systrayMenu_p2p_transport, SIGNAL(triggered()), this, SLOT(mc_transport_slot()));
+    // --------------------------------------------------------------
+    // Error Log
+    mc_systrayMenu_error_log = new QAction(mc_systrayIcon_overview, tr("Error Log"), mc_systrayMenu_messaging);
+    mc_systrayMenu_messaging->addAction(mc_systrayMenu_error_log);
+    connect(mc_systrayMenu_error_log, SIGNAL(triggered()), this, SLOT(mc_log_slot()));
+
+    connect(this, SIGNAL(appendToLog(QString)),
+            this, SLOT(mc_showlog_slot(QString)));
+    // --------------------------------------------------------------
+}
+
+void Moneychanger::SetupAccountMenu(QPointer<QMenu> & parent_menu)
+{
+    mc_systrayMenu_account = new QMenu(tr("Set default account..."), parent_menu);
     mc_systrayMenu_account->setIcon(mc_systrayIcon_goldaccount);
-    mc_systrayMenu->addMenu(mc_systrayMenu_account);
+    parent_menu->addMenu(mc_systrayMenu_account);
 
     //Add a "Manage accounts" action button (and connection)
     QAction * manage_accounts = new QAction(tr("Manage Accounts..."), mc_systrayMenu_account);
@@ -1122,7 +1143,7 @@ void Moneychanger::mc_addressbook_show(QString text/*=QString("")*/)
     if (!text.isEmpty())
         contactswindow->SetPreSelected(text);
     // -------------------------------------
-    contactswindow->setWindowTitle(tr("Contacts"));
+    contactswindow->setWindowTitle(tr("Address Book"));
     // -------------------------------------
     contactswindow->dialog(MTDetailEdit::DetailEditTypeContact);
 }
@@ -1570,7 +1591,7 @@ void Moneychanger::setDefaultAsset(QString asset_id, QString asset_name)
     //Rename "ASSET:" if a asset is loaded
     if (asset_id != "")
     {
-        mc_systrayMenu_asset->setTitle(tr("Asset Type: ")+asset_name);
+        mc_systrayMenu_asset->setTitle(tr("Asset contract: ")+asset_name);
 
         if (mc_overall_init)
         {
@@ -1763,7 +1784,8 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
     //Rename "ACCOUNT:" if a account is loaded
     if (account_id != "")
     {
-        QString result = tr("Account: ") + account_name;
+        QString result = account_name;
+//      QString result = tr("Account: ") + account_name;
 
         int64_t     lBalance  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance    (account_id.toStdString());
         std::string strAsset  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(account_id.toStdString());
@@ -1932,7 +1954,7 @@ void Moneychanger::setDefaultServer(QString notary_id, QString server_name)
 
     if (mc_overall_init)
     {
-        mc_systrayMenu_server->setTitle(tr("Server: ")+new_server_title);
+        mc_systrayMenu_server->setTitle(tr("Server contract: ")+new_server_title);
 
         // Loop through actions in mc_systrayMenu_server.
         // Ignore the "openmanager" action.
