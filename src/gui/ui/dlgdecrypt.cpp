@@ -3,8 +3,11 @@
 
 #include <gui/ui/dlgexportedtopass.hpp>
 
+#include <core/handlers/contacthandler.hpp>
+
 #include <QClipboard>
 #include <QMessageBox>
+#include <QDebug>
 
 #include <core/moneychanger.hpp>
 #include <core/handlers/focuser.h>
@@ -75,6 +78,9 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
     bool bSuccessDecrypting = false;
     bool bSuccessVerifying  = false;
 
+    QString qstrNymWhoDecrypted;
+    QString qstrNymWhoVerified;
+
     QString qstrText = ui->plainTextEdit->toPlainText().trimmed();
     // --------------------------------
     if (qstrText.isEmpty())
@@ -124,6 +130,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                                 if (theEnvelope.Open(*pNym, strOutput) && strOutput.Exists())
                                 {
                                     bSuccessDecrypting = true;
+                                    qstrNymWhoDecrypted = qstrTempID;
 
                                     strInput  = strOutput;
                                     str_input = strInput.Get();
@@ -133,7 +140,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                         }
                     }
                     // ------------
-                    else // Default nym is NOT available. Okay let's loop through all the Nyms in the wallet then, and try then all...
+                    if (!bSuccessDecrypting) // Default nym is NOT available. Okay let's loop through all the Nyms in the wallet then, and try then all...
                     {
                         const int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
                         // -----------------------------------------------
@@ -144,7 +151,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
 
                             if (!OT_nym_id.isEmpty())
                             {
-                                std::string  str_nym    (OT_nym_id.toStdString());
+                                std::string         str_nym    (OT_nym_id.toStdString());
                                 opentxs::String     strNym     (str_nym.c_str());
                                 opentxs::Identifier nym_id     (strNym);
 
@@ -164,6 +171,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                                         if (theEnvelope.Open(*pNym, strOutput) && strOutput.Exists())
                                         {
                                             bSuccessDecrypting = true;
+                                            qstrNymWhoDecrypted = OT_nym_id;
 
                                             strInput  = strOutput;
                                             str_input = strInput.Get();
@@ -227,6 +235,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                                 if (theSignedFile.VerifySignature(*pNym, &thePWData))
                                 {
                                     bSuccessVerifying = true;
+                                    qstrNymWhoVerified = qstrSignerNym;
 
                                     opentxs::String strContents = theSignedFile.GetFilePayload();
 
@@ -247,19 +256,37 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
             //
             if (!qstrText.isEmpty())
             {
+                MTNameLookupQT theLookup;
+                QString qstrNymWhoDecryptedName(""), qstrNymWhoVerifiedName("");
+
+                if (!qstrNymWhoDecrypted.isEmpty())
+                    qstrNymWhoDecryptedName = QString::fromStdString(theLookup.GetNymName(qstrNymWhoDecrypted.toStdString(), ""));
+                if (!qstrNymWhoVerified.isEmpty())
+                    qstrNymWhoVerifiedName = QString::fromStdString(theLookup.GetNymName(qstrNymWhoVerified.toStdString(), ""));
+                // -------------------------------
+                if (qstrNymWhoDecryptedName.isEmpty())
+                    qstrNymWhoDecryptedName = qstrNymWhoDecrypted;
+                else if (qstrNymWhoDecryptedName != qstrNymWhoDecrypted)
+                    qstrNymWhoDecryptedName += QString(" (%1)").arg(qstrNymWhoDecrypted);
+                // -------------------------------
+                if (qstrNymWhoVerifiedName.isEmpty())
+                    qstrNymWhoVerifiedName = qstrNymWhoVerified;
+                else if (qstrNymWhoVerifiedName != qstrNymWhoVerified)
+                    qstrNymWhoVerifiedName += QString(" (%1)").arg(qstrNymWhoVerified);
+                // -------------------------------
                 QString qstrType("Output:");
 
                 if (bSuccessVerifying)
                 {
-                    qstrType = QString(tr("Verified Signature:"));
+                    qstrType = QString("%1: %2").arg(tr("Verified signature by Nym")).arg(qstrNymWhoVerifiedName);
                 }
                 // -----------
                 if (bSuccessDecrypting)
                 {
                     if (bSuccessVerifying)
-                        qstrType = QString(tr("Decrypted and Signature Verified:"));
+                        qstrType = QString("%1: %2\n%3: %4").arg(tr("Decrypted using Nym")).arg(qstrNymWhoDecryptedName).arg(tr("Verified signature by Nym")).arg(qstrNymWhoVerifiedName);
                     else
-                        qstrType = QString(tr("Decrypted:"));
+                        qstrType = QString("%1: %2").arg(tr("Decrypted using Nym")).arg(qstrNymWhoDecryptedName);
                 }
                 // -----------
                 QString qstrSubTitle(tr("Be sure to copy it somewhere before closing this dialog."));

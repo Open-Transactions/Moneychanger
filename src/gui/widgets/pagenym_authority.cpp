@@ -15,6 +15,7 @@ MTPageNym_Authority::MTPageNym_Authority(QWidget *parent) :
     this->setCommitPage(true);
 
     this->registerField("Authority", ui->comboBoxAuthority);
+    this->registerField("Algorithm", ui->comboBoxAlgorithm);
 }
 
 

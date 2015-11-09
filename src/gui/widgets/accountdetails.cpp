@@ -344,18 +344,59 @@ void MTAccountDetails::DeleteButtonClicked()
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
-            // TODO: Need to use opentxs::OT_ME to send a "delete account" message to the server.
-            // Only if that is successful, do we set bSuccess here to true.
+            const std::string str_account_id   = m_pOwner->m_qstrCurrentID.toStdString();
+            const std::string str_owner_nym_id = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (str_account_id);
+            const std::string str_notary_id    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_account_id);
+            // ----------------------------------------------------
+            opentxs::OT_ME madeEasy;
 
-//          bool bSuccess = opentxs::OTAPI_Wrap::It()->Wallet_RemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
-
-            bool bSuccess = false;
-
-            if (!bSuccess)
-                QMessageBox::warning(this, tr("Failure Deleting Account"),
-                                     tr("Failed trying to delete this Account."));
-            else
+            int32_t nSuccess = 0;
+            bool    bDeleted = false;
             {
+                MTSpinner theSpinner;
+
+                std::string strResponse = madeEasy.unregister_account(str_notary_id, str_owner_nym_id, str_account_id);
+                nSuccess                = madeEasy.VerifyMessageSuccess(strResponse);
+            }
+            // -1 is error,
+            //  0 is reply received: failure
+            //  1 is reply received: success
+            //
+            switch (nSuccess)
+            {
+            case (1):
+                {
+                    bDeleted = true;
+                    break; // SUCCESS
+                }
+            case (0):
+                {
+                    QMessageBox::warning(this, tr("Moneychanger"),
+                        tr("Failed while trying to unregister account from Server."));
+                    break;
+                }
+            default:
+                {
+                    QMessageBox::warning(this, tr("Moneychanger"),
+                        tr("Error while trying to unregister account from Server."));
+                    break;
+                }
+            } // switch
+            // --------------------------
+            if (1 != nSuccess)
+            {
+                Moneychanger::It()->HasUsageCredits(QString::fromStdString(str_notary_id), QString::fromStdString(str_owner_nym_id));
+                return;
+            }
+            // --------------------------
+            if (bDeleted)
+            {
+                // NOTE: OTClient.cpp already does this, as soon as it receives a success reply
+                // from the above server message to unregisterAccount. So we don't have to do this
+                // here, since it's already done by the time we reach this point.
+                //
+//              bool bSuccess = opentxs::OTAPI_Wrap::It()->Wallet_RemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
+                // ------------------------------------------------
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 // ------------------------------------------------
                 emit RefreshRecordsAndUpdateMenu();
@@ -363,7 +404,6 @@ void MTAccountDetails::DeleteButtonClicked()
             }
         }
     }
-    // ----------------------------------------------------
 }
 
 
