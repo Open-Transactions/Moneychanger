@@ -666,7 +666,7 @@ void MTServerDetails::AddButtonClicked()
             std::string strContractID = opentxs::OTAPI_Wrap::It()->CreateServerContract(qstrNymID.toStdString(),
                                                                                         qstrXMLContents.toStdString());
 
-            if ("" == strContractID) {
+            if (strContractID.empty() || "" == strContractID) {
                 QMessageBox::warning(this, tr("Failed Creating Contract"),
                                      tr("Unable to create contract. Perhaps the XML contents were bad?"));
                 return;
@@ -674,7 +674,7 @@ void MTServerDetails::AddButtonClicked()
             else {
                 std::string strNewContract = opentxs::OTAPI_Wrap::It()->GetServer_Contract(strContractID);
 
-                if ("" == strNewContract) {
+                if (strNewContract.empty() || "" == strNewContract) {
                     QMessageBox::warning(this, tr("Unable to Load"),
                                          tr("While the contract was apparently created, Moneychanger is unable to load it up. (Strange.)"));
                     return;

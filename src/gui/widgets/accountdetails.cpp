@@ -325,16 +325,35 @@ void MTAccountDetails::DeleteButtonClicked()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
+        const std::string str_account_id   = m_pOwner->m_qstrCurrentID.toStdString();
+        const std::string str_owner_nym_id = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (str_account_id);
+        const std::string str_notary_id    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_account_id);
         // ----------------------------------------------------
+        // Download all the intermediary files (account balance, inbox, outbox, etc)
+        // to make sure we're looking at the latest inbox.
+        //
+        opentxs::OT_ME retrieveAcct;
+        bool bRetrieved = false;
+        {
+            MTSpinner theSpinner;
+
+            bRetrieved = retrieveAcct.retrieve_account(str_notary_id, str_owner_nym_id, str_account_id, true); //bForceDownload defaults to false.
+        }
+        qDebug() << QString("%1 retrieving intermediary files for account %2. (Precursor to delete account.)").
+                    arg(bRetrieved ? QString("Success") : QString("Failed")).arg(str_account_id.c_str());
+        // -------------
+        if (!bRetrieved)
+        {
+            Moneychanger::It()->HasUsageCredits(str_notary_id, str_owner_nym_id);
+            return;
+        }
+        // ---------------------------------------------------------
         bool bCanRemove = opentxs::OTAPI_Wrap::It()->Wallet_CanRemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
 
         if (!bCanRemove)
         {
             QMessageBox::warning(this, tr("Account Cannot Be Deleted"),
-                                 tr("This Account cannot be deleted yet, since it probably doesn't have a zero balance, "
-                                         "and probably still has outstanding receipts. (This is where, in the future, "
-                                         "you will be given the option to automatically close-out all that stuff and thus delete "
-                                         "this Account.)"));
+                                 tr("This Account cannot be deleted until it has a zero balance and an empty inbox."));
             return;
         }
         // ----------------------------------------------------
@@ -344,10 +363,6 @@ void MTAccountDetails::DeleteButtonClicked()
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
-            const std::string str_account_id   = m_pOwner->m_qstrCurrentID.toStdString();
-            const std::string str_owner_nym_id = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (str_account_id);
-            const std::string str_notary_id    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_account_id);
-            // ----------------------------------------------------
             opentxs::OT_ME madeEasy;
 
             int32_t nSuccess = 0;
