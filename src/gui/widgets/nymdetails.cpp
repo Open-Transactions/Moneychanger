@@ -620,6 +620,7 @@ void MTNymDetails::AddButtonClicked()
     {
         QString qstrName        = theWizard.field("Name")     .toString();
         int     nAuthorityIndex = theWizard.field("Authority").toInt();
+        int     nAlgorithmIndex = theWizard.field("Algorithm").toInt();
         QString qstrSource      = theWizard.field("Source")   .toString();
         QString qstrLocation    = theWizard.field("Location") .toString();
         // ---------------------------------------------------
@@ -637,25 +638,44 @@ void MTNymDetails::AddButtonClicked()
         if (!qstrLocation.isEmpty())
             ALT_LOCATION = qstrLocation.toStdString();
         // -------------------------------------------
-
         // Create Nym here...
         //
         opentxs::OT_ME madeEasy;
+        std::string    str_id;
 
-        std::string str_id = madeEasy.create_nym_ecdsa(NYM_ID_SOURCE, ALT_LOCATION);
-
+        switch (nAlgorithmIndex)
+        {
+            case 0:  // ECDSA
+                str_id = madeEasy.create_nym_ecdsa(NYM_ID_SOURCE, ALT_LOCATION);
+                break;
+            case 1: // 1024-bit RSA
+                str_id = madeEasy.create_nym_legacy(1024, NYM_ID_SOURCE, ALT_LOCATION);
+                break;
+//            case 2: // 2048-bit RSA
+//                str_id = madeEasy.create_nym_legacy(2048, NYM_ID_SOURCE, ALT_LOCATION);
+//                break;
+//            case 3: // 4096-bit RSA
+//                str_id = madeEasy.create_nym_legacy(4096, NYM_ID_SOURCE, ALT_LOCATION);
+//                break;
+//            case 4: // 8192-bit RSA
+//                str_id = madeEasy.create_nym_legacy(8192, NYM_ID_SOURCE, ALT_LOCATION);
+//                break;
+            default:
+                QMessageBox::warning(this, tr("Moneychanger"),
+                    tr("Unexpected key type."));
+                return;
+        }
+        // --------------------------------------------------
         if (str_id.empty())
         {
-            QMessageBox::warning(this, tr("Failed Creating Nym"),
+            QMessageBox::warning(this, tr("Moneychanger"),
                 tr("Failed trying to create Nym."));
             return;
         }
-
         // ------------------------------------------------------
         // Get the ID of the new nym.
         //
         QString qstrID = QString::fromStdString(str_id);
-
         // ------------------------------------------------------
         // Register the Namecoin name.
         if (nAuthorityIndex == 1)
@@ -683,8 +703,8 @@ void MTNymDetails::AddButtonClicked()
         // -----------------------------------------------
         // Commenting this out for now.
         //
-//        QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Creating Nym! Name")).
-//                                 arg(qstrName).arg(tr("ID")).arg(qstrID));
+//      QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Creating Nym! Name")).
+//                               arg(qstrName).arg(tr("ID")).arg(qstrID));
         // ----------
         m_pOwner->m_map.insert(qstrID, qstrName);
         m_pOwner->SetPreSelected(qstrID);
