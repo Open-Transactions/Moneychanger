@@ -475,10 +475,8 @@ void MTAssetDetails::DeleteButtonClicked()
 
         if (!bCanRemove)
         {
-            QMessageBox::warning(this, tr("Asset Contract Cannot Be Removed"),
-                                 tr("This Asset Contract cannot be removed, since you probably have already created accounts "
-                                         "using this asset type. (This is where, in the future, you would be given the option "
-                                         "to automatically delete those accounts, and remove this asset contract along with them.)"));
+            QMessageBox::warning(this, tr("Moneychanger"),
+                                 tr("This asset contract cannot be removed, because there are still accounts in the wallet that are using it. Please delete those accounts first."));
             return;
         }
         // ----------------------------------------------------
