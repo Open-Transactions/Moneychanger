@@ -634,6 +634,8 @@ QWidget * MTHome::CreateUserBarWidget()
 //  QPixmap pixmapIdentities(":/icons/icons/user.png");
 //  QPixmap pixmapContacts  (":/icons/icons/rolodex_small");
     QPixmap pixmapSecrets   (":/icons/icons/vault.png");
+//  QPixmap pixmapSecrets   (":/icons/icons/safe.png");
+
     QPixmap pixmapRefresh   (":/icons/icons/refresh.png");
     // ----------------------------------------------------------------
     QIcon sendButtonIcon      (pixmapSend);

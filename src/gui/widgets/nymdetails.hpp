@@ -7,6 +7,9 @@
 #include <gui/widgets/editdetails.hpp>
 
 #include <QGroupBox>
+#include <QMenu>
+#include <QAction>
+#include <QScopedPointer>
 
 namespace Ui {
 class MTNymDetails;
@@ -26,7 +29,6 @@ public:
     virtual void refresh(QString strID, QString strName);
     virtual void AddButtonClicked();
     virtual void DeleteButtonClicked();
-    
     // ----------------------------------
     // Only used on construction (aka when dialog() is called for first time.)
     //
@@ -34,12 +36,16 @@ public:
     virtual QWidget * CreateCustomTab (int nTab);
     virtual QString   GetCustomTabName(int nTab);
     // ----------------------------------
-
     virtual void ClearContents();
 
 private:
     QPointer<QPlainTextEdit> m_pPlainTextEdit;
     QPointer<MTCredentials>  m_pCredentials;
+
+    QScopedPointer<QMenu> popupMenu_;
+
+    QAction * pActionRegister_;
+    QAction * pActionUnregister_;
 
 private slots:
     void on_lineEditName_editingFinished();
@@ -48,10 +54,13 @@ private slots:
     void on_btnAddressAdd_clicked();
     void on_btnAddressDelete_clicked();
 
+    void on_tableWidget_customContextMenuRequested(const QPoint &pos);
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
     void FavorLeftSideForIDs();
+    void clearNotaryTable();
 
     QGroupBox * createAddressGroupBox    (QString strNymID);
     QWidget   * createSingleAddressWidget(QString strNymID, int nMethodID, QString qstrAddress, QString qstrDisplayAddr);

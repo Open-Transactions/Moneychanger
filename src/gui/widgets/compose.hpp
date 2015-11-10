@@ -85,6 +85,8 @@ signals:
 
     void ShowContact(QString);
     void ShowNym(QString);
+    void ShowTransport(QString);
+    void ShowServer(QString);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -101,6 +103,8 @@ private slots:
     void on_toolButtonFrom_clicked();
 
     void on_subjectEdit_textChanged(const QString &arg1);
+
+    void on_toolButton_3_clicked();
 
 private:
     bool already_init;

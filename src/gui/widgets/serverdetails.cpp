@@ -122,7 +122,7 @@ QWidget * MTServerDetails::CreateCustomTab(int nTab)
         // -------------------------------
         QVBoxLayout * pvBox = new QVBoxLayout;
 
-        QLabel * pLabelContents = new QLabel(tr("Server Contract:"));
+        QLabel * pLabelContents = new QLabel(tr("Set default notary..."));
 
         pvBox->setAlignment(Qt::AlignTop);
         pvBox->addWidget   (pLabelContents);
@@ -226,9 +226,8 @@ void MTServerDetails::DeleteButtonClicked()
 
         if (!bCanRemove)
         {
-            QMessageBox::warning(this, tr("Server Cannot Be Deleted"),
-                                 tr("This Server cannot be deleted yet, since you probably have Nyms registered there. "
-                                         "(This is where, in the future, you'd be given the option to automatically delete those Nyms.)"));
+            QMessageBox::warning(this, tr("Moneychanger"),
+                                 tr("This server contract cannot be removed, because there are still accounts and/or nyms in the wallet that are registered there. Please unregister the relevant nyms, and/or delete the relevant accounts, first."));
             return;
         }
         // ----------------------------------------------------
