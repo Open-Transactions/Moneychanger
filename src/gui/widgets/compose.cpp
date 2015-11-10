@@ -17,6 +17,9 @@
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
 
+#include <opentxs/core/String.hpp>
+#include <opentxs/core/Identifier.hpp>
+
 #include <QMessageBox>
 #include <QDebug>
 #include <QStringList>
@@ -2838,8 +2841,10 @@ MTCompose::MTCompose(QWidget *parent) :
 
     connect(this, SIGNAL(balancesChanged()), this, SLOT(onBalancesChanged()));
 
-    connect(this, SIGNAL(ShowContact(QString)), Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
-    connect(this, SIGNAL(ShowNym(QString)),     Moneychanger::It(), SLOT(mc_show_nym_slot(QString)));
+    connect(this, SIGNAL(ShowContact(QString)),   Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
+    connect(this, SIGNAL(ShowNym(QString)),       Moneychanger::It(), SLOT(mc_show_nym_slot(QString)));
+    connect(this, SIGNAL(ShowTransport(QString)), Moneychanger::It(), SLOT(mc_showtransport_slot(QString)));
+    connect(this, SIGNAL(ShowServer(QString)),    Moneychanger::It(), SLOT(mc_show_server_slot(QString)));
 
     ui->toolButton  ->setStyleSheet("QToolButton { border: 0px solid #575757; }");
     ui->toolButton_2->setStyleSheet("QToolButton { border: 0px solid #575757; }");
@@ -2892,4 +2897,15 @@ void MTCompose::on_toolButtonFrom_clicked()
         qstrNymID = m_senderNymId;
     // ------------------------------------------------
     emit ShowNym(qstrNymID);
+}
+
+void MTCompose::on_toolButton_3_clicked()
+{
+    if ((QString("otserver") == m_msgtype) && !m_NotaryID.isEmpty())
+        emit ShowServer(m_NotaryID);
+    else if (QString("otserver") != m_msgtype)
+    {
+        QString methodID = QString("%1").arg(m_senderMethodId);
+        emit ShowTransport(methodID);
+    }
 }

@@ -7,9 +7,11 @@
 
 #include <gui/widgets/credentials.hpp>
 #include <gui/widgets/wizardaddnym.hpp>
+#include <gui/widgets/overridecursor.hpp>
 
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
+#include <core/moneychanger.hpp>
 
 #include <namecoin/Namecoin.hpp>
 
@@ -33,7 +35,9 @@
 // ------------------------------------------------------
 MTNymDetails::MTNymDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
-    ui(new Ui::MTNymDetails)
+    ui(new Ui::MTNymDetails),
+    pActionRegister_(nullptr),
+    pActionUnregister_(nullptr)
 {
     ui->setupUi(this);
     this->setContentsMargins(0, 0, 0, 0);
@@ -41,11 +45,30 @@ MTNymDetails::MTNymDetails(QWidget *parent, MTDetailEdit & theOwner) :
 
     ui->lineEditID->setStyleSheet("QLineEdit { background-color: lightgray }");
     // ----------------------------------
+    ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    // ----------------------------------
+    ui->tableWidget->verticalHeader()->hide();
+    // ----------------------------------
+    ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
+    ui->tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+    // ----------------------------------
+    ui->tableWidget->setSelectionMode    (QAbstractItemView::SingleSelection);
+    ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    // ----------------------------------
+    ui->tableWidget->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignLeft);
+    ui->tableWidget->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignLeft);
+    // ----------------------------------
     // Note: This is a placekeeper, so later on I can just erase
     // the widget at 0 and replace it with the real header widget.
     //
     m_pHeaderWidget  = new QWidget;
     ui->verticalLayout->insertWidget(0, m_pHeaderWidget);
+    // ----------------------------------
+    popupMenu_.reset(new QMenu(this));
+
+    //popupMenu_->addAction("Menu Item 1", this, SLOT(menuItemActivated()));
+    pActionRegister_ = popupMenu_->addAction(tr("Register"));
+    pActionUnregister_ = popupMenu_->addAction(tr("Unregister"));
     // ----------------------------------
 }
 
@@ -203,9 +226,15 @@ QWidget * MTNymDetails::createNewAddressWidget(QString strNymID)
     }
     // -----------------------------------------------
     if (mapMethods.size() > 0)
+    {
+        pWidget->setVisible(true);
         pCombo->setCurrentIndex(0);
+    }
     else
+    {
+        pWidget->setVisible(false);
         pBtnAdd->setEnabled(false);
+    }
     // -----------------------------------------------
     QLabel      * pLabel   = new QLabel(tr("Address:"));
     QLineEdit   * pAddress = new QLineEdit;
@@ -394,6 +423,8 @@ QGroupBox * MTNymDetails::createAddressGroupBox(QString strNymID)
     QGroupBox   * pBox = new QGroupBox(tr("P2P Addresses"));
     QVBoxLayout * vbox = new QVBoxLayout;
     // -----------------------------------------------------------------
+    int nAddressesAdded = 0;
+    // -----------------------------------------------------------------
     // Loop through all known transport methods (communications addresses)
     // known for this Nym,
     mapIDName theMap;
@@ -416,11 +447,13 @@ QGroupBox * MTNymDetails::createAddressGroupBox(QString strNymID)
                 QWidget * pWidget = this->createSingleAddressWidget(strNymID, nMethodID, qstrAddress, qstrAddress);
 
                 if (NULL != pWidget)
+                {
+                    nAddressesAdded++;
                     vbox->addWidget(pWidget);
+                }
             }
         }
     }
-
     // -----------------------------------------------------------------
     QWidget * pWidget = this->createNewAddressWidget(strNymID);
 
@@ -428,7 +461,10 @@ QGroupBox * MTNymDetails::createAddressGroupBox(QString strNymID)
         vbox->addWidget(pWidget);
     // -----------------------------------------------------------------
     pBox->setLayout(vbox);
-
+    // -----------------------------------------------------------------
+    if (pWidget->isHidden() && (0 == nAddressesAdded))
+        pBox->hide();
+    // -----------------------------------------------------------------
     return pBox;
 }
 
@@ -439,7 +475,9 @@ void MTNymDetails::refresh(QString strID, QString strName)
 
     if ((NULL != ui) && !strID.isEmpty())
     {
-        QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName, "", "", ":/icons/icons/identity_BW.png", false);
+        QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName,
+                                                                           "", "", ":/icons/icons/identity_BW.png",
+                                                                           false);
 
         pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 
@@ -460,7 +498,48 @@ void MTNymDetails::refresh(QString strID, QString strName)
         ui->lineEditName->setText(strName);
 
         FavorLeftSideForIDs();
-        // --------------------------
+        // ----------------------------------------------------------------
+        clearNotaryTable();
+        // ----------------------------------------------------------------
+        ui->tableWidget->blockSignals(true);
+        // ----------------------------
+        std::string nymId   = strID.toStdString();
+        const int32_t serverCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
+
+        for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
+        {
+            std::string NotaryID   = opentxs::OTAPI_Wrap::It()->GetServer_ID(serverIndex);
+            QString qstrNotaryID   = QString::fromStdString(NotaryID);
+            QString qstrNotaryName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(NotaryID));
+            bool    bStatus        = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(nymId, NotaryID);
+            QString qstrStatus     = bStatus ? tr("Registered") : tr("Not registered");
+            // ----------------------------------
+            int column = 0;
+            // ----------------------------------
+            ui->tableWidget->insertRow(0);
+            QTableWidgetItem * item = nullptr;
+            // ----------------------------------
+            item = new QTableWidgetItem(qstrNotaryName);
+            item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
+            ui->tableWidget->setItem(0, column++, item);
+            // ----------------------------------
+            item = new QTableWidgetItem(qstrStatus);
+            item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
+            ui->tableWidget->setItem(0, column++, item);
+            // ----------------------------------
+            item = new QTableWidgetItem(qstrNotaryID);
+            item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
+            ui->tableWidget->setItem(0, column++, item);
+            // ----------------------------------
+            ui->tableWidget->item(0,0)->setData(Qt::UserRole, QVariant(qstrNotaryID));
+        }
+        if (serverCount < 1)
+            ui->tableWidget->setCurrentCell(-1,0);
+        else
+            ui->tableWidget->setCurrentCell(0,0);
+        // ----------------------------
+        ui->tableWidget->blockSignals(false);
+        // ----------------------------------------------------------------
         QGroupBox * pAddresses = this->createAddressGroupBox(strID);
 
         if (m_pAddresses)
@@ -476,9 +555,6 @@ void MTNymDetails::refresh(QString strID, QString strName)
         ui->verticalLayout->addWidget(pAddresses);
 
         m_pAddresses = pAddresses;
-        // ----------------------------------
-
-
         // ----------------------------------
         // TAB: "Nym State"
         //
@@ -501,17 +577,29 @@ void MTNymDetails::refresh(QString strID, QString strName)
     }
 }
 
+void MTNymDetails::clearNotaryTable()
+{
+    ui->tableWidget->blockSignals(true);
+    // -----------------------------------
+    ui->tableWidget->clearContents();
+    ui->tableWidget->setRowCount (0);
+    // -----------------------------------
+    ui->tableWidget->setCurrentCell(-1, 0);
+    ui->tableWidget->blockSignals(false);
+}
+
 void MTNymDetails::ClearContents()
 {
     ui->lineEditID  ->setText("");
     ui->lineEditName->setText("");
-
     // ------------------------------------------
     if (m_pCredentials)
         m_pCredentials->ClearContents();
     // ------------------------------------------
     if (m_pPlainTextEdit)
         m_pPlainTextEdit->setPlainText("");
+    // ------------------------------------------
+    clearNotaryTable();
     // ------------------------------------------
     if (m_pAddresses)
     {
@@ -576,11 +664,10 @@ void MTNymDetails::DeleteButtonClicked()
 
         if (!bCanRemove)
         {
-            QMessageBox::warning(this, tr("Nym Cannot Be Deleted"),
-                                 tr("This Nym cannot be deleted yet, since it's already been registered on at least one "
-                                         "server, and perhaps even owns an asset account or two. (This is where, in the future, "
-                                         "you will be given the option to automatically delete all that stuff and thus delete "
-                                         "this Nym.)"));
+            QMessageBox::warning(this, tr("Moneychanger"),
+                                 tr("For your protection, Nyms already registered on a notary cannot be summarily deleted. "
+                                    "Please unregister first. (You may also delete need to any accounts you may have registered "
+                                    "at that same notary using the same Nym.)"));
             return;
         }
         // ----------------------------------------------------
@@ -620,6 +707,7 @@ void MTNymDetails::AddButtonClicked()
     {
         QString qstrName        = theWizard.field("Name")     .toString();
         int     nAuthorityIndex = theWizard.field("Authority").toInt();
+        int     nAlgorithmIndex = theWizard.field("Algorithm").toInt();
         QString qstrSource      = theWizard.field("Source")   .toString();
         QString qstrLocation    = theWizard.field("Location") .toString();
         // ---------------------------------------------------
@@ -637,25 +725,44 @@ void MTNymDetails::AddButtonClicked()
         if (!qstrLocation.isEmpty())
             ALT_LOCATION = qstrLocation.toStdString();
         // -------------------------------------------
-
         // Create Nym here...
         //
         opentxs::OT_ME madeEasy;
+        std::string    str_id;
 
-        std::string str_id = madeEasy.create_nym_ecdsa(NYM_ID_SOURCE, ALT_LOCATION);
-
+        switch (nAlgorithmIndex)
+        {
+            case 0:  // ECDSA
+                str_id = madeEasy.create_nym_ecdsa(NYM_ID_SOURCE, ALT_LOCATION);
+                break;
+            case 1: // 1024-bit RSA
+                str_id = madeEasy.create_nym_legacy(1024, NYM_ID_SOURCE, ALT_LOCATION);
+                break;
+//            case 2: // 2048-bit RSA
+//                str_id = madeEasy.create_nym_legacy(2048, NYM_ID_SOURCE, ALT_LOCATION);
+//                break;
+//            case 3: // 4096-bit RSA
+//                str_id = madeEasy.create_nym_legacy(4096, NYM_ID_SOURCE, ALT_LOCATION);
+//                break;
+//            case 4: // 8192-bit RSA
+//                str_id = madeEasy.create_nym_legacy(8192, NYM_ID_SOURCE, ALT_LOCATION);
+//                break;
+            default:
+                QMessageBox::warning(this, tr("Moneychanger"),
+                    tr("Unexpected key type."));
+                return;
+        }
+        // --------------------------------------------------
         if (str_id.empty())
         {
-            QMessageBox::warning(this, tr("Failed Creating Nym"),
+            QMessageBox::warning(this, tr("Moneychanger"),
                 tr("Failed trying to create Nym."));
             return;
         }
-
         // ------------------------------------------------------
         // Get the ID of the new nym.
         //
         QString qstrID = QString::fromStdString(str_id);
-
         // ------------------------------------------------------
         // Register the Namecoin name.
         if (nAuthorityIndex == 1)
@@ -683,8 +790,8 @@ void MTNymDetails::AddButtonClicked()
         // -----------------------------------------------
         // Commenting this out for now.
         //
-//        QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Creating Nym! Name")).
-//                                 arg(qstrName).arg(tr("ID")).arg(qstrID));
+//      QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Creating Nym! Name")).
+//                               arg(qstrName).arg(tr("ID")).arg(qstrID));
         // ----------
         m_pOwner->m_map.insert(qstrID, qstrName);
         m_pOwner->SetPreSelected(qstrID);
@@ -694,6 +801,167 @@ void MTNymDetails::AddButtonClicked()
     }
 }
 
+// ------------------------------------------------------
+
+void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
+{
+    if (!m_pOwner->m_qstrCurrentID.isEmpty())
+    {
+        QString qstrNymID(m_pOwner->m_qstrCurrentID);
+        QString qstrNymName(m_pOwner->m_qstrCurrentName);
+        const std::string str_nym_id = qstrNymID.toStdString();
+        // ----------------------------------------------------
+        QTableWidgetItem * pItem = ui->tableWidget->itemAt(pos);
+
+        if (NULL != pItem)
+        {
+            int nRow = pItem->row();
+
+            if (nRow >= 0)
+            {
+                QString qstrNotaryID = ui->tableWidget->item(nRow, 0)->data(Qt::UserRole).toString();
+                std::string str_notary_id = qstrNotaryID.toStdString();
+                QString qstrNotaryName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(str_notary_id));
+                // ------------------------
+                QPoint globalPos = ui->tableWidget->mapToGlobal(pos);
+                // ------------------------
+                const QAction* selectedAction = popupMenu_->exec(globalPos); // Here we popup the menu, and get the user's click.
+                // ------------------------
+                if (selectedAction == pActionRegister_)
+                {
+                    if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(str_nym_id, str_notary_id))
+                    {
+                        QMessageBox::information(this, tr("Moneychanger"), QString("%1 '%2' %3 '%4'.").arg(tr("The Nym")).
+                                                 arg(qstrNymName).arg(tr("is already registered on notary")).arg(qstrNotaryName));
+                        return;
+                    }
+                    else
+                    {
+                        opentxs::OT_ME madeEasy;
+
+                        int32_t nSuccess = 0;
+                        bool    bRegistered = false;
+                        {
+                            MTSpinner theSpinner;
+
+                            std::string strResponse = madeEasy.register_nym(str_notary_id, str_nym_id);
+                            nSuccess                = madeEasy.VerifyMessageSuccess(strResponse);
+                        }
+                        // -1 is error,
+                        //  0 is reply received: failure
+                        //  1 is reply received: success
+                        //
+                        switch (nSuccess)
+                        {
+                        case (1):
+                            {
+                                bRegistered = true;
+
+                                QMessageBox::information(this, tr("Moneychanger"),
+                                    tr("Success!"));
+
+                                break; // SUCCESS
+                            }
+                        case (0):
+                            {
+                                QMessageBox::warning(this, tr("Moneychanger"),
+                                    tr("Failed while trying to register nym on Server."));
+                                break;
+                            }
+                        default:
+                            {
+                                QMessageBox::warning(this, tr("Moneychanger"),
+                                    tr("Error while trying to register nym on Server."));
+                                break;
+                            }
+                        } // switch
+                        // --------------------------
+                        if (1 != nSuccess)
+                        {
+                            Moneychanger::It()->HasUsageCredits(QString::fromStdString(str_notary_id), QString::fromStdString(str_nym_id));
+                            return;
+                        }
+                    }
+                }
+                // ------------------------
+                else if (selectedAction == pActionUnregister_)
+                {
+                    if (!opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(str_nym_id, str_notary_id))
+                    {
+                        QMessageBox::information(this, tr("Moneychanger"), QString("%1 '%2' %3 '%4'.").arg(tr("The Nym")).
+                                                 arg(qstrNymName).arg(tr("is already not registered on notary")).arg(qstrNotaryName));
+                        return;
+                    }
+                    else
+                    {
+                        // See if Nym even CAN unregister.
+                        // (Not if he has any accounts there -- he must delete those accounts first.)
+                        //
+                        mapIDName accountMap;
+                        if (MTContactHandler::getInstance()->GetAccounts(accountMap, qstrNymID, qstrNotaryID, QString("")))
+                        {
+                            QMessageBox::information(this, tr("Moneychanger"), QString("%1 '%2' %3 '%4'. %5.").arg(tr("The Nym")).
+                                                     arg(qstrNymName).arg(tr("still has asset accounts on the notary")).arg(qstrNotaryName).arg(tr("Please delete those first")));
+                            return;
+                        }
+                        // -----------------------------------
+                        QMessageBox::StandardButton reply;
+                        reply = QMessageBox::question(this, tr("Moneychanger"),
+                                                      tr("Are you sure you want to unregister your Nym from this notary?"),
+                                                      QMessageBox::Yes|QMessageBox::No);
+                        if (reply == QMessageBox::Yes)
+                        {
+                            opentxs::OT_ME madeEasy;
+
+                            int32_t nSuccess = 0;
+                            bool    bUnregistered = false;
+                            {
+                                MTSpinner theSpinner;
+
+                                std::string strResponse = madeEasy.unregister_nym(str_notary_id, str_nym_id);
+                                nSuccess                = madeEasy.VerifyMessageSuccess(strResponse);
+                            }
+                            // -1 is error,
+                            //  0 is reply received: failure
+                            //  1 is reply received: success
+                            //
+                            switch (nSuccess)
+                            {
+                            case (1):
+                                {
+                                    bUnregistered = true;
+
+                                    QMessageBox::information(this, tr("Moneychanger"),
+                                        tr("Success!"));
+
+                                    break; // SUCCESS
+                                }
+                            case (0):
+                                {
+                                    QMessageBox::warning(this, tr("Moneychanger"),
+                                        tr("Failed while trying to unregister nym from Server."));
+                                    break;
+                                }
+                            default:
+                                {
+                                    QMessageBox::warning(this, tr("Moneychanger"),
+                                        tr("Error while trying to unregister nym from Server."));
+                                    break;
+                                }
+                            } // switch
+                            // --------------------------
+                            if (1 != nSuccess)
+                            {
+                                Moneychanger::It()->HasUsageCredits(QString::fromStdString(str_notary_id), QString::fromStdString(str_nym_id));
+                                return;
+                            }
+                        }
+                    }
+                }
+            } // nRow >= 0
+        } // pItem not NULL.
+    }
+}
 
 // ------------------------------------------------------
 
@@ -718,6 +986,7 @@ void MTNymDetails::on_lineEditName_editingFinished()
 }
 
 // ------------------------------------------------------
+
 
 
 

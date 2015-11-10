@@ -14,6 +14,9 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
 
+#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+
 #include <QComboBox>
 #include <QPushButton>
 #include <QPlainTextEdit>
@@ -165,26 +168,29 @@ void MTContactDetails::DeleteButtonClicked()
 //virtual
 void MTContactDetails::AddButtonClicked()
 {
-    // -----------------------------------------------
     MTDlgNewContact theNewContact(this);
-    // -----------------------------------------------
     theNewContact.setWindowTitle(tr("Create New Contact"));
     // -----------------------------------------------
     if (theNewContact.exec() == QDialog::Accepted)
     {
         QString nymID = theNewContact.GetId();
 
-//      qDebug() << QString("MTContactDetails::AddButtonClicked: OKAY was clicked. Value: %1").arg(nymID);
-
         if (!nymID.isEmpty())
         {
+            if (!opentxs::OTAPI_Wrap::It()->IsValidID(nymID.toStdString()))
+            {
+                QMessageBox::warning(this, tr("Moneychanger"),
+                                     tr("Sorry, that is not a valid Open-Transactions Nym ID."));
+                return;
+            }
+            // --------------------------------------------------------
             int nExisting = MTContactHandler::getInstance()->FindContactIDByNymID(nymID);
 
             if (nExisting > 0)
             {
                 QString contactName = MTContactHandler::getInstance()->GetContactName(nExisting);
 
-                QMessageBox::warning(this, tr("Contact Already Exists"),
+                QMessageBox::warning(this, tr("Moneychanger"),
                                      tr("Contact '%1' already exists with NymID: %2").arg(contactName).arg(nymID));
                 return;
             }
@@ -195,7 +201,7 @@ void MTContactDetails::AddButtonClicked()
 
             if (nContact <= 0)
             {
-                QMessageBox::warning(this, tr("Failed creating contact"),
+                QMessageBox::warning(this, tr("Moneychanger"),
                                      tr("Failed trying to create contact for NymID: %1").arg(nymID));
                 return;
             }

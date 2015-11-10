@@ -39,7 +39,9 @@ bool MTPageAddContract::validatePage()
 
     // If we're creating a server contract, I want to display a warning to the user.
     //
-    if ((0 == qstrType.compare("server")) && (opentxs::OTAPI_Wrap::It()->GetAccountCount() > 0)) {
+    if ((0 == qstrType.compare("server")) &&
+        ui->radioButton_2->isChecked() && // "Create" (versus "Import".)
+        (opentxs::OTAPI_Wrap::It()->GetAccountCount() > 0)) {
         QMessageBox::StandardButton reply;
 
         reply = QMessageBox::question(this, "", QString("%1<br/><br/>%2<br/><br/>%3").arg(tr("Are you sure you want to create a server contract?")).

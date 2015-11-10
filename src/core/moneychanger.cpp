@@ -910,7 +910,7 @@ void Moneychanger::SetupContractsMenu(QPointer<QMenu> & parent_menu)
 
 void Moneychanger::SetupToolsMenu(QPointer<QMenu> & parent_menu)
 {
-    mc_systrayMenu_tools = new QMenu(tr("Tools"), parent_menu);
+    mc_systrayMenu_tools = new QMenu(tr("Crypto Tools"), parent_menu);
     mc_systrayMenu_tools->setIcon(mc_systrayIcon_crypto_sign);
     parent_menu->addMenu(mc_systrayMenu_tools);
     // --------------------------------------------------------------
