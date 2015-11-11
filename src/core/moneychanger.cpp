@@ -2479,6 +2479,25 @@ void Moneychanger::onNewNymAdded(QString qstrID)
 {
     if (homewindow)
     {
+        // Add a new Contact in the Address Book for this Nym as well.
+        // It's a pain having to add my own Nyms to the address book
+        // by hand for sending payments between them.
+
+        QString qstrNymName("");
+
+        if (!qstrID.isEmpty())
+        {
+            MTNameLookupQT theLookup;
+            qstrNymName = QString::fromStdString(theLookup.GetNymName(qstrID.toStdString(), ""));
+            int nContactID  = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrID, "");
+
+            if (!qstrNymName.isEmpty() && (nContactID > 0))
+            {
+                qstrNymName += tr(" (local wallet)");
+                MTContactHandler::getInstance()->SetContactName(nContactID, qstrNymName);
+            }
+        }
+        // --------------------------------------------------
         homewindow->onNewNymAdded(qstrID);
     }
 }
