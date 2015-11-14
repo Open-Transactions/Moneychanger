@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>544</width>
-    <height>378</height>
+    <width>734</width>
+    <height>650</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -247,7 +247,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QTableWidget" name="tableWidgetTrades">
+    <widget class="QTableView" name="tableViewTrades">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
@@ -263,36 +263,6 @@
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
-     <column>
-      <property name="text">
-       <string>Price</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Sold or Purchased</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Received or Paid</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Timestamp</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Receipt#</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Server</string>
-      </property>
-     </column>
     </widget>
    </item>
   </layout>

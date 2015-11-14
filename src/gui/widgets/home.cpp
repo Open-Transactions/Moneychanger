@@ -9,7 +9,9 @@
 #include <gui/widgets/overridecursor.hpp>
 
 #include <core/moneychanger.hpp>
+#include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
+
 #include <core/mtcomms.h>
 #include <core/network/Network.h>
 #include <core/handlers/focuser.h>
@@ -17,11 +19,14 @@
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Log.hpp>
+#include <opentxs/core/OTTransaction.hpp>
+#include <opentxs/core/OTTransactionType.hpp>
 
 #include <QLabel>
 #include <QDebug>
 #include <QToolButton>
 #include <QKeyEvent>
+#include <QSqlTableModel>
 
 #include <QMessageBox>
 
@@ -995,6 +1000,59 @@ void MTHome::PopulateRecords()
 }
 
 
+bool MTHome::AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt)
+{
+    QPointer<ModelTradeArchive> pModel = DBHandler::getInstance()->getTradeArchiveModel();
+
+    if (pModel)
+    {
+        QPointer<FinalReceiptProxyModel> pFinalReceiptProxy = new FinalReceiptProxyModel;
+        pFinalReceiptProxy->setSourceModel(pModel);
+        pFinalReceiptProxy->setFilterOpentxsRecord(recordmt);
+
+        bool bEditing = false;
+        QString qstrReceipt;
+
+        int nRowCount = pFinalReceiptProxy->rowCount();
+        for (int nIndex = 0; nIndex < nRowCount; ++nIndex)
+        {
+            if (!bEditing)
+            {
+                bEditing = true;
+                pModel->database().transaction();
+                qstrReceipt = QString::fromStdString(recordmt.GetContents());
+            }
+
+            QModelIndex proxyIndex  = pFinalReceiptProxy->index(nIndex, 0);
+            QModelIndex actualIndex = pFinalReceiptProxy->mapToSource(proxyIndex);
+            QSqlRecord  record      = pModel->record(actualIndex.row());
+            record.setValue("final_receipt", qstrReceipt);
+            pModel->setRecord(actualIndex.row(), record);
+        }
+        // ----------------------------
+        if (bEditing)
+        {
+            if (pModel->submitAll())
+            {
+                if (pModel->database().commit())
+                {
+                    // Success.
+                    return true;
+                }
+            }
+            else
+            {
+                pModel->database().rollback();
+                qDebug() << "Database Write Error" <<
+                           "The database reported an error: " <<
+                           pModel->lastError().text();
+            }
+        }
+    }
+    return false;
+}
+
+
 void MTHome::RefreshRecords()
 {
     //(Lock the overview dialog refreshing mechinism until finished)
@@ -1018,6 +1076,91 @@ void MTHome::RefreshRecords()
         if (NULL != item)
             delete item;
     }
+    // -------------------------------------------------------
+    // Delete the market receipts (since they are already archived in other places)
+    // and find any finalReceipts that correspond to those, so we can add them
+    // to the trade archive table as well (and delete them as well.)
+    // Leave any other final receipts, since they may correspond to offers that
+    // completed without a trade, or to a smart contract, or to a recurring payment, etc.
+    //
+    for (int ii = 0; ii < listSize; ++ii)
+    {
+        const int nIndex = listSize - ii - 1; // We iterate through the list in reverse. (Since we'll be deleting stuff.)
+
+        opentxs::OTRecord record = m_list.GetRecord(nIndex);
+        {
+            opentxs::OTRecord& recordmt = record;
+
+            // If recordmt IsRecord() and IsReceipt() and is a "finalReceipt"
+            // then try to look it up in the Trade Archive table. For all entries
+            // from the same transaction, we set the final receipt text in those
+            // rows.
+            //
+            // Then we delete the finalReceipt from the OT Record Box.
+            //
+            // Meanwhile, for all marketReceipts, we just deleting them since they
+            // are ALREADY in the trade_archive table.
+            //
+            if (recordmt.IsRecord() && !recordmt.IsExpired() && recordmt.IsReceipt() && recordmt.CanDeleteRecord())
+            {
+                // -----------------------------------
+                bool bShouldDeleteRecord = false;
+                // -----------------------------------
+                if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
+                {
+                    // We don't have to add these to the trade archive table because they
+                    // are already there. OTClient directly adds them into the TradeNymData object,
+                    // and then Moneychanger reads that object and imports it into the trade_achive
+                    // table already. So basically here all we need to do is delete the market
+                    // receipt records so the user doesn't have the hassle of deleting them himself.
+                    // Now they are safe in his archive and he can do whatever he wants with them.
+
+                    bShouldDeleteRecord = true;
+                } // marketReceipt
+                // -----------------------------------
+                else if (0 == recordmt.GetInstrumentType().compare("finalReceipt"))
+                {
+                    // Notice here we only delete the record if we successfully
+                    // added the final receipt to the trade archive table.
+                    // Why? Because the trade archive table contains receipts
+                    // of COMPLETED TRADES. So if we fail to find any of those
+                    // to add the final receipt to, we don't just want to DELETE
+                    // the final receipt -- the user's sole remaining copy!
+                    // - So for trades that occurred, the final receipt will be stored
+                    // with those archives next to the corresponding market receipts.
+                    // - And for trades that did NOT occur, the final receipt will
+                    // remain in the record box, so the user himself can delete those
+                    // whenever he sees fit. They will be his only notice that an
+                    // offer completed on the market without any trades occurring.
+                    // We might even change the GUI label now for final receipt records,
+                    // (in the Transaction History main window) to explicitly say,
+                    // "offer completed on market without any trades."
+                    //
+                    // P.S. There's another reason not to just delete a finalReceipt
+                    // if we can't find any trades associated with it: because it might
+                    // not be a finalReceipt for a market offer! It might correspond to
+                    // a smart contract or a recurring payment plan.
+                    //
+                    if (AddFinalReceiptToTradeArchive(recordmt))
+                        bShouldDeleteRecord = true;
+                } // finalReceipt
+                // -----------------------------------
+                if (bShouldDeleteRecord)
+                {
+                    if (recordmt.DeleteRecord())
+                    {
+                        bool bRemoved = m_list.RemoveRecord(nIndex);
+
+                        if (!bRemoved)
+                            qDebug() << "MTHome::RefreshRecords: weird issue trying to remove deleted record from m_list (record list.)\n";
+                    }
+                }
+            }
+        }
+    } // for (m_list in reverse)
+    // -------------------------------------------------------
+    listSize       = m_list.size();
+    nTotalRecords  = listSize;
     // -------------------------------------------------------
     ui->tableWidget->setRowCount(nTotalRecords);
     // -------------------------------------------------------

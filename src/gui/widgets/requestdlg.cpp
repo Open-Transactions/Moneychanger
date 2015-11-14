@@ -160,7 +160,7 @@ bool MTRequestDlg::requestFunds(QString memo, QString qstr_amount)
     }
     // ----------------------------------------------------
     if (memo.isEmpty())
-        memo = tr("From the desktop client. (Empty memo.)");
+        memo = tr("(Memo was empty.)");
     // ----------------------------------------------------
     if (qstr_amount.isEmpty())
         qstr_amount = QString("0");

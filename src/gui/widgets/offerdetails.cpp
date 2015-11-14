@@ -10,6 +10,8 @@
 #include <gui/widgets/overridecursor.hpp>
 
 #include <core/moneychanger.hpp>
+#include <core/handlers/DBHandler.hpp>
+#include <core/handlers/modeltradearchive.hpp>
 
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -412,46 +414,44 @@ MTOfferDetails::MTOfferDetails(QWidget *parent, MTDetailEdit & theOwner) :
     ui->lineEditAcctBalance    ->setStyleSheet("QLineEdit { background-color: lightgray }");
     ui->lineEditCurrencyBalance->setStyleSheet("QLineEdit { background-color: lightgray }");
     // ----------------------------------
-    ui->tableWidgetTrades ->verticalHeader()->hide();
-    // ----------------------------------
-    ui->tableWidgetTrades->horizontalHeader()->setStretchLastSection(true);
-    ui->tableWidgetTrades->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
-    ui->tableWidgetTrades->setSelectionMode    (QAbstractItemView::SingleSelection);
-    ui->tableWidgetTrades->setSelectionBehavior(QAbstractItemView::SelectRows);
+//    ui->tableWidgetTrades ->verticalHeader()->hide();
+//    // ----------------------------------
+//    ui->tableWidgetTrades->horizontalHeader()->setStretchLastSection(true);
+//    ui->tableWidgetTrades->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+//    ui->tableWidgetTrades->setSelectionMode    (QAbstractItemView::SingleSelection);
+//    ui->tableWidgetTrades->setSelectionBehavior(QAbstractItemView::SelectRows);
 
-    ui->tableWidgetTrades->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignCenter);
-    ui->tableWidgetTrades->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignCenter);
-    ui->tableWidgetTrades->horizontalHeaderItem(2)->setTextAlignment(Qt::AlignCenter);
-    ui->tableWidgetTrades->horizontalHeaderItem(3)->setTextAlignment(Qt::AlignCenter);
-    ui->tableWidgetTrades->horizontalHeaderItem(4)->setTextAlignment(Qt::AlignCenter);
-    ui->tableWidgetTrades->horizontalHeaderItem(5)->setTextAlignment(Qt::AlignCenter);
+//    ui->tableWidgetTrades->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignCenter);
+//    ui->tableWidgetTrades->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignCenter);
+//    ui->tableWidgetTrades->horizontalHeaderItem(2)->setTextAlignment(Qt::AlignCenter);
+//    ui->tableWidgetTrades->horizontalHeaderItem(3)->setTextAlignment(Qt::AlignCenter);
+//    ui->tableWidgetTrades->horizontalHeaderItem(4)->setTextAlignment(Qt::AlignCenter);
+//    ui->tableWidgetTrades->horizontalHeaderItem(5)->setTextAlignment(Qt::AlignCenter);
     // ----------------------------------
-}
+    QPointer<ModelTradeArchive> pModel = DBHandler::getInstance()->getTradeArchiveModel();
 
-void MTOfferDetails::ClearTradesGrid()
-{
-//    this->blockSignals(true);
-    ui->tableWidgetTrades->blockSignals(true);
-    // -------------------------------------------------------
-    int nGridItemCount = ui->tableWidgetTrades->rowCount();
-    // -------------------------------------------------------
-    for (int ii = 0; ii < nGridItemCount; ii++)
+    if (pModel)
     {
-        QTableWidgetItem * item = ui->tableWidgetTrades->takeItem(0,1); // Row 0, Column 1
-        ui->tableWidgetTrades->removeRow(0); // Row 0.
+        pTradeDataProxy_ = new TradeArchiveProxyModel;
 
-        if (NULL != item)
-        {
-            delete item;
-            item = NULL;
-        }
+        pTradeDataProxy_->setSourceModel(pModel);
+
+        ui->tableViewTrades->setModel(pTradeDataProxy_);
+        ui->tableViewTrades->setSortingEnabled(true);
+        ui->tableViewTrades->resizeColumnsToContents();
+        ui->tableViewTrades->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+        ui->tableViewTrades->verticalHeader()->hide();
+        ui->tableViewTrades->setAlternatingRowColors(true);
+
+        ui->tableViewTrades->horizontalHeader()->setStretchLastSection(true);
+        ui->tableViewTrades->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+
+        //ui->tableView->setSelectionMode    (QAbstractItemView::SingleSelection);
+        ui->tableViewTrades->setSelectionBehavior(QAbstractItemView::SelectRows);
     }
-    // -------------------------------------------------------
-    ui->tableWidgetTrades->setRowCount(0);
-    // -----------------------------------
-//    this->blockSignals(false);
-    ui->tableWidgetTrades->blockSignals(false);
 }
+
 
 
 void MTOfferDetails::on_toolButtonAssetAcct_clicked()
@@ -620,118 +620,71 @@ void MTOfferDetails::refresh(QString strID, QString strName)
 
 // ----------------------------------------------------
 
+//// Caller must delete.
+//opentxs::OTDB::TradeListNym * MTOfferDetails::LoadTradeListForNym(QString qstrNotaryID, QString qstrNymID)
+//{
+//    opentxs::OTDB::TradeListNym * pTradeList = NULL;
+//    opentxs::OTDB::Storable     * pStorable  = NULL;
+//    // ------------------------------------------
+//    QString qstrMarketID = m_pOwner->GetMarketID();
+//    // ------------------------------------------
+//    if (!m_pOwner || qstrNotaryID.isEmpty() || qstrNymID.isEmpty() || qstrMarketID.isEmpty())
+//        return NULL;
+//    // ------------------------------------------
+//    if (opentxs::OTDB::Exists("nyms", "trades", qstrNotaryID.toStdString(), qstrNymID.toStdString()))
+//    {
+//        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_TRADE_LIST_NYM, "nyms", "trades",
+//                                      qstrNotaryID.toStdString(), qstrNymID.toStdString());
+//        if (nullptr == pStorable) {
+//            return NULL;
+//        }
+//        // -------------------------------
+//        pTradeList = opentxs::OTDB::TradeListNym::ot_dynamic_cast(pStorable);
 
-/*
-message TradeDataNym_InternalPB {
-    optional string gui_label = 1;
-    optional string completed_count = 2; // (How many trades have processed for the associated offer? We keep count for each trade.)
-    optional string date = 3;			 // (The date of this trade's execution)
-    optional string price = 4;			 // (The price this trade executed at.)
-    optional string amount_sold = 5;	 // (Amount of asset sold for that price.)
-    optional string transaction_id = 6;	 // (transaction number for original offer.)
-    optional string updated_id = 7;      // NEW FIELD (transaction number for this trade receipt.)
-    optional string offer_price = 8;     // NEW FIELD (price limit on the original offer.)
-    optional string finished_so_far = 9; // NEW FIELD (total amount sold this offer across all trades.)
-    optional string asset_id = 10;       // NEW FIELD asset id of trade
-    optional string currency_id = 11;    // NEW FIELD currency id of trade
-    optional string currency_paid = 12;  // NEW FIELD currency paid for this trade.
-}
+//        if (NULL == pTradeList) {
+//            delete pStorable;
+//        }
+//    }
 
-// ----------------------------------------------------
-
-message TradeListNym_InternalPB {
-    repeated TradeDataNym_InternalPB  trades = 1;
-}
-
-/*/
+//    return pTradeList;
+//}
 
 
-// Caller must delete.
-opentxs::OTDB::TradeListNym * MTOfferDetails::LoadTradeListForNym(opentxs::OTDB::OfferDataNym & offerData, QString qstrNotaryID, QString qstrNymID)
+void MTOfferDetails::ClearTradesGrid()
 {
-    opentxs::OTDB::TradeListNym * pTradeList = NULL;
-    opentxs::OTDB::Storable     * pStorable  = NULL;
-    // ------------------------------------------
-    QString qstrMarketID = m_pOwner->GetMarketID();
-    // ------------------------------------------
-    if (!m_pOwner || qstrNotaryID.isEmpty() || qstrNymID.isEmpty() || qstrMarketID.isEmpty())
-        return NULL;
-    // ------------------------------------------
-    if (opentxs::OTDB::Exists("nyms", "trades", offerData.notary_id, qstrNymID.toStdString()))
-    {
-        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_TRADE_LIST_NYM, "nyms", "trades",
-                                      offerData.notary_id, qstrNymID.toStdString());
-        if (nullptr == pStorable) {
-            return NULL;
-        }
-        // -------------------------------
-        pTradeList = opentxs::OTDB::TradeListNym::ot_dynamic_cast(pStorable);
-
-        if (NULL == pTradeList) {
-            delete pStorable;
-        }
-    }
-
-    return pTradeList;
+    pTradeDataProxy_->setFilterNymId(QString(""));
+    pTradeDataProxy_->setFilterOfferId(0);
 }
-
-
-/*
-
-message OfferDataNym_InternalPB {
-    optional string gui_label = 1;
-
-    optional string valid_from = 2;
-    optional string valid_to = 3;
-
-    optional string notary_id = 4;
-    optional string instrument_definition_id = 5;		// the asset type on offer.
-    optional string asset_acct_id = 6;		// the account where asset is.
-    optional string currency_type_id = 7;	// the currency being used to purchase the asset.
-    optional string currency_acct_id = 8;	// the account where currency is.
-
-    optional bool selling = 9;		// true for ask, false for bid.
-
-    optional string scale = 10;	// 1oz market? 100oz market? 10,000oz market? This determines size and granularity.
-    optional string price_per_scale = 11;
-
-    optional string transaction_id = 12;
-
-    optional string total_assets = 13;
-    optional string finished_so_far = 14;
-
-
-    // Each sale or purchase against (total_assets - finished_so_far) must be in minimum increments.
-    // Minimum Increment must be evenly divisible by scale.
-    // (This effectively becomes a "FILL OR KILL" order if set to the same value as total_assets. Also, MUST be 1
-    // or greater. CANNOT be zero. Enforce this at class level. You cannot sell something in minimum increments of 0.)
-
-    optional string minimum_increment = 15;
-
-    optional string stop_sign = 16;		// If this is a stop order, this will contain '<' or '>'.
-    optional string stop_price = 17;	// The price at which the stop order activates (less than X or greater than X, based on sign.)
-
-    optional string date = 18; // (NEW FIELD) The date this offer was added to the market.
-}
-
-message TradeDataNym_InternalPB {
-    optional string gui_label = 1;
-    optional string completed_count = 2; // (How many trades have processed for the associated offer? We keep count for each trade.)
-    optional string date = 3;			 // (The date of this trade's execution)
-    optional string price = 4;			 // (The price this trade executed at.)
-    optional string amount_sold = 5;	 // (Amount of asset sold for that price.)
-    optional string transaction_id = 6;	 // (transaction number for original offer.)
-    optional string updated_id = 7;      // NEW FIELD (transaction number for this trade receipt.)
-    optional string offer_price = 8;     // NEW FIELD (price limit on the original offer.)
-    optional string finished_so_far = 9; // NEW FIELD (total amount sold this offer across all trades.)
-    optional string asset_id = 10;       // NEW FIELD asset id of trade
-    optional string currency_id = 11;    // NEW FIELD currency id of trade
-    optional string currency_paid = 12;  // NEW FIELD currency paid for this trade.
-}
-
-*/
 
 void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, QMap<QString, QVariant> & OFFER_MAP)
+{
+    QMap<QString, QVariant>::iterator it_offer = OFFER_MAP.find(qstrID);
+    // -----------------------------
+    if (OFFER_MAP.end() != it_offer)
+    {
+        opentxs::OTDB::OfferDataNym * pOfferData = VPtr<opentxs::OTDB::OfferDataNym>::asPtr(it_offer.value());
+
+        if (NULL != pOfferData) // Should never be NULL.
+        {
+            QPointer<ModelTradeArchive> pModel = DBHandler::getInstance()->getTradeArchiveModel();
+
+            if (pModel && pTradeDataProxy_)
+            {
+                pModel->updateDBFromOT();
+
+                int64_t lOfferID = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->transaction_id);
+
+                pTradeDataProxy_->setFilterNymId(qstrNymID);
+                pTradeDataProxy_->setFilterOfferId(lOfferID);
+                pTradeDataProxy_->setFilterIsBid(!pOfferData->selling);
+            }
+        }
+    }
+}
+
+
+/*
+void MTOfferDetails::PopulateNymTradesWidget(QString & qstrID, QString qstrNymID, QMap<QString, QVariant> & OFFER_MAP)
 {
     // ------------------------------------------------------------------------
 //    this->blockSignals(true);
@@ -786,7 +739,7 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
                     pCurrencyHeader->setText(tr("Paid"));
             }
             // -----------------------------------------
-            opentxs::OTDB::TradeListNym * pTradeList = LoadTradeListForNym(*pOfferData,
+            opentxs::OTDB::TradeListNym * pTradeList = LoadTradeListForNym(
                                                                   QString::fromStdString(str_server),
                                                                   qstrNymID);
             std::unique_ptr<opentxs::OTDB::TradeListNym> theAngel(pTradeList);
@@ -899,10 +852,8 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
                 } // for (trades)
                 // -----------------------------------------------------------------------
             } // if (NULL != pTradeList)
-        } // if (NULL != pTradeData)
-        // -----------------
-        ++it_offer;
-    } // while
+        } // if (NULL != pOfferData)
+    }
     // -----------------------------------------------------
 //    this->blockSignals(false);
     // -----------------------------------
@@ -912,7 +863,7 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
         ui->tableWidgetTrades->setCurrentCell(0, 0);
     // -----------------------------------------------------
 }
-
+*/
 
 // ------------------------------------------------------------------------
 
