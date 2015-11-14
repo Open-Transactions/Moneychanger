@@ -30,6 +30,8 @@ private:
     void setupRecordList();
     void RefreshUserBar();
 
+    bool AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt);
+
     QWidget * CreateUserBarWidget();
 
     /** Overview **/

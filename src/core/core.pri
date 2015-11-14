@@ -19,7 +19,8 @@ HEADERS += \
     ../../src/core/mtcomms.h \
     ../../src/core/network/base64.h \
     ../../src/core/network/BitMessageQueue.h \
-    $$PWD/handlers/focuser.h
+    $$PWD/handlers/focuser.h \
+    $$PWD/handlers/modeltradearchive.hpp
 
 SOURCES += \
     $${PWD}/applicationmc.cpp \
@@ -40,7 +41,8 @@ SOURCES += \
     ../../src/core/network/BitMessage.cpp \
     ../../src/core/mtcomms.cpp \
     ../../src/core/network/base64.cpp \
-    ../../src/core/network/BitMessageQueue.cpp
+    ../../src/core/network/BitMessageQueue.cpp \
+    $$PWD/handlers/modeltradearchive.cpp
 
 mac: {
   OBJECTIVE_SOURCES += ../../src/core/handlers/focuser.mm

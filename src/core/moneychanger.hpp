@@ -23,6 +23,7 @@ class MTDetailEdit;
 class DlgLog;
 class DlgMenu;
 class DlgMarkets;
+class DlgTradeArchive;
 class Settings;
 class BtcGuiTest;
 class BtcPoolManager;
@@ -146,9 +147,9 @@ private:
 
     QPointer<CreateInsuranceCompany> createinsurancecompany_window;
 
-    QPointer<DlgLog      > log_window;
-
-    QPointer<DlgMarkets  > market_window;
+    QPointer<DlgLog           > log_window;
+    QPointer<DlgMarkets       > market_window;
+    QPointer<DlgTradeArchive  > trade_archive_window;
 
     QPointer<Settings> settingswindow;
 
@@ -177,6 +178,7 @@ private:
     void SetupNymMenu(QPointer<QMenu> & parent_menu);
     void SetupAccountMenu(QPointer<QMenu> & parent_menu);
     void SetupPaymentsMenu(QPointer<QMenu> & parent_menu);
+    void SetupExchangeMenu(QPointer<QMenu> & parent_menu);
     void SetupContractsMenu(QPointer<QMenu> & parent_menu);
     void SetupMessagingMenu(QPointer<QMenu> & parent_menu);
     void SetupToolsMenu(QPointer<QMenu> & parent_menu);
@@ -212,6 +214,7 @@ private:
     void mc_passphrase_manager_show_dialog();
     // ------------------------------------------------
     void mc_market_dialog();
+    void mc_trade_archive_dialog();
     void mc_corporation_dialog();
     void mc_agreement_dialog();
     void mc_transport_dialog(QString qstrPresetID=QString(""));
@@ -253,6 +256,7 @@ private:
     QIcon mc_systrayIcon_composemessage;
 
     QIcon mc_systrayIcon_markets;
+    QIcon mc_systrayIcon_trade_archive;
 
     QIcon mc_systrayIcon_bitcoin;
     QIcon mc_systrayIcon_crypto;
@@ -294,6 +298,7 @@ private:
     QPointer<QMenu> mc_systrayMenu_account;
     QPointer<QMenu> mc_systrayMenu_payments;
     QPointer<QMenu> mc_systrayMenu_contracts;
+    QPointer<QMenu> mc_systrayMenu_exchange;
     QPointer<QMenu> mc_systrayMenu_messaging;
     // ---------------------------------------------------------
     QList<QVariant> * account_list_id;
@@ -330,6 +335,7 @@ private:
     QPointer<QMenu> mc_systrayMenu_advanced;
 
     QPointer<QAction> mc_systrayMenu_markets;
+    QPointer<QAction> mc_systrayMenu_trade_archive;
     QPointer<QAction> mc_systrayMenu_smart_contracts;
     QPointer<QAction> mc_systrayMenu_import_cash;
     QPointer<QAction> mc_systrayMenu_settings;
@@ -414,6 +420,7 @@ public slots:
     void mc_crypto_verify_slot();
     // ---------------------------------------------------------------------------
     void mc_market_slot();                  // Market Slot
+    void mc_trade_archive_slot();
     void mc_agreement_slot();               // Agreements Slot
     void mc_corporation_slot();             // Agreements Slot
     void mc_import_slot();                  // Import Slot

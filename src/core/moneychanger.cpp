@@ -20,6 +20,8 @@
 #include <core/moneychanger.hpp>
 #include <core/mtcomms.h>
 #include <core/handlers/DBHandler.hpp>
+#include <core/handlers/modeltradearchive.hpp>
+
 #include <rpc/rpcserver.h>
 
 #include <gui/widgets/compose.hpp>
@@ -43,6 +45,7 @@
 #include <gui/ui/dlglog.hpp>
 #include <gui/ui/dlgmenu.hpp>
 #include <gui/ui/dlgmarkets.hpp>
+#include <gui/ui/dlgtradearchive.hpp>
 #include <gui/ui/dlgencrypt.hpp>
 #include <gui/ui/dlgdecrypt.hpp>
 #include <gui/ui/dlgpassphrasemanager.hpp>
@@ -285,6 +288,9 @@ Moneychanger::Moneychanger(QWidget *parent)
 //  mc_systrayIcon_composemessage = QIcon(":/icons/icons/compose.png");
 
     mc_systrayIcon_markets = QIcon(":/icons/markets");
+    mc_systrayIcon_trade_archive = QIcon(":/icons/overview");
+
+
 
     // ---------------------------------------------------------------
     mc_systrayIcon_bitcoin  = QIcon(":/icons/icons/bitcoin.png");
@@ -548,10 +554,7 @@ void Moneychanger::SetupMainMenu()
     //Separator
     mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
-    mc_systrayMenu_markets = new QAction(mc_systrayIcon_markets, tr("Exchange"), mc_systrayMenu);
-    mc_systrayMenu->addAction(mc_systrayMenu_markets);
-    connect(mc_systrayMenu_markets, SIGNAL(triggered()), this, SLOT(mc_market_slot()));
-    // --------------------------------------------------------------
+    SetupExchangeMenu(mc_systrayMenu);
     SetupContractsMenu(mc_systrayMenu);
     // --------------------------------------------------------------
     mc_systrayMenu->addSeparator();
@@ -891,6 +894,24 @@ void Moneychanger::SetupPaymentsMenu(QPointer<QMenu> & parent_menu)
     mc_systrayMenu_payments->addAction(mc_systrayMenu_import_cash);
     connect(mc_systrayMenu_import_cash, SIGNAL(triggered()), this, SLOT(mc_import_slot()));
 }
+
+// --------------------------------------------------------------
+
+void Moneychanger::SetupExchangeMenu(QPointer<QMenu> & parent_menu)
+{
+    mc_systrayMenu_exchange = new QMenu(tr("Exchange"), parent_menu);
+    mc_systrayMenu_exchange->setIcon(mc_systrayIcon_markets);
+    parent_menu->addMenu(mc_systrayMenu_exchange);
+    // --------------------------------------------------------------
+    mc_systrayMenu_markets = new QAction(mc_systrayIcon_markets, tr("Live Offers"), mc_systrayMenu_exchange);
+    mc_systrayMenu_exchange->addAction(mc_systrayMenu_markets);
+    connect(mc_systrayMenu_markets, SIGNAL(triggered()), this, SLOT(mc_market_slot()));
+    // --------------------------------------------------------------
+    mc_systrayMenu_trade_archive = new QAction(mc_systrayIcon_trade_archive, tr("Archive of Trades"), mc_systrayMenu_exchange);
+    mc_systrayMenu_exchange->addAction(mc_systrayMenu_trade_archive);
+    connect(mc_systrayMenu_trade_archive, SIGNAL(triggered()), this, SLOT(mc_trade_archive_slot()));
+}
+
 
 void Moneychanger::SetupContractsMenu(QPointer<QMenu> & parent_menu)
 {
@@ -1503,6 +1524,16 @@ void Moneychanger::onNeedToDownloadAccountData()
                 Moneychanger::It()->HasUsageCredits(acctSvrID, acctNymID);
                 return;
             }
+        }
+        // ----------------------------------------------------------------
+        // This refreshes any new Nym Trade Data (the receipts we just downloaded
+        // may include Market Receipts, so we need to import those into the Historical Trade Archive.)
+        //
+        QPointer<ModelTradeArchive> pModel = DBHandler::getInstance()->getTradeArchiveModel();
+
+        if (pModel)
+        {
+            pModel->updateDBFromOT();
         }
         // ----------------------------------------------------------------
         emit downloadedAccountData();
@@ -2539,6 +2570,12 @@ void Moneychanger::mc_main_menu_dialog()
         connect(menuwindow, SIGNAL(sig_on_toolButton_markets_clicked()),
                 this,       SLOT(mc_market_slot()));
 
+        connect(menuwindow, SIGNAL(sig_on_toolButton_trade_archive_clicked()),
+                this,       SLOT(mc_trade_archive_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_secrets_clicked()),
+                this,       SLOT(mc_passphrase_manager_slot()));
+
         connect(menuwindow, SIGNAL(sig_on_toolButton_importCash_clicked()),
                 this,       SLOT(mc_import_slot()));
 
@@ -2637,6 +2674,25 @@ void Moneychanger::mc_market_dialog()
     market_window->dialog();
 }
 
+
+
+void Moneychanger::mc_trade_archive_slot()
+{
+    mc_trade_archive_dialog();
+}
+
+void Moneychanger::mc_trade_archive_dialog()
+{
+    if (!trade_archive_window)
+    {
+        trade_archive_window = new DlgTradeArchive(this);
+
+//        connect(this,                 SIGNAL(balancesChanged()),
+//                trade_archive_window, SLOT(onBalancesChangedFromAbove()));
+    }
+    // ------------------------------------
+    trade_archive_window->dialog();
+}
 
 
 

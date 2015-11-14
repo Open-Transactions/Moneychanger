@@ -97,6 +97,8 @@ public:
 
   bool ContactExists(int nContactID);
   bool DeleteContact(int nContactID);
+
+  bool ArchivedTradeReceiptExists(int64_t lReceiptID);
   // ---------------------------------------------
   static QString Encode(QString plaintext);
   static QString Decode(QString encoded);
@@ -222,7 +224,7 @@ public:
   QString GetSmartContract    (int nID);
   bool DeleteSmartContract    (int nID);
   bool DeleteManagedPassphrase(int nID);
-
+  // ----------------------------------------------------------
   public:
     ~MTContactHandler();
 };

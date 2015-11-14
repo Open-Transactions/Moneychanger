@@ -12,6 +12,8 @@ namespace Ui {
 class MTOfferDetails;
 }
 
+class TradeArchiveProxyModel;
+
 namespace opentxs{
 namespace OTDB {
 class TradeListNym;
@@ -41,7 +43,7 @@ protected:
     void PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, QMap<QString, QVariant> & OFFER_MAP);
     void ClearTradesGrid();
 
-    opentxs::OTDB::TradeListNym * LoadTradeListForNym(opentxs::OTDB::OfferDataNym & offerData, QString qstrNotaryID, QString qstrNymID);
+    opentxs::OTDB::TradeListNym * LoadTradeListForNym(QString qstrNotaryID, QString qstrNymID);
 
     bool ChooseServer(QString & qstrNotaryID, QString & qstrServerName);
 
@@ -51,6 +53,7 @@ private slots:
 
 private:
     QPointer<QWidget> m_pHeaderWidget;
+    QPointer<TradeArchiveProxyModel> pTradeDataProxy_;
 
     Ui::MTOfferDetails *ui;
 };

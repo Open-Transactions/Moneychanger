@@ -135,6 +135,14 @@ MTContactHandler * MTContactHandler::getInstance()
 
 
 
+bool MTContactHandler::ArchivedTradeReceiptExists(int64_t lReceiptID)
+{
+    QMutexLocker locker(&m_Mutex);
+    QString str_select = QString("SELECT * FROM `trade_archive` WHERE `receipt_id`=%1 LIMIT 0,1").arg(lReceiptID);
+    int nRows = DBHandler::getInstance()->querySize(str_select);
+    return (nRows > 0);
+}
+
 bool MTContactHandler::ContactExists(int nContactID)
 {
     QMutexLocker locker(&m_Mutex);
