@@ -73,9 +73,20 @@ public slots:
      **/
     
     void setDefaultNym(QString, QString);
+    QString getDefaultNymID(){return default_nym_id;}
+    QString getDefaultNymName(){return default_nym_name;}
+
     void setDefaultAsset(QString, QString);
+    QString getDefaultAssetID(){return default_asset_id;}
+    QString getDefaultAssetName(){return default_asset_name;}
+
     void setDefaultAccount(QString, QString);
+    QString getDefaultAccountID(){return default_account_id;}
+    QString getDefaultAccountName(){return default_account_name;}
+
     void setDefaultServer(QString, QString);
+    QString getDefaultNotaryID(){return default_notary_id;}
+    QString getDefaultServerName(){return default_server_name;}
     
     void onNewServerAdded(QString qstrID);
     void onNewAssetAdded(QString qstrID);

@@ -901,6 +901,23 @@ public Q_SLOTS:
     QJsonValue recordListRetrieve(QString Username, QString APIKey,
                                   int BeginIndex, int EndIndex);
 
+    QJsonValue setDefaultNym(QString nym_id, QString nym_name,
+                             QString Username, QString APIKey);
+    QJsonValue getDefaultNym(QString Username, QString APIKey);
+
+    QJsonValue setDefaultAccount(QString AccountID, QString AccountName,
+                                 QString Username, QString APIKey);
+    QJsonValue getDefaultAccount(QString Username, QString APIKey);
+
+    QJsonValue setDefaultServer(QString NotaryID, QString ServerName,
+                                QString Username, QString APIKey);
+    QJsonValue getDefaultServer(QString Username, QString APIKey);
+
+    QJsonValue setDefaultAsset(QString AssetID, QString AssetName,
+                               QString Username, QString APIKey);
+    QJsonValue getDefaultAsset(QString Username, QString APIKey);
+
+
 private:
 
     // RecordList Methods

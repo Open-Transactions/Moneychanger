@@ -5367,6 +5367,107 @@ bool MCRPCService::createRecordList(QString Username, QString APIKey)
 }
 
 
+QJsonValue MCRPCService::setDefaultNym(QString NymID, QString NymName,
+                                       QString Username, QString APIKey){
+
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    Moneychanger::It()->setDefaultNym(NymID, NymName);
+    return "Success";
+}
+
+QJsonValue MCRPCService::getDefaultNym(QString Username, QString APIKey){
+
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    QJsonObject record{{"NymID", Moneychanger::It()->getDefaultNymID()},
+                       {"NymName", Moneychanger::It()->getDefaultNymName()}};
+
+}
+
+QJsonValue MCRPCService::setDefaultAccount(QString AccountID, QString AccountName,
+                                           QString Username, QString APIKey){
+
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    Moneychanger::It()->setDefaultAccount(AccountID, AccountName);
+    return "Success";
+}
+
+QJsonValue MCRPCService::getDefaultAccount(QString Username, QString APIKey){
+
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    QJsonObject record{{"AccountID", Moneychanger::It()->getDefaultAccountID()},
+                       {"AccountName", Moneychanger::It()->getDefaultAccountName()}};
+
+}
+
+QJsonValue MCRPCService::setDefaultServer(QString NotaryID, QString ServerName,
+                                          QString Username, QString APIKey){
+
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    Moneychanger::It()->setDefaultServer(NotaryID, ServerName);
+    return "Success";
+
+}
+
+QJsonValue MCRPCService::getDefaultServer(QString Username, QString APIKey){
+
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    QJsonObject record{{"NotaryID", Moneychanger::It()->getDefaultNotaryID()},
+                       {"ServerName", Moneychanger::It()->getDefaultServerName()}};
+
+}
+
+QJsonValue MCRPCService::setDefaultAsset(QString AssetID, QString AssetName,
+                                         QString Username, QString APIKey){
+
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    Moneychanger::It()->setDefaultServer(AssetID, AssetName);
+    return "Success";
+
+}
+
+QJsonValue MCRPCService::getDefaultAsset(QString Username, QString APIKey){
+
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    QJsonObject record{{"AssetID", Moneychanger::It()->getDefaultAssetID()},
+                       {"AssetName", Moneychanger::It()->getDefaultAssetName()}};
+
+}
+
+
+
+
 QJsonValue MCRPCService::userLogin(QString Username, QString PlaintextPassword)
 {
     if(m_userManager.activateUserAccount(Username, PlaintextPassword)){
