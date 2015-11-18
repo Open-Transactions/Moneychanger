@@ -312,7 +312,7 @@ public Q_SLOTS:
                            QString SenderAccountID, QString SenderNymID,
                            QString ChequeMemo, QString RecipientNymID);
     QJsonValue discardCheque(QString Username, QString APIKey,
-                             QString NotaryId, QString NymID,
+                             QString NotaryID, QString NymID,
                              QString AccountID, QString Cheque);
     QJsonValue proposePaymentPlan(QString Username, QString APIKey,
                                   QString NotaryID, time64_t ValidFrom,
@@ -916,6 +916,8 @@ public Q_SLOTS:
     QJsonValue setDefaultAsset(QString AssetID, QString AssetName,
                                QString Username, QString APIKey);
     QJsonValue getDefaultAsset(QString Username, QString APIKey);
+
+    QJsonValue isValidID(QString ID, QString Username, QString APIKey);
 
 
 private:
