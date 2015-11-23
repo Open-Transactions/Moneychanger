@@ -46,8 +46,8 @@ signals:
     void accountDataDownloaded();
     void setRefreshBtnRed();
     void refreshUserBar();
-    void recordDeleted(bool bNeedToRefreshUserBar);
-    void recordDeletedBalanceChanged(bool bNeedToRefreshUserBar);
+    void recordDeleted();
+    void recordDeletedBalanceChanged();
 
     void showContact(QString qstrContactID);
     void showContactAndRefreshHome(QString qstrContactID);

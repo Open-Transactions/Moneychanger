@@ -212,7 +212,7 @@ void MTAccountDetails::refresh(QString strID, QString strName)
         // -----------------------------------------------------------------------
         QString qstr_default_acct_id = Moneychanger::It()->get_default_account_id();
 
-        if (strID == qstr_default_acct_id)
+        if (0 == strID.compare(qstr_default_acct_id))
             ui->pushButtonMakeDefault->setEnabled(false);
         else
             ui->pushButtonMakeDefault->setEnabled(true);

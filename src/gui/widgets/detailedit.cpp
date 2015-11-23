@@ -49,6 +49,21 @@ MTDetailEdit::~MTDetailEdit()
 }
 
 
+bool MTDetailEdit::getAccountIDs(QString & qstrAssetAcctID, QString & qstrCurrencyAcctID)
+{
+    if (!m_pDetailPane)
+        return false;
+
+    MTEditDetails  & theDetailPane = *m_pDetailPane;
+    MTOfferDetails * pOfferDetails = qobject_cast<MTOfferDetails *>(&theDetailPane);
+
+    if (nullptr != pOfferDetails)
+    {
+        return pOfferDetails->getAccountIDs(qstrAssetAcctID, qstrCurrencyAcctID);
+    }
+    return false;
+}
+
 void MTDetailEdit::SetMarketMap(QMultiMap<QString, QVariant> & theMap)
 {
     m_pmapMarkets = &theMap;
@@ -307,6 +322,8 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         pTab1->setLayout(m_pDetailLayout);
 
         // ----------------------------------
+        m_pTabWidget->setTabBarAutoHide(true);
+
         int nCustomTabCount = m_pDetailPane->GetCustomTabCount();
 
         if (nCustomTabCount > 0)
@@ -401,7 +418,7 @@ void MTDetailEdit::onMarketIDChangedFromAbove(QString qstrMarketID)
         {
             ++nIndex; // 0 on first iteration.
             // --------------------------------
-            if (it_markets.key() == qstrMarketID)
+            if (0 == it_markets.key().compare(qstrMarketID))
                 break;
         }
         // ------------------------------------------------------------
@@ -479,7 +496,7 @@ void MTDetailEdit::RefreshMarketCombo()
         QString OT_market_id   = ii.key();   // This is the marketID,scale
         QString OT_market_name = ii.value(); // This is the display name aka "Bitcoins for Silver Grams"
         // ------------------------------
-        if (!m_qstrMarketID.isEmpty() && (OT_market_id == m_qstrMarketID))
+        if (!m_qstrMarketID.isEmpty() && (0 == m_qstrMarketID.compare(OT_market_id)))
         {
             bFoundCurrentMarket = true;
             nCurrentMarketIndex = nIndex;
@@ -561,7 +578,7 @@ void MTDetailEdit::RefreshLawyerCombo()
         QString OT_lawyer_id   = ii.key();   // This is a nym ID.
         QString OT_lawyer_name = ii.value(); // This is the display name aka "Trader Bob"
         // ------------------------------
-        if (!m_qstrLawyerID.isEmpty() && (OT_lawyer_id == m_qstrLawyerID))
+        if (!m_qstrLawyerID.isEmpty() && (0 == m_qstrLawyerID.compare(OT_lawyer_id)))
         {
             bFoundCurrentLawyer = true;
             nCurrentLawyerIndex = nIndex;
@@ -750,7 +767,7 @@ void MTDetailEdit::RefreshRecords()
 
 //        qDebug() << QString("MTDetailEdit::RefreshRecords: Name: %1, ID: %2").arg(qstrValue, qstrID);
         // -------------------------------------
-        if (!m_PreSelected.isEmpty() && (m_PreSelected == qstrID))
+        if (!m_PreSelected.isEmpty() && (0 == m_PreSelected.compare(qstrID)))
             nPreselectedIndex = nIndex;
         // -------------------------------------
         QWidget * pWidget = NULL;

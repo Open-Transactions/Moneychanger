@@ -554,7 +554,7 @@ void MTSendDlg::on_sendButton_clicked()
     std::string str_fromAcctId(m_myAcctId.toStdString());
     QString     qstr_fromNymId(QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(str_fromAcctId)));
 
-    if (m_hisNymId == qstr_fromNymId)
+    if (0 == qstr_fromNymId.compare(m_hisNymId))
     {
         QMessageBox::warning(this, tr("Cannot Send To Yourself"),
                              tr("Sorry, but you cannot send to yourself. Please choose another recipient, or change the sending account."));

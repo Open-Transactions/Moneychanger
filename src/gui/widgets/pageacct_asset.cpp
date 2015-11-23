@@ -66,7 +66,7 @@ void MTPageAcct_Asset::on_pushButtonSelect_clicked()
         // -----------------------------------------------
         if (!OT_id.isEmpty())
         {
-            if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
+            if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                 bFoundDefault = true;
             // -----------------------------------------------
             OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(OT_id.toStdString()));
@@ -158,7 +158,7 @@ void MTPageAcct_Asset::on_pushButtonManage_clicked()
 
         the_map.insert(OT_id, OT_name);
 
-        if (!qstrPreSelected.isEmpty() && (qstrPreSelected == OT_id))
+        if (!qstrPreSelected.isEmpty() && (0 == qstrPreSelected.compare(OT_id)))
             bFoundPreselected = true;
     } // for
     // -------------------------------------

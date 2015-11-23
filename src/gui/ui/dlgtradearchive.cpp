@@ -46,15 +46,12 @@ DlgTradeArchive::DlgTradeArchive(QWidget *parent) :
 
     this->installEventFilter(this);
     // ----------------------------------
-//    ui->tableWidget->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignCenter);
-//    ui->tableWidget->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignCenter);
-    // ----------------------------------
     popupMenu_.reset(new QMenu(this));
     pActionShowAssetReceipt = popupMenu_->addAction(tr("Show asset receipt"));
     pActionShowCurrencyReceipt = popupMenu_->addAction(tr("Show currency receipt"));
     pActionShowFinalReceipt = popupMenu_->addAction(tr("Show final receipt"));
     popupMenu_->addSeparator();
-    pActionDelete = popupMenu_->addAction(tr("Permanently delete this record"));
+    pActionDelete = popupMenu_->addAction(tr("Delete this record"));
     // ----------------------------------
     QPointer<ModelTradeArchive> pModel = DBHandler::getInstance()->getTradeArchiveModel();
 

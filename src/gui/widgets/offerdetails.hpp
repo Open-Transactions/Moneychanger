@@ -35,6 +35,8 @@ public:
 
     virtual void ClearContents();
 
+    bool getAccountIDs(QString & qstrAssetAcctID, QString & qstrCurrencyAcctID);
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 

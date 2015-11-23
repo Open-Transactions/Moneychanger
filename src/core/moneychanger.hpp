@@ -7,6 +7,8 @@
 
 #include <core/handlers/focuser.h>
 
+#include <opentxs/client/OTRecordList.hpp>
+
 #include <namecoin/Namecoin.hpp>
 
 #include _CINTTYPES
@@ -32,6 +34,7 @@ class BtcConnectDlg;
 class BtcSendDlg;
 class BtcReceiveDlg;
 class DlgPassphraseManager;
+class Messages;
 
 class QMenu;
 class QSystemTrayIcon;
@@ -42,6 +45,9 @@ class Moneychanger : public QWidget
     Q_OBJECT
 
 private:
+    // ------------------------------------------------
+    opentxs::OTRecordList   m_list;
+    // ------------------------------------------------
     /** Constructor & Destructor **/
     Moneychanger(QWidget *parent = 0);
 public:
@@ -57,17 +63,26 @@ public:
     /** Start **/
     void bootTray();
     
+    opentxs::OTRecordList & GetRecordlist();
+    void setupRecordList();  // Sets up the RecordList object with the IDs etc.
+    void populateRecords();  // Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
+
+    void modifyRecords(); // After we populate the recordlist, we make some changes to the list (move messages to a separate db table, move receipts to a separate table, etc.)
+    bool AddMailToMsgArchive(opentxs::OTRecord& recordmt);
+    bool AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt);
+
 signals:
     void balancesChanged();
-    void downloadedAccountData();
+    void populatedRecordlist();
     void appendToLog(QString);
 
 public slots:
-
     void onBalancesChanged();
     void onNeedToUpdateMenu();
+    void onNeedToPopulateRecordlist();
     void onNeedToDownloadAccountData();
-    void onNeedToDownloadSingleAcct(QString qstrAcctID);
+    void onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOptionalAcctID);
+    void onNeedToDownloadMail();
 
     /**
      * Functions for setting Systray Values
@@ -134,6 +149,8 @@ private:
     
     QPointer<MTHome>  homewindow;
     QPointer<DlgMenu> menuwindow;
+
+    QPointer<Messages> messages_window;
 
     QPointer<MTDetailEdit> contactswindow;
     QPointer<MTDetailEdit> nymswindow;
@@ -203,6 +220,7 @@ private:
     
     void mc_overview_dialog();
     void mc_main_menu_dialog();
+    void mc_messages_dialog();
     // ------------------------------------------------
     void mc_sendfunds_show_dialog(QString qstrAcct=QString(""));
     void mc_requestfunds_show_dialog(QString qstrAcct=QString(""));
@@ -316,6 +334,7 @@ private:
     QPointer<QAction> mc_systrayMenu_sendfunds;
     QPointer<QAction> mc_systrayMenu_requestfunds;
     QPointer<QAction> mc_systrayMenu_contacts;
+    QPointer<QAction> mc_systrayMenu_messages;
     QPointer<QAction> mc_systrayMenu_composemessage;
     QPointer<QAction> mc_systrayMenu_passphrase_manager;
     // ---------------------------------------------------------
@@ -409,6 +428,7 @@ public slots:
     void mc_sendfunds_slot();               // Send Funds
     void mc_requestfunds_slot();            // Request Funds
     void mc_composemessage_slot();          // Compose Message
+    void mc_messages_slot();
     // ---------------------------------------------------------------------------
     void mc_send_from_acct (QString qstrAcct);
     void mc_request_to_acct(QString qstrAcct);

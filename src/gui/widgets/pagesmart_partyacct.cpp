@@ -73,7 +73,7 @@ void PageSmart_PartyAcct::on_pushButtonSelect_clicked()
     // -------------------------------------------
     QString qstr_current_id = field("AcctName").toString();
 
-    if (qstr_current_id == m_qstrClickText)
+    if (0 == qstr_current_id.compare(m_qstrClickText))
         qstr_current_id = QString("");
     // -------------------------------------------
     DlgChooser theChooser(this);
@@ -112,7 +112,7 @@ void PageSmart_PartyAcct::on_pushButtonSelect_clicked()
         // -----------------------------------------------
         if (!OT_id.isEmpty())
         {
-            if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
+            if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                 bFoundDefault = true;
             // -----------------------------------------------
             the_map.insert(OT_id, OT_name);
@@ -155,7 +155,7 @@ bool PageSmart_PartyAcct::isComplete() const
 {
     QString qstr_current_id = field("AcctName").toString();
 
-    if (qstr_current_id == m_qstrClickText)
+    if (0 == qstr_current_id.compare(m_qstrClickText))
         qstr_current_id = QString("");
 
     if (qstr_current_id.isEmpty())

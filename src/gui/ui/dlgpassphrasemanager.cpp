@@ -78,10 +78,10 @@ void ClipboardWrapper::clearContents()
 {
     QClipboard* clipboard = QApplication::clipboard();
     OT_ASSERT(NULL != clipboard);
-    if (clipboard->text(QClipboard::Clipboard) == m_qstrPreviousSetContents)
+    if (0 == m_qstrPreviousSetContents.compare(clipboard->text(QClipboard::Clipboard)))
         clipboard->clear(QClipboard::Clipboard);
     if (clipboard->supportsSelection() &&
-        clipboard->text(QClipboard::Selection) == m_qstrPreviousSetContents)
+        (0 == m_qstrPreviousSetContents.compare(clipboard->text(QClipboard::Selection))))
         clipboard->clear(QClipboard::Selection);
     m_qstrPreviousSetContents.clear();
 }

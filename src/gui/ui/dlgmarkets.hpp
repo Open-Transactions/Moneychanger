@@ -45,6 +45,9 @@ public:
 
 signals:
     void needToLoadOrRetrieveMarkets();
+    void needToDownloadSingleAcct(QString qstrAcctID, QString qstrOptionalAcctID);
+    void needToDownloadAccountData();
+    void needToDisplayTradeArchive();
 
 public slots:
     void onCurrentMarketChanged_Offers (QString qstrMarketID);
@@ -83,10 +86,10 @@ protected:
 
 private slots:
     void on_comboBoxServer_currentIndexChanged(int index);
-
     void on_comboBoxNym_currentIndexChanged(int index);
-
-    void on_toolButton_clicked();
+    void on_toolButtonRefreshOffers_clicked();
+    void on_toolButtonRefreshAccounts_clicked();
+    void on_toolButtonTradeArchive_clicked();
 
 private:
     void ClearMarketMap();

@@ -4,6 +4,7 @@
 
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/modeltradearchive.hpp>
+#include <core/handlers/modelmessages.hpp>
 
 #include <opentxs/core/util/OTPaths.hpp>
 
@@ -174,7 +175,30 @@ bool DBHandler::dbCreateInstance()
                 " final_receipt TEXT"
                 ")";
         // --------------------------------------------
-
+        QString create_message_table = "CREATE TABLE IF NOT EXISTS message"
+               "(message_id INTEGER PRIMARY KEY,"
+               " have_read INTEGER,"
+               " have_replied INTEGER,"
+               " have_forwarded INTEGER,"
+               " subject TEXT,"
+               " sender_nym_id TEXT,"
+               " sender_address TEXT,"
+               " recipient_nym_id TEXT,"
+               " recipient_address TEXT,"
+               " timestamp INTEGER,"
+               " method_type TEXT,"
+               " method_type_display TEXT,"
+               " notary_id TEXT,"
+               " my_nym_id TEXT,"
+               " my_address TEXT,"
+               " folder INTEGER"
+               ")";
+        // --------------------------------------------
+        QString create_message_body_table = "CREATE TABLE IF NOT EXISTS message_body"
+               "(message_id INTEGER PRIMARY KEY,"
+               " body TEXT"
+               ")";
+        // --------------------------------------------
         // RPC User Manager
         QString create_rpcusers_table = "CREATE TABLE IF NOT EXISTS rpc_users(user_id TEXT PRIMARY KEY, password TEXT)";
 
@@ -216,18 +240,20 @@ bool DBHandler::dbCreateInstance()
         error += query.exec(create_smart_contract);
         error += query.exec(create_managed_passphrase);
         error += query.exec(create_trade_archive);
+        error += query.exec(create_message_table);
+        error += query.exec(create_message_body_table);
         // ------------------------------------------
         error += query.exec(create_rpcusers_table);
         // ------------------------------------------
         error += query.exec(create_nmc);
         // ------------------------------------------
-        if (error != 18)  //every query passed?
+        if (error != 20)  //every query passed?
         {
             qDebug() << "dbCreateInstance Error: " << dbConnectErrorStr + " " + dbCreationStr;
             FileHandler rm;
             db.close();
 
-//            rm.removeFile(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
+//          rm.removeFile(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 //          rm.removeFile(QCoreApplication::applicationDirPath() + dbFileNameStr);
         }
         else
@@ -236,7 +262,79 @@ bool DBHandler::dbCreateInstance()
     return error;
 }
 
+// Unused for now, but too much work to just throw away:
+//    QString qstrQuery(
+//                "SELECT contact.contact_id as contact_id, contact.contact_display_name as contact_display_name,"
+//                " msg_method.method_type as method_type, msg_method.method_type_display as method_type_display,"
+//                " contact_method.address as address"
+//                " FROM contact, msg_method, contact_method"
+//                " WHERE contact.contact_id = contact_method.contact_id"
+//                " AND msg_method.method_type = contact_method.method_type"
+//                );
 
+
+QPointer<ModelMessages> DBHandler::getMessageModel()
+{
+    QString tableName("message");
+
+    if (!pMessageModel_)
+    {
+        pMessageModel_ = new ModelMessages(0, db);
+
+        pMessageModel_->setTable(tableName);
+        pMessageModel_->setEditStrategy(QSqlTableModel::OnManualSubmit);
+        pMessageModel_->select();
+
+        if ( pMessageModel_->lastError().isValid())
+            qDebug() <<  pMessageModel_->lastError();
+
+        int column = 0;
+
+        // NOTE: These header names will change.
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("message_id"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Read?"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Replied?"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Forwarded?"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Subject"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("From"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("From address"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("To"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("To address"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Timestamp"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("method_type"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Transport"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Notary"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Me"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("My address"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Folder"));
+
+        pMessageModel_->sort(MSG_SOURCE_COL_TIMESTAMP, Qt::DescendingOrder);
+    }
+
+    return pMessageModel_;
+}
+
+/*
+SELECT contact.contact_id as contact_id, contact.contact_display_name as contact_display_name,
+ msg_method.method_type as method_type, msg_method.method_type_display as method_type_display,
+ contact_method.address as address
+ FROM contact, msg_method, contact_method
+ WHERE contact.contact_id = contact_method.contact_id
+ AND msg_method.method_type = contact_method.method_type
+*/
+
+// --------------------------------------------
+// contact(contact_id INTEGER PRIMARY KEY, contact_display_name TEXT)";
+// --------------------------------------------
+// msg_method"
+//        " (method_id INTEGER PRIMARY KEY,"   // 1, 2, etc.
+//        "  method_display_name TEXT,"        // "Localhost"
+//        "  method_type TEXT,"                // "bitmessage"
+//        "  method_type_display TEXT,"        // "Bitmessage"
+//        "  method_connect TEXT)";            // "http://username:password@http://127.0.0.1:8332/"
+// --------------------------------------------
+//  contact_method(contact_id INTEGER, method_type TEXT, address TEXT, PRIMARY KEY(contact_id, method_type, address))";
+// --------------------------------------------
 
 
 QPointer<ModelTradeArchive> DBHandler::getTradeArchiveModel()
@@ -251,14 +349,17 @@ QPointer<ModelTradeArchive> DBHandler::getTradeArchiveModel()
         pTradeArchiveModel_->setEditStrategy(QSqlTableModel::OnManualSubmit);
         pTradeArchiveModel_->select();
 
+        if ( pTradeArchiveModel_->lastError().isValid())
+            qDebug() <<  pTradeArchiveModel_->lastError();
+
         int column = 0;
 
         // NOTE: These header names will change.
         pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Bid / Ask")); // is_bid
         pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Final Price")); // actual_price
         pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Per Scale"));
-        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Total Price for")); // actual_paid
-        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Asset Amount")); // amount_purchased
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Total Price")); // actual_paid
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("for Asset Amount")); // amount_purchased
         pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Timestamp"));
         pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Offer#"));
         pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Receipt#"));
