@@ -134,7 +134,7 @@ void MTAssetDetails::on_pushButton_clicked()
                         // -----------------------------------------------
                         if (!OT_id.isEmpty())
                         {
-                            if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
+                            if (!qstr_current_id.isEmpty() && (0 == OT_id.compare(qstr_current_id)))
                                 bFoundDefault = true;
                             // -----------------------------------------------
                             OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_id.toStdString()));

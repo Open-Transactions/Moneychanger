@@ -196,10 +196,10 @@ public:
   bool GetMsgMethods             (mapIDName & theMap,                       bool bAddServers=false, QString filterByType="");
   bool GetMsgMethodTypes         (mapIDName & theMap,                       bool bAddServers=false);
   bool GetMsgMethodsByNym        (mapIDName & theMap, QString filterByNym,  bool bAddServers=false, QString filterByType=""); // Methods.
-  bool GetMsgMethodTypesByContact(mapIDName & theMap, int nFilterByContact, bool bAddServers=false, QString filterByType=""); // Method Types.
+  bool GetMsgMethodTypesByContact(mapIDName & theMap, int nFilterByContact, bool bAddServers=false, QString filterByType="", bool bIncludeTypeInKey=true); // Method Types.
   bool GetMsgMethodTypesByNym    (mapIDName & theMap, QString filterByNym,  bool bAddServers=false);
 
-  bool GetAddressesByContact     (mapIDName & theMap, int nFilterByContact, QString filterByType);
+  bool GetAddressesByContact     (mapIDName & theMap, int nFilterByContact, QString filterByType, bool bIncludeTypeInKey=true);
   bool GetAddressesByNym         (mapIDName & theMap, QString filterByNym,  QString filterByType);
   bool GetAddressesByNym         (mapIDName & theMap, QString filterByNym,  int filterByMethodID);
 
@@ -224,6 +224,12 @@ public:
   QString GetSmartContract    (int nID);
   bool DeleteSmartContract    (int nID);
   bool DeleteManagedPassphrase(int nID);
+
+  bool LowLevelUpdateMessageBody(int nMessageID, const QString & qstrBody);
+  bool CreateMessageBody(QString qstrBody);
+  bool DeleteMessageBody(int nID);
+  bool UpdateMessageBody(int nMessageID, const QString & qstrBody);
+  QString GetMessageBody(int nID);
   // ----------------------------------------------------------
   public:
     ~MTContactHandler();

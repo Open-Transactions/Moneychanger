@@ -86,20 +86,38 @@ void DlgMarkets::FirstRun()
         m_bFirstRun = false;
         // -----------------------
         // Initialization here...
+        ui->userBar->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");
+
+        QPixmap pixmapContacts(":/icons/icons/user.png"); // This is here only for size purposes.
+        QIcon   contactsButtonIcon(pixmapContacts);       // Other buttons use this to set their own size.
         // ----------------------------------------------------------------
-        QPixmap pixmapContacts(":/icons/icons/user.png");
+        QPixmap pixmapArchive (":/icons/overview");
         QPixmap pixmapRefresh (":/icons/icons/refresh.png");
         // ----------------------------------------------------------------
-        QIcon contactsButtonIcon(pixmapContacts);
-        QIcon refreshButtonIcon (pixmapRefresh);
+        QIcon refreshAccountsButtonIcon (pixmapRefresh);
+        QIcon refreshOffersButtonIcon   (pixmapRefresh);
+        QIcon tradeArchiveButtonIcon    (pixmapArchive);
         // ----------------------------------------------------------------
-        ui->toolButton->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-        ui->toolButton->setAutoRaise(true);
-        ui->toolButton->setIcon(refreshButtonIcon);
-//      ui->toolButton->setIconSize(pixmapRefresh.rect().size());
-        ui->toolButton->setIconSize(pixmapContacts.rect().size());
-        ui->toolButton->setText(tr("Refresh"));
-
+        ui->toolButtonRefreshOffers->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonRefreshOffers->setAutoRaise(true);
+        ui->toolButtonRefreshOffers->setIcon(refreshOffersButtonIcon);
+//      ui->toolButtonRefreshOffers->setIconSize(pixmapRefresh.rect().size());
+        ui->toolButtonRefreshOffers->setIconSize(pixmapContacts.rect().size());
+        ui->toolButtonRefreshOffers->setText(tr("Refresh Offers"));
+        // ----------------------------------------------------------------
+        ui->toolButtonRefreshAccounts->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonRefreshAccounts->setAutoRaise(true);
+        ui->toolButtonRefreshAccounts->setIcon(refreshAccountsButtonIcon);
+//      ui->toolButtonRefreshAccounts->setIconSize(pixmapRefresh.rect().size());
+        ui->toolButtonRefreshAccounts->setIconSize(pixmapContacts.rect().size());
+        ui->toolButtonRefreshAccounts->setText(tr("Refresh Accounts"));
+        // ----------------------------------------------------------------
+        ui->toolButtonTradeArchive->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonTradeArchive->setAutoRaise(true);
+        ui->toolButtonTradeArchive->setIcon(tradeArchiveButtonIcon);
+//      ui->toolButtonTradeArchive->setIconSize(pixmapRefresh.rect().size());
+        ui->toolButtonTradeArchive->setIconSize(pixmapContacts.rect().size());
+        ui->toolButtonTradeArchive->setText(tr("Historical Trades"));
         // ******************************************************
         {
             m_pMarketDetails = new MTDetailEdit(this);
@@ -222,7 +240,7 @@ void DlgMarkets::onBalancesChangedFromAbove()
     emit needToLoadOrRetrieveMarkets();
 }
 
-void DlgMarkets::on_toolButton_clicked()
+void DlgMarkets::on_toolButtonRefreshOffers_clicked()
 {
     m_bHaveRetrievedFirstTime = false; // To force RefreshRecords to re-download.
 
@@ -239,6 +257,27 @@ void DlgMarkets::on_toolButton_clicked()
     // TODO here: turn refresh button black.
 }
 
+void DlgMarkets::on_toolButtonRefreshAccounts_clicked()//resume todo
+{
+    if (m_pOfferDetails)
+    {
+        QString qstrAssetAcctID, qstrCurrencyAcctID;
+
+        const bool bGotAccounts = m_pOfferDetails->getAccountIDs(qstrAssetAcctID, qstrCurrencyAcctID);
+
+        if (bGotAccounts)
+            emit needToDownloadSingleAcct(qstrAssetAcctID, qstrCurrencyAcctID);
+        else
+            emit needToDownloadAccountData();
+    }
+    else
+        emit needToDownloadAccountData();
+}
+
+void DlgMarkets::on_toolButtonTradeArchive_clicked()
+{
+    emit needToDisplayTradeArchive();
+}
 
 void DlgMarkets::SetCurrentNymIDBasedOnIndex(int index)
 {
@@ -937,7 +976,7 @@ void DlgMarkets::RefreshRecords()
     m_mapServers.insert(qstrAllID, qstrAllName);
     ui->comboBoxServer->insertItem(0, qstrAllName);
     // ----------------------------
-    if (!m_NotaryID.isEmpty() && (m_NotaryID == qstrAllID))
+    if (!m_NotaryID.isEmpty() && (0 == m_NotaryID.compare(qstrAllID)))
     {
         bFoundServerDefault = true;
         nDefaultServerIndex = 0;

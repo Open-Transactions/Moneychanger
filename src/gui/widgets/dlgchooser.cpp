@@ -89,7 +89,7 @@ void DlgChooser::showEvent(QShowEvent * event)
             QString qstrID    = ii.key();
             QString qstrValue = ii.value();
             // -------------------------------------
-            if (!m_PreSelected.isEmpty() && (m_PreSelected == qstrID))
+            if (!m_PreSelected.isEmpty() && (0 == m_PreSelected.compare(qstrID)))
                 nPreselectedIndex = nIndex;
             // -------------------------------------
             QWidget     * row_widget        = new QWidget;

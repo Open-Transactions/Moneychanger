@@ -24,12 +24,13 @@ class MTHome : public QWidget
 private:
     /** Functions **/
 
-    void PopulateRecords();  // Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
+//    void PopulateRecords();  // Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
 
     void RefreshRecords();
-    void setupRecordList();
     void RefreshUserBar();
+//  void setupRecordList();
 
+    bool AddMailToMsgArchive(opentxs::OTRecord& recordmt);
     bool AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt);
 
     QWidget * CreateUserBarWidget();
@@ -42,6 +43,7 @@ private:
     QPointer<QFrame>        m_pHeaderFrame;
     // ------------------------------------------------
     opentxs::OTRecordList   m_list;
+    opentxs::OTRecordList & GetRecordlist();
     // ------------------------------------------------
     bool    m_bTurnRefreshBtnRed;
     // ------------------------------------------------
@@ -64,21 +66,17 @@ public:
     static QString FormDisplayLabelForAcctButton(QString qstr_acct_id, QString qstr_display_name);
 
 signals:
+    void needToPopulateRecordlist();
     void needToDownloadAccountData();
     void needToRefreshDetails(int nRow, opentxs::OTRecordList & theList);
 
 public slots:
-    void onAccountDataDownloaded();
+    void onRecordlistPopulated();
     void onBalancesChanged();
     void onSetRefreshBtnRed();
     void onNeedToRefreshUserBar();
     void onNeedToRefreshRecords();
-    void onRecordDeleted(bool bNeedToRefreshUserBar);
-
-    void onNewServerAdded(QString qstrID);
-    void onNewAssetAdded(QString qstrID);
-    void onNewNymAdded(QString qstrID);
-    void onNewAccountAdded(QString qstrID);
+    void onRecordDeleted();
 
 private slots:
     void on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn);

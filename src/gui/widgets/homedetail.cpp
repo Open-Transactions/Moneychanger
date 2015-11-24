@@ -35,28 +35,25 @@ void MTHomeDetail::SetHomePointer(MTHome & theHome)
 {
     m_pHome = &theHome;
 
-    connect(this, SIGNAL(accountDataDownloaded()), m_pHome, SLOT(onAccountDataDownloaded()));
+    connect(this, SIGNAL(accountDataDownloaded()), Moneychanger::It(), SLOT(onNeedToPopulateRecordlist()));
 //  connect(this, SIGNAL(balanceChanged()),        m_pHome, SLOT(onBalancesChanged()));
     connect(this, SIGNAL(setRefreshBtnRed()),      m_pHome, SLOT(onSetRefreshBtnRed()));
     connect(this, SIGNAL(refreshUserBar()),        m_pHome, SLOT(onNeedToRefreshUserBar()));
-    connect(this, SIGNAL(recordDeleted(bool)),     m_pHome, SLOT(onRecordDeleted(bool)));
+    connect(this, SIGNAL(recordDeleted()),         m_pHome, SLOT(onRecordDeleted()));
     // --------------------------------------------------------
     connect(this, SIGNAL(showContact(QString)),               Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
     // --------------------------------------------------------
-    connect(this, SIGNAL(showContactAndRefreshHome(QString)), m_pHome,            SLOT(onNeedToRefreshRecords()));
+    connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(onNeedToPopulateRecordlist()));
     connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
     // --------------------------------------------------------
     connect(this, SIGNAL(balanceChanged()),                   Moneychanger::It(), SLOT(onBalancesChanged()));
-    connect(this, SIGNAL(balanceChanged()),                   m_pHome,            SLOT(onAccountDataDownloaded()));
+    connect(this, SIGNAL(balanceChanged()),                   Moneychanger::It(), SLOT(onNeedToPopulateRecordlist()));
     // --------------------------------------------------------
-    connect(this, SIGNAL(recordDeletedBalanceChanged(bool)),  Moneychanger::It(), SLOT(onBalancesChanged()));
-    connect(this, SIGNAL(recordDeletedBalanceChanged(bool)),  m_pHome,            SLOT(onRecordDeleted(bool))); // bRefreshUserBar
-    // NOTE: ALWAYS pass false to recordDeletedBalanceChanged, since Moneychanger::onBalancesChanged refreshes
-    // it anyway, so we don't want MTHome::recordDeleted() to unnecessarily refresh it a second time.
+    connect(this, SIGNAL(recordDeletedBalanceChanged()),  Moneychanger::It(), SLOT(onBalancesChanged()));
+    connect(this, SIGNAL(recordDeletedBalanceChanged()),  m_pHome,            SLOT(onRecordDeleted()));
     // --------------------------------------------------------
     connect(m_pHome, SIGNAL(needToRefreshDetails(int, opentxs::OTRecordList&)), this, SLOT(onRefresh(int, opentxs::OTRecordList&)));
 }
-
 
 MTHomeDetail::MTHomeDetail(QWidget *parent) :
     QWidget(parent),
@@ -360,7 +357,7 @@ void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
 
         if (bSuccess)
         {
-            emit recordDeleted(false); // bRefreshUserBar
+            emit recordDeleted();
         }
     }
 }
@@ -481,9 +478,9 @@ QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
                 qstr_acct_server = QString::fromStdString(str_acct_server);
                 qstr_acct_asset  = QString::fromStdString(str_acct_asset);
                 // -----------------------------------------------
-                if ((qstr_record_nym    == qstr_acct_nym   ) &&
-                    (qstr_record_server == qstr_acct_server) &&
-                    (qstr_record_asset  == qstr_acct_asset ) &&
+                if ((0 == qstr_record_nym   .compare(qstr_acct_nym)   ) &&
+                    (0 == qstr_record_server.compare(qstr_acct_server)) &&
+                    (0 == qstr_record_asset .compare(qstr_acct_asset) ) &&
                     (0 == str_acct_type.compare("simple")  )  ) // DO NOT INTERNATIONALIZE "simple".
                 {
                     MTNameLookupQT theLookup;
@@ -711,7 +708,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
                 {
                     // Refresh the main list, or at least change the color of the refresh button.
                     //
-                    emit recordDeletedBalanceChanged(false); // Passing true would unnecessarily refresh the user bar twice.
+                    emit recordDeletedBalanceChanged();
                 }
             } // qstr_acct_id not empty.
         } // record is cash
@@ -787,7 +784,7 @@ void MTHomeDetail::on_discardOutgoingButton_clicked(bool checked /*=false*/)
         }
         else
         {
-            emit recordDeletedBalanceChanged(false);
+            emit recordDeletedBalanceChanged();
         }
         // ----------------------------------
     }
@@ -829,7 +826,7 @@ void MTHomeDetail::on_discardIncomingButton_clicked(bool checked /*=false*/)
         }
         else
         {
-            emit recordDeletedBalanceChanged(false);
+            emit recordDeletedBalanceChanged();
         }
         // ----------------------------------
     }

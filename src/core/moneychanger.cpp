@@ -49,6 +49,7 @@
 #include <gui/ui/dlgencrypt.hpp>
 #include <gui/ui/dlgdecrypt.hpp>
 #include <gui/ui/dlgpassphrasemanager.hpp>
+#include <gui/ui/messages.hpp>
 
 
 
@@ -98,6 +99,7 @@ Moneychanger * Moneychanger::It(QWidget *parent/*=0*/, bool bShuttingDown/*=fals
 
 Moneychanger::Moneychanger(QWidget *parent)
 : QWidget(parent),
+  m_list(*(new MTNameLookupQT)),
   nmc(new NMC_Interface ()),
   nmc_names(NULL),
   mc_overall_init(false),
@@ -311,8 +313,8 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon_advanced_transport = QIcon(":/icons/icons/p2p.png");
     mc_systrayIcon_advanced_log = QIcon(":/icons/icons/p2p.png");
     mc_systrayIcon_advanced_settings = QIcon(":/icons/settings");
-
     // ----------------------------------------------------------------------------
+    setupRecordList();
 
     mc_overall_init = true;
 }
@@ -324,6 +326,233 @@ Moneychanger::~Moneychanger()
     delete nmc_names;
     delete nmc;
 }
+
+opentxs::OTRecordList & Moneychanger::GetRecordlist()
+{
+    return m_list;
+}
+
+void Moneychanger::setupRecordList()
+{
+    int nServerCount  = opentxs::OTAPI_Wrap::It()->GetServerCount();
+    int nAssetCount   = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
+    int nNymCount     = opentxs::OTAPI_Wrap::It()->GetNymCount();
+    int nAccountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
+    // ----------------------------------------------------
+    GetRecordlist().ClearServers();
+    GetRecordlist().ClearAssets();
+    GetRecordlist().ClearNyms();
+    GetRecordlist().ClearAccounts();
+    // ----------------------------------------------------
+    for (int ii = 0; ii < nServerCount; ++ii)
+    {
+        std::string NotaryID = opentxs::OTAPI_Wrap::It()->GetServer_ID(ii);
+        GetRecordlist().AddNotaryID(NotaryID);
+    }
+    // ----------------------------------------------------
+    for (int ii = 0; ii < nAssetCount; ++ii)
+    {
+        std::string InstrumentDefinitionID = opentxs::OTAPI_Wrap::It()->GetAssetType_ID(ii);
+        GetRecordlist().AddInstrumentDefinitionID(InstrumentDefinitionID);
+    }
+    // ----------------------------------------------------
+    for (int ii = 0; ii < nNymCount; ++ii)
+    {
+        std::string nymId = opentxs::OTAPI_Wrap::It()->GetNym_ID(ii);
+        GetRecordlist().AddNymID(nymId);
+    }
+    // ----------------------------------------------------
+    for (int ii = 0; ii < nAccountCount; ++ii)
+    {
+        std::string accountID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(ii);
+        GetRecordlist().AddAccountID(accountID);
+    }
+    // ----------------------------------------------------
+    GetRecordlist().AcceptChequesAutomatically  (true);
+    GetRecordlist().AcceptReceiptsAutomatically (true);
+    GetRecordlist().AcceptTransfersAutomatically(false);
+}
+
+// Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
+//
+void Moneychanger::populateRecords()
+{
+    GetRecordlist().Populate(); // Refreshes the OT data from local storage.   < << <<==============***
+    // ---------------------------------------------------------------------
+    QList<QString> listCheckOnlyOnce; // So we don't call checkMail more than once for the same connect string.
+    // ---------------------------------------------------------------------
+    // Let's see if, additionally, there are any Bitmessage records (etc)
+    // for the Nyms that we care about. (If we didn't add a Nym ID to GetRecordlist()'s
+    // list of Nyms, then we don't care about any Bitmessages for that Nym.)
+    //
+    bool bNeedsReSorting = false;
+
+    const opentxs::list_of_strings & the_nyms = GetRecordlist().GetNyms();
+
+    for (opentxs::list_of_strings::const_iterator it = the_nyms.begin(); it != the_nyms.end(); ++it)
+    {
+        const std::string str_nym_id = *it;
+        // -----------------------------
+        mapIDName mapMethods;
+        QString   filterByNym = QString::fromStdString(str_nym_id);
+
+        bool bGotMethods = !filterByNym.isEmpty() ? MTContactHandler::getInstance()->GetMsgMethodsByNym(mapMethods, filterByNym, false, QString("")) : false;
+
+        if (bGotMethods)
+        {
+            // Loop through mapMethods and for each methodID, call GetAddressesByNym.
+            // Then for each address, grab the inbox and outbox from MTComms, and add
+            // the messages to GetRecordlist().
+            //
+            for (mapIDName::iterator ii = mapMethods.begin(); ii != mapMethods.end(); ++ii)
+            {
+                QString qstrID        = ii.key();
+                int nFilterByMethodID = 0;
+
+                QStringList stringlist = qstrID.split("|");
+
+                if (stringlist.size() >= 2) // Should always be 2...
+                {
+//                  QString qstrType     = stringlist.at(0);
+                    QString qstrMethodID = stringlist.at(1);
+                    nFilterByMethodID    = qstrMethodID.isEmpty() ? 0 : qstrMethodID.toInt();
+                    // --------------------------------------
+                    if (nFilterByMethodID > 0)
+                    {
+                        QString   qstrMethodType  = MTContactHandler::getInstance()->GetMethodType       (nFilterByMethodID);
+                        QString   qstrTypeDisplay = MTContactHandler::getInstance()->GetMethodTypeDisplay(nFilterByMethodID);
+                        QString   qstrConnectStr  = MTContactHandler::getInstance()->GetMethodConnectStr (nFilterByMethodID);
+
+                        if (!qstrConnectStr.isEmpty())
+                        {
+                            NetworkModule * pModule = MTComms::find(qstrConnectStr.toStdString());
+
+                            if ((NULL == pModule) && MTComms::add(qstrMethodType.toStdString(), qstrConnectStr.toStdString()))
+                                pModule = MTComms::find(qstrConnectStr.toStdString());
+
+                            if (NULL == pModule)
+                                // todo probably need a messagebox here.
+                                qDebug() << QString("PopulateRecords: Unable to add a %1 interface with connection string: %2").arg(qstrMethodType).arg(qstrConnectStr);
+
+                            if ((NULL != pModule) && pModule->accessible())
+                            {
+                                if ((-1) == listCheckOnlyOnce.indexOf(qstrConnectStr)) // Not on the list yet.
+                                {
+                                    pModule->checkMail();
+                                    listCheckOnlyOnce.insert(0, qstrConnectStr);
+                                }
+                                // ------------------------------
+                                mapIDName mapAddresses;
+
+                                if (MTContactHandler::getInstance()->GetAddressesByNym(mapAddresses, filterByNym, nFilterByMethodID))
+                                {
+                                    for (mapIDName::iterator jj = mapAddresses.begin(); jj != mapAddresses.end(); ++jj)
+                                    {
+                                        QString qstrAddress = jj.key();
+
+                                        if (!qstrAddress.isEmpty())
+                                        {
+                                            // --------------------------------------------------------------------------------------------
+                                            // INBOX
+                                            //
+                                            std::vector< _SharedPtr<NetworkMail> > theInbox = pModule->getInbox(qstrAddress.toStdString());
+
+                                            for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theInbox.size(); ++nIndex)
+                                            {
+                                                _SharedPtr<NetworkMail> & theMsg = theInbox[nIndex];
+
+                                                std::string strSubject  = theMsg->getSubject();
+                                                std::string strContents = theMsg->getMessage();
+                                                // ----------------------------------------------------
+                                                QString qstrFinal;
+
+                                                if (!strSubject.empty())
+                                                    qstrFinal = QString("%1: %2\n%3").
+                                                            arg(tr("Subject")).
+                                                            arg(QString::fromStdString(strSubject)).
+                                                            arg(QString::fromStdString(strContents));
+                                                else
+                                                    qstrFinal = QString::fromStdString(strContents);
+                                                // ----------------------------------------------------
+                                                bNeedsReSorting = true;
+
+                                                if (!theMsg->getMessageID().empty())
+                                                    GetRecordlist().AddSpecialMsg(theMsg->getMessageID(),
+                                                                         false, //bIsOutgoing=false
+                                                                         static_cast<int32_t>(nFilterByMethodID),
+                                                                         qstrFinal.toStdString(),
+                                                                         theMsg->getTo(),
+                                                                         theMsg->getFrom(),
+                                                                         qstrMethodType.toStdString(),
+                                                                         qstrTypeDisplay.toStdString(),
+                                                                         str_nym_id,
+                                                                         static_cast<time64_t>(theMsg->getReceivedTime()));
+                                            } // for (inbox)
+                                            // --------------------------------------------------------------------------------------------
+                                            // OUTBOX
+                                            //
+                                            std::vector< _SharedPtr<NetworkMail> > theOutbox = pModule->getOutbox(qstrAddress.toStdString());
+
+                                            for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theOutbox.size(); ++nIndex)
+                                            {
+                                                _SharedPtr<NetworkMail> & theMsg = theOutbox[nIndex];
+
+                                                std::string strSubject  = theMsg->getSubject();
+                                                std::string strContents = theMsg->getMessage();
+                                                // ----------------------------------------------------
+                                                QString qstrFinal;
+
+                                                if (!strSubject.empty())
+                                                    qstrFinal = QString("%1: %2\n%3").
+                                                            arg(tr("Subject")).
+                                                            arg(QString::fromStdString(strSubject)).
+                                                            arg(QString::fromStdString(strContents));
+                                                else
+                                                    qstrFinal = QString::fromStdString(strContents);
+                                                // ----------------------------------------------------
+                                                bNeedsReSorting = true;
+
+//                                                qDebug() << QString("Adding OUTGOING theMsg->getMessageID(): %1 \n filterByNym: %2 \n qstrAddress: %3 \n nIndex: %4")
+//                                                            .arg(QString::fromStdString(theMsg->getMessageID()))
+//                                                            .arg(filterByNym)
+//                                                            .arg(qstrAddress)
+//                                                            .arg(nIndex)
+//                                                            ;
+
+
+                                                if (!theMsg->getMessageID().empty())
+                                                    GetRecordlist().AddSpecialMsg(theMsg->getMessageID(),
+                                                                         true, //bIsOutgoing=true
+                                                                         static_cast<int32_t>(nFilterByMethodID),
+                                                                         qstrFinal.toStdString(),
+                                                                         theMsg->getFrom(),
+                                                                         theMsg->getTo(),
+                                                                         qstrMethodType.toStdString(),
+                                                                         qstrTypeDisplay.toStdString(),
+                                                                         str_nym_id,
+                                                                         static_cast<time64_t>(theMsg->getSentTime()));
+                                            } // for (outbox)
+                                        } // if (!qstrAddress.isEmpty())
+                                    } // for (addresses)
+                                } // if GetAddressesByNym
+                            } // if ((NULL != pModule) && pModule->accessible())
+                        } // if (!qstrConnectStr.isEmpty())
+                    } // if nFilterByMethodID > 0
+                } // if (stringlist.size() >= 2)
+            } // for (methods)
+        } // if bGotMethods
+    } // for (nyms)
+    // -----------------------------------------------------
+    if (bNeedsReSorting)
+        GetRecordlist().SortRecords();
+    // -----------------------------------------------------
+    // This takes things like market receipts out of the record list
+    // and moves to their own database table.
+    // Same thing for mail messages, etc.
+    //
+    modifyRecords();
+}
+
 
 // ---------------------------------------------------------------
 // Check and see if the Nym has exhausted his usage credits.
@@ -907,7 +1136,7 @@ void Moneychanger::SetupExchangeMenu(QPointer<QMenu> & parent_menu)
     mc_systrayMenu_exchange->addAction(mc_systrayMenu_markets);
     connect(mc_systrayMenu_markets, SIGNAL(triggered()), this, SLOT(mc_market_slot()));
     // --------------------------------------------------------------
-    mc_systrayMenu_trade_archive = new QAction(mc_systrayIcon_trade_archive, tr("Archive of Trades"), mc_systrayMenu_exchange);
+    mc_systrayMenu_trade_archive = new QAction(mc_systrayIcon_trade_archive, tr("Historical Trades"), mc_systrayMenu_exchange);
     mc_systrayMenu_exchange->addAction(mc_systrayMenu_trade_archive);
     connect(mc_systrayMenu_trade_archive, SIGNAL(triggered()), this, SLOT(mc_trade_archive_slot()));
 }
@@ -957,11 +1186,16 @@ void Moneychanger::SetupMessagingMenu(QPointer<QMenu> & parent_menu)
     mc_systrayMenu_messaging = new QMenu(tr("Messages"), parent_menu);
     mc_systrayMenu_messaging->setIcon(mc_systrayIcon_composemessage);
     parent_menu->addMenu(mc_systrayMenu_messaging);
-    // --------------------------------------------------------------
+    // -------------------------------------------------
     //Compose Message
     mc_systrayMenu_composemessage = new QAction(mc_systrayIcon_composemessage, tr("Compose Message"), mc_systrayMenu_messaging);
     mc_systrayMenu_messaging->addAction(mc_systrayMenu_composemessage);
     connect(mc_systrayMenu_composemessage, SIGNAL(triggered()), this, SLOT(mc_composemessage_slot()));
+    // --------------------------------------------------------------
+    //Message History
+    mc_systrayMenu_messages = new QAction(mc_systrayIcon_overview, tr("Message History"), mc_systrayMenu_messaging);
+    mc_systrayMenu_messaging->addAction(mc_systrayMenu_messages);
+    connect(mc_systrayMenu_messages, SIGNAL(triggered()), this, SLOT(mc_messages_slot()));
     // --------------------------------------------------------------
     //Address Book
     mc_systrayMenu_contacts = new QAction(mc_systrayIcon_contacts, tr("Address Book"), mc_systrayMenu_messaging);
@@ -1223,7 +1457,7 @@ void Moneychanger::mc_nymmanager_dialog(QString qstrPresetID/*=QString("")*/)
 
         the_map.insert(OT_id, OT_name);
         // ------------------------------
-        if (!qstrPresetID.isEmpty() && (qstrPresetID == OT_id))
+        if (!qstrPresetID.isEmpty() && (0 == qstrPresetID.compare(OT_id)))
             bFoundPreset = true;
         // ------------------------------
     } // for
@@ -1309,29 +1543,538 @@ void Moneychanger::mc_nymselection_triggered(QAction*action_triggered)
 
 
 
+void Moneychanger::onNeedToDownloadMail()
+{
+    QString qstrErrorMsg;
+    qstrErrorMsg = tr("Failed trying to contact the notary. Perhaps it is down, or there might be a network problem.");
+    // -----------------------------
+    opentxs::OT_ME madeEasy;
+
+    int32_t nymCount = opentxs::OTAPI_Wrap::It()->GetNymCount();
+
+    if (0 == nymCount)
+    {
+        qDebug() << "Making 'Me' Nym";
+
+        std::string strSource(""), strAlt("");
+        std::string newNymId = madeEasy.create_nym_ecdsa(strSource, strAlt);
+
+        if (!newNymId.empty())
+        {
+            opentxs::OTAPI_Wrap::It()->SetNym_Name(newNymId, newNymId, tr("Me").toLatin1().data());
+            DBHandler::getInstance()->AddressBookUpdateDefaultNym(QString::fromStdString(newNymId));
+            qDebug() << "Finished Making Nym";
+        }
+
+        nymCount = opentxs::OTAPI_Wrap::It()->GetNymCount();
+    }
+    // ----------------------------------------------------------------
+    std::string defaultNymID(get_default_nym_id().toStdString());
+    // ----------------------------------------------------------------
+    // Some messages come from Bitmessage or other transport layers, and
+    // other messages from via OT. So let's download any latest Nym info
+    // from OT... (Messages are shipped via the nymbox.)
+    //
+    if ((get_server_list_id_size() > 0))
+    {
+        std::string defaultNotaryID(get_default_notary_id().toStdString());
+        // ----------------------------------------------------------------
+        if (defaultNotaryID.empty())
+        {
+            defaultNotaryID = get_notary_id_at(0).toStdString();
+            DBHandler::getInstance()->AddressBookUpdateDefaultServer(QString::fromStdString(defaultNotaryID));
+        }
+        // ----------------------------------------------------------------
+        if (!defaultNymID.empty() && !defaultNotaryID.empty())
+        {
+            bool isReg = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(defaultNymID, defaultNotaryID);
+
+            if (!isReg)
+            {
+                std::string response;
+                {
+                    MTSpinner theSpinner;
+
+                    response = madeEasy.register_nym(defaultNotaryID, defaultNymID);
+
+                    if (opentxs::OTAPI_Wrap::networkFailure())
+                    {
+                        emit appendToLog(qstrErrorMsg);
+                        return;
+                    }
+                }
+
+                if (!madeEasy.VerifyMessageSuccess(response)) {
+                    Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
+                    return;
+                }
+//              qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
+            }
+        }
+        // ----------------------------------------------------------------
+        // Retrieve Nyms
+        //
+        int32_t serverCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
+
+        for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
+        {
+            std::string NotaryID = opentxs::OTAPI_Wrap::It()->GetServer_ID(serverIndex);
+
+            for (int32_t nymIndex = 0; nymIndex < nymCount; ++nymIndex)
+            {
+                std::string nymId = opentxs::OTAPI_Wrap::It()->GetNym_ID(nymIndex);
+
+                bool bRetrievalAttempted = false;
+                bool bRetrievalSucceeded = false;
+
+                if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(nymId, NotaryID))
+                {
+                    MTSpinner theSpinner;
+
+                    bRetrievalAttempted = true;
+                    bRetrievalSucceeded = madeEasy.retrieve_nym(NotaryID, nymId, true);
+
+                    if (opentxs::OTAPI_Wrap::networkFailure())
+                    {
+                        emit appendToLog(qstrErrorMsg);
+                        return;
+                    }
+                }
+                // ----------------------------------------------------------------
+                if (bRetrievalAttempted && !bRetrievalSucceeded) {
+                    Moneychanger::It()->HasUsageCredits(NotaryID, nymId);
+                    return;
+                }
+            }
+        }
+        // ----------------------------------------------------------------
+        onNeedToPopulateRecordlist();
+        return;
+    }
+    else
+    {
+        qDebug() << QString("%1: There's not at least 1 server contract; doing nothing.").arg(__FUNCTION__);
+    }
+}
 
 
-void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID)
+
+bool Moneychanger::AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt)
+{
+    QPointer<ModelTradeArchive> pModel = DBHandler::getInstance()->getTradeArchiveModel();
+
+    if (pModel)
+    {
+        QPointer<FinalReceiptProxyModel> pFinalReceiptProxy = new FinalReceiptProxyModel;
+        pFinalReceiptProxy->setSourceModel(pModel);
+        pFinalReceiptProxy->setFilterOpentxsRecord(recordmt);
+
+        bool bEditing = false;
+        QString qstrReceipt;
+
+        int nRowCount = pFinalReceiptProxy->rowCount();
+        for (int nIndex = 0; nIndex < nRowCount; ++nIndex)
+        {
+            if (!bEditing)
+            {
+                bEditing = true;
+                pModel->database().transaction();
+                qstrReceipt = QString::fromStdString(recordmt.GetContents());
+            }
+
+            QModelIndex proxyIndex  = pFinalReceiptProxy->index(nIndex, 0);
+            QModelIndex actualIndex = pFinalReceiptProxy->mapToSource(proxyIndex);
+            QSqlRecord  record      = pModel->record(actualIndex.row());
+            record.setValue("final_receipt", qstrReceipt);
+            pModel->setRecord(actualIndex.row(), record);
+        }
+        // ----------------------------
+        if (bEditing)
+        {
+            if (pModel->submitAll())
+            {
+                if (pModel->database().commit())
+                {
+                    // Success.
+                    return true;
+                }
+            }
+            else
+            {
+                pModel->database().rollback();
+                qDebug() << "Database Write Error" <<
+                           "The database reported an error: " <<
+                           pModel->lastError().text();
+            }
+        }
+    }
+    return false;
+}
+
+
+// Todo someday: Add a setting to the configuration so a user can choose whether or not to import Bitmessages.
+// In which case they might never be added to the database here, or deleting from Bitmessage here (as they are now in both cases), unless that setting was set to true.
+//
+bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
+{
+    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+    bool bSuccessAddingMsg = false;
+    QString qstrBody("");
+
+    if (pModel)
+    {
+        QString myNymID;
+        if (!recordmt.GetNymID().empty())
+            myNymID = QString::fromStdString(recordmt.GetNymID());
+        // ---------------------------------
+        QString myAddress;
+        if (!recordmt.GetAddress().empty())
+            myAddress = QString::fromStdString(recordmt.GetAddress());
+//          myAddress = MTContactHandler::Encode(QString::fromStdString(recordmt.GetAddress()));
+        // ---------------------------------
+        QString senderNymID,    senderAddress,
+                recipientNymID, recipientAddress;
+
+        if (recordmt.IsOutgoing())
+        {
+            if (!recordmt.GetOtherNymID().empty())
+                recipientNymID = QString::fromStdString(recordmt.GetOtherNymID());
+
+            if (!recordmt.GetOtherAddress().empty())
+                recipientAddress = QString::fromStdString(recordmt.GetOtherAddress());
+//              recipientAddress = MTContactHandler::Encode(QString::fromStdString(recordmt.GetOtherAddress()));
+        }
+        else
+        {
+            if (!recordmt.GetOtherNymID().empty())
+                senderNymID = QString::fromStdString(recordmt.GetOtherNymID());
+
+            if (!recordmt.GetOtherAddress().empty())
+                senderAddress = QString::fromStdString(recordmt.GetOtherAddress());
+//              senderAddress = MTContactHandler::Encode(QString::fromStdString(recordmt.GetOtherAddress()));
+        }
+        // ---------------------------------
+        QString notaryID, msgType, msgTypeDisplay;
+
+        if (!recordmt.GetNotaryID().empty())
+            notaryID = QString::fromStdString(recordmt.GetNotaryID());
+
+        if (!recordmt.GetMsgType().empty())
+            msgType = QString::fromStdString(recordmt.GetMsgType());
+//          msgType = MTContactHandler::Encode(QString::fromStdString(recordmt.GetMsgType()));
+
+        if (!recordmt.GetMsgTypeDisplay().empty())
+            msgTypeDisplay = QString::fromStdString(recordmt.GetMsgTypeDisplay());
+//          msgTypeDisplay = MTContactHandler::Encode(QString::fromStdString(recordmt.GetMsgTypeDisplay()));
+        // ---------------------------------
+        time64_t tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetDate()));
+        // ---------------------------------
+        std::string str_mailDescription;
+        recordmt.FormatMailSubject(str_mailDescription);
+        QString mailDescription;
+
+        if (!str_mailDescription.empty())
+            mailDescription = MTContactHandler::Encode(QString::fromStdString(str_mailDescription));
+        // ---------------------------------
+        const int nFolder = recordmt.IsOutgoing() ? 0 : 1; // 0 for moneychanger's outbox, and 1 for inbox.
+        // ---------------------------------
+        pModel->database().transaction();
+        // ---------------------------------
+        // ADD THE RECORD HERE.
+        //
+        QSqlRecord record = pModel->record();
+
+        record.setGenerated("message_id", true);
+
+        if (!myNymID.isEmpty())
+            record.setValue("my_nym_id", myNymID);
+        if (!myAddress.isEmpty())
+            record.setValue("my_address", myAddress);
+        if (!senderNymID.isEmpty())
+            record.setValue("sender_nym_id", senderNymID);
+        if (!senderAddress.isEmpty())
+            record.setValue("sender_address", senderAddress);
+        if (!recipientNymID.isEmpty())
+            record.setValue("recipient_nym_id", recipientNymID);
+        if (!recipientAddress.isEmpty())
+            record.setValue("recipient_address", recipientAddress);
+        if (!msgType.isEmpty())
+            record.setValue("method_type",  msgType);
+        if (!msgTypeDisplay.isEmpty())
+            record.setValue("method_type_display", msgTypeDisplay);
+        if (!notaryID.isEmpty())
+            record.setValue("notary_id", notaryID);
+        record.setValue("timestamp", tDate);
+        record.setValue("have_read", recordmt.IsOutgoing() ? 1 : 0);
+        record.setValue("have_replied", 0);
+        record.setValue("have_forwarded", 0);
+        if (!mailDescription.isEmpty())
+            record.setValue("subject", mailDescription);
+        record.setValue("folder", nFolder);
+
+        pModel->insertRecord(0, record);
+        // ---------------------------------
+        if (pModel->submitAll())
+        {
+            if (pModel->database().commit())
+            {
+                // Success.
+                bSuccessAddingMsg = true;
+                qstrBody = QString::fromStdString(recordmt.GetContents());
+            }
+        }
+        else
+        {
+            pModel->database().rollback();
+            qDebug() << "Database Write Error" <<
+                       "The database reported an error: " <<
+                       pModel->lastError().text();
+        }
+    }
+    // ------------------------------------------------
+    if (bSuccessAddingMsg)
+    {
+        if (!MTContactHandler::getInstance()->CreateMessageBody(qstrBody))
+        {
+            qDebug() << "AddMailToMsgArchive: Succeeded adding message record to database, but then failed writing message body.\n";
+            return false;
+        }
+        // -------------------------------------------------------
+        // Now that we've added it to our database, we need to delete it from Bitmessage.
+        bool bSuccessDeletingSpecial = true;
+
+        if (recordmt.IsSpecialMail())
+        {
+            bSuccessDeletingSpecial = false;
+
+            int32_t     nMethodID   = recordmt.GetMethodID();
+            std::string strMsgID    = recordmt.GetMsgID();
+            std::string strMsgType  = recordmt.GetMsgType();
+
+            if ((nMethodID > 0) && !strMsgID.empty())
+            {
+                // Get the comm string for this message ID.
+
+                QString qstrConnect = MTContactHandler::getInstance()->GetMethodConnectStr(static_cast<int>(nMethodID));
+
+                // Then find the NetworkModule based on the comm string:
+                //
+                if (!qstrConnect.isEmpty())
+                {
+                    NetworkModule * pModule = MTComms::find(qstrConnect.toStdString());
+
+                    // Use net module to delete msg ID
+                    //
+                    if (NULL != pModule)
+                    {
+                        if (recordmt.IsOutgoing())
+                        {
+                            if (pModule->deleteOutMessage(strMsgID))
+                                bSuccessDeletingSpecial = true;
+                        }
+                        else // incoming
+                        {
+                            if (pModule->deleteMessage(strMsgID))
+                                bSuccessDeletingSpecial = true;
+                        }
+                    }
+                }
+            }
+        } // special mail
+
+        if (!bSuccessDeletingSpecial)
+            qDebug() << "AddMailToMsgArchive: FYI, Failed while trying to delete special mail (probably bitmessage) from its native source.";
+        else
+            qDebug() << "AddMailToMsgArchive: FYI, SUCCESS deleting special mail (probably bitmessage) from its native source.";
+        // -----------------------------------
+    }
+
+    return bSuccessAddingMsg;
+}
+
+
+void Moneychanger::modifyRecords()
+{
+    const int listSize = GetRecordlist().size();
+    // -------------------------------------------------------
+    // Delete the market receipts (since they are already archived in other places)
+    // and find any finalReceipts that correspond to those, so we can add them
+    // to the trade archive table as well (and delete them as well.)
+    // Leave any other final receipts, since they may correspond to offers that
+    // completed without a trade, or to a smart contract, or to a recurring payment, etc.
+    //
+    for (int ii = 0; ii < listSize; ++ii)
+    {
+        const int nIndex = listSize - ii - 1; // We iterate through the list in reverse. (Since we'll be deleting stuff.)
+
+        opentxs::OTRecord record = GetRecordlist().GetRecord(nIndex);
+        {
+            opentxs::OTRecord& recordmt = record;
+
+            if (!recordmt.CanDeleteRecord())
+                continue;
+
+            // If recordmt IsRecord() and IsReceipt() and is a "finalReceipt"
+            // then try to look it up in the Trade Archive table. For all entries
+            // from the same transaction, we set the final receipt text in those
+            // rows.
+            //
+            // Then we delete the finalReceipt from the OT Record Box.
+            //
+            // Meanwhile, for all marketReceipts, we just deleting them since they
+            // are ALREADY in the trade_archive table.
+            //
+            // -----------------------------------
+            bool bShouldDeleteRecord = false;
+            // -----------------------------------
+            if (recordmt.IsRecord() && !recordmt.IsExpired() && recordmt.IsReceipt())
+            {
+                if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
+                {
+                    // We don't have to add these to the trade archive table because they
+                    // are already there. OTClient directly adds them into the TradeNymData object,
+                    // and then Moneychanger reads that object and imports it into the trade_achive
+                    // table already. So basically here all we need to do is delete the market
+                    // receipt records so the user doesn't have the hassle of deleting them himself.
+                    // Now they are safe in his archive and he can do whatever he wants with them.
+
+                    bShouldDeleteRecord = true;
+                } // marketReceipt
+                // -----------------------------------
+                else if (0 == recordmt.GetInstrumentType().compare("finalReceipt"))
+                {
+                    // Notice here we only delete the record if we successfully
+                    // added the final receipt to the trade archive table.
+                    // Why? Because the trade archive table contains receipts
+                    // of COMPLETED TRADES. So if we fail to find any of those
+                    // to add the final receipt to, we don't just want to DELETE
+                    // the final receipt -- the user's sole remaining copy!
+                    // - So for trades that occurred, the final receipt will be stored
+                    // with those archives next to the corresponding market receipts.
+                    // - And for trades that did NOT occur, the final receipt will
+                    // remain in the record box, so the user himself can delete those
+                    // whenever he sees fit. They will be his only notice that an
+                    // offer completed on the market without any trades occurring.
+                    // We might even change the GUI label now for final receipt records,
+                    // (in the Transaction History main window) to explicitly say,
+                    // "offer completed on market without any trades."
+                    //
+                    // P.S. There's another reason not to just delete a finalReceipt
+                    // if we can't find any trades associated with it: because it might
+                    // not be a finalReceipt for a market offer! It might correspond to
+                    // a smart contract or a recurring payment plan.
+                    //
+                    if (AddFinalReceiptToTradeArchive(recordmt))
+                        bShouldDeleteRecord = true;
+                } // finalReceipt
+            }
+            // -----------------------------------
+            if (recordmt.IsMail() || recordmt.IsSpecialMail())
+            {
+                if (AddMailToMsgArchive(recordmt))
+                    bShouldDeleteRecord = true;
+            }
+            // -----------------------------------
+            if (bShouldDeleteRecord)
+            {
+                if (recordmt.DeleteRecord())
+                {
+                    bool bRemoved = GetRecordlist().RemoveRecord(nIndex);
+
+                    if (!bRemoved)
+                        qDebug() << "Moneychanger::modifyRecords: weird issue trying to remove deleted record from GetRecordlist() (record list.)\n";
+                }
+            }
+        }
+    } // for (GetRecordlist() in reverse)
+    // -------------------------------------
+    // If the above process DID remove any records, then we have to repopulate them now,
+    // since every record contains its index, and so they will be wrong until re-populated.
+    //
+    if (listSize != GetRecordlist().size())
+        populateRecords();
+}
+
+
+// This function is used sometimes, but it's NOT called by the function below it, that
+// does this stuff in a loop. Why not? Because we don't want to download the same Nym
+// for EACH account he owns, when we could just download the Nym once and then download
+// all his accounts once. So this function is only used for more targeted cases where you
+// really prefer the faster loading time. Also, notice the "emit populatedRecordList()"
+// that you see at the bottom? We don't want to have to emit that 10 times in a row, so
+// again, you would only use this function in the case where that Acct and Nym really are
+// the ONLY two entities being refreshed.
+//
+void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOptionalAcctID)
 {
     if (qstrAcctID.isEmpty())
         return;
+
+    QString qstrErrorMsg;
+    qstrErrorMsg = tr("Failed trying to contact the notary. Perhaps it is down, or there might be a network problem.");
     // ------------------------------
     opentxs::OT_ME madeEasy;
 
     std::string accountId = qstrAcctID.toStdString();
     std::string acctNymID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (accountId);
     std::string acctSvrID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(accountId);
-
-    bool bRetrievalAttempted = false;
-    bool bRetrievalSucceeded = false;
-
+    // ------------------------------
+    std::string accountIdOptional = qstrOptionalAcctID.isEmpty() ? "" : qstrOptionalAcctID.toStdString();
+    std::string acctNymIDOptional = qstrOptionalAcctID.isEmpty() ? "" : opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (accountIdOptional);
+    std::string acctSvrIDOptional = qstrOptionalAcctID.isEmpty() ? "" : opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(accountIdOptional);
+    // ------------------------------
+    bool bRetrievalAttemptedNym = false;
+    bool bRetrievalSucceededNym = false;
+    bool bRetrievalAttemptedAcct = false;
+    bool bRetrievalSucceededAcct = false;
+    // ------------------------------
     if (!acctNymID.empty() && !acctSvrID.empty())
     {
         MTSpinner theSpinner;
 
-        bRetrievalAttempted = true;
-        bRetrievalSucceeded = madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
+        bRetrievalAttemptedNym = true;
+        bRetrievalSucceededNym = madeEasy.retrieve_nym(acctSvrID, acctNymID, true);
+
+        if (opentxs::OTAPI_Wrap::networkFailure())
+        {
+            emit appendToLog(qstrErrorMsg);
+            return;
+        }
+
+        // Let's download the Nym for the optional account too, but ONLY if it's not the same Nym!!
+        //
+        if (bRetrievalSucceededNym && !qstrOptionalAcctID.isEmpty() && (acctNymIDOptional != acctNymID))
+        {
+            bRetrievalSucceededNym = madeEasy.retrieve_nym(acctSvrIDOptional, acctNymIDOptional, true);
+
+            if (opentxs::OTAPI_Wrap::networkFailure())
+            {
+                emit appendToLog(qstrErrorMsg);
+                return;
+            }
+        }
     }
+    if (bRetrievalSucceededNym)
+    {
+        MTSpinner theSpinner;
+
+        bRetrievalAttemptedAcct = true;
+        bRetrievalSucceededAcct = madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
+
+        if (bRetrievalSucceededAcct && !qstrOptionalAcctID.isEmpty())
+        {
+            bRetrievalSucceededAcct = madeEasy.retrieve_account(acctSvrIDOptional, acctNymIDOptional, accountIdOptional, true);
+        }
+
+        if (opentxs::OTAPI_Wrap::networkFailure())
+        {
+            emit appendToLog(qstrErrorMsg);
+            return;
+        }
+    }
+    // ----------------------------------------------------------------
+    const bool bRetrievalAttempted = (bRetrievalAttemptedNym && bRetrievalAttemptedAcct);
+    const bool bRetrievalSucceeded = (bRetrievalSucceededNym && bRetrievalSucceededAcct);
     // ----------------------------------------------------------------
     if (bRetrievalAttempted)
     {
@@ -1339,11 +2082,32 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID)
             Moneychanger::It()->HasUsageCredits(acctSvrID, acctNymID);
             return;
         }
-        else {
-            emit downloadedAccountData();
+        else
+        {
+            // ----------------------------------------------------------------
+            // This refreshes any new Nym Trade Data (the receipts we just downloaded
+            // may include Market Receipts, so we need to import those into the Historical Trade Archive.)
+            //
+            QPointer<ModelTradeArchive> pModel = DBHandler::getInstance()->getTradeArchiveModel();
+
+            if (pModel)
+            {
+                pModel->updateDBFromOT();
+            }
+            // ----------------------------------------------------------------
+            onNeedToPopulateRecordlist();
             return;
         }
     }
+}
+
+// ----------------------------------------------------------------
+
+void Moneychanger::onNeedToPopulateRecordlist()
+{
+    populateRecords(); // This updates the record list. (It assumes a download has recently occurred.)
+    // ----------------------------------------------------------------
+    emit populatedRecordlist();
 }
 
 // ----------------------------------------------------------------
@@ -1427,7 +2191,7 @@ void Moneychanger::onNeedToDownloadAccountData()
         // ----------------------------------------------------------------
         int32_t accountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
 
-//        qDebug() << QString("Account Count: %1").arg(accountCount);
+//      qDebug() << QString("Account Count: %1").arg(accountCount);
 
         if (0 == accountCount)
         {
@@ -1536,7 +2300,7 @@ void Moneychanger::onNeedToDownloadAccountData()
             pModel->updateDBFromOT();
         }
         // ----------------------------------------------------------------
-        emit downloadedAccountData();
+        onNeedToPopulateRecordlist();
         return;
     }
     else
@@ -1588,7 +2352,7 @@ void Moneychanger::mc_assetmanager_dialog(QString qstrPresetID/*=QString("")*/)
 
         the_map.insert(OT_id, OT_name);
         // ------------------------------
-        if (!qstrPresetID.isEmpty() && (qstrPresetID == OT_id))
+        if (!qstrPresetID.isEmpty() && (0 == qstrPresetID.compare(OT_id)))
             bFoundPreset = true;
         // ------------------------------
     } // for
@@ -1754,7 +2518,7 @@ void Moneychanger::mc_accountmanager_dialog(QString qstrAcctID/*=QString("")*/)
 
         the_map.insert(OT_id, OT_name);
         // ------------------------------
-        if (!qstrAcctID.isEmpty() && (qstrAcctID == OT_id))
+        if (!qstrAcctID.isEmpty() && (0 == qstrAcctID.compare(OT_id)))
             bFoundDefault = true;
         // ------------------------------
     } // for
@@ -1797,7 +2561,7 @@ void Moneychanger::mc_accountselection_triggered(QAction*action_triggered)
         }
         // ------------------------------
         // NOTE: I just commented this out because it's already done in setDefaultAccount (above.)
-//      emit downloadedAccountData();
+//      emit populatedRecordlist();
         // ------------------------------
     }
 }
@@ -1889,10 +2653,9 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
                     a->setChecked(false);
                 }
             }
-            // -----------------------------------------------------------
-            emit downloadedAccountData();
+            // ----------------------------------------------------------------
+            onNeedToPopulateRecordlist();
         }
-        // -----------------------------------------------------------
     }
 }
 
@@ -1947,7 +2710,7 @@ void Moneychanger::mc_servermanager_dialog(QString qstrPresetID/*=QString("")*/)
 
         the_map.insert(OT_id, OT_name);
         // ------------------------------
-        if (!qstrPresetID.isEmpty() && (qstrPresetID == OT_id))
+        if (!qstrPresetID.isEmpty() && (0 == qstrPresetID.compare(OT_id)))
             bFoundPreset = true;
         // ------------------------------
     } // for
@@ -2441,6 +3204,27 @@ void Moneychanger::mc_composemessage_show_dialog()
     // --------------------------------------------------
 }
 
+void Moneychanger::mc_messages_slot()
+{
+    mc_messages_dialog();
+}
+
+void Moneychanger::mc_messages_dialog()
+{
+    if (!messages_window)
+    {
+        messages_window = new Messages(this);
+
+        connect(messages_window, SIGNAL(needToDownloadMail()),
+                this,            SLOT(onNeedToDownloadMail()));
+
+        connect(this,            SIGNAL(populatedRecordlist()),
+                messages_window, SLOT(onRecordlistPopulated()));
+    }
+    // ---------------------------------
+    messages_window->dialog();
+}
+
 
 
 /**
@@ -2474,8 +3258,11 @@ void Moneychanger::mc_overview_dialog()
         connect(homewindow, SIGNAL(needToDownloadAccountData()),
                 this,       SLOT(onNeedToDownloadAccountData()));
 
-        connect(this,       SIGNAL(downloadedAccountData()),
-                homewindow, SLOT(onAccountDataDownloaded()));
+        connect(homewindow, SIGNAL(needToPopulateRecordlist()),
+                this,       SLOT(onNeedToPopulateRecordlist()));
+
+        connect(this,       SIGNAL(populatedRecordlist()),
+                homewindow, SLOT(onRecordlistPopulated()));
 
         connect(this,       SIGNAL(balancesChanged()),
                 homewindow, SLOT(onBalancesChanged()));
@@ -2485,60 +3272,46 @@ void Moneychanger::mc_overview_dialog()
     // ---------------------------------
     homewindow->dialog();
 }
-
-
-
 // End Overview
+
 
 void Moneychanger::onNewServerAdded(QString qstrID)
 {
-    if (homewindow)
-    {
-        homewindow->onNewServerAdded(qstrID);
-    }
+    GetRecordlist().AddNotaryID(qstrID.toStdString());
 }
 
 void Moneychanger::onNewAssetAdded(QString qstrID)
 {
-    if (homewindow)
-    {
-        homewindow->onNewAssetAdded(qstrID);
-    }
+    GetRecordlist().AddInstrumentDefinitionID(qstrID.toStdString());
 }
 
 void Moneychanger::onNewNymAdded(QString qstrID)
 {
-    if (homewindow)
+    // Add a new Contact in the Address Book for this Nym as well.
+    // It's a pain having to add my own Nyms to the address book
+    // by hand for sending payments between them.
+
+    QString qstrNymName("");
+
+    if (!qstrID.isEmpty())
     {
-        // Add a new Contact in the Address Book for this Nym as well.
-        // It's a pain having to add my own Nyms to the address book
-        // by hand for sending payments between them.
+        MTNameLookupQT theLookup;
+        qstrNymName = QString::fromStdString(theLookup.GetNymName(qstrID.toStdString(), ""));
+        int nContactID  = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrID, "");
 
-        QString qstrNymName("");
-
-        if (!qstrID.isEmpty())
+        if (!qstrNymName.isEmpty() && (nContactID > 0))
         {
-            MTNameLookupQT theLookup;
-            qstrNymName = QString::fromStdString(theLookup.GetNymName(qstrID.toStdString(), ""));
-            int nContactID  = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrID, "");
-
-            if (!qstrNymName.isEmpty() && (nContactID > 0))
-            {
-                qstrNymName += tr(" (local wallet)");
-                MTContactHandler::getInstance()->SetContactName(nContactID, qstrNymName);
-            }
+            qstrNymName += tr(" (local wallet)");
+            MTContactHandler::getInstance()->SetContactName(nContactID, qstrNymName);
         }
         // --------------------------------------------------
-        homewindow->onNewNymAdded(qstrID);
+        GetRecordlist().AddNymID(qstrID.toStdString());
     }
 }
 
 void Moneychanger::onNewAccountAdded(QString qstrID)
 {
-    if (homewindow)
-    {
-        homewindow->onNewAccountAdded(qstrID);
-    }
+    GetRecordlist().AddAccountID(qstrID.toStdString());
 }
 
 
@@ -2667,6 +3440,12 @@ void Moneychanger::mc_market_dialog()
         // When Moneychanger's signal "balancesChanged" is triggered,
         // it will call accountswindow's "onBalancesChangedFromAbove" function.
         //
+        connect(market_window, SIGNAL(needToDownloadAccountData()),
+                this,       SLOT(onNeedToDownloadAccountData()));
+        connect(market_window, SIGNAL(needToDownloadSingleAcct(QString, QString)),
+                this,       SLOT(onNeedToDownloadSingleAcct(QString, QString)));
+        connect(market_window, SIGNAL(needToDisplayTradeArchive()),
+                this,          SLOT(mc_trade_archive_slot()));
         connect(this,          SIGNAL(balancesChanged()),
                 market_window, SLOT(onBalancesChangedFromAbove()));
     }
@@ -2969,7 +3748,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
         // current acctID in the loop and if they match, we set myAcctID. Later on,
         // if/when activating, we can just use myAcctID to activate.
         // (Otherwise we will have to pick one from the confirmed accounts.)
-        if ("" == myAcctID && qstr_default_acct_id == x.value())
+        if ("" == myAcctID && (0 == qstr_default_acct_id.compare(x.value())))
         {
             myAcctID = qstr_default_acct_id.toStdString();
             QString qstrMyAcctAgentName = mapAgents[x.key()];

@@ -25,6 +25,7 @@
 #include <QStringList>
 
 
+void MTCompose::setInitialBody(QString body)  { m_body = body; }
 void MTCompose::setInitialSubject(QString subject)  { m_subject = subject; }
 
 
@@ -2749,12 +2750,9 @@ void MTCompose::dialog()
         setRecipientNameBasedOnAvailableData();
         setTransportDisplayBasedOnAvailableData();
         // -------------------------------------------
-
-
-        // -------------------------------------------
         if (!m_subject.isEmpty())
         {
-            QString qstrRe = tr("re:");
+            QString qstrRe = m_bForwarding ? tr("fw:") : tr("re:");
 
             QString qstrSubjectLeft = m_subject.left(qstrRe.size());
 
@@ -2764,22 +2762,68 @@ void MTCompose::dialog()
                 m_subject = strTemp;
             }
             // -----------------------
-            QString qstrTempSubject = m_subject;
-
-            ui->subjectEdit->setText(qstrTempSubject);
+            ui->subjectEdit->setText(m_subject);
             // -----------------------
-            this->setWindowTitle(QString("%1: %2").arg(tr("Compose")).arg(qstrTempSubject));
+            this->setWindowTitle(QString("%1: %2").arg(tr("Compose")).arg(m_subject));
         }
         // -------------------------------------------
+        if (!m_body.isEmpty())
+        {
+            QString qstrRe = m_bForwarding ? tr("\n\n-----Forwarded:\n") : tr("\n\n-----You wrote:\n");
+            QString qstrReplyBody(m_body);
 
+            qstrRe += QString("%1: %2\n").arg(tr("From")).arg(m_forwardSenderName);
+            qstrRe += QString("%1: %2\n\n").arg(tr("To")).arg(m_forwardRecipientName);
 
+            qstrReplyBody = qstrRe + m_body;
+
+            ui->contentsEdit->setPlainText(qstrReplyBody);
+        }
+        // -------------------------------------------
         ui->contentsEdit->setFocus();
-
 
         /** Flag Already Init **/
         already_init = true;
     }
 
+}
+
+void MTCompose::setVariousIds(QString senderNymId, QString recipientNymId, QString senderAddress, QString recipientAddress)
+{
+    m_forwardSenderNymId      = senderNymId;
+    m_forwardRecipientNymId   = recipientNymId;
+    m_forwardSenderAddress    = senderAddress;
+    m_forwardRecipientAddress = recipientAddress;
+    // ----------------------------------------------
+    if (!m_forwardSenderNymId.isEmpty())
+    {
+        MTNameLookupQT theLookup;
+        m_forwardSenderName = QString::fromStdString(theLookup.GetNymName(m_forwardSenderNymId.toStdString(), ""));
+    }
+    if (m_forwardSenderName.isEmpty() && !m_forwardSenderAddress.isEmpty())
+    {
+        MTNameLookupQT theLookup;
+        m_forwardSenderName = QString::fromStdString(theLookup.GetAddressName(m_forwardSenderAddress.toStdString()));
+    }
+    if (m_forwardSenderName.isEmpty() && !m_forwardSenderNymId.isEmpty())
+        m_forwardSenderName = m_forwardSenderNymId;
+    else if (m_forwardSenderName.isEmpty() && !m_forwardSenderAddress.isEmpty())
+        m_forwardSenderName = m_forwardSenderAddress;
+    // ----------------------------------------------
+    if (!m_forwardRecipientNymId.isEmpty())
+    {
+        MTNameLookupQT theLookup;
+        m_forwardRecipientName = QString::fromStdString(theLookup.GetNymName(m_forwardRecipientNymId.toStdString(), ""));
+    }
+    if (m_forwardRecipientName.isEmpty() && !m_forwardRecipientAddress.isEmpty())
+    {
+        MTNameLookupQT theLookup;
+        m_forwardRecipientName = QString::fromStdString(theLookup.GetAddressName(m_forwardRecipientAddress.toStdString()));
+    }
+    if (m_forwardRecipientName.isEmpty() && !m_forwardRecipientNymId.isEmpty())
+        m_forwardRecipientName = m_forwardRecipientNymId;
+    else if (m_forwardRecipientName.isEmpty() && !m_forwardRecipientAddress.isEmpty())
+        m_forwardRecipientName = m_forwardRecipientAddress;
 }
 
 

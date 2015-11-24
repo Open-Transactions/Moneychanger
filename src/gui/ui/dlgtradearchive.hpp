@@ -12,7 +12,6 @@ namespace Ui {
 class DlgTradeArchive;
 }
 
-class QListWidgetItem;
 class QItemSelection;
 class QString;
 
@@ -28,8 +27,6 @@ public:
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
-
-    void PopulateTableWidget(mapIDName & mapTitle, mapIDName & mapURL);
 
 private slots:
     void on_tableView_customContextMenuRequested(const QPoint &pos);

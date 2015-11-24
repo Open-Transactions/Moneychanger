@@ -46,7 +46,7 @@ void MTOfferDetails::AddButtonClicked()
     // ---------------------------------------------------
     const QString qstrAll(tr("all"));
 
-    if (qstrMarketNotaryID.isEmpty() || (qstrAll == qstrMarketNotaryID))
+    if (qstrMarketNotaryID.isEmpty() || (0 == qstrAll.compare(qstrMarketNotaryID)))
     {
         if (false == ChooseServer(qstrMarketNotaryID, qstrMarketServerName))
             return;
@@ -337,7 +337,7 @@ bool MTOfferDetails::ChooseServer(QString & qstrNotaryID, QString & qstrServerNa
     // -------------------------------------------
     const QString qstrAll(tr("all"));
 
-    if (qstr_current_id.isEmpty() || (qstrAll == qstr_current_id))
+    if (qstr_current_id.isEmpty() || (0 == qstrAll.compare(qstr_current_id)))
         qstr_current_id = qstr_default_id;
     // -------------------------------------------
     if (qstr_current_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0))
@@ -360,7 +360,7 @@ bool MTOfferDetails::ChooseServer(QString & qstrNotaryID, QString & qstrServerNa
         // -----------------------------------------------
         if (!OT_id.isEmpty())
         {
-            if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
+            if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                 bFoundDefault = true;
             // -----------------------------------------------
             OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_id.toStdString()));
@@ -390,6 +390,16 @@ bool MTOfferDetails::ChooseServer(QString & qstrNotaryID, QString & qstrServerNa
 }
 
 // ------------------------------------------------------------------------
+// For a market offer.
+bool MTOfferDetails::getAccountIDs(QString & qstrAssetAcctID, QString & qstrCurrencyAcctID)
+{
+    qstrAssetAcctID    = ui->lineEditAssetAcctID->text();
+    qstrCurrencyAcctID = ui->lineEditCurrencyAcctID->text();
+
+    return (!qstrAssetAcctID.isEmpty() && !qstrCurrencyAcctID.isEmpty());
+}
+
+
 
 MTOfferDetails::MTOfferDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),

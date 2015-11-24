@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>743</width>
-    <height>563</height>
+    <width>840</width>
+    <height>379</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Archive of Historical Trades</string>
+   <string>Historical Trades</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>

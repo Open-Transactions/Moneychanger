@@ -85,6 +85,8 @@ public:
     void RefreshLawyerCombo();
     void SetCurrentLawyerIDBasedOnIndex(int index);
     // --------------------------------
+    bool getAccountIDs(QString & qstrAssetAcctID, QString & qstrCurrencyAcctID); // For a market offer.
+    // --------------------------------
     QMultiMap<QString, QVariant> * m_pmapMarkets; // do not delete. For reference only.
     QMap     <QString, QVariant> * m_pmapOffers;  // do not delete. For reference only.
     // --------------------------------

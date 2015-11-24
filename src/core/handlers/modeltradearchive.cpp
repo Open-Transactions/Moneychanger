@@ -142,7 +142,7 @@ bool TradeArchiveProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &
     QString qstrCurrentNymID = pTradeModel->rawData(index9).toString();
 
     return (( lCurrentOfferID  ==  offerId_) &&
-            ( qstrCurrentNymID ==  nymId_));
+            (0 == qstrCurrentNymID.compare(nymId_)));
 }
 
 
