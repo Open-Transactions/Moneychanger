@@ -31,6 +31,7 @@
 #include <QMenu>
 #include <QList>
 #include <QSqlRecord>
+#include <QTimer>
 
 #include <string>
 #include <map>
@@ -96,18 +97,27 @@ Messages::Messages(QWidget *parent) :
 void setup_tableview(QTableView * pView, QAbstractItemModel * pModel)
 {
     pView->setModel(pModel);
-    pView->horizontalHeader()->setStretchLastSection(true);
     pView->setSortingEnabled(true);
     pView->resizeColumnsToContents();
+    pView->horizontalHeader()->setStretchLastSection(true);
     pView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
+//    QPointer<ModelMessages> pSourceModel = DBHandler::getInstance()->getMessageModel();
+
+//    if (pSourceModel)
+    {
+//        QModelIndex sourceIndex = pSourceModel->index(0, MSG_SOURCE_COL_TIMESTAMP);
+//        QModelIndex proxyIndex  = (static_cast<MessagesProxyModel *>(pModel)) -> mapFromSource(sourceIndex);
+        // ----------------------------------
+        pView->sortByColumn(2, Qt::DescendingOrder); // The timestamp ends up at index 2 in all the proxy views.
+
+//        qDebug() << "SORT COLUMN: " << proxyIndex.column() << "\n";
+
+    }
     pView->setContextMenuPolicy(Qt::CustomContextMenu);
     pView->verticalHeader()->hide();
-
     pView->setAlternatingRowColors(true);
-
     pView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
-
     pView->setSelectionBehavior(QAbstractItemView::SelectRows);
 }
 
@@ -153,6 +163,50 @@ void Messages::disableButtons()
     ui->toolButtonReply  ->setEnabled(false);
     ui->toolButtonForward->setEnabled(false);
 
+}
+
+void Messages::on_MarkAsRead_timer()
+{
+    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+
+    if (!pModel)
+        return;
+    // ------------------------------
+    bool bEditing = false;
+
+    while (!listRecordsToMarkAsRead_.isEmpty())
+    {
+        QModelIndex index = listRecordsToMarkAsRead_.front();
+        listRecordsToMarkAsRead_.pop_front();
+        // ------------------------------------
+        if (!index.isValid())
+            continue;
+        // ------------------------------------
+        if (!bEditing)
+        {
+            bEditing = true;
+            pModel->database().transaction();
+        }
+        // ------------------------------------
+        pModel->setData(index, QVariant(1)); // 1 for "true" in sqlite. "Yes, we've now read this message. Mark it as read."
+    } // while
+    // ------------------------------
+    if (bEditing)
+    {
+        if (pModel->submitAll())
+        {
+            pModel->database().commit();
+            // ------------------------------------
+            QTimer::singleShot(0, this, SLOT(RefreshMessages()));
+        }
+        else
+        {
+            pModel->database().rollback();
+            qDebug() << "Database Write Error" <<
+                       "The database reported an error: " <<
+                       pModel->lastError().text();
+        }
+    }
 }
 
 void Messages::on_tableViewSentSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
@@ -227,31 +281,10 @@ void Messages::on_tableViewSentSelectionModel_currentRowChanged(const QModelInde
             // ----------------------------------------------------------
             const bool bHaveRead = varHaveRead.isValid() ? varHaveRead.toBool() : false;
 
-            if (!bHaveRead) // It's unread, so we need to set it as read.
+            if (!bHaveRead && (message_id > 0)) // It's unread, so we need to set it as read.
             {
-                pModel->database().transaction();
-
-                if (pModel->setData(haveReadSourceIndex, QVariant(1))) // 1 for "true" in sqlite. "Yes, we've now read this message. Mark it as read."
-                {
-                    if (pModel->submitAll())
-                    {
-                        pModel->database().commit();
-                        // ------------------------------------
-
-                        RefreshMessages();
-
-//                        qDebug() << "CALLING INVALIDATE\n";
-
-//                        pMsgProxyModelOutbox_->invalidate();
-                    }
-                    else
-                    {
-                        pModel->database().rollback();
-                        qDebug() << "Database Write Error" <<
-                                   "The database reported an error: " <<
-                                   pModel->lastError().text();
-                    }
-                }
+                listRecordsToMarkAsRead_.append(haveReadSourceIndex);
+                QTimer::singleShot(1000, this, SLOT(on_MarkAsRead_timer()));
             }
         }
     }
@@ -329,32 +362,10 @@ void Messages::on_tableViewReceivedSelectionModel_currentRowChanged(const QModel
             // ----------------------------------------------------------
             const bool bHaveRead = varHaveRead.isValid() ? varHaveRead.toBool() : false;
 
-            if (!bHaveRead) // It's unread, so we need to set it as read.
+            if (!bHaveRead && (message_id > 0)) // It's unread, so we need to set it as read.
             {
-                pModel->database().transaction();
-
-                if (pModel->setData(haveReadSourceIndex, QVariant(1))) // 1 for "true" in sqlite. "Yes, we've now read this message. Mark it as read."
-                {
-                    if (pModel->submitAll())
-                    {
-                        pModel->database().commit();
-                        // ------------------------------------
-
-                        //qDebug() << "CALLING INVALIDATE\n";
-
-
-                        //pMsgProxyModelInbox_->invalidate();
-
-                        RefreshMessages();
-                    }
-                    else
-                    {
-                        pModel->database().rollback();
-                        qDebug() << "Database Write Error" <<
-                                   "The database reported an error: " <<
-                                   pModel->lastError().text();
-                    }
-                }
+                listRecordsToMarkAsRead_.append(haveReadSourceIndex);
+                QTimer::singleShot(1000, this, SLOT(on_MarkAsRead_timer()));
             }
         }
     }
@@ -434,8 +445,8 @@ void Messages::dialog()
             pMsgProxyModelOutbox_->setFilterFolder(0);
             pMsgProxyModelInbox_ ->setFilterFolder(1);
             // ---------------------------------
-            pMsgProxyModelInbox_ ->setFilterKeyColumn(-1);
-            pMsgProxyModelOutbox_->setFilterKeyColumn(-1);
+//            pMsgProxyModelInbox_ ->setFilterKeyColumn(-1);
+//            pMsgProxyModelOutbox_->setFilterKeyColumn(-1);
             // ---------------------------------
             setup_tableview(ui->tableViewSent, pMsgProxyModelOutbox_);
             setup_tableview(ui->tableViewReceived, pMsgProxyModelInbox_);

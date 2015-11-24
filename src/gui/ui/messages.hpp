@@ -8,6 +8,8 @@
 #include <QMenu>
 #include <QScopedPointer>
 #include <QPointer>
+#include <QList>
+#include <QSqlRecord>
 
 #include <tuple>
 #include <map>
@@ -81,6 +83,8 @@ private slots:
 
     void on_tabWidget_currentChanged(int index);
 
+    void on_MarkAsRead_timer();
+
     void RefreshMessages();
 
 private:
@@ -105,6 +109,8 @@ private:
 
     mapOfMsgTreeItems    mapCurrentRows_inbox; // For each tree item, we store a "currently selected" row so we can re-select it when that tree item is clicked.
     mapOfMsgTreeItems    mapCurrentRows_outbox;
+
+    QList<QModelIndex> listRecordsToMarkAsRead_;
 };
 
 #endif // MESSAGES_HPP

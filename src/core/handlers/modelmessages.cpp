@@ -106,7 +106,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
         QModelIndex sourceIndex = sourceModel()->index(nSourceRow, nSourceColumn);
         QVariant    sourceData  = sourceModel()->data(sourceIndex, Qt::DisplayRole);
 
-        if (sourceData.isValid() && (false == sourceData.toBool()))
+        if (sourceData.isValid() && (!sourceData.toBool()))
         {
             QFont boldFont;
             boldFont.setBold(true);
@@ -114,7 +114,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
         }
     }
     // ----------------------------------------
-    else if ( role==Qt::DisplayRole &&
+    else if ( role==Qt::DisplayRole && index.isValid() &&
         QSortFilterProxyModel::data(index,role).isValid())
     {
         const int nSourceRow    = headerData(index.row(),    Qt::Vertical,   Qt::UserRole).toInt();
@@ -431,6 +431,7 @@ bool MessagesProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
     QModelIndex indexMethodType = sourceModel()->index(sourceRow, MSG_SOURCE_COL_METHOD_TYPE, sourceParent); // method_type
     QModelIndex indexNotary     = sourceModel()->index(sourceRow, MSG_SOURCE_COL_NOTARY_ID,   sourceParent); // notary_id
     QModelIndex indexFolder     = sourceModel()->index(sourceRow, MSG_SOURCE_COL_FOLDER,      sourceParent); // folder
+    QModelIndex indexSubject    = sourceModel()->index(sourceRow, MSG_SOURCE_COL_SUBJECT,     sourceParent); // subject
 
     QAbstractItemModel * pModel    = sourceModel();
     ModelMessages      * pMsgModel = dynamic_cast<ModelMessages*>(pModel);
@@ -452,10 +453,11 @@ bool MessagesProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
         const QVariant dataSenderAddress    = pMsgModel->data(indexSenderAddr);
         const QVariant dataRecipientAddress = pMsgModel->data(indexRecipAddr);
         const QVariant dataNotaryID         = pMsgModel->data(indexNotary);
+        const QVariant dataSubject          = pMsgModel->data(indexSubject);
 
-        const QVariant dataSenderName       = this->data(mapFromSource(indexSenderNym));
-        const QVariant dataRecipientName    = this->data(mapFromSource(indexRecipNym));
-        const QVariant dataNotaryName       = this->data(mapFromSource(indexNotary));
+//        const QVariant dataSenderName       = this->data(mapFromSource(indexSenderNym));
+//        const QVariant dataRecipientName    = this->data(mapFromSource(indexRecipNym));
+//        const QVariant dataNotaryName       = this->data(mapFromSource(indexNotary));
 
         const QString qstrMethodType       = dataMethodType.isValid() ? dataMethodType.toString() : "";
         const QString qstrSenderNym        = dataSenderNym.isValid() ? dataSenderNym.toString() : "";
@@ -463,25 +465,36 @@ bool MessagesProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
         const QString qstrSenderAddress    = dataSenderAddress.isValid() ? dataSenderAddress.toString() : "";
         const QString qstrRecipientAddress = dataRecipientAddress.isValid() ? dataRecipientAddress.toString() : "";
         const QString qstrNotaryID         = dataNotaryID.isValid() ? dataNotaryID.toString() : "";
-
-        const QString qstrSenderName       = dataSenderName.isValid() ? dataSenderName.toString() : "";
-        const QString qstrRecipientName    = dataRecipientName.isValid() ? dataRecipientName.toString() : "";
-        const QString qstrNotaryName       = dataNotaryName.isValid() ? dataNotaryName.toString() : "";
-
         // ------------------------------------
-        // Here we check the filterFixedString (optional string the user can type.)
+        // Here we check the filterString (optional string the user can type.)
         //
-        if (!filterString_.isEmpty() &&
-            !qstrMethodType.contains(filterString_) &&
-            !qstrSenderNym.contains(filterString_) &&
-            !qstrRecipientNym.contains(filterString_) &&
-            !qstrSenderAddress.contains(filterString_) &&
-            !qstrRecipientAddress.contains(filterString_) &&
-            !qstrNotaryID.contains(filterString_) &&
-            !qstrSenderName.contains(filterString_) &&
-            !qstrRecipientName.contains(filterString_) &&
-            !qstrNotaryName.contains(filterString_) )
-            return false;
+        if (!filterString_.isEmpty())
+        {
+            const QString qstrSubject = dataSubject.isValid() ? dataSubject.toString() : "";
+
+            const QString qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
+                                           QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(qstrNotaryID.toStdString()));
+            MTNameLookupQT theLookup;
+            QString qstrSenderName    = qstrSenderNym   .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrSenderNym   .toStdString(), ""));
+            QString qstrRecipientName = qstrRecipientNym.isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrRecipientNym.toStdString(), ""));
+
+            if (qstrSenderName.isEmpty() && !qstrSenderAddress.isEmpty())
+                qstrSenderName = QString::fromStdString(theLookup.GetAddressName(qstrSenderAddress.toStdString()));
+            if (qstrRecipientName.isEmpty() && !qstrRecipientAddress.isEmpty())
+                qstrRecipientName = QString::fromStdString(theLookup.GetAddressName(qstrRecipientAddress.toStdString()));
+
+            if (!qstrSubject.contains(filterString_) &&
+                !qstrMethodType.contains(filterString_) &&
+                !qstrSenderNym.contains(filterString_) &&
+                !qstrRecipientNym.contains(filterString_) &&
+                !qstrSenderAddress.contains(filterString_) &&
+                !qstrRecipientAddress.contains(filterString_) &&
+                !qstrNotaryID.contains(filterString_) &&
+                !qstrSenderName.contains(filterString_) &&
+                !qstrRecipientName.contains(filterString_) &&
+                !qstrNotaryName.contains(filterString_) )
+                return false;
+        }
         // ------------------------------------
         // Then check the other stuff:
         switch (filterType_)

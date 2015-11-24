@@ -283,7 +283,10 @@ QPointer<ModelMessages> DBHandler::getMessageModel()
 
         pMessageModel_->setTable(tableName);
         pMessageModel_->setEditStrategy(QSqlTableModel::OnManualSubmit);
+
         pMessageModel_->select();
+//        pMessageModel_->sort(MSG_SOURCE_COL_TIMESTAMP, Qt::DescendingOrder);
+
 
         if ( pMessageModel_->lastError().isValid())
             qDebug() <<  pMessageModel_->lastError();
@@ -307,8 +310,6 @@ QPointer<ModelMessages> DBHandler::getMessageModel()
         pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Me"));
         pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("My address"));
         pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Folder"));
-
-        pMessageModel_->sort(MSG_SOURCE_COL_TIMESTAMP, Qt::DescendingOrder);
     }
 
     return pMessageModel_;
