@@ -71,6 +71,8 @@ public:
   void NotifyOfNymServerPair(QString nym_id_string, QString notary_id_string);
 
   int  CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string=QString(""));
+  int  CreateContactBasedOnAddress(QString qstrAddress, QString qstrMethodType);
+
   int  CreateSmartContractTemplate(QString template_string);
 
   int CreateManagedPassphrase(const QString & qstrTitle, const QString & qstrUsername, const opentxs::OTPassword & thePassphrase,

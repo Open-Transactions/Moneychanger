@@ -155,17 +155,15 @@ void MTHomeDetail::on_addContactButton_clicked(bool checked /*=false*/)
                 QString InstrumentDefinitionID   = QString::fromStdString(str_asset_id);
                 QString accountID = QString::fromStdString(str_acct_id);
                 // --------------------------------------------------
-                nContactID = MTContactHandler::getInstance()->CreateContactBasedOnNym(nymID, NotaryID);
-                // --------------------------------------------------
-                if (!str_acct_id.empty())
-                {
-                    int nAcctContactID = MTContactHandler::getInstance()->FindContactIDByAcctID(accountID, nymID, NotaryID, InstrumentDefinitionID);
+                int nAcctContactID = 0;
 
-                    if (!(nContactID > 0))
-                        nContactID = nAcctContactID;
-                }
-                else if (!str_notary_id.empty())
-                    MTContactHandler::getInstance()->NotifyOfNymServerPair(nymID, NotaryID);
+                if (!str_acct_id.empty())
+                    nAcctContactID = MTContactHandler::getInstance()->FindContactIDByAcctID(accountID, nymID, NotaryID, InstrumentDefinitionID);
+                // --------------------------------------------------
+                if (nAcctContactID > 0)
+                    nContactID = nAcctContactID;
+                else
+                    nContactID = MTContactHandler::getInstance()->CreateContactBasedOnNym(nymID, NotaryID);
                 // --------------------------------------------------
                 if (nContactID > 0)
                 {
@@ -223,10 +221,17 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
         QString InstrumentDefinitionID   = QString::fromStdString(str_asset_id);
         QString accountID = QString::fromStdString(str_acct_id);
 
-        if (MTContactHandler::getInstance()->ContactExists(nymID.toInt()))
+        if (MTContactHandler::getInstance()->FindContactIDByNymID(nymID) > 0)
         {
-            QMessageBox::warning(this, tr("Strange"),
+            QMessageBox::warning(this, tr("Moneychanger"),
                                  tr("Strange: NymID %1 already belongs to an existing contact.").arg(nymID));
+            return;
+        }
+
+        if (MTContactHandler::getInstance()->FindContactIDByAcctID(accountID, nymID, NotaryID, InstrumentDefinitionID) > 0)
+        {
+            QMessageBox::warning(this, tr("Moneychanger"),
+                                 tr("Strange: accountID %1 already belongs to an existing contact.").arg(accountID));
             return;
         }
         // --------------------------------------------------------------------

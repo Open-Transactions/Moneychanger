@@ -296,8 +296,8 @@ QPointer<ModelMessages> DBHandler::getMessageModel()
         // NOTE: These header names will change.
         pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("message_id"));
         pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Read?"));
-        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Replied?"));
-        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Forwarded?"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr(" ")); //replied
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr(" ")); // forwarded
         pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Subject"));
         pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("From"));
         pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("From address"));

@@ -84,10 +84,9 @@ DlgTradeArchive::~DlgTradeArchive()
 void DlgTradeArchive::on_tableView_customContextMenuRequested(const QPoint &pos)
 {
     QModelIndex index = ui->tableView->indexAt(pos);
+    const int nRow    = index.isValid() ? index.row() : -1;
 
-    const int nRow    = index.row();
-
-    if (nRow >= 0)
+    if (index.isValid() && (nRow >= 0))
     {
         ui->tableView->selectionModel()->select( index, QItemSelectionModel::ClearAndSelect|QItemSelectionModel::Rows );
         // ------------------------

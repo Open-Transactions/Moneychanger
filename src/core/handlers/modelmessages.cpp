@@ -238,6 +238,14 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
 
             return sourceData;
         }
+        else if (nSourceColumn == MSG_SOURCE_COL_METHOD_TYPE_DISP) // Method type display (if blank, we see if there's a notary ID. If so, then transport shows "otserver".)
+        {
+            QString qstrType = sourceData.isValid() ? sourceData.toString() : "";
+            // ------------------------
+            if (!qstrType.isEmpty())
+                return QVariant(qstrType);
+            return QVariant(QString("opentxs"));
+        }
         else if (nSourceColumn == MSG_SOURCE_COL_TIMESTAMP) // timestamp
         {
             time64_t the_time = sourceData.isValid() ? sourceData.toLongLong() : 0;
@@ -248,12 +256,12 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
         else if (nSourceColumn == MSG_SOURCE_COL_HAVE_REPLIED) // have_replied
         {
             bool bHaveI = sourceData.isValid() ? sourceData.toBool() : false;
-            return QVariant(QString(bHaveI ? "X" : ""));
+            return QVariant(QString(bHaveI ? "Replied" : ""));
         }
         else if (nSourceColumn == MSG_SOURCE_COL_HAVE_FORWARDED) // have_forwarded
         {
             bool bHaveI = sourceData.isValid() ? sourceData.toBool() : false;
-            return QVariant(QString(bHaveI ? "X" : ""));
+            return QVariant(QString(bHaveI ? "Forwarded" : ""));
         }
         else if (nSourceColumn == MSG_SOURCE_COL_FOLDER) // folder
         {
@@ -261,6 +269,49 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
             return QVariant(tr(0 == nFolder ? "Sent" : "Receieved"));
         }
     }
+    // -------------------------------
+//    else if (role==Qt::DecorationRole && index.isValid())
+//    {
+//        const int nSourceRow    = headerData(index.row(),    Qt::Vertical,   Qt::UserRole).toInt();
+//        const int nSourceColumn = headerData(index.column(), Qt::Horizontal, Qt::UserRole).toInt();
+
+//        QModelIndex sourceIndex = sourceModel()->index(nSourceRow, nSourceColumn);
+//        QVariant    sourceData  = sourceModel()->data(sourceIndex, role);
+
+//        if (nSourceColumn == MSG_SOURCE_COL_HAVE_REPLIED) // have_replied
+//        {
+//            bool bHaveI = sourceData.isValid() ? sourceData.toBool() : false;
+////            if (bHaveI)
+//            {
+//                QPixmap pixmapReply(":/icons/icons/reply.png");
+//                return pixmapReply;
+//            }
+//        }
+//        else if (nSourceColumn == MSG_SOURCE_COL_HAVE_FORWARDED) // have_forwarded
+//        {
+//            bool bHaveI = sourceData.isValid() ? sourceData.toBool() : false;
+////            if (bHaveI)
+//            {
+//                QPixmap pixmapReply(":/icons/sendfunds");
+//                return pixmapReply;
+//            }
+//        }
+//    }
+    // --------------------------------------------
+//    else if (role == Qt::SizeHintRole)
+//    {
+////      const int nSourceRow    = headerData(index.row(),    Qt::Vertical,   Qt::UserRole).toInt();
+//        const int nSourceColumn = headerData(index.column(), Qt::Horizontal, Qt::UserRole).toInt();
+
+//        if (nSourceColumn == MSG_SOURCE_COL_HAVE_REPLIED) // have_replied
+//        {
+//            return QSize (16,16);
+//        }
+//        else if (nSourceColumn == MSG_SOURCE_COL_HAVE_FORWARDED) // have_forwarded
+//        {
+//            return QSize (16,16);
+//        }
+//    }
 
     return QSortFilterProxyModel::data(index,role);
 }
@@ -384,6 +435,8 @@ bool MessagesProxyModel::filterAcceptsColumn(int source_column, const QModelInde
     case MSG_SOURCE_COL_HAVE_READ:       bReturn = false;  break;
     case MSG_SOURCE_COL_HAVE_REPLIED:    bReturn = false;  break;
     case MSG_SOURCE_COL_HAVE_FORWARDED:  bReturn = false;  break;
+//    case MSG_SOURCE_COL_HAVE_REPLIED:    bReturn = true;  break;  //coming soon.
+//    case MSG_SOURCE_COL_HAVE_FORWARDED:  bReturn = true;  break;
     case MSG_SOURCE_COL_SUBJECT:         bReturn = true;  break;
     case MSG_SOURCE_COL_FOLDER:
     {

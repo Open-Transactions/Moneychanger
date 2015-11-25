@@ -6,6 +6,10 @@
 #include <ui_messages.h>
 
 #include <gui/widgets/compose.hpp>
+#include <gui/ui/dlgexportedtopass.hpp>
+
+#include <gui/widgets/dlgchooser.hpp>
+#include <gui/ui/getstringdialog.hpp>
 
 #include <core/moneychanger.hpp>
 #include <core/handlers/DBHandler.hpp>
@@ -94,9 +98,9 @@ Messages::Messages(QWidget *parent) :
     connect(ui->toolButtonCompose, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_composemessage_slot()));
 }
 
-void setup_tableview(QTableView * pView, QAbstractItemModel * pModel)
+void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel)
 {
-    pView->setModel(pModel);
+    pView->setModel(pProxyModel);
     pView->setSortingEnabled(true);
     pView->resizeColumnsToContents();
     pView->horizontalHeader()->setStretchLastSection(true);
@@ -107,9 +111,11 @@ void setup_tableview(QTableView * pView, QAbstractItemModel * pModel)
 //    if (pSourceModel)
     {
 //        QModelIndex sourceIndex = pSourceModel->index(0, MSG_SOURCE_COL_TIMESTAMP);
-//        QModelIndex proxyIndex  = (static_cast<MessagesProxyModel *>(pModel)) -> mapFromSource(sourceIndex);
+//        QModelIndex proxyIndex  = (static_cast<MessagesProxyModel *>(pProxyModel)) -> mapFromSource(sourceIndex);
         // ----------------------------------
-        pView->sortByColumn(2, Qt::DescendingOrder); // The timestamp ends up at index 2 in all the proxy views.
+//        MessagesProxyModel * pMsgProxyModel = static_cast<MessagesProxyModel *>(pProxyModel);
+
+      pView->sortByColumn(2, Qt::DescendingOrder); // The timestamp ends up at index 2 in all the proxy views.
 
 //        qDebug() << "SORT COLUMN: " << proxyIndex.column() << "\n";
 
@@ -209,6 +215,51 @@ void Messages::on_MarkAsRead_timer()
     }
 }
 
+void Messages::on_MarkAsUnread_timer()
+{
+    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+
+    if (!pModel)
+        return;
+    // ------------------------------
+    bool bEditing = false;
+
+    while (!listRecordsToMarkAsUnread_.isEmpty())
+    {
+        QModelIndex index = listRecordsToMarkAsUnread_.front();
+        listRecordsToMarkAsUnread_.pop_front();
+        // ------------------------------------
+        if (!index.isValid())
+            continue;
+        // ------------------------------------
+        if (!bEditing)
+        {
+            bEditing = true;
+            pModel->database().transaction();
+        }
+        // ------------------------------------
+        pModel->setData(index, QVariant(0)); // 0 for "false" in sqlite. "This message is now marked UNREAD."
+    } // while
+    // ------------------------------
+    if (bEditing)
+    {
+        if (pModel->submitAll())
+        {
+            pModel->database().commit();
+            // ------------------------------------
+            QTimer::singleShot(0, this, SLOT(RefreshMessages()));
+        }
+        else
+        {
+            pModel->database().rollback();
+            qDebug() << "Database Write Error" <<
+                       "The database reported an error: " <<
+                       pModel->lastError().text();
+        }
+    }
+}
+
+
 void Messages::on_tableViewSentSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
 {
     qDebug() << "on_tableViewSentSelectionModel_currentRowChanged WAS CALLED!";
@@ -292,8 +343,6 @@ void Messages::on_tableViewSentSelectionModel_currentRowChanged(const QModelInde
 
 void Messages::on_tableViewReceivedSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
 {
-    qDebug() << "on_tableViewReceivedSelectionModel_currentRowChanged WAS CALLED!";
-
     if (!current.isValid())
     {
         ui->headerReceived->setSubject("");
@@ -377,13 +426,6 @@ void Messages::dialog()
     {
         ui->userBar->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");
         // ----------------------------------
-        popupMenu_.reset(new QMenu(this));
-        pActionOpenNewWindow = popupMenu_->addAction(tr("Open in New Window"));
-        pActionReply = popupMenu_->addAction(tr("Reply"));
-        pActionForward = popupMenu_->addAction(tr("Forward"));
-        popupMenu_->addSeparator();
-        pActionDelete = popupMenu_->addAction(tr("Delete"));
-        // ----------------------------------
         QPixmap pixmapContacts(":/icons/icons/user.png"); // This is here only for size purposes.
         QIcon   contactsButtonIcon(pixmapContacts);       // Other buttons use this to set their own size.
         // ----------------------------------------------------------------
@@ -462,9 +504,13 @@ void Messages::dialog()
 //                    this,                  SLOT(RefreshMessages()));
 //            connect(pMsgProxyModelOutbox_, SIGNAL(modelReset()),
 //                    this,                  SLOT(RefreshMessages()));
-            // ---------------------------------
         }
-
+        // --------------------------------------------------------
+        connect(this, SIGNAL(showContact(QString)),               Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
+        // --------------------------------------------------------
+        connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(onNeedToPopulateRecordlist()));
+        connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
+        // --------------------------------------------------------
         QWidget* pTab0 = ui->tabWidget->widget(0);
         QWidget* pTab1 = ui->tabWidget->widget(1);
 
@@ -758,7 +804,7 @@ void Messages::RefreshTree()
             const QString qstrMethodType   = qvarMethodType  .isValid() ? qvarMethodType  .toString() : "";
             const QString qstrViaTransport = qvarViaTransport.isValid() ? qvarViaTransport.toString() : "";
 
-            if ( (nContactID       == nCurrentContact_ ) &&
+            if ( (nContactID == nCurrentContact_ ) &&
                  (0 == qstrMethodType.compare(qstrMethodType_)) &&
                  (0 == qstrViaTransport.compare(qstrViaTransport_)) )
             {
@@ -781,6 +827,436 @@ void Messages::RefreshTree()
     // ----------------------------------------
     on_treeWidget_currentItemChanged(ui->treeWidget->currentItem(), previous);
 }
+
+// --------------------------------------------------
+//#define MSG_SOURCE_COL_MSG_ID 0
+//#define MSG_SOURCE_COL_HAVE_READ 1
+//#define MSG_SOURCE_COL_HAVE_REPLIED 2
+//#define MSG_SOURCE_COL_HAVE_FORWARDED 3
+//#define MSG_SOURCE_COL_SUBJECT 4
+//#define MSG_SOURCE_COL_SENDER_NYM 5
+//#define MSG_SOURCE_COL_SENDER_ADDR 6
+//#define MSG_SOURCE_COL_RECIP_NYM 7
+//#define MSG_SOURCE_COL_RECIP_ADDR 8
+//#define MSG_SOURCE_COL_TIMESTAMP 9
+//#define MSG_SOURCE_COL_METHOD_TYPE 10
+//#define MSG_SOURCE_COL_METHOD_TYPE_DISP 11
+//#define MSG_SOURCE_COL_NOTARY_ID 12
+//#define MSG_SOURCE_COL_MY_NYM 13
+//#define MSG_SOURCE_COL_MY_ADDR 14
+//#define MSG_SOURCE_COL_FOLDER 15
+
+//resume
+
+void Messages::on_tableViewReceived_customContextMenuRequested(const QPoint &pos)
+{
+    tableViewPopupMenu(pos, ui->tableViewReceived, &(*pMsgProxyModelInbox_));
+}
+
+void Messages::on_tableViewSent_customContextMenuRequested(const QPoint &pos)
+{
+    tableViewPopupMenu(pos, ui->tableViewSent, &(*pMsgProxyModelOutbox_));
+}
+
+void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, MessagesProxyModel * pProxyModel)
+{
+    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+
+    if (!pModel)
+        return;
+    // ------------------------
+    QModelIndex indexAtRightClick = pTableView->indexAt(pos);
+    if (!indexAtRightClick.isValid())
+        return;
+    // I can't figure out how to ADD to the selection without UNSELECTING everything else.
+    // The Qt docs indicate that the below options should do that -- but it doesn't work.
+    // So this is commented out since it was deselecting everything.
+    //pTableView->selectionModel()->select( indexAtRightClick, QItemSelectionModel::SelectCurrent|QItemSelectionModel::Rows );
+    // ------------------------
+    QModelIndex sourceIndexAtRightClick = pProxyModel->mapToSource(indexAtRightClick);
+    const int nRow = sourceIndexAtRightClick.row();
+    // ----------------------------------
+    popupMenu_.reset(new QMenu(this));
+    pActionOpenNewWindow = popupMenu_->addAction(tr("Open in New Window"));
+    pActionReply = popupMenu_->addAction(tr("Reply"));
+    pActionForward = popupMenu_->addAction(tr("Forward"));
+    popupMenu_->addSeparator();
+    pActionDelete = popupMenu_->addAction(tr("Delete"));
+    popupMenu_->addSeparator();
+    pActionMarkRead = popupMenu_->addAction(tr("Mark as read"));
+    pActionMarkUnread = popupMenu_->addAction(tr("Mark as unread"));
+    // ----------------------------------
+    pActionViewContact     = nullptr;
+    pActionCreateContact   = nullptr;
+    pActionExistingContact = nullptr;
+
+    int nContactId = 0;
+
+    QString qstrSenderNymId;
+    QString qstrSenderAddr;
+    QString qstrRecipientNymId;
+    QString qstrRecipientAddr;
+    QString qstrNotaryId;
+    QString qstrMethodType;
+    QString qstrSubject;
+
+    int nSenderContactByNym     = 0;
+    int nSenderContactByAddr    = 0;
+    int nRecipientContactByNym  = 0;
+    int nRecipientContactByAddr = 0;
+
+    // Look at the data for indexAtRightClick and see if I have a contact already in the
+    // address book. If so, add the "View Contact" option to the menu. But if not, add the
+    // "Create Contact" and "Add to Existing Contact" options to the menu instead.
+    if (nRow >= 0)
+    {
+        QModelIndex indexSenderNym     = pModel->index(nRow, MSG_SOURCE_COL_SENDER_NYM);
+        QModelIndex indexSenderAddr    = pModel->index(nRow, MSG_SOURCE_COL_SENDER_ADDR);
+        QModelIndex indexRecipientNym  = pModel->index(nRow, MSG_SOURCE_COL_RECIP_NYM);
+        QModelIndex indexRecipientAddr = pModel->index(nRow, MSG_SOURCE_COL_RECIP_ADDR);
+        QModelIndex indexNotaryId      = pModel->index(nRow, MSG_SOURCE_COL_NOTARY_ID);
+        QModelIndex indexMethodType    = pModel->index(nRow, MSG_SOURCE_COL_METHOD_TYPE);
+        QModelIndex indexSubject       = pModel->index(nRow, MSG_SOURCE_COL_SUBJECT);
+
+        QVariant varSenderNym     = pModel->rawData(indexSenderNym);
+        QVariant varSenderAddr    = pModel->rawData(indexSenderAddr);
+        QVariant varRecipientNym  = pModel->rawData(indexRecipientNym);
+        QVariant varRecipientAddr = pModel->rawData(indexRecipientAddr);
+        QVariant varNotaryId      = pModel->rawData(indexNotaryId);
+        QVariant varMethodType    = pModel->rawData(indexMethodType);
+        QVariant varSubject       = pModel->rawData(indexSubject);
+
+        qstrSenderNymId    = varSenderNym    .isValid() ? varSenderNym    .toString() : QString("");
+        qstrSenderAddr     = varSenderAddr   .isValid() ? varSenderAddr   .toString() : QString("");
+        qstrRecipientNymId = varRecipientNym .isValid() ? varRecipientNym .toString() : QString("");
+        qstrRecipientAddr  = varRecipientAddr.isValid() ? varRecipientAddr.toString() : QString("");
+        qstrNotaryId       = varNotaryId     .isValid() ? varNotaryId     .toString() : QString("");
+        qstrMethodType     = varMethodType   .isValid() ? varMethodType   .toString() : QString("");
+        qstrSubject        = varSubject      .isValid() ? varSubject      .toString() : QString("");
+
+        nSenderContactByNym     = qstrSenderNymId.isEmpty()    ? 0 : MTContactHandler::getInstance()->FindContactIDByNymID(qstrSenderNymId);
+        nSenderContactByAddr    = qstrSenderAddr.isEmpty()     ? 0 : MTContactHandler::getInstance()->GetContactByAddress(qstrSenderAddr);
+        nRecipientContactByNym  = qstrRecipientNymId.isEmpty() ? 0 : MTContactHandler::getInstance()->FindContactIDByNymID(qstrRecipientNymId);
+        nRecipientContactByAddr = qstrRecipientAddr.isEmpty()  ? 0 : MTContactHandler::getInstance()->GetContactByAddress(qstrRecipientAddr);
+
+        nContactId = (nSenderContactByNym > 0) ? nSenderContactByNym : nSenderContactByAddr;
+
+        if (nContactId <= 0)
+            nContactId = (nRecipientContactByNym > 0) ? nRecipientContactByNym : nRecipientContactByAddr;
+        // -------------------------------
+        popupMenu_->addSeparator();
+        // -------------------------------
+        if (nContactId > 0) // There's a known contact for this message.
+            pActionViewContact = popupMenu_->addAction(tr("View contact in address book"));
+        else // There is no known contact for this message.
+        {
+            pActionCreateContact = popupMenu_->addAction(tr("Create new contact in address book"));
+            pActionExistingContact = popupMenu_->addAction(tr("Add to existing contact in address book"));
+        }
+    }
+    // --------------------------------------------------
+    QPoint globalPos = pTableView->mapToGlobal(pos);
+    const QAction* selectedAction = popupMenu_->exec(globalPos); // Here we popup the menu, and get the user's click.
+    if (nullptr == selectedAction)
+        return;
+    // ----------------------------------
+    if (selectedAction == pActionReply) // Only replies to the current message.
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+        on_toolButtonReply_clicked();
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionForward) // Only fowards the current messages.
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+        on_toolButtonForward_clicked();
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionDelete) // May delete many messages.
+    {
+        on_toolButtonDelete_clicked();
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionOpenNewWindow) // May open many messages.
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+
+        if (pTableView == ui->tableViewReceived)
+            on_tableViewReceived_doubleClicked(indexAtRightClick); // just one for now. baby steps!
+        else if (pTableView == ui->tableViewSent)
+            on_tableViewSent_doubleClicked(indexAtRightClick); // just one for now. baby steps!
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionMarkRead) // May mark many messages.
+    {
+        if (!pTableView->selectionModel()->hasSelection())
+            return;
+        // ----------------------------------------------
+        QItemSelection selection( pTableView->selectionModel()->selection() );
+        QList<int> rows;
+        foreach( const QModelIndex & index, selection.indexes() )
+        {
+            if (rows.indexOf(index.row()) != (-1)) // This row is already on the list, so skip it.
+                continue;
+            rows.append(index.row());
+            // -----------------------
+            QModelIndex sourceIndex = pProxyModel->mapToSource(index);
+            QModelIndex sourceIndexHaveRead = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_HAVE_READ, sourceIndex);
+            // --------------------------------
+            if (sourceIndexHaveRead.isValid())
+                listRecordsToMarkAsRead_.append(sourceIndexHaveRead);
+        }
+        if (listRecordsToMarkAsRead_.count() > 0)
+            QTimer::singleShot(0, this, SLOT(on_MarkAsRead_timer()));
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionMarkUnread) // May mark many messages.
+    {
+        if (!pTableView->selectionModel()->hasSelection())
+            return;
+        // ----------------------------------------------
+        QItemSelection selection( pTableView->selectionModel()->selection() );
+        QList<int> rows;
+        foreach( const QModelIndex & index, selection.indexes() )
+        {
+            if (rows.indexOf(index.row()) != (-1)) // This row is already on the list, so skip it.
+                continue;
+            rows.append(index.row());
+            // -----------------------
+            QModelIndex sourceIndex = pProxyModel->mapToSource(index);
+            QModelIndex sourceIndexHaveRead = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_HAVE_READ, sourceIndex);
+            // --------------------------------
+            if (sourceIndexHaveRead.isValid())
+                listRecordsToMarkAsUnread_.append(sourceIndexHaveRead);
+        }
+        if (listRecordsToMarkAsUnread_.count() > 0)
+            QTimer::singleShot(0, this, SLOT(on_MarkAsUnread_timer()));
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionViewContact)
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+
+        if (nContactId > 0)
+        {
+            QString qstrContactId = QString::number(nContactId);
+            emit showContact(qstrContactId);
+        }
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionCreateContact)
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+
+        MTGetStringDialog nameDlg(this, tr("Enter a name for the new contact"));
+
+        if (QDialog::Accepted != nameDlg.exec())
+            return;
+        // --------------------------------------
+        QString strNewContactName = nameDlg.GetOutputString();
+        // --------------------------------------------------
+        // NOTE:
+        // if nSenderContactByNym > 0, then the sender Nym already has a contact.
+        // else if nSenderContactByNym == 0 but qstrSenderNymId exists, that means it
+        // contains a NymID that could be added to an existing contact, or used to
+        // create a new contact. (And the same is true for the Sender Address.)
+        //
+        // (And the same is also true for the recipient nymID and address.)
+        //
+        if ((0 == nSenderContactByNym) && !qstrSenderNymId.isEmpty())
+            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrSenderNymId, qstrNotaryId);
+        else if ((0 == nSenderContactByAddr) && !qstrSenderAddr.isEmpty())
+            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnAddress(qstrSenderAddr, qstrMethodType);
+        else if ((0 == nRecipientContactByNym) && !qstrRecipientNymId.isEmpty())
+            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrRecipientNymId, qstrNotaryId);
+        else if ((0 == nRecipientContactByAddr) && !qstrRecipientAddr.isEmpty())
+            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnAddress(qstrRecipientAddr, qstrMethodType);
+        // -----------------------------------------------------
+        if (nContactId > 0)
+        {
+            MTContactHandler::getInstance()->SetContactName(nContactId, strNewContactName);
+            // ---------------------------------
+            QString qstrContactID = QString("%1").arg(nContactId);
+            emit showContactAndRefreshHome(qstrContactID);
+        }
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionExistingContact)
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+
+        // This should never happen since we wouldn't even have gotten this menu option
+        // in the first place, unless contact ID had been 0.
+        if (nContactId > 0)
+            return;
+
+        // (And that means no contact was found for ANY of the Nym IDs or Addresses on this message.)
+        // That means we can add the first one we find (which will probably be the only one as well.)
+        // Because I'll EITHER have a SenderNymID OR SenderAddress,
+        // ...OR I'll have a RecipientNymID OR RecipientAddress.
+        // Thus, only one of the four IDs/Addresses will actually be found.
+        // Therefore I don't care which one I find first:
+        //
+        QString qstrAddress, qstrNymId;
+
+        if      (!qstrSenderNymId.isEmpty())    qstrNymId   = qstrSenderNymId;
+        else if (!qstrSenderAddr.isEmpty())     qstrAddress = qstrSenderAddr;
+        else if (!qstrRecipientNymId.isEmpty()) qstrNymId   = qstrRecipientNymId;
+        else if (!qstrRecipientAddr.isEmpty())  qstrAddress = qstrRecipientAddr;
+        // ---------------------------------------------------
+        if (qstrNymId.isEmpty() && qstrAddress.isEmpty()) // Should never happen.
+            return;
+        // Below this point we're guaranteed that there's either a NymID or an Address.
+        // ---------------------------------------------------
+        if (!qstrNymId.isEmpty() && (MTContactHandler::getInstance()->FindContactIDByNymID(qstrNymId) > 0))
+        {
+            QMessageBox::warning(this, tr("Moneychanger"),
+                                 tr("Strange: NymID %1 already belongs to an existing contact.").arg(qstrNymId));
+            return;
+        }
+        // ---------------------------------------------------
+        if (!qstrAddress.isEmpty() && MTContactHandler::getInstance()->GetContactByAddress(qstrAddress) > 0)
+        {
+            QMessageBox::warning(this, tr("Moneychanger"),
+                                 tr("Strange: Address %1 already belongs to an existing contact.").arg(qstrAddress));
+            return;
+        }
+        // --------------------------------------------------------------------
+        // Pop up a Contact selection box. The user chooses an existing contact.
+        // If OK (vs Cancel) then add the Nym / Acct to the existing contact selected.
+        //
+        DlgChooser theChooser(this);
+        // -----------------------------------------------
+        mapIDName & the_map = theChooser.m_map;
+        MTContactHandler::getInstance()->GetContacts(the_map);
+        // -----------------------------------------------
+        theChooser.setWindowTitle(tr("Choose an Existing Contact"));
+        if (theChooser.exec() != QDialog::Accepted)
+            return;
+        // -----------------------------------------------
+        QString strContactID = theChooser.GetCurrentID();
+        nContactId = strContactID.isEmpty() ? 0 : strContactID.toInt();
+
+        if (nContactId > 0)
+        {
+            if (!qstrNymId.isEmpty()) // We're adding this NymID to the contact.
+            {
+                if (!MTContactHandler::getInstance()->AddNymToExistingContact(nContactId, qstrNymId))
+                {
+                    QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactId));
+                    QMessageBox::warning(this, tr("Moneychanger"), QString("Failed while trying to add NymID %1 to existing contact '%2' with contact ID: %3").
+                                         arg(qstrNymId).arg(strContactName).arg(nContactId));
+                    return;
+                }
+                if (!qstrNotaryId.isEmpty())
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(qstrNymId, qstrNotaryId);
+            }
+            else if (!qstrAddress.isEmpty()) // We're adding this Address to the contact.
+            {
+                if (!MTContactHandler::getInstance()->AddMsgAddressToContact(nContactId, qstrMethodType, qstrAddress))
+                {
+                    QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactId));
+                    QMessageBox::warning(this, tr("Moneychanger"), QString("Failed while trying to add Address %1 to existing contact '%2' with contact ID: %3").
+                                         arg(qstrAddress).arg(strContactName).arg(nContactId));
+                    return;
+                }
+            }
+            // ---------------------------------
+            // Display the normal contacts dialog, with the new contact
+            // being the one selected.
+            //
+            QString qstrContactID = QString("%1").arg(nContactId);
+            emit showContactAndRefreshHome(qstrContactID);
+            // ---------------------------------
+        } // nContactID > 0
+    }
+}
+
+
+
+void Messages::on_tableViewReceived_doubleClicked(const QModelIndex &index)
+{
+    tableViewDoubleClicked(index, &(*pMsgProxyModelInbox_));
+}
+
+void Messages::on_tableViewSent_doubleClicked(const QModelIndex &index)
+{
+    tableViewDoubleClicked(index, &(*pMsgProxyModelOutbox_));
+}
+
+void Messages::tableViewDoubleClicked(const QModelIndex &index, MessagesProxyModel * pProxyModel)
+{
+    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+
+    if (!pModel)
+        return;
+
+    if (!index.isValid())
+        return;
+
+    QModelIndex sourceIndex = pProxyModel->mapToSource(index);
+
+    if (!sourceIndex.isValid())
+        return;
+    // -------------------------------
+    QModelIndex msgIdIndex   = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_MSG_ID, sourceIndex);
+    QModelIndex subjectIndex = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_SUBJECT, sourceIndex);
+
+    QVariant qvarMsgId   = pModel->data(msgIdIndex);
+    QVariant qvarSubject = pModel->data(subjectIndex);
+
+    int     nMessageID  = qvarMsgId.isValid() ? qvarMsgId.toInt() : 0;
+    QString qstrSubject = qvarSubject.isValid() ? qvarSubject.toString() : "";
+    // -------------------------------
+    QString qstrMessage, qstrType, qstrSubtitle;
+    // --------------------------------------------------
+    if (nMessageID > 0)
+        qstrMessage = MTContactHandler::getInstance()->GetMessageBody(nMessageID);
+    // --------------------------------------------------
+    QModelIndex myNymIndex        = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_MY_NYM, sourceIndex);
+    QModelIndex senderNymIndex    = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_SENDER_NYM, sourceIndex);
+    QModelIndex recipientNymIndex = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_RECIP_NYM, sourceIndex);
+
+    QModelIndex myNymProxyIndex        = pProxyModel->mapFromSource(myNymIndex);
+    QModelIndex senderNymProxyIndex    = pProxyModel->mapFromSource(senderNymIndex);
+    QModelIndex recipientNymProxyIndex = pProxyModel->mapFromSource(recipientNymIndex);
+
+    QVariant qvarMyNymName        = myNymProxyIndex.isValid()        ? pProxyModel->data(myNymProxyIndex) : QString("");
+    QVariant qvarSenderNymName    = senderNymProxyIndex.isValid()    ? pProxyModel->data(senderNymProxyIndex) : QString("");
+    QVariant qvarRecipientNymName = recipientNymProxyIndex.isValid() ? pProxyModel->data(recipientNymProxyIndex) : QString("");
+
+    QString qstrMyNymName        = qvarMyNymName.isValid() ? qvarMyNymName.toString() : "";
+    QString qstrSenderNymName    = qvarSenderNymName.isValid() ? qvarSenderNymName.toString() : "";
+    QString qstrRecipientNymName = qvarRecipientNymName.isValid() ? qvarRecipientNymName.toString() : "";
+
+    if (!qstrSenderNymName.isEmpty())
+    {
+        qstrType = QString("%1: %2").arg(tr("To")).arg(qstrMyNymName);
+        qstrSubtitle = QString("%1: %2").arg(tr("From")).arg(qstrSenderNymName);
+    }
+    else if (!qstrRecipientNymName.isEmpty())
+    {
+        qstrType = QString("%1: %2").arg(tr("To")).arg(qstrRecipientNymName);
+        qstrSubtitle = QString("%1: %2").arg(tr("From")).arg(qstrMyNymName);
+    }
+    // -----------
+    // Pop up the result dialog.
+    //
+    DlgExportedToPass dlgExported(this, qstrMessage,
+                                  qstrType,
+                                  qstrSubtitle, false);
+    dlgExported.setWindowTitle(QString("%1: %2").arg(tr("Subject")).arg(qstrSubject));
+    dlgExported.exec();
+}
+
 
 void Messages::on_toolButtonReply_clicked()
 {
@@ -1188,6 +1664,7 @@ bool Messages::eventFilter(QObject *obj, QEvent *event)
     // standard event processing
     return QWidget::eventFilter(obj, event);
 }
+
 
 
 

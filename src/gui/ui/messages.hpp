@@ -55,6 +55,9 @@ protected:
     int get_inbox_msgid_for_tree_item(MSG_TREE_ITEM & theItem); // returns message ID
     int get_outbox_msgid_for_tree_item(MSG_TREE_ITEM & theItem); // returns message ID
 
+    void tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, MessagesProxyModel * pProxyModel);
+    void tableViewDoubleClicked(const QModelIndex &index, MessagesProxyModel * pProxyModel);
+
 public:
     explicit Messages(QWidget *parent = 0);
     ~Messages();
@@ -66,6 +69,8 @@ public slots:
 
 signals:
     void needToDownloadMail();
+    void showContact(QString);
+    void showContactAndRefreshHome(QString);
 
 private slots:
     void on_pushButtonSearch_clicked();
@@ -82,20 +87,30 @@ private slots:
     void on_toolButtonRefresh_clicked();
 
     void on_tabWidget_currentChanged(int index);
-
     void on_MarkAsRead_timer();
-
+    void on_MarkAsUnread_timer();
     void RefreshMessages();
+
+    void on_tableViewReceived_customContextMenuRequested(const QPoint &pos);
+    void on_tableViewSent_customContextMenuRequested(const QPoint &pos);
+
+    void on_tableViewSent_doubleClicked(const QModelIndex &index);
+    void on_tableViewReceived_doubleClicked(const QModelIndex &index);
 
 private:
     Ui::Messages *ui;
 
     QScopedPointer<QMenu> popupMenu_;
 
-    QAction * pActionDelete = nullptr;
-    QAction * pActionOpenNewWindow = nullptr;
-    QAction * pActionReply = nullptr;
-    QAction * pActionForward = nullptr;
+    QAction * pActionDelete          = nullptr;
+    QAction * pActionOpenNewWindow   = nullptr;
+    QAction * pActionReply           = nullptr;
+    QAction * pActionForward         = nullptr;
+    QAction * pActionMarkRead        = nullptr;
+    QAction * pActionMarkUnread      = nullptr;
+    QAction * pActionViewContact     = nullptr;
+    QAction * pActionCreateContact   = nullptr;
+    QAction * pActionExistingContact = nullptr;
 
     int nCurrentContact_ = 0;
     QString qstrMethodType_;
@@ -111,6 +126,7 @@ private:
     mapOfMsgTreeItems    mapCurrentRows_outbox;
 
     QList<QModelIndex> listRecordsToMarkAsRead_;
+    QList<QModelIndex> listRecordsToMarkAsUnread_;
 };
 
 #endif // MESSAGES_HPP
