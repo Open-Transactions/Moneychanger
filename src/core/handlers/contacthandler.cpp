@@ -1031,6 +1031,86 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString not
     return nContactID;
 }
 
+
+
+
+
+int MTContactHandler::CreateContactBasedOnAddress(QString qstrAddress, QString qstrMethodType)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString qstrEncodedAddress = Encode(qstrAddress);
+    QString qstrEncodedMethodType = Encode(qstrMethodType);
+
+    // First, see if a contact already exists for this Address, and if so,
+    // save its ID and return at the bottom.
+    //
+    // If no contact exists for this Address, then create the contact and Address.
+    // (And save the contact ID, and return at the bottom.)
+    //
+    // -----------------------------------------------------------------------
+    int nContactID = 0;
+
+    // First, see if a contact already exists for this Address, and if so,
+    // save its ID and return at the bottom.
+    //
+    QString str_select = QString("SELECT `contact_id` FROM `contact_method` WHERE `address`='%1'").arg(qstrEncodedAddress);
+
+    int  nRows      = DBHandler::getInstance()->querySize(str_select);
+    bool bAddressExists = false;
+
+    for(int ii=0; ii < nRows; ii++)
+    {
+        nContactID = DBHandler::getInstance()->queryInt(str_select, 0, ii);
+
+        bAddressExists = true; // Whether the contact ID was good or not, the Address itself DOES exist.
+
+        break; // In practice there should only be one row.
+    }
+    // ---------------------------------------------------------------------
+    // If no contact exists for this Address, then create the contact and Address.
+    // (And save the contact ID, and return at the bottom.)
+    //
+    bool bHadToCreateContact = false;
+    if (!(nContactID > 0))
+    {
+        bHadToCreateContact = true;
+        QString str_insert_contact = QString("INSERT INTO `contact` "
+                                             "(`contact_id`) "
+                                             "VALUES(NULL)");
+
+        qDebug() << QString("Running query: %1").arg(str_insert_contact);
+
+        DBHandler::getInstance()->runQuery(str_insert_contact);
+        // ----------------------------------------
+        nContactID = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `contact`", 0, 0);
+    }
+    // ---------------------------------------------------------------------
+    // Here we create or update the Address...
+    //
+    if (nContactID > 0)
+    {
+        QString str_insert_addr;
+
+        if (!bAddressExists)
+            str_insert_addr = QString("INSERT INTO `contact_method` "
+                                     "(`contact_id`, `method_type`, `address`) "
+                                     "VALUES(%1, '%2', '%3')").arg(nContactID).arg(qstrEncodedMethodType).arg(qstrEncodedAddress);
+        else
+            str_insert_addr = QString("UPDATE contact_method SET contact_id=%1 WHERE address='%2'").arg(nContactID).arg(qstrEncodedAddress);
+
+        if (!str_insert_addr.isEmpty())
+        {
+            DBHandler::getInstance()->runQuery(str_insert_addr);
+        }
+    }
+    // ---------------------------------------------------------------------
+    return nContactID;
+}
+
+
+
+
 /*
 int MTContactHandler::FindOrCreateContactByNym(QString nym_id_string)
 {

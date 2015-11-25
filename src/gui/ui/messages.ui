@@ -243,11 +243,9 @@
     </widget>
    </item>
   </layout>
-  <zorder>splitter_3</zorder>
   <zorder>line</zorder>
   <zorder>userBar</zorder>
-  <zorder></zorder>
-  <zorder>toolButtonForward</zorder>
+  <zorder>splitter_3</zorder>
  </widget>
  <customwidgets>
   <customwidget>
