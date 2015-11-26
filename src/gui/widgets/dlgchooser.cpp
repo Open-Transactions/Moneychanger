@@ -83,13 +83,11 @@ void DlgChooser::showEvent(QShowEvent * event)
         for (mapIDName::iterator ii = m_map.begin(); ii != m_map.end(); ii++)
         {
             ++nIndex; // 0 on first iteration.
-
-            qDebug() << "Chooser Iteration: " << nIndex;
             // -------------------------------------
             QString qstrID    = ii.key();
             QString qstrValue = ii.value();
             // -------------------------------------
-            if (!m_PreSelected.isEmpty() && (m_PreSelected == qstrID))
+            if (!m_PreSelected.isEmpty() && (0 == m_PreSelected.compare(qstrID)))
                 nPreselectedIndex = nIndex;
             // -------------------------------------
             QWidget     * row_widget        = new QWidget;

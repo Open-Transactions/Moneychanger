@@ -71,6 +71,8 @@ public:
   void NotifyOfNymServerPair(QString nym_id_string, QString notary_id_string);
 
   int  CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string=QString(""));
+  int  CreateContactBasedOnAddress(QString qstrAddress, QString qstrMethodType);
+
   int  CreateSmartContractTemplate(QString template_string);
 
   int CreateManagedPassphrase(const QString & qstrTitle, const QString & qstrUsername, const opentxs::OTPassword & thePassphrase,
@@ -97,6 +99,8 @@ public:
 
   bool ContactExists(int nContactID);
   bool DeleteContact(int nContactID);
+
+  bool ArchivedTradeReceiptExists(int64_t lReceiptID);
   // ---------------------------------------------
   static QString Encode(QString plaintext);
   static QString Decode(QString encoded);
@@ -194,10 +198,10 @@ public:
   bool GetMsgMethods             (mapIDName & theMap,                       bool bAddServers=false, QString filterByType="");
   bool GetMsgMethodTypes         (mapIDName & theMap,                       bool bAddServers=false);
   bool GetMsgMethodsByNym        (mapIDName & theMap, QString filterByNym,  bool bAddServers=false, QString filterByType=""); // Methods.
-  bool GetMsgMethodTypesByContact(mapIDName & theMap, int nFilterByContact, bool bAddServers=false, QString filterByType=""); // Method Types.
+  bool GetMsgMethodTypesByContact(mapIDName & theMap, int nFilterByContact, bool bAddServers=false, QString filterByType="", bool bIncludeTypeInKey=true); // Method Types.
   bool GetMsgMethodTypesByNym    (mapIDName & theMap, QString filterByNym,  bool bAddServers=false);
 
-  bool GetAddressesByContact     (mapIDName & theMap, int nFilterByContact, QString filterByType);
+  bool GetAddressesByContact     (mapIDName & theMap, int nFilterByContact, QString filterByType, bool bIncludeTypeInKey=true);
   bool GetAddressesByNym         (mapIDName & theMap, QString filterByNym,  QString filterByType);
   bool GetAddressesByNym         (mapIDName & theMap, QString filterByNym,  int filterByMethodID);
 
@@ -223,6 +227,12 @@ public:
   bool DeleteSmartContract    (int nID);
   bool DeleteManagedPassphrase(int nID);
 
+  bool LowLevelUpdateMessageBody(int nMessageID, const QString & qstrBody);
+  bool CreateMessageBody(QString qstrBody);
+  bool DeleteMessageBody(int nID);
+  bool UpdateMessageBody(int nMessageID, const QString & qstrBody);
+  QString GetMessageBody(int nID);
+  // ----------------------------------------------------------
   public:
     ~MTContactHandler();
 };

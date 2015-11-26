@@ -161,7 +161,7 @@ void MTMarketDetails::RetrieveMarketOffers(QString & qstrID, QMultiMap<QString, 
 {
     QMap<QString, QVariant>::iterator it_market = multimap.find(qstrID);
     // -----------------------------
-    while ((multimap.end() != it_market) && (it_market.key() == qstrID))
+    while ((multimap.end() != it_market) && (0 == qstrID.compare(it_market.key())))
     {
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
 
@@ -262,7 +262,7 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
     // -----------------------------------
     QMap<QString, QVariant>::iterator it_market = multimap.find(qstrID);
     // -----------------------------
-    while ((multimap.end() != it_market) && (it_market.key() == qstrID))
+    while ((multimap.end() != it_market) && (0 == qstrID.compare(it_market.key())))
     {
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
 
@@ -488,7 +488,7 @@ void MTMarketDetails::RetrieveMarketTrades(QString & qstrID, QMultiMap<QString, 
 {
     QMap<QString, QVariant>::iterator it_market = multimap.find(qstrID);
     // -----------------------------
-    while ((multimap.end() != it_market) && (it_market.key() == qstrID))
+    while ((multimap.end() != it_market) && (0 == qstrID.compare(it_market.key())))
     {
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
 
@@ -578,7 +578,7 @@ void MTMarketDetails::PopulateRecentTradesGrid(QString & qstrID, QMultiMap<QStri
     // -----------------------------------
     QMap<QString, QVariant>::iterator it_market = multimap.find(qstrID);
     // -----------------------------
-    while ((multimap.end() != it_market) && (it_market.key() == qstrID))
+    while ((multimap.end() != it_market) && (0 == qstrID.compare(it_market.key())))
     {
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
 
@@ -822,7 +822,7 @@ QString MTMarketDetails::CalculateTotalAssets(QString & qstrID, QMultiMap<QStrin
     // -----------------------------
     QMap<QString, QVariant>::iterator it_market = multimap.find(qstrID);
     // -----------------------------
-    while ((multimap.end() != it_market) && (it_market.key() == qstrID))
+    while ((multimap.end() != it_market) && (0 == qstrID.compare(it_market.key())))
     {
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
         // -----------------------------
@@ -837,7 +837,7 @@ QString MTMarketDetails::CalculateTotalAssets(QString & qstrID, QMultiMap<QStrin
         // --------------------
         // We do this here where pMarketData is still a valid pointer.
         //
-        if ((multimap.end() == it_market) || (it_market.key() != qstrID))
+        if ((multimap.end() == it_market) || (0 != qstrID.compare(it_market.key())))
         {
             qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id, lTotal));
             break;
@@ -865,7 +865,7 @@ QString MTMarketDetails::CalculateNumberOffers(QString & qstrID, QMultiMap<QStri
     // -----------------------------
     QMap<QString, QVariant>::iterator it_market = multimap.find(qstrID);
     // -----------------------------
-    while ((multimap.end() != it_market) && (it_market.key() == qstrID))
+    while ((multimap.end() != it_market) && (0 == qstrID.compare(it_market.key())))
     {
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
 
@@ -881,7 +881,7 @@ QString MTMarketDetails::CalculateNumberOffers(QString & qstrID, QMultiMap<QStri
         // --------------------
         // We do this here where pMarketData is still a valid pointer.
         //
-        if ((multimap.end() == it_market) || (it_market.key() != qstrID))
+        if ((multimap.end() == it_market) || (0 != qstrID.compare(it_market.key())))
         {
             qstrReturnValue = QString("%1").arg(lTotal);
             break;
@@ -901,7 +901,7 @@ QString MTMarketDetails::CalculateLastSalePrice(QString & qstrID, QMultiMap<QStr
     // -----------------------------
     QMap<QString, QVariant>::iterator it_market = multimap.find(qstrID);
     // -----------------------------
-    while ((multimap.end() != it_market) && (it_market.key() == qstrID))
+    while ((multimap.end() != it_market) && (0 == qstrID.compare(it_market.key())))
     {
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
         // -----------------------------
@@ -913,12 +913,6 @@ QString MTMarketDetails::CalculateLastSalePrice(QString & qstrID, QMultiMap<QStr
         int64_t lCurrentLastSaleDate  = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->last_sale_date);
         int64_t lCurrentLastSalePrice = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->last_sale_price);
 
-
-        qDebug() << "lCurrentLastSaleDate: " << lCurrentLastSaleDate;
-        qDebug() << "lCurrentLastSalePrice: " << lCurrentLastSalePrice;
-
-
-
         if (lCurrentLastSaleDate > lLastSaleDate)
         {
             lLastSaleDate  = lCurrentLastSaleDate;
@@ -929,7 +923,7 @@ QString MTMarketDetails::CalculateLastSalePrice(QString & qstrID, QMultiMap<QStr
         // --------------------
         // We do this here where pMarketData is still a valid pointer.
         //
-        if ((multimap.end() == it_market) || (it_market.key() != qstrID))
+        if ((multimap.end() == it_market) || (0 != qstrID.compare(it_market.key())))
         {
             qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id, lLastSalePrice));
             break;
@@ -948,7 +942,7 @@ QString MTMarketDetails::CalculateCurrentBid(QString & qstrID, QMultiMap<QString
     // -----------------------------
     QMap<QString, QVariant>::iterator it_market = multimap.find(qstrID);
     // -----------------------------
-    while ((multimap.end() != it_market) && (it_market.key() == qstrID))
+    while ((multimap.end() != it_market) && (0 == qstrID.compare(it_market.key())))
     {
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
         // -----------------------------
@@ -966,7 +960,7 @@ QString MTMarketDetails::CalculateCurrentBid(QString & qstrID, QMultiMap<QString
         // --------------------
         // We do this here where pMarketData is still a valid pointer.
         //
-        if ((multimap.end() == it_market) || (it_market.key() != qstrID))
+        if ((multimap.end() == it_market) || (0 != qstrID.compare(it_market.key())))
         {
             qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id, lHighestBid));
             break;
@@ -985,7 +979,7 @@ QString MTMarketDetails::CalculateCurrentAsk(QString & qstrID, QMultiMap<QString
     // -----------------------------
     QMap<QString, QVariant>::iterator it_market = multimap.find(qstrID);
     // -----------------------------
-    while ((multimap.end() != it_market) && (it_market.key() == qstrID))
+    while ((multimap.end() != it_market) && (0 == qstrID.compare(it_market.key())))
     {
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
         // -----------------------------
@@ -1003,7 +997,7 @@ QString MTMarketDetails::CalculateCurrentAsk(QString & qstrID, QMultiMap<QString
         // --------------------
         // We do this here where pMarketData is still a valid pointer.
         //
-        if ((multimap.end() == it_market) || (it_market.key() != qstrID))
+        if ((multimap.end() == it_market) || (0 != qstrID.compare(it_market.key())))
         {
             qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id, lLowestAsk));
             break;

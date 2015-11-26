@@ -33,6 +33,8 @@ private slots:
     void on_toolButton_Corporations_clicked();
     void on_toolButton_settings_clicked();
     void on_toolButton_quit_clicked();
+    void on_toolButton_trade_archive_clicked();
+    void on_toolButton_secrets_clicked();
 
 signals:
     void sig_on_toolButton_main_clicked();
@@ -47,6 +49,9 @@ signals:
     void sig_on_toolButton_Corporations_clicked();
     void sig_on_toolButton_settings_clicked();
     void sig_on_toolButton_quit_clicked();
+    void sig_on_toolButton_trade_archive_clicked();
+    void sig_on_toolButton_secrets_clicked();
+
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

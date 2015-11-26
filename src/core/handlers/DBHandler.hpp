@@ -5,12 +5,16 @@
 #include "core/ExportWrapper.h"
 
 #include <core/handlers/FileHandler.hpp>
+#include <core/handlers/modeltradearchive.hpp>
+#include <core/handlers/modelmessages.hpp>
 
 #include <QDebug>
 #include <QMutex>
 #include <QSqlDatabase>
+#include <QPointer>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QSqlQueryModel>
 #include <QSqlRecord>
 #include <QString>
 #include <QVariant>
@@ -51,6 +55,9 @@ class DBHandler
     FileHandler dbFile;
     QMutex dbMutex;
     
+    QPointer<ModelTradeArchive> pTradeArchiveModel_;
+    QPointer<ModelMessages> pMessageModel_;
+
     bool dbConnect();
     bool isConnected();
     bool dbDisconnect();
@@ -60,6 +67,9 @@ class DBHandler
 
   public:
     static DBHandler * getInstance();
+
+    QPointer<ModelTradeArchive> getTradeArchiveModel();
+    QPointer<ModelMessages> getMessageModel();
 
     QString formatValue(QSqlField & sqlField);
 

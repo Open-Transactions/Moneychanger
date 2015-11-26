@@ -9,7 +9,10 @@
 #include <gui/widgets/overridecursor.hpp>
 
 #include <core/moneychanger.hpp>
+#include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
+#include <core/handlers/modelmessages.hpp>
+
 #include <core/mtcomms.h>
 #include <core/network/Network.h>
 #include <core/handlers/focuser.h>
@@ -17,11 +20,14 @@
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Log.hpp>
+#include <opentxs/core/OTTransaction.hpp>
+#include <opentxs/core/OTTransactionType.hpp>
 
 #include <QLabel>
 #include <QDebug>
 #include <QToolButton>
 #include <QKeyEvent>
+#include <QSqlTableModel>
 
 #include <QMessageBox>
 
@@ -106,18 +112,20 @@ void MTHome::dialog()
         m_pHeaderFrame  = new QFrame;
         ui->verticalLayout->insertWidget(0, m_pHeaderFrame);
         // ----------------------------------
-        setupRecordList();
+//        Moneychanger::It()->setupRecordList();
         // ------------------------
         /** Flag Already Init **/
         already_init = true;
     }
     // -------------------------------------------
-    RefreshAll();
-
     Focuser f(this);
     f.show();
     f.focus();
+    // -------------------------------------------
+    emit needToPopulateRecordlist();
 }
+
+
 
 
 void MTHome::on_tableWidget_currentCellChanged(int row, int column, int previousRow, int previousColumn)
@@ -133,73 +141,15 @@ void MTHome::on_tableWidget_currentCellChanged(int row, int column, int previous
         else
             m_pDetailPane->setVisible(true);
 
-        emit needToRefreshDetails(row, m_list);
+        emit needToRefreshDetails(row, GetRecordlist());
     }
 }
 
-void MTHome::setupRecordList()
+
+opentxs::OTRecordList & MTHome::GetRecordlist()
 {
-    int nServerCount  = opentxs::OTAPI_Wrap::It()->GetServerCount();
-    int nAssetCount   = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
-    int nNymCount     = opentxs::OTAPI_Wrap::It()->GetNymCount();
-    int nAccountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
-    // ----------------------------------------------------
-    m_list.ClearServers();
-    m_list.ClearAssets();
-    m_list.ClearNyms();
-    m_list.ClearAccounts();
-    // ----------------------------------------------------
-    for (int ii = 0; ii < nServerCount; ++ii)
-    {
-        std::string NotaryID = opentxs::OTAPI_Wrap::It()->GetServer_ID(ii);
-        m_list.AddNotaryID(NotaryID);
-    }
-    // ----------------------------------------------------
-    for (int ii = 0; ii < nAssetCount; ++ii)
-    {
-        std::string InstrumentDefinitionID = opentxs::OTAPI_Wrap::It()->GetAssetType_ID(ii);
-        m_list.AddInstrumentDefinitionID(InstrumentDefinitionID);
-    }
-    // ----------------------------------------------------
-    for (int ii = 0; ii < nNymCount; ++ii)
-    {
-        std::string nymId = opentxs::OTAPI_Wrap::It()->GetNym_ID(ii);
-        m_list.AddNymID(nymId);
-    }
-    // ----------------------------------------------------
-    for (int ii = 0; ii < nAccountCount; ++ii)
-    {
-        std::string accountID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(ii);
-        m_list.AddAccountID(accountID);
-    }
-    // ----------------------------------------------------
-    m_list.AcceptChequesAutomatically  (true);
-    m_list.AcceptReceiptsAutomatically (true);
-    m_list.AcceptTransfersAutomatically(false);
+    return Moneychanger::It()->GetRecordlist();
 }
-
-
-void MTHome::onNewServerAdded(QString qstrID)
-{
-    m_list.AddNotaryID(qstrID.toStdString());
-}
-
-void MTHome::onNewAssetAdded(QString qstrID)
-{
-    m_list.AddInstrumentDefinitionID(qstrID.toStdString());
-}
-
-void MTHome::onNewNymAdded(QString qstrID)
-{
-    m_list.AddNymID(qstrID.toStdString());
-}
-
-void MTHome::onNewAccountAdded(QString qstrID)
-{
-    m_list.AddAccountID(qstrID.toStdString());
-}
-
-
 
 void MTHome::RefreshUserBar()
 {   
@@ -248,7 +198,7 @@ void MTHome::onNeedToRefreshRecords()
     RefreshAll();
 }
 
-void MTHome::onAccountDataDownloaded()
+void MTHome::onRecordlistPopulated()
 {
     RefreshAll();
 }
@@ -271,12 +221,9 @@ void MTHome::SetRefreshBtnRed()
 }
 
 
-void MTHome::onRecordDeleted(bool bNeedToRefreshUserBar)
+void MTHome::onRecordDeleted()
 {
-    OnDeletedRecord(); // This does a "RefreshRecords" internally, but doesn't refresh the user bar.
-
-    if (bNeedToRefreshUserBar)
-        RefreshUserBar();
+    OnDeletedRecord();
 }
 
 // The balances hasn't necessarily changed.
@@ -296,8 +243,6 @@ void MTHome::RefreshAll()
 {
 //  int nRowCount    = ui->tableWidget->rowCount();
     int nCurrentRow  = ui->tableWidget->currentRow();
-    // -----------------------------------------
-    PopulateRecords(); // Refreshes the data from local storage.
     // -----------------------------------------
     RefreshUserBar();
     // -------------------------------------------
@@ -346,7 +291,7 @@ void MTHome::RefreshAll()
 
 void MTHome::on_refreshButton_clicked()
 {
-    MTSpinner theSpinner;
+//    MTSpinner theSpinner;  // I think the Moneychanger function already does this.
 //    qDebug() << QString("Refreshing records from transaction servers.");
     emit needToDownloadAccountData();
 }
@@ -661,7 +606,7 @@ QWidget * MTHome::CreateUserBarWidget()
     buttonCompose->setAutoRaise(true);
     buttonCompose->setIcon(composeButtonIcon);
     buttonCompose->setIconSize(pixmapCompose.rect().size());
-    buttonCompose->setText(tr("Compose"));
+    buttonCompose->setText(tr("Messages"));
     // ----------------------------------------------------------------
     buttonExchange->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     buttonExchange->setAutoRaise(true);
@@ -702,7 +647,7 @@ QWidget * MTHome::CreateUserBarWidget()
     // -------------------------------------------
 //  connect(buttonRequest,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_requestfunds_slot()));
     connect(buttonSend,       SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_sendfunds_slot()));
-    connect(buttonCompose,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_composemessage_slot()));
+    connect(buttonCompose,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_messages_slot()));
     connect(buttonExchange,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_market_slot()));
     connect(buttonSecrets,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_passphrase_manager_slot()));
     connect(buttonRefresh,    SIGNAL(clicked()),  this,               SLOT(on_refreshButton_clicked()));
@@ -770,9 +715,9 @@ void MTHome::OnDeletedRecord()
     int nRowCount    = ui->tableWidget->rowCount();
     int nCurrentRow  = ui->tableWidget->currentRow();
 
-    if ((nRowCount > 0) && (nCurrentRow >= 0))
+    if ((nRowCount > 0) && (nCurrentRow >= 0) && (nCurrentRow < nRowCount))
     {
-        bool bRemoved = m_list.RemoveRecord(nCurrentRow);
+        bool bRemoved = GetRecordlist().RemoveRecord(nCurrentRow);
 
         if (bRemoved)
         {
@@ -781,219 +726,12 @@ void MTHome::OnDeletedRecord()
             // We do this because the individual records keep track of their index inside their box.
             // Once a record is deleted, all the others now have bad indices, and must be reloaded.
             //
-            PopulateRecords(); // Refreshes the data from local storage.
-
-            RefreshRecords();
-            // -----------------------------------------
-            if ((nCurrentRow >= 0) && (nCurrentRow < ui->tableWidget->rowCount()))
-            {
-                ui->tableWidget->setCurrentCell(nCurrentRow, 1);
-            }
-            else if (ui->tableWidget->rowCount() > 0)
-            {
-                ui->tableWidget->setCurrentCell((ui->tableWidget->rowCount() - 1), 1);
-            }
-            else
-            {
-                m_pDetailPane->setVisible(false);
-                ui->tableWidget->setCurrentCell(-1, 1);
-            }
-            // -----------------------------------------
+            emit needToPopulateRecordlist();
         }
         else
             qDebug() << QString("Failure removing opentxs::OTRecordat index %1.").arg(nCurrentRow);
     }
 }
-
-
-// Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
-//
-void MTHome::PopulateRecords()
-{
-    m_list.Populate(); // Refreshes the OT data from local storage.
-    // ---------------------------------------------------------------------
-    QList<QString> listCheckOnlyOnce; // So we don't call checkMail more than once for the same connect string.
-    // ---------------------------------------------------------------------
-    // Let's see if, additionally, there are any Bitmessage records (etc)
-    // for the Nyms that we care about. (If we didn't add a Nym ID to m_list's
-    // list of Nyms, then we don't care about any Bitmessages for that Nym.)
-    //
-    bool bNeedsReSorting = false;
-
-    const opentxs::list_of_strings & the_nyms = m_list.GetNyms();
-
-    for (opentxs::list_of_strings::const_iterator it = the_nyms.begin(); it != the_nyms.end(); ++it)
-    {
-        const std::string str_nym_id = *it;
-        // -----------------------------
-        mapIDName mapMethods;
-        QString   filterByNym = QString::fromStdString(str_nym_id);
-
-        bool bGotMethods = !filterByNym.isEmpty() ? MTContactHandler::getInstance()->GetMsgMethodsByNym(mapMethods, filterByNym, false, QString("")) : false;
-
-        if (bGotMethods)
-        {
-            // Loop through mapMethods and for each methodID, call GetAddressesByNym.
-            // Then for each address, grab the inbox and outbox from MTComms, and add
-            // the messages to m_list.
-            //
-            for (mapIDName::iterator ii = mapMethods.begin(); ii != mapMethods.end(); ++ii)
-            {
-                QString qstrID        = ii.key();
-                int nFilterByMethodID = 0;
-
-                QStringList stringlist = qstrID.split("|");
-
-                if (stringlist.size() >= 2) // Should always be 2...
-                {
-//                  QString qstrType     = stringlist.at(0);
-                    QString qstrMethodID = stringlist.at(1);
-                    nFilterByMethodID    = qstrMethodID.isEmpty() ? 0 : qstrMethodID.toInt();
-                    // --------------------------------------
-                    if (nFilterByMethodID > 0)
-                    {
-                        QString   qstrMethodType  = MTContactHandler::getInstance()->GetMethodType       (nFilterByMethodID);
-                        QString   qstrTypeDisplay = MTContactHandler::getInstance()->GetMethodTypeDisplay(nFilterByMethodID);
-                        QString   qstrConnectStr  = MTContactHandler::getInstance()->GetMethodConnectStr (nFilterByMethodID);
-
-                        if (!qstrConnectStr.isEmpty())
-                        {
-                            NetworkModule * pModule = MTComms::find(qstrConnectStr.toStdString());
-
-                            if ((NULL == pModule) && MTComms::add(qstrMethodType.toStdString(), qstrConnectStr.toStdString()))
-                                pModule = MTComms::find(qstrConnectStr.toStdString());
-
-                            if (NULL == pModule)
-                                // todo probably need a messagebox here.
-                                qDebug() << QString("PopulateRecords: Unable to add a %1 interface with connection string: %2").arg(qstrMethodType).arg(qstrConnectStr);
-
-//                        qDebug() << QString("qstrConnectStr: %1   NULL != pModule: %2").arg(qstrConnectStr).arg(QString((NULL != pModule) ? "true" : "false"));
-//
-//                        if (NULL != pModule)
-//                            qDebug() << QString("pModule->accessible: %1").arg(QString(pModule->accessible() ? "true" : "false"));
-
-                            if ((NULL != pModule) && pModule->accessible())
-                            {
-                                if ((-1) == listCheckOnlyOnce.indexOf(qstrConnectStr)) // Not on the list yet.
-                                {
-                                    pModule->checkMail();
-                                    listCheckOnlyOnce.insert(0, qstrConnectStr);
-                                }
-                                // ------------------------------
-                                mapIDName mapAddresses;
-
-                                if (MTContactHandler::getInstance()->GetAddressesByNym(mapAddresses, filterByNym, nFilterByMethodID))
-                                {
-//                                    qDebug() << QString("ADDRESSES SIZE ================== ");
-//                                    qDebug() << mapAddresses.size();
-//                                    qDebug() << QString("ADDRESSES SIZE ================== ");
-
-                                    for (mapIDName::iterator jj = mapAddresses.begin(); jj != mapAddresses.end(); ++jj)
-                                    {
-                                        QString qstrAddress = jj.key();
-
-                                        if (!qstrAddress.isEmpty())
-                                        {
-                                            // --------------------------------------------------------------------------------------------
-                                            // INBOX
-                                            //
-                                            std::vector< _SharedPtr<NetworkMail> > theInbox = pModule->getInbox(qstrAddress.toStdString());
-
-                                            for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theInbox.size(); ++nIndex)
-                                            {
-                                                _SharedPtr<NetworkMail> & theMsg = theInbox[nIndex];
-
-                                                std::string strSubject  = theMsg->getSubject();
-                                                std::string strContents = theMsg->getMessage();
-                                                // ----------------------------------------------------
-                                                QString qstrFinal;
-
-                                                if (!strSubject.empty())
-                                                    qstrFinal = QString("%1: %2\n%3").
-                                                            arg(tr("Subject")).
-                                                            arg(QString::fromStdString(strSubject)).
-                                                            arg(QString::fromStdString(strContents));
-                                                else
-                                                    qstrFinal = QString::fromStdString(strContents);
-                                                // ----------------------------------------------------
-                                                bNeedsReSorting = true;
-
-                                                if (!theMsg->getMessageID().empty())
-                                                    m_list.AddSpecialMsg(theMsg->getMessageID(),
-                                                                         false, //bIsOutgoing=false
-                                                                         static_cast<int32_t>(nFilterByMethodID),
-                                                                         qstrFinal.toStdString(),
-                                                                         theMsg->getTo(),
-                                                                         theMsg->getFrom(),
-                                                                         qstrMethodType.toStdString(),
-                                                                         qstrTypeDisplay.toStdString(),
-                                                                         str_nym_id,
-                                                                         static_cast<time64_t>(theMsg->getReceivedTime()));
-                                            } // for (inbox)
-                                            // --------------------------------------------------------------------------------------------
-                                            // OUTBOX
-                                            //
-                                            std::vector< _SharedPtr<NetworkMail> > theOutbox = pModule->getOutbox(qstrAddress.toStdString());
-
-//                                            qDebug() << QString("OUTBOX SIZE ================== ");
-//                                            qDebug() << theOutbox.size();
-//                                            qDebug() << QString("OUTBOX SIZE ================== ");
-
-
-                                            for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theOutbox.size(); ++nIndex)
-                                            {
-                                                _SharedPtr<NetworkMail> & theMsg = theOutbox[nIndex];
-
-                                                std::string strSubject  = theMsg->getSubject();
-                                                std::string strContents = theMsg->getMessage();
-                                                // ----------------------------------------------------
-                                                QString qstrFinal;
-
-                                                if (!strSubject.empty())
-                                                    qstrFinal = QString("%1: %2\n%3").
-                                                            arg(tr("Subject")).
-                                                            arg(QString::fromStdString(strSubject)).
-                                                            arg(QString::fromStdString(strContents));
-                                                else
-                                                    qstrFinal = QString::fromStdString(strContents);
-                                                // ----------------------------------------------------
-                                                bNeedsReSorting = true;
-
-//                                                qDebug() << QString("Adding OUTGOING theMsg->getMessageID(): %1 \n filterByNym: %2 \n qstrAddress: %3 \n nIndex: %4")
-//                                                            .arg(QString::fromStdString(theMsg->getMessageID()))
-//                                                            .arg(filterByNym)
-//                                                            .arg(qstrAddress)
-//                                                            .arg(nIndex)
-//                                                            ;
-
-
-                                                if (!theMsg->getMessageID().empty())
-                                                    m_list.AddSpecialMsg(theMsg->getMessageID(),
-                                                                         true, //bIsOutgoing=true
-                                                                         static_cast<int32_t>(nFilterByMethodID),
-                                                                         qstrFinal.toStdString(),
-                                                                         theMsg->getFrom(),
-                                                                         theMsg->getTo(),
-                                                                         qstrMethodType.toStdString(),
-                                                                         qstrTypeDisplay.toStdString(),
-                                                                         str_nym_id,
-                                                                         static_cast<time64_t>(theMsg->getSentTime()));
-                                            } // for (outbox)
-                                        } // if (!qstrAddress.isEmpty())
-                                    } // for (addresses)
-                                } // if GetAddressesByNym
-                            } // if ((NULL != pModule) && pModule->accessible())
-                        } // if (!qstrConnectStr.isEmpty())
-                    } // if nFilterByMethodID > 0
-                } // if (stringlist.size() >= 2)
-            } // for (methods)
-        } // if bGotMethods
-    } // for (nyms)
-    // -----------------------------------------------------
-    if (bNeedsReSorting)
-        m_list.SortRecords();
-}
-
 
 void MTHome::RefreshRecords()
 {
@@ -1002,8 +740,7 @@ void MTHome::RefreshRecords()
     // -------------------------------------------------------
     m_bTurnRefreshBtnRed = false;
     // -------------------------------------------------------
-    int listSize       = m_list.size();
-    // -------------------------------------------------------
+    int listSize       = GetRecordlist().size();
     int nTotalRecords  = listSize;
     // -------------------------------------------------------
     ui->tableWidget->blockSignals(true);
@@ -1023,7 +760,7 @@ void MTHome::RefreshRecords()
     // -------------------------------------------------------
     for (int nIndex = 0; nIndex < listSize; ++nIndex)
     {
-        opentxs::OTRecord record = m_list.GetRecord(nIndex);
+        opentxs::OTRecord record = GetRecordlist().GetRecord(nIndex);
         {
             opentxs::OTRecord& recordmt = record;
             QWidget  * pWidget  = MTHomeDetail::CreateDetailHeaderWidget(recordmt);

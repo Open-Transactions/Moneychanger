@@ -263,8 +263,6 @@ QGroupBox * MTContactDetails::createAddressGroupBox(QString strContactID)
     // known for this Nym,
     mapIDName theMap;
 
-    qDebug() << QString("CONTACT ID: %1").arg(strContactID);
-
     int nContactID = strContactID.isEmpty() ? 0 : strContactID.toInt();
 
     if ((nContactID > 0) && MTContactHandler::getInstance()->GetAddressesByContact(theMap, nContactID, QString("")))
@@ -602,8 +600,6 @@ void MTContactDetails::on_pushButtonMsg_clicked()
 //virtual
 void MTContactDetails::refresh(QString strID, QString strName)
 {
-    qDebug() << "MTContactDetails::refresh";
-
     if ((NULL == ui) || strID.isEmpty())
     {
         ui->pushButtonMsg->setEnabled(false);

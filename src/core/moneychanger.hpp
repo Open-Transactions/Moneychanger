@@ -7,6 +7,8 @@
 
 #include <core/handlers/focuser.h>
 
+#include <opentxs/client/OTRecordList.hpp>
+
 #include <namecoin/Namecoin.hpp>
 
 #include _CINTTYPES
@@ -23,6 +25,7 @@ class MTDetailEdit;
 class DlgLog;
 class DlgMenu;
 class DlgMarkets;
+class DlgTradeArchive;
 class Settings;
 class BtcGuiTest;
 class BtcPoolManager;
@@ -31,6 +34,7 @@ class BtcConnectDlg;
 class BtcSendDlg;
 class BtcReceiveDlg;
 class DlgPassphraseManager;
+class Messages;
 
 class QMenu;
 class QSystemTrayIcon;
@@ -41,6 +45,9 @@ class Moneychanger : public QWidget
     Q_OBJECT
 
 private:
+    // ------------------------------------------------
+    opentxs::OTRecordList   m_list;
+    // ------------------------------------------------
     /** Constructor & Destructor **/
     Moneychanger(QWidget *parent = 0);
 public:
@@ -56,26 +63,46 @@ public:
     /** Start **/
     void bootTray();
     
+    opentxs::OTRecordList & GetRecordlist();
+    void setupRecordList();  // Sets up the RecordList object with the IDs etc.
+    void populateRecords();  // Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
+
+    void modifyRecords(); // After we populate the recordlist, we make some changes to the list (move messages to a separate db table, move receipts to a separate table, etc.)
+    bool AddMailToMsgArchive(opentxs::OTRecord& recordmt);
+    bool AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt);
+
 signals:
     void balancesChanged();
-    void downloadedAccountData();
+    void populatedRecordlist();
     void appendToLog(QString);
 
 public slots:
-
     void onBalancesChanged();
     void onNeedToUpdateMenu();
+    void onNeedToPopulateRecordlist();
     void onNeedToDownloadAccountData();
-    void onNeedToDownloadSingleAcct(QString qstrAcctID);
+    void onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOptionalAcctID);
+    void onNeedToDownloadMail();
 
     /**
      * Functions for setting Systray Values
      **/
     
     void setDefaultNym(QString, QString);
+    QString getDefaultNymID(){return default_nym_id;}
+    QString getDefaultNymName(){return default_nym_name;}
+
     void setDefaultAsset(QString, QString);
+    QString getDefaultAssetID(){return default_asset_id;}
+    QString getDefaultAssetName(){return default_asset_name;}
+
     void setDefaultAccount(QString, QString);
+    QString getDefaultAccountID(){return default_account_id;}
+    QString getDefaultAccountName(){return default_account_name;}
+
     void setDefaultServer(QString, QString);
+    QString getDefaultNotaryID(){return default_notary_id;}
+    QString getDefaultServerName(){return default_server_name;}
     
     void onNewServerAdded(QString qstrID);
     void onNewAssetAdded(QString qstrID);
@@ -134,6 +161,8 @@ private:
     QPointer<MTHome>  homewindow;
     QPointer<DlgMenu> menuwindow;
 
+    QPointer<Messages> messages_window;
+
     QPointer<MTDetailEdit> contactswindow;
     QPointer<MTDetailEdit> nymswindow;
     QPointer<MTDetailEdit> serverswindow;
@@ -146,9 +175,9 @@ private:
 
     QPointer<CreateInsuranceCompany> createinsurancecompany_window;
 
-    QPointer<DlgLog      > log_window;
-
-    QPointer<DlgMarkets  > market_window;
+    QPointer<DlgLog           > log_window;
+    QPointer<DlgMarkets       > market_window;
+    QPointer<DlgTradeArchive  > trade_archive_window;
 
     QPointer<Settings> settingswindow;
 
@@ -177,6 +206,7 @@ private:
     void SetupNymMenu(QPointer<QMenu> & parent_menu);
     void SetupAccountMenu(QPointer<QMenu> & parent_menu);
     void SetupPaymentsMenu(QPointer<QMenu> & parent_menu);
+    void SetupExchangeMenu(QPointer<QMenu> & parent_menu);
     void SetupContractsMenu(QPointer<QMenu> & parent_menu);
     void SetupMessagingMenu(QPointer<QMenu> & parent_menu);
     void SetupToolsMenu(QPointer<QMenu> & parent_menu);
@@ -201,6 +231,7 @@ private:
     
     void mc_overview_dialog();
     void mc_main_menu_dialog();
+    void mc_messages_dialog();
     // ------------------------------------------------
     void mc_sendfunds_show_dialog(QString qstrAcct=QString(""));
     void mc_requestfunds_show_dialog(QString qstrAcct=QString(""));
@@ -212,6 +243,7 @@ private:
     void mc_passphrase_manager_show_dialog();
     // ------------------------------------------------
     void mc_market_dialog();
+    void mc_trade_archive_dialog();
     void mc_corporation_dialog();
     void mc_agreement_dialog();
     void mc_transport_dialog(QString qstrPresetID=QString(""));
@@ -253,6 +285,7 @@ private:
     QIcon mc_systrayIcon_composemessage;
 
     QIcon mc_systrayIcon_markets;
+    QIcon mc_systrayIcon_trade_archive;
 
     QIcon mc_systrayIcon_bitcoin;
     QIcon mc_systrayIcon_crypto;
@@ -294,6 +327,7 @@ private:
     QPointer<QMenu> mc_systrayMenu_account;
     QPointer<QMenu> mc_systrayMenu_payments;
     QPointer<QMenu> mc_systrayMenu_contracts;
+    QPointer<QMenu> mc_systrayMenu_exchange;
     QPointer<QMenu> mc_systrayMenu_messaging;
     // ---------------------------------------------------------
     QList<QVariant> * account_list_id;
@@ -311,6 +345,7 @@ private:
     QPointer<QAction> mc_systrayMenu_sendfunds;
     QPointer<QAction> mc_systrayMenu_requestfunds;
     QPointer<QAction> mc_systrayMenu_contacts;
+    QPointer<QAction> mc_systrayMenu_messages;
     QPointer<QAction> mc_systrayMenu_composemessage;
     QPointer<QAction> mc_systrayMenu_passphrase_manager;
     // ---------------------------------------------------------
@@ -330,6 +365,7 @@ private:
     QPointer<QMenu> mc_systrayMenu_advanced;
 
     QPointer<QAction> mc_systrayMenu_markets;
+    QPointer<QAction> mc_systrayMenu_trade_archive;
     QPointer<QAction> mc_systrayMenu_smart_contracts;
     QPointer<QAction> mc_systrayMenu_import_cash;
     QPointer<QAction> mc_systrayMenu_settings;
@@ -403,6 +439,7 @@ public slots:
     void mc_sendfunds_slot();               // Send Funds
     void mc_requestfunds_slot();            // Request Funds
     void mc_composemessage_slot();          // Compose Message
+    void mc_messages_slot();
     // ---------------------------------------------------------------------------
     void mc_send_from_acct (QString qstrAcct);
     void mc_request_to_acct(QString qstrAcct);
@@ -414,6 +451,7 @@ public slots:
     void mc_crypto_verify_slot();
     // ---------------------------------------------------------------------------
     void mc_market_slot();                  // Market Slot
+    void mc_trade_archive_slot();
     void mc_agreement_slot();               // Agreements Slot
     void mc_corporation_slot();             // Agreements Slot
     void mc_import_slot();                  // Import Slot

@@ -121,3 +121,12 @@ void DlgMenu::on_toolButton_quit_clicked()
     emit sig_on_toolButton_quit_clicked();
 }
 
+void DlgMenu::on_toolButton_trade_archive_clicked()
+{
+    emit sig_on_toolButton_trade_archive_clicked();
+}
+
+void DlgMenu::on_toolButton_secrets_clicked()
+{
+    emit sig_on_toolButton_secrets_clicked();
+}

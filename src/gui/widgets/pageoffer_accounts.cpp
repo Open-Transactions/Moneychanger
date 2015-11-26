@@ -86,7 +86,7 @@ void PageOffer_Accounts::on_pushButtonManageServer_clicked()
 
         the_map.insert(OT_id, OT_name);
 
-        if (!qstrPreselected.isEmpty() && (qstrPreselected == OT_id))
+        if (!qstrPreselected.isEmpty() && (0 == qstrPreselected.compare(OT_id)))
             bFoundPreselected = true;
     } // for
     // -------------------------------------
@@ -120,7 +120,7 @@ void PageOffer_Accounts::on_pushButtonManageNym_clicked()
 
         the_map.insert(OT_id, OT_name);
 
-        if (!qstrPreselected.isEmpty() && (qstrPreselected == OT_id))
+        if (!qstrPreselected.isEmpty() && (0 == qstrPreselected.compare(OT_id)))
             bFoundPreselected = true;
     } // for
     // -------------------------------------
@@ -154,7 +154,7 @@ void PageOffer_Accounts::on_pushButtonManageAssetAcct_clicked()
 
         the_map.insert(OT_id, OT_name);
 
-        if (!qstrPreselected.isEmpty() && (qstrPreselected == OT_id))
+        if (!qstrPreselected.isEmpty() && (0 == qstrPreselected.compare(OT_id)))
             bFoundPreselected = true;
     } // for
     // -------------------------------------
@@ -188,7 +188,7 @@ void PageOffer_Accounts::on_pushButtonManageCurrencyAcct_clicked()
 
         the_map.insert(OT_id, OT_name);
 
-        if (!qstrPreselected.isEmpty() && (qstrPreselected == OT_id))
+        if (!qstrPreselected.isEmpty() && (0 == qstrPreselected.compare(OT_id)))
             bFoundPreselected = true;
     } // for
     // -------------------------------------
@@ -242,7 +242,7 @@ void PageOffer_Accounts::on_pushButtonSelectAssetAcct_clicked()
                 (qstrAcctNotaryID != qstrNotaryID))
                 continue;
             // -----------------------------------------------
-            if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
+            if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                 bFoundDefault = true;
             // -----------------------------------------------
             OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(OT_id.toStdString()));
@@ -314,7 +314,7 @@ void PageOffer_Accounts::on_pushButtonSelectCurrencyAcct_clicked()
                 (qstrAcctNotaryID != qstrNotaryID))
                 continue;
             // -----------------------------------------------
-            if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
+            if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                 bFoundDefault = true;
             // -----------------------------------------------
             OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(OT_id.toStdString()));

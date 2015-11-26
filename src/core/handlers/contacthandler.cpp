@@ -135,6 +135,14 @@ MTContactHandler * MTContactHandler::getInstance()
 
 
 
+bool MTContactHandler::ArchivedTradeReceiptExists(int64_t lReceiptID)
+{
+    QMutexLocker locker(&m_Mutex);
+    QString str_select = QString("SELECT * FROM `trade_archive` WHERE `receipt_id`=%1 LIMIT 0,1").arg(lReceiptID);
+    int nRows = DBHandler::getInstance()->querySize(str_select);
+    return (nRows > 0);
+}
+
 bool MTContactHandler::ContactExists(int nContactID)
 {
     QMutexLocker locker(&m_Mutex);
@@ -418,6 +426,91 @@ QString MTContactHandler::GetSmartContract(int nID)
     return MTContactHandler::GetValueByID(nID, "template_contents", "smart_contract", "template_id");
 }
 
+// -------------------------------------------------
+
+QString MTContactHandler::GetMessageBody(int nID)
+{
+    return MTContactHandler::GetEncryptedValueByID(nID, "body", "message_body", "message_id");
+}
+
+bool MTContactHandler::UpdateMessageBody(int nMessageID, const QString & qstrBody)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    return LowLevelUpdateMessageBody(nMessageID, qstrBody);
+}
+
+bool MTContactHandler::DeleteMessageBody(int nID)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_delete = QString("DELETE FROM `message_body` WHERE `message_id`=%1").arg(nID);
+
+    return DBHandler::getInstance()->runQuery(str_delete);
+}
+
+
+// Since there is a message table, the message_id is already pre-existing by the time
+// the entry is added to the message_body table. (FYI.) This function assumes that
+// the message was JUST added, and that the body we're about to add corresponds to that
+// same message. So we simply look up the message_id for the last row inserted and then
+// add the body to the message_body table using that same ID.
+//
+bool MTContactHandler::CreateMessageBody(QString qstrBody)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    const int nID = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `message`", 0, 0);
+    // ----------------------------------------
+    if (nID > 0)
+    {
+        QString str_insert = QString("INSERT INTO `message_body` "
+                                     "(`message_id`) "
+                                     "VALUES(%1)").arg(nID);
+        DBHandler::getInstance()->runQuery(str_insert);
+        // ----------------------------------------
+        const int nMessageID = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `message_body`", 0, 0);
+
+        if (nMessageID == nID)
+        {
+            bool bUpdated = LowLevelUpdateMessageBody(nMessageID, qstrBody);
+
+            if (!bUpdated)
+            {
+                qDebug() << QString("Failed updating message body for message_id: %1").arg(nMessageID);
+                return false;
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+bool MTContactHandler::LowLevelUpdateMessageBody(int nMessageID, const QString & qstrBody)
+{
+//  NOTE: This function ASSUMES that the calling function already locked the Mutex.
+//  QMutexLocker locker(&m_Mutex);
+
+    try
+    {
+        // The body is encrypted.
+        //
+        bool bSetValue = SetEncryptedValueByID(nMessageID, qstrBody, "body", "message_body", "message_id");
+        Q_UNUSED(bSetValue);
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return false;
+    }
+
+    return true;
+}
+
+
+// ----------------------------------------------------------
+
+
 // The contact ID (unlike all the other IDs) is an int instead of a string.
 // Therefore we just convert it to a string and return it in a map in the same
 // format as all the others.
@@ -490,7 +583,10 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact)
                 nym_name = Decode(nym_name);
             }
             else
-                nym_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(nym_id.toStdString()));
+            {
+                MTNameLookupQT theLookup;
+                nym_name = QString::fromStdString(theLookup.GetNymName(nym_id.toStdString(), ""));
+            }
             // ----------------------------
             // At this point we have the nym ID *and* the nym name.
             // So we can add them to our map...
@@ -934,6 +1030,86 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString not
     // ---------------------------------------------------------------------
     return nContactID;
 }
+
+
+
+
+
+int MTContactHandler::CreateContactBasedOnAddress(QString qstrAddress, QString qstrMethodType)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString qstrEncodedAddress = Encode(qstrAddress);
+    QString qstrEncodedMethodType = Encode(qstrMethodType);
+
+    // First, see if a contact already exists for this Address, and if so,
+    // save its ID and return at the bottom.
+    //
+    // If no contact exists for this Address, then create the contact and Address.
+    // (And save the contact ID, and return at the bottom.)
+    //
+    // -----------------------------------------------------------------------
+    int nContactID = 0;
+
+    // First, see if a contact already exists for this Address, and if so,
+    // save its ID and return at the bottom.
+    //
+    QString str_select = QString("SELECT `contact_id` FROM `contact_method` WHERE `address`='%1'").arg(qstrEncodedAddress);
+
+    int  nRows      = DBHandler::getInstance()->querySize(str_select);
+    bool bAddressExists = false;
+
+    for(int ii=0; ii < nRows; ii++)
+    {
+        nContactID = DBHandler::getInstance()->queryInt(str_select, 0, ii);
+
+        bAddressExists = true; // Whether the contact ID was good or not, the Address itself DOES exist.
+
+        break; // In practice there should only be one row.
+    }
+    // ---------------------------------------------------------------------
+    // If no contact exists for this Address, then create the contact and Address.
+    // (And save the contact ID, and return at the bottom.)
+    //
+    bool bHadToCreateContact = false;
+    if (!(nContactID > 0))
+    {
+        bHadToCreateContact = true;
+        QString str_insert_contact = QString("INSERT INTO `contact` "
+                                             "(`contact_id`) "
+                                             "VALUES(NULL)");
+
+        qDebug() << QString("Running query: %1").arg(str_insert_contact);
+
+        DBHandler::getInstance()->runQuery(str_insert_contact);
+        // ----------------------------------------
+        nContactID = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `contact`", 0, 0);
+    }
+    // ---------------------------------------------------------------------
+    // Here we create or update the Address...
+    //
+    if (nContactID > 0)
+    {
+        QString str_insert_addr;
+
+        if (!bAddressExists)
+            str_insert_addr = QString("INSERT INTO `contact_method` "
+                                     "(`contact_id`, `method_type`, `address`) "
+                                     "VALUES(%1, '%2', '%3')").arg(nContactID).arg(qstrEncodedMethodType).arg(qstrEncodedAddress);
+        else
+            str_insert_addr = QString("UPDATE contact_method SET contact_id=%1 WHERE address='%2'").arg(nContactID).arg(qstrEncodedAddress);
+
+        if (!str_insert_addr.isEmpty())
+        {
+            DBHandler::getInstance()->runQuery(str_insert_addr);
+        }
+    }
+    // ---------------------------------------------------------------------
+    return nContactID;
+}
+
+
+
 
 /*
 int MTContactHandler::FindOrCreateContactByNym(QString nym_id_string)
@@ -2091,7 +2267,7 @@ int MTContactHandler::GetContactByAddress(QString qstrAddress)
     return 0;
 }
 
-bool MTContactHandler::GetMsgMethodTypesByContact(mapIDName & theMap, int nFilterByContact, bool bAddServers/*=false*/, QString filterByType/*=""*/)
+bool MTContactHandler::GetMsgMethodTypesByContact(mapIDName & theMap, int nFilterByContact, bool bAddServers/*=false*/, QString filterByType/*=""*/, bool bIncludeTypeInKey/*=true*/)
 {
 // = "CREATE TABLE contact_method(contact_id INTEGER, method_type TEXT, address TEXT, PRIMARY KEY(contact_id, method_id, address))";
 
@@ -2133,7 +2309,7 @@ bool MTContactHandler::GetMsgMethodTypesByContact(mapIDName & theMap, int nFilte
             QString qstrID;
             QString qstrName = QString("%1: %2").arg(qstrTypeDisplay).arg(qstrAddress);
 
-            if (!filterByType.isEmpty())
+            if (!bIncludeTypeInKey || !filterByType.isEmpty())
                 qstrID   = QString("%1").arg(qstrAddress); // Address only. No need to put the type if we already filtered based on type.
             else
                 qstrID   = QString("%1|%2").arg(qstrType).arg(qstrAddress); // Here we put the type and address. Caller can split the string.
@@ -2154,9 +2330,9 @@ bool MTContactHandler::GetMsgMethodTypesByContact(mapIDName & theMap, int nFilte
 
 // --------------------------------------------
 
-bool MTContactHandler::GetAddressesByContact(mapIDName & theMap, int nFilterByContact, QString filterByType)
+bool MTContactHandler::GetAddressesByContact(mapIDName & theMap, int nFilterByContact, QString filterByType, bool bIncludeTypeInKey/*=true*/)
 {
-    return this->GetMsgMethodTypesByContact(theMap, nFilterByContact, false, filterByType);
+    return this->GetMsgMethodTypesByContact(theMap, nFilterByContact, false, filterByType, bIncludeTypeInKey);
 }
 
 // --------------------------------------------

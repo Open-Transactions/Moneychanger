@@ -445,7 +445,7 @@ bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
     }
     // ----------------------------------------------------
     if (memo.isEmpty())
-        memo = tr("From the desktop client. (Empty memo.)");
+        memo = tr("(Memo was empty.)");
     // ----------------------------------------------------
     if (qstr_amount.isEmpty())
         qstr_amount = QString("0");
@@ -554,7 +554,7 @@ void MTSendDlg::on_sendButton_clicked()
     std::string str_fromAcctId(m_myAcctId.toStdString());
     QString     qstr_fromNymId(QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(str_fromAcctId)));
 
-    if (m_hisNymId == qstr_fromNymId)
+    if (0 == qstr_fromNymId.compare(m_hisNymId))
     {
         QMessageBox::warning(this, tr("Cannot Send To Yourself"),
                              tr("Sorry, but you cannot send to yourself. Please choose another recipient, or change the sending account."));
@@ -663,7 +663,7 @@ void MTSendDlg::on_fromButton_clicked()
     }
     else
     {
-      qDebug() << "CANCEL was clicked";
+//      qDebug() << "CANCEL was clicked";
     }
     // -----------------------------------------------
     m_myAcctId = QString("");
@@ -807,7 +807,7 @@ void MTSendDlg::on_toButton_clicked()
     }
     else
     {
-      qDebug() << "CANCEL was clicked";
+//      qDebug() << "CANCEL was clicked";
     }
     // -----------------------------------------------
 }

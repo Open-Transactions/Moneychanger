@@ -3,11 +3,15 @@
 #endif
 
 #include <core/handlers/DBHandler.hpp>
+#include <core/handlers/modeltradearchive.hpp>
+#include <core/handlers/modelmessages.hpp>
 
 #include <opentxs/core/util/OTPaths.hpp>
 
 #include <QSqlRecord>
 #include <QSqlDriver>
+#include <QString>
+#include <QObject>
 
 #include <sstream>
 #include <stdexcept>
@@ -46,7 +50,7 @@ DBHandler::DBHandler()
     if(!dbConnect())
         qDebug() << "Error Opening Database";
     
-    if (!flag)
+//    if (!flag)  // The database now creates the tables if they don't exist, so we call this every time now.
     {
         qDebug() << "Running dbCreateInstance";
         dbCreateInstance();
@@ -112,20 +116,20 @@ bool DBHandler::dbCreateInstance()
     {
         qDebug() << "Creating Tables";
 
-        QString address_book_create = "CREATE TABLE address_book (id INTEGER PRIMARY KEY, nym_id TEXT, nym_display_name TEXT)";
+        QString address_book_create = "CREATE TABLE IF NOT EXISTS address_book (id INTEGER PRIMARY KEY, nym_id TEXT, nym_display_name TEXT)";
         // --------------------------------------------
-        QString default_nym_create = "CREATE TABLE default_nym (default_id INTEGER PRIMARY KEY, nym TEXT)";
-        QString default_server_create = "CREATE TABLE default_server (default_id INTEGER PRIMARY KEY, server TEXT)";
-        QString default_asset_create = "CREATE TABLE default_asset (default_id INTEGER PRIMARY KEY, asset TEXT)";
-        QString default_account_create = "CREATE TABLE default_account (default_id INTEGER PRIMARY KEY, account TEXT)";
-        QString settings = "CREATE TABLE settings (setting TEXT PRIMARY KEY, parameter1 TEXT)";
+        QString default_nym_create = "CREATE TABLE IF NOT EXISTS default_nym (default_id INTEGER PRIMARY KEY, nym TEXT)";
+        QString default_server_create = "CREATE TABLE IF NOT EXISTS default_server (default_id INTEGER PRIMARY KEY, server TEXT)";
+        QString default_asset_create = "CREATE TABLE IF NOT EXISTS default_asset (default_id INTEGER PRIMARY KEY, asset TEXT)";
+        QString default_account_create = "CREATE TABLE IF NOT EXISTS default_account (default_id INTEGER PRIMARY KEY, account TEXT)";
+        QString settings = "CREATE TABLE IF NOT EXISTS settings (setting TEXT PRIMARY KEY, parameter1 TEXT)";
         // --------------------------------------------
-        QString create_contact = "CREATE TABLE contact(contact_id INTEGER PRIMARY KEY, contact_display_name TEXT)";
-        QString create_nym     = "CREATE TABLE nym(nym_id TEXT PRIMARY KEY, contact_id INTEGER, nym_display_name TEXT)";
-        QString create_server  = "CREATE TABLE nym_server(nym_id TEXT, notary_id TEXT, PRIMARY KEY(nym_id, notary_id))";
-        QString create_account = "CREATE TABLE nym_account(account_id TEXT PRIMARY KEY, notary_id TEXT, nym_id TEXT, asset_id TEXT, account_display_name TEXT)";
+        QString create_contact = "CREATE TABLE IF NOT EXISTS contact(contact_id INTEGER PRIMARY KEY, contact_display_name TEXT)";
+        QString create_nym     = "CREATE TABLE IF NOT EXISTS nym(nym_id TEXT PRIMARY KEY, contact_id INTEGER, nym_display_name TEXT)";
+        QString create_server  = "CREATE TABLE IF NOT EXISTS nym_server(nym_id TEXT, notary_id TEXT, PRIMARY KEY(nym_id, notary_id))";
+        QString create_account = "CREATE TABLE IF NOT EXISTS nym_account(account_id TEXT PRIMARY KEY, notary_id TEXT, nym_id TEXT, asset_id TEXT, account_display_name TEXT)";
         // --------------------------------------------
-        QString create_msg_method = "CREATE TABLE msg_method"
+        QString create_msg_method = "CREATE TABLE IF NOT EXISTS msg_method"
                 " (method_id INTEGER PRIMARY KEY,"   // 1, 2, etc.
                 "  method_display_name TEXT,"        // "Localhost"
                 "  method_type TEXT,"                // "bitmessage"
@@ -134,14 +138,14 @@ bool DBHandler::dbCreateInstance()
         // --------------------------------------------
         // Messaging methods set for various nyms or contacts.
         //
-        QString create_nym_method      = "CREATE TABLE nym_method(nym_id TEXT, method_id INTEGER, address TEXT, PRIMARY KEY(nym_id, method_id, address))";
-        QString create_contact_method  = "CREATE TABLE contact_method(contact_id INTEGER, method_type TEXT, address TEXT, PRIMARY KEY(contact_id, method_type, address))";
+        QString create_nym_method      = "CREATE TABLE IF NOT EXISTS nym_method(nym_id TEXT, method_id INTEGER, address TEXT, PRIMARY KEY(nym_id, method_id, address))";
+        QString create_contact_method  = "CREATE TABLE IF NOT EXISTS contact_method(contact_id INTEGER, method_type TEXT, address TEXT, PRIMARY KEY(contact_id, method_type, address))";
         // --------------------------------------------
-        // Smart Contracts
-        QString create_smart_contract  = "CREATE TABLE smart_contract(template_id INTEGER PRIMARY KEY, template_display_name TEXT, template_contents TEXT)";
+        // Smart Contracts table
+        QString create_smart_contract  = "CREATE TABLE IF NOT EXISTS smart_contract(template_id INTEGER PRIMARY KEY, template_display_name TEXT, template_contents TEXT)";
         // --------------------------------------------
-        // Passphrase Manager
-        QString create_managed_passphrase  = "CREATE TABLE managed_passphrase"
+        // Passphrase Manager table
+        QString create_managed_passphrase  = "CREATE TABLE IF NOT EXISTS managed_passphrase"
                 "(passphrase_id INTEGER PRIMARY KEY,"
                 " passphrase_title TEXT,"
                 " passphrase_username TEXT,"
@@ -150,8 +154,53 @@ bool DBHandler::dbCreateInstance()
                 " passphrase_notes TEXT"
                 ")";
         // --------------------------------------------
+        // Trade Archive table
+        QString create_trade_archive  = "CREATE TABLE IF NOT EXISTS trade_archive"
+                "(is_bid INTEGER,"
+                " actual_price INTEGER,"
+                " scale INTEGER,"
+                " actual_paid INTEGER,"
+                " amount_purchased INTEGER,"
+                " timestamp INTEGER,"
+                " offer_id INTEGER,"
+                " receipt_id INTEGER,"
+                " notary_id TEXT,"
+                " nym_id TEXT,"
+                " asset_acct_id TEXT,"
+                " currency_acct_id TEXT,"
+                " asset_id TEXT,"
+                " currency_id TEXT,"
+                " asset_receipt TEXT,"
+                " currency_receipt TEXT,"
+                " final_receipt TEXT"
+                ")";
+        // --------------------------------------------
+        QString create_message_table = "CREATE TABLE IF NOT EXISTS message"
+               "(message_id INTEGER PRIMARY KEY,"
+               " have_read INTEGER,"
+               " have_replied INTEGER,"
+               " have_forwarded INTEGER,"
+               " subject TEXT,"
+               " sender_nym_id TEXT,"
+               " sender_address TEXT,"
+               " recipient_nym_id TEXT,"
+               " recipient_address TEXT,"
+               " timestamp INTEGER,"
+               " method_type TEXT,"
+               " method_type_display TEXT,"
+               " notary_id TEXT,"
+               " my_nym_id TEXT,"
+               " my_address TEXT,"
+               " folder INTEGER"
+               ")";
+        // --------------------------------------------
+        QString create_message_body_table = "CREATE TABLE IF NOT EXISTS message_body"
+               "(message_id INTEGER PRIMARY KEY,"
+               " body TEXT"
+               ")";
+        // --------------------------------------------
         // RPC User Manager
-        QString create_rpcusers_table = "CREATE TABLE rpc_users(user_id TEXT PRIMARY KEY, password TEXT)";
+        QString create_rpcusers_table = "CREATE TABLE IF NOT EXISTS rpc_users(user_id TEXT PRIMARY KEY, password TEXT)";
 
 
         /* Keep track of Namecoin names registered for the purpose of
@@ -165,7 +214,7 @@ bool DBHandler::dbCreateInstance()
            transaction ID of the last name_update that has been issued,
            mainly to keep track of still unconfirmed update transactions
            (after the first confirmation, we can find it via the name).  */
-        QString create_nmc = "CREATE TABLE nmc_names"
+        QString create_nmc = "CREATE TABLE IF NOT EXISTS nmc_names"
                              "  (name     TEXT PRIMARY KEY,"
                              "   nym      TEXT,"
                              "   cred     TEXT,"
@@ -190,18 +239,21 @@ bool DBHandler::dbCreateInstance()
         error += query.exec(create_contact_method);
         error += query.exec(create_smart_contract);
         error += query.exec(create_managed_passphrase);
+        error += query.exec(create_trade_archive);
+        error += query.exec(create_message_table);
+        error += query.exec(create_message_body_table);
         // ------------------------------------------
         error += query.exec(create_rpcusers_table);
         // ------------------------------------------
         error += query.exec(create_nmc);
         // ------------------------------------------
-        if (error != 17)  //every query passed?
+        if (error != 20)  //every query passed?
         {
             qDebug() << "dbCreateInstance Error: " << dbConnectErrorStr + " " + dbCreationStr;
             FileHandler rm;
             db.close();
 
-//            rm.removeFile(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
+//          rm.removeFile(QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
 //          rm.removeFile(QCoreApplication::applicationDirPath() + dbFileNameStr);
         }
         else
@@ -209,6 +261,124 @@ bool DBHandler::dbCreateInstance()
     }
     return error;
 }
+
+// Unused for now, but too much work to just throw away:
+//    QString qstrQuery(
+//                "SELECT contact.contact_id as contact_id, contact.contact_display_name as contact_display_name,"
+//                " msg_method.method_type as method_type, msg_method.method_type_display as method_type_display,"
+//                " contact_method.address as address"
+//                " FROM contact, msg_method, contact_method"
+//                " WHERE contact.contact_id = contact_method.contact_id"
+//                " AND msg_method.method_type = contact_method.method_type"
+//                );
+
+
+QPointer<ModelMessages> DBHandler::getMessageModel()
+{
+    QString tableName("message");
+
+    if (!pMessageModel_)
+    {
+        pMessageModel_ = new ModelMessages(0, db);
+
+        pMessageModel_->setTable(tableName);
+        pMessageModel_->setEditStrategy(QSqlTableModel::OnManualSubmit);
+
+        pMessageModel_->select();
+//        pMessageModel_->sort(MSG_SOURCE_COL_TIMESTAMP, Qt::DescendingOrder);
+
+
+        if ( pMessageModel_->lastError().isValid())
+            qDebug() <<  pMessageModel_->lastError();
+
+        int column = 0;
+
+        // NOTE: These header names will change.
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("message_id"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Read?"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr(" ")); //replied
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr(" ")); // forwarded
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Subject"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("From"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("From address"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("To"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("To address"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Timestamp"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("method_type"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Transport"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Notary"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Me"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("My address"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Folder"));
+    }
+
+    return pMessageModel_;
+}
+
+/*
+SELECT contact.contact_id as contact_id, contact.contact_display_name as contact_display_name,
+ msg_method.method_type as method_type, msg_method.method_type_display as method_type_display,
+ contact_method.address as address
+ FROM contact, msg_method, contact_method
+ WHERE contact.contact_id = contact_method.contact_id
+ AND msg_method.method_type = contact_method.method_type
+*/
+
+// --------------------------------------------
+// contact(contact_id INTEGER PRIMARY KEY, contact_display_name TEXT)";
+// --------------------------------------------
+// msg_method"
+//        " (method_id INTEGER PRIMARY KEY,"   // 1, 2, etc.
+//        "  method_display_name TEXT,"        // "Localhost"
+//        "  method_type TEXT,"                // "bitmessage"
+//        "  method_type_display TEXT,"        // "Bitmessage"
+//        "  method_connect TEXT)";            // "http://username:password@http://127.0.0.1:8332/"
+// --------------------------------------------
+//  contact_method(contact_id INTEGER, method_type TEXT, address TEXT, PRIMARY KEY(contact_id, method_type, address))";
+// --------------------------------------------
+
+
+QPointer<ModelTradeArchive> DBHandler::getTradeArchiveModel()
+{
+    QString tableName("trade_archive");
+
+    if (!pTradeArchiveModel_)
+    {                
+        pTradeArchiveModel_ = new ModelTradeArchive(0, db);
+
+        pTradeArchiveModel_->setTable(tableName);
+        pTradeArchiveModel_->setEditStrategy(QSqlTableModel::OnManualSubmit);
+        pTradeArchiveModel_->select();
+
+        if ( pTradeArchiveModel_->lastError().isValid())
+            qDebug() <<  pTradeArchiveModel_->lastError();
+
+        int column = 0;
+
+        // NOTE: These header names will change.
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Bid / Ask")); // is_bid
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Final Price")); // actual_price
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Per Scale"));
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Total Price")); // actual_paid
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("for Asset Amount")); // amount_purchased
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Timestamp"));
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Offer#"));
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Receipt#"));
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Notary"));
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Identity"));
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Asset Account"));
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Currency Account"));
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Asset Type"));
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Currency Type"));
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Asset Receipt"));
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Currency Receipt"));
+        pTradeArchiveModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Final Receipt"));
+         // --------------------------------------------
+    }
+
+    return pTradeArchiveModel_;
+}
+
 
 bool DBHandler::isConnected()
 {

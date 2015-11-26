@@ -63,7 +63,7 @@ void PageSmart_NymAcct::on_pushButtonManageAcct_clicked()
 
         the_map.insert(OT_id, OT_name);
 
-        if (!qstrPreselected.isEmpty() && (qstrPreselected == OT_id))
+        if (!qstrPreselected.isEmpty() && (0 == qstrPreselected.compare(OT_id)))
             bFoundPreselected = true;
     } // for
     // -------------------------------------
@@ -165,14 +165,15 @@ void PageSmart_NymAcct::on_pushButtonSelect_clicked()
         // the account, or if it DOES specify, AND they match, then it's a viable
         // choice. Display it.
         //
-        if (!foundTemplateInstrumentDefinitionID || templateInstrumentDefinitionID == acctInstrumentDefinitionID)
+        if (!foundTemplateInstrumentDefinitionID ||
+            templateInstrumentDefinitionID == acctInstrumentDefinitionID)
         {
             QString OT_id = qstrAcctID;
             QString OT_name = OT_id;
             // -----------------------------------------------
             if (!OT_id.isEmpty())
             {
-                if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
+                if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                     bFoundDefault = true;
                 // -----------------------------------------------
                 QString qstrTemp = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(OT_id.toStdString()));

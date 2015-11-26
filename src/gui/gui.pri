@@ -79,7 +79,10 @@ FORMS += \
     $$PWD/widgets/pagesmart_partyacct.ui \
     $$PWD/widgets/pagesmart_nymacct.ui \
     $$PWD/ui/dlgpassphrasemanager.ui \
-    $$PWD/ui/dlgcreatepassphrase.ui
+    $$PWD/ui/dlgcreatepassphrase.ui \
+    $$PWD/ui/dlgtradearchive.ui \
+    $$PWD/ui/messages.ui \
+    $$PWD/ui/msgheaderwidget.ui
 
 HEADERS += \
     $${PWD}/ui/dlgexportcash.hpp \
@@ -157,7 +160,10 @@ HEADERS += \
     $$PWD/widgets/pagesmart_partyacct.hpp \
     $$PWD/widgets/pagesmart_nymacct.hpp \
     $$PWD/ui/dlgpassphrasemanager.hpp \
-    $$PWD/ui/dlgcreatepassphrase.hpp
+    $$PWD/ui/dlgcreatepassphrase.hpp \
+    $$PWD/ui/dlgtradearchive.hpp \
+    $$PWD/ui/messages.hpp \
+    $$PWD/ui/msgheaderwidget.hpp
 
 SOURCES += \
     $${PWD}/ui/dlgexportcash.cpp \
@@ -235,7 +241,10 @@ SOURCES += \
     $$PWD/widgets/pagesmart_partyacct.cpp \
     $$PWD/widgets/pagesmart_nymacct.cpp \
     $$PWD/ui/dlgpassphrasemanager.cpp \
-    $$PWD/ui/dlgcreatepassphrase.cpp
+    $$PWD/ui/dlgcreatepassphrase.cpp \
+    $$PWD/ui/dlgtradearchive.cpp \
+    $$PWD/ui/messages.cpp \
+    $$PWD/ui/msgheaderwidget.cpp
 
 TRANSLATIONS += $${PWD}/translations/en_US.ts \
                 $${PWD}/translations/de_DE.ts

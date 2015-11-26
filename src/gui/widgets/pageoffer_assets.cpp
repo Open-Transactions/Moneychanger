@@ -62,7 +62,7 @@ void PageOffer_Assets::on_pushButtonManageAsset_clicked()
 
         the_map.insert(OT_id, OT_name);
 
-        if (!qstrPreselected.isEmpty() && (qstrPreselected == OT_id))
+        if (!qstrPreselected.isEmpty() && (0 == qstrPreselected.compare(OT_id)))
             bFoundPreselected = true;
     } // for
     // -------------------------------------
@@ -118,7 +118,7 @@ void PageOffer_Assets::on_pushButtonManageCurrency_clicked()
 
         the_map.insert(OT_id, OT_name);
 
-        if (!qstrPreselected.isEmpty() && (qstrPreselected == OT_id))
+        if (!qstrPreselected.isEmpty() && (0 == qstrPreselected.compare(OT_id)))
             bFoundPreselected = true;
     } // for
     // -------------------------------------
@@ -176,7 +176,7 @@ void PageOffer_Assets::on_pushButtonSelectAsset_clicked()
         // -----------------------------------------------
         if (!OT_id.isEmpty())
         {
-            if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
+            if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                 bFoundDefault = true;
             // -----------------------------------------------
             OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(OT_id.toStdString()));
@@ -229,7 +229,7 @@ void PageOffer_Assets::on_pushButtonSelectCurrency_clicked()
         // -----------------------------------------------
         if (!OT_id.isEmpty())
         {
-            if (!qstr_current_id.isEmpty() && (OT_id == qstr_current_id))
+            if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                 bFoundDefault = true;
             // -----------------------------------------------
             OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(OT_id.toStdString()));
