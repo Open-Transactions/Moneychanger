@@ -55,5 +55,8 @@
         <file>icons/fistful_of_cash_72.png</file>
         <file>icons/DeleteRed.png</file>
         <file>icons/reply.png</file>
+        <file>icons/forwarded.png</file>
+        <file>icons/replied.png</file>
+        <file>icons/replied_forwarded.png</file>
     </qresource>
 </RCC>

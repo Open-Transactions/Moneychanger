@@ -96,6 +96,7 @@ Messages::Messages(QWidget *parent) :
     this->installEventFilter(this);
 
     connect(ui->toolButtonCompose, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_composemessage_slot()));
+    connect(ui->toolButtonContacts, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_addressbook_slot()));
 }
 
 void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel)
@@ -160,7 +161,6 @@ void Messages::enableButtons()
     ui->toolButtonDelete ->setEnabled(true);
     ui->toolButtonReply  ->setEnabled(true);
     ui->toolButtonForward->setEnabled(true);
-
 }
 
 void Messages::disableButtons()
@@ -168,7 +168,6 @@ void Messages::disableButtons()
     ui->toolButtonDelete ->setEnabled(false);
     ui->toolButtonReply  ->setEnabled(false);
     ui->toolButtonForward->setEnabled(false);
-
 }
 
 void Messages::on_MarkAsRead_timer()
@@ -259,11 +258,96 @@ void Messages::on_MarkAsUnread_timer()
     }
 }
 
+void Messages::on_MarkAsReplied_timer()
+{
+    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+
+    if (!pModel)
+        return;
+    // ------------------------------
+    bool bEditing = false;
+
+    while (!listRecordsToMarkAsReplied_.isEmpty())
+    {
+        QModelIndex index = listRecordsToMarkAsReplied_.front();
+        listRecordsToMarkAsReplied_.pop_front();
+        // ------------------------------------
+        if (!index.isValid())
+            continue;
+        // ------------------------------------
+        if (!bEditing)
+        {
+            bEditing = true;
+            pModel->database().transaction();
+        }
+        // ------------------------------------
+        pModel->setData(index, QVariant(1)); // 1 for "true" in sqlite. "Yes, we've now replied to this message. Mark it as replied."
+    } // while
+    // ------------------------------
+    if (bEditing)
+    {
+        if (pModel->submitAll())
+        {
+            pModel->database().commit();
+            // ------------------------------------
+            QTimer::singleShot(0, this, SLOT(RefreshMessages()));
+        }
+        else
+        {
+            pModel->database().rollback();
+            qDebug() << "Database Write Error" <<
+                       "The database reported an error: " <<
+                       pModel->lastError().text();
+        }
+    }
+}
+
+void Messages::on_MarkAsForwarded_timer()
+{
+    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+
+    if (!pModel)
+        return;
+    // ------------------------------
+    bool bEditing = false;
+
+    while (!listRecordsToMarkAsForwarded_.isEmpty())
+    {
+        QModelIndex index = listRecordsToMarkAsForwarded_.front();
+        listRecordsToMarkAsForwarded_.pop_front();
+        // ------------------------------------
+        if (!index.isValid())
+            continue;
+        // ------------------------------------
+        if (!bEditing)
+        {
+            bEditing = true;
+            pModel->database().transaction();
+        }
+        // ------------------------------------
+        pModel->setData(index, QVariant(1)); // 1 for "true" in sqlite. "Yes, we've now forwarded this message. Mark it as forwarded."
+    } // while
+    // ------------------------------
+    if (bEditing)
+    {
+        if (pModel->submitAll())
+        {
+            pModel->database().commit();
+            // ------------------------------------
+            QTimer::singleShot(0, this, SLOT(RefreshMessages()));
+        }
+        else
+        {
+            pModel->database().rollback();
+            qDebug() << "Database Write Error" <<
+                       "The database reported an error: " <<
+                       pModel->lastError().text();
+        }
+    }
+}
 
 void Messages::on_tableViewSentSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
 {
-    qDebug() << "on_tableViewSentSelectionModel_currentRowChanged WAS CALLED!";
-
     if (!current.isValid())
     {
         ui->headerSent->setSubject("");
@@ -426,15 +510,17 @@ void Messages::dialog()
     {
         ui->userBar->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");
         // ----------------------------------
-        QPixmap pixmapContacts(":/icons/icons/user.png"); // This is here only for size purposes.
-        QIcon   contactsButtonIcon(pixmapContacts);       // Other buttons use this to set their own size.
+        QPixmap pixmapSize(":/icons/icons/user.png"); // This is here only for size purposes.
+        QIcon   sizeButtonIcon(pixmapSize);           // Other buttons use this to set their own size.
         // ----------------------------------------------------------------
+        QPixmap pixmapContacts(":/icons/icons/rolodex_small");
         QPixmap pixmapCompose (":/icons/icons/pencil.png");
         QPixmap pixmapRefresh (":/icons/icons/refresh.png");
         QPixmap pixmapReply   (":/icons/icons/reply.png");
         QPixmap pixmapForward (":/icons/sendfunds");
         QPixmap pixmapDelete  (":/icons/icons/DeleteRed.png");
         // ----------------------------------------------------------------
+        QIcon contactsButtonIcon(pixmapContacts);
         QIcon refreshButtonIcon (pixmapRefresh);
         QIcon composeButtonIcon (pixmapCompose);
         QIcon replyButtonIcon   (pixmapReply);
@@ -445,35 +531,42 @@ void Messages::dialog()
         ui->toolButtonRefresh->setAutoRaise(true);
         ui->toolButtonRefresh->setIcon(refreshButtonIcon);
 //      ui->toolButtonRefresh->setIconSize(pixmapRefresh.rect().size());
-        ui->toolButtonRefresh->setIconSize(pixmapContacts.rect().size());
+        ui->toolButtonRefresh->setIconSize(pixmapSize.rect().size());
         ui->toolButtonRefresh->setText(tr("Refresh"));
+        // ----------------------------------------------------------------
+        ui->toolButtonContacts->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonContacts->setAutoRaise(true);
+        ui->toolButtonContacts->setIcon(contactsButtonIcon);
+//      ui->toolButtonContacts->setIconSize(pixmapContacts.rect().size());
+        ui->toolButtonContacts->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonContacts->setText(tr("Address Book"));
         // ----------------------------------------------------------------
         ui->toolButtonCompose->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         ui->toolButtonCompose->setAutoRaise(true);
         ui->toolButtonCompose->setIcon(composeButtonIcon);
 //      ui->toolButtonCompose->setIconSize(pixmapCompose.rect().size());
-        ui->toolButtonCompose->setIconSize(pixmapContacts.rect().size());
+        ui->toolButtonCompose->setIconSize(pixmapSize.rect().size());
         ui->toolButtonCompose->setText(tr("Compose"));
         // ----------------------------------------------------------------
         ui->toolButtonDelete->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         ui->toolButtonDelete->setAutoRaise(true);
         ui->toolButtonDelete->setIcon(deleteButtonIcon);
 //      ui->toolButtonDelete->setIconSize(pixmapDelete.rect().size());
-        ui->toolButtonDelete->setIconSize(pixmapContacts.rect().size());
+        ui->toolButtonDelete->setIconSize(pixmapSize.rect().size());
         ui->toolButtonDelete->setText(tr("Delete"));
         // ----------------------------------------------------------------
         ui->toolButtonReply->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         ui->toolButtonReply->setAutoRaise(true);
         ui->toolButtonReply->setIcon(replyButtonIcon);
 //      ui->toolButtonReply->setIconSize(pixmapReply.rect().size());
-        ui->toolButtonReply->setIconSize(pixmapContacts.rect().size());
+        ui->toolButtonReply->setIconSize(pixmapSize.rect().size());
         ui->toolButtonReply->setText(tr("Reply"));
         // ----------------------------------------------------------------
         ui->toolButtonForward->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         ui->toolButtonForward->setAutoRaise(true);
         ui->toolButtonForward->setIcon(forwardButtonIcon);
 //      ui->toolButtonForward->setIconSize(pixmapForward.rect().size());
-        ui->toolButtonForward->setIconSize(pixmapContacts.rect().size());
+        ui->toolButtonForward->setIconSize(pixmapSize.rect().size());
         ui->toolButtonForward->setText(tr("Forward"));
         // ******************************************************
         QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
@@ -593,8 +686,6 @@ void Messages::on_treeWidget_currentItemChanged(QTreeWidgetItem *current, QTreeW
 
 void Messages::RefreshMessages()
 {
-    qDebug() << "==== TOP of RefreshMessages ====\n";
-
     ui->tableViewSent->resizeColumnsToContents();
     ui->tableViewReceived->resizeColumnsToContents();
 
@@ -614,9 +705,6 @@ void Messages::RefreshMessages()
             nRowToSelect = 0;
 
         // So let's select the first one in the list!
-
-        qDebug() << "Messages::RefreshMessages: ABOUT TO SELECT ROW " << nRowToSelect << " IN CURRENT TABLE VIEW...";
-
         QModelIndex previous = pCurrentTabTableView_->currentIndex();
         pCurrentTabTableView_->blockSignals(true);
         pCurrentTabTableView_->selectRow(nRowToSelect);
@@ -655,8 +743,6 @@ void Messages::RefreshMessages()
                     {
                         bFoundIt = true;
 
-                        qDebug() << "Messages::RefreshMessages: ABOUT TO SELECT ROW " << ii << " IN CURRENT TABLE VIEW...";
-
                         QModelIndex previous = pCurrentTabTableView_->currentIndex();
                         pCurrentTabTableView_->blockSignals(true);
                         pCurrentTabTableView_->selectRow(ii);
@@ -677,8 +763,6 @@ void Messages::RefreshMessages()
 
                 if (nRowCount > 0)
                     nRowToSelect = 0;
-
-                qDebug() << "Messages::RefreshMessages: ABOUT TO SELECT ROW " << nRowToSelect << " IN CURRENT TABLE VIEW...";
 
                 QModelIndex previous = pCurrentTabTableView_->currentIndex();
                 pCurrentTabTableView_->blockSignals(true);
@@ -845,8 +929,6 @@ void Messages::RefreshTree()
 //#define MSG_SOURCE_COL_MY_NYM 13
 //#define MSG_SOURCE_COL_MY_ADDR 14
 //#define MSG_SOURCE_COL_FOLDER 15
-
-//resume
 
 void Messages::on_tableViewReceived_customContextMenuRequested(const QPoint &pos)
 {
@@ -1274,6 +1356,10 @@ void Messages::on_toolButtonReply_clicked()
 
     if (!sourceIndex.isValid())
         return;
+
+    QModelIndex haveRepliedIndex = pModel->sibling(sourceIndex.row(),
+                                                   MSG_SOURCE_COL_HAVE_REPLIED,
+                                                   sourceIndex);
     // ------------------------------------
     QSqlRecord record = pModel->record(sourceIndex.row());
 
@@ -1363,6 +1449,11 @@ void Messages::on_toolButtonReply_clicked()
     Focuser f(compose_window);
     f.show();
     f.focus();
+    // -----------------------------
+    if (haveRepliedIndex.isValid())
+        listRecordsToMarkAsReplied_.append(haveRepliedIndex);
+    if (listRecordsToMarkAsReplied_.count() > 0)
+        QTimer::singleShot(0, this, SLOT(on_MarkAsReplied_timer()));
 }
 
 void Messages::on_toolButtonForward_clicked()
@@ -1381,6 +1472,10 @@ void Messages::on_toolButtonForward_clicked()
 
     if (!sourceIndex.isValid())
         return;
+
+    QModelIndex haveForwardedIndex = pModel->sibling(sourceIndex.row(),
+                                                     MSG_SOURCE_COL_HAVE_FORWARDED,
+                                                     sourceIndex);
     // ------------------------------------
     QSqlRecord record = pModel->record(sourceIndex.row());
 
@@ -1472,6 +1567,11 @@ void Messages::on_toolButtonForward_clicked()
     Focuser f(compose_window);
     f.show();
     f.focus();
+    // -----------------------------
+    if (haveForwardedIndex.isValid())
+        listRecordsToMarkAsForwarded_.append(haveForwardedIndex);
+    if (listRecordsToMarkAsForwarded_.count() > 0)
+        QTimer::singleShot(0, this, SLOT(on_MarkAsForwarded_timer()));
 }
 
 
@@ -1664,7 +1764,6 @@ bool Messages::eventFilter(QObject *obj, QEvent *event)
     // standard event processing
     return QWidget::eventFilter(obj, event);
 }
-
 
 
 

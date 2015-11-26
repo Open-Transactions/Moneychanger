@@ -83,8 +83,6 @@ void DlgChooser::showEvent(QShowEvent * event)
         for (mapIDName::iterator ii = m_map.begin(); ii != m_map.end(); ii++)
         {
             ++nIndex; // 0 on first iteration.
-
-            qDebug() << "Chooser Iteration: " << nIndex;
             // -------------------------------------
             QString qstrID    = ii.key();
             QString qstrValue = ii.value();

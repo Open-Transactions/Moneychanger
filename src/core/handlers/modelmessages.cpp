@@ -253,16 +253,6 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
             timestamp.setTime_t(the_time);
             return QVariant(QString(timestamp.toString(Qt::SystemLocaleShortDate)));
         }
-        else if (nSourceColumn == MSG_SOURCE_COL_HAVE_REPLIED) // have_replied
-        {
-            bool bHaveI = sourceData.isValid() ? sourceData.toBool() : false;
-            return QVariant(QString(bHaveI ? "Replied" : ""));
-        }
-        else if (nSourceColumn == MSG_SOURCE_COL_HAVE_FORWARDED) // have_forwarded
-        {
-            bool bHaveI = sourceData.isValid() ? sourceData.toBool() : false;
-            return QVariant(QString(bHaveI ? "Forwarded" : ""));
-        }
         else if (nSourceColumn == MSG_SOURCE_COL_FOLDER) // folder
         {
             int nFolder = sourceData.isValid() ? sourceData.toInt() : 0;
@@ -270,49 +260,44 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
         }
     }
     // -------------------------------
-//    else if (role==Qt::DecorationRole && index.isValid())
-//    {
-//        const int nSourceRow    = headerData(index.row(),    Qt::Vertical,   Qt::UserRole).toInt();
-//        const int nSourceColumn = headerData(index.column(), Qt::Horizontal, Qt::UserRole).toInt();
+    else if (role==Qt::DecorationRole && index.isValid())
+    {
+        const int nSourceRow             = headerData(index.row(),    Qt::Vertical,   Qt::UserRole).toInt();
+        const int nSourceColumn          = headerData(index.column(), Qt::Horizontal, Qt::UserRole).toInt();
 
-//        QModelIndex sourceIndex = sourceModel()->index(nSourceRow, nSourceColumn);
-//        QVariant    sourceData  = sourceModel()->data(sourceIndex, role);
+        const int nSourceColumnReplied   = MSG_SOURCE_COL_HAVE_REPLIED;
+        const int nSourceColumnForwarded = MSG_SOURCE_COL_HAVE_FORWARDED;
 
-//        if (nSourceColumn == MSG_SOURCE_COL_HAVE_REPLIED) // have_replied
-//        {
-//            bool bHaveI = sourceData.isValid() ? sourceData.toBool() : false;
-////            if (bHaveI)
-//            {
-//                QPixmap pixmapReply(":/icons/icons/reply.png");
-//                return pixmapReply;
-//            }
-//        }
-//        else if (nSourceColumn == MSG_SOURCE_COL_HAVE_FORWARDED) // have_forwarded
-//        {
-//            bool bHaveI = sourceData.isValid() ? sourceData.toBool() : false;
-////            if (bHaveI)
-//            {
-//                QPixmap pixmapReply(":/icons/sendfunds");
-//                return pixmapReply;
-//            }
-//        }
-//    }
+        QModelIndex sourceIndexReplied   = sourceModel()->index(nSourceRow, nSourceColumnReplied);
+        QModelIndex sourceIndexForwarded = sourceModel()->index(nSourceRow, nSourceColumnForwarded);
+
+        QVariant    sourceDataReplied    = sourceModel()->data(sourceIndexReplied,   Qt::DisplayRole);
+        QVariant    sourceDataForwarded  = sourceModel()->data(sourceIndexForwarded, Qt::DisplayRole);
+
+        if (nSourceColumn == MSG_SOURCE_COL_SUBJECT)
+        {
+            const bool bHaveReplied   = sourceDataReplied.isValid() ? sourceDataReplied.toBool() : false;
+            const bool bHaveForwarded = sourceDataForwarded.isValid() ? sourceDataForwarded.toBool() : false;
+            const bool bHaveBoth      = (bHaveReplied && bHaveForwarded);
+
+            if (bHaveBoth)
+            {
+                QPixmap pixmap(":/icons/icons/replied_forwarded.png");
+                return pixmap;
+            }
+            else if (bHaveReplied)
+            {
+                QPixmap pixmap(":/icons/icons/replied.png");
+                return pixmap;
+            }
+            if (bHaveForwarded)
+            {
+                QPixmap pixmap(":/icons/icons/forwarded.png");
+                return pixmap;
+            }
+        }
+    }
     // --------------------------------------------
-//    else if (role == Qt::SizeHintRole)
-//    {
-////      const int nSourceRow    = headerData(index.row(),    Qt::Vertical,   Qt::UserRole).toInt();
-//        const int nSourceColumn = headerData(index.column(), Qt::Horizontal, Qt::UserRole).toInt();
-
-//        if (nSourceColumn == MSG_SOURCE_COL_HAVE_REPLIED) // have_replied
-//        {
-//            return QSize (16,16);
-//        }
-//        else if (nSourceColumn == MSG_SOURCE_COL_HAVE_FORWARDED) // have_forwarded
-//        {
-//            return QSize (16,16);
-//        }
-//    }
-
     return QSortFilterProxyModel::data(index,role);
 }
 
@@ -435,8 +420,6 @@ bool MessagesProxyModel::filterAcceptsColumn(int source_column, const QModelInde
     case MSG_SOURCE_COL_HAVE_READ:       bReturn = false;  break;
     case MSG_SOURCE_COL_HAVE_REPLIED:    bReturn = false;  break;
     case MSG_SOURCE_COL_HAVE_FORWARDED:  bReturn = false;  break;
-//    case MSG_SOURCE_COL_HAVE_REPLIED:    bReturn = true;  break;  //coming soon.
-//    case MSG_SOURCE_COL_HAVE_FORWARDED:  bReturn = true;  break;
     case MSG_SOURCE_COL_SUBJECT:         bReturn = true;  break;
     case MSG_SOURCE_COL_FOLDER:
     {
@@ -724,6 +707,9 @@ QVariant ModelMessages::data ( const QModelIndex & index, int role/* = Qt::Displ
     {
         if (index.column() == MSG_SOURCE_COL_SUBJECT)
             return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
+//        if (index.column() == MSG_SOURCE_COL_HAVE_REPLIED ||
+//            index.column() == MSG_SOURCE_COL_HAVE_FORWARDED)
+//            return QVariant(Qt::AlignRight | Qt::AlignVCenter);
         return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
     }
     // ----------------------------------------
