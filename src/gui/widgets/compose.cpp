@@ -915,7 +915,7 @@ void MTCompose::on_viaButton_clicked()
     }
     else
     {
-      qDebug() << "CANCEL was clicked";
+//      qDebug() << "CANCEL was clicked";
     }
 }
 
@@ -2559,7 +2559,7 @@ void MTCompose::on_fromButton_clicked()
     }
     else
     {
-      qDebug() << "CANCEL was clicked";
+//      qDebug() << "CANCEL was clicked";
     }
 }
 
@@ -2696,7 +2696,7 @@ void MTCompose::on_toButton_clicked()
     }
     else
     {
-      qDebug() << "CANCEL was clicked";
+//      qDebug() << "CANCEL was clicked";
     }
     // -----------------------------------------------
 }

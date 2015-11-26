@@ -913,12 +913,6 @@ QString MTMarketDetails::CalculateLastSalePrice(QString & qstrID, QMultiMap<QStr
         int64_t lCurrentLastSaleDate  = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->last_sale_date);
         int64_t lCurrentLastSalePrice = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->last_sale_price);
 
-
-        qDebug() << "lCurrentLastSaleDate: " << lCurrentLastSaleDate;
-        qDebug() << "lCurrentLastSalePrice: " << lCurrentLastSalePrice;
-
-
-
         if (lCurrentLastSaleDate > lLastSaleDate)
         {
             lLastSaleDate  = lCurrentLastSaleDate;

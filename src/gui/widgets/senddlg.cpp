@@ -663,7 +663,7 @@ void MTSendDlg::on_fromButton_clicked()
     }
     else
     {
-      qDebug() << "CANCEL was clicked";
+//      qDebug() << "CANCEL was clicked";
     }
     // -----------------------------------------------
     m_myAcctId = QString("");
@@ -807,7 +807,7 @@ void MTSendDlg::on_toButton_clicked()
     }
     else
     {
-      qDebug() << "CANCEL was clicked";
+//      qDebug() << "CANCEL was clicked";
     }
     // -----------------------------------------------
 }

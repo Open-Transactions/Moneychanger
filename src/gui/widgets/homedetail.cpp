@@ -290,7 +290,7 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
         }
         else
         {
-          qDebug() << "CANCEL was clicked";
+//          qDebug() << "CANCEL was clicked";
         }
     }
 }

@@ -87,8 +87,12 @@ private slots:
     void on_toolButtonRefresh_clicked();
 
     void on_tabWidget_currentChanged(int index);
+
     void on_MarkAsRead_timer();
     void on_MarkAsUnread_timer();
+    void on_MarkAsReplied_timer();
+    void on_MarkAsForwarded_timer();
+
     void RefreshMessages();
 
     void on_tableViewReceived_customContextMenuRequested(const QPoint &pos);
@@ -127,6 +131,9 @@ private:
 
     QList<QModelIndex> listRecordsToMarkAsRead_;
     QList<QModelIndex> listRecordsToMarkAsUnread_;
+
+    QList<QModelIndex> listRecordsToMarkAsReplied_;
+    QList<QModelIndex> listRecordsToMarkAsForwarded_;
 };
 
 #endif // MESSAGES_HPP
