@@ -403,13 +403,13 @@ void ModelTradeArchive::updateDBFromOT(const std::string & strNotaryID, const st
             QSqlRecord record = this->record();
 
             record.setValue("is_bid", bIsBid);
-            record.setValue("receipt_id", lReceiptID);
-            record.setValue("offer_id", lOfferID);
-            record.setValue("scale", lScale);
-            record.setValue("actual_price", lPrice);
-            record.setValue("actual_paid", lPayQuantity);
-            record.setValue("amount_purchased", lQuantity);
-            record.setValue("timestamp",  tDate);
+            record.setValue("receipt_id", QVariant::fromValue(lReceiptID));
+            record.setValue("offer_id", QVariant::fromValue(lOfferID));
+            record.setValue("scale", QVariant::fromValue(lScale));
+            record.setValue("actual_price", QVariant::fromValue(lPrice));
+            record.setValue("actual_paid", QVariant::fromValue(lPayQuantity));
+            record.setValue("amount_purchased", QVariant::fromValue(lQuantity));
+            record.setValue("timestamp",  QVariant::fromValue(tDate));
             record.setValue("notary_id", QString::fromStdString(strNotaryID));
             record.setValue("nym_id", QString::fromStdString(strNymID));
             record.setValue("asset_id", QString::fromStdString(pTradeData->instrument_definition_id));
