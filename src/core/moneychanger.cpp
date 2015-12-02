@@ -1804,7 +1804,7 @@ bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
             record.setValue("method_type_display", msgTypeDisplay);
         if (!notaryID.isEmpty())
             record.setValue("notary_id", notaryID);
-        record.setValue("timestamp", tDate);
+        record.setValue("timestamp", QVariant::fromValue(tDate));
         record.setValue("have_read", recordmt.IsOutgoing() ? 1 : 0);
         record.setValue("have_replied", 0);
         record.setValue("have_forwarded", 0);
