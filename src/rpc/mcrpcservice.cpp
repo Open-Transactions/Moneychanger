@@ -33,6 +33,88 @@ MCRPCService::~MCRPCService(){
 
 }
 
+QJsonValue MCRPCService::createNymEcdsa(QString Username, QString APIKey,
+                                        QString NymIDSource,
+                                        QString AltLocation)
+{
+    if (!validateAPIKey(Username, APIKey))
+    {
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QJsonValue(object);
+    }
+    std::string result = opentxs::OTAPI_Wrap::It()->CreateNymECDSA(
+                                                              NymIDSource.toStdString(),
+                                                              AltLocation.toStdString());
+    QJsonObject object{{"CreateNymEcdsaResult", QString(result.c_str())}};
+    return QJsonValue(object);
+}
+
+
+QJsonValue MCRPCService::registerAccount(QString Username, QString APIKey,
+                                         QString NotaryID, QString NymID,
+                                         QString InstrumentDefinitionID)
+{
+
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QJsonValue(object);
+    }
+    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+        QJsonObject object{{"Error", "Invalid NotaryID"}};
+        return QJsonValue(object);
+    }
+    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+        QJsonObject object{{"Error", "Invalid NymID"}};
+        return QJsonValue(object);
+    }
+    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+        QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
+        return QJsonValue(object);
+    }
+
+    opentxs::OT_ME madeEasy;
+
+    std::string result = madeEasy.create_asset_acct(NotaryID.toStdString(), NymID.toStdString(), InstrumentDefinitionID.toStdString());
+
+    if (opentxs::OTAPI_Wrap::networkFailure())
+    {
+//      emit appendToLog(qstrErrorMsg); // TODO!
+        qDebug() << "Network failure while trying to create asset account.";
+
+        QJsonObject object{{"Error", "Network failure"}};
+        return QJsonValue(object);
+    }
+
+//  std::cout << "result is " << result << std::endl;
+
+    // -1 error, 0 failure, 1 success.
+    //
+    if (1 != madeEasy.VerifyMessageSuccess(result))
+    {
+        const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(qstrNotaryID, qstrNymID);
+
+        // HasUsageCredits already pops up an error box in the cases of -2 and 0.
+        //
+        if (((-2) != lUsageCredits) && (0 != lUsageCredits))
+        {
+            QJsonObject object{{"Error", "Out of usage credits."}};
+            return QJsonValue(object);
+        }
+    }
+    // ------------------------------------------------------
+    // Get the ID of the new account.
+    //
+    QString qstrID = QString::fromStdString(opentxs::OTAPI_Wrap::It()->Message_GetNewAcctID(strResponse));
+
+    if (qstrID.isEmpty())
+    {
+        QJsonObject object{{"Error", "Failed to get new account ID from server response."}};
+        return QJsonValue(object);
+    }
+    // ------------------------------------------------------
+    QJsonObject object{{"CreateAccountResult", qstrID}};
+    return QJsonValue(object);
+}
 
 
 QJsonValue MCRPCService::numListAdd(QString Username, QString APIKey,
@@ -5792,34 +5874,6 @@ QJsonValue MCRPCService::getMint(QString Username, QString APIKey,
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::registerAccount(QString Username, QString APIKey,
-                                         QString NotaryID, QString NymID,
-                                         QString InstrumentDefinitionID)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NotaryID"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
-        QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
-        return QJsonValue(object);
-    }
-
-    int result = opentxs::OTAPI_Wrap::It()->registerAccount(NotaryID.toStdString(),
-                                                            NymID.toStdString(),
-                                                            InstrumentDefinitionID.toStdString());
-    QJsonObject object{{"RegisterAccountResult", result}};
-    return QJsonValue(object);
-}
-
 QJsonValue MCRPCService::getAccountData(QString Username, QString APIKey,
                                         QString NotaryID, QString NymID,
                                         QString AccountID)
@@ -7202,8 +7256,8 @@ bool MCRPCService::createRecordList(QString Username, QString APIKey)
 }
 
 
-QJsonValue MCRPCService::setDefaultNym(QString NymID, QString NymName,
-                                       QString Username, QString APIKey){
+QJsonValue MCRPCService::setDefaultNym(QString Username, QString APIKey,
+                                       QString NymID, QString NymName){
 
     if(!validateAPIKey(Username, APIKey)){
         QJsonObject object{{"Error", "Invalid API Key"}};
@@ -7227,8 +7281,8 @@ QJsonValue MCRPCService::getDefaultNym(QString Username, QString APIKey){
     return record;
 }
 
-QJsonValue MCRPCService::setDefaultAccount(QString AccountID, QString AccountName,
-                                           QString Username, QString APIKey){
+QJsonValue MCRPCService::setDefaultAccount(QString Username, QString APIKey,
+                                           QString AccountID, QString AccountName){
 
     if(!validateAPIKey(Username, APIKey)){
         QJsonObject object{{"Error", "Invalid API Key"}};
@@ -7253,8 +7307,8 @@ QJsonValue MCRPCService::getDefaultAccount(QString Username, QString APIKey){
 
 }
 
-QJsonValue MCRPCService::setDefaultServer(QString NotaryID, QString ServerName,
-                                          QString Username, QString APIKey){
+QJsonValue MCRPCService::setDefaultServer(QString Username, QString APIKey,
+                                          QString NotaryID, QString ServerName){
 
     if(!validateAPIKey(Username, APIKey)){
         QJsonObject object{{"Error", "Invalid API Key"}};
@@ -7279,8 +7333,8 @@ QJsonValue MCRPCService::getDefaultServer(QString Username, QString APIKey){
     return record;
 }
 
-QJsonValue MCRPCService::setDefaultAsset(QString AssetID, QString AssetName,
-                                         QString Username, QString APIKey){
+QJsonValue MCRPCService::setDefaultAsset(QString Username, QString APIKey,
+                                         QString AssetID, QString AssetName){
 
     if(!validateAPIKey(Username, APIKey)){
         QJsonObject object{{"Error", "Invalid API Key"}};
