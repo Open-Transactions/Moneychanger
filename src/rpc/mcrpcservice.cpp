@@ -375,30 +375,6 @@ QJsonValue MCRPCService::getNymChildCredentialContents(QString Username, QString
 }
 
 
-QJsonValue MCRPCService::addChildCredentialLegacy(QString Username, QString APIKey,
-                                          QString NymID, QString MasterCredID,
-                                          int KeySize)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(MasterCredID.toStdString())){
-        QJsonObject object{{"Error", "Invalid MasterCredID"}};
-        return QJsonValue(object);
-    }
-
-    std::string result = opentxs::OTAPI_Wrap::It()->AddChildCredentialLegacy(NymID.toStdString(),
-                                                                     MasterCredID.toStdString(),
-                                                                     KeySize);
-    QJsonObject object{{"AddChildCredentialResult", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
 QJsonValue MCRPCService::revokeChildcredential(QString Username, QString APIKey,
                                              QString NymID, QString MasterCredID,
                                              QString SubCredID)

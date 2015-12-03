@@ -68,9 +68,6 @@ public Q_SLOTS:
     QJsonValue getNymChildCredentialContents(QString Username, QString APIKey,
                                            QString NymID, QString MasterCredID,
                                            QString SubCredID);
-    QJsonValue addChildCredentialLegacy(QString Username, QString APIKey,
-                                QString NymID, QString MasterCredID,
-                                int KeySize);
     QJsonValue revokeChildcredential(QString Username, QString APIKey,
                                    QString NymID, QString MasterCredID,
                                    QString SubCredID);
