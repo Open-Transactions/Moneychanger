@@ -91,7 +91,7 @@ QJsonValue MCRPCService::registerAccount(QString Username, QString APIKey,
     //
     if (1 != madeEasy.VerifyMessageSuccess(result))
     {
-        const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(qstrNotaryID, qstrNymID);
+        const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(NotaryID, NymID);
 
         // HasUsageCredits already pops up an error box in the cases of -2 and 0.
         //
@@ -104,7 +104,7 @@ QJsonValue MCRPCService::registerAccount(QString Username, QString APIKey,
     // ------------------------------------------------------
     // Get the ID of the new account.
     //
-    QString qstrID = QString::fromStdString(opentxs::OTAPI_Wrap::It()->Message_GetNewAcctID(strResponse));
+    QString qstrID = QString::fromStdString(opentxs::OTAPI_Wrap::It()->Message_GetNewAcctID(result));
 
     if (qstrID.isEmpty())
     {
