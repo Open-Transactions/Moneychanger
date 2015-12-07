@@ -6939,6 +6939,76 @@ QString MCRPCService::mcRequestFundsDialog(QString Username, QString APIKey,
     return "Success";
 }
 
+QString MCRPCService::mcMessagesDialog(QString Username, QString APIKey){
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    Moneychanger::It()->mc_rpc_messages_show_dialog();
+
+    return "Success";
+}
+
+QString MCRPCService::mcExchangeDialog(QString Username, QString APIKey){
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    Moneychanger::It()->mc_rpc_exchange_show_dialog();
+    return "Success";
+}
+
+QString MCRPCService::mcPaymentsDialog(QString Username, QString APIKey){
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    return "Not yet implemented";
+}
+
+QString MCRPCService::mcManageAccountsDialog(QString Username, QString APIKey){
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    Moneychanger::It()->mc_rpc_manage_accounts_show_dialog();
+    return "Success";
+}
+
+QString MCRPCService::mcManageNymsDialog(QString Username, QString APIKey){
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    Moneychanger::It()->mc_rpc_manage_nyms_show_dialog();
+    return "Success";
+}
+
+QString MCRPCService::mcManageAssetsDialog(QString Username, QString APIKey){
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    Moneychanger::It()->mc_rpc_manage_assets_show_dialog();
+    return "Success";
+}
+
+QString MCRPCService::mcManageSmartContractsDialog(QString Username, QString APIKey){
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    Moneychanger::It()->mc_rpc_manage_smartcontracts_show_dialog();
+    return "Success";
+}
+
 bool MCRPCService::mcActivateSmartContract(QString Username, QString APIKey)
 {
     if(!validateAPIKey(Username, APIKey)){
