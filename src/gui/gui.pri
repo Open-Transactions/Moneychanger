@@ -82,7 +82,8 @@ FORMS += \
     $$PWD/ui/dlgcreatepassphrase.ui \
     $$PWD/ui/dlgtradearchive.ui \
     $$PWD/ui/messages.ui \
-    $$PWD/ui/msgheaderwidget.ui
+    $$PWD/ui/msgheaderwidget.ui \
+    $$PWD/ui/payments.ui
 
 HEADERS += \
     $${PWD}/ui/dlgexportcash.hpp \
@@ -163,7 +164,8 @@ HEADERS += \
     $$PWD/ui/dlgcreatepassphrase.hpp \
     $$PWD/ui/dlgtradearchive.hpp \
     $$PWD/ui/messages.hpp \
-    $$PWD/ui/msgheaderwidget.hpp
+    $$PWD/ui/msgheaderwidget.hpp \
+    $$PWD/ui/payments.hpp
 
 SOURCES += \
     $${PWD}/ui/dlgexportcash.cpp \
@@ -244,7 +246,8 @@ SOURCES += \
     $$PWD/ui/dlgcreatepassphrase.cpp \
     $$PWD/ui/dlgtradearchive.cpp \
     $$PWD/ui/messages.cpp \
-    $$PWD/ui/msgheaderwidget.cpp
+    $$PWD/ui/msgheaderwidget.cpp \
+    $$PWD/ui/payments.cpp
 
 TRANSLATIONS += $${PWD}/translations/en_US.ts \
                 $${PWD}/translations/de_DE.ts

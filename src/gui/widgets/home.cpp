@@ -12,6 +12,7 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/modelmessages.hpp>
+#include <core/handlers/modelpayments.hpp>
 
 #include <core/mtcomms.h>
 #include <core/network/Network.h>
@@ -594,7 +595,7 @@ QWidget * MTHome::CreateUserBarWidget()
     buttonSend->setAutoRaise(true);
     buttonSend->setIcon(sendButtonIcon);
     buttonSend->setIconSize(pixmapSend.rect().size());
-    buttonSend->setText(tr("Pay"));
+    buttonSend->setText(tr("Payments"));
     // ----------------------------------------------------------------
 //    buttonRequest->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 //    buttonRequest->setAutoRaise(true);
@@ -646,7 +647,7 @@ QWidget * MTHome::CreateUserBarWidget()
 //  pUserBarWidget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
     // -------------------------------------------
 //  connect(buttonRequest,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_requestfunds_slot()));
-    connect(buttonSend,       SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_sendfunds_slot()));
+    connect(buttonSend,       SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_payments_slot()));
     connect(buttonCompose,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_messages_slot()));
     connect(buttonExchange,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_market_slot()));
     connect(buttonSecrets,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_passphrase_manager_slot()));

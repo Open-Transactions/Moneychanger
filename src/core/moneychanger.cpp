@@ -50,6 +50,7 @@
 #include <gui/ui/dlgdecrypt.hpp>
 #include <gui/ui/dlgpassphrasemanager.hpp>
 #include <gui/ui/messages.hpp>
+#include <gui/ui/payments.hpp>
 
 
 
@@ -1111,6 +1112,11 @@ void Moneychanger::SetupPaymentsMenu(QPointer<QMenu> & parent_menu)
     mc_systrayMenu_overview = new QAction(mc_systrayIcon_overview, tr("Transaction History"), mc_systrayMenu_payments);
     mc_systrayMenu_payments->addAction(mc_systrayMenu_overview);
     connect(mc_systrayMenu_overview, SIGNAL(triggered()), this, SLOT(mc_overview_slot()));
+    // --------------------------------------------------------------
+    //Payment History
+    mc_systrayMenu_receipts = new QAction(mc_systrayIcon_overview, tr("Payment Receipts"), mc_systrayMenu_payments);
+    mc_systrayMenu_payments->addAction(mc_systrayMenu_receipts);
+    connect(mc_systrayMenu_receipts, SIGNAL(triggered()), this, SLOT(mc_payments_slot()));
     // -------------------------------------------------
     mc_systrayMenu_payments->addSeparator();
     // -------------------------------------------------
@@ -1892,6 +1898,236 @@ bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
     return bSuccessAddingMsg;
 }
 
+// Adds or updates.
+// The payment archive stores up to multiple receipts per record.
+// The primary key is the "display txn ID"
+//
+bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord/*=true*/)
+{
+    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
+    bool bSuccessAddingPmnt = false;
+    QString qstrBody(""), qstrPendingBody("");
+    const bool bIsPending = !bCanDeleteRecord;
+    QMap<QString, QVariant> mapFinalValues;
+
+    if (pModel)
+    {
+        QString myNymID;
+        if (!recordmt.GetNymID().empty())
+            myNymID = QString::fromStdString(recordmt.GetNymID());
+        // ---------------------------------
+        QString myAcctID;
+        if (!recordmt.GetAccountID().empty())
+            myAcctID = QString::fromStdString(recordmt.GetAccountID());
+        // ---------------------------------
+        QString instrumentType;
+        if (!recordmt.GetInstrumentType().empty())
+            instrumentType = QString::fromStdString(recordmt.GetInstrumentType());
+        // ---------------------------------
+        QString myAssetTypeID;
+        if (!recordmt.GetInstrumentDefinitionID().empty())
+            myAssetTypeID = QString::fromStdString(recordmt.GetInstrumentDefinitionID());
+        // ---------------------------------
+        QString myAddress;
+        if (!recordmt.GetAddress().empty())
+            myAddress = QString::fromStdString(recordmt.GetAddress());
+//          myAddress = MTContactHandler::Encode(QString::fromStdString(recordmt.GetAddress()));
+        // ---------------------------------
+        QString senderNymID,    senderAccountID,    senderAddress,
+                recipientNymID, recipientAccountID, recipientAddress;
+
+        if (recordmt.IsOutgoing())
+        {
+            if (!recordmt.GetOtherNymID().empty())
+                recipientNymID = QString::fromStdString(recordmt.GetOtherNymID());
+
+            if (!recordmt.GetOtherAccountID().empty())
+                recipientAccountID = QString::fromStdString(recordmt.GetOtherAccountID());
+
+            if (!recordmt.GetOtherAddress().empty())
+                recipientAddress = QString::fromStdString(recordmt.GetOtherAddress());
+//              recipientAddress = MTContactHandler::Encode(QString::fromStdString(recordmt.GetOtherAddress()));
+        }
+        else
+        {
+            if (!recordmt.GetOtherNymID().empty())
+                senderNymID = QString::fromStdString(recordmt.GetOtherNymID());
+
+            if (!recordmt.GetOtherAccountID().empty())
+                senderAccountID = QString::fromStdString(recordmt.GetOtherAccountID());
+
+            if (!recordmt.GetOtherAddress().empty())
+                senderAddress = QString::fromStdString(recordmt.GetOtherAddress());
+//              senderAddress = MTContactHandler::Encode(QString::fromStdString(recordmt.GetOtherAddress()));
+        }
+        // ---------------------------------
+        QString notaryID, msgType, msgTypeDisplay;
+
+        if (!recordmt.GetNotaryID().empty())
+            notaryID = QString::fromStdString(recordmt.GetNotaryID());
+
+        if (!recordmt.GetMsgType().empty())
+            msgType = QString::fromStdString(recordmt.GetMsgType());
+//          msgType = MTContactHandler::Encode(QString::fromStdString(recordmt.GetMsgType()));
+
+        if (!recordmt.GetMsgTypeDisplay().empty())
+            msgTypeDisplay = QString::fromStdString(recordmt.GetMsgTypeDisplay());
+//          msgTypeDisplay = MTContactHandler::Encode(QString::fromStdString(recordmt.GetMsgTypeDisplay()));
+        // ---------------------------------
+        time64_t tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetDate()));
+
+        int64_t transNum        = recordmt.GetTransactionNum();
+        int64_t transNumDisplay = recordmt.GetTransNumForDisplay();
+
+        int64_t lAmount = opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetAmount());
+
+        int nPending   = recordmt.IsPending() ? 1 : 0;
+        int nCompleted = recordmt.IsPending() ? 0 : 1;
+        // ---------------------------------
+        std::string str_Name = recordmt.GetName();
+        QString qstrName;
+        if (!str_Name.empty())
+            qstrName = MTContactHandler::Encode(QString::fromStdString(str_Name));
+        // ---------------------------------
+        std::string str_Memo = recordmt.HasMemo() ? recordmt.GetMemo() : "";
+        QString qstrMemo;
+        if (!str_Memo.empty())
+            qstrMemo = MTContactHandler::Encode(QString::fromStdString(str_Memo));
+        // ---------------------------------
+        std::string str_mailDescription;
+        recordmt.FormatDescription(str_mailDescription);
+        QString mailDescription;
+
+        if (!str_mailDescription.empty())
+            mailDescription = MTContactHandler::Encode(QString::fromStdString(str_mailDescription));
+        // ---------------------------------
+        const int nFolder = recordmt.IsOutgoing() ? 0 : 1; // 0 for moneychanger's outbox, and 1 for inbox.
+        // ---------------------------------
+        // First let's see if a record already exists:
+        //
+        const int  nPreExistingPaymentId = MTContactHandler::getInstance()->GetPaymentIdByTxnDisplayId(transNumDisplay);
+        const bool bRecordAlreadyExisted = (nPreExistingPaymentId > 0);
+        // ------------------------------------------
+        // We'll start by putting all the values into our map,
+        // so we can then use that map when creating or updating
+        // database records.
+        //
+        // if (bRecordAlreadyExisted) mapFinalValues.insert("payment_id", nPreExistingPaymentId);
+        // Note: No need to insert this one.
+
+        if (!myNymID.isEmpty()) mapFinalValues.insert("my_nym_id", myNymID);
+        if (!myAcctID.isEmpty()) mapFinalValues.insert("my_acct_id", myAcctID);
+        if (!myAssetTypeID.isEmpty()) mapFinalValues.insert("my_asset_type_id", myAssetTypeID);
+        if (!myAddress.isEmpty()) mapFinalValues.insert("my_address", myAddress);
+        if (!senderNymID.isEmpty()) mapFinalValues.insert("sender_nym_id", senderNymID);
+        if (!senderAccountID.isEmpty()) mapFinalValues.insert("sender_acct_id", senderAccountID);
+        if (!senderAddress.isEmpty()) mapFinalValues.insert("sender_address", senderAddress);
+        if (!recipientNymID.isEmpty()) mapFinalValues.insert("recipient_nym_id", recipientNymID);
+        if (!recipientAccountID.isEmpty()) mapFinalValues.insert("recipient_acct_id", recipientAccountID);
+        if (!recipientAddress.isEmpty()) mapFinalValues.insert("recipient_address", recipientAddress);
+
+        if (transNum > 0)        mapFinalValues.insert("txn_id", QVariant::fromValue(transNum));
+        if (transNumDisplay > 0) mapFinalValues.insert("txn_id_display", QVariant::fromValue(transNumDisplay));
+        if (lAmount > 0)         mapFinalValues.insert("amount", QVariant::fromValue(lAmount));
+        if (tDate > 0)           mapFinalValues.insert("timestamp", QVariant::fromValue(tDate));
+
+        if ( !bRecordAlreadyExisted ||
+             (bRecordAlreadyExisted && (nPending   > 0))) mapFinalValues .insert("pending_found", QVariant::fromValue(nPending));
+        if ( !bRecordAlreadyExisted ||
+             (bRecordAlreadyExisted && (nCompleted > 0))) mapFinalValues .insert("completed_found", QVariant::fromValue(nCompleted));
+
+        if (!msgType.isEmpty()) mapFinalValues.insert("method_type", msgType);
+        if (!msgTypeDisplay.isEmpty()) mapFinalValues.insert("method_type_display", msgTypeDisplay);
+        if (!notaryID.isEmpty()) mapFinalValues.insert("notary_id", notaryID);
+        if (!qstrMemo.isEmpty()) mapFinalValues.insert("memo", qstrMemo);
+        if (!mailDescription.isEmpty()) mapFinalValues.insert("description", mailDescription);
+        if (!qstrName.isEmpty()) mapFinalValues.insert("record_name", qstrName);
+        if (!instrumentType.isEmpty()) mapFinalValues.insert("instrument_type", instrumentType);
+
+        if (!bRecordAlreadyExisted) mapFinalValues.insert("have_read", QVariant::fromValue(recordmt.IsOutgoing() ? 1 : 0));
+        if (!bRecordAlreadyExisted) mapFinalValues.insert("have_replied", QVariant::fromValue(0));
+        if (!bRecordAlreadyExisted) mapFinalValues.insert("have_forwarded", QVariant::fromValue(0));
+
+        mapFinalValues.insert("folder", QVariant::fromValue(nFolder));
+        // -------------------------------------------------
+        if (bIsPending) qstrPendingBody = QString::fromStdString(recordmt.GetContents());
+        else            qstrBody        = QString::fromStdString(recordmt.GetContents());
+        // -------------------------------------------------
+        if (bRecordAlreadyExisted)
+        {
+            // Success.
+            if (MTContactHandler::getInstance()->UpdatePaymentRecord(nPreExistingPaymentId, mapFinalValues))
+            {
+                bSuccessAddingPmnt = true;
+
+                pModel->select(); // Reset the model since we just inserted a new record.
+                // AH WAIT!!! We don't want to do this for EVERY record inserted, do we?
+                // Just the LAST ONE.
+                // TODO!
+            }
+        }
+        else // Record doesn't already exist in the database.
+        {    // In that case we can use some code we already had:
+
+            pModel->database().transaction();
+            // ---------------------------------
+            QSqlRecord record = pModel->record();
+            record.setGenerated("payment_id", true);
+            // ---------------------------------
+            for (QMap<QString, QVariant>::iterator it_map = mapFinalValues.begin();
+                 it_map != mapFinalValues.end(); ++it_map)
+            {
+                const QString  & qstrKey = it_map.key();
+                const QVariant & qValue  = it_map.value();
+
+                record.setValue(qstrKey, qValue);
+            }
+
+            pModel->insertRecord(0, record);
+            // ---------------------------------
+            if (pModel->submitAll())
+            {
+                // Success.
+                if (pModel->database().commit())
+                    bSuccessAddingPmnt = true;
+            }
+            else
+            {
+                pModel->database().rollback();
+                qDebug() << "Database Write Error" <<
+                           "The database reported an error: " <<
+                           pModel->lastError().text();
+            }
+        } // Record didn't already exist. (Adding new.)
+    } // if pModel
+    // ------------------------------------------------
+    if (bSuccessAddingPmnt)
+    {
+        qDebug() << "AddPaymentToPmntArchive: Succeeded adding payment record to database.\n";
+
+        if (bRecordAlreadyExisted)
+        {
+            if (!MTContactHandler::getInstance()->UpdatePaymentBody(nPreExistingPaymentId, qstrBody, qstrPendingBody))
+            {
+                qDebug() << "AddPaymentToPmntArchive: ...but then failed updating payment body and/or pending body.\n";
+                return false;
+            }
+        }
+        // ------------------------
+        else
+        {
+            if (!MTContactHandler::getInstance()->CreatePaymentBody(qstrBody, qstrPendingBody))
+            {
+                qDebug() << "AddPaymentToPmntArchive: ...but then failed creating payment body and/or pending body.\n";
+                return false;
+            }
+        }
+    }
+    // ------------------------------------------------
+    return bSuccessAddingPmnt;
+}
+
+
 
 void Moneychanger::modifyRecords()
 {
@@ -1912,79 +2148,116 @@ void Moneychanger::modifyRecords()
             opentxs::OTRecord& recordmt = record;
 
             if (!recordmt.CanDeleteRecord())
-                continue;
-
-            // If recordmt IsRecord() and IsReceipt() and is a "finalReceipt"
-            // then try to look it up in the Trade Archive table. For all entries
-            // from the same transaction, we set the final receipt text in those
-            // rows.
-            //
-            // Then we delete the finalReceipt from the OT Record Box.
-            //
-            // Meanwhile, for all marketReceipts, we just deleting them since they
-            // are ALREADY in the trade_archive table.
-            //
-            // -----------------------------------
-            bool bShouldDeleteRecord = false;
-            // -----------------------------------
-            if (recordmt.IsRecord() && !recordmt.IsExpired() && recordmt.IsReceipt())
             {
-                if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
-                {
-                    // We don't have to add these to the trade archive table because they
-                    // are already there. OTClient directly adds them into the TradeNymData object,
-                    // and then Moneychanger reads that object and imports it into the trade_achive
-                    // table already. So basically here all we need to do is delete the market
-                    // receipt records so the user doesn't have the hassle of deleting them himself.
-                    // Now they are safe in his archive and he can do whatever he wants with them.
+                // In this case we aren't going to delete the record, but we can still
+                // save a copy of it in our local database, if it's not already there.
 
-                    bShouldDeleteRecord = true;
-                } // marketReceipt
+                if (!recordmt.IsMail() &&
+                    !recordmt.IsSpecialMail() &&
+                    !recordmt.IsExpired() )
+                    AddPaymentToPmntArchive(recordmt);
+
+            }
+            else // record can be deleted.
+            {
+                // If recordmt IsRecord() and IsReceipt() and is a "finalReceipt"
+                // then try to look it up in the Trade Archive table. For all entries
+                // from the same transaction, we set the final receipt text in those
+                // rows.
+                //
+                // Then we delete the finalReceipt from the OT Record Box.
+                //
+                // Meanwhile, for all marketReceipts, we just deleting them since they
+                // are ALREADY in the trade_archive table.
+                //
                 // -----------------------------------
-                else if (0 == recordmt.GetInstrumentType().compare("finalReceipt"))
+                bool bShouldDeleteRecord = false;
+                // -----------------------------------
+                if (recordmt.IsMail() || recordmt.IsSpecialMail())
                 {
-                    // Notice here we only delete the record if we successfully
-                    // added the final receipt to the trade archive table.
-                    // Why? Because the trade archive table contains receipts
-                    // of COMPLETED TRADES. So if we fail to find any of those
-                    // to add the final receipt to, we don't just want to DELETE
-                    // the final receipt -- the user's sole remaining copy!
-                    // - So for trades that occurred, the final receipt will be stored
-                    // with those archives next to the corresponding market receipts.
-                    // - And for trades that did NOT occur, the final receipt will
-                    // remain in the record box, so the user himself can delete those
-                    // whenever he sees fit. They will be his only notice that an
-                    // offer completed on the market without any trades occurring.
-                    // We might even change the GUI label now for final receipt records,
-                    // (in the Transaction History main window) to explicitly say,
-                    // "offer completed on market without any trades."
-                    //
-                    // P.S. There's another reason not to just delete a finalReceipt
-                    // if we can't find any trades associated with it: because it might
-                    // not be a finalReceipt for a market offer! It might correspond to
-                    // a smart contract or a recurring payment plan.
-                    //
-                    if (AddFinalReceiptToTradeArchive(recordmt))
+                    if (AddMailToMsgArchive(recordmt))
                         bShouldDeleteRecord = true;
-                } // finalReceipt
-            }
-            // -----------------------------------
-            if (recordmt.IsMail() || recordmt.IsSpecialMail())
-            {
-                if (AddMailToMsgArchive(recordmt))
-                    bShouldDeleteRecord = true;
-            }
-            // -----------------------------------
-            if (bShouldDeleteRecord)
-            {
-                if (recordmt.DeleteRecord())
-                {
-                    bool bRemoved = GetRecordlist().RemoveRecord(nIndex);
-
-                    if (!bRemoved)
-                        qDebug() << "Moneychanger::modifyRecords: weird issue trying to remove deleted record from GetRecordlist() (record list.)\n";
                 }
-            }
+                // -----------------------------------
+                else if (recordmt.IsRecord() && !recordmt.IsExpired())
+                {
+                    if (recordmt.IsReceipt())
+                    {
+                        if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
+                        {
+                            // We don't have to add these to the trade archive table because they
+                            // are already there. OTClient directly adds them into the TradeNymData object,
+                            // and then Moneychanger reads that object and imports it into the trade_achive
+                            // table already. So basically here all we need to do is delete the market
+                            // receipt records so the user doesn't have the hassle of deleting them himself.
+                            // Now they are safe in his archive and he can do whatever he wants with them.
+
+                            bShouldDeleteRecord = true;
+                        } // marketReceipt
+                        // -----------------------------------
+                        else if (0 == recordmt.GetInstrumentType().compare("finalReceipt"))
+                        {
+                            // Notice here we only delete the record if we successfully
+                            // added the final receipt to the trade archive table.
+                            // Why? Because the trade archive table contains receipts
+                            // of COMPLETED TRADES. So if we fail to find any of those
+                            // to add the final receipt to, we don't just want to DELETE
+                            // the final receipt -- the user's sole remaining copy!
+                            // - So for trades that occurred, the final receipt will be stored
+                            // with those archives next to the corresponding market receipts.
+                            // - And for trades that did NOT occur, the final receipt will
+                            // remain in the record box, so the user himself can delete those
+                            // whenever he sees fit. They will be his only notice that an
+                            // offer completed on the market without any trades occurring.
+                            // We might even change the GUI label now for final receipt records,
+                            // (in the Transaction History main window) to explicitly say,
+                            // "offer completed on market without any trades."
+                            //
+                            // P.S. There's another reason not to just delete a finalReceipt
+                            // if we can't find any trades associated with it: because it might
+                            // not be a finalReceipt for a market offer! It might correspond to
+                            // a smart contract or a recurring payment plan.
+                            //
+                            if (AddFinalReceiptToTradeArchive(recordmt))
+                                bShouldDeleteRecord = true;
+                        } // finalReceipt
+                        else // All  other closed (deletable) receipts.
+                        {
+                            if (AddPaymentToPmntArchive(recordmt))
+                                bShouldDeleteRecord = true;
+                        }
+                    }
+                    // -----------------------------------
+                    else // All  other delete-able, non-expired records.
+                    {
+                        // For example, an incoming cheque becomes a received cheque after depositing it.
+                        // At that point, OT moves incoming cheque from the payments inbox, to the record box. So
+                        // it's not a cheque receipt (the payer gets that; you're the recipient) but it's the deletable
+                        // record of the incoming cheque itself, for a cheque you've since already deposited, and thus
+                        // are now moving to your payment receipts table.
+                        // There IS another relevant receipt, however -- the cheque DEPOSIT. When you deposited the cheque,
+                        // YOU got a deposit receipt. This is currently not recorded here but it really should be. That
+                        // way you can see the cheque itself, as well as your receipt from depositing that cheque. It'd just
+                        // be two different receipts on the same payment record, similar to what we do in the trade archive
+                        // table, which has potentially up to 3 different receipts for the same trade record. (Market receipt
+                        // for asset and currency accounts, plus final receipt.)
+                        //
+                        if (AddPaymentToPmntArchive(recordmt))
+                            bShouldDeleteRecord = true;
+                    }
+                } // else if (recordmt.IsRecord() && !recordmt.IsExpired())
+                // -----------------------------------
+                if (bShouldDeleteRecord)
+                {
+                    if (recordmt.DeleteRecord())
+                    {
+                        bool bRemoved = GetRecordlist().RemoveRecord(nIndex);
+
+                        if (!bRemoved)
+                            qDebug() << "Moneychanger::modifyRecords: weird issue trying to remove deleted record from GetRecordlist() (record list.)\n";
+                    }
+                }
+            } // Record can be deleted.
         }
     } // for (GetRecordlist() in reverse)
     // -------------------------------------
@@ -3204,6 +3477,7 @@ void Moneychanger::mc_composemessage_show_dialog()
     // --------------------------------------------------
 }
 
+
 void Moneychanger::mc_messages_slot()
 {
     mc_messages_dialog();
@@ -3225,6 +3499,27 @@ void Moneychanger::mc_messages_dialog()
     messages_window->dialog();
 }
 
+
+void Moneychanger::mc_payments_slot()
+{
+    mc_payments_dialog();
+}
+
+void Moneychanger::mc_payments_dialog()
+{
+    if (!payments_window)
+    {
+        payments_window = new Payments(this);
+
+        connect(payments_window, SIGNAL(needToDownloadMail()),
+                this,            SLOT(onNeedToDownloadMail()));
+
+        connect(this,            SIGNAL(populatedRecordlist()),
+                payments_window, SLOT(onRecordlistPopulated()));
+    }
+    // ---------------------------------
+    payments_window->dialog();
+}
 
 
 /**

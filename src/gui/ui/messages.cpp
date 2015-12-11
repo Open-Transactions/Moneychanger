@@ -99,7 +99,7 @@ Messages::Messages(QWidget *parent) :
     connect(ui->toolButtonContacts, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_addressbook_slot()));
 }
 
-void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel)
+static void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel)
 {
     pView->setModel(pProxyModel);
     pView->setSortingEnabled(true);

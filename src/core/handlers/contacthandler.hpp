@@ -13,6 +13,7 @@
 
 #include <QMutex>
 #include <QString>
+#include <QVariant>
 #include <QMap>
 
 
@@ -227,11 +228,22 @@ public:
   bool DeleteSmartContract    (int nID);
   bool DeleteManagedPassphrase(int nID);
 
+
   bool LowLevelUpdateMessageBody(int nMessageID, const QString & qstrBody);
   bool CreateMessageBody(QString qstrBody);
   bool DeleteMessageBody(int nID);
   bool UpdateMessageBody(int nMessageID, const QString & qstrBody);
   QString GetMessageBody(int nID);
+
+  int  GetPaymentIdByTxnDisplayId(int64_t lTxnDisplayId);
+  bool LowLevelUpdatePaymentBody(int nPaymentID, const QString qstrBody, const QString qstrPendingBody);
+  bool CreatePaymentBody(QString qstrBody, QString qstrPendingBody);
+  bool DeletePaymentBody(int nID);
+  bool UpdatePaymentBody(int nPaymentID, const QString qstrBody, const QString qstrPendingBody);
+  QString GetPaymentBody(int nID);
+  QString GetPaymentPendingBody(int nID);
+
+  bool UpdatePaymentRecord(int nPaymentID, QMap<QString, QVariant>& mapFinalValues);
   // ----------------------------------------------------------
   public:
     ~MTContactHandler();
