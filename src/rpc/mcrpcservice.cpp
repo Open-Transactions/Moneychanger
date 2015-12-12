@@ -34,8 +34,7 @@ MCRPCService::~MCRPCService(){
 }
 
 QJsonValue MCRPCService::createNymEcdsa(QString Username, QString APIKey,
-                                        QString NymIDSource,
-                                        QString AltLocation)
+                                        QString NymIDSource)
 {
     if (!validateAPIKey(Username, APIKey))
     {
@@ -43,8 +42,7 @@ QJsonValue MCRPCService::createNymEcdsa(QString Username, QString APIKey,
         return QJsonValue(object);
     }
     std::string result = opentxs::OTAPI_Wrap::It()->CreateNymECDSA(
-                                                              NymIDSource.toStdString(),
-                                                              AltLocation.toStdString());
+                                                              NymIDSource.toStdString());
     QJsonObject object{{"CreateNymEcdsaResult", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -187,16 +185,14 @@ QJsonValue MCRPCService::numListCount(QString Username, QString APIKey,
 }
 
 QJsonValue MCRPCService::createNymLegacy(QString Username, QString APIKey,
-                                   int KeySize, QString NymIDSource,
-                                   QString AltLocation)
+                                   int KeySize, QString NymIDSource)
 {
     if(!validateAPIKey(Username, APIKey)){
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
     std::string result = opentxs::OTAPI_Wrap::It()->CreateNymLegacy(KeySize,
-                                                              NymIDSource.toStdString(),
-                                                              AltLocation.toStdString());
+                                                              NymIDSource.toStdString());
     QJsonObject object{{"CreateNymLegacyResult", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -258,7 +254,7 @@ QJsonValue MCRPCService::getNymSourceForID(QString Username, QString APIKey,
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymAltSourceLocation(QString Username, QString APIKey,
+QJsonValue MCRPCService::getNymDescription(QString Username, QString APIKey,
                                                  QString NymID)
 {
     if(!validateAPIKey(Username, APIKey)){
@@ -270,8 +266,8 @@ QJsonValue MCRPCService::getNymAltSourceLocation(QString Username, QString APIKe
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_AltSourceLocation(NymID.toStdString());
-    QJsonObject object{{"NymAltSourceLocation", QString(result.c_str())}};
+    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_Description(NymID.toStdString());
+    QJsonObject object{{"NymDescription", QString(result.c_str())}};
     return QJsonValue(object);
 }
 
