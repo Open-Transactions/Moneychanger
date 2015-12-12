@@ -1910,6 +1910,9 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
     const bool bIsPending = !bCanDeleteRecord;
     QMap<QString, QVariant> mapFinalValues;
 
+    bool bRecordAlreadyExisted = false;
+    int  nPreExistingPaymentId = 0;
+
     if (pModel)
     {
         QString myNymID;
@@ -2005,8 +2008,8 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
         // ---------------------------------
         // First let's see if a record already exists:
         //
-        const int  nPreExistingPaymentId = MTContactHandler::getInstance()->GetPaymentIdByTxnDisplayId(transNumDisplay);
-        const bool bRecordAlreadyExisted = (nPreExistingPaymentId > 0);
+        nPreExistingPaymentId = MTContactHandler::getInstance()->GetPaymentIdByTxnDisplayId(transNumDisplay);
+        bRecordAlreadyExisted = (nPreExistingPaymentId > 0);
         // ------------------------------------------
         // We'll start by putting all the values into our map,
         // so we can then use that map when creating or updating
