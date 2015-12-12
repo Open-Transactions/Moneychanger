@@ -38,18 +38,16 @@ public Q_SLOTS:
     QJsonValue numListCount(QString Username, QString APIKey,
                             QString NumList);
     QJsonValue createNymLegacy(QString Username, QString APIKey,
-                         int KeySize, QString NymIDSource,
-                         QString AltLocation);
+                         int KeySize, QString NymIDSource);
     QJsonValue createNymEcdsa(QString Username, QString APIKey,
-                              QString NymIDSource,
-                              QString AltLocation);
+                              QString NymIDSource);
     QJsonValue getNymActiveCronItemIDs(QString Username, QString APIKey,
                                        QString NymID, QString NotaryID);
     QJsonValue getActiveCronItem(QString Username, QString APIKey,
                                  QString NotaryID, qint64 TransNum);
     QJsonValue getNymSourceForID(QString Username, QString APIKey,
                                  QString NymID);
-    QJsonValue getNymAltSourceLocation(QString Username, QString APIKey,
+    QJsonValue getNymDescription(QString Username, QString APIKey,
                                        QString NymID);
     QJsonValue getNymMasterCredentialCount(QString Username, QString APIKey,
                                      QString NymID);
