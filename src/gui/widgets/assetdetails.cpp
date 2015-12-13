@@ -492,7 +492,7 @@ void MTAssetDetails::DeleteButtonClicked()
             {
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 // ------------------------------------------------
-                emit RefreshRecordsAndUpdateMenu();
+                emit assetsChanged();
                 // ------------------------------------------------
             }
             else
@@ -810,7 +810,7 @@ void MTAssetDetails::on_lineEditName_editingFinished()
 
             m_pOwner->SetPreSelected(m_pOwner->m_qstrCurrentID);
             // ------------------------------------------------
-            emit RefreshRecordsAndUpdateMenu();
+            emit assetsChanged();
             // ------------------------------------------------
         }
     }

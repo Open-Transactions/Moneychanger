@@ -82,6 +82,11 @@ signals:
     void newAssetAdded(QString qstrID);
     void newNymAdded(QString qstrID);
     void newAccountAdded(QString qstrID);
+    // OR:
+    void serversChanged();
+    void assetsChanged();
+    void nymsChanged();
+    void accountsChanged();
 
     void runSmartContract(QString qstrTemplate, QString qstrLawyer, int32_t index);
 

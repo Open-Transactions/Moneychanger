@@ -111,6 +111,11 @@ public slots:
     void onNewNymAdded(QString qstrID);
     void onNewAccountAdded(QString qstrID);
     
+    void onServersChanged();
+    void onAssetsChanged();
+    void onNymsChanged();
+    void onAccountsChanged();
+
     void onRunSmartContract(QString qstrTemplate, QString qstrLawyer, int32_t index);
 
 public:

@@ -683,7 +683,7 @@ void MTNymDetails::DeleteButtonClicked()
             {
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 // ------------------------------------------------
-                emit RefreshRecordsAndUpdateMenu();
+                emit nymsChanged();
                 // ------------------------------------------------
             }
             else
@@ -854,7 +854,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                                 QMessageBox::information(this, tr("Moneychanger"),
                                     tr("Success!"));
                                 // ------------------------------------------------
-                                emit RefreshRecordsAndUpdateMenu();
+                                emit nymsChanged();
                                 // ------------------------------------------------
                                 break; // SUCCESS
                             }
@@ -930,7 +930,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                                     QMessageBox::information(this, tr("Moneychanger"),
                                         tr("Success!"));
                                     // ------------------------------------------------
-                                    emit RefreshRecordsAndUpdateMenu();
+                                    emit nymsChanged();
                                     // ------------------------------------------------
                                     break; // SUCCESS
                                 }
@@ -977,7 +977,7 @@ void MTNymDetails::on_lineEditName_editingFinished()
 
             m_pOwner->SetPreSelected(m_pOwner->m_qstrCurrentID);
             // ------------------------------------------------
-            emit RefreshRecordsAndUpdateMenu();
+            emit nymsChanged();
             // ------------------------------------------------
         }
     }

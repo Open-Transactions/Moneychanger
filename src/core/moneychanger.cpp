@@ -3538,7 +3538,6 @@ void Moneychanger::mc_payments_slot()
     mc_payments_dialog();
 }
 
-//resume
 void Moneychanger::mc_payments_dialog()
 {
     if (!payments_window)
@@ -3614,14 +3613,44 @@ void Moneychanger::mc_overview_dialog()
 // End Overview
 
 
+void Moneychanger::onServersChanged()
+{
+    // Because the Nym details page has a list of servers that Nym is registered on.
+    // So if we've added a new Server, we should update that page, if it's open.
+    if (nullptr != nymswindow)
+        nymswindow->RefreshRecords();
+}
+
+
+void Moneychanger::onAssetsChanged()
+{
+
+}
+
+
+void Moneychanger::onNymsChanged()
+{
+
+}
+
+
+void Moneychanger::onAccountsChanged()
+{
+
+}
+
 void Moneychanger::onNewServerAdded(QString qstrID)
 {
     GetRecordlist().AddNotaryID(qstrID.toStdString());
+
+    onServersChanged();
 }
 
 void Moneychanger::onNewAssetAdded(QString qstrID)
 {
     GetRecordlist().AddInstrumentDefinitionID(qstrID.toStdString());
+
+    onAssetsChanged();
 }
 
 void Moneychanger::onNewNymAdded(QString qstrID)
@@ -3643,27 +3672,21 @@ void Moneychanger::onNewNymAdded(QString qstrID)
         {
             qstrNymName += tr(" (local wallet)");
             MTContactHandler::getInstance()->SetContactName(nContactID, qstrNymName);
+
+            if (nullptr != contactswindow)
+                mc_addressbook_show();
         }
         // --------------------------------------------------
         GetRecordlist().AddNymID(qstrID.toStdString());
-        // --------------------------------------------------
-        if (!contactswindow)
-            contactswindow = new MTDetailEdit(this);
-        // -------------------------------------
-        contactswindow->m_map.clear();
-        // -------------------------------------
-        MTContactHandler::getInstance()->GetContacts(contactswindow->m_map);
-//        // -------------------------------------
-//        if (!qstrContactID.isEmpty())
-//            contactswindow->SetPreSelected(qstrContactID);
-        // -------------------------------------
-        contactswindow->RefreshRecords();
     }
+
+    onNymsChanged();
 }
 
 void Moneychanger::onNewAccountAdded(QString qstrID)
 {
     GetRecordlist().AddAccountID(qstrID.toStdString());
+    onAccountsChanged();
 }
 
 
