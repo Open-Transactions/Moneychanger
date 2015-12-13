@@ -113,9 +113,7 @@ public:
 
 signals:
     void balancesChanged();
-
     void CurrentMarketChanged(QString qstrMarketID);
-
     void NeedToLoadOrRetrieveOffers(QString qstrMarketID);
 
 public slots:

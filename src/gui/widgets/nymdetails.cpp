@@ -683,7 +683,7 @@ void MTNymDetails::DeleteButtonClicked()
             {
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 // ------------------------------------------------
-                emit RefreshRecordsAndUpdateMenu();
+                emit nymsChanged();
                 // ------------------------------------------------
             }
             else
@@ -709,7 +709,6 @@ void MTNymDetails::AddButtonClicked()
         int     nAuthorityIndex = theWizard.field("Authority").toInt();
         int     nAlgorithmIndex = theWizard.field("Algorithm").toInt();
         QString qstrSource      = theWizard.field("Source")   .toString();
-        QString qstrLocation    = theWizard.field("Location") .toString();
         // ---------------------------------------------------
         // NOTE: theWizard won't allow each page to finish unless the data is provided.
         // (Therefore we don't have to check here to see if any of the data is empty.)
@@ -720,11 +719,6 @@ void MTNymDetails::AddButtonClicked()
         if (0 != nAuthorityIndex) // Zero would be Self-Signed, which needs no source.
             NYM_ID_SOURCE = qstrSource.toStdString();
         // -------------------------------------------
-        std::string ALT_LOCATION("");
-
-        if (!qstrLocation.isEmpty())
-            ALT_LOCATION = qstrLocation.toStdString();
-        // -------------------------------------------
         // Create Nym here...
         //
         opentxs::OT_ME madeEasy;
@@ -733,19 +727,19 @@ void MTNymDetails::AddButtonClicked()
         switch (nAlgorithmIndex)
         {
             case 0:  // ECDSA
-                str_id = madeEasy.create_nym_ecdsa(NYM_ID_SOURCE, ALT_LOCATION);
+                str_id = madeEasy.create_nym_ecdsa(NYM_ID_SOURCE);
                 break;
             case 1: // 1024-bit RSA
-                str_id = madeEasy.create_nym_legacy(1024, NYM_ID_SOURCE, ALT_LOCATION);
+                str_id = madeEasy.create_nym_legacy(1024, NYM_ID_SOURCE);
                 break;
 //            case 2: // 2048-bit RSA
-//                str_id = madeEasy.create_nym_legacy(2048, NYM_ID_SOURCE, ALT_LOCATION);
+//                str_id = madeEasy.create_nym_legacy(2048, NYM_ID_SOURCE);
 //                break;
 //            case 3: // 4096-bit RSA
-//                str_id = madeEasy.create_nym_legacy(4096, NYM_ID_SOURCE, ALT_LOCATION);
+//                str_id = madeEasy.create_nym_legacy(4096, NYM_ID_SOURCE);
 //                break;
 //            case 4: // 8192-bit RSA
-//                str_id = madeEasy.create_nym_legacy(8192, NYM_ID_SOURCE, ALT_LOCATION);
+//                str_id = madeEasy.create_nym_legacy(8192, NYM_ID_SOURCE);
 //                break;
             default:
                 QMessageBox::warning(this, tr("Moneychanger"),
@@ -859,7 +853,9 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
 
                                 QMessageBox::information(this, tr("Moneychanger"),
                                     tr("Success!"));
-
+                                // ------------------------------------------------
+                                emit nymsChanged();
+                                // ------------------------------------------------
                                 break; // SUCCESS
                             }
                         case (0):
@@ -933,7 +929,9 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
 
                                     QMessageBox::information(this, tr("Moneychanger"),
                                         tr("Success!"));
-
+                                    // ------------------------------------------------
+                                    emit nymsChanged();
+                                    // ------------------------------------------------
                                     break; // SUCCESS
                                 }
                             case (0):
@@ -979,7 +977,7 @@ void MTNymDetails::on_lineEditName_editingFinished()
 
             m_pOwner->SetPreSelected(m_pOwner->m_qstrCurrentID);
             // ------------------------------------------------
-            emit RefreshRecordsAndUpdateMenu();
+            emit nymsChanged();
             // ------------------------------------------------
         }
     }

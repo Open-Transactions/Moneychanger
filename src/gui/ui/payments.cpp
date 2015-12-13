@@ -2,19 +2,20 @@
 #include <core/stable.hpp>
 #endif
 
-#include <gui/ui/messages.hpp>
-#include <ui_messages.h>
+#include <gui/ui/payments.hpp>
+#include <ui_payments.h>
 
 #include <gui/widgets/compose.hpp>
 #include <gui/ui/dlgexportedtopass.hpp>
 
+#include <gui/widgets/home.hpp>
 #include <gui/widgets/dlgchooser.hpp>
 #include <gui/ui/getstringdialog.hpp>
 
 #include <core/moneychanger.hpp>
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
-#include <core/handlers/modelmessages.hpp>
+#include <core/handlers/modelpayments.hpp>
 #include <core/handlers/focuser.h>
 
 #include <opentxs/client/OTAPI.hpp>
@@ -36,40 +37,41 @@
 #include <QList>
 #include <QSqlRecord>
 #include <QTimer>
+#include <QFrame>
 
 #include <string>
 #include <map>
 
 
-MSG_TREE_ITEM Messages::make_tree_item(int nCurrentContact, QString qstrMethodType, QString qstrViaTransport)
+PMNT_TREE_ITEM Payments::make_tree_item(int nCurrentContact, QString qstrMethodType, QString qstrViaTransport)
 {
     return std::make_tuple(nCurrentContact, qstrMethodType.toStdString(), qstrViaTransport.toStdString());
 }
 
 
-void Messages::set_inbox_msgid_for_tree_item(MSG_TREE_ITEM & theItem, int nMsgID)
+void Payments::set_inbox_pmntid_for_tree_item(PMNT_TREE_ITEM & theItem, int nPmntID)
 {
-    mapOfMsgTreeItems::iterator it = mapCurrentRows_inbox.find(theItem);
+    mapOfPmntTreeItems::iterator it = mapCurrentRows_inbox.find(theItem);
     if (mapCurrentRows_inbox.end() != it) // found it.
     {
         mapCurrentRows_inbox.erase(it);
     }
-    mapCurrentRows_inbox.insert( std::pair<MSG_TREE_ITEM, int> (theItem, nMsgID) );
+    mapCurrentRows_inbox.insert( std::pair<PMNT_TREE_ITEM, int> (theItem, nPmntID) );
 }
 
-void Messages::set_outbox_msgid_for_tree_item(MSG_TREE_ITEM & theItem, int nMsgID)
+void Payments::set_outbox_pmntid_for_tree_item(PMNT_TREE_ITEM & theItem, int nPmntID)
 {
-    mapOfMsgTreeItems::iterator it = mapCurrentRows_outbox.find(theItem);
+    mapOfPmntTreeItems::iterator it = mapCurrentRows_outbox.find(theItem);
     if (mapCurrentRows_outbox.end() != it) // found it.
     {
         mapCurrentRows_outbox.erase(it);
     }
-    mapCurrentRows_outbox.insert( std::pair<MSG_TREE_ITEM, int> (theItem, nMsgID) );
+    mapCurrentRows_outbox.insert( std::pair<PMNT_TREE_ITEM, int> (theItem, nPmntID) );
 }
 
-int Messages::get_inbox_msgid_for_tree_item(MSG_TREE_ITEM & theItem)
+int Payments::get_inbox_pmntid_for_tree_item(PMNT_TREE_ITEM & theItem)
 {
-    mapOfMsgTreeItems::iterator it = mapCurrentRows_inbox.find(theItem);
+    mapOfPmntTreeItems::iterator it = mapCurrentRows_inbox.find(theItem);
     if (mapCurrentRows_inbox.end() != it) // found it.
     {
         return it->second;
@@ -77,9 +79,9 @@ int Messages::get_inbox_msgid_for_tree_item(MSG_TREE_ITEM & theItem)
     return 0;
 }
 
-int Messages::get_outbox_msgid_for_tree_item(MSG_TREE_ITEM & theItem)
+int Payments::get_outbox_pmntid_for_tree_item(PMNT_TREE_ITEM & theItem)
 {
-    mapOfMsgTreeItems::iterator it = mapCurrentRows_outbox.find(theItem);
+    mapOfPmntTreeItems::iterator it = mapCurrentRows_outbox.find(theItem);
     if (mapCurrentRows_outbox.end() != it) // found it.
     {
         return it->second;
@@ -87,41 +89,45 @@ int Messages::get_outbox_msgid_for_tree_item(MSG_TREE_ITEM & theItem)
     return 0;
 }
 
-Messages::Messages(QWidget *parent) :
+Payments::Payments(QWidget *parent) :
     QWidget(parent, Qt::Window),
-    ui(new Ui::Messages)
+    ui(new Ui::Payments)
 {
     ui->setupUi(this);
 
     this->installEventFilter(this);
 
-    connect(ui->toolButtonCompose,  SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_composemessage_slot()));
+    connect(ui->toolButtonPay,      SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_sendfunds_slot()));
     connect(ui->toolButtonContacts, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_addressbook_slot()));
 
     QList<int> list;
     list.append(0);
     list.append(100);
-    ui->splitter_3->setSizes(list);
+    ui->splitter->setSizes(list);
 }
 
 static void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel)
 {
-    pView->setModel(pProxyModel);
+    PaymentsProxyModel * pPmntProxyModel = static_cast<PaymentsProxyModel *>(pProxyModel);
+    pPmntProxyModel->setTableView(pView);
+
+    pView->setModel(pProxyModel);    
     pView->setSortingEnabled(true);
     pView->resizeColumnsToContents();
+    pView->resizeRowsToContents();
     pView->horizontalHeader()->setStretchLastSection(true);
     pView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-//    QPointer<ModelMessages> pSourceModel = DBHandler::getInstance()->getMessageModel();
+//    QPointer<ModelPayments> pSourceModel = DBHandler::getInstance()->getPaymentModel();
 
 //    if (pSourceModel)
     {
-//        QModelIndex sourceIndex = pSourceModel->index(0, MSG_SOURCE_COL_TIMESTAMP);
-//        QModelIndex proxyIndex  = (static_cast<MessagesProxyModel *>(pProxyModel)) -> mapFromSource(sourceIndex);
+//        QModelIndex sourceIndex = pSourceModel->index(0, PMNT_SOURCE_COL_TIMESTAMP);
+//        QModelIndex proxyIndex  = (static_cast<PaymentsProxyModel *>(pProxyModel)) -> mapFromSource(sourceIndex);
         // ----------------------------------
-//        MessagesProxyModel * pMsgProxyModel = static_cast<MessagesProxyModel *>(pProxyModel);
+//        PaymentsProxyModel * pPmntProxyModel = static_cast<PaymentsProxyModel *>(pProxyModel);
 
-      pView->sortByColumn(2, Qt::DescendingOrder); // The timestamp ends up at index 2 in all the proxy views.
+      pView->sortByColumn(7, Qt::DescendingOrder); // The timestamp ends up at index 7 in all the proxy views.
 
 //        qDebug() << "SORT COLUMN: " << proxyIndex.column() << "\n";
 
@@ -134,13 +140,247 @@ static void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel
 }
 
 
-void Messages::on_tabWidget_currentChanged(int index)
+
+
+
+
+void Payments::RefreshUserBar()
 {
-    if (ui->tableViewSent     && ui->tableViewReceived &&
-        pMsgProxyModelOutbox_ && pMsgProxyModelInbox_)
+    if (m_pHeaderFrame)
+    {
+        ui->userBar->layout()->removeWidget(m_pHeaderFrame);
+
+        m_pHeaderFrame->setParent(NULL);
+        m_pHeaderFrame->disconnect();
+        m_pHeaderFrame->deleteLater();
+
+        m_pHeaderFrame = NULL;
+    }
+    // -------------------------------------------------
+    QPointer<QWidget> pUserBar = this->CreateUserBarWidget();
+
+    if (pUserBar)
+    {
+        // Note: Frame Shape should be Styled Panel, and Frame Shadow should be Raised.
+        // Frame line width should be 1. Mid line width 0. LayoutDirection on frame should
+        // be leftToRight. Font kerning should be on. Horizontal and Vertical policies
+        // should be Preferred.
+//        QPointer<QFrame> pHeaderFrame  = new QFrame;
+//        // -----------------------------------------
+//        pHeaderFrame->setFrameShape (QFrame::StyledPanel);
+//        pHeaderFrame->setFrameShadow(QFrame::Raised);
+//        pHeaderFrame->setLineWidth(1);
+//        pHeaderFrame->setMidLineWidth(0);
+//        // -----------------------------------------
+//        QPointer<QGridLayout> pBalanceLayout = new QGridLayout;
+//        pBalanceLayout->setAlignment(Qt::AlignTop);
+//        // -----------------------------------------
+//        pBalanceLayout->addWidget(pUserBar);
+//        // -----------------------------------------
+//        pHeaderFrame->setLayout(pBalanceLayout);
+        // -----------------------------------------
+        QHBoxLayout * pHBoxLayout = static_cast<QHBoxLayout*>(ui->userBar->layout());
+        pHBoxLayout->insertWidget(0, pUserBar);
+        // -----------------------------------------
+        m_pHeaderFrame = pUserBar;
+    }
+    // --------------------------------------------------
+}
+
+
+QWidget * Payments::CreateUserBarWidget()
+{
+    QWidget     * pUserBar        = new QWidget;
+    QGridLayout * pUserBar_layout = new QGridLayout;
+
+    pUserBar_layout->setSpacing(12);
+    pUserBar_layout->setContentsMargins(0,0,0,0); // left top right bottom
+//  pUserBar_layout->setContentsMargins(12, 3, 8, 10); // left top right bottom
+
+    pUserBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    pUserBar->setLayout(pUserBar_layout);
+    pUserBar->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");  // todo hardcoding.
+    // -------------------------------------------
+    QString qstr_acct_nym,
+            qstr_acct_server,
+            qstr_acct_asset, qstr_acct_asset_name("");
+    // -------------------------------------------
+    QString qstr_acct_name("");
+    QString qstr_balance(""), qstr_tla("");
+    QString qstr_acct_id = Moneychanger::It()->get_default_account_id();
+    // -------------------------------------------
+    if (qstr_acct_id.isEmpty())
+    {
+        qstr_balance     = tr("(Click for Account Manager)");
+        qstr_acct_name = QString("");
+        // -----------------------------------
+        qstr_acct_nym    = Moneychanger::It()->get_default_nym_id();
+        qstr_acct_server = Moneychanger::It()->get_default_notary_id();
+        qstr_acct_asset  = Moneychanger::It()->get_default_asset_id();
+    }
+    else
+    {
+        // -----------------------------------
+        std::string str_acct_id     = qstr_acct_id.toStdString();
+        std::string str_acct_nym    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
+        std::string str_acct_server = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_acct_id);
+        std::string str_acct_asset  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+        // -----------------------------------
+        qstr_acct_nym    = QString::fromStdString(str_acct_nym);
+        qstr_acct_server = QString::fromStdString(str_acct_server);
+        qstr_acct_asset  = QString::fromStdString(str_acct_asset);
+        // -----------------------------------
+        std::string str_tla = opentxs::OTAPI_Wrap::It()->GetCurrencyTLA(str_acct_asset);
+        qstr_tla = QString("<font color=grey>%1</font>").arg(QString::fromStdString(str_tla));
+
+        qstr_balance = MTHome::shortAcctBalance(qstr_acct_id, qstr_acct_asset, false);
+        // -----------------------------------
+        std::string str_acct_name  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(str_acct_id);
+        // -----------------------------------
+        if (!str_acct_asset.empty())
+        {
+            std::string str_asset_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(str_acct_asset);
+            qstr_acct_asset_name = QString::fromStdString(str_asset_name);
+        }
+        // -----------------------------------
+        if (!str_acct_name.empty())
+        {
+            qstr_acct_name = QString("%1").arg(QString::fromStdString(str_acct_name));
+        }
+    }
+    // ---------------------------------------------
+    QToolButton * buttonAccount = new QToolButton;
+
+    buttonAccount->setAutoRaise(true);
+    buttonAccount->setStyleSheet("QToolButton { margin-left: 0; font-size:30pt;  font-weight:lighter; }");
+
+    QLabel * tla_label = new QLabel(qstr_tla);
+    tla_label->setAlignment(Qt::AlignRight|Qt::AlignBottom);
+    tla_label->setStyleSheet("QLabel { margin-right: 0; font-size:20pt;  font-weight:lighter; }");
+
+    buttonAccount->setText(qstr_balance);
+    // -------------------------------------------
+    connect(buttonAccount, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_show_account_manager_slot()));
+    // ----------------------------------------------------------------
+    QString  cash_label_string = QString("");
+    QString  qstrCash = qstr_acct_name;
+
+    if (!qstr_acct_nym.isEmpty() && !qstr_acct_server.isEmpty() && !qstr_acct_asset.isEmpty())
+    {
+        int64_t  raw_cash_balance = MTHome::rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
+
+        if (raw_cash_balance > 0)
+        {
+            cash_label_string = MTHome::cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
+            qstrCash += QString(" <small><font color=grey>(%2 %3 %4)</font></small>").arg(tr("plus")).arg(cash_label_string).arg(tr("in cash"));
+        }
+    }
+    else
+        qstrCash = tr("(no account selected)");
+    // -------------------------------------------
+    QLabel * pCashLabel = new QLabel(qstrCash);
+    // ---------------------------------------------------------------
+    //pCashLabel->setText(qstrCash);
+    pCashLabel->setIndent(13);
+    // ---------------------------------------------------------------
+    QWidget * row_balance_container = new QWidget;
+    QHBoxLayout * row_balance_layout = new QHBoxLayout;
+
+    tla_label->setContentsMargins(12, 0, 0, 5);
+    tla_label->setAlignment(Qt::AlignRight|Qt::AlignBottom);
+    row_balance_layout->setSpacing(0);
+    row_balance_layout->addWidget(tla_label);
+    row_balance_layout->addWidget(buttonAccount);
+
+    row_balance_layout->setMargin(0);
+    row_balance_layout->setContentsMargins(0, 0, 0, 0);
+//  row_balance_layout->setContentsMargins(0, 20, 0, 0);
+    row_balance_container->setContentsMargins(0, 0, 0, 0);
+
+    row_balance_container->setLayout(row_balance_layout);
+    // ----------------------------------------------------------------
+    QVBoxLayout * pAccountLayout = new QVBoxLayout;
+
+    pAccountLayout->setMargin(0);
+    pAccountLayout->setContentsMargins(0, 0, 0, 0);
+    pAccountLayout->setSpacing(3);
+
+    pAccountLayout->addWidget(row_balance_container);
+    pAccountLayout->addWidget(pCashLabel);
+    pAccountLayout->addStretch();
+    // ----------------------------------------------------------------
+    pUserBar_layout->addLayout(pAccountLayout, 0, 0, 1,1, Qt::AlignLeft);
+    // ----------------------------------------------------------------
+    //Sub-info
+    QWidget * row_content_container = new QWidget;
+    QGridLayout * row_content_grid = new QGridLayout;
+
+    row_content_container->setContentsMargins(0, 0, 0, 0);
+
+    row_content_grid->setSpacing(4);
+    row_content_grid->setMargin(0); // new
+
+    row_content_grid->setContentsMargins(3, 0, 3, 0); // left top right bottom
+//  row_content_grid->setContentsMargins(3, 4, 3, 4); // left top right bottom
+
+    row_content_container->setLayout(row_content_grid);
+
+    pUserBar_layout->addWidget(row_content_container, 1,0, 1,2);
+    // -------------------------------------------
+    QString  identity_label_string = QString("<font color=grey>%1:</font> ").arg(tr("My Identity"));
+    QLabel * pIdentityLabel = new QLabel(identity_label_string);
+    pIdentityLabel->setIndent(2);
+//  pIdentityLabel->setContentsMargins(12, 0, 0, 5);
+    pIdentityLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+//  pIdentityLabel->setStyleSheet("QLabel { margin-right: 0; font-size:20pt;  font-weight:lighter; }");
+    // --------------------------------------------
+    QString  nym_label_string = QString("");
+    // --------------------------------------------
+    if (!qstr_acct_nym.isEmpty())
+    {
+        MTNameLookupQT theLookup;
+        QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_acct_nym.toStdString(), ""));
+
+        if (!qstr_name.isEmpty())
+            nym_label_string = qstr_name;
+        else
+            nym_label_string = QString("(name is blank)");
+    }
+    else
+        nym_label_string += tr("(none selected)");
+    // ---------------------------------------------------------------
+    QToolButton * buttonNym = new QToolButton;
+
+    buttonNym->setText(nym_label_string);
+    buttonNym->setAutoRaise(true);
+    buttonNym->setStyleSheet("QToolButton { margin-left: 0; font-size:15pt;  font-weight:lighter; }");
+//  buttonNym->setStyleSheet("QToolButton { margin-left: 0; font-size:20pt;  font-weight:lighter; }");
+    // -------------------------------------------
+    connect(buttonNym, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_defaultnym_slot()));
+    // ----------------------------------------------------------------
+    QHBoxLayout * pIdentityLayout = new QHBoxLayout;
+
+    pIdentityLayout->setMargin(0);
+    pIdentityLayout->setContentsMargins(0, 0, 0, 0); // new
+    pIdentityLayout->setSpacing(0);
+    pIdentityLayout->addSpacing(8);
+    pIdentityLayout->addWidget(pIdentityLabel);
+    pIdentityLayout->addWidget(buttonNym);
+    // ---------------------------------------------------------------
+    row_content_grid->addLayout(pIdentityLayout, 0,0, 1,1, Qt::AlignLeft);
+    // -------------------------------------------
+    return pUserBar;
+}
+
+
+void Payments::on_tabWidget_currentChanged(int index)
+{
+    if (ui->tableViewSent      && ui->tableViewReceived &&
+        pPmntProxyModelOutbox_ && pPmntProxyModelInbox_)
     {
         pCurrentTabTableView_  = (0 == ui->tabWidget->currentIndex()) ? ui->tableViewReceived    : ui->tableViewSent;
-        pCurrentTabProxyModel_ = (0 == ui->tabWidget->currentIndex()) ? &(*pMsgProxyModelInbox_) : &(*pMsgProxyModelOutbox_);
+        pCurrentTabProxyModel_ = (0 == ui->tabWidget->currentIndex()) ? &(*pPmntProxyModelInbox_) : &(*pPmntProxyModelOutbox_);
         // -------------------------------------------------
         QModelIndex the_index  = pCurrentTabTableView_->currentIndex();
 
@@ -149,7 +389,7 @@ void Messages::on_tabWidget_currentChanged(int index)
         else
             disableButtons();
         // --------------------------------------
-        RefreshMessages();
+        RefreshPayments();
     }
     else
     {
@@ -161,23 +401,23 @@ void Messages::on_tabWidget_currentChanged(int index)
 }
 
 
-void Messages::enableButtons()
+void Payments::enableButtons()
 {
     ui->toolButtonDelete ->setEnabled(true);
     ui->toolButtonReply  ->setEnabled(true);
     ui->toolButtonForward->setEnabled(true);
 }
 
-void Messages::disableButtons()
+void Payments::disableButtons()
 {
     ui->toolButtonDelete ->setEnabled(false);
     ui->toolButtonReply  ->setEnabled(false);
     ui->toolButtonForward->setEnabled(false);
 }
 
-void Messages::on_MarkAsRead_timer()
+void Payments::on_MarkAsRead_timer()
 {
-    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
     if (!pModel)
         return;
@@ -198,7 +438,7 @@ void Messages::on_MarkAsRead_timer()
             pModel->database().transaction();
         }
         // ------------------------------------
-        pModel->setData(index, QVariant(1)); // 1 for "true" in sqlite. "Yes, we've now read this message. Mark it as read."
+        pModel->setData(index, QVariant(1)); // 1 for "true" in sqlite. "Yes, we've now read this payment. Mark it as read."
     } // while
     // ------------------------------
     if (bEditing)
@@ -207,7 +447,7 @@ void Messages::on_MarkAsRead_timer()
         {
             pModel->database().commit();
             // ------------------------------------
-            QTimer::singleShot(0, this, SLOT(RefreshMessages()));
+            QTimer::singleShot(0, this, SLOT(RefreshPayments()));
         }
         else
         {
@@ -219,9 +459,9 @@ void Messages::on_MarkAsRead_timer()
     }
 }
 
-void Messages::on_MarkAsUnread_timer()
+void Payments::on_MarkAsUnread_timer()
 {
-    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
     if (!pModel)
         return;
@@ -242,7 +482,7 @@ void Messages::on_MarkAsUnread_timer()
             pModel->database().transaction();
         }
         // ------------------------------------
-        pModel->setData(index, QVariant(0)); // 0 for "false" in sqlite. "This message is now marked UNREAD."
+        pModel->setData(index, QVariant(0)); // 0 for "false" in sqlite. "This payment is now marked UNREAD."
     } // while
     // ------------------------------
     if (bEditing)
@@ -251,7 +491,7 @@ void Messages::on_MarkAsUnread_timer()
         {
             pModel->database().commit();
             // ------------------------------------
-            QTimer::singleShot(0, this, SLOT(RefreshMessages()));
+            QTimer::singleShot(0, this, SLOT(RefreshPayments()));
         }
         else
         {
@@ -263,9 +503,9 @@ void Messages::on_MarkAsUnread_timer()
     }
 }
 
-void Messages::on_MarkAsReplied_timer()
+void Payments::on_MarkAsReplied_timer()
 {
-    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
     if (!pModel)
         return;
@@ -286,7 +526,7 @@ void Messages::on_MarkAsReplied_timer()
             pModel->database().transaction();
         }
         // ------------------------------------
-        pModel->setData(index, QVariant(1)); // 1 for "true" in sqlite. "Yes, we've now replied to this message. Mark it as replied."
+        pModel->setData(index, QVariant(1)); // 1 for "true" in sqlite. "Yes, we've now replied to this payment. Mark it as replied."
     } // while
     // ------------------------------
     if (bEditing)
@@ -295,7 +535,7 @@ void Messages::on_MarkAsReplied_timer()
         {
             pModel->database().commit();
             // ------------------------------------
-            QTimer::singleShot(0, this, SLOT(RefreshMessages()));
+            QTimer::singleShot(0, this, SLOT(RefreshPayments()));
         }
         else
         {
@@ -307,9 +547,9 @@ void Messages::on_MarkAsReplied_timer()
     }
 }
 
-void Messages::on_MarkAsForwarded_timer()
+void Payments::on_MarkAsForwarded_timer()
 {
-    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
     if (!pModel)
         return;
@@ -330,7 +570,7 @@ void Messages::on_MarkAsForwarded_timer()
             pModel->database().transaction();
         }
         // ------------------------------------
-        pModel->setData(index, QVariant(1)); // 1 for "true" in sqlite. "Yes, we've now forwarded this message. Mark it as forwarded."
+        pModel->setData(index, QVariant(1)); // 1 for "true" in sqlite. "Yes, we've now forwarded this payment. Mark it as forwarded."
     } // while
     // ------------------------------
     if (bEditing)
@@ -339,7 +579,7 @@ void Messages::on_MarkAsForwarded_timer()
         {
             pModel->database().commit();
             // ------------------------------------
-            QTimer::singleShot(0, this, SLOT(RefreshMessages()));
+            QTimer::singleShot(0, this, SLOT(RefreshPayments()));
         }
         else
         {
@@ -351,77 +591,59 @@ void Messages::on_MarkAsForwarded_timer()
     }
 }
 
-void Messages::on_tableViewSentSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
+void Payments::on_tableViewSentSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
 {
     if (!current.isValid())
     {
-        ui->headerSent->setSubject("");
-        ui->headerSent->setSender("");
-        ui->headerSent->setRecipient("");
-        ui->headerSent->setTimestamp("");
-        ui->headerSent->setFolder(tr("Sent"));
-        // ----------------------------------------
-        ui->plainTextEditSent->setPlainText("");
-        // ----------------------------------------
         disableButtons();
         // ----------------------------------------
-        MSG_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
-        set_outbox_msgid_for_tree_item(theItem, 0);
+        PMNT_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
+        set_outbox_pmntid_for_tree_item(theItem, 0);
     }
     else
     {
         enableButtons();
         // ----------------------------------------
-        QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+        QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
         if (pModel)
         {
-            QModelIndex sourceIndex = pMsgProxyModelOutbox_->mapToSource(current);
+            QModelIndex sourceIndex = pPmntProxyModelOutbox_->mapToSource(current);
 
-            QModelIndex haveReadSourceIndex  = pMsgProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), MSG_SOURCE_COL_HAVE_READ, sourceIndex);
-            QModelIndex msgIDSourceIndex     = pMsgProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), MSG_SOURCE_COL_MSG_ID,    sourceIndex);
-            QModelIndex subjectSourceIndex   = pMsgProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), MSG_SOURCE_COL_SUBJECT,   sourceIndex);
-            QModelIndex senderSourceIndex    = pMsgProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), MSG_SOURCE_COL_MY_NYM,    sourceIndex);
-            QModelIndex recipientSourceIndex = pMsgProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), MSG_SOURCE_COL_RECIP_NYM, sourceIndex);
-            QModelIndex timestampSourceIndex = pMsgProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), MSG_SOURCE_COL_TIMESTAMP, sourceIndex);
+            QModelIndex haveReadSourceIndex  = pPmntProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), PMNT_SOURCE_COL_HAVE_READ, sourceIndex);
+            QModelIndex pmntidSourceIndex    = pPmntProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), PMNT_SOURCE_COL_PMNT_ID,   sourceIndex);
+//            QModelIndex subjectSourceIndex   = pPmntProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), PMNT_SOURCE_COL_MEMO,      sourceIndex);
+//            QModelIndex senderSourceIndex    = pPmntProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), PMNT_SOURCE_COL_MY_NYM,    sourceIndex);
+//            QModelIndex recipientSourceIndex = pPmntProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), PMNT_SOURCE_COL_RECIP_NYM, sourceIndex);
+//            QModelIndex timestampSourceIndex = pPmntProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), PMNT_SOURCE_COL_TIMESTAMP, sourceIndex);
 
-            QModelIndex subjectIndex      = pMsgProxyModelOutbox_->mapFromSource(subjectSourceIndex);
-            QModelIndex senderIndex       = pMsgProxyModelOutbox_->mapFromSource(senderSourceIndex);
-            QModelIndex recipientIndex    = pMsgProxyModelOutbox_->mapFromSource(recipientSourceIndex);
-            QModelIndex timestampIndex    = pMsgProxyModelOutbox_->mapFromSource(timestampSourceIndex);
+//            QModelIndex subjectIndex      = pPmntProxyModelOutbox_->mapFromSource(subjectSourceIndex);
+//            QModelIndex senderIndex       = pPmntProxyModelOutbox_->mapFromSource(senderSourceIndex);
+//            QModelIndex recipientIndex    = pPmntProxyModelOutbox_->mapFromSource(recipientSourceIndex);
+//            QModelIndex timestampIndex    = pPmntProxyModelOutbox_->mapFromSource(timestampSourceIndex);
 
-            QVariant varMsgID     = pModel->data(msgIDSourceIndex);
+            QVariant varpmntid    = pModel->data(pmntidSourceIndex);
             QVariant varHaveRead  = pModel->data(haveReadSourceIndex);
-            QVariant varSubject   = pMsgProxyModelOutbox_->data(subjectIndex);
-            QVariant varSender    = pMsgProxyModelOutbox_->data(senderIndex);
-            QVariant varRecipient = pMsgProxyModelOutbox_->data(recipientIndex);
-            QVariant varTimestamp = pMsgProxyModelOutbox_->data(timestampIndex);
+//            QVariant varSubject   = pPmntProxyModelOutbox_->data(subjectIndex);
+//            QVariant varSender    = pPmntProxyModelOutbox_->data(senderIndex);
+//            QVariant varRecipient = pPmntProxyModelOutbox_->data(recipientIndex);
+//            QVariant varTimestamp = pPmntProxyModelOutbox_->data(timestampIndex);
 
-            QString qstrSubject   = varSubject.isValid()   ? varSubject.toString()   : "";
-            QString qstrSender    = varSender.isValid()    ? varSender.toString()    : "";
-            QString qstrRecipient = varRecipient.isValid() ? varRecipient.toString() : "";
-            QString qstrTimestamp = varTimestamp.isValid() ? varTimestamp.toString() : "";
-
-            ui->headerSent->setSubject(qstrSubject);
-            ui->headerSent->setSender(qstrSender);
-            ui->headerSent->setRecipient(qstrRecipient);
-            ui->headerSent->setTimestamp(qstrTimestamp);
-            ui->headerSent->setFolder(tr("Sent"));
+//            QString qstrSubject   = varSubject.isValid()   ? varSubject.toString()   : "";
+//            QString qstrSender    = varSender.isValid()    ? varSender.toString()    : "";
+//            QString qstrRecipient = varRecipient.isValid() ? varRecipient.toString() : "";
+//            QString qstrTimestamp = varTimestamp.isValid() ? varTimestamp.toString() : "";
             // ----------------------------------------------------------
-            int message_id = varMsgID.isValid() ? varMsgID.toInt() : 0;
-            if (message_id > 0)
+            int payment_id = varpmntid.isValid() ? varpmntid.toInt() : 0;
+            if (payment_id > 0)
             {
-                QString qstrBody = MTContactHandler::getInstance()->GetMessageBody(message_id);
-                if (!qstrBody.isEmpty())
-                    ui->plainTextEditSent->setPlainText(qstrBody);
-                // -------------------------------------------------
-                MSG_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
-                set_outbox_msgid_for_tree_item(theItem, message_id);
+                PMNT_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
+                set_outbox_pmntid_for_tree_item(theItem, payment_id);
             }
             // ----------------------------------------------------------
             const bool bHaveRead = varHaveRead.isValid() ? varHaveRead.toBool() : false;
 
-            if (!bHaveRead && (message_id > 0)) // It's unread, so we need to set it as read.
+            if (!bHaveRead && (payment_id > 0)) // It's unread, so we need to set it as read.
             {
                 listRecordsToMarkAsRead_.append(haveReadSourceIndex);
                 QTimer::singleShot(1000, this, SLOT(on_MarkAsRead_timer()));
@@ -430,77 +652,65 @@ void Messages::on_tableViewSentSelectionModel_currentRowChanged(const QModelInde
     }
 }
 
-void Messages::on_tableViewReceivedSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
+void Payments::on_tableViewReceivedSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
 {
     if (!current.isValid())
     {
-        ui->headerReceived->setSubject("");
-        ui->headerReceived->setSender("");
-        ui->headerReceived->setRecipient("");
-        ui->headerReceived->setTimestamp("");
-        ui->headerReceived->setFolder(tr("Received"));
-        // ----------------------------------------
-        ui->plainTextEditReceived->setPlainText("");
-        // ----------------------------------------
         disableButtons();
         // ----------------------------------------
-        MSG_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
-        set_inbox_msgid_for_tree_item(theItem, 0);
+        PMNT_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
+        set_inbox_pmntid_for_tree_item(theItem, 0);
     }
     else
     {
         enableButtons();
         // ----------------------------------------
-        QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+        QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
         if (pModel)
         {
-            QModelIndex sourceIndex = pMsgProxyModelInbox_->mapToSource(current);
+            QModelIndex sourceIndex = pPmntProxyModelInbox_->mapToSource(current);
 
-            QModelIndex haveReadSourceIndex  = pMsgProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), MSG_SOURCE_COL_HAVE_READ,  sourceIndex);
-            QModelIndex msgIDSourceIndex     = pMsgProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), MSG_SOURCE_COL_MSG_ID,     sourceIndex);
-            QModelIndex subjectSourceIndex   = pMsgProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), MSG_SOURCE_COL_SUBJECT,    sourceIndex);
-            QModelIndex senderSourceIndex    = pMsgProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), MSG_SOURCE_COL_SENDER_NYM, sourceIndex);
-            QModelIndex recipientSourceIndex = pMsgProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), MSG_SOURCE_COL_MY_NYM,     sourceIndex);
-            QModelIndex timestampSourceIndex = pMsgProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), MSG_SOURCE_COL_TIMESTAMP,  sourceIndex);
+            QModelIndex haveReadSourceIndex  = pPmntProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), PMNT_SOURCE_COL_HAVE_READ,  sourceIndex);
+            QModelIndex pmntidSourceIndex    = pPmntProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), PMNT_SOURCE_COL_PMNT_ID,    sourceIndex);
+//            QModelIndex subjectSourceIndex   = pPmntProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), PMNT_SOURCE_COL_MEMO,       sourceIndex);
+//            QModelIndex senderSourceIndex    = pPmntProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), PMNT_SOURCE_COL_SENDER_NYM, sourceIndex);
+//            QModelIndex recipientSourceIndex = pPmntProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), PMNT_SOURCE_COL_MY_NYM,     sourceIndex);
+//            QModelIndex timestampSourceIndex = pPmntProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), PMNT_SOURCE_COL_TIMESTAMP,  sourceIndex);
 
-            QModelIndex subjectIndex      = pMsgProxyModelInbox_->mapFromSource(subjectSourceIndex);
-            QModelIndex senderIndex       = pMsgProxyModelInbox_->mapFromSource(senderSourceIndex);
-            QModelIndex recipientIndex    = pMsgProxyModelInbox_->mapFromSource(recipientSourceIndex);
-            QModelIndex timestampIndex    = pMsgProxyModelInbox_->mapFromSource(timestampSourceIndex);
+//            QModelIndex subjectIndex      = pPmntProxyModelInbox_->mapFromSource(subjectSourceIndex);
+//            QModelIndex senderIndex       = pPmntProxyModelInbox_->mapFromSource(senderSourceIndex);
+//            QModelIndex recipientIndex    = pPmntProxyModelInbox_->mapFromSource(recipientSourceIndex);
+//            QModelIndex timestampIndex    = pPmntProxyModelInbox_->mapFromSource(timestampSourceIndex);
 
-            QVariant varMsgID     = pModel->data(msgIDSourceIndex);
+            QVariant varpmntid    = pModel->data(pmntidSourceIndex);
             QVariant varHaveRead  = pModel->data(haveReadSourceIndex);
-            QVariant varSubject   = pMsgProxyModelInbox_->data(subjectIndex);
-            QVariant varSender    = pMsgProxyModelInbox_->data(senderIndex);
-            QVariant varRecipient = pMsgProxyModelInbox_->data(recipientIndex);
-            QVariant varTimestamp = pMsgProxyModelInbox_->data(timestampIndex);
+//            QVariant varSubject   = pPmntProxyModelInbox_->data(subjectIndex);
+//            QVariant varSender    = pPmntProxyModelInbox_->data(senderIndex);
+//            QVariant varRecipient = pPmntProxyModelInbox_->data(recipientIndex);
+//            QVariant varTimestamp = pPmntProxyModelInbox_->data(timestampIndex);
 
-            QString qstrSubject   = varSubject.isValid()   ? varSubject  .toString() : "";
-            QString qstrSender    = varSender   .isValid() ? varSender   .toString() : "";
-            QString qstrRecipient = varRecipient.isValid() ? varRecipient.toString() : "";
-            QString qstrTimestamp = varTimestamp.isValid() ? varTimestamp.toString() : "";
+//            QString qstrSubject   = varSubject.isValid()   ? varSubject  .toString() : "";
+//            QString qstrSender    = varSender   .isValid() ? varSender   .toString() : "";
+//            QString qstrRecipient = varRecipient.isValid() ? varRecipient.toString() : "";
+//            QString qstrTimestamp = varTimestamp.isValid() ? varTimestamp.toString() : "";
 
-            ui->headerReceived->setSubject  (qstrSubject);
-            ui->headerReceived->setSender   (qstrSender);
-            ui->headerReceived->setRecipient(qstrRecipient);
-            ui->headerReceived->setTimestamp(qstrTimestamp);
-            ui->headerReceived->setFolder(tr("Received"));
+//            ui->headerReceived->setSubject  (qstrSubject);
+//            ui->headerReceived->setSender   (qstrSender);
+//            ui->headerReceived->setRecipient(qstrRecipient);
+//            ui->headerReceived->setTimestamp(qstrTimestamp);
+//            ui->headerReceived->setFolder(tr("Received"));
 
-            int message_id = varMsgID.isValid() ? varMsgID.toInt() : 0;
-            if (message_id > 0)
+            int payment_id = varpmntid.isValid() ? varpmntid.toInt() : 0;
+            if (payment_id > 0)
             {
-                QString qstrBody = MTContactHandler::getInstance()->GetMessageBody(message_id);
-                if (!qstrBody.isEmpty())
-                    ui->plainTextEditReceived->setPlainText(qstrBody);
-                // -------------------------------------------------
-                MSG_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
-                set_inbox_msgid_for_tree_item(theItem, message_id);
+                PMNT_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
+                set_inbox_pmntid_for_tree_item(theItem, payment_id);
             }
             // ----------------------------------------------------------
             const bool bHaveRead = varHaveRead.isValid() ? varHaveRead.toBool() : false;
 
-            if (!bHaveRead && (message_id > 0)) // It's unread, so we need to set it as read.
+            if (!bHaveRead && (payment_id > 0)) // It's unread, so we need to set it as read.
             {
                 listRecordsToMarkAsRead_.append(haveReadSourceIndex);
                 QTimer::singleShot(1000, this, SLOT(on_MarkAsRead_timer()));
@@ -509,7 +719,9 @@ void Messages::on_tableViewReceivedSelectionModel_currentRowChanged(const QModel
     }
 }
 
-void Messages::dialog()
+
+
+void Payments::dialog()
 {
     if (!already_init)
     {
@@ -518,19 +730,32 @@ void Messages::dialog()
         QPixmap pixmapSize(":/icons/icons/user.png"); // This is here only for size purposes.
         QIcon   sizeButtonIcon(pixmapSize);           // Other buttons use this to set their own size.
         // ----------------------------------------------------------------
+        QPixmap pixmapSend    (":/icons/icons/fistful_of_cash_72.png");
         QPixmap pixmapContacts(":/icons/icons/rolodex_small");
-        QPixmap pixmapCompose (":/icons/icons/pencil.png");
+//      QPixmap pixmapCompose (":/icons/icons/pencil.png");
         QPixmap pixmapRefresh (":/icons/icons/refresh.png");
         QPixmap pixmapReply   (":/icons/icons/reply.png");
         QPixmap pixmapForward (":/icons/sendfunds");
         QPixmap pixmapDelete  (":/icons/icons/DeleteRed.png");
+        QPixmap pixmapRequest (":/icons/requestpayment");
+        QPixmap pixmapPending (":/icons/overview");
+        QPixmap pixmapImport  (":/icons/icons/request.png");
+        QPixmap pixmapMessages(":/icons/icons/pencil.png");
+        QPixmap pixmapExchange  (":/icons/markets");
+        QPixmap pixmapSecrets   (":/icons/icons/vault.png");
         // ----------------------------------------------------------------
         QIcon contactsButtonIcon(pixmapContacts);
         QIcon refreshButtonIcon (pixmapRefresh);
-        QIcon composeButtonIcon (pixmapCompose);
+        QIcon sendButtonIcon    (pixmapSend);
         QIcon replyButtonIcon   (pixmapReply);
         QIcon forwardButtonIcon (pixmapForward);
         QIcon deleteButtonIcon  (pixmapDelete);
+        QIcon requestButtonIcon  (pixmapRequest);
+        QIcon pendingButtonIcon  (pixmapPending);
+        QIcon importButtonIcon   (pixmapImport);
+        QIcon messagesButtonIcon (pixmapMessages);
+        QIcon exchangeButtonIcon (pixmapExchange);
+        QIcon secretsButtonIcon  (pixmapSecrets);
         // ----------------------------------------------------------------
         ui->toolButtonRefresh->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         ui->toolButtonRefresh->setAutoRaise(true);
@@ -545,13 +770,13 @@ void Messages::dialog()
 //      ui->toolButtonContacts->setIconSize(pixmapContacts.rect().size());
         ui->toolButtonContacts->setIconSize(pixmapSize.rect().size());
         ui->toolButtonContacts->setText(tr("Address Book"));
+        ui->toolButtonContacts->setHidden(true);
         // ----------------------------------------------------------------
-        ui->toolButtonCompose->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-        ui->toolButtonCompose->setAutoRaise(true);
-        ui->toolButtonCompose->setIcon(composeButtonIcon);
-//      ui->toolButtonCompose->setIconSize(pixmapCompose.rect().size());
-        ui->toolButtonCompose->setIconSize(pixmapSize.rect().size());
-        ui->toolButtonCompose->setText(tr("Compose"));
+        ui->toolButtonPay->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonPay->setAutoRaise(true);
+        ui->toolButtonPay->setIcon(sendButtonIcon);
+        ui->toolButtonPay->setIconSize(pixmapSend.rect().size());
+        ui->toolButtonPay->setText(tr("Pay"));
         // ----------------------------------------------------------------
         ui->toolButtonDelete->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         ui->toolButtonDelete->setAutoRaise(true);
@@ -566,6 +791,7 @@ void Messages::dialog()
 //      ui->toolButtonReply->setIconSize(pixmapReply.rect().size());
         ui->toolButtonReply->setIconSize(pixmapSize.rect().size());
         ui->toolButtonReply->setText(tr("Reply"));
+        ui->toolButtonReply->setHidden(true);
         // ----------------------------------------------------------------
         ui->toolButtonForward->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         ui->toolButtonForward->setAutoRaise(true);
@@ -573,23 +799,84 @@ void Messages::dialog()
 //      ui->toolButtonForward->setIconSize(pixmapForward.rect().size());
         ui->toolButtonForward->setIconSize(pixmapSize.rect().size());
         ui->toolButtonForward->setText(tr("Forward"));
+        ui->toolButtonForward->setHidden(true);
+        // ----------------------------------------------------------------
+        ui->toolButtonRequest->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonRequest->setAutoRaise(true);
+        ui->toolButtonRequest->setIcon(requestButtonIcon);
+//      ui->toolButtonRequest->setIconSize(pixmapRequest.rect().size());
+        ui->toolButtonRequest->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonRequest->setText(tr("Request Funds"));
+        ui->toolButtonRequest->setHidden(true);
+        // ----------------------------------------------------------------
+        ui->toolButtonPending->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonPending->setAutoRaise(true);
+        ui->toolButtonPending->setIcon(pendingButtonIcon);
+//      ui->toolButtonPending->setIconSize(pixmapPending.rect().size());
+        ui->toolButtonPending->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonPending->setText(tr("View Pending"));
+        // ----------------------------------------------------------------
+        ui->toolButtonImport->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonImport->setAutoRaise(true);
+        ui->toolButtonImport->setIcon(importButtonIcon);
+//      ui->toolButtonImport->setIconSize(pixmapImport.rect().size());
+        ui->toolButtonImport->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonImport->setText(tr("Import Cash"));
+        ui->toolButtonImport->setHidden(true);
+        // ----------------------------------------------------------------
+        ui->toolButtonMessages->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonMessages->setAutoRaise(true);
+        ui->toolButtonMessages->setIcon(messagesButtonIcon);
+//      ui->toolButtonMessages->setIconSize(pixmapMessages.rect().size());
+        ui->toolButtonMessages->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonMessages->setText(tr("Messages"));
+        // ----------------------------------------------------------------
+        ui->toolButtonExchange->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonExchange->setAutoRaise(true);
+        ui->toolButtonExchange->setIcon(exchangeButtonIcon);
+//      ui->toolButtonExchange->setIconSize(pixmapExchange.rect().size());
+        ui->toolButtonExchange->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonExchange->setText(tr("Exchange"));
+        // ----------------------------------------------------------------
+        ui->toolButtonSecrets->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonSecrets->setAutoRaise(true);
+        ui->toolButtonSecrets->setIcon(secretsButtonIcon);
+//      ui->toolButtonSecrets->setIconSize(pixmapSecrets.rect().size());
+        ui->toolButtonSecrets->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonSecrets->setText(tr("Secrets"));
+        // ----------------------------------------------------------------
+        connect(ui->toolButtonRequest,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_requestfunds_slot()));
+        connect(ui->toolButtonPending,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_overview_slot()));
+        connect(ui->toolButtonImport,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_import_slot()));
+        connect(ui->toolButtonMessages,  SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_messages_slot()));
+        connect(ui->toolButtonExchange,  SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_market_slot()));
+        connect(ui->toolButtonSecrets,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_passphrase_manager_slot()));
+        // ----------------------------------
+        // Note: This is a placekeeper, so later on I can just erase
+        // the widget at 0 and replace it with the real header widget.
+        //
+        m_pHeaderFrame  = new QFrame;
+        QHBoxLayout * pHBoxLayout = static_cast<QHBoxLayout*>(ui->userBar->layout());
+        pHBoxLayout->insertWidget(0, m_pHeaderFrame);
+        // ----------------------------------
+
         // ******************************************************
-        QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+        QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
         if (pModel)
         {
-            pMsgProxyModelInbox_  = new MessagesProxyModel;
-            pMsgProxyModelOutbox_ = new MessagesProxyModel;
-            pMsgProxyModelInbox_ ->setSourceModel(pModel);
-            pMsgProxyModelOutbox_->setSourceModel(pModel);
-            pMsgProxyModelOutbox_->setFilterFolder(0);
-            pMsgProxyModelInbox_ ->setFilterFolder(1);
+            pPmntProxyModelInbox_  = new PaymentsProxyModel;
+            pPmntProxyModelOutbox_ = new PaymentsProxyModel;
+            pPmntProxyModelInbox_ ->setSourceModel(pModel);
+            pPmntProxyModelOutbox_->setSourceModel(pModel);
+            pPmntProxyModelOutbox_->setFilterFolder(0);
+            pPmntProxyModelInbox_ ->setFilterFolder(1);
             // ---------------------------------
-//            pMsgProxyModelInbox_ ->setFilterKeyColumn(-1);
-//            pMsgProxyModelOutbox_->setFilterKeyColumn(-1);
+//            pPmntProxyModelInbox_ ->setFilterKeyColumn(-1);
+//            pPmntProxyModelOutbox_->setFilterKeyColumn(-1);
             // ---------------------------------
-            setup_tableview(ui->tableViewSent, pMsgProxyModelOutbox_);
-            setup_tableview(ui->tableViewReceived, pMsgProxyModelInbox_);
+            setup_tableview(ui->tableViewSent, pPmntProxyModelOutbox_);
+            setup_tableview(ui->tableViewReceived, pPmntProxyModelInbox_);
             // ---------------------------------
             QItemSelectionModel *sm1 = ui->tableViewSent->selectionModel();
             connect(sm1, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
@@ -598,11 +885,11 @@ void Messages::dialog()
             connect(sm2, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
                     this, SLOT(on_tableViewReceivedSelectionModel_currentRowChanged(QModelIndex,QModelIndex)));
             // ---------------------------------
-//            connect(pMsgProxyModelInbox_,  SIGNAL(modelReset()),
-//                    this,                  SLOT(RefreshMessages()));
-//            connect(pMsgProxyModelOutbox_, SIGNAL(modelReset()),
-//                    this,                  SLOT(RefreshMessages()));
-        }
+//            connect(pPmntProxyModelInbox_,  SIGNAL(modelReset()),
+//                    this,                  SLOT(RefreshPayments()));
+//            connect(pPmntProxyModelOutbox_, SIGNAL(modelReset()),
+//                    this,                  SLOT(RefreshPayments()));
+        }        
         // --------------------------------------------------------
         connect(this, SIGNAL(showContact(QString)),               Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
         // --------------------------------------------------------
@@ -615,11 +902,11 @@ void Messages::dialog()
         pTab0->setStyleSheet("QWidget { margin: 0 }");
         pTab1->setStyleSheet("QWidget { margin: 0 }");
 
-        ui->splitter->setStretchFactor(0, 2);
-        ui->splitter->setStretchFactor(1, 3);
+//        ui->splitter->setStretchFactor(0, 2);
+//        ui->splitter->setStretchFactor(1, 3);
 
-        ui->splitter_3->setStretchFactor(0, 1);
-        ui->splitter_3->setStretchFactor(1, 5);
+        ui->splitter->setStretchFactor(0, 1);
+        ui->splitter->setStretchFactor(1, 5);
         // ------------------------
         on_tabWidget_currentChanged(0);
 
@@ -634,7 +921,7 @@ void Messages::dialog()
     f.focus();
 }
 
-void Messages::ClearTree()
+void Payments::ClearTree()
 {
     ui->treeWidget->blockSignals(true);
     ui->treeWidget->clear();
@@ -642,7 +929,7 @@ void Messages::ClearTree()
 }
 
 
-void Messages::on_treeWidget_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
+void Payments::on_treeWidget_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
 {
     if (nullptr != current)
     {
@@ -656,23 +943,23 @@ void Messages::on_treeWidget_currentItemChanged(QTreeWidgetItem *current, QTreeW
             qstrMethodType_   = QString("");
             qstrViaTransport_ = QString("");
 
-            pMsgProxyModelInbox_ ->setFilterNone();
-            pMsgProxyModelOutbox_->setFilterNone();
+            pPmntProxyModelInbox_ ->setFilterNone();
+            pPmntProxyModelOutbox_->setFilterNone();
         }
         else if (qstrMethodType_.isEmpty() && qstrViaTransport_.isEmpty())
         {
-            pMsgProxyModelInbox_ ->setFilterTopLevel(nCurrentContact_);
-            pMsgProxyModelOutbox_->setFilterTopLevel(nCurrentContact_);
+            pPmntProxyModelInbox_ ->setFilterTopLevel(nCurrentContact_);
+            pPmntProxyModelOutbox_->setFilterTopLevel(nCurrentContact_);
         }
         else if (0 == qstrMethodType_.compare("otserver"))
         {
-            pMsgProxyModelInbox_ ->setFilterNotary(qstrViaTransport_, nCurrentContact_);
-            pMsgProxyModelOutbox_->setFilterNotary(qstrViaTransport_, nCurrentContact_);
+            pPmntProxyModelInbox_ ->setFilterNotary(qstrViaTransport_, nCurrentContact_);
+            pPmntProxyModelOutbox_->setFilterNotary(qstrViaTransport_, nCurrentContact_);
         }
         else
         {
-            pMsgProxyModelInbox_ ->setFilterMethodAddress(qstrMethodType_, qstrViaTransport_);
-            pMsgProxyModelOutbox_->setFilterMethodAddress(qstrMethodType_, qstrViaTransport_);
+            pPmntProxyModelInbox_ ->setFilterMethodAddress(qstrMethodType_, qstrViaTransport_);
+            pPmntProxyModelOutbox_->setFilterMethodAddress(qstrMethodType_, qstrViaTransport_);
         }
     }
     else
@@ -681,28 +968,33 @@ void Messages::on_treeWidget_currentItemChanged(QTreeWidgetItem *current, QTreeW
         qstrMethodType_   = QString("");
         qstrViaTransport_ = QString("");
 
-        pMsgProxyModelInbox_ ->setFilterNone();
-        pMsgProxyModelOutbox_->setFilterNone();
+        pPmntProxyModelInbox_ ->setFilterNone();
+        pPmntProxyModelOutbox_->setFilterNone();
     }
     // --------------------------------------
-    RefreshMessages();
+    RefreshPayments();
 }
 
 
-void Messages::RefreshMessages()
+void Payments::RefreshPayments()
 {
+    ui->tableViewSent->reset();
+    ui->tableViewReceived->reset();
+    // -------------------------------------------
     ui->tableViewSent->resizeColumnsToContents();
     ui->tableViewReceived->resizeColumnsToContents();
+    ui->tableViewSent->resizeRowsToContents();
+    ui->tableViewReceived->resizeRowsToContents();
 
     ui->tableViewSent->horizontalHeader()->setStretchLastSection(true);
     ui->tableViewReceived->horizontalHeader()->setStretchLastSection(true);
     // -------------------------------------------
-    MSG_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
+    PMNT_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
 
     bool bIsInbox = (0 == ui->tabWidget->currentIndex());
-    int  nMsgID   = bIsInbox ? get_inbox_msgid_for_tree_item(theItem) : get_outbox_msgid_for_tree_item(theItem);
+    int  nPmntID   = bIsInbox ? get_inbox_pmntid_for_tree_item(theItem) : get_outbox_pmntid_for_tree_item(theItem);
 
-    if (0 == nMsgID) // There's no "current selected message ID" set for this tree item.
+    if (0 == nPmntID) // There's no "current selected payment ID" set for this tree item.
     {
         int nRowToSelect = -1;
 
@@ -720,11 +1012,11 @@ void Messages::RefreshMessages()
         else
             on_tableViewSentSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
     }
-    else // There IS a "current selected message ID" for the current tree item.
+    else // There IS a "current selected payment ID" for the current tree item.
     {
         // So let's try to select that in the tree again! (If it's still there. Otherwise set it to row 0.)
 
-        QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+        QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
         if (pModel)
         {
@@ -741,10 +1033,10 @@ void Messages::RefreshMessages()
 
                 if (!record.isEmpty())
                 {
-                    QVariant the_value = record.value(MSG_SOURCE_COL_MSG_ID);
-                    const int nRecordMsgID = the_value.isValid() ? the_value.toInt() : 0;
+                    QVariant the_value = record.value(PMNT_SOURCE_COL_PMNT_ID);
+                    const int nRecordpmntid = the_value.isValid() ? the_value.toInt() : 0;
 
-                    if (nRecordMsgID == nMsgID)
+                    if (nRecordpmntid == nPmntID)
                     {
                         bFoundIt = true;
 
@@ -783,7 +1075,7 @@ void Messages::RefreshMessages()
     }
 }
 
-void Messages::RefreshTree()
+void Payments::RefreshTree()
 {
     ClearTree();
     // ----------------------------------------
@@ -791,7 +1083,7 @@ void Messages::RefreshTree()
     // ----------------------------------------
     QList<QTreeWidgetItem *> items;
     // ------------------------------------
-    QTreeWidgetItem * pUnfilteredItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("All Messages (Unfiltered)")));
+    QTreeWidgetItem * pUnfilteredItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("All Payments (Unfiltered)")));
     pUnfilteredItem->setData(0, Qt::UserRole, QVariant(0));
     items.append(pUnfilteredItem);
     // ----------------------------------------
@@ -918,36 +1210,44 @@ void Messages::RefreshTree()
 }
 
 // --------------------------------------------------
-//#define MSG_SOURCE_COL_MSG_ID 0
-//#define MSG_SOURCE_COL_HAVE_READ 1
-//#define MSG_SOURCE_COL_HAVE_REPLIED 2
-//#define MSG_SOURCE_COL_HAVE_FORWARDED 3
-//#define MSG_SOURCE_COL_SUBJECT 4
-//#define MSG_SOURCE_COL_SENDER_NYM 5
-//#define MSG_SOURCE_COL_SENDER_ADDR 6
-//#define MSG_SOURCE_COL_RECIP_NYM 7
-//#define MSG_SOURCE_COL_RECIP_ADDR 8
-//#define MSG_SOURCE_COL_TIMESTAMP 9
-//#define MSG_SOURCE_COL_METHOD_TYPE 10
-//#define MSG_SOURCE_COL_METHOD_TYPE_DISP 11
-//#define MSG_SOURCE_COL_NOTARY_ID 12
-//#define MSG_SOURCE_COL_MY_NYM 13
-//#define MSG_SOURCE_COL_MY_ADDR 14
-//#define MSG_SOURCE_COL_FOLDER 15
 
-void Messages::on_tableViewReceived_customContextMenuRequested(const QPoint &pos)
+void Payments::on_tableViewReceived_customContextMenuRequested(const QPoint &pos)
 {
-    tableViewPopupMenu(pos, ui->tableViewReceived, &(*pMsgProxyModelInbox_));
+    tableViewPopupMenu(pos, ui->tableViewReceived, &(*pPmntProxyModelInbox_));
 }
 
-void Messages::on_tableViewSent_customContextMenuRequested(const QPoint &pos)
+void Payments::on_tableViewSent_customContextMenuRequested(const QPoint &pos)
 {
-    tableViewPopupMenu(pos, ui->tableViewSent, &(*pMsgProxyModelOutbox_));
+    tableViewPopupMenu(pos, ui->tableViewSent, &(*pPmntProxyModelOutbox_));
 }
 
-void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, MessagesProxyModel * pProxyModel)
+// --------------------------------------------------
+// TODO resume: payments::AcceptIncoming, CancelOutgoing, DiscardOutgoingCash, and DiscardIncoming:
+
+void Payments::AcceptIncoming(QPointer<ModelPayments> & pModel, PaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView)
 {
-    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+    emit showDashboard();
+}
+
+void Payments::CancelOutgoing(QPointer<ModelPayments> & pModel, PaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView)
+{
+    emit showDashboard();
+}
+
+void Payments::DiscardOutgoingCash(QPointer<ModelPayments> & pModel, PaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView)
+{
+    emit showDashboard();
+}
+
+void Payments::DiscardIncoming(QPointer<ModelPayments> & pModel, PaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView)
+{
+    emit showDashboard();
+}
+// --------------------------------------------------
+
+void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, PaymentsProxyModel * pProxyModel)
+{
+    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
     if (!pModel)
         return;
@@ -973,9 +1273,13 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
     pActionMarkRead = popupMenu_->addAction(tr("Mark as read"));
     pActionMarkUnread = popupMenu_->addAction(tr("Mark as unread"));
     // ----------------------------------
-    pActionViewContact     = nullptr;
-    pActionCreateContact   = nullptr;
-    pActionExistingContact = nullptr;
+    pActionViewContact         = nullptr;
+    pActionCreateContact       = nullptr;
+    pActionExistingContact     = nullptr;
+    pActionAcceptIncoming      = nullptr;
+    pActionCancelOutgoing      = nullptr;
+    pActionDiscardOutgoingCash = nullptr;
+    pActionDiscardIncoming     = nullptr;
 
     int nContactId = 0;
 
@@ -985,25 +1289,33 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
     QString qstrRecipientAddr;
     QString qstrNotaryId;
     QString qstrMethodType;
-    QString qstrSubject;
+//  QString qstrSubject;
 
     int nSenderContactByNym     = 0;
     int nSenderContactByAddr    = 0;
     int nRecipientContactByNym  = 0;
     int nRecipientContactByAddr = 0;
 
+    ModelPayments::PaymentFlags flags = ModelPayments::NoFlags;
+    // ----------------------------------------------
     // Look at the data for indexAtRightClick and see if I have a contact already in the
     // address book. If so, add the "View Contact" option to the menu. But if not, add the
     // "Create Contact" and "Add to Existing Contact" options to the menu instead.
+    //
+    // UPDATE: I've now also added similar functionality, for other actions specific
+    // to certain payment records, based on their flags. (Pay this invoice, deposit
+    // this cash, etc.)
+    //
     if (nRow >= 0)
     {
-        QModelIndex indexSenderNym     = pModel->index(nRow, MSG_SOURCE_COL_SENDER_NYM);
-        QModelIndex indexSenderAddr    = pModel->index(nRow, MSG_SOURCE_COL_SENDER_ADDR);
-        QModelIndex indexRecipientNym  = pModel->index(nRow, MSG_SOURCE_COL_RECIP_NYM);
-        QModelIndex indexRecipientAddr = pModel->index(nRow, MSG_SOURCE_COL_RECIP_ADDR);
-        QModelIndex indexNotaryId      = pModel->index(nRow, MSG_SOURCE_COL_NOTARY_ID);
-        QModelIndex indexMethodType    = pModel->index(nRow, MSG_SOURCE_COL_METHOD_TYPE);
-        QModelIndex indexSubject       = pModel->index(nRow, MSG_SOURCE_COL_SUBJECT);
+        QModelIndex indexSenderNym     = pModel->index(nRow, PMNT_SOURCE_COL_SENDER_NYM);
+        QModelIndex indexSenderAddr    = pModel->index(nRow, PMNT_SOURCE_COL_SENDER_ADDR);
+        QModelIndex indexRecipientNym  = pModel->index(nRow, PMNT_SOURCE_COL_RECIP_NYM);
+        QModelIndex indexRecipientAddr = pModel->index(nRow, PMNT_SOURCE_COL_RECIP_ADDR);
+        QModelIndex indexNotaryId      = pModel->index(nRow, PMNT_SOURCE_COL_NOTARY_ID);
+        QModelIndex indexMethodType    = pModel->index(nRow, PMNT_SOURCE_COL_METHOD_TYPE);
+        QModelIndex indexFlags         = pModel->index(nRow, PMNT_SOURCE_COL_FLAGS);
+//      QModelIndex indexSubject       = pModel->index(nRow, PMNT_SOURCE_COL_MEMO);
 
         QVariant varSenderNym     = pModel->rawData(indexSenderNym);
         QVariant varSenderAddr    = pModel->rawData(indexSenderAddr);
@@ -1011,15 +1323,17 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
         QVariant varRecipientAddr = pModel->rawData(indexRecipientAddr);
         QVariant varNotaryId      = pModel->rawData(indexNotaryId);
         QVariant varMethodType    = pModel->rawData(indexMethodType);
-        QVariant varSubject       = pModel->rawData(indexSubject);
+        QVariant varFlags         = pModel->rawData(indexFlags);
+//      QVariant varSubject       = pModel->rawData(indexSubject);
 
-        qstrSenderNymId    = varSenderNym    .isValid() ? varSenderNym    .toString() : QString("");
-        qstrSenderAddr     = varSenderAddr   .isValid() ? varSenderAddr   .toString() : QString("");
-        qstrRecipientNymId = varRecipientNym .isValid() ? varRecipientNym .toString() : QString("");
-        qstrRecipientAddr  = varRecipientAddr.isValid() ? varRecipientAddr.toString() : QString("");
-        qstrNotaryId       = varNotaryId     .isValid() ? varNotaryId     .toString() : QString("");
-        qstrMethodType     = varMethodType   .isValid() ? varMethodType   .toString() : QString("");
-        qstrSubject        = varSubject      .isValid() ? varSubject      .toString() : QString("");
+        qint64 lFlags      = varFlags        .isValid() ? varFlags        .toLongLong() : 0;
+        qstrSenderNymId    = varSenderNym    .isValid() ? varSenderNym    .toString()   : QString("");
+        qstrSenderAddr     = varSenderAddr   .isValid() ? varSenderAddr   .toString()   : QString("");
+        qstrRecipientNymId = varRecipientNym .isValid() ? varRecipientNym .toString()   : QString("");
+        qstrRecipientAddr  = varRecipientAddr.isValid() ? varRecipientAddr.toString()   : QString("");
+        qstrNotaryId       = varNotaryId     .isValid() ? varNotaryId     .toString()   : QString("");
+        qstrMethodType     = varMethodType   .isValid() ? varMethodType   .toString()   : QString("");
+//      qstrSubject        = varSubject      .isValid() ? varSubject      .toString()   : QString("");
 
         nSenderContactByNym     = qstrSenderNymId.isEmpty()    ? 0 : MTContactHandler::getInstance()->FindContactIDByNymID(qstrSenderNymId);
         nSenderContactByAddr    = qstrSenderAddr.isEmpty()     ? 0 : MTContactHandler::getInstance()->GetContactByAddress(qstrSenderAddr);
@@ -1030,15 +1344,130 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
 
         if (nContactId <= 0)
             nContactId = (nRecipientContactByNym > 0) ? nRecipientContactByNym : nRecipientContactByAddr;
+
+        flags = ModelPayments::PaymentFlag(static_cast<ModelPayments::PaymentFlag>(lFlags));
         // -------------------------------
         popupMenu_->addSeparator();
         // -------------------------------
-        if (nContactId > 0) // There's a known contact for this message.
+        if (nContactId > 0) // There's a known contact for this payment.
             pActionViewContact = popupMenu_->addAction(tr("View contact in address book"));
-        else // There is no known contact for this message.
+        else // There is no known contact for this payment.
         {
             pActionCreateContact = popupMenu_->addAction(tr("Create new contact in address book"));
             pActionExistingContact = popupMenu_->addAction(tr("Add to existing contact in address book"));
+        }
+        // -------------------------------
+        popupMenu_->addSeparator();
+        // -------------------------------
+        if ( flags.testFlag(ModelPayments::CanAcceptIncoming))
+        {
+            QString nameString;
+            QString actionString;
+
+            if ( flags.testFlag(ModelPayments::IsTransfer) )
+            {
+                nameString = tr("Accept this Transfer");
+                actionString = tr("Accepting...");
+            }
+            else if ( flags.testFlag(ModelPayments::IsReceipt) )
+            {
+                nameString = tr("Accept this Receipt");
+                actionString = tr("Accepting...");
+            }
+            else if ( flags.testFlag(ModelPayments::IsInvoice) )
+            {
+                nameString = tr("Pay this Invoice");
+                actionString = tr("Paying...");
+            }
+            else if ( flags.testFlag(ModelPayments::IsPaymentPlan) )
+            {
+                nameString = tr("Activate this Payment Plan");
+                actionString = tr("Activating...");
+            }
+            else if ( flags.testFlag(ModelPayments::IsContract) )
+            {
+                nameString = tr("Sign this Smart Contract");
+                actionString = tr("Signing...");
+            }
+            else if ( flags.testFlag(ModelPayments::IsCash) )
+            {
+                nameString = tr("Deposit this Cash");
+                actionString = tr("Depositing...");
+            }
+            else if ( flags.testFlag(ModelPayments::IsCheque) )
+            {
+                nameString = tr("Deposit this Cheque");
+                actionString = tr("Depositing...");
+            }
+            else if ( flags.testFlag(ModelPayments::IsVoucher) )
+            {
+                nameString = tr("Accept this Payment");
+                actionString = tr("Accepting...");
+            }
+            else
+            {
+                nameString = tr("Deposit this Payment");
+                actionString = tr("Depositing...");
+            }
+
+            pActionAcceptIncoming = popupMenu_->addAction(nameString);
+        }
+
+        if (flags.testFlag(ModelPayments::CanCancelOutgoing))
+        {
+            QString cancelString;
+            QString actionString = tr("Canceling...");
+//          QString msg = tr("Cancellation Failed. Perhaps recipient had already accepted it?");
+
+            if (flags.testFlag(ModelPayments::IsInvoice))
+                cancelString = tr("Cancel this Invoice");
+            else if (flags.testFlag(ModelPayments::IsPaymentPlan))
+                cancelString = tr("Cancel this Payment Plan");
+            else if (flags.testFlag(ModelPayments::IsContract))
+                cancelString = tr("Cancel this Smart Contract");
+            else if (flags.testFlag(ModelPayments::IsCash))
+            {
+                cancelString = tr("Recover this Cash");
+                actionString = tr("Recovering...");
+//              msg = tr("Recovery Failed. Perhaps recipient had already accepted it?");
+            }
+            else if (flags.testFlag(ModelPayments::IsCheque))
+                cancelString = tr("Cancel this Cheque");
+            else if (flags.testFlag(ModelPayments::IsVoucher))
+                cancelString = tr("Cancel this Payment");
+            else
+                cancelString = tr("Cancel this Payment");
+
+            pActionCancelOutgoing = popupMenu_->addAction(cancelString);
+        }
+
+        if (flags.testFlag(ModelPayments::CanDiscardOutgoingCash))
+        {
+            QString discardString = tr("Discard this Sent Cash");
+
+            pActionDiscardOutgoingCash = popupMenu_->addAction(discardString);
+        }
+
+        if (flags.testFlag(ModelPayments::CanDiscardIncoming))
+        {
+            QString discardString;
+
+            if (flags.testFlag(ModelPayments::IsInvoice))
+                discardString = tr("Discard this Invoice");
+            else if (flags.testFlag(ModelPayments::IsPaymentPlan))
+                discardString = tr("Discard this Payment Plan");
+            else if (flags.testFlag(ModelPayments::IsContract))
+                discardString = tr("Discard this Smart Contract");
+            else if (flags.testFlag(ModelPayments::IsCash))
+                discardString = tr("Discard this Cash");
+            else if (flags.testFlag(ModelPayments::IsCheque))
+                discardString = tr("Discard this Cheque");
+            else if (flags.testFlag(ModelPayments::IsVoucher))
+                discardString = tr("Discard this Payment");
+            else
+                discardString = tr("Discard this Payment");
+
+            pActionDiscardIncoming = popupMenu_->addAction(discardString);
         }
     }
     // --------------------------------------------------
@@ -1047,27 +1476,55 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
     if (nullptr == selectedAction)
         return;
     // ----------------------------------
-    if (selectedAction == pActionReply) // Only replies to the current message.
+    if (selectedAction == pActionAcceptIncoming) // Only approves the current payment.
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+        AcceptIncoming(pModel, pProxyModel, nRow, pTableView);
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionCancelOutgoing) // Only cancels the current payment.
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+        CancelOutgoing(pModel, pProxyModel, nRow, pTableView);
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionDiscardOutgoingCash) // Only discards the current payment.
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+        DiscardOutgoingCash(pModel, pProxyModel, nRow, pTableView);
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionDiscardIncoming) // Only discards the current payment.
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+        DiscardIncoming(pModel, pProxyModel, nRow, pTableView);
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionReply) // Only replies to the current payment.
     {
         pTableView->setCurrentIndex(indexAtRightClick);
         on_toolButtonReply_clicked();
         return;
     }
     // ----------------------------------
-    else if (selectedAction == pActionForward) // Only fowards the current messages.
+    else if (selectedAction == pActionForward) // Only fowards the current payments.
     {
         pTableView->setCurrentIndex(indexAtRightClick);
         on_toolButtonForward_clicked();
         return;
     }
     // ----------------------------------
-    else if (selectedAction == pActionDelete) // May delete many messages.
+    else if (selectedAction == pActionDelete) // May delete many payments.
     {
         on_toolButtonDelete_clicked();
         return;
     }
     // ----------------------------------
-    else if (selectedAction == pActionOpenNewWindow) // May open many messages.
+    else if (selectedAction == pActionOpenNewWindow) // May open many payments.
     {
         pTableView->setCurrentIndex(indexAtRightClick);
 
@@ -1078,7 +1535,7 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
         return;
     }
     // ----------------------------------
-    else if (selectedAction == pActionMarkRead) // May mark many messages.
+    else if (selectedAction == pActionMarkRead) // May mark many payments.
     {
         if (!pTableView->selectionModel()->hasSelection())
             return;
@@ -1092,7 +1549,7 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
             rows.append(index.row());
             // -----------------------
             QModelIndex sourceIndex = pProxyModel->mapToSource(index);
-            QModelIndex sourceIndexHaveRead = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_HAVE_READ, sourceIndex);
+            QModelIndex sourceIndexHaveRead = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_HAVE_READ, sourceIndex);
             // --------------------------------
             if (sourceIndexHaveRead.isValid())
                 listRecordsToMarkAsRead_.append(sourceIndexHaveRead);
@@ -1102,7 +1559,7 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
         return;
     }
     // ----------------------------------
-    else if (selectedAction == pActionMarkUnread) // May mark many messages.
+    else if (selectedAction == pActionMarkUnread) // May mark many payments.
     {
         if (!pTableView->selectionModel()->hasSelection())
             return;
@@ -1116,7 +1573,7 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
             rows.append(index.row());
             // -----------------------
             QModelIndex sourceIndex = pProxyModel->mapToSource(index);
-            QModelIndex sourceIndexHaveRead = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_HAVE_READ, sourceIndex);
+            QModelIndex sourceIndexHaveRead = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_HAVE_READ, sourceIndex);
             // --------------------------------
             if (sourceIndexHaveRead.isValid())
                 listRecordsToMarkAsUnread_.append(sourceIndexHaveRead);
@@ -1185,7 +1642,7 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
         if (nContactId > 0)
             return;
 
-        // (And that means no contact was found for ANY of the Nym IDs or Addresses on this message.)
+        // (And that means no contact was found for ANY of the Nym IDs or Addresses on this payment.)
         // That means we can add the first one we find (which will probably be the only one as well.)
         // Because I'll EITHER have a SenderNymID OR SenderAddress,
         // ...OR I'll have a RecipientNymID OR RecipientAddress.
@@ -1269,19 +1726,19 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
 
 
 
-void Messages::on_tableViewReceived_doubleClicked(const QModelIndex &index)
+void Payments::on_tableViewReceived_doubleClicked(const QModelIndex &index)
 {
-    tableViewDoubleClicked(index, &(*pMsgProxyModelInbox_));
+    tableViewDoubleClicked(index, &(*pPmntProxyModelInbox_));
 }
 
-void Messages::on_tableViewSent_doubleClicked(const QModelIndex &index)
+void Payments::on_tableViewSent_doubleClicked(const QModelIndex &index)
 {
-    tableViewDoubleClicked(index, &(*pMsgProxyModelOutbox_));
+    tableViewDoubleClicked(index, &(*pPmntProxyModelOutbox_));
 }
 
-void Messages::tableViewDoubleClicked(const QModelIndex &index, MessagesProxyModel * pProxyModel)
+void Payments::tableViewDoubleClicked(const QModelIndex &index, PaymentsProxyModel * pProxyModel)
 {
-    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
     if (!pModel)
         return;
@@ -1294,23 +1751,26 @@ void Messages::tableViewDoubleClicked(const QModelIndex &index, MessagesProxyMod
     if (!sourceIndex.isValid())
         return;
     // -------------------------------
-    QModelIndex msgIdIndex   = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_MSG_ID, sourceIndex);
-    QModelIndex subjectIndex = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_SUBJECT, sourceIndex);
+    QModelIndex pmntidIndex   = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_PMNT_ID, sourceIndex);
+    QModelIndex subjectIndex = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_MEMO, sourceIndex);
 
-    QVariant qvarMsgId   = pModel->data(msgIdIndex);
+    QVariant qvarpmntid   = pModel->data(pmntidIndex);
     QVariant qvarSubject = pModel->data(subjectIndex);
 
-    int     nMessageID  = qvarMsgId.isValid() ? qvarMsgId.toInt() : 0;
+    int     nPaymentID  = qvarpmntid.isValid() ? qvarpmntid.toInt() : 0;
     QString qstrSubject = qvarSubject.isValid() ? qvarSubject.toString() : "";
     // -------------------------------
-    QString qstrMessage, qstrType, qstrSubtitle;
+    QString qstrPayment, qstrPending, qstrType, qstrSubtitle;
     // --------------------------------------------------
-    if (nMessageID > 0)
-        qstrMessage = MTContactHandler::getInstance()->GetMessageBody(nMessageID);
+    if (nPaymentID > 0)
+    {
+        qstrPayment = MTContactHandler::getInstance()->GetPaymentBody(nPaymentID);
+        qstrPending = MTContactHandler::getInstance()->GetPaymentPendingBody(nPaymentID);
+    }
     // --------------------------------------------------
-    QModelIndex myNymIndex        = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_MY_NYM, sourceIndex);
-    QModelIndex senderNymIndex    = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_SENDER_NYM, sourceIndex);
-    QModelIndex recipientNymIndex = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_RECIP_NYM, sourceIndex);
+    QModelIndex myNymIndex        = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_MY_NYM, sourceIndex);
+    QModelIndex senderNymIndex    = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_SENDER_NYM, sourceIndex);
+    QModelIndex recipientNymIndex = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_RECIP_NYM, sourceIndex);
 
     QModelIndex myNymProxyIndex        = pProxyModel->mapFromSource(myNymIndex);
     QModelIndex senderNymProxyIndex    = pProxyModel->mapFromSource(senderNymIndex);
@@ -1337,17 +1797,17 @@ void Messages::tableViewDoubleClicked(const QModelIndex &index, MessagesProxyMod
     // -----------
     // Pop up the result dialog.
     //
-    DlgExportedToPass dlgExported(this, qstrMessage,
+    DlgExportedToPass dlgExported(this, qstrPayment.isEmpty() ? qstrPending : qstrPayment,
                                   qstrType,
                                   qstrSubtitle, false);
-    dlgExported.setWindowTitle(QString("%1: %2").arg(tr("Subject")).arg(qstrSubject));
+    dlgExported.setWindowTitle(QString("%1: %2").arg(tr("Memo")).arg(qstrSubject));
     dlgExported.exec();
 }
 
 
-void Messages::on_toolButtonReply_clicked()
+void Payments::on_toolButtonReply_clicked()
 {
-    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
     if (!pModel)
         return;
@@ -1363,7 +1823,7 @@ void Messages::on_toolButtonReply_clicked()
         return;
 
     QModelIndex haveRepliedIndex = pModel->sibling(sourceIndex.row(),
-                                                   MSG_SOURCE_COL_HAVE_REPLIED,
+                                                   PMNT_SOURCE_COL_HAVE_REPLIED,
                                                    sourceIndex);
     // ------------------------------------
     QSqlRecord record = pModel->record(sourceIndex.row());
@@ -1371,35 +1831,35 @@ void Messages::on_toolButtonReply_clicked()
     if (record.isEmpty())
         return;
     // ------------------------------------
-    const int nMessageID = record.value(MSG_SOURCE_COL_MSG_ID).isValid() ? record.value(MSG_SOURCE_COL_MSG_ID).toInt() : 0;
+    const int nPaymentID = record.value(PMNT_SOURCE_COL_PMNT_ID).isValid() ? record.value(PMNT_SOURCE_COL_PMNT_ID).toInt() : 0;
 
-    const bool bOutgoing = (0 == record.value(MSG_SOURCE_COL_FOLDER).toInt());
+    const bool bOutgoing = (0 == record.value(PMNT_SOURCE_COL_FOLDER).toInt());
 
-    const QVariant qvar_method_type = record.value(MSG_SOURCE_COL_METHOD_TYPE);
+    const QVariant qvar_method_type = record.value(PMNT_SOURCE_COL_METHOD_TYPE);
     const QString  methodType = qvar_method_type.isValid() ? qvar_method_type.toString() : "";
 
-    const QVariant qvar_my_nym_id = record.value(MSG_SOURCE_COL_MY_NYM);
+    const QVariant qvar_my_nym_id = record.value(PMNT_SOURCE_COL_MY_NYM);
     const QString  myNymID = qvar_my_nym_id.isValid() ? qvar_my_nym_id.toString() : "";
 
-    const QVariant qvar_my_addr = record.value(MSG_SOURCE_COL_MY_ADDR);
+    const QVariant qvar_my_addr = record.value(PMNT_SOURCE_COL_MY_ADDR);
     const QString  myAddress = qvar_my_addr.isValid() ? qvar_my_addr.toString() : "";
 
-    const QVariant qvar_sender_nym_id = record.value(MSG_SOURCE_COL_SENDER_NYM);
+    const QVariant qvar_sender_nym_id = record.value(PMNT_SOURCE_COL_SENDER_NYM);
     const QString  senderNymID = qvar_sender_nym_id.isValid() ? qvar_sender_nym_id.toString() : "";
 
-    const QVariant qvar_recipient_nym_id = record.value(MSG_SOURCE_COL_RECIP_NYM);
+    const QVariant qvar_recipient_nym_id = record.value(PMNT_SOURCE_COL_RECIP_NYM);
     const QString  recipientNymID = qvar_recipient_nym_id.isValid() ? qvar_recipient_nym_id.toString() : "";
 
-    const QVariant qvar_notary_id = record.value(MSG_SOURCE_COL_NOTARY_ID);
+    const QVariant qvar_notary_id = record.value(PMNT_SOURCE_COL_NOTARY_ID);
     const QString  NotaryID = qvar_notary_id.isValid() ? qvar_notary_id.toString() : "";
 
-    const QVariant qvar_sender_addr = record.value(MSG_SOURCE_COL_SENDER_ADDR);
+    const QVariant qvar_sender_addr = record.value(PMNT_SOURCE_COL_SENDER_ADDR);
     const QString  senderAddr = qvar_sender_addr.isValid() ? qvar_sender_addr.toString() : "";
 
-    const QVariant qvar_recipient_addr = record.value(MSG_SOURCE_COL_RECIP_ADDR);
+    const QVariant qvar_recipient_addr = record.value(PMNT_SOURCE_COL_RECIP_ADDR);
     const QString  recipientAddr = qvar_recipient_addr.isValid() ? qvar_recipient_addr.toString() : "";
 
-    const QVariant qvar_subject = record.value(MSG_SOURCE_COL_SUBJECT);
+    const QVariant qvar_subject = record.value(PMNT_SOURCE_COL_MEMO);
     const QString  subject = qvar_subject.isValid() ? MTContactHandler::getInstance()->Decode(qvar_subject.toString()) : "";
     // --------------------------------------------------
     const QString& otherNymID = bOutgoing ? recipientNymID : senderNymID;
@@ -1436,12 +1896,15 @@ void Messages::on_toolButtonReply_clicked()
     // --------------------------------------------------
     compose_window->setInitialSubject(subject);
     // --------------------------------------------------
-    if (nMessageID > 0)
+    if (nPaymentID > 0)
     {
-        QString body = MTContactHandler::getInstance()->GetMessageBody(nMessageID);
+        QString body        = MTContactHandler::getInstance()->GetPaymentBody(nPaymentID);
+        QString pendingBody = MTContactHandler::getInstance()->GetPaymentPendingBody(nPaymentID);
 
         if (!body.isEmpty())
             compose_window->setInitialBody(body);
+        else if (!pendingBody.isEmpty())
+            compose_window->setInitialBody(pendingBody);
     }
     // --------------------------------------------------
     compose_window->setVariousIds(
@@ -1461,9 +1924,9 @@ void Messages::on_toolButtonReply_clicked()
         QTimer::singleShot(0, this, SLOT(on_MarkAsReplied_timer()));
 }
 
-void Messages::on_toolButtonForward_clicked()
+void Payments::on_toolButtonForward_clicked()
 {
-    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
     if (!pModel)
         return;
@@ -1479,7 +1942,7 @@ void Messages::on_toolButtonForward_clicked()
         return;
 
     QModelIndex haveForwardedIndex = pModel->sibling(sourceIndex.row(),
-                                                     MSG_SOURCE_COL_HAVE_FORWARDED,
+                                                     PMNT_SOURCE_COL_HAVE_FORWARDED,
                                                      sourceIndex);
     // ------------------------------------
     QSqlRecord record = pModel->record(sourceIndex.row());
@@ -1487,35 +1950,35 @@ void Messages::on_toolButtonForward_clicked()
     if (record.isEmpty())
         return;
     // ------------------------------------
-    const int nMessageID = record.value(MSG_SOURCE_COL_MSG_ID).isValid() ? record.value(MSG_SOURCE_COL_MSG_ID).toInt() : 0;
+    const int nPaymentID = record.value(PMNT_SOURCE_COL_PMNT_ID).isValid() ? record.value(PMNT_SOURCE_COL_PMNT_ID).toInt() : 0;
 
-    const bool bOutgoing = (0 == record.value(MSG_SOURCE_COL_FOLDER).toInt());
+    const bool bOutgoing = (0 == record.value(PMNT_SOURCE_COL_FOLDER).toInt());
 
-    const QVariant qvar_method_type = record.value(MSG_SOURCE_COL_METHOD_TYPE);
+    const QVariant qvar_method_type = record.value(PMNT_SOURCE_COL_METHOD_TYPE);
     const QString  methodType = qvar_method_type.isValid() ? qvar_method_type.toString() : "";
 
-    const QVariant qvar_my_nym_id = record.value(MSG_SOURCE_COL_MY_NYM);
+    const QVariant qvar_my_nym_id = record.value(PMNT_SOURCE_COL_MY_NYM);
     const QString  myNymID = qvar_my_nym_id.isValid() ? qvar_my_nym_id.toString() : "";
 
-    const QVariant qvar_my_addr = record.value(MSG_SOURCE_COL_MY_ADDR);
+    const QVariant qvar_my_addr = record.value(PMNT_SOURCE_COL_MY_ADDR);
     const QString  myAddress = qvar_my_addr.isValid() ? qvar_my_addr.toString() : "";
 
-    const QVariant qvar_sender_nym_id = record.value(MSG_SOURCE_COL_SENDER_NYM);
+    const QVariant qvar_sender_nym_id = record.value(PMNT_SOURCE_COL_SENDER_NYM);
     const QString  senderNymID = qvar_sender_nym_id.isValid() ? qvar_sender_nym_id.toString() : "";
 
-    const QVariant qvar_recipient_nym_id = record.value(MSG_SOURCE_COL_RECIP_NYM);
+    const QVariant qvar_recipient_nym_id = record.value(PMNT_SOURCE_COL_RECIP_NYM);
     const QString  recipientNymID = qvar_recipient_nym_id.isValid() ? qvar_recipient_nym_id.toString() : "";
 
-    const QVariant qvar_notary_id = record.value(MSG_SOURCE_COL_NOTARY_ID);
+    const QVariant qvar_notary_id = record.value(PMNT_SOURCE_COL_NOTARY_ID);
     const QString  NotaryID = qvar_notary_id.isValid() ? qvar_notary_id.toString() : "";
 
-    const QVariant qvar_sender_addr = record.value(MSG_SOURCE_COL_SENDER_ADDR);
+    const QVariant qvar_sender_addr = record.value(PMNT_SOURCE_COL_SENDER_ADDR);
     const QString  senderAddr = qvar_sender_addr.isValid() ? qvar_sender_addr.toString() : "";
 
-    const QVariant qvar_recipient_addr = record.value(MSG_SOURCE_COL_RECIP_ADDR);
+    const QVariant qvar_recipient_addr = record.value(PMNT_SOURCE_COL_RECIP_ADDR);
     const QString  recipientAddr = qvar_recipient_addr.isValid() ? qvar_recipient_addr.toString() : "";
 
-    const QVariant qvar_subject = record.value(MSG_SOURCE_COL_SUBJECT);
+    const QVariant qvar_subject = record.value(PMNT_SOURCE_COL_MEMO);
     const QString  subject = qvar_subject.isValid() ? MTContactHandler::getInstance()->Decode(qvar_subject.toString()) : "";
     // --------------------------------------------------
     const QString& otherNymID = bOutgoing ? recipientNymID : senderNymID;
@@ -1552,12 +2015,15 @@ void Messages::on_toolButtonForward_clicked()
     // --------------------------------------------------
     compose_window->setInitialSubject(subject);
     // --------------------------------------------------
-    if (nMessageID > 0)
+    if (nPaymentID > 0)
     {
-        QString body = MTContactHandler::getInstance()->GetMessageBody(nMessageID);
+        QString body        = MTContactHandler::getInstance()->GetPaymentBody(nPaymentID);
+        QString pendingBody = MTContactHandler::getInstance()->GetPaymentPendingBody(nPaymentID);
 
         if (!body.isEmpty())
             compose_window->setInitialBody(body);
+        else if (!pendingBody.isEmpty())
+            compose_window->setInitialBody(pendingBody);
     }
     // --------------------------------------------------
     compose_window->setForwarded();
@@ -1580,12 +2046,8 @@ void Messages::on_toolButtonForward_clicked()
 }
 
 
-//QTableView         * pCurrentTabTableView_  = nullptr;
-//MessagesProxyModel * pCurrentTabProxyModel_ = nullptr;
-//
 
-
-void Messages::on_toolButtonDelete_clicked()
+void Payments::on_toolButtonDelete_clicked()
 {
     if ( (nullptr != pCurrentTabTableView_) &&
          (nullptr != pCurrentTabProxyModel_) )
@@ -1595,13 +2057,13 @@ void Messages::on_toolButtonDelete_clicked()
         // ----------------------------------------------
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, tr("Moneychanger"), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to delete these messages?")).
+        reply = QMessageBox::question(this, tr("Moneychanger"), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to delete these receipts?")).
                                       arg(tr("WARNING: This is not reversible!")),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply != QMessageBox::Yes)
             return;
         // ----------------------------------------------
-        QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+        QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
         if (pModel)
         {
@@ -1611,7 +2073,7 @@ void Messages::on_toolButtonDelete_clicked()
             int nLastProxyRowRemoved  = -1;
             int nCountRowsRemoved     = 0;
 
-            QList<int> rows, message_ids;
+            QList<int> rows, payment_ids;
             foreach( const QModelIndex & index, selection.indexes() ) {
                 QModelIndex sourceIndex = pCurrentTabProxyModel_->mapToSource(index);
                 rows.append( sourceIndex.row() );
@@ -1631,9 +2093,9 @@ void Messages::on_toolButtonDelete_clicked()
                int current = rows[ii];
                if( current != prev ) {
                    bRemoved = true;
-                   QModelIndex sourceIndexMsgID = pModel->index(current, MSG_SOURCE_COL_MSG_ID);
-                   if (sourceIndexMsgID.isValid())
-                       message_ids.append(pModel->data(sourceIndexMsgID).toInt());
+                   QModelIndex sourceIndexpmntid = pModel->index(current, PMNT_SOURCE_COL_PMNT_ID);
+                   if (sourceIndexpmntid.isValid())
+                       payment_ids.append(pModel->data(sourceIndexpmntid).toInt());
                    pModel->removeRows( current, 1 );
                    prev = current;
                    nCountRowsRemoved++;
@@ -1646,16 +2108,16 @@ void Messages::on_toolButtonDelete_clicked()
                 {
                     pModel->database().commit();
                     // ------------------------
-                    // Now we just deleted some messages; let's delete also the corresponding
-                    // message bodies. (We saved the deleted IDs for this purpose.)
+                    // Now we just deleted some receipts; let's delete also the corresponding
+                    // receipt contents. (We saved the deleted IDs for this purpose.)
                     //
-                    for (int ii = 0; ii < message_ids.count(); ++ii)
+                    for (int ii = 0; ii < payment_ids.count(); ++ii)
                     {
-                        const int nMsgID = message_ids[ii];
+                        const int nPmntID = payment_ids[ii];
 
-                        if (nMsgID > 0)
-                            if (!MTContactHandler::getInstance()->DeleteMessageBody(nMsgID))
-                                qDebug() << "Messages::on_toolButtonDelete_clicked: Failed trying to delete message body with message_id: " << nMsgID << "\n";
+                        if (nPmntID > 0)
+                            if (!MTContactHandler::getInstance()->DeletePaymentBody(nPmntID))
+                                qDebug() << "Payments::on_toolButtonDelete_clicked: Failed trying to delete payment body with payment_id: " << nPmntID << "\n";
                     }
                     // ------------------------
                     // We just deleted the selected rows.
@@ -1698,62 +2160,82 @@ void Messages::on_toolButtonDelete_clicked()
     }
 }
 
-void Messages::on_toolButtonRefresh_clicked()
+void Payments::on_toolButtonRefresh_clicked()
 {
-    emit needToDownloadMail();
+    emit needToDownloadAccountData();
 }
 
-void Messages::onRecordlistPopulated()
+void Payments::onRecordlistPopulated()
 {
     RefreshAll();
 }
 
-void Messages::RefreshAll()
+void Payments::RefreshAll()
 {
+    RefreshUserBar();
     RefreshTree();
 }
 
-void Messages::on_pushButtonSearch_clicked()
+void Payments::onBalancesChanged()
+{
+    RefreshUserBar();
+}
+
+// The balances hasn't necessarily changed.
+// (Perhaps the default account was changed.)
+//
+void Payments::onNeedToRefreshUserBar()
+{
+    RefreshUserBar();
+}
+
+void Payments::onNeedToRefreshRecords()
+{
+    RefreshAll();
+}
+
+
+void Payments::on_pushButtonSearch_clicked()
 {
     QString qstrSearchText = ui->lineEdit->text();
 
     this->doSearch(qstrSearchText.simplified());
 }
 
-void Messages::doSearch(QString qstrInput)
+void Payments::doSearch(QString qstrInput)
 {
-    if (pMsgProxyModelInbox_)
+    if (pPmntProxyModelInbox_)
     {
-        pMsgProxyModelInbox_ ->setFilterString(qstrInput);
+        pPmntProxyModelInbox_ ->setFilterString(qstrInput);
     }
-    if (pMsgProxyModelOutbox_)
+    if (pPmntProxyModelOutbox_)
     {
-        pMsgProxyModelOutbox_->setFilterString(qstrInput);
+        pPmntProxyModelOutbox_->setFilterString(qstrInput);
     }
 
-    RefreshMessages();
+    RefreshPayments();
 }
 
-void Messages::on_lineEdit_textChanged(const QString &arg1)
+void Payments::on_lineEdit_textChanged(const QString &arg1)
 {
     // This means someone clicked the "clear" button on the search box.
     if (arg1.isEmpty())
         doSearch(arg1);
 }
 
-void Messages::on_lineEdit_returnPressed()
+void Payments::on_lineEdit_returnPressed()
 {
     QString qstrSearchText = ui->lineEdit->text();
 
     this->doSearch(qstrSearchText.simplified());
 }
 
-Messages::~Messages()
+Payments::~Payments()
 {
     delete ui;
 }
 
-bool Messages::eventFilter(QObject *obj, QEvent *event)
+bool Payments::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress)
     {
@@ -1769,6 +2251,7 @@ bool Messages::eventFilter(QObject *obj, QEvent *event)
     // standard event processing
     return QWidget::eventFilter(obj, event);
 }
+
 
 
 

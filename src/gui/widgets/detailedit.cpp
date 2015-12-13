@@ -196,6 +196,12 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
             connect(m_pDetailPane,      SIGNAL(newServerAdded(QString)),
                     m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
             // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(serversChanged()),
+                    Moneychanger::It(), SLOT  (onServersChanged()));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(serversChanged()),
+                    m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
+            // -------------------------------------------
             break;
 
         case MTDetailEdit::DetailEditTypeAsset:
@@ -205,6 +211,12 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
                     Moneychanger::It(), SLOT  (onNewAssetAdded(QString)));
             // -------------------------------------------
             connect(m_pDetailPane,      SIGNAL(newAssetAdded(QString)),
+                    m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(assetsChanged()),
+                    Moneychanger::It(), SLOT  (onAssetsChanged()));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(assetsChanged()),
                     m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
             // -------------------------------------------
 
@@ -228,6 +240,12 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
                     Moneychanger::It(), SLOT  (onNewNymAdded(QString)));
             // -------------------------------------------
             connect(m_pDetailPane,      SIGNAL(newNymAdded(QString)),
+                    m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(nymsChanged()),
+                    Moneychanger::It(), SLOT  (onNymsChanged()));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(nymsChanged()),
                     m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
             // -------------------------------------------
             break;
@@ -278,6 +296,12 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
                     Moneychanger::It(), SLOT  (onNewAccountAdded(QString)));
             // -------------------------------------------
             connect(m_pDetailPane,      SIGNAL(newAccountAdded(QString)),
+                    m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(accountsChanged()),
+                    Moneychanger::It(), SLOT  (onAccountsChanged()));
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(accountsChanged()),
                     m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
             // -------------------------------------------
             break;
