@@ -168,7 +168,7 @@ void MTPageAcct_Nym::on_pushButtonManage_clicked()
             bFoundPreselected = true;
     } // for
     // -------------------------------------
-    pWindow->setWindowTitle(tr("Manage Identities"));
+    pWindow->setWindowTitle(tr("Manage My Identities"));
     // -------------------------------------
     if (bFoundPreselected)
         pWindow->SetPreSelected(qstrPreSelected);

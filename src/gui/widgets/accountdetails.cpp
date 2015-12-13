@@ -414,7 +414,7 @@ void MTAccountDetails::DeleteButtonClicked()
                 // ------------------------------------------------
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 // ------------------------------------------------
-                emit RefreshRecordsAndUpdateMenu();
+                emit accountsChanged();
                 // ------------------------------------------------
             }
         }
@@ -582,7 +582,7 @@ void MTAccountDetails::on_lineEditName_editingFinished()
 
                 m_pOwner->SetPreSelected(m_pOwner->m_qstrCurrentID);
                 // ------------------------------------------------
-                emit RefreshRecordsAndUpdateMenu();
+                emit accountsChanged();
                 // ------------------------------------------------
             }
         }

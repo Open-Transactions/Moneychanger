@@ -1475,7 +1475,6 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         connect(deleteButton, SIGNAL(clicked()), this, SLOT(on_deleteButton_clicked()));
     }
     // --------------------------------------------------
-
     if (recordmt.CanAcceptIncoming())
     {
 //      const bool bIsTransfer = (recordmt.GetRecordType() == opentxs::OTRecord::Transfer);
@@ -1538,7 +1537,6 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         increment_cell(nCurrentRow, nCurrentColumn);
 
         connect(acceptButton, SIGNAL(clicked()), this, SLOT(on_acceptButton_clicked()));
-
     }
 
     if (recordmt.CanCancelOutgoing())
@@ -1578,7 +1576,6 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         increment_cell(nCurrentRow, nCurrentColumn);
 
         connect(cancelButton, SIGNAL(clicked()), this, SLOT(on_cancelButton_clicked()));
-
     }
 
     if (recordmt.CanDiscardOutgoingCash())
@@ -1593,8 +1590,6 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         increment_cell(nCurrentRow, nCurrentColumn);
 
         connect(discardOutgoingButton, SIGNAL(clicked()), this, SLOT(on_discardOutgoingButton_clicked()));
-
-
     }
 
     if (recordmt.CanDiscardIncoming())
@@ -1625,7 +1620,6 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         increment_cell(nCurrentRow, nCurrentColumn);
 
         connect(discardIncomingButton, SIGNAL(clicked()), this, SLOT(on_discardIncomingButton_clicked()));
-
     }
 
     if (!recordmt.GetOtherNymID().empty() || !recordmt.GetOtherAddress().empty())

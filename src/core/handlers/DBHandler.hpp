@@ -7,6 +7,7 @@
 #include <core/handlers/FileHandler.hpp>
 #include <core/handlers/modeltradearchive.hpp>
 #include <core/handlers/modelmessages.hpp>
+#include <core/handlers/modelpayments.hpp>
 
 #include <QDebug>
 #include <QMutex>
@@ -57,6 +58,7 @@ class DBHandler
     
     QPointer<ModelTradeArchive> pTradeArchiveModel_;
     QPointer<ModelMessages> pMessageModel_;
+    QPointer<ModelPayments> pPaymentModel_;
 
     bool dbConnect();
     bool isConnected();
@@ -70,6 +72,7 @@ class DBHandler
 
     QPointer<ModelTradeArchive> getTradeArchiveModel();
     QPointer<ModelMessages> getMessageModel();
+    QPointer<ModelPayments> getPaymentModel();
 
     QString formatValue(QSqlField & sqlField);
 

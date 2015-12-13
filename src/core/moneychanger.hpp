@@ -35,6 +35,7 @@ class BtcSendDlg;
 class BtcReceiveDlg;
 class DlgPassphraseManager;
 class Messages;
+class Payments;
 
 class QMenu;
 class QSystemTrayIcon;
@@ -69,6 +70,7 @@ public:
 
     void modifyRecords(); // After we populate the recordlist, we make some changes to the list (move messages to a separate db table, move receipts to a separate table, etc.)
     bool AddMailToMsgArchive(opentxs::OTRecord& recordmt);
+    bool AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord=true);
     bool AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt);
 
 signals:
@@ -109,6 +111,11 @@ public slots:
     void onNewNymAdded(QString qstrID);
     void onNewAccountAdded(QString qstrID);
     
+    void onServersChanged();
+    void onAssetsChanged();
+    void onNymsChanged();
+    void onAccountsChanged();
+
     void onRunSmartContract(QString qstrTemplate, QString qstrLawyer, int32_t index);
 
 public:
@@ -162,6 +169,7 @@ private:
     QPointer<DlgMenu> menuwindow;
 
     QPointer<Messages> messages_window;
+    QPointer<Payments> payments_window;
 
     QPointer<MTDetailEdit> contactswindow;
     QPointer<MTDetailEdit> nymswindow;
@@ -232,6 +240,7 @@ private:
     void mc_overview_dialog();
     void mc_main_menu_dialog();
     void mc_messages_dialog();
+    void mc_payments_dialog();
     // ------------------------------------------------
     void mc_sendfunds_show_dialog(QString qstrAcct=QString(""));
     void mc_requestfunds_show_dialog(QString qstrAcct=QString(""));
@@ -345,6 +354,7 @@ private:
     QPointer<QAction> mc_systrayMenu_sendfunds;
     QPointer<QAction> mc_systrayMenu_requestfunds;
     QPointer<QAction> mc_systrayMenu_contacts;
+    QPointer<QAction> mc_systrayMenu_receipts;
     QPointer<QAction> mc_systrayMenu_messages;
     QPointer<QAction> mc_systrayMenu_composemessage;
     QPointer<QAction> mc_systrayMenu_passphrase_manager;
@@ -440,6 +450,7 @@ public slots:
     void mc_requestfunds_slot();            // Request Funds
     void mc_composemessage_slot();          // Compose Message
     void mc_messages_slot();
+    void mc_payments_slot();
     // ---------------------------------------------------------------------------
     void mc_send_from_acct (QString qstrAcct);
     void mc_request_to_acct(QString qstrAcct);

@@ -20,6 +20,7 @@
 #include <QObject>
 #include <QStringList>
 #include <QSqlField>
+#include <QFlags>
 
 
 std::string MTNameLookupQT::GetNymName(const std::string & str_id,
@@ -511,6 +512,138 @@ bool MTContactHandler::LowLevelUpdateMessageBody(int nMessageID, const QString &
 // ----------------------------------------------------------
 
 
+
+
+
+
+
+
+
+
+
+
+
+// -------------------------------------------------
+
+QString MTContactHandler::GetPaymentBody(int nID)
+{
+    return MTContactHandler::GetEncryptedValueByID(nID, "body", "payment_body", "payment_id");
+}
+
+QString MTContactHandler::GetPaymentPendingBody(int nID)
+{
+    return MTContactHandler::GetEncryptedValueByID(nID, "pending_body", "payment_body", "payment_id");
+}
+
+bool MTContactHandler::UpdatePaymentBody(int nPaymentID, const QString qstrBody, const QString qstrPendingBody)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    return LowLevelUpdatePaymentBody(nPaymentID, qstrBody, qstrPendingBody);
+}
+
+bool MTContactHandler::DeletePaymentBody(int nID)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_delete = QString("DELETE FROM `payment_body` WHERE `payment_id`=%1").arg(nID);
+
+    return DBHandler::getInstance()->runQuery(str_delete);
+}
+
+// Returns 0 if not found.
+//
+int MTContactHandler::GetPaymentIdByTxnDisplayId(int64_t lTxnDisplayId)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_select = QString("SELECT `payment_id` FROM `payment` WHERE `txn_id_display`=%1 LIMIT 0,1").arg(lTxnDisplayId);
+    int nRows = DBHandler::getInstance()->querySize(str_select);
+
+    if (0 >= nRows)
+        return 0;
+
+    return DBHandler::getInstance()->queryInt(str_select, 0, 0);
+}
+
+// Since there is a payment table, the payment_id is already pre-existing by the time
+// the entry is added to the payment_body table. (FYI.) This function assumes that
+// the payment was JUST added, and that the body we're about to add corresponds to that
+// same payment. So we simply look up the payment_id for the last row inserted and then
+// add the body to the payment_body table using that same ID.
+//
+bool MTContactHandler::CreatePaymentBody(QString qstrBody, QString qstrPendingBody)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    const int nID = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `payment`", 0, 0);
+    // ----------------------------------------
+    if (nID > 0)
+    {
+        QString str_insert = QString("INSERT INTO `payment_body` "
+                                     "(`payment_id`) "
+                                     "VALUES(%1)").arg(nID);
+        DBHandler::getInstance()->runQuery(str_insert);
+        // ----------------------------------------
+        const int nPaymentID = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `payment_body`", 0, 0);
+
+        if (nPaymentID == nID)
+        {
+            bool bUpdated = LowLevelUpdatePaymentBody(nPaymentID, qstrBody, qstrPendingBody);
+
+            if (!bUpdated)
+            {
+                qDebug() << QString("Failed updating payment body for payment_id: %1").arg(nPaymentID);
+                return false;
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+bool MTContactHandler::LowLevelUpdatePaymentBody(int nPaymentID, const QString qstrBody, const QString qstrPendingBody)
+{
+//  NOTE: This function ASSUMES that the calling function already locked the Mutex.
+//  QMutexLocker locker(&m_Mutex);
+
+    if (!qstrBody.isEmpty())
+    {
+        try
+        {
+            // The body is encrypted.
+            //
+            bool bSetValue = SetEncryptedValueByID(nPaymentID, qstrBody, "body", "payment_body", "payment_id");
+            Q_UNUSED(bSetValue);
+        }
+        catch (const std::exception& exc)
+        {
+            qDebug () << "Error: " << exc.what ();
+            return false;
+        }
+    }
+    // --------------------------
+    if (!qstrPendingBody.isEmpty())
+    {
+        try
+        {
+            // The pending body is encrypted.
+            //
+            bool bSetValue = SetEncryptedValueByID(nPaymentID, qstrPendingBody, "pending_body", "payment_body", "payment_id");
+            Q_UNUSED(bSetValue);
+        }
+        catch (const std::exception& exc)
+        {
+            qDebug () << "Error: " << exc.what ();
+            return false;
+        }
+    }
+    return true;
+}
+
+
+// ----------------------------------------------------------
+
 // The contact ID (unlike all the other IDs) is an int instead of a string.
 // Therefore we just convert it to a string and return it in a map in the same
 // format as all the others.
@@ -722,6 +855,95 @@ int MTContactHandler::CreateManagedPassphrase(const QString & qstrTitle, const Q
     return nPassphraseID;
 }
 
+
+bool MTContactHandler::SetPaymentFlags(int nPaymentID, qint64 nFlags)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    qint64 & storedFlags = nFlags;
+
+    try
+    {
+        QString queryStr("UPDATE `payment`"
+                         " SET `flags` = :strdflags"
+                         " WHERE `payment_id` = :pymntid");
+    #ifdef CXX_11
+        std::unique_ptr<DBHandler::PreparedQuery> qu;
+    #else /* CXX_11?  */
+        std::auto_ptr<DBHandler::PreparedQuery> qu;
+    #endif /* CXX_11?  */
+        qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+        // ---------------------------------------------
+        qu->bind (":strdflags", storedFlags);
+        qu->bind (":pymntid", nPaymentID);
+
+        DBHandler::getInstance ()->runQuery (qu.release ());
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return false;
+    }
+
+    return true;
+}
+
+// This function assumes that any data needing to be encrypted and/or encoded,
+// has already been so-transformed before passed to this function.
+//
+bool MTContactHandler::UpdatePaymentRecord(int nPaymentID, QMap<QString, QVariant>& mapFinalValues)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    try
+    {
+        QString queryDetails("");
+        int nValuesAddedToQuery = 0;
+
+        for (QMap<QString, QVariant>::iterator it_map = mapFinalValues.begin();
+             it_map != mapFinalValues.end(); ++it_map)
+        {
+            const QString  & qstrKey = it_map.key();
+            // If this isn't the first value being added to the query, then add a comma first.
+            if (nValuesAddedToQuery++ > 0) queryDetails += QString(", ");
+            queryDetails += QString("`%1` = :key_%2").arg(qstrKey).arg(qstrKey);
+        }
+        // ---------------------------------------------
+        QString queryStr = QString("UPDATE `payment`"
+                                   " SET %1"
+                                   " WHERE `payment_id` = :pymntid").arg(queryDetails);
+    #ifdef CXX_11
+        std::unique_ptr<DBHandler::PreparedQuery> qu;
+    #else /* CXX_11?  */
+        std::auto_ptr<DBHandler::PreparedQuery> qu;
+    #endif /* CXX_11?  */
+        qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+        // ---------------------------------------------
+        // Now we bind all the values.
+        //
+        for (QMap<QString, QVariant>::iterator it_map = mapFinalValues.begin();
+             it_map != mapFinalValues.end(); ++it_map)
+        {
+            const QString  & qstrKey = it_map.key();
+            const QVariant & qValue  = it_map.value();
+
+            const QString qstrSqlSubstitute = QString(":key_%1").arg(qstrKey);
+
+            qu->bind (qstrSqlSubstitute, qValue);
+        }
+        // ---------------------------------------------
+        qu->bind (":pymntid", nPaymentID);
+
+        DBHandler::getInstance ()->runQuery (qu.release ());
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return false;
+    }
+
+    return true;
+}
 
 bool MTContactHandler::LowLevelUpdateManagedPassphrase(int nPassphraseID,
                                                        const QString & qstrTitle, const QString & qstrUsername, const opentxs::OTPassword & thePassphrase,

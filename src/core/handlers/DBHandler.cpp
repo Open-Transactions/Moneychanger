@@ -5,6 +5,7 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/modeltradearchive.hpp>
 #include <core/handlers/modelmessages.hpp>
+#include <core/handlers/modelpayments.hpp>
 
 #include <opentxs/core/util/OTPaths.hpp>
 
@@ -199,6 +200,44 @@ bool DBHandler::dbCreateInstance()
                " body TEXT"
                ")";
         // --------------------------------------------
+        QString create_payment_table = "CREATE TABLE IF NOT EXISTS payment"
+               "(payment_id INTEGER PRIMARY KEY,"
+               " have_read INTEGER,"
+               " have_replied INTEGER,"
+               " have_forwarded INTEGER,"
+               " memo TEXT,"
+               " my_asset_type_id TEXT,"
+               " my_nym_id TEXT,"
+               " my_acct_id TEXT,"
+               " my_address TEXT,"
+               " description TEXT,"
+               " sender_nym_id TEXT,"
+               " sender_acct_id TEXT,"
+               " sender_address TEXT,"
+               " recipient_nym_id TEXT,"
+               " recipient_acct_id TEXT,"
+               " recipient_address TEXT,"
+               " amount INTEGER,"
+               " pending_found INTEGER,"
+               " completed_found INTEGER,"
+               " timestamp INTEGER,"
+               " txn_id INTEGER,"
+               " txn_id_display INTEGER,"
+               " method_type TEXT,"
+               " method_type_display TEXT,"
+               " notary_id TEXT,"
+               " record_name TEXT,"
+               " instrument_type TEXT,"
+               " folder INTEGER,"
+               " flags INTEGER"
+               ")";
+        // --------------------------------------------
+        QString create_payment_body_table = "CREATE TABLE IF NOT EXISTS payment_body"
+               "(payment_id INTEGER PRIMARY KEY,"
+               " pending_body TEXT,"
+               " body TEXT"
+               ")";
+        // --------------------------------------------
         // RPC User Manager
         QString create_rpcusers_table = "CREATE TABLE IF NOT EXISTS rpc_users(user_id TEXT PRIMARY KEY, password TEXT)";
 
@@ -242,12 +281,14 @@ bool DBHandler::dbCreateInstance()
         error += query.exec(create_trade_archive);
         error += query.exec(create_message_table);
         error += query.exec(create_message_body_table);
+        error += query.exec(create_payment_table);
+        error += query.exec(create_payment_body_table);
         // ------------------------------------------
         error += query.exec(create_rpcusers_table);
         // ------------------------------------------
         error += query.exec(create_nmc);
         // ------------------------------------------
-        if (error != 20)  //every query passed?
+        if (error != 22)  //every query passed?
         {
             qDebug() << "dbCreateInstance Error: " << dbConnectErrorStr + " " + dbCreationStr;
             FileHandler rm;
@@ -272,6 +313,62 @@ bool DBHandler::dbCreateInstance()
 //                " AND msg_method.method_type = contact_method.method_type"
 //                );
 
+
+QPointer<ModelPayments> DBHandler::getPaymentModel()
+{
+    QString tableName("payment");
+
+    if (!pPaymentModel_)
+    {
+        pPaymentModel_ = new ModelPayments(0, db);
+
+        pPaymentModel_->setTable(tableName);
+        pPaymentModel_->setEditStrategy(QSqlTableModel::OnManualSubmit);
+
+        pPaymentModel_->select();
+//        pPaymentModel_->sort(PMNT_SOURCE_COL_TIMESTAMP, Qt::DescendingOrder);
+
+
+        if ( pPaymentModel_->lastError().isValid())
+            qDebug() <<  pPaymentModel_->lastError();
+
+        int column = 0;
+
+        // NOTE: These header names will change.
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Details"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Read?"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr(" ")); //replied
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr(" ")); // forwarded
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Memo"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Asset type"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Me"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("My account"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("My address"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Description"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("From"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("From account"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("From address"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("To"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("To account"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("To address"));
+
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Amount"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("pending_found"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("completed_found"));
+
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Timestamp"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Txn#"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("txn_id_display"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("method_type"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Transport"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Notary"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("record_name"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Instrument"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Folder"));
+    }
+
+    return pPaymentModel_;
+}
 
 QPointer<ModelMessages> DBHandler::getMessageModel()
 {

@@ -243,7 +243,7 @@ void MTServerDetails::DeleteButtonClicked()
             {
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 // ------------------------------------------------
-                emit RefreshRecordsAndUpdateMenu();
+                emit serversChanged();
                 // ------------------------------------------------
             }
             else
@@ -705,11 +705,23 @@ void MTServerDetails::AddButtonClicked()
                     QDir dirToZip(dir_path);
                     // --------------------------
                     QString filenameZipFile;
+                    QDir selectedDir("/tmp");
 
                     while (filenameZipFile.isEmpty())
-                        filenameZipFile = QFileDialog::getSaveFileName(this, tr("Save Credentials Zipfile"),
-                                                                       "New_Notary_SignerNym_Credentials.zip",
-                                                                       tr("Zipfiles (*.zip)"));
+                    {
+                        QFileDialog dialog(this, tr("Save Credentials Zipfile"), "/tmp/New_Notary_SignerNym_Credentials.zip", tr("Zipfiles (*.zip)"));
+                        dialog.setAcceptMode(QFileDialog::AcceptSave);
+                        if (dialog.exec()) {
+                            QStringList filenames = dialog.selectedFiles();
+                            filenameZipFile = filenames.at(0);
+                            selectedDir = dialog.directory();
+                        }
+                    }
+                    // --------------------------
+//                  while (filenameZipFile.isEmpty())
+//                      filenameZipFile = QFileDialog::getSaveFileName(this, tr("Save Credentials Zipfile"),
+//                                                                     "New_Notary_SignerNym_Credentials.zip",
+//                                                                     tr("Zipfiles (*.zip)"));
 
                     if (!archive(filenameZipFile, dirToZip, QString("New Notary Signer Nym Credentials")))
                         QMessageBox::information(this, tr("Failed Zipping Credentials"),
@@ -745,9 +757,20 @@ void MTServerDetails::AddButtonClicked()
                     QString outputFilename;
 
                     while (outputFilename.isEmpty())
-                        outputFilename = QFileDialog::getSaveFileName(this, tr("Save Results File"),
-                                                                      "New_Notary_Creation_File.txt",
-                                                                      tr("Text files (*.txt)"));
+                    {
+                        QString tempFilename = QString("%1/%2").arg(selectedDir.absolutePath()).arg("New_Notary_Creation_File.txt");
+                        QFileDialog dialog(this, tr("Save Results File"), tempFilename, tr("Text files (*.txt)"));
+                        dialog.setAcceptMode(QFileDialog::AcceptSave);
+                        if (dialog.exec()) {
+                            QStringList filenames = dialog.selectedFiles();
+                            outputFilename = filenames.at(0);
+                            selectedDir = dialog.directory();
+                        }
+                    }
+//                  while (outputFilename.isEmpty())
+//                      outputFilename = QFileDialog::getSaveFileName(this, tr("Save Results File"),
+//                                                                    "New_Notary_Creation_File.txt",
+//                                                                    tr("Text files (*.txt)"));
                     QFile outputFile(outputFilename);
                     outputFile.open(QIODevice::WriteOnly);
 
@@ -851,7 +874,7 @@ void MTServerDetails::on_lineEditName_editingFinished()
 
             m_pOwner->SetPreSelected(m_pOwner->m_qstrCurrentID);
             // ------------------------------------------------
-            emit RefreshRecordsAndUpdateMenu();
+            emit serversChanged();
             // ------------------------------------------------
         }
     }

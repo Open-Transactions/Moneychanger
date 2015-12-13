@@ -737,7 +737,10 @@ QVariant ModelMessages::data ( const QModelIndex & index, int role/* = Qt::Displ
 //        }
         if (index.column() == MSG_SOURCE_COL_SUBJECT) // subject
         {
-            return QVariant( MTContactHandler::Decode(QSqlTableModel::data(index,role).toString()));
+            QVariant qvarData    = QSqlTableModel::data(index,role);
+            QString  qstrData    = qvarData.isValid() ? qvarData.toString() : "";
+            QString  qstrDecoded = qstrData.isEmpty() ? "" : MTContactHandler::Decode(qstrData);
+            return QVariant(qstrDecoded);
         }
     }
 
