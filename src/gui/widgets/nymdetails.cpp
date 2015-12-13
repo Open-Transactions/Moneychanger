@@ -853,7 +853,9 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
 
                                 QMessageBox::information(this, tr("Moneychanger"),
                                     tr("Success!"));
-
+                                // ------------------------------------------------
+                                emit RefreshRecordsAndUpdateMenu();
+                                // ------------------------------------------------
                                 break; // SUCCESS
                             }
                         case (0):
@@ -927,7 +929,9 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
 
                                     QMessageBox::information(this, tr("Moneychanger"),
                                         tr("Success!"));
-
+                                    // ------------------------------------------------
+                                    emit RefreshRecordsAndUpdateMenu();
+                                    // ------------------------------------------------
                                     break; // SUCCESS
                                 }
                             case (0):

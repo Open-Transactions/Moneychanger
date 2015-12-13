@@ -907,6 +907,8 @@ void MTSendDlg::dialog()
         }
         // -------------------------------------------
 
+        ui->comboBox->setCurrentIndex(1); // Cheque.
+
         ui->toButton->setFocus();
 
 

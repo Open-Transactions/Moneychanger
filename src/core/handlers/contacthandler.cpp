@@ -20,6 +20,7 @@
 #include <QObject>
 #include <QStringList>
 #include <QSqlField>
+#include <QFlags>
 
 
 std::string MTNameLookupQT::GetNymName(const std::string & str_id,
@@ -852,6 +853,39 @@ int MTContactHandler::CreateManagedPassphrase(const QString & qstrTitle, const Q
     }
 
     return nPassphraseID;
+}
+
+
+bool MTContactHandler::SetPaymentFlags(int nPaymentID, qint64 nFlags)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    qint64 & storedFlags = nFlags;
+
+    try
+    {
+        QString queryStr("UPDATE `payment`"
+                         " SET `flags` = :strdflags"
+                         " WHERE `payment_id` = :pymntid");
+    #ifdef CXX_11
+        std::unique_ptr<DBHandler::PreparedQuery> qu;
+    #else /* CXX_11?  */
+        std::auto_ptr<DBHandler::PreparedQuery> qu;
+    #endif /* CXX_11?  */
+        qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+        // ---------------------------------------------
+        qu->bind (":strdflags", storedFlags);
+        qu->bind (":pymntid", nPaymentID);
+
+        DBHandler::getInstance ()->runQuery (qu.release ());
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return false;
+    }
+
+    return true;
 }
 
 // This function assumes that any data needing to be encrypted and/or encoded,

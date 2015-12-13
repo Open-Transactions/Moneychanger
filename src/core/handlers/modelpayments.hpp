@@ -8,6 +8,7 @@
 #include <QModelIndex>
 #include <QVariant>
 #include <QSortFilterProxyModel>
+#include <QFlags>
 
 #include <memory>
 #include <string>
@@ -40,11 +41,58 @@
 #define PMNT_SOURCE_COL_RECORD_NAME 25
 #define PMNT_SOURCE_COL_INSTRUMENT_TYPE 26
 #define PMNT_SOURCE_COL_FOLDER 27
+#define PMNT_SOURCE_COL_FLAGS 28
+
+
+
 
 class ModelPayments : public QSqlTableModel
 {
     Q_OBJECT
 public:
+    /*
+class MyClass
+{
+public:
+    enum Option {
+        NoOptions = 0x0,
+        ShowTabs = 0x1,
+        ShowAll = 0x2,
+        SqueezeBlank = 0x4
+    };
+    Q_DECLARE_FLAGS(Options, Option)
+    ...
+};
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(MyClass::Options)
+
+You can then use the MyClass::Options type to store combinations of MyClass::Option values.
+    */
+    enum PaymentFlag {
+         NoFlags                =  0x0
+        ,IsSpecialMail          =  0x1
+        ,IsPending              =  0x1 <<  1
+        ,IsOutgoing             =  0x1 <<  2
+        ,IsRecord               =  0x1 <<  3
+        ,IsReceipt              =  0x1 <<  4
+        ,IsMail                 =  0x1 <<  5
+        ,IsTransfer             =  0x1 <<  6
+        ,IsCheque               =  0x1 <<  7
+        ,IsInvoice              =  0x1 <<  8
+        ,IsVoucher              =  0x1 <<  9
+        ,IsContract             =  0x1 << 10
+        ,IsPaymentPlan          =  0x1 << 11
+        ,IsCash                 =  0x1 << 12
+        ,IsExpired              =  0x1 << 13
+        ,IsCanceled             =  0x1 << 14
+        ,CanDelete              =  0x1 << 15
+        ,CanAcceptIncoming      =  0x1 << 16
+        ,CanDiscardIncoming     =  0x1 << 17
+        ,CanCancelOutgoing      =  0x1 << 18
+        ,CanDiscardOutgoingCash =  0x1 << 19
+    };
+    Q_DECLARE_FLAGS(PaymentFlags, PaymentFlag)
+
     explicit ModelPayments(QObject *parent = 0, QSqlDatabase db = QSqlDatabase());
 
     QVariant data ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
@@ -60,6 +108,8 @@ signals:
 
 public slots:
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(ModelPayments::PaymentFlags)
 
 
 class QTableView;

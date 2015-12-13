@@ -45,6 +45,7 @@ class MTContactHandler;
 
 typedef QMap<QString, QString> mapIDName; // ID, display name.
 
+
 class MTContactHandler
 {
 private:
@@ -244,6 +245,7 @@ public:
   QString GetPaymentPendingBody(int nID);
 
   bool UpdatePaymentRecord(int nPaymentID, QMap<QString, QVariant>& mapFinalValues);
+  bool SetPaymentFlags(int nPaymentID, qint64 nFlags);
   // ----------------------------------------------------------
   public:
     ~MTContactHandler();

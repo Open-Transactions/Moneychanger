@@ -108,6 +108,7 @@ QWidget * PaymentsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, boo
     QModelIndex sourceIndex_Amount         = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_AMOUNT);
     QModelIndex sourceIndex_PendingFound   = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_PENDING_FOUND);
     QModelIndex sourceIndex_CompletedFound = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_COMPLETED_FOUND);
+    QModelIndex sourceIndex_Flags          = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_FLAGS);
 
     QVariant    sourceData_Folder     = sourceModel()->data(sourceIndex_Folder,  Qt::DisplayRole);
     QVariant    sourceData_AssetId    = sourceModel()->data(sourceIndex_AssetId, Qt::DisplayRole);
@@ -118,11 +119,15 @@ QWidget * PaymentsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, boo
     QVariant    sourceData_Amount  = sourceModel()->data(sourceIndex_Amount,   Qt::DisplayRole);
     QVariant    sourceData_PendingFound  = sourceModel()->data(sourceIndex_PendingFound, Qt::DisplayRole);
     QVariant    sourceData_CompletedFound  = sourceModel()->data(sourceIndex_CompletedFound, Qt::DisplayRole);
+    QVariant    sourceData_Flags      = sourceModel()->data(sourceIndex_Flags,  Qt::DisplayRole);
 
     QString     qstrAssetId     = sourceData_AssetId.isValid() ? sourceData_AssetId.toString() : "";
     QString     qstrDescription = sourceData_Desc   .isValid() ? sourceData_Desc   .toString() : "";
     QString     qstrRecordName  = sourceData_RecordName       .isValid() ? sourceData_RecordName    .toString() : "";
     QString     qstrInstrumentType = sourceData_InstrumentType.isValid() ? sourceData_InstrumentType.toString() : "";
+
+    ModelPayments::PaymentFlags flags = sourceData_Flags.isValid() ? (ModelPayments::PaymentFlag)sourceData_Flags.toLongLong()
+                                                                  : ModelPayments::NoFlags;
 
     const int64_t lAmount = sourceData_Amount.isValid() ? sourceData_Amount.toLongLong() : 0;
 
@@ -131,12 +136,21 @@ QWidget * PaymentsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, boo
     timestamp.setTime_t(the_time);
     QString qstrTimestamp = QString(timestamp.toString(Qt::SystemLocaleShortDate));
 
-    const bool bIsOutgoing     = sourceData_Folder.isValid()         ? (sourceData_Folder.toInt() == 0)   : false;
-    const bool bPendingFound   = sourceData_PendingFound.isValid()   ? sourceData_PendingFound.toBool()   : false;
-    const bool bCompletedFound = sourceData_CompletedFound.isValid() ? sourceData_CompletedFound.toBool() : false;
+    const bool bIsOutgoing     = flags.testFlag(ModelPayments::IsOutgoing);
+    const bool bIsPending      = flags.testFlag(ModelPayments::IsPending);
 
-    const bool bIsPending = (bPendingFound && !bCompletedFound);
+//  const bool bIsOutgoing     = sourceData_Folder.isValid()         ? (sourceData_Folder.toInt() == 0)   : false;
+//  const bool bPendingFound   = sourceData_PendingFound.isValid()   ? sourceData_PendingFound.toBool()   : false;
+//  const bool bCompletedFound = sourceData_CompletedFound.isValid() ? sourceData_CompletedFound.toBool() : false;
+//  const bool bIsPending = (bPendingFound && !bCompletedFound);
 
+    
+//    qDebug() << "DEBUGGING! bIsOutgoing: " << (bIsOutgoing ? QString("true") :  QString("false"))
+//    << " bPendingFound: " << (bPendingFound ? QString("true") :  QString("false")) <<
+//    " bCompletedFound: " << (bCompletedFound ? QString("true") :  QString("false")) <<
+//    " bIsPending: " << (bIsPending ? QString("true") :  QString("false")) << "\n";
+    
+    
     TransactionTableViewCellType cellType = (bIsOutgoing ?
                                                  // -------------------------------------------------
                                                  (bIsPending ?
@@ -149,8 +163,9 @@ QWidget * PaymentsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, boo
     // --------------------------------------------------------------------------------------------
     // For invoices and invoice receipts.
     //
-    const bool bIsInvoice = (0 == qstrInstrumentType.compare("cheque")) && (lAmount < 0);
-    const bool bIsPlan    = (0 == qstrInstrumentType.compare("paymentPlan"));
+
+    const bool bIsInvoice       = flags.testFlag(ModelPayments::IsInvoice);
+    const bool bIsPlan          = flags.testFlag(ModelPayments::IsPaymentPlan);
     const bool bIsChequeReceipt = (0 == qstrInstrumentType.compare("chequeReceipt"));
     const bool bIsMarketReceipt = (0 == qstrInstrumentType.compare("marketReceipt"));
 

@@ -557,6 +557,9 @@ QWidget * MTHome::CreateUserBarWidget()
     // ----------------------------------------------------------------
     pUserBarWidget_layout->addLayout(pAccountLayout, 0, 0, 1,1, Qt::AlignLeft);
     // ----------------------------------------------------------------
+
+
+
     QLabel * currency_amount_label = new QLabel;
     QString currency_amount = QString("");
     // ----------------------------------------------------------------

@@ -1063,7 +1063,7 @@ void MTCompose::on_sendButton_clicked()
         QMessageBox::StandardButton info_btn =
                 QMessageBox::information(this, tr("Success"), tr("Success sending message."));
         // -----------------------------------------------------------------
-        emit balancesChanged(); // So we'll see the sent message in the transaction history
+        emit balancesChanged(); // So we'll see the sent message in the payment history.
         // -----------------------------------------------------------------
     }
     // -----------------------------------------------------------------

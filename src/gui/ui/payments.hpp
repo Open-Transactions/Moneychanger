@@ -27,6 +27,8 @@ class Payments;
 
 class QTreeWidgetItem;
 class PaymentsProxyModel;
+class ModelPayments;
+//class QFrame;
 
 class QTableView;
 
@@ -64,11 +66,24 @@ public:
 
     void dialog();
 
+    void RefreshUserBar();
+    QWidget * CreateUserBarWidget();
+
+    void AcceptIncoming     (QPointer<ModelPayments> & pModel, PaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
+    void CancelOutgoing     (QPointer<ModelPayments> & pModel, PaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
+    void DiscardOutgoingCash(QPointer<ModelPayments> & pModel, PaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
+    void DiscardIncoming    (QPointer<ModelPayments> & pModel, PaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
+
 public slots:
     void onRecordlistPopulated();
+    void onBalancesChanged();
+    void onNeedToRefreshUserBar();
+    void onNeedToRefreshRecords();
 
 signals:
-    void needToDownloadMail();
+    void showDashboard();
+    void needToPopulateRecordlist();
+    void needToDownloadAccountData();
     void showContact(QString);
     void showContactAndRefreshHome(QString);
 
@@ -104,17 +119,24 @@ private slots:
 private:
     Ui::Payments *ui;
 
+    QPointer<QWidget>     m_pHeaderFrame;
+//  QPointer<QFrame>      m_pHeaderFrame;
+
     QScopedPointer<QMenu> popupMenu_;
 
-    QAction * pActionDelete          = nullptr;
-    QAction * pActionOpenNewWindow   = nullptr;
-    QAction * pActionReply           = nullptr;
-    QAction * pActionForward         = nullptr;
-    QAction * pActionMarkRead        = nullptr;
-    QAction * pActionMarkUnread      = nullptr;
-    QAction * pActionViewContact     = nullptr;
-    QAction * pActionCreateContact   = nullptr;
-    QAction * pActionExistingContact = nullptr;
+    QAction * pActionDelete              = nullptr;
+    QAction * pActionOpenNewWindow       = nullptr;
+    QAction * pActionReply               = nullptr;
+    QAction * pActionForward             = nullptr;
+    QAction * pActionMarkRead            = nullptr;
+    QAction * pActionMarkUnread          = nullptr;
+    QAction * pActionViewContact         = nullptr;
+    QAction * pActionCreateContact       = nullptr;
+    QAction * pActionExistingContact     = nullptr;
+    QAction * pActionAcceptIncoming      = nullptr;
+    QAction * pActionCancelOutgoing      = nullptr;
+    QAction * pActionDiscardOutgoingCash = nullptr;
+    QAction * pActionDiscardIncoming     = nullptr;
 
     int nCurrentContact_ = 0;
     QString qstrMethodType_;

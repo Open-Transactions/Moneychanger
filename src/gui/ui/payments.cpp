@@ -8,6 +8,7 @@
 #include <gui/widgets/compose.hpp>
 #include <gui/ui/dlgexportedtopass.hpp>
 
+#include <gui/widgets/home.hpp>
 #include <gui/widgets/dlgchooser.hpp>
 #include <gui/ui/getstringdialog.hpp>
 
@@ -36,6 +37,7 @@
 #include <QList>
 #include <QSqlRecord>
 #include <QTimer>
+#include <QFrame>
 
 #include <string>
 #include <map>
@@ -97,6 +99,11 @@ Payments::Payments(QWidget *parent) :
 
     connect(ui->toolButtonPay,      SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_sendfunds_slot()));
     connect(ui->toolButtonContacts, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_addressbook_slot()));
+
+    QList<int> list;
+    list.append(0);
+    list.append(100);
+    ui->splitter->setSizes(list);
 }
 
 static void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel)
@@ -120,7 +127,7 @@ static void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel
         // ----------------------------------
 //        PaymentsProxyModel * pPmntProxyModel = static_cast<PaymentsProxyModel *>(pProxyModel);
 
-      pView->sortByColumn(2, Qt::DescendingOrder); // The timestamp ends up at index 2 in all the proxy views.
+      pView->sortByColumn(7, Qt::DescendingOrder); // The timestamp ends up at index 7 in all the proxy views.
 
 //        qDebug() << "SORT COLUMN: " << proxyIndex.column() << "\n";
 
@@ -135,9 +142,241 @@ static void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel
 
 
 
+
+
+void Payments::RefreshUserBar()
+{
+    if (m_pHeaderFrame)
+    {
+        ui->userBar->layout()->removeWidget(m_pHeaderFrame);
+
+        m_pHeaderFrame->setParent(NULL);
+        m_pHeaderFrame->disconnect();
+        m_pHeaderFrame->deleteLater();
+
+        m_pHeaderFrame = NULL;
+    }
+    // -------------------------------------------------
+    QPointer<QWidget> pUserBar = this->CreateUserBarWidget();
+
+    if (pUserBar)
+    {
+        // Note: Frame Shape should be Styled Panel, and Frame Shadow should be Raised.
+        // Frame line width should be 1. Mid line width 0. LayoutDirection on frame should
+        // be leftToRight. Font kerning should be on. Horizontal and Vertical policies
+        // should be Preferred.
+//        QPointer<QFrame> pHeaderFrame  = new QFrame;
+//        // -----------------------------------------
+//        pHeaderFrame->setFrameShape (QFrame::StyledPanel);
+//        pHeaderFrame->setFrameShadow(QFrame::Raised);
+//        pHeaderFrame->setLineWidth(1);
+//        pHeaderFrame->setMidLineWidth(0);
+//        // -----------------------------------------
+//        QPointer<QGridLayout> pBalanceLayout = new QGridLayout;
+//        pBalanceLayout->setAlignment(Qt::AlignTop);
+//        // -----------------------------------------
+//        pBalanceLayout->addWidget(pUserBar);
+//        // -----------------------------------------
+//        pHeaderFrame->setLayout(pBalanceLayout);
+        // -----------------------------------------
+        QHBoxLayout * pHBoxLayout = static_cast<QHBoxLayout*>(ui->userBar->layout());
+        pHBoxLayout->insertWidget(0, pUserBar);
+        // -----------------------------------------
+        m_pHeaderFrame = pUserBar;
+    }
+    // --------------------------------------------------
+}
+
+
+QWidget * Payments::CreateUserBarWidget()
+{
+    QWidget     * pUserBar        = new QWidget;
+    QGridLayout * pUserBar_layout = new QGridLayout;
+
+    pUserBar_layout->setSpacing(12);
+    pUserBar_layout->setContentsMargins(0,0,0,0); // left top right bottom
+//  pUserBar_layout->setContentsMargins(12, 3, 8, 10); // left top right bottom
+
+    pUserBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    pUserBar->setLayout(pUserBar_layout);
+    pUserBar->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");  // todo hardcoding.
+    // -------------------------------------------
+    QString qstr_acct_nym,
+            qstr_acct_server,
+            qstr_acct_asset, qstr_acct_asset_name("");
+    // -------------------------------------------
+    QString qstr_acct_name("");
+    QString qstr_balance(""), qstr_tla("");
+    QString qstr_acct_id = Moneychanger::It()->get_default_account_id();
+    // -------------------------------------------
+    if (qstr_acct_id.isEmpty())
+    {
+        qstr_balance     = tr("(Click for Account Manager)");
+        qstr_acct_name = QString("");
+        // -----------------------------------
+        qstr_acct_nym    = Moneychanger::It()->get_default_nym_id();
+        qstr_acct_server = Moneychanger::It()->get_default_notary_id();
+        qstr_acct_asset  = Moneychanger::It()->get_default_asset_id();
+    }
+    else
+    {
+        // -----------------------------------
+        std::string str_acct_id     = qstr_acct_id.toStdString();
+        std::string str_acct_nym    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
+        std::string str_acct_server = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_acct_id);
+        std::string str_acct_asset  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+        // -----------------------------------
+        qstr_acct_nym    = QString::fromStdString(str_acct_nym);
+        qstr_acct_server = QString::fromStdString(str_acct_server);
+        qstr_acct_asset  = QString::fromStdString(str_acct_asset);
+        // -----------------------------------
+        std::string str_tla = opentxs::OTAPI_Wrap::It()->GetCurrencyTLA(str_acct_asset);
+        qstr_tla = QString("<font color=grey>%1</font>").arg(QString::fromStdString(str_tla));
+
+        qstr_balance = MTHome::shortAcctBalance(qstr_acct_id, qstr_acct_asset, false);
+        // -----------------------------------
+        std::string str_acct_name  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(str_acct_id);
+        // -----------------------------------
+        if (!str_acct_asset.empty())
+        {
+            std::string str_asset_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(str_acct_asset);
+            qstr_acct_asset_name = QString::fromStdString(str_asset_name);
+        }
+        // -----------------------------------
+        if (!str_acct_name.empty())
+        {
+            qstr_acct_name = QString("%1").arg(QString::fromStdString(str_acct_name));
+        }
+    }
+    // ---------------------------------------------
+    QToolButton * buttonAccount = new QToolButton;
+
+    buttonAccount->setAutoRaise(true);
+    buttonAccount->setStyleSheet("QToolButton { margin-left: 0; font-size:30pt;  font-weight:lighter; }");
+
+    QLabel * tla_label = new QLabel(qstr_tla);
+    tla_label->setAlignment(Qt::AlignRight|Qt::AlignBottom);
+    tla_label->setStyleSheet("QLabel { margin-right: 0; font-size:20pt;  font-weight:lighter; }");
+
+    buttonAccount->setText(qstr_balance);
+    // -------------------------------------------
+    connect(buttonAccount, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_show_account_manager_slot()));
+    // ----------------------------------------------------------------
+    QString  cash_label_string = QString("");
+    QString  qstrCash = qstr_acct_name;
+
+    if (!qstr_acct_nym.isEmpty() && !qstr_acct_server.isEmpty() && !qstr_acct_asset.isEmpty())
+    {
+        int64_t  raw_cash_balance = MTHome::rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
+
+        if (raw_cash_balance > 0)
+        {
+            cash_label_string = MTHome::cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
+            qstrCash += QString(" <small><font color=grey>(%2 %3 %4)</font></small>").arg(tr("plus")).arg(cash_label_string).arg(tr("in cash"));
+        }
+    }
+    else
+        qstrCash = tr("(no account selected)");
+    // -------------------------------------------
+    QLabel * pCashLabel = new QLabel(qstrCash);
+    // ---------------------------------------------------------------
+    //pCashLabel->setText(qstrCash);
+    pCashLabel->setIndent(13);
+    // ---------------------------------------------------------------
+    QWidget * row_balance_container = new QWidget;
+    QHBoxLayout * row_balance_layout = new QHBoxLayout;
+
+    tla_label->setContentsMargins(12, 0, 0, 5);
+    tla_label->setAlignment(Qt::AlignRight|Qt::AlignBottom);
+    row_balance_layout->setSpacing(0);
+    row_balance_layout->addWidget(tla_label);
+    row_balance_layout->addWidget(buttonAccount);
+
+    row_balance_layout->setMargin(0);
+    row_balance_layout->setContentsMargins(0, 0, 0, 0);
+//  row_balance_layout->setContentsMargins(0, 20, 0, 0);
+    row_balance_container->setContentsMargins(0, 0, 0, 0);
+
+    row_balance_container->setLayout(row_balance_layout);
+    // ----------------------------------------------------------------
+    QVBoxLayout * pAccountLayout = new QVBoxLayout;
+
+    pAccountLayout->setMargin(0);
+    pAccountLayout->setContentsMargins(0, 0, 0, 0);
+    pAccountLayout->setSpacing(3);
+
+    pAccountLayout->addWidget(row_balance_container);
+    pAccountLayout->addWidget(pCashLabel);
+    pAccountLayout->addStretch();
+    // ----------------------------------------------------------------
+    pUserBar_layout->addLayout(pAccountLayout, 0, 0, 1,1, Qt::AlignLeft);
+    // ----------------------------------------------------------------
+    //Sub-info
+    QWidget * row_content_container = new QWidget;
+    QGridLayout * row_content_grid = new QGridLayout;
+
+    row_content_container->setContentsMargins(0, 0, 0, 0);
+
+    row_content_grid->setSpacing(4);
+    row_content_grid->setMargin(0); // new
+
+    row_content_grid->setContentsMargins(3, 0, 3, 0); // left top right bottom
+//  row_content_grid->setContentsMargins(3, 4, 3, 4); // left top right bottom
+
+    row_content_container->setLayout(row_content_grid);
+
+    pUserBar_layout->addWidget(row_content_container, 1,0, 1,2);
+    // -------------------------------------------
+    QString  identity_label_string = QString("<font color=grey>%1:</font> ").arg(tr("My Identity"));
+    QLabel * pIdentityLabel = new QLabel(identity_label_string);
+    pIdentityLabel->setIndent(2);
+//  pIdentityLabel->setContentsMargins(12, 0, 0, 5);
+    pIdentityLabel->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+//  pIdentityLabel->setStyleSheet("QLabel { margin-right: 0; font-size:20pt;  font-weight:lighter; }");
+    // --------------------------------------------
+    QString  nym_label_string = QString("");
+    // --------------------------------------------
+    if (!qstr_acct_nym.isEmpty())
+    {
+        MTNameLookupQT theLookup;
+        QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_acct_nym.toStdString(), ""));
+
+        if (!qstr_name.isEmpty())
+            nym_label_string = qstr_name;
+        else
+            nym_label_string = QString("(name is blank)");
+    }
+    else
+        nym_label_string += tr("(none selected)");
+    // ---------------------------------------------------------------
+    QToolButton * buttonNym = new QToolButton;
+
+    buttonNym->setText(nym_label_string);
+    buttonNym->setAutoRaise(true);
+    buttonNym->setStyleSheet("QToolButton { margin-left: 0; font-size:15pt;  font-weight:lighter; }");
+//  buttonNym->setStyleSheet("QToolButton { margin-left: 0; font-size:20pt;  font-weight:lighter; }");
+    // -------------------------------------------
+    connect(buttonNym, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_defaultnym_slot()));
+    // ----------------------------------------------------------------
+    QHBoxLayout * pIdentityLayout = new QHBoxLayout;
+
+    pIdentityLayout->setMargin(0);
+    pIdentityLayout->setContentsMargins(0, 0, 0, 0); // new
+    pIdentityLayout->setSpacing(0);
+    pIdentityLayout->addSpacing(8);
+    pIdentityLayout->addWidget(pIdentityLabel);
+    pIdentityLayout->addWidget(buttonNym);
+    // ---------------------------------------------------------------
+    row_content_grid->addLayout(pIdentityLayout, 0,0, 1,1, Qt::AlignLeft);
+    // -------------------------------------------
+    return pUserBar;
+}
+
+
 void Payments::on_tabWidget_currentChanged(int index)
 {
-    if (ui->tableViewSent     && ui->tableViewReceived &&
+    if (ui->tableViewSent      && ui->tableViewReceived &&
         pPmntProxyModelOutbox_ && pPmntProxyModelInbox_)
     {
         pCurrentTabTableView_  = (0 == ui->tabWidget->currentIndex()) ? ui->tableViewReceived    : ui->tableViewSent;
@@ -480,6 +719,8 @@ void Payments::on_tableViewReceivedSelectionModel_currentRowChanged(const QModel
     }
 }
 
+
+
 void Payments::dialog()
 {
     if (!already_init)
@@ -496,6 +737,12 @@ void Payments::dialog()
         QPixmap pixmapReply   (":/icons/icons/reply.png");
         QPixmap pixmapForward (":/icons/sendfunds");
         QPixmap pixmapDelete  (":/icons/icons/DeleteRed.png");
+        QPixmap pixmapRequest (":/icons/requestpayment");
+        QPixmap pixmapPending (":/icons/overview");
+        QPixmap pixmapImport  (":/icons/icons/request.png");
+        QPixmap pixmapMessages(":/icons/icons/pencil.png");
+        QPixmap pixmapExchange  (":/icons/markets");
+        QPixmap pixmapSecrets   (":/icons/icons/vault.png");
         // ----------------------------------------------------------------
         QIcon contactsButtonIcon(pixmapContacts);
         QIcon refreshButtonIcon (pixmapRefresh);
@@ -503,6 +750,12 @@ void Payments::dialog()
         QIcon replyButtonIcon   (pixmapReply);
         QIcon forwardButtonIcon (pixmapForward);
         QIcon deleteButtonIcon  (pixmapDelete);
+        QIcon requestButtonIcon  (pixmapRequest);
+        QIcon pendingButtonIcon  (pixmapPending);
+        QIcon importButtonIcon   (pixmapImport);
+        QIcon messagesButtonIcon (pixmapMessages);
+        QIcon exchangeButtonIcon (pixmapExchange);
+        QIcon secretsButtonIcon  (pixmapSecrets);
         // ----------------------------------------------------------------
         ui->toolButtonRefresh->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         ui->toolButtonRefresh->setAutoRaise(true);
@@ -517,6 +770,7 @@ void Payments::dialog()
 //      ui->toolButtonContacts->setIconSize(pixmapContacts.rect().size());
         ui->toolButtonContacts->setIconSize(pixmapSize.rect().size());
         ui->toolButtonContacts->setText(tr("Address Book"));
+        ui->toolButtonContacts->setHidden(true);
         // ----------------------------------------------------------------
         ui->toolButtonPay->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         ui->toolButtonPay->setAutoRaise(true);
@@ -537,6 +791,7 @@ void Payments::dialog()
 //      ui->toolButtonReply->setIconSize(pixmapReply.rect().size());
         ui->toolButtonReply->setIconSize(pixmapSize.rect().size());
         ui->toolButtonReply->setText(tr("Reply"));
+        ui->toolButtonReply->setHidden(true);
         // ----------------------------------------------------------------
         ui->toolButtonForward->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         ui->toolButtonForward->setAutoRaise(true);
@@ -544,6 +799,67 @@ void Payments::dialog()
 //      ui->toolButtonForward->setIconSize(pixmapForward.rect().size());
         ui->toolButtonForward->setIconSize(pixmapSize.rect().size());
         ui->toolButtonForward->setText(tr("Forward"));
+        ui->toolButtonForward->setHidden(true);
+        // ----------------------------------------------------------------
+        ui->toolButtonRequest->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonRequest->setAutoRaise(true);
+        ui->toolButtonRequest->setIcon(requestButtonIcon);
+//      ui->toolButtonRequest->setIconSize(pixmapRequest.rect().size());
+        ui->toolButtonRequest->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonRequest->setText(tr("Request Funds"));
+        ui->toolButtonRequest->setHidden(true);
+        // ----------------------------------------------------------------
+        ui->toolButtonPending->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonPending->setAutoRaise(true);
+        ui->toolButtonPending->setIcon(pendingButtonIcon);
+//      ui->toolButtonPending->setIconSize(pixmapPending.rect().size());
+        ui->toolButtonPending->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonPending->setText(tr("View Pending"));
+        // ----------------------------------------------------------------
+        ui->toolButtonImport->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonImport->setAutoRaise(true);
+        ui->toolButtonImport->setIcon(importButtonIcon);
+//      ui->toolButtonImport->setIconSize(pixmapImport.rect().size());
+        ui->toolButtonImport->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonImport->setText(tr("Import Cash"));
+        ui->toolButtonImport->setHidden(true);
+        // ----------------------------------------------------------------
+        ui->toolButtonMessages->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonMessages->setAutoRaise(true);
+        ui->toolButtonMessages->setIcon(messagesButtonIcon);
+//      ui->toolButtonMessages->setIconSize(pixmapMessages.rect().size());
+        ui->toolButtonMessages->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonMessages->setText(tr("Messages"));
+        // ----------------------------------------------------------------
+        ui->toolButtonExchange->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonExchange->setAutoRaise(true);
+        ui->toolButtonExchange->setIcon(exchangeButtonIcon);
+//      ui->toolButtonExchange->setIconSize(pixmapExchange.rect().size());
+        ui->toolButtonExchange->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonExchange->setText(tr("Exchange"));
+        // ----------------------------------------------------------------
+        ui->toolButtonSecrets->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonSecrets->setAutoRaise(true);
+        ui->toolButtonSecrets->setIcon(secretsButtonIcon);
+//      ui->toolButtonSecrets->setIconSize(pixmapSecrets.rect().size());
+        ui->toolButtonSecrets->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonSecrets->setText(tr("Secrets"));
+        // ----------------------------------------------------------------
+        connect(ui->toolButtonRequest,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_requestfunds_slot()));
+        connect(ui->toolButtonPending,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_overview_slot()));
+        connect(ui->toolButtonImport,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_import_slot()));
+        connect(ui->toolButtonMessages,  SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_messages_slot()));
+        connect(ui->toolButtonExchange,  SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_market_slot()));
+        connect(ui->toolButtonSecrets,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_passphrase_manager_slot()));
+        // ----------------------------------
+        // Note: This is a placekeeper, so later on I can just erase
+        // the widget at 0 and replace it with the real header widget.
+        //
+        m_pHeaderFrame  = new QFrame;
+        QHBoxLayout * pHBoxLayout = static_cast<QHBoxLayout*>(ui->userBar->layout());
+        pHBoxLayout->insertWidget(0, m_pHeaderFrame);
+        // ----------------------------------
+
         // ******************************************************
         QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
@@ -589,8 +905,8 @@ void Payments::dialog()
 //        ui->splitter->setStretchFactor(0, 2);
 //        ui->splitter->setStretchFactor(1, 3);
 
-        ui->splitter_3->setStretchFactor(0, 1);
-        ui->splitter_3->setStretchFactor(1, 5);
+        ui->splitter->setStretchFactor(0, 1);
+        ui->splitter->setStretchFactor(1, 5);
         // ------------------------
         on_tabWidget_currentChanged(0);
 
@@ -905,6 +1221,30 @@ void Payments::on_tableViewSent_customContextMenuRequested(const QPoint &pos)
     tableViewPopupMenu(pos, ui->tableViewSent, &(*pPmntProxyModelOutbox_));
 }
 
+// --------------------------------------------------
+// TODO resume: payments::AcceptIncoming, CancelOutgoing, DiscardOutgoingCash, and DiscardIncoming:
+
+void Payments::AcceptIncoming(QPointer<ModelPayments> & pModel, PaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView)
+{
+    emit showDashboard();
+}
+
+void Payments::CancelOutgoing(QPointer<ModelPayments> & pModel, PaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView)
+{
+    emit showDashboard();
+}
+
+void Payments::DiscardOutgoingCash(QPointer<ModelPayments> & pModel, PaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView)
+{
+    emit showDashboard();
+}
+
+void Payments::DiscardIncoming(QPointer<ModelPayments> & pModel, PaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView)
+{
+    emit showDashboard();
+}
+// --------------------------------------------------
+
 void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, PaymentsProxyModel * pProxyModel)
 {
     QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
@@ -933,9 +1273,13 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
     pActionMarkRead = popupMenu_->addAction(tr("Mark as read"));
     pActionMarkUnread = popupMenu_->addAction(tr("Mark as unread"));
     // ----------------------------------
-    pActionViewContact     = nullptr;
-    pActionCreateContact   = nullptr;
-    pActionExistingContact = nullptr;
+    pActionViewContact         = nullptr;
+    pActionCreateContact       = nullptr;
+    pActionExistingContact     = nullptr;
+    pActionAcceptIncoming      = nullptr;
+    pActionCancelOutgoing      = nullptr;
+    pActionDiscardOutgoingCash = nullptr;
+    pActionDiscardIncoming     = nullptr;
 
     int nContactId = 0;
 
@@ -945,16 +1289,23 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
     QString qstrRecipientAddr;
     QString qstrNotaryId;
     QString qstrMethodType;
-    QString qstrSubject;
+//  QString qstrSubject;
 
     int nSenderContactByNym     = 0;
     int nSenderContactByAddr    = 0;
     int nRecipientContactByNym  = 0;
     int nRecipientContactByAddr = 0;
 
+    ModelPayments::PaymentFlags flags = ModelPayments::NoFlags;
+    // ----------------------------------------------
     // Look at the data for indexAtRightClick and see if I have a contact already in the
     // address book. If so, add the "View Contact" option to the menu. But if not, add the
     // "Create Contact" and "Add to Existing Contact" options to the menu instead.
+    //
+    // UPDATE: I've now also added similar functionality, for other actions specific
+    // to certain payment records, based on their flags. (Pay this invoice, deposit
+    // this cash, etc.)
+    //
     if (nRow >= 0)
     {
         QModelIndex indexSenderNym     = pModel->index(nRow, PMNT_SOURCE_COL_SENDER_NYM);
@@ -963,6 +1314,7 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
         QModelIndex indexRecipientAddr = pModel->index(nRow, PMNT_SOURCE_COL_RECIP_ADDR);
         QModelIndex indexNotaryId      = pModel->index(nRow, PMNT_SOURCE_COL_NOTARY_ID);
         QModelIndex indexMethodType    = pModel->index(nRow, PMNT_SOURCE_COL_METHOD_TYPE);
+        QModelIndex indexFlags         = pModel->index(nRow, PMNT_SOURCE_COL_FLAGS);
 //      QModelIndex indexSubject       = pModel->index(nRow, PMNT_SOURCE_COL_MEMO);
 
         QVariant varSenderNym     = pModel->rawData(indexSenderNym);
@@ -971,15 +1323,17 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
         QVariant varRecipientAddr = pModel->rawData(indexRecipientAddr);
         QVariant varNotaryId      = pModel->rawData(indexNotaryId);
         QVariant varMethodType    = pModel->rawData(indexMethodType);
+        QVariant varFlags         = pModel->rawData(indexFlags);
 //      QVariant varSubject       = pModel->rawData(indexSubject);
 
-        qstrSenderNymId    = varSenderNym    .isValid() ? varSenderNym    .toString() : QString("");
-        qstrSenderAddr     = varSenderAddr   .isValid() ? varSenderAddr   .toString() : QString("");
-        qstrRecipientNymId = varRecipientNym .isValid() ? varRecipientNym .toString() : QString("");
-        qstrRecipientAddr  = varRecipientAddr.isValid() ? varRecipientAddr.toString() : QString("");
-        qstrNotaryId       = varNotaryId     .isValid() ? varNotaryId     .toString() : QString("");
-        qstrMethodType     = varMethodType   .isValid() ? varMethodType   .toString() : QString("");
-//      qstrSubject        = varSubject      .isValid() ? varSubject      .toString() : QString("");
+        qint64 lFlags      = varFlags        .isValid() ? varFlags        .toLongLong() : 0;
+        qstrSenderNymId    = varSenderNym    .isValid() ? varSenderNym    .toString()   : QString("");
+        qstrSenderAddr     = varSenderAddr   .isValid() ? varSenderAddr   .toString()   : QString("");
+        qstrRecipientNymId = varRecipientNym .isValid() ? varRecipientNym .toString()   : QString("");
+        qstrRecipientAddr  = varRecipientAddr.isValid() ? varRecipientAddr.toString()   : QString("");
+        qstrNotaryId       = varNotaryId     .isValid() ? varNotaryId     .toString()   : QString("");
+        qstrMethodType     = varMethodType   .isValid() ? varMethodType   .toString()   : QString("");
+//      qstrSubject        = varSubject      .isValid() ? varSubject      .toString()   : QString("");
 
         nSenderContactByNym     = qstrSenderNymId.isEmpty()    ? 0 : MTContactHandler::getInstance()->FindContactIDByNymID(qstrSenderNymId);
         nSenderContactByAddr    = qstrSenderAddr.isEmpty()     ? 0 : MTContactHandler::getInstance()->GetContactByAddress(qstrSenderAddr);
@@ -990,6 +1344,8 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
 
         if (nContactId <= 0)
             nContactId = (nRecipientContactByNym > 0) ? nRecipientContactByNym : nRecipientContactByAddr;
+
+        flags = ModelPayments::PaymentFlag(static_cast<ModelPayments::PaymentFlag>(lFlags));
         // -------------------------------
         popupMenu_->addSeparator();
         // -------------------------------
@@ -1000,6 +1356,119 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
             pActionCreateContact = popupMenu_->addAction(tr("Create new contact in address book"));
             pActionExistingContact = popupMenu_->addAction(tr("Add to existing contact in address book"));
         }
+        // -------------------------------
+        popupMenu_->addSeparator();
+        // -------------------------------
+        if ( flags.testFlag(ModelPayments::CanAcceptIncoming))
+        {
+            QString nameString;
+            QString actionString;
+
+            if ( flags.testFlag(ModelPayments::IsTransfer) )
+            {
+                nameString = tr("Accept this Transfer");
+                actionString = tr("Accepting...");
+            }
+            else if ( flags.testFlag(ModelPayments::IsReceipt) )
+            {
+                nameString = tr("Accept this Receipt");
+                actionString = tr("Accepting...");
+            }
+            else if ( flags.testFlag(ModelPayments::IsInvoice) )
+            {
+                nameString = tr("Pay this Invoice");
+                actionString = tr("Paying...");
+            }
+            else if ( flags.testFlag(ModelPayments::IsPaymentPlan) )
+            {
+                nameString = tr("Activate this Payment Plan");
+                actionString = tr("Activating...");
+            }
+            else if ( flags.testFlag(ModelPayments::IsContract) )
+            {
+                nameString = tr("Sign this Smart Contract");
+                actionString = tr("Signing...");
+            }
+            else if ( flags.testFlag(ModelPayments::IsCash) )
+            {
+                nameString = tr("Deposit this Cash");
+                actionString = tr("Depositing...");
+            }
+            else if ( flags.testFlag(ModelPayments::IsCheque) )
+            {
+                nameString = tr("Deposit this Cheque");
+                actionString = tr("Depositing...");
+            }
+            else if ( flags.testFlag(ModelPayments::IsVoucher) )
+            {
+                nameString = tr("Accept this Payment");
+                actionString = tr("Accepting...");
+            }
+            else
+            {
+                nameString = tr("Deposit this Payment");
+                actionString = tr("Depositing...");
+            }
+
+            pActionAcceptIncoming = popupMenu_->addAction(nameString);
+        }
+
+        if (flags.testFlag(ModelPayments::CanCancelOutgoing))
+        {
+            QString cancelString;
+            QString actionString = tr("Canceling...");
+//          QString msg = tr("Cancellation Failed. Perhaps recipient had already accepted it?");
+
+            if (flags.testFlag(ModelPayments::IsInvoice))
+                cancelString = tr("Cancel this Invoice");
+            else if (flags.testFlag(ModelPayments::IsPaymentPlan))
+                cancelString = tr("Cancel this Payment Plan");
+            else if (flags.testFlag(ModelPayments::IsContract))
+                cancelString = tr("Cancel this Smart Contract");
+            else if (flags.testFlag(ModelPayments::IsCash))
+            {
+                cancelString = tr("Recover this Cash");
+                actionString = tr("Recovering...");
+//              msg = tr("Recovery Failed. Perhaps recipient had already accepted it?");
+            }
+            else if (flags.testFlag(ModelPayments::IsCheque))
+                cancelString = tr("Cancel this Cheque");
+            else if (flags.testFlag(ModelPayments::IsVoucher))
+                cancelString = tr("Cancel this Payment");
+            else
+                cancelString = tr("Cancel this Payment");
+
+            pActionCancelOutgoing = popupMenu_->addAction(cancelString);
+        }
+
+        if (flags.testFlag(ModelPayments::CanDiscardOutgoingCash))
+        {
+            QString discardString = tr("Discard this Sent Cash");
+
+            pActionDiscardOutgoingCash = popupMenu_->addAction(discardString);
+        }
+
+        if (flags.testFlag(ModelPayments::CanDiscardIncoming))
+        {
+            QString discardString;
+
+            if (flags.testFlag(ModelPayments::IsInvoice))
+                discardString = tr("Discard this Invoice");
+            else if (flags.testFlag(ModelPayments::IsPaymentPlan))
+                discardString = tr("Discard this Payment Plan");
+            else if (flags.testFlag(ModelPayments::IsContract))
+                discardString = tr("Discard this Smart Contract");
+            else if (flags.testFlag(ModelPayments::IsCash))
+                discardString = tr("Discard this Cash");
+            else if (flags.testFlag(ModelPayments::IsCheque))
+                discardString = tr("Discard this Cheque");
+            else if (flags.testFlag(ModelPayments::IsVoucher))
+                discardString = tr("Discard this Payment");
+            else
+                discardString = tr("Discard this Payment");
+
+            pActionDiscardIncoming = popupMenu_->addAction(discardString);
+        }
     }
     // --------------------------------------------------
     QPoint globalPos = pTableView->mapToGlobal(pos);
@@ -1007,7 +1476,35 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
     if (nullptr == selectedAction)
         return;
     // ----------------------------------
-    if (selectedAction == pActionReply) // Only replies to the current payment.
+    if (selectedAction == pActionAcceptIncoming) // Only approves the current payment.
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+        AcceptIncoming(pModel, pProxyModel, nRow, pTableView);
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionCancelOutgoing) // Only cancels the current payment.
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+        CancelOutgoing(pModel, pProxyModel, nRow, pTableView);
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionDiscardOutgoingCash) // Only discards the current payment.
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+        DiscardOutgoingCash(pModel, pProxyModel, nRow, pTableView);
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionDiscardIncoming) // Only discards the current payment.
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+        DiscardIncoming(pModel, pProxyModel, nRow, pTableView);
+        return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionReply) // Only replies to the current payment.
     {
         pTableView->setCurrentIndex(indexAtRightClick);
         on_toolButtonReply_clicked();
@@ -1665,7 +2162,7 @@ void Payments::on_toolButtonDelete_clicked()
 
 void Payments::on_toolButtonRefresh_clicked()
 {
-    emit needToDownloadMail();
+    emit needToDownloadAccountData();
 }
 
 void Payments::onRecordlistPopulated()
@@ -1675,8 +2172,28 @@ void Payments::onRecordlistPopulated()
 
 void Payments::RefreshAll()
 {
+    RefreshUserBar();
     RefreshTree();
 }
+
+void Payments::onBalancesChanged()
+{
+    RefreshUserBar();
+}
+
+// The balances hasn't necessarily changed.
+// (Perhaps the default account was changed.)
+//
+void Payments::onNeedToRefreshUserBar()
+{
+    RefreshUserBar();
+}
+
+void Payments::onNeedToRefreshRecords()
+{
+    RefreshAll();
+}
+
 
 void Payments::on_pushButtonSearch_clicked()
 {
@@ -1734,6 +2251,7 @@ bool Payments::eventFilter(QObject *obj, QEvent *event)
     // standard event processing
     return QWidget::eventFilter(obj, event);
 }
+
 
 
 

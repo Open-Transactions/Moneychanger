@@ -61,9 +61,19 @@ void DlgMenu::dialog()
 }
 
 
-void DlgMenu::on_toolButton_main_clicked()
+void DlgMenu::on_toolButton_payments_clicked()
 {
-    emit sig_on_toolButton_main_clicked();
+    emit sig_on_toolButton_payments_clicked();
+}
+
+void DlgMenu::on_toolButton_messages_clicked()
+{
+    emit sig_on_toolButton_messages_clicked();
+}
+
+void DlgMenu::on_toolButton_pending_clicked()
+{
+    emit sig_on_toolButton_pending_clicked();
 }
 
 void DlgMenu::on_toolButton_markets_clicked()
@@ -129,4 +139,19 @@ void DlgMenu::on_toolButton_trade_archive_clicked()
 void DlgMenu::on_toolButton_secrets_clicked()
 {
     emit sig_on_toolButton_secrets_clicked();
+}
+
+void DlgMenu::on_toolButton_encrypt_clicked()
+{
+    emit sig_on_toolButton_encrypt_clicked();
+}
+
+void DlgMenu::on_toolButton_sign_clicked()
+{
+    emit sig_on_toolButton_sign_clicked();
+}
+
+void DlgMenu::on_toolButton_decrypt_clicked()
+{
+    emit sig_on_toolButton_decrypt_clicked();
 }

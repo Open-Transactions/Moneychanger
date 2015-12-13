@@ -21,7 +21,9 @@ public:
     void dialog();
 
 private slots:
-    void on_toolButton_main_clicked();
+    void on_toolButton_payments_clicked();
+    void on_toolButton_messages_clicked();
+    void on_toolButton_pending_clicked();
     void on_toolButton_markets_clicked();
     void on_toolButton_importCash_clicked();
     void on_toolButton_contacts_clicked();
@@ -35,9 +37,14 @@ private slots:
     void on_toolButton_quit_clicked();
     void on_toolButton_trade_archive_clicked();
     void on_toolButton_secrets_clicked();
+    void on_toolButton_encrypt_clicked();
+    void on_toolButton_sign_clicked();
+    void on_toolButton_decrypt_clicked();
 
 signals:
-    void sig_on_toolButton_main_clicked();
+    void sig_on_toolButton_payments_clicked();
+    void sig_on_toolButton_messages_clicked();
+    void sig_on_toolButton_pending_clicked();
     void sig_on_toolButton_markets_clicked();
     void sig_on_toolButton_importCash_clicked();
     void sig_on_toolButton_contacts_clicked();
@@ -51,6 +58,9 @@ signals:
     void sig_on_toolButton_quit_clicked();
     void sig_on_toolButton_trade_archive_clicked();
     void sig_on_toolButton_secrets_clicked();
+    void sig_on_toolButton_encrypt_clicked();
+    void sig_on_toolButton_sign_clicked();
+    void sig_on_toolButton_decrypt_clicked();
 
 
 protected:

@@ -66,6 +66,7 @@
 #include <QMessageBox>
 #include <QSystemTrayIcon>
 #include <QTimer>
+#include <QFlags>
 
 #include <sstream>
 
@@ -657,8 +658,8 @@ void Moneychanger::bootTray()
     //Show systray
     mc_systrayIcon->show();
     // ----------------------------------------------------------------------------
-    // Pop up the home screen.
-    mc_overview_dialog();
+    // Pop up the payments screen.
+    mc_payments_dialog();
     // ----------------------------------------------------------------------------
     QString qstrMenuFileExists = QString(opentxs::OTPaths::AppDataFolder().Get()) + QString("/knotworkpigeons");
 
@@ -1043,7 +1044,7 @@ void Moneychanger::SetupNymMenu(QPointer<QMenu> & parent_menu)
     parent_menu->addMenu(mc_systrayMenu_nym);
 
     //Add a "Manage pseudonym" action button (and connection)
-    QAction * manage_nyms = new QAction(tr("Manage Identities..."), mc_systrayMenu_nym);
+    QAction * manage_nyms = new QAction(tr("Manage My Identities..."), mc_systrayMenu_nym);
     manage_nyms->setData(QVariant(QString("openmanager")));
     mc_systrayMenu_nym->addAction(manage_nyms);
     connect(mc_systrayMenu_nym, SIGNAL(triggered(QAction*)), this, SLOT(mc_nymselection_triggered(QAction*)));
@@ -1107,16 +1108,18 @@ void Moneychanger::SetupPaymentsMenu(QPointer<QMenu> & parent_menu)
     mc_systrayMenu_sendfunds = new QAction(mc_systrayIcon_sendfunds, tr("Pay Funds..."), mc_systrayMenu_payments);
     mc_systrayMenu_payments->addAction(mc_systrayMenu_sendfunds);
     connect(mc_systrayMenu_sendfunds, SIGNAL(triggered()), this, SLOT(mc_sendfunds_slot()));
-    // --------------------------------------------------------------
-    //Transaction History
-    mc_systrayMenu_overview = new QAction(mc_systrayIcon_overview, tr("Transaction History"), mc_systrayMenu_payments);
-    mc_systrayMenu_payments->addAction(mc_systrayMenu_overview);
-    connect(mc_systrayMenu_overview, SIGNAL(triggered()), this, SLOT(mc_overview_slot()));
-    // --------------------------------------------------------------
+    // -------------------------------------------------
+    mc_systrayMenu_payments->addSeparator();
+    // -------------------------------------------------
     //Payment History
-    mc_systrayMenu_receipts = new QAction(mc_systrayIcon_overview, tr("Payment Receipts"), mc_systrayMenu_payments);
+    mc_systrayMenu_receipts = new QAction(mc_systrayIcon_overview, tr("Payment History"), mc_systrayMenu_payments);
     mc_systrayMenu_payments->addAction(mc_systrayMenu_receipts);
     connect(mc_systrayMenu_receipts, SIGNAL(triggered()), this, SLOT(mc_payments_slot()));
+    // --------------------------------------------------------------
+    //Pending Transactions
+    mc_systrayMenu_overview = new QAction(mc_systrayIcon_overview, tr("Pending Transactions"), mc_systrayMenu_payments);
+    mc_systrayMenu_payments->addAction(mc_systrayMenu_overview);
+    connect(mc_systrayMenu_overview, SIGNAL(triggered()), this, SLOT(mc_overview_slot()));
     // -------------------------------------------------
     mc_systrayMenu_payments->addSeparator();
     // -------------------------------------------------
@@ -1198,6 +1201,8 @@ void Moneychanger::SetupMessagingMenu(QPointer<QMenu> & parent_menu)
     mc_systrayMenu_messaging->addAction(mc_systrayMenu_composemessage);
     connect(mc_systrayMenu_composemessage, SIGNAL(triggered()), this, SLOT(mc_composemessage_slot()));
     // --------------------------------------------------------------
+    mc_systrayMenu_messaging->addSeparator();
+    // --------------------------------------------------------------
     //Message History
     mc_systrayMenu_messages = new QAction(mc_systrayIcon_overview, tr("Message History"), mc_systrayMenu_messaging);
     mc_systrayMenu_messaging->addAction(mc_systrayMenu_messages);
@@ -1208,7 +1213,6 @@ void Moneychanger::SetupMessagingMenu(QPointer<QMenu> & parent_menu)
     mc_systrayMenu_messaging->addAction(mc_systrayMenu_contacts);
     connect(mc_systrayMenu_contacts, SIGNAL(triggered()), this, SLOT(mc_addressbook_slot()));
     // --------------------------------------------------------------
-    //Separator
     mc_systrayMenu_messaging->addSeparator();
     // --------------------------------------------------------------
     // Transport
@@ -1468,7 +1472,7 @@ void Moneychanger::mc_nymmanager_dialog(QString qstrPresetID/*=QString("")*/)
         // ------------------------------
     } // for
     // -------------------------------------
-    nymswindow->setWindowTitle(tr("Manage Identities"));
+    nymswindow->setWindowTitle(tr("Manage My Identities"));
     // -------------------------------------
     if (bFoundPreset)
         nymswindow->SetPreSelected(qstrPresetID);
@@ -1903,11 +1907,12 @@ bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
 // The primary key is the "display txn ID"
 //
 bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord/*=true*/)
-{
+{            
+    ModelPayments::PaymentFlags flags = ModelPayments::NoFlags;
+
     QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
     bool bSuccessAddingPmnt = false;
     QString qstrBody(""), qstrPendingBody("");
-    const bool bIsPending = !bCanDeleteRecord;
     QMap<QString, QVariant> mapFinalValues;
 
     bool bRecordAlreadyExisted = false;
@@ -1915,6 +1920,28 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
 
     if (pModel)
     {
+        // ---------------------------------
+        if (recordmt.IsSpecialMail())           flags |= ModelPayments::IsSpecialMail;
+        if (recordmt.IsPending())               flags |= ModelPayments::IsPending;
+        if (recordmt.IsOutgoing())              flags |= ModelPayments::IsOutgoing;
+        if (recordmt.IsRecord())                flags |= ModelPayments::IsRecord;
+        if (recordmt.IsReceipt())               flags |= ModelPayments::IsReceipt;
+        if (recordmt.IsMail())                  flags |= ModelPayments::IsMail;
+        if (recordmt.IsTransfer())              flags |= ModelPayments::IsTransfer;
+        if (recordmt.IsCheque())                flags |= ModelPayments::IsCheque;
+        if (recordmt.IsInvoice())               flags |= ModelPayments::IsInvoice;
+        if (recordmt.IsVoucher())               flags |= ModelPayments::IsVoucher;
+        if (recordmt.IsContract())              flags |= ModelPayments::IsContract;
+        if (recordmt.IsPaymentPlan())           flags |= ModelPayments::IsPaymentPlan;
+        if (recordmt.IsCash())                  flags |= ModelPayments::IsCash;
+        if (recordmt.IsExpired())               flags |= ModelPayments::IsExpired;
+        if (recordmt.IsCanceled())              flags |= ModelPayments::IsCanceled;
+        if (recordmt.CanDeleteRecord())         flags |= ModelPayments::CanDelete;
+        if (recordmt.CanAcceptIncoming())       flags |= ModelPayments::CanAcceptIncoming;
+        if (recordmt.CanDiscardIncoming())      flags |= ModelPayments::CanDiscardIncoming;
+        if (recordmt.CanCancelOutgoing())       flags |= ModelPayments::CanCancelOutgoing;
+        if (recordmt.CanDiscardOutgoingCash())  flags |= ModelPayments::CanDiscardOutgoingCash;
+        // ---------------------------------
         QString myNymID;
         if (!recordmt.GetNymID().empty())
             myNymID = QString::fromStdString(recordmt.GetNymID());
@@ -1984,8 +2011,11 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
 
         int64_t lAmount = opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetAmount());
 
-        int nPending   = recordmt.IsPending() ? 1 : 0;
-        int nCompleted = recordmt.IsPending() ? 0 : 1;
+//      qDebug() << "DEBUGGING! recordmt.GetAmount(): " << QString::fromStdString(recordmt.GetAmount())
+//               << " lAmount: " << lAmount << "\n";
+
+        int nPending   = recordmt.CanDeleteRecord() ? 0 : 1;
+        int nCompleted = recordmt.CanDeleteRecord() ? 1 : 0;
         // ---------------------------------
         std::string str_Name = recordmt.GetName();
         QString qstrName;
@@ -2031,13 +2061,11 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
 
         if (transNum > 0)        mapFinalValues.insert("txn_id", QVariant::fromValue(transNum));
         if (transNumDisplay > 0) mapFinalValues.insert("txn_id_display", QVariant::fromValue(transNumDisplay));
-        if (lAmount > 0)         mapFinalValues.insert("amount", QVariant::fromValue(lAmount));
+        if (lAmount != 0)        mapFinalValues.insert("amount", QVariant::fromValue(lAmount));
         if (tDate > 0)           mapFinalValues.insert("timestamp", QVariant::fromValue(tDate));
 
-        if ( !bRecordAlreadyExisted ||
-             (bRecordAlreadyExisted && (nPending   > 0))) mapFinalValues .insert("pending_found", QVariant::fromValue(nPending));
-        if ( !bRecordAlreadyExisted ||
-             (bRecordAlreadyExisted && (nCompleted > 0))) mapFinalValues .insert("completed_found", QVariant::fromValue(nCompleted));
+        if (nPending   > 0) mapFinalValues.insert("pending_found",   QVariant::fromValue(nPending));
+        if (nCompleted > 0) mapFinalValues.insert("completed_found", QVariant::fromValue(nCompleted));
 
         if (!msgType.isEmpty()) mapFinalValues.insert("method_type", msgType);
         if (!msgTypeDisplay.isEmpty()) mapFinalValues.insert("method_type_display", msgTypeDisplay);
@@ -2051,10 +2079,12 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
         if (!bRecordAlreadyExisted) mapFinalValues.insert("have_replied", QVariant::fromValue(0));
         if (!bRecordAlreadyExisted) mapFinalValues.insert("have_forwarded", QVariant::fromValue(0));
 
+        qint64 storedFlags = (qint64)flags;
         mapFinalValues.insert("folder", QVariant::fromValue(nFolder));
+        mapFinalValues.insert("flags", QVariant::fromValue(storedFlags));
         // -------------------------------------------------
-        if (bIsPending) qstrPendingBody = QString::fromStdString(recordmt.GetContents());
-        else            qstrBody        = QString::fromStdString(recordmt.GetContents());
+        if (!bCanDeleteRecord) qstrPendingBody = QString::fromStdString(recordmt.GetContents());
+        else                   qstrBody        = QString::fromStdString(recordmt.GetContents());
         // -------------------------------------------------
         if (bRecordAlreadyExisted)
         {
@@ -2213,7 +2243,7 @@ void Moneychanger::modifyRecords()
                             // whenever he sees fit. They will be his only notice that an
                             // offer completed on the market without any trades occurring.
                             // We might even change the GUI label now for final receipt records,
-                            // (in the Transaction History main window) to explicitly say,
+                            // (in the Pending Transactions window) to explicitly say,
                             // "offer completed on market without any trades."
                             //
                             // P.S. There's another reason not to just delete a finalReceipt
@@ -3508,17 +3538,28 @@ void Moneychanger::mc_payments_slot()
     mc_payments_dialog();
 }
 
+//resume
 void Moneychanger::mc_payments_dialog()
 {
     if (!payments_window)
     {
         payments_window = new Payments(this);
 
-        connect(payments_window, SIGNAL(needToDownloadMail()),
-                this,            SLOT(onNeedToDownloadMail()));
+        connect(payments_window, SIGNAL(showDashboard()),
+                this,            SLOT(mc_overview_slot()));
+
+        connect(payments_window, SIGNAL(needToDownloadAccountData()),
+                this,            SLOT(onNeedToDownloadAccountData()));
 
         connect(this,            SIGNAL(populatedRecordlist()),
                 payments_window, SLOT(onRecordlistPopulated()));
+
+        connect(payments_window, SIGNAL(needToPopulateRecordlist()),
+                this,            SLOT(onNeedToPopulateRecordlist()));
+
+        connect(this,            SIGNAL(balancesChanged()),
+                payments_window, SLOT(onBalancesChanged()));
+
     }
     // ---------------------------------
     payments_window->dialog();
@@ -3596,6 +3637,7 @@ void Moneychanger::onNewNymAdded(QString qstrID)
         MTNameLookupQT theLookup;
         qstrNymName = QString::fromStdString(theLookup.GetNymName(qstrID.toStdString(), ""));
         int nContactID  = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrID, "");
+//      QString qstrContactID = QString::number(nContactID);
 
         if (!qstrNymName.isEmpty() && (nContactID > 0))
         {
@@ -3604,6 +3646,18 @@ void Moneychanger::onNewNymAdded(QString qstrID)
         }
         // --------------------------------------------------
         GetRecordlist().AddNymID(qstrID.toStdString());
+        // --------------------------------------------------
+        if (!contactswindow)
+            contactswindow = new MTDetailEdit(this);
+        // -------------------------------------
+        contactswindow->m_map.clear();
+        // -------------------------------------
+        MTContactHandler::getInstance()->GetContacts(contactswindow->m_map);
+//        // -------------------------------------
+//        if (!qstrContactID.isEmpty())
+//            contactswindow->SetPreSelected(qstrContactID);
+        // -------------------------------------
+        contactswindow->RefreshRecords();
     }
 }
 
@@ -3635,7 +3689,13 @@ void Moneychanger::mc_main_menu_dialog()
         // --------------------------------------------------
         menuwindow = new DlgMenu(this);
         // --------------------------------------------------
-        connect(menuwindow, SIGNAL(sig_on_toolButton_main_clicked()),
+        connect(menuwindow, SIGNAL(sig_on_toolButton_payments_clicked()),
+                this,       SLOT(mc_payments_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_messages_clicked()),
+                this,       SLOT(mc_messages_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_pending_clicked()),
                 this,       SLOT(mc_overview_slot()));
 
         connect(menuwindow, SIGNAL(sig_on_toolButton_markets_clicked()),
@@ -3679,6 +3739,15 @@ void Moneychanger::mc_main_menu_dialog()
 
         connect(menuwindow, SIGNAL(sig_on_toolButton_quit_clicked()),
                 this,       SLOT(mc_shutdown_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_encrypt_clicked()),
+                this,       SLOT(mc_crypto_encrypt_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_sign_clicked()),
+                this,       SLOT(mc_crypto_sign_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_decrypt_clicked()),
+                this,       SLOT(mc_crypto_decrypt_slot()));
 
         qDebug() << "Main Menu Opened";
     }

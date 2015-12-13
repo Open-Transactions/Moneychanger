@@ -228,7 +228,8 @@ bool DBHandler::dbCreateInstance()
                " notary_id TEXT,"
                " record_name TEXT,"
                " instrument_type TEXT,"
-               " folder INTEGER"
+               " folder INTEGER,"
+               " flags INTEGER"
                ")";
         // --------------------------------------------
         QString create_payment_body_table = "CREATE TABLE IF NOT EXISTS payment_body"
