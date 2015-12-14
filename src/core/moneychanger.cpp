@@ -4161,7 +4161,13 @@ void Moneychanger::mc_bitcoin_receive_slot()
  *
  */
 
+void Moneychanger::mc_rpc_messages_show_dialog() {
+    mc_messages_dialog();
+}
 
+void Moneychanger::mc_rpc_market_show_dialog() {
+    mc_market_dialog();
+}
 void Moneychanger::mc_rpc_sendfunds_show_dialog(QString qstrAcct/*=QString("")*/, QString qstrRecipientNym/*=QString("")*/,
                                                 QString qstrAsset/*=QString("")*/, QString qstrAmount/*=QString("")*/)
 {

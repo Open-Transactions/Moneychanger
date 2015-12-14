@@ -6895,6 +6895,27 @@ QJsonValue MCRPCService::messageGetTransactionSuccess(QString Username, QString 
 
 // Moneychanger::It() methods
 
+QString MCRPCService::mcMarketDialog(QString Username, QString APIKey)
+{
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    Moneychanger::It()->mc_rpc_market_show_dialog();
+    return "Success";
+}
+
+QString MCRPCService::mcMessagesDialog(QString Username, QString APIKey)
+{
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QString("Error: Invalid API Key");
+    }
+
+    Moneychanger::It()->mc_rpc_messages_show_dialog();
+    return "Success";
+}
 QString MCRPCService::mcSendDialog(QString Username, QString APIKey,
                                    QString Account, QString Recipient,
                                    QString Asset, QString Amount)
