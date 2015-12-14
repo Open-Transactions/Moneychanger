@@ -4657,3 +4657,29 @@ void Moneychanger::mc_rpc_requestfunds_show_dialog(QString qstrAcct/*=QString(""
     // --------------------------------------------------
 }
 
+void Moneychanger::mc_rpc_messages_show_dialog(){
+    mc_messages_dialog();
+}
+
+void Moneychanger::mc_rpc_exchange_show_dialog(){
+    mc_market_dialog();
+}
+
+//void mc_rpc_payments_show_dialog();
+void Moneychanger::mc_rpc_manage_accounts_show_dialog(){
+    mc_accountmanager_dialog();
+}
+
+void Moneychanger::mc_rpc_manage_nyms_show_dialog(){
+    mc_nymmanager_dialog();
+}
+
+void Moneychanger::mc_rpc_manage_assets_show_dialog(){
+    mc_assetmanager_dialog();
+}
+
+void Moneychanger::mc_rpc_manage_smartcontracts_show_dialog(){
+
+}
+
+

@@ -1,8 +1,14 @@
 #ifndef RPCUSER_H
 #define RPCUSER_H
 
-
+#include <string>
 #include <QTime>
+
+#include "core/WinsockWrapper.h"
+#include "core/ExportWrapper.h"
+
+#include "opentxs/core/crypto/OTPassword.hpp"
+
 
 class RPCUser
 {
@@ -35,6 +41,7 @@ private:
 
     bool m_keyActive;
     void resetTimeStamp();
+
 };
 
 #endif // RPCUSER_H

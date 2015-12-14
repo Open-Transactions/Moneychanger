@@ -487,6 +487,14 @@ public slots:
 
     void mc_rpc_requestfunds_show_dialog(QString qstrAcct=QString(""), QString qstrRecipientNym=QString(""),
                                          QString qstrAsset=QString(""), QString qstrAmount=QString(""));
+    void mc_rpc_messages_show_dialog();
+    void mc_rpc_exchange_show_dialog();
+    //void mc_rpc_payments_show_dialog();
+    void mc_rpc_manage_accounts_show_dialog();
+    void mc_rpc_manage_nyms_show_dialog();
+    void mc_rpc_manage_assets_show_dialog();
+    void mc_rpc_manage_smartcontracts_show_dialog();
+
 };
 
 #endif // MONEYCHANGER_HPP
