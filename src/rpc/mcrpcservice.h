@@ -873,13 +873,21 @@ public Q_SLOTS:
 
 
 
-    // Moneychanger::It() methods
+    // Moneychanger::It() Dialog methods
     QString mcSendDialog(QString Username, QString APIKey,
                          QString Account, QString Recipient,
                          QString Asset, QString Amount);
     QString mcRequestFundsDialog(QString Username, QString APIKey,
                                  QString Account, QString Recipient,
                                  QString Asset, QString Amount);
+    QString mcMessagesDialog(QString Username, QString APIKey);
+    QString mcExchangeDialog(QString Username, QString APIKey);
+    QString mcPaymentsDialog(QString Username, QString APIKey);
+    QString mcManageAccountsDialog(QString Username, QString APIKey);
+    QString mcManageNymsDialog(QString Username, QString APIKey);
+    QString mcManageAssetsDialog(QString Username, QString APIKey);
+    QString mcManageSmartContractsDialog(QString Username, QString APIKey);
+
 
     bool mcActivateSmartContract(QString Username, QString APIKey); // Init Wizard
     QJsonValue mcListSmartContracts(QString Username, QString APIKey);

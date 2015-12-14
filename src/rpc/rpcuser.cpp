@@ -1,18 +1,5 @@
-#ifndef __STABLE_HPP__
-#include <core/stable.hpp>
-#endif
-
-#include "core/WinsockWrapper.h"
-#include "core/ExportWrapper.h"
-
 #include "rpcuser.h"
-
-#include <opentxs/core/crypto/OTPassword.hpp>
-
 #include <QDebug>
-
-#include <string>
-
 
 RPCUser::RPCUser(QString Username, QString Password)
 {

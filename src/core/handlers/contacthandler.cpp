@@ -1140,6 +1140,9 @@ int  MTContactHandler::CreateSmartContractTemplate(QString template_string)
     {
         QString encoded_value = Encode(template_string);
 
+        // TODO: CHANGE THIS to use bind (there are examples in this file) so we aren't literally copying the full
+        // smart contract directly into this update statement!
+        //
         str_insert = QString("UPDATE smart_contract SET template_contents='%1' WHERE template_id='%2'").arg(encoded_value).arg(nTemplateID);
 
         qDebug() << QString("Running query: %1").arg(str_insert);
