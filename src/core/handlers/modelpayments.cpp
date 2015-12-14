@@ -740,23 +740,20 @@ bool PaymentsProxyModel::filterAcceptsColumn(int source_column, const QModelInde
             bReturn = true;
     }
         break;
-    case PMNT_SOURCE_COL_TXN_ID:          bReturn = true;  break;
+    case PMNT_SOURCE_COL_TXN_ID:          bReturn = true;   break;
     case PMNT_SOURCE_COL_TXN_ID_DISPLAY:  bReturn = false;  break;
-    case PMNT_SOURCE_COL_AMOUNT:          bReturn = true;  break;
+    case PMNT_SOURCE_COL_AMOUNT:          bReturn = true;   break;
     case PMNT_SOURCE_COL_PENDING_FOUND:   bReturn = false;  break;
     case PMNT_SOURCE_COL_COMPLETED_FOUND: bReturn = false;  break;
-    case PMNT_SOURCE_COL_TIMESTAMP:       bReturn = true;  break;
+    case PMNT_SOURCE_COL_TIMESTAMP:       bReturn = true;   break;
     case PMNT_SOURCE_COL_HAVE_READ:       bReturn = false;  break;
     case PMNT_SOURCE_COL_HAVE_REPLIED:    bReturn = false;  break;
     case PMNT_SOURCE_COL_HAVE_FORWARDED:  bReturn = false;  break;
-    case PMNT_SOURCE_COL_MEMO:            bReturn = true;  break;
+    case PMNT_SOURCE_COL_MEMO:            bReturn = true;   break;
     case PMNT_SOURCE_COL_DESCRIPTION:     bReturn = false;  break;
-    case PMNT_SOURCE_COL_RECORD_NAME:     bReturn = false; break;
-    case PMNT_SOURCE_COL_FOLDER:
-    {
-        bReturn = false;
-    }
-        break;
+    case PMNT_SOURCE_COL_RECORD_NAME:     bReturn = false;  break;
+    case PMNT_SOURCE_COL_FOLDER:          bReturn = false;  break;
+    case PMNT_SOURCE_COL_FLAGS:           bReturn = false;  break;
     default:  bReturn = true;  break;
     }
     return bReturn;

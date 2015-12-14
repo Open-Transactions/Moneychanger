@@ -1,4 +1,7 @@
 
+NOTE: Also check out ubuntu.md
+
+----------------------------------
 
 Have the QT bin folder on your path.
 
