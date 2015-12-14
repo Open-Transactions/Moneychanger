@@ -874,6 +874,8 @@ public Q_SLOTS:
 
 
     // Moneychanger::It() methods
+    QString mcMarketDialog(QString Username, QString APIKey);
+    QString mcMessagesDialog(QString Username, QString APIKey);
     QString mcSendDialog(QString Username, QString APIKey,
                          QString Account, QString Recipient,
                          QString Asset, QString Amount);
