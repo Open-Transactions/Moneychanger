@@ -20,6 +20,7 @@ VERSION     = 0.0.1
 QT         += core gui sql network widgets
 
 DEFINES    += "OT_ZMQ_MODE=1"
+DEFINES    += "EXPORT="
 
 #-------------------------------------------------
 # Common Settings

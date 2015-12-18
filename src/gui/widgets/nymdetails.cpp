@@ -2,6 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
+#include <opentxs/client/OpenTransactions.hpp>
+#include <opentxs/core/Nym.hpp>
 #include <opentxs-proto/verify/VerifyContacts.hpp>
 
 #include <gui/widgets/nymdetails.hpp>
@@ -832,6 +834,12 @@ void MTNymDetails::AddButtonClicked()
                 }
                 newItem->add_attribute(opentxs::proto::CITEMATTR_ACTIVE);
             }
+        }
+
+        opentxs::Nym* newNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(qstrID.toStdString());
+
+        if (nullptr != newNym) {
+            opentxs::OTAPI_Wrap::OTAPI()->SetContactData(*newNym, contactData);
         }
 
         // -----------------------------------------------
