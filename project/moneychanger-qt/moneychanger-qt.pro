@@ -76,6 +76,9 @@ mac:{
 #-------------------------------------------------
 # Linked Libs
 
+LIBS += -lopentxs-proto
+LIBS += -lprotobuf-lite
+
 # MAC AND LINUX:
 unix: {
 
@@ -94,7 +97,7 @@ unix: {
 
     LIBS += -L$${OUT_PWD}/../nmcrpc
     LIBS += -lnmcrpc
-    
+
     LIBS += -L$${OUT_PWD}/../quazip
     LIBS += -lquazip -lz
 
@@ -111,7 +114,7 @@ unix: {
         }
         LIBS += -L/usr/local/lib/
         LIBS += -framework Cocoa -framework CoreFoundation
-    } 
+    }
 
     # LINUX:
     else: {

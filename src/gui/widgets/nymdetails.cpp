@@ -2,6 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
+#include <opentxs-proto/verify/VerifyContacts.hpp>
+
 #include <gui/widgets/nymdetails.hpp>
 #include <ui_nymdetails.h>
 
@@ -794,6 +796,8 @@ void MTNymDetails::AddButtonClicked()
         // QString qstrID is the NymID as a Qstring.
         // qstrID.toStdString() is the NymID as a std::string.
 
+        std::map<uint32_t, std::list<std::tuple<uint32_t, std::string, bool>>> items;
+
         for (const auto & contactDataItem: theWizard.listContactDataTuples_)
         {
             uint32_t     indexSection     = std::get<0>(contactDataItem);
@@ -801,31 +805,35 @@ void MTNymDetails::AddButtonClicked()
             std::string  textValue        = std::get<2>(contactDataItem);
             bool         bIsPrimary       = std::get<3>(contactDataItem);
 
-            // Todo: Justusranvier:
+            std::tuple<uint32_t, std::string, bool> item{indexSectionType, textValue, bIsPrimary};
 
-            // Here we're looping through the contact data items we collected during the
-            // wizard.
-
-            // HERE: You have the NymID, and you have the 4 data members of your Contact Item.
-            // Now you can do an OT API call or a proto call or whatever you want to do.
-            //
-            // Warning: this is a loop, so this will happen multiple times (once for each
-            // data item.)
-            //
-            // You can access the entire list using theWizard.listContactDataTuples_
-            // Its description:
-            //
-//          typedef std::tuple<uint32_t, uint32_t, std::string, bool> tupleContactDataItem;
-//          typedef std::list<tupleContactDataItem> listContactDataTuples;
-
-
-
-
-
-
-
-
+            if (items.count(indexSection) > 0) {
+                items[indexSection].push_back(item);
+            } else {
+                items.insert({indexSection, { item }});
+            }
         }
+
+        opentxs::proto::ContactData contactData;
+        contactData.set_version(1);
+
+        for (auto& it: items) {
+            auto newSection = contactData.add_section();
+            newSection->set_version(1);
+            newSection->set_name(static_cast<opentxs::proto::ContactSectionName>(it.first));
+
+            for (auto& i: it.second) {
+                auto newItem = newSection->add_item();
+                newItem->set_version(1);
+                newItem->set_type(static_cast<opentxs::proto::ContactItemType>(std::get<0>(i)));
+                newItem->set_value(std::get<1>(i));
+                if (std::get<2>(i)) {
+                    newItem->add_attribute(opentxs::proto::CITEMATTR_PRIMARY);
+                }
+                newItem->add_attribute(opentxs::proto::CITEMATTR_ACTIVE);
+            }
+        }
+
         // -----------------------------------------------
 //      QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Creating Nym! Name")).
 //                               arg(qstrName).arg(tr("ID")).arg(qstrID));
