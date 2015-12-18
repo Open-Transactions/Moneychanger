@@ -147,6 +147,10 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
         m_pPlainTextEdit->setReadOnly(true);
         m_pPlainTextEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
         // -------------------------------
+
+
+
+        // -------------------------------
         QVBoxLayout * pvBox = new QVBoxLayout;
 
         QLabel * pLabelContents = new QLabel(tr("Raw State of Nym:"));
@@ -700,6 +704,12 @@ void MTNymDetails::DeleteButtonClicked()
 void MTNymDetails::AddButtonClicked()
 {
     MTWizardAddNym theWizard(this);
+
+
+    // Page Nym Authority can go. Default authority index=0
+
+    // Change the Alt Location page to do the claims.
+
 
     theWizard.setWindowTitle(tr("Create Nym (a.k.a. Create Identity)"));
 

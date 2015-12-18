@@ -14,7 +14,11 @@
    <string>Wizard</string>
   </property>
   <widget class="MTPageAcct_Name" name="mtpageAcct_Name"/>
-  <widget class="MTPageNym_Authority" name="mtpageNym_Authority"/>
+  <widget class="MTPageNym_Authority" name="mtpageNym_Authority">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+  </widget>
   <widget class="MTPageNym_Source" name="mtpageNym_Source"/>
   <widget class="MTPageNym_AltLocation" name="mtpageNym_AltLocation"/>
  </widget>
