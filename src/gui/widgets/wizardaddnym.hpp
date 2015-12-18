@@ -4,6 +4,8 @@
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
 
+#include <gui/widgets/pagenym_altlocation.hpp>
+
 #include <QWizard>
 
 namespace Ui {
@@ -20,6 +22,9 @@ public:
 
 private:
     Ui::MTWizardAddNym *ui;
+
+public:
+    listContactDataTuples listContactDataTuples_;
 };
 
 #endif // WIZARDADDNYM_HPP

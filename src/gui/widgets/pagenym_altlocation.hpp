@@ -62,8 +62,6 @@ private:
 
     QList<QWidget *>  listTabs_;
     QMap<uint32_t, QList<GroupBoxContactItems *> * > mapGroupBoxLists_;
-
-    listContactDataTuples listContactDataTuples_;
 };
 
 #endif // PAGENYM_ALTLOCATION_HPP
