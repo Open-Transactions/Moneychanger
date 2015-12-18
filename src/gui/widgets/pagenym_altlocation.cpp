@@ -6,6 +6,7 @@
 #include <ui_pagenym_altlocation.h>
 
 #include <gui/widgets/editdetails.hpp>
+#include <gui/widgets/wizardaddnym.hpp>
 
 #include <QComboBox>
 #include <QVBoxLayout>
@@ -104,7 +105,7 @@ void MTPageNym_AltLocation::PrepareOutputData()
 {
     // Step 1: wipe the old data.
     //
-    listContactDataTuples_.clear();
+    static_cast<MTWizardAddNym *>(wizard())->listContactDataTuples_.clear();
 
     // Step 2: reconstruct it from the widgets.
     QMap<uint32_t, QList<GroupBoxContactItems *> * >::iterator it_mapGroupBoxLists;
@@ -139,7 +140,7 @@ void MTPageNym_AltLocation::PrepareOutputData()
                         const QString & qstrText = pLineEdit->text();
 
                         if (!qstrText.isEmpty())
-                            listContactDataTuples_.push_back(
+                            static_cast<MTWizardAddNym *>(wizard())->listContactDataTuples_.push_back(
                                     std::make_tuple(indexSection, indexSectionType,
                                         qstrText.toStdString(),
                                         pBtnRadio->isChecked()));
@@ -495,10 +496,13 @@ void MTPageNym_AltLocation::initializePage() //virtual
 {
     //QList<QWidget *>  listTabs_;
 
+    int nCurrentTab = 0;
+
     std::set<uint32_t> sections = opentxs::OTAPI_Wrap::OTAPI()->GetContactSections();
 
     for (auto & indexSection: sections)  //Names (for example)
     {
+        nCurrentTab++;
         bool bAddedInitialItem = false;
 
         QMap<uint32_t, QString> mapTypeNames;
@@ -550,8 +554,15 @@ void MTPageNym_AltLocation::initializePage() //virtual
                     )
             {
                 bAddedInitialItem = true;
-
-                QWidget * pInitialItem = createSingleContactItem(pGroupBox);
+                QWidget * pInitialItem = nullptr;
+                if (1 == nCurrentTab)
+                {
+                    // Pre-fill the name on the first tab.
+                    QString qstrName = wizard()->field("Name").toString();
+                    pInitialItem = createSingleContactItem(pGroupBox, 0, qstrName);
+                }
+                else
+                    pInitialItem = createSingleContactItem(pGroupBox);
 
                 if (nullptr != pInitialItem)
                 {

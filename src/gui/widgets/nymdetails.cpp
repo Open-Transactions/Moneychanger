@@ -785,15 +785,48 @@ void MTNymDetails::AddButtonClicked()
                 nmc.startRegistration (qstrID, qCred);
             }
         }
-
         // ------------------------------------------------------
         // Set the Name of the new Nym.
         //
         //bool bNameSet =
-                opentxs::OTAPI_Wrap::It()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
+        opentxs::OTAPI_Wrap::It()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
+        // ------------------------------------------------------
+        // QString qstrID is the NymID as a Qstring.
+        // qstrID.toStdString() is the NymID as a std::string.
+
+        for (const auto & contactDataItem: theWizard.listContactDataTuples_)
+        {
+            uint32_t     indexSection     = std::get<0>(contactDataItem);
+            uint32_t     indexSectionType = std::get<1>(contactDataItem);
+            std::string  textValue        = std::get<2>(contactDataItem);
+            bool         bIsPrimary       = std::get<3>(contactDataItem);
+
+            // Todo: Justusranvier:
+
+            // Here we're looping through the contact data items we collected during the
+            // wizard.
+
+            // HERE: You have the NymID, and you have the 4 data members of your Contact Item.
+            // Now you can do an OT API call or a proto call or whatever you want to do.
+            //
+            // Warning: this is a loop, so this will happen multiple times (once for each
+            // data item.)
+            //
+            // You can access the entire list using theWizard.listContactDataTuples_
+            // Its description:
+            //
+//          typedef std::tuple<uint32_t, uint32_t, std::string, bool> tupleContactDataItem;
+//          typedef std::list<tupleContactDataItem> listContactDataTuples;
+
+
+
+
+
+
+
+
+        }
         // -----------------------------------------------
-        // Commenting this out for now.
-        //
 //      QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Creating Nym! Name")).
 //                               arg(qstrName).arg(tr("ID")).arg(qstrID));
         // ----------
