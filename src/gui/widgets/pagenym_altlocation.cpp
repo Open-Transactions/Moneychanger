@@ -290,6 +290,13 @@ void MTPageNym_AltLocation::on_lineEditItemValue_textChanged(const QString & tex
             return;
         }
         // ----------------------------------------------------------
+        QComboBox * pComboBox = VPtr<QComboBox>::asPtr(pContactItemWidget->property("combo"));
+
+        if (nullptr == pComboBox)
+        {
+            return;
+        }
+        // ----------------------------------------------------------
         GroupBoxContactItems * pGroupBox = VPtr<GroupBoxContactItems>::asPtr(pContactItemWidget->property("groupbox"));
 
         if (nullptr == pGroupBox)
@@ -329,7 +336,7 @@ void MTPageNym_AltLocation::on_lineEditItemValue_textChanged(const QString & tex
         // -----------------------------------
         if (!bAtLeastOneIsEmpty)
         {
-            QWidget * pNewItem = createSingleContactItem(pGroupBox);
+            QWidget * pNewItem = createSingleContactItem(pGroupBox, pComboBox->currentIndex());
 
             if (nullptr != pNewItem)
             {

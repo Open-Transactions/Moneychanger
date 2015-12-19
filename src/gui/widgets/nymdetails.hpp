@@ -9,7 +9,10 @@
 #include <QGroupBox>
 #include <QMenu>
 #include <QAction>
+#include <QLineEdit>
+#include <QToolButton>
 #include <QScopedPointer>
+#include <QLabel>
 
 namespace Ui {
 class MTNymDetails;
@@ -41,6 +44,10 @@ public:
 private:
     QPointer<QPlainTextEdit> m_pPlainTextEdit;
     QPointer<MTCredentials>  m_pCredentials;
+
+    QPointer<QLabel>      pLabelNymId_;
+    QPointer<QLineEdit>   pLineEditNymId_;
+    QPointer<QToolButton> pToolButtonNymId_;
 
     QScopedPointer<QMenu> popupMenu_;
 

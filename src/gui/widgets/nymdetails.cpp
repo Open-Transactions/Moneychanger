@@ -47,7 +47,6 @@ MTNymDetails::MTNymDetails(QWidget *parent, MTDetailEdit & theOwner) :
     this->setContentsMargins(0, 0, 0, 0);
 //  this->installEventFilter(this); // NOTE: Successfully tested theory that the base class has already installed this.
 
-    ui->lineEditID->setStyleSheet("QLineEdit { background-color: lightgray }");
     // ----------------------------------
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     // ----------------------------------
@@ -88,13 +87,13 @@ void MTNymDetails::on_toolButton_clicked()
 {
     QClipboard *clipboard = QApplication::clipboard();
 
-    if (NULL != clipboard)
+    if (pLineEditNymId_ && (nullptr != clipboard))
     {
-        clipboard->setText(ui->lineEditID->text());
+        clipboard->setText(pLineEditNymId_->text());
 
         QMessageBox::information(this, tr("ID copied"), QString("%1:<br/>%2").
                                  arg(tr("Copied Nym ID to the clipboard")).
-                                 arg(ui->lineEditID->text()));
+                                 arg(pLineEditNymId_->text()));
     }
 }
 
@@ -121,6 +120,67 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
     case 0: // "Credentials" tab
         if (m_pOwner)
         {
+
+            if (pLabelNymId_)
+            {
+                pLabelNymId_->setParent(NULL);
+                pLabelNymId_->disconnect();
+                pLabelNymId_->deleteLater();
+
+                pLabelNymId_ = NULL;
+            }
+            pLabelNymId_ = new QLabel(tr("Nym ID: "));
+
+            if (pToolButtonNymId_)
+            {
+                pToolButtonNymId_->setParent(NULL);
+                pToolButtonNymId_->disconnect();
+                pToolButtonNymId_->deleteLater();
+
+                pToolButtonNymId_ = NULL;
+            }
+
+            QPixmap pixmapCopy(":/icons/icons/Basic-Copy-icon.png");
+            QIcon   copyIcon  (pixmapCopy);
+            // ----------------------------------------------------------------
+            pToolButtonNymId_ = new QToolButton;
+            pToolButtonNymId_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+            pToolButtonNymId_->setIcon(copyIcon);
+
+            connect(pToolButtonNymId_.data(), SIGNAL(clicked()), this, SLOT(on_toolButton_clicked()));
+
+            if (pLineEditNymId_)
+            {
+                pLineEditNymId_->setParent(NULL);
+                pLineEditNymId_->disconnect();
+                pLineEditNymId_->deleteLater();
+
+                pLineEditNymId_ = NULL;
+            }
+
+            pLineEditNymId_ = new QLineEdit;
+            pLineEditNymId_->setReadOnly(true);
+            pLineEditNymId_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            pLineEditNymId_->setStyleSheet("QLineEdit { background-color: lightgray }");
+            // -------------------------------
+            QHBoxLayout * phBox = new QHBoxLayout;
+            QWidget * pWidgetNymId = new QWidget;
+
+//            phBox->setMargin(0);
+//            pWidgetNymId->setContentsMargins(0,0,0,0);
+
+            QMargins margins = pWidgetNymId->contentsMargins();
+
+            QMargins newMargins(margins.left(), margins.top(), margins.right(), 0);
+
+            pWidgetNymId->setContentsMargins(newMargins);
+
+            phBox->addWidget(pLabelNymId_);
+            phBox->addWidget(pLineEditNymId_);
+            phBox->addWidget(pToolButtonNymId_);
+
+            pWidgetNymId->setLayout(phBox);
+            // -------------------------------
             if (m_pCredentials)
             {
                 m_pCredentials->setParent(NULL);
@@ -130,13 +190,61 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
                 m_pCredentials = NULL;
             }
             m_pCredentials = new MTCredentials(NULL, *m_pOwner);
-            pReturnValue = m_pCredentials;
+            m_pCredentials->setContentsMargins(0,0,0,0);
+
+            QWidget * pWidgetCred = new QWidget;
+            QVBoxLayout * pvBox = new QVBoxLayout;
+
+            pvBox->setMargin(0);
+            pvBox->addWidget(pWidgetNymId);
+            pvBox->addWidget(m_pCredentials);
+
+            pWidgetCred->setLayout(pvBox);
+
+            pReturnValue = pWidgetCred;
             pReturnValue->setContentsMargins(0, 0, 0, 0);
         }
         break;
 
     case 1: // "State of Nym" tab
     {
+//        if (pToolButtonNymId_)
+//        {
+//            pToolButtonNymId_->setParent(NULL);
+//            pToolButtonNymId_->disconnect();
+//            pToolButtonNymId_->deleteLater();
+
+//            pToolButtonNymId_ = NULL;
+//        }
+
+//        QPixmap pixmapCopy(":/icons/icons/Basic-Copy-icon.png");
+//        QIcon   copyIcon  (pixmapCopy);
+//        // ----------------------------------------------------------------
+//        pToolButtonNymId_ = new QToolButton;
+//        pToolButtonNymId_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+//        pToolButtonNymId_->setIcon(copyIcon);
+
+//        connect(pToolButtonNymId_.data(), SIGNAL(clicked()), this, SLOT(on_toolButton_clicked()));
+
+//        if (pLineEditNymId_)
+//        {
+//            pLineEditNymId_->setParent(NULL);
+//            pLineEditNymId_->disconnect();
+//            pLineEditNymId_->deleteLater();
+
+//            pLineEditNymId_ = NULL;
+//        }
+
+//        pLineEditNymId_ = new QLineEdit;
+//        pLineEditNymId_->setReadOnly(true);
+//        pLineEditNymId_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+//        pLineEditNymId_->setStyleSheet("QLineEdit { background-color: lightgray }");
+//        // -------------------------------
+//        QHBoxLayout * phBox = new QHBoxLayout;
+
+//        phBox->addWidget(pLineEditNymId_);
+//        phBox->addWidget(pToolButtonNymId_);
+        // -------------------------------
         if (m_pPlainTextEdit)
         {
             m_pPlainTextEdit->setParent(NULL);
@@ -151,15 +259,12 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
         m_pPlainTextEdit->setReadOnly(true);
         m_pPlainTextEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
         // -------------------------------
-
-
-
-        // -------------------------------
         QVBoxLayout * pvBox = new QVBoxLayout;
 
         QLabel * pLabelContents = new QLabel(tr("Raw State of Nym:"));
 
         pvBox->setAlignment(Qt::AlignTop);
+        //pvBox->addLayout   (phBox);
         pvBox->addWidget   (pLabelContents);
         pvBox->addWidget   (m_pPlainTextEdit);
         // -------------------------------
@@ -502,7 +607,11 @@ void MTNymDetails::refresh(QString strID, QString strName)
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
-        ui->lineEditID  ->setText(strID);
+
+        if (pLineEditNymId_)
+            pLineEditNymId_->setText(strID);
+
+        pLineEditNymId_ ->setText(strID);
         ui->lineEditName->setText(strName);
 
         FavorLeftSideForIDs();
@@ -598,7 +707,8 @@ void MTNymDetails::clearNotaryTable()
 
 void MTNymDetails::ClearContents()
 {
-    ui->lineEditID  ->setText("");
+    if (pLineEditNymId_)
+        pLineEditNymId_->setText("");
     ui->lineEditName->setText("");
     // ------------------------------------------
     if (m_pCredentials)
@@ -627,7 +737,8 @@ void MTNymDetails::FavorLeftSideForIDs()
 {
     if (NULL != ui)
     {
-        ui->lineEditID  ->home(false);
+        if (pLineEditNymId_)
+            pLineEditNymId_->home(false);
         ui->lineEditName->home(false);
     }
 }

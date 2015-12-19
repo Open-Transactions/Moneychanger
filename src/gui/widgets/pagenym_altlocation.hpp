@@ -58,8 +58,6 @@ private slots:
 private:
     Ui::MTPageNym_AltLocation *ui;
 
-    QPointer<GroupBoxContactItems> m_pAddresses;
-
     QList<QWidget *>  listTabs_;
     QMap<uint32_t, QList<GroupBoxContactItems *> * > mapGroupBoxLists_;
 };
