@@ -72,7 +72,7 @@ public:
 
   void NotifyOfNymServerPair(QString nym_id_string, QString notary_id_string);
 
-  int  CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string=QString(""));
+  int  CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string=QString(""), QString payment_code=QString(""));
   int  CreateContactBasedOnAddress(QString qstrAddress, QString qstrMethodType);
 
   int  CreateSmartContractTemplate(QString template_string);
@@ -96,7 +96,7 @@ protected:
                                        const QString & qstrURL,   const QString & qstrNotes);
 
 public:
-  bool AddNymToExistingContact   (int nContactID, QString nym_id_string);
+  bool AddNymToExistingContact   (int nContactID, QString nym_id_string, QString payment_code="");
   bool VerifyNymOnExistingContact(int nContactID, QString nym_id_string); // See if a given Contact ID is associated with a given NymID.
 
   bool ContactExists(int nContactID);
@@ -210,7 +210,7 @@ public:
   bool GetMethodsAndAddrByNym    (mapIDName & theMap, QString filterByNym,  int filterByMethodID);
   bool GetMethodsAndAddrByNym    (mapIDName & theMap, QString filterByNym);
 
-  QString GetNymByAddress    (QString qstrAddress);
+  QString GetNymByAddress    (QString qstrAddress); // Note: NOT to be confused with Payment Address! This refers to P2P addresses like Bitmessage.
   int     GetContactByAddress(QString qstrAddress);
 
   int  GetMethodIDByNymAndAddress(QString filterByNym, QString qstrAddress);
@@ -223,6 +223,7 @@ public:
 
   bool GetContacts(mapIDName & theMap);
   bool GetNyms    (mapIDName & theMap, int nFilterByContact);
+  bool GetPaymentCodes(mapIDName & theMap, int nFilterByContact);
 
   bool GetSmartContracts(mapIDName & theMap);
   QString GetSmartContract    (int nID);

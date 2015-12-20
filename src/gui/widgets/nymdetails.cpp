@@ -13,6 +13,8 @@
 #include <gui/widgets/wizardaddnym.hpp>
 #include <gui/widgets/overridecursor.hpp>
 
+#include <gui/widgets/qrwidget.hpp>
+
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
 #include <core/moneychanger.hpp>
@@ -35,6 +37,14 @@
 #include <QClipboard>
 #include <QDebug>
 
+#include <QGroupBox>
+#include <QTableWidget>
+#include <QMenu>
+#include <QAction>
+#include <QLineEdit>
+#include <QToolButton>
+#include <QScopedPointer>
+#include <QLabel>
 
 // ------------------------------------------------------
 MTNymDetails::MTNymDetails(QWidget *parent, MTDetailEdit & theOwner) :
@@ -47,19 +57,20 @@ MTNymDetails::MTNymDetails(QWidget *parent, MTDetailEdit & theOwner) :
     this->setContentsMargins(0, 0, 0, 0);
 //  this->installEventFilter(this); // NOTE: Successfully tested theory that the base class has already installed this.
 
+    ui->lineEditDescription->setStyleSheet("QLineEdit { background-color: lightgray }");
     // ----------------------------------
-    ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    // ----------------------------------
-    ui->tableWidget->verticalHeader()->hide();
-    // ----------------------------------
-    ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
-    ui->tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
-    // ----------------------------------
-    ui->tableWidget->setSelectionMode    (QAbstractItemView::SingleSelection);
-    ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    // ----------------------------------
-    ui->tableWidget->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignLeft);
-    ui->tableWidget->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignLeft);
+//    ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+//    // ----------------------------------
+//    ui->tableWidget->verticalHeader()->hide();
+//    // ----------------------------------
+//    ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
+//    ui->tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+//    // ----------------------------------
+//    ui->tableWidget->setSelectionMode    (QAbstractItemView::SingleSelection);
+//    ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+//    // ----------------------------------
+//    ui->tableWidget->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignLeft);
+//    ui->tableWidget->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignLeft);
     // ----------------------------------
     // Note: This is a placekeeper, so later on I can just erase
     // the widget at 0 and replace it with the real header widget.
@@ -82,6 +93,31 @@ MTNymDetails::~MTNymDetails()
     delete ui;
 }
 
+
+void MTNymDetails::on_toolButtonDescription_clicked()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+
+    if (pLineEditNymId_ && (nullptr != clipboard))
+    {
+        QString strID = pLineEditNymId_->text();
+
+        if (strID.isEmpty())
+            return;
+
+        std::string nym_description = opentxs::OTAPI_Wrap::It()->GetNym_Description(strID.toStdString());
+        QString qstrDesc(QString::fromStdString(nym_description));
+
+        ui->widgetQrCode->setString(QString::fromStdString(nym_description));
+        ui->lineEditDescription->setText(QString::fromStdString(nym_description));
+
+        clipboard->setText(ui->lineEditDescription->text());
+
+        QMessageBox::information(this, tr("Moneychanger"), QString("%1:<br/>%2").
+                                 arg(tr("Copied payment address to the clipboard")).
+                                 arg(ui->lineEditDescription->text()));
+    }
+}
 
 void MTNymDetails::on_toolButton_clicked()
 {
@@ -120,7 +156,6 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
     case 0: // "Credentials" tab
         if (m_pOwner)
         {
-
             if (pLabelNymId_)
             {
                 pLabelNymId_->setParent(NULL);
@@ -245,6 +280,48 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
 //        phBox->addWidget(pLineEditNymId_);
 //        phBox->addWidget(pToolButtonNymId_);
         // -------------------------------
+        if (pLabelNotaries_)
+        {
+            pLabelNotaries_->setParent(NULL);
+            pLabelNotaries_->disconnect();
+            pLabelNotaries_->deleteLater();
+            pLabelNotaries_ = nullptr;
+
+        }
+
+        pLabelNotaries_ = new QLabel(tr("Registered on notaries:"));
+
+        if (pTableWidgetNotaries_)
+        {
+            pTableWidgetNotaries_->setParent(NULL);
+            pTableWidgetNotaries_->disconnect();
+            pTableWidgetNotaries_->deleteLater();
+            pTableWidgetNotaries_ = nullptr;
+        }
+
+        pTableWidgetNotaries_ = new QTableWidget;
+        pTableWidgetNotaries_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        pTableWidgetNotaries_->setColumnCount(3);
+
+        pTableWidgetNotaries_->setHorizontalHeaderLabels(
+                    QStringList() << tr("Notary") << tr("Status") << tr("Notary ID"));
+        // ----------------------------------
+        pTableWidgetNotaries_->setContextMenuPolicy(Qt::CustomContextMenu);
+        // ----------------------------------
+        pTableWidgetNotaries_->verticalHeader()->hide();
+        // ----------------------------------
+        pTableWidgetNotaries_->horizontalHeader()->setStretchLastSection(true);
+        pTableWidgetNotaries_->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+        // ----------------------------------
+        pTableWidgetNotaries_->setSelectionMode    (QAbstractItemView::SingleSelection);
+        pTableWidgetNotaries_->setSelectionBehavior(QAbstractItemView::SelectRows);
+        // ----------------------------------
+        pTableWidgetNotaries_->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignLeft);
+        pTableWidgetNotaries_->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignLeft);
+        // ----------------------------------
+        connect(pTableWidgetNotaries_, SIGNAL(customContextMenuRequested(const QPoint &)),
+                this, SLOT(on_tableWidget_customContextMenuRequested(const QPoint &)));
+        // -------------------------------
         if (m_pPlainTextEdit)
         {
             m_pPlainTextEdit->setParent(NULL);
@@ -264,7 +341,8 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
         QLabel * pLabelContents = new QLabel(tr("Raw State of Nym:"));
 
         pvBox->setAlignment(Qt::AlignTop);
-        //pvBox->addLayout   (phBox);
+        pvBox->addWidget   (pLabelNotaries_);
+        pvBox->addWidget   (pTableWidgetNotaries_);
         pvBox->addWidget   (pLabelContents);
         pvBox->addWidget   (m_pPlainTextEdit);
         // -------------------------------
@@ -588,6 +666,10 @@ void MTNymDetails::refresh(QString strID, QString strName)
 
     if ((NULL != ui) && !strID.isEmpty())
     {
+        std::string nym_description = opentxs::OTAPI_Wrap::It()->GetNym_Description(strID.toStdString());
+        ui->widgetQrCode->setString(QString::fromStdString(nym_description));
+        ui->lineEditDescription->setText(QString::fromStdString(nym_description));
+
         QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName,
                                                                            "", "", ":/icons/icons/identity_BW.png",
                                                                            false);
@@ -618,7 +700,7 @@ void MTNymDetails::refresh(QString strID, QString strName)
         // ----------------------------------------------------------------
         clearNotaryTable();
         // ----------------------------------------------------------------
-        ui->tableWidget->blockSignals(true);
+        pTableWidgetNotaries_->blockSignals(true);
         // ----------------------------
         std::string nymId   = strID.toStdString();
         const int32_t serverCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
@@ -633,29 +715,29 @@ void MTNymDetails::refresh(QString strID, QString strName)
             // ----------------------------------
             int column = 0;
             // ----------------------------------
-            ui->tableWidget->insertRow(0);
+            pTableWidgetNotaries_->insertRow(0);
             QTableWidgetItem * item = nullptr;
             // ----------------------------------
             item = new QTableWidgetItem(qstrNotaryName);
             item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
-            ui->tableWidget->setItem(0, column++, item);
+            pTableWidgetNotaries_->setItem(0, column++, item);
             // ----------------------------------
             item = new QTableWidgetItem(qstrStatus);
             item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
-            ui->tableWidget->setItem(0, column++, item);
+            pTableWidgetNotaries_->setItem(0, column++, item);
             // ----------------------------------
             item = new QTableWidgetItem(qstrNotaryID);
             item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
-            ui->tableWidget->setItem(0, column++, item);
+            pTableWidgetNotaries_->setItem(0, column++, item);
             // ----------------------------------
-            ui->tableWidget->item(0,0)->setData(Qt::UserRole, QVariant(qstrNotaryID));
+            pTableWidgetNotaries_->item(0,0)->setData(Qt::UserRole, QVariant(qstrNotaryID));
         }
         if (serverCount < 1)
-            ui->tableWidget->setCurrentCell(-1,0);
+            pTableWidgetNotaries_->setCurrentCell(-1,0);
         else
-            ui->tableWidget->setCurrentCell(0,0);
+            pTableWidgetNotaries_->setCurrentCell(0,0);
         // ----------------------------
-        ui->tableWidget->blockSignals(false);
+        pTableWidgetNotaries_->blockSignals(false);
         // ----------------------------------------------------------------
         QGroupBox * pAddresses = this->createAddressGroupBox(strID);
 
@@ -696,17 +778,20 @@ void MTNymDetails::refresh(QString strID, QString strName)
 
 void MTNymDetails::clearNotaryTable()
 {
-    ui->tableWidget->blockSignals(true);
+    pTableWidgetNotaries_->blockSignals(true);
     // -----------------------------------
-    ui->tableWidget->clearContents();
-    ui->tableWidget->setRowCount (0);
+    pTableWidgetNotaries_->clearContents();
+    pTableWidgetNotaries_->setRowCount (0);
     // -----------------------------------
-    ui->tableWidget->setCurrentCell(-1, 0);
-    ui->tableWidget->blockSignals(false);
+    pTableWidgetNotaries_->setCurrentCell(-1, 0);
+    pTableWidgetNotaries_->blockSignals(false);
 }
 
 void MTNymDetails::ClearContents()
 {
+    ui->widgetQrCode->setString("");
+    ui->lineEditDescription->setText("");
+
     if (pLineEditNymId_)
         pLineEditNymId_->setText("");
     ui->lineEditName->setText("");
@@ -739,6 +824,7 @@ void MTNymDetails::FavorLeftSideForIDs()
     {
         if (pLineEditNymId_)
             pLineEditNymId_->home(false);
+        ui->lineEditDescription->home(false);
         ui->lineEditName->home(false);
     }
 }
@@ -975,7 +1061,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
         QString qstrNymName(m_pOwner->m_qstrCurrentName);
         const std::string str_nym_id = qstrNymID.toStdString();
         // ----------------------------------------------------
-        QTableWidgetItem * pItem = ui->tableWidget->itemAt(pos);
+        QTableWidgetItem * pItem = pTableWidgetNotaries_->itemAt(pos);
 
         if (NULL != pItem)
         {
@@ -983,11 +1069,11 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
 
             if (nRow >= 0)
             {
-                QString qstrNotaryID = ui->tableWidget->item(nRow, 0)->data(Qt::UserRole).toString();
+                QString qstrNotaryID = pTableWidgetNotaries_->item(nRow, 0)->data(Qt::UserRole).toString();
                 std::string str_notary_id = qstrNotaryID.toStdString();
                 QString qstrNotaryName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(str_notary_id));
                 // ------------------------
-                QPoint globalPos = ui->tableWidget->mapToGlobal(pos);
+                QPoint globalPos = pTableWidgetNotaries_->mapToGlobal(pos);
                 // ------------------------
                 const QAction* selectedAction = popupMenu_->exec(globalPos); // Here we popup the menu, and get the user's click.
                 // ------------------------

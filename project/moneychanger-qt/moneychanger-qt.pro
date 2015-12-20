@@ -32,6 +32,7 @@ include(../common.pri)
 
 #PRECOMPILED_HEADER = $${SOLUTION_DIR}../src/core/stable.hpp
 
+include($${SOLUTION_DIR}../project/QtQREncoder/QtQREncoder.pri)
 include($${SOLUTION_DIR}../project/qjsonrpc/qjsonrpc.pri)
 include($${SOLUTION_DIR}../src/core/core.pri)
 include($${SOLUTION_DIR}../src/gui/gui.pri)
@@ -39,7 +40,6 @@ include($${SOLUTION_DIR}../src/rpc/rpc.pri)
 include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
 include($${SOLUTION_DIR}../src/namecoin/namecoin.pri)
 include($${SOLUTION_DIR}../src/quazip/quazip.pri)
-
 
 #-------------------------------------------------
 # Package Config
@@ -96,11 +96,17 @@ unix: {
     LIBS += -L$${OUT_PWD}/../qjsonrpc/src
     LIBS += -lqjsonrpc
 
+    INCLUDEPATH += $${PWD}/../QtQREncoder
+    INCLUDEPATH += $${PWD}/../QtQREncoder/qrencode
+    LIBS += -L$${OUT_PWD}/../QtQREncoder
+    LIBS += -lqrencode
+
     LIBS += -L$${OUT_PWD}/../nmcrpc
     LIBS += -lnmcrpc
 
     LIBS += -L$${OUT_PWD}/../quazip
     LIBS += -lquazip -lz
+
 
     mac:{
 
@@ -163,6 +169,7 @@ win32: {
     LIBS += bitcoin-api.lib
     LIBS += jsoncpp.lib
     LIBS += qjsonrpc.lib
+    LIBS += qrencode.lib
     LIBS += curl.lib
     LIBS += nmcrpc.lib
     LIBS += quazip.lib

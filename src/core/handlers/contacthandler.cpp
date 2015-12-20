@@ -178,7 +178,8 @@ bool MTContactHandler::VerifyNymOnExistingContact(int nContactID, QString nym_id
 }
 
 
-bool MTContactHandler::AddNymToExistingContact(int nContactID, QString nym_id_string)
+
+bool MTContactHandler::AddNymToExistingContact(int nContactID, QString nym_id_string, QString payment_code/*=""*/)
 {
     QMutexLocker locker(&m_Mutex);
 
@@ -191,7 +192,7 @@ bool MTContactHandler::AddNymToExistingContact(int nContactID, QString nym_id_st
         //
         QString str_select = QString("SELECT `contact_id` FROM `nym` WHERE `nym_id`='%1'").arg(nym_id_string);
 
-        qDebug() << QString("Running query: %1").arg(str_select);
+//      qDebug() << QString("Running query: %1").arg(str_select);
 
         int  nRows      = DBHandler::getInstance()->querySize(str_select);
         bool bNymExists = (nRows > 0); // Whether the contact ID was good or not, the Nym itself DOES exist.
@@ -200,11 +201,13 @@ bool MTContactHandler::AddNymToExistingContact(int nContactID, QString nym_id_st
 
         if (!bNymExists)
             str_insert_nym = QString("INSERT INTO `nym` "
-                                     "(`nym_id`, `contact_id`) "
-                                     "VALUES('%1', %2)").arg(nym_id_string).arg(nContactID);
-//      else if (bHadToCreateContact)
+                                     "(`nym_id`, `contact_id`, `nym_payment_code`) "
+                                     "VALUES('%1', %2, '%3')").arg(nym_id_string).arg(nContactID).arg(payment_code);
+        else if (!payment_code.isEmpty())
+            str_insert_nym = QString("UPDATE `nym` SET `contact_id`=%1,`nym_payment_code`='%2' WHERE `nym_id`='%3'")
+                    .arg(nContactID).arg(payment_code).arg(nym_id_string);
         else
-            str_insert_nym = QString("UPDATE nym SET contact_id=%1 WHERE nym_id='%2'").arg(nContactID).arg(nym_id_string);
+            str_insert_nym = QString("UPDATE `nym` SET `contact_id`=%1 WHERE `nym_id`='%2'").arg(nContactID).arg(nym_id_string);
 
         if (!str_insert_nym.isEmpty())
         {
@@ -689,6 +692,46 @@ bool MTContactHandler::GetContacts(mapIDName & theMap)
 
 // ---------------------------------------------------------------------
 
+bool MTContactHandler::GetPaymentCodes(mapIDName & theMap, int nFilterByContact)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_select = QString("SELECT * FROM `nym` WHERE `contact_id`=%1").arg(nFilterByContact);
+//  QString str_select = QString("SELECT * FROM `nym` WHERE `contact_id`=%1 LIMIT 0,1").arg(nFilterByContact);
+
+    bool bFoundAny = false;
+    int  nRows     = DBHandler::getInstance()->querySize(str_select);
+
+    for (int ii=0; ii < nRows; ii++)
+    {
+        QString nym_id       = DBHandler::getInstance()->queryString(str_select, 0, ii);
+        QString nym_name     = DBHandler::getInstance()->queryString(str_select, 2, ii);
+        QString payment_code = DBHandler::getInstance()->queryString(str_select, 3, ii);
+
+        if (!nym_id.isEmpty() && !payment_code.isEmpty())
+        {
+            bFoundAny = true;
+
+            if (!nym_name.isEmpty())
+            {
+                //Decode base64.
+                nym_name = Decode(nym_name);
+            }
+            else
+            {
+                MTNameLookupQT theLookup;
+                nym_name = QString::fromStdString(theLookup.GetNymName(nym_id.toStdString(), ""));
+            }
+            // ----------------------------
+            // At this point we have the payment code *and* the nym name.
+            // So we can add them to our map...
+            theMap.insert(payment_code, nym_name);
+        }
+    }
+    // ---------------------------------------------------------------------
+    return bFoundAny;
+}
+
 bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact)
 {
     QMutexLocker locker(&m_Mutex);
@@ -1156,7 +1199,7 @@ int  MTContactHandler::CreateSmartContractTemplate(QString template_string)
 // Notice there is no "CreateContactBasedOnAcct" because you can call this first,
 // and then just call FindContactIDByAcctID.
 //
-int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string/*=QString("")*/)
+int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string/*=QString("")*/, QString payment_code/*=QString("")*/)
 {
     QMutexLocker locker(&m_Mutex);
 
@@ -1219,11 +1262,13 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString not
 
         if (!bNymExists)
             str_insert_nym = QString("INSERT INTO `nym` "
-                                     "(`nym_id`, `contact_id`) "
-                                     "VALUES('%1', %2)").arg(nym_id_string).arg(nContactID);
-//      else if (bHadToCreateContact)
+                                     "(`nym_id`, `contact_id`, `nym_payment_code`) "
+                                     "VALUES('%1', %2, '%3')").arg(nym_id_string).arg(nContactID).arg(payment_code);
+        else if (!payment_code.isEmpty())
+            str_insert_nym = QString("UPDATE `nym` SET `contact_id`=%1,`nym_payment_code`='%2' WHERE `nym_id`='%3'")
+                    .arg(nContactID).arg(payment_code).arg(nym_id_string);
         else
-            str_insert_nym = QString("UPDATE nym SET contact_id=%1 WHERE nym_id='%2'").arg(nContactID).arg(nym_id_string);
+            str_insert_nym = QString("UPDATE `nym` SET `contact_id`=%1 WHERE `nym_id`='%2'").arg(nContactID).arg(nym_id_string);
 
         if (!str_insert_nym.isEmpty())
         {

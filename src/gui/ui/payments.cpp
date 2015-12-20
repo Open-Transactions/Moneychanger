@@ -212,7 +212,7 @@ QWidget * Payments::CreateUserBarWidget()
     // -------------------------------------------
     if (qstr_acct_id.isEmpty())
     {
-        qstr_balance     = tr("(Click for Account Manager)");
+        qstr_balance     = tr("Click here");
         qstr_acct_name = QString("");
         // -----------------------------------
         qstr_acct_nym    = Moneychanger::It()->get_default_nym_id();
