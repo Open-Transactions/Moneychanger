@@ -119,11 +119,9 @@ signals:
 public slots:
     void onBalancesChangedFromAbove();
     void onBalancesChangedFromBelow(QString qstrAcctID);
-
     void onRefreshRecords();
-
+    void onExpertModeUpdated(bool bExpertMode);
     void onMarketIDChangedFromAbove(QString qstrMarketID);
-
     void onSetNeedToRetrieveOfferTradeFlags();
 
 protected:

@@ -1,19 +1,19 @@
 
-#include <gui/widgets/qrwidget.hpp>
-#include <ui_qrwidget.h>
+#include <gui/widgets/qrtoolbutton.hpp>
+#include <ui_qrtoolbutton.h>
 
 #include <QPainter>
+#include <QStylePainter>
 #include <QImage>
 
-
-QrWidget::QrWidget(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::QrWidget)
+QrToolButton::QrToolButton(QWidget *parent) :
+    QToolButton(parent),
+    ui(new Ui::QrToolButton)
 {
     ui->setupUi(this);
 }
 
-QrWidget::~QrWidget()
+QrToolButton::~QrToolButton()
 {
     delete ui;
 
@@ -24,34 +24,7 @@ QrWidget::~QrWidget()
     }
 }
 
-void QrWidget::setString(QString str)
-{
-    string = str;
-
-    if (qr != nullptr)
-    {
-        QRcode_free(qr);
-        qr = nullptr;
-    }
-    qr = QRcode_encodeString(string.toStdString().c_str(),
-                             1,
-                             QR_ECLEVEL_L,
-                             QR_MODE_8,
-                             1);
-    update();
-}
-
-int QrWidget::getQRWidth() const
-{
-    if (qr != nullptr)
-    {
-        return qr->width;
-    }
-
-    return 0;
-}
-
-bool QrWidget::asImage(QImage & output, int size)
+bool QrToolButton::asImage(QImage & output, int size)
 {
     if (size != 0)
     {
@@ -72,32 +45,63 @@ bool QrWidget::asImage(QImage & output, int size)
     return false;
 }
 
-bool QrWidget::saveImage(QString fileName, int size)
+void QrToolButton::setString(QString str)
 {
-    if (size != 0 && !fileName.isEmpty())
+    string = str;
+
+    if (qr != nullptr)
     {
-        QImage image(size, size, QImage::Format_Mono);
-        QPainter painter(&image);
-        QColor background(Qt::white);
-        painter.setBrush(background);
-        painter.setPen(Qt::NoPen);
-        painter.drawRect(0, 0, size, size);
-        if (nullptr != qr)
-        {
-            draw(painter, size, size);
-        }
-        return image.save(fileName);
+        QRcode_free(qr);
+        qr = nullptr;
     }
-    else
-    {
-        return false;
-    }
+    qr = QRcode_encodeString(string.toStdString().c_str(),
+                             1,
+                             QR_ECLEVEL_L,
+                             QR_MODE_8,
+                             1);
+    update();
 }
 
-
-void QrWidget::paintEvent(QPaintEvent *)
+int QrToolButton::getQRWidth() const
 {
-    QPainter painter(this);
+    if (qr != nullptr)
+    {
+        return qr->width;
+    }
+
+    return 0;
+}
+
+//bool QrToolButton::saveImage(QString fileName, int size)
+//{
+//    if (size != 0 && !fileName.isEmpty())
+//    {
+//        QImage image(size, size, QImage::Format_Mono);
+//        QPainter painter(&image);
+//        QColor background(Qt::white);
+//        painter.setBrush(background);
+//        painter.setPen(Qt::NoPen);
+//        painter.drawRect(0, 0, size, size);
+//        if (nullptr != qr)
+//        {
+//            draw(painter, size, size);
+//        }
+//        return image.save(fileName);
+//    }
+//    else
+//    {
+//        return false;
+//    }
+//}
+
+void QrToolButton::paintEvent(QPaintEvent *)
+{
+    QStylePainter p(this);
+    p.drawComplexControl(QStyle::CC_ToolButton, 0);
+
+
+    QPainter & painter(p);
+//    QPainter painter(this);
     QColor background(Qt::white);
     painter.setBrush(background);
     painter.setPen(Qt::NoPen);
@@ -108,7 +112,7 @@ void QrWidget::paintEvent(QPaintEvent *)
     }
 }
 
-QSize QrWidget::sizeHint() const
+QSize QrToolButton::sizeHint() const
 {
     QSize s;
     if (nullptr != qr)
@@ -123,7 +127,7 @@ QSize QrWidget::sizeHint() const
     return s;
 }
 
-QSize QrWidget::minimumSizeHint() const
+QSize QrToolButton::minimumSizeHint() const
 {
     QSize s;
     if (nullptr != qr)
@@ -140,7 +144,7 @@ QSize QrWidget::minimumSizeHint() const
 
 
 
-void QrWidget::draw(QPainter &painter, int width, int height)
+void QrToolButton::draw(QPainter &painter, int width, int height)
 {
     QColor foreground(Qt::black);
     painter.setBrush(foreground);
@@ -171,27 +175,3 @@ void QrWidget::draw(QPainter &painter, int width, int height)
         }
     }
 }
-
-
-//void QrWidget::draw(QPainter &painter, int width, int height)
-//{
-//    QColor foreground(Qt::black);
-//    painter.setBrush(foreground);
-//    const int qr_width = qr->width > 0 ? qr->width : 1;
-//    double scale_x = width / qr_width;
-//    double scale_y = height / qr_width;
-
-//    for (int y = 0; y < qr_width; y ++)
-//    {
-//        for (int x = 0; x < qr_width; x++)
-//        {
-//            unsigned char b = qr->data[y * qr_width + x];
-
-//            if (b & 0x01)
-//            {
-//                QRectF r(x * scale_x, y * scale_y, scale_x, scale_y);
-//                painter.drawRects(&r, 1);
-//            }
-//        }
-//    }
-//}

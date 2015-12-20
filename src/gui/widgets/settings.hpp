@@ -19,15 +19,21 @@ public:
     explicit Settings(QWidget *parent = 0);
     ~Settings();
 
+signals:
+    void expertModeUpdated(bool);
+
 private:
     void showEvent (QShowEvent * event);
 
 private slots:
     void on_pushButtonSave_clicked();
+    void on_checkBoxExpertMode_toggled(bool checked);
+    void on_comboBoxLanguage_currentIndexChanged(int index);
 
 private:
     Ui::Settings *ui;
     QString language;
+    QString expertmode_;
 };
 
 #endif // SETTINGS_HPP

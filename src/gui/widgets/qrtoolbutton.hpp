@@ -1,26 +1,25 @@
-#ifndef QRWIDGET_HPP
-#define QRWIDGET_HPP
+#ifndef QRTOOLBUTTON_HPP
+#define QRTOOLBUTTON_HPP
 
-#include <QWidget>
+#include <QToolButton>
 
 #include <qrencode/qrencode.h>
 
 namespace Ui {
-class QrWidget;
+class QrToolButton;
 }
 
-class QrWidget : public QWidget
+class QrToolButton : public QToolButton
 {
     Q_OBJECT
 
 public:
-    explicit QrWidget(QWidget *parent = 0);
-    ~QrWidget();
+    explicit QrToolButton(QWidget *parent = 0);
+    ~QrToolButton();
 
     //This is where you pass the string to encode
     void setString (QString str);
     int  getQRWidth() const;
-    bool saveImage (QString name, int size);
     bool asImage(QImage & output, int size);
 
 signals:
@@ -37,8 +36,9 @@ private:
     QString string;
     QRcode *qr=nullptr;
 
-    Ui::QrWidget *ui;
+private:
+    Ui::QrToolButton *ui;
 };
 
-#endif // QRWIDGET_HPP
+#endif // QRTOOLBUTTON_HPP
 

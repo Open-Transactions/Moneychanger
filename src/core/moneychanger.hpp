@@ -61,6 +61,11 @@ public:
 
     int64_t HasUsageCredits(QString   notary_id,
                             QString   NYM_ID);
+
+    bool expertMode() const { return bExpertMode_; }
+    bool hasNyms() const;
+    bool hasAccounts() const;
+
     /** Start **/
     void bootTray();
     
@@ -77,6 +82,7 @@ signals:
     void balancesChanged();
     void populatedRecordlist();
     void appendToLog(QString);
+    void expertModeUpdated(bool);
 
 public slots:
     void onBalancesChanged();
@@ -85,6 +91,7 @@ public slots:
     void onNeedToDownloadAccountData();
     void onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOptionalAcctID);
     void onNeedToDownloadMail();
+    void onExpertModeUpdated(bool bExpertMode);
 
     /**
      * Functions for setting Systray Values
@@ -148,18 +155,20 @@ public:
 private:
 
     /** Namecoin interface used for the NameManager.  */
-    NMC_Interface* nmc;
+    NMC_Interface* nmc=nullptr;
     /** Namecoin name manager.  */
-    NMC_NameManager* nmc_names;
+    NMC_NameManager* nmc_names=nullptr;
     
     /**
      * Booleans for tracking initialization
      **/
     
-    bool mc_overall_init;
+    bool mc_overall_init=false;
+
+    bool bExpertMode_=false;
 
     /** Timer used to update Namecoin names.  */
-    QTimer* nmc_update_timer;
+    QTimer* nmc_update_timer=nullptr;
     
     /**
      * Window Classes
@@ -209,6 +218,8 @@ private:
     void mc_overview_dialog_refresh();
 
 private:
+    void SetupAdvancedMenu(QPointer<QMenu> & parent_menu);
+    void SetupExperimentalMenu(QPointer<QMenu> & parent_menu);
     void SetupAssetMenu(QPointer<QMenu> & parent_menu);
     void SetupServerMenu(QPointer<QMenu> & parent_menu);
     void SetupNymMenu(QPointer<QMenu> & parent_menu);
@@ -306,7 +317,7 @@ private:
     QIcon mc_systrayIcon_advanced;
     QIcon mc_systrayIcon_advanced_agreements;
     QIcon mc_systrayIcon_advanced_import;
-    QIcon mc_systrayIcon_advanced_settings;
+    QIcon mc_systrayIcon_settings;
     
     QIcon mc_systrayIcon_advanced_corporations;
     QIcon mc_systrayIcon_advanced_transport;
@@ -372,17 +383,20 @@ private:
     QPointer<QAction> mc_systrayMenu_crypto_verify;
     // ---------------------------------------------------------
     //Advanced submenu
-    QPointer<QMenu> mc_systrayMenu_advanced;
-
+    QPointer<QMenu>   mc_systrayMenu_advanced;
+    // ---------------------------------------------------------
+    //Experimental submenu
+    QPointer<QMenu>   mc_systrayMenu_experimental;
+    QPointer<QAction> mc_systrayMenu_corporations;
+    QPointer<QMenu>   mc_systrayMenu_bazaar;
+    // ---------------------------------------------------------
     QPointer<QAction> mc_systrayMenu_markets;
     QPointer<QAction> mc_systrayMenu_trade_archive;
     QPointer<QAction> mc_systrayMenu_smart_contracts;
     QPointer<QAction> mc_systrayMenu_import_cash;
     QPointer<QAction> mc_systrayMenu_settings;
-    QPointer<QAction> mc_systrayMenu_advanced_corporations;
     QPointer<QAction> mc_systrayMenu_p2p_transport;
     QPointer<QAction> mc_systrayMenu_error_log;
-    QPointer<QMenu>   mc_systrayMenu_advanced_bazaar;
     // ---------------------------------------------------------
     // Bazaar
     QPointer<QAction> mc_systrayMenu_bazaar_search;

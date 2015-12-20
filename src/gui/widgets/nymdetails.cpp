@@ -13,7 +13,7 @@
 #include <gui/widgets/wizardaddnym.hpp>
 #include <gui/widgets/overridecursor.hpp>
 
-#include <gui/widgets/qrwidget.hpp>
+#include <gui/widgets/qrtoolbutton.hpp>
 
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
@@ -98,23 +98,31 @@ void MTNymDetails::on_toolButtonDescription_clicked()
 {
     QClipboard *clipboard = QApplication::clipboard();
 
-    if (pLineEditNymId_ && (nullptr != clipboard))
+    if (nullptr != clipboard)
     {
-        QString strID = pLineEditNymId_->text();
-
-        if (strID.isEmpty())
-            return;
-
-        std::string nym_description = opentxs::OTAPI_Wrap::It()->GetNym_Description(strID.toStdString());
-        QString qstrDesc(QString::fromStdString(nym_description));
-
-        ui->widgetQrCode->setString(QString::fromStdString(nym_description));
-        ui->lineEditDescription->setText(QString::fromStdString(nym_description));
-
         clipboard->setText(ui->lineEditDescription->text());
 
         QMessageBox::information(this, tr("Moneychanger"), QString("%1:<br/>%2").
                                  arg(tr("Copied payment address to the clipboard")).
+                                 arg(ui->lineEditDescription->text()));
+    }
+}
+
+
+void MTNymDetails::on_toolButtonQrCode_clicked()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+
+    if (nullptr != clipboard)
+    {
+        QImage image;
+        ui->toolButtonQrCode->asImage(image, 200);
+        QPixmap pixmapQR = QPixmap::fromImage(image);
+
+        clipboard->setPixmap(pixmapQR);
+
+        QMessageBox::information(this, tr("Moneychanger"), QString("%1:<br/>%2").
+                                 arg(tr("Copied QR CODE IMAGE to the clipboard, of payment address")).
                                  arg(ui->lineEditDescription->text()));
     }
 }
@@ -138,7 +146,10 @@ void MTNymDetails::on_toolButton_clicked()
 //virtual
 int MTNymDetails::GetCustomTabCount()
 {
-    return 2;
+    if (Moneychanger::It()->expertMode())
+        return 2;
+
+    return 0;
 }
 // ----------------------------------
 //virtual
@@ -671,7 +682,7 @@ void MTNymDetails::refresh(QString strID, QString strName)
     if ((NULL != ui) && !strID.isEmpty())
     {
         std::string nym_description = opentxs::OTAPI_Wrap::It()->GetNym_Description(strID.toStdString());
-        ui->widgetQrCode->setString(QString::fromStdString(nym_description));
+        ui->toolButtonQrCode->setString(QString::fromStdString(nym_description));
         ui->lineEditDescription->setText(QString::fromStdString(nym_description));
 
         QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName,
@@ -693,55 +704,56 @@ void MTNymDetails::refresh(QString strID, QString strName)
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
-
         if (pLineEditNymId_)
             pLineEditNymId_->setText(strID);
 
-        pLineEditNymId_ ->setText(strID);
         ui->lineEditName->setText(strName);
 
         FavorLeftSideForIDs();
         // ----------------------------------------------------------------
         clearNotaryTable();
         // ----------------------------------------------------------------
-        pTableWidgetNotaries_->blockSignals(true);
-        // ----------------------------
-        std::string nymId   = strID.toStdString();
-        const int32_t serverCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
-
-        for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
+        if (pTableWidgetNotaries_)
         {
-            std::string NotaryID   = opentxs::OTAPI_Wrap::It()->GetServer_ID(serverIndex);
-            QString qstrNotaryID   = QString::fromStdString(NotaryID);
-            QString qstrNotaryName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(NotaryID));
-            bool    bStatus        = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(nymId, NotaryID);
-            QString qstrStatus     = bStatus ? tr("Registered") : tr("Not registered");
-            // ----------------------------------
-            int column = 0;
-            // ----------------------------------
-            pTableWidgetNotaries_->insertRow(0);
-            QTableWidgetItem * item = nullptr;
-            // ----------------------------------
-            item = new QTableWidgetItem(qstrNotaryName);
-            item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
-            pTableWidgetNotaries_->setItem(0, column++, item);
-            // ----------------------------------
-            item = new QTableWidgetItem(qstrStatus);
-            item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
-            pTableWidgetNotaries_->setItem(0, column++, item);
-            // ----------------------------------
-            item = new QTableWidgetItem(qstrNotaryID);
-            item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
-            pTableWidgetNotaries_->setItem(0, column++, item);
-            // ----------------------------------
-            pTableWidgetNotaries_->item(0,0)->setData(Qt::UserRole, QVariant(qstrNotaryID));
+            pTableWidgetNotaries_->blockSignals(true);
+            // ----------------------------
+            std::string nymId   = strID.toStdString();
+            const int32_t serverCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
+
+            for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
+            {
+                std::string NotaryID   = opentxs::OTAPI_Wrap::It()->GetServer_ID(serverIndex);
+                QString qstrNotaryID   = QString::fromStdString(NotaryID);
+                QString qstrNotaryName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(NotaryID));
+                bool    bStatus        = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(nymId, NotaryID);
+                QString qstrStatus     = bStatus ? tr("Registered") : tr("Not registered");
+                // ----------------------------------
+                int column = 0;
+                // ----------------------------------
+                pTableWidgetNotaries_->insertRow(0);
+                QTableWidgetItem * item = nullptr;
+                // ----------------------------------
+                item = new QTableWidgetItem(qstrNotaryName);
+                item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
+                pTableWidgetNotaries_->setItem(0, column++, item);
+                // ----------------------------------
+                item = new QTableWidgetItem(qstrStatus);
+                item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
+                pTableWidgetNotaries_->setItem(0, column++, item);
+                // ----------------------------------
+                item = new QTableWidgetItem(qstrNotaryID);
+                item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
+                pTableWidgetNotaries_->setItem(0, column++, item);
+                // ----------------------------------
+                pTableWidgetNotaries_->item(0,0)->setData(Qt::UserRole, QVariant(qstrNotaryID));
+            }
+            if (serverCount < 1)
+                pTableWidgetNotaries_->setCurrentCell(-1,0);
+            else
+                pTableWidgetNotaries_->setCurrentCell(0,0);
+            // ----------------------------
+            pTableWidgetNotaries_->blockSignals(false);
         }
-        if (serverCount < 1)
-            pTableWidgetNotaries_->setCurrentCell(-1,0);
-        else
-            pTableWidgetNotaries_->setCurrentCell(0,0);
-        // ----------------------------
-        pTableWidgetNotaries_->blockSignals(false);
         // ----------------------------------------------------------------
         QGroupBox * pAddresses = this->createAddressGroupBox(strID);
 
@@ -782,6 +794,9 @@ void MTNymDetails::refresh(QString strID, QString strName)
 
 void MTNymDetails::clearNotaryTable()
 {
+    if (!pTableWidgetNotaries_)
+        return;
+
     pTableWidgetNotaries_->blockSignals(true);
     // -----------------------------------
     pTableWidgetNotaries_->clearContents();
@@ -793,7 +808,7 @@ void MTNymDetails::clearNotaryTable()
 
 void MTNymDetails::ClearContents()
 {
-    ui->widgetQrCode->setString("");
+    ui->toolButtonQrCode->setString("");
     ui->lineEditDescription->setText("");
 
     if (pLineEditNymId_)

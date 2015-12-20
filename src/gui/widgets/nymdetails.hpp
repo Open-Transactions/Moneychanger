@@ -65,8 +65,8 @@ private slots:
     void on_btnAddressDelete_clicked();
 
     void on_tableWidget_customContextMenuRequested(const QPoint &pos);
-
     void on_toolButtonDescription_clicked();
+    void on_toolButtonQrCode_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

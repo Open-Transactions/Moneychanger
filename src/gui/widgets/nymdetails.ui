@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>478</width>
-    <height>346</height>
+    <width>353</width>
+    <height>352</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,1,1,10">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,1,1,15">
    <item>
     <widget class="Line" name="line">
      <property name="orientation">
@@ -91,7 +91,17 @@
     </layout>
    </item>
    <item>
-    <widget class="QrWidget" name="widgetQrCode" native="true"/>
+    <widget class="QrToolButton" name="toolButtonQrCode">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -103,10 +113,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>QrWidget</class>
-   <extends>QWidget</extends>
-   <header>gui/widgets/qrwidget.hpp</header>
-   <container>1</container>
+   <class>QrToolButton</class>
+   <extends>QToolButton</extends>
+   <header>gui/widgets/qrtoolbutton.hpp</header>
   </customwidget>
  </customwidgets>
  <resources>
