@@ -336,6 +336,10 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
         m_pPlainTextEdit->setReadOnly(true);
         m_pPlainTextEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
         // -------------------------------
+
+
+
+        // -------------------------------
         QVBoxLayout * pvBox = new QVBoxLayout;
 
         QLabel * pLabelContents = new QLabel(tr("Raw State of Nym:"));
@@ -992,9 +996,6 @@ void MTNymDetails::AddButtonClicked()
         //bool bNameSet =
         opentxs::OTAPI_Wrap::It()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
         // ------------------------------------------------------
-        // QString qstrID is the NymID as a Qstring.
-        // qstrID.toStdString() is the NymID as a std::string.
-
         std::map<uint32_t, std::list<std::tuple<uint32_t, std::string, bool>>> items;
 
         for (const auto & contactDataItem: theWizard.listContactDataTuples_)
@@ -1038,7 +1039,6 @@ void MTNymDetails::AddButtonClicked()
         if (nullptr != newNym) {
             opentxs::OTAPI_Wrap::OTAPI()->SetContactData(*newNym, contactData);
         }
-
         // -----------------------------------------------
 //      QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Creating Nym! Name")).
 //                               arg(qstrName).arg(tr("ID")).arg(qstrID));

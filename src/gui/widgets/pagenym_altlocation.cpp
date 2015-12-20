@@ -601,7 +601,6 @@ void MTPageNym_AltLocation::initializePage() //virtual
 }
 
 
-
 MTPageNym_AltLocation::~MTPageNym_AltLocation()
 {
     delete ui;
