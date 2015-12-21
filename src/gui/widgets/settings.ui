@@ -49,6 +49,19 @@
         </size>
        </property>
       </widget>
+      <widget class="QCheckBox" name="checkBoxExpertMode">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>70</y>
+         <width>151</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Expert Mode</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QWidget" name="tab_2">
       <attribute name="title">
@@ -74,6 +87,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="pushButtonSave">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Save</string>
        </property>

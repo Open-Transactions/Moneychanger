@@ -27,6 +27,7 @@
 #include <QDialog>
 #include <QKeyEvent>
 #include <QDebug>
+#include <QTimer>
 
 
 MTDetailEdit::MTDetailEdit(QWidget *parent) :
@@ -333,6 +334,9 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
                 Moneychanger::It(), SLOT  (mc_show_account_slot(QString)));
         // -------------------------------------------
 
+//      connect(Moneychanger::It(), SIGNAL(expertModeUpdated(bool)), this, SLOT(onExpertModeUpdated(bool)));
+
+        // -------------------------------------------
         m_pDetailPane->SetOwnerPointer(*this);
         m_pDetailPane->SetEditType(theType);
         // -------------------------------------------
@@ -391,6 +395,7 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         m_pTabWidget->setVisible(false);
         // ----------------------------------
         m_bFirstRun = false;
+
     } // first run.
 }
 
@@ -400,13 +405,19 @@ void MTDetailEdit::onRefreshRecords()
     RefreshRecords();
 }
 
+void MTDetailEdit::onExpertModeUpdated(bool bExpertMode)
+{
+
+}
 
 void MTDetailEdit::showEvent(QShowEvent * event)
 {
     QWidget::showEvent(event);
 
-//    if (m_map.size() < 1)
-//        on_addButton_clicked();
+    if (m_map.size() < 1)
+    {
+        QTimer::singleShot(0, this, SLOT(on_addButton_clicked()));
+    }
 }
 
 //virtual
@@ -1115,7 +1126,6 @@ void MTDetailEdit::onSetNeedToRetrieveOfferTradeFlags()
         pMarketDetails->onSetNeedToRetrieveOfferTradeFlags();
     }
 }
-
 
 void MTDetailEdit::SetPreSelected(QString strSelected)
 {

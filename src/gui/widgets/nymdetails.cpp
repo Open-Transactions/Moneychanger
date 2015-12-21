@@ -2,12 +2,18 @@
 #include <core/stable.hpp>
 #endif
 
+#include <opentxs/client/OpenTransactions.hpp>
+#include <opentxs/core/Nym.hpp>
+#include <opentxs-proto/verify/VerifyContacts.hpp>
+
 #include <gui/widgets/nymdetails.hpp>
 #include <ui_nymdetails.h>
 
 #include <gui/widgets/credentials.hpp>
 #include <gui/widgets/wizardaddnym.hpp>
 #include <gui/widgets/overridecursor.hpp>
+
+#include <gui/widgets/qrtoolbutton.hpp>
 
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
@@ -31,6 +37,14 @@
 #include <QClipboard>
 #include <QDebug>
 
+#include <QGroupBox>
+#include <QTableWidget>
+#include <QMenu>
+#include <QAction>
+#include <QLineEdit>
+#include <QToolButton>
+#include <QScopedPointer>
+#include <QLabel>
 
 // ------------------------------------------------------
 MTNymDetails::MTNymDetails(QWidget *parent, MTDetailEdit & theOwner) :
@@ -43,20 +57,20 @@ MTNymDetails::MTNymDetails(QWidget *parent, MTDetailEdit & theOwner) :
     this->setContentsMargins(0, 0, 0, 0);
 //  this->installEventFilter(this); // NOTE: Successfully tested theory that the base class has already installed this.
 
-    ui->lineEditID->setStyleSheet("QLineEdit { background-color: lightgray }");
+    ui->lineEditDescription->setStyleSheet("QLineEdit { background-color: lightgray }");
     // ----------------------------------
-    ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    // ----------------------------------
-    ui->tableWidget->verticalHeader()->hide();
-    // ----------------------------------
-    ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
-    ui->tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
-    // ----------------------------------
-    ui->tableWidget->setSelectionMode    (QAbstractItemView::SingleSelection);
-    ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    // ----------------------------------
-    ui->tableWidget->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignLeft);
-    ui->tableWidget->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignLeft);
+//    ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+//    // ----------------------------------
+//    ui->tableWidget->verticalHeader()->hide();
+//    // ----------------------------------
+//    ui->tableWidget->horizontalHeader()->setStretchLastSection(true);
+//    ui->tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+//    // ----------------------------------
+//    ui->tableWidget->setSelectionMode    (QAbstractItemView::SingleSelection);
+//    ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+//    // ----------------------------------
+//    ui->tableWidget->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignLeft);
+//    ui->tableWidget->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignLeft);
     // ----------------------------------
     // Note: This is a placekeeper, so later on I can just erase
     // the widget at 0 and replace it with the real header widget.
@@ -80,17 +94,50 @@ MTNymDetails::~MTNymDetails()
 }
 
 
+void MTNymDetails::on_toolButtonDescription_clicked()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+
+    if (nullptr != clipboard)
+    {
+        clipboard->setText(ui->lineEditDescription->text());
+
+        QMessageBox::information(this, tr("Moneychanger"), QString("%1:<br/>%2").
+                                 arg(tr("Copied payment address to the clipboard")).
+                                 arg(ui->lineEditDescription->text()));
+    }
+}
+
+
+void MTNymDetails::on_toolButtonQrCode_clicked()
+{
+    QClipboard *clipboard = QApplication::clipboard();
+
+    if (nullptr != clipboard)
+    {
+        QImage image;
+        ui->toolButtonQrCode->asImage(image, 200);
+        QPixmap pixmapQR = QPixmap::fromImage(image);
+
+        clipboard->setPixmap(pixmapQR);
+
+        QMessageBox::information(this, tr("Moneychanger"), QString("%1:<br/>%2").
+                                 arg(tr("Copied QR CODE IMAGE to the clipboard, of payment address")).
+                                 arg(ui->lineEditDescription->text()));
+    }
+}
+
 void MTNymDetails::on_toolButton_clicked()
 {
     QClipboard *clipboard = QApplication::clipboard();
 
-    if (NULL != clipboard)
+    if (pLineEditNymId_ && (nullptr != clipboard))
     {
-        clipboard->setText(ui->lineEditID->text());
+        clipboard->setText(pLineEditNymId_->text());
 
         QMessageBox::information(this, tr("ID copied"), QString("%1:<br/>%2").
                                  arg(tr("Copied Nym ID to the clipboard")).
-                                 arg(ui->lineEditID->text()));
+                                 arg(pLineEditNymId_->text()));
     }
 }
 
@@ -99,7 +146,10 @@ void MTNymDetails::on_toolButton_clicked()
 //virtual
 int MTNymDetails::GetCustomTabCount()
 {
-    return 2;
+    if (Moneychanger::It()->expertMode())
+        return 2;
+
+    return 0;
 }
 // ----------------------------------
 //virtual
@@ -117,6 +167,66 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
     case 0: // "Credentials" tab
         if (m_pOwner)
         {
+            if (pLabelNymId_)
+            {
+                pLabelNymId_->setParent(NULL);
+                pLabelNymId_->disconnect();
+                pLabelNymId_->deleteLater();
+
+                pLabelNymId_ = NULL;
+            }
+            pLabelNymId_ = new QLabel(tr("Nym ID: "));
+
+            if (pToolButtonNymId_)
+            {
+                pToolButtonNymId_->setParent(NULL);
+                pToolButtonNymId_->disconnect();
+                pToolButtonNymId_->deleteLater();
+
+                pToolButtonNymId_ = NULL;
+            }
+
+            QPixmap pixmapCopy(":/icons/icons/Basic-Copy-icon.png");
+            QIcon   copyIcon  (pixmapCopy);
+            // ----------------------------------------------------------------
+            pToolButtonNymId_ = new QToolButton;
+            pToolButtonNymId_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+            pToolButtonNymId_->setIcon(copyIcon);
+
+            connect(pToolButtonNymId_.data(), SIGNAL(clicked()), this, SLOT(on_toolButton_clicked()));
+
+            if (pLineEditNymId_)
+            {
+                pLineEditNymId_->setParent(NULL);
+                pLineEditNymId_->disconnect();
+                pLineEditNymId_->deleteLater();
+
+                pLineEditNymId_ = NULL;
+            }
+
+            pLineEditNymId_ = new QLineEdit;
+            pLineEditNymId_->setReadOnly(true);
+            pLineEditNymId_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            pLineEditNymId_->setStyleSheet("QLineEdit { background-color: lightgray }");
+            // -------------------------------
+            QHBoxLayout * phBox = new QHBoxLayout;
+            QWidget * pWidgetNymId = new QWidget;
+
+//            phBox->setMargin(0);
+//            pWidgetNymId->setContentsMargins(0,0,0,0);
+
+            QMargins margins = pWidgetNymId->contentsMargins();
+
+            QMargins newMargins(margins.left(), margins.top(), margins.right(), 0);
+
+            pWidgetNymId->setContentsMargins(newMargins);
+
+            phBox->addWidget(pLabelNymId_);
+            phBox->addWidget(pLineEditNymId_);
+            phBox->addWidget(pToolButtonNymId_);
+
+            pWidgetNymId->setLayout(phBox);
+            // -------------------------------
             if (m_pCredentials)
             {
                 m_pCredentials->setParent(NULL);
@@ -126,13 +236,103 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
                 m_pCredentials = NULL;
             }
             m_pCredentials = new MTCredentials(NULL, *m_pOwner);
-            pReturnValue = m_pCredentials;
+            m_pCredentials->setContentsMargins(0,0,0,0);
+
+            QWidget * pWidgetCred = new QWidget;
+            QVBoxLayout * pvBox = new QVBoxLayout;
+
+            pvBox->setMargin(0);
+            pvBox->addWidget(pWidgetNymId);
+            pvBox->addWidget(m_pCredentials);
+
+            pWidgetCred->setLayout(pvBox);
+
+            pReturnValue = pWidgetCred;
             pReturnValue->setContentsMargins(0, 0, 0, 0);
         }
         break;
 
     case 1: // "State of Nym" tab
     {
+//        if (pToolButtonNymId_)
+//        {
+//            pToolButtonNymId_->setParent(NULL);
+//            pToolButtonNymId_->disconnect();
+//            pToolButtonNymId_->deleteLater();
+
+//            pToolButtonNymId_ = NULL;
+//        }
+
+//        QPixmap pixmapCopy(":/icons/icons/Basic-Copy-icon.png");
+//        QIcon   copyIcon  (pixmapCopy);
+//        // ----------------------------------------------------------------
+//        pToolButtonNymId_ = new QToolButton;
+//        pToolButtonNymId_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+//        pToolButtonNymId_->setIcon(copyIcon);
+
+//        connect(pToolButtonNymId_.data(), SIGNAL(clicked()), this, SLOT(on_toolButton_clicked()));
+
+//        if (pLineEditNymId_)
+//        {
+//            pLineEditNymId_->setParent(NULL);
+//            pLineEditNymId_->disconnect();
+//            pLineEditNymId_->deleteLater();
+
+//            pLineEditNymId_ = NULL;
+//        }
+
+//        pLineEditNymId_ = new QLineEdit;
+//        pLineEditNymId_->setReadOnly(true);
+//        pLineEditNymId_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+//        pLineEditNymId_->setStyleSheet("QLineEdit { background-color: lightgray }");
+//        // -------------------------------
+//        QHBoxLayout * phBox = new QHBoxLayout;
+
+//        phBox->addWidget(pLineEditNymId_);
+//        phBox->addWidget(pToolButtonNymId_);
+        // -------------------------------
+        if (pLabelNotaries_)
+        {
+            pLabelNotaries_->setParent(NULL);
+            pLabelNotaries_->disconnect();
+            pLabelNotaries_->deleteLater();
+            pLabelNotaries_ = nullptr;
+
+        }
+
+        pLabelNotaries_ = new QLabel(tr("Registered on notaries:"));
+
+        if (pTableWidgetNotaries_)
+        {
+            pTableWidgetNotaries_->setParent(NULL);
+            pTableWidgetNotaries_->disconnect();
+            pTableWidgetNotaries_->deleteLater();
+            pTableWidgetNotaries_ = nullptr;
+        }
+
+        pTableWidgetNotaries_ = new QTableWidget;
+        pTableWidgetNotaries_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        pTableWidgetNotaries_->setColumnCount(3);
+
+        pTableWidgetNotaries_->setHorizontalHeaderLabels(
+                    QStringList() << tr("Notary") << tr("Status") << tr("Notary ID"));
+        // ----------------------------------
+        pTableWidgetNotaries_->setContextMenuPolicy(Qt::CustomContextMenu);
+        // ----------------------------------
+        pTableWidgetNotaries_->verticalHeader()->hide();
+        // ----------------------------------
+        pTableWidgetNotaries_->horizontalHeader()->setStretchLastSection(true);
+        pTableWidgetNotaries_->horizontalHeader()->setDefaultAlignment(Qt::AlignCenter);
+        // ----------------------------------
+        pTableWidgetNotaries_->setSelectionMode    (QAbstractItemView::SingleSelection);
+        pTableWidgetNotaries_->setSelectionBehavior(QAbstractItemView::SelectRows);
+        // ----------------------------------
+        pTableWidgetNotaries_->horizontalHeaderItem(0)->setTextAlignment(Qt::AlignLeft);
+        pTableWidgetNotaries_->horizontalHeaderItem(1)->setTextAlignment(Qt::AlignLeft);
+        // ----------------------------------
+        connect(pTableWidgetNotaries_, SIGNAL(customContextMenuRequested(const QPoint &)),
+                this, SLOT(on_tableWidget_customContextMenuRequested(const QPoint &)));
+        // -------------------------------
         if (m_pPlainTextEdit)
         {
             m_pPlainTextEdit->setParent(NULL);
@@ -147,11 +347,17 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
         m_pPlainTextEdit->setReadOnly(true);
         m_pPlainTextEdit->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
         // -------------------------------
+
+
+
+        // -------------------------------
         QVBoxLayout * pvBox = new QVBoxLayout;
 
         QLabel * pLabelContents = new QLabel(tr("Raw State of Nym:"));
 
         pvBox->setAlignment(Qt::AlignTop);
+        pvBox->addWidget   (pLabelNotaries_);
+        pvBox->addWidget   (pTableWidgetNotaries_);
         pvBox->addWidget   (pLabelContents);
         pvBox->addWidget   (m_pPlainTextEdit);
         // -------------------------------
@@ -475,6 +681,10 @@ void MTNymDetails::refresh(QString strID, QString strName)
 
     if ((NULL != ui) && !strID.isEmpty())
     {
+        std::string nym_description = opentxs::OTAPI_Wrap::It()->GetNym_Description(strID.toStdString());
+        ui->toolButtonQrCode->setString(QString::fromStdString(nym_description));
+        ui->lineEditDescription->setText(QString::fromStdString(nym_description));
+
         QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName,
                                                                            "", "", ":/icons/icons/identity_BW.png",
                                                                            false);
@@ -494,51 +704,56 @@ void MTNymDetails::refresh(QString strID, QString strName)
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
-        ui->lineEditID  ->setText(strID);
+        if (pLineEditNymId_)
+            pLineEditNymId_->setText(strID);
+
         ui->lineEditName->setText(strName);
 
         FavorLeftSideForIDs();
         // ----------------------------------------------------------------
         clearNotaryTable();
         // ----------------------------------------------------------------
-        ui->tableWidget->blockSignals(true);
-        // ----------------------------
-        std::string nymId   = strID.toStdString();
-        const int32_t serverCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
-
-        for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
+        if (pTableWidgetNotaries_)
         {
-            std::string NotaryID   = opentxs::OTAPI_Wrap::It()->GetServer_ID(serverIndex);
-            QString qstrNotaryID   = QString::fromStdString(NotaryID);
-            QString qstrNotaryName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(NotaryID));
-            bool    bStatus        = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(nymId, NotaryID);
-            QString qstrStatus     = bStatus ? tr("Registered") : tr("Not registered");
-            // ----------------------------------
-            int column = 0;
-            // ----------------------------------
-            ui->tableWidget->insertRow(0);
-            QTableWidgetItem * item = nullptr;
-            // ----------------------------------
-            item = new QTableWidgetItem(qstrNotaryName);
-            item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
-            ui->tableWidget->setItem(0, column++, item);
-            // ----------------------------------
-            item = new QTableWidgetItem(qstrStatus);
-            item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
-            ui->tableWidget->setItem(0, column++, item);
-            // ----------------------------------
-            item = new QTableWidgetItem(qstrNotaryID);
-            item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
-            ui->tableWidget->setItem(0, column++, item);
-            // ----------------------------------
-            ui->tableWidget->item(0,0)->setData(Qt::UserRole, QVariant(qstrNotaryID));
+            pTableWidgetNotaries_->blockSignals(true);
+            // ----------------------------
+            std::string nymId   = strID.toStdString();
+            const int32_t serverCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
+
+            for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
+            {
+                std::string NotaryID   = opentxs::OTAPI_Wrap::It()->GetServer_ID(serverIndex);
+                QString qstrNotaryID   = QString::fromStdString(NotaryID);
+                QString qstrNotaryName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(NotaryID));
+                bool    bStatus        = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(nymId, NotaryID);
+                QString qstrStatus     = bStatus ? tr("Registered") : tr("Not registered");
+                // ----------------------------------
+                int column = 0;
+                // ----------------------------------
+                pTableWidgetNotaries_->insertRow(0);
+                QTableWidgetItem * item = nullptr;
+                // ----------------------------------
+                item = new QTableWidgetItem(qstrNotaryName);
+                item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
+                pTableWidgetNotaries_->setItem(0, column++, item);
+                // ----------------------------------
+                item = new QTableWidgetItem(qstrStatus);
+                item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
+                pTableWidgetNotaries_->setItem(0, column++, item);
+                // ----------------------------------
+                item = new QTableWidgetItem(qstrNotaryID);
+                item->setFlags(item->flags() &  ~Qt::ItemIsEditable);
+                pTableWidgetNotaries_->setItem(0, column++, item);
+                // ----------------------------------
+                pTableWidgetNotaries_->item(0,0)->setData(Qt::UserRole, QVariant(qstrNotaryID));
+            }
+            if (serverCount < 1)
+                pTableWidgetNotaries_->setCurrentCell(-1,0);
+            else
+                pTableWidgetNotaries_->setCurrentCell(0,0);
+            // ----------------------------
+            pTableWidgetNotaries_->blockSignals(false);
         }
-        if (serverCount < 1)
-            ui->tableWidget->setCurrentCell(-1,0);
-        else
-            ui->tableWidget->setCurrentCell(0,0);
-        // ----------------------------
-        ui->tableWidget->blockSignals(false);
         // ----------------------------------------------------------------
         QGroupBox * pAddresses = this->createAddressGroupBox(strID);
 
@@ -579,18 +794,25 @@ void MTNymDetails::refresh(QString strID, QString strName)
 
 void MTNymDetails::clearNotaryTable()
 {
-    ui->tableWidget->blockSignals(true);
+    if (!pTableWidgetNotaries_)
+        return;
+
+    pTableWidgetNotaries_->blockSignals(true);
     // -----------------------------------
-    ui->tableWidget->clearContents();
-    ui->tableWidget->setRowCount (0);
+    pTableWidgetNotaries_->clearContents();
+    pTableWidgetNotaries_->setRowCount (0);
     // -----------------------------------
-    ui->tableWidget->setCurrentCell(-1, 0);
-    ui->tableWidget->blockSignals(false);
+    pTableWidgetNotaries_->setCurrentCell(-1, 0);
+    pTableWidgetNotaries_->blockSignals(false);
 }
 
 void MTNymDetails::ClearContents()
 {
-    ui->lineEditID  ->setText("");
+    ui->toolButtonQrCode->setString("");
+    ui->lineEditDescription->setText("");
+
+    if (pLineEditNymId_)
+        pLineEditNymId_->setText("");
     ui->lineEditName->setText("");
     // ------------------------------------------
     if (m_pCredentials)
@@ -619,7 +841,9 @@ void MTNymDetails::FavorLeftSideForIDs()
 {
     if (NULL != ui)
     {
-        ui->lineEditID  ->home(false);
+        if (pLineEditNymId_)
+            pLineEditNymId_->home(false);
+        ui->lineEditDescription->home(false);
         ui->lineEditName->home(false);
     }
 }
@@ -701,6 +925,12 @@ void MTNymDetails::AddButtonClicked()
 {
     MTWizardAddNym theWizard(this);
 
+
+    // Page Nym Authority can go. Default authority index=0
+
+    // Change the Alt Location page to do the claims.
+
+
     theWizard.setWindowTitle(tr("Create Nym (a.k.a. Create Identity)"));
 
     if (QDialog::Accepted == theWizard.exec())
@@ -775,15 +1005,56 @@ void MTNymDetails::AddButtonClicked()
                 nmc.startRegistration (qstrID, qCred);
             }
         }
-
         // ------------------------------------------------------
         // Set the Name of the new Nym.
         //
         //bool bNameSet =
-                opentxs::OTAPI_Wrap::It()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
+        opentxs::OTAPI_Wrap::It()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
+        // ------------------------------------------------------
+        std::map<uint32_t, std::list<std::tuple<uint32_t, std::string, bool>>> items;
+
+        for (const auto & contactDataItem: theWizard.listContactDataTuples_)
+        {
+            uint32_t     indexSection     = std::get<0>(contactDataItem);
+            uint32_t     indexSectionType = std::get<1>(contactDataItem);
+            std::string  textValue        = std::get<2>(contactDataItem);
+            bool         bIsPrimary       = std::get<3>(contactDataItem);
+
+            std::tuple<uint32_t, std::string, bool> item{indexSectionType, textValue, bIsPrimary};
+
+            if (items.count(indexSection) > 0) {
+                items[indexSection].push_back(item);
+            } else {
+                items.insert({indexSection, { item }});
+            }
+        }
+
+        opentxs::proto::ContactData contactData;
+        contactData.set_version(1);
+
+        for (auto& it: items) {
+            auto newSection = contactData.add_section();
+            newSection->set_version(1);
+            newSection->set_name(static_cast<opentxs::proto::ContactSectionName>(it.first));
+
+            for (auto& i: it.second) {
+                auto newItem = newSection->add_item();
+                newItem->set_version(1);
+                newItem->set_type(static_cast<opentxs::proto::ContactItemType>(std::get<0>(i)));
+                newItem->set_value(std::get<1>(i));
+                if (std::get<2>(i)) {
+                    newItem->add_attribute(opentxs::proto::CITEMATTR_PRIMARY);
+                }
+                newItem->add_attribute(opentxs::proto::CITEMATTR_ACTIVE);
+            }
+        }
+
+        opentxs::Nym* newNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(qstrID.toStdString());
+
+        if (nullptr != newNym) {
+            opentxs::OTAPI_Wrap::OTAPI()->SetContactData(*newNym, contactData);
+        }
         // -----------------------------------------------
-        // Commenting this out for now.
-        //
 //      QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Creating Nym! Name")).
 //                               arg(qstrName).arg(tr("ID")).arg(qstrID));
         // ----------
@@ -805,7 +1076,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
         QString qstrNymName(m_pOwner->m_qstrCurrentName);
         const std::string str_nym_id = qstrNymID.toStdString();
         // ----------------------------------------------------
-        QTableWidgetItem * pItem = ui->tableWidget->itemAt(pos);
+        QTableWidgetItem * pItem = pTableWidgetNotaries_->itemAt(pos);
 
         if (NULL != pItem)
         {
@@ -813,11 +1084,11 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
 
             if (nRow >= 0)
             {
-                QString qstrNotaryID = ui->tableWidget->item(nRow, 0)->data(Qt::UserRole).toString();
+                QString qstrNotaryID = pTableWidgetNotaries_->item(nRow, 0)->data(Qt::UserRole).toString();
                 std::string str_notary_id = qstrNotaryID.toStdString();
                 QString qstrNotaryName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(str_notary_id));
                 // ------------------------
-                QPoint globalPos = ui->tableWidget->mapToGlobal(pos);
+                QPoint globalPos = pTableWidgetNotaries_->mapToGlobal(pos);
                 // ------------------------
                 const QAction* selectedAction = popupMenu_->exec(globalPos); // Here we popup the menu, and get the user's click.
                 // ------------------------

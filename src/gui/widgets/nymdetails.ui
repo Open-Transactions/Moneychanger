@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>336</width>
-    <height>346</height>
+    <width>353</width>
+    <height>352</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,1,1,15">
    <item>
     <widget class="Line" name="line">
      <property name="orientation">
@@ -22,20 +22,7 @@
     </widget>
    </item>
    <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="labelName">
-       <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
-       </property>
-       <property name="text">
-        <string>Name:</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-     </item>
+    <layout class="QGridLayout" name="gridLayout" columnstretch="1,2,5">
      <item row="0" column="1" colspan="2">
       <widget class="QLineEdit" name="lineEditName">
        <property name="sizePolicy">
@@ -52,28 +39,16 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="labelID">
+     <item row="0" column="0">
+      <widget class="QLabel" name="labelName">
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
        <property name="text">
-        <string>Nym ID:</string>
+        <string>Name:</string>
        </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEditID">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <widget class="QToolButton" name="toolButton">
-       <property name="text">
-        <string>...</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../resource.qrc">
-         <normaloff>:/icons/icons/Basic-Copy-icon.png</normaloff>:/icons/icons/Basic-Copy-icon.png</iconset>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
       </widget>
      </item>
@@ -87,29 +62,45 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Registered on notaries:</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Payment address:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEditDescription">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="toolButtonDescription">
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../resource.qrc">
+         <normaloff>:/icons/icons/Basic-Copy-icon.png</normaloff>:/icons/icons/Basic-Copy-icon.png</iconset>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
-    <widget class="QTableWidget" name="tableWidget">
-     <column>
-      <property name="text">
-       <string>Notary</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Status</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Notary ID</string>
-      </property>
-     </column>
+    <widget class="QrToolButton" name="toolButtonQrCode">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
     </widget>
    </item>
   </layout>
@@ -120,6 +111,11 @@
    <extends>QWidget</extends>
    <header>gui/widgets/editdetails.hpp</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QrToolButton</class>
+   <extends>QToolButton</extends>
+   <header>gui/widgets/qrtoolbutton.hpp</header>
   </customwidget>
  </customwidgets>
  <resources>

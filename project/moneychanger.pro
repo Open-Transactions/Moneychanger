@@ -15,4 +15,6 @@ SUBDIRS += quazip
 
 unix: SUBDIRS += qjsonrpc
 
+unix: SUBDIRS += QtQREncoder
+
 SUBDIRS += moneychanger-qt

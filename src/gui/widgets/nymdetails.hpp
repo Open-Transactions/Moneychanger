@@ -6,15 +6,19 @@
 
 #include <gui/widgets/editdetails.hpp>
 
-#include <QGroupBox>
-#include <QMenu>
-#include <QAction>
 #include <QScopedPointer>
 
 namespace Ui {
 class MTNymDetails;
 }
 
+class QGroupBox;
+class QTableWidget;
+class QMenu;
+class QAction;
+class QLineEdit;
+class QToolButton;
+class QLabel;
 class QPlainTextEdit;
 class MTCredentials;
 
@@ -42,6 +46,12 @@ private:
     QPointer<QPlainTextEdit> m_pPlainTextEdit;
     QPointer<MTCredentials>  m_pCredentials;
 
+    QPointer<QLabel>       pLabelNymId_;
+    QPointer<QLineEdit>    pLineEditNymId_;
+    QPointer<QToolButton>  pToolButtonNymId_;
+    QPointer<QLabel>       pLabelNotaries_;
+    QPointer<QTableWidget> pTableWidgetNotaries_;
+
     QScopedPointer<QMenu> popupMenu_;
 
     QAction * pActionRegister_;
@@ -55,6 +65,8 @@ private slots:
     void on_btnAddressDelete_clicked();
 
     void on_tableWidget_customContextMenuRequested(const QPoint &pos);
+    void on_toolButtonDescription_clicked();
+    void on_toolButtonQrCode_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

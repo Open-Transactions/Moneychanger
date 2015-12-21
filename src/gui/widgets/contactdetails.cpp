@@ -173,11 +173,32 @@ void MTContactDetails::AddButtonClicked()
     // -----------------------------------------------
     if (theNewContact.exec() == QDialog::Accepted)
     {
-        QString nymID = theNewContact.GetId();
+        QString     rawId  = theNewContact.GetId();
+        std::string raw_id = rawId.toStdString();
+        std::string str_nym_id = raw_id;
+        std::string payment_code;
+
+        QString nymID(rawId);
+//      QString nymID = theNewContact.GetId();
 
         if (!nymID.isEmpty())
         {
-            if (!opentxs::OTAPI_Wrap::It()->IsValidID(nymID.toStdString()))
+            if (!opentxs::OTAPI_Wrap::It()->IsValidID(raw_id))
+            {
+                nymID = "";
+                str_nym_id = "";
+
+                const std::string str_temp = opentxs::OTAPI_Wrap::It()->NymIDFromPaymentCode(raw_id);
+
+                if (!str_temp.empty())
+                {
+                    payment_code = raw_id;
+                    str_nym_id = str_temp;
+                    nymID = QString::fromStdString(str_nym_id);
+                }
+            }
+            // --------------------------------------------------------
+            if (!opentxs::OTAPI_Wrap::It()->IsValidID(str_nym_id))
             {
                 QMessageBox::warning(this, tr("Moneychanger"),
                                      tr("Sorry, that is not a valid Open-Transactions Nym ID."));
