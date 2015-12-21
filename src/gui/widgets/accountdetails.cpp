@@ -83,7 +83,10 @@ void MTAccountDetails::FavorLeftSideForIDs()
 //virtual
 int MTAccountDetails::GetCustomTabCount()
 {
-    return 1;
+    if (Moneychanger::It()->expertMode())
+        return 1;
+
+    return 0;
 }
 // ----------------------------------
 //virtual

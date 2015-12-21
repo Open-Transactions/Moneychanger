@@ -1167,7 +1167,7 @@ void Moneychanger::SetupPaymentsMenu(QPointer<QMenu> & parent_menu)
     current_menu->addAction(mc_systrayMenu_requestfunds);
     connect(mc_systrayMenu_requestfunds, SIGNAL(triggered()), this, SLOT(mc_requestfunds_slot()));
     // --------------------------------------------------------------
-    if (bExpertMode_)
+    if (bExpertMode_ && hasAccounts())
     {
         mc_systrayMenu_import_cash = new QAction(mc_systrayIcon_advanced_import, tr("Import Cash..."), current_menu);
         current_menu->addAction(mc_systrayMenu_import_cash);
@@ -1248,15 +1248,21 @@ void Moneychanger::SetupAdvancedMenu(QPointer<QMenu> & parent_menu)
         current_menu->addSeparator();
     }
     // --------------------------------------------------------------
-    if (hasAccounts())
-    {
-        // --------------------------------------------------------------
-        mc_systrayMenu_import_cash = new QAction(mc_systrayIcon_advanced_import, tr("Import Cash..."), current_menu);
-        current_menu->addAction(mc_systrayMenu_import_cash);
-        connect(mc_systrayMenu_import_cash, SIGNAL(triggered()), this, SLOT(mc_import_slot()));
-        // --------------------------------------------------------------
-        current_menu->addSeparator();
-    }
+    // Basic mode doesn't show the cash purse on the account details page.
+    // So what's the point of importing cash, when you then can't see it in the
+    // cash purse? It would just be confusing.
+    // Therefore, if you cannot see the cash purse, neither can you import cash.
+    // Put yourself in expert mode if you want to do that stuff.
+    //
+//    if (hasAccounts())
+//    {
+//        // --------------------------------------------------------------
+//        mc_systrayMenu_import_cash = new QAction(mc_systrayIcon_advanced_import, tr("Import Cash..."), current_menu);
+//        current_menu->addAction(mc_systrayMenu_import_cash);
+//        connect(mc_systrayMenu_import_cash, SIGNAL(triggered()), this, SLOT(mc_import_slot()));
+//        // --------------------------------------------------------------
+//        current_menu->addSeparator();
+//    }
     // --------------------------------------------------------------
     // Transport
     mc_systrayMenu_p2p_transport = new QAction(mc_systrayIcon_advanced_transport, tr("P2P Transport"), current_menu);

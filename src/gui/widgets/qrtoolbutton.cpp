@@ -143,7 +143,6 @@ QSize QrToolButton::minimumSizeHint() const
 }
 
 
-
 void QrToolButton::draw(QPainter &painter, int width, int height)
 {
     QColor foreground(Qt::black);

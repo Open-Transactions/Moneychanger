@@ -132,24 +132,24 @@ public:
      **/
     
     QString get_default_nym_id(){return default_nym_id;}
-    int get_nym_list_id_size(){return nym_list_id->size();}
-    QString get_nym_id_at(int a){return nym_list_id->at(a).toString();}
-    QString get_nym_name_at(int a){return nym_list_name->at(a).toString();}
+    int get_nym_list_id_size(){return nym_list_id ? nym_list_id->size() : 0;}
+    QString get_nym_id_at(int a){return nym_list_id ? nym_list_id->at(a).toString() : "";}
+    QString get_nym_name_at(int a){return nym_list_name ? nym_list_name->at(a).toString() : "";}
     
     QString get_default_asset_id(){return default_asset_id;}
-    int get_asset_list_id_size(){return asset_list_id->size();}
-    QString get_asset_id_at(int a){return asset_list_id->at(a).toString();}
-    QString get_asset_name_at(int a){return asset_list_name->at(a).toString();}
+    int get_asset_list_id_size(){return asset_list_id ? asset_list_id->size() : 0;}
+    QString get_asset_id_at(int a){return asset_list_id ? asset_list_id->at(a).toString() : "";}
+    QString get_asset_name_at(int a){return asset_list_name ? asset_list_name->at(a).toString() : "";}
     
     QString get_default_account_id(){return default_account_id;}
-    int get_account_list_id_size(){return account_list_id->size();}
-    QString get_account_id_at(int a){return account_list_id->at(a).toString();}
-    QString get_account_name_at(int a){return account_list_name->at(a).toString();}
+    int get_account_list_id_size(){return account_list_id ? account_list_id->size() : 0;}
+    QString get_account_id_at(int a){return account_list_id ? account_list_id->at(a).toString() : "";}
+    QString get_account_name_at(int a){return account_list_name ? account_list_name->at(a).toString() : "";}
     
     QString get_default_notary_id(){return default_notary_id;}
-    int get_server_list_id_size(){return server_list_id->size();}
-    QString get_notary_id_at(int a){return server_list_id->at(a).toString();}
-    QString get_server_name_at(int a){return server_list_name->at(a).toString();}
+    int get_server_list_id_size(){return server_list_id ? server_list_id->size() : 0;}
+    QString get_notary_id_at(int a){return server_list_id ? server_list_id->at(a).toString() : "";}
+    QString get_server_name_at(int a){return server_list_name ? server_list_name->at(a).toString() : "";}
     
     
 private:
@@ -270,14 +270,14 @@ private:
     void mc_log_dialog(QString qstrAppend=QString(""));
     void mc_createinsurancecompany_dialog();
     // ------------------------------------------------    
-    QList<QVariant> * nym_list_id;
-    QList<QVariant> * nym_list_name;
+    QList<QVariant> * nym_list_id=nullptr;
+    QList<QVariant> * nym_list_name=nullptr;
     // ---------------------------------------------------------
     QString default_nym_id;
     QString default_nym_name;
     // ---------------------------------------------------------
-    QList<QVariant> * server_list_id;
-    QList<QVariant> * server_list_name;
+    QList<QVariant> * server_list_id=nullptr;
+    QList<QVariant> * server_list_name=nullptr;
     // ---------------------------------------------------------
     QString default_notary_id;
     QString default_server_name;
@@ -338,8 +338,8 @@ private:
     // ---------------------------------------------------------
     QPointer<QMenu> mc_systrayMenu_asset;
     // ---------------------------------------------------------
-    QList<QVariant> * asset_list_id;
-    QList<QVariant> * asset_list_name;
+    QList<QVariant> * asset_list_id = nullptr;
+    QList<QVariant> * asset_list_name = nullptr;
     // ---------------------------------------------------------
     QString default_asset_id;
     QString default_asset_name;
@@ -350,8 +350,8 @@ private:
     QPointer<QMenu> mc_systrayMenu_exchange;
     QPointer<QMenu> mc_systrayMenu_messaging;
     // ---------------------------------------------------------
-    QList<QVariant> * account_list_id;
-    QList<QVariant> * account_list_name;
+    QList<QVariant> * account_list_id = nullptr;
+    QList<QVariant> * account_list_name = nullptr;
     // ---------------------------------------------------------
     QString default_account_id;
     QString default_account_name;
