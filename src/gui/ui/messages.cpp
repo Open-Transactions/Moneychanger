@@ -98,10 +98,13 @@ Messages::Messages(QWidget *parent) :
     connect(ui->toolButtonCompose,  SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_composemessage_slot()));
     connect(ui->toolButtonContacts, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_addressbook_slot()));
 
-    QList<int> list;
-    list.append(0);
-    list.append(100);
-    ui->splitter_3->setSizes(list);
+    if (!Moneychanger::It()->expertMode())
+    {
+        QList<int> list;
+        list.append(0);
+        list.append(100);
+        ui->splitter_3->setSizes(list);
+    }
 }
 
 static void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel)

@@ -821,6 +821,9 @@ void MTSendDlg::dialog()
 
     if (!already_init)
     {
+        if (!Moneychanger::It()->expertMode())
+            ui->comboBox->setEnabled(false);
+        // ---------------------------------------
         connect(this,               SIGNAL(balancesChanged()),
                 Moneychanger::It(), SLOT  (onBalancesChanged()));
         // ---------------------------------------

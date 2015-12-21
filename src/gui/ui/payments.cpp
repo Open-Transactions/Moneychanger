@@ -10,6 +10,7 @@
 
 #include <gui/widgets/home.hpp>
 #include <gui/widgets/dlgchooser.hpp>
+#include <gui/widgets/qrwidget.hpp>
 #include <gui/ui/getstringdialog.hpp>
 
 #include <core/moneychanger.hpp>
@@ -100,10 +101,13 @@ Payments::Payments(QWidget *parent) :
     connect(ui->toolButtonPay,      SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_sendfunds_slot()));
     connect(ui->toolButtonContacts, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_addressbook_slot()));
 
-    QList<int> list;
-    list.append(0);
-    list.append(100);
-    ui->splitter->setSizes(list);
+    if (!Moneychanger::It()->expertMode())
+    {
+        QList<int> list;
+        list.append(0);
+        list.append(100);
+        ui->splitter->setSizes(list);
+    }
 }
 
 static void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel)
@@ -212,7 +216,7 @@ QWidget * Payments::CreateUserBarWidget()
     // -------------------------------------------
     if (qstr_acct_id.isEmpty())
     {
-        qstr_balance     = tr("(Click for Account Manager)");
+        qstr_balance     = tr("0.00");
         qstr_acct_name = QString("");
         // -----------------------------------
         qstr_acct_nym    = Moneychanger::It()->get_default_nym_id();
@@ -277,7 +281,8 @@ QWidget * Payments::CreateUserBarWidget()
         }
     }
     else
-        qstrCash = tr("(no account selected)");
+        qstrCash = tr("");
+//      qstrCash = tr("(no account selected)");
     // -------------------------------------------
     QLabel * pCashLabel = new QLabel(qstrCash);
     // ---------------------------------------------------------------
@@ -310,8 +315,6 @@ QWidget * Payments::CreateUserBarWidget()
     pAccountLayout->addWidget(pCashLabel);
     pAccountLayout->addStretch();
     // ----------------------------------------------------------------
-    pUserBar_layout->addLayout(pAccountLayout, 0, 0, 1,1, Qt::AlignLeft);
-    // ----------------------------------------------------------------
     //Sub-info
     QWidget * row_content_container = new QWidget;
     QGridLayout * row_content_grid = new QGridLayout;
@@ -325,8 +328,6 @@ QWidget * Payments::CreateUserBarWidget()
 //  row_content_grid->setContentsMargins(3, 4, 3, 4); // left top right bottom
 
     row_content_container->setLayout(row_content_grid);
-
-    pUserBar_layout->addWidget(row_content_container, 1,0, 1,2);
     // -------------------------------------------
     QString  identity_label_string = QString("<font color=grey>%1:</font> ").arg(tr("My Identity"));
     QLabel * pIdentityLabel = new QLabel(identity_label_string);
@@ -337,8 +338,14 @@ QWidget * Payments::CreateUserBarWidget()
     // --------------------------------------------
     QString  nym_label_string = QString("");
     // --------------------------------------------
+    QString qstrPaymentCode("");
+    std::string payment_code("");
+
     if (!qstr_acct_nym.isEmpty())
     {
+        payment_code = opentxs::OTAPI_Wrap::It()->GetNym_Description(qstr_acct_nym.toStdString());
+        qstrPaymentCode = QString::fromStdString(payment_code);
+        // ----------------------------
         MTNameLookupQT theLookup;
         QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_acct_nym.toStdString(), ""));
 
@@ -369,6 +376,47 @@ QWidget * Payments::CreateUserBarWidget()
     pIdentityLayout->addWidget(buttonNym);
     // ---------------------------------------------------------------
     row_content_grid->addLayout(pIdentityLayout, 0,0, 1,1, Qt::AlignLeft);
+    // -------------------------------------------
+    int nColumn = 0;
+
+    const int nColumnWidthBalance = 2;
+
+    pUserBar_layout->addLayout(pAccountLayout,        0, nColumn, 1,nColumnWidthBalance, Qt::AlignLeft);
+    pUserBar_layout->addWidget(row_content_container, 1, nColumn, 1,nColumnWidthBalance, Qt::AlignLeft);
+
+    nColumn += nColumnWidthBalance;
+
+    if (!qstrPaymentCode.isEmpty())
+    {
+        QrWidget qrWidget;
+        qrWidget.setString(qstrPaymentCode);
+
+        QImage image;
+        qrWidget.asImage(image, 100);
+
+        QPixmap pixmapQR = QPixmap::fromImage(image);
+        // ----------------------------------------------------------------
+        QIcon qrButtonIcon  (pixmapQR);
+        // ----------------------------------------------------------------
+        QToolButton * buttonPaymentCode = new QToolButton;
+
+        buttonPaymentCode->setAutoRaise(true);
+        buttonPaymentCode->setStyleSheet("QToolButton { margin-left: 0; font-size:15pt;  font-weight:lighter; }");
+        buttonPaymentCode->setIcon(qrButtonIcon);
+        buttonPaymentCode->setIconSize(pixmapQR.rect().size());
+//      buttonPaymentCode->setString(qstrPaymentCode);
+        // -------------------------------------------
+        connect(buttonPaymentCode, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_defaultnym_slot()));
+        // ----------------------------------------------------------------
+        const int nColumnWidthQrCode = 2;
+
+        pUserBar_layout->addWidget(buttonPaymentCode, 0, nColumn, 2, nColumnWidthQrCode, Qt::AlignLeft);
+
+        nColumn += nColumnWidthQrCode;
+    }
+    // -------------------------------------------
+//    pUserBar_layout->addLayout(pAccountLayout,        0, nColumn, 1,2, Qt::AlignLeft);
+//    pUserBar_layout->addWidget(row_content_container, 1, nColumn, 1,2, Qt::AlignLeft);
     // -------------------------------------------
     return pUserBar;
 }

@@ -122,7 +122,7 @@ QWidget * MTServerDetails::CreateCustomTab(int nTab)
         // -------------------------------
         QVBoxLayout * pvBox = new QVBoxLayout;
 
-        QLabel * pLabelContents = new QLabel(tr("Set default notary..."));
+        QLabel * pLabelContents = new QLabel(tr("Server contract:"));
 
         pvBox->setAlignment(Qt::AlignTop);
         pvBox->addWidget   (pLabelContents);

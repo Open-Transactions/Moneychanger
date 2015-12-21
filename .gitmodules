@@ -1,3 +1,6 @@
 [submodule "project/qjsonrpc"]
 	path = project/qjsonrpc
 	url = https://bitbucket.org/devonit/qjsonrpc
+[submodule "project/QtQREncoder"]
+	path = project/QtQREncoder
+	url = https://github.com/Open-Transactions/QtQREncoder.git

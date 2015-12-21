@@ -126,7 +126,7 @@ bool DBHandler::dbCreateInstance()
         QString settings = "CREATE TABLE IF NOT EXISTS settings (setting TEXT PRIMARY KEY, parameter1 TEXT)";
         // --------------------------------------------
         QString create_contact = "CREATE TABLE IF NOT EXISTS contact(contact_id INTEGER PRIMARY KEY, contact_display_name TEXT)";
-        QString create_nym     = "CREATE TABLE IF NOT EXISTS nym(nym_id TEXT PRIMARY KEY, contact_id INTEGER, nym_display_name TEXT)";
+        QString create_nym     = "CREATE TABLE IF NOT EXISTS nym(nym_id TEXT PRIMARY KEY, contact_id INTEGER, nym_display_name TEXT, nym_payment_code TEXT)";
         QString create_server  = "CREATE TABLE IF NOT EXISTS nym_server(nym_id TEXT, notary_id TEXT, PRIMARY KEY(nym_id, notary_id))";
         QString create_account = "CREATE TABLE IF NOT EXISTS nym_account(account_id TEXT PRIMARY KEY, notary_id TEXT, nym_id TEXT, asset_id TEXT, account_display_name TEXT)";
         // --------------------------------------------

@@ -455,7 +455,8 @@ QWidget * MTHome::CreateUserBarWidget()
     // -------------------------------------------
     if (qstr_acct_id.isEmpty())
     {
-        qstr_balance     = tr("(Click to Set Default Account)");
+        qstr_balance     = tr("0.00");
+//      qstr_balance     = tr("(Click to Set Default Account)");
         qstr_acct_name = QString("");
         // -----------------------------------
         qstr_acct_nym    = Moneychanger::It()->get_default_nym_id();
@@ -524,7 +525,8 @@ QWidget * MTHome::CreateUserBarWidget()
         }
     }
     else
-        qstrCash = tr("(no account selected)");
+        qstrCash = tr("");
+//      qstrCash = tr("(no account selected)");
     // -------------------------------------------
     QLabel * pCashLabel = new QLabel(qstrCash);
     // ---------------------------------------------------------------
