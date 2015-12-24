@@ -65,17 +65,12 @@ protected:
 
 private slots:
     void onBalancesChanged();
-
     void on_toButton_clicked();
     void on_fromButton_clicked();
     void on_sendButton_clicked();
-
     void on_memoEdit_textChanged(const QString &arg1);
-
     void on_amountEdit_editingFinished();
-
     void on_toolButton_clicked();
-
     void on_toolButtonManageAccts_clicked();
 
 private:

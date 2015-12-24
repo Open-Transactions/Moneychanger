@@ -134,9 +134,9 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     std::string str_NotaryID (opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_fromAcctId));
     // ------------------------------------------------------------
     int64_t SignedAmount = amount;
-    qDebug() << QString("Sending %1:\n Server:'%2'\n Nym:'%3'\n Acct:'%4'\n ToNym:'%5'\n Amount:'%6'\n Note:'%7'").
-                arg(nsChequeType).arg(str_NotaryID.c_str()).arg(str_fromNymId.c_str()).arg(str_fromAcctId.c_str()).
-                arg(toNymId).arg(SignedAmount).arg(note);
+//    qDebug() << QString("Sending %1:\n Server:'%2'\n Nym:'%3'\n Acct:'%4'\n ToNym:'%5'\n Amount:'%6'\n Note:'%7'").
+//                arg(nsChequeType).arg(str_NotaryID.c_str()).arg(str_fromNymId.c_str()).arg(str_fromAcctId.c_str()).
+//                arg(toNymId).arg(SignedAmount).arg(note);
     // ------------------------------------------------------------
     opentxs::OT_ME madeEasy;
 
@@ -351,9 +351,9 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
     int64_t SignedAmount = amount;
     int64_t trueAmount   = isInvoice ? (SignedAmount*(-1)) : SignedAmount;
     // ------------------------------------------------------------
-    qDebug() << QString("Sending %1:\n Server:'%2'\n Nym:'%3'\n Acct:'%4'\n ToNym:'%5'\n Amount:'%6'\n Note:'%7'").
-                arg(nsChequeType).arg(QString::fromStdString(str_NotaryID)).arg(QString::fromStdString(str_fromNymId)).
-                arg(fromAcctId).arg(toNymId).arg(SignedAmount).arg(note);
+//    qDebug() << QString("Sending %1:\n Server:'%2'\n Nym:'%3'\n Acct:'%4'\n ToNym:'%5'\n Amount:'%6'\n Note:'%7'").
+//                arg(nsChequeType).arg(QString::fromStdString(str_NotaryID)).arg(QString::fromStdString(str_fromNymId)).
+//                arg(fromAcctId).arg(toNymId).arg(SignedAmount).arg(note);
     // ------------------------------------------------------------
     time_t tFrom = opentxs::OTAPI_Wrap::It()->GetTime();
     time_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
@@ -640,7 +640,7 @@ void MTSendDlg::on_fromButton_clicked()
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
-        qDebug() << QString("SELECT was clicked for AcctID: %1").arg(theChooser.m_qstrCurrentID);
+//      qDebug() << QString("SELECT was clicked for AcctID: %1").arg(theChooser.m_qstrCurrentID);
 
         if (!theChooser.m_qstrCurrentID.isEmpty())
         {
@@ -720,7 +720,7 @@ void MTSendDlg::on_toButton_clicked()
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
-        qDebug() << QString("SELECT was clicked for ID: %1").arg(theChooser.m_qstrCurrentID);
+//        qDebug() << QString("SELECT was clicked for ID: %1").arg(theChooser.m_qstrCurrentID);
 
         // If not the same as before, then we have to choose a NymID based on the selected Contact.
         //
@@ -822,7 +822,11 @@ void MTSendDlg::dialog()
     if (!already_init)
     {
         if (!Moneychanger::It()->expertMode())
-            ui->comboBox->setEnabled(false);
+        {
+            ui->comboBox->setVisible(false);
+            ui->toolButton->setVisible(false);
+            ui->toolButtonManageAccts->setVisible(false);
+        }
         // ---------------------------------------
         connect(this,               SIGNAL(balancesChanged()),
                 Moneychanger::It(), SLOT  (onBalancesChanged()));

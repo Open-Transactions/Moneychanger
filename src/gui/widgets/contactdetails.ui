@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>426</width>
-    <height>292</height>
+    <width>560</width>
+    <height>420</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -75,11 +75,42 @@
     </layout>
    </item>
    <item>
-    <widget class="QPushButton" name="pushButtonMsg">
-     <property name="text">
-      <string>Message this Contact</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="pushButtonMsg">
+       <property name="text">
+        <string>Message this contact</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../resource.qrc">
+         <normaloff>:/icons/icons/pencil.png</normaloff>:/icons/icons/pencil.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>64</width>
+         <height>64</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButtonPay">
+       <property name="text">
+        <string>Pay this contact</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../resource.qrc">
+         <normaloff>:/icons/icons/fistful_of_cash_72.png</normaloff>:/icons/icons/fistful_of_cash_72.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>64</width>
+         <height>64</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <spacer name="verticalSpacer">
@@ -104,6 +135,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../resource.qrc"/>
+ </resources>
  <connections/>
 </ui>

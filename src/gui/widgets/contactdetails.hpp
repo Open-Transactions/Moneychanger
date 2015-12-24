@@ -44,6 +44,7 @@ protected:
 
 private:
     QPointer<QPlainTextEdit> m_pPlainTextEdit;
+    QPointer<QPlainTextEdit> m_pPlainTextEditNotes;
     QPointer<MTCredentials> m_pCredentials;
 
 private slots:
@@ -51,8 +52,8 @@ private slots:
 
     void on_btnAddressAdd_clicked();
     void on_btnAddressDelete_clicked();
-
     void on_pushButtonMsg_clicked();
+    void on_pushButtonPay_clicked();
 
 private:
     QPointer<QWidget>   m_pHeaderWidget;

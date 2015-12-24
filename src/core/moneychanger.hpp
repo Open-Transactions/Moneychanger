@@ -76,6 +76,12 @@ public:
     void modifyRecords(); // After we populate the recordlist, we make some changes to the list (move messages to a separate db table, move receipts to a separate table, etc.)
     bool AddMailToMsgArchive(opentxs::OTRecord& recordmt);
     bool AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord=true);
+    void AddPaymentBasedOnNotification(const std::string & str_acct_id,
+                                       const std::string & p_nym_id,
+                                       const std::string & p_notary_id,
+                                       const std::string & p_txn_contents,
+                                       int64_t & lTransactionNum,
+                                       int64_t & lTransNumForDisplay);
     bool AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt);
 
 signals:
@@ -251,7 +257,7 @@ private:
     void mc_overview_dialog();
     void mc_main_menu_dialog();
     void mc_messages_dialog();
-    void mc_payments_dialog();
+    void mc_payments_dialog(int nSourceRow=-1, int nFolder=-1);
     // ------------------------------------------------
     void mc_sendfunds_show_dialog(QString qstrAcct=QString(""));
     void mc_requestfunds_show_dialog(QString qstrAcct=QString(""));
@@ -465,6 +471,7 @@ public slots:
     void mc_composemessage_slot();          // Compose Message
     void mc_messages_slot();
     void mc_payments_slot();
+    void mc_show_payment_slot(int nSourceRow, int nFolder);
     // ---------------------------------------------------------------------------
     void mc_send_from_acct (QString qstrAcct);
     void mc_request_to_acct(QString qstrAcct);
