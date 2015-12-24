@@ -20,6 +20,9 @@ public:
 
     void dialog();
 
+public slots:
+    void onAboutToQuit();
+
 private slots:
     void on_toolButton_payments_clicked();
     void on_toolButton_messages_clicked();
@@ -40,6 +43,7 @@ private slots:
     void on_toolButton_encrypt_clicked();
     void on_toolButton_sign_clicked();
     void on_toolButton_decrypt_clicked();
+    void on_toolButton_transport_clicked();
 
 signals:
     void sig_on_toolButton_payments_clicked();
@@ -61,7 +65,7 @@ signals:
     void sig_on_toolButton_encrypt_clicked();
     void sig_on_toolButton_sign_clicked();
     void sig_on_toolButton_decrypt_clicked();
-
+    void sig_on_toolButton_Transport_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -69,6 +73,8 @@ protected:
 
 private:
     Ui::DlgMenu *ui;
+
+    bool bQuitting_=false;
 };
 
 #endif // DLGMENU_HPP

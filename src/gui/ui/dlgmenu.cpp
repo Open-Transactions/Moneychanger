@@ -9,6 +9,7 @@
 
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <QDebug>
 
 
 DlgMenu::DlgMenu(QWidget *parent) :
@@ -38,12 +39,22 @@ bool DlgMenu::eventFilter(QObject *obj, QEvent *event)
 }
 
 
+void DlgMenu::onAboutToQuit()
+{
+    bQuitting_ = true;
+}
+
 void DlgMenu::closeEvent(QCloseEvent *event)
 {
-    QMessageBox::information(this, tr("Quit?"),
-                            tr("If you want to close the application, click the 'Quit' button"));
-    event->ignore();
-//  QDialog::closeEvent(event);
+    if (bQuitting_ || !this->isVisible())
+        QDialog::closeEvent(event);
+    else
+    {
+        QMessageBox::information(this, tr("Moneychanger"),
+                                tr("To hide this window, there is an option in the Settings. To quit the application entirely, click 'Quit'."));
+//      this->setVisible(false);
+        event->ignore();
+    }
 }
 
 
@@ -154,4 +165,9 @@ void DlgMenu::on_toolButton_sign_clicked()
 void DlgMenu::on_toolButton_decrypt_clicked()
 {
     emit sig_on_toolButton_decrypt_clicked();
+}
+
+void DlgMenu::on_toolButton_transport_clicked()
+{
+    emit sig_on_toolButton_Transport_clicked();
 }

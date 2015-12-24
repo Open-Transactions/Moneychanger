@@ -62,6 +62,7 @@ public:
     int64_t HasUsageCredits(QString   notary_id,
                             QString   NYM_ID);
 
+    bool hideNav() const { return bHideNav_; }
     bool expertMode() const { return bExpertMode_; }
     bool hasNyms() const;
     bool hasAccounts() const;
@@ -89,6 +90,7 @@ signals:
     void populatedRecordlist();
     void appendToLog(QString);
     void expertModeUpdated(bool);
+    void hideNavUpdated(bool);
 
 public slots:
     void onBalancesChanged();
@@ -98,6 +100,7 @@ public slots:
     void onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOptionalAcctID);
     void onNeedToDownloadMail();
     void onExpertModeUpdated(bool bExpertMode);
+    void onHideNavUpdated(bool bHideNav);
 
     /**
      * Functions for setting Systray Values
@@ -172,6 +175,7 @@ private:
     bool mc_overall_init=false;
 
     bool bExpertMode_=false;
+    bool bHideNav_=false;
 
     /** Timer used to update Namecoin names.  */
     QTimer* nmc_update_timer=nullptr;
@@ -255,7 +259,7 @@ private:
     
     
     void mc_overview_dialog();
-    void mc_main_menu_dialog();
+    void mc_main_menu_dialog(bool bShow=true);
     void mc_messages_dialog();
     void mc_payments_dialog(int nSourceRow=-1, int nFolder=-1);
     // ------------------------------------------------

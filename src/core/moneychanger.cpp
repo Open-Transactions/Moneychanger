@@ -321,7 +321,11 @@ Moneychanger::Moneychanger(QWidget *parent)
 
     bExpertMode_ = (0 == qstrExpertMode.compare("on"));
     // -------------------------------------------------
+    QString qstrHideNav = MTContactHandler::getInstance()->
+            GetValueByID("hidenav", "parameter1", "settings", "setting");
 
+    bHideNav_ = (0 == qstrHideNav.compare("on"));
+    // -------------------------------------------------
     setupRecordList();
 
     mc_overall_init = true;
@@ -669,6 +673,9 @@ void Moneychanger::bootTray()
     // ----------------------------------------------------------------------------
     //Show systray
     mc_systrayIcon->show();
+    // ----------------------------------------------------------------------------
+    if (!hideNav())
+        mc_main_menu_dialog();
     // ----------------------------------------------------------------------------
     if (expertMode())
         mc_payments_dialog();
@@ -1652,6 +1659,13 @@ void Moneychanger::mc_show_nym_slot(QString text)
 {
     mc_nymmanager_dialog(text);
 
+}
+
+void Moneychanger::onHideNavUpdated(bool bHideNav)
+{
+    bHideNav_ = bHideNav;
+
+    mc_main_menu_dialog(!bHideNav);
 }
 
 void Moneychanger::onExpertModeUpdated(bool bExpertMode)
@@ -4134,12 +4148,17 @@ void Moneychanger::mc_main_menu_slot()
 
 // --------------------------------------------------
 
-void Moneychanger::mc_main_menu_dialog()
+void Moneychanger::mc_main_menu_dialog(bool bShow/*=true*/)
 {
     if (!menuwindow)
     {
         // --------------------------------------------------
         menuwindow = new DlgMenu(this);
+        // --------------------------------------------------
+        QCoreApplication * pCore = QCoreApplication::instance();
+
+        connect(pCore,      SIGNAL(aboutToQuit()),
+                menuwindow, SLOT(onAboutToQuit()));
         // --------------------------------------------------
         connect(menuwindow, SIGNAL(sig_on_toolButton_payments_clicked()),
                 this,       SLOT(mc_payments_slot()));
@@ -4204,7 +4223,16 @@ void Moneychanger::mc_main_menu_dialog()
         qDebug() << "Main Menu Opened";
     }
     // ---------------------------------
-    menuwindow->dialog();
+    if (bShow)
+    {
+        if (!menuwindow->isVisible())
+            menuwindow->setVisible(true);
+        menuwindow->dialog();
+    }
+    else
+    {
+        menuwindow->setVisible(false);
+    }
 }
 
 // End Main Menu
@@ -4888,6 +4916,7 @@ void Moneychanger::mc_settings_slot()
         settingswindow = new Settings(this);
     // ------------------------------------
     connect(settingswindow, SIGNAL(expertModeUpdated(bool)), this, SLOT(onExpertModeUpdated(bool)));
+    connect(settingswindow, SIGNAL(hideNavUpdated(bool)),    this, SLOT(onHideNavUpdated(bool)));
     // ------------------------------------
     Focuser f(settingswindow);
     f.show();
