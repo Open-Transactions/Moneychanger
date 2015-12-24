@@ -2643,7 +2643,7 @@ void MTCompose::on_toButton_clicked()
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
-        qDebug() << QString("SELECT was clicked for ID: %1").arg(theChooser.m_qstrCurrentID);
+//        qDebug() << QString("SELECT was clicked for ID: %1").arg(theChooser.m_qstrCurrentID);
 
         // We try to choose a NymID based on the selected Contact.
         //
@@ -2710,6 +2710,11 @@ void MTCompose::dialog()
 
     if (!already_init)
     {
+        if (!Moneychanger::It()->expertMode())
+        {
+            ui->toolButtonTo->setVisible(false);
+            ui->toolButtonFrom->setVisible(false);
+        }
         connect(this,               SIGNAL(balancesChanged()),
                 Moneychanger::It(), SLOT  (onBalancesChanged()));
         // ---------------------------------------

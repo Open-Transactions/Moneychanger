@@ -74,7 +74,7 @@ void DlgExportCash::on_buttonBox_accepted()
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
-        qDebug() << QString("SELECT was clicked for ID: %1").arg(theChooser.m_qstrCurrentID);
+//        qDebug() << QString("SELECT was clicked for ID: %1").arg(theChooser.m_qstrCurrentID);
 
         // If not the same as before, then we have to choose a NymID based on the selected Contact.
         //

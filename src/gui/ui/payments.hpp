@@ -60,11 +60,13 @@ protected:
     void tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, PaymentsProxyModel * pProxyModel);
     void tableViewDoubleClicked(const QModelIndex &index, PaymentsProxyModel * pProxyModel);
 
+    void setAsCurrentPayment(int nSourceRow, int nFolder);
+
 public:
     explicit Payments(QWidget *parent = 0);
     ~Payments();
 
-    void dialog();
+    void dialog(int nSourceRow=-1, int nFolder=-1);
 
     void RefreshUserBar();
     QWidget * CreateUserBarWidget();

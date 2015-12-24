@@ -139,8 +139,8 @@ public:
 
     void clearFilterType();
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-    QVariant data    ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant data    ( const QModelIndex & index, int role = Qt::DisplayRole ) const override;
     QVariant rawData ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
 
     QWidget * CreateDetailHeaderWidget(const int nSourceRow, bool bExternal=true) const;
@@ -178,6 +178,54 @@ private:
     QTableView * pTableView_=nullptr;
 };
 
+
+
+
+class AccountRecordsProxyModel : public QSortFilterProxyModel
+{
+    Q_OBJECT
+
+    enum FilterType {
+        FilterNone = 0,
+        FilterSent = 1,
+        FilterReceived = 2
+    };
+
+public:
+    AccountRecordsProxyModel(QObject *parent = 0);
+
+    void setFilterSent();
+    void setFilterReceived();
+    void setFilterNone();
+
+    void clearFilterType();
+
+    void setFilterString(QString qstrFilter);
+
+    void setFilterAccountId(QString qstrFilter);
+
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+    QVariant data    ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
+    QVariant rawData ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
+
+    QWidget * CreateDetailHeaderWidget(const int nSourceRow, bool bExternal=true) const;
+
+    void setTableView(QTableView * pTableView) { pTableView_ = pTableView; }
+
+protected:
+    void setFilterFolder(int nFolder);
+
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const Q_DECL_OVERRIDE;
+    bool filterAcceptsColumn(int source_column, const QModelIndex & source_parent) const Q_DECL_OVERRIDE;
+
+private:
+    QString   filterString_;
+    QString   filterAccount_;
+
+    FilterType filterType_ = FilterNone;
+
+    QTableView * pTableView_=nullptr;
+};
 
 
 #endif // MODELPAYMENTS_H

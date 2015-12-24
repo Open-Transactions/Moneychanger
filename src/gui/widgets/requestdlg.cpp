@@ -68,9 +68,9 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString f
     int64_t SignedAmount = amount;
     int64_t trueAmount   = isInvoice ? (SignedAmount*(-1)) : SignedAmount;
     // ------------------------------------------------------------
-    qDebug() << QString("Sending %1:\n Server:'%2'\n Nym:'%3'\n Acct:'%4'\n ToNym:'%5'\n Amount:'%6'\n Note:'%7'").
-                arg(nsChequeType).arg(QString::fromStdString(str_NotaryID)).arg(QString::fromStdString(str_fromNymId)).
-                arg(fromAcctId).arg(toNymId).arg(SignedAmount).arg(note);
+//    qDebug() << QString("Sending %1:\n Server:'%2'\n Nym:'%3'\n Acct:'%4'\n ToNym:'%5'\n Amount:'%6'\n Note:'%7'").
+//                arg(nsChequeType).arg(QString::fromStdString(str_NotaryID)).arg(QString::fromStdString(str_fromNymId)).
+//                arg(fromAcctId).arg(toNymId).arg(SignedAmount).arg(note);
     // ------------------------------------------------------------
     time_t tFrom = opentxs::OTAPI_Wrap::It()->GetTime();
     time_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
@@ -320,7 +320,7 @@ void MTRequestDlg::on_toButton_clicked()
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
-        qDebug() << QString("SELECT was clicked for AcctID: %1").arg(theChooser.m_qstrCurrentID);
+//      qDebug() << QString("SELECT was clicked for AcctID: %1").arg(theChooser.m_qstrCurrentID);
 
         if (!theChooser.m_qstrCurrentID.isEmpty())
         {
@@ -400,7 +400,7 @@ void MTRequestDlg::on_fromButton_clicked()
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
-        qDebug() << QString("SELECT was clicked for ID: %1").arg(theChooser.m_qstrCurrentID);
+//        qDebug() << QString("SELECT was clicked for ID: %1").arg(theChooser.m_qstrCurrentID);
 
         // If not the same as before, then we have to choose a NymID based on the selected Contact.
         //
@@ -501,6 +501,12 @@ void MTRequestDlg::dialog()
 
     if (!already_init)
     {
+        if (!Moneychanger::It()->expertMode())
+        {
+            ui->toolButton->setVisible(false);
+            ui->toolButtonManageAccts->setVisible(false);
+        }
+        // ---------------------------------------
         connect(this,               SIGNAL(balancesChanged()),
                 Moneychanger::It(), SLOT  (onBalancesChanged()));
         // ---------------------------------------

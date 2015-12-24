@@ -31,7 +31,7 @@ private slots:
     void on_pushButton_clicked();
 
 private:
-    bool m_bShowWarning;
+    bool m_bShowWarning=true;
 //  QString m_qstrLabelHeader1;
 //  QString m_qstrLabelHeader2;
     Ui::DlgExportedToPass *ui;
