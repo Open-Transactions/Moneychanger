@@ -249,7 +249,7 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
         {
             QString strContactID = theChooser.GetCurrentID();
 
-            qDebug() << QString("SELECT was clicked for ID: %1").arg(strContactID);
+//            qDebug() << QString("SELECT was clicked for ID: %1").arg(strContactID);
 
             int nContactID = strContactID.isEmpty() ? 0 : strContactID.toInt();
 
@@ -540,7 +540,7 @@ QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
             // -----------------------------------------------
             if (theChooser.exec() == QDialog::Accepted)
             {
-                qDebug() << QString("SELECT was clicked for AcctID: %1").arg(theChooser.m_qstrCurrentID);
+//              qDebug() << QString("SELECT was clicked for AcctID: %1").arg(theChooser.m_qstrCurrentID);
 
                 if (!theChooser.m_qstrCurrentID.isEmpty())
                     qstr_acct_id = theChooser.m_qstrCurrentID;

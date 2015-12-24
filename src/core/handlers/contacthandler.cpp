@@ -7,6 +7,7 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/DBHandler.hpp>
 #include <core/mtcomms.h>
+#include <core/moneychanger.hpp>
 
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/client/OTAPI.hpp>
@@ -22,6 +23,21 @@
 #include <QSqlField>
 #include <QFlags>
 
+
+void MTNameLookupQT::notifyOfSuccessfulNotarization(const std::string & str_acct_id,
+                                                    const std::string   p_nym_id,
+                                                    const std::string   p_notary_id,
+                                                    const std::string   p_txn_contents,
+                                                    int64_t lTransactionNum,
+                                                    int64_t lTransNumForDisplay) const
+{
+    // Add/update record to payments table for whatever
+    // transaction just occurred.
+
+    Moneychanger::It()->AddPaymentBasedOnNotification(str_acct_id,
+                                                      p_nym_id, p_notary_id,
+                                                      p_txn_contents, lTransactionNum, lTransNumForDisplay);
+}
 
 std::string MTNameLookupQT::GetNymName(const std::string & str_id,
                                        const std::string   p_notary_id) const
@@ -556,11 +572,11 @@ bool MTContactHandler::DeletePaymentBody(int nID)
 
 // Returns 0 if not found.
 //
-int MTContactHandler::GetPaymentIdByTxnDisplayId(int64_t lTxnDisplayId)
+int MTContactHandler::GetPaymentIdByTxnDisplayId(int64_t lTxnDisplayId, QString qstrNymId)
 {
     QMutexLocker locker(&m_Mutex);
 
-    QString str_select = QString("SELECT `payment_id` FROM `payment` WHERE `txn_id_display`=%1 LIMIT 0,1").arg(lTxnDisplayId);
+    QString str_select = QString("SELECT `payment_id` FROM `payment` WHERE `txn_id_display`=%1 AND `my_nym_id`='%2' LIMIT 0,1").arg(lTxnDisplayId).arg(qstrNymId);
     int nRows = DBHandler::getInstance()->querySize(str_select);
 
     if (0 >= nRows)

@@ -9,6 +9,8 @@
 #include <gui/ui/dlgnewcontact.hpp>
 
 #include <gui/widgets/compose.hpp>
+#include <gui/widgets/senddlg.hpp>
+#include <gui/widgets/dlgchooser.hpp>
 
 #include <core/moneychanger.hpp>
 #include <core/handlers/contacthandler.hpp>
@@ -41,6 +43,11 @@ MTContactDetails::MTContactDetails(QWidget *parent, MTDetailEdit & theOwner) :
     m_pHeaderWidget  = new QWidget;
     ui->verticalLayout->insertWidget(0, m_pHeaderWidget);
     // ----------------------------------
+    if (!Moneychanger::It()->expertMode())
+    {
+        ui->lineEditID->setVisible(false);
+        ui->labelID->setVisible(false);
+    }
 }
 
 MTContactDetails::~MTContactDetails()
@@ -53,7 +60,7 @@ MTContactDetails::~MTContactDetails()
 //virtual
 int MTContactDetails::GetCustomTabCount()
 {
-    return 2;
+    return (Moneychanger::It()->expertMode()) ? 3 : 1;
 }
 // ----------------------------------
 //virtual
@@ -68,7 +75,37 @@ QWidget * MTContactDetails::CreateCustomTab(int nTab)
     // -----------------------------
     switch (nTab)
     {
-    case 0: // "Credentials" tab
+    case 0: // "Notes" tab
+        if (m_pOwner)
+        {
+            if (m_pPlainTextEditNotes)
+            {
+                m_pPlainTextEditNotes->setParent(NULL);
+                m_pPlainTextEditNotes->disconnect();
+                m_pPlainTextEditNotes->deleteLater();
+
+                m_pPlainTextEditNotes = NULL;
+            }
+            m_pPlainTextEditNotes = new QPlainTextEdit;
+
+            m_pPlainTextEditNotes->setReadOnly(false);
+            m_pPlainTextEditNotes->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+            // -------------------------------
+            QVBoxLayout * pvBox = new QVBoxLayout;
+
+            QLabel * pLabelContents = new QLabel(tr("Notes (these don't save yet):"));
+
+            pvBox->setAlignment(Qt::AlignTop);
+            pvBox->addWidget   (pLabelContents);
+            pvBox->addWidget   (m_pPlainTextEditNotes);
+            // -------------------------------
+            pReturnValue = new QWidget;
+            pReturnValue->setContentsMargins(0, 0, 0, 0);
+            pReturnValue->setLayout(pvBox);
+        }
+        break;
+
+    case 1: // "Credentials" tab
         if (m_pOwner)
         {
             if (m_pCredentials)
@@ -85,7 +122,7 @@ QWidget * MTContactDetails::CreateCustomTab(int nTab)
         }
         break;
 
-    case 1: // "Known IDs" tab
+    case 2: // "Known IDs" tab
     {
         if (m_pPlainTextEdit)
         {
@@ -134,8 +171,9 @@ QString  MTContactDetails::GetCustomTabName(int nTab)
     // -----------------------------
     switch (nTab)
     {
-    case 0:  qstrReturnValue = "Credentials";  break;
-    case 1:  qstrReturnValue = "Known IDs";    break;
+    case 0:  qstrReturnValue = "Notes";  break;
+    case 1:  qstrReturnValue = "Credentials";  break;
+    case 2:  qstrReturnValue = "Known IDs";    break;
 
     default:
         qDebug() << QString("Unexpected: MTContactDetails::GetCustomTabName was called with bad index: %1").arg(nTab);
@@ -260,7 +298,9 @@ void MTContactDetails::ClearContents()
         m_pPlainTextEdit->setPlainText("");
     // ------------------------------------------
     ui->pushButtonMsg->setEnabled(false);
+    ui->pushButtonPay->setEnabled(false);
     ui->pushButtonMsg->setProperty("contactid", 0);
+    ui->pushButtonPay->setProperty("contactid", 0);
     // ------------------------------------------
     if (m_pAddresses)
     {
@@ -358,9 +398,9 @@ QWidget * MTContactDetails::createSingleAddressWidget(int nContactID, QString qs
 
     connect(pBtnDelete, SIGNAL(clicked()), this, SLOT(on_btnAddressDelete_clicked()));
     // ----------------------------------------------------------
-    layout->setStretch(0,  0);
+    layout->setStretch(0,  1);
     layout->setStretch(1, -1);
-    layout->setStretch(2,  0);
+    layout->setStretch(2,  3);
     layout->setStretch(3,  1);
     // ----------------------------------------------------------
     pType   ->home(false);
@@ -428,9 +468,9 @@ QWidget * MTContactDetails::createNewAddressWidget(int nContactID)
     // -----------------------------------------------
     pWidget->setLayout(layout);
     // -----------------------------------------------
-    layout->setStretch(0,  0);
+    layout->setStretch(0,  1);
     layout->setStretch(1, -1);
-    layout->setStretch(2,  0);
+    layout->setStretch(2,  3);
     layout->setStretch(3,  1);
     // -----------------------------------------------
     connect(pBtnAdd, SIGNAL(clicked()), this, SLOT(on_btnAddressAdd_clicked()));
@@ -540,6 +580,63 @@ void MTContactDetails::on_btnAddressDelete_clicked()
     }
 }
 
+void MTContactDetails::on_pushButtonPay_clicked()
+{
+    QVariant varContactID = ui->pushButtonPay->property("contactid");
+    int      nContactID   = varContactID.toInt();
+
+    if (nContactID > 0)
+    {
+        // --------------------------------------------------
+        MTSendDlg * send_window = new MTSendDlg(NULL);
+        send_window->setAttribute(Qt::WA_DeleteOnClose);
+        // --------------------------------------------------
+        QString qstrAcct = Moneychanger::It()->get_default_account_id();
+        QString qstr_acct_id = qstrAcct.isEmpty() ? QString("") : qstrAcct;
+
+        if (!qstr_acct_id.isEmpty())
+            send_window->setInitialMyAcct(qstr_acct_id);
+        // ---------------------------------------
+        mapIDName theNymMap;
+
+        if (!MTContactHandler::getInstance()->GetNyms(theNymMap, nContactID))
+        {
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Sorry, there are no NymIDs associated with this contact. Currently only Open-Transactions payments are supported."));
+            return;
+        }
+        else
+        {
+            QString qstrHisNymId;
+
+            if (theNymMap.size() == 1) // This contact has exactly one Nym, so we'll go with it.
+            {
+                mapIDName::iterator theNymIt = theNymMap.begin();
+
+                qstrHisNymId = theNymIt.key();
+//              QString qstrNymName = theNymIt.value();
+            }
+            else // There are multiple Nyms to choose from.
+            {
+                DlgChooser theNymChooser(this);
+                theNymChooser.m_map = theNymMap;
+                theNymChooser.setWindowTitle(tr("Recipient has multiple Nyms. (Please choose one.)"));
+                // -----------------------------------------------
+                if (theNymChooser.exec() == QDialog::Accepted)
+                    qstrHisNymId = theNymChooser.m_qstrCurrentID;
+                else // User must have cancelled.
+                    qstrHisNymId = QString("");
+            }
+
+            send_window->setInitialHisNym(qstrHisNymId);
+        }
+        // ---------------------------------------
+        send_window->dialog();
+        // ---------------------------------------
+        Focuser f(send_window);
+        f.show();
+        f.focus();
+    }
+}
 
 void MTContactDetails::on_pushButtonMsg_clicked()
 {
@@ -624,7 +721,9 @@ void MTContactDetails::refresh(QString strID, QString strName)
     if ((NULL == ui) || strID.isEmpty())
     {
         ui->pushButtonMsg->setEnabled(false);
+        ui->pushButtonPay->setEnabled(false);
         ui->pushButtonMsg->setProperty("contactid", 0);
+        ui->pushButtonPay->setProperty("contactid", 0);
         return;
     }
 
@@ -672,12 +771,16 @@ void MTContactDetails::refresh(QString strID, QString strName)
     if (nContactID > 0)
     {
         ui->pushButtonMsg->setProperty("contactid", nContactID);
+        ui->pushButtonPay->setProperty("contactid", nContactID);
         ui->pushButtonMsg->setEnabled(true);
+        ui->pushButtonPay->setEnabled(true);
     }
     else
     {
         ui->pushButtonMsg->setProperty("contactid", 0);
         ui->pushButtonMsg->setEnabled(false);
+        ui->pushButtonPay->setProperty("contactid", 0);
+        ui->pushButtonPay->setEnabled(false);
     }
     // ------------------------------------------
     {
@@ -772,4 +875,5 @@ void MTContactDetails::on_lineEditName_editingFinished()
         }
     }
 }
+
 

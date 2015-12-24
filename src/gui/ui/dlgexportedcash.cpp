@@ -9,8 +9,14 @@
 #include <QClipboard>
 
 
-DlgExportedCash::DlgExportedCash(QWidget *parent, QString qstrHisCopy, QString qstrMyCopy) :
+DlgExportedCash::DlgExportedCash(QWidget *parent, QString qstrHisCopy, QString qstrMyCopy,
+                                 QString   qstrLabelHeader1/*=QString("")*/,
+                                 QString   qstrLabelHeader2/*=QString("")*/,
+                                 QString   qstrLabelHeader3/*=QString("")*/,
+                                 QString   qstrLabelHeader4/*=QString("")*/,
+                                 bool      bShowWarning/*=true*/) :
     QDialog(parent),
+    m_bShowWarning(bShowWarning),
     ui(new Ui::DlgExportedCash)
 {
     ui->setupUi(this);
@@ -19,6 +25,15 @@ DlgExportedCash::DlgExportedCash(QWidget *parent, QString qstrHisCopy, QString q
 
     ui->plainTextEdit    ->setPlainText(qstrHisCopy);
     ui->plainTextEditCopy->setPlainText(qstrMyCopy);
+
+    if (!qstrLabelHeader1.isEmpty())
+        ui->labelHeader1->setText(qstrLabelHeader1);
+    if (!qstrLabelHeader2.isEmpty())
+        ui->labelHeader2->setText(qstrLabelHeader2);
+    if (!qstrLabelHeader3.isEmpty())
+        ui->labelHeader3->setText(qstrLabelHeader3);
+    if (!qstrLabelHeader4.isEmpty())
+        ui->labelHeader4->setText(qstrLabelHeader4);
 }
 
 DlgExportedCash::~DlgExportedCash()
@@ -28,12 +43,17 @@ DlgExportedCash::~DlgExportedCash()
 
 void DlgExportedCash::on_buttonBox_accepted()
 {
-    QMessageBox::StandardButton reply;
+    if (m_bShowWarning)
+    {
+        QMessageBox::StandardButton reply;
 
-    reply = QMessageBox::question(this, "", QString("%1<br/><br/>%2").arg(tr("Are you sure you want to close this dialog?")).
-                                  arg(tr("WARNING: You are strongly advised to first SAVE BOTH COPIES of the exported cash!")),
-                                  QMessageBox::Yes|QMessageBox::No);
-    if (reply == QMessageBox::Yes)
+        reply = QMessageBox::question(this, "", QString("%1<br/><br/>%2").arg(tr("Are you sure you want to close this dialog?")).
+                                      arg(tr("WARNING: You are strongly advised to first SAVE BOTH COPIES of the exported cash!")),
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::Yes)
+            accept();
+    }
+    else
         accept();
 }
 

@@ -1678,6 +1678,45 @@ void Moneychanger::onExpertModeUpdated(bool bExpertMode)
 
     if (bNymsWindowVisible)
         mc_nymmanager_dialog(nym_id);
+    // --------------------------------
+    bool bAccountWindowVisible = false;
+    QString acct_id("");
+
+    if (accountswindow)
+    {
+        acct_id = accountswindow->m_qstrCurrentID;
+        bAccountWindowVisible = accountswindow->isVisible();
+        // -------------------------------------
+        accountswindow->setParent(NULL);
+        accountswindow->disconnect();
+        accountswindow->setAttribute(Qt::WA_DeleteOnClose, true);
+        accountswindow->close();
+    }
+
+    accountswindow = nullptr;
+
+    if (bAccountWindowVisible)
+        mc_show_account_slot(acct_id);
+    // --------------------------------
+    bool bContactWindowVisible = false;
+    QString contact_id("");
+
+    if (contactswindow)
+    {
+        contact_id = contactswindow->m_qstrCurrentID;
+        bContactWindowVisible = contactswindow->isVisible();
+        // -------------------------------------
+        contactswindow->setParent(NULL);
+        contactswindow->disconnect();
+        contactswindow->setAttribute(Qt::WA_DeleteOnClose, true);
+        contactswindow->close();
+    }
+
+    contactswindow = nullptr;
+
+    if (bContactWindowVisible)
+        mc_showcontact_slot(contact_id);
+    // --------------------------------
 }
 
 void Moneychanger::mc_nymmanager_dialog(QString qstrPresetID/*=QString("")*/)
@@ -2139,6 +2178,149 @@ bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
     return bSuccessAddingMsg;
 }
 
+
+
+
+void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id,
+                                                 const std::string & p_nym_id,
+                                                 const std::string & p_notary_id,
+                                                 const std::string & p_txn_contents,
+                                                 int64_t & lTransactionNum,
+                                                 int64_t & lTransNumForDisplay)
+{
+    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
+    bool bSuccessAddingPmnt = false;
+    QString qstrBody(""), qstrPendingBody("");
+    QMap<QString, QVariant> mapFinalValues;
+
+    bool bRecordAlreadyExisted = false;
+    int  nPreExistingPaymentId = 0;
+
+    if (pModel)
+    {
+        QString myNymID;
+        if (!p_nym_id.empty())
+            myNymID = QString::fromStdString(p_nym_id);
+        // ---------------------------------
+        QString myAcctID;
+        if (!str_acct_id.empty())
+            myAcctID = QString::fromStdString(str_acct_id);
+        // ---------------------------------
+        QString notaryID;
+        if (!p_notary_id.empty())
+            notaryID = QString::fromStdString(p_notary_id);
+        // ---------------------------------
+        int64_t & transNum        = lTransactionNum;
+        int64_t & transNumDisplay = lTransNumForDisplay;
+
+        int nPending = 1;
+        int nCompleted = 1;
+        // ---------------------------------
+        const int nFolder = 1; // 0 for moneychanger's outbox, and 1 for inbox.
+        // ---------------------------------
+        // First let's see if a record already exists:
+        //
+        nPreExistingPaymentId = MTContactHandler::getInstance()->GetPaymentIdByTxnDisplayId(transNumDisplay, myNymID);
+        bRecordAlreadyExisted = (nPreExistingPaymentId > 0);
+        // ------------------------------------------
+        // We'll start by putting all the values into our map,
+        // so we can then use that map when creating or updating
+        // database records.
+        //
+        // if (bRecordAlreadyExisted) mapFinalValues.insert("payment_id", nPreExistingPaymentId);
+        // Note: No need to insert this one.
+
+        if (!myNymID.isEmpty()) mapFinalValues.insert("my_nym_id", myNymID);
+        if (!myAcctID.isEmpty()) mapFinalValues.insert("my_acct_id", myAcctID);
+        if (transNum > 0) mapFinalValues.insert("txn_id", QVariant::fromValue(transNum));
+        if (transNumDisplay > 0) mapFinalValues.insert("txn_id_display", QVariant::fromValue(transNumDisplay));
+        if (nPending > 0) mapFinalValues.insert("pending_found",   QVariant::fromValue(nPending));
+        if (nCompleted > 0) mapFinalValues.insert("completed_found",   QVariant::fromValue(nCompleted));
+        if (!notaryID.isEmpty()) mapFinalValues.insert("notary_id", notaryID);
+
+
+        qDebug() << "DEBUGGING AddPaymentBasedOnNotification. transNum: " << transNum << " transNumDisplay: " << transNumDisplay << "\n";
+
+
+
+        if (!bRecordAlreadyExisted) mapFinalValues.insert("have_read", QVariant::fromValue(0));
+        if (!bRecordAlreadyExisted) mapFinalValues.insert("have_replied", QVariant::fromValue(0));
+        if (!bRecordAlreadyExisted) mapFinalValues.insert("have_forwarded", QVariant::fromValue(0));
+
+        mapFinalValues.insert("folder", QVariant::fromValue(nFolder));
+        // -------------------------------------------------
+        qstrPendingBody = QString::fromStdString(p_txn_contents);
+        // -------------------------------------------------
+        if (bRecordAlreadyExisted)
+        {
+            // Success.
+            if (MTContactHandler::getInstance()->UpdatePaymentRecord(nPreExistingPaymentId, mapFinalValues))
+            {
+                bSuccessAddingPmnt = true;
+
+                pModel->select(); // Reset the model since we just inserted a new record.
+                // AH WAIT!!! We don't want to do this for EVERY record inserted, do we?
+                // Just the LAST ONE.
+                // TODO!
+            }
+        }
+        else // Record doesn't already exist in the database.
+        {    // In that case we can use some code we already had:
+
+            pModel->database().transaction();
+            // ---------------------------------
+            QSqlRecord record = pModel->record();
+            record.setGenerated("payment_id", true);
+            // ---------------------------------
+            for (QMap<QString, QVariant>::iterator it_map = mapFinalValues.begin();
+                 it_map != mapFinalValues.end(); ++it_map)
+            {
+                const QString  & qstrKey = it_map.key();
+                const QVariant & qValue  = it_map.value();
+
+                record.setValue(qstrKey, qValue);
+            }
+
+            pModel->insertRecord(0, record);
+            // ---------------------------------
+            if (pModel->submitAll())
+            {
+                // Success.
+                if (pModel->database().commit())
+                    bSuccessAddingPmnt = true;
+            }
+            else
+            {
+                pModel->database().rollback();
+                qDebug() << "Database Write Error" <<
+                           "The database reported an error: " <<
+                           pModel->lastError().text();
+            }
+        } // Record didn't already exist. (Adding new.)
+    } // if pModel
+    // ------------------------------------------------
+    if (bSuccessAddingPmnt)
+    {
+        qDebug() << "AddPaymentBasedOnNotification: Succeeded adding payment record to database.\n";
+
+        if (bRecordAlreadyExisted)
+        {
+            if (!MTContactHandler::getInstance()->UpdatePaymentBody(nPreExistingPaymentId, qstrBody, qstrPendingBody))
+            {
+                qDebug() << "AddPaymentBasedOnNotification: ...but then failed updating payment body and/or pending body.\n";
+            }
+        }
+        // ------------------------
+        else
+        {
+            if (!MTContactHandler::getInstance()->CreatePaymentBody(qstrBody, qstrPendingBody))
+            {
+                qDebug() << "AddPaymentBasedOnNotification: ...but then failed creating payment body and/or pending body.\n";
+            }
+        }
+    }
+}
+
 // Adds or updates.
 // The payment archive stores up to multiple receipts per record.
 // The primary key is the "display txn ID"
@@ -2275,7 +2457,7 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
         // ---------------------------------
         // First let's see if a record already exists:
         //
-        nPreExistingPaymentId = MTContactHandler::getInstance()->GetPaymentIdByTxnDisplayId(transNumDisplay);
+        nPreExistingPaymentId = MTContactHandler::getInstance()->GetPaymentIdByTxnDisplayId(transNumDisplay, myNymID);
         bRecordAlreadyExisted = (nPreExistingPaymentId > 0);
         // ------------------------------------------
         // We'll start by putting all the values into our map,
@@ -2298,6 +2480,13 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
 
         if (transNum > 0)        mapFinalValues.insert("txn_id", QVariant::fromValue(transNum));
         if (transNumDisplay > 0) mapFinalValues.insert("txn_id_display", QVariant::fromValue(transNumDisplay));
+
+
+        qDebug() << "DEBUGGING AddPaymentToPmntArchive. " << (recordmt.IsOutgoing() ? "OUT" : "IN") << ". transNum: " << transNum << " transNumDisplay: " << transNumDisplay << "\n";
+
+        // I receive a cheque. This is the incoming cheque I'm receiving.
+
+
         if (lAmount != 0)        mapFinalValues.insert("amount", QVariant::fromValue(lAmount));
         if (tDate > 0)           mapFinalValues.insert("timestamp", QVariant::fromValue(tDate));
 
@@ -3773,7 +3962,12 @@ void Moneychanger::mc_payments_slot()
     mc_payments_dialog();
 }
 
-void Moneychanger::mc_payments_dialog()
+void Moneychanger::mc_show_payment_slot(int nSourceRow, int nFolder)
+{
+    mc_payments_dialog(nSourceRow, nFolder);
+}
+
+void Moneychanger::mc_payments_dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 {
     if (!payments_window)
     {
@@ -3796,7 +3990,7 @@ void Moneychanger::mc_payments_dialog()
 
     }
     // ---------------------------------
-    payments_window->dialog();
+    payments_window->dialog(nSourceRow, nFolder);
 }
 
 

@@ -22,14 +22,14 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="labelHeader1">
      <property name="text">
       <string>Exported Cash (encrypted to recipient key)</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="labelHeader2">
      <property name="font">
       <font>
        <pointsize>11</pointsize>
@@ -62,14 +62,14 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label_2">
+    <widget class="QLabel" name="labelHeader3">
      <property name="text">
       <string>Your Copy (encrypted to your own key)</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="label_4">
+    <widget class="QLabel" name="labelHeader4">
      <property name="font">
       <font>
        <pointsize>11</pointsize>

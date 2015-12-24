@@ -75,8 +75,8 @@ public:
 
     void clearFilterType();
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-    QVariant data    ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant data    ( const QModelIndex & index, int role = Qt::DisplayRole ) const override;
     QVariant rawData ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
 
 protected:

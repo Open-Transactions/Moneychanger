@@ -37,6 +37,23 @@ public:
                                     const std::string   p_asset_id) const;
 
     virtual std::string GetAddressName(const std::string & str_address) const; // Used for Bitmessage addresses (etc.)
+
+    // Let's say that OTRecordList just deposited a cheque. (Which it does automatically.)
+    // Or let's say the user just asked it to activate a smart contract. Whatever. RecordList
+    // will call this and pass the server's "success" transaction contents, along with whatever
+    // other useful IDs it's gleaned.
+    //
+    // That way, when Moneychanger overrides notifyOfSuccessfulNotarization, Moneychanger will
+    // get a notification whenever the recordlist has deposited a cheque. Then Moneychanger can
+    // take the cheque deposit (transaction reply from server) and add it to its internal database,
+    // in its payment table.
+    //
+    virtual void notifyOfSuccessfulNotarization(const std::string & str_acct_id,
+                                                const std::string   p_nym_id,
+                                                const std::string   p_notary_id,
+                                                const std::string   p_txn_contents,
+                                                int64_t lTransactionNum,
+                                                int64_t lTransNumForDisplay) const;
 };
 
 
@@ -237,7 +254,7 @@ public:
   bool UpdateMessageBody(int nMessageID, const QString & qstrBody);
   QString GetMessageBody(int nID);
 
-  int  GetPaymentIdByTxnDisplayId(int64_t lTxnDisplayId);
+  int  GetPaymentIdByTxnDisplayId(int64_t lTxnDisplayId, QString qstrNymId);
   bool LowLevelUpdatePaymentBody(int nPaymentID, const QString qstrBody, const QString qstrPendingBody);
   bool CreatePaymentBody(QString qstrBody, QString qstrPendingBody);
   bool DeletePaymentBody(int nID);

@@ -6,14 +6,26 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>642</width>
+    <height>490</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
     <widget class="Line" name="line_2">
      <property name="orientation">
@@ -30,22 +42,37 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="lineEditName">
-       <property name="readOnly">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label">
+     <item row="2" column="3">
+      <widget class="QToolButton" name="toolButtonNym">
        <property name="text">
-        <string>Asset Type:</string>
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../resource.qrc">
+         <normaloff>:/icons/icons/user.png</normaloff>:/icons/icons/user.png</iconset>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEditAsset">
+     <item row="3" column="3">
+      <widget class="QToolButton" name="toolButtonServer">
+       <property name="text">
+        <string>...</string>
+       </property>
+       <property name="icon">
+        <iconset resource="../resource.qrc">
+         <normaloff>:/icons/server</normaloff>:/icons/server</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="labelServer">
+       <property name="text">
+        <string>Via Notary:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" colspan="2">
+      <widget class="QLineEdit" name="lineEditServer">
        <property name="frame">
         <bool>false</bool>
        </property>
@@ -54,7 +81,7 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
+     <item row="1" column="3">
       <widget class="QToolButton" name="toolButtonAsset">
        <property name="text">
         <string>...</string>
@@ -72,7 +99,14 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="1" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Asset Type:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" colspan="2">
       <widget class="QLineEdit" name="lineEditNym">
        <property name="frame">
         <bool>false</bool>
@@ -82,26 +116,8 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="2">
-      <widget class="QToolButton" name="toolButtonNym">
-       <property name="text">
-        <string>...</string>
-       </property>
-       <property name="icon">
-        <iconset resource="../resource.qrc">
-         <normaloff>:/icons/icons/user.png</normaloff>:/icons/icons/user.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="labelServer">
-       <property name="text">
-        <string>Via Notary:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="lineEditServer">
+     <item row="1" column="1" colspan="2">
+      <widget class="QLineEdit" name="lineEditAsset">
        <property name="frame">
         <bool>false</bool>
        </property>
@@ -110,14 +126,24 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="2">
-      <widget class="QToolButton" name="toolButtonServer">
+     <item row="0" column="2" colspan="2">
+      <widget class="QPushButton" name="pushButtonMakeDefault">
        <property name="text">
-        <string>...</string>
+        <string>Make Default Account</string>
        </property>
-       <property name="icon">
-        <iconset resource="../resource.qrc">
-         <normaloff>:/icons/server</normaloff>:/icons/server</iconset>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="lineEditName">
+       <property name="readOnly">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="4" rowspan="4">
+      <widget class="Line" name="line_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
        </property>
       </widget>
      </item>
@@ -131,42 +157,7 @@
     </widget>
    </item>
    <item>
-    <layout class="QGridLayout" name="gridLayout_2">
-     <item row="0" column="0">
-      <widget class="QPushButton" name="pushButtonSend">
-       <property name="text">
-        <string>Send Funds</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QPushButton" name="pushButtonRequest">
-       <property name="text">
-        <string>Request Funds</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0" colspan="2">
-      <widget class="QPushButton" name="pushButtonMakeDefault">
-       <property name="text">
-        <string>Make Default Account</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>209</height>
-      </size>
-     </property>
-    </spacer>
+    <widget class="QTableView" name="tableView"/>
    </item>
   </layout>
  </widget>
