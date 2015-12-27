@@ -601,7 +601,7 @@ QWidget * Payments::CreateUserBarWidget()
         buttonPaymentCode->setAutoRaise(true);
         buttonPaymentCode->setStyleSheet("QToolButton { margin-left: 0; font-size:15pt;  font-weight:lighter; }");
         buttonPaymentCode->setIcon(qrButtonIcon);
-        buttonPaymentCode->setIconSize(pixmapQR.rect().size()*.8);
+        buttonPaymentCode->setIconSize(pixmapQR.rect().size());
 //      buttonPaymentCode->setString(qstrPaymentCode);
         // -------------------------------------------
         connect(buttonPaymentCode, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_defaultnym_slot()));

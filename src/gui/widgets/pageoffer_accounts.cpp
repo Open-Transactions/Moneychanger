@@ -5,6 +5,8 @@
 #include <gui/widgets/pageoffer_accounts.hpp>
 #include <ui_pageoffer_accounts.h>
 
+#include <core/moneychanger.hpp>
+
 #include <gui/widgets/dlgchooser.hpp>
 #include <gui/widgets/detailedit.hpp>
 #include <gui/widgets/wizardnewoffer.hpp>
@@ -350,6 +352,12 @@ void PageOffer_Accounts::on_pushButtonSelectCurrencyAcct_clicked()
 
 void PageOffer_Accounts::initializePage()
 {
+    if (!Moneychanger::It()->expertMode())
+    {
+        ui->pushButtonManageAssetAcct->setVisible(false);
+        ui->pushButtonManageCurrencyAcct->setVisible(false);
+    }
+    // -------------------------------------------
     const bool bIsBid        = field("bid").toBool();
 
     QString qstrAssetName    = field("AssetName").toString();

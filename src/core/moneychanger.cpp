@@ -31,6 +31,7 @@
 #include <gui/widgets/requestdlg.hpp>
 #include <gui/widgets/dlgchooser.hpp>
 #include <gui/widgets/senddlg.hpp>
+#include <gui/widgets/proposeplandlg.hpp>
 #include <gui/widgets/createinsurancecompany.hpp>
 #include <gui/widgets/wizardrunsmartcontract.hpp>
 #include <gui/widgets/wizardpartyacct.hpp>
@@ -286,6 +287,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon_sendfunds      = QIcon(":/icons/icons/money_fist4_small.png");
 //  mc_systrayIcon_sendfunds      = QIcon(":/icons/sendfunds");
     mc_systrayIcon_requestfunds   = QIcon(":/icons/requestpayment");
+    mc_systrayIcon_proposeplan    = QIcon(":/icons/icons/refresh.png");
 //  mc_systrayIcon_contacts       = QIcon(":/icons/addressbook");
     mc_systrayIcon_contacts       = QIcon(":/icons/icons/rolodex_card2");
     mc_systrayIcon_composemessage = QIcon(":/icons/icons/pencil.png");
@@ -321,7 +323,11 @@ Moneychanger::Moneychanger(QWidget *parent)
 
     bExpertMode_ = (0 == qstrExpertMode.compare("on"));
     // -------------------------------------------------
+    QString qstrHideNav = MTContactHandler::getInstance()->
+            GetValueByID("hidenav", "parameter1", "settings", "setting");
 
+    bHideNav_ = (0 == qstrHideNav.compare("on"));
+    // -------------------------------------------------
     setupRecordList();
 
     mc_overall_init = true;
@@ -663,12 +669,16 @@ int64_t Moneychanger::HasUsageCredits(QString   notary_id,
 // Startup
 void Moneychanger::bootTray()
 {
-    connect(this, SIGNAL(appendToLog(QString)), this, SLOT(mc_showlog_slot(QString)));
+    connect(this, SIGNAL(appendToLog(QString)),    this, SLOT(mc_showlog_slot(QString)));
+    connect(this, SIGNAL(expertModeUpdated(bool)), this, SLOT(onExpertModeUpdated(bool)));
     // ----------------------------------------------------------------------------
     SetupMainMenu();
     // ----------------------------------------------------------------------------
     //Show systray
     mc_systrayIcon->show();
+    // ----------------------------------------------------------------------------
+    if (!hideNav())
+        mc_main_menu_dialog();
     // ----------------------------------------------------------------------------
     if (expertMode())
         mc_payments_dialog();
@@ -1167,8 +1177,12 @@ void Moneychanger::SetupPaymentsMenu(QPointer<QMenu> & parent_menu)
     current_menu->addAction(mc_systrayMenu_requestfunds);
     connect(mc_systrayMenu_requestfunds, SIGNAL(triggered()), this, SLOT(mc_requestfunds_slot()));
     // --------------------------------------------------------------
-    if (bExpertMode_ && hasAccounts())
+    if (bExpertMode_)
     {
+        mc_systrayMenu_proposeplan = new QAction(mc_systrayIcon_proposeplan, tr("Recurring Payment..."), current_menu);
+        current_menu->addAction(mc_systrayMenu_proposeplan);
+        connect(mc_systrayMenu_proposeplan, SIGNAL(triggered()), this, SLOT(mc_proposeplan_slot()));
+        // -------------------------------------------------
         mc_systrayMenu_import_cash = new QAction(mc_systrayIcon_advanced_import, tr("Import Cash..."), current_menu);
         current_menu->addAction(mc_systrayMenu_import_cash);
         connect(mc_systrayMenu_import_cash, SIGNAL(triggered()), this, SLOT(mc_import_slot()));
@@ -1652,6 +1666,13 @@ void Moneychanger::mc_show_nym_slot(QString text)
 {
     mc_nymmanager_dialog(text);
 
+}
+
+void Moneychanger::onHideNavUpdated(bool bHideNav)
+{
+    bHideNav_ = bHideNav;
+
+    mc_main_menu_dialog(!bHideNav);
 }
 
 void Moneychanger::onExpertModeUpdated(bool bExpertMode)
@@ -3865,6 +3886,37 @@ void Moneychanger::mc_import_slot()
 }
 
 // -----------------------------------------------
+/**
+ * Propose Payment Plan
+ **/
+
+void Moneychanger::mc_proposeplan_slot()
+{
+    mc_proposeplan_show_dialog();
+}
+
+void Moneychanger::mc_proposeplan_show_dialog(QString qstrAcct/*=QString("")*/)
+{
+    // --------------------------------------------------
+    ProposePlanDlg * plan_window = new ProposePlanDlg(NULL);
+    plan_window->setAttribute(Qt::WA_DeleteOnClose);
+    // --------------------------------------------------
+    QString qstr_acct_id = qstrAcct.isEmpty() ? this->get_default_account_id() : qstrAcct;
+
+    if (!qstr_acct_id.isEmpty())
+        plan_window->setInitialMyAcct(qstr_acct_id);
+    // ---------------------------------------
+    plan_window->dialog();
+    // --------------------------------------------------
+}
+
+
+void Moneychanger::mc_proposeplan_from_acct(QString qstrAcct)
+{
+    mc_proposeplan_show_dialog(qstrAcct);
+}
+
+
 
 
 
@@ -4048,24 +4100,30 @@ void Moneychanger::onServersChanged()
     // So if we've added a new Server, we should update that page, if it's open.
     if (nullptr != nymswindow)
         nymswindow->RefreshRecords();
+
+    if (menuwindow)
+        menuwindow->refreshOptions();
 }
 
 
 void Moneychanger::onAssetsChanged()
 {
-
+    if (menuwindow)
+        menuwindow->refreshOptions();
 }
 
 
 void Moneychanger::onNymsChanged()
 {
-
+    if (menuwindow)
+        menuwindow->refreshOptions();
 }
 
 
 void Moneychanger::onAccountsChanged()
 {
-
+    if (menuwindow)
+        menuwindow->refreshOptions();
 }
 
 void Moneychanger::onNewServerAdded(QString qstrID)
@@ -4134,12 +4192,17 @@ void Moneychanger::mc_main_menu_slot()
 
 // --------------------------------------------------
 
-void Moneychanger::mc_main_menu_dialog()
+void Moneychanger::mc_main_menu_dialog(bool bShow/*=true*/)
 {
     if (!menuwindow)
     {
         // --------------------------------------------------
         menuwindow = new DlgMenu(this);
+        // --------------------------------------------------
+        QCoreApplication * pCore = QCoreApplication::instance();
+
+        connect(pCore,      SIGNAL(aboutToQuit()),
+                menuwindow, SLOT(onAboutToQuit()));
         // --------------------------------------------------
         connect(menuwindow, SIGNAL(sig_on_toolButton_payments_clicked()),
                 this,       SLOT(mc_payments_slot()));
@@ -4201,10 +4264,24 @@ void Moneychanger::mc_main_menu_dialog()
         connect(menuwindow, SIGNAL(sig_on_toolButton_decrypt_clicked()),
                 this,       SLOT(mc_crypto_decrypt_slot()));
 
-        qDebug() << "Main Menu Opened";
+        connect(menuwindow, SIGNAL(sig_on_toolButton_requestPayment_clicked()),
+                this,       SLOT(mc_requestfunds_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_recurringPayment_clicked()),
+                this,       SLOT(mc_proposeplan_slot()));
+
     }
     // ---------------------------------
-    menuwindow->dialog();
+    if (bShow)
+    {
+        if (!menuwindow->isVisible())
+            menuwindow->setVisible(true);
+        menuwindow->dialog();
+    }
+    else
+    {
+        menuwindow->setVisible(false);
+    }
 }
 
 // End Main Menu
@@ -4887,7 +4964,8 @@ void Moneychanger::mc_settings_slot()
     if (!settingswindow)
         settingswindow = new Settings(this);
     // ------------------------------------
-    connect(settingswindow, SIGNAL(expertModeUpdated(bool)), this, SLOT(onExpertModeUpdated(bool)));
+    connect(settingswindow, SIGNAL(expertModeUpdated(bool)), this, SIGNAL(expertModeUpdated(bool)));
+    connect(settingswindow, SIGNAL(hideNavUpdated(bool)),    this, SLOT(onHideNavUpdated(bool)));
     // ------------------------------------
     Focuser f(settingswindow);
     f.show();

@@ -230,6 +230,11 @@ bool PageSmart_NymAcct::isComplete() const
 
 void PageSmart_NymAcct::initializePage() //virtual
 {
+    if (!Moneychanger::It()->expertMode())
+    {
+        ui->pushButtonManageAcct->setVisible(false);
+    }
+    // -------------------------------------------
     QString qstrAcctName = field("AcctName").toString();
 
     ui->label_2->setText(QString("%1 \"%2\":").arg(tr("Select an account to be")).arg(qstrAcctName));

@@ -108,6 +108,11 @@ void MTPageAcct_Nym::SetFieldsBlank()
 
 void MTPageAcct_Nym::initializePage() //virtual
 {
+    if (!Moneychanger::It()->expertMode())
+    {
+        ui->pushButtonManage->setVisible(false);
+    }
+    // -------------------------------------------
     std::string str_name;
     QString     qstr_id;
     // -------------------------------------------

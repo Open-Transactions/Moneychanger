@@ -52,6 +52,11 @@ void MTPageCreateContract::SetFieldsBlank()
 
 void MTPageCreateContract::initializePage() //virtual
 {
+    if (!Moneychanger::It()->expertMode())
+    {
+        ui->pushButtonManage->setVisible(false);
+    }
+    // -------------------------------------------
     std::string str_name;
     QString     qstr_id;
     // -------------------------------------------

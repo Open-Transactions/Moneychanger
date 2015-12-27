@@ -14,11 +14,6 @@
 #include <QDebug>
 
 
-void Settings::on_comboBoxLanguage_currentIndexChanged(int index)
-{
-    ui->pushButtonSave->setEnabled(true);
-}
-
 Settings::Settings(QWidget *parent) :
     QWidget(parent, Qt::Window),
     ui(new Ui::Settings)
@@ -44,7 +39,7 @@ Settings::Settings(QWidget *parent) :
     ui->comboBoxLanguage->setCurrentIndex(ui->comboBoxLanguage->findData(language));
     ui->comboBoxLanguage->blockSignals(false);
 #endif
-    // ----------------------------------------------
+    // *************************************************************
     if (DBHandler::getInstance()->querySize("SELECT `setting`,`parameter1` FROM `settings` WHERE `setting`='expertmode'") <= 0)
     {
         DBHandler::getInstance()->runQuery(QString("INSERT INTO `settings` (`setting`, `parameter1`) VALUES('expertmode','off')"));
@@ -62,6 +57,24 @@ Settings::Settings(QWidget *parent) :
     else
         ui->checkBoxExpertMode->setChecked(false);
     ui->checkBoxExpertMode->blockSignals(false);
+    // *************************************************************
+    if (DBHandler::getInstance()->querySize("SELECT `setting`,`parameter1` FROM `settings` WHERE `setting`='hidenav'") <= 0)
+    {
+        DBHandler::getInstance()->runQuery(QString("INSERT INTO `settings` (`setting`, `parameter1`) VALUES('hidenav','off')"));
+        qDebug() << "hide navigation setting wasn't set in the database. Setting to 'off'.";
+    }
+    // ----------------------------------------------
+    hidenav_ = MTContactHandler::getInstance()->
+            GetValueByID("hidenav", "parameter1", "settings", "setting");
+
+    const bool bHideNav = (0 == hidenav_.compare("on"));
+
+    ui->checkBoxHideNav->blockSignals(true);
+    if (bHideNav)
+        ui->checkBoxHideNav->setChecked(true);
+    else
+        ui->checkBoxHideNav->setChecked(false);
+    ui->checkBoxHideNav->blockSignals(false);
     // ----------------------------------------------
 }
 
@@ -93,6 +106,10 @@ void Settings::showEvent (QShowEvent * event)
     // ----------------------------------------------
 }
 
+void Settings::on_comboBoxLanguage_currentIndexChanged(int index)
+{
+    ui->pushButtonSave->setEnabled(true);
+}
 
 void Settings::on_checkBoxExpertMode_toggled(bool checked)
 {
@@ -105,13 +122,19 @@ void Settings::on_checkBoxExpertMode_toggled(bool checked)
     ui->pushButtonSave->setEnabled(true);
 }
 
+void Settings::on_checkBoxHideNav_toggled(bool checked)
+{
+    ui->pushButtonSave->setEnabled(true);
+}
 
 void Settings::on_pushButtonSave_clicked()
 {
     bool bExpertModeChanged = false;
+    bool bHideNavChanged    = false;
     bool bSettingsChanged   = false;
     // ----------------------------------------------
     QString qstrExpertMode = ui->checkBoxExpertMode->isChecked() ? QString("on") : QString("off");
+    QString qstrHideNav    = ui->checkBoxHideNav   ->isChecked() ? QString("on") : QString("off");
     // ----------------------------------------------
     if (0 != expertmode_.compare(qstrExpertMode))
     {
@@ -119,6 +142,14 @@ void Settings::on_pushButtonSave_clicked()
         bExpertModeChanged = true;
         expertmode_ = qstrExpertMode;
         MTContactHandler::getInstance()->SetValueByID("expertmode", qstrExpertMode,  "parameter1", "settings", "setting");
+    }
+    // ----------------------------------------------
+    if (0 != hidenav_.compare(qstrHideNav))
+    {
+        //bSettingsChanged = true;
+        bHideNavChanged = true;
+        hidenav_ = qstrHideNav;
+        MTContactHandler::getInstance()->SetValueByID("hidenav", qstrHideNav,  "parameter1", "settings", "setting");
     }
     // ----------------------------------------------
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
@@ -142,6 +173,9 @@ void Settings::on_pushButtonSave_clicked()
     // ----------------------------------------------
     if (bExpertModeChanged)
         emit expertModeUpdated(ui->checkBoxExpertMode->isChecked());
+    // ----------------------------------------------
+    if (bHideNavChanged)
+        emit hideNavUpdated(ui->checkBoxHideNav->isChecked());
     // ----------------------------------------------
 //  hide();
 }

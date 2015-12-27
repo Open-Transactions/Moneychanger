@@ -21,6 +21,7 @@ public:
 
 signals:
     void expertModeUpdated(bool);
+    void hideNavUpdated(bool);
 
 private:
     void showEvent (QShowEvent * event);
@@ -29,11 +30,13 @@ private slots:
     void on_pushButtonSave_clicked();
     void on_checkBoxExpertMode_toggled(bool checked);
     void on_comboBoxLanguage_currentIndexChanged(int index);
+    void on_checkBoxHideNav_toggled(bool checked);
 
 private:
     Ui::Settings *ui;
     QString language;
     QString expertmode_;
+    QString hidenav_;
 };
 
 #endif // SETTINGS_HPP
