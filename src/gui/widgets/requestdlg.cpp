@@ -72,8 +72,8 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString f
 //                arg(nsChequeType).arg(QString::fromStdString(str_NotaryID)).arg(QString::fromStdString(str_fromNymId)).
 //                arg(fromAcctId).arg(toNymId).arg(SignedAmount).arg(note);
     // ------------------------------------------------------------
-    time_t tFrom = opentxs::OTAPI_Wrap::It()->GetTime();
-    time_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
+    time64_t tFrom = opentxs::OTAPI_Wrap::It()->GetTime();
+    time64_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
     // ------------------------------------------------------------
     std::string strCheque = opentxs::OTAPI_Wrap::It()->WriteCheque(str_NotaryID, trueAmount, tFrom, tTo,
                                                     str_fromAcctId, str_fromNymId, note.toStdString(),

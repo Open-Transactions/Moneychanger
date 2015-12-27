@@ -5,6 +5,8 @@
 #include <gui/widgets/pageoffer_assets.hpp>
 #include <ui_pageoffer_assets.h>
 
+#include <core/moneychanger.hpp>
+
 #include <gui/widgets/dlgchooser.hpp>
 #include <gui/widgets/detailedit.hpp>
 
@@ -272,6 +274,12 @@ void PageOffer_Assets::SetCurrencyBlank()
 
 void PageOffer_Assets::initializePage()
 {
+    if (!Moneychanger::It()->expertMode())
+    {
+        ui->pushButtonManageAsset->setVisible(false);
+        ui->pushButtonManageCurrency->setVisible(false);
+    }
+    // -------------------------------------------
     const bool bIsBid = field("bid").toBool();
 
     if (bIsBid)

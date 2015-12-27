@@ -1427,6 +1427,8 @@ void MTAccountDetails::refresh(QString strID, QString strName)
 
     if (!strID.isEmpty() && (NULL != ui))
     {
+        ui->labelTransactions->setVisible(!Moneychanger::It()->expertMode());
+
         m_qstrID = strID;
         // -------------------------------------
         QString qstrAmount = MTHome::shortAcctBalance(strID);

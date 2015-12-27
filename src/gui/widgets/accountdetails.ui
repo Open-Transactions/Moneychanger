@@ -157,6 +157,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="labelTransactions">
+     <property name="text">
+      <string>Transactions for this account:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QTableView" name="tableView"/>
    </item>
   </layout>

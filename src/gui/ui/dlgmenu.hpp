@@ -20,6 +20,8 @@ public:
 
     void dialog();
 
+    void refreshOptions();
+
 public slots:
     void onAboutToQuit();
 
@@ -44,6 +46,10 @@ private slots:
     void on_toolButton_sign_clicked();
     void on_toolButton_decrypt_clicked();
     void on_toolButton_transport_clicked();
+    void on_toolButton_requestPayment_clicked();
+    void on_toolButton_recurringPayment_clicked();
+
+    void onExpertModeUpdated();
 
 signals:
     void sig_on_toolButton_payments_clicked();
@@ -66,6 +72,8 @@ signals:
     void sig_on_toolButton_sign_clicked();
     void sig_on_toolButton_decrypt_clicked();
     void sig_on_toolButton_Transport_clicked();
+    void sig_on_toolButton_requestPayment_clicked();
+    void sig_on_toolButton_recurringPayment_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

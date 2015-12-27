@@ -36,7 +36,6 @@ class BtcReceiveDlg;
 class DlgPassphraseManager;
 class Messages;
 class Payments;
-
 class QMenu;
 class QSystemTrayIcon;
 class CreateInsuranceCompany;
@@ -265,8 +264,10 @@ private:
     // ------------------------------------------------
     void mc_sendfunds_show_dialog(QString qstrAcct=QString(""));
     void mc_requestfunds_show_dialog(QString qstrAcct=QString(""));
+    void mc_proposeplan_show_dialog(QString qstrAcct=QString(""));
+    // ------------------------------------------------
     void mc_composemessage_show_dialog();
-
+    // ------------------------------------------------
     void mc_encrypt_show_dialog(bool bEncrypt=true, bool bSign=true);
     void mc_decrypt_show_dialog();
     // ------------------------------------------------
@@ -311,6 +312,7 @@ private:
     
     QIcon mc_systrayIcon_sendfunds;
     QIcon mc_systrayIcon_requestfunds;
+    QIcon mc_systrayIcon_proposeplan;
     QIcon mc_systrayIcon_contacts;
     QIcon mc_systrayIcon_composemessage;
 
@@ -374,6 +376,7 @@ private:
     // ---------------------------------------------------------    
     QPointer<QAction> mc_systrayMenu_sendfunds;
     QPointer<QAction> mc_systrayMenu_requestfunds;
+    QPointer<QAction> mc_systrayMenu_proposeplan;
     QPointer<QAction> mc_systrayMenu_contacts;
     QPointer<QAction> mc_systrayMenu_receipts;
     QPointer<QAction> mc_systrayMenu_messages;
@@ -472,11 +475,13 @@ public slots:
     // ---------------------------------------------------------------------------
     void mc_sendfunds_slot();               // Send Funds
     void mc_requestfunds_slot();            // Request Funds
+    void mc_proposeplan_slot();             // Propose Payment Plan
     void mc_composemessage_slot();          // Compose Message
     void mc_messages_slot();
     void mc_payments_slot();
     void mc_show_payment_slot(int nSourceRow, int nFolder);
     // ---------------------------------------------------------------------------
+    void mc_proposeplan_from_acct (QString qstrAcct);
     void mc_send_from_acct (QString qstrAcct);
     void mc_request_to_acct(QString qstrAcct);
     // ---------------------------------------------------------------------------
