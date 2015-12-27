@@ -86,7 +86,8 @@ FORMS += \
     $$PWD/ui/payments.ui \
     $$PWD/widgets/groupboxcontactitems.ui \
     $$PWD/widgets/qrwidget.ui \
-    $$PWD/widgets/qrtoolbutton.ui
+    $$PWD/widgets/qrtoolbutton.ui \
+    $$PWD/widgets/proposeplandlg.ui
 
 HEADERS += \
     $${PWD}/ui/dlgexportcash.hpp \
@@ -171,7 +172,8 @@ HEADERS += \
     $$PWD/ui/payments.hpp \
     $$PWD/widgets/groupboxcontactitems.hpp \
     $$PWD/widgets/qrwidget.hpp \
-    $$PWD/widgets/qrtoolbutton.hpp
+    $$PWD/widgets/qrtoolbutton.hpp \
+    $$PWD/widgets/proposeplandlg.hpp
 
 SOURCES += \
     $${PWD}/ui/dlgexportcash.cpp \
@@ -256,7 +258,8 @@ SOURCES += \
     $$PWD/ui/payments.cpp \
     $$PWD/widgets/groupboxcontactitems.cpp \
     $$PWD/widgets/qrwidget.cpp \
-    $$PWD/widgets/qrtoolbutton.cpp
+    $$PWD/widgets/qrtoolbutton.cpp \
+    $$PWD/widgets/proposeplandlg.cpp
 
 TRANSLATIONS += $${PWD}/translations/en_US.ts \
                 $${PWD}/translations/de_DE.ts

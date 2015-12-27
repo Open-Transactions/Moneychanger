@@ -98,6 +98,11 @@ void MTPageAcct_Server::on_pushButtonSelect_clicked()
 
 void MTPageAcct_Server::initializePage() //virtual
 {
+    if (!Moneychanger::It()->expertMode())
+    {
+        ui->pushButtonManage->setVisible(false);
+    }
+    // -------------------------------------------
     std::string str_name;
     QString     qstr_id;
     // -------------------------------------------
