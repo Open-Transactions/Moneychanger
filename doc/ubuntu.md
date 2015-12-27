@@ -12,7 +12,7 @@ Use the `develop` branch of the MoneyChanger and of the Open Transactions librar
 
 ### QT5 and other libraries
  
-     suddo apt-get install libxmlrpc-c++8-dev libqwt-qt5-6 libqwt-qt5-dev libqwtmathml-qt5-6 libqwtmathml-qt5-devqt5-default:amd64 qt5-qmake:amd64 qtbase5-dev:amd64 qtbase5-dev-tools qtchooser qttranslations5-l10n
+     sudo apt-get install libxmlrpc-c++8-dev libqwt-qt5-6 libqwt-qt5-dev libqwtmathml-qt5-6 libqwtmathml-qt5-devqt5-default:amd64 qt5-qmake:amd64 qtbase5-dev:amd64 qtbase5-dev-tools qtchooser qttranslations5-l10n
 
 #### clone and submodules
 
