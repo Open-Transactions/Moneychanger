@@ -23,8 +23,12 @@
 
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OpenTransactions.hpp>
 #include <opentxs/client/OT_ME.hpp>
 
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
+#include <QStringList>
 #include <QMessageBox>
 #include <QStringList>
 #include <QComboBox>
@@ -36,7 +40,6 @@
 #include <QPlainTextEdit>
 #include <QClipboard>
 #include <QDebug>
-
 #include <QGroupBox>
 #include <QTableWidget>
 #include <QMenu>
@@ -45,6 +48,174 @@
 #include <QToolButton>
 #include <QScopedPointer>
 #include <QLabel>
+
+#include <map>
+#include <tuple>
+#include <string>
+
+void MTNymDetails::ClearTree()
+{
+    if (treeWidgetClaims_)
+    {
+        treeWidgetClaims_->blockSignals(true);
+        treeWidgetClaims_->clear();
+        treeWidgetClaims_->blockSignals(false);
+    }
+}
+
+void MTNymDetails::RefreshTree(QStringList & qstrlistNymIDs)
+{
+    if (!treeWidgetClaims_ || (NULL == ui) || (0 == qstrlistNymIDs.size()))
+        return;
+
+    ClearTree();
+    // ----------------------------------------
+    treeWidgetClaims_->blockSignals(true);
+    // ----------------------------------------
+    // Before commencing with the main act, let's iterate all the Nyms once,
+    // and construct a map, so we don't end up doing this multiple times below
+    // unnecessarily.
+    //
+    typedef std::pair<std::string, opentxs::OT_API::ClaimSet> NymClaims;
+    typedef std::map <std::string, opentxs::OT_API::ClaimSet> mapOfNymClaims;
+    typedef std::map <std::string, std::string> mapOfNymNames;
+
+    mapOfNymClaims nym_claims; // Each node in this map has a NymID and a ClaimSet.
+    mapOfNymNames  nym_names;
+
+    for (int ii = 0; ii < qstrlistNymIDs.size(); ++ii)
+    {
+        QString qstrNymID = qstrlistNymIDs.at(ii);
+        // ---------------------------------------
+        if (qstrNymID.isEmpty()) // should never happen.
+            continue;
+        // ---------------------------------------
+        MTNameLookupQT theLookup;
+        const std::string str_nym_id   = qstrNymID.toStdString();
+        const std::string str_nym_name = theLookup.GetNymName(qstrNymID.toStdString(), "");
+        const opentxs::Identifier id_nym(str_nym_id);
+
+        if (!str_nym_id.empty())
+        {
+            opentxs::Nym * pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
+
+            // check_nym if not already downloaded.
+            if (nullptr == pCurrentNym)
+            {
+                const QString qstrDefaultNotaryId = Moneychanger::It()->getDefaultNotaryID();
+                const QString qstrDefaultNymId    = Moneychanger::It()->getDefaultNymID();
+
+                if (!qstrDefaultNotaryId.isEmpty() && !qstrDefaultNymId.isEmpty())
+                {
+                    const std::string my_nym_id = qstrDefaultNymId   .toStdString();
+                    const std::string notary_id = qstrDefaultNotaryId.toStdString();
+
+                    opentxs::OT_ME madeEasy;
+                    std::string response;
+                    {
+                        MTSpinner theSpinner;
+
+                        response = madeEasy.check_nym(notary_id, my_nym_id, str_nym_id);
+                    }
+
+                    int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
+
+                    if (1 == nReturnVal)
+                        pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
+                }
+            }
+
+            if (nullptr != pCurrentNym)
+            {
+                opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
+                // ---------------------------------------
+                nym_claims.insert( NymClaims(str_nym_id, claims) );
+                nym_names.insert(std::pair<std::string, std::string>(str_nym_id, str_nym_name));
+            }
+        }
+    }
+    // -------------------------------------------------
+    // This means NONE of the contact's Nyms had any claims.
+    // (So there's nothing to put on this tree. Done.)
+    if (nym_claims.empty())
+        return;
+    // -------------------------------------------------
+    // Now we loop through the sections, and for each, we populate its
+    // itemwidgets by looping through the nym_claims we got above.
+
+    std::set<uint32_t> sections = opentxs::OTAPI_Wrap::OTAPI()->GetContactSections();
+
+    for (auto & indexSection: sections)  //Names (for example)
+    {
+        QMap<uint32_t, QString> mapTypeNames;
+        // ----------------------------------------
+        std::string        sectionName  = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionName (indexSection); // Names, Email, URL, etc.
+        std::set<uint32_t> sectionTypes = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionTypes(indexSection); // Business, Personal, etc.
+
+        for (auto & indexSectionType: sectionTypes)
+        {
+            std::string typeName = opentxs::OTAPI_Wrap::OTAPI()->GetContactTypeName(indexSectionType);
+            mapTypeNames.insert(indexSectionType, QString::fromStdString(typeName));
+        }
+        // ---------------------------------------
+        // Insert Section into Tree.
+        //
+        QTreeWidgetItem * topLevel = new QTreeWidgetItem;
+        // ------------------------------------------
+        topLevel->setText(0, QString::fromStdString(sectionName));
+        // ------------------------------------------
+        treeWidgetClaims_->addTopLevelItem(topLevel);
+        treeWidgetClaims_->expandItem(topLevel);
+        // ------------------------------------------
+        // Next: We iterate all the Nyms for this contact, here,
+        // so it happens for EACH section.
+        //
+        for (auto& it_nym_claims: nym_claims)
+        {
+            const std::string & str_nym_id = it_nym_claims.first;
+            const opentxs::OT_API::ClaimSet & claims = it_nym_claims.second;
+
+            for (const opentxs::OT_API::Claim& claim: claims)
+            {
+                // Claim fields: identifier, section, type, value, start, end, attributes
+                //typedef std::tuple<std::string, uint32_t, uint32_t, std::string, int64_t, int64_t, std::set<uint32_t>> Claim;
+                //std::get<0>(claim);// identifier
+                const uint32_t    claim_section = std::get<1>(claim); // section
+                const uint32_t    claim_type    = std::get<2>(claim); // type
+                const std::string claim_value   = std::get<3>(claim); // value
+                //std::get<4>(claim);// start
+                //std::get<5>(claim);// end
+                //std::get<6>(claim);// attributes
+
+                if (claim_section != indexSection)
+                    continue;
+
+                QMap<uint32_t, QString>::iterator it_typeNames = mapTypeNames.find(claim_type);
+                QString qstrTypeName;
+
+                if (it_typeNames != mapTypeNames.end())
+                    qstrTypeName = it_typeNames.value();
+                // ---------------------------------------
+                // Add the claim to the tree.
+                //
+                QTreeWidgetItem * claim_item = new QTreeWidgetItem;
+                // ---------------------------------------
+                claim_item->setText(0, QString::fromStdString(claim_value)); // "james@blah.com"
+                claim_item->setText(1, qstrTypeName);                        // "Personal"
+                claim_item->setText(2, QString::fromStdString(nym_names[str_nym_id]));
+                claim_item->setData(2, Qt::UserRole, QString::fromStdString(str_nym_id));
+                // ---------------------------------------
+                topLevel->addChild(claim_item);
+                treeWidgetClaims_->expandItem(claim_item);
+            }
+        }
+    }
+
+    treeWidgetClaims_->blockSignals(false);
+    treeWidgetClaims_->resizeColumnToContents(0);
+    treeWidgetClaims_->resizeColumnToContents(1);
+    treeWidgetClaims_->resizeColumnToContents(2);
+}
 
 // ------------------------------------------------------
 MTNymDetails::MTNymDetails(QWidget *parent, MTDetailEdit & theOwner) :
@@ -146,10 +317,7 @@ void MTNymDetails::on_toolButton_clicked()
 //virtual
 int MTNymDetails::GetCustomTabCount()
 {
-    if (Moneychanger::It()->expertMode())
-        return 2;
-
-    return 0;
+    return Moneychanger::It()->expertMode() ? 3 : 1;
 }
 // ----------------------------------
 //virtual
@@ -164,7 +332,34 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
     // -----------------------------
     switch (nTab)
     {
-    case 0: // "Credentials" tab
+    case 0: // "Contact Data" tab
+        if (m_pOwner)
+        {
+            if (treeWidgetClaims_)
+            {
+                treeWidgetClaims_->setParent(NULL);
+                treeWidgetClaims_->disconnect();
+                treeWidgetClaims_->deleteLater();
+
+                treeWidgetClaims_ = NULL;
+            }
+            treeWidgetClaims_ = new QTreeWidget;
+
+            treeWidgetClaims_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+            treeWidgetClaims_->setColumnCount(3);
+            // -------------------------------
+            QVBoxLayout * pvBox = new QVBoxLayout;
+
+            pvBox->setAlignment(Qt::AlignTop);
+            pvBox->addWidget   (treeWidgetClaims_);
+            // -------------------------------
+            pReturnValue = new QWidget;
+            pReturnValue->setContentsMargins(0, 0, 0, 0);
+            pReturnValue->setLayout(pvBox);
+        }
+        break;
+
+    case 1: // "Credentials" tab
         if (m_pOwner)
         {
             if (pLabelNymId_)
@@ -252,7 +447,7 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
         }
         break;
 
-    case 1: // "State of Nym" tab
+    case 2: // "State of Nym" tab
     {
 //        if (pToolButtonNymId_)
 //        {
@@ -387,8 +582,9 @@ QString  MTNymDetails::GetCustomTabName(int nTab)
     // -----------------------------
     switch (nTab)
     {
-    case 0:  qstrReturnValue = "Credentials";  break;
-    case 1:  qstrReturnValue = "State";        break;
+    case 0:  qstrReturnValue = "Contact Data"; break;
+    case 1:  qstrReturnValue = "Credentials";  break;
+    case 2:  qstrReturnValue = "State";        break;
 
     default:
         qDebug() << QString("Unexpected: MTNymDetails::GetCustomTabName was called with bad index: %1").arg(nTab);
@@ -677,7 +873,8 @@ QGroupBox * MTNymDetails::createAddressGroupBox(QString strNymID)
 //virtual
 void MTNymDetails::refresh(QString strID, QString strName)
 {
-//  qDebug() << "MTNymDetails::refresh";
+    if (treeWidgetClaims_)
+        ClearTree();
 
     if ((NULL != ui) && !strID.isEmpty())
     {
@@ -771,6 +968,14 @@ void MTNymDetails::refresh(QString strID, QString strName)
 
         m_pAddresses = pAddresses;
         // ----------------------------------
+        // TAB: "Contact Data"
+        //
+        if (treeWidgetClaims_)
+        {
+            QStringList qstrlistNymIDs(strID);
+            RefreshTree(qstrlistNymIDs);
+        }
+        // ----------------------------------
         // TAB: "Nym State"
         //
         if (m_pPlainTextEdit)
@@ -820,6 +1025,8 @@ void MTNymDetails::ClearContents()
     // ------------------------------------------
     if (m_pPlainTextEdit)
         m_pPlainTextEdit->setPlainText("");
+    // ------------------------------------------
+    ClearTree();
     // ------------------------------------------
     clearNotaryTable();
     // ------------------------------------------

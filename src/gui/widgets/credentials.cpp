@@ -146,7 +146,7 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
             // ---------------------------------------
             // Insert Nym into Tree.
             //
-            QTreeWidgetItem * topLevel = new QTreeWidgetItem();
+            QTreeWidgetItem * topLevel = new QTreeWidgetItem;
             // ------------------------------------------
             topLevel->setText(0, qstrNymName);
             topLevel->setText(1, qstrNymID);
@@ -169,7 +169,7 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
                 // ---------------------------------------
                 // Add the credential ID to the tree.
                 //
-                QTreeWidgetItem * cred_item = new QTreeWidgetItem();
+                QTreeWidgetItem * cred_item = new QTreeWidgetItem;
                 // ---------------------------------------
                 cred_item->setText(0, tr("Master Credential"));
                 cred_item->setText(1, qstrCredID);
@@ -197,7 +197,7 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
                     // ---------------------------------------
                     // Add the subcredential ID to the tree.
                     //
-                    QTreeWidgetItem * sub_cred_item = new QTreeWidgetItem();
+                    QTreeWidgetItem * sub_cred_item = new QTreeWidgetItem;
                     // ---------------------------------------
                     sub_cred_item->setText(0, tr("Subcredential"));
                     sub_cred_item->setText(1, qstrSubcredID);
