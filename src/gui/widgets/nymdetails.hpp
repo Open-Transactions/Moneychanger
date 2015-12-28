@@ -21,6 +21,7 @@ class QToolButton;
 class QLabel;
 class QPlainTextEdit;
 class MTCredentials;
+class QTreeWidget;
 
 class MTNymDetails : public MTEditDetails
 {
@@ -42,9 +43,13 @@ public:
     // ----------------------------------
     virtual void ClearContents();
 
+    void ClearTree();
+    void RefreshTree(QStringList & qstrlistNymIDs);
+
 private:
     QPointer<QPlainTextEdit> m_pPlainTextEdit;
     QPointer<MTCredentials>  m_pCredentials;
+    QPointer<QTreeWidget>    treeWidgetClaims_;
 
     QPointer<QLabel>       pLabelNymId_;
     QPointer<QLineEdit>    pLineEditNymId_;

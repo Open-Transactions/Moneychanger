@@ -13,7 +13,9 @@ class MTContactDetails;
 }
 
 class QPlainTextEdit;
+class QTreeWidget;
 class MTCredentials;
+class QStringList;
 
 class MTContactDetails : public MTEditDetails
 {
@@ -37,6 +39,9 @@ public:
 
     virtual void ClearContents();
 
+    void ClearTree();
+    void RefreshTree(QStringList & qstrlistNymIDs);
+
 protected:
     QGroupBox * createAddressGroupBox    (QString strContactID);
     QWidget   * createSingleAddressWidget(int nContactID, QString qstrType, QString qstrTypeDisplay, QString qstrAddress);
@@ -45,6 +50,9 @@ protected:
 private:
     QPointer<QPlainTextEdit> m_pPlainTextEdit;
     QPointer<QPlainTextEdit> m_pPlainTextEditNotes;
+
+    QPointer<QTreeWidget>    treeWidgetClaims_;
+
     QPointer<MTCredentials> m_pCredentials;
 
 private slots:
