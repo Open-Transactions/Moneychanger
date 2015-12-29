@@ -175,7 +175,7 @@ void MTNymDetails::RefreshTree(QStringList & qstrlistNymIDs)
             const std::string & str_nym_id = it_nym_claims.first;
             const opentxs::OT_API::ClaimSet & claims = it_nym_claims.second;
 
-            for (const opentxs::OT_API::Claim& claim: claims)
+            for (const opentxs::Claim& claim: claims)
             {
                 // Claim fields: identifier, section, type, value, start, end, attributes
                 //typedef std::tuple<std::string, uint32_t, uint32_t, std::string, int64_t, int64_t, std::set<uint32_t>> Claim;
