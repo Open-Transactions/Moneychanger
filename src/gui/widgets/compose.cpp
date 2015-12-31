@@ -2461,6 +2461,8 @@ bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrNot
                         Moneychanger::It()->HasUsageCredits(notary_id, sender_id);
                         return false;
                     }
+                    else
+                        emit nymWasJustChecked(m_recipientNymId);
                 }
                 else
                     return false;
@@ -2717,6 +2719,8 @@ void MTCompose::dialog()
         }
         connect(this,               SIGNAL(balancesChanged()),
                 Moneychanger::It(), SLOT  (onBalancesChanged()));
+        connect(this,               SIGNAL(nymWasJustChecked(QString)),
+                Moneychanger::It(), SLOT  (onCheckNym(QString)));
         // ---------------------------------------
         this->setWindowTitle(tr("Compose: (no subject)"));
 

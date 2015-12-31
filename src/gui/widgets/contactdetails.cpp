@@ -30,6 +30,7 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QStringList>
+#include <QTimer>
 #include <QDebug>
 
 #include <map>
@@ -334,6 +335,132 @@ void MTContactDetails::ClearTree()
     }
 }
 
+
+void MTContactDetails::on_pushButtonRefresh_clicked()
+{
+    if (m_pOwner->m_qstrCurrentID.isEmpty())
+        return;
+    int nContactId = m_pOwner->m_qstrCurrentID.toInt();
+    if (nContactId <= 0)
+        return;
+    // --------------------------------
+    const QString qstrDefaultNymId = Moneychanger::It()->getDefaultNymID();
+
+    if (qstrDefaultNymId.isEmpty())
+    {
+        QMessageBox::warning(this, tr("Moneychanger"),
+                             QString("%1").arg(tr("Your default identity is not set. Please do that and then try again. "
+                                                  "(It's needed since an identity must be used to communicate with your "
+                                                  "Contact's server in order to download the credentials.)")));
+        return;
+    }
+    const std::string my_nym_id = qstrDefaultNymId.toStdString();
+    // --------------------------------
+    mapIDName mapNyms, mapServers;
+
+    // TODO Optimize: We COULD just get the NymIDs here, not the map,
+    // and thus save the time we waste ascertaining the display Name, which here,
+    // we aren't even using.
+    //
+    const bool bGotNyms = MTContactHandler::getInstance()->GetNyms(mapNyms, nContactId);
+    // --------------------------------
+    if (!bGotNyms)
+    {
+        // TODO:
+        // If bGotNyms is false, we can still potentially download the related Nym based on
+        // the BIP47 payment code, if we have one. That would occur here, and then we could
+        // re-try the GetNyms call.
+    }
+    // --------------------------------
+    bTimerFired_ = false; //reset it here just in case.
+    // --------------------------------
+    for (mapIDName::iterator it_nyms = mapNyms.begin(); it_nyms != mapNyms.end(); ++it_nyms)
+    {
+        QString qstrNymID   = it_nyms.key();
+//      QString qstrNymName = it_nyms.value();
+
+        if (qstrNymID.isEmpty()) // Weird, should never happen.
+        {
+            qDebug() << "MTContactDetails::on_pushButtonRefresh_clicked: Unexpected empty NymId, should not happen. (Returning.)";
+            return;
+        }
+        const std::string str_nym_id = qstrNymID.toStdString();
+        // ----------------------------------------------
+        const bool bGotServers = MTContactHandler::getInstance()->GetServers(mapServers, qstrNymID);
+
+        if (!bGotServers)
+        {
+            // Try the default server, then, since there are no known servers for that Nym.
+            const QString qstrDefaultNotaryId = Moneychanger::It()->getDefaultNotaryID();
+
+            if (!qstrDefaultNotaryId.isEmpty())
+                mapServers.insert("qstrDefaultNotaryId", "(Leaving server name empty since it's unused.)");
+        }
+        // -------------------------------
+        for (mapIDName::iterator it_servers = mapServers.begin(); it_servers != mapServers.end(); ++it_servers)
+        {
+            QString qstrNotaryID   = it_servers.key();
+//          QString qstrNotaryName = it_servers.value();
+
+            if (qstrNotaryID.isEmpty()) // Weird, should never happen.
+            {
+                qDebug() << "MTContactDetails::on_pushButtonRefresh_clicked: Unexpected empty NotaryID, should not happen. (Returning.)";
+                return;
+            }
+            const std::string notary_id = qstrNotaryID.toStdString();
+
+            // Todo note: May need to verify that I'M registered at this server, before I
+            // try to download some guy's credentials from a "server he's known to use."
+            // I may not even be registered there, in which case the check_nym call would fail.
+            //
+            // ------------------------------
+            opentxs::OT_ME madeEasy;
+            std::string response;
+            {
+                MTSpinner theSpinner;
+
+                response = madeEasy.check_nym(notary_id, my_nym_id, str_nym_id);
+            }
+
+            int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
+
+            if (1 == nReturnVal)
+            {
+                emit nymWasJustChecked(qstrNymID);
+                break;
+            }
+        } // for (servers)
+    }
+}
+
+void MTContactDetails::onClaimsUpdatedTimer()
+{
+    bTimerFired_ = false; //reset it here so it'll work again next time.
+
+    // NOTE: By this point, the Nym's claims should be in our local DB.
+    // So I'm not worried that we'll repopulate with old claim data
+    // (Since the wallet keeps the Nyms cached in RAM) because I won't be
+    // populating the GUI from those Nyms anyway, but from tables in the
+    // Moneychanger DB.
+    //
+    emit RefreshRecordsAndUpdateMenu();
+}
+
+void MTContactDetails::onClaimsUpdatedForNym(QString nymId)
+{
+    if (!bTimerFired_)
+    {
+        bTimerFired_ = true;
+
+        // I'm doing this because perhaps 5 Nyms may update and trigger this slot,
+        // all in a row. So I want to make sure the GUI doesn't update 5 times in
+        // a row as well! Right now I'm giving it 5 seconds, so presumably it won't
+        // take that long (I hope) for all the Nyms to update, before we then go
+        // ahead and update the GUI.
+        QTimer::singleShot(2000, this, SLOT(onClaimsUpdatedTimer()));
+    }
+}
+
 void MTContactDetails::RefreshTree(QStringList & qstrlistNymIDs)
 {
     if (!treeWidgetClaims_ || (NULL == ui) || (0 == qstrlistNymIDs.size()))
@@ -368,10 +495,10 @@ void MTContactDetails::RefreshTree(QStringList & qstrlistNymIDs)
 
         if (!str_nym_id.empty())
         {
-            opentxs::Nym * pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
+            std::unique_ptr<opentxs::Nym> pCurrentNym(opentxs::OTAPI_Wrap::OTAPI()->LoadPublicNym(id_nym, __FUNCTION__));
 
             // check_nym if not already downloaded.
-            if (nullptr == pCurrentNym)
+            if (!pCurrentNym)
             {
                 const QString qstrDefaultNotaryId = Moneychanger::It()->getDefaultNotaryID();
                 const QString qstrDefaultNymId    = Moneychanger::It()->getDefaultNymID();
@@ -392,13 +519,17 @@ void MTContactDetails::RefreshTree(QStringList & qstrlistNymIDs)
                     int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
 
                     if (1 == nReturnVal)
-                        pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
+                    {
+                        pCurrentNym.reset(opentxs::OTAPI_Wrap::OTAPI()->LoadPublicNym(id_nym, __FUNCTION__));
+                        emit nymWasJustChecked(qstrNymID);
+                    }
                 }
             }
 
-            if (nullptr != pCurrentNym)
+            if (pCurrentNym)
             {
                 opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
+//              opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*(pCurrentNym.get()));
                 // ---------------------------------------
                 nym_claims.insert( NymClaims(str_nym_id, claims) );
                 nym_names.insert(std::pair<std::string, std::string>(str_nym_id, str_nym_name));

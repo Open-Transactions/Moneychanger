@@ -20,6 +20,7 @@
 #include <core/moneychanger.hpp>
 #include <core/mtcomms.h>
 #include <core/handlers/DBHandler.hpp>
+#include <core/handlers/contacthandler.hpp>
 #include <core/handlers/modeltradearchive.hpp>
 
 #include <rpc/rpcserver.h>
@@ -54,10 +55,11 @@
 #include <gui/ui/payments.hpp>
 
 
-
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OpenTransactions.hpp>
 #include <opentxs/client/OT_ME.hpp>
+#include <opentxs/core/Nym.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
 
 #include <QMenu>
@@ -332,6 +334,48 @@ Moneychanger::Moneychanger(QWidget *parent)
 
     mc_overall_init = true;
 }
+
+
+
+void Moneychanger::onCheckNym(QString nymId)
+{
+    opentxs::String strNymId = nymId.toStdString();
+    opentxs::Identifier id_nym(strNymId);
+
+    // Import the claims.
+    std::unique_ptr<opentxs::Nym> pCurrentNym(opentxs::OTAPI_Wrap::OTAPI()->LoadPublicNym(id_nym, __FUNCTION__));
+
+    // check_nym if not already downloaded.
+    if (!pCurrentNym)
+    {
+        qDebug() << "onCheckNym: GetOrLoadNym failed. (Which should NOT happen since we supposedly JUST downloaded that Nym's credentials...)";
+        return;
+    }
+    // -------------------------------------------------------
+    opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
+
+    for (const opentxs::Claim& claim: claims)
+    {
+        // ---------------------------------------
+        // Add the claim to the database if not there already.
+        //
+        if (!MTContactHandler::getInstance()->upsertClaim(*pCurrentNym, claim))
+        {
+            qDebug() << "onCheckNym: the call to upsertClaim just failed. (Returning.)";
+            return;
+        }
+    }
+
+    //resume
+    // Import the verifications.
+
+    // Import the repudiations.
+
+    // emit signal that claims / verifications were updated.
+    //
+    emit claimsUpdatedForNym(nymId);
+}
+
 
 
 Moneychanger::~Moneychanger()

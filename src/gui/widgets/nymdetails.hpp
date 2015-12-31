@@ -46,6 +46,12 @@ public:
     void ClearTree();
     void RefreshTree(QStringList & qstrlistNymIDs);
 
+signals:
+    void nymWasJustChecked(QString);
+
+public slots:
+    void onClaimsUpdatedForNym(QString nymId);
+
 private:
     QPointer<QPlainTextEdit> m_pPlainTextEdit;
     QPointer<MTCredentials>  m_pCredentials;

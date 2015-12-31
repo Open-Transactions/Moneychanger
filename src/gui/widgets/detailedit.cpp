@@ -249,9 +249,26 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
             connect(m_pDetailPane,      SIGNAL(nymsChanged()),
                     m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
             // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(nymWasJustChecked(QString)),
+                    Moneychanger::It(), SLOT  (onCheckNym(QString)));
+            // -------------------------------------------
+            connect(Moneychanger::It(), SIGNAL(claimsUpdatedForNym(QString)),
+                    m_pDetailPane,      SLOT  (onClaimsUpdatedForNym(QString)));
+            // -------------------------------------------
             break;
 
-        case MTDetailEdit::DetailEditTypeContact:     m_pDetailPane = new MTContactDetails    (this, *this); break;
+        case MTDetailEdit::DetailEditTypeContact:
+            // -------------------------------------------
+            m_pDetailPane = new MTContactDetails(this, *this);
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(nymWasJustChecked(QString)),
+                    Moneychanger::It(), SLOT  (onCheckNym(QString)));
+            // -------------------------------------------
+            connect(Moneychanger::It(), SIGNAL(claimsUpdatedForNym(QString)),
+                    m_pDetailPane,      SLOT  (onClaimsUpdatedForNym(QString)));
+            // -------------------------------------------
+            break;
+
         case MTDetailEdit::DetailEditTypeCorporation: m_pDetailPane = new MTCorporationDetails(this, *this); break;
         case MTDetailEdit::DetailEditTypeTransport:   m_pDetailPane = new TransportDetails    (this, *this); break;
 

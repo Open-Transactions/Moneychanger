@@ -90,6 +90,7 @@ signals:
     void appendToLog(QString);
     void expertModeUpdated(bool);
     void hideNavUpdated(bool);
+    void claimsUpdatedForNym(QString);
 
 public slots:
     void onBalancesChanged();
@@ -100,6 +101,7 @@ public slots:
     void onNeedToDownloadMail();
     void onExpertModeUpdated(bool bExpertMode);
     void onHideNavUpdated(bool bHideNav);
+    void onCheckNym(QString nymId);
 
     /**
      * Functions for setting Systray Values
@@ -123,7 +125,7 @@ public slots:
     
     void onNewServerAdded(QString qstrID);
     void onNewAssetAdded(QString qstrID);
-    void onNewNymAdded(QString qstrID);
+    void onNewNymAdded(QString qstrID);  // NOTE This means "new private Nym created in local wallet" -- not, "New public Nym downloaded from outside."
     void onNewAccountAdded(QString qstrID);
     
     void onServersChanged();

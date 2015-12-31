@@ -8,6 +8,7 @@
 #include "core/ExportWrapper.h"
 
 #include <opentxs/client/OTRecordList.hpp>
+#include <opentxs/core/Nym.hpp>
 
 #include <core/network/Network.h>
 
@@ -21,6 +22,8 @@
 
 namespace opentxs {
     class OTPassword;
+    class Nym;
+    //class Claim;
 }
 
 class MTNameLookupQT : public opentxs::OTNameLookup
@@ -264,6 +267,11 @@ public:
 
   bool UpdatePaymentRecord(int nPaymentID, QMap<QString, QVariant>& mapFinalValues);
   bool SetPaymentFlags(int nPaymentID, qint64 nFlags);
+  // ----------------------------------------------------------
+  // Claims and Claim Verifications (web of trust.)
+  //
+  bool claimRecordExists(const QString & claim_id);
+  bool upsertClaim(opentxs::Nym& nym, const opentxs::Claim& claim);
   // ----------------------------------------------------------
   public:
     ~MTContactHandler();

@@ -294,6 +294,19 @@ bool DBHandler::dbCreateInstance()
                " body TEXT"
                ")";
         // --------------------------------------------
+        QString create_claim_table = "CREATE TABLE IF NOT EXISTS claim"
+               "(claim_id TEXT PRIMARY KEY,"
+               " claim_nym_id TEXT,"
+               " claim_section INTEGER,"
+               " claim_type INTEGER,"
+               " claim_value TEXT,"
+               " claim_start INTEGER,"
+               " claim_end INTEGER,"
+               " claim_attributes TEXT,"
+               " claim_att_active INTEGER,"
+               " claim_att_primary INTEGER"
+               ")";
+        // --------------------------------------------
         // RPC User Manager
         QString create_rpcusers_table = "CREATE TABLE IF NOT EXISTS rpc_users(user_id TEXT PRIMARY KEY, password TEXT)";
 
@@ -340,11 +353,13 @@ bool DBHandler::dbCreateInstance()
         error += query.exec(create_payment_table);
         error += query.exec(create_payment_body_table);
         // ------------------------------------------
+        error += query.exec(create_claim_table);
+        // ------------------------------------------
         error += query.exec(create_rpcusers_table);
         // ------------------------------------------
         error += query.exec(create_nmc);
         // ------------------------------------------
-        if (error != 22)  //every query passed?
+        if (error != 23)  // Every query passed?
         {
             qDebug() << "dbCreateInstance Error: " << dbConnectErrorStr + " " + dbCreationStr;
             FileHandler rm;

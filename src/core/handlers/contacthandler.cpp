@@ -15,6 +15,7 @@
 #include <opentxs/client/OpenTransactions.hpp>
 #include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/crypto/OTPassword.hpp>
+#include <opentxs/core/NumList.hpp>
 #include <opentxs/client/OTWallet.hpp>
 
 #include <QDebug>
@@ -23,6 +24,7 @@
 #include <QSqlField>
 #include <QFlags>
 
+#include <tuple>
 
 void MTNameLookupQT::notifyOfSuccessfulNotarization(const std::string & str_acct_id,
                                                     const std::string   p_nym_id,
@@ -150,6 +152,78 @@ MTContactHandler * MTContactHandler::getInstance()
     return _instance;
 }
 
+
+bool MTContactHandler::claimRecordExists(const QString & claim_id)
+{
+    QMutexLocker locker(&m_Mutex);
+    QString str_select_count = QString("SELECT claim_section FROM `claim` WHERE `claim_id`='%1' LIMIT 0,1").arg(claim_id);
+    int nRows = DBHandler::getInstance()->querySize(str_select_count);
+    return (nRows > 0);
+}
+
+bool MTContactHandler::upsertClaim(opentxs::Nym& nym, const opentxs::Claim& claim)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    const opentxs::Identifier nym_id(nym);
+    const opentxs::String     strNym(nym_id);
+    const std::string         str_nym_id(strNym.Get());
+    const QString             qstrNymId(QString::fromStdString(str_nym_id));
+
+    // Claim fields: identifier, section, type, value, start, end, attributes
+    //typedef std::tuple<std::string, uint32_t, uint32_t, std::string, int64_t, int64_t, std::set<uint32_t>> Claim;
+    const QString            claim_id         = QString::fromStdString(std::get<0>(claim)); // identifier
+    const uint32_t           claim_section    = std::get<1>(claim); // section
+    const uint32_t           claim_type       = std::get<2>(claim); // type
+    const QString            claim_value      = QString::fromStdString(std::get<3>(claim)); // value
+    const int64_t            claim_start      = std::get<4>(claim); // start
+    const int64_t            claim_end        = std::get<5>(claim); // end
+    const std::set<uint32_t> claim_attributes = std::get<6>(claim); // attributes
+
+    bool claim_att_active  = false;
+    bool claim_att_primary = false;
+
+    opentxs::NumList numlistAttributes;
+    for (auto& attribute: claim_attributes)
+    {
+        numlistAttributes.Add(attribute);
+
+        if (opentxs::proto::CITEMATTR_ACTIVE  == attribute) claim_att_active  = true;
+        if (opentxs::proto::CITEMATTR_PRIMARY == attribute) claim_att_primary = true;
+
+    }
+
+    opentxs::String strAttributes;
+    numlistAttributes.Output(strAttributes);
+    const std::string str_attributes(strAttributes.Get());
+    const QString qstrAttributes(QString::fromStdString(str_attributes));
+    // ------------------------------------------------------------
+    const QString encoded_claim_value = Encode(claim_value);
+    // ------------------------------------------------------------
+    QString str_select_count = QString("SELECT claim_section FROM `claim` WHERE `claim_id`='%1' LIMIT 0,1").arg(claim_id);
+
+    const bool bClaimExists = (DBHandler::getInstance()->querySize(str_select_count) > 0);
+    // ------------------------------------------------------------
+    // TODO: Do a real upsert here instead of this crap.
+    //
+    QString str_insert;
+    if (!bClaimExists)
+        str_insert = QString("INSERT INTO `claim`"
+                                 " (`claim_id`, `claim_nym_id`, `claim_section`, `claim_type`, `claim_value`,"
+                                 "  `claim_start`, `claim_end`, `claim_attributes`, `claim_att_active`, `claim_att_primary`)"
+                                 "  VALUES('%1', '%2', %3, %4, '%5', %6, %7, '%8', %9, %10)").
+                arg(claim_id).arg(qstrNymId).arg(claim_section).arg(claim_type).arg(encoded_claim_value).arg(claim_start).
+                arg(claim_end).arg(qstrAttributes).arg(claim_att_active ? 1 : 0).arg(claim_att_primary ? 1 : 0);
+    else
+        str_insert = QString("UPDATE `claim` SET"
+                             " `claim_nym_id`='%1', `claim_section`=%2,`claim_type`=%3,`claim_value`='%4',`claim_start`=%5,`claim_end`=%6,"
+                             " `claim_attributes`='%7',`claim_att_active`=%8,`claim_att_primary`=%9 WHERE `claim_id`='%10'").
+                arg(qstrNymId).arg(claim_section).arg(claim_type).arg(encoded_claim_value).arg(claim_start).
+                arg(claim_end).arg(qstrAttributes).arg(claim_att_active ? 1 : 0).arg(claim_att_primary ? 1 : 0).arg(claim_id);
+    DBHandler::getInstance()->runQuery(str_insert);
+    const int nRowId = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `claim`", 0, 0);
+    return (nRowId > 0);
+}
 
 
 bool MTContactHandler::ArchivedTradeReceiptExists(int64_t lReceiptID)

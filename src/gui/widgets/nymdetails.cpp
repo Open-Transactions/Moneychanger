@@ -63,6 +63,13 @@ void MTNymDetails::ClearTree()
     }
 }
 
+void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
+{
+//resume todo
+    // UPDATE: May not do anything here at all.
+
+}
+
 void MTNymDetails::RefreshTree(QStringList & qstrlistNymIDs)
 {
     if (!treeWidgetClaims_ || (NULL == ui) || (0 == qstrlistNymIDs.size()))
@@ -78,7 +85,7 @@ void MTNymDetails::RefreshTree(QStringList & qstrlistNymIDs)
     //
     typedef std::pair<std::string, opentxs::OT_API::ClaimSet> NymClaims;
     typedef std::map <std::string, opentxs::OT_API::ClaimSet> mapOfNymClaims;
-    typedef std::map <std::string, std::string> mapOfNymNames;
+    typedef std::map <std::string, std::string>               mapOfNymNames;
 
     mapOfNymClaims nym_claims; // Each node in this map has a NymID and a ClaimSet.
     mapOfNymNames  nym_names;
@@ -121,7 +128,10 @@ void MTNymDetails::RefreshTree(QStringList & qstrlistNymIDs)
                     int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
 
                     if (1 == nReturnVal)
+                    {
                         pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
+                        emit nymWasJustChecked(qstrNymID);
+                    }
                 }
             }
 
