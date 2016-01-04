@@ -336,7 +336,8 @@ Moneychanger::Moneychanger(QWidget *parent)
 }
 
 
-
+// Someone did this: OT_ME::check_nym(id);  emit nymWasJustChecked(id);
+//
 void Moneychanger::onCheckNym(QString nymId)
 {
     opentxs::String strNymId = nymId.toStdString();

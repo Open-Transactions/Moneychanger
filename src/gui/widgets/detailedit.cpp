@@ -137,7 +137,15 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType, bool bIsModal/*=
         f.show();
         f.focus();
     }
-    // -------------------------------------------
+}
+
+// -------------------------------------------
+
+QWidget * MTDetailEdit::GetTab(int nTab)
+{
+    if (m_pTabWidget)
+        return m_pTabWidget->widget(nTab);
+    return nullptr;
 }
 
 // -------------------------------------------

@@ -18,6 +18,9 @@ class QTreeView;
 class MTCredentials;
 class QStringList;
 
+class ClaimsProxyModel;
+class ModelClaims;
+
 class MTContactDetails : public MTEditDetails
 {
     Q_OBJECT
@@ -40,7 +43,7 @@ public:
     virtual void ClearContents();
 
     void ClearTree();
-    void RefreshTree(QStringList & qstrlistNymIDs);
+    void RefreshTree(int nContactId, QStringList & qstrlistNymIDs);
 
 signals:
     void nymWasJustChecked(QString);
@@ -59,7 +62,9 @@ private:
     QPointer<QPlainTextEdit> m_pPlainTextEditNotes;
 
     QPointer<QTreeWidget>    treeWidgetClaims_;    
-    QPointer<QTreeView>      treeViewClaims_;
+
+    QPointer<ModelClaims>      pModelClaims_;
+    QPointer<ClaimsProxyModel> pProxyModelClaims_;
 
     QPointer<MTCredentials> m_pCredentials;
 
@@ -70,7 +75,6 @@ private slots:
     void on_btnAddressDelete_clicked();
     void on_pushButtonMsg_clicked();
     void on_pushButtonPay_clicked();
-
     void on_pushButtonRefresh_clicked();
 
 private:
