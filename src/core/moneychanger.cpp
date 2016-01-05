@@ -352,6 +352,8 @@ void Moneychanger::onCheckNym(QString nymId)
         qDebug() << "onCheckNym: GetOrLoadNym failed. (Which should NOT happen since we supposedly JUST downloaded that Nym's credentials...)";
         return;
     }
+
+    const std::string str_checked_nym_id(strNymId.Get());
     // -------------------------------------------------------
     opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
 
@@ -366,18 +368,92 @@ void Moneychanger::onCheckNym(QString nymId)
             return;
         }
     }
-
-    //resume
+    // -------------------------------------------------------
     // Import the verifications.
+    //
+    opentxs::OT_API::VerificationSet the_set = opentxs::OTAPI_Wrap::OTAPI()->GetVerificationSet(*pCurrentNym);
 
+    opentxs::OT_API::VerificationMap       & internalSet   = std::get<0>(the_set);
+    opentxs::OT_API::VerificationMap       & externalSet   = std::get<1>(the_set);
+    std::set<std::string>                  & repudiatedIds = std::get<2>(the_set);
+
+    // Internal verifications:
+    // Here I'm looping through pCurrentNym's verifications of other people's claims.
+    for (auto& claimant: internalSet)
+    {
+        // Here we're looping through those other people. (Claimants.)
+
+        const std::string                         str_claimant_id  = claimant.first;
+        std::set<opentxs::OT_API::Verification> & verification_set = claimant.second;
+
+        for (auto& verification : verification_set)
+        {
+            if (!MTContactHandler::getInstance()->upsertClaimVerification(str_claimant_id, str_checked_nym_id, verification, true)) //bIsInternal=true
+            {
+                qDebug() << "onCheckNym: the call to upsertInternalClaimVerification just failed. (Returning.)";
+                return;
+            }
+        }
+    }
+
+    // External verifications:
+    // Here I'm looping through other people's verifications of pCurrentNym's claims.
+    for (auto& verifier: externalSet)
+    {
+        const std::string                         str_verifier_id  = verifier.first;
+        std::set<opentxs::OT_API::Verification> & verification_set = verifier.second;
+
+        for (auto& verification : verification_set)
+        {
+            if (!MTContactHandler::getInstance()->upsertClaimVerification(str_checked_nym_id, str_verifier_id, verification, false)) //bIsInternal=true by default.
+            {
+                qDebug() << "onCheckNym: the call to upsertExternalClaimVerification just failed. (Returning.)";
+                return;
+            }
+        }
+    }
+    // -------------------------------------------------------
     // Import the repudiations.
 
+
+
+    // -------------------------------------------------------
     // emit signal that claims / verifications were updated.
     //
     emit claimsUpdatedForNym(nymId);
 }
 
 
+static void blah()
+{
+//resume
+//todo
+
+// OpenTransactions.hpp
+//EXPORT VerificationSet GetVerificationSet(const Nym& fromNym) const;
+// EXPORT bool SetVerifications(Nym& onNym,
+//                            const proto::VerificationSet&) const;
+
+// Nym.hpp
+//    std::shared_ptr<proto::VerificationSet> VerificationSet() const;
+//    bool SetVerificationSet(const proto::VerificationSet& data);
+
+//    proto::Verification Sign(
+//        const std::string& claim,
+//        const bool polarity,
+//        const int64_t start = 0,
+//        const int64_t end = 0,
+//        const OTPasswordData* pPWData = nullptr) const;
+//    bool Verify(const proto::Verification& item) const;
+
+    // VerificationSet has 2 groups, internal and external.
+    // Internal is for your signatures on other people's claims.
+    // External is for other people's signatures on your claims.
+    // When you find that in the external, you copy it to your own credential.
+    // So external is for re-publishing other people's verifications of your claims.
+
+    // If we've repudiated any claims, you can add their IDs to the repudiated field in the verification set.
+}
 
 Moneychanger::~Moneychanger()
 {

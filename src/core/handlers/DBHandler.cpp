@@ -251,6 +251,18 @@ bool DBHandler::dbCreateInstance()
                " claim_att_primary INTEGER"
                ")";
         // --------------------------------------------
+        QString create_claim_verification_table = "CREATE TABLE IF NOT EXISTS claim_verification"
+               "(ver_id TEXT PRIMARY KEY,"
+               " ver_claimant_nym_id TEXT,"
+               " ver_verifier_nym_id TEXT,"
+               " ver_claim_id TEXT,"
+               " ver_polarity INTEGER,"
+               " ver_start INTEGER,"
+               " ver_end INTEGER,"
+               " ver_signature TEXT,"
+               " ver_signature_verified INTEGER"
+               ")";
+        // --------------------------------------------
 
         // Internal verifications are other Nym's claims that I have signed.
         // External verifications are my claims that other Nyms have signed.
@@ -354,12 +366,13 @@ bool DBHandler::dbCreateInstance()
         error += query.exec(create_payment_body_table);
         // ------------------------------------------
         error += query.exec(create_claim_table);
+        error += query.exec(create_claim_verification_table);
         // ------------------------------------------
         error += query.exec(create_rpcusers_table);
         // ------------------------------------------
         error += query.exec(create_nmc);
         // ------------------------------------------
-        if (error != 23)  // Every query passed?
+        if (error != 24)  // Every query passed?
         {
             qDebug() << "dbCreateInstance Error: " << dbConnectErrorStr + " " + dbCreationStr;
             FileHandler rm;

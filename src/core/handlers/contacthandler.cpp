@@ -13,10 +13,11 @@
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OpenTransactions.hpp>
+#include <opentxs/client/OTWallet.hpp>
+#include <opentxs/core/NumList.hpp>
+#include <opentxs/core/Proto.hpp>
 #include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/crypto/OTPassword.hpp>
-#include <opentxs/core/NumList.hpp>
-#include <opentxs/client/OTWallet.hpp>
 
 #include <QDebug>
 #include <QObject>
@@ -225,6 +226,7 @@ bool MTContactHandler::upsertClaim(opentxs::Nym& nym, const opentxs::Claim& clai
     return (nRowId > 0);
 }
 
+
 static void blah()
 {
 //resume
@@ -254,6 +256,81 @@ static void blah()
     // So external is for re-publishing other people's verifications of your claims.
 
     // If we've repudiated any claims, you can add their IDs to the repudiated field in the verification set.
+}
+
+
+
+bool MTContactHandler::upsertClaimVerification(const std::string & claimant_nym_id,
+                                               const std::string & verifier_nym_id,
+                                               const opentxs::OT_API::Verification & verification,
+                                               const bool bIsInternal/*=true*/)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    const QString qstrVerifierNymId(QString::fromStdString(verifier_nym_id));
+    // ---------------------------------------------------
+    // verification identifier, claim identifier, polarity, start time, end time, signature
+//  typedef std::tuple<std::string, std::string, bool, int64_t, int64_t, std::string> Verification;
+
+    const QString  ver_id       = QString::fromStdString(std::get<0>(verification));
+    const QString  ver_claim_id = QString::fromStdString(std::get<1>(verification));
+    const bool     ver_polarity = std::get<2>(verification);
+    const int64_t  ver_start    = std::get<3>(verification);
+    const int64_t  ver_end      = std::get<4>(verification);
+
+    QString  ver_sig("");
+
+    if (!bIsInternal)
+        ver_sig = QString::fromStdString(std::get<5>(verification));
+    // NOTE: Signature is always an empty string for internal verifications.
+    // That's because OT already verified it, before even allowing it onto the
+    // internal list in the first place. So we wouldn't have even seen this at all,
+    // if it hadn't already been known to be verified.
+    // Therefore OT just passes an empty string for the signature, and we mark in the database
+    // table that the signature has verified (because according to OT, it has.)
+    // So then why have "signature" and "signature verified" fields at all? Because when we
+    // import the EXTERNAL claim verifications, the signature is not necessarily verified yet,
+    // so we will need to store it -- and mark it as not verified -- until such time as we are
+    // able to verify it, probably in a background process, download the related Nym, verify his
+    // signature, then mark it as verified in the DB.
+    // ---------------------------------------------------
+    QString str_select_count = QString("SELECT ver_id FROM `claim_verification` WHERE `ver_id`='%1' LIMIT 0,1").arg(ver_id);
+
+    const bool bVerificationExists = (DBHandler::getInstance()->querySize(str_select_count) > 0);
+    // ------------------------------------------------------------
+//    QString create_claim_verification_table = "CREATE TABLE IF NOT EXISTS claim_verification"
+//           "(ver_id TEXT PRIMARY KEY,"
+//           " ver_claimant_nym_id TEXT,"
+//           " ver_verifier_nym_id TEXT,"
+//           " ver_claim_id TEXT,"
+//           " ver_polarity INTEGER,"
+//           " ver_start INTEGER,"8 AM
+//           " ver_end INTEGER,"
+//           " ver_signature TEXT,"
+//           " ver_signature_verified INTEGER"
+//           ")";
+
+    // TODO: Do a real upsert here instead of this crap.
+    //
+    QString str_insert;
+    if (!bVerificationExists)
+        str_insert = QString("INSERT INTO `claim_verification`"
+                                 " (`ver_id`, `ver_claimant_nym_id`, `ver_verifier_nym_id`, `ver_claim_id`, `ver_polarity`,"
+                                 "  `ver_start`, `ver_end`, `ver_signature`, `ver_signature_verified`)"
+                                 "  VALUES('%1', '%2', '%3', '%4', %5, %6, %7, '%8', %9)").
+                arg(ver_id).arg(QString::fromStdString(claimant_nym_id)).arg(qstrVerifierNymId).arg(ver_claim_id).arg(ver_polarity ? 1 : 0).arg(ver_start).
+                arg(ver_end).arg(ver_sig).
+                arg(bIsInternal ? 1 : 0);
+    else
+        str_insert = QString("UPDATE `claim_verification` SET"
+                             " `ver_claimant_nym_id`='%1', `ver_verifier_nym_id`='%2',`ver_claim_id`='%3',`ver_polarity`=%4,`ver_start`=%5,`ver_end`=%6,"
+                             " `ver_signature`='%7' WHERE `ver_id`='%8'").
+                arg(QString::fromStdString(claimant_nym_id)).arg(qstrVerifierNymId).arg(ver_claim_id).arg(ver_polarity ? 1 : 0).arg(ver_start).
+                arg(ver_end).arg(ver_sig).
+                arg(ver_id);
+    DBHandler::getInstance()->runQuery(str_insert);
+    const int nRowId = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `claim_verification`", 0, 0);
+    return (nRowId > 0);
 }
 
 bool MTContactHandler::ArchivedTradeReceiptExists(int64_t lReceiptID)
