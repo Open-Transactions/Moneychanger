@@ -221,7 +221,16 @@ bool MTContactHandler::upsertClaim(opentxs::Nym& nym, const opentxs::Claim& clai
                              " `claim_attributes`='%7',`claim_att_active`=%8,`claim_att_primary`=%9 WHERE `claim_id`='%10'").
                 arg(qstrNymId).arg(claim_section).arg(claim_type).arg(encoded_claim_value).arg(claim_start).
                 arg(claim_end).arg(qstrAttributes).arg(claim_att_active ? 1 : 0).arg(claim_att_primary ? 1 : 0).arg(claim_id);
-    DBHandler::getInstance()->runQuery(str_insert);
+    const bool bRan = DBHandler::getInstance()->runQuery(str_insert);
+
+    if (bClaimExists)
+    {
+        if (bRan)
+            return true;
+        else
+            return false;
+    }
+
     const int nRowId = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `claim`", 0, 0);
     return (nRowId > 0);
 }
@@ -328,7 +337,16 @@ bool MTContactHandler::upsertClaimVerification(const std::string & claimant_nym_
                 arg(QString::fromStdString(claimant_nym_id)).arg(qstrVerifierNymId).arg(ver_claim_id).arg(ver_polarity ? 1 : 0).arg(ver_start).
                 arg(ver_end).arg(ver_sig).
                 arg(ver_id);
-    DBHandler::getInstance()->runQuery(str_insert);
+    const bool bRan = DBHandler::getInstance()->runQuery(str_insert);
+
+    if (bVerificationExists)
+    {
+        if (bRan)
+            return true;
+        else
+            return false;
+    }
+
     const int nRowId = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `claim_verification`", 0, 0);
     return (nRowId > 0);
 }
