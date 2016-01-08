@@ -1464,7 +1464,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         QPixmap pixmapAction(":/icons/icons/rolodex_small.png");
         QIcon actionButtonIcon(pixmapAction);
 
-        QPushButton * addContactButton = new QPushButton(tr("Add as Contact"));
+        QPushButton * addContactButton = new QPushButton(actionButtonIcon, tr("Add as Contact"));
 
         m_pDetailLayout->addWidget(addContactButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(addContactButton, Qt::AlignTop);
@@ -1477,7 +1477,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         // but also "add to existing contact."
         //
         QPixmap pixmapAction1(":/icons/icons/rolodex_small.png");
-        QIcon actionButtonIcon1(pixmapAction);
+        QIcon actionButtonIcon1(pixmapAction1);
 
         QPushButton * existingContactButton = new QPushButton(actionButtonIcon1, tr("Add to an Existing Contact"));
 
@@ -1495,7 +1495,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         QIcon actionButtonIcon(pixmapAction);
 
         QString deleteActionName = recordmt.IsMail() ? tr("Delete this Message") : tr("Delete this Record");
-        QPushButton * deleteButton = new QPushButton(deleteActionName);
+        QPushButton * deleteButton = new QPushButton(actionButtonIcon, deleteActionName);
 
         m_pDetailLayout->addWidget(deleteButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(deleteButton, Qt::AlignTop);
