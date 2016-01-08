@@ -130,6 +130,62 @@ bool DBHandler::dbCreateInstance()
         QString create_server  = "CREATE TABLE IF NOT EXISTS nym_server(nym_id TEXT, notary_id TEXT, PRIMARY KEY(nym_id, notary_id))";
         QString create_account = "CREATE TABLE IF NOT EXISTS nym_account(account_id TEXT PRIMARY KEY, notary_id TEXT, nym_id TEXT, asset_id TEXT, account_display_name TEXT)";
         // --------------------------------------------
+
+        // Internal verifications are other Nym's claims that I have signed.
+        // External verifications are my claims that other Nyms have signed.
+
+        // External are only shown on my Nym Tab
+        // Internal are only shown on Contact tab.
+
+        // What you care about is that the signatures have been verified.
+
+        // Whenever you are displaying a claim, any verification related to that claim should be displayed,
+        // regardless of whether it's internal or external.
+
+
+        // Let's say you have made some claims, you have no external ones yet.
+        // You're looking at your own Nym and you don't see the verifications. Just maybe the implicit self-signed.
+        // I get your Nym and I verify your claims and publish them.
+        // At some point your Moneychanger has downloaded my latest verifications.
+        // On my credential, those verifications are on the internal side.
+        // As soon as your client has done a checkNym and noticed this,
+        // you should see those verifications on your own Nym.
+        // Now that you see there are verifications related to your claims, you should add those
+        // to your own credential, as external claims, and re-publish your credentials.
+
+        // We need a unique identifier for verifications because they can appear
+        // more than once for the same claim (from different people.)
+
+        // When Alice verified your claim, I might see that verification appear on Alice's
+        // credential, and on your credential, because you republished hers.
+
+        // A verification can either confirm or refute a claim.
+
+        // And the signature validity is either valid or unknown.
+
+        // Need to be able to search for claims based on claimant ID.
+
+        // Need to be able to search for verifications, filtered optionally on Claim ID and/or Verifier ID and/or Claimaint ID.
+
+        // Verification has its own ID, plus a Claimant ID, plus a Verifier ID, plus and Claim ID, plus a confirm/refute (polarity).
+
+        // Column for good signature, unknown signature, invalid. Column name: Validity.
+
+        // There is a start/end time but current unused.
+
+        // Table should have a "known valid" column so it can keep track of which ones it has validated.
+
+        // If someone refutes your claims you do not want to automatically republish that unless you are a troll.
+
+        // When looking at Nym details, I'll see my claims plus other people's verifications of those.
+
+        // When looking at Contact details, I'll see the contact's claims about himself, plus mine and other people's verifications of those claims.
+
+        // Repudiations are just a list of verification IDs. There's also the verifier/repudiator ID.
+
+        // In the UI I would show repudiated status on each verification.
+
+        // --------------------------------------------
         QString create_msg_method = "CREATE TABLE IF NOT EXISTS msg_method"
                 " (method_id INTEGER PRIMARY KEY,"   // 1, 2, etc.
                 "  method_display_name TEXT,"        // "Localhost"

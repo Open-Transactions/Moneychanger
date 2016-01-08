@@ -2260,7 +2260,7 @@ void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id
         if (!notaryID.isEmpty()) mapFinalValues.insert("notary_id", notaryID);
 
 
-        qDebug() << "DEBUGGING AddPaymentBasedOnNotification. transNum: " << transNum << " transNumDisplay: " << transNumDisplay << "\n";
+//      qDebug() << "DEBUGGING AddPaymentBasedOnNotification. transNum: " << transNum << " transNumDisplay: " << transNumDisplay << "\n";
 
 
 
@@ -2503,7 +2503,7 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
         if (transNumDisplay > 0) mapFinalValues.insert("txn_id_display", QVariant::fromValue(transNumDisplay));
 
 
-        qDebug() << "DEBUGGING AddPaymentToPmntArchive. " << (recordmt.IsOutgoing() ? "OUT" : "IN") << ". transNum: " << transNum << " transNumDisplay: " << transNumDisplay << "\n";
+//      qDebug() << "DEBUGGING AddPaymentToPmntArchive. " << (recordmt.IsOutgoing() ? "OUT" : "IN") << ". transNum: " << transNum << " transNumDisplay: " << transNumDisplay << "\n";
 
         // I receive a cheque. This is the incoming cheque I'm receiving.
 

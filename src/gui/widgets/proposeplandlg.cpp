@@ -606,8 +606,8 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
         notaryID,
         timeFrom,
         validityLength, //"valid to" is apparently ADDED to "valid from" so it's a bit misnamed.
-        hisNymId, // This is his account, but I don't have that, so I'm putting his Nym here as a placekeeper.
-        hisNymId, // This is where it actually expects his Nym ID.
+        "", // This is the customer's asset account, but we don't know that yet.
+        hisNymId, // The customer's Nym ID.
         memo.toStdString(),
         myAcctId,
         myNymId,

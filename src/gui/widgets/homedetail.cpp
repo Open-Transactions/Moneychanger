@@ -425,10 +425,17 @@ QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
         qstr_acct_server = QString::fromStdString(str_acct_server);
         qstr_acct_asset  = QString::fromStdString(str_acct_asset);
         // -----------------------------------
+
+
+        qDebug() << "\n DEBUGGING qstr_acct_nym: " << qstr_acct_nym;
+        qDebug() << "\n DEBUGGING str_acct_type: " << QString::fromStdString(str_acct_type);
+
+
+
         if ((qstr_record_nym    != qstr_acct_nym)    ||
             (qstr_record_server != qstr_acct_server) ||
             (qstr_record_asset  != qstr_acct_asset)  ||
-            (0 != str_acct_type.compare("simple"))    ) // DO NOT INTERNATIONALIZE "simple".
+            (0 != str_acct_type.compare("user"))    ) // DO NOT INTERNATIONALIZE "user".
         {
             // There's a default account, but it's got the wrong Asset type, or the
             // wrong server, etc, for it to accept this record. Therefore we have to
@@ -483,10 +490,15 @@ QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
                 qstr_acct_server = QString::fromStdString(str_acct_server);
                 qstr_acct_asset  = QString::fromStdString(str_acct_asset);
                 // -----------------------------------------------
+
+
+                qDebug() << "\n DEBUGGING loop qstr_acct_nym: " << qstr_acct_nym;
+                qDebug() << "\n DEBUGGING loop str_acct_type: " << QString::fromStdString(str_acct_type);
+
                 if ((0 == qstr_record_nym   .compare(qstr_acct_nym)   ) &&
                     (0 == qstr_record_server.compare(qstr_acct_server)) &&
                     (0 == qstr_record_asset .compare(qstr_acct_asset) ) &&
-                    (0 == str_acct_type.compare("simple")  )  ) // DO NOT INTERNATIONALIZE "simple".
+                    (0 == str_acct_type.compare("user")  )  ) // DO NOT INTERNATIONALIZE "user".
                 {
                     MTNameLookupQT theLookup;
 
@@ -631,6 +643,12 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
                 {
                     MTSpinner theSpinner;
                     // -----------------------------------------
+
+
+                    // TODO resume
+                    // if it's a payment plan or smart contract, need to display certain details for the user
+                    // Then the user can be double-sure before accepting the terms.
+
                     bSuccess = recordmt.AcceptIncomingInstrument(qstr_acct_id.toStdString());
                 }
                 // -----------------------------------------
@@ -1429,7 +1447,10 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     {
         m_nContactID = nContactID;
         // --------------------------------------------------
-        QPushButton * viewContactButton = new QPushButton(viewDetails);
+        QPixmap pixmapAction(":/icons/icons/rolodex_small.png");
+        QIcon actionButtonIcon(pixmapAction);
+
+        QPushButton * viewContactButton = new QPushButton(actionButtonIcon, viewDetails);
 
         m_pDetailLayout->addWidget(viewContactButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(viewContactButton, Qt::AlignTop);
@@ -1440,6 +1461,9 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     }
     else if (!str_nym_id.empty())
     {
+        QPixmap pixmapAction(":/icons/icons/rolodex_small.png");
+        QIcon actionButtonIcon(pixmapAction);
+
         QPushButton * addContactButton = new QPushButton(tr("Add as Contact"));
 
         m_pDetailLayout->addWidget(addContactButton, nCurrentRow, nCurrentColumn,1,1);
@@ -1452,7 +1476,10 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         // If the contact didn't already exist, we don't just have "add new contact"
         // but also "add to existing contact."
         //
-        QPushButton * existingContactButton = new QPushButton(tr("Add to an Existing Contact"));
+        QPixmap pixmapAction1(":/icons/icons/rolodex_small.png");
+        QIcon actionButtonIcon1(pixmapAction);
+
+        QPushButton * existingContactButton = new QPushButton(actionButtonIcon1, tr("Add to an Existing Contact"));
 
         m_pDetailLayout->addWidget(existingContactButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(existingContactButton, Qt::AlignTop);
@@ -1464,6 +1491,9 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     // *************************************************************
     if (recordmt.CanDeleteRecord())
     {
+        QPixmap pixmapAction(":/icons/icons/DeleteRed.png");
+        QIcon actionButtonIcon(pixmapAction);
+
         QString deleteActionName = recordmt.IsMail() ? tr("Delete this Message") : tr("Delete this Record");
         QPushButton * deleteButton = new QPushButton(deleteActionName);
 
@@ -1529,7 +1559,10 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
             actionString = tr("Depositing...");
         }
 
-        QPushButton * acceptButton = new QPushButton(nameString);
+        QPixmap pixmapAction(":/icons/icons/signature-small.png");
+        QIcon actionButtonIcon(pixmapAction);
+        // ----------------------------------------------------------------
+        QPushButton * acceptButton = new QPushButton(actionButtonIcon, nameString);
 
         m_pDetailLayout->addWidget(acceptButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(acceptButton, Qt::AlignTop);
@@ -1568,7 +1601,10 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
             cancelString = tr("Cancel this Payment");
 
 
-        QPushButton * cancelButton = new QPushButton(cancelString);
+        QPixmap pixmapAction(":/icons/icons/DeleteRed.png");
+        QIcon actionButtonIcon(pixmapAction);
+
+        QPushButton * cancelButton = new QPushButton(actionButtonIcon, cancelString);
 
         m_pDetailLayout->addWidget(cancelButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(cancelButton, Qt::AlignTop);
@@ -1582,7 +1618,10 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     {
         QString discardString = tr("Discard this Sent Cash");
 
-        QPushButton * discardOutgoingButton = new QPushButton(discardString);
+        QPixmap pixmapAction(":/icons/icons/DeleteRed.png");
+        QIcon actionButtonIcon(pixmapAction);
+
+        QPushButton * discardOutgoingButton = new QPushButton(actionButtonIcon, discardString);
 
         m_pDetailLayout->addWidget(discardOutgoingButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(discardOutgoingButton, Qt::AlignTop);
@@ -1611,8 +1650,10 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         else
             discardString = tr("Discard this Payment");
 
+        QPixmap pixmapAction(":/icons/icons/DeleteRed.png");
+        QIcon actionButtonIcon(pixmapAction);
 
-        QPushButton * discardIncomingButton = new QPushButton(discardString);
+        QPushButton * discardIncomingButton = new QPushButton(actionButtonIcon, discardString);
 
         m_pDetailLayout->addWidget(discardIncomingButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(discardIncomingButton, Qt::AlignTop);
@@ -1631,7 +1672,10 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
         else
             msgUser = tr("Message the Sender");
 
-        QPushButton * msgButton = new QPushButton(((recordmt.IsMail() && !recordmt.IsOutgoing()) ? tr("Reply to this Message") : msgUser));
+        QPixmap pixmapAction(":/icons/icons/reply.png");
+        QIcon actionButtonIcon(pixmapAction);
+
+        QPushButton * msgButton = new QPushButton(actionButtonIcon, ((recordmt.IsMail() && !recordmt.IsOutgoing()) ? tr("Reply to this Message") : msgUser));
 
         m_pDetailLayout->addWidget(msgButton, nCurrentRow, nCurrentColumn,1,1);
         m_pDetailLayout->setAlignment(msgButton, Qt::AlignTop);
