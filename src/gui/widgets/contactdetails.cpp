@@ -24,6 +24,7 @@
 #include <opentxs/client/OpenTransactions.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/Nym.hpp>
+#include <opentxs/core/crypto/OTPasswordData.hpp>
 
 #include <QComboBox>
 #include <QPushButton>
@@ -418,7 +419,7 @@ void MTContactDetails::on_pushButtonRefresh_clicked()
             const QString qstrDefaultNotaryId = Moneychanger::It()->getDefaultNotaryID();
 
             if (!qstrDefaultNotaryId.isEmpty())
-                mapServers.insert("qstrDefaultNotaryId", "(Leaving server name empty since it's unused.)");
+                mapServers.insert(qstrDefaultNotaryId, "(Leaving server name empty since it's unused.)");
         }
         // -------------------------------
         for (mapIDName::iterator it_servers = mapServers.begin(); it_servers != mapServers.end(); ++it_servers)
@@ -444,6 +445,12 @@ void MTContactDetails::on_pushButtonRefresh_clicked()
                 MTSpinner theSpinner;
 
                 response = madeEasy.check_nym(notary_id, my_nym_id, str_nym_id);
+
+
+                qDebug() << "DEBUGGING check_nym:  notary_id: " << QString::fromStdString(notary_id)
+                         << " my_nym_id: " << QString::fromStdString(my_nym_id) << "str_nym_id: " << QString::fromStdString(str_nym_id);
+
+
             }
 
             int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
@@ -524,10 +531,24 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
         if (!str_nym_id.empty())
         {
-            std::unique_ptr<opentxs::Nym> pCurrentNym(opentxs::OTAPI_Wrap::OTAPI()->LoadPublicNym(id_nym, __FUNCTION__));
+            opentxs::Nym * pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->LoadPublicNym(id_nym, __FUNCTION__);
+            std::unique_ptr<opentxs::Nym> pNymAngel(pCurrentNym);
+
+            if (!pNymAngel)
+            {
+                opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
+
+                // Notice we don't set the unique_ptr in this case, since with this function,
+                // the wallet already owns the nym and handles all the cleanup automatically.
+                //
+                pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym,
+                                                                         false, //bChecking=false
+                                                                         __FUNCTION__,
+                                                                         &thePWData);
+            }
 
             // check_nym if not already downloaded.
-            if (!pCurrentNym)
+            if (nullptr == pCurrentNym)
             {
                 const QString qstrDefaultNotaryId = Moneychanger::It()->getDefaultNotaryID();
                 const QString qstrDefaultNymId    = Moneychanger::It()->getDefaultNymID();
@@ -549,14 +570,15 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
                     if (1 == nReturnVal)
                     {
-                        pCurrentNym.reset(opentxs::OTAPI_Wrap::OTAPI()->LoadPublicNym(id_nym, __FUNCTION__));
+                        pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->LoadPublicNym(id_nym, __FUNCTION__);
+                        pNymAngel.reset(pCurrentNym);
                         bANymWasChecked = true;
                         emit nymWasJustChecked(qstrNymID);
                     }
                 }
             }
 
-            if (pCurrentNym && !bANymWasChecked)
+            if ((nullptr != pCurrentNym) && !bANymWasChecked)
             {
                 opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
                 // ---------------------------------------

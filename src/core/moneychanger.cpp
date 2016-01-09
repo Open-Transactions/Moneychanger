@@ -61,6 +61,7 @@
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/Nym.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
+#include <opentxs/core/crypto/OTPasswordData.hpp>
 
 #include <QMenu>
 #include <QApplication>
@@ -344,10 +345,34 @@ void Moneychanger::onCheckNym(QString nymId)
     opentxs::Identifier id_nym(strNymId);
 
     // Import the claims.
-    std::unique_ptr<opentxs::Nym> pCurrentNym(opentxs::OTAPI_Wrap::OTAPI()->LoadPublicNym(id_nym, __FUNCTION__));
+    opentxs::Nym * pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->LoadPublicNym(id_nym, __FUNCTION__);
+    std::unique_ptr<opentxs::Nym> pNymAngel(pCurrentNym);
+
+    // NOTE: Let's say you load a Nym, so it's cached in the wallet (in RAM.)
+    // Next let's say you do a check_nym (download it from a server and save to disk locally.)
+    // So if you call "GetOrLoadNym" you will end up with the wallet's cached version,
+    // instead of the latest one you just downloaded from disk.
+    // Therefore, we EXPLICITLY try to LoadPublicNym (above) first, and ONLY if that fails,
+    // do the GetOrLoadNym. So that way if we HAVEN'T downloaded the public Nym, we still get the
+    // Nym. What case might that be, you wonder? The case where a Nym was just created, and we want
+    // Moneychanger to import its contact credentials, claims, and claim verifications AS THOUGH
+    // the Nym had just been downloaded.
+    //
+    if (!pNymAngel)
+    {
+        opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
+
+        // NOTICE in this case, pNymAngel unique_ptr is NOT set with pCurrentNym.
+        // That's because the wallet already cleans it up in this case.
+        //
+        pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym,
+                                                                 false, //bChecking=false
+                                                                 __FUNCTION__,
+                                                                 &thePWData);
+    }
 
     // check_nym if not already downloaded.
-    if (!pCurrentNym)
+    if (nullptr == pCurrentNym)
     {
         qDebug() << "onCheckNym: GetOrLoadNym failed. (Which should NOT happen since we supposedly JUST downloaded that Nym's credentials...)";
         return;
@@ -2036,6 +2061,10 @@ void Moneychanger::onNeedToDownloadMail()
                     Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
                     return;
                 }
+                else
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(defaultNymID),
+                                                                           QString::fromStdString(defaultNotaryID));
+
 //              qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
             }
         }
@@ -3050,6 +3079,9 @@ void Moneychanger::onNeedToDownloadAccountData()
                     Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
                     return;
                 }
+                else
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(defaultNymID),
+                                                                           QString::fromStdString(defaultNotaryID));
 
 //              qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
             }

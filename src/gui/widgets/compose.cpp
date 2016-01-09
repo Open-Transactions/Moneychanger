@@ -2390,7 +2390,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
                     response = madeEasy.register_nym(notary_id, sender_id);
                 }
 
-                qDebug() << QString("Nym Creation Response: %1").arg(QString::fromStdString(response));
+                qDebug() << QString("Nym Registration Response: %1").arg(QString::fromStdString(response));
 
                 int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
 
@@ -2399,6 +2399,9 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
                     Moneychanger::It()->HasUsageCredits(notary_id, sender_id);
                     return false;
                 }
+                else
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(sender_id),
+                                                                           QString::fromStdString(notary_id));
             }
             else
                 return false;

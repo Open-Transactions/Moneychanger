@@ -245,8 +245,11 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         case MTDetailEdit::DetailEditTypeNym:
             m_pDetailPane = new MTNymDetails(this, *this);
             // -------------------------------------------
-            connect(m_pDetailPane,      SIGNAL(newNymAdded(QString)),
-                    Moneychanger::It(), SLOT  (onNewNymAdded(QString)));
+            connect(m_pDetailPane,      SIGNAL(newNymAdded(QString)),    // This also adds the new Nym as a Contact in the address book.
+                    Moneychanger::It(), SLOT  (onNewNymAdded(QString))); // (For convenience for the user.)
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(newNymAdded(QString)), // Why do we do this, since we haven't actually done a check_nym?
+                    Moneychanger::It(), SLOT  (onCheckNym(QString))); // Because this upserts the new Nym's claims/verifications into the local DB.
             // -------------------------------------------
             connect(m_pDetailPane,      SIGNAL(newNymAdded(QString)),
                     m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));

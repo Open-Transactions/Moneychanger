@@ -108,7 +108,7 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
         {
             opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
             // ---------------------------------------
-//            nym_claims.insert( NymClaims(str_nym_id, claims) );
+//          nym_claims.insert( NymClaims(str_nym_id, claims) );
             nym_names.insert(std::pair<std::string, std::string>(str_nym_id, str_nym_name));
         }
     }
@@ -1290,6 +1290,7 @@ void MTNymDetails::AddButtonClicked()
         // Get the ID of the new nym.
         //
         QString qstrID = QString::fromStdString(str_id);
+        opentxs::Identifier id_nym(str_id);
         // ------------------------------------------------------
         // Register the Namecoin name.
         if (nAuthorityIndex == 1)
@@ -1352,7 +1353,7 @@ void MTNymDetails::AddButtonClicked()
             }
         }
 
-        opentxs::Nym* newNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(qstrID.toStdString());
+        opentxs::Nym* newNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
 
         if (nullptr != newNym) {
             opentxs::OTAPI_Wrap::OTAPI()->SetContactData(*newNym, contactData);
@@ -1424,6 +1425,9 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                         case (1):
                             {
                                 bRegistered = true;
+
+                                MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_nym_id),
+                                                                                       QString::fromStdString(str_notary_id));
 
                                 QMessageBox::information(this, tr("Moneychanger"),
                                     tr("Success!"));
