@@ -118,7 +118,7 @@ QWidget * AccountRecordsProxyModel::CreateDetailHeaderWidget(const int nSourceRo
 //  const bool bIsPending = (bPendingFound && !bCompletedFound);
 
 
-//    qDebug() << "DEBUGGING! bIsOutgoing: " << (bIsOutgoing ? QString("true") :  QString("false"))
+//    qDebug() << "bIsOutgoing: " << (bIsOutgoing ? QString("true") :  QString("false"))
 //    << " bPendingFound: " << (bPendingFound ? QString("true") :  QString("false")) <<
 //    " bCompletedFound: " << (bCompletedFound ? QString("true") :  QString("false")) <<
 //    " bIsPending: " << (bIsPending ? QString("true") :  QString("false")) << "\n";
@@ -991,7 +991,7 @@ QWidget * PaymentsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, boo
 //  const bool bIsPending = (bPendingFound && !bCompletedFound);
 
     
-//    qDebug() << "DEBUGGING! bIsOutgoing: " << (bIsOutgoing ? QString("true") :  QString("false"))
+//    qDebug() << "bIsOutgoing: " << (bIsOutgoing ? QString("true") :  QString("false"))
 //    << " bPendingFound: " << (bPendingFound ? QString("true") :  QString("false")) <<
 //    " bCompletedFound: " << (bCompletedFound ? QString("true") :  QString("false")) <<
 //    " bIsPending: " << (bIsPending ? QString("true") :  QString("false")) << "\n";
