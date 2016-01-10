@@ -7034,6 +7034,98 @@ QJsonValue MCRPCService::mcListSmartContracts(QString Username, QString APIKey)
 }
 
 
+QJsonValue MCRPCService::retreivePayments(QString Username, QString APIKey)
+{
+    if(!validateAPIKey(Username, APIKey)){
+        QJsonObject object{{"Error", "Invalid API Key"}};
+        return QJsonValue(object);
+    }
+
+    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
+
+    if (!pModel)
+        return QJsonValue({"Error", "No payment model"});
+
+    QJsonObject records;
+
+    int i;
+    for(i = 0; i < pModel->rowCount(); i++ ) {
+        const int nRow = i;
+
+        QModelIndex indexAmount       = pModel->index(nRow, PMNT_SOURCE_COL_AMOUNT);
+        QModelIndex indexTxnId        = pModel->index(nRow, PMNT_SOURCE_COL_TXN_ID); // txn_id
+        QModelIndex indexTxnIdDisplay = pModel->index(nRow, PMNT_SOURCE_COL_TXN_ID_DISPLAY); // txn_id_display
+        QModelIndex indexMyNym        = pModel->index(nRow, PMNT_SOURCE_COL_MY_NYM); // my_nym_id
+        QModelIndex indexMyAcct       = pModel->index(nRow, PMNT_SOURCE_COL_MY_ACCT); // my_acct_id
+        QModelIndex indexAssetType    = pModel->index(nRow, PMNT_SOURCE_COL_MY_ASSET_TYPE); // my_asset_type_id
+        QModelIndex indexSenderNym    = pModel->index(nRow, PMNT_SOURCE_COL_SENDER_NYM); // sender_nym_id
+        QModelIndex indexSenderAcct   = pModel->index(nRow, PMNT_SOURCE_COL_SENDER_ACCT); // sender_acct_id
+        QModelIndex indexSenderAddr   = pModel->index(nRow, PMNT_SOURCE_COL_SENDER_ADDR); // sender_address
+        QModelIndex indexRecipNym     = pModel->index(nRow, PMNT_SOURCE_COL_RECIP_NYM); // recipient_nym_id
+        QModelIndex indexRecipAcct    = pModel->index(nRow, PMNT_SOURCE_COL_RECIP_ACCT); // recipient_acct_id
+        QModelIndex indexRecipAddr    = pModel->index(nRow, PMNT_SOURCE_COL_RECIP_ADDR); // recipient_address
+        QModelIndex indexMethodType   = pModel->index(nRow, PMNT_SOURCE_COL_METHOD_TYPE); // method_type
+        QModelIndex indexNotary       = pModel->index(nRow, PMNT_SOURCE_COL_NOTARY_ID); // notary_id
+        QModelIndex indexMemo         = pModel->index(nRow, PMNT_SOURCE_COL_MEMO); // memo
+        QModelIndex indexDescription  = pModel->index(nRow, PMNT_SOURCE_COL_DESCRIPTION); // description
+
+        QVariant dataTxnId            = pModel->rawData(indexTxnId);
+        QVariant dataTxnIdDisplay     = pModel->rawData(indexTxnIdDisplay);
+        QVariant dataMyNym            = pModel->rawData(indexMyNym);
+        QVariant dataMyAcct           = pModel->rawData(indexMyAcct);
+        QVariant dataAssetType        = pModel->rawData(indexAssetType);
+        QVariant dataMethodType       = pModel->rawData(indexMethodType);
+        QVariant dataSenderNym        = pModel->rawData(indexSenderNym);
+        QVariant dataRecipientNym     = pModel->rawData(indexRecipNym);
+        QVariant dataSenderAcct       = pModel->rawData(indexSenderAcct);
+        QVariant dataRecipientAcct    = pModel->rawData(indexRecipAcct);
+        QVariant dataSenderAddress    = pModel->rawData(indexSenderAddr);
+        QVariant dataRecipientAddress = pModel->rawData(indexRecipAddr);
+        QVariant dataNotaryID         = pModel->rawData(indexNotary);
+        QVariant dataMemo             = pModel->rawData(indexMemo);
+        QVariant dataDescription      = pModel->rawData(indexDescription);
+        QVariant qvarAmount = indexAmount.isValid() ? pModel->rawData(indexAmount) : QVariant();
+
+        int64_t lAmount = qvarAmount.isValid() ? qvarAmount.toLongLong() : 0;
+        int64_t lTxnId               = dataTxnId.isValid() ? dataTxnId.toLongLong() : 0;
+        int64_t lTxnIdDisplay        = dataTxnIdDisplay.isValid() ? dataTxnIdDisplay.toLongLong() : 0;
+
+        QString qstrAmount = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LongToString(lAmount));
+        QString qstrTxnId            = lTxnId        > 0 ? QString::fromStdString(opentxs::OTAPI_Wrap::It()->LongToString(lTxnId       )) : "";
+        QString qstrTxnIdDisplay     = lTxnIdDisplay > 0 ? QString::fromStdString(opentxs::OTAPI_Wrap::It()->LongToString(lTxnIdDisplay)) : "";
+        QString qstrMyNym            = dataMyNym.isValid() ? dataMyNym.toString() : "";
+        QString qstrMyAcct           = dataMyAcct.isValid() ? dataMyAcct.toString() : "";
+        QString qstrAssetType        = dataAssetType.isValid() ? dataAssetType.toString() : "";
+        QString qstrMethodType       = dataMethodType.isValid() ? dataMethodType.toString() : "";
+        QString qstrSenderNym        = dataSenderNym.isValid() ? dataSenderNym.toString() : "";
+        QString qstrRecipientNym     = dataRecipientNym.isValid() ? dataRecipientNym.toString() : "";
+        QString qstrSenderAcct       = dataSenderAcct.isValid() ? dataSenderAcct.toString() : "";
+        QString qstrRecipientAcct    = dataRecipientAcct.isValid() ? dataRecipientAcct.toString() : "";
+        QString qstrSenderAddress    = dataSenderAddress.isValid() ? dataSenderAddress.toString() : "";
+        QString qstrRecipientAddress = dataRecipientAddress.isValid() ? dataRecipientAddress.toString() : "";
+        QString qstrNotaryID         = dataNotaryID.isValid() ? dataNotaryID.toString() : "";
+
+        QJsonObject record{
+                          {"txnid", qstrTxnId},
+                          {"txniddisp", qstrTxnIdDisplay},
+                          {"myNym", qstrMyNym},
+                          {"myAcct", qstrMyAcct},
+                          {"asset", qstrAssetType},
+                          {"method", qstrMethodType},
+                          {"senderNym", qstrSenderNym},
+                          {"senderAddr", qstrSenderAddress},
+                          {"senderAcct", qstrSenderAcct},
+                          {"recipientNym", qstrRecipientNym},
+                          {"recipientAddr", qstrRecipientAddress},
+                          {"recipientAcct", qstrRecipientAcct},
+                          {"notaryId", qstrNotaryID},
+                          {"amount", qstrAmount}};
+
+        records.insert(QString::number(i), record);
+    }
+
+    return records;
+}
 
 // RecordList Methods
 

@@ -925,6 +925,7 @@ public Q_SLOTS:
 
     QJsonValue isValidID(QString ID, QString Username, QString APIKey);
 
+    QJsonValue retreivePayments(QString Username, QString APIKey);
 
 private:
 
