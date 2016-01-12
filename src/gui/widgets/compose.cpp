@@ -2720,10 +2720,8 @@ void MTCompose::dialog()
             ui->toolButtonTo->setVisible(false);
             ui->toolButtonFrom->setVisible(false);
         }
-        connect(this,               SIGNAL(balancesChanged()),
-                Moneychanger::It(), SLOT  (onBalancesChanged()));
-        connect(this,               SIGNAL(nymWasJustChecked(QString)),
-                Moneychanger::It(), SLOT  (onCheckNym(QString)));
+        connect(this, SIGNAL(balancesChanged()), Moneychanger::It(), SLOT  (onBalancesChanged()));
+        connect(this, SIGNAL(nymWasJustChecked(QString)), Moneychanger::It(), SLOT  (onCheckNym(QString)));
         // ---------------------------------------
         this->setWindowTitle(tr("Compose: (no subject)"));
 

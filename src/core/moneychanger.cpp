@@ -62,6 +62,7 @@
 #include <opentxs/core/Nym.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
+#include <opentxs/client/OTWallet.hpp>
 
 #include <QMenu>
 #include <QApplication>
@@ -815,8 +816,22 @@ int64_t Moneychanger::HasUsageCredits(QString   notary_id,
 // Startup
 void Moneychanger::bootTray()
 {
-    connect(this, SIGNAL(appendToLog(QString)),    this, SLOT(mc_showlog_slot(QString)));
-    connect(this, SIGNAL(expertModeUpdated(bool)), this, SLOT(onExpertModeUpdated(bool)));
+    connect(this, SIGNAL(appendToLog(QString)),            this, SLOT(mc_showlog_slot(QString)));
+    connect(this, SIGNAL(expertModeUpdated(bool)),         this, SLOT(onExpertModeUpdated(bool)));
+    connect(this, SIGNAL(nymWasJustChecked(QString)),      this, SLOT(onCheckNym(QString)));
+    connect(this, SIGNAL(serversChanged()),                this, SLOT(onServersChanged()));
+    connect(this, SIGNAL(assetsChanged()),                 this, SLOT(onAssetsChanged()));
+    connect(this, SIGNAL(needToPopulateRecordlist()),      this, SLOT(onNeedToPopulateRecordlist()));
+    connect(this, SIGNAL(needToUpdateMenu()),              this, SLOT(onNeedToUpdateMenu()));
+    connect(this, SIGNAL(updateMenuAndPopulateRecords()),  this, SLOT(onNeedToUpdateMenu()));
+    connect(this, SIGNAL(updateMenuAndPopulateRecords()),  this, SLOT(onNeedToPopulateRecordlist()));
+    connect(this, SIGNAL(newServerAdded(QString)),         this, SLOT(onNewServerAdded(QString)));
+    connect(this, SIGNAL(newAssetAdded(QString)),          this, SLOT(onNewAssetAdded(QString)));
+    // ----------------------------------------------------------------------------
+    connect(this, SIGNAL(serversChanged(QString)),         this, SIGNAL(updateMenuAndPopulateRecords()));
+    connect(this, SIGNAL(assetsChanged(QString)),          this, SIGNAL(updateMenuAndPopulateRecords()));
+    connect(this, SIGNAL(newServerAdded(QString)),         this, SIGNAL(updateMenuAndPopulateRecords()));
+    connect(this, SIGNAL(newAssetAdded(QString)),          this, SIGNAL(updateMenuAndPopulateRecords()));
     // ----------------------------------------------------------------------------
     SetupMainMenu();
     // ----------------------------------------------------------------------------
@@ -3008,6 +3023,7 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOp
 
 void Moneychanger::onNeedToPopulateRecordlist()
 {
+    setupRecordList();
     populateRecords(); // This updates the record list. (It assumes a download has recently occurred.)
     // ----------------------------------------------------------------
     emit populatedRecordlist();
@@ -4279,20 +4295,6 @@ void Moneychanger::onAccountsChanged()
         menuwindow->refreshOptions();
 }
 
-void Moneychanger::onNewServerAdded(QString qstrID)
-{
-    GetRecordlist().AddNotaryID(qstrID.toStdString());
-
-    onServersChanged();
-}
-
-void Moneychanger::onNewAssetAdded(QString qstrID)
-{
-    GetRecordlist().AddInstrumentDefinitionID(qstrID.toStdString());
-
-    onAssetsChanged();
-}
-
 void Moneychanger::onNewNymAdded(QString qstrID)
 {
     // Add a new Contact in the Address Book for this Nym as well.
@@ -4331,6 +4333,145 @@ void Moneychanger::onNewAccountAdded(QString qstrID)
 
 
 
+// --------------------------------------------------
+
+void Moneychanger::onNewServerAdded(QString qstrID)
+{
+    GetRecordlist().AddNotaryID(qstrID.toStdString());
+
+    onServersChanged();
+}
+
+void Moneychanger::onNewAssetAdded(QString qstrID)
+{
+    GetRecordlist().AddInstrumentDefinitionID(qstrID.toStdString());
+
+    onAssetsChanged();
+}
+
+
+void Moneychanger::PublicNymNotify(std::string id)
+{
+    const opentxs::Identifier ot_id(id);
+
+    opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet("Moneychanger::PublicNymNotify");
+
+    if (nullptr != pWallet)
+    {
+        opentxs::Nym * pNym = pWallet->GetNymByID(ot_id);
+        if (nullptr != pNym) // Found it! The nym is already in the wallet. (Public or private.)
+        {
+            qDebug() << "I was notified that the DHT downloaded Nym " << QString::fromStdString(id) << " and I see that he's already in the wallet, "
+                        "so I'm just going to reload the wallet, to make sure we have the latest one loaded.";
+            const bool bReloaded = pWallet->LoadWallet();
+
+            if (!bReloaded)
+                qDebug() << "Error while trying to reload the wallet.";
+        }
+        else // The Nym is not already in the wallet.
+        {
+            // I don't think I have to do anything at all then.
+            // No need to reload the wallet, since the Nym isn't loaded
+            // in the wallet, and if it ever does load that Nym in the
+            // near future, it will get the latest version then.
+        }
+    }
+
+    emit nymWasJustChecked(QString::fromStdString(id));
+}
+
+void Moneychanger::ServerContractNotify(std::string id)
+{
+    const opentxs::Identifier ot_id(id);
+
+    opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet("Moneychanger::ServerContractNotify");
+
+    if (nullptr != pWallet)
+    {
+        opentxs::OTServerContract * pContract = pWallet->GetServerContract(ot_id);
+
+        // Found it! The contract is already in the wallet.
+        if (nullptr != pContract)
+        {
+            qDebug() << "I was notified that the DHT downloaded contract " << QString::fromStdString(id) << " and I see that it's already in the wallet, "
+                        "so I'm just going to reload the wallet, to make sure we have the latest one loaded.";
+            const bool bReloaded = pWallet->LoadWallet();
+
+            if (!bReloaded)
+                qDebug() << "Error while trying to reload the wallet.";
+            else
+                emit serversChanged();
+        }
+        else // The contract is NOT already in the wallet.
+        {
+            // No need to reload the wallet, since the contract isn't loaded
+            // in the wallet anyway.
+            //
+            // However, I DO need to ADD the contract to the wallet...
+            //
+            opentxs::OTServerContract * pContract = opentxs::OTAPI_Wrap::OTAPI()->LoadServerContract(ot_id);
+
+            if (nullptr != pContract)
+            {
+                pWallet->AddServerContract(*pContract); // Takes ownership.
+                pWallet->SaveWallet();
+
+                emit newServerAdded(QString::fromStdString(id));
+            }
+            else
+                qDebug() << "Strange: I was notified that we downloaded contract " << QString::fromStdString(id) <<
+                            " but then failed trying to load it up.";
+        }
+    }
+}
+
+
+void Moneychanger::AssetContractNotify(std::string id)
+{
+    const opentxs::Identifier ot_id(id);
+
+    opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet("Moneychanger::AssetContractNotify");
+
+    if (nullptr != pWallet)
+    {
+        opentxs::AssetContract * pContract = pWallet->GetAssetContract(ot_id);
+
+        // Found it! The contract is already in the wallet.
+        if (nullptr != pContract)
+        {
+            qDebug() << "I was notified that the DHT downloaded contract " << QString::fromStdString(id) << " and I see that it's already in the wallet, "
+                        "so I'm just going to reload the wallet, to make sure we have the latest one loaded.";
+            const bool bReloaded = pWallet->LoadWallet();
+
+            if (!bReloaded)
+                qDebug() << "Error while trying to reload the wallet.";
+            else
+                emit assetsChanged();
+        }
+        else // The contract is NOT already in the wallet.
+        {
+            // No need to reload the wallet, since the contract isn't loaded
+            // in the wallet anyway.
+            //
+            // However, I DO need to ADD the contract to the wallet...
+            //
+            opentxs::AssetContract * pContract = opentxs::OTAPI_Wrap::OTAPI()->LoadAssetContract(ot_id);
+
+            if (nullptr != pContract)
+            {
+                pWallet->AddAssetContract(*pContract); // Takes ownership.
+                pWallet->SaveWallet();
+
+                emit newAssetAdded(QString::fromStdString(id));
+            }
+            else
+                qDebug() << "Strange: I was notified that we downloaded contract " << QString::fromStdString(id) <<
+                            " but then failed trying to load it up.";
+        }
+    }
+}
+
+// --------------------------------------------------
 
 /**
  * Main Menu Window  (For people who can't see the menu on the systray.)
