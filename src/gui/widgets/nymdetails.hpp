@@ -23,6 +23,9 @@ class QPlainTextEdit;
 class MTCredentials;
 class QTreeWidget;
 
+class ClaimsProxyModel;
+class ModelClaims;
+
 class MTNymDetails : public MTEditDetails
 {
     Q_OBJECT
@@ -44,7 +47,13 @@ public:
     virtual void ClearContents();
 
     void ClearTree();
-    void RefreshTree(QStringList & qstrlistNymIDs);
+    void RefreshTree(const QString & qstrNymId);
+
+signals:
+    void nymWasJustChecked(QString);
+
+public slots:
+    void onClaimsUpdatedForNym(QString nymId);
 
 private:
     QPointer<QPlainTextEdit> m_pPlainTextEdit;
@@ -56,6 +65,9 @@ private:
     QPointer<QToolButton>  pToolButtonNymId_;
     QPointer<QLabel>       pLabelNotaries_;
     QPointer<QTableWidget> pTableWidgetNotaries_;
+
+    QPointer<ModelClaims>      pModelClaims_;
+    QPointer<ClaimsProxyModel> pProxyModelClaims_;
 
     QScopedPointer<QMenu> popupMenu_;
 

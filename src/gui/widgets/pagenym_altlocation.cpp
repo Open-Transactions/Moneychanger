@@ -443,7 +443,7 @@ QWidget * MTPageNym_AltLocation::createSingleContactItem(GroupBoxContactItems * 
         pComboType->addItem(value, QVariant::fromValue(key));
     }
     // ----------------------------------------------------------
-    // We don't set these values until here, underneath the above loop.
+    // We don't set this until here, underneath the above loop.
     // After all, you can't set the combo box to a certain current index
     // if you haven't even populated it yet!
     //
@@ -465,6 +465,7 @@ QWidget * MTPageNym_AltLocation::createSingleContactItem(GroupBoxContactItems * 
     connect(pBtnDelete, SIGNAL(clicked()), this, SLOT(on_btnContactItemDelete_clicked()));
     connect(pLineEditItemValue, SIGNAL(textChanged(QString)), this, SLOT(on_lineEditItemValue_textChanged(QString)));
     connect(pBtnRadio, SIGNAL(toggled(bool)), this, SLOT(on_btnPrimary_toggled(bool)));
+//    connect(this, SIGNAL(initialNameProfileSetting(QString)), pLineEditItemValue, SIGNAL(textChanged(QString)));
     // ----------------------------------------------------------
 //    layout->setStretch(0,  0);
 //    layout->setStretch(1, -1);
@@ -598,6 +599,8 @@ void MTPageNym_AltLocation::initializePage() //virtual
         mapGroupBoxLists_.insert(indexSection, pListGroupBoxes);
         ui->tabWidget->addTab(pTab, QString::fromStdString(sectionName));
     }
+
+    PrepareOutputData();
 }
 
 

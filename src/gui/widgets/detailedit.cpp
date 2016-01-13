@@ -137,7 +137,15 @@ void MTDetailEdit::dialog(MTDetailEdit::DetailEditType theType, bool bIsModal/*=
         f.show();
         f.focus();
     }
-    // -------------------------------------------
+}
+
+// -------------------------------------------
+
+QWidget * MTDetailEdit::GetTab(int nTab)
+{
+    if (m_pTabWidget)
+        return m_pTabWidget->widget(nTab);
+    return nullptr;
 }
 
 // -------------------------------------------
@@ -237,8 +245,11 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         case MTDetailEdit::DetailEditTypeNym:
             m_pDetailPane = new MTNymDetails(this, *this);
             // -------------------------------------------
-            connect(m_pDetailPane,      SIGNAL(newNymAdded(QString)),
-                    Moneychanger::It(), SLOT  (onNewNymAdded(QString)));
+            connect(m_pDetailPane,      SIGNAL(newNymAdded(QString)),    // This also adds the new Nym as a Contact in the address book.
+                    Moneychanger::It(), SLOT  (onNewNymAdded(QString))); // (For convenience for the user.)
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(newNymAdded(QString)), // Why do we do this, since we haven't actually done a check_nym?
+                    Moneychanger::It(), SLOT  (onCheckNym(QString))); // Because this upserts the new Nym's claims/verifications into the local DB.
             // -------------------------------------------
             connect(m_pDetailPane,      SIGNAL(newNymAdded(QString)),
                     m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
@@ -249,9 +260,26 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
             connect(m_pDetailPane,      SIGNAL(nymsChanged()),
                     m_pDetailPane,      SIGNAL(RefreshRecordsAndUpdateMenu()));
             // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(nymWasJustChecked(QString)),
+                    Moneychanger::It(), SLOT  (onCheckNym(QString)));
+            // -------------------------------------------
+            connect(Moneychanger::It(), SIGNAL(claimsUpdatedForNym(QString)),
+                    m_pDetailPane,      SLOT  (onClaimsUpdatedForNym(QString)));
+            // -------------------------------------------
             break;
 
-        case MTDetailEdit::DetailEditTypeContact:     m_pDetailPane = new MTContactDetails    (this, *this); break;
+        case MTDetailEdit::DetailEditTypeContact:
+            // -------------------------------------------
+            m_pDetailPane = new MTContactDetails(this, *this);
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(nymWasJustChecked(QString)),
+                    Moneychanger::It(), SLOT  (onCheckNym(QString)));
+            // -------------------------------------------
+            connect(Moneychanger::It(), SIGNAL(claimsUpdatedForNym(QString)),
+                    m_pDetailPane,      SLOT  (onClaimsUpdatedForNym(QString)));
+            // -------------------------------------------
+            break;
+
         case MTDetailEdit::DetailEditTypeCorporation: m_pDetailPane = new MTCorporationDetails(this, *this); break;
         case MTDetailEdit::DetailEditTypeTransport:   m_pDetailPane = new TransportDetails    (this, *this); break;
 

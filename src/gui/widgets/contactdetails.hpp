@@ -14,8 +14,12 @@ class MTContactDetails;
 
 class QPlainTextEdit;
 class QTreeWidget;
+class QTreeView;
 class MTCredentials;
 class QStringList;
+
+class ClaimsProxyModel;
+class ModelClaims;
 
 class MTContactDetails : public MTEditDetails
 {
@@ -36,11 +40,17 @@ public:
     virtual QWidget * CreateCustomTab (int nTab);
     virtual QString   GetCustomTabName(int nTab);
     // ----------------------------------
-
     virtual void ClearContents();
 
     void ClearTree();
-    void RefreshTree(QStringList & qstrlistNymIDs);
+    void RefreshTree(int nContactId, QStringList & qstrlistNymIDs);
+
+signals:
+    void nymWasJustChecked(QString);
+
+public slots:
+    void onClaimsUpdatedForNym(QString nymId);
+    void onClaimsUpdatedTimer();
 
 protected:
     QGroupBox * createAddressGroupBox    (QString strContactID);
@@ -51,7 +61,10 @@ private:
     QPointer<QPlainTextEdit> m_pPlainTextEdit;
     QPointer<QPlainTextEdit> m_pPlainTextEditNotes;
 
-    QPointer<QTreeWidget>    treeWidgetClaims_;
+    QPointer<QTreeWidget>    treeWidgetClaims_;    
+
+    QPointer<ModelClaims>      pModelClaims_;
+    QPointer<ClaimsProxyModel> pProxyModelClaims_;
 
     QPointer<MTCredentials> m_pCredentials;
 
@@ -62,10 +75,13 @@ private slots:
     void on_btnAddressDelete_clicked();
     void on_pushButtonMsg_clicked();
     void on_pushButtonPay_clicked();
+    void on_pushButtonRefresh_clicked();
 
 private:
     QPointer<QWidget>   m_pHeaderWidget;
     QPointer<QGroupBox> m_pAddresses;
+
+    bool bTimerFired_=false;
 
     Ui::MTContactDetails *ui;
 };

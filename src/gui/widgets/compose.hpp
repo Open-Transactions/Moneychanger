@@ -94,11 +94,11 @@ public:
 
 signals:
     void balancesChanged();
-
     void ShowContact(QString);
     void ShowNym(QString);
     void ShowTransport(QString);
     void ShowServer(QString);
+    void nymWasJustChecked(QString);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

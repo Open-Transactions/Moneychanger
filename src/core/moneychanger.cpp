@@ -20,6 +20,7 @@
 #include <core/moneychanger.hpp>
 #include <core/mtcomms.h>
 #include <core/handlers/DBHandler.hpp>
+#include <core/handlers/contacthandler.hpp>
 #include <core/handlers/modeltradearchive.hpp>
 
 #include <rpc/rpcserver.h>
@@ -54,11 +55,14 @@
 #include <gui/ui/payments.hpp>
 
 
-
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OpenTransactions.hpp>
 #include <opentxs/client/OT_ME.hpp>
+#include <opentxs/core/Nym.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
+#include <opentxs/core/crypto/OTPasswordData.hpp>
+#include <opentxs/client/OTWallet.hpp>
 
 #include <QMenu>
 #include <QApplication>
@@ -333,6 +337,151 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_overall_init = true;
 }
 
+
+// Someone did this: OT_ME::check_nym(id);  emit nymWasJustChecked(id);
+//
+void Moneychanger::onCheckNym(QString nymId)
+{
+    opentxs::String strNymId = nymId.toStdString();
+    opentxs::Identifier id_nym(strNymId);
+
+    // Import the claims.
+    opentxs::Nym * pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->LoadPublicNym(id_nym, __FUNCTION__);
+    std::unique_ptr<opentxs::Nym> pNymAngel(pCurrentNym);
+
+    // NOTE: Let's say you load a Nym, so it's cached in the wallet (in RAM.)
+    // Next let's say you do a check_nym (download it from a server and save to disk locally.)
+    // So if you call "GetOrLoadNym" you will end up with the wallet's cached version,
+    // instead of the latest one you just downloaded from disk.
+    // Therefore, we EXPLICITLY try to LoadPublicNym (above) first, and ONLY if that fails,
+    // do the GetOrLoadNym. So that way if we HAVEN'T downloaded the public Nym, we still get the
+    // Nym. What case might that be, you wonder? The case where a Nym was just created, and we want
+    // Moneychanger to import its contact credentials, claims, and claim verifications AS THOUGH
+    // the Nym had just been downloaded.
+    //
+    if (!pNymAngel)
+    {
+        opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
+
+        // NOTICE in this case, pNymAngel unique_ptr is NOT set with pCurrentNym.
+        // That's because the wallet already cleans it up in this case.
+        //
+        pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym,
+                                                                 false, //bChecking=false
+                                                                 __FUNCTION__,
+                                                                 &thePWData);
+    }
+
+    // check_nym if not already downloaded.
+    if (nullptr == pCurrentNym)
+    {
+        qDebug() << "onCheckNym: GetOrLoadNym failed. (Which should NOT happen since we supposedly JUST downloaded that Nym's credentials...)";
+        return;
+    }
+
+    const std::string str_checked_nym_id(strNymId.Get());
+    // -------------------------------------------------------
+    opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
+
+    qDebug() << "onCheckNym: claims.size(): " << claims.size();
+
+    for (const opentxs::Claim& claim: claims)
+    {
+        // ---------------------------------------
+        // Add the claim to the database if not there already.
+        //
+        if (!MTContactHandler::getInstance()->upsertClaim(*pCurrentNym, claim))
+        {
+            qDebug() << "onCheckNym: the call to upsertClaim just failed. (Returning.)";
+            return;
+        }
+    }
+    // -------------------------------------------------------
+    // Import the verifications.
+    //
+    opentxs::OT_API::VerificationSet the_set = opentxs::OTAPI_Wrap::OTAPI()->GetVerificationSet(*pCurrentNym);
+
+    opentxs::OT_API::VerificationMap       & internalSet   = std::get<0>(the_set);
+    opentxs::OT_API::VerificationMap       & externalSet   = std::get<1>(the_set);
+    std::set<std::string>                  & repudiatedIds = std::get<2>(the_set);
+
+    // Internal verifications:
+    // Here I'm looping through pCurrentNym's verifications of other people's claims.
+    for (auto& claimant: internalSet)
+    {
+        // Here we're looping through those other people. (Claimants.)
+
+        const std::string                         str_claimant_id  = claimant.first;
+        std::set<opentxs::OT_API::Verification> & verification_set = claimant.second;
+
+        for (auto& verification : verification_set)
+        {
+            if (!MTContactHandler::getInstance()->upsertClaimVerification(str_claimant_id, str_checked_nym_id, verification, true)) //bIsInternal=true
+            {
+                qDebug() << "onCheckNym: the call to upsertInternalClaimVerification just failed. (Returning.)";
+                return;
+            }
+        }
+    }
+
+    // External verifications:
+    // Here I'm looping through other people's verifications of pCurrentNym's claims.
+    for (auto& verifier: externalSet)
+    {
+        const std::string                         str_verifier_id  = verifier.first;
+        std::set<opentxs::OT_API::Verification> & verification_set = verifier.second;
+
+        for (auto& verification : verification_set)
+        {
+            if (!MTContactHandler::getInstance()->upsertClaimVerification(str_checked_nym_id, str_verifier_id, verification, false)) //bIsInternal=true by default.
+            {
+                qDebug() << "onCheckNym: the call to upsertExternalClaimVerification just failed. (Returning.)";
+                return;
+            }
+        }
+    }
+    // -------------------------------------------------------
+    // Import the repudiations.
+
+
+
+    // -------------------------------------------------------
+    // emit signal that claims / verifications were updated.
+    //
+    emit claimsUpdatedForNym(nymId);
+}
+
+
+static void blah()
+{
+//resume
+//todo
+
+// OpenTransactions.hpp
+//EXPORT VerificationSet GetVerificationSet(const Nym& fromNym) const;
+// EXPORT bool SetVerifications(Nym& onNym,
+//                            const proto::VerificationSet&) const;
+
+// Nym.hpp
+//    std::shared_ptr<proto::VerificationSet> VerificationSet() const;
+//    bool SetVerificationSet(const proto::VerificationSet& data);
+
+//    proto::Verification Sign(
+//        const std::string& claim,
+//        const bool polarity,
+//        const int64_t start = 0,
+//        const int64_t end = 0,
+//        const OTPasswordData* pPWData = nullptr) const;
+//    bool Verify(const proto::Verification& item) const;
+
+    // VerificationSet has 2 groups, internal and external.
+    // Internal is for your signatures on other people's claims.
+    // External is for other people's signatures on your claims.
+    // When you find that in the external, you copy it to your own credential.
+    // So external is for re-publishing other people's verifications of your claims.
+
+    // If we've repudiated any claims, you can add their IDs to the repudiated field in the verification set.
+}
 
 Moneychanger::~Moneychanger()
 {
@@ -669,8 +818,22 @@ int64_t Moneychanger::HasUsageCredits(QString   notary_id,
 // Startup
 void Moneychanger::bootTray()
 {
-    connect(this, SIGNAL(appendToLog(QString)),    this, SLOT(mc_showlog_slot(QString)));
-    connect(this, SIGNAL(expertModeUpdated(bool)), this, SLOT(onExpertModeUpdated(bool)));
+    connect(this, SIGNAL(appendToLog(QString)),            this, SLOT(mc_showlog_slot(QString)));
+    connect(this, SIGNAL(expertModeUpdated(bool)),         this, SLOT(onExpertModeUpdated(bool)));
+    connect(this, SIGNAL(nymWasJustChecked(QString)),      this, SLOT(onCheckNym(QString)));
+    connect(this, SIGNAL(serversChanged()),                this, SLOT(onServersChanged()));
+    connect(this, SIGNAL(assetsChanged()),                 this, SLOT(onAssetsChanged()));
+    connect(this, SIGNAL(needToPopulateRecordlist()),      this, SLOT(onNeedToPopulateRecordlist()));
+    connect(this, SIGNAL(needToUpdateMenu()),              this, SLOT(onNeedToUpdateMenu()));
+    connect(this, SIGNAL(updateMenuAndPopulateRecords()),  this, SLOT(onNeedToUpdateMenu()));
+    connect(this, SIGNAL(updateMenuAndPopulateRecords()),  this, SLOT(onNeedToPopulateRecordlist()));
+    connect(this, SIGNAL(newServerAdded(QString)),         this, SLOT(onNewServerAdded(QString)));
+    connect(this, SIGNAL(newAssetAdded(QString)),          this, SLOT(onNewAssetAdded(QString)));
+    // ----------------------------------------------------------------------------
+    connect(this, SIGNAL(serversChanged(QString)),         this, SIGNAL(updateMenuAndPopulateRecords()));
+    connect(this, SIGNAL(assetsChanged(QString)),          this, SIGNAL(updateMenuAndPopulateRecords()));
+    connect(this, SIGNAL(newServerAdded(QString)),         this, SIGNAL(updateMenuAndPopulateRecords()));
+    connect(this, SIGNAL(newAssetAdded(QString)),          this, SIGNAL(updateMenuAndPopulateRecords()));
     // ----------------------------------------------------------------------------
     SetupMainMenu();
     // ----------------------------------------------------------------------------
@@ -1915,6 +2078,10 @@ void Moneychanger::onNeedToDownloadMail()
                     Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
                     return;
                 }
+                else
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(defaultNymID),
+                                                                           QString::fromStdString(defaultNotaryID));
+
 //              qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
             }
         }
@@ -2858,6 +3025,7 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOp
 
 void Moneychanger::onNeedToPopulateRecordlist()
 {
+    setupRecordList();
     populateRecords(); // This updates the record list. (It assumes a download has recently occurred.)
     // ----------------------------------------------------------------
     emit populatedRecordlist();
@@ -2929,6 +3097,9 @@ void Moneychanger::onNeedToDownloadAccountData()
                     Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
                     return;
                 }
+                else
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(defaultNymID),
+                                                                           QString::fromStdString(defaultNotaryID));
 
 //              qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
             }
@@ -4126,20 +4297,6 @@ void Moneychanger::onAccountsChanged()
         menuwindow->refreshOptions();
 }
 
-void Moneychanger::onNewServerAdded(QString qstrID)
-{
-    GetRecordlist().AddNotaryID(qstrID.toStdString());
-
-    onServersChanged();
-}
-
-void Moneychanger::onNewAssetAdded(QString qstrID)
-{
-    GetRecordlist().AddInstrumentDefinitionID(qstrID.toStdString());
-
-    onAssetsChanged();
-}
-
 void Moneychanger::onNewNymAdded(QString qstrID)
 {
     // Add a new Contact in the Address Book for this Nym as well.
@@ -4178,6 +4335,145 @@ void Moneychanger::onNewAccountAdded(QString qstrID)
 
 
 
+// --------------------------------------------------
+
+void Moneychanger::onNewServerAdded(QString qstrID)
+{
+    GetRecordlist().AddNotaryID(qstrID.toStdString());
+
+    onServersChanged();
+}
+
+void Moneychanger::onNewAssetAdded(QString qstrID)
+{
+    GetRecordlist().AddInstrumentDefinitionID(qstrID.toStdString());
+
+    onAssetsChanged();
+}
+
+
+void Moneychanger::PublicNymNotify(std::string id)
+{
+    const opentxs::Identifier ot_id(id);
+
+    opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet("Moneychanger::PublicNymNotify");
+
+    if (nullptr != pWallet)
+    {
+        opentxs::Nym * pNym = pWallet->GetNymByID(ot_id);
+        if (nullptr != pNym) // Found it! The nym is already in the wallet. (Public or private.)
+        {
+            qDebug() << "I was notified that the DHT downloaded Nym " << QString::fromStdString(id) << " and I see that he's already in the wallet, "
+                        "so I'm just going to reload the wallet, to make sure we have the latest one loaded.";
+            const bool bReloaded = pWallet->LoadWallet();
+
+            if (!bReloaded)
+                qDebug() << "Error while trying to reload the wallet.";
+        }
+        else // The Nym is not already in the wallet.
+        {
+            // I don't think I have to do anything at all then.
+            // No need to reload the wallet, since the Nym isn't loaded
+            // in the wallet, and if it ever does load that Nym in the
+            // near future, it will get the latest version then.
+        }
+    }
+
+    emit nymWasJustChecked(QString::fromStdString(id));
+}
+
+void Moneychanger::ServerContractNotify(std::string id)
+{
+    const opentxs::Identifier ot_id(id);
+
+    opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet("Moneychanger::ServerContractNotify");
+
+    if (nullptr != pWallet)
+    {
+        opentxs::OTServerContract * pContract = pWallet->GetServerContract(ot_id);
+
+        // Found it! The contract is already in the wallet.
+        if (nullptr != pContract)
+        {
+            qDebug() << "I was notified that the DHT downloaded contract " << QString::fromStdString(id) << " and I see that it's already in the wallet, "
+                        "so I'm just going to reload the wallet, to make sure we have the latest one loaded.";
+            const bool bReloaded = pWallet->LoadWallet();
+
+            if (!bReloaded)
+                qDebug() << "Error while trying to reload the wallet.";
+            else
+                emit serversChanged();
+        }
+        else // The contract is NOT already in the wallet.
+        {
+            // No need to reload the wallet, since the contract isn't loaded
+            // in the wallet anyway.
+            //
+            // However, I DO need to ADD the contract to the wallet...
+            //
+            opentxs::OTServerContract * pContract = opentxs::OTAPI_Wrap::OTAPI()->LoadServerContract(ot_id);
+
+            if (nullptr != pContract)
+            {
+                pWallet->AddServerContract(*pContract); // Takes ownership.
+                pWallet->SaveWallet();
+
+                emit newServerAdded(QString::fromStdString(id));
+            }
+            else
+                qDebug() << "Strange: I was notified that we downloaded contract " << QString::fromStdString(id) <<
+                            " but then failed trying to load it up.";
+        }
+    }
+}
+
+
+void Moneychanger::AssetContractNotify(std::string id)
+{
+    const opentxs::Identifier ot_id(id);
+
+    opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet("Moneychanger::AssetContractNotify");
+
+    if (nullptr != pWallet)
+    {
+        opentxs::AssetContract * pContract = pWallet->GetAssetContract(ot_id);
+
+        // Found it! The contract is already in the wallet.
+        if (nullptr != pContract)
+        {
+            qDebug() << "I was notified that the DHT downloaded contract " << QString::fromStdString(id) << " and I see that it's already in the wallet, "
+                        "so I'm just going to reload the wallet, to make sure we have the latest one loaded.";
+            const bool bReloaded = pWallet->LoadWallet();
+
+            if (!bReloaded)
+                qDebug() << "Error while trying to reload the wallet.";
+            else
+                emit assetsChanged();
+        }
+        else // The contract is NOT already in the wallet.
+        {
+            // No need to reload the wallet, since the contract isn't loaded
+            // in the wallet anyway.
+            //
+            // However, I DO need to ADD the contract to the wallet...
+            //
+            opentxs::AssetContract * pContract = opentxs::OTAPI_Wrap::OTAPI()->LoadAssetContract(ot_id);
+
+            if (nullptr != pContract)
+            {
+                pWallet->AddAssetContract(*pContract); // Takes ownership.
+                pWallet->SaveWallet();
+
+                emit newAssetAdded(QString::fromStdString(id));
+            }
+            else
+                qDebug() << "Strange: I was notified that we downloaded contract " << QString::fromStdString(id) <<
+                            " but then failed trying to load it up.";
+        }
+    }
+}
+
+// --------------------------------------------------
 
 /**
  * Main Menu Window  (For people who can't see the menu on the systray.)
