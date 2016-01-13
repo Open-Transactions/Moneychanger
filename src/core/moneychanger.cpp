@@ -383,6 +383,8 @@ void Moneychanger::onCheckNym(QString nymId)
     // -------------------------------------------------------
     opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
 
+    qDebug() << "onCheckNym: claims.size(): " << claims.size();
+
     for (const opentxs::Claim& claim: claims)
     {
         // ---------------------------------------

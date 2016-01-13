@@ -107,6 +107,9 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
         if (pCurrentNym)
         {
             opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
+
+            qDebug() << "RefreshTree: claims.size(): " << claims.size();
+
             // ---------------------------------------
 //          nym_claims.insert( NymClaims(str_nym_id, claims) );
             nym_names.insert(std::pair<std::string, std::string>(str_nym_id, str_nym_name));
@@ -1353,7 +1356,7 @@ void MTNymDetails::AddButtonClicked()
             }
         }
 
-        opentxs::Nym* newNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
+        opentxs::Nym* newNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(id_nym);
 
         if (nullptr != newNym) // The nym we created is now in the wallet. (Which owns this nym pointer.)
         {
@@ -1361,6 +1364,9 @@ void MTNymDetails::AddButtonClicked()
             {
                 qDebug() << __FUNCTION__ << ": ERROR: Failed trying to Set Contact Data!";
             }
+            else
+                qDebug() << __FUNCTION__ << "SetContactData SUCCESS. items.size(): " << items.size();
+
             m_pOwner->m_map.insert(qstrID, qstrName);
             m_pOwner->SetPreSelected(qstrID);
             // ------------------------------------------------
