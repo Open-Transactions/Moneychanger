@@ -15,7 +15,7 @@
 
 #include <gui/widgets/qrtoolbutton.hpp>
 
-#include <core/handlers/dbhandler.hpp>
+#include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/modelclaims.hpp>
 #include <core/mtcomms.h>
@@ -1355,18 +1355,24 @@ void MTNymDetails::AddButtonClicked()
 
         opentxs::Nym* newNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
 
-        if (nullptr != newNym) {
-            opentxs::OTAPI_Wrap::OTAPI()->SetContactData(*newNym, contactData);
+        if (nullptr != newNym) // The nym we created is now in the wallet. (Which owns this nym pointer.)
+        {
+            if (!opentxs::OTAPI_Wrap::OTAPI()->SetContactData(*newNym, contactData))
+            {
+                qDebug() << __FUNCTION__ << ": ERROR: Failed trying to Set Contact Data!";
+            }
+            m_pOwner->m_map.insert(qstrID, qstrName);
+            m_pOwner->SetPreSelected(qstrID);
+            // ------------------------------------------------
+            emit newNymAdded(qstrID);
         }
+        // ------------------------------------------------
+        else
+            qDebug() << __FUNCTION__ << "ERROR: Failed trying to load Nym we just created.";
         // -----------------------------------------------
 //      QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Creating Nym! Name")).
 //                               arg(qstrName).arg(tr("ID")).arg(qstrID));
         // ----------
-        m_pOwner->m_map.insert(qstrID, qstrName);
-        m_pOwner->SetPreSelected(qstrID);
-        // ------------------------------------------------
-        emit newNymAdded(qstrID);
-        // ------------------------------------------------
     }
 }
 

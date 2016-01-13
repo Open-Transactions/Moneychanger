@@ -14,7 +14,7 @@
 #include <gui/widgets/overridecursor.hpp>
 
 #include <core/moneychanger.hpp>
-#include <core/handlers/dbhandler.hpp>
+#include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/modelclaims.hpp>
 #include <core/mtcomms.h>
