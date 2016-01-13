@@ -185,6 +185,7 @@ void MTAssetDetails::on_pushButton_clicked()
                                 case (1):
                                     {
                                         bIsRegiseredAtServer = true;
+                                        MTContactHandler::getInstance()->NotifyOfNymServerPair(qstrNymID, qstrNotaryID);
                                         break; // SUCCESS
                                     }
                                 case (0):

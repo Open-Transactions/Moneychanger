@@ -40,6 +40,9 @@ class QMenu;
 class QSystemTrayIcon;
 class CreateInsuranceCompany;
 
+
+
+
 class Moneychanger : public QWidget
 {
     Q_OBJECT
@@ -51,6 +54,14 @@ private:
     /** Constructor & Destructor **/
     Moneychanger(QWidget *parent = 0);
 public:
+    // Note: These are callback functions needed by OT.
+    // Specifically, whenever the DHT downloads a contract, it notifies interested parties
+    // using this contract.
+    //
+    void ServerContractNotify(std::string id);
+    void PublicNymNotify(std::string id);
+    void AssetContractNotify(std::string id);
+    // ------------------------------------------------
     virtual ~Moneychanger();
     
     static Moneychanger * It(QWidget *parent = 0, bool bShuttingDown = false);
@@ -86,10 +97,20 @@ public:
 
 signals:
     void balancesChanged();
+    void needToPopulateRecordlist();
+    void needToUpdateMenu();
+    void updateMenuAndPopulateRecords();
     void populatedRecordlist();
     void appendToLog(QString);
     void expertModeUpdated(bool);
     void hideNavUpdated(bool);
+    void claimsUpdatedForNym(QString);
+    void nymWasJustChecked(QString);
+    void serversChanged();
+    void assetsChanged();
+
+    void newServerAdded(QString);
+    void newAssetAdded(QString);
 
 public slots:
     void onBalancesChanged();
@@ -100,6 +121,8 @@ public slots:
     void onNeedToDownloadMail();
     void onExpertModeUpdated(bool bExpertMode);
     void onHideNavUpdated(bool bHideNav);
+    void onCheckNym(QString nymId);
+
 
     /**
      * Functions for setting Systray Values
@@ -120,10 +143,10 @@ public slots:
     void setDefaultServer(QString, QString);
     QString getDefaultNotaryID(){return default_notary_id;}
     QString getDefaultServerName(){return default_server_name;}
-    
+        
     void onNewServerAdded(QString qstrID);
     void onNewAssetAdded(QString qstrID);
-    void onNewNymAdded(QString qstrID);
+    void onNewNymAdded(QString qstrID);  // NOTE This means "new private Nym created in local wallet" -- not, "New public Nym downloaded from outside."
     void onNewAccountAdded(QString qstrID);
     
     void onServersChanged();

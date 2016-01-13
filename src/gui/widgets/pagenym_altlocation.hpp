@@ -37,6 +37,9 @@ public:
 
     void SetFieldsBlank();
 
+signals:
+//    void initialNameProfileSetting(QString); // To set the name as the first profile item.
+
 protected:
     QWidget * createSingleContactItem(GroupBoxContactItems * pGroupBox, int nComboIndex=0, const QString textValue="");
     bool      deleteSingleContactItem(GroupBoxContactItems * pGroupBox, QWidget * pWidget);

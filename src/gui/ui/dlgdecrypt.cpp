@@ -123,7 +123,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
 
                             opentxs::Nym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
                                                                                    false, //bChecking=false
-                                                                                   "DlgEncrypt::on_pushButtonDecrypt_clicked",
+                                                                                   __FUNCTION__,
                                                                                    &thePWData);
                             if (NULL != pNym)
                             {
@@ -225,10 +225,10 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                         if (!str_signer_nym.empty())
                         {
                             opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
-
-                            opentxs::Nym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(str_signer_nym,
+                            opentxs::Identifier id_signer_nym(strSignerNymID);
+                            opentxs::Nym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_signer_nym,
                                                                                    false, //bChecking=false
-                                                                                   "DlgEncrypt::on_pushButtonDecrypt_clicked",
+                                                                                   __FUNCTION__,
                                                                                    &thePWData);
                             if (NULL != pNym)
                             {

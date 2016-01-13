@@ -8,6 +8,7 @@
 #include <core/handlers/modeltradearchive.hpp>
 #include <core/handlers/modelmessages.hpp>
 #include <core/handlers/modelpayments.hpp>
+#include <core/handlers/modelclaims.hpp>
 
 #include <QDebug>
 #include <QMutex>
@@ -57,8 +58,8 @@ class DBHandler
     QMutex dbMutex;
     
     QPointer<ModelTradeArchive> pTradeArchiveModel_;
-    QPointer<ModelMessages> pMessageModel_;
-    QPointer<ModelPayments> pPaymentModel_;
+    QPointer<ModelMessages>     pMessageModel_;
+    QPointer<ModelPayments>     pPaymentModel_;
 
     bool dbConnect();
     bool isConnected();
@@ -71,8 +72,10 @@ class DBHandler
     static DBHandler * getInstance();
 
     QPointer<ModelTradeArchive> getTradeArchiveModel();
-    QPointer<ModelMessages> getMessageModel();
-    QPointer<ModelPayments> getPaymentModel();
+    QPointer<ModelMessages>     getMessageModel();
+    QPointer<ModelPayments>     getPaymentModel();
+    QPointer<ModelClaims>       getClaimsModel(int nContactId);
+    QPointer<ModelClaims>       getClaimsModel(const QString & qstrNymId);
 
     QString formatValue(QSqlField & sqlField);
 

@@ -61,6 +61,7 @@ public:
     //
     virtual int       GetCustomTabCount();
     virtual QWidget * CreateCustomTab (int nTab);
+            QWidget * GetTab(int nTab);
     virtual QString   GetCustomTabName(int nTab);
     // ----------------------------------
     void SetEditType(MTDetailEdit::DetailEditType theType) { m_Type = theType; }

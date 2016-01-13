@@ -82,6 +82,18 @@ QWidget * MTEditDetails::CreateCustomTab(int nTab)
     // -----------------------------
     return pReturnValue;
 }
+
+QWidget * MTEditDetails::GetTab(int nTab)
+{
+    QWidget * pReturn = nullptr;
+
+    if (!m_pOwner)
+        return nullptr;
+
+    pReturn = m_pOwner->GetTab(nTab);
+
+    return pReturn;
+}
 // ---------------------------------
 //virtual
 QString  MTEditDetails::GetCustomTabName(int nTab)

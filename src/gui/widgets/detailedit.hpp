@@ -87,10 +87,12 @@ public:
     // --------------------------------
     bool getAccountIDs(QString & qstrAssetAcctID, QString & qstrCurrencyAcctID); // For a market offer.
     // --------------------------------
-    QMultiMap<QString, QVariant> * m_pmapMarkets; // do not delete. For reference only.
-    QMap     <QString, QVariant> * m_pmapOffers;  // do not delete. For reference only.
+    QWidget * GetTab(int nTab);
     // --------------------------------
-    int         m_nCurrentRow;
+    QMultiMap<QString, QVariant> * m_pmapMarkets=nullptr; // do not delete. For reference only.
+    QMap     <QString, QVariant> * m_pmapOffers=nullptr;  // do not delete. For reference only.
+    // --------------------------------
+    int         m_nCurrentRow = -1;
     QString     m_qstrCurrentID;
     QString     m_qstrCurrentName;
     mapIDName   m_map; // qstr/qstr for id/name
@@ -129,8 +131,8 @@ protected:
     QString     m_qstrMarketNymID;    // used by marketdetails and offerdetails.
     QString     m_qstrMarketNotaryID; // used by marketdetails and offerdetails.
     // ----------------------------------
-    bool        m_bEnableAdd;
-    bool        m_bEnableDelete;
+    bool        m_bEnableAdd=false;
+    bool        m_bEnableDelete=false;
     // ----------------------------------
     QString     m_PreSelected;
     // ----------------------------------
