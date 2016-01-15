@@ -81,6 +81,7 @@ public slots:
     void onBalancesChanged();
     void onNeedToRefreshUserBar();
     void onNeedToRefreshRecords();
+    void onClaimsUpdatedForNym(QString nymId);
 
 signals:
     void showDashboard();
@@ -88,6 +89,7 @@ signals:
     void needToDownloadAccountData();
     void showContact(QString);
     void showContactAndRefreshHome(QString);
+    void needToCheckNym(QString, QString, QString);
 
 private slots:
     void on_pushButtonSearch_clicked();
@@ -139,6 +141,7 @@ private:
     QAction * pActionCancelOutgoing      = nullptr;
     QAction * pActionDiscardOutgoingCash = nullptr;
     QAction * pActionDiscardIncoming     = nullptr;
+    QAction * pActionDownloadCredentials = nullptr;
 
     int nCurrentContact_ = 0;
     QString qstrMethodType_;
@@ -158,6 +161,8 @@ private:
 
     QList<QModelIndex> listRecordsToMarkAsReplied_;
     QList<QModelIndex> listRecordsToMarkAsForwarded_;
+
+    bool bRefreshingAfterUpdatedClaims_=false;
 };
 
 #endif // PAYMENTS_HPP

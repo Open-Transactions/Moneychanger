@@ -97,6 +97,7 @@ Messages::Messages(QWidget *parent) :
 
     connect(ui->toolButtonCompose,  SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_composemessage_slot()));
     connect(ui->toolButtonContacts, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_addressbook_slot()));
+    connect(this, SIGNAL(needToCheckNym(QString, QString, QString)), Moneychanger::It(), SLOT(onNeedToCheckNym(QString, QString, QString)));
 
     if (!Moneychanger::It()->expertMode())
     {
@@ -694,11 +695,7 @@ void Messages::on_treeWidget_currentItemChanged(QTreeWidgetItem *current, QTreeW
 
 void Messages::RefreshMessages()
 {
-    ui->tableViewSent->resizeColumnsToContents();
-    ui->tableViewReceived->resizeColumnsToContents();
-
-    ui->tableViewSent->horizontalHeader()->setStretchLastSection(true);
-    ui->tableViewReceived->horizontalHeader()->setStretchLastSection(true);
+    bRefreshingAfterUpdatedClaims_ = false;
     // -------------------------------------------
     MSG_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
 
@@ -784,6 +781,12 @@ void Messages::RefreshMessages()
             }
         }
     }
+    // -------------------------------------------
+    ui->tableViewSent->resizeColumnsToContents();
+    ui->tableViewReceived->resizeColumnsToContents();
+
+    ui->tableViewSent->horizontalHeader()->setStretchLastSection(true);
+    ui->tableViewReceived->horizontalHeader()->setStretchLastSection(true);
 }
 
 void Messages::RefreshTree()
@@ -921,6 +924,17 @@ void Messages::RefreshTree()
 }
 
 // --------------------------------------------------
+
+
+void Messages::onClaimsUpdatedForNym(QString nymId)
+{
+    if (!bRefreshingAfterUpdatedClaims_)
+    {
+        bRefreshingAfterUpdatedClaims_ = true;
+        QTimer::singleShot(500, this, SLOT(RefreshMessages()));
+    }
+}
+
 //#define MSG_SOURCE_COL_MSG_ID 0
 //#define MSG_SOURCE_COL_HAVE_READ 1
 //#define MSG_SOURCE_COL_HAVE_REPLIED 2
@@ -979,6 +993,7 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
     pActionViewContact     = nullptr;
     pActionCreateContact   = nullptr;
     pActionExistingContact = nullptr;
+    pActionDownloadCredentials = nullptr;
 
     int nContactId = 0;
 
@@ -1043,6 +1058,10 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
             pActionCreateContact = popupMenu_->addAction(tr("Create new contact in address book"));
             pActionExistingContact = popupMenu_->addAction(tr("Add to existing contact in address book"));
         }
+        // -------------------------------
+        popupMenu_->addSeparator();
+        // -------------------------------
+        pActionDownloadCredentials = popupMenu_->addAction(tr("Download credentials"));
     }
     // --------------------------------------------------
     QPoint globalPos = pTableView->mapToGlobal(pos);
@@ -1177,6 +1196,75 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
             emit showContactAndRefreshHome(qstrContactID);
         }
         return;
+    }
+    // ----------------------------------
+    else if (selectedAction == pActionDownloadCredentials)
+    {
+        pTableView->setCurrentIndex(indexAtRightClick);
+
+        const bool bHaveContact = (nContactId > 0);
+        mapIDName mapNymIds;
+
+        if (bHaveContact)
+        {
+            MTContactHandler::getInstance()->GetNyms(mapNymIds, nContactId);
+
+            // Check to see if there is more than one Nym for this contact.
+            // TODO: If so, get the user to select one of the Nyms, or give him the
+            // option to do them all.
+            // (Until then, we're just going to do them all.)
+        }
+        // ---------------------------------------------------
+        QString qstrAddress, qstrNymId;
+
+        if      (!qstrSenderNymId.isEmpty())    qstrNymId   = qstrSenderNymId;
+        else if (!qstrRecipientNymId.isEmpty()) qstrNymId   = qstrRecipientNymId;
+        // ---------------------------------------------------
+        if      (!qstrSenderAddr.isEmpty())     qstrAddress = qstrSenderAddr;
+        else if (!qstrRecipientAddr.isEmpty())  qstrAddress = qstrRecipientAddr;
+        // ---------------------------------------------------
+        // Might not have a contact. Even if we did, he might not have any NymIds.
+        // Here, if there are no known NymIds, but there's one on the message,
+        // then we add it to the map.
+        if ( (0 == mapNymIds.size()) && (qstrNymId.size() > 0) )
+        {
+            mapNymIds.insert(qstrNymId, QString("Name not used here"));
+        }
+        // ---------------------------------------------------
+        // By this point if there's still no Nym, we need to take the address,
+        // and then loop through all the claims in the database to see if there's
+        // a Nym associated with that Bitmessage address via his claims.
+        //
+        if ( (0 == mapNymIds.size()) && (qstrAddress.size() > 0) )
+        {
+            qstrNymId = MTContactHandler::getInstance()->GetNymByAddress(qstrAddress);
+
+            if (qstrNymId.isEmpty())
+                qstrNymId = MTContactHandler::getInstance()->getNymIdFromClaimsByBtMsg(qstrAddress);
+
+            if (qstrNymId.size() > 0)
+            {
+                mapNymIds.insert(qstrNymId, QString("Name not used here"));
+            }
+        }
+        // ---------------------------------------------------
+        if (0 == mapNymIds.size())
+        {
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Unable to find a NymId for this message. (Unable to download credentials without Id.)"));
+            qDebug() << "UNABLE to find a NymId for this message. (Failed trying to download his credentials.)";
+            return;
+        }
+        // Below this point we're guaranteed that there's at least one NymID.
+        // ---------------------------------------------------
+        int nFound = 0;
+        for (mapIDName::iterator
+             it_nyms  = mapNymIds.begin();
+             it_nyms != mapNymIds.end();
+             ++it_nyms)
+        {
+            nFound++;
+            emit needToCheckNym("", it_nyms.key(), qstrNotaryId);
+        }
     }
     // ----------------------------------
     else if (selectedAction == pActionExistingContact)

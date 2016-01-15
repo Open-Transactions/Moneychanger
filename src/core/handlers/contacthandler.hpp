@@ -91,6 +91,7 @@ public:
   QString GetContactName(int nContactID);
   bool    SetContactName(int nContactID, QString contact_name_string);
 
+  void NotifyOfNymNamePair(QString nym_id_string, QString name_string);
   void NotifyOfNymServerPair(QString nym_id_string, QString notary_id_string);
 
   int  CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string=QString(""), QString payment_code=QString(""));
@@ -272,6 +273,11 @@ public:
   // Claims and Claim Verifications (web of trust.)
   //
   bool claimRecordExists(const QString & claim_id);
+
+  QString getBitmessageAddressFromClaims(const QString & claimant_nym_id);
+  QString getNymIdFromClaimsByBtMsg(const QString & bitmessage_address);
+  QString getDisplayNameFromClaims(const QString & claimant_nym_id);
+  // ----------------------------------------------------------
   bool upsertClaim(opentxs::Nym& nym, const opentxs::Claim& claim);
 
   bool upsertClaimVerification(const std::string & claimant_nym_id,
