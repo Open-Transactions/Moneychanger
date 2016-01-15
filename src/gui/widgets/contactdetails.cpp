@@ -445,12 +445,6 @@ void MTContactDetails::on_pushButtonRefresh_clicked()
                 MTSpinner theSpinner;
 
                 response = madeEasy.check_nym(notary_id, my_nym_id, str_nym_id);
-
-
-                qDebug() << "DEBUGGING check_nym:  notary_id: " << QString::fromStdString(notary_id)
-                         << " my_nym_id: " << QString::fromStdString(my_nym_id) << "str_nym_id: " << QString::fromStdString(str_nym_id);
-
-
             }
 
             int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
@@ -684,7 +678,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
             QVariant    qvarNymId             = pModelClaims_->data(sourceIndexNymId);
             QVariant    qvarSection           = pModelClaims_->data(sourceIndexSection);
             QVariant    qvarType              = pModelClaims_->data(sourceIndexType);
-            QVariant    qvarValue             = pProxyModelClaims_->data(proxyIndexValue); // Proxy here since the proxy model decodes this.
+            QVariant    qvarValue             = pProxyModelClaims_->data(proxyIndexValue); // Proxy here since the proxy model decodes this. UPDATE: no longer encoded.
             QVariant    qvarStart             = pProxyModelClaims_->data(proxyIndexStart); // Proxy for these two since it formats the
             QVariant    qvarEnd               = pProxyModelClaims_->data(proxyIndexEnd);   // timestamp as a human-readable string.
             QVariant    qvarAttributes        = pModelClaims_->data(sourceIndexAttributes);

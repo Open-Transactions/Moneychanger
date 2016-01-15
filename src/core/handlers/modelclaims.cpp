@@ -189,16 +189,16 @@ QVariant ModelClaims::data ( const QModelIndex & index, int role/* = Qt::Display
         return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
     }
     // ----------------------------------------
-    if (role==Qt::DisplayRole && QSqlQueryModel::data(index,role).isValid())
-    {
-        if (index.column() == CLAIM_SOURCE_COL_VALUE) // 'claim_value' is only encoded field.
-        {
-            QVariant qvarData    = QSqlQueryModel::data(index,role);
-            QString  qstrData    = qvarData.isValid() ? qvarData.toString() : "";
-            QString  qstrDecoded = qstrData.isEmpty() ? "" : MTContactHandler::Decode(qstrData);
-            return QVariant(qstrDecoded);
-        }
-    }
+//    if (role==Qt::DisplayRole && QSqlQueryModel::data(index,role).isValid())
+//    {
+//        if (index.column() == CLAIM_SOURCE_COL_VALUE) // 'claim_value' is only encoded field. UPDATE: NOT ANY MORE!!
+//        {
+//            QVariant qvarData    = QSqlQueryModel::data(index,role);
+//            QString  qstrData    = qvarData.isValid() ? qvarData.toString() : "";
+//            QString  qstrDecoded = qstrData.isEmpty() ? "" : MTContactHandler::Decode(qstrData);
+//            return QVariant(qstrDecoded);
+//        }
+//    }
 
     return QSqlQueryModel::data(index,role);
 }
