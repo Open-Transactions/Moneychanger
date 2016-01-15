@@ -71,6 +71,7 @@ signals:
     void needToDownloadMail();
     void showContact(QString);
     void showContactAndRefreshHome(QString);
+    void needToCheckNym(QString, QString, QString);
 
 private slots:
     void on_pushButtonSearch_clicked();
@@ -115,6 +116,7 @@ private:
     QAction * pActionViewContact     = nullptr;
     QAction * pActionCreateContact   = nullptr;
     QAction * pActionExistingContact = nullptr;
+    QAction * pActionDownloadCredentials = nullptr;
 
     int nCurrentContact_ = 0;
     QString qstrMethodType_;

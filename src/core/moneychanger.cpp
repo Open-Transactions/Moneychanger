@@ -338,6 +338,166 @@ Moneychanger::Moneychanger(QWidget *parent)
 }
 
 
+
+void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString notaryId)
+{
+    if (hisNymId.isEmpty())
+    {
+        qDebug() << __FUNCTION__ << ": ERROR: no hisNymId passed in! (Returning.)";
+        return;
+    }
+    // ---------------------------
+    if (myNymId.isEmpty())
+        myNymId = getDefaultNymID();
+
+    if (myNymId.isEmpty())
+    {
+        //Count nyms
+        const int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
+
+        if (nym_count > 0)
+            myNymId = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(0));
+    }
+
+    if (myNymId.isEmpty())
+    {
+        qDebug() << __FUNCTION__ << ": no myNymId passed in, and unable to figure out one on my own! (Returning.)";
+        return;
+    }
+    // ---------------------------
+    // If a notary was passed in, let's make sure we have its contract!
+    //
+    if (!notaryId.isEmpty())
+    {
+        const std::string str_notary_contract = opentxs::OTAPI_Wrap::It()->GetServer_Contract(notaryId.toStdString());
+
+        if (str_notary_contract.empty())
+        {
+            notaryId = QString("");
+            qDebug() << __FUNCTION__ << ": We don't have the server contract for the specified notary ID. "
+                        "(I guess we'll try the default, it may yet work.) TODO: Download it from the DHT.";
+        }
+    }
+    // ---------------------------
+    mapIDName mapServers;
+
+    bool bGotServersForNym = false;
+
+    // Hmm, no notary ID was passed. Perhaps one wasn't available.
+    // In that case we'll see if there are any known notaries for hisNymId.
+    // If so, we'll use them all.
+    // Otherwise, we'll try to use the default notary instead.
+    // Otherwise we'll give up  :P
+    //
+    if (notaryId.isEmpty())
+        bGotServersForNym = MTContactHandler::getInstance()->GetServers(mapServers, hisNymId);
+    else
+        mapServers.insert(notaryId, "Server Name Unused Here");
+
+    if (mapServers.size() < 1)
+    {
+        notaryId = getDefaultNotaryID();
+
+        if (!notaryId.isEmpty())
+            mapServers.insert(notaryId, "Server Name Unused Here");
+    }
+
+    // Oh well. We tried.
+    if (mapServers.size() < 1)
+    {
+        qDebug() << __FUNCTION__ << ": no notaryId passed in, and unable to figure out one on my own! (Returning.)";
+        return;
+    }
+    // --------------------------------
+    const std::string my_nym_id  = myNymId.toStdString();
+    const std::string his_nym_id = hisNymId.toStdString();
+
+    for (mapIDName::iterator it_servers = mapServers.begin(); it_servers != mapServers.end(); ++it_servers)
+    {
+        QString qstrNotaryID   = it_servers.key();
+//      QString qstrNotaryName = it_servers.value();
+
+        if (qstrNotaryID.isEmpty()) // Weird, should never happen.
+        {
+            qDebug() << __FUNCTION__ << ": Unexpectedly empty NotaryID, should not happen. (Returning.)";
+            return;
+        }
+        const std::string notary_id = qstrNotaryID.toStdString();
+        // ---------------------------------------------
+        // Need to verify that I'M registered at this server, before I try to
+        // download some guy's credentials from a "server he's known to use."
+        // I may not even be registered there, in which case the check_nym call would fail.
+        //
+        // And how do I know if I even have the server contract at all?
+        //
+        const std::string str_server_contract = opentxs::OTAPI_Wrap::It()->GetServer_Contract(notary_id);
+
+        if (str_server_contract.empty())
+        {
+            qDebug() << __FUNCTION__ << ": We don't have the server contract for this notary ID. (Skipping.) TODO: Download it from the DHT.";
+            continue;
+        }
+        // ---------------------------------------------
+        const bool isReg = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(my_nym_id, notary_id);
+
+        if (!isReg)
+        {
+            std::string response;
+            {
+                MTSpinner theSpinner;
+                opentxs::OT_ME madeEasy;
+                response = madeEasy.register_nym(notary_id, my_nym_id);
+                if (opentxs::OTAPI_Wrap::networkFailure())
+                {
+                    QString qstrErrorMsg;
+                    qstrErrorMsg = QString("%1: %2. %3.").
+                            arg(tr("Failed trying to contact notary")).
+                            arg(qstrNotaryID).arg(tr("Perhaps it is down, or there might be a network problem"));
+                    emit appendToLog(qstrErrorMsg);
+                    continue;
+                }
+            }
+
+            opentxs::OT_ME madeEasy;
+            if (!madeEasy.VerifyMessageSuccess(response)) {
+                Moneychanger::It()->HasUsageCredits(notary_id, my_nym_id);
+                continue;
+            }
+            else
+                MTContactHandler::getInstance()->NotifyOfNymServerPair(myNymId, qstrNotaryID);
+        }
+        // ------------------------------
+        {
+            opentxs::OT_ME madeEasy;
+            std::string response;
+            {
+                MTSpinner theSpinner;
+                response = madeEasy.check_nym(notary_id, my_nym_id, his_nym_id);
+            }
+            if (opentxs::OTAPI_Wrap::networkFailure())
+            {
+                QString qstrErrorMsg;
+                qstrErrorMsg = QString("%1: %2. %3.").
+                        arg(tr("Failed trying to contact notary")).
+                        arg(qstrNotaryID).arg(tr("Perhaps it is down, or there might be a network problem"));
+                emit appendToLog(qstrErrorMsg);
+                continue;
+            }
+
+            int32_t  nReturnVal = madeEasy.VerifyMessageSuccess(response);
+            if (1 == nReturnVal)
+            {
+                emit nymWasJustChecked(hisNymId);
+                break;
+            }
+        }
+    } // for (servers)
+}
+
+
+//QString getBitmessageAddressFromClaims(const QString & claimant_nym_id);
+//QString getDisplayNameFromClaims(const QString & claimant_nym_id);
+
 // Someone did this: OT_ME::check_nym(id);  emit nymWasJustChecked(id);
 //
 void Moneychanger::onCheckNym(QString nymId)
@@ -381,19 +541,49 @@ void Moneychanger::onCheckNym(QString nymId)
 
     const std::string str_checked_nym_id(strNymId.Get());
     // -------------------------------------------------------
-    opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
+    //QString getBitmessageAddressFromClaims(const QString & claimant_nym_id);
+    //QString getDisplayNameFromClaims(const QString & claimant_nym_id);
 
-    qDebug() << "onCheckNym: claims.size(): " << claims.size();
+//    void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString notaryId)
+
+    opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
 
     for (const opentxs::Claim& claim: claims)
     {
-        // ---------------------------------------
         // Add the claim to the database if not there already.
         //
         if (!MTContactHandler::getInstance()->upsertClaim(*pCurrentNym, claim))
         {
             qDebug() << "onCheckNym: the call to upsertClaim just failed. (Returning.)";
             return;
+        }
+        // ---------------------------------------
+        const uint32_t           claim_section    = std::get<1>(claim); // section
+//      const uint32_t           claim_type       = std::get<2>(claim); // type
+        const QString            claim_value      = QString::fromStdString(std::get<3>(claim)); // value
+        const std::set<uint32_t> claim_attributes = std::get<6>(claim); // attributes
+
+        bool claim_att_active  = false;
+        bool claim_att_primary = false;
+
+        for (auto& attribute: claim_attributes)
+        {
+            if (opentxs::proto::CITEMATTR_ACTIVE  == attribute) claim_att_active  = true;
+            if (opentxs::proto::CITEMATTR_PRIMARY == attribute) claim_att_primary = true;
+        }
+
+        if (claim_att_active && claim_att_primary)
+        {
+            if (claim_section == opentxs::proto::CONTACTSECTION_NAME)
+            {
+                MTContactHandler::getInstance()->NotifyOfNymNamePair(nymId, claim_value);
+            }
+            if (claim_section == opentxs::proto::CONTACTSECTION_BITMESSAGE)
+            {
+                // NOTE: May not need to do anything here. We already imported the claims,
+                // and we can already search the claims for Bitmessage address and NymID,
+                // which we are already doing.
+            }
         }
     }
     // -------------------------------------------------------
@@ -820,6 +1010,7 @@ void Moneychanger::bootTray()
 {
     connect(this, SIGNAL(appendToLog(QString)),            this, SLOT(mc_showlog_slot(QString)));
     connect(this, SIGNAL(expertModeUpdated(bool)),         this, SLOT(onExpertModeUpdated(bool)));
+    connect(this, SIGNAL(needToCheckNym(QString,QString,QString)), this, SLOT(onNeedToCheckNym(QString,QString,QString)));
     connect(this, SIGNAL(nymWasJustChecked(QString)),      this, SLOT(onCheckNym(QString)));
     connect(this, SIGNAL(serversChanged()),                this, SLOT(onServersChanged()));
     connect(this, SIGNAL(assetsChanged()),                 this, SLOT(onAssetsChanged()));

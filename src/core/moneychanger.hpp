@@ -108,9 +108,9 @@ signals:
     void nymWasJustChecked(QString);
     void serversChanged();
     void assetsChanged();
-
     void newServerAdded(QString);
     void newAssetAdded(QString);
+    void needToCheckNym(QString, QString, QString);
 
 public slots:
     void onBalancesChanged();
@@ -122,6 +122,7 @@ public slots:
     void onExpertModeUpdated(bool bExpertMode);
     void onHideNavUpdated(bool bHideNav);
     void onCheckNym(QString nymId);
+    void onNeedToCheckNym(QString myNymId, QString hisNymId, QString notaryId);
 
 
     /**

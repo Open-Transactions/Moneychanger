@@ -198,7 +198,7 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
             QVariant    qvarNymId             = pModelClaims_->data(sourceIndexNymId);
             QVariant    qvarSection           = pModelClaims_->data(sourceIndexSection);
             QVariant    qvarType              = pModelClaims_->data(sourceIndexType);
-            QVariant    qvarValue             = pProxyModelClaims_->data(proxyIndexValue); // Proxy here since the proxy model decodes this.
+            QVariant    qvarValue             = pProxyModelClaims_->data(proxyIndexValue); // Proxy here since the proxy model decodes this. UPDATE: No longer encoded!
             QVariant    qvarStart             = pProxyModelClaims_->data(proxyIndexStart); // Proxy for these two since it formats the
             QVariant    qvarEnd               = pProxyModelClaims_->data(proxyIndexEnd);   // timestamp as a human-readable string.
             QVariant    qvarAttributes        = pModelClaims_->data(sourceIndexAttributes);

@@ -42,6 +42,8 @@ void MTNameLookupQT::notifyOfSuccessfulNotarization(const std::string & str_acct
                                                       p_txn_contents, lTransactionNum, lTransNumForDisplay);
 }
 
+
+
 std::string MTNameLookupQT::GetNymName(const std::string & str_id,
                                        const std::string   p_notary_id) const
 {
@@ -63,10 +65,39 @@ std::string MTNameLookupQT::GetNymName(const std::string & str_id,
 
             if (!contact_name.isEmpty())
                 str_result = contact_name.toStdString();
+            else
+            {
+                QString qstrName = MTContactHandler::getInstance()->getDisplayNameFromClaims(QString::fromStdString(str_id));
+
+                if (qstrName.isEmpty())
+                    qstrName = MTContactHandler::getInstance()->GetValueByID(QString::fromStdString(str_id), "nym_display_name", "nym", "nym_id");
+
+                if (!qstrName.isEmpty())
+                {
+                    MTContactHandler::getInstance()->SetContactName(nContactID, qstrName);
+                    str_result = qstrName.toStdString();
+                }
+            }
             // -----------------------------------------------
             if (p_notary_id != "")
                 MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
                                                                        QString::fromStdString(p_notary_id));
+        }
+        else // No contact found.
+        {
+            QString qstrName = MTContactHandler::getInstance()->getDisplayNameFromClaims(QString::fromStdString(str_id));
+
+            if (qstrName.isEmpty())
+                qstrName = MTContactHandler::getInstance()->GetValueByID(QString::fromStdString(str_id), "nym_display_name", "nym", "nym_id");
+
+            if (!qstrName.isEmpty())
+            {
+                str_result = qstrName.toStdString();
+                // -----------------------------------------------
+                if (p_notary_id != "")
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
+                                                                           QString::fromStdString(p_notary_id));
+            }
         }
     }
     // ------------------------
@@ -116,13 +147,26 @@ std::string MTNameLookupQT::GetAddressName(const std::string & str_address) cons
 
             if (!contact_name.isEmpty())
                 str_result = contact_name.toStdString();
+            else
+            {
+                QString qstrNymId = MTContactHandler::getInstance()->GetNymByAddress(QString::fromStdString(str_address));
+
+                if (qstrNymId.isEmpty())
+                    qstrNymId = MTContactHandler::getInstance()->getNymIdFromClaimsByBtMsg(QString::fromStdString(str_address));
+
+                if (!qstrNymId.isEmpty())
+                    str_result = this->GetNymName(qstrNymId.toStdString(), "");
+            }
         }
         else
         {
-            QString qstrNymID = MTContactHandler::getInstance()->GetNymByAddress(QString::fromStdString(str_address));
+            QString qstrNymId = MTContactHandler::getInstance()->GetNymByAddress(QString::fromStdString(str_address));
 
-            if (!qstrNymID.isEmpty())
-                str_result = this->GetNymName(qstrNymID.toStdString(), "");
+            if (qstrNymId.isEmpty())
+                qstrNymId = MTContactHandler::getInstance()->getNymIdFromClaimsByBtMsg(QString::fromStdString(str_address));
+
+            if (!qstrNymId.isEmpty())
+                str_result = this->GetNymName(qstrNymId.toStdString(), "");
         }
     }
     // ------------------------
@@ -162,6 +206,163 @@ bool MTContactHandler::claimRecordExists(const QString & claim_id)
     return (nRows > 0);
 }
 
+
+
+QString MTContactHandler::getDisplayNameFromClaims(const QString & claimant_nym_id)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString qstrReturnVal;
+    QString str_select = QString("SELECT `claim_value`, `claim_att_active`, `claim_att_primary` FROM `claim` WHERE `claim_nym_id`='%1' AND `claim_section`=%2").
+            arg(claimant_nym_id).arg(opentxs::proto::CONTACTSECTION_NAME);
+
+    int nRows = 0;
+    try
+    {
+       nRows = DBHandler::getInstance()->querySize(str_select);
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return qstrReturnVal;
+    }
+    // ---------------------------------------
+    if (nRows > 0)
+    {
+        QString qstrName, qstrFirstName, qstrInactiveName;
+        bool bActive  = false;
+        bool bPrimary = false;
+
+        for (int nCurrentRow = 0; nCurrentRow < nRows; ++nCurrentRow)
+        {
+            const QString temp = DBHandler::getInstance()->queryString(str_select, 0, nCurrentRow);
+            const int nActive  = DBHandler::getInstance()->queryInt(str_select, 1, nCurrentRow);
+            const int nPrimary = DBHandler::getInstance()->queryInt(str_select, 2, nCurrentRow);
+
+            bActive  = !(0 == nActive);
+            bPrimary = !(0 == nPrimary);
+            // --------------------------
+            if (temp.isEmpty())
+                continue;
+            qstrName = temp;
+            // --------------------------
+            if (!bActive)
+                qstrInactiveName = qstrName;
+            else if (0 == nCurrentRow)
+                qstrFirstName = qstrName;
+            // --------------------------
+            if (bPrimary)
+                break;
+        }
+
+        qstrReturnVal = bPrimary ? qstrName :
+                                   (!qstrFirstName.isEmpty() ? qstrFirstName : qstrInactiveName);
+    }
+    // ---------------------------------------
+    return qstrReturnVal;
+}
+
+QString MTContactHandler::getNymIdFromClaimsByBtMsg(const QString & bitmessage_address)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString qstrReturnVal;
+    QString str_select = QString("SELECT `claim_nym_id` FROM `claim` WHERE `claim_value`='%1' AND `claim_section`=%2").
+            arg(bitmessage_address).arg(opentxs::proto::CONTACTSECTION_BITMESSAGE);
+
+    int nRows = 0;
+    try
+    {
+       nRows = DBHandler::getInstance()->querySize(str_select);
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return qstrReturnVal;
+    }
+    // ---------------------------------------
+    if (nRows > 0)
+    {
+        QString qstrNymId;
+
+        int nFound = 0;
+        for (int nCurrentRow = 0; nCurrentRow < nRows; ++nCurrentRow)
+        {
+            const QString temp = DBHandler::getInstance()->queryString(str_select, 0, nCurrentRow);
+            // --------------------------
+            if (temp.isEmpty())
+                continue;
+            nFound++;
+            // --------------------------
+            if (1 == nFound)
+                qstrNymId = temp;
+            else
+                qDebug() << "WARNING JUSTUS: Right now we're just grabbing the first NymId that matches a Bitmessage address, BUT there were multiple matches! CLAIM RETURNED MAY BE FALSE. Need rules "
+                            "here so we only return a verified claim!";
+        }
+
+        qstrReturnVal = qstrNymId;
+    }
+    // ---------------------------------------
+    return qstrReturnVal;
+}
+
+QString MTContactHandler::getBitmessageAddressFromClaims(const QString & claimant_nym_id)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString qstrReturnVal;
+    QString str_select = QString("SELECT `claim_value`, `claim_att_active`, `claim_att_primary` FROM `claim` WHERE `claim_nym_id`='%1' AND `claim_section`=%2").
+            arg(claimant_nym_id).arg(opentxs::proto::CONTACTSECTION_BITMESSAGE);
+
+    int nRows = 0;
+    try
+    {
+       nRows = DBHandler::getInstance()->querySize(str_select);
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return qstrReturnVal;
+    }
+    // ---------------------------------------
+    if (nRows > 0)
+    {
+        QString qstrAddress, qstrFirstAddress, qstrInactiveAddress;
+        bool bActive  = false;
+        bool bPrimary = false;
+
+        int nFound = 0;
+        for (int nCurrentRow = 0; nCurrentRow < nRows; ++nCurrentRow)
+        {
+            const QString temp = DBHandler::getInstance()->queryString(str_select, 0, nCurrentRow);
+            const int nActive  = DBHandler::getInstance()->queryInt(str_select, 1, nCurrentRow);
+            const int nPrimary = DBHandler::getInstance()->queryInt(str_select, 2, nCurrentRow);
+
+            bActive  = !(0 == nActive);
+            bPrimary = !(0 == nPrimary);
+            // --------------------------
+            if (temp.isEmpty())
+                continue;
+            qstrAddress = temp;
+            nFound++;
+            // --------------------------
+            if (!bActive)
+                qstrInactiveAddress = qstrAddress;
+            else if (1 == nFound)
+                qstrFirstAddress = qstrAddress;
+            // --------------------------
+            if (bPrimary)
+                break;
+        }
+
+        qstrReturnVal = bPrimary ? qstrAddress :
+                                   (!qstrFirstAddress.isEmpty() ? qstrFirstAddress : qstrInactiveAddress);
+    }
+    // ---------------------------------------
+    return qstrReturnVal;
+}
+
 bool MTContactHandler::upsertClaim(opentxs::Nym& nym, const opentxs::Claim& claim)
 {
     QMutexLocker locker(&m_Mutex);
@@ -199,30 +400,56 @@ bool MTContactHandler::upsertClaim(opentxs::Nym& nym, const opentxs::Claim& clai
     const std::string str_attributes(strAttributes.Get());
     const QString qstrAttributes(QString::fromStdString(str_attributes));
     // ------------------------------------------------------------
-    const QString encoded_claim_value = Encode(claim_value);
-    // ------------------------------------------------------------
     QString str_select_count = QString("SELECT claim_section FROM `claim` WHERE `claim_id`='%1' LIMIT 0,1").arg(claim_id);
 
     const bool bClaimExists = (DBHandler::getInstance()->querySize(str_select_count) > 0);
     // ------------------------------------------------------------
     // TODO: Do a real upsert here instead of this crap.
     //
-    QString str_insert;
+    QString queryStr;
     if (!bClaimExists)
-        str_insert = QString("INSERT INTO `claim`"
+        queryStr = QString("INSERT INTO `claim`"
                                  " (`claim_id`, `claim_nym_id`, `claim_section`, `claim_type`, `claim_value`,"
                                  "  `claim_start`, `claim_end`, `claim_attributes`, `claim_att_active`, `claim_att_primary`)"
-                                 "  VALUES('%1', '%2', %3, %4, '%5', %6, %7, '%8', %9, %10)").
-                arg(claim_id).arg(qstrNymId).arg(claim_section).arg(claim_type).arg(encoded_claim_value).arg(claim_start).
-                arg(claim_end).arg(qstrAttributes).arg(claim_att_active ? 1 : 0).arg(claim_att_primary ? 1 : 0);
-    else
-        str_insert = QString("UPDATE `claim` SET"
-                             " `claim_nym_id`='%1', `claim_section`=%2,`claim_type`=%3,`claim_value`='%4',`claim_start`=%5,`claim_end`=%6,"
-                             " `claim_attributes`='%7',`claim_att_active`=%8,`claim_att_primary`=%9 WHERE `claim_id`='%10'").
-                arg(qstrNymId).arg(claim_section).arg(claim_type).arg(encoded_claim_value).arg(claim_start).
-                arg(claim_end).arg(qstrAttributes).arg(claim_att_active ? 1 : 0).arg(claim_att_primary ? 1 : 0).arg(claim_id);
-    const bool bRan = DBHandler::getInstance()->runQuery(str_insert);
+                                 "  VALUES(:claim_idBlah, :claim_nym_idBlah, :claim_sectionBlah, :claim_typeBlah, :claim_valueBlah,"
+                                 ":claim_startBlah , :claim_endBlah, :claim_attributesBlah, :claim_att_activeBlah, :claim_att_primaryBlah)");
 
+    else
+        queryStr = QString("UPDATE `claim` SET"
+                             " `claim_nym_id`=:claim_nym_idBlah, `claim_section`=:claim_sectionBlah,`claim_type`=:claim_typeBlah,"
+                             " `claim_value`=:claim_valueBlah,`claim_start`=:claim_startBlah,`claim_end`=:claim_endBlah,"
+                             " `claim_attributes`=:claim_attributesBlah,`claim_att_active`=:claim_att_activeBlah,"
+                             " `claim_att_primary`=:claim_att_primaryBlah WHERE `claim_id`=:claim_idBlah");
+    bool bRan = false;
+
+    try
+    {
+    #ifdef CXX_11
+        std::unique_ptr<DBHandler::PreparedQuery> qu;
+    #else /* CXX_11?  */
+        std::auto_ptr<DBHandler::PreparedQuery> qu;
+    #endif /* CXX_11?  */
+        qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+        // ---------------------------------------------
+        qu->bind (":claim_idBlah", claim_id);
+        qu->bind (":claim_nym_idBlah", qstrNymId);
+        qu->bind (":claim_sectionBlah", claim_section);
+        qu->bind (":claim_typeBlah", claim_type);
+        qu->bind (":claim_valueBlah", claim_value);
+        qu->bind (":claim_startBlah", claim_start);
+        qu->bind (":claim_endBlah", claim_end);
+        qu->bind (":claim_attributesBlah", qstrAttributes);
+        qu->bind (":claim_att_activeBlah", (claim_att_active ? 1 : 0));
+        qu->bind (":claim_att_primaryBlah", (claim_att_primary ? 1 : 0));
+
+        bRan = DBHandler::getInstance ()->runQuery (qu.release ());
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return false;
+    }
+    // -----------------------------
     if (bClaimExists)
     {
         if (bRan)
@@ -230,10 +457,11 @@ bool MTContactHandler::upsertClaim(opentxs::Nym& nym, const opentxs::Claim& clai
         else
             return false;
     }
-
+    // -----------------------------
     const int nRowId = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `claim`", 0, 0);
     return (nRowId > 0);
 }
+
 
 
 static void blah()
@@ -2894,6 +3122,45 @@ void MTContactHandler::NotifyOfNymServerPair(QString nym_id_string, QString nota
     }
 }
 
+void MTContactHandler::NotifyOfNymNamePair(QString nym_id_string, QString name_string)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_select = QString("SELECT `nym_id` FROM `nym` WHERE `nym_id`='%1' LIMIT 0,1").arg(nym_id_string);
+    const int nRows = DBHandler::getInstance()->querySize(str_select);
+
+    QString queryStr;
+
+    if (0 == nRows) // It wasn't already there. (Add it.)
+    {
+        queryStr = QString("INSERT INTO `nym` "
+                           "(`nym_id`, `nym_display_name`, `contact_id`) "
+                           "VALUES(:nym_idBlah, :nym_display_nameBlah, 0)");
+    }
+    else
+    {
+        queryStr = QString("UPDATE `nym` SET `nym_display_name`=:nym_display_nameBlah WHERE `nym_id`=:nym_idBlah");
+    }
+
+    try
+    {
+    #ifdef CXX_11
+        std::unique_ptr<DBHandler::PreparedQuery> qu;
+    #else /* CXX_11?  */
+        std::auto_ptr<DBHandler::PreparedQuery> qu;
+    #endif /* CXX_11?  */
+        qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+        // ---------------------------------------------
+        qu->bind (":nym_idBlah", nym_id_string);
+        qu->bind (":nym_display_nameBlah", name_string);
+
+        DBHandler::getInstance ()->runQuery (qu.release ());
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+    }
+}
 
 // NOTE: if an account isn't ALREADY found in my contact list, I am
 // very unlikely to find it in my wallet (since it's still most likely
