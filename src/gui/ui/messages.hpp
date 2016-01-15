@@ -66,6 +66,7 @@ public:
 
 public slots:
     void onRecordlistPopulated();
+    void onClaimsUpdatedForNym(QString nymId);
 
 signals:
     void needToDownloadMail();
@@ -136,6 +137,8 @@ private:
 
     QList<QModelIndex> listRecordsToMarkAsReplied_;
     QList<QModelIndex> listRecordsToMarkAsForwarded_;
+
+    bool bRefreshingAfterUpdatedClaims_=false;
 };
 
 #endif // MESSAGES_HPP
