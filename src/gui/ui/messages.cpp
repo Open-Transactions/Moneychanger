@@ -695,11 +695,7 @@ void Messages::on_treeWidget_currentItemChanged(QTreeWidgetItem *current, QTreeW
 
 void Messages::RefreshMessages()
 {
-    ui->tableViewSent->resizeColumnsToContents();
-    ui->tableViewReceived->resizeColumnsToContents();
-
-    ui->tableViewSent->horizontalHeader()->setStretchLastSection(true);
-    ui->tableViewReceived->horizontalHeader()->setStretchLastSection(true);
+    bRefreshingAfterUpdatedClaims_ = false;
     // -------------------------------------------
     MSG_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
 
@@ -785,6 +781,12 @@ void Messages::RefreshMessages()
             }
         }
     }
+    // -------------------------------------------
+    ui->tableViewSent->resizeColumnsToContents();
+    ui->tableViewReceived->resizeColumnsToContents();
+
+    ui->tableViewSent->horizontalHeader()->setStretchLastSection(true);
+    ui->tableViewReceived->horizontalHeader()->setStretchLastSection(true);
 }
 
 void Messages::RefreshTree()
@@ -922,6 +924,17 @@ void Messages::RefreshTree()
 }
 
 // --------------------------------------------------
+
+
+void Messages::onClaimsUpdatedForNym(QString nymId)
+{
+    if (!bRefreshingAfterUpdatedClaims_)
+    {
+        bRefreshingAfterUpdatedClaims_ = true;
+        QTimer::singleShot(500, this, SLOT(RefreshMessages()));
+    }
+}
+
 //#define MSG_SOURCE_COL_MSG_ID 0
 //#define MSG_SOURCE_COL_HAVE_READ 1
 //#define MSG_SOURCE_COL_HAVE_REPLIED 2
@@ -1237,6 +1250,7 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
         // ---------------------------------------------------
         if (0 == mapNymIds.size())
         {
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Unable to find a NymId for this message. (Unable to download credentials without Id.)"));
             qDebug() << "UNABLE to find a NymId for this message. (Failed trying to download his credentials.)";
             return;
         }
@@ -1251,9 +1265,6 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
             nFound++;
             emit needToCheckNym("", it_nyms.key(), qstrNotaryId);
         }
-
-        if (nFound > 0)
-            RefreshMessages();
     }
     // ----------------------------------
     else if (selectedAction == pActionExistingContact)

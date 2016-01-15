@@ -541,6 +541,10 @@ void Moneychanger::onCheckNym(QString nymId)
 
     const std::string str_checked_nym_id(strNymId.Get());
     // -------------------------------------------------------
+
+
+
+    // -------------------------------------------------------
     //QString getBitmessageAddressFromClaims(const QString & claimant_nym_id);
     //QString getDisplayNameFromClaims(const QString & claimant_nym_id);
 
@@ -4360,11 +4364,9 @@ void Moneychanger::mc_messages_dialog()
     {
         messages_window = new Messages(this);
 
-        connect(messages_window, SIGNAL(needToDownloadMail()),
-                this,            SLOT(onNeedToDownloadMail()));
-
-        connect(this,            SIGNAL(populatedRecordlist()),
-                messages_window, SLOT(onRecordlistPopulated()));
+        connect(messages_window, SIGNAL(needToDownloadMail()),          this,            SLOT(onNeedToDownloadMail()));
+        connect(this,            SIGNAL(populatedRecordlist()),         messages_window, SLOT(onRecordlistPopulated()));
+        connect(this,            SIGNAL(claimsUpdatedForNym(QString)),  messages_window, SLOT(onClaimsUpdatedForNym(QString)));
     }
     // ---------------------------------
     messages_window->dialog();
@@ -4387,20 +4389,12 @@ void Moneychanger::mc_payments_dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
     {
         payments_window = new Payments(this);
 
-        connect(payments_window, SIGNAL(showDashboard()),
-                this,            SLOT(mc_overview_slot()));
-
-        connect(payments_window, SIGNAL(needToDownloadAccountData()),
-                this,            SLOT(onNeedToDownloadAccountData()));
-
-        connect(this,            SIGNAL(populatedRecordlist()),
-                payments_window, SLOT(onRecordlistPopulated()));
-
-        connect(payments_window, SIGNAL(needToPopulateRecordlist()),
-                this,            SLOT(onNeedToPopulateRecordlist()));
-
-        connect(this,            SIGNAL(balancesChanged()),
-                payments_window, SLOT(onBalancesChanged()));
+        connect(payments_window, SIGNAL(showDashboard()),               this,            SLOT(mc_overview_slot()));
+        connect(payments_window, SIGNAL(needToDownloadAccountData()),   this,            SLOT(onNeedToDownloadAccountData()));
+        connect(this,            SIGNAL(populatedRecordlist()),         payments_window, SLOT(onRecordlistPopulated()));
+        connect(payments_window, SIGNAL(needToPopulateRecordlist()),    this,            SLOT(onNeedToPopulateRecordlist()));
+        connect(this,            SIGNAL(balancesChanged()),             payments_window, SLOT(onBalancesChanged()));
+        connect(this,            SIGNAL(claimsUpdatedForNym(QString)),  payments_window, SLOT(onClaimsUpdatedForNym(QString)));
 
     }
     // ---------------------------------
