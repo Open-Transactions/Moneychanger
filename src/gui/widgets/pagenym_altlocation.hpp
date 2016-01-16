@@ -41,7 +41,7 @@ signals:
 //    void initialNameProfileSetting(QString); // To set the name as the first profile item.
 
 protected:
-    QWidget * createSingleContactItem(GroupBoxContactItems * pGroupBox, int nComboIndex=0, const QString textValue="");
+    QWidget * createSingleContactItem(GroupBoxContactItems * pGroupBox, int nComboIndex=0, const QString textValue="", const bool bIsPrimary=false);
     bool      deleteSingleContactItem(GroupBoxContactItems * pGroupBox, QWidget * pWidget);
     bool      moveSingleContactItem(  GroupBoxContactItems * pGroupBoxOld,
                                       GroupBoxContactItems * pGroupBoxNew, QWidget * pWidget,
@@ -63,6 +63,8 @@ private:
 
     QList<QWidget *>  listTabs_;
     QMap<uint32_t, QList<GroupBoxContactItems *> * > mapGroupBoxLists_;
+
+    bool bInitialized=false;
 };
 
 #endif // PAGENYM_ALTLOCATION_HPP

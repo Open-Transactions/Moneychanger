@@ -56,15 +56,15 @@ void DlgMenu::onAboutToQuit()
 
 void DlgMenu::closeEvent(QCloseEvent *event)
 {
-    if (bQuitting_ || !this->isVisible())
+//    if (bQuitting_ || !this->isVisible())
         QDialog::closeEvent(event);
-    else
-    {
-        QMessageBox::information(this, tr("Moneychanger"),
-                                tr("To hide this window, there is an option in the Settings. To quit the application entirely, click 'Quit'."));
-//      this->setVisible(false);
-        event->ignore();
-    }
+//    else
+//    {
+//        QMessageBox::information(this, tr("Moneychanger"),
+//                                tr("To hide this window, there is an option in the Settings. To quit the application entirely, click 'Quit'."));
+////      this->setVisible(false);
+//        event->ignore();
+//    }
 }
 
 
@@ -76,11 +76,11 @@ DlgMenu::~DlgMenu()
 
 void DlgMenu::dialog()
 {
-    refreshOptions();
-
     Focuser f(this);
     f.show();
     f.focus();
+
+    refreshOptions();
 }
 
 

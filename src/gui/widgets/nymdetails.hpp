@@ -51,6 +51,7 @@ public:
 
 signals:
     void nymWasJustChecked(QString);
+    void appendToLog(QString);
 
 public slots:
     void onClaimsUpdatedForNym(QString nymId);
@@ -84,6 +85,8 @@ private slots:
     void on_tableWidget_customContextMenuRequested(const QPoint &pos);
     void on_toolButtonDescription_clicked();
     void on_toolButtonQrCode_clicked();
+
+    void on_btnEditProfile_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
