@@ -7,6 +7,7 @@
 
 #include <gui/widgets/editdetails.hpp>
 #include <gui/widgets/wizardaddnym.hpp>
+#include <gui/widgets/wizardeditprofile.hpp>
 
 #include <QComboBox>
 #include <QVBoxLayout>
@@ -20,8 +21,10 @@
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OpenTransactions.hpp>
+#include <opentxs/core/util/Assert.hpp>
 
 #include <set>
+#include <tuple>
 
 
 // Triggers whenever a contact Item is deleted on this wizard page.
@@ -105,7 +108,11 @@ void MTPageNym_AltLocation::PrepareOutputData()
 {
     // Step 1: wipe the old data.
     //
-    static_cast<MTWizardAddNym *>(wizard())->listContactDataTuples_.clear();
+    MTWizardAddNym    * pWizardAdd  = dynamic_cast<MTWizardAddNym    *>(wizard());
+    WizardEditProfile * pWizardEdit = dynamic_cast<WizardEditProfile *>(wizard());
+
+    if (nullptr != pWizardAdd)       pWizardAdd ->listContactDataTuples_.clear();
+    else if (nullptr != pWizardEdit) pWizardEdit->listContactDataTuples_.clear();
 
     // Step 2: reconstruct it from the widgets.
     QMap<uint32_t, QList<GroupBoxContactItems *> * >::iterator it_mapGroupBoxLists;
@@ -140,10 +147,23 @@ void MTPageNym_AltLocation::PrepareOutputData()
                         const QString & qstrText = pLineEdit->text();
 
                         if (!qstrText.isEmpty())
-                            static_cast<MTWizardAddNym *>(wizard())->listContactDataTuples_.push_back(
-                                    std::make_tuple(indexSection, indexSectionType,
-                                        qstrText.toStdString(),
-                                        pBtnRadio->isChecked()));
+                        {
+                            std::string str_text(qstrText.toStdString());
+
+                            if (nullptr != pWizardAdd)
+                                pWizardAdd->listContactDataTuples_.push_back(
+                                        tupleContactDataItem{indexSection,
+                                                             indexSectionType,
+                                                             str_text,
+                                                             pBtnRadio->isChecked()} );
+
+                            else if (nullptr != pWizardEdit)
+                                pWizardEdit->listContactDataTuples_.push_back(
+                                        tupleContactDataItem{indexSection,
+                                                             indexSectionType,
+                                                             str_text,
+                                                             pBtnRadio->isChecked()} );
+                        }
                     }
                 }
             }
@@ -261,9 +281,41 @@ void MTPageNym_AltLocation::SetFieldsBlank()
 //    setField("NymName", QString("<%1>").arg(tr("Click to choose Nym")));
 
 
-    //QList<QWidget *>  listTabs_;
-    //QMap<int, QList<GroupBoxContactItems *> > mapGroupBoxLists_;
+//    for(auto * ptab:listTabs_)
+//    {
+//        ptab->setParent(nullptr);
+//        ptab->deleteLater();
+//    }
+//    listTabs_.clear();
 
+//    QMap<uint32_t, QList<GroupBoxContactItems *> * >::iterator it_mapGroupBoxLists;
+
+//    for (it_mapGroupBoxLists  = mapGroupBoxLists_.begin();
+//         it_mapGroupBoxLists != mapGroupBoxLists_.end();
+//         it_mapGroupBoxLists++)
+//    {
+//        QList<GroupBoxContactItems *> * pList = it_mapGroupBoxLists.value();
+
+//        if (nullptr != pList)
+//        {
+//            QList<GroupBoxContactItems *>::iterator it_list;
+
+//            for (it_list  = pList->begin();
+//                 it_list != pList->end();
+//                 it_list++)
+//            {
+//                GroupBoxContactItems * pGroupBox = *it_list;
+
+//                if (nullptr != pGroupBox)
+//                {
+//                    pGroupBox->setParent(nullptr);
+//                    pGroupBox->deleteLater();
+//                }
+//            }
+//            delete pList;
+//        }
+//    }
+//    mapGroupBoxLists_.clear();
 }
 
 
@@ -398,7 +450,8 @@ bool MTPageNym_AltLocation::deleteSingleContactItem(GroupBoxContactItems * pGrou
     return true;
 }
 
-QWidget * MTPageNym_AltLocation::createSingleContactItem(GroupBoxContactItems * pGroupBox, int nComboIndex/*=0*/, const QString textValue/*=""*/)
+QWidget * MTPageNym_AltLocation::createSingleContactItem(GroupBoxContactItems * pGroupBox, int nComboIndex/*=0*/,
+                                                         const QString textValue/*=""*/, const bool bIsPrimary/*=false*/)
 {
     QWidget      * pWidgetContactItem = new QWidget;
     // ----------------------------------------------------------
@@ -447,6 +500,7 @@ QWidget * MTPageNym_AltLocation::createSingleContactItem(GroupBoxContactItems * 
     // After all, you can't set the combo box to a certain current index
     // if you haven't even populated it yet!
     //
+    pBtnRadio->setChecked(bIsPrimary);
     pComboType->setCurrentIndex(nComboIndex);
     pLineEditItemValue->setText(textValue);
     // ----------------------------------------------------------
@@ -465,7 +519,7 @@ QWidget * MTPageNym_AltLocation::createSingleContactItem(GroupBoxContactItems * 
     connect(pBtnDelete, SIGNAL(clicked()), this, SLOT(on_btnContactItemDelete_clicked()));
     connect(pLineEditItemValue, SIGNAL(textChanged(QString)), this, SLOT(on_lineEditItemValue_textChanged(QString)));
     connect(pBtnRadio, SIGNAL(toggled(bool)), this, SLOT(on_btnPrimary_toggled(bool)));
-//    connect(this, SIGNAL(initialNameProfileSetting(QString)), pLineEditItemValue, SIGNAL(textChanged(QString)));
+//  connect(this, SIGNAL(initialNameProfileSetting(QString)), pLineEditItemValue, SIGNAL(textChanged(QString)));
     // ----------------------------------------------------------
 //    layout->setStretch(0,  0);
 //    layout->setStretch(1, -1);
@@ -502,8 +556,17 @@ MTPageNym_AltLocation::MTPageNym_AltLocation(QWidget *parent) :
 
 void MTPageNym_AltLocation::initializePage() //virtual
 {
-    //QList<QWidget *>  listTabs_;
+    if (!bInitialized)
+    {
+        bInitialized=true;
 
+    WizardEditProfile * pWizard = dynamic_cast<WizardEditProfile *>(wizard());
+    const bool bEditingExistingProfile = (nullptr != pWizard);
+
+    listContactDataTuples copy_of_list;
+    if (bEditingExistingProfile) copy_of_list = pWizard->listContactDataTuples_;
+    // ------------------------------
+    //QList<QWidget *>  listTabs_;
     int nCurrentTab = 0;
 
     std::set<uint32_t> sections = opentxs::OTAPI_Wrap::OTAPI()->GetContactSections();
@@ -556,29 +619,88 @@ void MTPageNym_AltLocation::initializePage() //virtual
             pGroupBox->indexSectionType_ = indexSectionType;
             pGroupBox->mapTypeNames_ = mapTypeNames;
 
-            if (!bAddedInitialItem &&
-                    ( (1 != indexSection) ||     // hardcoded for CONTACTSECTION_NAME
-                      (1 == indexSectionType ))  // hardcoded for CITEMTYPE_PERSONAL
-                    )
+            if (bEditingExistingProfile) // We're editing pre-existing claims, so need to add them to the UI.
             {
-                bAddedInitialItem = true;
-                QWidget * pInitialItem = nullptr;
-                if (1 == nCurrentTab)
-                {
-                    // Pre-fill the name on the first tab.
-                    QString qstrName = wizard()->field("Name").toString();
-                    pInitialItem = createSingleContactItem(pGroupBox, 0, qstrName);
-                }
-                else
-                    pInitialItem = createSingleContactItem(pGroupBox);
+        //      typedef std::tuple<uint32_t, uint32_t, std::string, bool> tupleContactDataItem;
+        //      typedef std::list<tupleContactDataItem> listContactDataTuples;
 
-                if (nullptr != pInitialItem)
+//                qDebug() << "===> copy_of_list.size(): " << copy_of_list.size();
+
+                int nCounter=0;
+                for (auto & data_item: copy_of_list)
                 {
-                    layout->addWidget(pInitialItem);
-                    nContactItemsAdded++;
+//                    qDebug() << "Loop through copy_of_list nCounter: " << nCounter++;
+//                    qDebug() << "std::get<0>(data_item): " << std::get<0>(data_item);
+//                    qDebug() << "std::get<1>(data_item): " << std::get<1>(data_item);
+//                    qDebug() << "std::get<2>(data_item): " << QString::fromStdString(std::get<2>(data_item));
+//                    qDebug() << "std::get<3>(data_item): " << std::get<3>(data_item);
+
+                    const uint32_t    item_section = std::get<0>(data_item);
+                    const uint32_t    item_type    = std::get<1>(data_item);
+                    const std::string item_value   = std::get<2>(data_item);
+                    const bool        item_primary = std::get<3>(data_item);
+
+                    if ( (item_section == indexSection) &&
+                         (item_type    == indexSectionType) )
+                    {
+                        // Crash isolated to the below line of code:
+                        //qDebug() << "Crash isolated to below line of code: indexSectionType: " << indexSectionType;
+
+                        OT_ASSERT(indexSectionType >= 1);
+
+//                      QWidget * pItem = createSingleContactItem(pGroupBox);
+                        QWidget * pItem = createSingleContactItem(pGroupBox, indexSectionType-1,
+                                                        QString::fromStdString(item_value), item_primary);
+
+                        if (nullptr != pItem)
+                        {
+                            layout->addWidget(pItem);
+                            nContactItemsAdded++;
+                        }
+                    }
                 }
 
-                pGroupBox->setLayout(layout);
+                if (!bAddedInitialItem && (0 == nContactItemsAdded) )
+                {
+                    bAddedInitialItem = true;
+                    QWidget * pItem = createSingleContactItem(pGroupBox);
+
+                    if (nullptr != pItem)
+                    {
+                        layout->addWidget(pItem);
+                        nContactItemsAdded++;
+                    }
+                }
+
+                if (nContactItemsAdded > 0)
+                    pGroupBox->setLayout(layout);
+            }
+            else // This wizard is for a new Nym being created for the first time. He has no pre-existing claims.
+            {
+                if (!bAddedInitialItem &&
+                        ( (1 != indexSection) ||     // hardcoded for CONTACTSECTION_NAME
+                          (1 == indexSectionType ))  // hardcoded for CITEMTYPE_PERSONAL
+                        )
+                {
+                    bAddedInitialItem = true;
+                    QWidget * pInitialItem = nullptr;
+                    if (1 == nCurrentTab)
+                    {
+                        // Pre-fill the name on the first tab.
+                        QString qstrName = wizard()->field("Name").toString();
+                        pInitialItem = createSingleContactItem(pGroupBox, 0, qstrName, true);
+                    }
+                    else
+                        pInitialItem = createSingleContactItem(pGroupBox);
+
+                    if (nullptr != pInitialItem)
+                    {
+                        layout->addWidget(pInitialItem);
+                        nContactItemsAdded++;
+                    }
+
+                    pGroupBox->setLayout(layout);
+                }
             }
             // -------------------------------
             pGroupBox->pListGroupBoxes_ = pListGroupBoxes;
@@ -600,7 +722,9 @@ void MTPageNym_AltLocation::initializePage() //virtual
         ui->tabWidget->addTab(pTab, QString::fromStdString(sectionName));
     }
 
-    PrepareOutputData();
+    if (!bEditingExistingProfile)
+        PrepareOutputData();
+    }
 }
 
 

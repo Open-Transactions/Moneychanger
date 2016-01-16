@@ -93,6 +93,7 @@ public:
 
   void NotifyOfNymNamePair(QString nym_id_string, QString name_string);
   void NotifyOfNymServerPair(QString nym_id_string, QString notary_id_string);
+  void NotifyOfNymServerUnpair(QString nym_id_string, QString notary_id_string);
 
   int  CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string=QString(""), QString payment_code=QString(""));
   int  CreateContactBasedOnAddress(QString qstrAddress, QString qstrMethodType);
@@ -284,6 +285,8 @@ public:
                                const std::string & verifier_nym_id,
                                const opentxs::OT_API::Verification & verification,
                                const bool bIsInternal=true);
+
+  void clearClaimsForNym(const QString & qstrNymId);
   // ----------------------------------------------------------
   public:
     ~MTContactHandler();

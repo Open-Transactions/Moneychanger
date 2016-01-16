@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>WizardEditProfile</class>
+ <widget class="QWizard" name="WizardEditProfile">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>791</width>
+    <height>408</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Wizard</string>
+  </property>
+  <widget class="MTPageNym_AltLocation" name="wizardPage"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MTPageNym_AltLocation</class>
+   <extends>QWizardPage</extends>
+   <header location="global">gui/widgets/pagenym_altlocation.hpp</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

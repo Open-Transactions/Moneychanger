@@ -266,6 +266,8 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
             connect(Moneychanger::It(), SIGNAL(claimsUpdatedForNym(QString)),
                     m_pDetailPane,      SLOT  (onClaimsUpdatedForNym(QString)));
             // -------------------------------------------
+            connect(m_pDetailPane, SIGNAL(appendToLog(QString)), Moneychanger::It(), SLOT(mc_showlog_slot(QString)));
+
             break;
 
         case MTDetailEdit::DetailEditTypeContact:

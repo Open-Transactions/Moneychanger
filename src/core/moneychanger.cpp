@@ -1025,8 +1025,8 @@ void Moneychanger::bootTray()
     connect(this, SIGNAL(newServerAdded(QString)),         this, SLOT(onNewServerAdded(QString)));
     connect(this, SIGNAL(newAssetAdded(QString)),          this, SLOT(onNewAssetAdded(QString)));
     // ----------------------------------------------------------------------------
-    connect(this, SIGNAL(serversChanged(QString)),         this, SIGNAL(updateMenuAndPopulateRecords()));
-    connect(this, SIGNAL(assetsChanged(QString)),          this, SIGNAL(updateMenuAndPopulateRecords()));
+    connect(this, SIGNAL(serversChanged()),                this, SIGNAL(updateMenuAndPopulateRecords()));
+    connect(this, SIGNAL(assetsChanged()),                 this, SIGNAL(updateMenuAndPopulateRecords()));
     connect(this, SIGNAL(newServerAdded(QString)),         this, SIGNAL(updateMenuAndPopulateRecords()));
     connect(this, SIGNAL(newAssetAdded(QString)),          this, SIGNAL(updateMenuAndPopulateRecords()));
     // ----------------------------------------------------------------------------
