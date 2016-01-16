@@ -11,6 +11,7 @@
 
 #include <gui/widgets/credentials.hpp>
 #include <gui/widgets/wizardaddnym.hpp>
+#include <gui/widgets/wizardeditprofile.hpp>
 #include <gui/widgets/overridecursor.hpp>
 
 #include <gui/widgets/qrtoolbutton.hpp>
@@ -27,6 +28,8 @@
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OpenTransactions.hpp>
 #include <opentxs/client/OT_ME.hpp>
+
+#include <opentxs/core/NumList.hpp>
 
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
@@ -50,6 +53,7 @@
 #include <QToolButton>
 #include <QScopedPointer>
 #include <QLabel>
+#include <QSpacerItem>
 
 #include <map>
 #include <tuple>
@@ -65,11 +69,70 @@ void MTNymDetails::ClearTree()
     }
 }
 
+
+//resume
 void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
 {
-//resume todo
-    // UPDATE: May not do anything here at all.
+    // Get the Nym as private, to see if we definitely own this as a private Nym.
+    // If so, then we have just finished editing the claims on one of our own Nyms.
+    // (That's every single case inside this file, but we may have received the signal
+    // here from some other screen emitting it, like ContactDetails.)
+    // At this point we want to re-register the Nym on all its servers, in order to
+    // update each server's copy of the Nym's credentials containing the updated
+    // claims.
 
+    if (nymId.isEmpty())
+        return;
+    // -------------------------------------
+    std::string         str_nym_id  (nymId.toStdString());
+    opentxs::String     strNymId    (str_nym_id);
+    opentxs::Identifier id_nym      (strNymId);
+    // -------------------------------------
+    opentxs::Nym * pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(id_nym) ;
+
+    if (nullptr == pCurrentNym)
+        return;
+
+    const int32_t server_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
+    // -----------------------------------------------
+    for (int32_t ii = 0; ii < server_count; ++ii)
+    {
+        QString notary_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(ii));
+        // -----------------------------------------------
+        if (!notary_id.isEmpty())
+        {
+            const bool isReg = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(str_nym_id, notary_id.toStdString());
+
+            if (isReg) // We only RE-REGISTER at servers where we're ALREADY registered.
+            {          // (To update their copy of the credentials we just edited.)
+                std::string response;
+                {
+                    MTSpinner theSpinner;
+                    opentxs::OT_ME madeEasy;
+                    response = madeEasy.register_nym(notary_id.toStdString(), str_nym_id);
+                    if (opentxs::OTAPI_Wrap::networkFailure())
+                    {
+                        QString qstrErrorMsg;
+                        qstrErrorMsg = QString("%1: %2. %3.").
+                                arg(tr("Failed trying to contact notary")).
+                                arg(notary_id).arg(tr("Perhaps it is down, or there might be a network problem"));
+                        emit appendToLog(qstrErrorMsg);
+                        continue;
+                    }
+                }
+
+                opentxs::OT_ME madeEasy;
+                if (!madeEasy.VerifyMessageSuccess(response)) {
+                    Moneychanger::It()->HasUsageCredits(notary_id, nymId);
+                    continue;
+                }
+                else
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(nymId, notary_id);
+            }
+        }
+    }
+    // -----------------------------------------------
+    emit RefreshRecordsAndUpdateMenu();
 }
 
 void MTNymDetails::RefreshTree(const QString & qstrNymId)
@@ -106,10 +169,7 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
 
         if (pCurrentNym)
         {
-            opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
-
-            qDebug() << "RefreshTree: claims.size(): " << claims.size();
-
+//          opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
             // ---------------------------------------
 //          nym_claims.insert( NymClaims(str_nym_id, claims) );
             nym_names.insert(std::pair<std::string, std::string>(str_nym_id, str_nym_name));
@@ -425,6 +485,17 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
             };
             treeWidgetClaims_->setHeaderLabels(labels);
             // -------------------------------
+            QHBoxLayout * phBox        = new QHBoxLayout;
+            QPushButton * pEditButton  = new QPushButton(tr("Edit Profile"));
+            QSpacerItem * pSpacerItem1 = new QSpacerItem(100, 50);
+            QSpacerItem * pSpacerItem2 = new QSpacerItem(100, 50);
+
+            connect(pEditButton, SIGNAL(clicked(bool)), this, SLOT(on_btnEditProfile_clicked()));
+
+            phBox->addSpacerItem(pSpacerItem1);
+            phBox->addWidget(pEditButton);
+            phBox->addSpacerItem(pSpacerItem2);
+            // -------------------------------
             QVBoxLayout * pvBox = new QVBoxLayout;
 
             QLabel * pLabel = new QLabel( QString("%1:").arg(tr("Profile")) );
@@ -432,6 +503,7 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
             pvBox->setAlignment(Qt::AlignTop);
             pvBox->addWidget   (pLabel);
             pvBox->addWidget   (treeWidgetClaims_);
+            pvBox->addLayout   (phBox);
             // -------------------------------
             pReturnValue = new QWidget;
             pReturnValue->setContentsMargins(0, 0, 0, 0);
@@ -1226,6 +1298,131 @@ void MTNymDetails::DeleteButtonClicked()
 
 // ------------------------------------------------------
 
+
+void MTNymDetails::on_btnEditProfile_clicked()
+{
+    if (!pLineEditNymId_)
+        return;
+
+    const QString qstrNymId = pLineEditNymId_->text();
+
+    if (qstrNymId.isEmpty())
+        return;
+    // -------------------------------------
+    std::string         str_nym_id  (qstrNymId.toStdString());
+    opentxs::String     strNymId    (str_nym_id);
+    opentxs::Identifier id_nym      (strNymId);
+    // -------------------------------------
+    opentxs::Nym * pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(id_nym) ;
+
+    if (nullptr == pCurrentNym)
+        return;
+    // -------------------------------------
+    WizardEditProfile theWizard(this);
+    theWizard.setWindowTitle(tr("Edit Profile (Public information)"));
+    // -------------------------------------
+    // Put the existing profile data in the wizard, so it doesn't load up blank.
+    // (Not much point in editing your profile data if the data comes up blank...)
+    //
+    theWizard.listContactDataTuples_.clear();
+
+    // ClaimSet is a std::set of Claims.
+    opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
+
+    for (auto & claim: claims)
+    {
+        // Claim fields: identifier, section, type, value, start, end, attributes
+        //typedef std::tuple<std::string, uint32_t, uint32_t, std::string, int64_t, int64_t, std::set<uint32_t>> Claim;
+        QString            claim_id         = QString::fromStdString(std::get<0>(claim)); // identifier
+        uint32_t           claim_section    = std::get<1>(claim); // section
+        uint32_t           claim_type       = std::get<2>(claim); // type
+        QString            claim_value      = QString::fromStdString(std::get<3>(claim)); // value
+        int64_t            claim_start      = std::get<4>(claim); // start
+        int64_t            claim_end        = std::get<5>(claim); // end
+        std::set<uint32_t> claim_attributes = std::get<6>(claim); // attributes
+
+        bool claim_att_active  = false;
+        bool claim_att_primary = false;
+
+        for (auto& attribute: claim_attributes)
+        {
+            if (opentxs::proto::CITEMATTR_ACTIVE  == attribute) claim_att_active  = true;
+            if (opentxs::proto::CITEMATTR_PRIMARY == attribute) claim_att_primary = true;
+        }
+        std::string str_value(claim_value.toStdString());
+        tupleContactDataItem item{claim_section, claim_type, str_value, claim_att_primary};
+
+//        qDebug() << "Loading wizard ";
+//        qDebug() << "std::get<0>(item): " << std::get<0>(item);
+//        qDebug() << "std::get<1>(item): " << std::get<1>(item);
+//        qDebug() << "std::get<2>(item): " << QString::fromStdString(std::get<2>(item));
+//        qDebug() << "std::get<3>(item): " << std::get<3>(item);
+
+        theWizard.listContactDataTuples_.push_front(std::move(item));
+    }
+//    qDebug() << "theWizard.listContactDataTuples_.size(): " <<
+//                theWizard.listContactDataTuples_.size();
+    // -------------------------------------
+    theWizard.setOption(QWizard::IndependentPages);
+    // -------------------------------------
+    if (QDialog::Accepted == theWizard.exec())
+    {
+        // Set the updated profile data on the Nym
+        //
+        std::map<uint32_t, std::list<std::tuple<uint32_t, std::string, bool>>> items;
+
+        for (const auto & contactDataItem: theWizard.listContactDataTuples_)
+        {
+            uint32_t     indexSection     = std::get<0>(contactDataItem);
+            uint32_t     indexSectionType = std::get<1>(contactDataItem);
+            std::string  textValue        = std::get<2>(contactDataItem);
+            bool         bIsPrimary       = std::get<3>(contactDataItem);
+
+            std::tuple<uint32_t, std::string, bool> item{indexSectionType, textValue, bIsPrimary};
+
+            if (items.count(indexSection) > 0) {
+                items[indexSection].push_back(item);
+            } else {
+                items.insert({indexSection, { item }});
+            }
+        }
+        // ------------------------------------------------
+        opentxs::proto::ContactData contactData;
+        contactData.set_version(1); // todo hardcoding.
+
+        for (auto& it: items) {
+            auto newSection = contactData.add_section();
+            newSection->set_version(1);
+            newSection->set_name(static_cast<opentxs::proto::ContactSectionName>(it.first));
+
+            for (auto& i: it.second) {
+                auto newItem = newSection->add_item();
+                newItem->set_version(1);
+                newItem->set_type(static_cast<opentxs::proto::ContactItemType>(std::get<0>(i)));
+                newItem->set_value(std::get<1>(i));
+                if (std::get<2>(i)) {
+                    newItem->add_attribute(opentxs::proto::CITEMATTR_PRIMARY);
+                }
+                newItem->add_attribute(opentxs::proto::CITEMATTR_ACTIVE);
+            }
+        }
+        // ------------------------------------------------
+        if (!opentxs::OTAPI_Wrap::OTAPI()->SetContactData(*pCurrentNym, contactData))
+            qDebug() << __FUNCTION__ << ": ERROR: Failed trying to Set Contact Data!";
+//      else
+//          qDebug() << __FUNCTION__ << "SetContactData SUCCESS. items.size(): " << items.size();
+        // ------------------------------------------------
+        // Clear the claims we already have in the database. (If any.)
+        MTContactHandler::getInstance()->clearClaimsForNym(qstrNymId);
+        // ------------------------------------------------
+        // Update the local database by re-importing the claims.
+        emit nymWasJustChecked(qstrNymId);
+    }
+}
+
+
+
+
 //virtual
 void MTNymDetails::AddButtonClicked()
 {
@@ -1516,6 +1713,9 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                             case (1):
                                 {
                                     bUnregistered = true;
+
+                                    MTContactHandler::getInstance()->NotifyOfNymServerUnpair(QString::fromStdString(str_nym_id),
+                                                                                             QString::fromStdString(str_notary_id));
 
                                     QMessageBox::information(this, tr("Moneychanger"),
                                         tr("Success!"));

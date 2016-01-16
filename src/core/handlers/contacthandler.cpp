@@ -363,6 +363,26 @@ QString MTContactHandler::getBitmessageAddressFromClaims(const QString & claiman
     return qstrReturnVal;
 }
 
+
+void MTContactHandler::clearClaimsForNym(const QString & qstrNymId)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    if (qstrNymId.isEmpty())
+        return;
+    // ------------------------------------------------------------
+    QString str_delete = QString("DELETE FROM `claim` WHERE `claim_nym_id`='%1'").arg(qstrNymId);
+
+    try {
+        DBHandler::getInstance()->runQuery(str_delete);
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return;
+    }
+}
+
 bool MTContactHandler::upsertClaim(opentxs::Nym& nym, const opentxs::Claim& claim)
 {
     QMutexLocker locker(&m_Mutex);
@@ -392,7 +412,6 @@ bool MTContactHandler::upsertClaim(opentxs::Nym& nym, const opentxs::Claim& clai
 
         if (opentxs::proto::CITEMATTR_ACTIVE  == attribute) claim_att_active  = true;
         if (opentxs::proto::CITEMATTR_PRIMARY == attribute) claim_att_primary = true;
-
     }
 
     opentxs::String strAttributes;
@@ -3118,6 +3137,22 @@ void MTContactHandler::NotifyOfNymServerPair(QString nym_id_string, QString nota
         QString str_insert_server = QString("INSERT INTO `nym_server` "
                                             "(`nym_id`, `notary_id`) "
                                             "VALUES('%1', '%2')").arg(nym_id_string).arg(notary_id_string);
+        DBHandler::getInstance()->runQuery(str_insert_server);
+    }
+}
+
+void MTContactHandler::NotifyOfNymServerUnpair(QString nym_id_string, QString notary_id_string)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_select_server = QString("SELECT `notary_id` FROM `nym_server` WHERE `nym_id`='%1' AND `notary_id`='%2' LIMIT 0,1").
+            arg(nym_id_string).arg(notary_id_string);
+    const int nRowsServer = DBHandler::getInstance()->querySize(str_select_server);
+
+    if (nRowsServer > 0) // It's already there. (Remove it.)
+    {
+        QString str_insert_server = QString("DELETE FROM `nym_server` WHERE `nym_id`='%1' AND `notary_id`='%2'").
+                arg(nym_id_string).arg(notary_id_string);
         DBHandler::getInstance()->runQuery(str_insert_server);
     }
 }
