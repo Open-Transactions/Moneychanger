@@ -9,13 +9,12 @@
 
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
-
+#include <opentxs/client/OTWallet.hpp>
 #include <opentxs/core/OTStorage.hpp>
-
-#include <opentxs/core/util/OTFolders.hpp>
-
+#include <opentxs/core/contract/ServerContract.hpp>
 #include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/crypto/OTCachedKey.hpp>
+#include <opentxs/core/util/OTFolders.hpp>
 
 #include <quazip/quazip.h>
 #include <quazip/quazipfile.h>
@@ -662,152 +661,12 @@ void MTServerDetails::AddButtonClicked()
             QString qstrXMLContents = theWizard.field("contractXML").toString();
             QString qstrNymID       = theWizard.field("NymID").toString();
 
-            std::string strContractID = opentxs::OTAPI_Wrap::It()->CreateServerContract(qstrNymID.toStdString(),
-                                                                                        qstrXMLContents.toStdString());
+            std::string strContractID;
 
             if (strContractID.empty() || "" == strContractID) {
                 QMessageBox::warning(this, tr("Failed Creating Contract"),
                                      tr("Unable to create contract. Perhaps the XML contents were bad?"));
                 return;
-            }
-            else {
-                std::string strNewContract = opentxs::OTAPI_Wrap::It()->GetServer_Contract(strContractID);
-
-                if (strNewContract.empty() || "" == strNewContract) {
-                    QMessageBox::warning(this, tr("Unable to Load"),
-                                         tr("While the contract was apparently created, Moneychanger is unable to load it up. (Strange.)"));
-                    return;
-                }
-                else // Success.
-                {
-                    // Need to zip up whatever extra files will be needed by the server.
-                    // Including the transport keys and the master key from the wallet.
-
-                    // Let's make a list, based on the opentxs-notary when you start it up
-                    // with an empty data folder:
-
-                    /*
-                     *  1. A wallet where you have already created one nym and a new notary server contract.
-                        2. The entire credentials folder. OR at least, the Signer Nym’s credentials folder.
-                     */
-                     // 3. The Notary ID.
-                     // 4. The Signer Nym ID for the notary server contract.
-                     // 5. The Cached key from the wallet.
-                     // 6. Notary Contract. (Signed by Signer.)
-
-                    // 2. The entire credentials folder. OR at least, the Signer Nym’s credentials folder.
-                    //
-                    std::string str_formed_path;
-                    int64_t nFormPath = opentxs::OTDB::FormPathString(str_formed_path, opentxs::OTFolders::Credential().Get(),
-                                                                      qstrNymID.toStdString());
-                    QString dir_path(QString::fromStdString(str_formed_path));
-
-                    QDir dirToZip(dir_path);
-                    // --------------------------
-                    QString filenameZipFile;
-                    QDir selectedDir("/tmp");
-
-                    while (filenameZipFile.isEmpty())
-                    {
-                        QFileDialog dialog(this, tr("Save Credentials Zipfile"), "/tmp/New_Notary_SignerNym_Credentials.zip", tr("Zipfiles (*.zip)"));
-                        dialog.setAcceptMode(QFileDialog::AcceptSave);
-                        if (dialog.exec()) {
-                            QStringList filenames = dialog.selectedFiles();
-                            filenameZipFile = filenames.at(0);
-                            selectedDir = dialog.directory();
-                        }
-                    }
-                    // --------------------------
-//                  while (filenameZipFile.isEmpty())
-//                      filenameZipFile = QFileDialog::getSaveFileName(this, tr("Save Credentials Zipfile"),
-//                                                                     "New_Notary_SignerNym_Credentials.zip",
-//                                                                     tr("Zipfiles (*.zip)"));
-
-                    if (!archive(filenameZipFile, dirToZip, QString("New Notary Signer Nym Credentials")))
-                        QMessageBox::information(this, tr("Failed Zipping Credentials"),
-                                                 QString("%1%2").arg(tr("There was an error while trying to zip up the new Signer Nym's credential directory. "
-                                                    "(The new server will need those credentials.) "
-                                                    "Therefore you will have to copy the directory yourself by hand. Its location: ")).arg(dir_path));
-                    // --------------------------
-                    // 3. The Notary ID.
-                    //
-                    // std::string strContractID
-                    // --------------------------
-                    // 4. The Signer Nym ID for the notary server contract.
-                    //
-                    // QString qstrNymID
-                    // ------------------------------------------------
-                    // 5. The Cached key from the wallet.
-                    //
-                    opentxs::OTASCIIArmor ascCachedKey;
-
-                    if (!opentxs::OTCachedKey::It()->SerializeTo(ascCachedKey))
-                        QMessageBox::information(this, tr("Failed getting cached master key"),
-                                                 tr("Failed to retrieve the cached master key from wallet.xml in the client_data folder. "
-                                                    "You will have to base64-decode that file yourself (using 'opentxs decode') and then "
-                                                    "copy the base64-encoded cached master key from it, since the new server will need that key. "
-                                                    "Just look for the <cachedKey> tag inside the wallet.xml file."));
-                    // --------------------------
-                    // 6. Notary Contract. (Signed by Signer.)
-                    //
-                    // std::string strNewContract
-                    // ------------------------------------------------
-                    // Write the IDs, etc to an output file to be pasted into the notary's creation process.
-                    //
-                    QString outputFilename;
-
-                    while (outputFilename.isEmpty())
-                    {
-                        QString tempFilename = QString("%1/%2").arg(selectedDir.absolutePath()).arg("New_Notary_Creation_File.txt");
-                        QFileDialog dialog(this, tr("Save Results File"), tempFilename, tr("Text files (*.txt)"));
-                        dialog.setAcceptMode(QFileDialog::AcceptSave);
-                        if (dialog.exec()) {
-                            QStringList filenames = dialog.selectedFiles();
-                            outputFilename = filenames.at(0);
-                            selectedDir = dialog.directory();
-                        }
-                    }
-//                  while (outputFilename.isEmpty())
-//                      outputFilename = QFileDialog::getSaveFileName(this, tr("Save Results File"),
-//                                                                    "New_Notary_Creation_File.txt",
-//                                                                    tr("Text files (*.txt)"));
-                    QFile outputFile(outputFilename);
-                    outputFile.open(QIODevice::WriteOnly);
-
-                    // Check it opened OK
-                    if(!outputFile.isOpen())
-                    {
-                        QMessageBox::information(this, tr("Failed opening output file"), QString(tr("Unable to open '%1' for output.")).arg(outputFilename));
-                    }
-                    else
-                    {
-                        // Point a QTextStream object at the file
-                        QTextStream outStream(&outputFile);
-
-                        // Write the lines to the file
-
-                        outStream << "Notary ID: " << strContractID.c_str() << "\n\n"; // Notary ID
-
-                        outStream << "Signer Nym ID: " << qstrNymID << "\n\n"; // Signer Nym ID
-
-                        outStream << "Cached Master Key:\n" << ascCachedKey.Get() << "\n\n"; // Cached master key from the wallet.
-
-                        outStream << strNewContract.c_str() << "\n";  // The new server contract.
-
-                        // Close the file
-                        outputFile.close();
-                    }
-                    // ------------------------------------------------
-                    QString qstrContractID   = QString::fromStdString(strContractID);
-                    QString qstrContractName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(strContractID));
-
-                    m_pOwner->m_map.insert(qstrContractID,
-                                           qstrContractName);
-                    m_pOwner->SetPreSelected(qstrContractID);
-                    // ------------------------------------------------
-                    emit newServerAdded(qstrContractID);
-                    return;
-                }
             }
         } // bIsCreating is true.
     } // Wizard "OK" was clicked.
@@ -837,19 +696,25 @@ void MTServerDetails::refresh(QString strID, QString strName)
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
-        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LoadServerContract(strID.toStdString()));
+        opentxs::OTWallet* pWallet =
+            pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet(__FUNCTION__);
+
+        if (nullptr == pWallet) { return; }
+
+        opentxs::ServerContract* contract =
+        pWallet->GetServerContract(strID.toStdString());
+
+        if (nullptr == contract) {return; }
+
+        QString qstrNymID("");
+        qstrNymID = QString::fromStdString(contract->ID().Get());
+
+        QString qstrContents = QString::fromStdString(contract->Terms().Get());
 
         if (m_pPlainTextEdit)
             m_pPlainTextEdit->setPlainText(qstrContents);
         // ----------------------------------
-        QString qstrNymID("");
 
-        if (!qstrContents.isEmpty()) {
-            std::string str_signer_nym = opentxs::OTAPI_Wrap::It()->GetSignerNymID(qstrContents.toStdString());
-
-            if (!str_signer_nym.empty())
-                qstrNymID = QString::fromStdString(str_signer_nym);
-        }
         // ----------------------------------
         ui->lineEditID   ->setText(strID);
         ui->lineEditName ->setText(strName);

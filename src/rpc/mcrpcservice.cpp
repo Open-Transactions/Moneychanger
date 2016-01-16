@@ -534,24 +534,6 @@ QJsonValue MCRPCService::calculateContractID(QString Username, QString APIKey,
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::createServerContract(QString Username, QString APIKey,
-                                              QString NymID, QString XMLContents)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-    std::string result = opentxs::OTAPI_Wrap::It()->CreateServerContract(NymID.toStdString(),
-                                                                         XMLContents.toStdString());
-    QJsonObject object{{"CreateServerContractResult", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
 QJsonValue MCRPCService::createAssetContract(QString Username, QString APIKey,
                                              QString NymID, QString XMLContents)
 {
