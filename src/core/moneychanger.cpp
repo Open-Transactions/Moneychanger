@@ -2705,7 +2705,7 @@ void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id
 // The primary key is the "display txn ID"
 //
 bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord/*=true*/)
-{            
+{
     ModelPayments::PaymentFlags flags = ModelPayments::NoFlags;
 
     QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
@@ -4571,7 +4571,7 @@ void Moneychanger::ServerContractNotify(std::string id)
 
     if (nullptr != pWallet)
     {
-        opentxs::OTServerContract * pContract = pWallet->GetServerContract(ot_id);
+        opentxs::ServerContract * pContract = pWallet->GetServerContract(ot_id);
 
         // Found it! The contract is already in the wallet.
         if (nullptr != pContract)
@@ -4592,11 +4592,11 @@ void Moneychanger::ServerContractNotify(std::string id)
             //
             // However, I DO need to ADD the contract to the wallet...
             //
-            opentxs::OTServerContract * pContract = opentxs::OTAPI_Wrap::OTAPI()->LoadServerContract(ot_id);
+            opentxs::ServerContract * pContract = opentxs::OTAPI_Wrap::OTAPI()->LoadServerContract(ot_id);
 
             if (nullptr != pContract)
             {
-                pWallet->AddServerContract(*pContract); // Takes ownership.
+                pWallet->AddServerContract(pContract); // Takes ownership.
                 pWallet->SaveWallet();
 
                 emit newServerAdded(QString::fromStdString(id));
