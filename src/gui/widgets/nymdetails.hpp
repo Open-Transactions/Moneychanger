@@ -70,10 +70,15 @@ private:
     QPointer<ModelClaims>      pModelClaims_;
     QPointer<ClaimsProxyModel> pProxyModelClaims_;
 
-    QScopedPointer<QMenu> popupMenu_;
+    QScopedPointer<QMenu> popupMenu_; // For the grid showing notaries the Nym is registered on.
+    QScopedPointer<QMenu> popupMenuProfile_; // For the tree showing the Nym's profile claims/verifications.
 
-    QAction * pActionRegister_;
-    QAction * pActionUnregister_;
+    QAction * pActionRegister_ = nullptr;
+    QAction * pActionUnregister_ = nullptr;
+
+    QAction * pActionConfirm_ = nullptr;
+    QAction * pActionRefute_ = nullptr;
+    QAction * pActionNoComment_ = nullptr;
 
 private slots:
     void on_lineEditName_editingFinished();
@@ -83,6 +88,7 @@ private slots:
     void on_btnAddressDelete_clicked();
 
     void on_tableWidget_customContextMenuRequested(const QPoint &pos);
+    void on_treeWidget_customContextMenuRequested(const QPoint &pos);
     void on_toolButtonDescription_clicked();
     void on_toolButtonQrCode_clicked();
 

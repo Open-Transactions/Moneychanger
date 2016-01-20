@@ -6,6 +6,7 @@
 
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
+#include "core/mapidname.hpp"
 
 #include <opentxs/client/OpenTransactions.hpp>
 #include <opentxs/client/OTRecordList.hpp>
@@ -26,6 +27,10 @@ namespace opentxs {
     class Nym;
     //class Claim;
 }
+
+int claimPolarityToInt(opentxs::OT_API::ClaimPolarity polarity);
+opentxs::OT_API::ClaimPolarity intToClaimPolarity(int polarity);
+
 
 class MTNameLookupQT : public opentxs::OTNameLookup
 {
@@ -63,9 +68,6 @@ public:
 
 
 class MTContactHandler;
-
-typedef QMap<QString, QString> mapIDName; // ID, display name.
-
 
 class MTContactHandler
 {
@@ -279,6 +281,21 @@ public:
   QString getNymIdFromClaimsByBtMsg(const QString & bitmessage_address);
   QString getDisplayNameFromClaims(const QString & claimant_nym_id);
   // ----------------------------------------------------------
+  // Pass in a claimId, and see if there are any verifications for that claim
+  // by verifier_nym_id. If there are, return the polarity.
+  bool getPolarityIfAny(const QString & claim_id, const QString & verifier_nym_id, bool & bPolarity);
+
+  // The bool return value here means, "FYI, I changed something based on this call" if true.
+  // Otherwise it means, "FYI, I didn't need to change anything based on this call."
+  //
+  bool claimVerificationConfirm  (const QString & qstrClaimId, const QString & qstrClaimantNymId, const QString & qstrVerifierNymId);
+  bool claimVerificationRefute   (const QString & qstrClaimId, const QString & qstrClaimantNymId, const QString & qstrVerifierNymId);
+  bool claimVerificationNoComment(const QString & qstrClaimId, const QString & qstrClaimantNymId, const QString & qstrVerifierNymId);
+
+//  bool notifyClaimConfirm(const QString & qstrClaimId, const QString & qstrVerifierNymID);
+//  bool notifyClaimRefute(const QString & qstrClaimId, const QString & qstrVerifierNymID);
+//  bool notifyClaimNoComment(const QString & qstrClaimId, const QString & qstrVerifierNymID);
+  // ----------------------------------------------------------
   bool upsertClaim(opentxs::Nym& nym, const opentxs::Claim& claim);
 
   bool upsertClaimVerification(const std::string & claimant_nym_id,
@@ -287,6 +304,10 @@ public:
                                const bool bIsInternal=true);
 
   void clearClaimsForNym(const QString & qstrNymId);
+protected:
+  bool claimVerificationLowlevel(const QString & qstrClaimId, const QString & qstrClaimantNymId,
+                                 const QString & qstrVerifierNymId, opentxs::OT_API::ClaimPolarity claimPolarity);
+
   // ----------------------------------------------------------
   public:
     ~MTContactHandler();

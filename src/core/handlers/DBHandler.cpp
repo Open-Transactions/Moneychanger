@@ -450,6 +450,46 @@ QPointer<ModelClaims> DBHandler::getClaimsModel(int nContactId)
 }
 
 
+// The first case where I want to use this, is when looking at a Contact's
+// Relationships, I want to grab every claim where someone claims to know
+// that Contact (claims to know one of his Nyms.)
+//
+QPointer<ModelClaims> DBHandler::getRelationshipClaims(int nAboutContactId)
+{
+    QPointer<ModelClaims> pClaimsModel = new ModelClaims(0);
+
+    QString str_select = QString("SELECT * "         // Select all rows...
+                                 "FROM `claim` "     // ...from the claim table...
+                                 "INNER JOIN `nym` " // ...where it matches the 'nym' table...
+                                 "ON nym.nym_id=claim.claim_value " // ...on the claim_value column. (If you have a relationship about
+                                                                    // a Nym, then his NymId will be in your claim_value field.)
+                                 "WHERE nym.contact_id='%1' AND " // (So we only see claims that are attached to a specific contact.)
+                                 " claim_section=%2").
+                                 arg(nAboutContactId).arg(opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
+
+    pClaimsModel->setQuery(str_select, db);
+
+    setup_claims_model(pClaimsModel);
+
+    return pClaimsModel;
+}
+
+
+QPointer<ModelClaims> DBHandler::getRelationshipClaims(const QString & qstrAboutNymId)
+{
+    QPointer<ModelClaims> pClaimsModel = new ModelClaims(0);
+
+
+    pClaimsModel->setQuery(QString("SELECT * FROM `claim` WHERE `claim_value`='%1' AND `claim_section`=%2").
+                           arg(qstrAboutNymId).arg(opentxs::proto::CONTACTSECTION_RELATIONSHIPS),
+                           db);
+
+    setup_claims_model(pClaimsModel);
+
+    return pClaimsModel;
+}
+
+
 QPointer<ModelPayments> DBHandler::getPaymentModel()
 {
     QString tableName("payment");

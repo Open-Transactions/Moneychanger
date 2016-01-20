@@ -582,6 +582,13 @@ void MTPageNym_AltLocation::initializePage() //virtual
         QWidget * pTab = new QWidget(this);
         std::string sectionName = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionName (indexSection);
 
+        if (opentxs::proto::CONTACTSECTION_RELATIONSHIPS == indexSection)
+        {
+            pTab->setEnabled(false);
+            pTab->setVisible(false);
+        }
+        // ----------------------------------------
+
 //      pTab->setWindowTitle(QString::fromStdString(sectionName));
         // ----------------------------
         // Setup the widget
