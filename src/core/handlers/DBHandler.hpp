@@ -76,6 +76,8 @@ class DBHandler
     QPointer<ModelPayments>     getPaymentModel();
     QPointer<ModelClaims>       getClaimsModel(int nContactId);
     QPointer<ModelClaims>       getClaimsModel(const QString & qstrNymId);
+    QPointer<ModelClaims>       getRelationshipClaims(int nAboutContactId);
+    QPointer<ModelClaims>       getRelationshipClaims(const QString & qstrAboutNymId);
 
     QString formatValue(QSqlField & sqlField);
 

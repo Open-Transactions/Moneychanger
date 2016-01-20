@@ -1,0 +1,5 @@
+#ifndef MAPIDNAME_HPP
+#define MAPIDNAME_HPP
+
+#endif // MAPIDNAME_HPP
+
