@@ -859,8 +859,8 @@ bool MTContactHandler::upsertClaim(opentxs::Nym& nym, const opentxs::Claim& clai
         qu->bind (":claim_sectionBlah", claim_section);
         qu->bind (":claim_typeBlah", claim_type);
         qu->bind (":claim_valueBlah", claim_value);
-        qu->bind (":claim_startBlah", claim_start);
-        qu->bind (":claim_endBlah", claim_end);
+        qu->bind (":claim_startBlah", QVariant::fromValue(claim_start));
+        qu->bind (":claim_endBlah", QVariant::fromValue(claim_end));
         qu->bind (":claim_attributesBlah", qstrAttributes);
         qu->bind (":claim_att_activeBlah", (claim_att_active ? 1 : 0));
         qu->bind (":claim_att_primaryBlah", (claim_att_primary ? 1 : 0));
