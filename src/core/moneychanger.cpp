@@ -502,55 +502,45 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
 //
 void Moneychanger::onCheckNym(QString nymId)
 {
+    // This logs and ASSERTs already.
+    opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet(__FUNCTION__);
+    // ----------------------------------------------
     opentxs::String strNymId = nymId.toStdString();
     opentxs::Identifier id_nym(strNymId);
-
-    // Import the claims.
-    opentxs::Nym * pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->LoadPublicNym(id_nym, __FUNCTION__);
-    std::unique_ptr<opentxs::Nym> pNymAngel(pCurrentNym);
-
-    // NOTE: Let's say you load a Nym, so it's cached in the wallet (in RAM.)
-    // Next let's say you do a check_nym (download it from a server and save to disk locally.)
-    // So if you call "GetOrLoadNym" you will end up with the wallet's cached version,
-    // instead of the latest one you just downloaded from disk.
-    // Therefore, we EXPLICITLY try to LoadPublicNym (above) first, and ONLY if that fails,
-    // do the GetOrLoadNym. So that way if we HAVEN'T downloaded the public Nym, we still get the
-    // Nym. What case might that be, you wonder? The case where a Nym was just created, and we want
-    // Moneychanger to import its contact credentials, claims, and claim verifications AS THOUGH
-    // the Nym had just been downloaded.
+    // ----------------------------------------------
+    // Get the Nym. Make sure we have the latest copy, since his credentials were apparently
+    // just downloaded and overwritten.
     //
-    if (!pNymAngel)
-    {
-        opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
+    opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
+    opentxs::Nym * pCurrentNym = pWallet->reloadAndGetNym(id_nym, false, __FUNCTION__,  &thePWData);
 
-        // NOTICE in this case, pNymAngel unique_ptr is NOT set with pCurrentNym.
-        // That's because the wallet already cleans it up in this case.
-        //
-        pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym,
-                                                                 false, //bChecking=false
-                                                                 __FUNCTION__,
-                                                                 &thePWData);
-    }
 
-    // check_nym if not already downloaded.
+    qDebug() << "DEBUGGING: onCheckNym 1 ";
+
+
+
     if (nullptr == pCurrentNym)
     {
         qDebug() << "onCheckNym: GetOrLoadNym failed. (Which should NOT happen since we supposedly JUST downloaded that Nym's credentials...)";
         return;
     }
+    // ------------------------------------------------
+    // Clear the claims and verifications we already have in the database. (If any.)
+    //
+    MTContactHandler::getInstance()->clearClaimsForNym(nymId);
+    // ----------------------------------------------
+    // Import the claims.
 
     const std::string str_checked_nym_id(strNymId.Get());
-    // -------------------------------------------------------
-
-
-
-    // -------------------------------------------------------
-    //QString getBitmessageAddressFromClaims(const QString & claimant_nym_id);
-    //QString getDisplayNameFromClaims(const QString & claimant_nym_id);
-
-//    void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString notaryId)
 
     opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
+
+
+
+
+    qDebug() << "DEBUGGING: onCheckNym 2 ";
+
+
 
     for (const opentxs::Claim& claim: claims)
     {
@@ -563,7 +553,7 @@ void Moneychanger::onCheckNym(QString nymId)
         }
         // ---------------------------------------
         const uint32_t           claim_section    = std::get<1>(claim); // section
-//      const uint32_t           claim_type       = std::get<2>(claim); // type
+        const uint32_t           claim_type       = std::get<2>(claim); // type
         const QString            claim_value      = QString::fromStdString(std::get<3>(claim)); // value
         const std::set<uint32_t> claim_attributes = std::get<6>(claim); // attributes
 
@@ -615,6 +605,12 @@ void Moneychanger::onCheckNym(QString nymId)
                 qDebug() << "onCheckNym: the call to upsertInternalClaimVerification just failed. (Returning.)";
                 return;
             }
+
+
+
+            qDebug() << "DEBUGGING: Verification upserted! ";
+
+
         }
     }
 
@@ -659,7 +655,7 @@ static void blah()
 // Nym.hpp
 //    std::shared_ptr<proto::VerificationSet> VerificationSet() const;
 //    bool SetVerificationSet(const proto::VerificationSet& data);
-
+//
 //    proto::Verification Sign(
 //        const std::string& claim,
 //        const bool polarity,
@@ -2709,7 +2705,7 @@ void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id
 // The primary key is the "display txn ID"
 //
 bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord/*=true*/)
-{            
+{
     ModelPayments::PaymentFlags flags = ModelPayments::NoFlags;
 
     QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
@@ -4575,7 +4571,7 @@ void Moneychanger::ServerContractNotify(std::string id)
 
     if (nullptr != pWallet)
     {
-        opentxs::OTServerContract * pContract = pWallet->GetServerContract(ot_id);
+        opentxs::ServerContract * pContract = pWallet->GetServerContract(ot_id);
 
         // Found it! The contract is already in the wallet.
         if (nullptr != pContract)
@@ -4596,11 +4592,11 @@ void Moneychanger::ServerContractNotify(std::string id)
             //
             // However, I DO need to ADD the contract to the wallet...
             //
-            opentxs::OTServerContract * pContract = opentxs::OTAPI_Wrap::OTAPI()->LoadServerContract(ot_id);
+            opentxs::ServerContract * pContract = opentxs::OTAPI_Wrap::OTAPI()->LoadServerContract(ot_id);
 
             if (nullptr != pContract)
             {
-                pWallet->AddServerContract(*pContract); // Takes ownership.
+                pWallet->AddServerContract(pContract); // Takes ownership.
                 pWallet->SaveWallet();
 
                 emit newServerAdded(QString::fromStdString(id));

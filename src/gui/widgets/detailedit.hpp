@@ -4,12 +4,13 @@
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
 
-#include <core/handlers/contacthandler.hpp>
 
 #include <QPointer>
 #include <QWidget>
 #include <QTabWidget>
 #include <QVBoxLayout>
+
+#include "core/mapidname.hpp"
 
 
 namespace Ui {

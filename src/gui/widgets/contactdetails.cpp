@@ -146,6 +146,7 @@ QWidget * MTContactDetails::CreateCustomTab(int nTab)
                 , tr("Nym")
                 , tr("Primary")
                 , tr("Active")
+                , tr("Polarity")
             };
             treeWidgetClaims_->setHeaderLabels(labels);
             // -------------------------------
@@ -520,7 +521,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
         // ---------------------------------------
         MTNameLookupQT theLookup;
         const std::string str_nym_id   = qstrNymID.toStdString();
-        const std::string str_nym_name = theLookup.GetNymName(qstrNymID.toStdString(), "");
+        const std::string str_nym_name = theLookup.GetNymName(str_nym_id, "");
         const opentxs::Identifier id_nym(str_nym_id);
 
         if (!str_nym_id.empty())
@@ -580,6 +581,17 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
                 nym_names.insert(std::pair<std::string, std::string>(str_nym_id, str_nym_name));
             }
         }
+        // ---------------------------------------------
+        // Since we're already looping here through all the Nyms known for this
+        // contact, let's go ahead and grab all claims from anyone else, that they
+        // "have met" that Nym, so later we can display those on the tree in the
+        // appropriate place.
+
+
+        // TODO
+
+
+
     }
     // -------------------------------------------------
     // NOTE: If a nymWasChecked, that means we emitted a signal which the Moneychanger singleton
@@ -627,9 +639,252 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
     mapOfButtonGroups mapButtonGroups;
     // -------------------------------------------------
+
+//    justusranvier
+//    6:45 ok
+//    6:46 well, when I update opentxs-proto to include the appropriate sections and types, you'll have a Relationships section
+//    6:46 and there will be an item type called "met"
+//    6:46 if you want to make this claim programmatically
+//    6:47 set the indexSection to proto::CONTACTSECTION_RELATIONSHIPS
+//    6:47 set the indexSectionType to CITEMTYPE_MET
+//    6:47 and set the nymid of the person you met to textValue
+//    6:47 (based on that code sample)
+//    6:47 .
+//    6:48 actually both of those enums should be in the opentxs::proto:: namespace
+
+    // Insert "Has Met" into Tree.
+    //
+    QString  qstrMetLabel = QString("<b>%1</b>").arg(tr("Relationship claims"));
+    QLabel * label = new QLabel(qstrMetLabel, treeWidgetClaims_);
+
+    QTreeWidgetItem * metInPerson = new QTreeWidgetItem;
+
+//  metInPerson->setText(0, "Met in person");
+    treeWidgetClaims_->addTopLevelItem(metInPerson);
+    treeWidgetClaims_->expandItem(metInPerson);
+    treeWidgetClaims_->setItemWidget(metInPerson, 0, label);
+    // ------------------------------------------
+    // Earlier above, we made a list of all the claims from other Nyms
+    // that they "have met" the Nyms represented by this Contact.
+    // Now let's add those here as sub-items under the metInPerson top-level item.
+    //
+    QPointer<ModelClaims> pRelationships = DBHandler::getInstance()->getRelationshipClaims(nContactId);
+
+    if (!pRelationships) // Should never happen, even if the result set is empty.
+        return;
+
+    QPointer<ClaimsProxyModel> pProxyModelRelationships = new ClaimsProxyModel;
+
+    pProxyModelRelationships->setSourceModel(pRelationships);
+
+    if (pRelationships->rowCount() > 0)
+    {
+        // First grab the various relationship type names:  (Parent of, have met, child of, etc.)
+        QMap<uint32_t, QString> mapTypeNames;
+        // ----------------------------------------
+        std::string        sectionName  = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionName (opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
+        std::set<uint32_t> sectionTypes = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionTypes(opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
+
+        for (auto & indexSectionType: sectionTypes)
+        {
+            std::string typeName = opentxs::OTAPI_Wrap::OTAPI()->GetContactTypeName(indexSectionType);
+            mapTypeNames.insert(indexSectionType, QString::fromStdString(typeName));
+        }
+        // ---------------------------------------
+
+        for (int nRelationshipCount = 0; nRelationshipCount < pProxyModelRelationships->rowCount(); nRelationshipCount++)
+        {
+//            QSqlRecord record = pRelationships->record(nRelationshipCount);
+
+            QModelIndex proxyIndexZero        = pProxyModelRelationships->index(nRelationshipCount, 0);
+            QModelIndex sourceIndexZero       = pProxyModelRelationships->mapToSource(proxyIndexZero);
+            // ----------------------------------------------------------------------------
+            QModelIndex sourceIndexClaimId    = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_CLAIM_ID,    sourceIndexZero);
+            QModelIndex sourceIndexNymId      = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_NYM_ID,      sourceIndexZero);
+            QModelIndex sourceIndexSection    = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_SECTION,     sourceIndexZero);
+            QModelIndex sourceIndexType       = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_TYPE,        sourceIndexZero);
+            QModelIndex sourceIndexValue      = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_VALUE,       sourceIndexZero);
+            QModelIndex sourceIndexStart      = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_START,       sourceIndexZero);
+            QModelIndex sourceIndexEnd        = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_END,         sourceIndexZero);
+            QModelIndex sourceIndexAttributes = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATTRIBUTES,  sourceIndexZero);
+            QModelIndex sourceIndexAttActive  = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATT_ACTIVE,  sourceIndexZero);
+            QModelIndex sourceIndexAttPrimary = pRelationships->sibling(sourceIndexZero.row(), CLAIM_SOURCE_COL_ATT_PRIMARY, sourceIndexZero);
+            // ----------------------------------------------------------------------------
+            QModelIndex proxyIndexValue       = pProxyModelRelationships->mapFromSource(sourceIndexValue);
+            QModelIndex proxyIndexStart       = pProxyModelRelationships->mapFromSource(sourceIndexStart);
+            QModelIndex proxyIndexEnd         = pProxyModelRelationships->mapFromSource(sourceIndexEnd);
+            // ----------------------------------------------------------------------------
+            QVariant    qvarClaimId           = pRelationships->data(sourceIndexClaimId);
+            QVariant    qvarNymId             = pRelationships->data(sourceIndexNymId);
+            QVariant    qvarSection           = pRelationships->data(sourceIndexSection);
+            QVariant    qvarType              = pRelationships->data(sourceIndexType);
+            QVariant    qvarValue             = pProxyModelRelationships->data(proxyIndexValue); // Proxy here since the proxy model decodes this. UPDATE: no longer encoded.
+            QVariant    qvarStart             = pProxyModelRelationships->data(proxyIndexStart); // Proxy for these two since it formats the
+            QVariant    qvarEnd               = pProxyModelRelationships->data(proxyIndexEnd);   // timestamp as a human-readable string.
+            QVariant    qvarAttributes        = pRelationships->data(sourceIndexAttributes);
+            QVariant    qvarAttActive         = pRelationships->data(sourceIndexAttActive);
+            QVariant    qvarAttPrimary        = pRelationships->data(sourceIndexAttPrimary);
+            // ----------------------------------------------------------------------------
+            const std::string claim_id      = qvarClaimId.isValid() ? qvarClaimId.toString().toStdString() : "";
+            const std::string claim_nym_id  = qvarNymId  .isValid() ? qvarNymId.toString().toStdString() : "";
+            const uint32_t    claim_section = qvarSection.isValid() ? qvarSection.toUInt() : 0;
+            const uint32_t    claim_type    = qvarType   .isValid() ? qvarType.toUInt() : 0;
+            const std::string claim_value   = qvarValue  .isValid() ? qvarValue.toString().toStdString() : "";
+            // ----------------------------------------------------------------------------
+            const bool        claim_active  = qvarAttActive .isValid() ? qvarAttActive .toBool() : false;
+            const bool        claim_primary = qvarAttPrimary.isValid() ? qvarAttPrimary.toBool() : false;
+            // ----------------------------------------------------------------------------
+            QMap<uint32_t, QString>::iterator it_typeNames = mapTypeNames.find(claim_type);
+            QString qstrTypeName;
+
+            if (it_typeNames != mapTypeNames.end())
+                qstrTypeName = it_typeNames.value();
+            // ---------------------------------------
+            MTNameLookupQT theLookup;
+            const std::string str_claimant_name = theLookup.GetNymName(claim_nym_id, "");
+
+            // Add the claim to the tree.
+            //
+            QTreeWidgetItem * claim_item = new QTreeWidgetItem;
+            // ---------------------------------------
+
+            // ALICE claims she HAS MET *CHARLIE*.
+
+            // str_claimant_name claims she qstrTypeName nym_names[claim_value]
+
+                    //resume
+            mapOfNymNames::iterator it_names = nym_names.find(claim_value);
+            std::string str_nym_name;
+
+            if (nym_names.end() != it_names)
+                str_nym_name =  it_names->second;
+            else
+                str_nym_name = claim_value;
+
+            const QString qstrClaimantLabel = QString("%1: %2").arg(tr("Claimant")).arg(QString::fromStdString(str_claimant_name));
+
+            claim_item->setText(0, qstrClaimantLabel);      // "Alice" (some lady) from NymId
+            claim_item->setText(1, qstrTypeName);           // "Has met" (or so she claimed)
+            claim_item->setText(2, QString::fromStdString(str_nym_name));  // "Charlie" (one of the Nyms on this Contact.)
+
+            claim_item->setData(2, Qt::UserRole, QString::fromStdString(claim_nym_id)); // For now this is Alice's Nym Id. Not sure how we'll use it.
+            // ----------------------------------------
+            // Since this is someone else's claim about me, I should see if I have already confirmed or refuted it.
+            bool bPolarity = false;
+            const bool bGotPolarity = MTContactHandler::getInstance()->getPolarityIfAny(QString::fromStdString(claim_id),
+                                                                                        QString::fromStdString(claim_value), bPolarity);
+
+            if (bGotPolarity)
+            {
+                claim_item->setText(5, bPolarity ? tr("Confirmed") : tr("Refuted") );
+                claim_item->setBackgroundColor(5, bPolarity ? QColor("green") : QColor("red"));
+            }
+            else
+                claim_item->setText(5, tr("No comment"));
+            // ---------------------------------------
+//          claim_item->setFlags(claim_item->flags() |     Qt::ItemIsEditable);
+            claim_item->setFlags(claim_item->flags() & ~ ( Qt::ItemIsEditable | Qt::ItemIsUserCheckable) );
+            // ---------------------------------------
+            metInPerson->addChild(claim_item);
+            treeWidgetClaims_->expandItem(claim_item);
+            // ----------------------------------------------------------------------------
+            // Couldn't do this until now, when the claim_item has been added to the tree.
+            //
+//          typedef std::tuple<std::string, uint32_t, uint32_t> ButtonGroupKey;
+//          typedef std::map<ButtonGroupKey, QButtonGroup *> mapOfButtonGroups;
+//          mapOfButtonGroups mapButtonGroups;
+
+//            ButtonGroupKey keyBtnGroup{claim_nym_id, claim_section, claim_type};
+//            mapOfButtonGroups::iterator it_btn_group = mapButtonGroups.find(keyBtnGroup);
+//            QButtonGroup * pButtonGroup = nullptr;
+
+//            if (mapButtonGroups.end() != it_btn_group)
+//                pButtonGroup = it_btn_group->second;
+//            else
+//            {
+//                // The button group doesn't exist yet, for this tuple.
+//                // (So let's create it.)
+//                //
+//                pButtonGroup = new QButtonGroup(treeWidgetClaims_);
+//                mapButtonGroups.insert(std::pair<ButtonGroupKey, QButtonGroup *>(keyBtnGroup, pButtonGroup));
+//            }
+//            { // "Primary"
+//            QRadioButton * pRadioBtn = new QRadioButton(treeWidgetClaims_);
+//            pButtonGroup->addButton(pRadioBtn);
+//            pRadioBtn->setChecked(claim_primary);
+//            pRadioBtn->setEnabled(false);
+//            // ---------
+//            treeWidgetClaims_->setItemWidget(claim_item, 3, pRadioBtn);
+//            }
+//            // ----------------------------------------------------------------------------
+//            { // "Active"
+//            QRadioButton * pRadioBtn = new QRadioButton(treeWidgetClaims_);
+//            pRadioBtn->setChecked(claim_active);
+//            pRadioBtn->setEnabled(false);
+//            // ---------
+//            treeWidgetClaims_->setItemWidget(claim_item, 4, pRadioBtn);
+//            }
+
+        }
+
+    }
+
+
+
+    //resume
+
+
+    //        QString create_claim_table = "CREATE TABLE IF NOT EXISTS claim"
+    //               "(claim_id TEXT PRIMARY KEY,"
+    //               " claim_nym_id TEXT,"
+    //               " claim_section INTEGER,"
+    //               " claim_type INTEGER,"
+    //               " claim_value TEXT,"
+    //               " claim_start INTEGER,"
+    //               " claim_end INTEGER,"
+    //               " claim_attributes TEXT,"
+    //               " claim_att_active INTEGER,"
+    //               " claim_att_primary INTEGER"
+    //               ")";
+
+//    // TODO
+
+
+
+//    // ------------------------------------------------
+//    opentxs::proto::ContactData contactData;
+//    contactData.set_version(1); // todo hardcoding.
+
+//    for (auto& it: items) {
+//        auto newSection = contactData.add_section();
+//        newSection->set_version(1);
+//        newSection->set_name(static_cast<opentxs::proto::ContactSectionName>(it.first));
+
+//        for (auto& i: it.second) {
+//            auto newItem = newSection->add_item();
+//            newItem->set_version(1);
+//            newItem->set_type(static_cast<opentxs::proto::ContactItemType>(std::get<0>(i)));
+//            newItem->set_value(std::get<1>(i));
+//            if (std::get<2>(i)) {
+//                newItem->add_attribute(opentxs::proto::CITEMATTR_PRIMARY);
+//            }
+//            newItem->add_attribute(opentxs::proto::CITEMATTR_ACTIVE);
+//        }
+//    }
+//    // ------------------------------------------------
+//    if (!opentxs::OTAPI_Wrap::OTAPI()->SetContactData(*pCurrentNym, contactData))
+//        qDebug() << __FUNCTION__ << ": ERROR: Failed trying to Set Contact Data!";
+////      else
+////          qDebug() << __FUNCTION__ << "SetContactData SUCCESS. items.size(): " << items.size();
+//    // ------------------------------------------------
+
+
+
+
+    // ------------------------------------------
     // Now we loop through the sections, and for each, we populate its
     // itemwidgets by looping through the nym_claims we got above.
-
+    //
     std::set<uint32_t> sections = opentxs::OTAPI_Wrap::OTAPI()->GetContactSections();
 
     for (auto & indexSection: sections)  //Names (for example)
@@ -653,6 +908,9 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
         // ------------------------------------------
         treeWidgetClaims_->addTopLevelItem(topLevel);
         treeWidgetClaims_->expandItem(topLevel);
+        // ------------------------------------------
+
+
         // ------------------------------------------
         for (int ii = 0; ii < pProxyModelClaims_->rowCount(); ++ii)
         {
