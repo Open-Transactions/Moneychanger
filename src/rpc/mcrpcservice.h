@@ -80,8 +80,6 @@ public Q_SLOTS:
                                          QString Contract);
     QJsonValue calculateContractID(QString Username, QString APIKey,
                                    QString Contract);
-    QJsonValue createServerContract(QString Username, QString APIKey,
-                                    QString NymID, QString XMLContents);
     QJsonValue createAssetContract(QString Username, QString APIKey,
                                    QString NymID, QString XMLContents);
     QJsonValue getServerContract(QString Username, QString APIKey,
