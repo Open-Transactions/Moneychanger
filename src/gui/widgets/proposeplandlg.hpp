@@ -51,6 +51,7 @@ signals:
     void ShowContact(QString);
     void ShowAccount(QString);
     void showLog(QString);
+    void needToPopulateRecordlist();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

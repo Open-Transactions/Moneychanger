@@ -1681,7 +1681,7 @@ bool MTContactHandler::GetAccounts(mapIDName & theMap, QString filterByNym, QStr
 
         if (!display_name.isEmpty())
         {
-//            qDebug() << QString("About to decode name: %1").arg(display_name);
+//          qDebug() << QString("About to decode name: %1").arg(display_name);
 
             //Decode base64.
             display_name = Decode(display_name);
@@ -1815,6 +1815,13 @@ bool MTContactHandler::UpdatePaymentRecord(int nPaymentID, QMap<QString, QVarian
             const QVariant & qValue  = it_map.value();
 
             const QString qstrSqlSubstitute = QString(":key_%1").arg(qstrKey);
+
+//            bool bIsInt = qValue.type() == QVariant::Int;
+//
+//            if (bIsInt)
+//                qDebug() << "BINDING: KEY: " << qstrKey << " VALUE: " << qValue.toInt();
+//            else
+//                qDebug() << "BINDING: KEY: " << qstrKey << " VALUE: " << qValue.toString();
 
             qu->bind (qstrSqlSubstitute, qValue);
         }

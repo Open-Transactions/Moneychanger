@@ -83,13 +83,14 @@ You can then use the MyClass::Options type to store combinations of MyClass::Opt
         ,IsContract             =  0x1 << 10
         ,IsPaymentPlan          =  0x1 << 11
         ,IsCash                 =  0x1 << 12
-        ,IsExpired              =  0x1 << 13
-        ,IsCanceled             =  0x1 << 14
-        ,CanDelete              =  0x1 << 15
-        ,CanAcceptIncoming      =  0x1 << 16
-        ,CanDiscardIncoming     =  0x1 << 17
-        ,CanCancelOutgoing      =  0x1 << 18
-        ,CanDiscardOutgoingCash =  0x1 << 19
+        ,IsNotice               =  0x1 << 13
+        ,IsExpired              =  0x1 << 14
+        ,IsCanceled             =  0x1 << 15
+        ,CanDelete              =  0x1 << 16
+        ,CanAcceptIncoming      =  0x1 << 17
+        ,CanDiscardIncoming     =  0x1 << 18
+        ,CanCancelOutgoing      =  0x1 << 19
+        ,CanDiscardOutgoingCash =  0x1 << 20
     };
     Q_DECLARE_FLAGS(PaymentFlags, PaymentFlag)
 
