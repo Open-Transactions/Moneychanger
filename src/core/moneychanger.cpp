@@ -2559,7 +2559,37 @@ bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
 
 
 
-
+// When OTRecord::AcceptIncomingInstrument is called, and the server reply is a success,
+// it calls OTNameLookup::notifyOfSuccessfulNotarization so that the client GUI has the
+// opportunity to make a database record that the transaction is complete. (That's what
+// this function here is doing...)
+//
+// You see, if you deposit someone's incoming cheque, then HE is the one who gets the
+// chequeReceipt (it's dropped into his inbox.) So you won't get any receipts in YOUR
+// inbox. All YOU get is the server's success reply. (Directly.) If Moneychanger wasn't
+// notified of that success reply, then it would have no way of knowing that the cheque
+// had been deposited, and would still think it was "pending incoming."
+//
+// You might ask, "But wait a second, if the Moneychanger user did the cheque deposit,
+// then Moneychanger should have seen it was a success." And that's true. But Moneychanger
+// didn't do the cheque deposit. Rather, it asked OTRecord to do an AcceptIncomingInstrument.
+// OTRecord did the actual deposit. That's why OTRecord has to notify Moneychanger of the success.
+//
+// You might also ask, "But we still have the pending incoming cheque, and if we know the
+// deposit was a success, why not just move the incoming cheque to the record box, and then
+// in the future we can think of it as a 'Deposited Cheque'?" The reason is, we only had the
+// cheque when it was 'pending incoming'. But now that it's been deposited, we have the actual
+// cheque deposit receipt that the server replied to us. So it's better to record that receipt
+// since it PROVES the deposit, instead of merely inferring it based on the cheque being in
+// Box B instead of Box A. Why not add the actual cheque DEPOSIT into the database, since we
+// now have a copy of it? So that's what we do.
+//
+// One more thing: Since this function has "notification" in its name, you might think it's
+// referring to a "notice" (a type of receipt that OT puts in the nymbox from time to time,
+// to inform the user that something has happened.) But nope. That's not it. Here we use
+// "Notification" because OTRecord has "notified" Moneychanger (by way of callback) that a
+// transaction was successfully performed. The confusion is coincidental and unfortunate.
+//
 void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id,
                                                  const std::string & p_nym_id,
                                                  const std::string & p_notary_id,
@@ -2602,6 +2632,15 @@ void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id
         nPreExistingPaymentId = MTContactHandler::getInstance()->GetPaymentIdByTxnDisplayId(transNumDisplay, myNymID);
         bRecordAlreadyExisted = (nPreExistingPaymentId > 0);
         // ------------------------------------------
+
+
+        qDebug() << "Payment already existed: " << QString(bRecordAlreadyExisted ? "TRUE" : "FALSE");
+
+        qDebug() << "nPreExistingPaymentId: " << nPreExistingPaymentId;
+
+
+
+
         // We'll start by putting all the values into our map,
         // so we can then use that map when creating or updating
         // database records.
@@ -2700,6 +2739,15 @@ void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id
     }
 }
 
+
+bool Moneychanger::AddPaymentBasedOnNotice(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord/*=true*/)
+{
+//resume
+
+    return AddPaymentToPmntArchive(recordmt, bCanDeleteRecord);
+}
+
+
 // Adds or updates.
 // The payment archive stores up to multiple receipts per record.
 // The primary key is the "display txn ID"
@@ -2732,6 +2780,7 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
         if (recordmt.IsContract())              flags |= ModelPayments::IsContract;
         if (recordmt.IsPaymentPlan())           flags |= ModelPayments::IsPaymentPlan;
         if (recordmt.IsCash())                  flags |= ModelPayments::IsCash;
+        if (recordmt.IsNotice())                flags |= ModelPayments::IsNotice;
         if (recordmt.IsExpired())               flags |= ModelPayments::IsExpired;
         if (recordmt.IsCanceled())              flags |= ModelPayments::IsCanceled;
         if (recordmt.CanDeleteRecord())         flags |= ModelPayments::CanDelete;
@@ -2993,7 +3042,11 @@ void Moneychanger::modifyRecords()
                 if (!recordmt.IsMail() &&
                     !recordmt.IsSpecialMail() &&
                     !recordmt.IsExpired() )
+                {
                     AddPaymentToPmntArchive(recordmt);
+
+//                    qDebug() << "DEBUGGING: MODIFYING RECORDS: 1";
+                }
 
             }
             else // record can be deleted.
@@ -3015,6 +3068,16 @@ void Moneychanger::modifyRecords()
                 {
                     if (AddMailToMsgArchive(recordmt))
                         bShouldDeleteRecord = true;
+                }
+                // -----------------------------------
+                else if (recordmt.IsNotice())
+                {
+                    if (AddPaymentBasedOnNotice(recordmt))
+                    {
+//                        qDebug() << "DEBUGGING: MODIFYING RECORDS BASED ON NOTICE.";
+
+                        bShouldDeleteRecord = true;
+                    }
                 }
                 // -----------------------------------
                 else if (recordmt.IsRecord() && !recordmt.IsExpired())
@@ -3058,11 +3121,19 @@ void Moneychanger::modifyRecords()
                             //
                             if (AddFinalReceiptToTradeArchive(recordmt))
                                 bShouldDeleteRecord = true;
+                            else
+                                qDebug() << "DEBUGGING: Tried to add final receipt to trade archive, but it failed!";
                         } // finalReceipt
                         else // All  other closed (deletable) receipts.
                         {
                             if (AddPaymentToPmntArchive(recordmt))
+                            {
+//                                qDebug() << "DEBUGGING: MODIFYING RECORDS: 2";
+
                                 bShouldDeleteRecord = true;
+                            }
+//                            else
+//                                qDebug() << "DEBUGGING: Failed trying to add a receipt to the payment archive.";
                         }
                     }
                     // -----------------------------------
@@ -3081,7 +3152,11 @@ void Moneychanger::modifyRecords()
                         // for asset and currency accounts, plus final receipt.)
                         //
                         if (AddPaymentToPmntArchive(recordmt))
+                        {
+//                            qDebug() << "DEBUGGING: MODIFYING RECORDS: 3";
+
                             bShouldDeleteRecord = true;
+                        }
                     }
                 } // else if (recordmt.IsRecord() && !recordmt.IsExpired())
                 // -----------------------------------
