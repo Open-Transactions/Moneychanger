@@ -664,11 +664,16 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
         emit showLog(qstrErr);
     }
     else
+    {
+        // NOTE: We do not retrieve the account files here, in the case of success.
+        // That's because none of them have changed yet from this operation -- not
+        // until the recipient confirms the recurring payment plan.
+        // However, the send_user_payment DOES put something in our outpayments box,
+        // So we can still go ahead and reload the record list.
+        //
+        emit needToPopulateRecordlist();
         return true;
-
-    // NOTE: We do not retrieve the account files here, in the case of success.
-    // That's because none of them have changed yet from this operation -- not
-    // until the recipient confirms the recurring payment plan.
+    }
 
     return false;
 }
@@ -951,8 +956,8 @@ void ProposePlanDlg::dialog()
             ui->toolButtonManageAccts->setVisible(false);
         }
         // ---------------------------------------
-        connect(this,               SIGNAL(showLog(QString)),
-                Moneychanger::It(), SLOT  (mc_showlog_slot(QString)));
+        connect(this, SIGNAL(showLog(QString)),           Moneychanger::It(), SLOT  (mc_showlog_slot(QString)));
+        connect(this, SIGNAL(needToPopulateRecordlist()), Moneychanger::It(), SLOT  (onNeedToPopulateRecordlist()));
         // ---------------------------------------
         QString style_sheet = "QPushButton{border: none; border-style: outset; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa);}"
                 "QPushButton:pressed {border: 1px solid black; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa); }"

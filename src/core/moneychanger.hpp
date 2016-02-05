@@ -87,6 +87,7 @@ public:
     void modifyRecords(); // After we populate the recordlist, we make some changes to the list (move messages to a separate db table, move receipts to a separate table, etc.)
     bool AddMailToMsgArchive(opentxs::OTRecord& recordmt);
     bool AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord=true);
+    bool AddPaymentBasedOnNotice(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord=true);
     void AddPaymentBasedOnNotification(const std::string & str_acct_id,
                                        const std::string & p_nym_id,
                                        const std::string & p_notary_id,
