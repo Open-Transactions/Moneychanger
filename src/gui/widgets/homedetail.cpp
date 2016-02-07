@@ -684,7 +684,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
             QMessageBox::StandardButton reply;
 
             reply = QMessageBox::question(this, "",
-                                          tr("This will prevent the original recipient from depositing the cash. "
+                                          tr("This will prevent the other party from depositing the cash. "
                                           "(And FYI, this action will fail, if he has already deposited it.) "
                                           "Are you sure you want to recover this cash?"),
                                           QMessageBox::Yes|QMessageBox::No);
@@ -741,7 +741,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
             QMessageBox::StandardButton reply;
 
             reply = QMessageBox::question(this, "",
-                                          tr("This will prevent the original recipient from exercising this instrument. "
+                                          tr("This will prevent the other party from exercising this instrument. "
                                           "(And FYI, this action will fail if he's already done so.) "
                                           "Are you sure you want to cancel?"),
                                           QMessageBox::Yes|QMessageBox::No);
@@ -1037,7 +1037,7 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(opentxs::OTRecord& recordmt, bo
     // --------------------------------------------------------------------------------------------
     // For invoices and invoice receipts.
     //
-    if (recordmt.IsInvoice() || recordmt.IsPaymentPlan() ||
+    if (recordmt.IsInvoice() || recordmt.IsPaymentPlan() || recordmt.IsNotice() ||
         ((0 == recordmt.GetInstrumentType().compare("chequeReceipt")) &&
          (( recordmt.IsOutgoing() && (opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetAmount()) > 0)) ||
           (!recordmt.IsOutgoing() && (opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetAmount()) < 0)))

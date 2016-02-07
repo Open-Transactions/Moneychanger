@@ -514,11 +514,6 @@ void Moneychanger::onCheckNym(QString nymId)
     opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
     opentxs::Nym * pCurrentNym = pWallet->reloadAndGetNym(id_nym, false, __FUNCTION__,  &thePWData);
 
-
-    qDebug() << "DEBUGGING: onCheckNym 1 ";
-
-
-
     if (nullptr == pCurrentNym)
     {
         qDebug() << "onCheckNym: GetOrLoadNym failed. (Which should NOT happen since we supposedly JUST downloaded that Nym's credentials...)";
@@ -534,13 +529,6 @@ void Moneychanger::onCheckNym(QString nymId)
     const std::string str_checked_nym_id(strNymId.Get());
 
     opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
-
-
-
-
-    qDebug() << "DEBUGGING: onCheckNym 2 ";
-
-
 
     for (const opentxs::Claim& claim: claims)
     {
@@ -605,12 +593,6 @@ void Moneychanger::onCheckNym(QString nymId)
                 qDebug() << "onCheckNym: the call to upsertInternalClaimVerification just failed. (Returning.)";
                 return;
             }
-
-
-
-            qDebug() << "DEBUGGING: Verification upserted! ";
-
-
         }
     }
 
@@ -2742,8 +2724,6 @@ void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id
 
 bool Moneychanger::AddPaymentBasedOnNotice(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord/*=true*/)
 {
-//resume
-
     return AddPaymentToPmntArchive(recordmt, bCanDeleteRecord);
 }
 
@@ -2955,7 +2935,6 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
         }
         else // Record doesn't already exist in the database.
         {    // In that case we can use some code we already had:
-
             pModel->database().transaction();
             // ---------------------------------
             QSqlRecord record = pModel->record();
@@ -3044,8 +3023,6 @@ void Moneychanger::modifyRecords()
                     !recordmt.IsExpired() )
                 {
                     AddPaymentToPmntArchive(recordmt);
-
-//                    qDebug() << "DEBUGGING: MODIFYING RECORDS: 1";
                 }
 
             }
@@ -3074,8 +3051,6 @@ void Moneychanger::modifyRecords()
                 {
                     if (AddPaymentBasedOnNotice(recordmt))
                     {
-//                        qDebug() << "DEBUGGING: MODIFYING RECORDS BASED ON NOTICE.";
-
                         bShouldDeleteRecord = true;
                     }
                 }
@@ -3122,18 +3097,16 @@ void Moneychanger::modifyRecords()
                             if (AddFinalReceiptToTradeArchive(recordmt))
                                 bShouldDeleteRecord = true;
                             else
-                                qDebug() << "DEBUGGING: Tried to add final receipt to trade archive, but it failed!";
+                                qDebug() << " --- Tried to add final receipt to trade archive, but it failed!";
                         } // finalReceipt
                         else // All  other closed (deletable) receipts.
                         {
                             if (AddPaymentToPmntArchive(recordmt))
                             {
-//                                qDebug() << "DEBUGGING: MODIFYING RECORDS: 2";
-
                                 bShouldDeleteRecord = true;
                             }
-//                            else
-//                                qDebug() << "DEBUGGING: Failed trying to add a receipt to the payment archive.";
+//                          else
+//                              qDebug() << __FUNCTION__ << ": Failed trying to add a receipt to the payment archive.";
                         }
                     }
                     // -----------------------------------
@@ -3153,8 +3126,6 @@ void Moneychanger::modifyRecords()
                         //
                         if (AddPaymentToPmntArchive(recordmt))
                         {
-//                            qDebug() << "DEBUGGING: MODIFYING RECORDS: 3";
-
                             bShouldDeleteRecord = true;
                         }
                     }
@@ -3322,8 +3293,6 @@ void Moneychanger::onNeedToDownloadAccountData()
 
         if (0 == nymCount)
         {
-            qDebug() << "Making 'Me' Nym";
-
             std::string strSource("");
 
             std::string newNymId = madeEasy.create_nym_ecdsa(strSource);
@@ -3332,7 +3301,6 @@ void Moneychanger::onNeedToDownloadAccountData()
             {
                 opentxs::OTAPI_Wrap::It()->SetNym_Name(newNymId, newNymId, tr("Me").toLatin1().data());
                 DBHandler::getInstance()->AddressBookUpdateDefaultNym(QString::fromStdString(newNymId));
-                qDebug() << "Finished Making Nym";
             }
 
             nymCount = opentxs::OTAPI_Wrap::It()->GetNymCount();
@@ -3366,8 +3334,6 @@ void Moneychanger::onNeedToDownloadAccountData()
                 else
                     MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(defaultNymID),
                                                                            QString::fromStdString(defaultNotaryID));
-
-//              qDebug() << QString("Creation Response: %1").arg(QString::fromStdString(response));
             }
         }
         // ----------------------------------------------------------------
@@ -3380,8 +3346,6 @@ void Moneychanger::onNeedToDownloadAccountData()
         }
         // ----------------------------------------------------------------
         int32_t accountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
-
-//      qDebug() << QString("Account Count: %1").arg(accountCount);
 
         if (0 == accountCount)
         {

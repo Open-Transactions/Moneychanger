@@ -139,10 +139,11 @@ QWidget * AccountRecordsProxyModel::CreateDetailHeaderWidget(const int nSourceRo
 
     const bool bIsInvoice       = flags.testFlag(ModelPayments::IsInvoice);
     const bool bIsPlan          = flags.testFlag(ModelPayments::IsPaymentPlan);
+    const bool bIsNotice        = flags.testFlag(ModelPayments::IsNotice);
     const bool bIsChequeReceipt = (0 == qstrInstrumentType.compare("chequeReceipt"));
     const bool bIsMarketReceipt = (0 == qstrInstrumentType.compare("marketReceipt"));
 
-    if (bIsInvoice || bIsPlan ||
+    if (bIsInvoice || bIsPlan || bIsNotice ||
         ( bIsChequeReceipt &&
           (( bIsOutgoing && lAmount > 0) ||
            (!bIsOutgoing && lAmount < 0))
@@ -1012,10 +1013,11 @@ QWidget * PaymentsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, boo
 
     const bool bIsInvoice       = flags.testFlag(ModelPayments::IsInvoice);
     const bool bIsPlan          = flags.testFlag(ModelPayments::IsPaymentPlan);
+    const bool bIsNotice        = flags.testFlag(ModelPayments::IsNotice);
     const bool bIsChequeReceipt = (0 == qstrInstrumentType.compare("chequeReceipt"));
     const bool bIsMarketReceipt = (0 == qstrInstrumentType.compare("marketReceipt"));
 
-    if (bIsInvoice || bIsPlan ||
+    if (bIsInvoice || bIsPlan || bIsNotice ||
         ( bIsChequeReceipt &&
           (( bIsOutgoing && lAmount > 0) ||
            (!bIsOutgoing && lAmount < 0))
