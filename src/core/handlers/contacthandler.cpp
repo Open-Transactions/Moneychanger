@@ -1356,21 +1356,186 @@ bool MTContactHandler::LowLevelUpdateMessageBody(int nMessageID, const QString &
 }
 
 
+// --------------------------------------------
+
+int MTContactHandler::GetOrCreateLiveAgreementId(const int64_t transNumDisplay, const QString & notaryID, const QString & qstrEncodedMemo, const int nFolder) // returns nAgreementId
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_select = QString("SELECT `agreement_id` FROM `agreement` WHERE `txn_id_display`=%1 AND `notary_id`='%2' LIMIT 0,1").arg(transNumDisplay).arg(notaryID);
+    const int nRows = DBHandler::getInstance()->querySize(str_select);
+
+    if (nRows > 0)
+        return DBHandler::getInstance()->queryInt(str_select, 0, 0);
+    // ----------------------------------
+    // Let's create it then.
+    //
+    const int have_read = 0;
+    try
+    {
+        QString queryStr = "INSERT INTO `agreement` "
+                           "(`agreement_id`, `have_read`, `txn_id_display`, `notary_id`, `memo`, `folder`) "
+                           "VALUES(NULL, :blah_have_read, :blah_txn_id_display, :blah_notary_id, :blah_memo, :blah_folder)";
+    #ifdef CXX_11
+        std::unique_ptr<DBHandler::PreparedQuery> qu;
+    #else /* CXX_11?  */
+        std::auto_ptr<DBHandler::PreparedQuery> qu;
+    #endif /* CXX_11?  */
+        qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+        qu->bind (":blah_have_read", have_read);
+        qu->bind (":blah_txn_id_display", QVariant::fromValue(transNumDisplay));
+        qu->bind (":blah_notary_id", notaryID);
+        qu->bind (":blah_memo", qstrEncodedMemo);
+        qu->bind (":blah_folder", nFolder);
+        DBHandler::getInstance ()->runQuery (qu.release ());
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return 0;
+    }
+    // ----------------------------------
+//    QString str_insert = QString("INSERT INTO `agreement` "
+//                                 "(`agreement_id`, `have_read`, `txn_id_display`, `notary_id`, `memo`, `folder`) "
+//                                 "VALUES(NULL, %1, %2, '%3', '%4', %5)").arg(0).arg(transNumDisplay).arg(notaryID).arg(qstrEncodedMemo).arg(nFolder);
+//    DBHandler::getInstance()->runQuery(str_insert);
+    // ----------------------------------------
+    return DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `agreement`", 0, 0);
+}
+
+
+bool MTContactHandler::UpdateLiveAgreementRecord(const int nAgreementId, const int64_t nNewestReceiptNum, const int nNewestKnownState, const int64_t timestamp)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    try
+    {
+        QString qstrKnownState;
+
+        if (nNewestKnownState > 0)
+            qstrKnownState = " `newest_known_state` = :blah_newest_known_state,";
+        else
+            qstrKnownState = "";
+
+        QString queryStr =
+                 QString("UPDATE `agreement` SET"
+                         " `have_read` = 0,"
+                         " `newest_receipt_id` = :blah_newest_receipt_id,"
+                         "%1" // newest_known_state
+                         " `timestamp` = :blah_timestamp"
+                         " WHERE `agreement_id` = :blah_agreement_id").arg(qstrKnownState);
+    #ifdef CXX_11
+        std::unique_ptr<DBHandler::PreparedQuery> qu;
+    #else /* CXX_11?  */
+        std::auto_ptr<DBHandler::PreparedQuery> qu;
+    #endif /* CXX_11?  */
+        qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+        // ---------------------------------------------
+        qu->bind (":blah_newest_receipt_id", QVariant::fromValue(nNewestReceiptNum));
+        if (nNewestKnownState > 0)
+            qu->bind (":blah_newest_known_state", nNewestKnownState);
+        qu->bind (":blah_timestamp", QVariant::fromValue(timestamp));
+        qu->bind (":blah_agreement_id", nAgreementId);
+
+        DBHandler::getInstance ()->runQuery (qu.release ());
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return false;
+    }
+//  QString str_update= QString("UPDATE `agreement` SET `have_read`=0, `newest_receipt_id`=%1,`newest_known_state`=%2,`timestamp`=%3 WHERE `agreement_id`=%4").
+//          arg(nNewestReceiptNum).arg(nNewestKnownState).arg(timestamp).arg(nAgreementId);
+//  qDebug() << QString("Running query: %1").arg(str_update);
+//  DBHandler::getInstance()->runQuery(str_update);
+
+    return true;
+}
+
 // ----------------------------------------------------------
 
+// returns nAgreementReceiptKey
+int MTContactHandler::DoesAgreementReceiptAlreadyExist(const int nAgreementId, const int64_t receiptNum, const QString & qstrNymId)
+{
+    QMutexLocker locker(&m_Mutex);
 
+    QString str_select = QString("SELECT `agreement_receipt_key` FROM `agreement_receipt` WHERE `agreement_id`=%1 AND `receipt_id`=%2 AND `my_nym_id`='%3' LIMIT 0,1").
+            arg(nAgreementId).arg(receiptNum).arg(qstrNymId);
+    int nRows = DBHandler::getInstance()->querySize(str_select);
 
+    if (0 >= nRows)
+        return 0;
 
+    return DBHandler::getInstance()->queryInt(str_select, 0, 0);
+}
 
+bool MTContactHandler::CreateAgreementReceiptBody(const int nAgreementReceiptKey, QString & qstrReceiptBody) // When this is called, we already know the specific receipt is being added for the first time.
+{
+    QMutexLocker locker(&m_Mutex);
+    // ----------------------------------------
+    if (nAgreementReceiptKey > 0)
+    {
+        QString str_insert = QString("INSERT INTO `receipt_body` "
+                                     "(`agreement_receipt_key`) "
+                                     "VALUES(%1)").arg(nAgreementReceiptKey);
+        DBHandler::getInstance()->runQuery(str_insert);
+        // ----------------------------------------
+        const int nReceiptKey = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `receipt_body`", 0, 0);
 
+        if (nReceiptKey == nAgreementReceiptKey)
+        {
+            const bool bUpdated = LowLevelUpdateReceiptBody(nReceiptKey, qstrReceiptBody);
 
+            if (!bUpdated)
+            {
+                qDebug() << QString("Failed updating receipt body for agreement_receipt_key: %1").arg(nReceiptKey);
+                return false;
+            }
+            return true;
+        }
+    }
+    return false;
+}
 
+bool MTContactHandler::LowLevelUpdateReceiptBody(int nAgreementReceiptKey, const QString & qstrBody)
+{
+//  NOTE: This function ASSUMES that the calling function already locked the Mutex.
+//  QMutexLocker locker(&m_Mutex);
 
+    if (!qstrBody.isEmpty())
+    {
+        try
+        {
+            // The body is encrypted.
+            //
+            bool bSetValue = SetEncryptedValueByID(nAgreementReceiptKey, qstrBody, "body", "receipt_body", "agreement_receipt_key");
+            Q_UNUSED(bSetValue);
+        }
+        catch (const std::exception& exc)
+        {
+            qDebug () << "Error: " << exc.what ();
+            return false;
+        }
+    }
+    // --------------------------
+    return true;
+}
 
+bool MTContactHandler::DeleteAgreementReceiptBody(const int nID) // nID is nAgreementReceiptKey
+{
+    QMutexLocker locker(&m_Mutex);
 
+    QString str_delete = QString("DELETE FROM `receipt_body` WHERE `agreement_receipt_key`=%1").arg(nID);
 
+    return DBHandler::getInstance()->runQuery(str_delete);
+}
 
-// -------------------------------------------------
+QString MTContactHandler::GetAgreementReceiptBody(const int nID) // nID is nAgreementReceiptKey
+{
+    return MTContactHandler::GetEncryptedValueByID(nID, "body", "receipt_body", "agreement_receipt_key");
+}
+
+// ----------------------------------------------------------
 
 QString MTContactHandler::GetPaymentBody(int nID)
 {

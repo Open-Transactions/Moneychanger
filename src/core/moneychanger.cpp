@@ -53,6 +53,7 @@
 #include <gui/ui/dlgpassphrasemanager.hpp>
 #include <gui/ui/messages.hpp>
 #include <gui/ui/payments.hpp>
+#include <gui/ui/agreements.hpp>
 
 
 #include <opentxs/client/OTAPI.hpp>
@@ -63,6 +64,7 @@
 #include <opentxs/core/util/OTPaths.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
 #include <opentxs/client/OTWallet.hpp>
+#include <opentxs/ext/OTPayment.hpp>
 
 #include <QMenu>
 #include <QApplication>
@@ -316,7 +318,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 
     //Submenu
     mc_systrayIcon_advanced_import = QIcon(":/icons/icons/request.png");
-    mc_systrayIcon_advanced_agreements = QIcon(":/icons/agreements");
+    mc_systrayIcon_advanced_smartcontracts = QIcon(":/icons/agreements");
     mc_systrayIcon_advanced_corporations = QIcon(":/icons/icons/buildings.png");
     mc_systrayIcon_advanced_transport = QIcon(":/icons/icons/p2p.png");
     mc_systrayIcon_advanced_log = QIcon(":/icons/icons/p2p.png");
@@ -1505,6 +1507,14 @@ void Moneychanger::SetupPaymentsMenu(QPointer<QMenu> & parent_menu)
     mc_systrayMenu_overview = new QAction(mc_systrayIcon_overview, tr("Pending Transactions"), current_menu);
     current_menu->addAction(mc_systrayMenu_overview);
     connect(mc_systrayMenu_overview, SIGNAL(triggered()), this, SLOT(mc_overview_slot()));
+    // --------------------------------------------------------------
+    //Live Agreements
+    if (bExpertMode_)
+    {
+        mc_systrayMenu_agreements = new QAction(mc_systrayIcon_overview, tr("Active Agreements"), current_menu);
+        current_menu->addAction(mc_systrayMenu_agreements);
+        connect(mc_systrayMenu_agreements, SIGNAL(triggered()), this, SLOT(mc_agreements_slot()));
+    }
     // -------------------------------------------------
     current_menu->addSeparator();
     // -------------------------------------------------
@@ -1551,7 +1561,7 @@ void Moneychanger::SetupContractsMenu(QPointer<QMenu> & parent_menu)
     QPointer<QMenu> & current_menu = mc_systrayMenu_contracts;
     // -------------------------------------------------
     current_menu = new QMenu(tr("Contracts"), parent_menu);
-    current_menu->setIcon(mc_systrayIcon_advanced_agreements);
+    current_menu->setIcon(mc_systrayIcon_advanced_smartcontracts);
     parent_menu->addMenu(current_menu);
     // --------------------------------------------------------------
     SetupAssetMenu(current_menu);
@@ -1561,9 +1571,9 @@ void Moneychanger::SetupContractsMenu(QPointer<QMenu> & parent_menu)
     // -------------------------------------------------
     if (bExpertMode_)
     {
-        mc_systrayMenu_smart_contracts = new QAction(mc_systrayIcon_advanced_agreements, tr("Smart Contract Editor"), current_menu);
+        mc_systrayMenu_smart_contracts = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Smart Contract Editor"), current_menu);
         current_menu->addAction(mc_systrayMenu_smart_contracts);
-        connect(mc_systrayMenu_smart_contracts, SIGNAL(triggered()), this, SLOT(mc_agreement_slot()));
+        connect(mc_systrayMenu_smart_contracts, SIGNAL(triggered()), this, SLOT(mc_smartcontract_slot()));
     }
 }
 
@@ -1577,7 +1587,7 @@ void Moneychanger::SetupAdvancedMenu(QPointer<QMenu> & parent_menu)
 
     // -------------------------------------------------
     current_menu = new QMenu(tr("Advanced"), parent_menu);
-    current_menu->setIcon(mc_systrayIcon_advanced_agreements);
+    current_menu->setIcon(mc_systrayIcon_advanced_smartcontracts);
     parent_menu->addMenu(current_menu);
     // --------------------------------------------------------------
 //    SetupContractsMenu(current_menu);
@@ -1591,9 +1601,9 @@ void Moneychanger::SetupAdvancedMenu(QPointer<QMenu> & parent_menu)
     // --------------------------------------------------------------
     if (hasNyms())
     {
-        mc_systrayMenu_smart_contracts = new QAction(mc_systrayIcon_advanced_agreements, tr("Smart Contract Editor"), current_menu);
+        mc_systrayMenu_smart_contracts = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Smart Contract Editor"), current_menu);
         current_menu->addAction(mc_systrayMenu_smart_contracts);
-        connect(mc_systrayMenu_smart_contracts, SIGNAL(triggered()), this, SLOT(mc_agreement_slot()));
+        connect(mc_systrayMenu_smart_contracts, SIGNAL(triggered()), this, SLOT(mc_smartcontract_slot()));
         // --------------------------------------------------------------
         current_menu->addSeparator();
     }
@@ -1652,7 +1662,7 @@ void Moneychanger::SetupExperimentalMenu(QPointer<QMenu> & parent_menu)
 //    mc_systrayMenu_corporations->addMenu(mc_systrayMenu_company_create);
 
 //    // Create insurance company action on submenu
-//    mc_systrayMenu_company_create_insurance = new QAction(mc_systrayIcon_advanced_agreements, tr("Insurance Company"), 0);
+//    mc_systrayMenu_company_create_insurance = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Insurance Company"), 0);
 //    mc_systrayMenu_company_create->addAction(mc_systrayMenu_company_create_insurance);
 //    connect(mc_systrayMenu_company_create_insurance, SIGNAL(triggered()), this, SLOT(mc_createinsurancecompany_slot()));
     // --------------------------------------------------------------
@@ -1661,15 +1671,15 @@ void Moneychanger::SetupExperimentalMenu(QPointer<QMenu> & parent_menu)
     current_menu->addMenu(mc_systrayMenu_bazaar);
 
     // Bazaar actions
-    mc_systrayMenu_bazaar_search = new QAction(mc_systrayIcon_advanced_agreements, tr("Search Listings"), mc_systrayMenu_bazaar);
+    mc_systrayMenu_bazaar_search = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Search Listings"), mc_systrayMenu_bazaar);
     mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_search);
 //  connect(mc_systrayMenu_bazaar_search, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
 
-    mc_systrayMenu_bazaar_post = new QAction(mc_systrayIcon_advanced_agreements, tr("Post an Ad"), mc_systrayMenu_bazaar);
+    mc_systrayMenu_bazaar_post = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Post an Ad"), mc_systrayMenu_bazaar);
     mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_post);
 //  connect(mc_systrayMenu_bazaar_post, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
 
-    mc_systrayMenu_bazaar_orders = new QAction(mc_systrayIcon_advanced_agreements, tr("Orders"), mc_systrayMenu_bazaar);
+    mc_systrayMenu_bazaar_orders = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Orders"), mc_systrayMenu_bazaar);
     mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_orders);
 //  connect(mc_systrayMenu_bazaar_orders, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
     // -------------------------------------------------
@@ -2614,14 +2624,8 @@ void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id
         nPreExistingPaymentId = MTContactHandler::getInstance()->GetPaymentIdByTxnDisplayId(transNumDisplay, myNymID);
         bRecordAlreadyExisted = (nPreExistingPaymentId > 0);
         // ------------------------------------------
-
-
-        qDebug() << "Payment already existed: " << QString(bRecordAlreadyExisted ? "TRUE" : "FALSE");
-
-        qDebug() << "nPreExistingPaymentId: " << nPreExistingPaymentId;
-
-
-
+//        qDebug() << "Payment already existed: " << QString(bRecordAlreadyExisted ? "TRUE" : "FALSE");
+//        qDebug() << "nPreExistingPaymentId: " << nPreExistingPaymentId;
 
         // We'll start by putting all the values into our map,
         // so we can then use that map when creating or updating
@@ -2641,15 +2645,32 @@ void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id
 
 //      qDebug() << "DEBUGGING AddPaymentBasedOnNotification. transNum: " << transNum << " transNumDisplay: " << transNumDisplay << "\n";
 
-
-
         if (!bRecordAlreadyExisted) mapFinalValues.insert("have_read", QVariant::fromValue(0));
         if (!bRecordAlreadyExisted) mapFinalValues.insert("have_replied", QVariant::fromValue(0));
         if (!bRecordAlreadyExisted) mapFinalValues.insert("have_forwarded", QVariant::fromValue(0));
 
         mapFinalValues.insert("folder", QVariant::fromValue(nFolder));
         // -------------------------------------------------
-        qstrPendingBody = QString::fromStdString(p_txn_contents);
+//        opentxs::OTPayment thePayment(p_txn_contents);
+
+//        if (thePayment.IsValid() && thePayment.SetTempValues())
+//        {
+//            const std::string str_temp_type(thePayment.GetTypeString());
+//            QString qstrType = QString::fromStdString(str_temp_type);
+
+//            if (thePayment.IsNotice())
+//                qstrPendingBody = QString::fromStdString(p_txn_contents);
+//            else if ( thePayment.IsReceipt() )
+//                qstrBody = QString::fromStdString(p_txn_contents);
+//            else
+//                qstrPendingBody = QString::fromStdString(p_txn_contents);
+//        }
+//        else
+
+//        if (bRecordAlreadyExisted)
+//            qstrBody = QString::fromStdString(p_txn_contents);
+//        else
+            qstrPendingBody = QString::fromStdString(p_txn_contents);
         // -------------------------------------------------
         if (bRecordAlreadyExisted)
         {
@@ -2727,6 +2748,396 @@ bool Moneychanger::AddPaymentBasedOnNotice(opentxs::OTRecord& recordmt, const bo
     return AddPaymentToPmntArchive(recordmt, bCanDeleteRecord);
 }
 
+// Instead of the Payments UI, this is for the Agreements UI.
+// Pretty similar though. Just make sure, if you call this function, that you know you are
+// passing something related to a payment plan or smart contract. (Anything recurring except
+// for market trades.)
+// We'll start with paymentReceipts and finalReceipts and then go from there...
+//
+bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
+{
+    ModelPayments::PaymentFlags flags = ModelPayments::NoFlags;
+
+    QPointer<ModelAgreementReceipts> pAgreementModel = DBHandler::getInstance()->getAgreementReceiptModel();
+    QPointer<ModelAgreementReceipts> pModel = DBHandler::getInstance()->getAgreementReceiptModel();
+    bool bSuccessAddingReceipt = false;
+    QString qstrReceiptBody("");
+    QMap<QString, QVariant> mapFinalValues;
+
+    int nAgreementId         = 0;
+    int nAgreementReceiptKey = 0;
+    int nNewestKnownState    = 0;
+
+    int64_t receiptNum = 0;
+
+    time64_t tDate = 0;
+
+    if (pModel)
+    {
+        // ---------------------------------
+        if (recordmt.IsSpecialMail())           flags |= ModelPayments::IsSpecialMail;
+        if (recordmt.IsPending())               flags |= ModelPayments::IsPending;
+        if (recordmt.IsOutgoing())              flags |= ModelPayments::IsOutgoing;
+        if (recordmt.IsRecord())                flags |= ModelPayments::IsRecord;
+        if (recordmt.IsReceipt())               flags |= ModelPayments::IsReceipt;
+        if (recordmt.IsFinalReceipt())          flags |= ModelPayments::IsFinalReceipt;
+        if (recordmt.IsMail())                  flags |= ModelPayments::IsMail;
+        if (recordmt.IsTransfer())              flags |= ModelPayments::IsTransfer;
+        if (recordmt.IsCheque())                flags |= ModelPayments::IsCheque;
+        if (recordmt.IsInvoice())               flags |= ModelPayments::IsInvoice;
+        if (recordmt.IsVoucher())               flags |= ModelPayments::IsVoucher;
+        if (recordmt.IsContract())              flags |= ModelPayments::IsContract;
+        if (recordmt.IsPaymentPlan())           flags |= ModelPayments::IsPaymentPlan;
+        if (recordmt.IsCash())                  flags |= ModelPayments::IsCash;
+        if (recordmt.IsNotice())                flags |= ModelPayments::IsNotice;
+        if (recordmt.IsExpired())               flags |= ModelPayments::IsExpired;
+        if (recordmt.IsCanceled())              flags |= ModelPayments::IsCanceled;
+        if (recordmt.CanDeleteRecord())         flags |= ModelPayments::CanDelete;
+        if (recordmt.CanAcceptIncoming())       flags |= ModelPayments::CanAcceptIncoming;
+        if (recordmt.CanDiscardIncoming())      flags |= ModelPayments::CanDiscardIncoming;
+        if (recordmt.CanCancelOutgoing())       flags |= ModelPayments::CanCancelOutgoing;
+        if (recordmt.CanDiscardOutgoingCash())  flags |= ModelPayments::CanDiscardOutgoingCash;
+        // ---------------------------------
+        QString myNymID;
+        if (!recordmt.GetNymID().empty())
+            myNymID = QString::fromStdString(recordmt.GetNymID());
+        // ---------------------------------
+        QString myAcctID;
+        if (!recordmt.GetAccountID().empty())
+            myAcctID = QString::fromStdString(recordmt.GetAccountID());
+        // ---------------------------------
+        QString instrumentType;
+        if (!recordmt.GetInstrumentType().empty())
+            instrumentType = QString::fromStdString(recordmt.GetInstrumentType());
+        // ---------------------------------
+        QString myAssetTypeID;
+        if (!recordmt.GetInstrumentDefinitionID().empty())
+            myAssetTypeID = QString::fromStdString(recordmt.GetInstrumentDefinitionID());
+        // ---------------------------------
+        QString myAddress;
+        if (!recordmt.GetAddress().empty())
+            myAddress = QString::fromStdString(recordmt.GetAddress());
+//          myAddress = MTContactHandler::Encode(QString::fromStdString(recordmt.GetAddress()));
+        // ---------------------------------
+        QString senderNymID,    senderAccountID,    senderAddress,
+                recipientNymID, recipientAccountID, recipientAddress;
+
+        if (recordmt.IsOutgoing())
+        {
+            if (!recordmt.GetOtherNymID().empty())
+                recipientNymID = QString::fromStdString(recordmt.GetOtherNymID());
+
+            if (!recordmt.GetOtherAccountID().empty())
+                recipientAccountID = QString::fromStdString(recordmt.GetOtherAccountID());
+
+            if (!recordmt.GetOtherAddress().empty())
+                recipientAddress = QString::fromStdString(recordmt.GetOtherAddress());
+//              recipientAddress = MTContactHandler::Encode(QString::fromStdString(recordmt.GetOtherAddress()));
+        }
+        else
+        {
+            if (!recordmt.GetOtherNymID().empty())
+                senderNymID = QString::fromStdString(recordmt.GetOtherNymID());
+
+            if (!recordmt.GetOtherAccountID().empty())
+                senderAccountID = QString::fromStdString(recordmt.GetOtherAccountID());
+
+            if (!recordmt.GetOtherAddress().empty())
+                senderAddress = QString::fromStdString(recordmt.GetOtherAddress());
+//              senderAddress = MTContactHandler::Encode(QString::fromStdString(recordmt.GetOtherAddress()));
+        }
+        // ---------------------------------
+        QString notaryID, msgType, msgTypeDisplay;
+
+        if (!recordmt.GetNotaryID().empty())
+            notaryID = QString::fromStdString(recordmt.GetNotaryID());
+
+        if (!recordmt.GetMsgType().empty())
+            msgType = QString::fromStdString(recordmt.GetMsgType());
+//          msgType = MTContactHandler::Encode(QString::fromStdString(recordmt.GetMsgType()));
+
+        if (!recordmt.GetMsgTypeDisplay().empty())
+            msgTypeDisplay = QString::fromStdString(recordmt.GetMsgTypeDisplay());
+//          msgTypeDisplay = MTContactHandler::Encode(QString::fromStdString(recordmt.GetMsgTypeDisplay()));
+        // ---------------------------------
+        tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetDate()));
+
+        // If it's a final Receipt, we want to get the closing number from it as the "receipt_id" which
+        // is the Agreement table's version of the TransNum.
+        // What's the difference? Well, they are basically identical, except for finalReceipts we have to use
+        // the closing number instead of the "transaction number" since it's the only unique number on the
+        // receipt. (A finalReceipt will have the same transaction number as other finalReceipts from the
+        // same event.) So we're probably going to fix this soon by adding the "event_id" to OT.
+        //
+        int64_t transNum        = recordmt.GetTransactionNum();
+        int64_t transNumDisplay = recordmt.GetTransNumForDisplay();
+        // ---------------------------------------------------------------
+        receiptNum = transNum;
+
+        if (recordmt.IsFinalReceipt())
+        {
+            int64_t temp = 0;
+
+            if (recordmt.GetClosingNum(temp) && (temp > 0))
+                receiptNum = temp;
+        }
+
+        // What's going on here is, we normally use the Transaction Number on a receipt to identify it.
+        // (The "trans num for display" might be the same on many receipts, but the actual txn_id isn't.)
+        // But a problem arose, because some finalReceipts have the same transaction number. (Those that
+        // were created from the same event.) We didn't mind this in the past since each finalReceipt went
+        // to a different account, and the txnId wasn't signed out to the user anyway, but was owned by
+        // the server.
+        // Well, the chickens have come home to roost. We DO need a unique receipt number, and so for now,
+        // we're using the "closing number" on the final receipt -- which is unique, at least for a given
+        // notary -- and we're using the normal TransNum for all other receipts. This is what forms the
+        // "receipt_id" that's used in the Agreement table.
+        //
+        // At some point soon we're going to fix this by adding an event_id to transactions, so we can tell
+        // which ones came from the same event, without having to put the same transaction number on each.
+        // Probably make a "receipt number" as well, on the OT side.
+        // Why's that? Imagine that Alice does a single transaction #900, to exchange out of a basket currency
+        // that has 4 asset types. She receives a server reply to her basket exchange, and then also receives
+        // 4 finalReceipts in her 4 asset accounts. So that's 5 receipts total!
+        // The server reply should be Transaction #900. (Which WAS signed out to Alice, though it's closed now.)
+        // It should also have a receipt ID owned by the server. Say, number 54.
+        // It should also have an event ID owned by the server. Say, number 600.
+        // The 4 receipts will each have a unique receipt number owned by the server. Say, 55, 56, 57, and 58.
+        // They should NOT have a transaction number, but they should have #900 as the "number of origin."
+        // They should also all have the same event ID 600.
+        // You might ask, why not just use the Transaction# 900 as the event ID? It's already the same on
+        // all those receipts. The answer is because it's possible to have multiple events from the same
+        // transaction. For example, market offer #900 might have 5 trades that occur. Each of those spawns
+        // 4 marketReceipts. (20 in total.) So that's 5 different events for the same #900. Those events
+        // might be 600, 601, 602, and 603. And there will be 20 receipt IDs as well. We'll get there.
+        //
+        // So this is a little confusing, but we'll simplify it soon, and for now, this works.
+        // ---------------------------------------------------------------
+        if (0 >= receiptNum)
+        {
+            qDebug() << __FUNCTION__ << ": Strange -- receiptNum is 0 or less. Should never happen. Failure.";
+            return false;
+        }
+        // ---------------------------------------------------------------
+        int64_t lAmount = opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetAmount());
+
+//      qDebug() << "DEBUGGING! recordmt.GetAmount(): " << QString::fromStdString(recordmt.GetAmount())
+//               << " lAmount: " << lAmount << "\n";
+        // ---------------------------------
+        std::string str_Name = recordmt.GetName();
+        QString qstrName;
+        if (!str_Name.empty())
+            qstrName = MTContactHandler::Encode(QString::fromStdString(str_Name));
+        // ---------------------------------
+        std::string str_Memo = recordmt.HasMemo() ? recordmt.GetMemo() : "";
+        QString qstrMemo;
+        if (!str_Memo.empty())
+            qstrMemo = MTContactHandler::Encode(QString::fromStdString(str_Memo));
+        // ---------------------------------
+        std::string str_mailDescription;
+        recordmt.FormatDescription(str_mailDescription);
+        QString mailDescription;
+
+        if (!str_mailDescription.empty())
+            mailDescription = MTContactHandler::Encode(QString::fromStdString(str_mailDescription));
+        // ---------------------------------
+        const int nFolder = recordmt.IsOutgoing() ? 0 : 1; // 0 for moneychanger's outbox, and 1 for inbox.
+        // ---------------------------------
+        if (notaryID.isEmpty())
+        {
+            qDebug() << __FUNCTION__ << ": Strange: notaryID was empty. (And I needed it. Returning false. Sigh.)";
+            return false;
+        }
+        // ----------------------------------------------------------
+        // Let's see if we already have a "live agreement" in the Moneychanger DB's agreement table.
+        // The Notary and the TxnDisplay (which is the same for all Nyms) are used to look up the
+        // agreement, and nAgreementId is the unique key returned.
+        // (Can't use TxnDisplay for unique key since there are multiple notaries out there...)
+        //
+        int nAgreementFolder = 0;
+        if (recordmt.IsPaymentPlan())   nAgreementFolder = 0;
+        else if (recordmt.IsContract()) nAgreementFolder = 1;
+//      else if (recordmt.IsEntity())   nAgreementFolder = 2; // Someday. (For digital corporations.)
+
+        // NOTE: This may be a paymentReceipt for a smart contract.
+        // In which case recordmt.IsContract() returns FALSE!  (Though recordmt.IsReceipt() would return TRUE.)
+        // In which case the above logic would set the folder wrong (It'd be set to the payment plan folder instead
+        // of the smart contract folder.)
+        // SO THEN, how does the below call work? Because it doesn't set the folder if the record already exists.
+        // It ONLY sets the folder when first creating the record. And it will get the folder correctly that time.
+        // So I don't mind if the folder is wrong all the other times, because it's discarded in those cases anyway.
+        // If it turns out later that this isn't good enough, I guess we can get more info from the record. But
+        // this should work for now.
+        //
+        nAgreementId = MTContactHandler::getInstance()->GetOrCreateLiveAgreementId(transNumDisplay, notaryID, qstrMemo, nAgreementFolder);
+
+        if (nAgreementId <= 0)
+        {
+            qDebug() << __FUNCTION__ << ": Failed in call to GetOrCreateLiveAgreementId (strange.)";
+            return false;
+        }
+        // ----------------------------------------------------------
+        // Let's see if a record already exists for this receipt:
+        //
+        nAgreementReceiptKey = MTContactHandler::getInstance()->DoesAgreementReceiptAlreadyExist(nAgreementId, receiptNum, myNymID);
+
+        if (nAgreementReceiptKey > 0)
+        {
+            qDebug() << __FUNCTION__ << ": Skipping this agreement receipt since it's apparently already in the database. (Returning true, however, so the recordlist will dump it.)";
+            return true;
+        }
+        // ----------------------------------------------------------
+        // We'll start by putting all the values into our map, so we can then use
+        // that map when creating the DB record.
+        //
+        // if (bRecordAlreadyExisted) mapFinalValues.insert("agreement_receipt_key", nAgreementReceiptKey);
+        // Note: No need to insert this one. It's auto-number.
+
+        mapFinalValues.insert("agreement_id", QVariant::fromValue(nAgreementId));
+        mapFinalValues.insert("receipt_id", QVariant::fromValue(receiptNum));
+
+        if (tDate > 0) mapFinalValues.insert("timestamp", QVariant::fromValue(tDate));
+        mapFinalValues.insert("have_read", QVariant::fromValue(recordmt.IsOutgoing() ? 1 : 0));
+        if (transNumDisplay > 0) mapFinalValues.insert("txn_id_display", QVariant::fromValue(transNumDisplay));
+
+        // (Someday event_id will go here.)
+
+        if (!qstrMemo.isEmpty()) mapFinalValues.insert("memo", qstrMemo);
+        if (!myAssetTypeID.isEmpty()) mapFinalValues.insert("my_asset_type_id", myAssetTypeID);
+        if (!myNymID.isEmpty()) mapFinalValues.insert("my_nym_id", myNymID);
+        if (!myAcctID.isEmpty()) mapFinalValues.insert("my_acct_id", myAcctID);
+        if (!myAddress.isEmpty()) mapFinalValues.insert("my_address", myAddress);
+        if (!senderNymID.isEmpty()) mapFinalValues.insert("sender_nym_id", senderNymID);
+        if (!senderAccountID.isEmpty()) mapFinalValues.insert("sender_acct_id", senderAccountID);
+        if (!senderAddress.isEmpty()) mapFinalValues.insert("sender_address", senderAddress);
+        if (!recipientNymID.isEmpty()) mapFinalValues.insert("recipient_nym_id", recipientNymID);
+        if (!recipientAccountID.isEmpty()) mapFinalValues.insert("recipient_acct_id", recipientAccountID);
+        if (!recipientAddress.isEmpty()) mapFinalValues.insert("recipient_address", recipientAddress);
+        if (lAmount != 0) mapFinalValues.insert("amount", QVariant::fromValue(lAmount));
+
+        mapFinalValues.insert("folder", QVariant::fromValue(nFolder));
+
+        if (!msgType.isEmpty()) mapFinalValues.insert("method_type", msgType);
+        if (!msgTypeDisplay.isEmpty()) mapFinalValues.insert("method_type_display", msgTypeDisplay);
+
+        if (!notaryID.isEmpty()) mapFinalValues.insert("notary_id", notaryID);
+        if (!mailDescription.isEmpty()) mapFinalValues.insert("description", mailDescription);
+        if (!qstrName.isEmpty()) mapFinalValues.insert("record_name", qstrName);
+        if (!instrumentType.isEmpty()) mapFinalValues.insert("instrument_type", instrumentType);
+
+        qint64 storedFlags = (qint64)flags;
+        mapFinalValues.insert("flags", QVariant::fromValue(storedFlags));
+        // -------------------------------------------------
+//        // 0 Error, 1 Outgoing, 2 Incoming, 3 Activated, 4 Failed Activating, 5 Canceled, 6 Expired, 7 Completed, 8 Killed
+//        if (recordmt.IsCanceled())      nNewestKnownState = 5; // Canceled
+//        else if (recordmt.IsExpired())  nNewestKnownState = 6; // Expired
+//        else if (recordmt.IsNotice())
+//        {
+//            bool bIsSuccess = false;
+
+//            if (recordmt.HasSuccess(bIsSuccess))
+//            {
+//                if (bIsSuccess) nNewestKnownState = 3; // Activated
+//                else            nNewestKnownState = 4; // Failed Activating
+//            }
+//        }
+//        else if (recordmt.IsFinalReceipt())
+//        {
+//            nNewestKnownState = 7; // Completed.
+//        }
+//        else if (recordmt.IsPending())
+//        {
+//            if (recordmt.IsOutgoing()) nNewestKnownState = 1; // Outgoing
+//            else                       nNewestKnownState = 2; // Incoming
+
+//        }
+        // else if (blah blah blah)    nNewestKnownState = 8; // Killed
+        // TODO: What about if it's killed? Should be something on the finalReceipt that tells me whether it died naturally or was killed.
+        // (There probably is.)
+
+        // ----------------------------------
+
+        // NOTE: Currently we only get paymentReceipts and finalReceipts.
+        // That means the only "state" we have currently here is "Paid", "Payment failed", or "Contract not active."
+        // 0 Error, 1 Paid, 2 Payment failed, 3 Contract not active.
+
+        if (recordmt.IsFinalReceipt()) nNewestKnownState = 3;
+        else if (recordmt.IsReceipt())
+        {
+            bool bIsSuccess = false;
+
+            if (recordmt.HasSuccess(bIsSuccess))
+            {
+                if (bIsSuccess) nNewestKnownState = 1; // Paid
+                else            nNewestKnownState = 2; // Payment failed.
+            }
+        }
+        // -------------------------------------------------
+//      qDebug() << "DEBUGGING AddAgreementRecord. " << (recordmt.IsOutgoing() ? "OUT" : "IN") << ". receiptNum: " << receiptNum << " transNumDisplay: " << transNumDisplay << "\n";
+        // -------------------------------------------------
+        pModel->database().transaction();
+        // ---------------------------------
+        QSqlRecord record = pModel->record();
+        record.setGenerated("agreement_receipt_key", true);
+        // ---------------------------------
+        for (QMap<QString, QVariant>::iterator it_map = mapFinalValues.begin();
+             it_map != mapFinalValues.end(); ++it_map)
+        {
+            const QString  & qstrKey = it_map.key();
+            const QVariant & qValue  = it_map.value();
+
+            record.setValue(qstrKey, qValue);
+        }
+
+        pModel->insertRecord(0, record);
+        // ---------------------------------
+        if (pModel->submitAll())
+        {
+            // Success.
+            if (pModel->database().commit())
+            {
+                bSuccessAddingReceipt = true;
+                nAgreementReceiptKey = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `agreement_receipt`", 0, 0);
+                qstrReceiptBody = QString::fromStdString(recordmt.GetContents());
+            }
+        }
+        else
+        {
+            pModel->database().rollback();
+            qDebug() << "Database Write Error"
+                     << "The database reported an error: "
+                     << pModel->lastError().text();
+        }
+    } // if pModel
+    // ------------------------------------------------
+    if (bSuccessAddingReceipt)
+    {
+        if (nAgreementReceiptKey <= 0)
+        {
+            qDebug() << "AddAgreementRecord: Supposedly succeeded adding agreement receipt to database, but the resulting key is wrong! (Failure.)\n";
+            return false;
+        }
+        else
+            qDebug() << "AddAgreementRecord: Succeeded adding agreement receipt to database.\n";
+        // -------------------------------------------
+        if (!MTContactHandler::getInstance()->UpdateLiveAgreementRecord(nAgreementId, receiptNum, nNewestKnownState, tDate))
+            qDebug() << "AddAgreementRecord: Strange -- just failed trying to update a live agreement record.\n";
+        else
+            pAgreementModel->select();
+        // -------------------------------------------
+        if (!MTContactHandler::getInstance()->CreateAgreementReceiptBody(nAgreementReceiptKey, qstrReceiptBody))
+        {
+            qDebug() << "AddAgreementRecord: ...but then failed creating agreement receipt body.\n";
+            return false;
+        }
+    }
+    // ------------------------------------------------
+    return bSuccessAddingReceipt;
+}
+
+
+// ------------------------------
+
 
 // Adds or updates.
 // The payment archive stores up to multiple receipts per record.
@@ -2752,6 +3163,7 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
         if (recordmt.IsOutgoing())              flags |= ModelPayments::IsOutgoing;
         if (recordmt.IsRecord())                flags |= ModelPayments::IsRecord;
         if (recordmt.IsReceipt())               flags |= ModelPayments::IsReceipt;
+        if (recordmt.IsFinalReceipt())          flags |= ModelPayments::IsFinalReceipt;
         if (recordmt.IsMail())                  flags |= ModelPayments::IsMail;
         if (recordmt.IsTransfer())              flags |= ModelPayments::IsTransfer;
         if (recordmt.IsCheque())                flags |= ModelPayments::IsCheque;
@@ -2917,8 +3329,25 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
         mapFinalValues.insert("folder", QVariant::fromValue(nFolder));
         mapFinalValues.insert("flags", QVariant::fromValue(storedFlags));
         // -------------------------------------------------
-        if (!bCanDeleteRecord) qstrPendingBody = QString::fromStdString(recordmt.GetContents());
-        else                   qstrBody        = QString::fromStdString(recordmt.GetContents());
+        bool bAddAsPending = false;
+
+        if (!bCanDeleteRecord) bAddAsPending = true;
+        else                   bAddAsPending = false;
+        // -------------------------------------------------
+        if (  (recordmt.IsNotice()) )
+        {
+            bAddAsPending = true;
+        }
+        // -------------------------------------------------
+        if (
+              (recordmt.IsReceipt())
+           )
+        {
+            bAddAsPending = false;
+        }
+        // -------------------------------------------------
+        if (bAddAsPending) qstrPendingBody = QString::fromStdString(recordmt.GetContents());
+        else               qstrBody        = QString::fromStdString(recordmt.GetContents());
         // -------------------------------------------------
         if (bRecordAlreadyExisted)
         {
@@ -3071,7 +3500,19 @@ void Moneychanger::modifyRecords()
                             bShouldDeleteRecord = true;
                         } // marketReceipt
                         // -----------------------------------
-                        else if (0 == recordmt.GetInstrumentType().compare("finalReceipt"))
+                        else if (0 == recordmt.GetInstrumentType().compare("paymentReceipt"))
+                        {
+                            if (AddAgreementRecord(recordmt))
+                            {
+                                bShouldDeleteRecord = true;
+                            }
+//                          else
+//                              qDebug() << __FUNCTION__ << ": Failed trying to add a receipt to the agreement archive.";
+
+                            bShouldDeleteRecord = true;
+                        } // paymentReceipt
+                        // -----------------------------------
+                        else if (recordmt.IsFinalReceipt())
                         {
                             // Notice here we only delete the record if we successfully
                             // added the final receipt to the trade archive table.
@@ -3094,10 +3535,19 @@ void Moneychanger::modifyRecords()
                             // not be a finalReceipt for a market offer! It might correspond to
                             // a smart contract or a recurring payment plan.
                             //
-                            if (AddFinalReceiptToTradeArchive(recordmt))
+                            if (AddFinalReceiptToTradeArchive(recordmt)) // It's possibly a market trade.
                                 bShouldDeleteRecord = true;
+                            else if (AddAgreementRecord(recordmt)) // Okay, it's a smart contract or recurring payment plan.
+                            {
+                                bShouldDeleteRecord = true;
+
+                                // For now I'm doing this one here as well, so the normal payments screen
+                                // is able to realize that the agreement has finished.
+                                //
+                                AddPaymentToPmntArchive(recordmt);
+                            }
                             else
-                                qDebug() << " --- Tried to add final receipt to trade archive, but it failed!";
+                                qDebug() << " --- Tried to import final receipt, but it failed!";
                         } // finalReceipt
                         else // All  other closed (deletable) receipts.
                         {
@@ -4437,6 +4887,35 @@ void Moneychanger::mc_payments_dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 }
 
 
+
+void Moneychanger::mc_agreements_slot()
+{
+    mc_agreements_dialog();
+}
+
+void Moneychanger::mc_show_agreement_slot(int nSourceRow, int nFolder)
+{
+    mc_agreements_dialog(nSourceRow, nFolder);
+}
+
+void Moneychanger::mc_agreements_dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
+{
+    if (!agreements_window)
+    {
+        agreements_window = new Agreements(this);
+
+        connect(agreements_window, SIGNAL(needToDownloadAccountData()),   this,              SLOT(onNeedToDownloadAccountData()));
+        connect(this,              SIGNAL(populatedRecordlist()),         agreements_window, SLOT(onRecordlistPopulated()));
+        connect(agreements_window, SIGNAL(needToPopulateRecordlist()),    this,              SLOT(onNeedToPopulateRecordlist()));
+        connect(this,              SIGNAL(balancesChanged()),             agreements_window, SLOT(onBalancesChanged()));
+        connect(this,              SIGNAL(claimsUpdatedForNym(QString)),  agreements_window, SLOT(onClaimsUpdatedForNym(QString)));
+
+    }
+    // ---------------------------------
+    agreements_window->dialog(nSourceRow, nFolder);
+}
+
+
 /**
  * Overview Window
  **/
@@ -4757,7 +5236,7 @@ void Moneychanger::mc_main_menu_dialog(bool bShow/*=true*/)
                 this,       SLOT(mc_defaultserver_slot()));
 
         connect(menuwindow, SIGNAL(sig_on_toolButton_smartContracts_clicked()),
-                this,       SLOT(mc_agreement_slot()));
+                this,       SLOT(mc_smartcontract_slot()));
 
         connect(menuwindow, SIGNAL(sig_on_toolButton_Corporations_clicked()),
                 this,       SLOT(mc_corporation_slot()));
@@ -4786,6 +5265,9 @@ void Moneychanger::mc_main_menu_dialog(bool bShow/*=true*/)
         connect(menuwindow, SIGNAL(sig_on_toolButton_recurringPayment_clicked()),
                 this,       SLOT(mc_proposeplan_slot()));
 
+        connect(menuwindow, SIGNAL(sig_on_toolButton_liveAgreements_clicked()),
+                this,       SLOT(mc_agreements_slot()));
+
     }
     // ---------------------------------
     if (bShow)
@@ -4810,26 +5292,26 @@ void Moneychanger::mc_main_menu_dialog(bool bShow/*=true*/)
  * Agreement Window
  **/
 
-void Moneychanger::mc_agreement_slot()
+void Moneychanger::mc_smartcontract_slot()
 {
-    mc_agreement_dialog();
+    mc_smartcontract_dialog();
 }
 
-void Moneychanger::mc_agreement_dialog()
+void Moneychanger::mc_smartcontract_dialog()
 {
     // -------------------------------------
-    if (!agreement_window)
-        agreement_window = new MTDetailEdit(this);
+    if (!smartcontract_window)
+        smartcontract_window = new MTDetailEdit(this);
     // -------------------------------------
-    mapIDName & the_map = agreement_window->m_map;
+    mapIDName & the_map = smartcontract_window->m_map;
     // -------------------------------------
     the_map.clear();
     // -------------------------------------
     MTContactHandler::getInstance()->GetSmartContracts(the_map);
     // -------------------------------------
-    agreement_window->setWindowTitle(tr("Smart Contracts"));
+    smartcontract_window->setWindowTitle(tr("Smart Contracts"));
     // -------------------------------------
-    agreement_window->dialog(MTDetailEdit::DetailEditTypeAgreement);
+    smartcontract_window->dialog(MTDetailEdit::DetailEditTypeAgreement);
 }
 
 

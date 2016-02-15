@@ -48,6 +48,7 @@ private slots:
     void on_toolButton_transport_clicked();
     void on_toolButton_requestPayment_clicked();
     void on_toolButton_recurringPayment_clicked();
+    void on_toolButton_liveAgreements_clicked();
 
     void onExpertModeUpdated();
 
@@ -74,6 +75,7 @@ signals:
     void sig_on_toolButton_Transport_clicked();
     void sig_on_toolButton_requestPayment_clicked();
     void sig_on_toolButton_recurringPayment_clicked();
+    void sig_on_toolButton_liveAgreements_clicked();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);

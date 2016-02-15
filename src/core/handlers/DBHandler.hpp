@@ -8,6 +8,7 @@
 #include <core/handlers/modeltradearchive.hpp>
 #include <core/handlers/modelmessages.hpp>
 #include <core/handlers/modelpayments.hpp>
+#include <core/handlers/modelagreements.hpp>
 #include <core/handlers/modelclaims.hpp>
 
 #include <QDebug>
@@ -57,9 +58,11 @@ class DBHandler
     FileHandler dbFile;
     QMutex dbMutex;
     
-    QPointer<ModelTradeArchive> pTradeArchiveModel_;
-    QPointer<ModelMessages>     pMessageModel_;
-    QPointer<ModelPayments>     pPaymentModel_;
+    QPointer<ModelTradeArchive>         pTradeArchiveModel_;
+    QPointer<ModelMessages>             pMessageModel_;
+    QPointer<ModelPayments>             pPaymentModel_;
+    QPointer<ModelAgreements>           pAgreementModel_;
+    QPointer<ModelAgreementReceipts>    pAgreementReceiptModel_;
 
     bool dbConnect();
     bool isConnected();
@@ -74,6 +77,8 @@ class DBHandler
     QPointer<ModelTradeArchive> getTradeArchiveModel();
     QPointer<ModelMessages>     getMessageModel();
     QPointer<ModelPayments>     getPaymentModel();
+    QPointer<ModelAgreements>     getAgreementModel();
+    QPointer<ModelAgreementReceipts>     getAgreementReceiptModel();
     QPointer<ModelClaims>       getClaimsModel(int nContactId);
     QPointer<ModelClaims>       getClaimsModel(const QString & qstrNymId);
     QPointer<ModelClaims>       getRelationshipClaims(int nAboutContactId);

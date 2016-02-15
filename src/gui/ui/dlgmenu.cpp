@@ -103,6 +103,7 @@ void DlgMenu::refreshOptions()
     ui->toolButton_transport->setVisible(Moneychanger::It()->hasNyms());
     ui->toolButton_requestPayment->setVisible(Moneychanger::It()->hasAccounts());
     ui->toolButton_recurringPayment->setVisible(Moneychanger::It()->hasAccounts() && Moneychanger::It()->expertMode());
+    ui->toolButton_liveAgreements->setVisible(Moneychanger::It()->hasAccounts() && Moneychanger::It()->expertMode());
 }
 
 void DlgMenu::on_toolButton_payments_clicked()
@@ -213,4 +214,9 @@ void DlgMenu::on_toolButton_requestPayment_clicked()
 void DlgMenu::on_toolButton_recurringPayment_clicked()
 {
     emit sig_on_toolButton_recurringPayment_clicked();
+}
+
+void DlgMenu::on_toolButton_liveAgreements_clicked()
+{
+    emit sig_on_toolButton_liveAgreements_clicked();
 }
