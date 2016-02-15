@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabUI">
       <attribute name="title">
@@ -157,6 +157,24 @@
         </widget>
        </item>
       </layout>
+     </widget>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>Wallet Seed</string>
+      </attribute>
+      <widget class="QPlainTextEdit" name="plainTextEditSeed">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>57</y>
+         <width>461</width>
+         <height>111</height>
+        </rect>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
      </widget>
     </widget>
    </item>

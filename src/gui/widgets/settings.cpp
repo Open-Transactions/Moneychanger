@@ -98,6 +98,10 @@ Settings::Settings(QWidget *parent) :
 
     ui->lineEditNymId   ->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->lineEditNotaryId->setContextMenuPolicy(Qt::CustomContextMenu);
+
+
+    // ----------------------------------------------
+    ui->plainTextEditSeed->setPlainText(QString::fromStdString(opentxs::OTAPI_Wrap::OTAPI()->Wallet_GetWords()));
 }
 
 Settings::~Settings()
