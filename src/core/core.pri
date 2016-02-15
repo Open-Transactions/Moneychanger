@@ -25,7 +25,8 @@ HEADERS += \
     $$PWD/handlers/modelpayments.hpp \
     $$PWD/handlers/modelclaims.hpp \
     $$PWD/handlers/modelverifications.hpp \
-    $$PWD/mapidname.hpp
+    $$PWD/mapidname.hpp \
+    $$PWD/handlers/modelagreements.hpp
 
 SOURCES += \
     $${PWD}/applicationmc.cpp \
@@ -51,7 +52,8 @@ SOURCES += \
     $$PWD/handlers/modelmessages.cpp \
     $$PWD/handlers/modelpayments.cpp \
     $$PWD/handlers/modelclaims.cpp \
-    $$PWD/handlers/modelverifications.cpp
+    $$PWD/handlers/modelverifications.cpp \
+    $$PWD/handlers/modelagreements.cpp
 
 mac: {
   OBJECTIVE_SOURCES += ../../src/core/handlers/focuser.mm

@@ -32,6 +32,12 @@ private slots:
     void on_comboBoxLanguage_currentIndexChanged(int index);
     void on_checkBoxHideNav_toggled(bool checked);
 
+    void on_pushButton_clicked();
+
+    void on_lineEditNymId_customContextMenuRequested(const QPoint &pos);
+
+    void on_lineEditNotaryId_customContextMenuRequested(const QPoint &pos);
+
 private:
     Ui::Settings *ui;
     QString language;

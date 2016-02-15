@@ -36,6 +36,7 @@ class BtcReceiveDlg;
 class DlgPassphraseManager;
 class Messages;
 class Payments;
+class Agreements;
 class QMenu;
 class QSystemTrayIcon;
 class CreateInsuranceCompany;
@@ -95,6 +96,8 @@ public:
                                        int64_t & lTransactionNum,
                                        int64_t & lTransNumForDisplay);
     bool AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt);
+
+    bool AddAgreementRecord(opentxs::OTRecord& recordmt);
 
 signals:
     void balancesChanged();
@@ -211,8 +214,9 @@ private:
     QPointer<MTHome>  homewindow;
     QPointer<DlgMenu> menuwindow;
 
-    QPointer<Messages> messages_window;
-    QPointer<Payments> payments_window;
+    QPointer<Messages>   messages_window;
+    QPointer<Payments>   payments_window;
+    QPointer<Agreements> agreements_window;
 
     QPointer<MTDetailEdit> contactswindow;
     QPointer<MTDetailEdit> nymswindow;
@@ -220,7 +224,7 @@ private:
     QPointer<MTDetailEdit> assetswindow;
     QPointer<MTDetailEdit> accountswindow;
     QPointer<MTDetailEdit> corporation_window;
-    QPointer<MTDetailEdit> agreement_window;
+    QPointer<MTDetailEdit> smartcontract_window;
     QPointer<MTDetailEdit> transport_window;
     QPointer<DlgPassphraseManager> passphrase_window;
 
@@ -286,6 +290,7 @@ private:
     void mc_main_menu_dialog(bool bShow=true);
     void mc_messages_dialog();
     void mc_payments_dialog(int nSourceRow=-1, int nFolder=-1);
+    void mc_agreements_dialog(int nSourceRow=-1, int nFolder=-1);
     // ------------------------------------------------
     void mc_sendfunds_show_dialog(QString qstrAcct=QString(""));
     void mc_requestfunds_show_dialog(QString qstrAcct=QString(""));
@@ -301,7 +306,7 @@ private:
     void mc_market_dialog();
     void mc_trade_archive_dialog();
     void mc_corporation_dialog();
-    void mc_agreement_dialog();
+    void mc_smartcontract_dialog();
     void mc_transport_dialog(QString qstrPresetID=QString(""));
     void mc_log_dialog(QString qstrAppend=QString(""));
     void mc_createinsurancecompany_dialog();
@@ -352,7 +357,7 @@ private:
     QIcon mc_systrayIcon_crypto_verify;
 
     QIcon mc_systrayIcon_advanced;
-    QIcon mc_systrayIcon_advanced_agreements;
+    QIcon mc_systrayIcon_advanced_smartcontracts;
     QIcon mc_systrayIcon_advanced_import;
     QIcon mc_systrayIcon_settings;
     
@@ -431,6 +436,7 @@ private:
     QPointer<QAction> mc_systrayMenu_markets;
     QPointer<QAction> mc_systrayMenu_trade_archive;
     QPointer<QAction> mc_systrayMenu_smart_contracts;
+    QPointer<QAction> mc_systrayMenu_agreements;
     QPointer<QAction> mc_systrayMenu_import_cash;
     QPointer<QAction> mc_systrayMenu_settings;
     QPointer<QAction> mc_systrayMenu_p2p_transport;
@@ -504,7 +510,9 @@ public slots:
     void mc_composemessage_slot();          // Compose Message
     void mc_messages_slot();
     void mc_payments_slot();
+    void mc_agreements_slot();
     void mc_show_payment_slot(int nSourceRow, int nFolder);
+    void mc_show_agreement_slot(int nSourceRow, int nFolder);
     // ---------------------------------------------------------------------------
     void mc_proposeplan_from_acct (QString qstrAcct);
     void mc_send_from_acct (QString qstrAcct);
@@ -518,8 +526,8 @@ public slots:
     // ---------------------------------------------------------------------------
     void mc_market_slot();                  // Market Slot
     void mc_trade_archive_slot();
-    void mc_agreement_slot();               // Agreements Slot
-    void mc_corporation_slot();             // Agreements Slot
+    void mc_smartcontract_slot();           // Smart Contracts Slot
+    void mc_corporation_slot();             // Entities Slot
     void mc_import_slot();                  // Import Slot
     // ---------------------------------------------------------------------------
     void mc_createinsurancecompany_slot();  // Create Insurance Company Slot

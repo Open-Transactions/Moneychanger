@@ -65,7 +65,7 @@ void DlgExportedCash::on_pushButton_clicked()
     {
         clipboard->setText(ui->plainTextEdit->toPlainText());
 
-        QMessageBox::information(this, tr("Recipient Cash Copied"), tr("Copied recipient's cash to the clipboard"));
+        QMessageBox::information(this, tr("Moneychanger"), tr("Copied"));
     }
 }
 
@@ -77,7 +77,7 @@ void DlgExportedCash::on_pushButtonCopy_clicked()
     {
         clipboard->setText(ui->plainTextEditCopy->toPlainText());
 
-        QMessageBox::information(this, tr("Your Copy of Cash Copied"), tr("Your copy of the cash was copied to the Clipboard"));
+        QMessageBox::information(this, tr("Moneychanger"), tr("Copied"));
     }
 }
 
