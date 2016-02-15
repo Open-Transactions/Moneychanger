@@ -1098,7 +1098,6 @@ void Payments::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         ui->toolButtonSecrets->setHidden(true);
         // ----------------------------------------------------------------
         connect(ui->toolButtonRequest,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_requestfunds_slot()));
-        connect(ui->toolButtonRequest,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_requestfunds_slot()));
         connect(ui->toolButtonPending,   SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_overview_slot()));
         connect(ui->toolButtonImport,    SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_import_slot()));
         connect(ui->toolButtonMessages,  SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_messages_slot()));
@@ -2100,7 +2099,6 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
         } // nContactID > 0
     }
 }
-
 
 
 void Payments::on_tableViewReceived_doubleClicked(const QModelIndex &index)

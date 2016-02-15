@@ -54,8 +54,6 @@ bool FinalReceiptProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &
 }
 
 
-
-
 TradeArchiveProxyModel::TradeArchiveProxyModel(QObject *parent /*=0*/)
 : QSortFilterProxyModel(parent)
 {

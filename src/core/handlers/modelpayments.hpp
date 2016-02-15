@@ -75,22 +75,23 @@ You can then use the MyClass::Options type to store combinations of MyClass::Opt
         ,IsOutgoing             =  0x1 <<  2
         ,IsRecord               =  0x1 <<  3
         ,IsReceipt              =  0x1 <<  4
-        ,IsMail                 =  0x1 <<  5
-        ,IsTransfer             =  0x1 <<  6
-        ,IsCheque               =  0x1 <<  7
-        ,IsInvoice              =  0x1 <<  8
-        ,IsVoucher              =  0x1 <<  9
-        ,IsContract             =  0x1 << 10
-        ,IsPaymentPlan          =  0x1 << 11
-        ,IsCash                 =  0x1 << 12
-        ,IsNotice               =  0x1 << 13
-        ,IsExpired              =  0x1 << 14
-        ,IsCanceled             =  0x1 << 15
-        ,CanDelete              =  0x1 << 16
-        ,CanAcceptIncoming      =  0x1 << 17
-        ,CanDiscardIncoming     =  0x1 << 18
-        ,CanCancelOutgoing      =  0x1 << 19
-        ,CanDiscardOutgoingCash =  0x1 << 20
+        ,IsFinalReceipt         =  0x1 <<  5
+        ,IsMail                 =  0x1 <<  6
+        ,IsTransfer             =  0x1 <<  7
+        ,IsCheque               =  0x1 <<  8
+        ,IsInvoice              =  0x1 <<  9
+        ,IsVoucher              =  0x1 << 10
+        ,IsContract             =  0x1 << 11
+        ,IsPaymentPlan          =  0x1 << 12
+        ,IsCash                 =  0x1 << 13
+        ,IsNotice               =  0x1 << 14
+        ,IsExpired              =  0x1 << 15
+        ,IsCanceled             =  0x1 << 16
+        ,CanDelete              =  0x1 << 17
+        ,CanAcceptIncoming      =  0x1 << 18
+        ,CanDiscardIncoming     =  0x1 << 19
+        ,CanCancelOutgoing      =  0x1 << 20
+        ,CanDiscardOutgoingCash =  0x1 << 21
     };
     Q_DECLARE_FLAGS(PaymentFlags, PaymentFlag)
 
