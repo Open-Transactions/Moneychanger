@@ -14,6 +14,7 @@
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
+#include <opentxs/core/Proto.hpp>
 
 #include <QPlainTextEdit>
 #include <QMessageBox>
@@ -70,12 +71,14 @@ void MTAssetDetails::on_pushButton_clicked()
 
     if (!qstrAssetID.isEmpty())
     {
-        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LoadAssetContract(qstrAssetID.toStdString()));
+        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LoadUnitDefinition(qstrAssetID.toStdString()));
+        opentxs::proto::UnitDefinition contractProto =
+            opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>(qstrContents.toStdString());
 
         if (!qstrContents.isEmpty())
         {
             // First we get the "signer nym" ID from the asset contract.
-            std::string str_signer_nym = opentxs::OTAPI_Wrap::It()->GetSignerNymID(qstrContents.toStdString());
+            std::string str_signer_nym = contractProto.nymid();
 
             if (!str_signer_nym.empty())
             {
@@ -535,7 +538,7 @@ void MTAssetDetails::ImportContract(QString qstrContents)
         return;
     }
     // ------------------------------------------------------
-    QString qstrContractID = QString::fromStdString(opentxs::OTAPI_Wrap::It()->CalculateAssetContractID(qstrContents.toStdString()));
+    QString qstrContractID = QString::fromStdString(opentxs::OTAPI_Wrap::It()->CalculateUnitDefinitionID(qstrContents.toStdString()));
 
     if (qstrContractID.isEmpty())
     {
@@ -557,7 +560,7 @@ void MTAssetDetails::ImportContract(QString qstrContents)
 //            return;
 //        }
         // ---------------------------------------------------
-        int32_t nAdded = opentxs::OTAPI_Wrap::It()->AddAssetContract(qstrContents.toStdString());
+        int32_t nAdded = opentxs::OTAPI_Wrap::It()->AddUnitDefinition(qstrContents.toStdString());
 
         if (1 != nAdded)
         {
@@ -711,8 +714,17 @@ void MTAssetDetails::AddButtonClicked()
             QString qstrXMLContents = theWizard.field("contractXML").toString();
             QString qstrNymID       = theWizard.field("NymID").toString();
 
-            std::string strContractID = opentxs::OTAPI_Wrap::It()->CreateAssetContract(qstrNymID.toStdString(),
-                                                                                       qstrXMLContents.toStdString());
+            std::string strContractID =
+                opentxs::OTAPI_Wrap::It()->CreateCurrencyContract(
+                    qstrNymID.toStdString(),
+                    "short name",  // FIXME
+                    qstrXMLContents.toStdString(),
+                    "name",  // FIXME
+                    "$",  // FIXME
+                    "TLA",  // FIXME
+                    100,  // FIXME
+                    2,  // FIXME
+                    "cents"); // FIXME
 
             if ("" == strContractID) {
                 QMessageBox::warning(this, tr("Failed Creating Contract"),
@@ -730,6 +742,8 @@ void MTAssetDetails::AddButtonClicked()
                 else { // Success.
                     QString qstrContractID   = QString::fromStdString(strContractID);
                     QString qstrContractName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(strContractID));
+
+                    std::cout << "New asset contract name: " << qstrContractName.toStdString() << std::endl;
 
                     m_pOwner->m_map.insert(qstrContractID,
                                            qstrContractName);
@@ -767,7 +781,9 @@ void MTAssetDetails::refresh(QString strID, QString strName)
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
-        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LoadAssetContract(strID.toStdString()));
+        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LoadUnitDefinition(strID.toStdString()));
+        opentxs::proto::UnitDefinition contractProto =
+            opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>(qstrContents.toStdString());
 
         if (m_pPlainTextEdit)
             m_pPlainTextEdit->setPlainText(qstrContents);
@@ -777,7 +793,7 @@ void MTAssetDetails::refresh(QString strID, QString strName)
         ui->pushButton->setVisible(false);
 
         if (!qstrContents.isEmpty()) {
-            std::string str_signer_nym = opentxs::OTAPI_Wrap::It()->GetSignerNymID(qstrContents.toStdString());
+            std::string str_signer_nym = contractProto.nymid();
 
             if (!str_signer_nym.empty()) {
                 qstrNymID = QString::fromStdString(str_signer_nym);

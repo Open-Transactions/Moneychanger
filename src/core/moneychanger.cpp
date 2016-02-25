@@ -4523,7 +4523,7 @@ void Moneychanger::mc_import_slot()
         return;
     }
     // -----------------------
-    std::string strAssetContract = opentxs::OTAPI_Wrap::It()->LoadAssetContract(strInstrumentDefinitionID);
+    std::string strAssetContract = opentxs::OTAPI_Wrap::It()->LoadUnitDefinition(strInstrumentDefinitionID);
 
     if (strAssetContract.empty())
     {
@@ -5135,7 +5135,7 @@ void Moneychanger::AssetContractNotify(std::string id)
 
     if (nullptr != pWallet)
     {
-        opentxs::AssetContract * pContract = pWallet->GetAssetContract(ot_id);
+        opentxs::UnitDefinition * pContract = pWallet->GetUnitDefinition(ot_id);
 
         // Found it! The contract is already in the wallet.
         if (nullptr != pContract)
@@ -5156,11 +5156,11 @@ void Moneychanger::AssetContractNotify(std::string id)
             //
             // However, I DO need to ADD the contract to the wallet...
             //
-            opentxs::AssetContract * pContract = opentxs::OTAPI_Wrap::OTAPI()->LoadAssetContract(ot_id);
+            opentxs::UnitDefinition * pContract = opentxs::OTAPI_Wrap::OTAPI()->LoadUnitDefinition(ot_id);
 
             if (nullptr != pContract)
             {
-                pWallet->AddAssetContract(*pContract); // Takes ownership.
+                pWallet->AddUnitDefinition(*pContract); // Takes ownership.
                 pWallet->SaveWallet();
 
                 emit newAssetAdded(QString::fromStdString(id));

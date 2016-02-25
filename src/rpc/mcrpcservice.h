@@ -74,14 +74,24 @@ public Q_SLOTS:
                                    QString SubCredID);
     QJsonValue getSignerNymID(QString Username, QString APIKey,
                               QString Contract);
-    QJsonValue calculateAssetContractID(QString Username, QString APIKey,
+    QJsonValue calculateUnitDefinitionID(QString Username, QString APIKey,
                                         QString Contract);
     QJsonValue calculateServerContractID(QString Username, QString APIKey,
                                          QString Contract);
     QJsonValue calculateContractID(QString Username, QString APIKey,
                                    QString Contract);
-    QJsonValue createAssetContract(QString Username, QString APIKey,
-                                   QString NymID, QString XMLContents);
+    QJsonValue createCurrencyContract(
+        QString Username,
+        QString APIKey,
+        QString NymID,
+        QString shortname,
+        QString terms,
+        QString names,
+        QString symbol,
+        QString tla,
+        QString factor,
+        QString power,
+        QString fraction);
     QJsonValue getServerContract(QString Username, QString APIKey,
                                  QString NotaryID);
     QJsonValue getCurrencyFactor(QString Username, QString APIKey,
@@ -111,7 +121,7 @@ public Q_SLOTS:
                                     QString InstrumentDefinitionID);
     QJsonValue addServerContract(QString Username, QString APIKey,
                                  QString Contract);
-    QJsonValue addAssetContract(QString Username, QString APIKey,
+    QJsonValue addUnitDefinition(QString Username, QString APIKey,
                                 QString Contract);
     QJsonValue getNymCount(QString Username, QString APIKey);
     QJsonValue getServerCount(QString Username, QString APIKey);
@@ -505,7 +515,7 @@ public Q_SLOTS:
                                QString NotaryID, QString InstrumentDefinitionID);
     QJsonValue loadMint(QString Username, QString APIKey,
                         QString NotaryID, QString InstrumentDefinitionID);
-    QJsonValue loadAssetContract(QString Username, QString APIKey,
+    QJsonValue loadUnitDefinition(QString Username, QString APIKey,
                                  QString InstrumentDefinitionID);
     QJsonValue loadServerContract(QString Username, QString APIKey,
                                   QString NotaryID);

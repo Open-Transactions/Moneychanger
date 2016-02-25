@@ -708,7 +708,8 @@ void MTServerDetails::refresh(QString strID, QString strName)
         if (nullptr == contract) {return; }
 
         QString qstrNymID("");
-        qstrNymID = QString::fromStdString(contract->ID().Get());
+        qstrNymID =
+            QString::fromStdString(opentxs::String(contract->ID()).Get());
 
         QString qstrContents = QString::fromStdString(contract->Terms().Get());
 
