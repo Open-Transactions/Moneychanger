@@ -20,8 +20,12 @@ public:
 
     QString getContents() const;
 
+    void setAssetMode();
+
 private:
     Ui::MTWizardAddContract *ui;
+
+    bool bIsAssetMode_ = false;
 };
 
 #endif // WIZARDADDCONTRACT_HPP

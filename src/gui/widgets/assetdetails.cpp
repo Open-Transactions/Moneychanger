@@ -591,6 +591,8 @@ void MTAssetDetails::AddButtonClicked()
 {
     MTWizardAddContract theWizard(this);
 
+    theWizard.setAssetMode();
+
     theWizard.setWindowTitle(tr("Add Asset Contract"));
 
     QString qstrDefaultValue("https://raw.github.com/FellowTraveler/Open-Transactions/master/sample-data/sample-contracts/btc.otc");
@@ -714,17 +716,23 @@ void MTAssetDetails::AddButtonClicked()
             QString qstrXMLContents = theWizard.field("contractXML").toString();
             QString qstrNymID       = theWizard.field("NymID").toString();
 
+            QString qstrContractName   = theWizard.field("currency.contract_name").toString();
+            QString qstrPrimaryUnit    = theWizard.field("currency.primary_unit").toString();
+            QString qstrSymbol         = theWizard.field("currency.symbol").toString();
+            QString qstrTLA            = theWizard.field("currency.tla").toString();
+            QString qstrFractionalUnit = theWizard.field("currency.fractional_unit").toString();
+
             std::string strContractID =
                 opentxs::OTAPI_Wrap::It()->CreateCurrencyContract(
                     qstrNymID.toStdString(),
-                    "short name",  // FIXME
+                    qstrContractName.toStdString(),  //  "Coinbase Dollars" (refers to the contract.)
                     qstrXMLContents.toStdString(),
-                    "name",  // FIXME
-                    "$",  // FIXME
-                    "TLA",  // FIXME
-                    100,  // FIXME
-                    2,  // FIXME
-                    "cents"); // FIXME
+                    qstrPrimaryUnit.toStdString(),  //   Primary unit name "dollars" or "yuan"
+                    qstrSymbol.toStdString(),  //  Symbol.
+                    qstrTLA.toStdString(),  //  "USD", etc.
+                    100,  //   100 cents in a dollar.  Factor.
+                    2,  //  A "cent" is 2 decimal places right of a "dollar." Decimal power.
+                    qstrFractionalUnit.toStdString());
 
             if ("" == strContractID) {
                 QMessageBox::warning(this, tr("Failed Creating Contract"),
