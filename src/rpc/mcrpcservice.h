@@ -759,10 +759,12 @@ public Q_SLOTS:
                               QString NotaryID, QString NymID,
                               QString AccountID);
     QJsonValue generateBasketCreation(QString Username, QString APIKey,
-                                      QString NymID, qint64 MinimumTransfer);
+                                      QString NymID, QString Shortname,
+                                      QString Name, QString Symbol,
+                                      QString Terms, qint64 Weight);
     QJsonValue addBasketCreationItem(QString Username, QString APIKey,
-                                     QString NymID, QString Basket,
-                                     QString InstrumentDefinitionID, qint64 MinimumTransfer);
+                                     QString Basket, QString InstrumentDefinitionID,
+                                     qint64 MinimumTransfer);
     QJsonValue issueBasket(QString Username, QString APIKey,
                            QString NotaryID, QString NymID,
                            QString Basket);

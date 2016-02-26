@@ -5876,7 +5876,9 @@ QJsonValue MCRPCService::getAccountData(QString Username, QString APIKey,
 }
 
 QJsonValue MCRPCService::generateBasketCreation(QString Username, QString APIKey,
-                                                QString NymID, qint64 MinimumTransfer)
+                                                QString NymID, QString Shortname,
+                                                QString Name, QString Symbol,
+                                                QString Terms, qint64 Weight)
 {
     if(!validateAPIKey(Username, APIKey)){
         QJsonObject object{{"Error", "Invalid API Key"}};
@@ -5887,22 +5889,24 @@ QJsonValue MCRPCService::generateBasketCreation(QString Username, QString APIKey
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GenerateBasketCreation(NymID.toStdString(),
-                                                                           MinimumTransfer);
+    std::string result =
+        opentxs::OTAPI_Wrap::It()->GenerateBasketCreation(
+            NymID.toStdString(),
+            Shortname.toStdString(),
+            Name.toStdString(),
+            Symbol.toStdString(),
+            Terms.toStdString(),
+            Weight);
     QJsonObject object{{"BasketCreation", QString(result.c_str())}};
     return QJsonValue(object);
 }
 
 QJsonValue MCRPCService::addBasketCreationItem(QString Username, QString APIKey,
-                                               QString NymID, QString Basket,
-                                               QString InstrumentDefinitionID, qint64 MinimumTransfer)
+                                               QString Basket, QString InstrumentDefinitionID,
+                                               qint64 MinimumTransfer)
 {
     if(!validateAPIKey(Username, APIKey)){
         QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
     if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
@@ -5910,8 +5914,7 @@ QJsonValue MCRPCService::addBasketCreationItem(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->AddBasketCreationItem(NymID.toStdString(),
-                                                                          Basket.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::It()->AddBasketCreationItem(                                                                         Basket.toStdString(),
                                                                           InstrumentDefinitionID.toStdString(),
                                                                           MinimumTransfer);
     QJsonObject object{{"AddBasketCreationItemResult", QString(result.c_str())}};
