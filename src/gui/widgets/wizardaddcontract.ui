@@ -38,6 +38,11 @@
     <string notr="true">4</string>
    </attribute>
   </widget>
+  <widget class="PageContract_Terms" name="wizardPage5">
+   <attribute name="pageId">
+    <string notr="true">5</string>
+   </attribute>
+  </widget>
  </widget>
  <customwidgets>
   <customwidget>
@@ -68,6 +73,12 @@
    <class>PageCurrency_Details</class>
    <extends>QWizardPage</extends>
    <header>gui/widgets/pagecurrency_details.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageContract_Terms</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pagecontract_terms.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

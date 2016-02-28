@@ -91,7 +91,8 @@ FORMS += \
     $$PWD/widgets/wizardeditprofile.ui \
     $$PWD/ui/agreements.ui \
     $$PWD/widgets/pageasset_type.ui \
-    $$PWD/widgets/pagecurrency_details.ui
+    $$PWD/widgets/pagecurrency_details.ui \
+    $$PWD/widgets/pagecontract_terms.ui
 
 HEADERS += \
     $${PWD}/ui/dlgexportcash.hpp \
@@ -181,7 +182,8 @@ HEADERS += \
     $$PWD/widgets/wizardeditprofile.hpp \
     $$PWD/ui/agreements.hpp \
     $$PWD/widgets/pageasset_type.hpp \
-    $$PWD/widgets/pagecurrency_details.hpp
+    $$PWD/widgets/pagecurrency_details.hpp \
+    $$PWD/widgets/pagecontract_terms.hpp
 
 SOURCES += \
     $${PWD}/ui/dlgexportcash.cpp \
@@ -271,7 +273,8 @@ SOURCES += \
     $$PWD/widgets/wizardeditprofile.cpp \
     $$PWD/ui/agreements.cpp \
     $$PWD/widgets/pageasset_type.cpp \
-    $$PWD/widgets/pagecurrency_details.cpp
+    $$PWD/widgets/pagecurrency_details.cpp \
+    $$PWD/widgets/pagecontract_terms.cpp
 
 TRANSLATIONS += $${PWD}/translations/en_US.ts \
                 $${PWD}/translations/de_DE.ts

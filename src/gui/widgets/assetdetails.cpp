@@ -715,6 +715,7 @@ void MTAssetDetails::AddButtonClicked()
         {
             QString qstrXMLContents = theWizard.field("contractXML").toString();
             QString qstrNymID       = theWizard.field("NymID").toString();
+            QString qstrTerms       = theWizard.field("terms").toString();
 
             QString qstrContractName   = theWizard.field("currency_contract_name").toString();
             QString qstrPrimaryUnit    = theWizard.field("currency_primary_unit").toString();
@@ -726,7 +727,7 @@ void MTAssetDetails::AddButtonClicked()
                 opentxs::OTAPI_Wrap::It()->CreateCurrencyContract(
                     qstrNymID.toStdString(),
                     qstrContractName.toStdString(),  //  "Coinbase Dollars" (refers to the contract.)
-                    qstrXMLContents.toStdString(),
+                    qstrTerms.toStdString(),
                     qstrPrimaryUnit.toStdString(),  //   Primary unit name "dollars" or "yuan"
                     qstrSymbol.toStdString(),  //  Symbol.
                     qstrTLA.toStdString(),  //  "USD", etc.
