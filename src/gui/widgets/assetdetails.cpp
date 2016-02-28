@@ -716,11 +716,11 @@ void MTAssetDetails::AddButtonClicked()
             QString qstrXMLContents = theWizard.field("contractXML").toString();
             QString qstrNymID       = theWizard.field("NymID").toString();
 
-            QString qstrContractName   = theWizard.field("currency.contract_name").toString();
-            QString qstrPrimaryUnit    = theWizard.field("currency.primary_unit").toString();
-            QString qstrSymbol         = theWizard.field("currency.symbol").toString();
-            QString qstrTLA            = theWizard.field("currency.tla").toString();
-            QString qstrFractionalUnit = theWizard.field("currency.fractional_unit").toString();
+            QString qstrContractName   = theWizard.field("currency_contract_name").toString();
+            QString qstrPrimaryUnit    = theWizard.field("currency_primary_unit").toString();
+            QString qstrSymbol         = theWizard.field("currency_symbol").toString();
+            QString qstrTLA            = theWizard.field("currency_tla").toString();
+            QString qstrFractionalUnit = theWizard.field("currency_fractional_unit").toString();
 
             std::string strContractID =
                 opentxs::OTAPI_Wrap::It()->CreateCurrencyContract(

@@ -539,6 +539,8 @@ void MTServerDetails::AddButtonClicked()
 {
     MTWizardAddContract theWizard(this);
 
+    theWizard.setServerMode();
+
     theWizard.setWindowTitle(tr("Add Server Contract"));
 
     QString qstrDefaultValue("https://raw.github.com/FellowTraveler/Open-Transactions/master/sample-data/sample-contracts/cloud.otc");

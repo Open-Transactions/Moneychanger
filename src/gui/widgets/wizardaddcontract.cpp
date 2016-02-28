@@ -25,16 +25,16 @@ MTWizardAddContract::~MTWizardAddContract()
 
 QString MTWizardAddContract::getContents() const
 {
-    return ui->wizardPage2->getContents();
+    return ui->wizardPage1->getContents();
+}
+
+void MTWizardAddContract::setServerMode()
+{
+    bServerMode_ = true;
 }
 
 void MTWizardAddContract::setAssetMode()
 {
-    bIsAssetMode_=true;
-
-    QWizardPage *pageType            = new PageAsset_Type;
-    QWizardPage *pageCurrencyDetails = new PageCurrency_Details;
-
-    if (nullptr != pageType)            this->addPage(pageType);
-    if (nullptr != pageCurrencyDetails) this->addPage(pageCurrencyDetails);
+    bAssetMode_ = true;
 }
+

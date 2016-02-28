@@ -13,19 +13,29 @@
   <property name="windowTitle">
    <string>Wizard</string>
   </property>
-  <widget class="MTPageAddContract" name="wizardPage1">
+  <widget class="MTPageAddContract" name="wizardPage0">
    <attribute name="pageId">
     <string notr="true">0</string>
    </attribute>
   </widget>
-  <widget class="MTPageImportContract" name="wizardPage2">
+  <widget class="MTPageImportContract" name="wizardPage1">
    <attribute name="pageId">
     <string notr="true">1</string>
    </attribute>
   </widget>
-  <widget class="MTPageCreateContract" name="wizardPage3">
+  <widget class="PageAsset_Type" name="wizardPage2">
    <attribute name="pageId">
     <string notr="true">2</string>
+   </attribute>
+  </widget>
+  <widget class="PageCurrency_Details" name="wizardPage3">
+   <attribute name="pageId">
+    <string notr="true">3</string>
+   </attribute>
+  </widget>
+  <widget class="MTPageCreateContract" name="wizardPage4">
+   <attribute name="pageId">
+    <string notr="true">4</string>
    </attribute>
   </widget>
  </widget>
@@ -46,6 +56,18 @@
    <class>MTPageCreateContract</class>
    <extends>QWizardPage</extends>
    <header>gui/widgets/pagecreatecontract.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageAsset_Type</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pageasset_type.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageCurrency_Details</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pagecurrency_details.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

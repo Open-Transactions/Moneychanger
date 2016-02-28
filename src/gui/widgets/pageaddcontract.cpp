@@ -5,7 +5,10 @@
 #include <gui/widgets/pageaddcontract.hpp>
 #include <ui_pageaddcontract.h>
 
+#include <gui/widgets/wizardaddcontract.hpp>
+
 #include <QMessageBox>
+#include <QDebug>
 
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -31,6 +34,21 @@ MTPageAddContract::~MTPageAddContract()
 {
     delete ui;
 }
+
+void MTPageAddContract::initializePage()
+{
+    MTWizardAddContract * pWizard  = dynamic_cast<MTWizardAddContract *>(wizard());
+
+    if (nullptr != pWizard)
+    {
+        if (pWizard->serverMode())
+        {
+            ui->radioButton_2->setVisible(false);
+            ui->label_2->setVisible(false);
+        }
+    }
+}
+
 
 //virtual
 bool MTPageAddContract::validatePage()
@@ -70,7 +88,19 @@ int MTPageAddContract::nextId() const
         return 1; // goes to import page.
 
     else if (ui->radioButton_2->isChecked())
-        return 2; // goes to create page.
+    {
+        MTWizardAddContract * pWizard  = dynamic_cast<MTWizardAddContract *>(wizard());
+
+        if (nullptr != pWizard)
+        {
+            if (pWizard->assetMode())
+                return 2;
+            if (pWizard->serverMode())
+                return 4;
+        }
+
+        return 4; // goes to create page.
+    }
 
     return QWizardPage::nextId();
 }

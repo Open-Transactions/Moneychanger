@@ -21,11 +21,16 @@ public:
     QString getContents() const;
 
     void setAssetMode();
+    void setServerMode();
+
+    bool assetMode()  const { return bAssetMode_;  }
+    bool serverMode() const { return bServerMode_; }
 
 private:
     Ui::MTWizardAddContract *ui;
 
-    bool bIsAssetMode_ = false;
+    bool bAssetMode_ = false;
+    bool bServerMode_ = false;
 };
 
 #endif // WIZARDADDCONTRACT_HPP

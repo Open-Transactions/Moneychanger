@@ -12,11 +12,11 @@ PageCurrency_Details::PageCurrency_Details(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    this->registerField("currency.contract_name",   ui->lineEditContractName);
-    this->registerField("currency.primary_unit",    ui->lineEditPrimaryUnit);
-    this->registerField("currency.symbol",          ui->lineEditSymbol);
-    this->registerField("currency.tla",             ui->lineEditTLA);
-    this->registerField("currency.fractional_unit", ui->lineEditFractionalUnit);
+    this->registerField("currency_contract_name*",   ui->lineEditContractName);
+    this->registerField("currency_primary_unit*",    ui->lineEditPrimaryUnit);
+    this->registerField("currency_symbol*",          ui->lineEditSymbol);
+    this->registerField("currency_tla*",             ui->lineEditTLA);
+    this->registerField("currency_fractional_unit*", ui->lineEditFractionalUnit);
 }
 
 PageCurrency_Details::~PageCurrency_Details()
