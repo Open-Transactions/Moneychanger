@@ -11,20 +11,20 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>(Human-Readable) Terms</string>
+   <string>Description</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>(Human-readable) contract terms:</string>
+      <string>(Human-readable) contract description:</string>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QPlainTextEdit" name="plainTextEdit">
      <property name="placeholderText">
-      <string>Optional field. Used for any needed human-readable agreement terms.</string>
+      <string>Used for any needed human-readable agreement terms (redemption criteria, etc).</string>
      </property>
     </widget>
    </item>
