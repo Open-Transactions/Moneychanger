@@ -71,7 +71,7 @@ void MTAssetDetails::on_pushButton_clicked()
 
     if (!qstrAssetID.isEmpty())
     {
-        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LoadUnitDefinition(qstrAssetID.toStdString()));
+        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Contract(qstrAssetID.toStdString()));
         opentxs::proto::UnitDefinition contractProto =
             opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>(qstrContents.toStdString());
 
@@ -538,44 +538,23 @@ void MTAssetDetails::ImportContract(QString qstrContents)
         return;
     }
     // ------------------------------------------------------
-    QString qstrContractID = QString::fromStdString(opentxs::OTAPI_Wrap::It()->CalculateUnitDefinitionID(qstrContents.toStdString()));
+    QString qstrContractID =
+        QString::fromStdString(opentxs::OTAPI_Wrap::It()->
+            AddUnitDefinition(qstrContents.toStdString()));
 
     if (qstrContractID.isEmpty())
     {
-        QMessageBox::warning(this, tr("Failed Calculating Contract ID"),
-                             tr("Failed trying to calculate this contract's ID. Perhaps the 'contract' is malformed?"));
+        QMessageBox::warning(this, tr("Failed Importing Asset Contract"),
+                             tr("Failed trying to import contract. Is it already in the wallet?"));
         return;
     }
     // ------------------------------------------------------
     else
     {
-        // Already in the wallet?
-        //
-//        std::string str_Contract = opentxs::OTAPI_Wrap::It()->LoadAssetContract(qstrContractID.toStdString());
-//
-//        if (!str_Contract.empty())
-//        {
-//            QMessageBox::warning(this, tr("Contract Already in Wallet"),
-//                tr("Failed importing this contract, since it's already in the wallet."));
-//            return;
-//        }
-        // ---------------------------------------------------
-        int32_t nAdded = opentxs::OTAPI_Wrap::It()->AddUnitDefinition(qstrContents.toStdString());
-
-        if (1 != nAdded)
-        {
-            QMessageBox::warning(this, tr("Failed Importing Asset Contract"),
-                tr("Failed trying to import contract. Is it already in the wallet?"));
-            return;
-        }
         // -----------------------------------------------
-        QString qstrContractName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(qstrContractID.toStdString()));
-        // -----------------------------------------------
-        // This was irritating knotwork.
-        //
-//        QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Importing Asset Contract! Name")).
-//                                 arg(qstrContractName).arg(tr("ID")).arg(qstrContractID));
-        // ----------
+        QString qstrContractName =
+            QString::fromStdString(opentxs::OTAPI_Wrap::It()->
+                GetAssetType_Name(qstrContractID.toStdString()));
         m_pOwner->m_map.insert(qstrContractID, qstrContractName);
         m_pOwner->SetPreSelected(qstrContractID);
         // ------------------------------------------------
@@ -790,7 +769,8 @@ void MTAssetDetails::refresh(QString strID, QString strName)
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
-        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LoadUnitDefinition(strID.toStdString()));
+        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->
+            GetAssetType_Contract(strID.toStdString()));
         opentxs::proto::UnitDefinition contractProto =
             opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>(qstrContents.toStdString());
 

@@ -74,10 +74,6 @@ public Q_SLOTS:
                                    QString SubCredID);
     QJsonValue getSignerNymID(QString Username, QString APIKey,
                               QString Contract);
-    QJsonValue calculateUnitDefinitionID(QString Username, QString APIKey,
-                                        QString Contract);
-    QJsonValue calculateServerContractID(QString Username, QString APIKey,
-                                         QString Contract);
     QJsonValue calculateContractID(QString Username, QString APIKey,
                                    QString Contract);
     QJsonValue createCurrencyContract(
@@ -515,8 +511,6 @@ public Q_SLOTS:
                                QString NotaryID, QString InstrumentDefinitionID);
     QJsonValue loadMint(QString Username, QString APIKey,
                         QString NotaryID, QString InstrumentDefinitionID);
-    QJsonValue loadUnitDefinition(QString Username, QString APIKey,
-                                 QString InstrumentDefinitionID);
     QJsonValue loadServerContract(QString Username, QString APIKey,
                                   QString NotaryID);
     QJsonValue loadAssetAccount(QString Username, QString APIKey,

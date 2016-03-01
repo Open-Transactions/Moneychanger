@@ -495,32 +495,6 @@ QJsonValue MCRPCService::getSignerNymID(QString Username, QString APIKey,
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::calculateUnitDefinitionID(QString Username, QString APIKey,
-                                                  QString Contract)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-
-    std::string result = opentxs::OTAPI_Wrap::It()->CalculateUnitDefinitionID(Contract.toStdString());
-    QJsonObject object{{"UnitDefinitionID", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::calculateServerContractID(QString Username, QString APIKey,
-                                                   QString Contract)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-
-    std::string result = opentxs::OTAPI_Wrap::It()->CalculateServerContractID(Contract.toStdString());
-    QJsonObject object{{"ServerContractID", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
 QJsonValue MCRPCService::calculateContractID(QString Username, QString APIKey,
                                              QString Contract)
 {
@@ -797,8 +771,8 @@ QJsonValue MCRPCService::addServerContract(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    int l_count = opentxs::OTAPI_Wrap::It()->AddServerContract(Contract.toStdString());
-    QJsonObject object{{"AddServerContractResult", l_count}};
+    std::string l_count = opentxs::OTAPI_Wrap::It()->AddServerContract(Contract.toStdString());
+    QJsonObject object{{"AddServerContractResult", l_count.c_str()}};
     return QJsonValue(object);
 }
 
@@ -810,8 +784,8 @@ QJsonValue MCRPCService::addUnitDefinition(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    int l_count = opentxs::OTAPI_Wrap::It()->AddUnitDefinition(Contract.toStdString());
-    QJsonObject object{{"AddUnitDefinitionResult", l_count}};
+    std::string newID = opentxs::OTAPI_Wrap::It()->AddUnitDefinition(Contract.toStdString());
+    QJsonObject object{{"AddUnitDefinitionResult", newID.c_str()}};
     return QJsonValue(object);
 }
 
@@ -3730,23 +3704,6 @@ QJsonValue MCRPCService::loadMint(QString Username, QString APIKey,
     std::string result = opentxs::OTAPI_Wrap::It()->LoadMint(NotaryID.toStdString(),
                                                              InstrumentDefinitionID.toStdString());
     QJsonObject object{{"LoadMintResult", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::loadUnitDefinition(QString Username, QString APIKey,
-                                           QString InstrumentDefinitionID)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
-        QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
-        return QJsonValue(object);
-    }
-
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadUnitDefinition(InstrumentDefinitionID.toStdString());
-    QJsonObject object{{"LoadUnitDefinitionResult", QString(result.c_str())}};
     return QJsonValue(object);
 }
 
