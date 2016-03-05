@@ -15,6 +15,7 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/modelclaims.hpp>
+#include <core/handlers/modelverifications.hpp>
 #include <core/mtcomms.h>
 #include <core/moneychanger.hpp>
 
@@ -61,8 +62,18 @@
 #include <tuple>
 #include <string>
 
+
+
+#define TREE_ITEM_TYPE_RELATIONSHIP    10
+#define TREE_ITEM_TYPE_CLAIM           11
+#define TREE_ITEM_TYPE_VERIFICATION    12
+
+
+
 void MTNymDetails::ClearTree()
 {
+    metInPerson_ = nullptr;
+
     if (treeWidgetClaims_)
     {
         treeWidgetClaims_->blockSignals(true);
@@ -84,10 +95,6 @@ int claimPolarityToInt(opentxs::OT_API::ClaimPolarity polarity)
     }
     return nReturnValue;
 }
-//enum class ClaimPolarity : uint8_t {
-//    POSITIVE = 0,
-//    NEGATIVE = 1,
-//    NEUTRAL = 2
 
 opentxs::OT_API::ClaimPolarity intToClaimPolarity(int polarity)
 {
@@ -117,14 +124,14 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
 
 
 
-    qDebug() << "DEBUGGING: onClaimsUpdatedForNym 1 ";
+//    qDebug() << "DEBUGGING: onClaimsUpdatedForNym 1 ";
 
 
 
     if (nymId.isEmpty())
         return;
 
-    qDebug() << "DEBUGGING: onClaimsUpdatedForNym 2 ";
+//    qDebug() << "DEBUGGING: onClaimsUpdatedForNym 2 ";
 
     // -------------------------------------
     std::string         str_nym_id  (nymId.toStdString());
@@ -137,7 +144,7 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
         return;
 
 
-    qDebug() << "DEBUGGING: onClaimsUpdatedForNym 3 ";
+//    qDebug() << "DEBUGGING: onClaimsUpdatedForNym 3 ";
 
     const int32_t server_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
     // -----------------------------------------------
@@ -263,16 +270,16 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
     QString  qstrMetLabel = QString("<b>%1</b>").arg(tr("Relationship claims"));
     QLabel * label = new QLabel(qstrMetLabel, treeWidgetClaims_);
 
-    QTreeWidgetItem * metInPerson = new QTreeWidgetItem;
+    metInPerson_ = new QTreeWidgetItem;
 
-//  metInPerson->setText(0, "Met in person");
-    treeWidgetClaims_->addTopLevelItem(metInPerson);
-    treeWidgetClaims_->expandItem(metInPerson);
-    treeWidgetClaims_->setItemWidget(metInPerson, 0, label);
+//  metInPerson_->setText(0, "Met in person");
+    treeWidgetClaims_->addTopLevelItem(metInPerson_);
+    treeWidgetClaims_->expandItem(metInPerson_);
+    treeWidgetClaims_->setItemWidget(metInPerson_, 0, label);
     // ------------------------------------------
     // Earlier above, we made a list of all the claims from other Nyms
     // that they "have met" the Nyms represented by this Contact.
-    // Now let's add those here as sub-items under the metInPerson top-level item.
+    // Now let's add those here as sub-items under the metInPerson_ top-level item.
     //
     QPointer<ModelClaims> pRelationships = DBHandler::getInstance()->getRelationshipClaims(qstrNymId);
 
@@ -358,7 +365,6 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
 
             // str_claimant_name claims she qstrTypeName nym_names[claim_value]
 
-                    //resume
             mapOfNymNames::iterator it_names = nym_names.find(claim_value);
             std::string str_nym_name;
 
@@ -373,7 +379,8 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
             claim_item->setText(1, qstrTypeName);           // "Has met" (or so she claimed)
             claim_item->setText(2, QString::fromStdString(str_nym_name)); // "Charlie" (the current Nym whose details we're viewing.)
 
-            claim_item->setData(0, Qt::UserRole+1, true); // Is relationship? true: Yes.  (false would be No.)
+            claim_item->setData(0, Qt::UserRole+1, TREE_ITEM_TYPE_RELATIONSHIP);
+
             claim_item->setData(0, Qt::UserRole, QString::fromStdString(claim_nym_id)); // Alice's Nym Id. The person who made the claim. Claimant Nym Id.
             claim_item->setData(1, Qt::UserRole, QString::fromStdString(claim_id));
             claim_item->setData(2, Qt::UserRole, QString::fromStdString(claim_value)); // Verifier Nym Id. Alice made a claim about Charlie, who verifies her claim.
@@ -399,7 +406,7 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
 //          claim_item->setFlags(claim_item->flags() |     Qt::ItemIsEditable);
             claim_item->setFlags(claim_item->flags() & ~ ( Qt::ItemIsEditable | Qt::ItemIsUserCheckable) );
             // ---------------------------------------
-            metInPerson->addChild(claim_item);
+            metInPerson_->addChild(claim_item);
             treeWidgetClaims_->expandItem(claim_item);
             // ----------------------------------------------------------------------------
             // Couldn't do this until now, when the claim_item has been added to the tree.
@@ -439,10 +446,8 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
 //            treeWidgetClaims_->setItemWidget(claim_item, 4, pRadioBtn);
 //            }
 
-        }
-
+         } // for (relationships)
     }
-
 
     // Now we loop through the sections, and for each, we populate its
     // itemwidgets by looping through the nym_claims we got above.
@@ -502,6 +507,9 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
             QVariant    qvarAttActive         = pModelClaims_->data(sourceIndexAttActive);
             QVariant    qvarAttPrimary        = pModelClaims_->data(sourceIndexAttPrimary);
             // ----------------------------------------------------------------------------
+            const QString     qstrClaimId =  qvarClaimId.isValid() ? qvarClaimId.toString() : "";
+            const std::string claim_id    = !qstrClaimId.isEmpty() ? qstrClaimId.toStdString() : "";
+            // ----------------------------------------------------------------------------
             const std::string claim_nym_id  = qvarNymId  .isValid() ? qvarNymId.toString().toStdString() : "";
             const uint32_t    claim_section = qvarSection.isValid() ? qvarSection.toUInt() : 0;
             const uint32_t    claim_type    = qvarType   .isValid() ? qvarType.toUInt() : 0;
@@ -527,7 +535,7 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
             claim_item->setText(1, qstrTypeName);                        // "Personal"
             claim_item->setText(2, QString::fromStdString(nym_names[claim_nym_id]));
 
-            claim_item->setData(0, Qt::UserRole+1, false); // Is relationship? false: No.  (true would be Yes.)
+            claim_item->setData(0, Qt::UserRole+1, TREE_ITEM_TYPE_CLAIM);
 
             claim_item->setData(2, Qt::UserRole, QString::fromStdString(claim_nym_id));  // Claimant aka Me.
             // ---------------------------------------
@@ -571,7 +579,148 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
             pRadioBtn->setEnabled(false);
             // --------
             treeWidgetClaims_->setItemWidget(claim_item, 3, pRadioBtn);
-        }
+            // ----------------------------------------------------------------------------
+            // VERIFICATIONS
+            // ----------------------------------------------------------------------------
+            // So we want to get the verifications known in the database for the
+            // current claim.
+            //
+            QPointer<ModelVerifications> pVerifications = DBHandler::getInstance()->getVerificationsModel(qstrClaimId);
+
+            if (!pVerifications)
+                continue;
+            // ----------------------------------------------------------------------------
+            // Here we now add the sub-widgets for the claim verifications.
+            //
+            QPointer<VerificationsProxyModel> pProxyModelVerifications = new VerificationsProxyModel;
+            pProxyModelVerifications->setSourceModel(pVerifications);
+            // ------------------------------------------
+            for (int iii = 0; iii < pProxyModelVerifications->rowCount(); ++iii)
+            {
+                QModelIndex proxyIndexZero        = pProxyModelVerifications->index(iii, 0);
+                QModelIndex sourceIndexZero       = pProxyModelVerifications->mapToSource(proxyIndexZero);
+                // ----------------------------------------------------------------------------
+                QModelIndex sourceIndexVerId       = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_VERIFICATION_ID, sourceIndexZero);
+                QModelIndex sourceIndexClaimantId  = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_CLAIMANT_NYM_ID, sourceIndexZero);
+                QModelIndex sourceIndexVerifierId  = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_VERIFIER_NYM_ID, sourceIndexZero);
+                QModelIndex sourceIndexClaimId     = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_CLAIM_ID,        sourceIndexZero);
+                QModelIndex sourceIndexPolarity    = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_POLARITY,        sourceIndexZero);
+                QModelIndex sourceIndexStart       = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_START,           sourceIndexZero);
+                QModelIndex sourceIndexEnd         = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_END,             sourceIndexZero);
+                QModelIndex sourceIndexSignature   = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_SIGNATURE,       sourceIndexZero);
+                QModelIndex sourceIndexSigVerified = pVerifications->sibling(sourceIndexZero.row(), VERIFY_SOURCE_COL_SIG_VERIFIED,    sourceIndexZero);
+                // ----------------------------------------------------------------------------
+                QModelIndex proxyIndexPolarity    = pProxyModelVerifications->mapFromSource(sourceIndexPolarity);
+                QModelIndex proxyIndexStart       = pProxyModelVerifications->mapFromSource(sourceIndexStart);
+                QModelIndex proxyIndexEnd         = pProxyModelVerifications->mapFromSource(sourceIndexEnd);
+                // ----------------------------------------------------------------------------
+                QVariant    qvarVerId             = pVerifications->data(sourceIndexVerId);
+                QVariant    qvarClaimantId        = pVerifications->data(sourceIndexClaimantId);
+                QVariant    qvarVerifierId        = pVerifications->data(sourceIndexVerifierId);
+                QVariant    qvarClaimId           = pVerifications->data(sourceIndexClaimId);
+                // ----------------------------------------------------------------------------
+                QVariant    qvarPolarity          = pProxyModelVerifications->data(proxyIndexPolarity);
+                QVariant    qvarStart             = pProxyModelVerifications->data(proxyIndexStart); // Proxy for these two since it formats the
+                QVariant    qvarEnd               = pProxyModelVerifications->data(proxyIndexEnd);   // timestamp as a human-readable string.
+                // ----------------------------------------------------------------------------
+                QVariant    qvarSignature         = pVerifications->data(sourceIndexSignature);
+                QVariant    qvarSigVerified       = pVerifications->data(sourceIndexSigVerified);
+                // ----------------------------------------------------------------------------
+                const QString     qstrVerId      =  qvarVerId  .isValid() ? qvarVerId.toString() : "";
+                const std::string verif_id       = !qstrVerId  .isEmpty() ? qstrVerId.toStdString() : "";
+                // ----------------------------------------------------------------------------
+                const QString     qstrClaimantId =  qvarClaimantId.isValid() ? qvarClaimantId.toString() : "";
+                const QString     qstrVerifierId =  qvarVerifierId.isValid() ? qvarVerifierId.toString() : "";
+
+                const std::string claimant_id    = !qstrClaimantId.isEmpty() ? qstrClaimantId.toStdString() : "";
+                const std::string verifier_id    = !qstrVerifierId.isEmpty() ? qstrVerifierId.toStdString() : "";
+                // ----------------------------------------------------------------------------
+                const QString     qstrVerificationClaimId =  qvarClaimId.isValid() ? qvarClaimId.toString() : "";
+                const std::string verification_claim_id   = !qstrVerificationClaimId.isEmpty() ? qstrVerificationClaimId.toStdString() : "";
+                // ----------------------------------------------------------------------------
+                QString qstrPolarity(tr("No comment"));
+                const int claim_polarity =  qvarPolarity.isValid() ? qvarPolarity.toInt() : 0;
+                opentxs::OT_API::ClaimPolarity claimPolarity = intToClaimPolarity(claim_polarity);
+
+                if (opentxs::OT_API::ClaimPolarity::NEUTRAL == claimPolarity)
+                {
+                    qDebug() << __FUNCTION__ << ": ERROR! A claim verification can't have neutral polarity, since that "
+                                "means no verification exists. How did it get into the database this way?";
+                    continue;
+                }
+
+                const bool bPolarity = (opentxs::OT_API::ClaimPolarity::NEGATIVE == claimPolarity) ? false : true;
+                qstrPolarity = bPolarity ? tr("Confirmed") : tr("Refuted");
+                // ----------------------------------------------------------------------------
+                const QString     qstrSignature   =  qvarSignature.isValid()   ? qvarSignature.toString() : "";
+                const std::string verif_signature = !qstrSignature.isEmpty()   ? qstrSignature.toStdString() : "";
+                // ---------------------------------------
+                const bool        bSigVerified    = qvarSigVerified .isValid() ? qvarSigVerified.toBool() : false;
+                // ----------------------------------------------------------------------------
+                //#define VERIFY_SOURCE_COL_VERIFICATION_ID 0
+                //#define VERIFY_SOURCE_COL_CLAIMANT_NYM_ID 1
+                //#define VERIFY_SOURCE_COL_VERIFIER_NYM_ID 2
+                //#define VERIFY_SOURCE_COL_CLAIM_ID 3
+                //#define VERIFY_SOURCE_COL_POLARITY 4
+                //#define VERIFY_SOURCE_COL_START 5
+                //#define VERIFY_SOURCE_COL_END 6
+                //#define VERIFY_SOURCE_COL_SIGNATURE 7
+                //#define VERIFY_SOURCE_COL_SIG_VERIFIED 8
+
+//                QStringList labels = {
+//                      tr("Value")
+//                    , tr("Type")
+//                    , tr("Nym")
+//                    , tr("Primary")
+//                    , tr("Active")
+//                    , tr("Polarity")
+//                };
+                // ---------------------------------------
+                MTNameLookupQT theLookup;
+                mapOfNymNames::iterator it_names = nym_names.find(verifier_id);
+                std::string str_verifier_name;
+
+                if (nym_names.end() != it_names)
+                    str_verifier_name =  it_names->second;
+                else
+                    str_verifier_name = theLookup.GetNymName(verifier_id, "");
+
+//              const QString qstrClaimIdLabel = QString("%1: %2").arg(tr("Claim Id")).arg(qstrVerificationClaimId);
+                const QString qstrClaimantIdLabel = QString("%1: %2").arg(tr("Claimant Nym Id")).arg(qstrClaimantId);
+                const QString qstrVerifierIdLabel = QString("%1: %2").arg(tr("Verifier Nym Id")).arg(qstrVerifierId);
+                const QString qstrVerifierLabel = QString("%1: %2").arg(tr("Verifier")).arg(QString::fromStdString(str_verifier_name));
+                // ---------------------------------------
+                const QString qstrSignatureLabel   = QString("%1").arg(qstrSignature.isEmpty() ? tr("missing signature") : tr("signature exists"));
+                const QString qstrSigVerifiedLabel = QString("%1").arg(bSigVerified ? tr("signature verified") : tr("signature failed"));
+                // ---------------------------------------
+                // Add the verification to the tree.
+                //
+                QTreeWidgetItem * verification_item = new QTreeWidgetItem;
+                // ---------------------------------------
+                verification_item->setText(0, qstrVerifierLabel); // "Jim Bob" (the Verifier on this claim verification.)
+                verification_item->setText(1, qstrVerifierIdLabel); // with Verifier Nym Id...
+                verification_item->setText(2, qstrClaimantIdLabel); // Verifies for Claimant Nym Id...
+                verification_item->setText(3, qstrSignatureLabel);
+                verification_item->setText(4, qstrSigVerifiedLabel);
+
+                verification_item->setData(0, Qt::UserRole+1, TREE_ITEM_TYPE_VERIFICATION);
+
+                verification_item->setData(0, Qt::UserRole, qstrVerId); // Verification ID.
+                verification_item->setData(1, Qt::UserRole, qstrVerifierId); // Verifier Nym ID.
+                verification_item->setData(2, Qt::UserRole, qstrClaimantId); // Claims have the claimant ID at index 2, so I'm matching that here.
+                verification_item->setData(3, Qt::UserRole, qstrVerificationClaimId); // Claim ID stored here.
+                verification_item->setData(5, Qt::UserRole, bPolarity); // Polarity
+                // ---------------------------------------
+                verification_item->setFlags(verification_item->flags() & ~ ( Qt::ItemIsEditable | Qt::ItemIsUserCheckable) );
+    //          verification_item->setFlags(verification_item->flags() |     Qt::ItemIsEditable);
+                // ---------------------------------------
+                verification_item->setBackgroundColor(5, bPolarity ? QColor("green") : QColor("red"));
+                // ---------------------------------------
+                claim_item->addChild(verification_item);
+                treeWidgetClaims_->expandItem(verification_item);
+                // ----------------------------------------------------------------------------
+            } // for (verifications)
+        } // for (claims)
     }
 
     treeWidgetClaims_->blockSignals(false);
@@ -1840,10 +1989,38 @@ void MTNymDetails::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 //          const int nRow = pItem->row();
 //          if (nRow >= 0)
             {
-                QVariant qvarIsRelationship = pItem->data(0, Qt::UserRole + 1);
+                //#define TREE_ITEM_TYPE_RELATIONSHIP    10
+                //#define TREE_ITEM_TYPE_CLAIM           11
+                //#define TREE_ITEM_TYPE_VERIFICATION    12
 
-                const bool bIsRelationship = qvarIsRelationship.isValid() ? qvarIsRelationship.toBool() : false;
+                QVariant qvarTreeItemType = pItem->data(0, Qt::UserRole+1);
+                const int nTreeItemType = qvarTreeItemType.isValid() ? qvarTreeItemType.toInt() : 0;
 
+                const bool bIsRelationship = (TREE_ITEM_TYPE_RELATIONSHIP == nTreeItemType);
+                const bool bIsClaim        = (TREE_ITEM_TYPE_CLAIM        == nTreeItemType);
+                const bool bIsVerification = (TREE_ITEM_TYPE_VERIFICATION == nTreeItemType);
+                // -----------------------------------------------------------------------------
+                // Relationships, here, are claims ABOUT my Nym -- this Nym -- ("ME").
+                // They are claims that were made by OTHERS. (But since my wallet contains multiple
+                // Nyms, "others" may include MY Nyms in this wallet, in addition to outside Nyms
+                // controlled by other users.)
+                //
+                // Thus for some of these, these records are read-only. Which is to say, a Nym can only
+                // view the claims made about him by others, in a read-only fashion. He cannot delete
+                // other people's claims. BUT! If the claim was made by ANOTHER Nym in the SAME WALLET,
+                // then THAT Nym DOES have the right to delete this claim. (Though normally that sort
+                // of thing is done in the Contact details tab, but we could make it available here as
+                // well.)
+                //
+                // In either case and in any case, I ("Me" Nym) am here viewing relationship claims made
+                // about me by "others", and I have the power to confirm or refute them by creating a
+                // verification for that specific relationships claim.
+                //
+                // So I may sign someone's relationship claim, thus confirming it (or refuting it.) So
+                // each of these relationship claims may also display its "confirmation status" whenever
+                // it's available. And I (the current Nym) have the power to Confirm/Refute/NoComment
+                // and thus change the confirmation status of any claim in this block.
+                //
                 if (bIsRelationship)
                 {
                     QVariant qvarClaimId       = pItem->data(1, Qt::UserRole);
@@ -1862,9 +2039,9 @@ void MTNymDetails::on_treeWidget_customContextMenuRequested(const QPoint &pos)
                                 intToClaimPolarity(static_cast<int>(qvarPolarity.toUInt())) :
                                 opentxs::OT_API::ClaimPolarity::NEUTRAL;
                     // ----------------------------------
-                   pActionConfirm_ = nullptr;
-                   pActionRefute_ = nullptr;
-                   pActionNoComment_ = nullptr;
+                    pActionConfirm_ = nullptr;
+                    pActionRefute_ = nullptr;
+                    pActionNoComment_ = nullptr;
 
                     popupMenuProfile_.reset(new QMenu(this));
 
@@ -1913,10 +2090,42 @@ void MTNymDetails::on_treeWidget_customContextMenuRequested(const QPoint &pos)
                         }
                     }
                 } // if is relationship.
+                // -----------------------------------------------
+                else if (bIsClaim)
+                {
+                    // It's a normal claim (made by me, versus relationships above, made by others ABOUT me.)
+                    //
+                    // NOTE: To edit your own claims, just click the "edit profile" button.)
+
+                } // if is claim.
+                // -----------------------------------------------
+                else if (bIsVerification) // verification
+                {
+                    // It's a verification of a claim. *I* make my own claims, and OTHER people
+                    // create verifications for those claims. So normally I CAN'T edit other people's
+                    // verifications.
+                    //
+                    // HOWEVER, there are multiple Nyms in this wallet. So some of these verifications,
+                    // while they are not created by the "Me" Nym currently displayed in the Nym Details,
+                    // nevertheless, some of them may have been created by Nyms under the control of this
+                    // wallet -- Nyms which have the same power to edit the same verification now!
+                    // So I have the power to edit SOME verifications, if they were created by other Nyms
+                    // in the wallet. Otherwise, if they were created by other Nyms outside of the wallet,
+                    // obviously I do NOT have the power to edit THOSE verifications.
+
+
+                    // For now we won't put any verification editing code here, since normally only "others"
+                    // can do this. (If you want to do this now, just edit the verification from the contact
+                    // details page, instead of the Nym details page.)
+                    //
+                    // The more advanced functionality described in the larger above comment can come later.
+
+
+                } // if is verification
+                // -----------------------------------------------
                 else
                 {
-                    // Else it's a normal claim (made by me, versus relationships above made by others ABOUT me.)
-
+                    // This space intentionally left blank.
                 }
                 // ------------------------
             } //nRow >= 0
