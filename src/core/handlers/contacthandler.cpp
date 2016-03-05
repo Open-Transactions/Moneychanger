@@ -595,7 +595,7 @@ bool MTContactHandler::getPolarityIfAny(const QString & claim_id, const QString 
            }
 
 
-           qDebug() << "DEBUGGING: getPolarityIfAny (from database): bPolarity: " << QString(bPolarity ? "True" : "False");
+//           qDebug() << "DEBUGGING: getPolarityIfAny (from database): bPolarity: " << QString(bPolarity ? "True" : "False");
 
        }
     }

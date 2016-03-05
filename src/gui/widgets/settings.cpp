@@ -89,16 +89,12 @@ Settings::Settings(QWidget *parent) :
     ui->checkBoxHideNav->blockSignals(false);
     // ----------------------------------------------
 
-
-
-
     ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tableWidget->setAlternatingRowColors(true);
     ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     ui->lineEditNymId   ->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->lineEditNotaryId->setContextMenuPolicy(Qt::CustomContextMenu);
-
 
     // ----------------------------------------------
     ui->plainTextEditSeed->setPlainText(QString::fromStdString(opentxs::OTAPI_Wrap::OTAPI()->Wallet_GetWords()));

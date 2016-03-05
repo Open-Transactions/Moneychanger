@@ -10,6 +10,7 @@
 #include <core/handlers/modelpayments.hpp>
 #include <core/handlers/modelagreements.hpp>
 #include <core/handlers/modelclaims.hpp>
+#include <core/handlers/modelverifications.hpp>
 
 #include <QDebug>
 #include <QMutex>
@@ -74,15 +75,17 @@ class DBHandler
   public:
     static DBHandler * getInstance();
 
-    QPointer<ModelTradeArchive> getTradeArchiveModel();
-    QPointer<ModelMessages>     getMessageModel();
-    QPointer<ModelPayments>     getPaymentModel();
-    QPointer<ModelAgreements>     getAgreementModel();
-    QPointer<ModelAgreementReceipts>     getAgreementReceiptModel();
-    QPointer<ModelClaims>       getClaimsModel(int nContactId);
-    QPointer<ModelClaims>       getClaimsModel(const QString & qstrNymId);
-    QPointer<ModelClaims>       getRelationshipClaims(int nAboutContactId);
-    QPointer<ModelClaims>       getRelationshipClaims(const QString & qstrAboutNymId);
+    QPointer<ModelTradeArchive>  getTradeArchiveModel();
+    QPointer<ModelMessages>      getMessageModel();
+    QPointer<ModelPayments>      getPaymentModel();
+    QPointer<ModelAgreements>    getAgreementModel();
+    QPointer<ModelAgreementReceipts> getAgreementReceiptModel();
+    QPointer<ModelClaims>        getClaimsModel(int nContactId);
+    QPointer<ModelClaims>        getClaimsModel(const QString & qstrNymId);
+    QPointer<ModelClaims>        getRelationshipClaims(int nAboutContactId);
+    QPointer<ModelClaims>        getRelationshipClaims(const QString & qstrAboutNymId);
+
+    QPointer<ModelVerifications> getVerificationsModel(const QString & forClaimId);
 
     QString formatValue(QSqlField & sqlField);
 
