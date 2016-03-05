@@ -749,7 +749,9 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                         if (0 == qstrClaimantNymId.compare(qstrVerifierNymId))
                         {
                             QMessageBox::warning(this, tr("Moneychanger"),
-                                                 QString("%1").arg(tr("You can't verify your own claims. (You can verify using a different Nym - just change the default Nym and then try again.)")));
+                                                 QString("%1").arg(tr("An identity can't confirm or refute its own claims. "
+                                                                      "(You can verify using a different Nym - just change the "
+                                                                      "default Nym and then try again.)")));
                             return;
                         }
                         // ----------------------------------
@@ -768,7 +770,7 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                         if (0 == qstrClaimantNymId.compare(qstrVerifierNymId))
                         {
                             QMessageBox::warning(this, tr("Moneychanger"),
-                                                 QString("%1").arg(tr("You can't verify your own claims. "
+                                                 QString("%1").arg(tr("An identity can't confirm or refute its own claims. "
                                                                       "(But you CAN verify this contact, by just using a different Nym - "
                                                                       "to do that, try selecting a different default Nym for your wallet, "
                                                                       "and then come back here and try again.)")));
@@ -787,7 +789,9 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                         if (0 == qstrClaimantNymId.compare(qstrVerifierNymId))
                         {
                             QMessageBox::warning(this, tr("Moneychanger"),
-                                                 QString("%1").arg(tr("You can't verify your own claims. (You can verify using a different Nym - just change the default Nym and then try again.)")));
+                                                 QString("%1").arg(tr("An identity can't confirm or refute its own claims. "
+                                                                      "(You can verify using a different Nym - just change "
+                                                                      "the default Nym and then try again.)")));
                             return;
                         }
                         // ----------------------------------
@@ -815,10 +819,6 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                     // edit -- versus other people's Nyms, which I may only view.
 
 
-
-
-
-
                     // Add ability to edit the selected verification to change its status
                     // to confirm or refute -- or delete the verification entirely.
                     // One of the Nyms in my wallet (specifically the one who originally created this
@@ -826,8 +826,6 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                     //
                     // NOTE: This should ONLY be possible for Verifications made by MY Nyms (that are
                     // in my wallet). All other Verifications are read-only.
-
-
 
 
                     // For reference purposes only:
