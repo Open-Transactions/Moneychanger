@@ -507,8 +507,6 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
 //
 void Moneychanger::onCheckNym(QString nymId)
 {
-    // This logs and ASSERTs already.
-    opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet(__FUNCTION__);
     // ----------------------------------------------
     opentxs::String strNymId = nymId.toStdString();
     opentxs::Identifier id_nym(strNymId);
@@ -517,7 +515,9 @@ void Moneychanger::onCheckNym(QString nymId)
     // just downloaded and overwritten.
     //
     opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
-    opentxs::Nym * pCurrentNym = pWallet->reloadAndGetNym(id_nym, false, __FUNCTION__,  &thePWData);
+    const opentxs::Nym * pCurrentNym =
+        opentxs::OTAPI_Wrap::OTAPI()->
+            reloadAndGetNym(id_nym, false, __FUNCTION__,  &thePWData);
 
     if (nullptr == pCurrentNym)
     {
@@ -5056,21 +5056,12 @@ void Moneychanger::onNewAssetAdded(QString qstrID)
 
 void Moneychanger::PublicNymNotify(std::string id)
 {
-    const opentxs::Identifier ot_id(id);
+        auto pNym = opentxs::App::Me().Contract().Nym(id);
 
-    opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet("Moneychanger::PublicNymNotify");
-
-    if (nullptr != pWallet)
-    {
-        opentxs::Nym * pNym = pWallet->GetNymByID(ot_id);
-        if (nullptr != pNym) // Found it! The nym is already in the wallet. (Public or private.)
+        if (pNym)
         {
-            qDebug() << "I was notified that the DHT downloaded Nym " << QString::fromStdString(id) << " and I see that he's already in the wallet, "
-                        "so I'm just going to reload the wallet, to make sure we have the latest one loaded.";
-            const bool bReloaded = pWallet->LoadWallet();
-
-            if (!bReloaded)
-                qDebug() << "Error while trying to reload the wallet.";
+            qDebug() << "I was notified that the DHT downloaded Nym "
+                     << QString::fromStdString(id);
         }
         else // The Nym is not already in the wallet.
         {
@@ -5079,9 +5070,7 @@ void Moneychanger::PublicNymNotify(std::string id)
             // in the wallet, and if it ever does load that Nym in the
             // near future, it will get the latest version then.
         }
-    }
-
-    emit nymWasJustChecked(QString::fromStdString(id));
+        emit nymWasJustChecked(QString::fromStdString(id));
 }
 
 void Moneychanger::ServerContractNotify(std::string id)

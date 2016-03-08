@@ -313,7 +313,7 @@ public:
 //  bool notifyClaimRefute(const QString & qstrClaimId, const QString & qstrVerifierNymID);
 //  bool notifyClaimNoComment(const QString & qstrClaimId, const QString & qstrVerifierNymID);
   // ----------------------------------------------------------
-  bool upsertClaim(opentxs::Nym& nym, const opentxs::Claim& claim);
+  bool upsertClaim(const opentxs::Nym& nym, const opentxs::Claim& claim);
 
   bool upsertClaimVerification(const std::string & claimant_nym_id,
                                const std::string & verifier_nym_id,

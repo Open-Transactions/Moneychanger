@@ -222,7 +222,8 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
 
     if (!str_nym_id.empty())
     {
-        opentxs::Nym * pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
+        const opentxs::Nym * pCurrentNym =
+            opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
 
         if (pCurrentNym)
         {
