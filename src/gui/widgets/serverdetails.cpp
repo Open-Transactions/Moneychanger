@@ -681,11 +681,13 @@ void MTServerDetails::refresh(QString strID, QString strName)
 
         if (!contract) {return; }
 
-        QString qstrNymID("");
-        qstrNymID =
-            QString::fromStdString(opentxs::String(contract->ID()).Get());
+        QString qstrNymID("");  // contract->PublicNym()->GetIdentifier(some_variable)
 
-        QString qstrContents = QString::fromStdString(contract->Terms().Get());
+        opentxs::Identifier id_nym;
+        contract->Nym()->GetIdentifier(id_nym);
+        qstrNymID = QString::fromStdString(opentxs::String(id_nym).Get());
+
+        QString qstrContents = QString::fromStdString(contract->Terms().c_str());
 
         if (m_pPlainTextEdit)
             m_pPlainTextEdit->setPlainText(qstrContents);
