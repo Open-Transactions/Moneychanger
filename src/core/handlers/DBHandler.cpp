@@ -570,7 +570,6 @@ QPointer<ModelClaims> DBHandler::getRelationshipClaims(const QString & qstrAbout
 {
     QPointer<ModelClaims> pClaimsModel = new ModelClaims(0);
 
-
     pClaimsModel->setQuery(QString("SELECT * FROM `claim` WHERE `claim_value`='%1' AND `claim_section`=%2").
                            arg(qstrAboutNymId).arg(opentxs::proto::CONTACTSECTION_RELATIONSHIPS),
                            db);
@@ -578,6 +577,32 @@ QPointer<ModelClaims> DBHandler::getRelationshipClaims(const QString & qstrAbout
     setup_claims_model(pClaimsModel);
 
     return pClaimsModel;
+}
+
+
+QPointer<ModelVerifications> DBHandler::getVerificationsModel(const QString & forClaimId)
+{
+    QPointer<ModelVerifications> pModel = new ModelVerifications(0);
+
+    pModel->setQuery(QString("SELECT * FROM `claim_verification` WHERE `ver_claim_id`='%1'").
+                     arg(forClaimId), db);
+
+    if ( pModel->lastError().isValid())
+        qDebug() <<  pModel->lastError();
+
+    int column = 0;
+
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("ver_id"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Claimant"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Verifier"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Claim"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Polarity"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Start"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("End"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Signature"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Signature Verified"));
+
+    return pModel;
 }
 
 

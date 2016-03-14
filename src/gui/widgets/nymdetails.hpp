@@ -22,6 +22,7 @@ class QLabel;
 class QPlainTextEdit;
 class MTCredentials;
 class QTreeWidget;
+class QTreeWidgetItem;
 
 class ClaimsProxyModel;
 class ModelClaims;
@@ -79,6 +80,8 @@ private:
     QAction * pActionConfirm_ = nullptr;
     QAction * pActionRefute_ = nullptr;
     QAction * pActionNoComment_ = nullptr;
+
+    QTreeWidgetItem * metInPerson_ = nullptr;
 
 private slots:
     void on_lineEditName_editingFinished();

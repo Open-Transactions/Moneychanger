@@ -14,6 +14,7 @@
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
+#include <opentxs/core/Proto.hpp>
 
 #include <QPlainTextEdit>
 #include <QMessageBox>
@@ -70,12 +71,14 @@ void MTAssetDetails::on_pushButton_clicked()
 
     if (!qstrAssetID.isEmpty())
     {
-        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LoadAssetContract(qstrAssetID.toStdString()));
+        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Contract(qstrAssetID.toStdString()));
+        opentxs::proto::UnitDefinition contractProto =
+            opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>(qstrContents.toStdString());
 
         if (!qstrContents.isEmpty())
         {
             // First we get the "signer nym" ID from the asset contract.
-            std::string str_signer_nym = opentxs::OTAPI_Wrap::It()->GetSignerNymID(qstrContents.toStdString());
+            std::string str_signer_nym = contractProto.nymid();
 
             if (!str_signer_nym.empty())
             {
@@ -535,44 +538,23 @@ void MTAssetDetails::ImportContract(QString qstrContents)
         return;
     }
     // ------------------------------------------------------
-    QString qstrContractID = QString::fromStdString(opentxs::OTAPI_Wrap::It()->CalculateAssetContractID(qstrContents.toStdString()));
+    QString qstrContractID =
+        QString::fromStdString(opentxs::OTAPI_Wrap::It()->
+            AddUnitDefinition(qstrContents.toStdString()));
 
     if (qstrContractID.isEmpty())
     {
-        QMessageBox::warning(this, tr("Failed Calculating Contract ID"),
-                             tr("Failed trying to calculate this contract's ID. Perhaps the 'contract' is malformed?"));
+        QMessageBox::warning(this, tr("Failed Importing Asset Contract"),
+                             tr("Failed trying to import contract. Is it already in the wallet?"));
         return;
     }
     // ------------------------------------------------------
     else
     {
-        // Already in the wallet?
-        //
-//        std::string str_Contract = opentxs::OTAPI_Wrap::It()->LoadAssetContract(qstrContractID.toStdString());
-//
-//        if (!str_Contract.empty())
-//        {
-//            QMessageBox::warning(this, tr("Contract Already in Wallet"),
-//                tr("Failed importing this contract, since it's already in the wallet."));
-//            return;
-//        }
-        // ---------------------------------------------------
-        int32_t nAdded = opentxs::OTAPI_Wrap::It()->AddAssetContract(qstrContents.toStdString());
-
-        if (1 != nAdded)
-        {
-            QMessageBox::warning(this, tr("Failed Importing Asset Contract"),
-                tr("Failed trying to import contract. Is it already in the wallet?"));
-            return;
-        }
         // -----------------------------------------------
-        QString qstrContractName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(qstrContractID.toStdString()));
-        // -----------------------------------------------
-        // This was irritating knotwork.
-        //
-//        QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Importing Asset Contract! Name")).
-//                                 arg(qstrContractName).arg(tr("ID")).arg(qstrContractID));
-        // ----------
+        QString qstrContractName =
+            QString::fromStdString(opentxs::OTAPI_Wrap::It()->
+                GetAssetType_Name(qstrContractID.toStdString()));
         m_pOwner->m_map.insert(qstrContractID, qstrContractName);
         m_pOwner->SetPreSelected(qstrContractID);
         // ------------------------------------------------
@@ -587,6 +569,8 @@ void MTAssetDetails::ImportContract(QString qstrContents)
 void MTAssetDetails::AddButtonClicked()
 {
     MTWizardAddContract theWizard(this);
+
+    theWizard.setAssetMode();
 
     theWizard.setWindowTitle(tr("Add Asset Contract"));
 
@@ -710,10 +694,74 @@ void MTAssetDetails::AddButtonClicked()
         {
             QString qstrXMLContents = theWizard.field("contractXML").toString();
             QString qstrNymID       = theWizard.field("NymID").toString();
+            QString qstrTerms       = theWizard.field("terms").toString();
 
-            std::string strContractID = opentxs::OTAPI_Wrap::It()->CreateAssetContract(qstrNymID.toStdString(),
-                                                                                       qstrXMLContents.toStdString());
+            const bool bIsCurrency = theWizard.field("asset_type_currency").toBool();
+            const bool bIsSecurity = theWizard.field("asset_type_security").toBool();
+            const bool bIsBasket   = theWizard.field("asset_type_basket")  .toBool();
 
+            QString qstrContractName;
+            QString qstrPrimaryUnit;
+            QString qstrSymbol;
+            QString qstrTLA;
+            QString qstrFractionalUnit;
+
+            std::string strContractID;
+
+            if (bIsCurrency)
+            {
+                qstrContractName   = theWizard.field("currency_contract_name").toString();
+                qstrPrimaryUnit    = theWizard.field("currency_primary_unit").toString();
+                qstrSymbol         = theWizard.field("currency_symbol").toString();
+                qstrTLA            = theWizard.field("currency_tla").toString();
+                qstrFractionalUnit = theWizard.field("currency_fractional_unit").toString();
+
+//                EXPORT std::string CreateCurrencyContract(
+//                      const std::string& NYM_ID,
+//                      const std::string& shortname,
+//                      const std::string& terms,
+//                      const std::string& name,
+//                      const std::string& symbol,
+//                      const std::string& tla,
+//                      const uint32_t power,
+//                      const std::string& fraction) const;
+
+                strContractID =
+                    opentxs::OTAPI_Wrap::It()->CreateCurrencyContract(
+                        qstrNymID.toStdString(),
+                        qstrContractName.toStdString(),  //  "Coinbase Dollars" (refers to the contract.) shortname
+                        qstrTerms.toStdString(), // terms
+                        qstrPrimaryUnit.toStdString(),  //   Primary unit name "dollars" or "yuan".  name
+                        qstrSymbol.toStdString(),  //  Symbol.
+                        qstrTLA.toStdString(),  //  "USD", etc.
+//                        100,  //   100 cents in a dollar.  Factor. (I think factor is gone now.)
+                        2,  //  A "cent" is 2 decimal places right of a "dollar." Decimal power.
+                        qstrFractionalUnit.toStdString());
+            }
+            else if (bIsSecurity)
+            {
+                qstrContractName   = theWizard.field("security_contract_name").toString();
+                qstrPrimaryUnit    = theWizard.field("security_primary_unit").toString();
+                qstrSymbol         = theWizard.field("security_symbol").toString();
+                qstrTLA            = theWizard.field("security_tla").toString();
+
+                strContractID =
+                    opentxs::OTAPI_Wrap::It()->CreateSecurityContract(
+                        qstrNymID.toStdString(),
+                        qstrContractName.toStdString(),  //  "Sample Co. shares" (refers to the contract.)
+                        qstrTerms.toStdString(),
+                        qstrPrimaryUnit.toStdString(),  //   Primary unit name "shares"
+                        qstrSymbol.toStdString(),  //  Symbol.
+//                        qstrTLA.toStdString(),  //  "USD", etc.
+                        "" // empty date string.
+                        );
+            }
+            else if (bIsBasket)
+            {
+                qDebug() << "Unimplemented still. (Basket currency creation wizard.)";
+                return;
+            }
+            // ----------------------------------------------------------
             if ("" == strContractID) {
                 QMessageBox::warning(this, tr("Failed Creating Contract"),
                                      tr("Unable to create contract. Perhaps the XML contents were bad?"));
@@ -730,6 +778,8 @@ void MTAssetDetails::AddButtonClicked()
                 else { // Success.
                     QString qstrContractID   = QString::fromStdString(strContractID);
                     QString qstrContractName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(strContractID));
+
+                    std::cout << "New asset contract name: " << qstrContractName.toStdString() << std::endl;
 
                     m_pOwner->m_map.insert(qstrContractID,
                                            qstrContractName);
@@ -767,7 +817,10 @@ void MTAssetDetails::refresh(QString strID, QString strName)
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
-        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->LoadAssetContract(strID.toStdString()));
+        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->
+            GetAssetType_Contract(strID.toStdString()));
+        opentxs::proto::UnitDefinition contractProto =
+            opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>(qstrContents.toStdString());
 
         if (m_pPlainTextEdit)
             m_pPlainTextEdit->setPlainText(qstrContents);
@@ -777,7 +830,7 @@ void MTAssetDetails::refresh(QString strID, QString strName)
         ui->pushButton->setVisible(false);
 
         if (!qstrContents.isEmpty()) {
-            std::string str_signer_nym = opentxs::OTAPI_Wrap::It()->GetSignerNymID(qstrContents.toStdString());
+            std::string str_signer_nym = contractProto.nymid();
 
             if (!str_signer_nym.empty()) {
                 qstrNymID = QString::fromStdString(str_signer_nym);

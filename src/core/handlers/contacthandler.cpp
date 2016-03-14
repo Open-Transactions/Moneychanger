@@ -595,7 +595,7 @@ bool MTContactHandler::getPolarityIfAny(const QString & claim_id, const QString 
            }
 
 
-           qDebug() << "DEBUGGING: getPolarityIfAny (from database): bPolarity: " << QString(bPolarity ? "True" : "False");
+//           qDebug() << "DEBUGGING: getPolarityIfAny (from database): bPolarity: " << QString(bPolarity ? "True" : "False");
 
        }
     }
@@ -786,7 +786,7 @@ void MTContactHandler::clearClaimsForNym(const QString & qstrNymId)
     }
 }
 
-bool MTContactHandler::upsertClaim(opentxs::Nym& nym, const opentxs::Claim& claim)
+bool MTContactHandler::upsertClaim(const opentxs::Nym& nym, const opentxs::Claim& claim)
 {
     QMutexLocker locker(&m_Mutex);
 
@@ -2715,7 +2715,7 @@ QString MTContactHandler::Decrypt(QString ciphertext)
                 std::string str_temp(strOutput.Get());
                 decrypted_value = QString::fromStdString(str_temp);
             }
- 
+
         }
     }
 

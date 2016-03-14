@@ -17,6 +17,8 @@ class QTreeWidget;
 class QTreeView;
 class MTCredentials;
 class QStringList;
+class QMenu;
+class QTreeWidgetItem;
 
 class ClaimsProxyModel;
 class ModelClaims;
@@ -68,6 +70,17 @@ private:
 
     QPointer<MTCredentials> m_pCredentials;
 
+    QScopedPointer<QMenu> popupMenuProfile_; // For the tree showing the Nym's profile claims/verifications.
+
+    QAction * pActionConfirm_ = nullptr;
+    QAction * pActionRefute_ = nullptr;
+    QAction * pActionNoComment_ = nullptr;
+
+    QAction * pActionNewRelationship_ = nullptr;
+    QAction * pActionDeleteRelationship_ = nullptr;
+
+    QTreeWidgetItem * metInPerson_ = nullptr;
+
 private slots:
     void on_lineEditName_editingFinished();
 
@@ -76,6 +89,8 @@ private slots:
     void on_pushButtonMsg_clicked();
     void on_pushButtonPay_clicked();
     void on_pushButtonRefresh_clicked();
+
+    void on_treeWidget_customContextMenuRequested(const QPoint &pos);
 
 private:
     QPointer<QWidget>   m_pHeaderWidget;

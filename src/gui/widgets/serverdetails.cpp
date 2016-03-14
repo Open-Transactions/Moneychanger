@@ -15,6 +15,7 @@
 #include <opentxs/core/contract/ServerContract.hpp>
 #include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/crypto/OTCachedKey.hpp>
+#include <opentxs/core/app/App.hpp>
 #include <opentxs/core/util/OTFolders.hpp>
 
 #include <quazip/quazip.h>
@@ -281,51 +282,28 @@ void MTServerDetails::ImportContract(QString qstrContents)
             tr("Failed importing: contract is empty."));
         return;
     }
-    // ------------------------------------------------------
-    QString qstrContractID = QString::fromStdString(opentxs::OTAPI_Wrap::It()->CalculateServerContractID(qstrContents.toStdString()));
+    // ---------------------------------------------------
+    std::string newID = opentxs::OTAPI_Wrap::It()->AddServerContract(qstrContents.toStdString());
 
-    if (qstrContractID.isEmpty())
+    if (newID.empty())
     {
-        QMessageBox::warning(this, tr("Failed Calculating Contract ID"),
-                             tr("Failed trying to calculate this contract's ID. Perhaps the 'contract' is malformed?"));
+        QMessageBox::warning(this, tr("Failed Importing Server Contract"),
+            tr("Failed trying to import contract. Is it already in the wallet?"));
         return;
     }
-    // ------------------------------------------------------
-    else
-    {
-        // Already in the wallet?
-        //
-//        std::string str_Contract = opentxs::OTAPI_Wrap::It()->LoadServerContract(qstrContractID.toStdString());
-//
-//        if (!str_Contract.empty())
-//        {
-//            QMessageBox::warning(this, tr("Contract Already in Wallet"),
-//                tr("Failed importing this contract, since it's already in the wallet."));
-//            return;
-//        }
-        // ---------------------------------------------------
-        int32_t nAdded = opentxs::OTAPI_Wrap::It()->AddServerContract(qstrContents.toStdString());
-
-        if (1 != nAdded)
-        {
-            QMessageBox::warning(this, tr("Failed Importing Server Contract"),
-                tr("Failed trying to import contract. Is it already in the wallet?"));
-            return;
-        }
-        // -----------------------------------------------
-        QString qstrContractName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(qstrContractID.toStdString()));
-        // -----------------------------------------------
-        // Commenting this out for now.
-        //
-//      QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Importing Server Contract! Name")).
-//                               arg(qstrContractName).arg(tr("ID")).arg(qstrContractID));
-        // ----------
-        m_pOwner->m_map.insert(qstrContractID, qstrContractName);
-        m_pOwner->SetPreSelected(qstrContractID);
-        // ------------------------------------------------
-        emit newServerAdded(qstrContractID);
-        // ------------------------------------------------
-    } // if (!qstrContractID.isEmpty())
+    // -----------------------------------------------
+    QString qstrContractName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(newID));
+    // -----------------------------------------------
+    // Commenting this out for now.
+    //
+//  QMessageBox::information(this, tr("Success!"), QString("%1: '%2' %3: %4").arg(tr("Success Importing Server Contract! Name")).
+//                           arg(qstrContractName).arg(tr("ID")).arg(qstrContractID));
+    // ----------
+    m_pOwner->m_map.insert(newID.c_str(), qstrContractName);
+    m_pOwner->SetPreSelected(newID.c_str());
+    // ------------------------------------------------
+    emit newServerAdded(newID.c_str());
+    // ------------------------------------------------
 }
 
 // ------------------------------------------------------
@@ -539,6 +517,8 @@ void MTServerDetails::AddButtonClicked()
 {
     MTWizardAddContract theWizard(this);
 
+    theWizard.setServerMode();
+
     theWizard.setWindowTitle(tr("Add Server Contract"));
 
     QString qstrDefaultValue("https://raw.github.com/FellowTraveler/Open-Transactions/master/sample-data/sample-contracts/cloud.otc");
@@ -697,20 +677,17 @@ void MTServerDetails::refresh(QString strID, QString strName)
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
-        opentxs::OTWallet* pWallet =
-            pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet(__FUNCTION__);
+        auto contract = opentxs::App::Me().Contract().Server(strID.toStdString());
 
-        if (nullptr == pWallet) { return; }
+        if (!contract) {return; }
 
-        opentxs::ServerContract* contract =
-        pWallet->GetServerContract(strID.toStdString());
+        QString qstrNymID("");  // contract->PublicNym()->GetIdentifier(some_variable)
 
-        if (nullptr == contract) {return; }
+        opentxs::Identifier id_nym;
+        contract->Nym()->GetIdentifier(id_nym);
+        qstrNymID = QString::fromStdString(opentxs::String(id_nym).Get());
 
-        QString qstrNymID("");
-        qstrNymID = QString::fromStdString(contract->ID().Get());
-
-        QString qstrContents = QString::fromStdString(contract->Terms().Get());
+        QString qstrContents = QString::fromStdString(contract->Terms().c_str());
 
         if (m_pPlainTextEdit)
             m_pPlainTextEdit->setPlainText(qstrContents);

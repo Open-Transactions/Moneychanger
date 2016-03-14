@@ -12,6 +12,7 @@
 
 #include <gui/ui/dlgexportedtopass.hpp>
 
+#include <opentxs/core/app/App.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -44,7 +45,7 @@ DlgEncrypt::DlgEncrypt(QWidget *parent) :
     m_nymId("")
 {
     ui->setupUi(this);
-    
+
     this->installEventFilter(this);
 
     ui->toolButton  ->setStyleSheet("QToolButton { border: 0px solid #575757; }");
@@ -337,7 +338,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
         {
             if (ui->listWidgetAdded->count() > 0)
             {
-                std::set<opentxs::Nym*> setRecipients;
+                std::set<const opentxs::Nym*> setRecipients;
                 bool      bRecipientsShouldBeAvailable = false;
 
                 // Loop through each NymID in listWidgetAdded, and put them on a opentxs::setOfNyms
@@ -361,7 +362,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     {
                         opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
 
-                        opentxs::Nym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(nym_id,
+                        const opentxs::Nym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(nym_id,
                                                                                false, //bChecking=false
                                                                                __FUNCTION__,
                                                                                &thePWData);
@@ -392,9 +393,9 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     bool bSignerIsAlreadyThere = false;
 
                     //FOR_EACH(opentxs::setOfNyms(), setRecipients) // See if it's already there, in which case we don't need to do anything else.
-                    for(opentxs::setOfNyms::iterator it = setRecipients.begin(); it != setRecipients.end(); ++ it)
+                    for(auto it = setRecipients.begin(); it != setRecipients.end(); ++ it)
                     {
-                        opentxs::Nym       * pNym = *it;
+                        const opentxs::Nym       * pNym = *it;
                         opentxs::String            strNymID;
                         pNym->GetIdentifier(strNymID);
 
@@ -412,11 +413,9 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                         {
                             opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
 
-                            opentxs::Nym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(signer_nym_id,
-                                                                                   false, //bChecking=false
-                                                                                   __FUNCTION__,
-                                                                                   &thePWData);
-                            if (NULL == pNym)
+                            auto pNym =
+                                opentxs::App::Me().Contract().Nym(signer_nym_id);
+                            if (!pNym)
                             {
                                 QString qstrErrorMsg = QString("%1: %2").
                                         arg(tr("Failed trying to load the signer; attempting to continue without. NymID")).arg(m_nymId);
@@ -424,7 +423,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                             }
                             else
                             {
-                                setRecipients.insert(setRecipients.begin(), pNym);
+                                setRecipients.insert(setRecipients.begin(), pNym.get());
                             }
                         }
                     }

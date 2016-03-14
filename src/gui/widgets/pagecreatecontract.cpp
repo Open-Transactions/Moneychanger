@@ -5,6 +5,8 @@
 #include <gui/widgets/pagecreatecontract.hpp>
 #include <ui_pagecreatecontract.h>
 
+#include <gui/widgets/wizardaddcontract.hpp>
+
 #include <gui/widgets/dlgchooser.hpp>
 #include <gui/widgets/detailedit.hpp>
 
@@ -102,7 +104,22 @@ int MTPageCreateContract::nextId() const
 {
     // -1 turns it into the last page.
     //
-    return -1;
+//    return -1;
+
+    MTWizardAddContract * pWizard  = dynamic_cast<MTWizardAddContract *>(wizard());
+
+    if (nullptr != pWizard)
+    {
+        if (pWizard->serverMode())
+        {
+            return -1;
+        }
+    }
+
+    if (wizard()->field("isImporting").toBool())
+        return -1; // No need to collect the terms then.
+
+    return QWizardPage::nextId();
  }
 
 

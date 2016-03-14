@@ -240,66 +240,66 @@ QWidget * Agreements::CreateUserBarWidget()
         }
     }
     // ---------------------------------------------
-    QToolButton * buttonAccount = new QToolButton;
+//    QToolButton * buttonAccount = new QToolButton;
 
-    buttonAccount->setAutoRaise(true);
-    buttonAccount->setStyleSheet("QToolButton { margin-left: 0; font-size:30pt;  font-weight:lighter; }");
+//    buttonAccount->setAutoRaise(true);
+//    buttonAccount->setStyleSheet("QToolButton { margin-left: 0; font-size:30pt;  font-weight:lighter; }");
 
-    QLabel * tla_label = new QLabel(qstr_tla);
-    tla_label->setAlignment(Qt::AlignRight|Qt::AlignBottom);
-    tla_label->setStyleSheet("QLabel { margin-right: 0; font-size:20pt;  font-weight:lighter; }");
+//    QLabel * tla_label = new QLabel(qstr_tla);
+//    tla_label->setAlignment(Qt::AlignRight|Qt::AlignBottom);
+//    tla_label->setStyleSheet("QLabel { margin-right: 0; font-size:20pt;  font-weight:lighter; }");
 
-    buttonAccount->setText(qstr_balance);
-    // -------------------------------------------
-    connect(buttonAccount, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_show_account_manager_slot()));
+//    buttonAccount->setText(qstr_balance);
+//    // -------------------------------------------
+//    connect(buttonAccount, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_show_account_manager_slot()));
     // ----------------------------------------------------------------
-    QString  cash_label_string = QString("");
-    QString  qstrCash = qstr_acct_name;
+//    QString  cash_label_string = QString("");
+//    QString  qstrCash = qstr_acct_name;
 
-    if (!qstr_acct_nym.isEmpty() && !qstr_acct_server.isEmpty() && !qstr_acct_asset.isEmpty())
-    {
-        int64_t  raw_cash_balance = MTHome::rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
+//    if (!qstr_acct_nym.isEmpty() && !qstr_acct_server.isEmpty() && !qstr_acct_asset.isEmpty())
+//    {
+//        int64_t  raw_cash_balance = MTHome::rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
 
-        if (raw_cash_balance > 0)
-        {
-            cash_label_string = MTHome::cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
-            qstrCash += QString(" <small><font color=grey>(%2 %3 %4)</font></small>").arg(tr("plus")).arg(cash_label_string).arg(tr("in cash"));
-        }
-    }
-    else
-        qstrCash = tr("");
-//      qstrCash = tr("(no account selected)");
+//        if (raw_cash_balance > 0)
+//        {
+//            cash_label_string = MTHome::cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
+//            qstrCash += QString(" <small><font color=grey>(%2 %3 %4)</font></small>").arg(tr("plus")).arg(cash_label_string).arg(tr("in cash"));
+//        }
+//    }
+//    else
+//        qstrCash = tr("");
+////      qstrCash = tr("(no account selected)");
     // -------------------------------------------
-    QLabel * pCashLabel = new QLabel(qstrCash);
+//    QLabel * pCashLabel = new QLabel(qstrCash);
+//    // ---------------------------------------------------------------
+//    //pCashLabel->setText(qstrCash);
+//    pCashLabel->setIndent(13);
     // ---------------------------------------------------------------
-    //pCashLabel->setText(qstrCash);
-    pCashLabel->setIndent(13);
-    // ---------------------------------------------------------------
-    QWidget * balanceWidget = new QWidget;
-    QHBoxLayout * balanceLayout = new QHBoxLayout;
+//    QWidget * balanceWidget = new QWidget;
+//    QHBoxLayout * balanceLayout = new QHBoxLayout;
 
-    tla_label->setContentsMargins(12, 0, 0, 5);
-    tla_label->setAlignment(Qt::AlignRight|Qt::AlignBottom);
-    balanceLayout->setSpacing(0);
-    balanceLayout->addWidget(tla_label);
-    balanceLayout->addWidget(buttonAccount);
+//    tla_label->setContentsMargins(12, 0, 0, 5);
+//    tla_label->setAlignment(Qt::AlignRight|Qt::AlignBottom);
+//    balanceLayout->setSpacing(0);
+//    balanceLayout->addWidget(tla_label);
+//    balanceLayout->addWidget(buttonAccount);
 
-    balanceLayout->setMargin(0);
-    balanceLayout->setContentsMargins(0, 0, 0, 0);
-//  balanceLayout->setContentsMargins(0, 20, 0, 0);
-    balanceWidget->setContentsMargins(0, 0, 0, 0);
+//    balanceLayout->setMargin(0);
+//    balanceLayout->setContentsMargins(0, 0, 0, 0);
+////  balanceLayout->setContentsMargins(0, 20, 0, 0);
+//    balanceWidget->setContentsMargins(0, 0, 0, 0);
 
-    balanceWidget->setLayout(balanceLayout);
+//    balanceWidget->setLayout(balanceLayout);
     // ----------------------------------------------------------------
-    QVBoxLayout * pAccountLayout = new QVBoxLayout;
+//    QVBoxLayout * pAccountLayout = new QVBoxLayout;
 
-    pAccountLayout->setMargin(0);
-    pAccountLayout->setContentsMargins(0, 0, 0, 0);
-    pAccountLayout->setSpacing(3);
+//    pAccountLayout->setMargin(0);
+//    pAccountLayout->setContentsMargins(0, 0, 0, 0);
+//    pAccountLayout->setSpacing(3);
 
-    pAccountLayout->addWidget(balanceWidget);
-    pAccountLayout->addWidget(pCashLabel);
-    pAccountLayout->addStretch();
+//    pAccountLayout->addWidget(balanceWidget);
+//    pAccountLayout->addWidget(pCashLabel);
+//    pAccountLayout->addStretch();
     // ----------------------------------------------------------------
     QString  identity_label_string = QString("<font color=grey>%1:</font> ").arg(tr("My Identity"));
     QLabel * pIdentityLabel = new QLabel(identity_label_string);
@@ -372,7 +372,7 @@ QWidget * Agreements::CreateUserBarWidget()
     pIdentityLayout->addWidget(pIdentityLabel, 2, 0, 1, 1);
     pIdentityLayout->addWidget(buttonNym, 2, 1, 1, 1);
     // ---------------------------------------------------------------
-    pUserBar_layout->addLayout(pAccountLayout,  0, 2, 2,2, Qt::AlignLeft);
+//    pUserBar_layout->addLayout(pAccountLayout,  0, 2, 2,2, Qt::AlignLeft);
     pUserBar_layout->addLayout(pIdentityLayout, 0, 0, 2,2, Qt::AlignLeft);
 
     return pUserBar;
@@ -535,6 +535,10 @@ void Agreements::disableButtons()
 
 void Agreements::on_tableViewRecurringSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
 {
+    // resume todo
+
+    // Set a Filter based on which one is clicked.
+
 
 }
 
@@ -790,9 +794,11 @@ void Agreements::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
     setAsCurrentAgreement(nSourceRow, nFolder);
 }
 
-
+//resume
 void Agreements::setAsCurrentAgreement(int nSourceRow, int nFolder) // The smart contract itself, or payment plan, that's selected.
 {
+
+
 
 }
 

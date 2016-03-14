@@ -97,6 +97,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Paste the XML contents for your new contract:</string>
        </property>
@@ -104,6 +107,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="pushButton">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>Paste from Clipboard</string>
        </property>
@@ -113,6 +119,9 @@
    </item>
    <item>
     <widget class="QPlainTextEdit" name="plainTextEdit">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="readOnly">
       <bool>false</bool>
      </property>
@@ -126,16 +135,6 @@ https://github.com/Open-Transactions/opentxs-sample-data/tree/master/sample-cont
     </widget>
    </item>
   </layout>
-  <zorder>label</zorder>
-  <zorder>label_3</zorder>
-  <zorder>line</zorder>
-  <zorder>plainTextEdit</zorder>
-  <zorder>pushButton</zorder>
-  <zorder>lineEditID</zorder>
-  <zorder>pushButtonManage</zorder>
-  <zorder>pushButtonSelect</zorder>
-  <zorder>pushButtonManage</zorder>
-  <zorder>horizontalSpacer</zorder>
  </widget>
  <resources>
   <include location="../resource.qrc"/>
