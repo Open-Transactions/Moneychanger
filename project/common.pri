@@ -50,6 +50,8 @@ win32:{
 QMAKE_CFLAGS_WARN_ON -= -Wall -Wextra -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wextra -Wunused-parameter -Wunused-function -Wunneeded-internal-declaration
 
+DEFINES     += OT_CRYPTO_USING_OPENSSL
+
 win32:{
     DEFINES     += "_UNICODE" "NOMINMAX"
     CharacterSet = 1
@@ -96,7 +98,7 @@ unix:{
             !exists($$MAC_SDK): error("The selected Mac OSX SDK does not exist at $${MAC_SDK}!")
         }
     }
-    
+
     # LINUX:
     else:{
         GCC_VERSION = $$system(g++ -dumpversion | cut -d. -f1-2)

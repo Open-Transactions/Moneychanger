@@ -23,6 +23,7 @@ public:
 
     //virtual
     bool validatePage();
+    void initializePage();
 
 private:
     Ui::MTPageAddContract *ui;

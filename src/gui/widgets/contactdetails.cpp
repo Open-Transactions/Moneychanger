@@ -25,6 +25,7 @@
 #include <opentxs/client/OpenTransactions.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/Nym.hpp>
+#include <opentxs/core/app/App.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
 #include <opentxs/client/OTWallet.hpp>
 
@@ -470,27 +471,15 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                     }
                     else if (selectedAction == pActionDeleteRelationship_)
                     {
-                        // -----------------------------------------------
-                        // This logs and ASSERTs already.
-                        opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet(__FUNCTION__);
-                        // ----------------------------------------------
-                        opentxs::String strClaimantNymId = qstrClaimantNymId.toStdString();
-                        opentxs::Identifier claimant_nym_id(strClaimantNymId);
                         // ----------------------------------------------
                         // Get the Nym. Make sure we have the latest copy, since his credentials were apparently
                         // just downloaded and overwritten.
                         //
                         opentxs::OTPasswordData thePWData("Deleting relationship claim.");
-                        opentxs::Nym * pClaimantNym = pWallet->reloadAndGetNym(claimant_nym_id, false, __FUNCTION__,  &thePWData);
 
-                        if (nullptr == pClaimantNym)
-                        {
-                            qDebug() << __FUNCTION__ << "Strange: failed trying to get reloadAndGetNym from the Wallet.";
-                            return;
-                        }
                         // ------------------------------------------------
                         std::string str_claim_id(qstrClaimId.toStdString());
-                        if (opentxs::OTAPI_Wrap::OTAPI()->DeleteClaim(*pClaimantNym, str_claim_id))
+                        if (opentxs::OTAPI_Wrap::It()->DeleteClaim(qstrClaimantNymId.toStdString(), str_claim_id))
                         {
                             emit nymWasJustChecked(qstrClaimantNymId);
                             return;
@@ -622,9 +611,6 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
 
                         if (0 == sectionType)
                             return;
-                        // -----------------------------------------------
-                        // This logs and ASSERTs already.
-                        opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet(__FUNCTION__);
                         // ----------------------------------------------
                         opentxs::String strClaimantNymId = qstrClaimantNymId.toStdString();
                         opentxs::Identifier claimant_nym_id(strClaimantNymId);
@@ -633,7 +619,9 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                         // just downloaded and overwritten.
                         //
                         opentxs::OTPasswordData thePWData("Adding relationship claim.");
-                        opentxs::Nym * pClaimantNym = pWallet->reloadAndGetNym(claimant_nym_id, false, __FUNCTION__,  &thePWData);
+                        opentxs::Nym * pClaimantNym =
+                            opentxs::OTAPI_Wrap::OTAPI()->
+                                reloadAndGetPrivateNym(claimant_nym_id, false, __FUNCTION__,  &thePWData);
 
                         if (nullptr == pClaimantNym)
                         {
@@ -1120,24 +1108,10 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
         if (!str_nym_id.empty())
         {
-            opentxs::Nym * pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->LoadPublicNym(id_nym, __FUNCTION__);
-            std::unique_ptr<opentxs::Nym> pNymAngel(pCurrentNym);
-
-            if (!pNymAngel)
-            {
-                opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
-
-                // Notice we don't set the unique_ptr in this case, since with this function,
-                // the wallet already owns the nym and handles all the cleanup automatically.
-                //
-                pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym,
-                                                                         false, //bChecking=false
-                                                                         __FUNCTION__,
-                                                                         &thePWData);
-            }
+            auto pCurrentNym = opentxs::App::Me().Contract().Nym(id_nym);
 
             // check_nym if not already downloaded.
-            if (nullptr == pCurrentNym)
+            if (!pCurrentNym)
             {
                 const QString qstrDefaultNotaryId = Moneychanger::It()->getDefaultNotaryID();
                 const QString qstrDefaultNymId    = Moneychanger::It()->getDefaultNymID();
@@ -1159,8 +1133,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
                     if (1 == nReturnVal)
                     {
-                        pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->LoadPublicNym(id_nym, __FUNCTION__);
-                        pNymAngel.reset(pCurrentNym);
+                        pCurrentNym = opentxs::App::Me().Contract().Nym(id_nym);
                         bANymWasChecked = true;
                         emit nymWasJustChecked(qstrNymID);
                     }

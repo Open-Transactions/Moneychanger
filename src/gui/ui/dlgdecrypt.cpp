@@ -226,7 +226,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                         {
                             opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
                             opentxs::Identifier id_signer_nym(strSignerNymID);
-                            opentxs::Nym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_signer_nym,
+                            const opentxs::Nym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_signer_nym,
                                                                                    false, //bChecking=false
                                                                                    __FUNCTION__,
                                                                                    &thePWData);
