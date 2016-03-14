@@ -716,15 +716,25 @@ void MTAssetDetails::AddButtonClicked()
                 qstrTLA            = theWizard.field("currency_tla").toString();
                 qstrFractionalUnit = theWizard.field("currency_fractional_unit").toString();
 
+//                EXPORT std::string CreateCurrencyContract(
+//                      const std::string& NYM_ID,
+//                      const std::string& shortname,
+//                      const std::string& terms,
+//                      const std::string& name,
+//                      const std::string& symbol,
+//                      const std::string& tla,
+//                      const uint32_t power,
+//                      const std::string& fraction) const;
+
                 strContractID =
                     opentxs::OTAPI_Wrap::It()->CreateCurrencyContract(
                         qstrNymID.toStdString(),
-                        qstrContractName.toStdString(),  //  "Coinbase Dollars" (refers to the contract.)
-                        qstrTerms.toStdString(),
-                        qstrPrimaryUnit.toStdString(),  //   Primary unit name "dollars" or "yuan"
+                        qstrContractName.toStdString(),  //  "Coinbase Dollars" (refers to the contract.) shortname
+                        qstrTerms.toStdString(), // terms
+                        qstrPrimaryUnit.toStdString(),  //   Primary unit name "dollars" or "yuan".  name
                         qstrSymbol.toStdString(),  //  Symbol.
                         qstrTLA.toStdString(),  //  "USD", etc.
-                        100,  //   100 cents in a dollar.  Factor.
+//                        100,  //   100 cents in a dollar.  Factor. (I think factor is gone now.)
                         2,  //  A "cent" is 2 decimal places right of a "dollar." Decimal power.
                         qstrFractionalUnit.toStdString());
             }

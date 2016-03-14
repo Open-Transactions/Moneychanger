@@ -15,6 +15,9 @@ public:
     explicit PageCurrency_Details(QWidget *parent = 0);
     ~PageCurrency_Details();
 
+    //virtual
+    int nextId() const;
+
 private:
     Ui::PageCurrency_Details *ui;
 };

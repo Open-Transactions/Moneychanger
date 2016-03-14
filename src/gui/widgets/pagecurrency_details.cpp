@@ -23,3 +23,9 @@ PageCurrency_Details::~PageCurrency_Details()
 {
     delete ui;
 }
+
+//virtual
+int PageCurrency_Details::nextId() const
+{
+    return 5;
+}
