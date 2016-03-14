@@ -471,25 +471,15 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                     }
                     else if (selectedAction == pActionDeleteRelationship_)
                     {
-                        // -----------------------------------------------
-                        opentxs::String strClaimantNymId = qstrClaimantNymId.toStdString();
-                        opentxs::Identifier claimant_nym_id(strClaimantNymId);
                         // ----------------------------------------------
                         // Get the Nym. Make sure we have the latest copy, since his credentials were apparently
                         // just downloaded and overwritten.
                         //
                         opentxs::OTPasswordData thePWData("Deleting relationship claim.");
-                        opentxs::Nym * pClaimantNym =
-                            opentxs::OTAPI_Wrap::OTAPI()->reloadAndGetPrivateNym(claimant_nym_id, false, __FUNCTION__,  &thePWData);
 
-                        if (nullptr == pClaimantNym)
-                        {
-                            qDebug() << __FUNCTION__ << "Strange: failed trying to get reloadAndGetNym from the Wallet.";
-                            return;
-                        }
                         // ------------------------------------------------
                         std::string str_claim_id(qstrClaimId.toStdString());
-                        if (opentxs::OTAPI_Wrap::OTAPI()->DeleteClaim(*pClaimantNym, str_claim_id))
+                        if (opentxs::OTAPI_Wrap::It()->DeleteClaim(qstrClaimantNymId.toStdString(), str_claim_id))
                         {
                             emit nymWasJustChecked(qstrClaimantNymId);
                             return;

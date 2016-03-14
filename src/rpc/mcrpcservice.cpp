@@ -517,7 +517,6 @@ QJsonValue MCRPCService::createCurrencyContract(
     QString names,
     QString symbol,
     QString tla,
-    QString factor,
     QString power,
     QString fraction)
 {
@@ -537,7 +536,6 @@ QJsonValue MCRPCService::createCurrencyContract(
             names.toStdString(),
             symbol.toStdString(),
             tla.toStdString(),
-            stoi(factor.toStdString()),
             stoi(power.toStdString()),
             fraction.toStdString());
     QJsonObject object{{"CreateCurrencyContractResult", QString(result.c_str())}};
@@ -558,23 +556,6 @@ QJsonValue MCRPCService::getServerContract(QString Username, QString APIKey,
 
     std::string result = opentxs::OTAPI_Wrap::It()->GetServer_Contract(NotaryID.toStdString());
     QJsonObject object{{"ServerContract", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::getCurrencyFactor(QString Username, QString APIKey,
-                                           QString InstrumentDefinitionID)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
-        QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
-        return QJsonValue(object);
-    }
-
-    int result = opentxs::OTAPI_Wrap::It()->GetCurrencyFactor(InstrumentDefinitionID.toStdString());
-    QJsonObject object{{"CurrencyFactor", result}};
     return QJsonValue(object);
 }
 

@@ -85,13 +85,10 @@ public Q_SLOTS:
         QString names,
         QString symbol,
         QString tla,
-        QString factor,
         QString power,
         QString fraction);
     QJsonValue getServerContract(QString Username, QString APIKey,
                                  QString NotaryID);
-    QJsonValue getCurrencyFactor(QString Username, QString APIKey,
-                                 QString InstrumentDefinitionID);
     QJsonValue getCurrencyDecimalPower(QString Username, QString APIKey,
                                        QString InstrumentDefinitionID);
     QJsonValue getCurrencyTLA(QString Username, QString APIKey,

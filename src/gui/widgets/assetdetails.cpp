@@ -710,7 +710,6 @@ void MTAssetDetails::AddButtonClicked()
                     qstrPrimaryUnit.toStdString(),  //   Primary unit name "dollars" or "yuan"
                     qstrSymbol.toStdString(),  //  Symbol.
                     qstrTLA.toStdString(),  //  "USD", etc.
-                    100,  //   100 cents in a dollar.  Factor.
                     2,  //  A "cent" is 2 decimal places right of a "dollar." Decimal power.
                     qstrFractionalUnit.toStdString());
 
