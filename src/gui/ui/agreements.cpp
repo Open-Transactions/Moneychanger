@@ -535,6 +535,10 @@ void Agreements::disableButtons()
 
 void Agreements::on_tableViewRecurringSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
 {
+    // resume todo
+
+    // Set a Filter based on which one is clicked.
+
 
 }
 
@@ -790,9 +794,11 @@ void Agreements::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
     setAsCurrentAgreement(nSourceRow, nFolder);
 }
 
-
+//resume
 void Agreements::setAsCurrentAgreement(int nSourceRow, int nFolder) // The smart contract itself, or payment plan, that's selected.
 {
+
+
 
 }
 

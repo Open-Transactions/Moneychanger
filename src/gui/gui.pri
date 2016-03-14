@@ -92,7 +92,8 @@ FORMS += \
     $$PWD/ui/agreements.ui \
     $$PWD/widgets/pageasset_type.ui \
     $$PWD/widgets/pagecurrency_details.ui \
-    $$PWD/widgets/pagecontract_terms.ui
+    $$PWD/widgets/pagecontract_terms.ui \
+    $$PWD/widgets/pagesecurity_details.ui
 
 HEADERS += \
     $${PWD}/ui/dlgexportcash.hpp \
@@ -183,7 +184,8 @@ HEADERS += \
     $$PWD/ui/agreements.hpp \
     $$PWD/widgets/pageasset_type.hpp \
     $$PWD/widgets/pagecurrency_details.hpp \
-    $$PWD/widgets/pagecontract_terms.hpp
+    $$PWD/widgets/pagecontract_terms.hpp \
+    $$PWD/widgets/pagesecurity_details.hpp
 
 SOURCES += \
     $${PWD}/ui/dlgexportcash.cpp \
@@ -274,7 +276,8 @@ SOURCES += \
     $$PWD/ui/agreements.cpp \
     $$PWD/widgets/pageasset_type.cpp \
     $$PWD/widgets/pagecurrency_details.cpp \
-    $$PWD/widgets/pagecontract_terms.cpp
+    $$PWD/widgets/pagecontract_terms.cpp \
+    $$PWD/widgets/pagesecurity_details.cpp
 
 TRANSLATIONS += $${PWD}/translations/en_US.ts \
                 $${PWD}/translations/de_DE.ts

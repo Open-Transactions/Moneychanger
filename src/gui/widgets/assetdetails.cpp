@@ -696,23 +696,62 @@ void MTAssetDetails::AddButtonClicked()
             QString qstrNymID       = theWizard.field("NymID").toString();
             QString qstrTerms       = theWizard.field("terms").toString();
 
-            QString qstrContractName   = theWizard.field("currency_contract_name").toString();
-            QString qstrPrimaryUnit    = theWizard.field("currency_primary_unit").toString();
-            QString qstrSymbol         = theWizard.field("currency_symbol").toString();
-            QString qstrTLA            = theWizard.field("currency_tla").toString();
-            QString qstrFractionalUnit = theWizard.field("currency_fractional_unit").toString();
+            const bool bIsCurrency = theWizard.field("asset_type_currency").toBool();
+            const bool bIsSecurity = theWizard.field("asset_type_security").toBool();
+            const bool bIsBasket   = theWizard.field("asset_type_basket")  .toBool();
 
-            std::string strContractID =
-                opentxs::OTAPI_Wrap::It()->CreateCurrencyContract(
-                    qstrNymID.toStdString(),
-                    qstrContractName.toStdString(),  //  "Coinbase Dollars" (refers to the contract.)
-                    qstrTerms.toStdString(),
-                    qstrPrimaryUnit.toStdString(),  //   Primary unit name "dollars" or "yuan"
-                    qstrSymbol.toStdString(),  //  Symbol.
-                    qstrTLA.toStdString(),  //  "USD", etc.
-                    2,  //  A "cent" is 2 decimal places right of a "dollar." Decimal power.
-                    qstrFractionalUnit.toStdString());
+            QString qstrContractName;
+            QString qstrPrimaryUnit;
+            QString qstrSymbol;
+            QString qstrTLA;
+            QString qstrFractionalUnit;
 
+            std::string strContractID;
+
+            if (bIsCurrency)
+            {
+                qstrContractName   = theWizard.field("currency_contract_name").toString();
+                qstrPrimaryUnit    = theWizard.field("currency_primary_unit").toString();
+                qstrSymbol         = theWizard.field("currency_symbol").toString();
+                qstrTLA            = theWizard.field("currency_tla").toString();
+                qstrFractionalUnit = theWizard.field("currency_fractional_unit").toString();
+
+                strContractID =
+                    opentxs::OTAPI_Wrap::It()->CreateCurrencyContract(
+                        qstrNymID.toStdString(),
+                        qstrContractName.toStdString(),  //  "Coinbase Dollars" (refers to the contract.)
+                        qstrTerms.toStdString(),
+                        qstrPrimaryUnit.toStdString(),  //   Primary unit name "dollars" or "yuan"
+                        qstrSymbol.toStdString(),  //  Symbol.
+                        qstrTLA.toStdString(),  //  "USD", etc.
+                        100,  //   100 cents in a dollar.  Factor.
+                        2,  //  A "cent" is 2 decimal places right of a "dollar." Decimal power.
+                        qstrFractionalUnit.toStdString());
+            }
+            else if (bIsSecurity)
+            {
+                qstrContractName   = theWizard.field("security_contract_name").toString();
+                qstrPrimaryUnit    = theWizard.field("security_primary_unit").toString();
+                qstrSymbol         = theWizard.field("security_symbol").toString();
+                qstrTLA            = theWizard.field("security_tla").toString();
+
+                strContractID =
+                    opentxs::OTAPI_Wrap::It()->CreateSecurityContract(
+                        qstrNymID.toStdString(),
+                        qstrContractName.toStdString(),  //  "Sample Co. shares" (refers to the contract.)
+                        qstrTerms.toStdString(),
+                        qstrPrimaryUnit.toStdString(),  //   Primary unit name "shares"
+                        qstrSymbol.toStdString(),  //  Symbol.
+//                        qstrTLA.toStdString(),  //  "USD", etc.
+                        "" // empty date string.
+                        );
+            }
+            else if (bIsBasket)
+            {
+                qDebug() << "Unimplemented still. (Basket currency creation wizard.)";
+                return;
+            }
+            // ----------------------------------------------------------
             if ("" == strContractID) {
                 QMessageBox::warning(this, tr("Failed Creating Contract"),
                                      tr("Unable to create contract. Perhaps the XML contents were bad?"));

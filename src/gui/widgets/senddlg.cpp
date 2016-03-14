@@ -410,16 +410,38 @@ void MTSendDlg::on_amountEdit_editingFinished()
         std::string str_InstrumentDefinitionID(opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
         QString     amt = ui->amountEdit->text();
 
+
+
+        qDebug() << "DEBUGGING. AMOUNT TEXT: " << amt;
+
+
         if (!amt.isEmpty() && !str_InstrumentDefinitionID.empty())
         {
+
+
+            qDebug() << "Debugging 2.";
+
+
             std::string str_temp(amt.toStdString());
 
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
 
+            qDebug() << "Debugging str_temp: " << QString::fromStdString(str_temp);
+
+
             int64_t     amount               = opentxs::OTAPI_Wrap::It()->StringToAmount(str_InstrumentDefinitionID, str_temp);
+
+
+            qDebug() << "DEBUGGING. Amount: " << amount;
+
+
             std::string str_formatted_amount = opentxs::OTAPI_Wrap::It()->FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
+
+
+
             QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
+            qDebug() << "DEBUGGING. Formatted Amount: " << qstr_FinalAmount;
 
             ui->amountEdit->setText(qstr_FinalAmount);
         }

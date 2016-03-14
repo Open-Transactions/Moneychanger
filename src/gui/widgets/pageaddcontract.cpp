@@ -96,10 +96,10 @@ int MTPageAddContract::nextId() const
             if (pWizard->assetMode())
                 return 2;
             if (pWizard->serverMode())
-                return 4;
+                return 5;
         }
 
-        return 4; // goes to create page.
+        return 5; // goes to create page.
     }
 
     return QWizardPage::nextId();

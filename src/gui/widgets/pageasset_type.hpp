@@ -18,6 +18,9 @@ public:
     explicit PageAsset_Type(QWidget *parent = 0);
     ~PageAsset_Type();
 
+    //virtual
+    int nextId() const;
+
 private:
     Ui::PageAsset_Type *ui;
 };

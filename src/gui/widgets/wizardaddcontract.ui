@@ -33,14 +33,19 @@
     <string notr="true">3</string>
    </attribute>
   </widget>
-  <widget class="MTPageCreateContract" name="wizardPage4">
+  <widget class="PageSecurity_Details" name="wizardPage4">
    <attribute name="pageId">
     <string notr="true">4</string>
    </attribute>
   </widget>
-  <widget class="PageContract_Terms" name="wizardPage5">
+  <widget class="MTPageCreateContract" name="wizardPage5">
    <attribute name="pageId">
     <string notr="true">5</string>
+   </attribute>
+  </widget>
+  <widget class="PageContract_Terms" name="wizardPage6">
+   <attribute name="pageId">
+    <string notr="true">6</string>
    </attribute>
   </widget>
  </widget>
@@ -79,6 +84,12 @@
    <class>PageContract_Terms</class>
    <extends>QWizardPage</extends>
    <header>gui/widgets/pagecontract_terms.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageSecurity_Details</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pagesecurity_details.hpp</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
