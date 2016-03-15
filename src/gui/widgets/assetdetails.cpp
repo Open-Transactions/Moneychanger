@@ -751,10 +751,7 @@ void MTAssetDetails::AddButtonClicked()
                         qstrContractName.toStdString(),  //  "Sample Co. shares" (refers to the contract.)
                         qstrTerms.toStdString(),
                         qstrPrimaryUnit.toStdString(),  //   Primary unit name "shares"
-                        qstrSymbol.toStdString(),  //  Symbol.
-//                        qstrTLA.toStdString(),  //  "USD", etc.
-                        "" // empty date string.
-                        );
+                        qstrSymbol.toStdString());  //  Symbol.
             }
             else if (bIsBasket)
             {
