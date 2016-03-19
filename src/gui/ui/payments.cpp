@@ -2188,7 +2188,7 @@ void Payments::tableViewDoubleClicked(const QModelIndex &index, PaymentsProxyMod
     else
     {
         DlgExportedCash dlgExported(this, qstrPending, qstrPayment,
-                                    tr("Deposit receipt:"), QString(" "),
+                                    tr("Receipt:"), QString(" "),
                                     qstrType,
                                     qstrSubtitle, false);
         dlgExported.setWindowTitle(QString("%1: %2").arg(tr("Memo")).arg(qstrSubject));

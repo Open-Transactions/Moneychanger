@@ -6,88 +6,146 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>368</width>
-    <height>169</height>
+    <width>286</width>
+    <height>317</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>WizardPage</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Contract name:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="lineEditContractName">
-     <property name="placeholderText">
-      <string>e.g. MtGox Dollars</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Primary Unit Name:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="lineEditPrimaryUnit">
-     <property name="placeholderText">
-      <string>e.g. dollars</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Symbol:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="lineEditSymbol">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="placeholderText">
-      <string>e.g. $</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>TLA:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="lineEditTLA">
-     <property name="placeholderText">
-      <string>e.g. USD</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_5">
-     <property name="text">
-      <string>Fractional Unit Name:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1">
-    <widget class="QLineEdit" name="lineEditFractionalUnit">
-     <property name="placeholderText">
-      <string>e.g. cents</string>
-     </property>
-    </widget>
-   </item>
-  </layout>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>12</x>
+     <y>12</y>
+     <width>96</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Contract name:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEditContractName">
+   <property name="geometry">
+    <rect>
+     <x>154</x>
+     <y>12</y>
+     <width>125</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="placeholderText">
+    <string>e.g. MtGox Dollar</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>12</x>
+     <y>43</y>
+     <width>120</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Primary Unit Name:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEditPrimaryUnit">
+   <property name="geometry">
+    <rect>
+     <x>154</x>
+     <y>43</y>
+     <width>125</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="placeholderText">
+    <string>e.g. dollars</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>12</x>
+     <y>74</y>
+     <width>51</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Symbol:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEditSymbol">
+   <property name="geometry">
+    <rect>
+     <x>154</x>
+     <y>74</y>
+     <width>125</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="placeholderText">
+    <string>e.g. $</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>12</x>
+     <y>105</y>
+     <width>29</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>TLA:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEditTLA">
+   <property name="geometry">
+    <rect>
+     <x>154</x>
+     <y>105</y>
+     <width>125</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="placeholderText">
+    <string>e.g. USD</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5">
+   <property name="geometry">
+    <rect>
+     <x>12</x>
+     <y>136</y>
+     <width>134</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Fractional Unit Name:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEditFractionalUnit">
+   <property name="geometry">
+    <rect>
+     <x>154</x>
+     <y>136</y>
+     <width>125</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="placeholderText">
+    <string>e.g. cents</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

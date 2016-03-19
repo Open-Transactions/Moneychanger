@@ -86,7 +86,7 @@ static void setup_agreement_tableview(QTableView * pView, QAbstractItemModel * p
 //        AgreementsProxyModel * pProxyModel = static_cast<AgreementsProxyModel *>(pProxyModel);
 
 
-      pView->sortByColumn(7, Qt::DescendingOrder); // The timestamp ends up at index 7 in all the proxy views.
+      pView->sortByColumn(5, Qt::DescendingOrder); // The timestamp ends up at index 5 in all the proxy views.
 
 //        qDebug() << "SORT COLUMN: " << proxyIndex.column() << "\n";
 
@@ -121,7 +121,7 @@ static void setup_receipt_tableview(QTableView * pView, QAbstractItemModel * pPr
 //        AgreementReceiptsProxyModel * pProxyModel = static_cast<AgreementReceiptsProxyModel *>(pProxyModel);
 
 
-      pView->sortByColumn(7, Qt::DescendingOrder); // The timestamp ends up at index 7 in all the proxy views.
+      pView->sortByColumn(2, Qt::DescendingOrder); // The timestamp ends up at index 2 in all the proxy views.
 
 //        qDebug() << "SORT COLUMN: " << proxyIndex.column() << "\n";
 
@@ -442,115 +442,325 @@ void Agreements::disableButtons()
     ui->toolButtonDelete ->setEnabled(false);
 }
 
-//void Agreements::on_MarkAsRead_timer()
-//{
-//    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getAgreementModel();
+void Agreements::on_MarkAsRead_timer()
+{
+    QPointer<ModelAgreementReceipts> pModel = DBHandler::getInstance()->getAgreementReceiptModel();
 
-//    if (!pModel)
-//        return;
-//    // ------------------------------
-//    bool bEditing = false;
+    if (!pModel)
+        return;
+    // ------------------------------
+    bool bEditing = false;
 
-//    while (!listRecordsToMarkAsRead_.isEmpty())
-//    {
-//        QModelIndex index = listRecordsToMarkAsRead_.front();
-//        listRecordsToMarkAsRead_.pop_front();
-//        // ------------------------------------
-//        if (!index.isValid())
-//            continue;
-//        // ------------------------------------
-//        if (!bEditing)
-//        {
-//            bEditing = true;
-//            pModel->database().transaction();
-//        }
-//        // ------------------------------------
-//        pModel->setData(index, QVariant(1)); // 1 for "true" in sqlite. "Yes, we've now read this payment. Mark it as read."
-//    } // while
-//    // ------------------------------
-//    if (bEditing)
-//    {
-//        if (pModel->submitAll())
-//        {
-//            pModel->database().commit();
-//            // ------------------------------------
-//            QTimer::singleShot(0, this, SLOT(RefreshPayments()));
-//        }
-//        else
-//        {
-//            pModel->database().rollback();
-//            qDebug() << "Database Write Error" <<
-//                       "The database reported an error: " <<
-//                       pModel->lastError().text();
-//        }
-//    }
-//}
+    while (!listRecordsToMarkAsRead_.isEmpty())
+    {
+        QModelIndex index = listRecordsToMarkAsRead_.front();
+        listRecordsToMarkAsRead_.pop_front();
+        // ------------------------------------
+        if (!index.isValid())
+            continue;
+        // ------------------------------------
+        if (!bEditing)
+        {
+            bEditing = true;
+            pModel->database().transaction();
+        }
+        // ------------------------------------
+        pModel->setData(index, QVariant(1)); // 1 for "true" in sqlite. "Yes, we've now read this receipt. Mark it as read."
+    } // while
+    // ------------------------------
+    if (bEditing)
+    {
+        if (pModel->submitAll())
+        {
+            pModel->database().commit();
+            // ------------------------------------
+            QTimer::singleShot(0, this, SLOT(RefreshReceipts()));
+        }
+        else
+        {
+            pModel->database().rollback();
+            qDebug() << "Database Write Error" <<
+                       "The database reported an error: " <<
+                       pModel->lastError().text();
+        }
+    }
+}
 
-//void Agreements::on_MarkAsUnread_timer()
-//{
-//    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getAgreementModel();
+void Agreements::on_MarkAsUnread_timer()
+{
+    QPointer<ModelAgreementReceipts> pModel = DBHandler::getInstance()->getAgreementReceiptModel();
 
-//    if (!pModel)
-//        return;
-//    // ------------------------------
-//    bool bEditing = false;
+    if (!pModel)
+        return;
+    // ------------------------------
+    bool bEditing = false;
 
-//    while (!listRecordsToMarkAsUnread_.isEmpty())
-//    {
-//        QModelIndex index = listRecordsToMarkAsUnread_.front();
-//        listRecordsToMarkAsUnread_.pop_front();
-//        // ------------------------------------
-//        if (!index.isValid())
-//            continue;
-//        // ------------------------------------
-//        if (!bEditing)
-//        {
-//            bEditing = true;
-//            pModel->database().transaction();
-//        }
-//        // ------------------------------------
-//        pModel->setData(index, QVariant(0)); // 0 for "false" in sqlite. "This payment is now marked UNREAD."
-//    } // while
-//    // ------------------------------
-//    if (bEditing)
-//    {
-//        if (pModel->submitAll())
-//        {
-//            pModel->database().commit();
-//            // ------------------------------------
-//            QTimer::singleShot(0, this, SLOT(RefreshPayments()));
-//        }
-//        else
-//        {
-//            pModel->database().rollback();
-//            qDebug() << "Database Write Error" <<
-//                       "The database reported an error: " <<
-//                       pModel->lastError().text();
-//        }
-//    }
-//}
+    while (!listRecordsToMarkAsUnread_.isEmpty())
+    {
+        QModelIndex index = listRecordsToMarkAsUnread_.front();
+        listRecordsToMarkAsUnread_.pop_front();
+        // ------------------------------------
+        if (!index.isValid())
+            continue;
+        // ------------------------------------
+        if (!bEditing)
+        {
+            bEditing = true;
+            pModel->database().transaction();
+        }
+        // ------------------------------------
+        pModel->setData(index, QVariant(0)); // 0 for "false" in sqlite. "This receipt is now marked UNREAD."
+    } // while
+    // ------------------------------
+    if (bEditing)
+    {
+        if (pModel->submitAll())
+        {
+            pModel->database().commit();
+            // ------------------------------------
+            QTimer::singleShot(0, this, SLOT(RefreshReceipts()));
+        }
+        else
+        {
+            pModel->database().rollback();
+            qDebug() << "Database Write Error" <<
+                       "The database reported an error: " <<
+                       pModel->lastError().text();
+        }
+    }
+}
 
 
 
+void Agreements::setAsCurrentAgreement(int nSourceRow, int nFolder) // The smart contract itself, or payment plan, that's selected.
+{
+    if (-1 == nSourceRow || -1 == nFolder)
+        return;
+
+    QPointer<ModelAgreements> pModel = DBHandler::getInstance()->getAgreementModel();
+
+    if (!pModel)
+        return;
+    // -------------------
+    QTableView * pTableView = (0 == nFolder) ? ui->tableViewRecurring : ui->tableViewSmartContracts;
+    if (nullptr == pTableView) return; // should never happen.
+    QPointer<AgreementsProxyModel> & pProxyModel = (0 == nFolder) ? pProxyModelRecurring_ : pProxyModelSmartContracts_;
+    // ----------------------------
+    // If the table view we're switching to, is not the current one, then we
+    // need to make it the current one.
+    //
+    if (pTableView != pCurrentAgreementTableView_)
+    {
+        ui->tabWidgetAgreements->setCurrentIndex((0 == nFolder) ? 1 : 0);
+    }
+    // ----------------------------
+    QModelIndex sourceIndex = pModel->index(nSourceRow, AGRMT_SOURCE_COL_AGRMT_ID);
+    QModelIndex proxyIndex;
+    if (sourceIndex.isValid())
+        proxyIndex = pProxyModel->mapFromSource(sourceIndex);
+    if (proxyIndex.isValid())
+        pTableView->setCurrentIndex(proxyIndex);
+}
+
+void Agreements::setAsCurrentParty(int nSourceRow) // You may have multiple signer Nyms on the same agreement, in the same wallet
+{
+
+}
+
+void Agreements::setAsCurrentPayment(int nSourceRow, int nFolder) // the recurring paymentReceipts for each smart contract or payment plan.
+{
+
+}
+
+// -------------------------------------------------------
+
+//QPointer<AgreementsProxyModel> pProxyModelRecurring_;
+//QPointer<AgreementsProxyModel> pProxyModelSmartContracts_;
+
+//QPointer<AgreementReceiptsProxyModel> pReceiptProxyModelInbox_;
+//QPointer<AgreementReceiptsProxyModel> pReceiptProxyModelOutbox_;
+
+//QTableView         * pCurrentAgreementTableView_ = nullptr;
+//QTableView         * pCurrentPartyTableView_     = nullptr;
+//QTableView         * pCurrentReceiptTableView_   = nullptr;
+
+//AgreementsProxyModel        * pCurrentAgreementProxyModel_ = nullptr;
+//AgreementReceiptsProxyModel * pCurrentReceiptProxyModel_   = nullptr;
+
+//#define AGRMT_SOURCE_COL_AGRMT_ID 0
+//#define AGRMT_SOURCE_COL_HAVE_READ 1
+//#define AGRMT_SOURCE_COL_TXN_ID_DISPLAY 2
+//#define AGRMT_SOURCE_COL_NOTARY_ID 3
+//#define AGRMT_SOURCE_COL_CONTRACT_ID 4
+//#define AGRMT_SOURCE_COL_NEWEST_RECEIPT_ID 5
+//#define AGRMT_SOURCE_COL_NEWEST_KNOWN_STATE 6
+//#define AGRMT_SOURCE_COL_TIMESTAMP 7
+//#define AGRMT_SOURCE_COL_MEMO 8
+//#define AGRMT_SOURCE_COL_FOLDER 9
 
 void Agreements::on_tableViewRecurringSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
 {
-    // resume todo
+    int agreement_id = 0;
 
-    // Set a Filter based on which one is clicked.
+    if (current.isValid())
+    {
+        nLastSelectedRecurringIndex_ = current.row();
 
+        QPointer<ModelAgreements> pModel = DBHandler::getInstance()->getAgreementModel();
 
+        if (pModel && pProxyModelRecurring_)
+        {
+            QModelIndex sourceIndex = pProxyModelRecurring_->mapToSource(current);
+
+            QModelIndex agreementIdSourceIndex  = pProxyModelRecurring_->sourceModel()->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_AGRMT_ID,       sourceIndex);
+//            QModelIndex haveReadSourceIndex     = pProxyModelRecurring_->sourceModel()->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_HAVE_READ,      sourceIndex);
+//            QModelIndex TxnIdDisplaySourceIndex = pProxyModelRecurring_->sourceModel()->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_TXN_ID_DISPLAY, sourceIndex);
+//            QModelIndex NotaryIdSourceIndex     = pProxyModelRecurring_->sourceModel()->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_NOTARY_ID,      sourceIndex);
+//            QModelIndex ContractIdSourceIndex   = pProxyModelRecurring_->sourceModel()->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_CONTRACT_ID,    sourceIndex);
+//            QModelIndex timestampSourceIndex    = pProxyModelRecurring_->sourceModel()->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_TIMESTAMP,      sourceIndex);
+//            QModelIndex folderSourceIndex       = pProxyModelRecurring_->sourceModel()->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_FOLDER,         sourceIndex);
+
+//            QModelIndex timestampIndex    = pProxyModelRecurring_->mapFromSource(timestampSourceIndex);
+
+            QVariant varagrmtid   = pModel->data(agreementIdSourceIndex);
+//            QVariant varHaveRead  = pModel->data(haveReadSourceIndex);
+//            QVariant varTimestamp = pProxyModelRecurring_->data(timestampIndex);
+
+//            QString qstrSubject   = varSubject.isValid()   ? varSubject.toString()   : "";
+//            QString qstrTimestamp = varTimestamp.isValid() ? varTimestamp.toString() : "";
+            // ----------------------------------------------------------
+            agreement_id = varagrmtid.isValid() ? varagrmtid.toInt() : 0;
+
+        } // if pModel
+    }
+
+    if (agreement_id > 0)
+    {
+        if (pReceiptProxyModelInbox_)  pReceiptProxyModelInbox_ ->setFilterAgreementId(agreement_id);
+        if (pReceiptProxyModelOutbox_) pReceiptProxyModelOutbox_->setFilterAgreementId(agreement_id);
+    }
+    else
+    {
+        if (pReceiptProxyModelInbox_)  pReceiptProxyModelInbox_ ->setFilterAgreementId(0);
+        if (pReceiptProxyModelOutbox_) pReceiptProxyModelOutbox_->setFilterAgreementId(0);
+    }
+
+    RefreshReceipts();
+
+//    if ((nullptr != pCurrentReceiptProxyModel_) &&
+//        (nullptr != pCurrentReceiptTableView_)  &&
+//        (pCurrentReceiptProxyModel_->rowCount() > 0))
+//    {
+//        QModelIndex tableIndex = pCurrentReceiptTableView_->currentIndex();
+
+//        // If nothing is selected, then select the first index.
+//        //
+//        if (!tableIndex.isValid())
+//        {
+//            pCurrentReceiptTableView_->selectRow(0);
+//        }
+//    }
 }
 
 void Agreements::on_tableViewSmartContractsSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
 {
+    int agreement_id = 0;
 
+    if (current.isValid())
+    {
+        nLastSelectedContractIndex_  = current.row();
+
+        QPointer<ModelAgreements> pModel = DBHandler::getInstance()->getAgreementModel();
+
+        if (pModel && pProxyModelSmartContracts_)
+        {
+            QModelIndex sourceIndex = pProxyModelSmartContracts_->mapToSource(current);
+
+            QModelIndex agreementIdSourceIndex  = pProxyModelSmartContracts_->sourceModel()->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_AGRMT_ID,       sourceIndex);
+//            QModelIndex haveReadSourceIndex     = pProxyModelSmartContracts_->sourceModel()->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_HAVE_READ,      sourceIndex);
+//            QModelIndex TxnIdDisplaySourceIndex = pProxyModelSmartContracts_->sourceModel()->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_TXN_ID_DISPLAY, sourceIndex);
+//            QModelIndex NotaryIdSourceIndex     = pProxyModelSmartContracts_->sourceModel()->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_NOTARY_ID,      sourceIndex);
+//            QModelIndex ContractIdSourceIndex   = pProxyModelSmartContracts_->sourceModel()->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_CONTRACT_ID,    sourceIndex);
+//            QModelIndex timestampSourceIndex    = pProxyModelSmartContracts_->sourceModel()->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_TIMESTAMP,      sourceIndex);
+//            QModelIndex folderSourceIndex       = pProxyModelSmartContracts_->sourceModel()->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_FOLDER,         sourceIndex);
+
+//            QModelIndex timestampIndex    = pProxyModelSmartContracts_->mapFromSource(timestampSourceIndex);
+
+            QVariant varagrmtid   = pModel->data(agreementIdSourceIndex);
+//            QVariant varHaveRead  = pModel->data(haveReadSourceIndex);
+//            QVariant varTimestamp = pProxyModelSmartContracts_->data(timestampIndex);
+
+//            QString qstrSubject   = varSubject.isValid()   ? varSubject.toString()   : "";
+//            QString qstrTimestamp = varTimestamp.isValid() ? varTimestamp.toString() : "";
+            // ----------------------------------------------------------
+            agreement_id = varagrmtid.isValid() ? varagrmtid.toInt() : 0;
+        }
+    }
+
+    if (agreement_id > 0)
+    {
+        if (pReceiptProxyModelInbox_)  pReceiptProxyModelInbox_ ->setFilterAgreementId(agreement_id);
+        if (pReceiptProxyModelOutbox_) pReceiptProxyModelOutbox_->setFilterAgreementId(agreement_id);
+    }
+    else
+    {
+        if (pReceiptProxyModelInbox_)  pReceiptProxyModelInbox_ ->setFilterAgreementId(0);
+        if (pReceiptProxyModelOutbox_) pReceiptProxyModelOutbox_->setFilterAgreementId(0);
+    }
+
+    RefreshReceipts();
+
+//    if ((nullptr != pCurrentReceiptProxyModel_) &&
+//        (nullptr != pCurrentReceiptTableView_)  &&
+//        (pCurrentReceiptProxyModel_->rowCount() > 0))
+//    {
+//        QModelIndex tableIndex = pCurrentReceiptTableView_->currentIndex();
+
+//        // If nothing is selected, then select the first index.
+//        //
+//        if (!tableIndex.isValid())
+//        {
+//            pCurrentReceiptTableView_->selectRow(0);
+//        }
+//    }
 }
+
+// -------------------------------------------------------
 
 void Agreements::on_tableViewPartiesSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
 {
 
 }
+
+// -------------------------------------------------------
+
+//#define AGRMT_RECEIPT_COL_AGRMT_RECEIPT_KEY 0
+//#define AGRMT_RECEIPT_COL_AGRMT_ID 1
+//#define AGRMT_RECEIPT_COL_RECEIPT_ID 2
+//#define AGRMT_RECEIPT_COL_TIMESTAMP 3
+//#define AGRMT_RECEIPT_COL_HAVE_READ 4
+//#define AGRMT_RECEIPT_COL_TXN_ID_DISPLAY 5
+//#define AGRMT_RECEIPT_COL_EVENT_ID 6
+//#define AGRMT_RECEIPT_COL_MEMO 7
+//#define AGRMT_RECEIPT_COL_MY_ASSET_TYPE 8
+//#define AGRMT_RECEIPT_COL_MY_NYM 9
+//#define AGRMT_RECEIPT_COL_MY_ACCT 10
+//#define AGRMT_RECEIPT_COL_MY_ADDR 11
+//#define AGRMT_RECEIPT_COL_SENDER_NYM 12
+//#define AGRMT_RECEIPT_COL_SENDER_ACCT 13
+//#define AGRMT_RECEIPT_COL_SENDER_ADDR 14
+//#define AGRMT_RECEIPT_COL_RECIP_NYM 15
+//#define AGRMT_RECEIPT_COL_RECIP_ACCT 16
+//#define AGRMT_RECEIPT_COL_RECIP_ADDR 17
+//#define AGRMT_RECEIPT_COL_AMOUNT 18
+//#define AGRMT_RECEIPT_COL_FOLDER 19
+//#define AGRMT_RECEIPT_COL_METHOD_TYPE 20
+//#define AGRMT_RECEIPT_COL_METHOD_TYPE_DISP 21
+//#define AGRMT_RECEIPT_COL_NOTARY_ID 22
+//#define AGRMT_RECEIPT_COL_DESCRIPTION 23
+//#define AGRMT_RECEIPT_COL_RECORD_NAME 24
+//#define AGRMT_RECEIPT_COL_INSTRUMENT_TYPE 25
+//#define AGRMT_RECEIPT_COL_FLAGS 26
 
 void Agreements::on_tableViewSentSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
 {
@@ -569,8 +779,10 @@ void Agreements::on_tableViewSentSelectionModel_currentRowChanged(const QModelIn
         {
             QModelIndex sourceIndex = pReceiptProxyModelOutbox_->mapToSource(current);
 
-            QModelIndex haveReadSourceIndex  = pReceiptProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_HAVE_READ, sourceIndex);
-            QModelIndex agreementIdSourceIndex    = pReceiptProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_AGRMT_ID, sourceIndex);
+            QModelIndex haveReadSourceIndex    = pReceiptProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_HAVE_READ,  sourceIndex);
+            QModelIndex agreementIdSourceIndex = pReceiptProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_AGRMT_ID,   sourceIndex);
+            QModelIndex receiptIdSourceIndex   = pReceiptProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_RECEIPT_ID, sourceIndex);
+
 //            QModelIndex subjectSourceIndex   = pReceiptProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_MEMO,      sourceIndex);
 //            QModelIndex senderSourceIndex    = pReceiptProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_MY_NYM,    sourceIndex);
 //            QModelIndex recipientSourceIndex = pReceiptProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_RECIP_NYM, sourceIndex);
@@ -582,6 +794,7 @@ void Agreements::on_tableViewSentSelectionModel_currentRowChanged(const QModelIn
 //            QModelIndex timestampIndex    = pPmntProxyModelOutbox_->mapFromSource(timestampSourceIndex);
 
             QVariant varagrmtid   = pModel->data(agreementIdSourceIndex);
+            QVariant varrcptid    = pModel->data(receiptIdSourceIndex);
             QVariant varHaveRead  = pModel->data(haveReadSourceIndex);
 //            QVariant varSubject   = pPmntProxyModelOutbox_->data(subjectIndex);
 //            QVariant varSender    = pPmntProxyModelOutbox_->data(senderIndex);
@@ -594,9 +807,10 @@ void Agreements::on_tableViewSentSelectionModel_currentRowChanged(const QModelIn
 //            QString qstrTimestamp = varTimestamp.isValid() ? varTimestamp.toString() : "";
             // ----------------------------------------------------------
             int agreement_id = varagrmtid.isValid() ? varagrmtid.toInt() : 0;
+            int receipt_id   = varrcptid.isValid()  ? varrcptid.toInt()  : 0;
             const bool bHaveRead = varHaveRead.isValid() ? varHaveRead.toBool() : false;
 
-            if (!bHaveRead && (agreement_id > 0)) // It's unread, so we need to set it as read.
+            if (!bHaveRead && (receipt_id > 0)) // It's unread, so we need to set it as read.
             {
                 listRecordsToMarkAsRead_.append(haveReadSourceIndex);
                 QTimer::singleShot(1000, this, SLOT(on_MarkAsRead_timer()));
@@ -621,8 +835,10 @@ void Agreements::on_tableViewReceivedSelectionModel_currentRowChanged(const QMod
         {
             QModelIndex sourceIndex = pReceiptProxyModelInbox_->mapToSource(current);
 
-            QModelIndex haveReadSourceIndex  = pReceiptProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_HAVE_READ,  sourceIndex);
-            QModelIndex agreementIdSourceIndex    = pReceiptProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_AGRMT_ID, sourceIndex);
+            QModelIndex haveReadSourceIndex    = pReceiptProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_HAVE_READ,  sourceIndex);
+            QModelIndex agreementIdSourceIndex = pReceiptProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_AGRMT_ID, sourceIndex);
+            QModelIndex receiptIdSourceIndex   = pReceiptProxyModelOutbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_RECEIPT_ID, sourceIndex);
+
 //            QModelIndex subjectSourceIndex   = pReceiptProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_MEMO,       sourceIndex);
 //            QModelIndex senderSourceIndex    = pReceiptProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_SENDER_NYM, sourceIndex);
 //            QModelIndex recipientSourceIndex = pReceiptProxyModelInbox_->sourceModel()->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_MY_NYM,     sourceIndex);
@@ -634,6 +850,7 @@ void Agreements::on_tableViewReceivedSelectionModel_currentRowChanged(const QMod
 //            QModelIndex timestampIndex    = pReceiptProxyModelInbox_->mapFromSource(timestampSourceIndex);
 
             QVariant varagrmtid   = pModel->data(agreementIdSourceIndex);
+            QVariant varrcptid    = pModel->data(receiptIdSourceIndex);
             QVariant varHaveRead  = pModel->data(haveReadSourceIndex);
 //            QVariant varSubject   = pReceiptProxyModelInbox_->data(subjectIndex);
 //            QVariant varSender    = pReceiptProxyModelInbox_->data(senderIndex);
@@ -653,9 +870,10 @@ void Agreements::on_tableViewReceivedSelectionModel_currentRowChanged(const QMod
 
             // ----------------------------------------------------------
             int agreement_id = varagrmtid.isValid() ? varagrmtid.toInt() : 0;
+            int receipt_id   = varrcptid.isValid()  ? varrcptid.toInt()  : 0;
             const bool bHaveRead = varHaveRead.isValid() ? varHaveRead.toBool() : false;
 
-            if (!bHaveRead && (agreement_id > 0)) // It's unread, so we need to set it as read.
+            if (!bHaveRead && (receipt_id > 0)) // It's unread, so we need to set it as read.
             {
                 listRecordsToMarkAsRead_.append(haveReadSourceIndex);
                 QTimer::singleShot(1000, this, SLOT(on_MarkAsRead_timer()));
@@ -670,6 +888,13 @@ void Agreements::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 {
     if (!already_init)
     {
+        // Hide the signers stuff for now.
+        //
+        ui->checkBoxFilterByNym->setVisible(false);
+        ui->labelSigners->setVisible(false);
+        ui->tableViewMySigners->setVisible(false);
+        ui->horizontalSpacerSigners->changeSize(1,1,QSizePolicy::Fixed);
+        // ----------------------------------
         ui->userBar->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");
         // ----------------------------------
         QPixmap pixmapSize(":/icons/icons/user.png"); // This is here only for size purposes.
@@ -779,7 +1004,16 @@ void Agreements::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 //        ui->splitter->setStretchFactor(0, 1);
 //        ui->splitter->setStretchFactor(1, 5);
         // ------------------------
-        on_tabWidgetAgreements_currentChanged(0);
+
+//        if (!Moneychanger::It()->expertMode())
+        {
+            QList<int> list;
+            list.append(100);
+            list.append(0);
+            ui->splitter->setSizes(list);
+        }
+
+        on_tabWidgetAgreements_currentChanged(0); // NOTE: Why is this here again?
 
         /** Flag Already Init **/
         already_init = true;
@@ -793,54 +1027,6 @@ void Agreements::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
     // -------------------------------------------
     setAsCurrentAgreement(nSourceRow, nFolder);
 }
-
-//resume
-void Agreements::setAsCurrentAgreement(int nSourceRow, int nFolder) // The smart contract itself, or payment plan, that's selected.
-{
-
-
-
-}
-
-void Agreements::setAsCurrentParty(int nSourceRow) // You may have multiple signer Nyms on the same agreement, in the same wallet
-{
-
-}
-
-void Agreements::setAsCurrentPayment(int nSourceRow, int nFolder) // the recurring paymentReceipts for each smart contract or payment plan.
-{
-
-}
-
-//void Agreements::setAsCurrentPayment(int nSourceRow, int nFolder)
-//{
-//    if (-1 == nSourceRow || -1 == nFolder)
-//        return;
-
-//    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getAgreementModel();
-
-//    if (!pModel)
-//        return;
-//    // -------------------
-//    QTableView * pTableView = (0 == nFolder) ? ui->tableViewSent : ui->tableViewReceived;
-//    if (nullptr == pTableView) return; // should never happen.
-//    QPointer<PaymentsProxyModel> & pProxyModel = (0 == nFolder) ? pPmntProxyModelOutbox_ : pPmntProxyModelInbox_;
-//    // ----------------------------
-//    // If the table view we're switching to, is not the current one, then we
-//    // need to make it the current one.
-//    //
-//    if (pTableView != pCurrentTabTableView_)
-//    {
-//        ui->tabWidget->setCurrentIndex((0 == nFolder) ? 1 : 0);
-//    }
-//    // ----------------------------
-//    QModelIndex sourceIndex = pModel->index(nSourceRow, PMNT_SOURCE_COL_PMNT_ID);
-//    QModelIndex proxyIndex;
-//    if (sourceIndex.isValid())
-//        proxyIndex = pProxyModel->mapFromSource(sourceIndex);
-//    if (proxyIndex.isValid())
-//        pTableView->setCurrentIndex(proxyIndex);
-//}
 
 
 
@@ -857,18 +1043,31 @@ void Agreements::onClaimsUpdatedForNym(QString nymId)
 void Agreements::RefreshAgreements()
 {
 //    bRefreshingAfterUpdatedClaims_ = false;
-//    // -------------------------------------------
 
+    if (nullptr == pCurrentAgreementTableView_ || nullptr == pCurrentAgreementProxyModel_)
+        return;
+    // -------------------------------------------
+    const bool bOnSmartContractTab = (pCurrentAgreementTableView_ == ui->tableViewSmartContracts);
+    int & nLastSelectedIndex = bOnSmartContractTab ? nLastSelectedContractIndex_ : nLastSelectedRecurringIndex_;
+
+    QModelIndex currentIndex = pCurrentAgreementTableView_->currentIndex();
+
+    if (currentIndex.isValid())
+        nLastSelectedIndex = currentIndex.row();
+    else if (pCurrentAgreementProxyModel_->rowCount() <= 0)
+        nLastSelectedIndex = -1;
+    else if (nLastSelectedIndex >= pCurrentAgreementProxyModel_->rowCount())
+        nLastSelectedIndex = 0;
+    // ------------------------------------------------------
     QPointer<ModelAgreements> pModel = DBHandler::getInstance()->getAgreementModel();
 
     if (pModel)
     {
         pModel->select();
     }
-    ui->tableViewRecurring->reset();
-    ui->tableViewSmartContracts->reset();
-    ui->tableViewSent->reset();
-    ui->tableViewReceived->reset();
+
+//    ui->tableViewRecurring->reset();        // Might be unnecessary. todo remove.
+//    ui->tableViewSmartContracts->reset();   // That goes for both of these.
 //    // -------------------------------------------
 //    PMNT_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
 
@@ -969,31 +1168,57 @@ void Agreements::RefreshAgreements()
     ui->tableViewSmartContracts->resizeColumnsToContents();
     ui->tableViewSmartContracts->resizeRowsToContents();
 
-    ui->tableViewSent->resizeColumnsToContents();
-    ui->tableViewSent->resizeRowsToContents();
-
-    ui->tableViewReceived->resizeColumnsToContents();
-    ui->tableViewReceived->resizeRowsToContents();
-
+//    ui->tableViewSent->resizeColumnsToContents();
+//    ui->tableViewSent->resizeRowsToContents();
+//    ui->tableViewReceived->resizeColumnsToContents();
+//    ui->tableViewReceived->resizeRowsToContents();
 
     ui->tableViewRecurring->horizontalHeader()->setStretchLastSection(true);
     ui->tableViewSmartContracts->horizontalHeader()->setStretchLastSection(true);
-    ui->tableViewSent->horizontalHeader()->setStretchLastSection(true);
-    ui->tableViewReceived->horizontalHeader()->setStretchLastSection(true);
+    // ------------------------------------------
+    int nIndexToSelect = -1;
 
+    if ((-1 != nLastSelectedIndex) &&
+        (nLastSelectedIndex < pCurrentAgreementProxyModel_->rowCount()))
+        nIndexToSelect = nLastSelectedIndex;
+    // ------------------------------------------
+    if ((-1 == nIndexToSelect) && (pCurrentAgreementProxyModel_->rowCount() > 0))
+        nIndexToSelect = 0;
+    // ------------------------------------------
+//    QModelIndex previous = pCurrentAgreementTableView_->currentIndex();
+//    pCurrentAgreementTableView_->blockSignals(true);
+
+    pCurrentAgreementTableView_->selectRow(nIndexToSelect);
+
+//    pCurrentAgreementTableView_->blockSignals(false);
+
+//    if (bOnSmartContractTab)
+//        on_tableViewSmartContractsSelectionModel_currentRowChanged(pCurrentAgreementTableView_->currentIndex(), previous);
+//    else
+//        on_tableViewRecurringSelectionModel_currentRowChanged(pCurrentAgreementTableView_->currentIndex(), previous);
+
+//    ui->tableViewSent->horizontalHeader()->setStretchLastSection(true);
+//    ui->tableViewReceived->horizontalHeader()->setStretchLastSection(true);
 }
+
+
 
 void Agreements::RefreshReceipts()
 {
-//    bRefreshingAfterUpdatedClaims_ = false;
-//    // -------------------------------------------
+    bRefreshingAfterUpdatedClaims_ = false;
+    // ------------------------------------------------------
+    QPointer<ModelAgreementReceipts> pModel = DBHandler::getInstance()->getAgreementReceiptModel();
+
+    if (pModel)
+    {
+        pModel->select();
+    }
+    // -------------------------------------------
 //    ui->tableViewSent->reset();
 //    ui->tableViewReceived->reset();
-//    // -------------------------------------------
-//    PMNT_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
-
-//    bool bIsInbox = (0 == ui->tabWidget->currentIndex());
-//    int  nPmntID   = bIsInbox ? get_inbox_pmntid_for_tree_item(theItem) : get_outbox_pmntid_for_tree_item(theItem);
+    // -------------------------------------------
+//    bool bIsInbox = (0 == ui->tabWidgetReceipts->currentIndex());
+//    int  nPmntID  = bIsInbox ? get_inbox_pmntid_for_tree_item(theItem) : get_outbox_pmntid_for_tree_item(theItem);
 
 //    if (0 == nPmntID) // There's no "current selected payment ID" set for this tree item.
 //    {
@@ -1074,14 +1299,14 @@ void Agreements::RefreshReceipts()
 //            }
 //        }
 //    }
-//    // -------------------------------------------
-//    ui->tableViewSent->resizeColumnsToContents();
-//    ui->tableViewSent->resizeRowsToContents();
-//    ui->tableViewReceived->resizeColumnsToContents();
-//    ui->tableViewReceived->resizeRowsToContents();
+    // -------------------------------------------
+    ui->tableViewSent->resizeColumnsToContents();
+    ui->tableViewSent->resizeRowsToContents();
+    ui->tableViewReceived->resizeColumnsToContents();
+    ui->tableViewReceived->resizeRowsToContents();
 
-//    ui->tableViewSent->horizontalHeader()->setStretchLastSection(true);
-//    ui->tableViewReceived->horizontalHeader()->setStretchLastSection(true);
+    ui->tableViewSent->horizontalHeader()->setStretchLastSection(true);
+    ui->tableViewReceived->horizontalHeader()->setStretchLastSection(true);
 }
 
 // --------------------------------------------------
@@ -1692,89 +1917,131 @@ void Agreements::tableViewAgreementsDoubleClicked(const QModelIndex &index, Agre
 
 }
 
+//#define AGRMT_SOURCE_COL_AGRMT_ID 0
+//#define AGRMT_SOURCE_COL_HAVE_READ 1
+//#define AGRMT_SOURCE_COL_TXN_ID_DISPLAY 2
+//#define AGRMT_SOURCE_COL_NOTARY_ID 3
+//#define AGRMT_SOURCE_COL_CONTRACT_ID 4
+//#define AGRMT_SOURCE_COL_NEWEST_RECEIPT_ID 5
+//#define AGRMT_SOURCE_COL_NEWEST_KNOWN_STATE 6
+//#define AGRMT_SOURCE_COL_TIMESTAMP 7
+//#define AGRMT_SOURCE_COL_MEMO 8
+//#define AGRMT_SOURCE_COL_FOLDER 9
+//
+//#define AGRMT_RECEIPT_COL_AGRMT_RECEIPT_KEY 0
+//#define AGRMT_RECEIPT_COL_AGRMT_ID 1
+//#define AGRMT_RECEIPT_COL_RECEIPT_ID 2
+//#define AGRMT_RECEIPT_COL_TIMESTAMP 3
+//#define AGRMT_RECEIPT_COL_HAVE_READ 4
+//#define AGRMT_RECEIPT_COL_TXN_ID_DISPLAY 5
+//#define AGRMT_RECEIPT_COL_EVENT_ID 6
+//#define AGRMT_RECEIPT_COL_MEMO 7
+//#define AGRMT_RECEIPT_COL_MY_ASSET_TYPE 8
+//#define AGRMT_RECEIPT_COL_MY_NYM 9
+//#define AGRMT_RECEIPT_COL_MY_ACCT 10
+//#define AGRMT_RECEIPT_COL_MY_ADDR 11
+//#define AGRMT_RECEIPT_COL_SENDER_NYM 12
+//#define AGRMT_RECEIPT_COL_SENDER_ACCT 13
+//#define AGRMT_RECEIPT_COL_SENDER_ADDR 14
+//#define AGRMT_RECEIPT_COL_RECIP_NYM 15
+//#define AGRMT_RECEIPT_COL_RECIP_ACCT 16
+//#define AGRMT_RECEIPT_COL_RECIP_ADDR 17
+//#define AGRMT_RECEIPT_COL_AMOUNT 18
+//#define AGRMT_RECEIPT_COL_FOLDER 19
+//#define AGRMT_RECEIPT_COL_METHOD_TYPE 20
+//#define AGRMT_RECEIPT_COL_METHOD_TYPE_DISP 21
+//#define AGRMT_RECEIPT_COL_NOTARY_ID 22
+//#define AGRMT_RECEIPT_COL_DESCRIPTION 23
+//#define AGRMT_RECEIPT_COL_RECORD_NAME 24
+//#define AGRMT_RECEIPT_COL_INSTRUMENT_TYPE 25
+//#define AGRMT_RECEIPT_COL_FLAGS 26
+
+// ----------------------------------------------------------
+//int  GetOrCreateLiveAgreementId(const int64_t transNumDisplay, const QString & notaryID, const QString & qstrEncodedMemo, const int nFolder); // returns nAgreementId
+//bool UpdateLiveAgreementRecord(const int nAgreementId, const int64_t nNewestReceiptNum, const int nNewestKnownState, const int64_t timestamp);
+// ------------------------------
+// Why do we apparently have 2 receipt IDs? (ReceiptNum and AgreementReceiptKey)
+// The former comes from OT itself, and though it MAY be unique to OT (presuming the server is honest)
+// it's not unique across notaries in any case. But it's the number we'll need when dealing with OT.
+// Whereas the latter is an autonumber created here locally, in Moneychanger, which ensures that it's
+// unique to the local Moneychanger DB. So they are just used in slightly different ways and we ended up
+// needing both of them.
+//int  DoesAgreementReceiptAlreadyExist(const int nAgreementId, const int64_t receiptNum, const QString & qstrNymId); // returns nAgreementReceiptKey
+// ------------------------------
+//bool CreateAgreementReceiptBody(const int nAgreementReceiptKey, QString & qstrReceiptBody); // When this is called, we already know the specific receipt is being added for the first time.
+//bool DeleteAgreementReceiptBody(const int nID); // nID is nAgreementReceiptKey
+//QString GetAgreementReceiptBody(const int nID); // nID is nAgreementReceiptKey
+
 void Agreements::tableViewReceiptsDoubleClicked(const QModelIndex &index, AgreementReceiptsProxyModel * pProxyModel)
 {
-//    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getAgreementModel();
+    QPointer<ModelAgreementReceipts> pModel = DBHandler::getInstance()->getAgreementReceiptModel();
 
-//    if (!pModel)
-//        return;
+    if (!pModel)
+        return;
 
-//    if (!index.isValid())
-//        return;
+    if (!index.isValid())
+        return;
 
-//    QModelIndex sourceIndex = pProxyModel->mapToSource(index);
+    QModelIndex sourceIndex = pProxyModel->mapToSource(index);
 
-//    if (!sourceIndex.isValid())
-//        return;
-//    // -------------------------------
-//    QModelIndex pmntidIndex   = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_PMNT_ID, sourceIndex);
-//    QModelIndex subjectIndex = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_MEMO, sourceIndex);
+    if (!sourceIndex.isValid())
+        return;
+    // -------------------------------
+    QModelIndex agreementReceiptKeyIndex = pModel->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_AGRMT_RECEIPT_KEY, sourceIndex);
+    QModelIndex subjectIndex = pModel->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_MEMO, sourceIndex);
 
-//    QVariant qvarpmntid   = pModel->data(pmntidIndex);
-//    QVariant qvarSubject = pModel->data(subjectIndex);
+    QVariant qvarAgreementReceiptKey = pModel->data(agreementReceiptKeyIndex);
+    QVariant qvarSubject = pModel->data(subjectIndex);
 
-//    int     nPaymentID  = qvarpmntid.isValid() ? qvarpmntid.toInt() : 0;
-//    QString qstrSubject = qvarSubject.isValid() ? qvarSubject.toString() : "";
-//    // -------------------------------
-//    QString qstrPayment, qstrPending, qstrType, qstrSubtitle;
-//    // --------------------------------------------------
-//    if (nPaymentID > 0)
-//    {
-//        qstrPayment = MTContactHandler::getInstance()->GetAgreementReceiptBody(nPaymentID);
-//        qstrPending = MTContactHandler::getInstance()->GetPaymentPendingBody(nPaymentID);
-//    }
-//    // --------------------------------------------------
-//    QModelIndex myNymIndex        = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_MY_NYM, sourceIndex);
-//    QModelIndex senderNymIndex    = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_SENDER_NYM, sourceIndex);
-//    QModelIndex recipientNymIndex = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_RECIP_NYM, sourceIndex);
+    int nAgreementReceiptKey = qvarAgreementReceiptKey.isValid() ? qvarAgreementReceiptKey.toInt() : 0;
+    QString qstrSubject = qvarSubject.isValid() ? qvarSubject.toString() : "";
+    // -------------------------------
+    QString qstrReceipt, qstrType, qstrSubtitle;
+    // --------------------------------------------------
+    if (nAgreementReceiptKey > 0)
+        qstrReceipt = MTContactHandler::getInstance()->GetAgreementReceiptBody(nAgreementReceiptKey);
+    // --------------------------------------------------
+    QModelIndex myNymIndex        = pModel->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_MY_NYM, sourceIndex);
+    QModelIndex senderNymIndex    = pModel->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_SENDER_NYM, sourceIndex);
+    QModelIndex recipientNymIndex = pModel->sibling(sourceIndex.row(), AGRMT_RECEIPT_COL_RECIP_NYM, sourceIndex);
 
-//    QModelIndex myNymProxyIndex        = pProxyModel->mapFromSource(myNymIndex);
-//    QModelIndex senderNymProxyIndex    = pProxyModel->mapFromSource(senderNymIndex);
-//    QModelIndex recipientNymProxyIndex = pProxyModel->mapFromSource(recipientNymIndex);
+    QModelIndex myNymProxyIndex        = pProxyModel->mapFromSource(myNymIndex);
+    QModelIndex senderNymProxyIndex    = pProxyModel->mapFromSource(senderNymIndex);
+    QModelIndex recipientNymProxyIndex = pProxyModel->mapFromSource(recipientNymIndex);
 
-//    QVariant qvarMyNymName        = myNymProxyIndex.isValid()        ? pProxyModel->data(myNymProxyIndex) : QString("");
-//    QVariant qvarSenderNymName    = senderNymProxyIndex.isValid()    ? pProxyModel->data(senderNymProxyIndex) : QString("");
-//    QVariant qvarRecipientNymName = recipientNymProxyIndex.isValid() ? pProxyModel->data(recipientNymProxyIndex) : QString("");
+    QVariant qvarMyNymName        = myNymProxyIndex.isValid()        ? pProxyModel->data(myNymProxyIndex) : QString("");
+    QVariant qvarSenderNymName    = senderNymProxyIndex.isValid()    ? pProxyModel->data(senderNymProxyIndex) : QString("");
+    QVariant qvarRecipientNymName = recipientNymProxyIndex.isValid() ? pProxyModel->data(recipientNymProxyIndex) : QString("");
 
-//    QString qstrMyNymName        = qvarMyNymName.isValid() ? qvarMyNymName.toString() : "";
-//    QString qstrSenderNymName    = qvarSenderNymName.isValid() ? qvarSenderNymName.toString() : "";
-//    QString qstrRecipientNymName = qvarRecipientNymName.isValid() ? qvarRecipientNymName.toString() : "";
+    QString qstrMyNymName        = qvarMyNymName.isValid() ? qvarMyNymName.toString() : "";
+    QString qstrSenderNymName    = qvarSenderNymName.isValid() ? qvarSenderNymName.toString() : "";
+    QString qstrRecipientNymName = qvarRecipientNymName.isValid() ? qvarRecipientNymName.toString() : "";
 
-//    if (!qstrSenderNymName.isEmpty())
-//    {
-//        qstrType = QString("%1: %2").arg(tr("To")).arg(qstrMyNymName);
-//        qstrSubtitle = QString("%1: %2").arg(tr("From")).arg(qstrSenderNymName);
-//    }
-//    else if (!qstrRecipientNymName.isEmpty())
-//    {
-//        qstrType = QString("%1: %2").arg(tr("To")).arg(qstrRecipientNymName);
-//        qstrSubtitle = QString("%1: %2").arg(tr("From")).arg(qstrMyNymName);
-//    }
-//    else
-//    {
-//        qstrType = QString("Instrument:");
-//        qstrSubtitle = QString(" ");
-//    }
-//    // -----------
-//    // Pop up the result dialog.
-//    //
-//    if (qstrPayment.isEmpty() || qstrPending.isEmpty())
-//    {
-//        DlgExportedToPass dlgExported(this, qstrPayment.isEmpty() ? qstrPending : qstrPayment,
-//                                      qstrType,
-//                                      qstrSubtitle, false);
-//        dlgExported.setWindowTitle(QString("%1: %2").arg(tr("Memo")).arg(qstrSubject));
-//        dlgExported.exec();
-//    }
-//    else
-//    {
-//        DlgExportedCash dlgExported(this, qstrPending, qstrPayment,
-//                                    tr("Deposit receipt:"), QString(" "),
-//                                    qstrType,
-//                                    qstrSubtitle, false);
-//        dlgExported.setWindowTitle(QString("%1: %2").arg(tr("Memo")).arg(qstrSubject));
-//        dlgExported.exec();
-//    }
+    if (!qstrSenderNymName.isEmpty())
+    {
+        qstrType = QString("%1: %2").arg(tr("To")).arg(qstrMyNymName);
+        qstrSubtitle = QString("%1: %2").arg(tr("From")).arg(qstrSenderNymName);
+    }
+    else if (!qstrRecipientNymName.isEmpty())
+    {
+        qstrType = QString("%1: %2").arg(tr("To")).arg(qstrRecipientNymName);
+        qstrSubtitle = QString("%1: %2").arg(tr("From")).arg(qstrMyNymName);
+    }
+    else
+    {
+        qstrType = QString("Receipt:");
+        qstrSubtitle = QString(" ");
+    }
+    // -----------
+    // Pop up the result dialog.
+    //
+    DlgExportedToPass dlgExported(this, qstrReceipt, qstrType,
+                                  qstrSubtitle, false);
+    if (qstrSubject.isEmpty())
+        dlgExported.setWindowTitle(QString("%1").arg(tr("Receipt")));
+    else
+        dlgExported.setWindowTitle(QString("%1: %2").arg(tr("Memo")).arg(qstrSubject));
+    dlgExported.exec();
 }
 
 
@@ -1782,115 +2049,120 @@ void Agreements::tableViewReceiptsDoubleClicked(const QModelIndex &index, Agreem
 
 void Agreements::on_toolButtonDelete_clicked()
 {
-//    if ( (nullptr != pCurrentTabTableView_) &&
-//         (nullptr != pCurrentTabProxyModel_) )
-//    {
-//        if (!pCurrentTabTableView_->selectionModel()->hasSelection())
-//            return;
-//        // ----------------------------------------------
-//        QMessageBox::StandardButton reply;
+    if ( (nullptr != pCurrentReceiptTableView_) &&
+         (nullptr != pCurrentReceiptProxyModel_) )
+    {
+        if (!pCurrentReceiptTableView_->selectionModel()->hasSelection())
+            return;
 
-//        reply = QMessageBox::question(this, tr("Moneychanger"), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to delete these receipts?")).
-//                                      arg(tr("WARNING: This is not reversible!")),
-//                                      QMessageBox::Yes|QMessageBox::No);
-//        if (reply != QMessageBox::Yes)
-//            return;
-//        // ----------------------------------------------
-//        QPointer<ModelPayments> pModel = DBHandler::getInstance()->getAgreementModel();
+        // TODO: Add some code here to see if the user is trying to delete
+        // the agreement itself, instead of just one or some of its receipts.
 
-//        if (pModel)
-//        {
-//            QItemSelection selection( pCurrentTabTableView_->selectionModel()->selection() );
+        // ----------------------------------------------
+        QMessageBox::StandardButton reply;
 
-//            int nFirstProxyRowRemoved = -1;
-//            int nLastProxyRowRemoved  = -1;
-//            int nCountRowsRemoved     = 0;
+        reply = QMessageBox::question(this, tr("Moneychanger"), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to delete these receipts?")).
+                                      arg(tr("WARNING: This is not reversible!")),
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply != QMessageBox::Yes)
+            return;
+        // ----------------------------------------------
+        QPointer<ModelAgreementReceipts> pModel = DBHandler::getInstance()->getAgreementReceiptModel();
 
-//            QList<int> rows, payment_ids;
-//            foreach( const QModelIndex & index, selection.indexes() ) {
-//                QModelIndex sourceIndex = pCurrentTabProxyModel_->mapToSource(index);
-//                rows.append( sourceIndex.row() );
-//                // --------------------------------
-//                nLastProxyRowRemoved = index.row();
-//                if ((-1) == nFirstProxyRowRemoved)
-//                    nFirstProxyRowRemoved = index.row();
-//            }
+        if (pModel)
+        {
+            QItemSelection selection( pCurrentReceiptTableView_->selectionModel()->selection() );
 
-//            qSort( rows );
+            int nFirstProxyRowRemoved = -1;
+            int nLastProxyRowRemoved  = -1;
+            int nCountRowsRemoved     = 0;
 
-//            bool bRemoved = false;
+            QList<int> rows, receipt_keys;
+            foreach( const QModelIndex & index, selection.indexes() ) {
+                QModelIndex sourceIndex = pCurrentReceiptProxyModel_->mapToSource(index);
+                rows.append( sourceIndex.row() );
+                // --------------------------------
+                nLastProxyRowRemoved = index.row();
+                if ((-1) == nFirstProxyRowRemoved)
+                    nFirstProxyRowRemoved = index.row();
+            }
 
-//            int prev = -1;
+            qSort( rows );
 
-//            for(int ii = rows.count() - 1; ii >= 0; ii -= 1 ) {
-//               int current = rows[ii];
-//               if( current != prev ) {
-//                   bRemoved = true;
-//                   QModelIndex sourceIndexpmntid = pModel->index(current, PMNT_SOURCE_COL_PMNT_ID);
-//                   if (sourceIndexpmntid.isValid())
-//                       payment_ids.append(pModel->data(sourceIndexpmntid).toInt());
-//                   pModel->removeRows( current, 1 );
-//                   prev = current;
-//                   nCountRowsRemoved++;
-//               }
-//            }
+            bool bRemoved = false;
 
-//            if (bRemoved)
-//            {
-//                if (pModel->submitAll())
-//                {
-//                    pModel->database().commit();
-//                    // ------------------------
-//                    // Now we just deleted some receipts; let's delete also the corresponding
-//                    // receipt contents. (We saved the deleted IDs for this purpose.)
-//                    //
-//                    for (int ii = 0; ii < payment_ids.count(); ++ii)
-//                    {
-//                        const int nPmntID = payment_ids[ii];
+            int prev = -1;
 
-//                        if (nPmntID > 0)
-//                            if (!MTContactHandler::getInstance()->DeleteAgreementReceiptBody(nPmntID))
-//                                qDebug() << "Agreements::on_toolButtonDelete_clicked: Failed trying to delete payment body with payment_id: " << nPmntID << "\n";
-//                    }
-//                    // ------------------------
-//                    // We just deleted the selected rows.
-//                    // So now we need to choose another row to select.
+            for(int ii = rows.count() - 1; ii >= 0; ii -= 1 ) {
+               int current = rows[ii];
+               if( current != prev ) {
+                   bRemoved = true;
+                   QModelIndex sourceIndexAgreementReceiptKey = pModel->index(current, AGRMT_RECEIPT_COL_AGRMT_RECEIPT_KEY);
+                   if (sourceIndexAgreementReceiptKey.isValid())
+                       receipt_keys.append(pModel->data(sourceIndexAgreementReceiptKey).toInt());
+                   pModel->removeRows( current, 1 );
+                   prev = current;
+                   nCountRowsRemoved++;
+               }
+            }
 
-//                    int nRowToSelect = -1;
+            if (bRemoved)
+            {
+                if (pModel->submitAll())
+                {
+                    pModel->database().commit();
+                    // ------------------------
+                    // Now we just deleted some receipts; let's delete also the corresponding
+                    // receipt contents. (We saved the deleted IDs for this purpose.)
+                    //
+                    for (int ii = 0; ii < receipt_keys.count(); ++ii)
+                    {
+                        const int nReceiptKey = receipt_keys[ii];
 
-//                    if ((nFirstProxyRowRemoved >= 0) && (nFirstProxyRowRemoved < pCurrentTabProxyModel_->rowCount()))
-//                        nRowToSelect = nFirstProxyRowRemoved;
-//                    else if (0 == nFirstProxyRowRemoved)
-//                        nRowToSelect = 0;
-//                    else if (nFirstProxyRowRemoved > 0)
-//                        nRowToSelect = pCurrentTabProxyModel_->rowCount() - 1;
-//                    else
-//                        nRowToSelect = 0;
+                        if (nReceiptKey > 0)
+                            if (!MTContactHandler::getInstance()->DeleteAgreementReceiptBody(nReceiptKey))
+                                qDebug() << "Agreements::on_toolButtonDelete_clicked: "
+                                            "Failed trying to delete receipt body with agreement_receipt_key: " << nReceiptKey << "\n";
+                    }
+                    // ------------------------
+                    // We just deleted the selected rows.
+                    // So now we need to choose another row to select.
 
-//                    if ((pCurrentTabProxyModel_->rowCount() > 0) && (nRowToSelect >= 0) &&
-//                            (nRowToSelect < pCurrentTabProxyModel_->rowCount()))
-//                    {
-//                        QModelIndex previous = pCurrentTabTableView_->currentIndex();
-//                        pCurrentTabTableView_->blockSignals(true);
-//                        pCurrentTabTableView_->selectRow(nRowToSelect);
-//                        pCurrentTabTableView_->blockSignals(false);
+                    int nRowToSelect = -1;
 
-//                        if (pCurrentTabTableView_ == ui->tableViewReceived)
-//                            on_tableViewReceivedSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
-//                        else
-//                            on_tableViewSentSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
-//                    }
-//                }
-//                else
-//                {
-//                    pModel->database().rollback();
-//                    qDebug() << "Database Write Error" <<
-//                               "The database reported an error: " <<
-//                               pModel->lastError().text();
-//                }
-//            }
-//        }
-//    }
+                    if ((nFirstProxyRowRemoved >= 0) && (nFirstProxyRowRemoved < pCurrentReceiptProxyModel_->rowCount()))
+                        nRowToSelect = nFirstProxyRowRemoved;
+                    else if (0 == nFirstProxyRowRemoved)
+                        nRowToSelect = 0;
+                    else if (nFirstProxyRowRemoved > 0)
+                        nRowToSelect = pCurrentReceiptProxyModel_->rowCount() - 1;
+                    else
+                        nRowToSelect = 0;
+
+                    if ((pCurrentReceiptProxyModel_->rowCount() > 0) && (nRowToSelect >= 0) &&
+                            (nRowToSelect < pCurrentReceiptProxyModel_->rowCount()))
+                    {
+                        QModelIndex previous = pCurrentReceiptTableView_->currentIndex();
+                        pCurrentReceiptTableView_->blockSignals(true);
+                        pCurrentReceiptTableView_->selectRow(nRowToSelect);
+                        pCurrentReceiptTableView_->blockSignals(false);
+
+                        if (pCurrentReceiptTableView_ == ui->tableViewReceived)
+                            on_tableViewReceivedSelectionModel_currentRowChanged(pCurrentReceiptTableView_->currentIndex(), previous);
+                        else
+                            on_tableViewSentSelectionModel_currentRowChanged(pCurrentReceiptTableView_->currentIndex(), previous);
+                    }
+                }
+                else
+                {
+                    pModel->database().rollback();
+                    qDebug() << "Database Write Error" <<
+                               "The database reported an error: " <<
+                               pModel->lastError().text();
+                }
+            }
+        }
+    }
 }
 
 

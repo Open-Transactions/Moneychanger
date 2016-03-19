@@ -2318,7 +2318,6 @@ void Moneychanger::onNeedToDownloadMail()
 }
 
 
-
 bool Moneychanger::AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt)
 {
     QPointer<ModelTradeArchive> pModel = DBHandler::getInstance()->getTradeArchiveModel();
@@ -2761,10 +2760,10 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
 {
     ModelPayments::PaymentFlags flags = ModelPayments::NoFlags;
 
-    QPointer<ModelAgreementReceipts> pAgreementModel = DBHandler::getInstance()->getAgreementReceiptModel();
+    QPointer<ModelAgreements> pAgreementModel = DBHandler::getInstance()->getAgreementModel();
     QPointer<ModelAgreementReceipts> pModel = DBHandler::getInstance()->getAgreementReceiptModel();
     bool bSuccessAddingReceipt = false;
-    QString qstrReceiptBody("");
+    QString qstrReceiptBody(""), qstrMemo("");
     QMap<QString, QVariant> mapFinalValues;
 
     int nAgreementId         = 0;
@@ -2772,7 +2771,6 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
     int nNewestKnownState    = 0;
 
     int64_t receiptNum = 0;
-
     time64_t tDate = 0;
 
     if (pModel)
@@ -2933,7 +2931,6 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
             qstrName = MTContactHandler::Encode(QString::fromStdString(str_Name));
         // ---------------------------------
         std::string str_Memo = recordmt.HasMemo() ? recordmt.GetMemo() : "";
-        QString qstrMemo;
         if (!str_Memo.empty())
             qstrMemo = MTContactHandler::Encode(QString::fromStdString(str_Memo));
         // ---------------------------------
@@ -2972,7 +2969,8 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
         // If it turns out later that this isn't good enough, I guess we can get more info from the record. But
         // this should work for now.
         //
-        nAgreementId = MTContactHandler::getInstance()->GetOrCreateLiveAgreementId(transNumDisplay, notaryID, qstrMemo, nAgreementFolder);
+        int nLastKnownState = 0;
+        nAgreementId = MTContactHandler::getInstance()->GetOrCreateLiveAgreementId(transNumDisplay, notaryID, qstrMemo, nAgreementFolder, nLastKnownState);
 
         if (nAgreementId <= 0)
         {
@@ -3064,7 +3062,7 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
         // That means the only "state" we have currently here is "Paid", "Payment failed", or "Contract not active."
         // 0 Error, 1 Paid, 2 Payment failed, 3 Contract not active.
 
-        if (recordmt.IsFinalReceipt()) nNewestKnownState = 3;
+        if (recordmt.IsFinalReceipt()) nNewestKnownState = 3; // I guess 3 means no longer active?
         else if (recordmt.IsReceipt())
         {
             bool bIsSuccess = false;
@@ -3075,6 +3073,13 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
                 else            nNewestKnownState = 2; // Payment failed.
             }
         }
+
+        // If we already processed a finalReceipt previously, and now we're processing its related paymentReceipts,
+        // (since they are coming from the recordBox and may not be in the order originally received...) then we know
+        // the actual final state is 3. So we don't want to go backwards and set it back to 2 again, in that case.
+        //
+        if (3 == nLastKnownState)
+            nNewestKnownState = 3;
         // -------------------------------------------------
 //      qDebug() << "DEBUGGING AddAgreementRecord. " << (recordmt.IsOutgoing() ? "OUT" : "IN") << ". receiptNum: " << receiptNum << " transNumDisplay: " << transNumDisplay << "\n";
         // -------------------------------------------------
@@ -3123,7 +3128,7 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
         else
             qDebug() << "AddAgreementRecord: Succeeded adding agreement receipt to database.\n";
         // -------------------------------------------
-        if (!MTContactHandler::getInstance()->UpdateLiveAgreementRecord(nAgreementId, receiptNum, nNewestKnownState, tDate))
+        if (!MTContactHandler::getInstance()->UpdateLiveAgreementRecord(nAgreementId, receiptNum, nNewestKnownState, tDate, qstrMemo))
             qDebug() << "AddAgreementRecord: Strange -- just failed trying to update a live agreement record.\n";
         else
             pAgreementModel->select();
@@ -3503,6 +3508,9 @@ void Moneychanger::modifyRecords()
                             bShouldDeleteRecord = true;
                         } // marketReceipt
                         // -----------------------------------
+                        // NOTE: PayDividend is possibly having its receipts go in here.
+                        // Todo: Fix pay dividend in UI.
+                        //
                         else if (0 == recordmt.GetInstrumentType().compare("paymentReceipt"))
                         {
                             if (AddAgreementRecord(recordmt))
@@ -3547,7 +3555,15 @@ void Moneychanger::modifyRecords()
                                 // For now I'm doing this one here as well, so the normal payments screen
                                 // is able to realize that the agreement has finished.
                                 //
-                                AddPaymentToPmntArchive(recordmt);
+                                // UPDATE: We no longer do this. If someone activates a payment plan, and it
+                                // says "activated" in the payments screen. (Or "canceled" or "expired" or whatever)
+                                // then that was its state when that action occurred, and it's now historical.
+                                // It "was activated." Since then, is it STILL active? If you want to know that,
+                                // you have to look at the "active agreements" window where you can see its current
+                                // status and its finalReceipts and paymentReceipts.
+                                //
+                                //AddPaymentToPmntArchive(recordmt);
+
                             }
                             else
                                 qDebug() << " --- Tried to import final receipt, but it failed!";

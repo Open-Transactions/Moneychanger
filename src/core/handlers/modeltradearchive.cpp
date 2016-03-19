@@ -35,14 +35,13 @@ void FinalReceiptProxyModel::setFilterOpentxsRecord(opentxs::OTRecord& recordmt)
 
 bool FinalReceiptProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
-    QModelIndex index6 = sourceModel()->index(sourceRow, 6, sourceParent); // OfferID
-
+    QModelIndex theIndex = sourceModel()->index(sourceRow, 6, sourceParent); // OfferID at index 6
     QAbstractItemModel * pModel = sourceModel();
     ModelTradeArchive  * pTradeModel = dynamic_cast<ModelTradeArchive*>(pModel);
 
     if (nullptr != pTradeModel)
     {
-        int64_t lCurrentOfferID  = pTradeModel->rawData(index6).toLongLong();
+        int64_t lCurrentOfferID  = pTradeModel->rawData(theIndex).toLongLong();
 
         if (nullptr != pRecordMT_)
         {
