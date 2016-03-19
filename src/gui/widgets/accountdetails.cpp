@@ -1322,7 +1322,7 @@ void MTAccountDetails::on_tableView_doubleClicked(const QModelIndex &index)
     else
     {
         DlgExportedCash dlgExported(this, qstrPending, qstrPayment,
-                                    tr("Deposit receipt:"), QString(" "),
+                                    tr("Receipt:"), QString(" "),
                                     qstrType,
                                     qstrSubtitle, false);
         dlgExported.setWindowTitle(QString("%1: %2").arg(tr("Memo")).arg(qstrSubject));

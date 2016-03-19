@@ -14,17 +14,17 @@
    <string>WizardPage</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Contract name:</string>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="1">
     <widget class="QLineEdit" name="lineEditContractName">
      <property name="placeholderText">
-      <string>e.g. Sample Co. shares</string>
+      <string>e.g. Sample Co. Share</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Symbol:</string>
      </property>
     </widget>
    </item>
@@ -42,10 +42,10 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_3">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
      <property name="text">
-      <string>Symbol:</string>
+      <string>Contract name:</string>
      </property>
     </widget>
    </item>
@@ -54,20 +54,6 @@
      <property name="text">
       <string/>
      </property>
-     <property name="placeholderText">
-      <string>e.g. $</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>TLA:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="lineEditTLA">
      <property name="placeholderText">
       <string>e.g. SAMPL</string>
      </property>

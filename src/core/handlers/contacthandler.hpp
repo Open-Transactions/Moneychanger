@@ -273,12 +273,12 @@ public:
   bool UpdatePaymentRecord(int nPaymentID, QMap<QString, QVariant>& mapFinalValues);
   bool SetPaymentFlags(int nPaymentID, qint64 nFlags);
   // ----------------------------------------------------------
-  int  GetOrCreateLiveAgreementId(const int64_t transNumDisplay, const QString & notaryID, const QString & qstrEncodedMemo, const int nFolder); // returns nAgreementId
-  bool UpdateLiveAgreementRecord(const int nAgreementId, const int64_t nNewestReceiptNum, const int nNewestKnownState, const int64_t timestamp);
+  int  GetOrCreateLiveAgreementId(const int64_t transNumDisplay, const QString & notaryID, const QString & qstrEncodedMemo, const int nFolder, int & lastKnownState); // returns nAgreementId
+  bool UpdateLiveAgreementRecord(const int nAgreementId, const int64_t nNewestReceiptNum, const int nNewestKnownState, const int64_t timestamp, const QString qstrEncodedMemo);
   // ------------------------------
   // Why do we apparently have 2 receipt IDs? (ReceiptNum and AgreementReceiptKey)
   // The former comes from OT itself, and though it MAY be unique to OT (presuming the server is honest)
-  // it's not unique across notaries in any case. But it's the numer we'll need when dealing with OT.
+  // it's not unique across notaries in any case. But it's the number we'll need when dealing with OT.
   // Whereas the latter is an autonumber created here locally, in Moneychanger, which ensures that it's
   // unique to the local Moneychanger DB. So they are just used in slightly different ways and we ended up
   // needing both of them.

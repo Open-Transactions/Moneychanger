@@ -142,6 +142,7 @@ QVariant ModelAgreements::data ( const QModelIndex & index, int role/* = Qt::Dis
             QVariant qvarData    = QSqlTableModel::data(index,role);
             QString  qstrData    = qvarData.isValid() ? qvarData.toString() : "";
             QString  qstrDecoded = qstrData.isEmpty() ? "" : MTContactHandler::Decode(qstrData);
+
             return QVariant(qstrDecoded);
         }
     }
@@ -1178,8 +1179,8 @@ bool AgreementReceiptsProxyModel::filterAcceptsRow(int sourceRow, const QModelIn
 
         flags = ModelPayments::PaymentFlag(static_cast<ModelPayments::PaymentFlag>(lFlags)); // Note: isn't this line redundant??
 
-        if ( flags.testFlag(ModelPayments::IsFinalReceipt))
-            return false;
+//        if ( flags.testFlag(ModelPayments::IsFinalReceipt))
+//            return false;
         // -----------------------------------------------
         const int64_t lAgreementId         = dataAgreementId.isValid() ? dataAgreementId.toLongLong() : 0;
         const int64_t lReceiptId           = dataReceiptId.isValid() ? dataReceiptId.toLongLong() : 0;
@@ -1198,9 +1199,6 @@ bool AgreementReceiptsProxyModel::filterAcceptsRow(int sourceRow, const QModelIn
         const QString qstrSenderAddress    = dataSenderAddress.isValid() ? dataSenderAddress.toString() : "";
         const QString qstrRecipientAddress = dataRecipientAddress.isValid() ? dataRecipientAddress.toString() : "";
         const QString qstrNotaryID         = dataNotaryID.isValid() ? dataNotaryID.toString() : "";
-
-
-
         // ------------------------------------
         // Here we check the filterString (optional string the user can type.)
         //

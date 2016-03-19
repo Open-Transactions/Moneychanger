@@ -15,7 +15,6 @@ PageSecurity_Details::PageSecurity_Details(QWidget *parent) :
     this->registerField("security_contract_name*",   ui->lineEditContractName);
     this->registerField("security_primary_unit*",    ui->lineEditPrimaryUnit);
     this->registerField("security_symbol*",          ui->lineEditSymbol);
-    this->registerField("security_tla*",             ui->lineEditTLA);
 }
 
 PageSecurity_Details::~PageSecurity_Details()

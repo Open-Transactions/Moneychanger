@@ -158,9 +158,9 @@ public:
 
     void setFilterString(QString qstrFilter);
 
-    void setFilterAccountId(QString qstrFilter);
-    void setFilterMySignerId(QString qstrFilter);
-    void setFilterAgreementId(int nFilter);
+    void setFilterAccountId(QString qstrFilter); // unused so far.
+    void setFilterMySignerId(QString qstrFilter); // unused so far.
+    void setFilterAgreementId(int nFilter); // In use!
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
     QVariant data    ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
