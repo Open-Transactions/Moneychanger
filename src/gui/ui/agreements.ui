@@ -134,14 +134,14 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="labelSigners">
             <property name="text">
              <string>My signing identities:</string>
             </property>
            </widget>
           </item>
           <item>
-           <spacer name="horizontalSpacer">
+           <spacer name="horizontalSpacerSigners">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
             </property>

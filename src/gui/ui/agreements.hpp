@@ -86,8 +86,8 @@ private slots:
     void on_tabWidgetAgreements_currentChanged(int index); // recurring, smart contracts, entities.
     void on_tabWidgetReceipts_currentChanged(int index); // Received, Sent.
 
-//    void on_MarkAsRead_timer();
-//    void on_MarkAsUnread_timer();
+    void on_MarkAsRead_timer();
+    void on_MarkAsUnread_timer();
 
     void RefreshAgreements();
 //    void RefreshParties();
@@ -126,9 +126,9 @@ private:
     QPointer<AgreementReceiptsProxyModel> pReceiptProxyModelInbox_;
     QPointer<AgreementReceiptsProxyModel> pReceiptProxyModelOutbox_;
 
-    QTableView         * pCurrentAgreementTableView_ = nullptr;
-    QTableView         * pCurrentPartyTableView_     = nullptr;
-    QTableView         * pCurrentReceiptTableView_   = nullptr;
+    QTableView         * pCurrentAgreementTableView_ = nullptr; // Recurring payments or Smart contracts.
+    QTableView         * pCurrentPartyTableView_     = nullptr; // Might remove this. (I don't see how it would ever change.)
+    QTableView         * pCurrentReceiptTableView_   = nullptr; // Sent or Received.
 
     AgreementsProxyModel        * pCurrentAgreementProxyModel_ = nullptr;
     AgreementReceiptsProxyModel * pCurrentReceiptProxyModel_   = nullptr;
@@ -137,6 +137,9 @@ private:
     QList<QModelIndex> listRecordsToMarkAsUnread_;
 
     bool bRefreshingAfterUpdatedClaims_=false;
+
+    int nLastSelectedRecurringIndex_ = -1;
+    int nLastSelectedContractIndex_  = -1;
 };
 
 #endif // AGREEMENTS_HPP

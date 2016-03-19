@@ -1358,24 +1358,37 @@ bool MTContactHandler::LowLevelUpdateMessageBody(int nMessageID, const QString &
 
 // --------------------------------------------
 
-int MTContactHandler::GetOrCreateLiveAgreementId(const int64_t transNumDisplay, const QString & notaryID, const QString & qstrEncodedMemo, const int nFolder) // returns nAgreementId
+int MTContactHandler::GetOrCreateLiveAgreementId(const int64_t transNumDisplay, const QString & notaryID,
+                                                 const QString & qstrEncodedMemo, const int nFolder, int & lastKnownState) // returns nAgreementId
 {
     QMutexLocker locker(&m_Mutex);
 
-    QString str_select = QString("SELECT `agreement_id` FROM `agreement` WHERE `txn_id_display`=%1 AND `notary_id`='%2' LIMIT 0,1").arg(transNumDisplay).arg(notaryID);
+    QString str_select = QString("SELECT `agreement_id`, `newest_known_state` FROM `agreement` WHERE `txn_id_display`=%1 AND `notary_id`='%2' LIMIT 0,1").arg(transNumDisplay).arg(notaryID);
     const int nRows = DBHandler::getInstance()->querySize(str_select);
 
     if (nRows > 0)
+    {
+        // 0 Error, 1 Paid, 2 Payment failed, 3 Contract not active.
+        lastKnownState = DBHandler::getInstance()->queryInt(str_select, 1, 0);
+
         return DBHandler::getInstance()->queryInt(str_select, 0, 0);
+    }
     // ----------------------------------
     // Let's create it then.
     //
     const int have_read = 0;
     try
     {
-        QString queryStr = "INSERT INTO `agreement` "
-                           "(`agreement_id`, `have_read`, `txn_id_display`, `notary_id`, `memo`, `folder`) "
-                           "VALUES(NULL, :blah_have_read, :blah_txn_id_display, :blah_notary_id, :blah_memo, :blah_folder)";
+        QString memo1 = qstrEncodedMemo.isEmpty() ? "" : "`memo`, ";
+        QString memo2 = qstrEncodedMemo.isEmpty() ? "" : ":blah_memo, ";
+
+        QString queryStr = QString("INSERT INTO `agreement` "
+                           "(`agreement_id`, `have_read`, `txn_id_display`, `notary_id`, "
+                                   "%1"
+                                   "`folder`) "
+                           "VALUES(NULL, :blah_have_read, :blah_txn_id_display, :blah_notary_id, "
+                                   "%2"
+                                   ":blah_folder)").arg(memo1).arg(memo2);
     #ifdef CXX_11
         std::unique_ptr<DBHandler::PreparedQuery> qu;
     #else /* CXX_11?  */
@@ -1385,7 +1398,8 @@ int MTContactHandler::GetOrCreateLiveAgreementId(const int64_t transNumDisplay, 
         qu->bind (":blah_have_read", have_read);
         qu->bind (":blah_txn_id_display", QVariant::fromValue(transNumDisplay));
         qu->bind (":blah_notary_id", notaryID);
-        qu->bind (":blah_memo", qstrEncodedMemo);
+        if (!qstrEncodedMemo.isEmpty())
+            qu->bind (":blah_memo", qstrEncodedMemo);
         qu->bind (":blah_folder", nFolder);
         DBHandler::getInstance ()->runQuery (qu.release ());
     }
@@ -1404,26 +1418,33 @@ int MTContactHandler::GetOrCreateLiveAgreementId(const int64_t transNumDisplay, 
 }
 
 
-bool MTContactHandler::UpdateLiveAgreementRecord(const int nAgreementId, const int64_t nNewestReceiptNum, const int nNewestKnownState, const int64_t timestamp)
+bool MTContactHandler::UpdateLiveAgreementRecord(const int nAgreementId, const int64_t nNewestReceiptNum, const int nNewestKnownState,
+                                                 const int64_t timestamp, const QString qstrEncodedMemo)
 {
     QMutexLocker locker(&m_Mutex);
 
     try
     {
-        QString qstrKnownState;
+        QString qstrKnownState, qstrMemo;
 
         if (nNewestKnownState > 0)
             qstrKnownState = " `newest_known_state` = :blah_newest_known_state,";
         else
             qstrKnownState = "";
 
+        if (!qstrEncodedMemo.isEmpty())
+            qstrMemo = " `memo` = :blah_memo,";
+        else
+            qstrMemo = "";
+
         QString queryStr =
                  QString("UPDATE `agreement` SET"
                          " `have_read` = 0,"
                          " `newest_receipt_id` = :blah_newest_receipt_id,"
                          "%1" // newest_known_state
+                         "%2" // memo
                          " `timestamp` = :blah_timestamp"
-                         " WHERE `agreement_id` = :blah_agreement_id").arg(qstrKnownState);
+                         " WHERE `agreement_id` = :blah_agreement_id").arg(qstrKnownState).arg(qstrMemo);
     #ifdef CXX_11
         std::unique_ptr<DBHandler::PreparedQuery> qu;
     #else /* CXX_11?  */
@@ -1434,6 +1455,8 @@ bool MTContactHandler::UpdateLiveAgreementRecord(const int nAgreementId, const i
         qu->bind (":blah_newest_receipt_id", QVariant::fromValue(nNewestReceiptNum));
         if (nNewestKnownState > 0)
             qu->bind (":blah_newest_known_state", nNewestKnownState);
+        if (!qstrEncodedMemo.isEmpty())
+            qu->bind (":blah_memo", qstrEncodedMemo);
         qu->bind (":blah_timestamp", QVariant::fromValue(timestamp));
         qu->bind (":blah_agreement_id", nAgreementId);
 

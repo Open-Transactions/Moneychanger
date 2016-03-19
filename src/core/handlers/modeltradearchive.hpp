@@ -71,6 +71,7 @@ private:
 // cares about rows that correspond to that final receipt. (The code
 // that uses this proxy then adds a copy of that final receipt to
 // those specific rows.)
+//
 class FinalReceiptProxyModel : public QSortFilterProxyModel
 {
     Q_OBJECT

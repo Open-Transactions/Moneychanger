@@ -96,7 +96,6 @@ public:
                                        int64_t & lTransactionNum,
                                        int64_t & lTransNumForDisplay);
     bool AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt);
-
     bool AddAgreementRecord(opentxs::OTRecord& recordmt);
 
 signals:

@@ -736,7 +736,9 @@ void MTAssetDetails::AddButtonClicked()
                         qstrTLA.toStdString(),  //  "USD", etc.
 //                        100,  //   100 cents in a dollar.  Factor. (I think factor is gone now.)
                         2,  //  A "cent" is 2 decimal places right of a "dollar." Decimal power.
-                        qstrFractionalUnit.toStdString());
+                        qstrFractionalUnit.toStdString()
+
+                            );
             }
             else if (bIsSecurity)
             {
@@ -748,7 +750,7 @@ void MTAssetDetails::AddButtonClicked()
                 strContractID =
                     opentxs::OTAPI_Wrap::It()->CreateSecurityContract(
                         qstrNymID.toStdString(),
-                        qstrContractName.toStdString(),  //  "Sample Co. shares" (refers to the contract.)
+                        qstrContractName.toStdString(),  //  "Sample Co. Share" (refers to the contract.)
                         qstrTerms.toStdString(),
                         qstrPrimaryUnit.toStdString(),  //   Primary unit name "shares"
                         qstrSymbol.toStdString());  //  Symbol.
