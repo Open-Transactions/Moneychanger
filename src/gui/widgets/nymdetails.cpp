@@ -26,7 +26,7 @@
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OpenTransactions.hpp>
 #include <opentxs/client/OT_ME.hpp>
-
+#include <opentxs/core/app/App.hpp>
 #include <opentxs/core/NumList.hpp>
 
 
@@ -212,7 +212,7 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
     typedef std::map <std::string, opentxs::OT_API::ClaimSet> mapOfNymClaims;
     typedef std::map <std::string, std::string> mapOfNymNames;
 
-//    mapOfNymClaims nym_claims; // Each pair in this map has a NymID and a ClaimSet.
+//  mapOfNymClaims nym_claims; // Each pair in this map has a NymID and a ClaimSet.
     mapOfNymNames  nym_names;  // Each pair in this map has a NymID and a Nym Name.
     // ---------------------------------------
     MTNameLookupQT theLookup;
@@ -222,8 +222,9 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
 
     if (!str_nym_id.empty())
     {
-        const opentxs::Nym * pCurrentNym =
-            opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
+        auto pCurrentNym = opentxs::App::Me().Contract().Nym(id_nym);
+//        const opentxs::Nym * pCurrentNym =
+//            opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
 
         if (pCurrentNym)
         {
@@ -239,6 +240,9 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
     // (So there's nothing to put on this tree. Done.)
 //    if (nym_claims.empty())
 //        return;
+    // UPDATE: Even if Bob has no claims, ALICE might have made a relationship claim ABOUT
+    // Bob, which would be displayed here (giving Bob the opportunity to confirm/refute.)
+    // (So we can't just return here.)
     // -------------------------------------------------
 //  QPointer<ModelClaims>      pModelClaims_;
 //  QPointer<ClaimsProxyModel> pProxyModelClaims_;
@@ -339,11 +343,14 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
             QVariant    qvarAttActive         = pRelationships->data(sourceIndexAttActive);
             QVariant    qvarAttPrimary        = pRelationships->data(sourceIndexAttPrimary);
             // ----------------------------------------------------------------------------
-            const std::string claim_id      = qvarClaimId.isValid() ? qvarClaimId.toString().toStdString() : "";
-            const std::string claim_nym_id  = qvarNymId  .isValid() ? qvarNymId.toString().toStdString() : "";
-            const uint32_t    claim_section = qvarSection.isValid() ? qvarSection.toUInt() : 0;
-            const uint32_t    claim_type    = qvarType   .isValid() ? qvarType.toUInt() : 0;
-            const std::string claim_value   = qvarValue  .isValid() ? qvarValue.toString().toStdString() : "";
+            const QString qstrClaimId       = qvarClaimId.isValid() ? qvarClaimId.toString() : "";
+            const QString qstrClaimValue    = qvarValue  .isValid() ? qvarValue  .toString() : "";
+            // ----------------------------------------------------------------------------
+            const std::string claim_id      = qstrClaimId   .isEmpty() ? "" : qstrClaimId.toStdString();
+            const std::string claim_value   = qstrClaimValue.isEmpty() ? "" : qstrClaimValue.toStdString();
+            const std::string claim_nym_id  = qvarNymId     .isValid() ? qvarNymId.toString().toStdString() : "";
+            const uint32_t    claim_section = qvarSection   .isValid() ? qvarSection.toUInt() : 0;
+            const uint32_t    claim_type    = qvarType      .isValid() ? qvarType.toUInt() : 0;
             // ----------------------------------------------------------------------------
             const bool        claim_active  = qvarAttActive .isValid() ? qvarAttActive .toBool() : false;
             const bool        claim_primary = qvarAttPrimary.isValid() ? qvarAttPrimary.toBool() : false;
@@ -383,14 +390,17 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
             claim_item->setData(0, Qt::UserRole+1, TREE_ITEM_TYPE_RELATIONSHIP);
 
             claim_item->setData(0, Qt::UserRole, QString::fromStdString(claim_nym_id)); // Alice's Nym Id. The person who made the claim. Claimant Nym Id.
-            claim_item->setData(1, Qt::UserRole, QString::fromStdString(claim_id));
-            claim_item->setData(2, Qt::UserRole, QString::fromStdString(claim_value)); // Verifier Nym Id. Alice made a claim about Charlie, who verifies her claim.
+            claim_item->setData(1, Qt::UserRole, qstrClaimId);
+            claim_item->setData(2, Qt::UserRole, qstrClaimValue); // Verifier Nym Id. Alice made a claim about Charlie (me), who verifies her claim. So Charlie's ID goes in Alice's claim_value.
             // ----------------------------------------
             // Since this is someone else's claim about me, I should see if I have already confirmed or refuted it.
             bool bPolarity = false;
-            const bool bGotPolarity = MTContactHandler::getInstance()->getPolarityIfAny(QString::fromStdString(claim_id),
+            const bool bGotPolarity = MTContactHandler::getInstance()->getPolarityIfAny(qstrClaimId,
                                                                                         QString::fromStdString(str_nym_id), bPolarity);
-
+            
+//            qDebug() << "DEBUGGING NYM DETAILS: QString::fromStdString(claim_value): " << QString::fromStdString(claim_value);
+//            qDebug() << "DEBUGGING NYM DETAILS: QString::fromStdString(str_nym_id): " << QString::fromStdString(str_nym_id);
+            
             if (bGotPolarity)
             {
                 claim_item->setText(5, bPolarity ? tr("Confirmed") : tr("Refuted") );
@@ -457,8 +467,11 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
 
     for (auto & indexSection: sections)  //Names (for example)
     {
-        QMap<uint32_t, QString> mapTypeNames;
+        if (opentxs::proto::CONTACTSECTION_RELATIONSHIPS == indexSection)
+            continue;
         // ----------------------------------------
+        QMap<uint32_t, QString> mapTypeNames;
+
         std::string        sectionName  = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionName (indexSection); // Names, Email, URL, etc.
         std::set<uint32_t> sectionTypes = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionTypes(indexSection); // Business, Personal, etc.
 
@@ -687,8 +700,8 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
                     str_verifier_name = theLookup.GetNymName(verifier_id, "");
 
 //              const QString qstrClaimIdLabel = QString("%1: %2").arg(tr("Claim Id")).arg(qstrVerificationClaimId);
-                const QString qstrClaimantIdLabel = QString("%1: %2").arg(tr("Claimant Nym Id")).arg(qstrClaimantId);
-                const QString qstrVerifierIdLabel = QString("%1: %2").arg(tr("Verifier Nym Id")).arg(qstrVerifierId);
+                const QString qstrClaimantIdLabel = QString("%1: %2").arg(tr("Claimant")).arg(qstrClaimantId);
+                const QString qstrVerifierIdLabel = QString("%1: %2").arg(tr("Nym Id")).arg(qstrVerifierId);
                 const QString qstrVerifierLabel = QString("%1: %2").arg(tr("Verifier")).arg(QString::fromStdString(str_verifier_name));
                 // ---------------------------------------
                 const QString qstrSignatureLabel   = QString("%1").arg(qstrSignature.isEmpty() ? tr("missing signature") : tr("signature exists"));
@@ -849,67 +862,6 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
     case 0: // "Profile" tab
         if (m_pOwner)
         {
-            if (treeWidgetClaims_)
-            {
-                treeWidgetClaims_->setParent(NULL);
-                treeWidgetClaims_->disconnect();
-                treeWidgetClaims_->deleteLater();
-
-                treeWidgetClaims_ = NULL;
-            }
-
-            treeWidgetClaims_ = new QTreeWidget;
-
-            treeWidgetClaims_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-            treeWidgetClaims_->setAlternatingRowColors(true);
-            treeWidgetClaims_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
-            treeWidgetClaims_->setColumnCount(5);
-            // ---------------------------------------
-            QStringList labels = {
-                  tr("Value")
-                , tr("Type")
-                , tr("Nym")
-                , tr("Primary")
-                , tr("Active")
-                , tr("Polarity")
-            };
-            treeWidgetClaims_->setHeaderLabels(labels);
-            // -------------------------------
-            QHBoxLayout * phBox        = new QHBoxLayout;
-            QPushButton * pEditButton  = new QPushButton(tr("Edit Profile"));
-            QSpacerItem * pSpacerItem1 = new QSpacerItem(100, 50);
-            QSpacerItem * pSpacerItem2 = new QSpacerItem(100, 50);
-
-            connect(pEditButton, SIGNAL(clicked(bool)), this, SLOT(on_btnEditProfile_clicked()));
-
-            phBox->addSpacerItem(pSpacerItem1);
-            phBox->addWidget(pEditButton);
-            phBox->addSpacerItem(pSpacerItem2);
-            // -------------------------------
-            QVBoxLayout * pvBox = new QVBoxLayout;
-
-            QLabel * pLabel = new QLabel( QString("%1:").arg(tr("Profile")) );
-
-            pvBox->setAlignment(Qt::AlignTop);
-            pvBox->addWidget   (pLabel);
-            pvBox->addWidget   (treeWidgetClaims_);
-            pvBox->addLayout   (phBox);
-            // -------------------------------
-            pReturnValue = new QWidget;
-            pReturnValue->setContentsMargins(0, 0, 0, 0);
-            pReturnValue->setLayout(pvBox);
-
-            treeWidgetClaims_->setContextMenuPolicy(Qt::CustomContextMenu);
-
-            connect(treeWidgetClaims_, SIGNAL(customContextMenuRequested(const QPoint &)),
-                    this, SLOT(on_treeWidget_customContextMenuRequested(const QPoint &)));
-
-        }
-        break;
-
-    case 1: // "Credentials" tab
-        if (m_pOwner)
-        {
             if (pLabelNymId_)
             {
                 pLabelNymId_->setParent(NULL);
@@ -918,7 +870,8 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
 
                 pLabelNymId_ = NULL;
             }
-            pLabelNymId_ = new QLabel(tr("Nym ID: "));
+            pLabelNymId_ = new QLabel(Moneychanger::It()->expertMode() ?
+                        tr("Profile for Nym ID: ") : tr("Profile: "));
 
             if (pToolButtonNymId_)
             {
@@ -952,24 +905,94 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
             pLineEditNymId_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
             pLineEditNymId_->setStyleSheet("QLineEdit { background-color: lightgray }");
             // -------------------------------
-            QHBoxLayout * phBox = new QHBoxLayout;
-            QWidget * pWidgetNymId = new QWidget;
+            QHBoxLayout * phBoxNymId = new QHBoxLayout;
+            QWidget * pWidgetNymId   = new QWidget;
 
-//            phBox->setMargin(0);
-//            pWidgetNymId->setContentsMargins(0,0,0,0);
+//            QMargins margins = pWidgetNymId->contentsMargins();
+//            QMargins newMargins(margins.left(), margins.top(), margins.right(), 0);
+//            pWidgetNymId->setContentsMargins(newMargins);
 
-            QMargins margins = pWidgetNymId->contentsMargins();
+            phBoxNymId->setContentsMargins(0, 0, 0, 0);
 
-            QMargins newMargins(margins.left(), margins.top(), margins.right(), 0);
+            phBoxNymId->addWidget(pLabelNymId_);
+            phBoxNymId->addWidget(pLineEditNymId_);
+            phBoxNymId->addWidget(pToolButtonNymId_);
 
-            pWidgetNymId->setContentsMargins(newMargins);
+            if (!Moneychanger::It()->expertMode())
+            {
+                pLineEditNymId_  ->setVisible(false);
+                pToolButtonNymId_->setVisible(false);
+            }
 
-            phBox->addWidget(pLabelNymId_);
-            phBox->addWidget(pLineEditNymId_);
-            phBox->addWidget(pToolButtonNymId_);
-
-            pWidgetNymId->setLayout(phBox);
+            pWidgetNymId->setLayout(phBoxNymId);
             // -------------------------------
+            if (treeWidgetClaims_)
+            {
+                treeWidgetClaims_->setParent(NULL);
+                treeWidgetClaims_->disconnect();
+                treeWidgetClaims_->deleteLater();
+
+                treeWidgetClaims_ = NULL;
+            }
+
+            treeWidgetClaims_ = new QTreeWidget;
+
+            treeWidgetClaims_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+            treeWidgetClaims_->setAlternatingRowColors(true);
+            treeWidgetClaims_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+            treeWidgetClaims_->setColumnCount(5);
+            // ---------------------------------------
+            QStringList labels = {
+                  tr("Value")
+                , tr("Type")
+                , tr("Nym")
+                , tr("Primary")
+                , tr("Active")
+                , tr("Polarity")
+            };
+            treeWidgetClaims_->setHeaderLabels(labels);
+            // -------------------------------
+            QHBoxLayout * phBox        = new QHBoxLayout;
+            QPushButton * pEditButton  = new QPushButton(tr("Edit Profile"));
+            QSpacerItem * pSpacerItem1 = new QSpacerItem(0, 0, QSizePolicy::Expanding);
+            QSpacerItem * pSpacerItem2 = new QSpacerItem(0, 0, QSizePolicy::Expanding);
+
+            connect(pEditButton, SIGNAL(clicked(bool)), this, SLOT(on_btnEditProfile_clicked()));
+
+            phBox->addSpacerItem(pSpacerItem1);
+            phBox->addWidget(pEditButton);
+            phBox->addSpacerItem(pSpacerItem2);
+            // -------------------------------
+            QVBoxLayout * pvBox = new QVBoxLayout;
+            // -------------------------------
+//            QFrame * line = new QFrame;
+//            line->setFrameShape(QFrame::HLine);
+//            line->setFrameShadow(QFrame::Sunken);
+            // -------------------------------
+//            QLabel * pLabel = new QLabel( QString("%1:").arg(tr("Profile")) );
+
+            pvBox->setAlignment(Qt::AlignTop);
+            pvBox->addWidget(pWidgetNymId);
+//            pvBox->addWidget(line);
+//            pvBox->addWidget   (pLabel);
+            pvBox->addWidget   (treeWidgetClaims_);
+            pvBox->addLayout   (phBox);
+            // -------------------------------
+            pReturnValue = new QWidget;
+            pReturnValue->setContentsMargins(0, 0, 0, 0);
+            pReturnValue->setLayout(pvBox);
+
+            treeWidgetClaims_->setContextMenuPolicy(Qt::CustomContextMenu);
+
+            connect(treeWidgetClaims_, SIGNAL(customContextMenuRequested(const QPoint &)),
+                    this, SLOT(on_treeWidget_customContextMenuRequested(const QPoint &)));
+
+        }
+        break;
+
+    case 1: // "Credentials" tab
+        if (m_pOwner)
+        {
             if (m_pCredentials)
             {
                 m_pCredentials->setParent(NULL);
@@ -985,7 +1008,6 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
             QVBoxLayout * pvBox = new QVBoxLayout;
 
             pvBox->setMargin(0);
-            pvBox->addWidget(pWidgetNymId);
             pvBox->addWidget(m_pCredentials);
 
             pWidgetCred->setLayout(pvBox);
@@ -1207,9 +1229,9 @@ QWidget * MTNymDetails::createNewAddressWidget(QString strNymID)
     // -----------------------------------------------
     pWidget->setLayout(layout);
     // -----------------------------------------------
-    layout->setStretch(0,  0);
+    layout->setStretch(0,  1);
     layout->setStretch(1, -1);
-    layout->setStretch(2,  0);
+    layout->setStretch(2,  3);
     layout->setStretch(3,  1);
     // -----------------------------------------------
     connect(pBtnAdd, SIGNAL(clicked()), this, SLOT(on_btnAddressAdd_clicked()));
@@ -1357,9 +1379,9 @@ QWidget * MTNymDetails::createSingleAddressWidget(QString strNymID, int nMethodI
 
     connect(pBtnDelete, SIGNAL(clicked()), this, SLOT(on_btnAddressDelete_clicked()));
     // ----------------------------------------------------------
-    layout->setStretch(0,  0);
+    layout->setStretch(0,  1);
     layout->setStretch(1, -1);
-    layout->setStretch(2,  0);
+    layout->setStretch(2,  3);
     layout->setStretch(3,  1);
     // ----------------------------------------------------------
     pMethod ->home(false);
