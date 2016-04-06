@@ -573,6 +573,9 @@ void MTPageNym_AltLocation::initializePage() //virtual
 
     for (auto & indexSection: sections)  //Names (for example)
     {
+        if (opentxs::proto::CONTACTSECTION_RELATIONSHIPS == indexSection)
+            continue;
+        // ----------------------------------------
         nCurrentTab++;
         bool bAddedInitialItem = false;
 
@@ -582,11 +585,11 @@ void MTPageNym_AltLocation::initializePage() //virtual
         QWidget * pTab = new QWidget(this);
         std::string sectionName = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionName (indexSection);
 
-        if (opentxs::proto::CONTACTSECTION_RELATIONSHIPS == indexSection)
-        {
-            pTab->setEnabled(false);
-            pTab->setVisible(false);
-        }
+//        if (opentxs::proto::CONTACTSECTION_RELATIONSHIPS == indexSection)
+//        {
+//            pTab->setEnabled(false);
+//            pTab->setVisible(false);
+//        }
         // ----------------------------------------
 
 //      pTab->setWindowTitle(QString::fromStdString(sectionName));
