@@ -1089,7 +1089,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
     typedef std::map <std::string, opentxs::OT_API::ClaimSet> mapOfNymClaims;
     typedef std::map <std::string, std::string> mapOfNymNames;
 
-    mapOfNymClaims nym_claims; // Each pair in this map has a NymID and a ClaimSet.
+//  mapOfNymClaims nym_claims; // Each pair in this map has a NymID and a ClaimSet.
     mapOfNymNames  nym_names;  // Each pair in this map has a NymID and a Nym Name.
 
     bool bANymWasChecked = false;
@@ -1109,6 +1109,8 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
         if (!str_nym_id.empty())
         {
             auto pCurrentNym = opentxs::App::Me().Contract().Nym(id_nym);
+//          const opentxs::Nym * pCurrentNym =
+//                opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
 
             // check_nym if not already downloaded.
             if (!pCurrentNym)
@@ -1134,17 +1136,18 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
                     if (1 == nReturnVal)
                     {
                         pCurrentNym = opentxs::App::Me().Contract().Nym(id_nym);
+//                      pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->reloadAndGetNym(id_nym);
                         bANymWasChecked = true;
                         emit nymWasJustChecked(qstrNymID);
                     }
                 }
             }
 
-            if ((nullptr != pCurrentNym) && !bANymWasChecked)
+            if (pCurrentNym && !bANymWasChecked)
             {
                 opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
                 // ---------------------------------------
-                nym_claims.insert( NymClaims(str_nym_id, claims) );
+//              nym_claims.insert( NymClaims(str_nym_id, claims) );
                 nym_names.insert(std::pair<std::string, std::string>(str_nym_id, str_nym_name));
             }
         }
@@ -1178,8 +1181,11 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
     // -------------------------------------------------
     // This means NONE of the contact's Nyms had any claims.
     // (So there's nothing to put on this tree. Done.)
-    if (nym_claims.empty())
-        return;
+//    if (nym_claims.empty())
+//        return;
+    // UPDATE: Even if Bob has no claims, ALICE might have made a relationship claim ABOUT
+    // Bob, which would be displayed here (giving Bob the opportunity to confirm/refute.)
+    // (So we can't just return here.)
     // -------------------------------------------------
 //  QPointer<ModelClaims>      pModelClaims_;
 //  QPointer<ClaimsProxyModel> pProxyModelClaims_;
@@ -1293,12 +1299,13 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
             QVariant    qvarAttPrimary        = pRelationships->data(sourceIndexAttPrimary);
             // ----------------------------------------------------------------------------
             const QString qstrClaimId       = qvarClaimId.isValid() ? qvarClaimId.toString() : "";
+            const QString qstrClaimValue    = qvarValue  .isValid() ? qvarValue  .toString() : "";
             // ----------------------------------------------------------------------------
-            const std::string claim_id      = qstrClaimId.isEmpty() ? qstrClaimId.toStdString() : "";
-            const std::string claim_nym_id  = qvarNymId  .isValid() ? qvarNymId.toString().toStdString() : "";
-            const uint32_t    claim_section = qvarSection.isValid() ? qvarSection.toUInt() : 0;
-            const uint32_t    claim_type    = qvarType   .isValid() ? qvarType.toUInt() : 0;
-            const std::string claim_value   = qvarValue  .isValid() ? qvarValue.toString().toStdString() : "";
+            const std::string claim_id      = qstrClaimId   .isEmpty() ? "" : qstrClaimId.toStdString();
+            const std::string claim_value   = qstrClaimValue.isEmpty() ? "" : qstrClaimValue.toStdString();
+            const std::string claim_nym_id  = qvarNymId     .isValid() ? qvarNymId.toString().toStdString() : "";
+            const uint32_t    claim_section = qvarSection   .isValid() ? qvarSection.toUInt() : 0;
+            const uint32_t    claim_type    = qvarType      .isValid() ? qvarType.toUInt() : 0;
             // ----------------------------------------------------------------------------
             const bool        claim_active  = qvarAttActive .isValid() ? qvarAttActive .toBool() : false;
             const bool        claim_primary = qvarAttPrimary.isValid() ? qvarAttPrimary.toBool() : false;
@@ -1339,12 +1346,19 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
             claim_item->setData(0, Qt::UserRole, qstrClaimId);
             claim_item->setData(2, Qt::UserRole, QString::fromStdString(claim_nym_id)); // For now this is Alice's Nym Id. Not sure how we'll use it.
-            // ----------------------------------------
-            // Since this is someone else's claim about me, I should see if I have already confirmed or refuted it.
-            bool bPolarity = false;
-            const bool bGotPolarity = MTContactHandler::getInstance()->getPolarityIfAny(QString::fromStdString(claim_id),
-                                                                                        QString::fromStdString(claim_value), bPolarity);
 
+//            claim_item->setData(0, Qt::UserRole, QString::fromStdString(claim_nym_id)); // Alice's Nym Id. The person who made the claim. Claimant Nym Id.
+//            claim_item->setData(1, Qt::UserRole, qstrClaimId);
+//            claim_item->setData(2, Qt::UserRole, QString::fromStdString(claim_value)); // Verifier Nym Id. Alice made a claim about Charlie (this current Contact in the address book), who verifies her claim. So Charlie's ID goes in Alice's claim_value.
+            // ----------------------------------------
+            // Since this is someone else's claim about this contact, I should see if this contact has already confirmed or refuted it.
+            bool bPolarity = false;
+            const bool bGotPolarity = MTContactHandler::getInstance()->getPolarityIfAny(qstrClaimId,
+                                                                                        qstrClaimValue, bPolarity);
+
+//            qDebug() << "DEBUGGING CONTACT DETAILS: QString::fromStdString(claim_value): " << QString::fromStdString(claim_value);
+//            qDebug() << "DEBUGGING CONTACT DETAILS: QString::fromStdString(str_nym_id): " << QString::fromStdString(str_nym_id);
+            
             if (bGotPolarity)
             {
                 claim_item->setText(5, bPolarity ? tr("Confirmed") : tr("Refuted") );
@@ -1460,8 +1474,11 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
     for (auto & indexSection: sections)  //Names (for example)
     {
-        QMap<uint32_t, QString> mapTypeNames;
+        if (opentxs::proto::CONTACTSECTION_RELATIONSHIPS == indexSection)
+            continue;
         // ----------------------------------------
+        QMap<uint32_t, QString> mapTypeNames;
+
         std::string        sectionName  = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionName (indexSection); // Names, Email, URL, etc.
         std::set<uint32_t> sectionTypes = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionTypes(indexSection); // Business, Personal, etc.
 
@@ -1707,8 +1724,8 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
                     str_verifier_name = theLookup.GetNymName(verifier_id, "");
 
 //              const QString qstrClaimIdLabel = QString("%1: %2").arg(tr("Claim Id")).arg(qstrVerificationClaimId);
-                const QString qstrClaimantIdLabel = QString("%1: %2").arg(tr("Claimant Nym Id")).arg(qstrClaimantId);
-                const QString qstrVerifierIdLabel = QString("%1: %2").arg(tr("Verifier Nym Id")).arg(qstrVerifierId);
+                const QString qstrClaimantIdLabel = QString("%1: %2").arg(tr("Claimant")).arg(qstrClaimantId);
+                const QString qstrVerifierIdLabel = QString("%1: %2").arg(tr("Nym Id")).arg(qstrVerifierId);
                 const QString qstrVerifierLabel = QString("%1: %2").arg(tr("Verifier")).arg(QString::fromStdString(str_verifier_name));
                 // ---------------------------------------
                 const QString qstrSignatureLabel   = QString("%1").arg(qstrSignature.isEmpty() ? tr("missing signature") : tr("signature exists"));
