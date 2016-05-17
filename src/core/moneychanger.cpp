@@ -565,7 +565,9 @@ void Moneychanger::onCheckNym(QString nymId)
             {
                 MTContactHandler::getInstance()->NotifyOfNymNamePair(nymId, claim_value);
             }
-            if (claim_section == opentxs::proto::CONTACTSECTION_BITMESSAGE)
+            if ((claim_section == opentxs::proto::CONTACTSECTION_MESSAGING) &&
+                (claim_type == opentxs::proto::CITEMTYPE_BITMESSAGE)
+            )
             {
                 // NOTE: May not need to do anything here. We already imported the claims,
                 // and we can already search the claims for Bitmessage address and NymID,
