@@ -8,9 +8,10 @@
 #include "core/ExportWrapper.h"
 #include "core/mapidname.hpp"
 
-#include <opentxs/client/OpenTransactions.hpp>
 #include <opentxs/client/OTRecordList.hpp>
 #include <opentxs/core/Nym.hpp>
+#include <opentxs/core/Proto.hpp>
+#include <opentxs/core/Types.hpp>
 
 #include <core/network/Network.h>
 
@@ -28,8 +29,8 @@ namespace opentxs {
     //class Claim;
 }
 
-int claimPolarityToInt(opentxs::OT_API::ClaimPolarity polarity);
-opentxs::OT_API::ClaimPolarity intToClaimPolarity(int polarity);
+int claimPolarityToInt(opentxs::ClaimPolarity polarity);
+opentxs::ClaimPolarity intToClaimPolarity(int polarity);
 
 
 class MTNameLookupQT : public opentxs::OTNameLookup
@@ -313,17 +314,20 @@ public:
 //  bool notifyClaimRefute(const QString & qstrClaimId, const QString & qstrVerifierNymID);
 //  bool notifyClaimNoComment(const QString & qstrClaimId, const QString & qstrVerifierNymID);
   // ----------------------------------------------------------
-  bool upsertClaim(const opentxs::Nym& nym, const opentxs::Claim& claim);
+  bool upsertClaim(
+      const opentxs::Nym& nym,
+      const uint32_t section,
+      const opentxs::proto::ContactItem& claim);
 
   bool upsertClaimVerification(const std::string & claimant_nym_id,
                                const std::string & verifier_nym_id,
-                               const opentxs::OT_API::Verification & verification,
+                               const opentxs::proto::Verification & verification,
                                const bool bIsInternal=true);
 
   void clearClaimsForNym(const QString & qstrNymId);
 protected:
   bool claimVerificationLowlevel(const QString & qstrClaimId, const QString & qstrClaimantNymId,
-                                 const QString & qstrVerifierNymId, opentxs::OT_API::ClaimPolarity claimPolarity);
+                                 const QString & qstrVerifierNymId, opentxs::ClaimPolarity claimPolarity);
 
   // ----------------------------------------------------------
   public:

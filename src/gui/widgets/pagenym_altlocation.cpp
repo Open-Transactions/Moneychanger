@@ -569,12 +569,13 @@ void MTPageNym_AltLocation::initializePage() //virtual
     //QList<QWidget *>  listTabs_;
     int nCurrentTab = 0;
 
-    std::set<uint32_t> sections = opentxs::OTAPI_Wrap::OTAPI()->GetContactSections();
+    const auto sections =
+        opentxs::OTAPI_Wrap::It()->ContactSectionList();
 
-    for (auto & indexSection: sections)  //Names (for example)
-    {
-        if (opentxs::proto::CONTACTSECTION_RELATIONSHIPS == indexSection)
+    for (auto & indexSection: sections) {
+        if (opentxs::proto::CONTACTSECTION_RELATIONSHIPS == indexSection) {
             continue;
+        }
         // ----------------------------------------
         nCurrentTab++;
         bool bAddedInitialItem = false;
@@ -583,29 +584,20 @@ void MTPageNym_AltLocation::initializePage() //virtual
         // ----------------------------------------
         // Create a new (tab page) Widget.
         QWidget * pTab = new QWidget(this);
-        std::string sectionName = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionName (indexSection);
-
-//        if (opentxs::proto::CONTACTSECTION_RELATIONSHIPS == indexSection)
-//        {
-//            pTab->setEnabled(false);
-//            pTab->setVisible(false);
-//        }
-        // ----------------------------------------
-
-//      pTab->setWindowTitle(QString::fromStdString(sectionName));
-        // ----------------------------
-        // Setup the widget
-
-        //QMap<int, QList<GroupBoxContactItems *> * > mapGroupBoxLists_;
+        const std::string sectionName =
+            opentxs::OTAPI_Wrap::It()->ContactSectionName(indexSection);
 
         QList<GroupBoxContactItems *> * pListGroupBoxes = new QList<GroupBoxContactItems *>;
 
-        std::set<uint32_t> sectionTypes = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionTypes(indexSection);
+        const auto sectionTypes =
+            opentxs::OTAPI_Wrap::It()->ContactSectionTypeList(indexSection);
 
-        for (auto & indexSectionType: sectionTypes)
-        {
-            std::string typeName = opentxs::OTAPI_Wrap::OTAPI()->GetContactTypeName(indexSectionType);
-            mapTypeNames.insert(indexSectionType, QString::fromStdString(typeName));
+        for (const auto& indexSectionType: sectionTypes) {
+            const std::string typeName =
+                opentxs::OTAPI_Wrap::It()->ContactTypeName(indexSectionType);
+            mapTypeNames.insert(
+                indexSectionType,
+                QString::fromStdString(typeName));
         }
         // -------------------------------
         QVBoxLayout * pvBox = new QVBoxLayout(pTab);

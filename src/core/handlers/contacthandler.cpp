@@ -378,17 +378,17 @@ static void blah()
 
 
 
-//    opentxs::OT_API::VerificationSet   verification_set = opentxs::OTAPI_Wrap::OTAPI()->GetVerificationSet(*pVerifierNym);
-//    opentxs::OT_API::VerificationMap & internal         = std::get<0>(verification_set);
-//    opentxs::OT_API::VerificationMap & external         = std::get<1>(verification_set);
+//    opentxs::proto::VerificationSet   verification_set = opentxs::OTAPI_Wrap::OTAPI()->GetVerificationSet(*pVerifierNym);
+//    opentxs::proto::VerificationSetMap & internal         = std::get<0>(verification_set);
+//    opentxs::proto::VerificationSetMap & external         = std::get<1>(verification_set);
 //    std::set<std::string>            & repudiatedIDs    = std::get<2>(verification_set);
 //    // ------------------------------
 
 //    if (bInsertingNew)
 //    {
-//        opentxs::OT_API::Verification verification;
+//        opentxs::proto::VerificationSet verification;
 
-//        internal.insert(std::pair<std::string, std::set<opentxs::OT_API::Verification>>());
+//        internal.insert(std::pair<std::string, std::set<opentxs::proto::VerificationSet>>());
 //    }
 //    else // Editing existing.
 //    {
@@ -482,7 +482,7 @@ static void blah()
 
 
 bool MTContactHandler::claimVerificationLowlevel(const QString & qstrClaimId, const QString & qstrClaimantNymId,
-                                                 const QString & qstrVerifierNymId, opentxs::OT_API::ClaimPolarity claimPolarity)
+                                                 const QString & qstrVerifierNymId, opentxs::ClaimPolarity claimPolarity)
 {
     if (qstrVerifierNymId.isEmpty() || qstrClaimId.isEmpty())
         return false;
@@ -490,61 +490,34 @@ bool MTContactHandler::claimVerificationLowlevel(const QString & qstrClaimId, co
 
     qDebug() << "DEBUGGING: claimVerificationLowlevel: USER selected claimPolarity (and setting in OT): " << claimPolarityToInt(claimPolarity);
 
-
-//resume
-
-    opentxs::String strVerifierNymId = qstrVerifierNymId.toStdString();
-    opentxs::Identifier verifierNymId(strVerifierNymId);
-    opentxs::Nym * pVerifierNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(verifierNymId, false, __FUNCTION__);
-    if (nullptr == pVerifierNym) {
-        qDebug() << __FUNCTION__ << ": Private Nym not found for verifier: " << qstrVerifierNymId;
-        return false;
-    }
-    // ------------------------------
     bool bChanged = false; // So we know if OT had to change anything when it set the verification. (Maybe it was already there.)
 
     opentxs::OTPasswordData thePWData(QString(QObject::tr("We've almost bubbled up to the top!! Confirming/refuting a claim.")).toStdString().c_str());
 
-    opentxs::OT_API::VerificationSet the_set = opentxs::OTAPI_Wrap::OTAPI()->SetVerification(
-                *pVerifierNym,
+    auto data = opentxs::OTAPI_Wrap::It()->SetVerification(
                 bChanged,
+                qstrVerifierNymId.toStdString(),
                 qstrClaimantNymId.toStdString(),
                 qstrClaimId.toStdString(),
                 claimPolarity,
                 0, // start. todo.
-                0, // end. todo. bitemperal.
-                &thePWData);
-//    Q_UNUSED(verification_set);
+                0); // end. todo. bitemporal.
+
+    const auto the_set =
+        opentxs::proto::DataToProto<opentxs::proto::VerificationSet>(
+            {data.c_str(), data.length()});
 
 
     qDebug() << QString("%1").arg(QString(bChanged ? "YES, I CHANGED A VALUE (ACCORDING TO OT)" : "**NO** didn't CHANGE A VALUE, ACCORDING TO OT." ));
 
-
-
-
-
-
-
-
-    opentxs::OT_API::VerificationMap       & internalSet   = std::get<0>(the_set);
-    opentxs::OT_API::VerificationMap       & externalSet   = std::get<1>(the_set);
-    std::set<std::string>                  & repudiatedIds = std::get<2>(the_set);
-
     // Internal verifications:
     // Here I'm looping through pCurrentNym's verifications of other people's claims.
-    for (auto& claimant: internalSet)
-    {
+    for (auto& claimant: the_set.internal().identity()) {
         // Here we're looping through those other people. (Claimants.)
-
-        const std::string                         str_claimant_id  = claimant.first;
-        std::set<opentxs::OT_API::Verification> & verification_set = claimant.second;
-
-        for (auto& verification : verification_set)
-        {
-            const bool ver_polarity = std::get<2>(verification);
+        for (auto& verification : claimant.verification()) {
+            const bool ver_polarity = verification.valid();
 
             qDebug() << QString("%1").arg(QString(ver_polarity ? "==>Polarity is now positive" : "==>Polarity is now negative" ));
-
         }
     }
 
@@ -553,17 +526,17 @@ bool MTContactHandler::claimVerificationLowlevel(const QString & qstrClaimId, co
 
 bool MTContactHandler::claimVerificationConfirm(const QString & qstrClaimId, const QString & qstrClaimantNymId, const QString & qstrVerifierNymId)
 {
-    return claimVerificationLowlevel(qstrClaimId, qstrClaimantNymId, qstrVerifierNymId, opentxs::OT_API::ClaimPolarity::POSITIVE);
+    return claimVerificationLowlevel(qstrClaimId, qstrClaimantNymId, qstrVerifierNymId, opentxs::ClaimPolarity::POSITIVE);
 }
 
 bool MTContactHandler::claimVerificationRefute(const QString & qstrClaimId, const QString & qstrClaimantNymId, const QString & qstrVerifierNymId)
 {
-    return claimVerificationLowlevel(qstrClaimId, qstrClaimantNymId, qstrVerifierNymId, opentxs::OT_API::ClaimPolarity::NEGATIVE);
+    return claimVerificationLowlevel(qstrClaimId, qstrClaimantNymId, qstrVerifierNymId, opentxs::ClaimPolarity::NEGATIVE);
 }
 
 bool MTContactHandler::claimVerificationNoComment(const QString & qstrClaimId, const QString & qstrClaimantNymId, const QString & qstrVerifierNymId)
 {
-    return claimVerificationLowlevel(qstrClaimId, qstrClaimantNymId, qstrVerifierNymId, opentxs::OT_API::ClaimPolarity::NEUTRAL);
+    return claimVerificationLowlevel(qstrClaimId, qstrClaimantNymId, qstrVerifierNymId, opentxs::ClaimPolarity::NEUTRAL);
 }
 
 bool MTContactHandler::getPolarityIfAny(const QString & claim_id, const QString & verifier_nym_id, bool & bPolarity)
@@ -583,15 +556,15 @@ bool MTContactHandler::getPolarityIfAny(const QString & claim_id, const QString 
        if (nRows > 0)
        {
            const int polarity = DBHandler::getInstance()->queryInt(str_select, 1, 0);
-           opentxs::OT_API::ClaimPolarity claimPolarity = intToClaimPolarity(polarity);
+           opentxs::ClaimPolarity claimPolarity = intToClaimPolarity(polarity);
 
-           if (opentxs::OT_API::ClaimPolarity::NEUTRAL == claimPolarity)
+           if (opentxs::ClaimPolarity::NEUTRAL == claimPolarity)
                qDebug() << __FUNCTION__ << ": ERROR! A claim verification can't have neutral polarity, since that "
                            "means no verification exists. How did it get into the database this way?";
            else
            {
                bReturnValue = true;
-               bPolarity = (opentxs::OT_API::ClaimPolarity::NEGATIVE == claimPolarity) ? false : true;
+               bPolarity = (opentxs::ClaimPolarity::NEGATIVE == claimPolarity) ? false : true;
            }
 
 
@@ -790,7 +763,10 @@ void MTContactHandler::clearClaimsForNym(const QString & qstrNymId)
     }
 }
 
-bool MTContactHandler::upsertClaim(const opentxs::Nym& nym, const opentxs::Claim& claim)
+bool MTContactHandler::upsertClaim(
+    const opentxs::Nym& nym,
+    const uint32_t section,
+    const opentxs::proto::ContactItem& claim)
 {
     QMutexLocker locker(&m_Mutex);
 
@@ -799,26 +775,27 @@ bool MTContactHandler::upsertClaim(const opentxs::Nym& nym, const opentxs::Claim
     const std::string         str_nym_id(strNym.Get());
     const QString             qstrNymId(QString::fromStdString(str_nym_id));
 
-    // Claim fields: identifier, section, type, value, start, end, attributes
-    //typedef std::tuple<std::string, uint32_t, uint32_t, std::string, int64_t, int64_t, std::set<uint32_t>> Claim;
-    const QString            claim_id         = QString::fromStdString(std::get<0>(claim)); // identifier
-    const uint32_t           claim_section    = std::get<1>(claim); // section
-    const uint32_t           claim_type       = std::get<2>(claim); // type
-    const QString            claim_value      = QString::fromStdString(std::get<3>(claim)); // value
-    const int64_t            claim_start      = std::get<4>(claim); // start
-    const int64_t            claim_end        = std::get<5>(claim); // end
-    const std::set<uint32_t> claim_attributes = std::get<6>(claim); // attributes
+    const QString claim_id = QString::fromStdString(claim.id());
+    const uint32_t claim_section = section;
+    const uint32_t claim_type = claim.type();
+    const QString claim_value = QString::fromStdString(claim.value());
+    const int64_t claim_start = claim.start();
+    const int64_t claim_end = claim.end();
 
     bool claim_att_active  = false;
     bool claim_att_primary = false;
 
     opentxs::NumList numlistAttributes;
-    for (auto& attribute: claim_attributes)
-    {
+    for (const auto& attribute: claim.attribute()) {
         numlistAttributes.Add(attribute);
 
-        if (opentxs::proto::CITEMATTR_ACTIVE  == attribute) claim_att_active  = true;
-        if (opentxs::proto::CITEMATTR_PRIMARY == attribute) claim_att_primary = true;
+        if (opentxs::proto::CITEMATTR_ACTIVE  == attribute) {
+            claim_att_active  = true;
+        }
+
+        if (opentxs::proto::CITEMATTR_PRIMARY == attribute) {
+            claim_att_primary = true;
+        }
     }
 
     opentxs::String strAttributes;
@@ -894,7 +871,7 @@ bool MTContactHandler::upsertClaim(const opentxs::Nym& nym, const opentxs::Claim
 
 bool MTContactHandler::upsertClaimVerification(const std::string & claimant_nym_id,
                                                const std::string & verifier_nym_id,
-                                               const opentxs::OT_API::Verification & verification,
+                                               const opentxs::proto::Verification & verification,
                                                const bool bIsInternal/*=true*/)
 {
     QMutexLocker locker(&m_Mutex);
@@ -904,14 +881,11 @@ bool MTContactHandler::upsertClaimVerification(const std::string & claimant_nym_
     // verification identifier, claim identifier, polarity, start time, end time, signature
 //  typedef std::tuple<std::string, std::string, bool, int64_t, int64_t, std::string> Verification;
 
-    const QString  ver_id       = QString::fromStdString(std::get<0>(verification));
-    const QString  ver_claim_id = QString::fromStdString(std::get<1>(verification));
-    const bool     ver_polarity = std::get<2>(verification);
-    const int64_t  ver_start    = std::get<3>(verification);
-    const int64_t  ver_end      = std::get<4>(verification);
-
-
-
+    const QString  ver_id       = QString::fromStdString(verification.id());
+    const QString  ver_claim_id = QString::fromStdString(verification.claim());
+    const bool     ver_polarity = verification.valid();
+    const int64_t  ver_start    = verification.start();
+    const int64_t  ver_end      = verification.end();
 
     qDebug() << "DEBUGGING: upsertClaimVerification: ver_polarity according to OT is NOT neutral!: " << QString(ver_polarity ? "True" : "False");
 
@@ -919,7 +893,7 @@ bool MTContactHandler::upsertClaimVerification(const std::string & claimant_nym_
     QString  ver_sig("");
 
     if (!bIsInternal)
-        ver_sig = QString::fromStdString(std::get<5>(verification));
+        ver_sig = QString::fromStdString(verification.sig().signature());
     // NOTE: Signature is always an empty string for internal verifications.
     // That's because OT already verified it, before even allowing it onto the
     // internal list in the first place. So we wouldn't have even seen this at all,
@@ -957,7 +931,7 @@ bool MTContactHandler::upsertClaimVerification(const std::string & claimant_nym_
                                  "  `ver_start`, `ver_end`, `ver_signature`, `ver_signature_verified`)"
                                  "  VALUES('%1', '%2', '%3', '%4', %5, %6, %7, '%8', %9)").
                 arg(ver_id).arg(QString::fromStdString(claimant_nym_id)).arg(qstrVerifierNymId).arg(ver_claim_id).
-                arg(ver_polarity ? claimPolarityToInt(opentxs::OT_API::ClaimPolarity::POSITIVE) : claimPolarityToInt(opentxs::OT_API::ClaimPolarity::NEGATIVE)).
+                arg(ver_polarity ? claimPolarityToInt(opentxs::ClaimPolarity::POSITIVE) : claimPolarityToInt(opentxs::ClaimPolarity::NEGATIVE)).
                 arg(ver_start).
                 arg(ver_end).arg(ver_sig).
                 arg(bIsInternal ? 1 : 0);
@@ -966,7 +940,7 @@ bool MTContactHandler::upsertClaimVerification(const std::string & claimant_nym_
                              " `ver_claimant_nym_id`='%1', `ver_verifier_nym_id`='%2',`ver_claim_id`='%3',`ver_polarity`=%4,`ver_start`=%5,`ver_end`=%6,"
                              " `ver_signature`='%7' WHERE `ver_id`='%8'").
                 arg(QString::fromStdString(claimant_nym_id)).arg(qstrVerifierNymId).arg(ver_claim_id).
-                arg(ver_polarity ? claimPolarityToInt(opentxs::OT_API::ClaimPolarity::POSITIVE) : claimPolarityToInt(opentxs::OT_API::ClaimPolarity::NEGATIVE)).
+                arg(ver_polarity ? claimPolarityToInt(opentxs::ClaimPolarity::POSITIVE) : claimPolarityToInt(opentxs::ClaimPolarity::NEGATIVE)).
                 arg(ver_start).
                 arg(ver_end).arg(ver_sig).
                 arg(ver_id);
