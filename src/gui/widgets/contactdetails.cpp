@@ -25,6 +25,7 @@
 #include <opentxs/client/OpenTransactions.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/Nym.hpp>
+#include <opentxs/core/Types.hpp>
 #include <opentxs/core/app/App.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
 #include <opentxs/client/OTWallet.hpp>
@@ -587,13 +588,15 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                         DlgChooser theChooser(this);
                         mapIDName & the_map = theChooser.m_map;
                         // -----------------------------------------------
-                        std::set<uint32_t> sectionTypes =
-                                opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionTypes(opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
+                        auto sectionTypes =
+                                opentxs::OTAPI_Wrap::It()->ContactSectionTypeList(
+                                    opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
                         QMap<uint32_t, QString> mapTypeNames;
 
-                        for (auto & indexSectionType: sectionTypes)
-                        {
-                            std::string typeName = opentxs::OTAPI_Wrap::OTAPI()->GetContactTypeName(indexSectionType);
+                        for (auto & indexSectionType: sectionTypes) {
+                            auto typeName =
+                                opentxs::OTAPI_Wrap::It()->ContactTypeName(
+                                    indexSectionType);
                             mapTypeNames.insert(indexSectionType, QString::fromStdString(typeName));
 
                             the_map.insert(QString::number(indexSectionType), QString::fromStdString(typeName));
@@ -629,32 +632,26 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                             return;
                         }
                         // ------------------------------------------------
-                        // claim identifier, section, type, value, start time, end time, attributes
-//                      typedef std::tuple<std::string, uint32_t, uint32_t, std::string, int64_t, int64_t, std::set<uint32_t>> Claim;
+                        opentxs::proto::ContactItem item;
+                        item.set_version(1);
+                        item.set_type(
+                            static_cast<opentxs::proto::ContactItemType>
+                                (sectionType));
+                        item.set_value(qstrContactNymId.toStdString());
+                        item.set_start(0);
+                        item.set_end(0);
+                        item.add_attribute(opentxs::proto::CITEMATTR_ACTIVE);
 
-                        const std::string claim_identifier("");
-                        const uint32_t claim_section = opentxs::proto::CONTACTSECTION_RELATIONSHIPS;
-                        const uint32_t claim_section_type = sectionType;
-                        const std::string claim_value = qstrContactNymId.toStdString();
-                        const int64_t claim_start_time = 0;
-                        const int64_t claim_end_time = 0;
-                        std::set<uint32_t> claim_set_attributes{opentxs::proto::CITEMATTR_ACTIVE};
+                        // If true, that means OT had to CHANGE something in the
+                        // Nym's data. (So we'll need to broadcast that, so
+                        // Moneychanger can re-import the Nym.)
+                        const bool set =
+                            opentxs::OTAPI_Wrap::It()->SetClaim(
+                                qstrClaimantNymId.toStdString(),
+                                opentxs::proto::CONTACTSECTION_RELATIONSHIPS,
+                                opentxs::proto::ProtoAsString(item));
 
-                        opentxs::Claim claim {
-                            claim_identifier,
-                            claim_section,
-                            claim_section_type,
-                            claim_value,
-                            claim_start_time,
-                            claim_end_time,
-                            claim_set_attributes
-                        };
-
-                        // If true, that means OT had to CHANGE something in the Nym's data.
-                        // (So we'll need to broadcast that, so Moneychanger can re-import the Nym.)
-                        //
-                        if (opentxs::OTAPI_Wrap::OTAPI()->SetClaim(*pClaimantNym, claim))
-                        {
+                        if (set) {
                             emit nymWasJustChecked(qstrClaimantNymId);
                             return;
                         }
@@ -1085,8 +1082,8 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
     // and construct a map, so we don't end up doing this multiple times below
     // unnecessarily.
     //
-    typedef std::pair<std::string, opentxs::OT_API::ClaimSet> NymClaims;
-    typedef std::map <std::string, opentxs::OT_API::ClaimSet> mapOfNymClaims;
+    typedef std::pair<std::string, opentxs::ClaimSet> NymClaims;
+    typedef std::map <std::string, opentxs::ClaimSet> mapOfNymClaims;
     typedef std::map <std::string, std::string> mapOfNymNames;
 
 //  mapOfNymClaims nym_claims; // Each pair in this map has a NymID and a ClaimSet.
@@ -1145,9 +1142,6 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
             if (pCurrentNym && !bANymWasChecked)
             {
-                opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
-                // ---------------------------------------
-//              nym_claims.insert( NymClaims(str_nym_id, claims) );
                 nym_names.insert(std::pair<std::string, std::string>(str_nym_id, str_nym_name));
             }
         }
@@ -1255,13 +1249,19 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
         // First grab the various relationship type names:  (Parent of, have met, child of, etc.)
         QMap<uint32_t, QString> mapTypeNames;
         // ----------------------------------------
-        std::string        sectionName  = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionName (opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
-        std::set<uint32_t> sectionTypes = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionTypes(opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
+        const std::string sectionName =
+            opentxs::OTAPI_Wrap::It()->ContactSectionName(
+                opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
+        const auto sectionTypes =
+            opentxs::OTAPI_Wrap::It()->ContactSectionTypeList(
+                opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
 
-        for (auto & indexSectionType: sectionTypes)
-        {
-            std::string typeName = opentxs::OTAPI_Wrap::OTAPI()->GetContactTypeName(indexSectionType);
-            mapTypeNames.insert(indexSectionType, QString::fromStdString(typeName));
+        for (const auto& indexSectionType: sectionTypes) {
+            const std::string typeName =
+                opentxs::OTAPI_Wrap::It()->ContactTypeName(indexSectionType);
+            mapTypeNames.insert(
+                indexSectionType,
+                QString::fromStdString(typeName));
         }
         // ---------------------------------------
 
@@ -1358,7 +1358,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
 //            qDebug() << "DEBUGGING CONTACT DETAILS: QString::fromStdString(claim_value): " << QString::fromStdString(claim_value);
 //            qDebug() << "DEBUGGING CONTACT DETAILS: QString::fromStdString(str_nym_id): " << QString::fromStdString(str_nym_id);
-            
+
             if (bGotPolarity)
             {
                 claim_item->setText(5, bPolarity ? tr("Confirmed") : tr("Refuted") );
@@ -1470,22 +1470,26 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
     // Now we loop through the sections, and for each, we populate its
     // itemwidgets by looping through the nym_claims we got above.
     //
-    std::set<uint32_t> sections = opentxs::OTAPI_Wrap::OTAPI()->GetContactSections();
+    const auto sections = opentxs::OTAPI_Wrap::It()->ContactSectionList();
 
-    for (auto & indexSection: sections)  //Names (for example)
-    {
-        if (opentxs::proto::CONTACTSECTION_RELATIONSHIPS == indexSection)
+    for (const auto& indexSection: sections) {
+        if (opentxs::proto::CONTACTSECTION_RELATIONSHIPS == indexSection) {
             continue;
+        }
         // ----------------------------------------
         QMap<uint32_t, QString> mapTypeNames;
 
-        std::string        sectionName  = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionName (indexSection); // Names, Email, URL, etc.
-        std::set<uint32_t> sectionTypes = opentxs::OTAPI_Wrap::OTAPI()->GetContactSectionTypes(indexSection); // Business, Personal, etc.
+        const std::string sectionName =
+            opentxs::OTAPI_Wrap::It()->ContactSectionName(indexSection);
+        const auto sectionTypes =
+            opentxs::OTAPI_Wrap::It()->ContactSectionTypeList(indexSection);
 
-        for (auto & indexSectionType: sectionTypes)
-        {
-            std::string typeName = opentxs::OTAPI_Wrap::OTAPI()->GetContactTypeName(indexSectionType);
-            mapTypeNames.insert(indexSectionType, QString::fromStdString(typeName));
+        for (const auto& indexSectionType: sectionTypes) {
+            const std::string typeName =
+                opentxs::OTAPI_Wrap::It()->ContactTypeName(indexSectionType);
+            mapTypeNames.insert(
+                indexSectionType,
+                QString::fromStdString(typeName));
         }
         // ---------------------------------------
         // Insert Section into Tree.
@@ -1678,16 +1682,16 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
                 // ----------------------------------------------------------------------------
                 QString qstrPolarity(tr("No comment"));
                 const int claim_polarity =  qvarPolarity.isValid() ? qvarPolarity.toInt() : 0;
-                opentxs::OT_API::ClaimPolarity claimPolarity = intToClaimPolarity(claim_polarity);
+                opentxs::ClaimPolarity claimPolarity = intToClaimPolarity(claim_polarity);
 
-                if (opentxs::OT_API::ClaimPolarity::NEUTRAL == claimPolarity)
+                if (opentxs::ClaimPolarity::NEUTRAL == claimPolarity)
                 {
                     qDebug() << __FUNCTION__ << ": ERROR! A claim verification can't have neutral polarity, since that "
                                 "means no verification exists. How did it get into the database this way?";
                     continue;
                 }
 
-                const bool bPolarity = (opentxs::OT_API::ClaimPolarity::NEGATIVE == claimPolarity) ? false : true;
+                const bool bPolarity = (opentxs::ClaimPolarity::NEGATIVE == claimPolarity) ? false : true;
                 qstrPolarity = bPolarity ? tr("Confirmed") : tr("Refuted");
                 // ----------------------------------------------------------------------------
                 const QString     qstrSignature   =  qvarSignature.isValid()   ? qvarSignature.toString() : "";

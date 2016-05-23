@@ -533,71 +533,87 @@ void Moneychanger::onCheckNym(QString nymId)
 
     const std::string str_checked_nym_id(strNymId.Get());
 
-    opentxs::OT_API::ClaimSet claims = opentxs::OTAPI_Wrap::OTAPI()->GetClaims(*pCurrentNym);
+    const auto data =
+        opentxs::OTAPI_Wrap::It()->GetContactData(nymId.toStdString());
+    auto claims =
+        opentxs::proto::DataToProto<opentxs::proto::ContactData>
+            ({data.c_str(), data.length()});
 
-    for (const opentxs::Claim& claim: claims)
-    {
-        // Add the claim to the database if not there already.
-        //
-        if (!MTContactHandler::getInstance()->upsertClaim(*pCurrentNym, claim))
-        {
-            qDebug() << "onCheckNym: the call to upsertClaim just failed. (Returning.)";
-            return;
-        }
-        // ---------------------------------------
-        const uint32_t           claim_section    = std::get<1>(claim); // section
-        const uint32_t           claim_type       = std::get<2>(claim); // type
-        const QString            claim_value      = QString::fromStdString(std::get<3>(claim)); // value
-        const std::set<uint32_t> claim_attributes = std::get<6>(claim); // attributes
+    for (const auto& section: claims.section()) {
+        for (const auto& claim: section.item()) {
+            // ---------------------------------------
+            const uint32_t claim_section = section.name();
+            const uint32_t claim_type = claim.type();
+            const QString claim_value = QString::fromStdString(claim.value());
 
-        bool claim_att_active  = false;
-        bool claim_att_primary = false;
+            // Add the claim to the database if not there already.
+            const bool upserted =
+                MTContactHandler::getInstance()->upsertClaim(
+                    *pCurrentNym,
+                    claim_section,
+                    claim);
 
-        for (auto& attribute: claim_attributes)
-        {
-            if (opentxs::proto::CITEMATTR_ACTIVE  == attribute) claim_att_active  = true;
-            if (opentxs::proto::CITEMATTR_PRIMARY == attribute) claim_att_primary = true;
-        }
-
-        if (claim_att_active && claim_att_primary)
-        {
-            if (claim_section == opentxs::proto::CONTACTSECTION_NAME)
-            {
-                MTContactHandler::getInstance()->NotifyOfNymNamePair(nymId, claim_value);
+            if (!upserted) {
+                qDebug() << "onCheckNym: the call to upsertClaim just failed. "
+                         << "(Returning.)";
+                return;
             }
-            if ((claim_section == opentxs::proto::CONTACTSECTION_MESSAGING) &&
-                (claim_type == opentxs::proto::CITEMTYPE_BITMESSAGE)
-            )
-            {
-                // NOTE: May not need to do anything here. We already imported the claims,
-                // and we can already search the claims for Bitmessage address and NymID,
-                // which we are already doing.
+
+            bool claim_att_active  = false;
+            bool claim_att_primary = false;
+
+            for (const auto& attribute : claim.attribute()) {
+                if (opentxs::proto::CITEMATTR_ACTIVE  == attribute) {
+                    claim_att_active  = true;
+                }
+                if (opentxs::proto::CITEMATTR_PRIMARY == attribute) {
+                    claim_att_primary = true;
+                }
+            }
+
+            if (claim_att_active && claim_att_primary) {
+                if (claim_section == opentxs::proto::CONTACTSECTION_NAME) {
+                    MTContactHandler::getInstance()->NotifyOfNymNamePair(
+                        nymId,
+                        claim_value);
+                }
+                if ((claim_section == opentxs::proto::CONTACTSECTION_MESSAGING) &&
+                    (claim_type == opentxs::proto::CITEMTYPE_BITMESSAGE)) {
+                        // NOTE: May not need to do anything here. We already
+                        // imported the claims, and we can already search the
+                        // claims for Bitmessage address and NymID, which we
+                        // are already doing.
+                }
             }
         }
     }
     // -------------------------------------------------------
     // Import the verifications.
     //
-    opentxs::OT_API::VerificationSet the_set = opentxs::OTAPI_Wrap::OTAPI()->GetVerificationSet(*pCurrentNym);
+    const auto ver_data =
+        opentxs::OTAPI_Wrap::It()->GetVerificationSet(nymId.toStdString());
 
-    opentxs::OT_API::VerificationMap       & internalSet   = std::get<0>(the_set);
-    opentxs::OT_API::VerificationMap       & externalSet   = std::get<1>(the_set);
-    std::set<std::string>                  & repudiatedIds = std::get<2>(the_set);
+    auto the_set =
+        opentxs::proto::DataToProto<opentxs::proto::VerificationSet>
+            ({ver_data.c_str(), ver_data.length()});
 
     // Internal verifications:
     // Here I'm looping through pCurrentNym's verifications of other people's claims.
-    for (auto& claimant: internalSet)
-    {
+    for (auto& claimant: the_set.internal().identity()) {
         // Here we're looping through those other people. (Claimants.)
+        const std::string& str_claimant_id = claimant.nym();
 
-        const std::string                         str_claimant_id  = claimant.first;
-        std::set<opentxs::OT_API::Verification> & verification_set = claimant.second;
-
-        for (auto& verification : verification_set)
-        {
-            if (!MTContactHandler::getInstance()->upsertClaimVerification(str_claimant_id, str_checked_nym_id, verification, true)) //bIsInternal=true
-            {
-                qDebug() << "onCheckNym: the call to upsertInternalClaimVerification just failed. (Returning.)";
+        for (auto& verification : claimant.verification()) {
+            const bool success =
+                MTContactHandler::getInstance()->upsertClaimVerification(
+                    str_claimant_id,
+                    str_checked_nym_id,
+                    verification,
+                    true);  //bIsInternal=true
+            if (!success) {
+                qDebug() << "onCheckNym: the call to "
+                         << "upsertInternalClaimVerification just failed. "
+                         << "(Returning.)";
                 return;
             }
         }
@@ -605,16 +621,20 @@ void Moneychanger::onCheckNym(QString nymId)
 
     // External verifications:
     // Here I'm looping through other people's verifications of pCurrentNym's claims.
-    for (auto& verifier: externalSet)
-    {
-        const std::string                         str_verifier_id  = verifier.first;
-        std::set<opentxs::OT_API::Verification> & verification_set = verifier.second;
+    for (auto& verifier: the_set.external().identity()) {
+        const std::string& str_verifier_id  = verifier.nym();
 
-        for (auto& verification : verification_set)
-        {
-            if (!MTContactHandler::getInstance()->upsertClaimVerification(str_checked_nym_id, str_verifier_id, verification, false)) //bIsInternal=true by default.
-            {
-                qDebug() << "onCheckNym: the call to upsertExternalClaimVerification just failed. (Returning.)";
+        for (auto& verification : verifier.verification()) {
+            const bool success =
+                MTContactHandler::getInstance()->upsertClaimVerification(
+                    str_checked_nym_id,
+                    str_verifier_id,
+                    verification,
+                    false); //bIsInternal=true by default.
+            if (!success) {
+                qDebug() << "onCheckNym: the call to "
+                         << "upsertExternalClaimVerification just failed. "
+                         << "(Returning.)";
                 return;
             }
         }
