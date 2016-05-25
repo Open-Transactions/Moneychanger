@@ -52,6 +52,9 @@ void MTHomeDetail::SetHomePointer(MTHome & theHome)
     connect(this, SIGNAL(recordDeletedBalanceChanged()),  Moneychanger::It(), SLOT(onBalancesChanged()));
     connect(this, SIGNAL(recordDeletedBalanceChanged()),  m_pHome,            SLOT(onRecordDeleted()));
     // --------------------------------------------------------
+    connect(this, SIGNAL(confirmSmartContract(QString, QString, int32_t)),
+            Moneychanger::It(), SLOT(onConfirmSmartContract(QString, QString, int32_t)));
+    // --------------------------------------------------------
     connect(m_pHome, SIGNAL(needToRefreshDetails(int, opentxs::OTRecordList&)), this, SLOT(onRefresh(int, opentxs::OTRecordList&)));
 }
 
@@ -369,6 +372,8 @@ void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
 
 
 
+// void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID, int32_t index)
+
 QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
 {
     // -----------------------------------------
@@ -379,6 +384,12 @@ QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
     QString qstr_record_asset  = QString::fromStdString(str_record_asset);
     QString qstr_record_nym    = QString::fromStdString(str_record_nym);
     QString qstr_record_server = QString::fromStdString(str_record_server);
+
+
+    qDebug() << "qstr_record_asset: " << qstr_record_asset;
+    qDebug() << "qstr_record_nym: " << qstr_record_nym;
+    qDebug() << "qstr_record_server: " << qstr_record_server;
+
     // -----------------------------------------
     std::string str_acct_id;
     std::string str_acct_nym;
@@ -620,47 +631,107 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
         // -------------------------------------------------
         else if (opentxs::OTRecord::Instrument == recordmt.GetRecordType())
         {
-            // --------------------------------
-            if (recordmt.IsInvoice())
+            if (recordmt.IsContract()) // Smart Contract
             {
-                QMessageBox::StandardButton reply;
+                const int32_t nBoxIndex = recordmt.GetBoxIndex();
 
-                reply = QMessageBox::question(this, "", tr("Are you sure you want to pay this invoice?"),
-                                              QMessageBox::Yes|QMessageBox::No);
-                if (reply == QMessageBox::No)
-                    return;
-            }
+                const std::string str_contract = recordmt.GetContents();
+                const QString qstrContract = QString::fromStdString(str_contract);
+                // ------------------------
+//                QString qstr_default_id = Moneychanger::It()->get_default_nym_id();
+//                // -------------------------------------------
+//                QString qstr_current_id = qstr_default_id;
+//                // -------------------------------------------
+//                if (qstr_current_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetNymCount() > 0))
+//                    qstr_current_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(0));
+//                // -------------------------------------------
+//                // Select from Nyms in local wallet.
+//                //
+//                DlgChooser theChooser(this);
+//                // -----------------------------------------------
+//                mapIDName & the_map = theChooser.m_map;
+//
+//                bool bFoundDefault = false;
+//                // -----------------------------------------------
+//                const int32_t the_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
+//                // -----------------------------------------------
+//                for (int32_t ii = 0; ii < the_count; ++ii)
+//                {
+//                    QString OT_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(ii));
+//                    QString OT_name("");
+//                    // -----------------------------------------------
+//                    if (!OT_id.isEmpty())
+//                    {
+//                        if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
+//                            bFoundDefault = true;
+//                        // -----------------------------------------------
+//                        OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(OT_id.toStdString()));
+//                        // -----------------------------------------------
+//                        the_map.insert(OT_id, OT_name);
+//                    }
+//                 }
+//                // -----------------------------------------------
+//                if (bFoundDefault)
+//                    theChooser.SetPreSelected(qstr_current_id);
+//                // -----------------------------------------------
+//                theChooser.setWindowTitle(tr("Choose the Nym who'll Sign"));
+//                // -----------------------------------------------
+//                if (theChooser.exec() == QDialog::Accepted)
+//                {
+//                    if (!theChooser.m_qstrCurrentID  .isEmpty() &&
+//                        !theChooser.m_qstrCurrentName.isEmpty())
+//                    {
+                        QString qstrEmptyNymId("");
+                        emit confirmSmartContract(qstrContract, qstrEmptyNymId, nBoxIndex);
+//                    }
+//                }
+            } // smart contract
             // --------------------------------
-            QString qstr_acct_id = FindAppropriateDepositAccount(recordmt);
-            // -----------------------------------
-            // At this point we likely have the account ID, and if so, it's definitely
-            // got the right asset type, server, etc. Therefore it's time to accept the
-            // instrument.
-            //
-            if (!qstr_acct_id.isEmpty())
+            else
             {
-                bool bSuccess = false;
+                if (recordmt.IsInvoice())
                 {
-                    MTSpinner theSpinner;
+                    QMessageBox::StandardButton reply;
+
+                    reply = QMessageBox::question(this, "", tr("Are you sure you want to pay this invoice?"),
+                                                  QMessageBox::Yes|QMessageBox::No);
+                    if (reply == QMessageBox::No)
+                        return;
+                }
+                // --------------------------------
+                QString qstr_acct_id = FindAppropriateDepositAccount(recordmt);
+                // -----------------------------------
+                // At this point we likely have the account ID, and if so, it's definitely
+                // got the right asset type, server, etc. Therefore it's time to accept the
+                // instrument.
+                //
+                if (!qstr_acct_id.isEmpty())
+                {
+                    bool bSuccess = false;
+                    {
+                        MTSpinner theSpinner;
+                        // -----------------------------------------
+
+
+                        // TODO resume
+                        // if it's a payment plan or smart contract, need to display certain details for the user
+                        // Then the user can be double-sure before accepting the terms.
+
+
+
+                        bSuccess = recordmt.AcceptIncomingInstrument(qstr_acct_id.toStdString());
+                    }
                     // -----------------------------------------
-
-
-                    // TODO resume
-                    // if it's a payment plan or smart contract, need to display certain details for the user
-                    // Then the user can be double-sure before accepting the terms.
-
-                    bSuccess = recordmt.AcceptIncomingInstrument(qstr_acct_id.toStdString());
-                }
-                // -----------------------------------------
-                if (!bSuccess)
-                {
-                    QMessageBox::warning(this, tr("Transaction failure"), tr("Failed accepting this instrument."));
-                }
-                else
-                {
-                    // Refresh the main list, or at least change the color of the refresh button.
-                    //
-                    emit balanceChanged();
+                    if (!bSuccess)
+                    {
+                        QMessageBox::warning(this, tr("Transaction failure"), tr("Failed accepting this instrument."));
+                    }
+                    else
+                    {
+                        // Refresh the main list, or at least change the color of the refresh button.
+                        //
+                        emit balanceChanged();
+                    }
                 }
             }
         } // record type == instrument.

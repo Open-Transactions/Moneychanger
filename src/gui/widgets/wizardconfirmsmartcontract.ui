@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>WizardConfirmSmartContract</class>
+ <widget class="QWizard" name="WizardConfirmSmartContract">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>676</width>
+    <height>404</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Wizard</string>
+  </property>
+  <widget class="MTPageAcct_Nym" name="wizardPage1"/>
+  <widget class="PageSmart_Party" name="wizardPage2"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MTPageAcct_Nym</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pageacct_nym.hpp</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PageSmart_Party</class>
+   <extends>QWizardPage</extends>
+   <header>gui/widgets/pagesmart_party.hpp</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

@@ -52,6 +52,8 @@ signals:
     void showContact(QString qstrContactID);
     void showContactAndRefreshHome(QString qstrContactID);
 
+    void confirmSmartContract(QString, QString, int32_t);
+
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
