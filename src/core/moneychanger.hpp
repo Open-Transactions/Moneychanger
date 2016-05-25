@@ -159,6 +159,7 @@ public slots:
     void onAccountsChanged();
 
     void onRunSmartContract(QString qstrTemplate, QString qstrLawyer, int32_t index);
+    void onConfirmSmartContract(QString qstrTemplate, QString qstrLawyerID, int32_t index);
 
 public:
 
