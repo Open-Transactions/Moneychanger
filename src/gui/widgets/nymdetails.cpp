@@ -881,7 +881,7 @@ QWidget * MTNymDetails::CreateCustomTab(int nTab)
                 pLabelNymId_ = NULL;
             }
             pLabelNymId_ = new QLabel(Moneychanger::It()->expertMode() ?
-                        tr("Profile for Nym ID: ") : tr("Profile: "));
+                        tr("Profile (below) for Nym ID: ") : tr("Profile: "));
 
             if (pToolButtonNymId_)
             {

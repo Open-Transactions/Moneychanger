@@ -34,6 +34,7 @@
 #include <gui/widgets/senddlg.hpp>
 #include <gui/widgets/proposeplandlg.hpp>
 #include <gui/widgets/createinsurancecompany.hpp>
+#include <gui/widgets/wizardconfirmsmartcontract.hpp>
 #include <gui/widgets/wizardrunsmartcontract.hpp>
 #include <gui/widgets/wizardpartyacct.hpp>
 #include <gui/widgets/settings.hpp>
@@ -5449,6 +5450,292 @@ void Moneychanger::mc_createinsurancecompany_dialog()
     f.focus();
 }
 
+void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawyerID, int32_t index)
+{
+    if (qstrTemplate.isEmpty())
+    {
+        qDebug() << "onConfirmSmartContract: Strange, the smart contract was empty. (Failure.)";
+        return;
+    }
+
+    std::string str_template = qstrTemplate.toStdString();
+    // ------------------------------------------------
+    if (qstrLawyerID.isEmpty())
+        qstrLawyerID = get_default_nym_id();
+    // ------------------------------------------------
+    if (0 == opentxs::OTAPI_Wrap::It()->Smart_GetPartyCount(str_template))
+    {
+       QMessageBox::information(this, tr("Moneychanger"), tr("There are no parties listed on this smart contract, so you cannot sign it as a party."));
+       return;
+    }
+    // ------------------------------------------------
+    if (opentxs::OTAPI_Wrap::It()->Smart_AreAllPartiesConfirmed(str_template))
+    {
+        QMessageBox::information(this, tr("Moneychanger"), tr("Strange, all parties are already confirmed on this contract. (Failure.)"));
+        return;
+    }
+    // ------------------------------------------------
+    std::string str_server = opentxs::OTAPI_Wrap::It()->Instrmnt_GetNotaryID(str_template);
+    // ------------------------------------------------
+    WizardConfirmSmartContract theWizard(this);
+
+    theWizard.setWindowTitle(tr("Confirm smart contract"));
+
+    QString qstrNotaryID("");
+
+    if (!str_server.empty())
+    {
+        qstrNotaryID = QString::fromStdString(str_server);
+    }
+    else
+    {
+        qDebug() << "onConfirmSmartContract: Failed trying to get NotaryID from smart contract. (Failure.)";
+        return;
+    }
+    // ------------------------------------------------
+    if (!qstrLawyerID.isEmpty())
+        theWizard.setField(QString("NymID"), qstrLawyerID);
+
+    theWizard.setField(QString("SmartTemplate"), qstrTemplate);
+    // ------------------------------------------------
+    theWizard.setField(QString("NymPrompt"), QString(tr("Choose a Nym to be a party to, and a signer of, the smart contract:")));
+    // ------------------------------------------------
+    if (QDialog::Accepted != theWizard.exec())
+        return;
+    // ------------------------------------------------
+    qstrLawyerID = theWizard.field("NymID") .toString();
+    std::string str_lawyer_id = qstrLawyerID.toStdString();
+
+//    QString qstrNotaryID = theWizard.field("NotaryID").toString();
+//    str_server = qstrNotaryID.toStdString();
+    // -----------------------------------------
+    QString qstrPartyName  = theWizard.field("PartyName") .toString();
+    std::string str_party  = qstrPartyName.toStdString();
+    // ---------------------------------------------------
+    // By this point the user has selected the server ID, the Nym ID, and the Party Name.
+    //
+    std::string serverFromContract = opentxs::OTAPI_Wrap::It()->Instrmnt_GetNotaryID(str_template);
+    if ("" != serverFromContract && str_server != serverFromContract) {
+        QMessageBox::information(this, tr("Moneychanger"), tr("Mismatched server ID in contract. (Failure.)"));
+        return;
+    }
+    // ----------------------------------------------------
+    if (!opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(str_lawyer_id, str_server)) {
+        QMessageBox::information(this, tr("Moneychanger"), tr("Nym is not registered on server. (Failure.)"));
+        return;
+    }
+    // ----------------------------------------------------
+    // See if there are accounts for that party via Party_GetAcctCount.
+    // If there are, confirm those accounts.
+    //
+    int32_t nAccountCount = opentxs::OTAPI_Wrap::It()->Party_GetAcctCount(str_template, str_party);
+
+    if (0 >= nAccountCount)
+    {
+        QMessageBox::information(this, tr("Moneychanger"), tr("Strange, the chosen party has no accounts named on this smart contract. (Failed.)"));
+        return;
+    }
+    // ----------------------------------------------------
+    // Need to LOOP here until all the accounts are confirmed.
+
+    mapIDName mapConfirmed, mapAgents;
+
+    while (nAccountCount > 0)
+    {
+        WizardPartyAcct otherWizard(this);
+
+        otherWizard.setWindowTitle(tr("Confirm smart contract"));
+
+        otherWizard.setField("PartyName", qstrPartyName);
+        otherWizard.setField("SmartTemplate", qstrTemplate);
+
+        std::string str_shown_state;
+        if (showPartyAccounts(str_template, str_party, str_shown_state) && !str_shown_state.empty())
+            otherWizard.setField("AccountState", QString::fromStdString(str_shown_state));
+
+        otherWizard.m_qstrNotaryID = qstrNotaryID;
+        otherWizard.m_qstrNymID = qstrLawyerID;
+
+        otherWizard.m_mapConfirmed = mapConfirmed;
+        // ------------------------------------------------
+        if (QDialog::Accepted != otherWizard.exec())
+            return;
+
+        mapConfirmed = otherWizard.m_mapConfirmed;
+        // ------------------------------------------------
+        QString qstrAcctName = otherWizard.field("AcctName").toString();
+        std::string str_acct_name = qstrAcctName.toStdString();
+
+        QString qstrAcctID = otherWizard.field("AcctID").toString();
+        std::string str_acct_id = qstrAcctID.toStdString();
+        // -----------------------------------------
+        std::string agentName = opentxs::OTAPI_Wrap::It()->Party_GetAcctAgentName(str_template, str_party, str_acct_name);
+
+        if ("" == agentName)
+            agentName = opentxs::OTAPI_Wrap::It()->Party_GetAgentNameByIndex(str_template, str_party, 0);
+
+        if ("" == agentName)
+        {
+            QMessageBox::information(this, tr("Moneychanger"), tr("Strange, but apparently this smart contract doesn't have any agents for this party. (Failed.)"));
+            return;
+        }
+
+        mapConfirmed.insert(qstrAcctName, qstrAcctID);
+        mapAgents.insert(qstrAcctName, QString::fromStdString(agentName));
+
+        --nAccountCount;
+    }
+    // --------------------------------------------
+    // By this point, mapConfirmed and mapAgents are populated for all the relevant accounts.
+    //
+    // Let's make sure we have enough transaction numbers for all those accounts.
+    //
+    int32_t needed = 0;
+
+    for (auto x = mapConfirmed.begin(); x != mapConfirmed.end(); x++)
+    {
+        QString qstrAgent = mapAgents[x.key()];
+
+        needed += opentxs::OTAPI_Wrap::It()->SmartContract_CountNumsNeeded(str_template, qstrAgent.toStdString());
+    }
+    // --------------------------------------------
+    opentxs::OT_ME ot_me;
+    if (!ot_me.make_sure_enough_trans_nums(needed + 1, str_server, str_lawyer_id))
+    {
+        QMessageBox::information(this, tr("Moneychanger"), tr("Failed trying to reserve enough transaction numbers from the notary."));
+        return;
+    }
+    // --------------------------------------------
+    // CONFIRM THE ACCOUNTS HERE
+    //
+    // Note: Any failure below this point needs to harvest back ALL
+    // transaction numbers. Because we haven't even TRIED to activate it,
+    // therefore ALL numbers on the contract are still good (even the opening
+    // number.)
+    //
+    // Whereas after a failed activation, we'd need to harvest only the closing
+    // numbers, and not the opening numbers. But in here, this is confirmation,
+    // not activation.
+    //
+    std::string myAcctID = "";
+    std::string myAcctAgentName = "";
+
+    QString qstr_default_acct_id = get_default_account_id();
+
+    for (auto x = mapConfirmed.begin(); x != mapConfirmed.end(); x++)
+    {
+        // Here we check to see if default account ID exists -- if so we compare it to the
+        // current acctID in the loop and if they match, we set myAcctID. Later on,
+        // if/when activating, we can just use myAcctID to activate.
+        // (Otherwise we will have to pick one from the confirmed accounts.)
+        if ("" == myAcctID && (0 == qstr_default_acct_id.compare(x.value())))
+        {
+            myAcctID = qstr_default_acct_id.toStdString();
+            QString qstrMyAcctAgentName = mapAgents[x.key()];
+            myAcctAgentName = qstrMyAcctAgentName.toStdString();
+        }
+
+        QString qstrCurrentAcctName  = x.key();
+        QString qstrCurrentAcctID    = x.value();
+        QString qstrCurrentAgentname = mapAgents[x.key()];
+
+        // confirm a theoretical acct by giving it a real acct id.
+        std::string confirmed = opentxs::OTAPI_Wrap::It()->SmartContract_ConfirmAccount(
+            str_template, str_lawyer_id, str_party, qstrCurrentAcctName.toStdString(), qstrCurrentAgentname.toStdString(), qstrCurrentAcctID.toStdString());
+
+        if ("" == confirmed)
+        {
+            qDebug() << "Failure while calling "
+                     "OT_API_SmartContract_ConfirmAccount. Acct Name: "
+                  << qstrCurrentAcctName << "  Agent Name: " << qstrCurrentAgentname
+                  << "  Acct ID: " << qstrCurrentAcctID << " \n";
+
+            QMessageBox::information(this, tr("Moneychanger"), tr("Failed while calling OT_API_SmartContract_ConfirmAccount."));
+
+            opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
+
+            return;
+        }
+
+        str_template = confirmed;
+    }
+    // ----------------------------------------
+    // Then we try to activate it or pass on to the next party.
+
+    std::string confirmed =
+        opentxs::OTAPI_Wrap::It()->SmartContract_ConfirmParty(str_template, str_party, str_lawyer_id);
+
+    if ("" == confirmed)
+    {
+        qDebug() << "Error: cannot confirm smart contract party.\n";
+        QMessageBox::information(this, tr("Moneychanger"), tr("Failed while calling SmartContract_ConfirmParty."));
+        opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
+        return;
+    }
+
+    if (opentxs::OTAPI_Wrap::It()->Smart_AreAllPartiesConfirmed(confirmed))
+    {
+        // If you are the last party to sign, then ACTIVATE THE SMART CONTRACT.
+        activateContract(str_server, str_lawyer_id, confirmed, str_party, myAcctID, myAcctAgentName);
+        return;
+    }
+    // -------------------------------
+    // Below this point, we know there are still parties waiting to confirm the contract before
+    // it can be activated.
+    // So we pop up a list of Contacts to send the contract on to next.
+    // -----------------------------------------------
+    DlgChooser theChooser(this);
+    // -----------------------------------------------
+    mapIDName & the_map = theChooser.m_map;
+
+    MTContactHandler::getInstance()->GetContacts(the_map);
+
+    theChooser.setWindowTitle(tr("Choose the next signer"));
+    // -----------------------------------------------
+    if (theChooser.exec() != QDialog::Accepted)
+    {
+        opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
+        return;
+    }
+    // -----------------------------------------------
+    QString qstrContactName    = theChooser.m_qstrCurrentName;
+    int     nSelectedContactID = theChooser.m_qstrCurrentID.toInt();
+    // -----------------------------------------------
+    DlgChooser theNymChooser(this);
+
+    mapIDName & the_nym_map = theNymChooser.m_map;
+
+    MTContactHandler::getInstance()->GetNyms(the_nym_map, nSelectedContactID);
+
+    theNymChooser.setWindowTitle(tr("Choose one of his nyms"));
+    // -----------------------------------------------
+    if (theNymChooser.exec() != QDialog::Accepted)
+    {
+        opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
+        return;
+    }
+    // -----------------------------------------------
+    QString qstrNymID   = theNymChooser.m_qstrCurrentID;
+    QString qstrNymName = theNymChooser.m_qstrCurrentName;
+    // -----------------------------------------------
+    // NOTE: No matter which party you are (perhaps you are the middle one),
+    // when you confirm the contract, you will send it on to the NEXT
+    // UNCONFIRMED ONE. This means you don't know which party it will be,
+    // since all the unconfirmed parties have no NymID (yet.) Rather, it's
+    // YOUR problem to provide the NymID you're sending the contract on to.
+    // And then it's HIS problem to decide which party he will sign on as.
+    // (Unless you are the LAST PARTY to confirm, in which case YOU are the
+    // activator.)
+    //
+    sendToNextParty(str_server, str_lawyer_id, qstrNymID.toStdString(), confirmed);
+
+    if (-1 != index)
+    {
+        // not a pasted contract, but it's an index in the payments inbox.
+        //
+        opentxs::OTAPI_Wrap::It()->RecordPayment(str_server, str_lawyer_id, true, index, false);
+    }
+}
 
 void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID, int32_t index)
 {
