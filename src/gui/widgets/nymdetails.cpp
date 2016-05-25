@@ -1751,7 +1751,7 @@ void MTNymDetails::on_btnEditProfile_clicked()
         opentxs::OTAPI_Wrap::It()->GetContactData(str_nym_id);
     const auto claims =
         opentxs::proto::DataToProto<opentxs::proto::ContactData>
-            ({claims_data.c_str(), claims_data.length()});
+            ({claims_data.c_str(), static_cast<uint32_t>(claims_data.length())});
 
     for (auto& section: claims.section()) {
         for (auto& claim: section.item()) {
