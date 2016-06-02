@@ -521,7 +521,7 @@ void MTServerDetails::AddButtonClicked()
 
     theWizard.setWindowTitle(tr("Add Server Contract"));
 
-    QString qstrDefaultValue("https://raw.github.com/FellowTraveler/Open-Transactions/master/sample-data/sample-contracts/cloud.otc");
+    QString qstrDefaultValue("http://ot.stashcrypto.net/server_contract.otc");
     QVariant varDefault(qstrDefaultValue);
 
     theWizard.setField(QString("URL"), varDefault);
