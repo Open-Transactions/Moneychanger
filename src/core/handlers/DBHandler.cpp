@@ -41,16 +41,16 @@ DBHandler::DBHandler()
         qDebug() << dbConnectErrorStr + " " + dbDriverNotExistStr;
         exit(1);
     }
-    
+
     qDebug() << "Adding DB";
     db = QSqlDatabase::addDatabase(dbDriverStr, dbConnNameStr);
-    
+
     bool flag = isDbExist();
 //    qDebug() << QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr;
     db.setDatabaseName( QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
     if(!dbConnect())
         qDebug() << "Error Opening Database";
-    
+
 //    if (!flag)  // The database now creates the tables if they don't exist, so we call this every time now.
     {
         qDebug() << "Running dbCreateInstance";
@@ -69,7 +69,7 @@ bool DBHandler::dbConnect()
         qDebug() << dbConnectErrorStr + " " + dbCannotOpenStr;
         return false;
     }
-    
+
     qDebug() << "Database opened";
     return db.isOpen();
 }
@@ -556,7 +556,7 @@ QPointer<ModelClaims> DBHandler::getRelationshipClaims(int nAboutContactId)
                                                                     // a Nym, then his NymId will be in your claim_value field.)
                                  "WHERE nym.contact_id='%1' AND " // (So we only see claims that are attached to a specific contact.)
                                  " claim_section=%2").
-                                 arg(nAboutContactId).arg(opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
+                                 arg(nAboutContactId).arg(opentxs::proto::CONTACTSECTION_RELATIONSHIP);
 
     pClaimsModel->setQuery(str_select, db);
 
@@ -571,7 +571,7 @@ QPointer<ModelClaims> DBHandler::getRelationshipClaims(const QString & qstrAbout
     QPointer<ModelClaims> pClaimsModel = new ModelClaims(0);
 
     pClaimsModel->setQuery(QString("SELECT * FROM `claim` WHERE `claim_value`='%1' AND `claim_section`=%2").
-                           arg(qstrAboutNymId).arg(opentxs::proto::CONTACTSECTION_RELATIONSHIPS),
+                           arg(qstrAboutNymId).arg(opentxs::proto::CONTACTSECTION_RELATIONSHIP),
                            db);
 
     setup_claims_model(pClaimsModel);
@@ -821,7 +821,7 @@ QPointer<ModelTradeArchive> DBHandler::getTradeArchiveModel()
     QString tableName("trade_archive");
 
     if (!pTradeArchiveModel_)
-    {                
+    {
         pTradeArchiveModel_ = new ModelTradeArchive(0, db);
 
         pTradeArchiveModel_->setTable(tableName);
@@ -934,11 +934,11 @@ QSqlRecord DBHandler::queryOne(PreparedQuery* query)
 bool DBHandler::runQuery(const QString& run)
 {
     QMutexLocker locker(&dbMutex);
-    
+
     bool error = false;
-    
+
     QSqlQuery query(db);
-    
+
     if(db.isOpen())
     {
         error = query.exec(run);
@@ -965,7 +965,7 @@ int DBHandler::querySize(QString run)
     int size = 0;
     bool noerror = false;
     QSqlQuery query(db);
-    
+
     if(db.isOpen())
     {
         noerror = query.exec(run);
@@ -977,7 +977,7 @@ int DBHandler::querySize(QString run)
             recCount++;
         }
         size = recCount;
-        
+
         if(noerror)
             return size;
         else
@@ -987,30 +987,30 @@ int DBHandler::querySize(QString run)
             return -1;
         }
     }
-    
+
     // Return -1 on Error
     else
     {
         qDebug() << "Error at query Size: database not even open.";
         return -1;
     }
-    
+
 }
 
 
 bool DBHandler::isNext(QString run)
 {
     QMutexLocker locker(&dbMutex);
-    
+
     bool isnext = false;
-    
+
     QSqlQuery query(db);
-    
+
     if (db.isOpen())
     {
         isnext = query.exec(run);
         isnext = query.next();
-        
+
         if(isnext)
             return true;
         else
@@ -1018,7 +1018,7 @@ bool DBHandler::isNext(QString run)
     }
     else
         return isnext;
-    
+
 }
 
 int DBHandler::queryInt(QString run, int value, int at)
@@ -1131,7 +1131,7 @@ QVariant DBHandler::AddressBookInsertNym(QString nym_id_string, QString nym_disp
     QString queryResult;
 
     QSqlQuery query(db);
-    
+
     if (db.isOpen())
     {
         if (query.exec(QString("INSERT INTO `address_book` (`id`, `nym_id`, `nym_display_name`) VALUES(NULL, '%1', '%2')").arg(nym_id_string).arg(nym_display_name_string)))
@@ -1153,11 +1153,11 @@ QVariant DBHandler::AddressBookInsertNym(QString nym_id_string, QString nym_disp
 bool DBHandler::AddressBookUpdateNym(QString nym_id_string, QString nym_display_name_string, QString index_id_string)
 {
     QMutexLocker locker(&dbMutex);
-    
+
     QString queryResult;
-    
+
     QSqlQuery query(db);
-    
+
     if (db.isOpen())
     {
         return query.exec(QString("UPDATE `address_book` SET `nym_id` = '%1', `nym_display_name` = '%2' WHERE `id`='%3'").
@@ -1168,15 +1168,15 @@ bool DBHandler::AddressBookUpdateNym(QString nym_id_string, QString nym_display_
         qDebug() << "AddressBookUpdateNym Error";
         return false;
     }
-    
+
 }
 
 bool DBHandler::AddressBookRemoveID(int ID)
 {
     QMutexLocker locker(&dbMutex);
-    
+
     QString queryResult;
-    
+
     QSqlQuery query(db);
 
     if (db.isOpen())
@@ -1194,9 +1194,9 @@ bool DBHandler::AddressBookRemoveID(int ID)
 bool DBHandler::AddressBookUpdateDefaultNym(QString ID)
 {
     QMutexLocker locker(&dbMutex);
-    
+
     QString queryResult;
-    
+
     QSqlQuery query(db);
 
     if (db.isOpen())
@@ -1215,15 +1215,15 @@ bool DBHandler::AddressBookUpdateDefaultNym(QString ID)
         qDebug() << "AddressBookUpdateDefaultNym Error";
         return false;
     }
-    
+
 }
 
 bool DBHandler::AddressBookUpdateDefaultAsset(QString ID)
 {
     QMutexLocker locker(&dbMutex);
-    
+
     QString queryResult;
-    
+
     QSqlQuery query(db);
 
     if (db.isOpen())
@@ -1247,9 +1247,9 @@ bool DBHandler::AddressBookUpdateDefaultAsset(QString ID)
 bool DBHandler::AddressBookUpdateDefaultAccount(QString ID)
 {
     QMutexLocker locker(&dbMutex);
-    
+
     QString queryResult;
-    
+
     QSqlQuery query(db);
 
     if (db.isOpen())
@@ -1274,9 +1274,9 @@ bool DBHandler::AddressBookUpdateDefaultAccount(QString ID)
 bool DBHandler::AddressBookUpdateDefaultServer(QString ID)
 {
     QMutexLocker locker(&dbMutex);
-    
+
     QString queryResult;
-    
+
     QSqlQuery query(db);
 
     if (db.isOpen())

@@ -588,7 +588,7 @@ QString MTContactHandler::getDisplayNameFromClaims(const QString & claimant_nym_
 
     QString qstrReturnVal;
     QString str_select = QString("SELECT `claim_value`, `claim_att_active`, `claim_att_primary` FROM `claim` WHERE `claim_nym_id`='%1' AND `claim_section`=%2").
-            arg(claimant_nym_id).arg(opentxs::proto::CONTACTSECTION_NAME);
+            arg(claimant_nym_id).arg(opentxs::proto::CONTACTSECTION_IDENTIFIER);
 
     int nRows = 0;
     try
@@ -643,7 +643,7 @@ QString MTContactHandler::getNymIdFromClaimsByBtMsg(const QString & bitmessage_a
     QString qstrReturnVal;
     QString str_select = QString("SELECT `claim_nym_id` FROM `claim` WHERE `claim_value`='%1' AND `claim_section`=%2 AND `claim_type`=%3")
             .arg(bitmessage_address)
-            .arg(opentxs::proto::CONTACTSECTION_MESSAGING)
+            .arg(opentxs::proto::CONTACTSECTION_COMMUNICATION)
             .arg(opentxs::proto::CITEMTYPE_BITMESSAGE);
 
     int nRows = 0;
@@ -690,7 +690,7 @@ QString MTContactHandler::getBitmessageAddressFromClaims(const QString & claiman
     QString qstrReturnVal;
     QString str_select = QString("SELECT `claim_value`, `claim_att_active`, `claim_att_primary` FROM `claim` WHERE `claim_nym_id`='%1' AND `claim_section`=%2 AND `claim_type`=%3")
             .arg(claimant_nym_id)
-            .arg(opentxs::proto::CONTACTSECTION_MESSAGING)
+            .arg(opentxs::proto::CONTACTSECTION_COMMUNICATION)
             .arg(opentxs::proto::CITEMTYPE_BITMESSAGE);
 
     int nRows = 0;

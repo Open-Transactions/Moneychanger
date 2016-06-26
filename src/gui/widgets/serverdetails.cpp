@@ -677,7 +677,9 @@ void MTServerDetails::refresh(QString strID, QString strName)
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
-        auto contract = opentxs::App::Me().Contract().Server(strID.toStdString());
+        auto contract =
+            opentxs::App::Me().Contract().Server(
+                opentxs::Identifier(strID.toStdString()));
 
         if (!contract) {return; }
 

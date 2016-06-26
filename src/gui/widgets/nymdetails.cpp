@@ -304,10 +304,10 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
         // ----------------------------------------
         const std::string sectionName =
             opentxs::OTAPI_Wrap::It()->ContactSectionName(
-                opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
+                opentxs::proto::CONTACTSECTION_RELATIONSHIP);
         const auto sectionTypes =
             opentxs::OTAPI_Wrap::It()->ContactSectionTypeList(
-                opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
+                opentxs::proto::CONTACTSECTION_RELATIONSHIP);
 
         for (const auto& indexSectionType: sectionTypes) {
             const std::string typeName =
@@ -473,7 +473,7 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
     const auto sections = opentxs::OTAPI_Wrap::It()->ContactSectionList();
 
     for (const auto& indexSection: sections) {
-        if (opentxs::proto::CONTACTSECTION_RELATIONSHIPS == indexSection)
+        if (opentxs::proto::CONTACTSECTION_RELATIONSHIP == indexSection)
             continue;
         // ----------------------------------------
         QMap<uint32_t, QString> mapTypeNames;
