@@ -73,7 +73,8 @@ void MTAssetDetails::on_pushButton_clicked()
     {
         QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Contract(qstrAssetID.toStdString()));
         opentxs::proto::UnitDefinition contractProto =
-            opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>(qstrContents.toStdString());
+            opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
+                (opentxs::String(qstrContents.toStdString()));
 
         if (!qstrContents.isEmpty())
         {
@@ -816,10 +817,12 @@ void MTAssetDetails::refresh(QString strID, QString strName)
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
-        QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->
-            GetAssetType_Contract(strID.toStdString()));
+        QString qstrContents =
+            QString::fromStdString(opentxs::OTAPI_Wrap::It()->
+                GetAssetType_Contract(strID.toStdString()));
         opentxs::proto::UnitDefinition contractProto =
-            opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>(qstrContents.toStdString());
+            opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
+                (opentxs::String(qstrContents.toStdString()));
 
         if (m_pPlainTextEdit)
             m_pPlainTextEdit->setPlainText(qstrContents);

@@ -509,7 +509,7 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
 void Moneychanger::onCheckNym(QString nymId)
 {
     // ----------------------------------------------
-    opentxs::String strNymId = nymId.toStdString();
+    auto strNymId = opentxs::String(nymId.toStdString());
     opentxs::Identifier id_nym(strNymId);
     // ----------------------------------------------
     // Get the Nym. Make sure we have the latest copy, since his credentials were apparently
@@ -573,12 +573,12 @@ void Moneychanger::onCheckNym(QString nymId)
             }
 
             if (claim_att_active && claim_att_primary) {
-                if (claim_section == opentxs::proto::CONTACTSECTION_NAME) {
+                if (claim_section == opentxs::proto::CONTACTSECTION_IDENTIFIER) {
                     MTContactHandler::getInstance()->NotifyOfNymNamePair(
                         nymId,
                         claim_value);
                 }
-                if ((claim_section == opentxs::proto::CONTACTSECTION_MESSAGING) &&
+                if ((claim_section == opentxs::proto::CONTACTSECTION_COMMUNICATION) &&
                     (claim_type == opentxs::proto::CITEMTYPE_BITMESSAGE)) {
                         // NOTE: May not need to do anything here. We already
                         // imported the claims, and we can already search the
@@ -5095,7 +5095,7 @@ void Moneychanger::onNewAssetAdded(QString qstrID)
 
 void Moneychanger::PublicNymNotify(std::string id)
 {
-        auto pNym = opentxs::App::Me().Contract().Nym(id);
+        auto pNym = opentxs::App::Me().Contract().Nym(opentxs::Identifier(id));
 
         if (pNym)
         {
@@ -5114,7 +5114,8 @@ void Moneychanger::PublicNymNotify(std::string id)
 
 void Moneychanger::ServerContractNotify(std::string id)
 {
-    auto pContract = opentxs::App::Me().Contract().Server(id);
+    auto pContract =
+        opentxs::App::Me().Contract().Server(opentxs::Identifier(id));
 
     if (pContract) {
         qDebug() << "I was notified that the DHT downloaded contract "

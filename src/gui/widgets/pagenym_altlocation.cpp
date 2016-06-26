@@ -573,7 +573,7 @@ void MTPageNym_AltLocation::initializePage() //virtual
         opentxs::OTAPI_Wrap::It()->ContactSectionList();
 
     for (auto & indexSection: sections) {
-        if (opentxs::proto::CONTACTSECTION_RELATIONSHIPS == indexSection) {
+        if (opentxs::proto::CONTACTSECTION_RELATIONSHIP == indexSection) {
             continue;
         }
         // ----------------------------------------

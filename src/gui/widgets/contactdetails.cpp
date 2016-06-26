@@ -590,7 +590,7 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                         // -----------------------------------------------
                         auto sectionTypes =
                                 opentxs::OTAPI_Wrap::It()->ContactSectionTypeList(
-                                    opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
+                                    opentxs::proto::CONTACTSECTION_RELATIONSHIP);
                         QMap<uint32_t, QString> mapTypeNames;
 
                         for (auto & indexSectionType: sectionTypes) {
@@ -615,7 +615,7 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                         if (0 == sectionType)
                             return;
                         // ----------------------------------------------
-                        opentxs::String strClaimantNymId = qstrClaimantNymId.toStdString();
+                        auto strClaimantNymId = opentxs::String(qstrClaimantNymId.toStdString());
                         opentxs::Identifier claimant_nym_id(strClaimantNymId);
                         // ----------------------------------------------
                         // Get the Nym. Make sure we have the latest copy, since his credentials were apparently
@@ -648,7 +648,7 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                         const bool set =
                             opentxs::OTAPI_Wrap::It()->SetClaim(
                                 qstrClaimantNymId.toStdString(),
-                                opentxs::proto::CONTACTSECTION_RELATIONSHIPS,
+                                opentxs::proto::CONTACTSECTION_RELATIONSHIP,
                                 opentxs::proto::ProtoAsString(item));
 
                         if (set) {
@@ -1251,10 +1251,10 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
         // ----------------------------------------
         const std::string sectionName =
             opentxs::OTAPI_Wrap::It()->ContactSectionName(
-                opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
+                opentxs::proto::CONTACTSECTION_RELATIONSHIP);
         const auto sectionTypes =
             opentxs::OTAPI_Wrap::It()->ContactSectionTypeList(
-                opentxs::proto::CONTACTSECTION_RELATIONSHIPS);
+                opentxs::proto::CONTACTSECTION_RELATIONSHIP);
 
         for (const auto& indexSectionType: sectionTypes) {
             const std::string typeName =
@@ -1473,7 +1473,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
     const auto sections = opentxs::OTAPI_Wrap::It()->ContactSectionList();
 
     for (const auto& indexSection: sections) {
-        if (opentxs::proto::CONTACTSECTION_RELATIONSHIPS == indexSection) {
+        if (opentxs::proto::CONTACTSECTION_RELATIONSHIP == indexSection) {
             continue;
         }
         // ----------------------------------------

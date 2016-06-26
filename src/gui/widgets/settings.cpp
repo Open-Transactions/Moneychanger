@@ -212,7 +212,10 @@ void Settings::on_pushButton_clicked()
         QString qstrAgreementTypeDisplay = tr("Agreement"); // Smart Contract, Recurring Payment, etc.
         QString qstrMyColumn1, qstrMyColumn2;
         // --------------------------------------
-        const opentxs::String strCronItem = opentxs::OTAPI_Wrap::It()->GetActiveCronItem(NotaryID.toStdString(), cronId);
+        const auto strCronItem =
+            opentxs::String(opentxs::OTAPI_Wrap::It()->GetActiveCronItem(
+                NotaryID.toStdString(),
+                cronId));
 
         if (!strCronItem.Exists())
             continue;
