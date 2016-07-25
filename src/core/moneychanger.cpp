@@ -2236,7 +2236,7 @@ void Moneychanger::onNeedToDownloadMail()
         qDebug() << "Making 'Me' Nym";
 
         std::string strSource("");
-        std::string newNymId = madeEasy.create_nym_ecdsa(strSource);
+        std::string newNymId = madeEasy.create_nym_hd(strSource);
 
         if (!newNymId.empty())
         {
@@ -3787,7 +3787,7 @@ void Moneychanger::onNeedToDownloadAccountData()
         {
             std::string strSource("");
 
-            std::string newNymId = madeEasy.create_nym_ecdsa(strSource);
+            std::string newNymId = madeEasy.create_nym_hd(strSource);
 
             if (!newNymId.empty())
             {

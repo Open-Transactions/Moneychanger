@@ -7,6 +7,7 @@
 
 #include <gui/widgets/wizardaddcontract.hpp>
 
+#include <opentxs/core/Version.hpp>
 #include <opentxs/client/OpenTransactions.hpp>
 #include <opentxs/client/OTAPI.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>

@@ -1,6 +1,8 @@
 #ifndef MONEYCHANGER_HPP
 #define MONEYCHANGER_HPP
 
+#include <opentxs/core/Version.hpp>
+
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
 #include "core/TR1_Wrapper.hpp"
@@ -64,7 +66,7 @@ public:
     void AssetContractNotify(std::string id);
     // ------------------------------------------------
     virtual ~Moneychanger();
-    
+
     static Moneychanger * It(QWidget *parent = 0, bool bShuttingDown = false);
 
     int64_t HasUsageCredits(const std::string & notary_id,
@@ -80,7 +82,7 @@ public:
 
     /** Start **/
     void bootTray();
-    
+
     opentxs::OTRecordList & GetRecordlist();
     void setupRecordList();  // Sets up the RecordList object with the IDs etc.
     void populateRecords();  // Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
@@ -131,7 +133,7 @@ public slots:
     /**
      * Functions for setting Systray Values
      **/
-    
+
     void setDefaultNym(QString, QString);
     QString getDefaultNymID(){return default_nym_id;}
     QString getDefaultNymName(){return default_nym_name;}
@@ -147,12 +149,12 @@ public slots:
     void setDefaultServer(QString, QString);
     QString getDefaultNotaryID(){return default_notary_id;}
     QString getDefaultServerName(){return default_server_name;}
-        
+
     void onNewServerAdded(QString qstrID);
     void onNewAssetAdded(QString qstrID);
     void onNewNymAdded(QString qstrID);  // NOTE This means "new private Nym created in local wallet" -- not, "New public Nym downloaded from outside."
     void onNewAccountAdded(QString qstrID);
-    
+
     void onServersChanged();
     void onAssetsChanged();
     void onNymsChanged();
@@ -166,39 +168,39 @@ public:
     /**
      * Functions for pulling account information out of locally constructed lists.
      **/
-    
+
     QString get_default_nym_id(){return default_nym_id;}
     int get_nym_list_id_size(){return nym_list_id ? nym_list_id->size() : 0;}
     QString get_nym_id_at(int a){return nym_list_id ? nym_list_id->at(a).toString() : "";}
     QString get_nym_name_at(int a){return nym_list_name ? nym_list_name->at(a).toString() : "";}
-    
+
     QString get_default_asset_id(){return default_asset_id;}
     int get_asset_list_id_size(){return asset_list_id ? asset_list_id->size() : 0;}
     QString get_asset_id_at(int a){return asset_list_id ? asset_list_id->at(a).toString() : "";}
     QString get_asset_name_at(int a){return asset_list_name ? asset_list_name->at(a).toString() : "";}
-    
+
     QString get_default_account_id(){return default_account_id;}
     int get_account_list_id_size(){return account_list_id ? account_list_id->size() : 0;}
     QString get_account_id_at(int a){return account_list_id ? account_list_id->at(a).toString() : "";}
     QString get_account_name_at(int a){return account_list_name ? account_list_name->at(a).toString() : "";}
-    
+
     QString get_default_notary_id(){return default_notary_id;}
     int get_server_list_id_size(){return server_list_id ? server_list_id->size() : 0;}
     QString get_notary_id_at(int a){return server_list_id ? server_list_id->at(a).toString() : "";}
     QString get_server_name_at(int a){return server_list_name ? server_list_name->at(a).toString() : "";}
-    
-    
+
+
 private:
 
     /** Namecoin interface used for the NameManager.  */
     NMC_Interface* nmc=nullptr;
     /** Namecoin name manager.  */
     NMC_NameManager* nmc_names=nullptr;
-    
+
     /**
      * Booleans for tracking initialization
      **/
-    
+
     bool mc_overall_init=false;
 
     bool bExpertMode_=false;
@@ -206,11 +208,11 @@ private:
 
     /** Timer used to update Namecoin names.  */
     QTimer* nmc_update_timer=nullptr;
-    
+
     /**
      * Window Classes
      **/
-    
+
     QPointer<MTHome>  homewindow;
     QPointer<DlgMenu> menuwindow;
 
@@ -242,7 +244,7 @@ private:
     QPointer<BtcConnectDlg> bitcoinConnectWindow;
     QPointer<BtcSendDlg> bitcoinSendWindow;
     QPointer<BtcReceiveDlg> bitcoinReceiveWindow;
-        
+
 private:
     void SetupMainMenu();
 
@@ -284,8 +286,8 @@ private:
     /**
      * Menu Dialogs
      **/
-    
-    
+
+
     void mc_overview_dialog();
     void mc_main_menu_dialog(bool bShow=true);
     void mc_messages_dialog();
@@ -310,7 +312,7 @@ private:
     void mc_transport_dialog(QString qstrPresetID=QString(""));
     void mc_log_dialog(QString qstrAppend=QString(""));
     void mc_createinsurancecompany_dialog();
-    // ------------------------------------------------    
+    // ------------------------------------------------
     QList<QVariant> * nym_list_id=nullptr;
     QList<QVariant> * nym_list_name=nullptr;
     // ---------------------------------------------------------
@@ -323,23 +325,23 @@ private:
     QString default_notary_id;
     QString default_server_name;
     // ---------------------------------------------------------
-    
-    /** 
+
+    /**
      * Systray Icons
      **/
-    
+
     QPointer<QSystemTrayIcon> mc_systrayIcon;
-    
+
     QIcon mc_systrayIcon_shutdown;
-    
+
     QIcon mc_systrayIcon_overview;
-    
+
     QIcon mc_systrayIcon_nym;
     QIcon mc_systrayIcon_server;
-    
+
     QIcon mc_systrayIcon_goldaccount;
     QIcon mc_systrayIcon_purse;
-    
+
     QIcon mc_systrayIcon_sendfunds;
     QIcon mc_systrayIcon_requestfunds;
     QIcon mc_systrayIcon_proposeplan;
@@ -360,7 +362,7 @@ private:
     QIcon mc_systrayIcon_advanced_smartcontracts;
     QIcon mc_systrayIcon_advanced_import;
     QIcon mc_systrayIcon_settings;
-    
+
     QIcon mc_systrayIcon_advanced_corporations;
     QIcon mc_systrayIcon_advanced_transport;
     QIcon mc_systrayIcon_advanced_log;
@@ -369,10 +371,10 @@ private:
     /**
      * Systray menu
      **/
-    
+
     //Systray Menu Skeleton
     QPointer<QMenu> mc_systrayMenu;
-    
+
     QPointer<QAction> mc_systrayMenu_headertext;
     QPointer<QAction> mc_systrayMenu_aboveBlank;
     QPointer<QAction> mc_systrayMenu_shutdown;
@@ -385,7 +387,7 @@ private:
     // ---------------------------------------------------------
     QString default_asset_id;
     QString default_asset_name;
-    // ---------------------------------------------------------        
+    // ---------------------------------------------------------
     QPointer<QMenu> mc_systrayMenu_account;
     QPointer<QMenu> mc_systrayMenu_payments;
     QPointer<QMenu> mc_systrayMenu_contracts;
@@ -403,7 +405,7 @@ private:
     // ---------------------------------------------------------
     QPointer<QAction> mc_systrayMenu_goldaccount;
     QPointer<QAction> mc_systrayMenu_purse;
-    // ---------------------------------------------------------    
+    // ---------------------------------------------------------
     QPointer<QAction> mc_systrayMenu_sendfunds;
     QPointer<QAction> mc_systrayMenu_requestfunds;
     QPointer<QAction> mc_systrayMenu_proposeplan;
@@ -458,8 +460,8 @@ private:
     QPointer<QAction> mc_systrayMenu_bitcoin_transactions;
     QPointer<QAction> mc_systrayMenu_bitcoin_send;
     QPointer<QAction> mc_systrayMenu_bitcoin_receive;
-    
-    
+
+
 public slots:
 
     /**
@@ -467,10 +469,10 @@ public slots:
      */
     void nmc_timer_event();
 
-    /** 
+    /**
      * Systray Menu Slots
      **/
-    
+
     void mc_shutdown_slot(); //Shutdown
     // ---------------------------------------------------------------------------
     void mc_overview_slot();                // Overview
