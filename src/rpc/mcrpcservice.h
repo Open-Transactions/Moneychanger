@@ -39,8 +39,10 @@ public Q_SLOTS:
                             QString NumList);
     QJsonValue createNymLegacy(QString Username, QString APIKey,
                          int KeySize, QString NymIDSource);
-    QJsonValue createNymEcdsa(QString Username, QString APIKey,
-                              QString NymIDSource);
+    QJsonValue createNymHD(
+        QString Username,
+        QString APIKey,
+        QString Seed);
     QJsonValue getNymActiveCronItemIDs(QString Username, QString APIKey,
                                        QString NymID, QString NotaryID);
     QJsonValue getActiveCronItem(QString Username, QString APIKey,

@@ -34,17 +34,20 @@ MCRPCService::~MCRPCService(){
 
 }
 
-QJsonValue MCRPCService::createNymEcdsa(QString Username, QString APIKey,
-                                        QString NymIDSource)
+QJsonValue MCRPCService::createNymHD(
+    QString Username,
+    QString APIKey,
+    QString Seed)
 {
-    if (!validateAPIKey(Username, APIKey))
-    {
+    if (!validateAPIKey(Username, APIKey)) {
         QJsonObject object{{"Error", "Invalid API Key"}};
+
         return QJsonValue(object);
     }
-    std::string result = opentxs::OTAPI_Wrap::It()->CreateNymECDSA(
-                                                              NymIDSource.toStdString());
-    QJsonObject object{{"CreateNymEcdsaResult", QString(result.c_str())}};
+    const std::string result =
+        opentxs::OTAPI_Wrap::CreateNymHD(Seed.toStdString());
+    QJsonObject object{{"CreateNymHDResult", QString(result.c_str())}};
+
     return QJsonValue(object);
 }
 
