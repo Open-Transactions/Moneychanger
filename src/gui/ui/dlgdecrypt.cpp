@@ -19,9 +19,9 @@
 
 #include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/crypto/OTEnvelope.hpp>
-#include <opentxs/core/Nym.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
 #include <opentxs/core/crypto/OTSignedFile.hpp>
+#include <opentxs/core/Nym.hpp>
 
 
 DlgDecrypt::DlgDecrypt(QWidget *parent) :
@@ -102,8 +102,10 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
             if (strInput.Contains("-----BEGIN OT ARMORED ENVELOPE-----"))
             {
                 opentxs::OTEnvelope theEnvelope;
+                opentxs::OTASCIIArmor armor;
+                opentxs::OTASCIIArmor::LoadFromString(armor, strInput);
 
-                if (theEnvelope.SetFromBookendedString(strInput))
+                if (theEnvelope.SetCiphertext(armor))
                 {
                     opentxs::String strOutput;
                     // -------------------------
