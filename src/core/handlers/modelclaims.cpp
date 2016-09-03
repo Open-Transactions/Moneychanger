@@ -10,7 +10,7 @@
 #include <core/handlers/modelclaims.hpp>
 
 #include <opentxs/core/OTStorage.hpp>
-#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/util/OTPaths.hpp>

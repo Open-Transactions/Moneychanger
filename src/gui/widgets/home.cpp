@@ -18,7 +18,7 @@
 #include <core/network/Network.h>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/OTTransaction.hpp>

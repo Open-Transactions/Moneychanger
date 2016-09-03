@@ -11,7 +11,7 @@
 #include <gui/widgets/detailedit.hpp>
 #include <gui/widgets/wizardnewoffer.hpp>
 
-#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 
 

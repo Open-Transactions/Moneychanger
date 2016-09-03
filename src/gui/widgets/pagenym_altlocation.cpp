@@ -18,9 +18,9 @@
 #include <QRadioButton>
 #include <QDebug>
 
-#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OpenTransactions.hpp>
+#include <opentxs/client/OT_API.hpp>
 #include <opentxs/core/util/Assert.hpp>
 
 #include <set>
