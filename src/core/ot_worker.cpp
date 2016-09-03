@@ -6,7 +6,7 @@
 
 #include <core/handlers/contacthandler.hpp>
 
-#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Log.hpp>
 
@@ -18,7 +18,7 @@ ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookup
      ** Init MTList
      **/
     overview_list = new QList< QMap<QString,QVariant> >();
-    
+
     int nServerCount  = opentxs::OTAPI_Wrap::It()->GetServerCount();
     int nAssetCount   = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
     int nNymCount     = opentxs::OTAPI_Wrap::It()->GetNymCount();
@@ -51,7 +51,7 @@ ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookup
     list.AcceptChequesAutomatically  (true);
     list.AcceptReceiptsAutomatically (true);
     list.AcceptTransfersAutomatically(false);
-    
+
     //Populate
     list.Populate();
 }
@@ -61,7 +61,7 @@ ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookup
 void ot_worker::mc_overview_ping(){
     //Lock overview_list (Unlocks when function is returned)
     QMutexLocker overview_list_mutex_locker(&overview_list_mutex);
-    
+
     //Repopulate the list
     list.Populate();
     int listSize = list.size();
@@ -69,13 +69,13 @@ void ot_worker::mc_overview_ping(){
     for(int a = 0; a < overview_list->size();a++){
         overview_list->removeAt(0);
     }
-    
+
     //REadd to the backend memory to the visual table.
     for(int a = 0;a < listSize;a++){
         opentxs::OTRecord record = list.GetRecord(a);
             {
             opentxs::OTRecord recordmt = record;
-            
+
             /** Refernce Comment/Code **
              qDebug() << recordmt.IsOutgoing();
              qDebug() << recordmt.IsPending();
@@ -92,11 +92,11 @@ void ot_worker::mc_overview_ping(){
              qDebug() << recordmt.GetRecordType();
              qDebug() << QString::fromStdString(recordmt.GetNotaryID());
              ** End of Reference Comment/Code **/
-            
+
             //Add to overview list
             //Map of record
             QMap<QString, QVariant> record_map = QMap<QString,QVariant>();
-            
+
             /*
              bool  IsPending()     const;
              bool  IsOutgoing()    const;
@@ -115,20 +115,20 @@ void ot_worker::mc_overview_ping(){
              // ---------------------------------------
              bool  IsExpired()     const;
              bool  IsCanceled()    const;
-             
+
              time_t GetValidFrom();
              time_t GetValidTo();
-             
+
              bool  CanDeleteRecord()        const;  // For completed records (not pending.)
              bool  CanAcceptIncoming()      const;  // For incoming, pending (not-yet-accepted) instruments.
              bool  CanDiscardIncoming()     const;  // For INcoming, pending (not-yet-accepted) instruments.
              bool  CanCancelOutgoing()      const;  // For OUTgoing, pending (not-yet-accepted) instruments.
              bool  CanDiscardOutgoingCash() const;  // For OUTgoing cash. (No way to see if it's been accepted, so this lets you erase the record of sending it.)
-             
+
              int   GetBoxIndex() const;
              long  GetTransactionNum() const;
              long  GetTransNumForDisplay() const;
-             
+
              OTRecordType  GetRecordType() const;
              // ---------------------------------------
              const std::string & GetNotaryID()       const;
@@ -146,26 +146,26 @@ void ot_worker::mc_overview_ping(){
              const std::string & GetInstrumentType() const;
              const std::string & GetMemo()           const;
              const std::string & GetContents()       const;
-             
+
              bool   HasInitialPayment();
              bool   HasPaymentPlan();
-             
+
              time_t GetInitialPaymentDate();
              time_t GetPaymentPlanStartDate();
              time_t GetTimeBetweenPayments();
-             
+
              long   GetInitialPaymentAmount();
              long   GetPaymentPlanAmount();
-             
+
              int    GetMaximumNoPayments();
              // ---------------------------------------
              bool  FormatAmount              (std::string & str_output);
              bool  FormatDescription         (std::string & str_output);
              bool  FormatShortMailDescription(std::string & str_output);
              // ---------------------------------------
-             
+
              */
-            
+
             record_map.insert("isoutgoing", recordmt.IsOutgoing());
             record_map.insert("ispending", recordmt.IsPending());
             record_map.insert("isreceipt", recordmt.IsReceipt());
@@ -173,13 +173,13 @@ void ot_worker::mc_overview_ping(){
             record_map.insert("ismail", recordmt.IsMail());
             record_map.insert("accountId", QString::fromStdString(recordmt.GetAccountID()));
             record_map.insert("amount", QString::fromStdString(recordmt.GetAmount()));
-            
+
             std::string str_formatted;
             QString qstrAmount = QString("");
             if (recordmt.FormatAmount(str_formatted))
                 qstrAmount = QString(QString::fromStdString(str_formatted));
             record_map.insert("formatAmount", qstrAmount);
-            
+
             if (recordmt.IsMail())
             {
                 std::string str_mail_desc;
@@ -188,7 +188,7 @@ void ot_worker::mc_overview_ping(){
                     qstrDesc = QString(QString::fromStdString(str_mail_desc));
                 record_map.insert("shortMail", qstrDesc);
             }
-            
+
             record_map.insert("InstrumentDefinitionID", QString::fromStdString(recordmt.GetInstrumentDefinitionID()));
             record_map.insert("currencyTLA", QString::fromStdString(recordmt.GetCurrencyTLA()));
             record_map.insert("date", QString::fromStdString(recordmt.GetDate()));
@@ -197,15 +197,15 @@ void ot_worker::mc_overview_ping(){
             record_map.insert("nymId", QString::fromStdString(recordmt.GetNymID()));
             record_map.insert("recordType", recordmt.GetRecordType());
             record_map.insert("NotaryID", QString::fromStdString(recordmt.GetNotaryID()));
-            
+
             //Special retrieval
             //Format Description
             std::string formatDescription_holder;
             recordmt.FormatDescription(formatDescription_holder);
             record_map.insert("formatDescription", QString::fromStdString(formatDescription_holder));
-            
-            
-            
+
+
+
             //Append
             overview_list->append(record_map);
         }
@@ -217,17 +217,17 @@ void ot_worker::mc_overview_ping(){
  ** Return the current overview_list (if not locked)
  **/
 QList< QMap<QString, QVariant> > ot_worker::mc_overview_get_currentlist(){
-    
+
     //Lock overview_list (Unlocks when function is returned)
     QMutexLocker overview_list_mutex_locker(&overview_list_mutex);
-    
+
     //Make "DEEP COPY" of overviewlist
     QList< QMap<QString, QVariant> > deep_copy_overview_list = QList< QMap<QString, QVariant> >();
     //Copy
     for(int a = 0; a < overview_list->size(); a++){
         deep_copy_overview_list.append(overview_list->at(a));
     }
-    
+
     return deep_copy_overview_list;
 }
 

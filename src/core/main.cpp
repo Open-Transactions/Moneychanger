@@ -9,7 +9,7 @@
 
 #include <bitcoin-api/btcmodules.hpp>
 
-#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
@@ -21,7 +21,7 @@
 
 void shutdown_app()
 {
-    
+
 }
 
 
@@ -35,7 +35,7 @@ public:
     }
     ~__OTclient_RAII()
     {
-        
+
         opentxs::OTAPI_Wrap::AppCleanup();
     }
 };

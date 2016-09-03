@@ -57,9 +57,9 @@
 #include <gui/ui/agreements.hpp>
 
 
-#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OpenTransactions.hpp>
+#include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/Nym.hpp>
 #include <opentxs/core/app/App.hpp>
@@ -657,7 +657,7 @@ static void blah()
 //resume
 //todo
 
-// OpenTransactions.hpp
+// OT_API.hpp
 //EXPORT VerificationSet GetVerificationSet(const Nym& fromNym) const;
 // EXPORT bool SetVerifications(Nym& onNym,
 //                            const proto::VerificationSet&) const;

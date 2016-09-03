@@ -10,7 +10,7 @@
 #include <core/handlers/modelpayments.hpp>
 
 #include <opentxs/core/OTStorage.hpp>
-#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
@@ -991,13 +991,13 @@ QWidget * PaymentsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, boo
 //  const bool bCompletedFound = sourceData_CompletedFound.isValid() ? sourceData_CompletedFound.toBool() : false;
 //  const bool bIsPending = (bPendingFound && !bCompletedFound);
 
-    
+
 //    qDebug() << "bIsOutgoing: " << (bIsOutgoing ? QString("true") :  QString("false"))
 //    << " bPendingFound: " << (bPendingFound ? QString("true") :  QString("false")) <<
 //    " bCompletedFound: " << (bCompletedFound ? QString("true") :  QString("false")) <<
 //    " bIsPending: " << (bIsPending ? QString("true") :  QString("false")) << "\n";
-    
-    
+
+
     TransactionTableViewCellType cellType = (bIsOutgoing ?
                                                  // -------------------------------------------------
                                                  (bIsPending ?

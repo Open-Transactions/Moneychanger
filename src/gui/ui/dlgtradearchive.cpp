@@ -15,11 +15,11 @@
 #include <core/handlers/focuser.h>
 
 #include <opentxs/core/OTStorage.hpp>
-#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/util/Assert.hpp>
-#include <opentxs/client/OpenTransactions.hpp>
+#include <opentxs/client/OT_API.hpp>
 
 #include <QKeyEvent>
 #include <QApplication>

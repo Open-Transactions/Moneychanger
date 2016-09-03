@@ -20,7 +20,7 @@
 #include <core/moneychanger.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/client/OTAPI.hpp>
+#include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/OTStorage.hpp>
 
