@@ -178,11 +178,11 @@ private:
     QString   filterString_;
     QString   filterAccountId_;
     QString   filterMySignerId_;
-    int       filterAgreementId_=0;
+    int       filterAgreementId_{0};
 
-    FilterType filterType_ = FilterNone;
+    FilterType filterType_{FilterNone};
 
-    QTableView * pTableView_=nullptr;
+    QTableView * pTableView_{nullptr};
 };
 
 

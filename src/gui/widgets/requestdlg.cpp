@@ -91,8 +91,6 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString f
         return false;
     }
     // ------------------------------------------------------------
-    opentxs::OT_ME madeEasy;
-
     std::string  strResponse;
     {
         MTSpinner theSpinner;

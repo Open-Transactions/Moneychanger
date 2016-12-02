@@ -2236,7 +2236,7 @@ void Moneychanger::onNeedToDownloadMail()
         qDebug() << "Making 'Me' Nym";
 
         std::string strSource("");
-        std::string newNymId = madeEasy.create_nym_hd(strSource);
+        std::string newNymId = madeEasy.create_nym_hd(strSource, 0);
 
         if (!newNymId.empty())
         {
@@ -2786,8 +2786,11 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
     QPointer<ModelAgreements> pAgreementModel = DBHandler::getInstance()->getAgreementModel();
     QPointer<ModelAgreementReceipts> pModel = DBHandler::getInstance()->getAgreementReceiptModel();
     bool bSuccessAddingReceipt = false;
+    bool bSuccessUpdatingReceipt = false;
     QString qstrReceiptBody(""), qstrMemo("");
     QMap<QString, QVariant> mapFinalValues;
+
+    bool bRecordAlreadyExisted = false;
 
     int nAgreementId         = 0;
     int nAgreementReceiptKey = 0;
@@ -2821,6 +2824,16 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
         if (recordmt.CanDiscardIncoming())      flags |= ModelPayments::CanDiscardIncoming;
         if (recordmt.CanCancelOutgoing())       flags |= ModelPayments::CanCancelOutgoing;
         if (recordmt.CanDiscardOutgoingCash())  flags |= ModelPayments::CanDiscardOutgoingCash;
+        // ---------------------------------
+        if (recordmt.HasOriginType())  {
+            if (recordmt.IsOriginTypePaymentPlan())   flags |= ModelPayments::OriginTypePaymentPlan;
+            if (recordmt.IsOriginTypeSmartContract()) flags |= ModelPayments::OriginTypeSmartContract;
+            if (recordmt.IsOriginTypeMarketOffer()) {
+                qDebug() << __FUNCTION__
+                         << ": Strange; Misguided attempt to import a market related receipt into the agreements table. (Failure.)";
+                return false;
+            }
+        }
         // ---------------------------------
         QString myNymID;
         if (!recordmt.GetNymID().empty())
@@ -2905,7 +2918,6 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
             if (recordmt.GetClosingNum(temp) && (temp > 0))
                 receiptNum = temp;
         }
-
         // What's going on here is, we normally use the Transaction Number on a receipt to identify it.
         // (The "trans num for display" might be the same on many receipts, but the actual txn_id isn't.)
         // But a problem arose, because some finalReceipts have the same transaction number. (Those that
@@ -2972,25 +2984,35 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
             return false;
         }
         // ----------------------------------------------------------
-        // Let's see if we already have a "live agreement" in the Moneychanger DB's agreement table.
-        // The Notary and the TxnDisplay (which is the same for all Nyms) are used to look up the
-        // agreement, and nAgreementId is the unique key returned.
-        // (Can't use TxnDisplay for unique key since there are multiple notaries out there...)
-        //
         int nAgreementFolder = 0;
-        if (recordmt.IsPaymentPlan())   nAgreementFolder = 0;
-        else if (recordmt.IsContract()) nAgreementFolder = 1;
+        if (recordmt.IsPaymentPlan())   nAgreementFolder = 0; // Recurring Payment Plan
+        else if (recordmt.IsContract()) nAgreementFolder = 1; // Smart Contract
 //      else if (recordmt.IsEntity())   nAgreementFolder = 2; // Someday. (For digital corporations.)
-
+        // ----------------------------------------------------------------------------------------
         // NOTE: This may be a paymentReceipt for a smart contract.
         // In which case recordmt.IsContract() returns FALSE!  (Though recordmt.IsReceipt() would return TRUE.)
         // In which case the above logic would set the folder wrong (It'd be set to the payment plan folder instead
         // of the smart contract folder.)
-        // SO THEN, how does the below call work? Because it doesn't set the folder if the record already exists.
+        // SO THEN, how does the below call to GetOrCreateLiveAgreementId work? Because it doesn't set the folder if
+        // the record already exists.
         // It ONLY sets the folder when first creating the record. And it will get the folder correctly that time.
         // So I don't mind if the folder is wrong all the other times, because it's discarded in those cases anyway.
         // If it turns out later that this isn't good enough, I guess we can get more info from the record. But
         // this should work for now.
+        // UPDATE: We now have the below flags which take the guesswork out of it.
+        // ----------------------------------------------------------------------------------------
+        else if (flags.testFlag(ModelPayments::OriginTypePaymentPlan))   nAgreementFolder = 0;
+        else if (flags.testFlag(ModelPayments::OriginTypeSmartContract)) nAgreementFolder = 1;
+        else {
+            qDebug() << __FUNCTION__
+                     << ": Strange; Trying to import an agreement receipt, but can't figure out which folder to put it in. (Failure.)";
+            return false;
+        }
+        // ----------------------------------------------------------------------------------------
+        // Let's see if we already have a "live agreement" in the Moneychanger DB's agreement table.
+        // The Notary and the TxnDisplay (which is the same for all Nyms) are used to look up the
+        // agreement, and nAgreementId is the unique key returned.
+        // (Can't use TxnDisplay for unique key since there are multiple notaries out there...)
         //
         int nLastKnownState = 0;
         nAgreementId = MTContactHandler::getInstance()->GetOrCreateLiveAgreementId(transNumDisplay, notaryID, qstrMemo, nAgreementFolder, nLastKnownState);
@@ -3002,13 +3024,64 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
         }
         // ----------------------------------------------------------
         // Let's see if a record already exists for this receipt:
+        // UPDATE: Normally we search for an agreement receipt based on the "receiptNum"
+        // but there is one case where it will fail: a cancellation notice for a pending incoming agreement
+        // will have a different receiptNum than the pending incoming agreement does. Normally this is fine,
+        // as we just collect ALL receipts on the Active Agreements UI.
+        // But in the case of cancellation, we want to do a replacement. And we'll fail in the above-described
+        // scenario.
+        // Therefore, ONLY in the case of cancellation/activation, we pass the transNumDisplay in addition to the receiptNum,
+        // here into DoesAgreementReceiptAlreadyExist. ONLY if it fails in the normal way (using the receiptNum)
+        // will it then try the alternate search method of the transNumDisplay, since you can only cancel a pending
+        // transaction BEFORE it has been activated. Therefore there could not be any other records stored except
+        // for the pending incoming itself. So it should theoretically be the only one found, when searching based
+        // on the transNumDisplay. (When in all other cases in this UI, there could be a plethora of other receipts
+        // for the same transNumDisplay. Like all the paymentReceipts for that payment plan, etc.)
         //
-        nAgreementReceiptKey = MTContactHandler::getInstance()->DoesAgreementReceiptAlreadyExist(nAgreementId, receiptNum, myNymID);
-
-        if (nAgreementReceiptKey > 0)
+        nAgreementReceiptKey = MTContactHandler::getInstance()->DoesAgreementReceiptAlreadyExist(nAgreementId, receiptNum, myNymID,
+                                                                                                 recordmt.IsNotice() ? transNumDisplay : 0);
+        bRecordAlreadyExisted = (nAgreementReceiptKey > 0);
+        if (bRecordAlreadyExisted)
         {
-            qDebug() << __FUNCTION__ << ": Skipping this agreement receipt since it's apparently already in the database. (Returning true, however, so the recordlist will dump it.)";
-            return true;
+            // If the agreement receipt key already exists, AND the current record is a NOTICE,
+            // that means the current record should REPLACE or UPDATE the pre-existing version.
+            // But in ALL OTHER CASES, we simply want to add the receipt, or return if it's already there.
+            // This is the only case where we want to update an existing record.
+
+            QString qstrTemp = QString("nAgreementId: %1  nAgreementReceiptKey: %2  receiptNum: %3  transNum: %4   transNumDisplay: %5\n Description: %6")
+                    .arg(nAgreementId).arg(nAgreementReceiptKey).arg(receiptNum).arg(transNum).arg(transNumDisplay).arg(mailDescription);
+
+            qDebug() << qstrTemp;
+
+            QString tFinal = "false";
+            QString tContract = "false";
+            QString tPlan = "false";
+            QString tNotice = "false";
+            QString tExpired = "false";
+            QString tCanceled = "false";
+            QString tSuccess = "false";
+            bool bIsSuccess = false;
+
+            if (recordmt.IsFinalReceipt())          tFinal = "true";
+            if (recordmt.IsContract())              tContract = "true";
+            if (recordmt.IsPaymentPlan())           tPlan = "true";
+            if (recordmt.IsNotice())                tNotice = "true";
+            if (recordmt.IsExpired())               tExpired = "true";
+            if (recordmt.IsCanceled())              tCanceled = "true";
+            if (recordmt.HasSuccess(bIsSuccess))    tSuccess = bIsSuccess ? "true" : "false";
+
+            qstrTemp = QString(" IsFinalReceipt: %1\n IsContract: %2 \n IsPaymentPlan: %3 \n IsNotice: %4 \n IsExpired: %5 \n IsCanceled: %6 \n IsSuccess: %7 ")
+                    .arg(tFinal).arg(tContract).arg(tPlan).arg(tNotice).arg(tExpired).arg(tCanceled).arg(tSuccess);
+
+            qDebug() << qstrTemp;
+
+            if (!recordmt.IsNotice())
+            {
+                qDebug() << __FUNCTION__ << ": Skipping this agreement receipt since it's apparently already in the database. (Returning true, however, so the recordlist will dump it.)";
+                return true;
+            }
+            // else if it IS a notice, we let it fall through, and the below code is smart
+            // enough now to know when to add a new record, and when to update an existing one.
         }
         // ----------------------------------------------------------
         // We'll start by putting all the values into our map, so we can then use
@@ -3021,7 +3094,7 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
         mapFinalValues.insert("receipt_id", QVariant::fromValue(receiptNum));
 
         if (tDate > 0) mapFinalValues.insert("timestamp", QVariant::fromValue(tDate));
-        mapFinalValues.insert("have_read", QVariant::fromValue(recordmt.IsOutgoing() ? 1 : 0));
+        if (!bRecordAlreadyExisted) mapFinalValues.insert("have_read", QVariant::fromValue(recordmt.IsOutgoing() ? 1 : 0));
         if (transNumDisplay > 0) mapFinalValues.insert("txn_id_display", QVariant::fromValue(transNumDisplay));
 
         // (Someday event_id will go here.)
@@ -3052,96 +3125,156 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
         qint64 storedFlags = (qint64)flags;
         mapFinalValues.insert("flags", QVariant::fromValue(storedFlags));
         // -------------------------------------------------
-//        // 0 Error, 1 Outgoing, 2 Incoming, 3 Activated, 4 Failed Activating, 5 Canceled, 6 Expired, 7 Completed, 8 Killed
-//        if (recordmt.IsCanceled())      nNewestKnownState = 5; // Canceled
-//        else if (recordmt.IsExpired())  nNewestKnownState = 6; // Expired
-//        else if (recordmt.IsNotice())
-//        {
-//            bool bIsSuccess = false;
+        // 0 Error, 1 Outgoing, 2 Incoming, 3 Activated, 4 Paid, 5 Payment Failed, 6 Failed Activating, 7 Canceled, 8 Expired, 9 Completed, 10 Killed
 
-//            if (recordmt.HasSuccess(bIsSuccess))
-//            {
-//                if (bIsSuccess) nNewestKnownState = 3; // Activated
-//                else            nNewestKnownState = 4; // Failed Activating
-//            }
-//        }
-//        else if (recordmt.IsFinalReceipt())
-//        {
-//            nNewestKnownState = 7; // Completed.
-//        }
-//        else if (recordmt.IsPending())
-//        {
-//            if (recordmt.IsOutgoing()) nNewestKnownState = 1; // Outgoing
-//            else                       nNewestKnownState = 2; // Incoming
+        const int nError = 0;
+        const int nOutgoing = 1;
+        const int nIncoming = 2;
+        const int nActivated = 3;
+        const int nPaid = 4;
+        const int nPaymentFailed = 5; // Live agreement here and above this point.
+        const int nFailedActivating = 6; // Dead agreement here and below this point.
+        const int nCanceled = 7;
+        const int nExpired = 8;
+        const int nNoLongerActive = 9;
+        const int nKilled = 10;
 
-//        }
-        // else if (blah blah blah)    nNewestKnownState = 8; // Killed
-        // TODO: What about if it's killed? Should be something on the finalReceipt that tells me whether it died naturally or was killed.
-        // (There probably is.)
+        if (recordmt.IsCanceled())      nNewestKnownState = nCanceled;
+        else if (recordmt.IsExpired())  nNewestKnownState = nExpired;
+        else if (recordmt.IsFinalReceipt())
+        {
+            nNewestKnownState = nNoLongerActive;
 
-        // ----------------------------------
+            // NOTE: I think it's possible to be both a finalReceipt AND a Notice.
+            // How? Because the Nym is sent a finalReceipt notice when a cron item
+            // stops running. (Market offer, payment plan, or smart contract.)
+            // There are four finalReceipt RECEIPTS, in the case of market offer,
+            // one for each of the four asset accounts involved, but there is also
+            // a NOTICE finalReceipt that is sent to each of the two NYMs involved.
+            //
+            // ===> That's why it's so important that this "if final receipt" block
+            // happens ABOVE the "else if notice" block you see just below here.
+            // Because otherwise, the logic might take a "no longer active" notice
+            // (finalReceipt+IsNotice) and mistakenly mark it as "Activated".
+            //
+            // Todo: Make sure this "finalreceipt + isnotice" contains the REASON
+            // or CAUSE of the cron item to cease functioning, whether it expired,
+            // or was killed by another Nym, etc. That way we can import that information
+            // here and display it for the user. We, we do have expired. And we do
+            // have canceled, but that only shows if I canceled it before he activated
+            // it in the first place. It doesn't show if someone killed it while it
+            // was already running.
+        }
+        else if (recordmt.IsNotice())
+        {
+            // IMPORTANT: Should ASSERT !isFinalReceipt() here, so the logic is preserved
+            // that the above finalReceipt block comes just BEFORE this Notice block.
 
-        // NOTE: Currently we only get paymentReceipts and finalReceipts.
-        // That means the only "state" we have currently here is "Paid", "Payment failed", or "Contract not active."
-        // 0 Error, 1 Paid, 2 Payment failed, 3 Contract not active.
+            bool bIsSuccess = false;
 
-        if (recordmt.IsFinalReceipt()) nNewestKnownState = 3; // I guess 3 means no longer active?
+            if (recordmt.HasSuccess(bIsSuccess))
+            {
+                if (bIsSuccess) nNewestKnownState = nActivated;
+                else            nNewestKnownState = nFailedActivating;
+            }
+        }
         else if (recordmt.IsReceipt())
         {
             bool bIsSuccess = false;
 
             if (recordmt.HasSuccess(bIsSuccess))
             {
-                if (bIsSuccess) nNewestKnownState = 1; // Paid
-                else            nNewestKnownState = 2; // Payment failed.
+                if (bIsSuccess) nNewestKnownState = nPaid;
+                else            nNewestKnownState = nPaymentFailed;
             }
         }
-
+        else if (recordmt.IsPending())
+        {
+            if (recordmt.IsOutgoing()) nNewestKnownState = nOutgoing;
+            else                       nNewestKnownState = nIncoming;
+        }
+        // else if (blah blah blah)    nNewestKnownState = 8; // Killed
+        // TODO: What about if it's killed? Should be something on the finalReceipt that tells me whether it died naturally or was killed.
+        // (There probably is, or there should be.)
+        // ----------------------------------
         // If we already processed a finalReceipt previously, and now we're processing its related paymentReceipts,
         // (since they are coming from the recordBox and may not be in the order originally received...) then we know
-        // the actual final state is 3. So we don't want to go backwards and set it back to 2 again, in that case.
+        // the actual final state already. So we don't want to go backwards and set it back to "paid" again, in that case,
+        // instead of keeping it at "finished." The below logic accomplishes this.
         //
-        if (3 == nLastKnownState)
-            nNewestKnownState = 3;
+        // 0 Error, 1 Outgoing, 2 Incoming, 3 Activated, 4 Paid, 5 Payment Failed, 6 Failed Activating, 7 Canceled, 8 Expired, 9 Completed, 10 Killed
+
+        if (nNewestKnownState != nError)
+        {
+            if (nLastKnownState >= nFailedActivating)
+                nNewestKnownState = nLastKnownState;
+            else if (nLastKnownState >= nPaid && nNewestKnownState <= nActivated)
+                nNewestKnownState = nLastKnownState;
+            else if (nLastKnownState >= nActivated && nNewestKnownState < nActivated)
+                nNewestKnownState = nLastKnownState;
+        }
         // -------------------------------------------------
 //      qDebug() << "DEBUGGING AddAgreementRecord. " << (recordmt.IsOutgoing() ? "OUT" : "IN") << ". receiptNum: " << receiptNum << " transNumDisplay: " << transNumDisplay << "\n";
         // -------------------------------------------------
-        pModel->database().transaction();
-        // ---------------------------------
-        QSqlRecord record = pModel->record();
-        record.setGenerated("agreement_receipt_key", true);
-        // ---------------------------------
-        for (QMap<QString, QVariant>::iterator it_map = mapFinalValues.begin();
-             it_map != mapFinalValues.end(); ++it_map)
+        if (bRecordAlreadyExisted)
         {
-            const QString  & qstrKey = it_map.key();
-            const QVariant & qValue  = it_map.value();
-
-            record.setValue(qstrKey, qValue);
-        }
-
-        pModel->insertRecord(0, record);
-        // ---------------------------------
-        if (pModel->submitAll())
-        {
-            // Success.
-            if (pModel->database().commit())
+            // With agreement receipts, in most cases, we either insert a new one
+            // or just return since it's already there.
+            // But there's this ONE case where we DO need to update an existing record.
+            // It's when Payment Plan 757 comes in, and then later Notice 757 comes in
+            // (like a cancellation notice.) So in THAT case, we need to update the "pending"
+            // record to change it to "canceled."
+            //
+            if (MTContactHandler::getInstance()->UpdateAgreementReceiptRecord(nAgreementReceiptKey, mapFinalValues))
             {
-                bSuccessAddingReceipt = true;
-                nAgreementReceiptKey = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `agreement_receipt`", 0, 0);
                 qstrReceiptBody = QString::fromStdString(recordmt.GetContents());
+                bSuccessUpdatingReceipt = true;
+
+                pModel->select(); // Reset the model since we just inserted a new record.
+                // AH WAIT!!! We don't want to do this for EVERY record inserted, do we?
+                // Just the LAST ONE.
+                // TODO!
             }
         }
-        else
-        {
-            pModel->database().rollback();
-            qDebug() << "Database Write Error"
-                     << "The database reported an error: "
-                     << pModel->lastError().text();
+        else // Record didn't already exist in the DB, so we add it.
+        { // AgreementReceipt table being updated here. Vs the Live Agreements, updated status below this block.
+            pModel->database().transaction();
+            // ---------------------------------
+            QSqlRecord record = pModel->record();
+            record.setGenerated("agreement_receipt_key", true);
+            // ---------------------------------
+            for (QMap<QString, QVariant>::iterator it_map = mapFinalValues.begin();
+                 it_map != mapFinalValues.end(); ++it_map)
+            {
+                const QString  & qstrKey = it_map.key();
+                const QVariant & qValue  = it_map.value();
+
+                record.setValue(qstrKey, qValue);
+            }
+
+            pModel->insertRecord(0, record);
+            // ---------------------------------
+            if (pModel->submitAll())
+            {
+                // Success.
+                if (pModel->database().commit())
+                {
+                    bSuccessAddingReceipt = true;
+                    nAgreementReceiptKey = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `agreement_receipt`", 0, 0);
+                    qstrReceiptBody = QString::fromStdString(recordmt.GetContents());
+                }
+            }
+            else
+            {
+                pModel->database().rollback();
+                qDebug() << "Database Write Error"
+                         << "The database reported an error: "
+                         << pModel->lastError().text();
+            }
         }
     } // if pModel
     // ------------------------------------------------
-    if (bSuccessAddingReceipt)
+    if (bSuccessAddingReceipt || bSuccessUpdatingReceipt)
     {
         if (nAgreementReceiptKey <= 0)
         {
@@ -3156,7 +3289,14 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
         else
             pAgreementModel->select();
         // -------------------------------------------
-        if (!MTContactHandler::getInstance()->CreateAgreementReceiptBody(nAgreementReceiptKey, qstrReceiptBody))
+        if (bSuccessUpdatingReceipt &&
+            !MTContactHandler::getInstance()->UpdateAgreementReceiptBody(nAgreementReceiptKey, qstrReceiptBody))
+        {
+            qDebug() << "AddAgreementRecord: Updated record, but then failed updating agreement receipt body.\n";
+            return false;
+        }
+        else if (bSuccessAddingReceipt &&
+            !MTContactHandler::getInstance()->CreateAgreementReceiptBody(nAgreementReceiptKey, qstrReceiptBody))
         {
             qDebug() << "AddAgreementRecord: ...but then failed creating agreement receipt body.\n";
             return false;
@@ -3332,11 +3472,9 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
         if (transNum > 0)        mapFinalValues.insert("txn_id", QVariant::fromValue(transNum));
         if (transNumDisplay > 0) mapFinalValues.insert("txn_id_display", QVariant::fromValue(transNumDisplay));
 
-
 //      qDebug() << "DEBUGGING AddPaymentToPmntArchive. " << (recordmt.IsOutgoing() ? "OUT" : "IN") << ". transNum: " << transNum << " transNumDisplay: " << transNumDisplay << "\n";
 
         // I receive a cheque. This is the incoming cheque I'm receiving.
-
 
         if (lAmount != 0)        mapFinalValues.insert("amount", QVariant::fromValue(lAmount));
         if (tDate > 0)           mapFinalValues.insert("timestamp", QVariant::fromValue(tDate));
@@ -3473,8 +3611,12 @@ void Moneychanger::modifyRecords()
         {
             opentxs::OTRecord& recordmt = record;
 
+            qDebug() << QString("modifyRecords 1\n");
+
             if (!recordmt.CanDeleteRecord())
             {
+                qDebug() << QString("modifyRecords 2\n");
+
                 // In this case we aren't going to delete the record, but we can still
                 // save a copy of it in our local database, if it's not already there.
 
@@ -3482,12 +3624,36 @@ void Moneychanger::modifyRecords()
                     !recordmt.IsSpecialMail() &&
                     !recordmt.IsExpired() )
                 {
-                    AddPaymentToPmntArchive(recordmt);
-                }
+                    qDebug() << QString("modifyRecords 3\n");
 
+                    bool bShouldImportPayment   = true;  // To preserve original logic.
+                    bool bShouldImportAgreement = false; // This part is new.
+
+                    if (recordmt.IsPending()
+                       && (recordmt.IsPaymentPlan() ||
+                           recordmt.IsContract()) )
+                    {
+
+                        qDebug() << QString("modifyRecords 4\n");
+
+
+                        bShouldImportPayment   = true;
+                        bShouldImportAgreement = true;
+                    }
+
+                    if (bShouldImportPayment)
+                        AddPaymentToPmntArchive(recordmt);
+
+                    if (bShouldImportAgreement)
+                        AddAgreementRecord(recordmt);
+                }
             }
             else // record can be deleted.
             {
+
+                qDebug() << QString("modifyRecords 5\n");
+
+
                 // If recordmt IsRecord() and IsReceipt() and is a "finalReceipt"
                 // then try to look it up in the Trade Archive table. For all entries
                 // from the same transaction, we set the final receipt text in those
@@ -3509,16 +3675,96 @@ void Moneychanger::modifyRecords()
                 // -----------------------------------
                 else if (recordmt.IsNotice())
                 {
-                    if (AddPaymentBasedOnNotice(recordmt))
+
+                    qDebug() << QString("modifyRecords 6\n");
+
+
+                    bool bShouldImportPayment   = false;
+                    bool bShouldImportAgreement = false;
+//                  bool bShouldImportFinalReceiptToTradeArchive = false; // experimental. See note just below.
+
+                    if (recordmt.HasOriginType())
                     {
-                        bShouldDeleteRecord = true;
+                        qDebug() << QString("modifyRecords 7\n");
+
+                        if (recordmt.IsOriginTypeMarketOffer()) {
+                            qDebug() << __FUNCTION__ << ": This is where I almost just added a market notice to the payments table. I stopped myself.";
+                            // There actually IS a finalReceipt NOTICE for market exchange. (Sent to the Nym.)
+                            // (Versus the finalReceipt RECEIPTs, which are sent to 2 ACCOUNTS for each Nym.)
+                            // Therefore, AddAgreementRecord needs to check for "IsNotice" in combination with "IsFinalReceipt"
+                            // since in that case, it should know it hasn't received its official 4 ACCOUNT receipts yet,
+                            // and more importantly, that this notice should NOT overwrite any of those, but it
+                            // has still received _some_ useful information -- that the agreement itself _has_ been
+                            // terminated.
+                            //
+                            //bShouldImportFinalReceiptToTradeArchive = true;
+                        }
+                        else if (recordmt.IsOriginTypePaymentPlan()) {
+                            qDebug() << QString("modifyRecords 8\n");
+
+                            bShouldImportPayment   = true;
+                            bShouldImportAgreement = true;
+                        }
+                        else if (recordmt.IsOriginTypeSmartContract()) {
+                            qDebug() << QString("modifyRecords 9\n");
+
+                            bShouldImportPayment   = true;
+                            bShouldImportAgreement = true;
+                        }
+                        else {
+                            qDebug() << __FUNCTION__ << ": Importing notices, found a record with an unknown origin type.";
+                        }
                     }
+                    else {
+                        qDebug() << QString("modifyRecords 10\n");
+
+                        bShouldImportPayment = true;
+
+
+//                        QString tFinal = "false";
+//                        QString tContract = "false";
+//                        QString tPlan = "false";
+//                        QString tNotice = "false";
+//                        QString tExpired = "false";
+//                        QString tCanceled = "false";
+//                        QString tSuccess = "false";
+//                        bool bIsSuccess = false;
+
+//                        if (recordmt.IsFinalReceipt())          tFinal = "true";
+//                        if (recordmt.IsContract())              tContract = "true";
+//                        if (recordmt.IsPaymentPlan())           tPlan = "true";
+//                        if (recordmt.IsNotice())                tNotice = "true";
+//                        if (recordmt.IsExpired())               tExpired = "true";
+//                        if (recordmt.IsCanceled())              tCanceled = "true";
+//                        if (recordmt.HasSuccess(bIsSuccess))    tSuccess = bIsSuccess ? "true" : "false";
+
+//                        qstrTemp = QString(" IsFinalReceipt: %1\n IsContract: %2 \n IsPaymentPlan: %3 \n IsNotice: %4 \n IsExpired: %5 \n IsCanceled: %6 \n IsSuccess: %7 ")
+//                                .arg(tFinal).arg(tContract).arg(tPlan).arg(tNotice).arg(tExpired).arg(tCanceled).arg(tSuccess);
+
+//                        qDebug() << qstrTemp;
+
+
+
+
+
+                    }
+                    // -------------------------------------
+                    if (bShouldImportPayment && AddPaymentBasedOnNotice(recordmt))
+                        bShouldDeleteRecord = true;
+                    if (bShouldImportAgreement && AddAgreementRecord(recordmt))
+                        bShouldDeleteRecord = true;
+//                    if (bShouldImportFinalReceiptToTradeArchive && AddFinalReceiptToTradeArchive(recordmt))
+//                        bShouldDeleteRecord = true;
                 }
                 // -----------------------------------
                 else if (recordmt.IsRecord() && !recordmt.IsExpired())
                 {
+                    qDebug() << QString("modifyRecords 11\n");
+
                     if (recordmt.IsReceipt())
                     {
+                        qDebug() << QString("modifyRecords 12\n");
+
                         if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
                         {
                             // We don't have to add these to the trade archive table because they
@@ -3536,18 +3782,27 @@ void Moneychanger::modifyRecords()
                         //
                         else if (0 == recordmt.GetInstrumentType().compare("paymentReceipt"))
                         {
-                            if (AddAgreementRecord(recordmt))
+                            if (recordmt.HasOriginType()
+                                && (recordmt.IsOriginTypePaymentPlan() ||
+                                    recordmt.IsOriginTypeSmartContract())
+                                && AddAgreementRecord(recordmt)) // <====== IMPORTS HERE.
                             {
                                 bShouldDeleteRecord = true;
                             }
 //                          else
 //                              qDebug() << __FUNCTION__ << ": Failed trying to add a receipt to the agreement archive.";
 
-                            bShouldDeleteRecord = true;
+                            // Commenting this out for now.
+                            // It might have been added just to hide the pay dividend problems.
+                            // Now I want to see whatever pops up here.
+                            //bShouldDeleteRecord = true;
                         } // paymentReceipt
                         // -----------------------------------
                         else if (recordmt.IsFinalReceipt())
                         {
+
+                            qDebug() << QString("modifyRecords 13\n");
+
                             // Notice here we only delete the record if we successfully
                             // added the final receipt to the trade archive table.
                             // Why? Because the trade archive table contains receipts
@@ -3569,10 +3824,19 @@ void Moneychanger::modifyRecords()
                             // not be a finalReceipt for a market offer! It might correspond to
                             // a smart contract or a recurring payment plan.
                             //
-                            if (AddFinalReceiptToTradeArchive(recordmt)) // It's possibly a market trade.
+                            // UPDATE: We now CAN tell for finalReceipts and paymentReceipts, whether
+                            // they are for market offers, payment plans, or smart contracts. So the
+                            // logic is updated now to not even TRY to import into the trade archive
+                            // unless it's specifically a finalReceipt for a market offer.
+                            //
+                            if (recordmt.HasOriginType()
+                                && recordmt.IsOriginTypeMarketOffer()
+                                && AddFinalReceiptToTradeArchive(recordmt)) // <==== IMPORTS HERE.
                                 bShouldDeleteRecord = true;
-                            else if (AddAgreementRecord(recordmt)) // Okay, it's a smart contract or recurring payment plan.
+                            else if (AddAgreementRecord(recordmt)) // Okay, it's for a smart contract or recurring payment plan.
                             {
+                                qDebug() << QString("modifyRecords 14\n");
+
                                 bShouldDeleteRecord = true;
 
                                 // For now I'm doing this one here as well, so the normal payments screen
@@ -3585,16 +3849,33 @@ void Moneychanger::modifyRecords()
                                 // you have to look at the "active agreements" window where you can see its current
                                 // status and its finalReceipts and paymentReceipts.
                                 //
+                                // UPDATE: uncommenting this for now, to see how it goes. I'm thinking that
+                                // both the payments screen AND the active agreements screen should show the
+                                // most recent status of the agreement.
+                                //
+                                // UPDATE: commented it out again. In the payments GUI, we had a sent
+                                // activated, and a received activated, and you had to go to the live
+                                // agreements GUI to see what happened beyond that. It's better to keep
+                                // it that way, since when I uncomment this, those get replaced in the
+                                // payments UI with both final receipts in the received. It's appropriate
+                                // to see those appear in the live agreements, but it's confusing to have
+                                // them appear in the payments UI, so I commented this out again.
+                                //
                                 //AddPaymentToPmntArchive(recordmt);
-
                             }
                             else
                                 qDebug() << " --- Tried to import final receipt, but it failed!";
                         } // finalReceipt
                         else // All  other closed (deletable) receipts.
                         {
+                            qDebug() << QString("modifyRecords 15\n");
+
                             if (AddPaymentToPmntArchive(recordmt))
                             {
+
+                                qDebug() << QString("modifyRecords 16\n");
+
+
                                 bShouldDeleteRecord = true;
                             }
 //                          else
@@ -3604,6 +3885,8 @@ void Moneychanger::modifyRecords()
                     // -----------------------------------
                     else // All  other delete-able, non-expired records.
                     {
+                        qDebug() << QString("modifyRecords 17\n");
+
                         // For example, an incoming cheque becomes a received cheque after depositing it.
                         // At that point, OT moves incoming cheque from the payments inbox, to the record box. So
                         // it's not a cheque receipt (the payer gets that; you're the recipient) but it's the deletable
@@ -3616,8 +3899,19 @@ void Moneychanger::modifyRecords()
                         // table, which has potentially up to 3 different receipts for the same trade record. (Market receipt
                         // for asset and currency accounts, plus final receipt.)
                         //
+                        if ((recordmt.IsPaymentPlan() || recordmt.IsContract()) // They could be here maybe because they expired without ever being activated.
+                            && AddAgreementRecord(recordmt))
+                        {
+
+                            qDebug() << QString("modifyRecords 18\n");
+
+                            bShouldDeleteRecord = true;
+                        }
+
                         if (AddPaymentToPmntArchive(recordmt))
                         {
+                            qDebug() << QString("modifyRecords 19\n");
+
                             bShouldDeleteRecord = true;
                         }
                     }
@@ -3787,7 +4081,7 @@ void Moneychanger::onNeedToDownloadAccountData()
         {
             std::string strSource("");
 
-            std::string newNymId = madeEasy.create_nym_hd(strSource);
+            std::string newNymId = madeEasy.create_nym_hd(strSource, 0);
 
             if (!newNymId.empty())
             {
@@ -4946,6 +5240,7 @@ void Moneychanger::mc_agreements_dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*
     {
         agreements_window = new Agreements(this);
 
+        connect(agreements_window, SIGNAL(showDashboard()),               this,              SLOT(mc_overview_slot()));
         connect(agreements_window, SIGNAL(needToDownloadAccountData()),   this,              SLOT(onNeedToDownloadAccountData()));
         connect(this,              SIGNAL(populatedRecordlist()),         agreements_window, SLOT(onRecordlistPopulated()));
         connect(agreements_window, SIGNAL(needToPopulateRecordlist()),    this,              SLOT(onNeedToPopulateRecordlist()));

@@ -1372,7 +1372,15 @@ void Payments::RefreshPayments()
     ui->tableViewSent->resizeRowsToContents();
     ui->tableViewReceived->resizeColumnsToContents();
     ui->tableViewReceived->resizeRowsToContents();
-
+    {
+    int nWidthFirstColumn = ui->tableViewSent->columnWidth(0);
+    int nNewWidth = static_cast<int>( static_cast<float>(nWidthFirstColumn) * 1.2 );
+    ui->tableViewSent->setColumnWidth(0,nNewWidth);
+    }{
+    int nWidthFirstColumn = ui->tableViewReceived->columnWidth(0);
+    int nNewWidth = static_cast<int>( static_cast<float>(nWidthFirstColumn) * 1.2 );
+    ui->tableViewReceived->setColumnWidth(0,nNewWidth);
+    }
     ui->tableViewSent->horizontalHeader()->setStretchLastSection(true);
     ui->tableViewReceived->horizontalHeader()->setStretchLastSection(true);
 }

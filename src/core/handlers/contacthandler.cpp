@@ -1456,7 +1456,8 @@ bool MTContactHandler::UpdateLiveAgreementRecord(const int nAgreementId, const i
 // ----------------------------------------------------------
 
 // returns nAgreementReceiptKey
-int MTContactHandler::DoesAgreementReceiptAlreadyExist(const int nAgreementId, const int64_t receiptNum, const QString & qstrNymId)
+int MTContactHandler::DoesAgreementReceiptAlreadyExist(const int nAgreementId, const int64_t receiptNum, const QString & qstrNymId,
+                                                       const int64_t transNumDisplay/*=0*/) // Last parameter only used in case of cancellation.
 {
     QMutexLocker locker(&m_Mutex);
 
@@ -1464,8 +1465,21 @@ int MTContactHandler::DoesAgreementReceiptAlreadyExist(const int nAgreementId, c
             arg(nAgreementId).arg(receiptNum).arg(qstrNymId);
     int nRows = DBHandler::getInstance()->querySize(str_select);
 
-    if (0 >= nRows)
-        return 0;
+    if (0 >= nRows && transNumDisplay > 0)
+    {
+        // In this case, ONLY if it has already failed, and ONLY if transNumDisplay is provided,
+        // then we know it's a cancelation/activation, and the receiptNum for the notice may not
+        // match the receiptNum for the pending incoming payment plan or smart contract.
+        // Therefore we look it up instead based on the transNumDisplay, which is passed in
+        // specifically in cases where the pending incoming is being canceled by a server notice.
+
+        str_select = QString("SELECT `agreement_receipt_key` FROM `agreement_receipt` WHERE `agreement_id`=%1 AND `txn_id_display`=%2 AND `my_nym_id`='%3' LIMIT 0,1").
+                arg(nAgreementId).arg(transNumDisplay).arg(qstrNymId);
+        nRows = DBHandler::getInstance()->querySize(str_select);
+
+        if (0 >= nRows)
+            return 0;
+    }
 
     return DBHandler::getInstance()->queryInt(str_select, 0, 0);
 }
@@ -1497,6 +1511,15 @@ bool MTContactHandler::CreateAgreementReceiptBody(const int nAgreementReceiptKey
     }
     return false;
 }
+
+
+bool MTContactHandler::UpdateAgreementReceiptBody(int nAgreementReceiptKey, const QString qstrBody)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    return LowLevelUpdateReceiptBody(nAgreementReceiptKey, qstrBody);
+}
+
 
 bool MTContactHandler::LowLevelUpdateReceiptBody(int nAgreementReceiptKey, const QString & qstrBody)
 {
@@ -1929,6 +1952,70 @@ bool MTContactHandler::SetPaymentFlags(int nPaymentID, qint64 nFlags)
         // ---------------------------------------------
         qu->bind (":strdflags", storedFlags);
         qu->bind (":pymntid", nPaymentID);
+
+        DBHandler::getInstance ()->runQuery (qu.release ());
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return false;
+    }
+
+    return true;
+}
+
+
+
+
+bool MTContactHandler::UpdateAgreementReceiptRecord(int nAgreementReceiptID, QMap<QString, QVariant>& mapFinalValues)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    try
+    {
+        QString queryDetails("");
+        int nValuesAddedToQuery = 0;
+
+        for (QMap<QString, QVariant>::iterator it_map = mapFinalValues.begin();
+             it_map != mapFinalValues.end(); ++it_map)
+        {
+            const QString  & qstrKey = it_map.key();
+            // If this isn't the first value being added to the query, then add a comma first.
+            if (nValuesAddedToQuery++ > 0) queryDetails += QString(", ");
+            queryDetails += QString("`%1` = :key_%2").arg(qstrKey).arg(qstrKey);
+        }
+        // ---------------------------------------------
+        QString queryStr = QString("UPDATE `agreement_receipt`"
+                                   " SET %1"
+                                   " WHERE `agreement_receipt_key` = :agrectid").arg(queryDetails);
+    #ifdef CXX_11
+        std::unique_ptr<DBHandler::PreparedQuery> qu;
+    #else /* CXX_11?  */
+        std::auto_ptr<DBHandler::PreparedQuery> qu;
+    #endif /* CXX_11?  */
+        qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+        // ---------------------------------------------
+        // Now we bind all the values.
+        //
+        for (QMap<QString, QVariant>::iterator it_map = mapFinalValues.begin();
+             it_map != mapFinalValues.end(); ++it_map)
+        {
+            const QString  & qstrKey = it_map.key();
+            const QVariant & qValue  = it_map.value();
+
+            const QString qstrSqlSubstitute = QString(":key_%1").arg(qstrKey);
+
+//            bool bIsInt = qValue.type() == QVariant::Int;
+//
+//            if (bIsInt)
+//                qDebug() << "BINDING: KEY: " << qstrKey << " VALUE: " << qValue.toInt();
+//            else
+//                qDebug() << "BINDING: KEY: " << qstrKey << " VALUE: " << qValue.toString();
+
+            qu->bind (qstrSqlSubstitute, qValue);
+        }
+        // ---------------------------------------------
+        qu->bind (":agrectid", nAgreementReceiptID);
 
         DBHandler::getInstance ()->runQuery (qu.release ());
     }

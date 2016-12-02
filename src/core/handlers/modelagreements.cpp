@@ -268,16 +268,39 @@ QVariant AgreementsProxyModel::data ( const QModelIndex & index, int role/* = Qt
 
             QString qstrState;
 
+            // 0 Error, 1 Outgoing, 2 Incoming, 3 Activated, 4 Paid, 5 Payment Failed, 6 Failed Activating, 7 Canceled, 8 Expired, 9 Completed, 10 Killed
+
             switch(nState)
             {
             case 1:
-                qstrState = tr("Paid");
+                qstrState = tr("Outgoing");
                 break;
             case 2:
-                qstrState = tr("Payment Failed");
+                qstrState = tr("Incoming");
                 break;
             case 3:
+                qstrState = tr("Activated");
+                break;
+            case 4:
+                qstrState = tr("Paid");
+                break;
+            case 5:
+                qstrState = tr("Payment failed");
+                break;
+            case 6:
+                qstrState = tr("Failed activating");
+                break;
+            case 7:
+                qstrState = tr("Canceled");
+                break;
+            case 8:
+                qstrState = tr("Expired");
+                break;
+            case 9:
                 qstrState = tr("No longer active");
+                break;
+            case 10:
+                qstrState = tr("Killed");
                 break;
             default:
                 qstrState = tr("Error");
@@ -561,7 +584,7 @@ QWidget * AgreementReceiptsProxyModel::CreateDetailHeaderWidget(const int nSourc
     QString     qstrInstrumentType = sourceData_InstrumentType.isValid() ? sourceData_InstrumentType.toString() : "";
 
     ModelPayments::PaymentFlags flags = sourceData_Flags.isValid() ? (ModelPayments::PaymentFlag)sourceData_Flags.toLongLong()
-                                                                  : ModelPayments::NoFlags;
+                                                                   :  ModelPayments::NoFlags;
 
     const int64_t lAmount = sourceData_Amount.isValid() ? sourceData_Amount.toLongLong() : 0;
 
@@ -590,7 +613,6 @@ QWidget * AgreementReceiptsProxyModel::CreateDetailHeaderWidget(const int nSourc
     // --------------------------------------------------------------------------------------------
     // For invoices and invoice receipts.
     //
-
     const bool bIsInvoice       = flags.testFlag(ModelPayments::IsInvoice);
     const bool bIsPlan          = flags.testFlag(ModelPayments::IsPaymentPlan);
     const bool bIsNotice        = flags.testFlag(ModelPayments::IsNotice);
@@ -1267,6 +1289,9 @@ bool AgreementReceiptsProxyModel::filterAcceptsRow(int sourceRow, const QModelIn
             if (0 != qstrMyNym.compare(filterMySignerId_))
                 return false;
         }
+        // ------------------------------------
+        if (0 == filterAgreementId_)
+            return false;
         // ------------------------------------
         if ((filterAgreementId_ > 0) && (lAgreementId > 0))
         {
