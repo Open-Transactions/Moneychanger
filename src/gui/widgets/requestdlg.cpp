@@ -75,6 +75,13 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString f
     time64_t tFrom = opentxs::OTAPI_Wrap::It()->GetTime();
     time64_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
     // ------------------------------------------------------------
+    opentxs::OT_ME madeEasy;
+
+    if (!madeEasy.make_sure_enough_trans_nums(1, str_NotaryID, str_fromNymId)) {
+        qDebug() << QString("Failed trying to acquire a transaction number to write the cheque with.");
+        return false;
+    }
+    // ------------------------------------------------------------
     std::string strCheque = opentxs::OTAPI_Wrap::It()->WriteCheque(str_NotaryID, trueAmount, tFrom, tTo,
                                                     str_fromAcctId, str_fromNymId, note.toStdString(),
                                                     str_toNymId);
@@ -84,8 +91,6 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString f
         return false;
     }
     // ------------------------------------------------------------
-    opentxs::OT_ME madeEasy;
-
     std::string  strResponse;
     {
         MTSpinner theSpinner;

@@ -45,7 +45,7 @@ QJsonValue MCRPCService::createNymHD(
         return QJsonValue(object);
     }
     const std::string result =
-        opentxs::OTAPI_Wrap::CreateNymHD(Seed.toStdString());
+        opentxs::OTAPI_Wrap::CreateNymHD(Seed.toStdString(), 0);
     QJsonObject object{{"CreateNymHDResult", QString(result.c_str())}};
 
     return QJsonValue(object);

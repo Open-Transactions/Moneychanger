@@ -69,29 +69,31 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(MyClass::Options)
 You can then use the MyClass::Options type to store combinations of MyClass::Option values.
     */
     enum PaymentFlag {
-         NoFlags                =  0x0
-        ,IsSpecialMail          =  0x1
-        ,IsPending              =  0x1 <<  1
-        ,IsOutgoing             =  0x1 <<  2
-        ,IsRecord               =  0x1 <<  3
-        ,IsReceipt              =  0x1 <<  4
-        ,IsFinalReceipt         =  0x1 <<  5
-        ,IsMail                 =  0x1 <<  6
-        ,IsTransfer             =  0x1 <<  7
-        ,IsCheque               =  0x1 <<  8
-        ,IsInvoice              =  0x1 <<  9
-        ,IsVoucher              =  0x1 << 10
-        ,IsContract             =  0x1 << 11
-        ,IsPaymentPlan          =  0x1 << 12
-        ,IsCash                 =  0x1 << 13
-        ,IsNotice               =  0x1 << 14
-        ,IsExpired              =  0x1 << 15
-        ,IsCanceled             =  0x1 << 16
-        ,CanDelete              =  0x1 << 17
-        ,CanAcceptIncoming      =  0x1 << 18
-        ,CanDiscardIncoming     =  0x1 << 19
-        ,CanCancelOutgoing      =  0x1 << 20
-        ,CanDiscardOutgoingCash =  0x1 << 21
+         NoFlags                 =  0x0
+        ,IsSpecialMail           =  0x1
+        ,IsPending               =  0x1 <<  1
+        ,IsOutgoing              =  0x1 <<  2
+        ,IsRecord                =  0x1 <<  3
+        ,IsReceipt               =  0x1 <<  4
+        ,IsFinalReceipt          =  0x1 <<  5
+        ,IsMail                  =  0x1 <<  6
+        ,IsTransfer              =  0x1 <<  7
+        ,IsCheque                =  0x1 <<  8
+        ,IsInvoice               =  0x1 <<  9
+        ,IsVoucher               =  0x1 << 10
+        ,IsContract              =  0x1 << 11
+        ,IsPaymentPlan           =  0x1 << 12
+        ,IsCash                  =  0x1 << 13
+        ,IsNotice                =  0x1 << 14
+        ,IsExpired               =  0x1 << 15
+        ,IsCanceled              =  0x1 << 16
+        ,CanDelete               =  0x1 << 17
+        ,CanAcceptIncoming       =  0x1 << 18
+        ,CanDiscardIncoming      =  0x1 << 19
+        ,CanCancelOutgoing       =  0x1 << 20
+        ,CanDiscardOutgoingCash  =  0x1 << 21
+        ,OriginTypePaymentPlan   =  0x1 << 22 // For notices, finalReceipts and paymentReceipts re: a payment plan
+        ,OriginTypeSmartContract =  0x1 << 23 // For notices, finalReceipts and paymentReceipts re: a smart contract
     };
     Q_DECLARE_FLAGS(PaymentFlags, PaymentFlag)
 

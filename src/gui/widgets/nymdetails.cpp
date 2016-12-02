@@ -1881,7 +1881,7 @@ void MTNymDetails::AddButtonClicked()
         switch (nAlgorithmIndex)
         {
             case 0:  // ECDSA
-                str_id = madeEasy.create_nym_hd(NYM_ID_SOURCE);
+                str_id = madeEasy.create_nym_hd(NYM_ID_SOURCE, 0);
                 break;
             case 1: // 1024-bit RSA
                 str_id = madeEasy.create_nym_legacy(1024, NYM_ID_SOURCE);

@@ -329,7 +329,7 @@ bool DBHandler::dbCreateInstance()
                " notary_id TEXT," // The notary where the agreement is instantiated. This, plus txn_id_display, is unique to identify the agreement. But the autonumber is easier to work with.
                " contract_fingerprint TEXT," // the hash of the contract, or whatever fingerprinting technique is used.
                " newest_receipt_id INTEGER," // Last known receiptNum for ANYTHING related to this agreement. (For any nym.)
-               " newest_known_state INTEGER," // 0 Error, 1 Paid, 2 Payment failed, 3 Contract not active.
+               " newest_known_state INTEGER,"
                " timestamp INTEGER," // Timestamp of the above newest_receipt_id.
                " memo TEXT,"
                " folder INTEGER" // 0 Payment Plan, 1 Smart Contract, 2 Entity
