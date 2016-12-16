@@ -23,14 +23,6 @@ include(../common.pri)
 
 include($${SOLUTION_DIR}../src/quazip/quazip.pri)
 
-#-------------------------------------------------
-# Package Config
-
-# MAC AND LINUX:
-unix:{
-    PKGCONFIG += opentxs
-}
-
 # The ABI version.
 
 !win32:VERSION = 1.0.0
@@ -60,7 +52,7 @@ DEFINES += QUAZIP_BUILD
 CONFIG(staticlib): DEFINES += QUAZIP_STATIC
 
 unix: {
-    	
+
 #	headers.path=$$PREFIX/include/quazip
 #    	headers.files=$$HEADERS
 #    	target.path=$$PREFIX/lib/$${LIB_ARCH}
@@ -70,7 +62,7 @@ unix: {
 LIBS += -lz
 	OBJECTS_DIR=.obj
 	MOC_DIR=.moc
-	
+
 }
 
 win32 {

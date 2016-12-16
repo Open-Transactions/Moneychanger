@@ -34,13 +34,3 @@ win32:{
     DEFINES     += "_UNICODE=1"
     CharacterSet = 1
 }
-
-#-------------------------------------------------
-# Package Config
-
-# MAC AND LINUX:
-unix:{
-    PKGCONFIG += opentxs
-}
-
-
