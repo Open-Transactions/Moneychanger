@@ -42,16 +42,6 @@ include($${SOLUTION_DIR}../src/namecoin/namecoin.pri)
 include($${SOLUTION_DIR}../src/quazip/quazip.pri)
 
 #-------------------------------------------------
-# Package Config
-
-# MAC AND LINUX:
-unix:{
-    PKGCONFIG += opentxs
-    PKGCONFIG += libzmq
-}
-
-
-#-------------------------------------------------
 # Include
 
 win32:{
@@ -78,6 +68,7 @@ win32:{
 # Linked Libs
 
 LIBS += -lopentxs-proto
+LIBS += -lopentxs
 LIBS += -lprotobuf-lite
 
 # MAC AND LINUX:
