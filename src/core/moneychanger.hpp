@@ -437,6 +437,7 @@ private:
     QPointer<QMenu>   mc_systrayMenu_experimental;
     QPointer<QAction> mc_systrayMenu_corporations;
     QPointer<QMenu>   mc_systrayMenu_bazaar;
+    QPointer<QAction> mc_systrayMenu_pair_node;
     // ---------------------------------------------------------
     QPointer<QAction> mc_systrayMenu_markets;
     QPointer<QAction> mc_systrayMenu_trade_archive;
@@ -534,6 +535,7 @@ public slots:
     void mc_smartcontract_slot();           // Smart Contracts Slot
     void mc_corporation_slot();             // Entities Slot
     void mc_import_slot();                  // Import Slot
+    void mc_pair_node_slot();               // Pair Node Slot
     // ---------------------------------------------------------------------------
     void mc_createinsurancecompany_slot();  // Create Insurance Company Slot
     // ---------------------------------------------------------------------------

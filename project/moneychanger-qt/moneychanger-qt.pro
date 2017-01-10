@@ -17,7 +17,7 @@ win32:CONFIG += console
 TARGET      = moneychanger-qt
 VERSION     = 0.0.1
 
-QT         += core gui sql network widgets
+QT         += core gui sql network widgets serialport
 
 DEFINES    += "OT_ZMQ_MODE=1"
 DEFINES    += "EXPORT="

@@ -37,7 +37,7 @@
 
 #include <string>
 #include <map>
-
+#include <tuple>
 
 
 
@@ -1615,7 +1615,7 @@ void Agreements::tableViewAgreementsPopupMenu(const QPoint &pos, QTableView * pT
     pActionForward             = nullptr;
     // ----------------------------------
     int nAgreementId{};
-    int nNewestState{};
+    agreement_status nNewestState{};
     int64_t lTxnIdDisplay{};
     int64_t lNewestReceiptId{};
     time64_t timestamp{};
@@ -1624,17 +1624,18 @@ void Agreements::tableViewAgreementsPopupMenu(const QPoint &pos, QTableView * pT
     QString qstrSubject;
     QString qstrContractId;
     // ----------------------------------------------
-    const int nError = 0;
-    const int nOutgoing = 1;
-    const int nIncoming = 2;
-    const int nActivated = 3;
-    const int nPaid = 4;
-    const int nPaymentFailed = 5; // Live agreement here and above this point.
-    const int nFailedActivating = 6; // Dead agreement here and below this point.
-    const int nCanceled = 7;
-    const int nExpired = 8;
-    const int nNoLongerActive = 9;
-    const int nKilled = 10;
+    //    enum class agreement_status { ERROR = 0,
+    //                                  OUTGOING = 1,
+    //                                  INCOMING = 2,
+    //                                  ACTIVATED = 3,
+    //                                  PAID = 4,
+    //                                  PAYMENT_FAILED = 5,    // Live agreement here and above this line.
+    //                                  FAILED_ACTIVATING = 6, // Dead agreement here and below this line.
+    //                                  CANCELED = 7,
+    //                                  EXPIRED = 8,
+    //                                  NO_LONGER_ACTIVE = 9,
+    //                                  KILLED = 10
+    //                                };
 
     if (nRow >= 0)
     {
@@ -1661,13 +1662,13 @@ void Agreements::tableViewAgreementsPopupMenu(const QPoint &pos, QTableView * pT
         qstrNotaryId     = varNotaryId       .isValid() ? varNotaryId       .toString()   : QString("");
         qstrContractId   = varContractId     .isValid() ? varContractId     .toString()   : QString("");
         lNewestReceiptId = varNewestReceiptId.isValid() ? varNewestReceiptId.toLongLong() : 0;
-        nNewestState     = varNewestState    .isValid() ? varNewestState    .toInt()      : 0;
+        nNewestState     = static_cast<agreement_status>(varNewestState.isValid() ? varNewestState.toInt() : 0);
         timestamp        = varTimestamp      .isValid() ? varTimestamp      .toLongLong() : 0;
         qstrSubject      = varSubject        .isValid() ? varSubject        .toString()   : QString("");
         // -------------------------------
         popupMenu_->addSeparator();
         // -------------------------------
-        if ( nNewestState >= nFailedActivating ) // It's dead, for one reason or another.
+        if ( nNewestState >= agreement_status::FAILED_ACTIVATING ) // It's dead, for one reason or another.
         {
             QString nameString = tr("Delete");
             QString actionString = tr("Deleting...");
@@ -1675,7 +1676,7 @@ void Agreements::tableViewAgreementsPopupMenu(const QPoint &pos, QTableView * pT
             pActionDelete = popupMenu_->addAction(nameString);
             popupMenu_->addSeparator();
         }
-        else if ( nNewestState >= nActivated && nNewestState <= nPaymentFailed )
+        else if ( nNewestState >= agreement_status::ACTIVATED && nNewestState <= agreement_status::PAYMENT_FAILED )
         {
             QString nameString = tr("Kill");
             QString actionString = tr("Killing...");
@@ -2479,10 +2480,200 @@ void Agreements::tableViewReceiptsDoubleClicked(const QModelIndex &index, Agreem
 }
 
 
+
 void Agreements::killSelectedAgreement()
 {
     // Kill
     // todo
+
+    // resume now
+
+//    enum class agreement_status { ERROR = 0,
+//                                  OUTGOING = 1,
+//                                  INCOMING = 2,
+//                                  ACTIVATED = 3,
+//                                  PAID = 4,
+//                                  PAYMENT_FAILED = 5,
+//                                  FAILED_ACTIVATING = 6,
+//                                  CANCELED = 7,
+//                                  EXPIRED = 8,
+//                                  NO_LONGER_ACTIVE = 9,
+//                                  KILLED = 10
+//                                };
+
+    // -----------------------------------------------
+    if (    (nullptr == pCurrentReceiptTableView_)
+         || (nullptr == pCurrentReceiptProxyModel_)
+         || (nullptr == pCurrentAgreementTableView_)
+         || (nullptr == pCurrentAgreementProxyModel_)
+         ) return;
+    // -----------------------------------------------
+    if (!pCurrentAgreementTableView_->selectionModel()->hasSelection())
+        return;
+    // ----------------------------------------------
+    QMessageBox::StandardButton reply;
+
+    reply = QMessageBox::question(this, tr("Moneychanger"), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to kill all selected active agreement(s)?")).
+                                  arg(tr("WARNING: This is not reversible!")),
+                                  QMessageBox::Yes|QMessageBox::No);
+    if (reply != QMessageBox::Yes)
+        return;
+    // ----------------------------------------------
+    QPointer<ModelAgreements> pAgreementModel = DBHandler::getInstance()->getAgreementModel();
+
+    if (!pAgreementModel)
+        return;
+    // ----------------------------------------------
+    QItemSelection selection( pCurrentAgreementTableView_->selectionModel()->selection() );
+
+    int nFirstProxyRowKilled = -1;
+    int nLastProxyRowKilled  = -1;
+    int nCountRowsKilled     = 0;
+
+    QList<LiveAgreement> rows;
+    foreach( const QModelIndex & index, selection.indexes() )
+    {
+        QModelIndex sourceIndex = pCurrentAgreementProxyModel_->mapToSource(index);
+
+        QModelIndex indexAgreementId     = pAgreementModel->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_AGRMT_ID, sourceIndex);
+        QModelIndex indexTxnIdDisplay    = pAgreementModel->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_TXN_ID_DISPLAY, sourceIndex);
+        QModelIndex indexNotaryId        = pAgreementModel->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_NOTARY_ID, sourceIndex);
+        QModelIndex indexNewestState     = pAgreementModel->sibling(sourceIndex.row(), AGRMT_SOURCE_COL_NEWEST_KNOWN_STATE, sourceIndex);
+
+        QVariant varAgreementId     = pAgreementModel->rawData(indexAgreementId);
+        QVariant varTxnIdDisplay    = pAgreementModel->rawData(indexTxnIdDisplay);
+        QVariant varNotaryId        = pAgreementModel->rawData(indexNotaryId);
+        QVariant varNewestState     = pAgreementModel->rawData(indexNewestState);
+
+        int     nAgreementId     = varAgreementId    .isValid() ? varAgreementId    .toInt()      : 0;
+        int64_t lTxnIdDisplay    = varTxnIdDisplay   .isValid() ? varTxnIdDisplay   .toLongLong() : 0;
+        QString qstrNotaryId     = varNotaryId       .isValid() ? varNotaryId       .toString()   : QString("");
+        int     nNewestState     = varNewestState    .isValid() ? varNewestState    .toInt()      : 0;
+
+        // Only append if the agreement is believed to be alive, etc.
+        //
+        if (    (nNewestState >= static_cast<int>(agreement_status::ACTIVATED))
+             && (nNewestState <  static_cast<int>(agreement_status::FAILED_ACTIVATING))
+             && (lTxnIdDisplay > 0)
+             && (!qstrNotaryId.isEmpty())
+             && (nAgreementId > 0) )
+        {
+            const std::string str_notary_id = qstrNotaryId.toStdString();
+            const int nSourceRow = sourceIndex.row();
+
+            LiveAgreement the_data = //source model row, agreement_id, txnIdDisplay, notaryId, newestState
+                std::make_tuple//<int, int, int64_t, std::string, int>
+                    (nSourceRow, nAgreementId, lTxnIdDisplay, str_notary_id, nNewestState);
+
+            rows.append( the_data );
+            // --------------------------------
+            nLastProxyRowKilled = index.row();
+            if ((-1) == nFirstProxyRowKilled)
+                nFirstProxyRowKilled = index.row();
+        }
+    }
+    // --------------------------------------------------------
+    // By this point, rows is a QList containing 0 or more tuples
+    // of type LiveAgreement.
+    // If it's empty, we can return now.
+
+
+    for(int ii = 0; ii < rows.count(); ii++) {
+       auto & current = rows[ii];
+
+       // Todo: call the opentxs API function for killing a live agreement.
+       // in OT_ME
+
+       nCountRowsKilled++;
+    }
+
+
+/*
+
+    // resume now
+
+
+    // TODO: This is for killing, not deleting.
+    // So we don't want to delete any receipts out of the database.
+    // Rather, we just want to loop through the agreement IDs and for each
+    // one, send a "kill cron item" message via opentxs.
+
+    // So basically we just want to compile a list of the agreement IDs,
+    // and pass that to a new "kill" function, which possibly has to look up
+    // the appropriate transaction number and then send the kill message
+    // to the appropriate notary.
+
+
+    for(int ii = rows.count() - 1; ii >= 0; ii -= 1 ) {
+       int current = rows[ii];
+       if( current != prev ) {
+           bRemoved = true;
+           QModelIndex sourceIndexAgreementReceiptKey = pAgreementModel->index(current, AGRMT_RECEIPT_COL_AGRMT_RECEIPT_KEY);
+           if (sourceIndexAgreementReceiptKey.isValid())
+               receipt_keys.append(pAgreementModel->data(sourceIndexAgreementReceiptKey).toInt());
+           pAgreementModel->removeRows( current, 1 );
+           prev = current;
+           nCountRowsKilled++;
+       }
+    }
+
+    if (bRemoved)
+    {
+        if (pAgreementModel->submitAll())
+        {
+            pAgreementModel->database().commit();
+            // ------------------------
+            // Now we just deleted some receipts; let's delete also the corresponding
+            // receipt contents. (We saved the deleted IDs for this purpose.)
+            //
+            for (int ii = 0; ii < receipt_keys.count(); ++ii)
+            {
+                const int nReceiptKey = receipt_keys[ii];
+
+                if (nReceiptKey > 0)
+                    if (!MTContactHandler::getInstance()->DeleteAgreementReceiptBody(nReceiptKey))
+                        qDebug() << "Agreements::on_toolButtonDelete_clicked: "
+                                    "Failed trying to delete receipt body with agreement_receipt_key: " << nReceiptKey << "\n";
+            }
+            // ------------------------
+            // We just deleted the selected rows.
+            // So now we need to choose another row to select.
+
+            int nRowToSelect = -1;
+
+            if ((nFirstProxyRowKilled >= 0) && (nFirstProxyRowKilled < pCurrentAgreementProxyModel_->rowCount()))
+                nRowToSelect = nFirstProxyRowKilled;
+            else if (0 == nFirstProxyRowKilled)
+                nRowToSelect = 0;
+            else if (nFirstProxyRowKilled > 0)
+                nRowToSelect = pCurrentAgreementProxyModel_->rowCount() - 1;
+            else
+                nRowToSelect = 0;
+
+            if ((pCurrentAgreementProxyModel_->rowCount() > 0) && (nRowToSelect >= 0) &&
+                    (nRowToSelect < pCurrentAgreementProxyModel_->rowCount()))
+            {
+                QModelIndex previous = pCurrentAgreementTableView_->currentIndex();
+                pCurrentAgreementTableView_->blockSignals(true);
+                pCurrentAgreementTableView_->selectRow(nRowToSelect);
+                pCurrentAgreementTableView_->blockSignals(false);
+
+                if (pCurrentAgreementTableView_ == ui->tableViewRecurring)
+                    on_tableViewRecurringSelectionModel_currentRowChanged(pCurrentAgreementTableView_->currentIndex(), previous);
+                else
+                    on_tableViewSmartContractSelectionModel_currentRowChanged(pCurrentAgreementTableView_->currentIndex(), previous);
+            }
+        }
+        else
+        {
+            pAgreementModel->database().rollback();
+            qDebug() << "Database Write Error" <<
+                       "The database reported an error: " <<
+                       pAgreementModel->lastError().text();
+        }
+    }
+
+*/
 }
 
 void Agreements::on_toolButtonDelete_clicked()

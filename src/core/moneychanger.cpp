@@ -51,6 +51,7 @@
 #include <gui/ui/dlgtradearchive.hpp>
 #include <gui/ui/dlgencrypt.hpp>
 #include <gui/ui/dlgdecrypt.hpp>
+#include <gui/ui/dlgpairnode.hpp>
 #include <gui/ui/dlgpassphrasemanager.hpp>
 #include <gui/ui/messages.hpp>
 #include <gui/ui/payments.hpp>
@@ -1699,6 +1700,12 @@ void Moneychanger::SetupExperimentalMenu(QPointer<QMenu> & parent_menu)
     mc_systrayMenu_corporations = new QAction(mc_systrayIcon_advanced_corporations, tr("Corporations"), current_menu);
     current_menu->addAction(mc_systrayMenu_corporations);
     connect(mc_systrayMenu_corporations, SIGNAL(triggered()), this, SLOT(mc_corporation_slot()));
+    // -------------------------------------------------
+    current_menu->addSeparator();
+    // -------------------------------------------------
+    mc_systrayMenu_pair_node = new QAction(mc_systrayIcon_advanced_corporations, tr("Pair Stash Node"), current_menu);
+    current_menu->addAction(mc_systrayMenu_pair_node);
+    connect(mc_systrayMenu_pair_node, SIGNAL(triggered()), this, SLOT(mc_pair_node_slot()));
     // --------------------------------------------------------------
     //Separator
     current_menu->addSeparator();
@@ -4625,11 +4632,53 @@ void Moneychanger::mc_requestfunds_show_dialog(QString qstrAcct/*=QString("")*/)
 }
 
 
+#include <QSerialPort>
+/**
+  * Pair Stash Node
+  **/
+void Moneychanger::mc_pair_node_slot()
+{
+//    DlgPairNode dlgPair;
+
+//    if (QDialog::Accepted != dlgPair.exec())
+//        return;
+    // ----------------------------------------
+
+    // Todo: actual pairing code once we've read from the serial port.
+
+      QSerialPort serialPort;
+      QString serialPortName = QString("/dev/cu.usbserial-A104CNRS");
+      serialPort.setPortName(serialPortName);
+
+      int serialPortBaudRate = QSerialPort::Baud38400;
+      serialPort.setBaudRate(serialPortBaudRate);
+
+      if (!serialPort.open(QIODevice::ReadOnly)) {
+          qDebug() << QObject::tr("Failed to open port %1, error: %2").arg(serialPortName).arg(serialPort.error()) << endl;
+      }
+      else
+      {
+          QByteArray readData = serialPort.readAll();
+          while (serialPort.waitForReadyRead(5000))
+              readData.append(serialPort.readAll());
+
+          if (serialPort.error() == QSerialPort::ReadError) {
+              qDebug() << QObject::tr("Failed to read from port %1, error: %2").arg(serialPortName).arg(serialPort.errorString()) << endl;
+          } else if (serialPort.error() == QSerialPort::TimeoutError && readData.isEmpty()) {
+              qDebug() << QObject::tr("No data was currently available for reading from port %1").arg(serialPortName) << endl;
+          }
+          else {
+              qDebug() << QObject::tr("Data successfully received from port %1").arg(serialPortName) << endl;
+              qDebug() << readData << endl;
+          }
+      }
+}
 
 /**
  * Import Cash
  **/
 
+// TODO: Make this able to handle multiple instrument types
 void Moneychanger::mc_import_slot()
 {
     DlgImport dlgImport;

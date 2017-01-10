@@ -30,6 +30,22 @@ class AgreementReceiptsProxyModel;
 
 class QTableView;
 
+//source model row, agreement_id, txnIdDisplay, notaryId, newestState
+typedef std::tuple<int, int, int64_t, std::string, int> LiveAgreement;
+
+enum class agreement_status { ERROR = 0,
+                              OUTGOING = 1,
+                              INCOMING = 2,
+                              ACTIVATED = 3,
+                              PAID = 4,
+                              PAYMENT_FAILED = 5,    // LIVE agreement here and above this line.
+                              FAILED_ACTIVATING = 6, // DEAD agreement here and below this line.
+                              CANCELED = 7,
+                              EXPIRED = 8,
+                              NO_LONGER_ACTIVE = 9,
+                              KILLED = 10
+                            };
+
 class Agreements : public QWidget
 {
     Q_OBJECT
