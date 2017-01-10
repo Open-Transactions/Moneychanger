@@ -405,15 +405,15 @@ bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrNotaryID, QString qstrNym
     if (qstrNotaryID.isEmpty() || qstrNymID.isEmpty())
         return false;
     // -----------------
-    opentxs::OT_ME madeEasy;
+
 
     bool bSuccess = false;
     {
         MTSpinner theSpinner;
 
-        const std::string str_reply = madeEasy.get_nym_market_offers(qstrNotaryID.toStdString(),
+        const std::string str_reply = opentxs::OT_ME::It().get_nym_market_offers(qstrNotaryID.toStdString(),
                                                                      qstrNymID   .toStdString());
-        const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+        const int32_t     nResult   = opentxs::OT_ME::It().VerifyMessageSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }
@@ -521,13 +521,13 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrNotaryID, QString qstrNymID, 
                 // -----------------------------------------------------------------------
                 QString qstrBuySell = pOfferData->selling ? tr("Sell") : tr("Buy");
 
-                const std::string str_asset_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pOfferData->instrument_definition_id);
+                const std::string str_asset_name = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(pOfferData->instrument_definition_id);
                 // --------------------------
-                int64_t lTotalAssets   = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->total_assets);
-                int64_t lFinishedSoFar = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->finished_so_far);
+                int64_t lTotalAssets   = opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->total_assets);
+                int64_t lFinishedSoFar = opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->finished_so_far);
                 // --------------------------
-                const std::string str_total_assets    = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lTotalAssets);
-                const std::string str_finished_so_far = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lFinishedSoFar);
+                const std::string str_total_assets    = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lTotalAssets);
+                const std::string str_finished_so_far = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lFinishedSoFar);
                 // --------------------------
                 QString qstrAmounts;
 
@@ -660,8 +660,8 @@ bool DlgMarkets::LowLevelLoadMarketList(QString qstrNotaryID, QString qstrNymID,
 
             if (the_map.end() == it_map)
             {
-                const std::string str_asset_name    = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->instrument_definition_id);
-                const std::string str_currency_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->currency_type_id);
+                const std::string str_asset_name    = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(pMarketData->instrument_definition_id);
+                const std::string str_currency_name = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(pMarketData->currency_type_id);
                 // --------------------------
                 QString qstrMarketName = QString("%1 for %2").
                         arg(QString::fromStdString(str_asset_name)).
@@ -712,15 +712,15 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrNotaryID, QString qstrNy
     if (qstrNotaryID.isEmpty() || qstrNymID.isEmpty())
         return false;
     // -----------------
-    opentxs::OT_ME madeEasy;
+
 
     bool bSuccess = false;
     {
         MTSpinner theSpinner;
 
-        const std::string str_reply = madeEasy.get_market_list(qstrNotaryID.toStdString(),
+        const std::string str_reply = opentxs::OT_ME::It().get_market_list(qstrNotaryID.toStdString(),
                                                                qstrNymID   .toStdString());
-        const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+        const int32_t     nResult   = opentxs::OT_ME::It().VerifyMessageSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }
@@ -834,10 +834,10 @@ void DlgMarkets::LoadOrRetrieveMarkets()
                     if (NULL != pMarketData) // Should never be NULL.
                     {
                         // ------------------------------------------------------
-                        int64_t     lScale    = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->scale);
+                        int64_t     lScale    = opentxs::OTAPI_Wrap::Exec()->StringToLong(pMarketData->scale);
                         if (lScale > 1)
                         {
-                            std::string str_scale = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id, lScale);
+                            std::string str_scale = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->instrument_definition_id, lScale);
                             // ------------------------------------------------------
                             QString qstrFormattedScale = QString::fromStdString(str_scale);
                             // ------------------------------------------------------
@@ -982,13 +982,13 @@ void DlgMarkets::RefreshRecords()
         nDefaultServerIndex = 0;
     }
     // ----------------------------
-    const int32_t server_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
+    const int32_t server_count = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < server_count; ++ii)
     {
         //Get OT Server ID
         //
-        QString OT_notary_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(ii));
+        QString OT_notary_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_ID(ii));
         QString OT_server_name("");
         // -----------------------------------------------
         if (!OT_notary_id.isEmpty())
@@ -999,7 +999,7 @@ void DlgMarkets::RefreshRecords()
                 nDefaultServerIndex = ii+1; // the +1 is because of "all" in the 0 position. (Servers only.)
             }
             // -----------------------------------------------
-            OT_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_notary_id.toStdString()));
+            OT_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(OT_notary_id.toStdString()));
             // -----------------------------------------------
             m_mapServers.insert(OT_notary_id, OT_server_name);
             ui->comboBoxServer->insertItem(ii+1, OT_server_name);
@@ -1009,12 +1009,12 @@ void DlgMarkets::RefreshRecords()
 
     // -----------------------------------------------
     bool bFoundNymDefault = false;
-    const int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
+    const int32_t nym_count = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < nym_count; ++ii)
     {
         //Get OT Nym ID
-        QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(ii));
+        QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_ID(ii));
         QString OT_nym_name("");
         // -----------------------------------------------
         if (!OT_nym_id.isEmpty())

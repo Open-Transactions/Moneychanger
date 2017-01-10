@@ -41,7 +41,7 @@ void MTOfferDetails::AddButtonClicked()
         return;
     }
     // ---------------------------------------------------
-    QString qstrMarketNymName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(qstrMarketNymID.toStdString()));
+    QString qstrMarketNymName = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_Name(qstrMarketNymID.toStdString()));
     QString qstrMarketServerName;
     // ---------------------------------------------------
     const QString qstrAll(tr("all"));
@@ -52,7 +52,7 @@ void MTOfferDetails::AddButtonClicked()
             return;
     }
     else
-        qstrMarketServerName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(qstrMarketNotaryID.toStdString()));
+        qstrMarketServerName = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(qstrMarketNotaryID.toStdString()));
     // ---------------------------------------------------
     WizardNewOffer theWizard(this);
 
@@ -88,15 +88,15 @@ void MTOfferDetails::AddButtonClicked()
         const int64_t lQuantity              (static_cast<int64_t>(qstrQuantity     .toLong  ())); // If this is "9"...
         // --------------------------------------------
         const QString qstrTotalAsset         (theWizard.field("totalAsset")         .toString());//...then this is "BTC 9.000"
-        const int64_t lTotalAsset            (opentxs::OTAPI_Wrap::It()->StringToAmount(str_asset_id,           //...and lTotalAsset is 9000
+        const int64_t lTotalAsset            (opentxs::OTAPI_Wrap::Exec()->StringToAmount(str_asset_id,           //...and lTotalAsset is 9000
                                                                          qstrTotalAsset.toStdString())); // Note: scale is already inside this.
         // --------------------------------------------
         const QString qstrScale              (theWizard.field("scale")              .toString      ());// If this is "BTC 1.000"
-        const int64_t lScale                 (opentxs::OTAPI_Wrap::It()->StringToAmount(str_asset_id,                 // ...then lScale is 1000
+        const int64_t lScale                 (opentxs::OTAPI_Wrap::Exec()->StringToAmount(str_asset_id,                 // ...then lScale is 1000
                                                                          qstrScale  .toStdString   ()));
         // --------------------------------------------
         const QString qstrPrice              (theWizard.field("pricePerScale")      .toString      ());// If this is "$ 45.98"
-        const int64_t lPrice                 (opentxs::OTAPI_Wrap::It()->StringToAmount(str_currency_id,              // ...then lPrice is 4598
+        const int64_t lPrice                 (opentxs::OTAPI_Wrap::Exec()->StringToAmount(str_currency_id,              // ...then lPrice is 4598
                                                                          qstrPrice  .toStdString   ())); // (per scale.)
         // --------------------------------------------
         const QString qstrAssetAcctID        (theWizard.field("AssetAcctID")        .toString());
@@ -111,9 +111,9 @@ void MTOfferDetails::AddButtonClicked()
         const QString qstrAssetAcctBalance   (theWizard.field("AssetAcctBalance")   .toString());
         const QString qstrCurrencyAcctBalance(theWizard.field("CurrencyAcctBalance").toString());
         // --------------------------------------------
-        const int64_t lAssetAcctBalance      (opentxs::OTAPI_Wrap::It()->StringToAmount(str_asset_id,
+        const int64_t lAssetAcctBalance      (opentxs::OTAPI_Wrap::Exec()->StringToAmount(str_asset_id,
                                                                          qstrAssetAcctBalance   .toStdString()));
-        const int64_t lCurrencyAcctBalance   (opentxs::OTAPI_Wrap::It()->StringToAmount(str_currency_id,
+        const int64_t lCurrencyAcctBalance   (opentxs::OTAPI_Wrap::Exec()->StringToAmount(str_currency_id,
                                                                          qstrCurrencyAcctBalance.toStdString()));
         // --------------------------------------------
 //      const QString qstrExpire             (theWizard.field("expirationStr")      .toString());
@@ -173,7 +173,7 @@ void MTOfferDetails::AddButtonClicked()
 
             if (lHaveBalance < lNeedBalance)
             {
-                const QString qstrNeededBalance = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(
+                const QString qstrNeededBalance = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(
                                                                              bIsBid ? str_currency_id : str_asset_id,
                                                                              lNeedBalance));
                 QString qstrError = bIsBid ?
@@ -193,12 +193,12 @@ void MTOfferDetails::AddButtonClicked()
         // If we're in here, that means the person entered a valid market offer,
         // and then clicked "OK".
         //
-        opentxs::OT_ME        madeEasy;
+
         std::string  strResponse;
         {
             MTSpinner theSpinner;
             // --------------------------------------------------------------
-            strResponse = madeEasy.create_market_offer(str_asset_acct_id,
+            strResponse = opentxs::OT_ME::It().create_market_offer(str_asset_acct_id,
                                                        str_currency_acct_id,
                                                        lScale,
                                                        lMinIncrement,
@@ -212,7 +212,7 @@ void MTOfferDetails::AddButtonClicked()
         // --------------------------------------------------------
         const std::string strAttempt("create_market_offer");
 
-        int32_t nInterpretReply = madeEasy.InterpretTransactionMsgReply(str_notary_id,
+        int32_t nInterpretReply = opentxs::OT_ME::It().InterpretTransactionMsgReply(str_notary_id,
                                                                         str_nym_id,
                                                                         str_asset_acct_id,
                                                                         strAttempt, strResponse);
@@ -277,12 +277,12 @@ void MTOfferDetails::DeleteButtonClicked()
                 opentxs::String      strTransID(pOfferData->transaction_id);
                 const int64_t lTransID  (strTransID.ToLong());
                 // ---------------------------------
-                opentxs::OT_ME        madeEasy;
+
                 std::string  strResponse;
                 {
                     MTSpinner theSpinner;
                     // --------------------------------------------------------------
-                    strResponse = madeEasy.kill_market_offer(str_notary_id,
+                    strResponse = opentxs::OT_ME::It().kill_market_offer(str_notary_id,
                                                              str_nym_id,
                                                              str_asset_acct_id,
                                                              lTransID);
@@ -290,7 +290,7 @@ void MTOfferDetails::DeleteButtonClicked()
                 // --------------------------------------------------------
                 const std::string strAttempt("kill_market_offer");
 
-                int32_t nInterpretReply = madeEasy.InterpretTransactionMsgReply(str_notary_id,
+                int32_t nInterpretReply = opentxs::OT_ME::It().InterpretTransactionMsgReply(str_notary_id,
                                                                                 str_nym_id,
                                                                                 str_asset_acct_id,
                                                                                 strAttempt, strResponse);
@@ -340,8 +340,8 @@ bool MTOfferDetails::ChooseServer(QString & qstrNotaryID, QString & qstrServerNa
     if (qstr_current_id.isEmpty() || (0 == qstrAll.compare(qstr_current_id)))
         qstr_current_id = qstr_default_id;
     // -------------------------------------------
-    if (qstr_current_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0))
-        qstr_current_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(0));
+    if (qstr_current_id.isEmpty() && (opentxs::OTAPI_Wrap::Exec()->GetServerCount() > 0))
+        qstr_current_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_ID(0));
     // -------------------------------------------
     // Select from Servers in local wallet.
     //
@@ -351,11 +351,11 @@ bool MTOfferDetails::ChooseServer(QString & qstrNotaryID, QString & qstrServerNa
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t the_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
+    const int32_t the_count = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < the_count; ++ii)
     {
-        QString OT_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(ii));
+        QString OT_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_ID(ii));
         QString OT_name("");
         // -----------------------------------------------
         if (!OT_id.isEmpty())
@@ -363,7 +363,7 @@ bool MTOfferDetails::ChooseServer(QString & qstrNotaryID, QString & qstrServerNa
             if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                 bFoundDefault = true;
             // -----------------------------------------------
-            OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_id.toStdString()));
+            OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(OT_id.toStdString()));
             // -----------------------------------------------
             the_map.insert(OT_id, OT_name);
         }
@@ -508,18 +508,18 @@ void MTOfferDetails::refresh(QString strID, QString strName)
                 {
                     bool        bSelling          = pOfferData->selling;
                     // ------------------------------------------------------
-                    int64_t     lTotalAssets      = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->total_assets);
-                    int64_t     lFinished         = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->finished_so_far);
+                    int64_t     lTotalAssets      = opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->total_assets);
+                    int64_t     lFinished         = opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->finished_so_far);
                     // ------------------------------------------------------
                     int64_t     lStillAvailable   = lTotalAssets - lFinished;
                     // ------------------------------------------------------
-                    int64_t     lMinimumIncrement = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->minimum_increment);
+                    int64_t     lMinimumIncrement = opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->minimum_increment);
                     // ------------------------------------------------------
-                    int64_t     lScale            = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->scale);
-                    std::string str_scale         = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lScale);
+                    int64_t     lScale            = opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->scale);
+                    std::string str_scale         = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lScale);
                     // ------------------------------------------------------
-                    int64_t     lPrice            = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->price_per_scale);
-                    std::string str_price         = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->currency_type_id, lPrice);
+                    int64_t     lPrice            = opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->price_per_scale);
+                    std::string str_price         = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->currency_type_id, lPrice);
                     // ------------------------------------------------------
                     QString qstrPrice(tr("market order"));
 
@@ -531,15 +531,15 @@ void MTOfferDetails::refresh(QString strID, QString strName)
                     if (lScale > 1)
                         qstrPrice += QString(" (%1 %2)").arg(tr("per")).arg(qstrFormattedScale);
                     // ------------------------------------------------------
-                    QString qstrMinimumIncrement  = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lMinimumIncrement));
-                    QString qstrTotalAssets       = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lTotalAssets));
-                    QString qstrSoldOrPurchased   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lFinished));
-                    QString qstrStillAvailable    = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lStillAvailable));
+                    QString qstrMinimumIncrement  = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lMinimumIncrement));
+                    QString qstrTotalAssets       = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lTotalAssets));
+                    QString qstrSoldOrPurchased   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lFinished));
+                    QString qstrStillAvailable    = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lStillAvailable));
                     // ------------------------------------------------------
-                    std::string str_asset_name    = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pOfferData->instrument_definition_id);
+                    std::string str_asset_name    = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(pOfferData->instrument_definition_id);
                     // -----------------------------------------------------------------------
-                    time_t tValidFrom      = static_cast<time_t>(opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->valid_from));
-                    time_t tValidTo        = static_cast<time_t>(opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->valid_to));
+                    time_t tValidFrom      = static_cast<time_t>(opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->valid_from));
+                    time_t tValidTo        = static_cast<time_t>(opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->valid_to));
                     // -----------------------------------------------------------------------
                     QDateTime qdate_from   = QDateTime::fromTime_t(tValidFrom);
                     QDateTime qdate_to     = QDateTime::fromTime_t(tValidTo);
@@ -599,17 +599,17 @@ void MTOfferDetails::refresh(QString strID, QString strName)
                     // but across multiple servers.)
                     //
                     // ------------------------------------------------------
-                    ui->lineEditAssetAcct      ->setText(QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(pOfferData->asset_acct_id)));
-                    ui->lineEditCurrencyAcct   ->setText(QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(pOfferData->currency_acct_id)));
+                    ui->lineEditAssetAcct      ->setText(QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(pOfferData->asset_acct_id)));
+                    ui->lineEditCurrencyAcct   ->setText(QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(pOfferData->currency_acct_id)));
                     // ------------------------------------------------------
                     ui->lineEditAssetAcctID    ->setText(QString::fromStdString(pOfferData->asset_acct_id));
                     ui->lineEditCurrencyAcctID ->setText(QString::fromStdString(pOfferData->currency_acct_id));
                     // ------------------------------------------------------
-                    const int64_t lAcctBalance     = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance(pOfferData->asset_acct_id);
-                    const int64_t lCurrencyBalance = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance(pOfferData->currency_acct_id);
+                    const int64_t lAcctBalance     = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance(pOfferData->asset_acct_id);
+                    const int64_t lCurrencyBalance = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance(pOfferData->currency_acct_id);
 
-                    const std::string str_acct_balance     = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id,    lAcctBalance);
-                    const std::string str_currency_balance = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->currency_type_id, lCurrencyBalance);
+                    const std::string str_acct_balance     = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->instrument_definition_id,    lAcctBalance);
+                    const std::string str_currency_balance = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->currency_type_id, lCurrencyBalance);
 
                     ui->lineEditAcctBalance    ->setText(QString::fromStdString(str_acct_balance));
                     ui->lineEditCurrencyBalance->setText(QString::fromStdString(str_currency_balance));
@@ -682,7 +682,7 @@ void MTOfferDetails::PopulateNymTradesGrid(QString & qstrID, QString qstrNymID, 
             {
                 pModel->updateDBFromOT();
 
-                int64_t lOfferID = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->transaction_id);
+                int64_t lOfferID = opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->transaction_id);
 
                 pTradeDataProxy_->setFilterNymId(qstrNymID);
                 pTradeDataProxy_->setFilterOfferId(lOfferID);
@@ -714,16 +714,16 @@ void MTOfferDetails::PopulateNymTradesWidget(QString & qstrID, QString qstrNymID
         if (NULL != pOfferData) // Should never be NULL.
         {
             std::string & str_server         = pOfferData->notary_id;
-            std::string   str_server_display = opentxs::OTAPI_Wrap::It()->GetServer_Name(str_server);
+            std::string   str_server_display = opentxs::OTAPI_Wrap::Exec()->GetServer_Name(str_server);
             QString       qstrServerName     = QString::fromStdString(str_server_display);
             // -----------------------------------------
-            int64_t lScale = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->scale);
+            int64_t lScale = opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->scale);
             // -----------------------------------------
             QTableWidgetItem * pPriceHeader = ui->tableWidgetTrades->horizontalHeaderItem(0);
 
             if (NULL != pPriceHeader)
             {
-                const std::string str_price_per_scale(opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id,
+                const std::string str_price_per_scale(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->instrument_definition_id,
                                                                                lScale));
                 pPriceHeader->setText(QString("%1 %2").arg(tr("Actual Price per")).
                                       arg(QString::fromStdString(str_price_per_scale)));
@@ -772,8 +772,8 @@ void MTOfferDetails::PopulateNymTradesWidget(QString & qstrID, QString qstrNymID
                         continue;
                     }
                     // -----------------------------------------------------------------------
-                    int64_t lOfferID = opentxs::OTAPI_Wrap::It()->StringToLong(pOfferData->transaction_id);
-                    int64_t lTradeID = opentxs::OTAPI_Wrap::It()->StringToLong(pTradeData->transaction_id);
+                    int64_t lOfferID = opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->transaction_id);
+                    int64_t lTradeID = opentxs::OTAPI_Wrap::Exec()->StringToLong(pTradeData->transaction_id);
 
                     if (lOfferID != lTradeID)
                     {
@@ -786,40 +786,40 @@ void MTOfferDetails::PopulateNymTradesWidget(QString & qstrID, QString qstrNymID
                     // -----------------------------------------------------------------------
                     QString qstrUpdatedID     = QString::fromStdString(pTradeData->updated_id);
                     // -----------------------------------------------------------------------
-//                  time_t tDate = static_cast<time_t>(opentxs::OTAPI_Wrap::It()->StringToLong(pTradeData->date));
-                    time64_t tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::It()->StringToLong(pTradeData->date));
+//                  time_t tDate = static_cast<time_t>(opentxs::OTAPI_Wrap::Exec()->StringToLong(pTradeData->date));
+                    time64_t tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::Exec()->StringToLong(pTradeData->date));
 
                     QDateTime qdate_added   = QDateTime::fromTime_t(tDate);
                     QString   qstrDateAdded = qdate_added.toString(QString("MMM d yyyy hh:mm:ss"));
                     // -----------------------------------------------------------------------
                     std::string & str_price         = pTradeData->price;
 
-                    int64_t       lPrice            = opentxs::OTAPI_Wrap::It()->StringToLong(str_price); // this price is "per scale"
+                    int64_t       lPrice            = opentxs::OTAPI_Wrap::Exec()->StringToLong(str_price); // this price is "per scale"
 
                     if (lPrice < 0)
                         lPrice *= (-1);
 
-                    std::string   str_price_display = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->currency_type_id, lPrice);
+                    std::string   str_price_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->currency_type_id, lPrice);
 
                     QString qstrPrice = QString::fromStdString(str_price_display);
                     // -----------------------------------------------------------------------
                     std::string & str_amount_sold    = pTradeData->amount_sold;
-                    int64_t       lQuantity          = opentxs::OTAPI_Wrap::It()->StringToLong(str_amount_sold); // Total amount of asset sold.
+                    int64_t       lQuantity          = opentxs::OTAPI_Wrap::Exec()->StringToLong(str_amount_sold); // Total amount of asset sold.
 
                     if (lQuantity < 0)
                         lQuantity *= (-1);
 
-                    std::string   str_amount_display = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->instrument_definition_id, lQuantity);
+                    std::string   str_amount_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lQuantity);
 
                     QString qstrAmountSold = QString::fromStdString(str_amount_display);
                     // -----------------------------------------------------------------------
                     std::string & str_currency_paid   = pTradeData->currency_paid;
-                    int64_t       lPayQuantity        = opentxs::OTAPI_Wrap::It()->StringToLong(str_currency_paid); // Total currency paid
+                    int64_t       lPayQuantity        = opentxs::OTAPI_Wrap::Exec()->StringToLong(str_currency_paid); // Total currency paid
 
                     if (lPayQuantity < 0)
                         lPayQuantity *= (-1);
 
-                    std::string   str_paid_display    = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->currency_type_id, lPayQuantity);
+                    std::string   str_paid_display    = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->currency_type_id, lPayQuantity);
 
                     QString qstrCurrencyPaid = QString::fromStdString(str_paid_display);
                     // -----------------------------------------------------------------------
@@ -831,7 +831,7 @@ void MTOfferDetails::PopulateNymTradesWidget(QString & qstrID, QString qstrNymID
                         {
                             lPrice = lPayQuantity / (lQuantity / lScale);
 
-                            str_price_display = opentxs::OTAPI_Wrap::It()->FormatAmount(pOfferData->currency_type_id, lPrice);
+                            str_price_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->currency_type_id, lPrice);
                             qstrPrice = QString::fromStdString(str_price_display);
                         }
                     }

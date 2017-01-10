@@ -494,7 +494,7 @@ bool MTContactHandler::claimVerificationLowlevel(const QString & qstrClaimId, co
 
     opentxs::OTPasswordData thePWData(QString(QObject::tr("We've almost bubbled up to the top!! Confirming/refuting a claim.")).toStdString().c_str());
 
-    auto data = opentxs::OTAPI_Wrap::It()->SetVerification(
+    auto data = opentxs::OTAPI_Wrap::Exec()->SetVerification(
                 bChanged,
                 qstrVerifierNymId.toStdString(),
                 qstrClaimantNymId.toStdString(),
@@ -1075,7 +1075,7 @@ bool MTContactHandler::GetServers(mapIDName & theMap, QString filterByNym, bool 
 
         if (!notary_id.isEmpty())
         {
-            QString server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(notary_id.toStdString()));
+            QString server_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(notary_id.toStdString()));
 
             if (!server_name.isEmpty())
             {
@@ -1112,12 +1112,12 @@ bool MTContactHandler::GetServers(mapIDName & theMap, QString filterByNym, bool 
 bool MTContactHandler::GetServers(mapIDName & theMap, bool bPrependOTType/*=false*/)
 {
     bool    bFoundAny    = false;
-    int32_t nServerCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
+    int32_t nServerCount = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
 
     for (int32_t ii = 0; ii < nServerCount; ++ii)
     {
-        std::string str_notary_id   = opentxs::OTAPI_Wrap::It()->GetServer_ID(ii);
-        std::string str_server_name = opentxs::OTAPI_Wrap::It()->GetServer_Name(str_notary_id);
+        std::string str_notary_id   = opentxs::OTAPI_Wrap::Exec()->GetServer_ID(ii);
+        std::string str_server_name = opentxs::OTAPI_Wrap::Exec()->GetServer_Name(str_notary_id);
 
         QString qstrNotaryID   = QString::fromStdString(str_notary_id);
         QString qstrServerName = QString::fromStdString(str_server_name);
@@ -1162,7 +1162,7 @@ bool MTContactHandler::GetServers(mapIDName & theMap, int nFilterByContact, bool
 
         if (!notary_id.isEmpty())
         {
-            QString server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(notary_id.toStdString()));
+            QString server_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(notary_id.toStdString()));
 
             if (!server_name.isEmpty())
             {

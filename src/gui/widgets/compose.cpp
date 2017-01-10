@@ -135,7 +135,7 @@ void MTCompose::setTransportDisplayBasedOnAvailableData()
 
         if (sendingThroughOTServer() && !m_NotaryID.isEmpty())
         {
-            qstrMsgTypeDisplay = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(m_NotaryID.toStdString()));
+            qstrMsgTypeDisplay = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(m_NotaryID.toStdString()));
 
             if (qstrMsgTypeDisplay.isEmpty())
                 qstrMsgTypeDisplay = m_NotaryID;
@@ -475,16 +475,16 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
     // ----------------------------------------------------
     if (0 == viaTransport.compare("otserver"))
     {
-        opentxs::OT_ME madeEasy;
+
 
         std::string strResponse;
         {
             MTSpinner theSpinner;
 
-            strResponse = madeEasy.send_user_msg(str_NotaryID, str_fromNymId, str_toNymId, contents.toStdString());
+            strResponse = opentxs::OT_ME::It().send_user_msg(str_NotaryID, str_fromNymId, str_toNymId, contents.toStdString());
         }
 
-        int32_t nReturnVal = madeEasy.VerifyMessageSuccess(strResponse);
+        int32_t nReturnVal = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
 
         if (1 != nReturnVal)
         {
@@ -1327,7 +1327,7 @@ void MTCompose::FindSenderMsgMethod()
                         std::string notary_id    = qstrNotaryID.toStdString();
                         std::string sender_id    = m_senderNymId.toStdString();
 
-                        if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, notary_id))
+                        if (opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(sender_id, notary_id))
                         {
                             setInitialServer(qstrNotaryID);
                             return; // SUCCESS!
@@ -1618,7 +1618,7 @@ void MTCompose::FindRecipientMsgMethod()
                         std::string notary_id    = qstrNotaryID.toStdString();
                         std::string sender_id    = m_senderNymId.toStdString();
 
-                        if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, notary_id))
+                        if (opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(sender_id, notary_id))
                         {
                             setInitialServer(qstrNotaryID);
                             return; // SUCCESS!
@@ -2372,7 +2372,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
     std::string notary_id    = qstrNotaryID .toStdString();
     std::string sender_id    = m_senderNymId.toStdString();
 
-    if (!opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(sender_id, notary_id))
+    if (!opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(sender_id, notary_id))
     {
         if (bAsk)
         {
@@ -2382,17 +2382,17 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
                                           QMessageBox::Yes|QMessageBox::No);
             if (reply == QMessageBox::Yes)
             {
-                opentxs::OT_ME       madeEasy;
+
                 std::string response;
                 {
                     MTSpinner theSpinner;
 
-                    response = madeEasy.register_nym(notary_id, sender_id);
+                    response = opentxs::OT_ME::It().register_nym(notary_id, sender_id);
                 }
 
                 qDebug() << QString("Nym Registration Response: %1").arg(QString::fromStdString(response));
 
-                int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
+                int32_t nReturnVal = opentxs::OT_ME::It().VerifyMessageSuccess(response);
 
                 if (1 != nReturnVal)
                 {
@@ -2447,15 +2447,15 @@ bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrNot
                                               QMessageBox::Yes|QMessageBox::No);
                 if (reply == QMessageBox::Yes)
                 {
-                    opentxs::OT_ME       madeEasy;
+
                     std::string response;
                     {
                         MTSpinner theSpinner;
 
-                        response = madeEasy.check_nym(notary_id, sender_id, recipient_id);
+                        response = opentxs::OT_ME::It().check_nym(notary_id, sender_id, recipient_id);
                     }
 
-                    int32_t nReturnVal = madeEasy.VerifyMessageSuccess(response);
+                    int32_t nReturnVal = opentxs::OT_ME::It().VerifyMessageSuccess(response);
 
                     if (1 != nReturnVal)
                     {
@@ -2499,12 +2499,12 @@ void MTCompose::on_fromButton_clicked()
     mapIDName & the_map = theChooser.m_map;
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
+    const int32_t nym_count = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < nym_count; ++ii)
     {
         //Get OT Nym ID
-        QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(ii));
+        QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_ID(ii));
         QString OT_nym_name("");
         // -----------------------------------------------
         if (!OT_nym_id.isEmpty())

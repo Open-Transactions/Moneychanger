@@ -859,7 +859,7 @@ void Messages::RefreshTree()
                         {
                             qstrMethodName = tr("Notary");
                             // ------------------------------
-                            QString qstrTemp = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(qstrViaTransport.toStdString()));
+                            QString qstrTemp = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(qstrViaTransport.toStdString()));
                             if (!qstrTemp.isEmpty())
                                 qstrTransportName = qstrTemp;
                         }

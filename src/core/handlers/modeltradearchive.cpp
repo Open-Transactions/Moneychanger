@@ -179,7 +179,7 @@ QVariant ModelTradeArchive::data ( const QModelIndex & index, int role/* = Qt::D
 
             const std::string str_currency_id = qstrCurrencyID.toStdString();
 
-            std::string str_display = opentxs::OTAPI_Wrap::It()->FormatAmount(str_currency_id, lPrice);
+            std::string str_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_currency_id, lPrice);
             QString qstrDisplay = QString::fromStdString(str_display);
 
             return QVariant(qstrDisplay);
@@ -193,7 +193,7 @@ QVariant ModelTradeArchive::data ( const QModelIndex & index, int role/* = Qt::D
             QString qstrCurrencyID = QSqlTableModel::data(sibling,role).toString();
             const std::string str_currency_id = qstrCurrencyID.toStdString();
 
-            std::string str_display = opentxs::OTAPI_Wrap::It()->FormatAmount(str_currency_id, lPrice);
+            std::string str_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_currency_id, lPrice);
             QString qstrDisplay = QString::fromStdString(str_display);
 
             return QVariant(qstrDisplay);
@@ -208,7 +208,7 @@ QVariant ModelTradeArchive::data ( const QModelIndex & index, int role/* = Qt::D
 
             const std::string str_currency_id = qstrCurrencyID.toStdString();
 
-            std::string str_display = opentxs::OTAPI_Wrap::It()->FormatAmount(str_currency_id, lPrice);
+            std::string str_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_currency_id, lPrice);
             QString qstrDisplay = QString::fromStdString(str_display);
 
             return QVariant(qstrDisplay);
@@ -222,7 +222,7 @@ QVariant ModelTradeArchive::data ( const QModelIndex & index, int role/* = Qt::D
             QString qstrCurrencyID = QSqlTableModel::data(sibling,role).toString();
             const std::string str_currency_id = qstrCurrencyID.toStdString();
 
-            std::string str_display = opentxs::OTAPI_Wrap::It()->FormatAmount(str_currency_id, lPrice);
+            std::string str_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_currency_id, lPrice);
             QString qstrDisplay = QString::fromStdString(str_display);
 
             return QVariant(qstrDisplay);
@@ -246,7 +246,7 @@ QVariant ModelTradeArchive::data ( const QModelIndex & index, int role/* = Qt::D
         {
             QString qstrID = QSqlTableModel::data(index,role).toString();
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = opentxs::OTAPI_Wrap::It()->GetServer_Name(str_id);
+            const std::string str_name = opentxs::OTAPI_Wrap::Exec()->GetServer_Name(str_id);
             // ------------------------
             if (str_name.empty())
                 return QSqlTableModel::data(index,role);
@@ -256,7 +256,7 @@ QVariant ModelTradeArchive::data ( const QModelIndex & index, int role/* = Qt::D
         {
             QString qstrID = QSqlTableModel::data(index,role).toString();
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = opentxs::OTAPI_Wrap::It()->GetNym_Name(str_id);
+            const std::string str_name = opentxs::OTAPI_Wrap::Exec()->GetNym_Name(str_id);
             // ------------------------
             if (str_name.empty())
                 return QSqlTableModel::data(index,role);
@@ -266,7 +266,7 @@ QVariant ModelTradeArchive::data ( const QModelIndex & index, int role/* = Qt::D
         {
             QString qstrID = QSqlTableModel::data(index,role).toString();
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(str_id);
+            const std::string str_name = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(str_id);
             // ------------------------
             if (str_name.empty())
                 return QSqlTableModel::data(index,role);
@@ -276,7 +276,7 @@ QVariant ModelTradeArchive::data ( const QModelIndex & index, int role/* = Qt::D
         {
             QString qstrID = QSqlTableModel::data(index,role).toString();
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(str_id);
+            const std::string str_name = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(str_id);
             // ------------------------
             if (str_name.empty())
                 return QSqlTableModel::data(index,role);
@@ -286,7 +286,7 @@ QVariant ModelTradeArchive::data ( const QModelIndex & index, int role/* = Qt::D
         {
             QString qstrID = QSqlTableModel::data(index,role).toString();
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(str_id);
+            const std::string str_name = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(str_id);
             // ------------------------
             if (str_name.empty())
                 return QSqlTableModel::data(index,role);
@@ -296,7 +296,7 @@ QVariant ModelTradeArchive::data ( const QModelIndex & index, int role/* = Qt::D
         {
             QString qstrID = QSqlTableModel::data(index,role).toString();
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(str_id);
+            const std::string str_name = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(str_id);
             // ------------------------
             if (str_name.empty())
                 return QSqlTableModel::data(index,role);
@@ -354,27 +354,27 @@ void ModelTradeArchive::updateDBFromOT(const std::string & strNotaryID, const st
             if (pTradeData->currency_id.empty() || pTradeData->instrument_definition_id.empty())
                 continue;
             // -----------------------------------------------------------------------
-            int64_t lScale     = opentxs::OTAPI_Wrap::It()->StringToLong(pTradeData->scale);
-            int64_t lReceiptID = opentxs::OTAPI_Wrap::It()->StringToLong(pTradeData->updated_id);
-            int64_t lOfferID   = opentxs::OTAPI_Wrap::It()->StringToLong(pTradeData->transaction_id);
+            int64_t lScale     = opentxs::OTAPI_Wrap::Exec()->StringToLong(pTradeData->scale);
+            int64_t lReceiptID = opentxs::OTAPI_Wrap::Exec()->StringToLong(pTradeData->updated_id);
+            int64_t lOfferID   = opentxs::OTAPI_Wrap::Exec()->StringToLong(pTradeData->transaction_id);
             // -----------------------------------------------------------------------
-//          time_t tDate = static_cast<time_t>(opentxs::OTAPI_Wrap::It()->StringToLong(pTradeData->date));
-            time64_t tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::It()->StringToLong(pTradeData->date));
+//          time_t tDate = static_cast<time_t>(opentxs::OTAPI_Wrap::Exec()->StringToLong(pTradeData->date));
+            time64_t tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::Exec()->StringToLong(pTradeData->date));
             // -----------------------------------------------------------------------
             std::string & str_price = pTradeData->price;
-            int64_t       lPrice    = opentxs::OTAPI_Wrap::It()->StringToLong(str_price); // this price is "per scale"
+            int64_t       lPrice    = opentxs::OTAPI_Wrap::Exec()->StringToLong(str_price); // this price is "per scale"
 
             if (lPrice < 0)
                 lPrice *= (-1);
             // -----------------------------------------------------------------------
             std::string & str_amount_sold    = pTradeData->amount_sold;
-            int64_t       lQuantity          = opentxs::OTAPI_Wrap::It()->StringToLong(str_amount_sold); // Amount of asset sold for that price.
+            int64_t       lQuantity          = opentxs::OTAPI_Wrap::Exec()->StringToLong(str_amount_sold); // Amount of asset sold for that price.
 
             if (lQuantity < 0)
                 lQuantity *= (-1);
             // -----------------------------------------------------------------------
             std::string & str_currency_paid   = pTradeData->currency_paid;
-            int64_t       lPayQuantity        = opentxs::OTAPI_Wrap::It()->StringToLong(str_currency_paid); // Amount of currency paid for this trade.
+            int64_t       lPayQuantity        = opentxs::OTAPI_Wrap::Exec()->StringToLong(str_currency_paid); // Amount of currency paid for this trade.
 
             if (lPayQuantity < 0)
                 lPayQuantity *= (-1);
@@ -445,18 +445,18 @@ void ModelTradeArchive::updateDBFromOT(const std::string & strNotaryID, const st
 
 void ModelTradeArchive::updateDBFromOT()
 {
-    const int32_t nymCount    = opentxs::OTAPI_Wrap::It()->GetNymCount();
-    const int32_t serverCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
+    const int32_t nymCount    = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
+    const int32_t serverCount = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
 
     for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
     {
-        std::string NotaryID = opentxs::OTAPI_Wrap::It()->GetServer_ID(serverIndex);
+        std::string NotaryID = opentxs::OTAPI_Wrap::Exec()->GetServer_ID(serverIndex);
 
         for (int32_t nymIndex = 0; nymIndex < nymCount; ++nymIndex)
         {
-            std::string nymId = opentxs::OTAPI_Wrap::It()->GetNym_ID(nymIndex);
+            std::string nymId = opentxs::OTAPI_Wrap::Exec()->GetNym_ID(nymIndex);
 
-            if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(nymId, NotaryID))
+            if (opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(nymId, NotaryID))
             {
                 updateDBFromOT(NotaryID, nymId);
             }

@@ -158,15 +158,15 @@ Moneychanger::Moneychanger(QWidget *parent)
             default_nym_id = DBHandler::getInstance()->queryString("SELECT `nym` FROM `default_nym` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
         // -------------------------------------------------
-//        if (default_nym_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetNymCount() > 0))
+//        if (default_nym_id.isEmpty() && (opentxs::OTAPI_Wrap::Exec()->GetNymCount() > 0))
 //        {
-//            default_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(0));
+//            default_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_ID(0));
 //        }
 //        // -------------------------------------------------
 //        //Ask OT what the display name of this nym is and store it for quick retrieval later on(mostly for "Default Nym" displaying purposes)
 //        if (!default_nym_id.isEmpty())
 //        {
-//            default_nym_name =  QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(default_nym_id.toStdString()));
+//            default_nym_name =  QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_Name(default_nym_id.toStdString()));
 //        }
 //        else
 //            qDebug() << "Error loading DEFAULT NYM from SQL";
@@ -186,15 +186,15 @@ Moneychanger::Moneychanger(QWidget *parent)
             default_notary_id = DBHandler::getInstance()->queryString("SELECT `server` FROM `default_server` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
         // -------------------------------------------------
-//        if (default_notary_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0))
+//        if (default_notary_id.isEmpty() && (opentxs::OTAPI_Wrap::Exec()->GetServerCount() > 0))
 //        {
-//            default_notary_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(0));
+//            default_notary_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_ID(0));
 //        }
 //        // -------------------------------------------------
 //        //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
 //        if (!default_notary_id.isEmpty())
 //        {
-//            default_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(default_notary_id.toStdString()));
+//            default_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(default_notary_id.toStdString()));
 //        }
 //        else
 //            qDebug() << "Error loading DEFAULT SERVER from SQL";
@@ -215,15 +215,15 @@ Moneychanger::Moneychanger(QWidget *parent)
             default_asset_id = DBHandler::getInstance()->queryString("SELECT `asset` FROM `default_asset` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
         // -------------------------------------------------
-//        if (default_asset_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetAssetTypeCount() > 0))
+//        if (default_asset_id.isEmpty() && (opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount() > 0))
 //        {
-//            default_asset_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_ID(0));
+//            default_asset_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_ID(0));
 //        }
 //        // -------------------------------------------------
 //        //Ask OT what the display name of this asset type is and store it for a quick retrieval later on(mostly for "Default Asset" displaying purposes)
 //        if (!default_asset_id.isEmpty())
 //        {
-//            default_asset_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(default_asset_id.toStdString()));
+//            default_asset_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(default_asset_id.toStdString()));
 //        }
 //        else
 //            qDebug() << "Error loading DEFAULT ASSET from SQL";
@@ -244,15 +244,15 @@ Moneychanger::Moneychanger(QWidget *parent)
             default_account_id = DBHandler::getInstance()->queryString("SELECT `account` FROM `default_account` WHERE `default_id`='1' LIMIT 0,1", 0, 0);
         }
         // -------------------------------------------------
-//        if (default_account_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetAccountCount() > 0))
+//        if (default_account_id.isEmpty() && (opentxs::OTAPI_Wrap::Exec()->GetAccountCount() > 0))
 //        {
-//            default_account_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(0));
+//            default_account_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(0));
 //        }
 //        // -------------------------------------------------
 //        //Ask OT what the display name of this account is and store it for a quick retrieval later on(mostly for "Default Account" displaying purposes)
 //        if (!default_account_id.isEmpty())
 //        {
-//            default_account_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(default_account_id.toStdString()));
+//            default_account_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(default_account_id.toStdString()));
 //        }
 //        else
 //            qDebug() << "Error loading DEFAULT ACCOUNT from SQL";
@@ -359,10 +359,10 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
     if (myNymId.isEmpty())
     {
         //Count nyms
-        const int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
+        const int32_t nym_count = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
 
         if (nym_count > 0)
-            myNymId = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(0));
+            myNymId = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_ID(0));
     }
 
     if (myNymId.isEmpty())
@@ -375,7 +375,7 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
     //
     if (!notaryId.isEmpty())
     {
-        const std::string str_notary_contract = opentxs::OTAPI_Wrap::It()->GetServer_Contract(notaryId.toStdString());
+        const std::string str_notary_contract = opentxs::OTAPI_Wrap::Exec()->GetServer_Contract(notaryId.toStdString());
 
         if (str_notary_contract.empty())
         {
@@ -436,7 +436,7 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
         //
         // And how do I know if I even have the server contract at all?
         //
-        const std::string str_server_contract = opentxs::OTAPI_Wrap::It()->GetServer_Contract(notary_id);
+        const std::string str_server_contract = opentxs::OTAPI_Wrap::Exec()->GetServer_Contract(notary_id);
 
         if (str_server_contract.empty())
         {
@@ -444,15 +444,14 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
             continue;
         }
         // ---------------------------------------------
-        const bool isReg = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(my_nym_id, notary_id);
+        const bool isReg = opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(my_nym_id, notary_id);
 
         if (!isReg)
         {
             std::string response;
             {
                 MTSpinner theSpinner;
-                opentxs::OT_ME madeEasy;
-                response = madeEasy.register_nym(notary_id, my_nym_id);
+                response = opentxs::OT_ME::It().register_nym(notary_id, my_nym_id);
                 if (opentxs::OTAPI_Wrap::networkFailure())
                 {
                     QString qstrErrorMsg;
@@ -464,8 +463,7 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
                 }
             }
 
-            opentxs::OT_ME madeEasy;
-            if (!madeEasy.VerifyMessageSuccess(response)) {
+            if (!opentxs::OT_ME::It().VerifyMessageSuccess(response)) {
                 Moneychanger::It()->HasUsageCredits(notary_id, my_nym_id);
                 continue;
             }
@@ -474,11 +472,10 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
         }
         // ------------------------------
         {
-            opentxs::OT_ME madeEasy;
             std::string response;
             {
                 MTSpinner theSpinner;
-                response = madeEasy.check_nym(notary_id, my_nym_id, his_nym_id);
+                response = opentxs::OT_ME::It().check_nym(notary_id, my_nym_id, his_nym_id);
             }
             if (opentxs::OTAPI_Wrap::networkFailure())
             {
@@ -490,7 +487,7 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
                 continue;
             }
 
-            int32_t  nReturnVal = madeEasy.VerifyMessageSuccess(response);
+            int32_t  nReturnVal = opentxs::OT_ME::It().VerifyMessageSuccess(response);
             if (1 == nReturnVal)
             {
                 emit nymWasJustChecked(hisNymId);
@@ -535,7 +532,7 @@ void Moneychanger::onCheckNym(QString nymId)
     const std::string str_checked_nym_id(strNymId.Get());
 
     const auto data =
-        opentxs::OTAPI_Wrap::It()->GetContactData(nymId.toStdString());
+        opentxs::OTAPI_Wrap::Exec()->GetContactData(nymId.toStdString());
     auto claims =
         opentxs::proto::DataToProto<opentxs::proto::ContactData>
             ({data.c_str(), static_cast<uint32_t>(data.length())});
@@ -592,7 +589,7 @@ void Moneychanger::onCheckNym(QString nymId)
     // Import the verifications.
     //
     const auto ver_data =
-        opentxs::OTAPI_Wrap::It()->GetVerificationSet(nymId.toStdString());
+        opentxs::OTAPI_Wrap::Exec()->GetVerificationSet(nymId.toStdString());
 
     auto the_set =
         opentxs::proto::DataToProto<opentxs::proto::VerificationSet>
@@ -701,10 +698,10 @@ opentxs::OTRecordList & Moneychanger::GetRecordlist()
 
 void Moneychanger::setupRecordList()
 {
-    int nServerCount  = opentxs::OTAPI_Wrap::It()->GetServerCount();
-    int nAssetCount   = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
-    int nNymCount     = opentxs::OTAPI_Wrap::It()->GetNymCount();
-    int nAccountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
+    int nServerCount  = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
+    int nAssetCount   = opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount();
+    int nNymCount     = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
+    int nAccountCount = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
     // ----------------------------------------------------
     GetRecordlist().ClearServers();
     GetRecordlist().ClearAssets();
@@ -713,25 +710,25 @@ void Moneychanger::setupRecordList()
     // ----------------------------------------------------
     for (int ii = 0; ii < nServerCount; ++ii)
     {
-        std::string NotaryID = opentxs::OTAPI_Wrap::It()->GetServer_ID(ii);
+        std::string NotaryID = opentxs::OTAPI_Wrap::Exec()->GetServer_ID(ii);
         GetRecordlist().AddNotaryID(NotaryID);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAssetCount; ++ii)
     {
-        std::string InstrumentDefinitionID = opentxs::OTAPI_Wrap::It()->GetAssetType_ID(ii);
+        std::string InstrumentDefinitionID = opentxs::OTAPI_Wrap::Exec()->GetAssetType_ID(ii);
         GetRecordlist().AddInstrumentDefinitionID(InstrumentDefinitionID);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nNymCount; ++ii)
     {
-        std::string nymId = opentxs::OTAPI_Wrap::It()->GetNym_ID(ii);
+        std::string nymId = opentxs::OTAPI_Wrap::Exec()->GetNym_ID(ii);
         GetRecordlist().AddNymID(nymId);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAccountCount; ++ii)
     {
-        std::string accountID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(ii);
+        std::string accountID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(ii);
         GetRecordlist().AddAccountID(accountID);
     }
     // ----------------------------------------------------
@@ -941,15 +938,13 @@ int64_t Moneychanger::HasUsageCredits(const std::string & notary_id,
         return -2;
     }
     // --------------------------------------------------------
-    opentxs::OT_ME madeEasy;
-    // --------------------------------------------------------
     const std::string strAdjustment("0");
     // --------------------------------------------------------
     std::string strMessage;
     {
         MTSpinner theSpinner;
 
-        strMessage = madeEasy.adjust_usage_credits(notary_id, NYM_ID, NYM_ID, strAdjustment);
+        strMessage = opentxs::OT_ME::It().adjust_usage_credits(notary_id, NYM_ID, NYM_ID, strAdjustment);
     }
     if (strMessage.empty())
     {
@@ -960,7 +955,7 @@ int64_t Moneychanger::HasUsageCredits(const std::string & notary_id,
     }
 
     // --------------------------------------------------------
-    const int64_t lReturnValue = opentxs::OTAPI_Wrap::It()->Message_GetUsageCredits(strMessage);
+    const int64_t lReturnValue = opentxs::OTAPI_Wrap::Exec()->Message_GetUsageCredits(strMessage);
     // --------------------------------------------------------
     QString qstrErrorMsg;
 
@@ -1048,11 +1043,11 @@ void Moneychanger::bootTray()
         mc_payments_dialog();
     else if (!hasNyms())
         mc_nymmanager_dialog();
-    else if (opentxs::OTAPI_Wrap::It()->GetAssetTypeCount() <= 0)
+    else if (opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount() <= 0)
         mc_assetmanager_dialog();
-    else if (opentxs::OTAPI_Wrap::It()->GetServerCount() <= 0)
+    else if (opentxs::OTAPI_Wrap::Exec()->GetServerCount() <= 0)
         mc_servermanager_dialog();
-    else if (opentxs::OTAPI_Wrap::It()->GetAccountCount() <= 0)
+    else if (opentxs::OTAPI_Wrap::Exec()->GetAccountCount() <= 0)
         mc_accountmanager_dialog();
     else
         mc_payments_dialog();
@@ -1270,13 +1265,13 @@ void Moneychanger::SetupMainMenu()
 bool Moneychanger::hasAccounts() const
 {
     return (!default_account_id.isEmpty() ||
-            (opentxs::OTAPI_Wrap::It()->GetAccountCount() > 0));
+            (opentxs::OTAPI_Wrap::Exec()->GetAccountCount() > 0));
 }
 
 bool Moneychanger::hasNyms() const
 {
     return (!default_nym_id.isEmpty() ||
-            (opentxs::OTAPI_Wrap::It()->GetNymCount() > 0));
+            (opentxs::OTAPI_Wrap::Exec()->GetNymCount() > 0));
 }
 
 //bool Moneychanger::financeMode() const
@@ -1286,17 +1281,17 @@ bool Moneychanger::hasNyms() const
 //    //
 //    return (!default_account_id.isEmpty() ||
 //            !default_nym_id    .isEmpty() ||
-//            (opentxs::OTAPI_Wrap::It()->GetNymCount() > 0));
+//            (opentxs::OTAPI_Wrap::Exec()->GetNymCount() > 0));
 //}
 
 void Moneychanger::SetupAssetMenu(QPointer<QMenu> & parent_menu)
 {
-    if (default_asset_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetAssetTypeCount() > 0))
+    if (default_asset_id.isEmpty() && (opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount() > 0))
     {
-        default_asset_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_ID(0));
+        default_asset_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_ID(0));
     }
     // -------------------------------------------------
-    if (opentxs::OTAPI_Wrap::It()->GetAssetTypeCount() <= 0)
+    if (opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount() <= 0)
     {
 //        if (mc_systrayMenu_asset)
 //            mc_systrayMenu_asset->disconnect();
@@ -1324,7 +1319,7 @@ void Moneychanger::SetupAssetMenu(QPointer<QMenu> & parent_menu)
     // -------------------------------------------------
     if (!default_asset_id.isEmpty())
     {
-        default_asset_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(default_asset_id.toStdString()));
+        default_asset_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(default_asset_id.toStdString()));
     }
     // -------------------------------------------------
     //Load "default" asset type
@@ -1333,12 +1328,12 @@ void Moneychanger::SetupAssetMenu(QPointer<QMenu> & parent_menu)
     asset_list_id   = new QList<QVariant>;
     asset_list_name = new QList<QVariant>;
     // ------------------------------------------
-    int32_t asset_count = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
+    int32_t asset_count = opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount();
 
     for (int aa = 0; aa < asset_count; aa++)
     {
-        QString OT_asset_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_ID(aa));
-        QString OT_asset_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(OT_asset_id.toStdString()));
+        QString OT_asset_id   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_ID(aa));
+        QString OT_asset_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(OT_asset_id.toStdString()));
 
         asset_list_id  ->append(QVariant(OT_asset_id));
         asset_list_name->append(QVariant(OT_asset_name));
@@ -1362,12 +1357,12 @@ void Moneychanger::SetupAssetMenu(QPointer<QMenu> & parent_menu)
 
 void Moneychanger::SetupServerMenu(QPointer<QMenu> & parent_menu)
 {
-    if (default_notary_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetServerCount() > 0))
+    if (default_notary_id.isEmpty() && (opentxs::OTAPI_Wrap::Exec()->GetServerCount() > 0))
     {
-        default_notary_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(0));
+        default_notary_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_ID(0));
     }
     // -------------------------------------------------
-    if (opentxs::OTAPI_Wrap::It()->GetServerCount() <= 0)
+    if (opentxs::OTAPI_Wrap::Exec()->GetServerCount() <= 0)
     {
 //        if (mc_systrayMenu_server)
 //            mc_systrayMenu_server->disconnect();
@@ -1396,7 +1391,7 @@ void Moneychanger::SetupServerMenu(QPointer<QMenu> & parent_menu)
     //Ask OT what the display name of this server is and store it for a quick retrieval later on(mostly for "Default Server" displaying purposes)
     if (!default_notary_id.isEmpty())
     {
-        default_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(default_notary_id.toStdString()));
+        default_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(default_notary_id.toStdString()));
     }
     // -------------------------------------------------
     //Load "default" server
@@ -1405,12 +1400,12 @@ void Moneychanger::SetupServerMenu(QPointer<QMenu> & parent_menu)
     server_list_id   = new QList<QVariant>;
     server_list_name = new QList<QVariant>;
     // ------------------------------------------
-    int32_t server_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
+    int32_t server_count = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
 
     for (int32_t aa = 0; aa < server_count; aa++)
     {
-        QString OT_notary_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(aa));
-        QString OT_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_notary_id.toStdString()));
+        QString OT_notary_id   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_ID(aa));
+        QString OT_server_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(OT_notary_id.toStdString()));
 
         server_list_id  ->append(QVariant(OT_notary_id));
         server_list_name->append(QVariant(OT_server_name));
@@ -1436,9 +1431,9 @@ void Moneychanger::SetupServerMenu(QPointer<QMenu> & parent_menu)
 void Moneychanger::SetupNymMenu(QPointer<QMenu> & parent_menu)
 {
     // -------------------------------------------------
-    if (default_nym_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetNymCount() > 0))
+    if (default_nym_id.isEmpty() && (opentxs::OTAPI_Wrap::Exec()->GetNymCount() > 0))
     {
-        default_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(0));
+        default_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_ID(0));
     }
     // -------------------------------------------------
     if (!hasNyms())
@@ -1469,7 +1464,7 @@ void Moneychanger::SetupNymMenu(QPointer<QMenu> & parent_menu)
     //Ask OT what the display name of this nym is and store it for quick retrieval later on(mostly for "Default Nym" displaying purposes)
     if (!default_nym_id.isEmpty())
     {
-        default_nym_name =  QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(default_nym_id.toStdString()));
+        default_nym_name =  QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_Name(default_nym_id.toStdString()));
     }
     // -------------------------------------------------
     //Init nym submenu
@@ -1477,13 +1472,13 @@ void Moneychanger::SetupNymMenu(QPointer<QMenu> & parent_menu)
     nym_list_name = new QList<QVariant>;
     // --------------------------------------------------------
     //Count nyms
-    int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
+    int32_t nym_count = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
 
     //Add/append to the id + name lists
     for (int32_t a = 0; a < nym_count; a++)
     {
-        QString OT_nym_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(a));
-        QString OT_nym_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(OT_nym_id.toStdString()));
+        QString OT_nym_id   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_ID(a));
+        QString OT_nym_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_Name(OT_nym_id.toStdString()));
 
         nym_list_id  ->append(QVariant(OT_nym_id));
         nym_list_name->append(QVariant(OT_nym_name));
@@ -1816,12 +1811,12 @@ void Moneychanger::SetupMessagingMenu(QPointer<QMenu> & parent_menu)
 
 void Moneychanger::SetupAccountMenu(QPointer<QMenu> & parent_menu)
 {
-    if (default_account_id.isEmpty() && (opentxs::OTAPI_Wrap::It()->GetAccountCount() > 0))
+    if (default_account_id.isEmpty() && (opentxs::OTAPI_Wrap::Exec()->GetAccountCount() > 0))
     {
-        default_account_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(0));
+        default_account_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(0));
     }
     // -------------------------------------------------
-    if (opentxs::OTAPI_Wrap::It()->GetAccountCount() <= 0)
+    if (opentxs::OTAPI_Wrap::Exec()->GetAccountCount() <= 0)
     {
 //        if (mc_systrayMenu_account)
 //            mc_systrayMenu_account->disconnect();
@@ -1849,19 +1844,19 @@ void Moneychanger::SetupAccountMenu(QPointer<QMenu> & parent_menu)
     //Ask OT what the display name of this account is and store it for a quick retrieval later on(mostly for "Default Account" displaying purposes)
     if (!default_account_id.isEmpty())
     {
-        default_account_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(default_account_id.toStdString()));
+        default_account_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(default_account_id.toStdString()));
     }
     // -------------------------------------------------
     //Init account submenu
     account_list_id   = new QList<QVariant>;
     account_list_name = new QList<QVariant>;
     // ------------------------------------------
-    int32_t account_count = opentxs::OTAPI_Wrap::It()->GetAccountCount();
+    int32_t account_count = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
 
     for (int aa = 0; aa < account_count; aa++)
     {
-        QString OT_account_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(aa));
-        QString OT_account_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(OT_account_id.toStdString()));
+        QString OT_account_id   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(aa));
+        QString OT_account_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(OT_account_id.toStdString()));
 
         account_list_id  ->append(QVariant(OT_account_id));
         account_list_name->append(QVariant(OT_account_name));
@@ -2126,13 +2121,13 @@ void Moneychanger::mc_nymmanager_dialog(QString qstrPresetID/*=QString("")*/)
     // -------------------------------------
     the_map.clear();
     // -------------------------------------
-    int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
+    int32_t nym_count = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
     bool bFoundPreset = false;
 
     for (int32_t ii = 0; ii < nym_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(ii));
-        QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
         // ------------------------------
@@ -2227,25 +2222,24 @@ void Moneychanger::onNeedToDownloadMail()
     QString qstrErrorMsg;
     qstrErrorMsg = tr("Failed trying to contact the notary. Perhaps it is down, or there might be a network problem.");
     // -----------------------------
-    opentxs::OT_ME madeEasy;
 
-    int32_t nymCount = opentxs::OTAPI_Wrap::It()->GetNymCount();
+    int32_t nymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
 
     if (0 == nymCount)
     {
         qDebug() << "Making 'Me' Nym";
 
         std::string strSource("");
-        std::string newNymId = madeEasy.create_nym_hd(strSource, 0);
+        std::string newNymId = opentxs::OT_ME::It().create_nym_hd(strSource, 0);
 
         if (!newNymId.empty())
         {
-            opentxs::OTAPI_Wrap::It()->SetNym_Name(newNymId, newNymId, tr("Me").toLatin1().data());
+            opentxs::OTAPI_Wrap::Exec()->SetNym_Name(newNymId, newNymId, tr("Me").toLatin1().data());
             DBHandler::getInstance()->AddressBookUpdateDefaultNym(QString::fromStdString(newNymId));
             qDebug() << "Finished Making Nym";
         }
 
-        nymCount = opentxs::OTAPI_Wrap::It()->GetNymCount();
+        nymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
     }
     // ----------------------------------------------------------------
     std::string defaultNymID(get_default_nym_id().toStdString());
@@ -2266,7 +2260,7 @@ void Moneychanger::onNeedToDownloadMail()
         // ----------------------------------------------------------------
         if (!defaultNymID.empty() && !defaultNotaryID.empty())
         {
-            bool isReg = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(defaultNymID, defaultNotaryID);
+            bool isReg = opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(defaultNymID, defaultNotaryID);
 
             if (!isReg)
             {
@@ -2274,7 +2268,7 @@ void Moneychanger::onNeedToDownloadMail()
                 {
                     MTSpinner theSpinner;
 
-                    response = madeEasy.register_nym(defaultNotaryID, defaultNymID);
+                    response = opentxs::OT_ME::It().register_nym(defaultNotaryID, defaultNymID);
 
                     if (opentxs::OTAPI_Wrap::networkFailure())
                     {
@@ -2283,7 +2277,7 @@ void Moneychanger::onNeedToDownloadMail()
                     }
                 }
 
-                if (!madeEasy.VerifyMessageSuccess(response)) {
+                if (!opentxs::OT_ME::It().VerifyMessageSuccess(response)) {
                     Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
                     return;
                 }
@@ -2297,25 +2291,25 @@ void Moneychanger::onNeedToDownloadMail()
         // ----------------------------------------------------------------
         // Retrieve Nyms
         //
-        int32_t serverCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
+        int32_t serverCount = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
 
         for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
         {
-            std::string NotaryID = opentxs::OTAPI_Wrap::It()->GetServer_ID(serverIndex);
+            std::string NotaryID = opentxs::OTAPI_Wrap::Exec()->GetServer_ID(serverIndex);
 
             for (int32_t nymIndex = 0; nymIndex < nymCount; ++nymIndex)
             {
-                std::string nymId = opentxs::OTAPI_Wrap::It()->GetNym_ID(nymIndex);
+                std::string nymId = opentxs::OTAPI_Wrap::Exec()->GetNym_ID(nymIndex);
 
                 bool bRetrievalAttempted = false;
                 bool bRetrievalSucceeded = false;
 
-                if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(nymId, NotaryID))
+                if (opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(nymId, NotaryID))
                 {
                     MTSpinner theSpinner;
 
                     bRetrievalAttempted = true;
-                    bRetrievalSucceeded = madeEasy.retrieve_nym(NotaryID, nymId, true);
+                    bRetrievalSucceeded = opentxs::OT_ME::It().retrieve_nym(NotaryID, nymId, true);
 
                     if (opentxs::OTAPI_Wrap::networkFailure())
                     {
@@ -2449,7 +2443,7 @@ bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
             msgTypeDisplay = QString::fromStdString(recordmt.GetMsgTypeDisplay());
 //          msgTypeDisplay = MTContactHandler::Encode(QString::fromStdString(recordmt.GetMsgTypeDisplay()));
         // ---------------------------------
-        time64_t tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetDate()));
+        time64_t tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::Exec()->StringToLong(recordmt.GetDate()));
         // ---------------------------------
         std::string str_mailDescription;
         recordmt.FormatMailSubject(str_mailDescription);
@@ -2897,7 +2891,7 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
             msgTypeDisplay = QString::fromStdString(recordmt.GetMsgTypeDisplay());
 //          msgTypeDisplay = MTContactHandler::Encode(QString::fromStdString(recordmt.GetMsgTypeDisplay()));
         // ---------------------------------
-        tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetDate()));
+        tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::Exec()->StringToLong(recordmt.GetDate()));
 
         // If it's a final Receipt, we want to get the closing number from it as the "receipt_id" which
         // is the Agreement table's version of the TransNum.
@@ -2955,7 +2949,7 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
             return false;
         }
         // ---------------------------------------------------------------
-        int64_t lAmount = opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetAmount());
+        int64_t lAmount = opentxs::OTAPI_Wrap::Exec()->StringToLong(recordmt.GetAmount());
 
 //      qDebug() << "DEBUGGING! recordmt.GetAmount(): " << QString::fromStdString(recordmt.GetAmount())
 //               << " lAmount: " << lAmount << "\n";
@@ -3414,12 +3408,12 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
             msgTypeDisplay = QString::fromStdString(recordmt.GetMsgTypeDisplay());
 //          msgTypeDisplay = MTContactHandler::Encode(QString::fromStdString(recordmt.GetMsgTypeDisplay()));
         // ---------------------------------
-        time64_t tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetDate()));
+        time64_t tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::Exec()->StringToLong(recordmt.GetDate()));
 
         int64_t transNum        = recordmt.GetTransactionNum();
         int64_t transNumDisplay = recordmt.GetTransNumForDisplay();
 
-        int64_t lAmount = opentxs::OTAPI_Wrap::It()->StringToLong(recordmt.GetAmount());
+        int64_t lAmount = opentxs::OTAPI_Wrap::Exec()->StringToLong(recordmt.GetAmount());
 
 //      qDebug() << "DEBUGGING! recordmt.GetAmount(): " << QString::fromStdString(recordmt.GetAmount())
 //               << " lAmount: " << lAmount << "\n";
@@ -3956,15 +3950,14 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOp
     QString qstrErrorMsg;
     qstrErrorMsg = tr("Failed trying to contact the notary. Perhaps it is down, or there might be a network problem.");
     // ------------------------------
-    opentxs::OT_ME madeEasy;
 
     std::string accountId = qstrAcctID.toStdString();
-    std::string acctNymID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (accountId);
-    std::string acctSvrID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(accountId);
+    std::string acctNymID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID   (accountId);
+    std::string acctSvrID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID(accountId);
     // ------------------------------
     std::string accountIdOptional = qstrOptionalAcctID.isEmpty() ? "" : qstrOptionalAcctID.toStdString();
-    std::string acctNymIDOptional = qstrOptionalAcctID.isEmpty() ? "" : opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (accountIdOptional);
-    std::string acctSvrIDOptional = qstrOptionalAcctID.isEmpty() ? "" : opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(accountIdOptional);
+    std::string acctNymIDOptional = qstrOptionalAcctID.isEmpty() ? "" : opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID   (accountIdOptional);
+    std::string acctSvrIDOptional = qstrOptionalAcctID.isEmpty() ? "" : opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID(accountIdOptional);
     // ------------------------------
     bool bRetrievalAttemptedNym = false;
     bool bRetrievalSucceededNym = false;
@@ -3976,7 +3969,7 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOp
         MTSpinner theSpinner;
 
         bRetrievalAttemptedNym = true;
-        bRetrievalSucceededNym = madeEasy.retrieve_nym(acctSvrID, acctNymID, true);
+        bRetrievalSucceededNym = opentxs::OT_ME::It().retrieve_nym(acctSvrID, acctNymID, true);
 
         if (opentxs::OTAPI_Wrap::networkFailure())
         {
@@ -3988,7 +3981,7 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOp
         //
         if (bRetrievalSucceededNym && !qstrOptionalAcctID.isEmpty() && (acctNymIDOptional != acctNymID))
         {
-            bRetrievalSucceededNym = madeEasy.retrieve_nym(acctSvrIDOptional, acctNymIDOptional, true);
+            bRetrievalSucceededNym = opentxs::OT_ME::It().retrieve_nym(acctSvrIDOptional, acctNymIDOptional, true);
 
             if (opentxs::OTAPI_Wrap::networkFailure())
             {
@@ -4002,11 +3995,11 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOp
         MTSpinner theSpinner;
 
         bRetrievalAttemptedAcct = true;
-        bRetrievalSucceededAcct = madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
+        bRetrievalSucceededAcct = opentxs::OT_ME::It().retrieve_account(acctSvrID, acctNymID, accountId, true);
 
         if (bRetrievalSucceededAcct && !qstrOptionalAcctID.isEmpty())
         {
-            bRetrievalSucceededAcct = madeEasy.retrieve_account(acctSvrIDOptional, acctNymIDOptional, accountIdOptional, true);
+            bRetrievalSucceededAcct = opentxs::OT_ME::It().retrieve_account(acctSvrIDOptional, acctNymIDOptional, accountIdOptional, true);
         }
 
         if (opentxs::OTAPI_Wrap::networkFailure())
@@ -4063,7 +4056,6 @@ void Moneychanger::onNeedToDownloadAccountData()
     QString qstrErrorMsg;
     qstrErrorMsg = tr("Failed trying to contact the notary. Perhaps it is down, or there might be a network problem.");
     // -----------------------------
-    opentxs::OT_ME madeEasy;
 
     if ((get_server_list_id_size() > 0) && (get_asset_list_id_size() > 0) )
     {
@@ -4075,28 +4067,28 @@ void Moneychanger::onNeedToDownloadAccountData()
             DBHandler::getInstance()->AddressBookUpdateDefaultServer(QString::fromStdString(defaultNotaryID));
         }
         // ----------------------------------------------------------------
-        int32_t nymCount = opentxs::OTAPI_Wrap::It()->GetNymCount();
+        int32_t nymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
 
         if (0 == nymCount)
         {
             std::string strSource("");
 
-            std::string newNymId = madeEasy.create_nym_hd(strSource, 0);
+            std::string newNymId = opentxs::OT_ME::It().create_nym_hd(strSource, 0);
 
             if (!newNymId.empty())
             {
-                opentxs::OTAPI_Wrap::It()->SetNym_Name(newNymId, newNymId, tr("Me").toLatin1().data());
+                opentxs::OTAPI_Wrap::Exec()->SetNym_Name(newNymId, newNymId, tr("Me").toLatin1().data());
                 DBHandler::getInstance()->AddressBookUpdateDefaultNym(QString::fromStdString(newNymId));
             }
 
-            nymCount = opentxs::OTAPI_Wrap::It()->GetNymCount();
+            nymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
         }
         // ----------------------------------------------------------------
         std::string defaultNymID(get_default_nym_id().toStdString());
         // ----------------------------------------------------------------
         if (!defaultNymID.empty() && !defaultNotaryID.empty())
         {
-            bool isReg = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(defaultNymID, defaultNotaryID);
+            bool isReg = opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(defaultNymID, defaultNotaryID);
 
             if (!isReg)
             {
@@ -4104,7 +4096,7 @@ void Moneychanger::onNeedToDownloadAccountData()
                 {
                     MTSpinner theSpinner;
 
-                    response = madeEasy.register_nym(defaultNotaryID, defaultNymID);
+                    response = opentxs::OT_ME::It().register_nym(defaultNotaryID, defaultNymID);
 
                     if (opentxs::OTAPI_Wrap::networkFailure())
                     {
@@ -4113,7 +4105,7 @@ void Moneychanger::onNeedToDownloadAccountData()
                     }
                 }
 
-                if (!madeEasy.VerifyMessageSuccess(response)) {
+                if (!opentxs::OT_ME::It().VerifyMessageSuccess(response)) {
                     Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
                     return;
                 }
@@ -4131,7 +4123,7 @@ void Moneychanger::onNeedToDownloadAccountData()
             DBHandler::getInstance()->AddressBookUpdateDefaultAsset(QString::fromStdString(defaultInstrumentDefinitionID));
         }
         // ----------------------------------------------------------------
-        int32_t accountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
+        int32_t accountCount = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
 
         if (0 == accountCount)
         {
@@ -4140,7 +4132,7 @@ void Moneychanger::onNeedToDownloadAccountData()
                 std::string response;
                 {
                     MTSpinner theSpinner;
-                    response = madeEasy.create_asset_acct(defaultNotaryID, defaultNymID, defaultInstrumentDefinitionID);
+                    response = opentxs::OT_ME::It().create_asset_acct(defaultNotaryID, defaultNymID, defaultInstrumentDefinitionID);
 
                     if (opentxs::OTAPI_Wrap::networkFailure())
                     {
@@ -4149,17 +4141,17 @@ void Moneychanger::onNeedToDownloadAccountData()
                     }
                 }
 
-                if (!madeEasy.VerifyMessageSuccess(response)) {
+                if (!opentxs::OT_ME::It().VerifyMessageSuccess(response)) {
                     Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
                     return;
                 }
 
-                accountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
+                accountCount = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
 
                 if (accountCount > 0)
                 {
-                    std::string accountID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(0);
-                    opentxs::OTAPI_Wrap::It()->SetAccountWallet_Name(accountID, defaultNymID, tr("My Acct").toLatin1().data());
+                    std::string accountID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(0);
+                    opentxs::OTAPI_Wrap::Exec()->SetAccountWallet_Name(accountID, defaultNymID, tr("My Acct").toLatin1().data());
 
                     DBHandler::getInstance()->AddressBookUpdateDefaultAccount(QString::fromStdString(accountID));
                 }
@@ -4168,25 +4160,25 @@ void Moneychanger::onNeedToDownloadAccountData()
         // ----------------------------------------------------------------
         // Retrieve Nyms
         //
-        int32_t serverCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
+        int32_t serverCount = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
 
         for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
         {
-            std::string NotaryID = opentxs::OTAPI_Wrap::It()->GetServer_ID(serverIndex);
+            std::string NotaryID = opentxs::OTAPI_Wrap::Exec()->GetServer_ID(serverIndex);
 
             for (int32_t nymIndex = 0; nymIndex < nymCount; ++nymIndex)
             {
-                std::string nymId = opentxs::OTAPI_Wrap::It()->GetNym_ID(nymIndex);
+                std::string nymId = opentxs::OTAPI_Wrap::Exec()->GetNym_ID(nymIndex);
 
                 bool bRetrievalAttempted = false;
                 bool bRetrievalSucceeded = false;
 
-                if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(nymId, NotaryID))
+                if (opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(nymId, NotaryID))
                 {
                     MTSpinner theSpinner;
 
                     bRetrievalAttempted = true;
-                    bRetrievalSucceeded = madeEasy.retrieve_nym(NotaryID, nymId, true);
+                    bRetrievalSucceeded = opentxs::OT_ME::It().retrieve_nym(NotaryID, nymId, true);
 
                     if (opentxs::OTAPI_Wrap::networkFailure())
                     {
@@ -4204,9 +4196,9 @@ void Moneychanger::onNeedToDownloadAccountData()
         // ----------------------------------------------------------------
         for (int32_t i = 0; i < accountCount; i++)
         {
-            std::string accountId = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(i);
-            std::string acctNymID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(accountId);
-            std::string acctSvrID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(accountId);
+            std::string accountId = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(i);
+            std::string acctNymID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID(accountId);
+            std::string acctSvrID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID(accountId);
 
             bool bRetrievalAttempted = false;
             bool bRetrievalSucceeded = false;
@@ -4215,7 +4207,7 @@ void Moneychanger::onNeedToDownloadAccountData()
                 MTSpinner theSpinner;
 
                 bRetrievalAttempted = true;
-                bRetrievalSucceeded = madeEasy.retrieve_account(acctSvrID, acctNymID, accountId, true);
+                bRetrievalSucceeded = opentxs::OT_ME::It().retrieve_account(acctSvrID, acctNymID, accountId, true);
 
                 if (opentxs::OTAPI_Wrap::networkFailure())
                 {
@@ -4282,13 +4274,13 @@ void Moneychanger::mc_assetmanager_dialog(QString qstrPresetID/*=QString("")*/)
     // -------------------------------------
     the_map.clear();
     // -------------------------------------
-    int32_t  asset_count = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
+    int32_t  asset_count = opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount();
     bool    bFoundPreset = false;
 
     for (int32_t ii = 0; ii < asset_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_ID(ii));
-        QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
         // ------------------------------
@@ -4448,13 +4440,13 @@ void Moneychanger::mc_accountmanager_dialog(QString qstrAcctID/*=QString("")*/)
     // -------------------------------------
     the_map.clear();
     // -------------------------------------
-    int32_t acct_count = opentxs::OTAPI_Wrap::It()->GetAccountCount();
+    int32_t acct_count = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
     bool bFoundDefault = false;
 
     for (int32_t ii = 0; ii < acct_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
-        QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
         // ------------------------------
@@ -4522,21 +4514,21 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
         QString result = account_name;
 //      QString result = tr("Account: ") + account_name;
 
-        int64_t     lBalance  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance    (account_id.toStdString());
-        std::string strAsset  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(account_id.toStdString());
+        int64_t     lBalance  = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance    (account_id.toStdString());
+        std::string strAsset  = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(account_id.toStdString());
         // ----------------------------------------------------------
         std::string str_amount;
 
         if (!strAsset.empty())
         {
-            str_amount = opentxs::OTAPI_Wrap::It()->FormatAmount(strAsset, lBalance);
+            str_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmount(strAsset, lBalance);
             result += " ("+ QString::fromStdString(str_amount) +")";
         }
 
         mc_systrayMenu_account->setTitle(result);
         // -----------------------------------------------------------
-        std::string strNym    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (account_id.toStdString());
-        std::string strServer = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(account_id.toStdString());
+        std::string strNym    = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID   (account_id.toStdString());
+        std::string strServer = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID(account_id.toStdString());
 
         if (!strAsset.empty())
             DBHandler::getInstance()->AddressBookUpdateDefaultAsset (QString::fromStdString(strAsset));
@@ -4550,7 +4542,7 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
             // -----------------------------------------------------------
             if (!strAsset.empty())
             {
-                QString qstrAssetName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(strAsset));
+                QString qstrAssetName = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(strAsset));
 
                 if (!qstrAssetName.isEmpty() && (mc_systrayMenu_asset))
                     setDefaultAsset(QString::fromStdString(strAsset),
@@ -4559,7 +4551,7 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
             // -----------------------------------------------------------
             if (!strNym.empty())
             {
-                QString qstrNymName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name(strNym));
+                QString qstrNymName = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_Name(strNym));
 
                 if (!qstrNymName.isEmpty() && (mc_systrayMenu_nym))
                     setDefaultNym(QString::fromStdString(strNym),
@@ -4568,7 +4560,7 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
             // -----------------------------------------------------------
             if (!strServer.empty())
             {
-                QString qstrServerName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(strServer));
+                QString qstrServerName = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(strServer));
 
                 if (!qstrServerName.isEmpty() && (mc_systrayMenu_server))
                     setDefaultServer(QString::fromStdString(strServer),
@@ -4640,13 +4632,13 @@ void Moneychanger::mc_servermanager_dialog(QString qstrPresetID/*=QString("")*/)
     // -------------------------------------
     the_map.clear();
     // -------------------------------------
-    int32_t server_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
+    int32_t server_count = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
     bool    bFoundPreset = false;
 
     for (int32_t ii = 0; ii < server_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(ii));
-        QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
         // ------------------------------
@@ -4822,7 +4814,7 @@ void Moneychanger::mc_import_slot()
     //
     std::string strInstrument = qstrContents.toStdString();
     // ---------------------------------------------
-    std::string strType = opentxs::OTAPI_Wrap::It()->Instrmnt_GetType(strInstrument);
+    std::string strType = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetType(strInstrument);
 
     if (strType.empty())
     {
@@ -4831,7 +4823,7 @@ void Moneychanger::mc_import_slot()
         return;
     }
     // -----------------------
-    std::string strNotaryID = opentxs::OTAPI_Wrap::It()->Instrmnt_GetNotaryID(strInstrument);
+    std::string strNotaryID = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetNotaryID(strInstrument);
 
     if (strNotaryID.empty())
     {
@@ -4840,7 +4832,7 @@ void Moneychanger::mc_import_slot()
         return;
     }
     // -----------------------
-    std::string strInstrumentDefinitionID = opentxs::OTAPI_Wrap::It()->Instrmnt_GetInstrumentDefinitionID(strInstrument);
+    std::string strInstrumentDefinitionID = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetInstrumentDefinitionID(strInstrument);
 
     if (strInstrumentDefinitionID.empty())
     {
@@ -4849,7 +4841,7 @@ void Moneychanger::mc_import_slot()
         return;
     }
     // -----------------------
-    std::string strServerContract = opentxs::OTAPI_Wrap::It()->LoadServerContract(strNotaryID);
+    std::string strServerContract = opentxs::OTAPI_Wrap::Exec()->LoadServerContract(strNotaryID);
 
     if (strServerContract.empty())
     {
@@ -4859,7 +4851,7 @@ void Moneychanger::mc_import_slot()
         return;
     }
     // -----------------------
-    std::string strAssetContract = opentxs::OTAPI_Wrap::It()->GetAssetType_Contract(strInstrumentDefinitionID);
+    std::string strAssetContract = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Contract(strInstrumentDefinitionID);
 
     if (strAssetContract.empty())
     {
@@ -4883,7 +4875,7 @@ void Moneychanger::mc_import_slot()
     // Next, let's see if the purse is password-protected, and if not,
     // let's see if the recipient Nym is named on the instrument. (He may not be.)
     //
-    const bool  bHasPassword = opentxs::OTAPI_Wrap::It()->Purse_HasPassword(strNotaryID, strInstrument);
+    const bool  bHasPassword = opentxs::OTAPI_Wrap::Exec()->Purse_HasPassword(strNotaryID, strInstrument);
     std::string strPurseOwner("");
 
     if (!bHasPassword)
@@ -4894,7 +4886,7 @@ void Moneychanger::mc_import_slot()
         // The purse MAY include the NymID for this Nym, but it MAY also be blank, in
         // which case the user will have to select a Nym to TRY.
         //
-        strPurseOwner = opentxs::OTAPI_Wrap::It()->Instrmnt_GetRecipientNymID(strInstrument); // TRY and get the Nym ID (it may have been left blank.)
+        strPurseOwner = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetRecipientNymID(strInstrument); // TRY and get the Nym ID (it may have been left blank.)
 
         if (strPurseOwner.empty())
         {
@@ -4911,12 +4903,12 @@ void Moneychanger::mc_import_slot()
 
             bool bFoundDefault = false;
             // -----------------------------------------------
-            const int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
+            const int32_t nym_count = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
             // -----------------------------------------------
             for (int32_t ii = 0; ii < nym_count; ++ii)
             {
                 //Get OT Nym ID
-                QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(ii));
+                QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_ID(ii));
                 QString OT_nym_name("");
                 // -----------------------------------------------
                 if (!OT_nym_id.isEmpty())
@@ -4948,7 +4940,7 @@ void Moneychanger::mc_import_slot()
             }
         } // if strPurseOwner is empty (above the user selects him then.)
         // --------------------------------------
-        if (!opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(strPurseOwner, strNotaryID))
+        if (!opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(strPurseOwner, strNotaryID))
         {
             QMessageBox::warning(this, tr("Nym Isn't Registered at Server"),
                                  QString("%1 '%2'<br/>%3 '%4'<br/>%5").
@@ -4986,19 +4978,19 @@ void Moneychanger::mc_import_slot()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t acct_count = opentxs::OTAPI_Wrap::It()->GetAccountCount();
+    const int32_t acct_count = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < acct_count; ++ii)
     {
         //Get OT Acct ID
-        QString OT_acct_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
+        QString OT_acct_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(ii));
         QString OT_acct_name("");
         // -----------------------------------------------
         if (!OT_acct_id.isEmpty())
         {
-            std::string str_acct_nym_id    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID      (OT_acct_id.toStdString());
-            std::string str_acct_asset_id  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(OT_acct_id.toStdString());
-            std::string str_acct_notary_id = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID   (OT_acct_id.toStdString());
+            std::string str_acct_nym_id    = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID      (OT_acct_id.toStdString());
+            std::string str_acct_asset_id  = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(OT_acct_id.toStdString());
+            std::string str_acct_notary_id = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID   (OT_acct_id.toStdString());
 
             if (!strPurseOwner.empty() && (0 != strPurseOwner.compare(str_acct_nym_id)))
                 continue;
@@ -5036,16 +5028,15 @@ void Moneychanger::mc_import_slot()
         if (!theChooser.m_qstrCurrentID.isEmpty())
         {
             if (strPurseOwner.empty())
-                strPurseOwner = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(theChooser.m_qstrCurrentID.toStdString());
+                strPurseOwner = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID(theChooser.m_qstrCurrentID.toStdString());
             // -------------------------------------------
-            opentxs::OT_ME madeEasy;
-//          const bool bImported = opentxs::OTAPI_Wrap::It()->Wallet_ImportPurse(strNotaryID, strInstrumentDefinitionID, strPurseOwner, strInstrument);
+//          const bool bImported = opentxs::OTAPI_Wrap::Exec()->Wallet_ImportPurse(strNotaryID, strInstrumentDefinitionID, strPurseOwner, strInstrument);
 
             int32_t nDepositCash = 0;
             {
                 MTSpinner theSpinner;
 
-                nDepositCash = madeEasy.deposit_cash(strNotaryID, strPurseOwner,
+                nDepositCash = opentxs::OT_ME::It().deposit_cash(strNotaryID, strPurseOwner,
                                                      theChooser.m_qstrCurrentID.toStdString(), // AcctID.
                                                      strInstrument);
             }
@@ -5759,19 +5750,19 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
     if (qstrLawyerID.isEmpty())
         qstrLawyerID = get_default_nym_id();
     // ------------------------------------------------
-    if (0 == opentxs::OTAPI_Wrap::It()->Smart_GetPartyCount(str_template))
+    if (0 == opentxs::OTAPI_Wrap::Exec()->Smart_GetPartyCount(str_template))
     {
        QMessageBox::information(this, tr("Moneychanger"), tr("There are no parties listed on this smart contract, so you cannot sign it as a party."));
        return;
     }
     // ------------------------------------------------
-    if (opentxs::OTAPI_Wrap::It()->Smart_AreAllPartiesConfirmed(str_template))
+    if (opentxs::OTAPI_Wrap::Exec()->Smart_AreAllPartiesConfirmed(str_template))
     {
         QMessageBox::information(this, tr("Moneychanger"), tr("Strange, all parties are already confirmed on this contract. (Failure.)"));
         return;
     }
     // ------------------------------------------------
-    std::string str_server = opentxs::OTAPI_Wrap::It()->Instrmnt_GetNotaryID(str_template);
+    std::string str_server = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetNotaryID(str_template);
     // ------------------------------------------------
     WizardConfirmSmartContract theWizard(this);
 
@@ -5810,13 +5801,13 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
     // ---------------------------------------------------
     // By this point the user has selected the server ID, the Nym ID, and the Party Name.
     //
-    std::string serverFromContract = opentxs::OTAPI_Wrap::It()->Instrmnt_GetNotaryID(str_template);
+    std::string serverFromContract = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetNotaryID(str_template);
     if ("" != serverFromContract && str_server != serverFromContract) {
         QMessageBox::information(this, tr("Moneychanger"), tr("Mismatched server ID in contract. (Failure.)"));
         return;
     }
     // ----------------------------------------------------
-    if (!opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(str_lawyer_id, str_server)) {
+    if (!opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(str_lawyer_id, str_server)) {
         QMessageBox::information(this, tr("Moneychanger"), tr("Nym is not registered on server. (Failure.)"));
         return;
     }
@@ -5824,7 +5815,7 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
     // See if there are accounts for that party via Party_GetAcctCount.
     // If there are, confirm those accounts.
     //
-    int32_t nAccountCount = opentxs::OTAPI_Wrap::It()->Party_GetAcctCount(str_template, str_party);
+    int32_t nAccountCount = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctCount(str_template, str_party);
 
     if (0 >= nAccountCount)
     {
@@ -5865,10 +5856,10 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
         QString qstrAcctID = otherWizard.field("AcctID").toString();
         std::string str_acct_id = qstrAcctID.toStdString();
         // -----------------------------------------
-        std::string agentName = opentxs::OTAPI_Wrap::It()->Party_GetAcctAgentName(str_template, str_party, str_acct_name);
+        std::string agentName = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctAgentName(str_template, str_party, str_acct_name);
 
         if ("" == agentName)
-            agentName = opentxs::OTAPI_Wrap::It()->Party_GetAgentNameByIndex(str_template, str_party, 0);
+            agentName = opentxs::OTAPI_Wrap::Exec()->Party_GetAgentNameByIndex(str_template, str_party, 0);
 
         if ("" == agentName)
         {
@@ -5892,11 +5883,11 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
     {
         QString qstrAgent = mapAgents[x.key()];
 
-        needed += opentxs::OTAPI_Wrap::It()->SmartContract_CountNumsNeeded(str_template, qstrAgent.toStdString());
+        needed += opentxs::OTAPI_Wrap::Exec()->SmartContract_CountNumsNeeded(str_template, qstrAgent.toStdString());
     }
     // --------------------------------------------
-    opentxs::OT_ME ot_me;
-    if (!ot_me.make_sure_enough_trans_nums(needed + 1, str_server, str_lawyer_id))
+
+    if (!opentxs::OT_ME::It().make_sure_enough_trans_nums(needed + 1, str_server, str_lawyer_id))
     {
         QMessageBox::information(this, tr("Moneychanger"), tr("Failed trying to reserve enough transaction numbers from the notary."));
         return;
@@ -5936,7 +5927,7 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
         QString qstrCurrentAgentname = mapAgents[x.key()];
 
         // confirm a theoretical acct by giving it a real acct id.
-        std::string confirmed = opentxs::OTAPI_Wrap::It()->SmartContract_ConfirmAccount(
+        std::string confirmed = opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmAccount(
             str_template, str_lawyer_id, str_party, qstrCurrentAcctName.toStdString(), qstrCurrentAgentname.toStdString(), qstrCurrentAcctID.toStdString());
 
         if ("" == confirmed)
@@ -5948,7 +5939,7 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
 
             QMessageBox::information(this, tr("Moneychanger"), tr("Failed while calling OT_API_SmartContract_ConfirmAccount."));
 
-            opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
+            opentxs::OTAPI_Wrap::Exec()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
 
             return;
         }
@@ -5959,17 +5950,17 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
     // Then we try to activate it or pass on to the next party.
 
     std::string confirmed =
-        opentxs::OTAPI_Wrap::It()->SmartContract_ConfirmParty(str_template, str_party, str_lawyer_id);
+        opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmParty(str_template, str_party, str_lawyer_id);
 
     if ("" == confirmed)
     {
         qDebug() << "Error: cannot confirm smart contract party.\n";
         QMessageBox::information(this, tr("Moneychanger"), tr("Failed while calling SmartContract_ConfirmParty."));
-        opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
+        opentxs::OTAPI_Wrap::Exec()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
         return;
     }
 
-    if (opentxs::OTAPI_Wrap::It()->Smart_AreAllPartiesConfirmed(confirmed))
+    if (opentxs::OTAPI_Wrap::Exec()->Smart_AreAllPartiesConfirmed(confirmed))
     {
         // If you are the last party to sign, then ACTIVATE THE SMART CONTRACT.
         activateContract(str_server, str_lawyer_id, confirmed, str_party, myAcctID, myAcctAgentName);
@@ -5990,7 +5981,7 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
     // -----------------------------------------------
     if (theChooser.exec() != QDialog::Accepted)
     {
-        opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
+        opentxs::OTAPI_Wrap::Exec()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
         return;
     }
     // -----------------------------------------------
@@ -6007,7 +5998,7 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
     // -----------------------------------------------
     if (theNymChooser.exec() != QDialog::Accepted)
     {
-        opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
+        opentxs::OTAPI_Wrap::Exec()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
         return;
     }
     // -----------------------------------------------
@@ -6029,7 +6020,7 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
     {
         // not a pasted contract, but it's an index in the payments inbox.
         //
-        opentxs::OTAPI_Wrap::It()->RecordPayment(str_server, str_lawyer_id, true, index, false);
+        opentxs::OTAPI_Wrap::Exec()->RecordPayment(str_server, str_lawyer_id, true, index, false);
     }
 }
 
@@ -6043,19 +6034,19 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     if (qstrLawyerID.isEmpty())
         qstrLawyerID = get_default_nym_id();
     // ------------------------------------------------
-    if (0 == opentxs::OTAPI_Wrap::It()->Smart_GetPartyCount(str_template))
+    if (0 == opentxs::OTAPI_Wrap::Exec()->Smart_GetPartyCount(str_template))
     {
        QMessageBox::information(this, tr("Moneychanger"), tr("There are no parties listed on this smart contract, so you cannot sign it as a party."));
        return;
     }
     // ------------------------------------------------
-    if (opentxs::OTAPI_Wrap::It()->Smart_AreAllPartiesConfirmed(str_template))
+    if (opentxs::OTAPI_Wrap::Exec()->Smart_AreAllPartiesConfirmed(str_template))
     {
         QMessageBox::information(this, tr("Moneychanger"), tr("Strange, all parties are already confirmed on this contract. (Failure.)"));
         return;
     }
     // ------------------------------------------------
-    std::string str_server = opentxs::OTAPI_Wrap::It()->Instrmnt_GetNotaryID(str_template);
+    std::string str_server = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetNotaryID(str_template);
     // ------------------------------------------------
     WizardRunSmartContract theWizard(this);
 
@@ -6085,13 +6076,13 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     // ---------------------------------------------------
     // By this point the user has selected the server ID, the Nym ID, and the Party Name.
     //
-    std::string serverFromContract = opentxs::OTAPI_Wrap::It()->Instrmnt_GetNotaryID(str_template);
+    std::string serverFromContract = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetNotaryID(str_template);
     if ("" != serverFromContract && str_server != serverFromContract) {
         QMessageBox::information(this, tr("Moneychanger"), tr("Mismatched server ID in contract. (Failure.)"));
         return;
     }
     // ----------------------------------------------------
-    if (!opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(str_lawyer_id, str_server)) {
+    if (!opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(str_lawyer_id, str_server)) {
         QMessageBox::information(this, tr("Moneychanger"), tr("Nym is not registered on server. (Failure.)"));
         return;
     }
@@ -6099,7 +6090,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     // See if there are accounts for that party via Party_GetAcctCount.
     // If there are, confirm those accounts.
     //
-    int32_t nAccountCount = opentxs::OTAPI_Wrap::It()->Party_GetAcctCount(str_template, str_party);
+    int32_t nAccountCount = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctCount(str_template, str_party);
 
     if (0 >= nAccountCount)
     {
@@ -6140,10 +6131,10 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
         QString qstrAcctID = otherWizard.field("AcctID").toString();
         std::string str_acct_id = qstrAcctID.toStdString();
         // -----------------------------------------
-        std::string agentName = opentxs::OTAPI_Wrap::It()->Party_GetAcctAgentName(str_template, str_party, str_acct_name);
+        std::string agentName = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctAgentName(str_template, str_party, str_acct_name);
 
         if ("" == agentName)
-            agentName = opentxs::OTAPI_Wrap::It()->Party_GetAgentNameByIndex(str_template, str_party, 0);
+            agentName = opentxs::OTAPI_Wrap::Exec()->Party_GetAgentNameByIndex(str_template, str_party, 0);
 
         if ("" == agentName)
         {
@@ -6167,11 +6158,11 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     {
         QString qstrAgent = mapAgents[x.key()];
 
-        needed += opentxs::OTAPI_Wrap::It()->SmartContract_CountNumsNeeded(str_template, qstrAgent.toStdString());
+        needed += opentxs::OTAPI_Wrap::Exec()->SmartContract_CountNumsNeeded(str_template, qstrAgent.toStdString());
     }
     // --------------------------------------------
-    opentxs::OT_ME ot_me;
-    if (!ot_me.make_sure_enough_trans_nums(needed + 1, str_server, str_lawyer_id))
+
+    if (!opentxs::OT_ME::It().make_sure_enough_trans_nums(needed + 1, str_server, str_lawyer_id))
     {
         QMessageBox::information(this, tr("Moneychanger"), tr("Failed trying to reserve enough transaction numbers from the notary."));
         return;
@@ -6211,7 +6202,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
         QString qstrCurrentAgentname = mapAgents[x.key()];
 
         // confirm a theoretical acct by giving it a real acct id.
-        std::string confirmed = opentxs::OTAPI_Wrap::It()->SmartContract_ConfirmAccount(
+        std::string confirmed = opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmAccount(
             str_template, str_lawyer_id, str_party, qstrCurrentAcctName.toStdString(), qstrCurrentAgentname.toStdString(), qstrCurrentAcctID.toStdString());
 
         if ("" == confirmed)
@@ -6223,7 +6214,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
 
             QMessageBox::information(this, tr("Moneychanger"), tr("Failed while calling OT_API_SmartContract_ConfirmAccount."));
 
-            opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
+            opentxs::OTAPI_Wrap::Exec()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
 
             return;
         }
@@ -6234,17 +6225,17 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     // Then we try to activate it or pass on to the next party.
 
     std::string confirmed =
-        opentxs::OTAPI_Wrap::It()->SmartContract_ConfirmParty(str_template, str_party, str_lawyer_id);
+        opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmParty(str_template, str_party, str_lawyer_id);
 
     if ("" == confirmed)
     {
         qDebug() << "Error: cannot confirm smart contract party.\n";
         QMessageBox::information(this, tr("Moneychanger"), tr("Failed while calling SmartContract_ConfirmParty."));
-        opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
+        opentxs::OTAPI_Wrap::Exec()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
         return;
     }
 
-    if (opentxs::OTAPI_Wrap::It()->Smart_AreAllPartiesConfirmed(confirmed))
+    if (opentxs::OTAPI_Wrap::Exec()->Smart_AreAllPartiesConfirmed(confirmed))
     {
         // If you are the last party to sign, then ACTIVATE THE SMART CONTRACT.
         activateContract(str_server, str_lawyer_id, confirmed, str_party, myAcctID, myAcctAgentName);
@@ -6265,7 +6256,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     // -----------------------------------------------
     if (theChooser.exec() != QDialog::Accepted)
     {
-        opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
+        opentxs::OTAPI_Wrap::Exec()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
         return;
     }
     // -----------------------------------------------
@@ -6282,7 +6273,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     // -----------------------------------------------
     if (theNymChooser.exec() != QDialog::Accepted)
     {
-        opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
+        opentxs::OTAPI_Wrap::Exec()->Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
         return;
     }
     // -----------------------------------------------
@@ -6304,7 +6295,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     {
         // not a pasted contract, but it's an index in the payments inbox.
         //
-        opentxs::OTAPI_Wrap::It()->RecordPayment(str_server, str_lawyer_id, true, index, false);
+        opentxs::OTAPI_Wrap::Exec()->RecordPayment(str_server, str_lawyer_id, true, index, false);
     }
 }
 
@@ -6329,14 +6320,14 @@ int32_t Moneychanger::activateContract(const std::string& server, const std::str
         // -----------------------------------------------
         mapIDName & the_map = theChooser.m_map;
         // -----------------------------------------------
-        int32_t acct_count = opentxs::OTAPI_Wrap::It()->Party_GetAcctCount(contract, name);
+        int32_t acct_count = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctCount(contract, name);
 
         for (int32_t i = 0; i < acct_count; i++)
         {
-            std::string acctName = opentxs::OTAPI_Wrap::It()->Party_GetAcctNameByIndex(contract, name, i);
+            std::string acctName = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctNameByIndex(contract, name, i);
             QString qstrAcctName = QString::fromStdString(acctName);
             // -----------------------------------------------
-            std::string partyAcctID = opentxs::OTAPI_Wrap::It()->Party_GetAcctID(contract, name, acctName);
+            std::string partyAcctID = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctID(contract, name, acctName);
             QString qstrPartyAcctID = QString::fromStdString(partyAcctID);
             // -----------------------------------------------
             QString OT_id = qstrPartyAcctID;
@@ -6350,42 +6341,42 @@ int32_t Moneychanger::activateContract(const std::string& server, const std::str
         // -----------------------------------------------
         if (theChooser.exec() != QDialog::Accepted || theChooser.m_qstrCurrentID.isEmpty())
         {
-            return opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(contract, mynym, false, false, false, false, false);
+            return opentxs::OTAPI_Wrap::Exec()->Msg_HarvestTransactionNumbers(contract, mynym, false, false, false, false, false);
         }
         // ------------------------------------------------
         std::string acctName = theChooser.m_qstrCurrentName.toStdString();
         if ("" == acctName) {
             qDebug() << "Error: account name empty on smart contract.\n";
-            return opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(contract, mynym, false, false, false, false, false);
+            return opentxs::OTAPI_Wrap::Exec()->Msg_HarvestTransactionNumbers(contract, mynym, false, false, false, false, false);
         }
 
         myAcctID = theChooser.m_qstrCurrentID.toStdString();
 
-        myAcctAgentName = opentxs::OTAPI_Wrap::It()->Party_GetAcctAgentName(contract, name, acctName);
+        myAcctAgentName = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctAgentName(contract, name, acctName);
         if ("" == myAcctAgentName) {
             qDebug() << "Error: account agent is not yet confirmed.\n";
-            return opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(contract, mynym, false, false, false, false, false);
+            return opentxs::OTAPI_Wrap::Exec()->Msg_HarvestTransactionNumbers(contract, mynym, false, false, false, false, false);
         }
     }
 
-    opentxs::OT_ME ot_me;
-    std::string response = ot_me.activate_smart_contract(server, mynym, myAcctID, myAcctAgentName, contract);
 
-    if (1 != ot_me.VerifyMessageSuccess(response))
+    std::string response = opentxs::OT_ME::It().activate_smart_contract(server, mynym, myAcctID, myAcctAgentName, contract);
+
+    if (1 != opentxs::OT_ME::It().VerifyMessageSuccess(response))
     {
         qDebug() << "Error: cannot activate smart contract.\n";
-        return opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(contract, mynym, false, false, false, false, false);
+        return opentxs::OTAPI_Wrap::Exec()->Msg_HarvestTransactionNumbers(contract, mynym, false, false, false, false, false);
     }
 
     // BELOW THIS POINT, the transaction has definitely processed.
 
-    int32_t reply = ot_me.InterpretTransactionMsgReply(server, mynym, myAcctID, "activate_smart_contract", response);
+    int32_t reply = opentxs::OT_ME::It().InterpretTransactionMsgReply(server, mynym, myAcctID, "activate_smart_contract", response);
 
     if (1 != reply) {
         return reply;
     }
 
-    if (!ot_me.retrieve_account(server, mynym, myAcctID, true)) {
+    if (!opentxs::OT_ME::It().retrieve_account(server, mynym, myAcctID, true)) {
         qDebug() << "Error retrieving intermediary files for account.\n";
     }
 
@@ -6405,14 +6396,14 @@ int32_t Moneychanger::sendToNextParty(const std::string& server, const std::stri
     // ID or Name as well (I think there's an API call for that...)
     std::string hisNymID = hisnym;
 
-    opentxs::OT_ME ot_me;
+
     std::string response =
-        ot_me.send_user_payment(server, mynym, hisNymID, contract);
-    if (1 != ot_me.VerifyMessageSuccess(response)) {
+        opentxs::OT_ME::It().send_user_payment(server, mynym, hisNymID, contract);
+    if (1 != opentxs::OT_ME::It().VerifyMessageSuccess(response)) {
         qDebug() << "\nFor whatever reason, our attempt to send the instrument on "
                  "to the next user has failed.\n";
         QMessageBox::information(this, tr("Moneychanger"), tr("Failed while calling send_user_payment."));
-        return opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(contract, mynym, false, false, false, false, false);
+        return opentxs::OTAPI_Wrap::Exec()->Msg_HarvestTransactionNumbers(contract, mynym, false, false, false, false, false);
     }
 
     // Success. (Remove the payment instrument we just successfully sent from
@@ -6455,7 +6446,7 @@ bool Moneychanger::showPartyAccounts(const std::string& contract, const std::str
 {
     std::ostringstream os;
 
-    int32_t accounts = opentxs::OTAPI_Wrap::It()->Party_GetAcctCount(contract, name);
+    int32_t accounts = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctCount(contract, name);
 
     if (0 > accounts) {
         qDebug() << QString("Error: Party '%1' has bad value for number of asset accounts.").arg(QString::fromStdString(name));
@@ -6465,7 +6456,7 @@ bool Moneychanger::showPartyAccounts(const std::string& contract, const std::str
     for (int32_t i = 0; i < accounts; i++)
     {
         std::string acctName =
-            opentxs::OTAPI_Wrap::It()->Party_GetAcctNameByIndex(contract, name, i);
+            opentxs::OTAPI_Wrap::Exec()->Party_GetAcctNameByIndex(contract, name, i);
         if ("" == acctName) {
             qDebug() << QString("Error: Failed retrieving Asset Account Name from party '%1' at account index: %2")
                         .arg(QString::fromStdString(name)).arg(i);
@@ -6473,26 +6464,26 @@ bool Moneychanger::showPartyAccounts(const std::string& contract, const std::str
         }
 
         std::string acctInstrumentDefinitionID =
-            opentxs::OTAPI_Wrap::It()->Party_GetAcctInstrumentDefinitionID(contract, name,
+            opentxs::OTAPI_Wrap::Exec()->Party_GetAcctInstrumentDefinitionID(contract, name,
                                                             acctName);
         if ("" != acctInstrumentDefinitionID) {
             os << "-------------------\nAccount '" << acctName << "' (index "
                  << i << " on Party '" << name
                  << "') has instrument definition: "
                  << acctInstrumentDefinitionID << " ("
-                 << opentxs::OTAPI_Wrap::It()->GetAssetType_Name(acctInstrumentDefinitionID)
+                 << opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(acctInstrumentDefinitionID)
                  << ")\n";
         }
 
-        std::string acctID = opentxs::OTAPI_Wrap::It()->Party_GetAcctID(contract, name, acctName);
+        std::string acctID = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctID(contract, name, acctName);
         if ("" != acctID) {
             os << "Account '" << acctName << "' (party '" << name
                  << "') is confirmed as Account ID: " << acctID << " ("
-                 << opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(acctID) << ")\n";
+                 << opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(acctID) << ")\n";
         }
 
         std::string strAcctAgentName =
-            opentxs::OTAPI_Wrap::It()->Party_GetAcctAgentName(contract, name, acctName);
+            opentxs::OTAPI_Wrap::Exec()->Party_GetAcctAgentName(contract, name, acctName);
         if ("" != strAcctAgentName) {
             os << "Account '" << acctName << "' (party '" << name
                  << "') is managed by agent: " << strAcctAgentName << "\n";

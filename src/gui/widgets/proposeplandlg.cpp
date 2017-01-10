@@ -271,7 +271,7 @@ void ProposePlanDlg::on_initialAmountEdit_textChanged(const QString &arg1)
             return;
         }
         // --------------------------------------
-        std::string str_InstrumentDefinitionID(opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
+        std::string str_InstrumentDefinitionID(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
         QString     amt = ui->initialAmountEdit->text();
 
         if (!amt.isEmpty() && !str_InstrumentDefinitionID.empty())
@@ -281,8 +281,8 @@ void ProposePlanDlg::on_initialAmountEdit_textChanged(const QString &arg1)
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
 
-            int64_t     amount               = opentxs::OTAPI_Wrap::It()->StringToAmount(str_InstrumentDefinitionID, str_temp);
-            std::string str_formatted_amount = opentxs::OTAPI_Wrap::It()->FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
+            int64_t     amount               = opentxs::OTAPI_Wrap::Exec()->StringToAmount(str_InstrumentDefinitionID, str_temp);
+            std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
             QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
 
             ui->labelInitialAmountFormatted->setText(qstr_FinalAmount);
@@ -302,7 +302,7 @@ void ProposePlanDlg::on_recurringAmountEdit_textChanged(const QString &arg1)
             return;
         }
         // --------------------------------------
-        std::string str_InstrumentDefinitionID(opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
+        std::string str_InstrumentDefinitionID(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
         QString     amt = ui->recurringAmountEdit->text();
 
         if (!amt.isEmpty() && !str_InstrumentDefinitionID.empty())
@@ -312,8 +312,8 @@ void ProposePlanDlg::on_recurringAmountEdit_textChanged(const QString &arg1)
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
 
-            int64_t     amount               = opentxs::OTAPI_Wrap::It()->StringToAmount(str_InstrumentDefinitionID, str_temp);
-            std::string str_formatted_amount = opentxs::OTAPI_Wrap::It()->FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
+            int64_t     amount               = opentxs::OTAPI_Wrap::Exec()->StringToAmount(str_InstrumentDefinitionID, str_temp);
+            std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
             QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
 
             ui->labelRecurringAmountFormatted->setText(qstr_FinalAmount);
@@ -442,7 +442,7 @@ void ProposePlanDlg::on_sendButton_clicked()
     // Make sure I'm not sending to myself (since that will fail...)
     //
     std::string str_fromAcctId(m_myAcctId.toStdString());
-    QString     qstr_fromNymId(QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(str_fromAcctId)));
+    QString     qstr_fromNymId(QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID(str_fromAcctId)));
 
     if (0 == qstr_fromNymId.compare(m_hisNymId))
     {
@@ -510,7 +510,7 @@ void ProposePlanDlg::on_sendButton_clicked()
     int64_t     initial_amount   = 0;
     int64_t     recurring_amount = 0;
 
-    std::string str_InstrumentDefinitionID(opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
+    std::string str_InstrumentDefinitionID(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
 
     if (!str_InstrumentDefinitionID.empty())
     {
@@ -519,14 +519,14 @@ void ProposePlanDlg::on_sendButton_clicked()
         if (std::string::npos == str_initial_amount.find(".")) // not found
             str_initial_amount += '.';
 
-        initial_amount = opentxs::OTAPI_Wrap::It()->StringToAmount(str_InstrumentDefinitionID, str_initial_amount);
+        initial_amount = opentxs::OTAPI_Wrap::Exec()->StringToAmount(str_InstrumentDefinitionID, str_initial_amount);
         // ----------------------------------------------------
         std::string str_recurring_amount(qstr_recurring_amount.toStdString());
 
         if (std::string::npos == str_recurring_amount.find(".")) // not found
             str_recurring_amount += '.';
 
-        recurring_amount = opentxs::OTAPI_Wrap::It()->StringToAmount(str_InstrumentDefinitionID, str_recurring_amount);
+        recurring_amount = opentxs::OTAPI_Wrap::Exec()->StringToAmount(str_InstrumentDefinitionID, str_recurring_amount);
     }
     // ----------------------------------------------------
     if (initial_amount < 0)
@@ -564,8 +564,8 @@ void ProposePlanDlg::on_sendButton_clicked()
 bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t recurring_amount, const int32_t total_recurring_payment_count)
 {
     const std::string myAcctId = m_myAcctId.toStdString();
-    const std::string myNymId  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(myAcctId);
-    const std::string notaryID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(myAcctId);
+    const std::string myNymId  = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID(myAcctId);
+    const std::string notaryID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID(myAcctId);
     const std::string hisNymId = m_hisNymId.toStdString();
     // ----------------------------------------------------
     const QDateTime qtimeFrom    = ui->dateTimeEditFrom->dateTime();
@@ -587,8 +587,8 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     const bool bExpires             = ui->checkBoxExpires  ->isChecked();
     // ----------------------------------------------------
     {
-        opentxs::OT_ME madeEasy;
-        if (!madeEasy.make_sure_enough_trans_nums(2, notaryID, myNymId))
+
+        if (!opentxs::OT_ME::It().make_sure_enough_trans_nums(2, notaryID, myNymId))
         {
             const QString qstrErr("Failed trying to acquire 2 transaction numbers (to write the recurring payment with.)");
             qDebug() << qstrErr;
@@ -602,7 +602,7 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     const time64_t recurringPaymentDelay = timeFirstRecurring - timeFrom;
     const time64_t recurringPeriod       = timeNextRecurring  - timeFirstRecurring;
     // ------------------------------------------------------------
-    const std::string str_plan = opentxs::OTAPI_Wrap::It()->ProposePaymentPlan(
+    const std::string str_plan = opentxs::OTAPI_Wrap::Exec()->ProposePaymentPlan(
         notaryID,
         timeFrom,
         validityLength, //"valid to" is apparently ADDED to "valid from" so it's a bit misnamed.
@@ -644,14 +644,14 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
         return false;
     }
     // ------------------------------------------------------------
-    opentxs::OT_ME madeEasy;
+
     std::string  strResponse;
     {
         MTSpinner      theSpinner;
-        strResponse  = madeEasy.send_user_payment(notaryID, myNymId, hisNymId, str_plan);
+        strResponse  = opentxs::OT_ME::It().send_user_payment(notaryID, myNymId, hisNymId, str_plan);
     }
     // ------------------------------------------------------------
-    const int32_t nReturnVal = madeEasy.VerifyMessageSuccess(strResponse);
+    const int32_t nReturnVal = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
 
     if (1 != nReturnVal)
     {
@@ -684,7 +684,7 @@ void ProposePlanDlg::on_initialAmountEdit_editingFinished()
 {
     if (!m_myAcctId.isEmpty() && !m_bSent)
     {
-        std::string str_InstrumentDefinitionID(opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
+        std::string str_InstrumentDefinitionID(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
         QString     amt = ui->initialAmountEdit->text();
 
         if (!amt.isEmpty() && !str_InstrumentDefinitionID.empty())
@@ -694,8 +694,8 @@ void ProposePlanDlg::on_initialAmountEdit_editingFinished()
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
 
-            int64_t     amount               = opentxs::OTAPI_Wrap::It()->StringToAmount(str_InstrumentDefinitionID, str_temp);
-            std::string str_formatted_amount = opentxs::OTAPI_Wrap::It()->FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
+            int64_t     amount               = opentxs::OTAPI_Wrap::Exec()->StringToAmount(str_InstrumentDefinitionID, str_temp);
+            std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
             QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
 
             ui->initialAmountEdit->setText(qstr_FinalAmount);
@@ -708,7 +708,7 @@ void ProposePlanDlg::on_recurringAmountEdit_editingFinished()
 {
     if (!m_myAcctId.isEmpty() && !m_bSent)
     {
-        std::string str_InstrumentDefinitionID(opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
+        std::string str_InstrumentDefinitionID(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
         QString     amt = ui->recurringAmountEdit->text();
 
         if (!amt.isEmpty() && !str_InstrumentDefinitionID.empty())
@@ -718,8 +718,8 @@ void ProposePlanDlg::on_recurringAmountEdit_editingFinished()
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
 
-            int64_t     amount               = opentxs::OTAPI_Wrap::It()->StringToAmount(str_InstrumentDefinitionID, str_temp);
-            std::string str_formatted_amount = opentxs::OTAPI_Wrap::It()->FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
+            int64_t     amount               = opentxs::OTAPI_Wrap::Exec()->StringToAmount(str_InstrumentDefinitionID, str_temp);
+            std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
             QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
 
             ui->recurringAmountEdit->setText(qstr_FinalAmount);
@@ -741,12 +741,12 @@ void ProposePlanDlg::on_merchantButton_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t acct_count = opentxs::OTAPI_Wrap::It()->GetAccountCount();
+    const int32_t acct_count = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
     // -----------------------------------------------
     for(int32_t ii = 0; ii < acct_count; ++ii)
     {
         //Get OT Acct ID
-        QString OT_acct_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(ii));
+        QString OT_acct_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(ii));
         QString OT_acct_name("");
         // -----------------------------------------------
         if (!OT_acct_id.isEmpty())

@@ -3,7 +3,6 @@ HEADERS += \
     $${PWD}/stable.hpp \
     $${PWD}/applicationmc.hpp \
     $${PWD}/filedownloader.hpp \
-    $${PWD}/httpinterface.hpp \
     $${PWD}/modules.hpp \
     $${PWD}/moneychanger.hpp \
     $${PWD}/ot_worker.hpp \
@@ -31,7 +30,6 @@ HEADERS += \
 SOURCES += \
     $${PWD}/applicationmc.cpp \
     $${PWD}/filedownloader.cpp \
-    $${PWD}/httpinterface.cpp \
     $${PWD}/main.cpp \
     $${PWD}/modules.cpp \
     $${PWD}/moneychanger.cpp \

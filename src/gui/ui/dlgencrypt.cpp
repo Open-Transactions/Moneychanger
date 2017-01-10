@@ -98,11 +98,11 @@ void DlgEncrypt::PopulateCombo()
         int nDefaultNymIndex    = 0;
         bool bFoundNymDefault   = false;
         // -----------------------------------------------
-        const int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
+        const int32_t nym_count = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
         // -----------------------------------------------
         for (int32_t ii = 0; ii < nym_count; ++ii)
         {
-            QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(ii));
+            QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_ID(ii));
             QString OT_nym_name("");
             // -----------------------------------------------
             if (!OT_nym_id.isEmpty())
@@ -328,7 +328,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                         }
                     } // else (we have pNym.)
                 }
-//              std::string  str_output (opentxs::OTAPI_Wrap::It()->FlatSign(str_nym, str_encoded, str_type));
+//              std::string  str_output (opentxs::OTAPI_Wrap::Exec()->FlatSign(str_nym, str_encoded, str_type));
             }
         }
         // --------------------------------

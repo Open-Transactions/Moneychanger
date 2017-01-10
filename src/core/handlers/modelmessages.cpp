@@ -132,7 +132,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::OTAPI_Wrap::It()->GetNym_Name(str_id);
+                str_name = str_id.empty() ? "" : opentxs::OTAPI_Wrap::Exec()->GetNym_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())
@@ -147,7 +147,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
 //            if (!qstrNymID.isEmpty())
 //            {
 //                const std::string str_id = qstrNymID.toStdString();
-//                const std::string str_name = str_id.empty() ? "" : opentxs::OTAPI_Wrap::It()->GetNym_Name(str_id);
+//                const std::string str_name = str_id.empty() ? "" : opentxs::OTAPI_Wrap::Exec()->GetNym_Name(str_id);
 //                // ------------------------
 //                if (!str_name.empty())
 //                    return QVariant(QString::fromStdString(str_name));
@@ -228,7 +228,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
             // Else if the method t
             QString qstrID = sourceData.isValid() ? sourceData.toString() : "";
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = str_id.empty() ? "" : opentxs::OTAPI_Wrap::It()->GetServer_Name(str_id);
+            const std::string str_name = str_id.empty() ? "" : opentxs::OTAPI_Wrap::Exec()->GetServer_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -509,7 +509,7 @@ bool MessagesProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
             const QString qstrSubject = dataSubject.isValid() ? dataSubject.toString() : "";
 
             const QString qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(qstrNotaryID.toStdString()));
+                                           QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(qstrNotaryID.toStdString()));
             MTNameLookupQT theLookup;
             QString qstrSenderName    = qstrSenderNym   .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrSenderNym   .toStdString(), ""));
             QString qstrRecipientName = qstrRecipientNym.isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrRecipientNym.toStdString(), ""));

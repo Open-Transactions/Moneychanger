@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     //
     __OTclient_RAII the_client_cleanup;  // <===== SECOND constructor is called here.
     // ----------------------------------------
-    if (NULL == opentxs::OTAPI_Wrap::It())
+    if (nullptr == opentxs::OTAPI_Wrap::Exec())
     {
         opentxs::Log::vError(0, "Error, exiting: opentxs::OTAPI_Wrap::AppInit() call must have failed.\n");
         return -1;
