@@ -61,8 +61,10 @@
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OT_ME.hpp>
+#include <opentxs/client/OTME_too.hpp>
 #include <opentxs/core/Nym.hpp>
 #include <opentxs/core/app/App.hpp>
+#include <opentxs/core/app/Api.hpp>
 #include <opentxs/core/app/Wallet.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
@@ -130,6 +132,8 @@ Moneychanger::Moneychanger(QWidget *parent)
      ** Init variables *
      **/
 
+    refresh_count_.store(0);
+
     /* Set up Namecoin name manager.  */
     nmc_names = new NMC_NameManager (*nmc);
 
@@ -139,6 +143,27 @@ Moneychanger::Moneychanger(QWidget *parent)
              this, SLOT(nmc_timer_event()));
     nmc_update_timer->start (1000 * 60 * 10);
     nmc_timer_event ();
+
+    opentxs::App::Me().Schedule(
+        5,
+        [&]()->void
+            {
+                const auto count =
+                    opentxs::App::Me().API().OTME_TOO().RefreshCount();
+                const auto existing = refresh_count_.load();
+
+                if (existing < count) {
+                    refresh_count_.store(count);
+                    emit needToPopulateRecordlist();
+
+                }
+            }
+      );
+
+    opentxs::App::Me().Schedule(
+        15,
+        []()->void{ opentxs::OTAPI_Wrap::Trigger_Refresh(); },
+        (std::time(nullptr)+15));
 
     //SQLite database
     // This can be moved very easily into a different class
@@ -4051,202 +4076,39 @@ void Moneychanger::onNeedToPopulateRecordlist()
 
 void Moneychanger::onNeedToDownloadAccountData()
 {
-    //Also refreshes/initializes client data
 
-    QString qstrErrorMsg;
-    qstrErrorMsg = tr("Failed trying to contact the notary. Perhaps it is down, or there might be a network problem.");
-    // -----------------------------
+    const auto nymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
 
-    if ((get_server_list_id_size() > 0) && (get_asset_list_id_size() > 0) )
-    {
-        std::string defaultNotaryID(get_default_notary_id().toStdString());
-        // ----------------------------------------------------------------
-        if (defaultNotaryID.empty())
-        {
-            defaultNotaryID = get_notary_id_at(0).toStdString();
-            DBHandler::getInstance()->AddressBookUpdateDefaultServer(QString::fromStdString(defaultNotaryID));
+    if (0 == nymCount) {
+        const std::string id = opentxs::OT_ME::It().create_nym_hd("", 0);
+
+        if (!id.empty()) {
+            opentxs::OTAPI_Wrap::Exec()->SetNym_Name(
+                id, id, tr("Me").toLatin1().data());
+            DBHandler::getInstance()->AddressBookUpdateDefaultNym(
+                QString::fromStdString(id));
         }
-        // ----------------------------------------------------------------
-        int32_t nymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
 
-        if (0 == nymCount)
-        {
-            std::string strSource("");
-
-            std::string newNymId = opentxs::OT_ME::It().create_nym_hd(strSource, 0);
-
-            if (!newNymId.empty())
-            {
-                opentxs::OTAPI_Wrap::Exec()->SetNym_Name(newNymId, newNymId, tr("Me").toLatin1().data());
-                DBHandler::getInstance()->AddressBookUpdateDefaultNym(QString::fromStdString(newNymId));
-            }
-
-            nymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
-        }
-        // ----------------------------------------------------------------
-        std::string defaultNymID(get_default_nym_id().toStdString());
-        // ----------------------------------------------------------------
-        if (!defaultNymID.empty() && !defaultNotaryID.empty())
-        {
-            bool isReg = opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(defaultNymID, defaultNotaryID);
-
-            if (!isReg)
-            {
-                std::string response;
-                {
-                    MTSpinner theSpinner;
-
-                    response = opentxs::OT_ME::It().register_nym(defaultNotaryID, defaultNymID);
-
-                    if (opentxs::OTAPI_Wrap::networkFailure())
-                    {
-                        emit appendToLog(qstrErrorMsg);
-                        return;
-                    }
-                }
-
-                if (!opentxs::OT_ME::It().VerifyMessageSuccess(response)) {
-                    Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
-                    return;
-                }
-                else
-                    MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(defaultNymID),
-                                                                           QString::fromStdString(defaultNotaryID));
-            }
-        }
-        // ----------------------------------------------------------------
-        std::string defaultInstrumentDefinitionID (get_default_asset_id().toStdString());
-        // ----------------------------------------------------------------
-        if (defaultInstrumentDefinitionID.empty())
-        {
-            defaultInstrumentDefinitionID = get_asset_id_at(0).toStdString();
-            DBHandler::getInstance()->AddressBookUpdateDefaultAsset(QString::fromStdString(defaultInstrumentDefinitionID));
-        }
-        // ----------------------------------------------------------------
-        int32_t accountCount = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
-
-        if (0 == accountCount)
-        {
-            if (!defaultNymID.empty() && !defaultNotaryID.empty() && !defaultInstrumentDefinitionID.empty())
-            {
-                std::string response;
-                {
-                    MTSpinner theSpinner;
-                    response = opentxs::OT_ME::It().create_asset_acct(defaultNotaryID, defaultNymID, defaultInstrumentDefinitionID);
-
-                    if (opentxs::OTAPI_Wrap::networkFailure())
-                    {
-                        emit appendToLog(qstrErrorMsg);
-                        return;
-                    }
-                }
-
-                if (!opentxs::OT_ME::It().VerifyMessageSuccess(response)) {
-                    Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
-                    return;
-                }
-
-                accountCount = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
-
-                if (accountCount > 0)
-                {
-                    std::string accountID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(0);
-                    opentxs::OTAPI_Wrap::Exec()->SetAccountWallet_Name(accountID, defaultNymID, tr("My Acct").toLatin1().data());
-
-                    DBHandler::getInstance()->AddressBookUpdateDefaultAccount(QString::fromStdString(accountID));
-                }
-            }
-        }
-        // ----------------------------------------------------------------
-        // Retrieve Nyms
-        //
-        int32_t serverCount = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
-
-        for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
-        {
-            std::string NotaryID = opentxs::OTAPI_Wrap::Exec()->GetServer_ID(serverIndex);
-
-            for (int32_t nymIndex = 0; nymIndex < nymCount; ++nymIndex)
-            {
-                std::string nymId = opentxs::OTAPI_Wrap::Exec()->GetNym_ID(nymIndex);
-
-                bool bRetrievalAttempted = false;
-                bool bRetrievalSucceeded = false;
-
-                if (opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(nymId, NotaryID))
-                {
-                    MTSpinner theSpinner;
-
-                    bRetrievalAttempted = true;
-                    bRetrievalSucceeded = opentxs::OT_ME::It().retrieve_nym(NotaryID, nymId, true);
-
-                    if (opentxs::OTAPI_Wrap::networkFailure())
-                    {
-                        emit appendToLog(qstrErrorMsg);
-                        return;
-                    }
-                }
-                // ----------------------------------------------------------------
-                if (bRetrievalAttempted && !bRetrievalSucceeded) {
-                    Moneychanger::It()->HasUsageCredits(NotaryID, nymId);
-                    return;
-                }
-            }
-        }
-        // ----------------------------------------------------------------
-        for (int32_t i = 0; i < accountCount; i++)
-        {
-            std::string accountId = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(i);
-            std::string acctNymID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID(accountId);
-            std::string acctSvrID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID(accountId);
-
-            bool bRetrievalAttempted = false;
-            bool bRetrievalSucceeded = false;
-
-            {
-                MTSpinner theSpinner;
-
-                bRetrievalAttempted = true;
-                bRetrievalSucceeded = opentxs::OT_ME::It().retrieve_account(acctSvrID, acctNymID, accountId, true);
-
-                if (opentxs::OTAPI_Wrap::networkFailure())
-                {
-                    emit appendToLog(qstrErrorMsg);
-                    return;
-                }
-            }
-
-            if (bRetrievalAttempted && !bRetrievalSucceeded) {
-                Moneychanger::It()->HasUsageCredits(acctSvrID, acctNymID);
-                return;
-            }
-        }
-        // ----------------------------------------------------------------
-        // This refreshes any new Nym Trade Data (the receipts we just downloaded
-        // may include Market Receipts, so we need to import those into the Historical Trade Archive.)
-        //
-        QPointer<ModelTradeArchive> pModel = DBHandler::getInstance()->getTradeArchiveModel();
-
-        if (pModel)
-        {
-            pModel->updateDBFromOT();
-        }
-        // ----------------------------------------------------------------
-        onNeedToPopulateRecordlist();
-        return;
     }
-    else
-    {
-        qDebug() << QString("%1: Not at least 1 server contract and 1 asset contract registered, doing nothing.").arg(__FUNCTION__);
+
+    const auto defaultNotaryID = get_default_notary_id().toStdString();
+
+    if (defaultNotaryID.empty()) {
+        DBHandler::getInstance()->
+            AddressBookUpdateDefaultServer(get_notary_id_at(0));
     }
+
+    const auto defaultUnitDefinitionID (get_default_asset_id().toStdString());
+
+    if (defaultUnitDefinitionID.empty()) {
+        DBHandler::getInstance()->
+            AddressBookUpdateDefaultAsset(get_asset_id_at(0));
+    }
+
+    opentxs::App::Me().API().OTME_TOO().Refresh();
+
+    return;
 }
-
-
-
-
-
-
-
 
 /**
  * Asset Manager
