@@ -41,6 +41,13 @@ include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
 include($${SOLUTION_DIR}../src/namecoin/namecoin.pri)
 include($${SOLUTION_DIR}../src/quazip/quazip.pri)
 
+# Package Config
+# MAC AND LINUX:
+mac:{
+    PKGCONFIG += opentxs
+    PKGCONFIG += libzmq
+}
+
 #-------------------------------------------------
 # Include
 
