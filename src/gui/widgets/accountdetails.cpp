@@ -1453,17 +1453,17 @@ void MTAccountDetails::refresh(QString strID, QString strName)
 //      ui->lineEditID  ->setText(strID);
         ui->lineEditName->setText(strName);
         // ----------------------------------
-        std::string str_notary_id = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID   (strID.toStdString());
-        std::string str_asset_id  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(strID.toStdString());
-        std::string str_nym_id    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID      (strID.toStdString());
+        std::string str_notary_id = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID   (strID.toStdString());
+        std::string str_asset_id  = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(strID.toStdString());
+        std::string str_nym_id    = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID      (strID.toStdString());
         // ----------------------------------
         QString qstr_notary_id    = QString::fromStdString(str_notary_id);
         QString qstr_asset_id     = QString::fromStdString(str_asset_id);
         QString qstr_nym_id       = QString::fromStdString(str_nym_id);
         // ----------------------------------
-        QString qstr_server_name  = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name   (str_notary_id));
-        QString qstr_asset_name   = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(str_asset_id));
-        QString qstr_nym_name     = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name      (str_nym_id));
+        QString qstr_server_name  = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name   (str_notary_id));
+        QString qstr_asset_name   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(str_asset_id));
+        QString qstr_nym_name     = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_Name      (str_nym_id));
         // ----------------------------------
         // MAIN TAB
         //
@@ -1548,7 +1548,7 @@ void MTAccountDetails::on_pushButtonMakeDefault_clicked()
 {
     if ((NULL != m_pOwner) && !m_qstrID.isEmpty())
     {
-        std::string str_acct_name = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(m_qstrID.toStdString());
+        std::string str_acct_name = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(m_qstrID.toStdString());
         ui->pushButtonMakeDefault->setEnabled(false);
         // --------------------------------------------------
         QString qstrAcctName = QString::fromStdString(str_acct_name);
@@ -1565,7 +1565,7 @@ void MTAccountDetails::on_toolButtonAsset_clicked()
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
-        QString qstr_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(str_acct_id));
+        QString qstr_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id));
         // --------------------------------------------------
         emit ShowAsset(qstr_id);
     }
@@ -1577,7 +1577,7 @@ void MTAccountDetails::on_toolButtonNym_clicked()
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
-        QString qstr_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id));
+        QString qstr_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID(str_acct_id));
         // --------------------------------------------------
         emit ShowNym(qstr_id);
     }
@@ -1589,7 +1589,7 @@ void MTAccountDetails::on_toolButtonServer_clicked()
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
-        QString qstr_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_acct_id));
+        QString qstr_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID(str_acct_id));
         // --------------------------------------------------
         emit ShowServer(qstr_id);
     }
@@ -1605,18 +1605,17 @@ void MTAccountDetails::DeleteButtonClicked()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         const std::string str_account_id   = m_pOwner->m_qstrCurrentID.toStdString();
-        const std::string str_owner_nym_id = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID   (str_account_id);
-        const std::string str_notary_id    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_account_id);
+        const std::string str_owner_nym_id = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID   (str_account_id);
+        const std::string str_notary_id    = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID(str_account_id);
         // ----------------------------------------------------
         // Download all the intermediary files (account balance, inbox, outbox, etc)
         // to make sure we're looking at the latest inbox.
         //
-        opentxs::OT_ME retrieveAcct;
         bool bRetrieved = false;
         {
             MTSpinner theSpinner;
 
-            bRetrieved = retrieveAcct.retrieve_account(str_notary_id, str_owner_nym_id, str_account_id, true); //bForceDownload defaults to false.
+            bRetrieved = opentxs::OT_ME::It().retrieve_account(str_notary_id, str_owner_nym_id, str_account_id, true); //bForceDownload defaults to false.
         }
         qDebug() << QString("%1 retrieving intermediary files for account %2. (Precursor to delete account.)").
                     arg(bRetrieved ? QString("Success") : QString("Failed")).arg(str_account_id.c_str());
@@ -1627,7 +1626,7 @@ void MTAccountDetails::DeleteButtonClicked()
             return;
         }
         // ---------------------------------------------------------
-        bool bCanRemove = opentxs::OTAPI_Wrap::It()->Wallet_CanRemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
+        bool bCanRemove = opentxs::OTAPI_Wrap::Exec()->Wallet_CanRemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
 
         if (!bCanRemove)
         {
@@ -1642,15 +1641,13 @@ void MTAccountDetails::DeleteButtonClicked()
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
-            opentxs::OT_ME madeEasy;
-
             int32_t nSuccess = 0;
             bool    bDeleted = false;
             {
                 MTSpinner theSpinner;
 
-                std::string strResponse = madeEasy.unregister_account(str_notary_id, str_owner_nym_id, str_account_id);
-                nSuccess                = madeEasy.VerifyMessageSuccess(strResponse);
+                std::string strResponse = opentxs::OT_ME::It().unregister_account(str_notary_id, str_owner_nym_id, str_account_id);
+                nSuccess                = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
             }
             // -1 is error,
             //  0 is reply received: failure
@@ -1689,7 +1686,7 @@ void MTAccountDetails::DeleteButtonClicked()
                 // from the above server message to unregisterAccount. So we don't have to do this
                 // here, since it's already done by the time we reach this point.
                 //
-//              bool bSuccess = opentxs::OTAPI_Wrap::It()->Wallet_RemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
+//              bool bSuccess = opentxs::OTAPI_Wrap::Exec()->Wallet_RemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
                 // ------------------------------------------------
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 // ------------------------------------------------
@@ -1717,9 +1714,9 @@ void MTAccountDetails::AddButtonClicked()
         QString qstrNymID    = theWizard.field("NymID")   .toString();
         QString qstrNotaryID = theWizard.field("NotaryID").toString();
         // ---------------------------------------------------
-        QString qstrAssetName  = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(qstrInstrumentDefinitionID .toStdString()));
-        QString qstrNymName    = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Name      (qstrNymID   .toStdString()));
-        QString qstrServerName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name   (qstrNotaryID.toStdString()));
+        QString qstrAssetName  = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(qstrInstrumentDefinitionID .toStdString()));
+        QString qstrNymName    = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_Name      (qstrNymID   .toStdString()));
+        QString qstrServerName = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name   (qstrNotaryID.toStdString()));
         // ---------------------------------------------------
         QMessageBox::information(this, tr("Confirm Create Account"),
                                  QString("%1: '%2'<br/>%3: %4<br/>%5: %6<br/>%7: %8").arg(tr("Confirm Create Account:<br/>Name")).
@@ -1731,21 +1728,19 @@ void MTAccountDetails::AddButtonClicked()
         // ------------------------------
         // First make sure the Nym is registered at the server, and if not, register him.
         //
-        bool bIsRegiseredAtServer = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(qstrNymID.toStdString(),
+        bool bIsRegiseredAtServer = opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(qstrNymID.toStdString(),
                                                                          qstrNotaryID.toStdString());
         if (!bIsRegiseredAtServer)
         {
-            opentxs::OT_ME madeEasy;
-
             // If the Nym's not registered at the server, then register him first.
             //
             int32_t nSuccess = 0;
             {
                 MTSpinner theSpinner;
 
-                std::string strResponse = madeEasy.register_nym(qstrNotaryID.toStdString(),
+                std::string strResponse = opentxs::OT_ME::It().register_nym(qstrNotaryID.toStdString(),
                                                                 qstrNymID   .toStdString()); // This also does getRequest internally, if success.
-                nSuccess                = madeEasy.VerifyMessageSuccess(strResponse);
+                nSuccess                = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
             }
             // -1 is error,
             //  0 is reply received: failure
@@ -1783,21 +1778,19 @@ void MTAccountDetails::AddButtonClicked()
         // Send the request.
         // (Create Account here...)
         //
-        opentxs::OT_ME madeEasy;
-
         // Send the 'create_asset_acct' message to the server.
         //
         std::string strResponse;
         {
             MTSpinner theSpinner;
 
-            strResponse = madeEasy.create_asset_acct(qstrNotaryID.toStdString(),
+            strResponse = opentxs::OT_ME::It().create_asset_acct(qstrNotaryID.toStdString(),
                                                      qstrNymID   .toStdString(),
                                                      qstrInstrumentDefinitionID .toStdString());
         }
         // -1 error, 0 failure, 1 success.
         //
-        if (1 != madeEasy.VerifyMessageSuccess(strResponse))
+        if (1 != opentxs::OT_ME::It().VerifyMessageSuccess(strResponse))
         {
             const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(qstrNotaryID, qstrNymID);
 
@@ -1811,7 +1804,7 @@ void MTAccountDetails::AddButtonClicked()
         // ------------------------------------------------------
         // Get the ID of the new account.
         //
-        QString qstrID = QString::fromStdString(opentxs::OTAPI_Wrap::It()->Message_GetNewAcctID(strResponse));
+        QString qstrID = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->Message_GetNewAcctID(strResponse));
 
         if (qstrID.isEmpty())
         {
@@ -1823,7 +1816,7 @@ void MTAccountDetails::AddButtonClicked()
         // Set the Name of the new account.
         //
         //bool bNameSet =
-                opentxs::OTAPI_Wrap::It()->SetAccountWallet_Name(qstrID   .toStdString(),
+                opentxs::OTAPI_Wrap::Exec()->SetAccountWallet_Name(qstrID   .toStdString(),
                                                   qstrNymID.toStdString(),
                                                   qstrName .toStdString());
         // -----------------------------------------------
@@ -1848,11 +1841,11 @@ void MTAccountDetails::on_lineEditName_editingFinished()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
-        std::string str_nym_id  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
+        std::string str_nym_id  = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID(str_acct_id);
 
         if (!str_acct_id.empty() && !str_nym_id.empty())
         {
-            bool bSuccess = opentxs::OTAPI_Wrap::It()->SetAccountWallet_Name(str_acct_id,  // Account
+            bool bSuccess = opentxs::OTAPI_Wrap::Exec()->SetAccountWallet_Name(str_acct_id,  // Account
                                                               str_nym_id,   // Nym (Account Owner.)
                                                               ui->lineEditName->text().toStdString()); // New Name
             if (bSuccess)

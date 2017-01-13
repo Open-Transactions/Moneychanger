@@ -203,24 +203,24 @@ QWidget * Agreements::CreateUserBarWidget()
     {
         // -----------------------------------
         std::string str_acct_id     = qstr_acct_id.toStdString();
-        std::string str_acct_nym    = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(str_acct_id);
-        std::string str_acct_server = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(str_acct_id);
-        std::string str_acct_asset  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+        std::string str_acct_nym    = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID(str_acct_id);
+        std::string str_acct_server = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID(str_acct_id);
+        std::string str_acct_asset  = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
         // -----------------------------------
         qstr_acct_nym    = QString::fromStdString(str_acct_nym);
         qstr_acct_server = QString::fromStdString(str_acct_server);
         qstr_acct_asset  = QString::fromStdString(str_acct_asset);
         // -----------------------------------
-        std::string str_tla = opentxs::OTAPI_Wrap::It()->GetCurrencyTLA(str_acct_asset);
+        std::string str_tla = opentxs::OTAPI_Wrap::Exec()->GetCurrencyTLA(str_acct_asset);
         qstr_tla = QString("<font color=grey>%1</font>").arg(QString::fromStdString(str_tla));
 
         qstr_balance = MTHome::shortAcctBalance(qstr_acct_id, qstr_acct_asset, false);
         // -----------------------------------
-        std::string str_acct_name  = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(str_acct_id);
+        std::string str_acct_name  = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(str_acct_id);
         // -----------------------------------
         if (!str_acct_asset.empty())
         {
-            std::string str_asset_name = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(str_acct_asset);
+            std::string str_asset_name = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(str_acct_asset);
             qstr_acct_asset_name = QString::fromStdString(str_asset_name);
         }
         // -----------------------------------
@@ -305,7 +305,7 @@ QWidget * Agreements::CreateUserBarWidget()
 
     if (!qstr_acct_nym.isEmpty())
     {
-        payment_code = opentxs::OTAPI_Wrap::It()->GetNym_Description(qstr_acct_nym.toStdString());
+        payment_code = opentxs::OTAPI_Wrap::Exec()->GetNym_Description(qstr_acct_nym.toStdString());
         qstrPaymentCode = QString::fromStdString(payment_code);
         // ----------------------------
         MTNameLookupQT theLookup;

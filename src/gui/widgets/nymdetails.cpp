@@ -148,7 +148,7 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
 
 //    qDebug() << "DEBUGGING: onClaimsUpdatedForNym 3 ";
 
-    const int32_t server_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
+    const int32_t server_count = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
     // -----------------------------------------------
     // Loop through all the servers and for each, see if the Nym  is registered
     // there. For every server that he IS registered on, RE-register so it has
@@ -156,19 +156,19 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
     //
     for (int32_t ii = 0; ii < server_count; ++ii)
     {
-        QString notary_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_ID(ii));
+        QString notary_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_ID(ii));
         // -----------------------------------------------
         if (!notary_id.isEmpty())
         {
-            const bool isReg = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(str_nym_id, notary_id.toStdString());
+            const bool isReg = opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(str_nym_id, notary_id.toStdString());
 
             if (isReg) // We only RE-REGISTER at servers where we're ALREADY registered.
             {          // (To update their copy of the credentials we just edited.)
                 std::string response;
                 {
                     MTSpinner theSpinner;
-                    opentxs::OT_ME madeEasy;
-                    response = madeEasy.register_nym(notary_id.toStdString(), str_nym_id);
+
+                    response = opentxs::OT_ME::It().register_nym(notary_id.toStdString(), str_nym_id);
                     if (opentxs::OTAPI_Wrap::networkFailure())
                     {
                         QString qstrErrorMsg;
@@ -180,8 +180,8 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
                     }
                 }
 
-                opentxs::OT_ME madeEasy;
-                if (!madeEasy.VerifyMessageSuccess(response)) {
+
+                if (!opentxs::OT_ME::It().VerifyMessageSuccess(response)) {
                     Moneychanger::It()->HasUsageCredits(notary_id, nymId);
                     continue;
                 }
@@ -303,15 +303,15 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
         QMap<uint32_t, QString> mapTypeNames;
         // ----------------------------------------
         const std::string sectionName =
-            opentxs::OTAPI_Wrap::It()->ContactSectionName(
+            opentxs::OTAPI_Wrap::Exec()->ContactSectionName(
                 opentxs::proto::CONTACTSECTION_RELATIONSHIP);
         const auto sectionTypes =
-            opentxs::OTAPI_Wrap::It()->ContactSectionTypeList(
+            opentxs::OTAPI_Wrap::Exec()->ContactSectionTypeList(
                 opentxs::proto::CONTACTSECTION_RELATIONSHIP);
 
         for (const auto& indexSectionType: sectionTypes) {
             const std::string typeName =
-                opentxs::OTAPI_Wrap::It()->ContactTypeName(indexSectionType);
+                opentxs::OTAPI_Wrap::Exec()->ContactTypeName(indexSectionType);
             mapTypeNames.insert(
                 indexSectionType,
                 QString::fromStdString(typeName));
@@ -470,7 +470,7 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
 
     // Now we loop through the sections, and for each, we populate its
     // itemwidgets by looping through the nym_claims we got above.
-    const auto sections = opentxs::OTAPI_Wrap::It()->ContactSectionList();
+    const auto sections = opentxs::OTAPI_Wrap::Exec()->ContactSectionList();
 
     for (const auto& indexSection: sections) {
         if (opentxs::proto::CONTACTSECTION_RELATIONSHIP == indexSection)
@@ -479,13 +479,13 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
         QMap<uint32_t, QString> mapTypeNames;
 
         std::string sectionName =
-            opentxs::OTAPI_Wrap::It()->ContactSectionName(indexSection);
+            opentxs::OTAPI_Wrap::Exec()->ContactSectionName(indexSection);
         const auto sectionTypes =
-            opentxs::OTAPI_Wrap::It()->ContactSectionTypeList(indexSection);
+            opentxs::OTAPI_Wrap::Exec()->ContactSectionTypeList(indexSection);
 
         for (auto& indexSectionType: sectionTypes) {
             const std::string typeName =
-                opentxs::OTAPI_Wrap::It()->ContactTypeName(indexSectionType);
+                opentxs::OTAPI_Wrap::Exec()->ContactTypeName(indexSectionType);
             mapTypeNames.insert(
                 indexSectionType,
                 QString::fromStdString(typeName));
@@ -1458,7 +1458,7 @@ void MTNymDetails::refresh(QString strID, QString strName)
 
     if ((NULL != ui) && !strID.isEmpty())
     {
-        std::string nym_description = opentxs::OTAPI_Wrap::It()->GetNym_Description(strID.toStdString());
+        std::string nym_description = opentxs::OTAPI_Wrap::Exec()->GetNym_Description(strID.toStdString());
         ui->toolButtonQrCode->setString(QString::fromStdString(nym_description));
         ui->lineEditDescription->setText(QString::fromStdString(nym_description));
 
@@ -1495,14 +1495,14 @@ void MTNymDetails::refresh(QString strID, QString strName)
             pTableWidgetNotaries_->blockSignals(true);
             // ----------------------------
             std::string nymId   = strID.toStdString();
-            const int32_t serverCount = opentxs::OTAPI_Wrap::It()->GetServerCount();
+            const int32_t serverCount = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
 
             for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
             {
-                std::string NotaryID   = opentxs::OTAPI_Wrap::It()->GetServer_ID(serverIndex);
+                std::string NotaryID   = opentxs::OTAPI_Wrap::Exec()->GetServer_ID(serverIndex);
                 QString qstrNotaryID   = QString::fromStdString(NotaryID);
-                QString qstrNotaryName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(NotaryID));
-                bool    bStatus        = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(nymId, NotaryID);
+                QString qstrNotaryName = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(NotaryID));
+                bool    bStatus        = opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(nymId, NotaryID);
                 QString qstrStatus     = bStatus ? tr("Registered") : tr("Not registered");
                 // ----------------------------------
                 int column = 0;
@@ -1573,7 +1573,7 @@ void MTNymDetails::refresh(QString strID, QString strName)
         //
         if (m_pPlainTextEdit)
         {
-            QString strContents = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_Stats(strID.toStdString()));
+            QString strContents = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_Stats(strID.toStdString()));
             m_pPlainTextEdit->setPlainText(strContents);
         }
         // -----------------------------------
@@ -1690,7 +1690,7 @@ void MTNymDetails::DeleteButtonClicked()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         // ----------------------------------------------------
-        bool bCanRemove = opentxs::OTAPI_Wrap::It()->Wallet_CanRemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
+        bool bCanRemove = opentxs::OTAPI_Wrap::Exec()->Wallet_CanRemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
 
         if (!bCanRemove)
         {
@@ -1707,7 +1707,7 @@ void MTNymDetails::DeleteButtonClicked()
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
-            bool bSuccess = opentxs::OTAPI_Wrap::It()->Wallet_RemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
+            bool bSuccess = opentxs::OTAPI_Wrap::Exec()->Wallet_RemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
 
             if (bSuccess)
             {
@@ -1748,7 +1748,7 @@ void MTNymDetails::on_btnEditProfile_clicked()
     theWizard.listContactDataTuples_.clear();
 
     const auto claims_data =
-        opentxs::OTAPI_Wrap::It()->GetContactData(str_nym_id);
+        opentxs::OTAPI_Wrap::Exec()->GetContactData(str_nym_id);
     const auto claims =
         opentxs::proto::DataToProto<opentxs::proto::ContactData>
             ({claims_data.c_str(), static_cast<uint32_t>(claims_data.length())});
@@ -1830,7 +1830,7 @@ void MTNymDetails::on_btnEditProfile_clicked()
         const auto armored =
             opentxs::proto::ProtoAsArmored(contactData, "CONTACT DATA");
         const bool set =
-            opentxs::OTAPI_Wrap::It()->SetContactData(str_nym_id, armored.Get());
+            opentxs::OTAPI_Wrap::Exec()->SetContactData(str_nym_id, armored.Get());
         if (!set) {
             qDebug() << __FUNCTION__ << ": ERROR: Failed trying to Set Contact "
                      << "Data!";
@@ -1875,25 +1875,25 @@ void MTNymDetails::AddButtonClicked()
         // -------------------------------------------
         // Create Nym here...
         //
-        opentxs::OT_ME madeEasy;
+
         std::string    str_id;
 
         switch (nAlgorithmIndex)
         {
             case 0:  // ECDSA
-                str_id = madeEasy.create_nym_hd(NYM_ID_SOURCE, 0);
+                str_id = opentxs::OT_ME::It().create_nym_hd(NYM_ID_SOURCE, 0);
                 break;
             case 1: // 1024-bit RSA
-                str_id = madeEasy.create_nym_legacy(1024, NYM_ID_SOURCE);
+                str_id = opentxs::OT_ME::It().create_nym_legacy(1024, NYM_ID_SOURCE);
                 break;
 //            case 2: // 2048-bit RSA
-//                str_id = madeEasy.create_nym_legacy(2048, NYM_ID_SOURCE);
+//                str_id = opentxs::OT_ME::It().create_nym_legacy(2048, NYM_ID_SOURCE);
 //                break;
 //            case 3: // 4096-bit RSA
-//                str_id = madeEasy.create_nym_legacy(4096, NYM_ID_SOURCE);
+//                str_id = opentxs::OT_ME::It().create_nym_legacy(4096, NYM_ID_SOURCE);
 //                break;
 //            case 4: // 8192-bit RSA
-//                str_id = madeEasy.create_nym_legacy(8192, NYM_ID_SOURCE);
+//                str_id = opentxs::OT_ME::It().create_nym_legacy(8192, NYM_ID_SOURCE);
 //                break;
             default:
                 QMessageBox::warning(this, tr("Moneychanger"),
@@ -1915,7 +1915,7 @@ void MTNymDetails::AddButtonClicked()
         // Register the Namecoin name.
         if (nAuthorityIndex == 1)
         {
-            const unsigned cnt = opentxs::OTAPI_Wrap::It()->GetNym_MasterCredentialCount (str_id);
+            const unsigned cnt = opentxs::OTAPI_Wrap::Exec()->GetNym_MasterCredentialCount (str_id);
             if (cnt != 1)
             {
                 qDebug () << "Expected one master credential, got " << cnt
@@ -1923,7 +1923,7 @@ void MTNymDetails::AddButtonClicked()
             }
             else
             {
-                const std::string cred = opentxs::OTAPI_Wrap::It()->GetNym_MasterCredentialID (str_id, 0);
+                const std::string cred = opentxs::OTAPI_Wrap::Exec()->GetNym_MasterCredentialID (str_id, 0);
                 const QString qCred = QString::fromStdString (cred);
                 NMC_NameManager& nmc = NMC_NameManager::getInstance ();
                 nmc.startRegistration (qstrID, qCred);
@@ -1933,7 +1933,7 @@ void MTNymDetails::AddButtonClicked()
         // Set the Name of the new Nym.
         //
         //bool bNameSet =
-        opentxs::OTAPI_Wrap::It()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
+        opentxs::OTAPI_Wrap::Exec()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
         // ------------------------------------------------------
         std::map<uint32_t, std::list<std::tuple<uint32_t, std::string, bool>>> items;
 
@@ -1976,7 +1976,7 @@ void MTNymDetails::AddButtonClicked()
         auto armored =
             opentxs::proto::ProtoAsArmored(contactData, "CONTACT DATA");
 
-        if (!opentxs::OTAPI_Wrap::It()->SetContactData(str_id, armored.Get())) {
+        if (!opentxs::OTAPI_Wrap::Exec()->SetContactData(str_id, armored.Get())) {
             qDebug() << __FUNCTION__ << ": ERROR: Failed trying to Set Contact "
                      << "Data!";
         } else {
@@ -2175,7 +2175,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
             {
                 QString qstrNotaryID = pTableWidgetNotaries_->item(nRow, 0)->data(Qt::UserRole).toString();
                 std::string str_notary_id = qstrNotaryID.toStdString();
-                QString qstrNotaryName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(str_notary_id));
+                QString qstrNotaryName = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(str_notary_id));
                 // ------------------------
                 QPoint globalPos = pTableWidgetNotaries_->mapToGlobal(pos);
                 // ------------------------
@@ -2183,7 +2183,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                 // ------------------------
                 if (selectedAction == pActionRegister_)
                 {
-                    if (opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(str_nym_id, str_notary_id))
+                    if (opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(str_nym_id, str_notary_id))
                     {
                         QMessageBox::information(this, tr("Moneychanger"), QString("%1 '%2' %3 '%4'.").arg(tr("The Nym")).
                                                  arg(qstrNymName).arg(tr("is already registered on notary")).arg(qstrNotaryName));
@@ -2191,15 +2191,15 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                     }
                     else
                     {
-                        opentxs::OT_ME madeEasy;
+
 
                         int32_t nSuccess = 0;
                         bool    bRegistered = false;
                         {
                             MTSpinner theSpinner;
 
-                            std::string strResponse = madeEasy.register_nym(str_notary_id, str_nym_id);
-                            nSuccess                = madeEasy.VerifyMessageSuccess(strResponse);
+                            std::string strResponse = opentxs::OT_ME::It().register_nym(str_notary_id, str_nym_id);
+                            nSuccess                = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
                         }
                         // -1 is error,
                         //  0 is reply received: failure
@@ -2245,7 +2245,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                 // ------------------------
                 else if (selectedAction == pActionUnregister_)
                 {
-                    if (!opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(str_nym_id, str_notary_id))
+                    if (!opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(str_nym_id, str_notary_id))
                     {
                         QMessageBox::information(this, tr("Moneychanger"), QString("%1 '%2' %3 '%4'.").arg(tr("The Nym")).
                                                  arg(qstrNymName).arg(tr("is already not registered on notary")).arg(qstrNotaryName));
@@ -2270,15 +2270,15 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                                                       QMessageBox::Yes|QMessageBox::No);
                         if (reply == QMessageBox::Yes)
                         {
-                            opentxs::OT_ME madeEasy;
+
 
                             int32_t nSuccess = 0;
                             bool    bUnregistered = false;
                             {
                                 MTSpinner theSpinner;
 
-                                std::string strResponse = madeEasy.unregister_nym(str_notary_id, str_nym_id);
-                                nSuccess                = madeEasy.VerifyMessageSuccess(strResponse);
+                                std::string strResponse = opentxs::OT_ME::It().unregister_nym(str_notary_id, str_nym_id);
+                                nSuccess                = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
                             }
                             // -1 is error,
                             //  0 is reply received: failure
@@ -2333,7 +2333,7 @@ void MTNymDetails::on_lineEditName_editingFinished()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = opentxs::OTAPI_Wrap::It()->SetNym_Name(m_pOwner->m_qstrCurrentID.toStdString(), // Nym
+        bool bSuccess = opentxs::OTAPI_Wrap::Exec()->SetNym_Name(m_pOwner->m_qstrCurrentID.toStdString(), // Nym
                                                 m_pOwner->m_qstrCurrentID.toStdString(), // Signer
                                                 ui->lineEditName->text(). toStdString()); // New Name
         if (bSuccess)

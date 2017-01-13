@@ -570,7 +570,7 @@ void MTPageNym_AltLocation::initializePage() //virtual
     int nCurrentTab = 0;
 
     const auto sections =
-        opentxs::OTAPI_Wrap::It()->ContactSectionList();
+        opentxs::OTAPI_Wrap::Exec()->ContactSectionList();
 
     for (auto & indexSection: sections) {
         if (opentxs::proto::CONTACTSECTION_RELATIONSHIP == indexSection) {
@@ -585,16 +585,16 @@ void MTPageNym_AltLocation::initializePage() //virtual
         // Create a new (tab page) Widget.
         QWidget * pTab = new QWidget(this);
         const std::string sectionName =
-            opentxs::OTAPI_Wrap::It()->ContactSectionName(indexSection);
+            opentxs::OTAPI_Wrap::Exec()->ContactSectionName(indexSection);
 
         QList<GroupBoxContactItems *> * pListGroupBoxes = new QList<GroupBoxContactItems *>;
 
         const auto sectionTypes =
-            opentxs::OTAPI_Wrap::It()->ContactSectionTypeList(indexSection);
+            opentxs::OTAPI_Wrap::Exec()->ContactSectionTypeList(indexSection);
 
         for (const auto& indexSectionType: sectionTypes) {
             const std::string typeName =
-                opentxs::OTAPI_Wrap::It()->ContactTypeName(indexSectionType);
+                opentxs::OTAPI_Wrap::Exec()->ContactTypeName(indexSectionType);
             mapTypeNames.insert(
                 indexSectionType,
                 QString::fromStdString(typeName));

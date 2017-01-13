@@ -144,12 +144,12 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                     // ------------
                     if (!bSuccessDecrypting) // Default nym is NOT available. Okay let's loop through all the Nyms in the wallet then, and try then all...
                     {
-                        const int32_t nym_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
+                        const int32_t nym_count = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
                         // -----------------------------------------------
                         for (int32_t ii = 0; ii < nym_count; ++ii)
                         {
                             //Get OT Nym ID
-                            QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetNym_ID(ii));
+                            QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_ID(ii));
 
                             if (!OT_nym_id.isEmpty())
                             {

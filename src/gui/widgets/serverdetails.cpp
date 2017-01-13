@@ -224,7 +224,7 @@ void MTServerDetails::DeleteButtonClicked()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         // ----------------------------------------------------
-        bool bCanRemove = opentxs::OTAPI_Wrap::It()->Wallet_CanRemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
+        bool bCanRemove = opentxs::OTAPI_Wrap::Exec()->Wallet_CanRemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
 
         if (!bCanRemove)
         {
@@ -239,7 +239,7 @@ void MTServerDetails::DeleteButtonClicked()
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
-            bool bSuccess = opentxs::OTAPI_Wrap::It()->Wallet_RemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
+            bool bSuccess = opentxs::OTAPI_Wrap::Exec()->Wallet_RemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
 
             if (bSuccess)
             {
@@ -284,7 +284,7 @@ void MTServerDetails::ImportContract(QString qstrContents)
         return;
     }
     // ---------------------------------------------------
-    std::string newID = opentxs::OTAPI_Wrap::It()->AddServerContract(qstrContents.toStdString());
+    std::string newID = opentxs::OTAPI_Wrap::Exec()->AddServerContract(qstrContents.toStdString());
 
     if (newID.empty())
     {
@@ -293,7 +293,7 @@ void MTServerDetails::ImportContract(QString qstrContents)
         return;
     }
     // -----------------------------------------------
-    QString qstrContractName = QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetServer_Name(newID));
+    QString qstrContractName = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(newID));
     // -----------------------------------------------
     // Commenting this out for now.
     //
@@ -711,7 +711,7 @@ void MTServerDetails::on_lineEditName_editingFinished()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = opentxs::OTAPI_Wrap::It()->SetServer_Name(m_pOwner->m_qstrCurrentID.toStdString(),  // Server
+        bool bSuccess = opentxs::OTAPI_Wrap::Exec()->SetServer_Name(m_pOwner->m_qstrCurrentID.toStdString(),  // Server
                                                    ui->lineEditName->text(). toStdString()); // New Name
         if (bSuccess)
         {

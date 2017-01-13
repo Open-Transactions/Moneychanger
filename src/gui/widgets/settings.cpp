@@ -195,7 +195,7 @@ void Settings::on_pushButton_clicked()
     const QString NymID    = ui->lineEditNymId   ->text();
     const QString NotaryID = ui->lineEditNotaryId->text();
     // ---------------------------
-    opentxs::NumList numlistCronIds ( opentxs::OTAPI_Wrap::It()->GetNym_ActiveCronItemIDs(NymID   .toStdString(),
+    opentxs::NumList numlistCronIds ( opentxs::OTAPI_Wrap::Exec()->GetNym_ActiveCronItemIDs(NymID   .toStdString(),
                                                                                           NotaryID.toStdString()) );
     std::set<int64_t> cronIds;
     const bool bIdsArePresent = numlistCronIds.Output(cronIds);
@@ -213,7 +213,7 @@ void Settings::on_pushButton_clicked()
         QString qstrMyColumn1, qstrMyColumn2;
         // --------------------------------------
         const auto strCronItem =
-            opentxs::String(opentxs::OTAPI_Wrap::It()->GetActiveCronItem(
+            opentxs::String(opentxs::OTAPI_Wrap::Exec()->GetActiveCronItem(
                 NotaryID.toStdString(),
                 cronId));
 
@@ -286,7 +286,7 @@ void Settings::on_pushButton_clicked()
 
                     if ( !str_asset_type.empty() )
                     {
-                        str_formatted = opentxs::OTAPI_Wrap::It()->FormatAmount(str_asset_type, initialPaymentAmount);
+                        str_formatted = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_asset_type, initialPaymentAmount);
                         bFormatted = !str_formatted.empty();
                     }
                     // ----------------------------------------

@@ -22,6 +22,9 @@
 #include <QVariant>
 #include <QWidget>
 
+#include <atomic>
+#include <cstdint>
+
 class MTHome;
 class MTDetailEdit;
 class DlgLog;
@@ -43,9 +46,6 @@ class QMenu;
 class QSystemTrayIcon;
 class CreateInsuranceCompany;
 
-
-
-
 class Moneychanger : public QWidget
 {
     Q_OBJECT
@@ -56,6 +56,9 @@ private:
     // ------------------------------------------------
     /** Constructor & Destructor **/
     Moneychanger(QWidget *parent = 0);
+
+    std::atomic<std::uint64_t> refresh_count_;
+
 public:
     // Note: These are callback functions needed by OT.
     // Specifically, whenever the DHT downloads a contract, it notifies interested parties

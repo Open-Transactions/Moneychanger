@@ -102,7 +102,7 @@ void MTApplicationMC::appStarting()
     // ----------------------------------------
     // Load OTAPI Wallet
     //
-    opentxs::OTAPI_Wrap::It()->LoadWallet();
+    opentxs::OTAPI_Wrap::Exec()->LoadWallet();
     // ----------------------------------------
     /** Init Moneychanger code (Start when necessary below) **/
 

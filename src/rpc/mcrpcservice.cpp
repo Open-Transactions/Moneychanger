@@ -61,22 +61,22 @@ QJsonValue MCRPCService::registerAccount(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    opentxs::OT_ME madeEasy;
 
-    std::string result = madeEasy.create_asset_acct(NotaryID.toStdString(), NymID.toStdString(), InstrumentDefinitionID.toStdString());
+
+    std::string result = opentxs::OT_ME::It().create_asset_acct(NotaryID.toStdString(), NymID.toStdString(), InstrumentDefinitionID.toStdString());
 
     if (opentxs::OTAPI_Wrap::networkFailure())
     {
@@ -91,7 +91,7 @@ QJsonValue MCRPCService::registerAccount(QString Username, QString APIKey,
 
     // -1 error, 0 failure, 1 success.
     //
-    if (1 != madeEasy.VerifyMessageSuccess(result))
+    if (1 != opentxs::OT_ME::It().VerifyMessageSuccess(result))
     {
         const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(NotaryID, NymID);
 
@@ -106,7 +106,7 @@ QJsonValue MCRPCService::registerAccount(QString Username, QString APIKey,
     // ------------------------------------------------------
     // Get the ID of the new account.
     //
-    QString qstrID = QString::fromStdString(opentxs::OTAPI_Wrap::It()->Message_GetNewAcctID(result));
+    QString qstrID = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->Message_GetNewAcctID(result));
 
     if (qstrID.isEmpty())
     {
@@ -127,7 +127,7 @@ QJsonValue MCRPCService::numListAdd(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->NumList_Add(NumList.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->NumList_Add(NumList.toStdString(),
                                                                 Numbers.toStdString());
     QJsonObject object{{"NumListAddResult",  QString(result.c_str())}};
     return QJsonValue(object);
@@ -141,7 +141,7 @@ QJsonValue MCRPCService::numListRemove(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->NumList_Remove(NumList.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->NumList_Remove(NumList.toStdString(),
                                                                    Numbers.toStdString());
     QJsonObject object{{"NumListRemoveResult",  QString(result.c_str())}};
     return QJsonValue(object);
@@ -155,7 +155,7 @@ QJsonValue MCRPCService::numListVerifyQuery(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->NumList_VerifyQuery(NumList.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->NumList_VerifyQuery(NumList.toStdString(),
                                                                  Numbers.toStdString());
     QJsonObject object{{"NumListVerifyQueryResult", result}};
     return QJsonValue(object);
@@ -169,7 +169,7 @@ QJsonValue MCRPCService::numListVerifyAll(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->NumList_VerifyAll(NumList.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->NumList_VerifyAll(NumList.toStdString(),
                                                                Numbers.toStdString());
     QJsonObject object{{"NumListVerifyAllResult", result}};
     return QJsonValue(object);
@@ -183,7 +183,7 @@ QJsonValue MCRPCService::numListCount(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->NumList_Count(NumList.toStdString());
+    int result = opentxs::OTAPI_Wrap::Exec()->NumList_Count(NumList.toStdString());
     QJsonObject object{{"NumListCount", result}};
     return QJsonValue(object);
 }
@@ -195,7 +195,7 @@ QJsonValue MCRPCService::createNymLegacy(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    std::string result = opentxs::OTAPI_Wrap::It()->CreateNymLegacy(KeySize,
+    std::string result = opentxs::OTAPI_Wrap::Exec()->CreateNymLegacy(KeySize,
                                                               NymIDSource.toStdString());
     QJsonObject object{{"CreateNymLegacyResult", QString(result.c_str())}};
     return QJsonValue(object);
@@ -208,16 +208,16 @@ QJsonValue MCRPCService::getNymActiveCronItemIDs(QString Username, QString APIKe
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_ActiveCronItemIDs(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_ActiveCronItemIDs(NymID.toStdString(),
                                                                              NotaryID.toStdString());
     QJsonObject object{{"ActiveCronItemIDs", QString(result.c_str())}};
     return QJsonValue(object);
@@ -230,12 +230,12 @@ QJsonValue MCRPCService::getActiveCronItem(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetActiveCronItem(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetActiveCronItem(NotaryID.toStdString(),
                                                                       TransNum);
     QJsonObject object{{"ActiveCronItem", QString(result.c_str())}};
     return QJsonValue(object);
@@ -248,12 +248,12 @@ QJsonValue MCRPCService::getNymSourceForID(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_SourceForID(NymID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_SourceForID(NymID.toStdString());
     QJsonObject object{{"NymSourceForID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -265,12 +265,12 @@ QJsonValue MCRPCService::getNymDescription(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_Description(NymID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_Description(NymID.toStdString());
     QJsonObject object{{"NymDescription", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -282,12 +282,12 @@ QJsonValue MCRPCService::getNymMasterCredentialCount(QString Username, QString A
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->GetNym_MasterCredentialCount(NymID.toStdString());
+    int result = opentxs::OTAPI_Wrap::Exec()->GetNym_MasterCredentialCount(NymID.toStdString());
     QJsonObject object{{"NymCredentialCount", result}};
     return QJsonValue(object);
 }
@@ -299,12 +299,12 @@ QJsonValue MCRPCService::getNymMasterCredentialID(QString Username, QString APIK
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_MasterCredentialID(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_MasterCredentialID(NymID.toStdString(),
                                                                         Index);
     QJsonObject object{{"NymCredentialID", QString(result.c_str())}};
     return QJsonValue(object);
@@ -318,12 +318,12 @@ QJsonValue MCRPCService::getNymMasterCredentialContents(QString Username, QStrin
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_MasterCredentialContents(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_MasterCredentialContents(NymID.toStdString(),
                                                                               CredentialID.toStdString());
     QJsonObject object{{"NymCredentialContents", QString(result.c_str())}};
     return QJsonValue(object);
@@ -336,12 +336,12 @@ QJsonValue MCRPCService::getNymRevokedCount(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->GetNym_RevokedCredCount(NymID.toStdString());
+    int result = opentxs::OTAPI_Wrap::Exec()->GetNym_RevokedCredCount(NymID.toStdString());
     QJsonObject object{{"NymRevokedCredCount", result}};
     return QJsonValue(object);
 }
@@ -353,12 +353,12 @@ QJsonValue MCRPCService::getNymRevokedCredID(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_RevokedCredID(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_RevokedCredID(NymID.toStdString(),
                                                                          Index);
     QJsonObject object{{"NymRevokedCredID", QString(result.c_str())}};
     return QJsonValue(object);
@@ -371,12 +371,12 @@ QJsonValue MCRPCService::getNymRevokedCredContents(QString Username, QString API
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_RevokedCredContents(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_RevokedCredContents(NymID.toStdString(),
                                                                                CredentialID.toStdString());
     QJsonObject object{{"NymRevokedCredContents", QString(result.c_str())}};
     return QJsonValue(object);
@@ -389,16 +389,16 @@ QJsonValue MCRPCService::getNymChildCredentialCount(QString Username, QString AP
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(MasterCredID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(MasterCredID.toStdString())){
         QJsonObject object{{"Error", "Invalid MasterCredID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->GetNym_ChildCredentialCount(NymID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->GetNym_ChildCredentialCount(NymID.toStdString(),
                                                                       MasterCredID.toStdString());
     QJsonObject object{{"NymChildCredentialCount", result}};
     return QJsonValue(object);
@@ -412,16 +412,16 @@ QJsonValue MCRPCService::getNymChildCredentialID(QString Username, QString APIKe
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(MasterCredID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(MasterCredID.toStdString())){
         QJsonObject object{{"Error", "Invalid MasterCredID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_ChildCredentialID(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_ChildCredentialID(NymID.toStdString(),
                                                                            MasterCredID.toStdString(),
                                                                            Index);
     QJsonObject object{{"NymChildCredentialID", QString(result.c_str())}};
@@ -436,20 +436,20 @@ QJsonValue MCRPCService::getNymChildCredentialContents(QString Username, QString
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(MasterCredID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(MasterCredID.toStdString())){
         QJsonObject object{{"Error", "Invalid MasterCredID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SubCredID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SubCredID.toStdString())){
         QJsonObject object{{"Error", "Invalid SubCredID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_ChildCredentialContents(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_ChildCredentialContents(NymID.toStdString(),
                                                                                  MasterCredID.toStdString(),
                                                                                  SubCredID.toStdString());
     QJsonObject object{{"NymChildCredentialContents", QString(result.c_str())}};
@@ -465,20 +465,20 @@ QJsonValue MCRPCService::revokeChildcredential(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(MasterCredID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(MasterCredID.toStdString())){
         QJsonObject object{{"Error", "Invalid MasterCredID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SubCredID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SubCredID.toStdString())){
         QJsonObject object{{"Error", "Invalid SubCredID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->RevokeChildCredential(NymID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->RevokeChildCredential(NymID.toStdString(),
                                                                  MasterCredID.toStdString(),
                                                                  SubCredID.toStdString());
     QJsonObject object{{"RevokeChildCredentialResult", result}};
@@ -493,7 +493,7 @@ QJsonValue MCRPCService::getSignerNymID(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetSignerNymID(Contract.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetSignerNymID(Contract.toStdString());
     QJsonObject object{{"SignerNymID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -506,7 +506,7 @@ QJsonValue MCRPCService::calculateContractID(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->CalculateContractID(Contract.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->CalculateContractID(Contract.toStdString());
     QJsonObject object{{"ContractID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -527,12 +527,12 @@ QJsonValue MCRPCService::createCurrencyContract(
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
     std::string result =
-        opentxs::OTAPI_Wrap::It()->CreateCurrencyContract(
+        opentxs::OTAPI_Wrap::Exec()->CreateCurrencyContract(
             NymID.toStdString(),
             shortname.toStdString(),
             terms.toStdString(),
@@ -552,12 +552,12 @@ QJsonValue MCRPCService::getServerContract(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetServer_Contract(NotaryID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetServer_Contract(NotaryID.toStdString());
     QJsonObject object{{"ServerContract", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -569,12 +569,12 @@ QJsonValue MCRPCService::getCurrencyDecimalPower(QString Username, QString APIKe
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->GetCurrencyDecimalPower(InstrumentDefinitionID.toStdString());
+    int result = opentxs::OTAPI_Wrap::Exec()->GetCurrencyDecimalPower(InstrumentDefinitionID.toStdString());
     QJsonObject object{{"CurrencyDecimalPower", result}};
     return QJsonValue(object);
 }
@@ -586,12 +586,12 @@ QJsonValue MCRPCService::getCurrencyTLA(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetCurrencyTLA(InstrumentDefinitionID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetCurrencyTLA(InstrumentDefinitionID.toStdString());
     QJsonObject object{{"CurrencyTLA", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -603,12 +603,12 @@ QJsonValue MCRPCService::getCurrencySymbol(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetCurrencySymbol(InstrumentDefinitionID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetCurrencySymbol(InstrumentDefinitionID.toStdString());
     QJsonObject object{{"CurrencySymbol", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -621,12 +621,12 @@ QJsonValue MCRPCService::stringToAmountLocale(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    qint64 result = opentxs::OTAPI_Wrap::It()->StringToAmountLocale(InstrumentDefinitionID.toStdString(),
+    qint64 result = opentxs::OTAPI_Wrap::Exec()->StringToAmountLocale(InstrumentDefinitionID.toStdString(),
                                                                     Input.toStdString(),
                                                                     ThousandsSep.toStdString(),
                                                                     DecimalPoint.toStdString());
@@ -642,12 +642,12 @@ QJsonValue MCRPCService::formatAmountLocale(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->FormatAmountLocale(InstrumentDefinitionID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->FormatAmountLocale(InstrumentDefinitionID.toStdString(),
                                                                        Amount,
                                                                        ThousandsSep.toStdString(),
                                                                        DecimalPoint.toStdString());
@@ -663,12 +663,12 @@ QJsonValue MCRPCService::formatAmountWithoutSymbolLocale(QString Username, QStri
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->FormatAmountWithoutSymbolLocale(InstrumentDefinitionID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->FormatAmountWithoutSymbolLocale(InstrumentDefinitionID.toStdString(),
                                                                                     Amount,
                                                                                     ThousandsSep.toStdString(),
                                                                                     DecimalPoint.toStdString());
@@ -683,12 +683,12 @@ QJsonValue MCRPCService::stringToAmount(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    qint64 result = opentxs::OTAPI_Wrap::It()->StringToAmount(InstrumentDefinitionID.toStdString(),
+    qint64 result = opentxs::OTAPI_Wrap::Exec()->StringToAmount(InstrumentDefinitionID.toStdString(),
                                                               Input.toStdString());
     QJsonObject object{{"StringToAmountResult", QString(std::to_string(result).c_str())}};
     return QJsonValue(object);
@@ -701,12 +701,12 @@ QJsonValue MCRPCService::formatAmount(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->FormatAmount(InstrumentDefinitionID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->FormatAmount(InstrumentDefinitionID.toStdString(),
                                                                  Amount);
     QJsonObject object{{"FormatAmountResult", QString(result.c_str())}};
     return QJsonValue(object);
@@ -719,12 +719,12 @@ QJsonValue MCRPCService::formatAmountWithoutSymbol(QString Username, QString API
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->FormatAmountWithoutSymbol(InstrumentDefinitionID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->FormatAmountWithoutSymbol(InstrumentDefinitionID.toStdString(),
                                                                               Amount);
     QJsonObject object{{"FormatAmountWithoutSymbolResult", QString(result.c_str())}};
     return QJsonValue(object);
@@ -737,12 +737,12 @@ QJsonValue MCRPCService::getAssetTypeContract(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    std::string contract = opentxs::OTAPI_Wrap::It()->GetAssetType_Contract(InstrumentDefinitionID.toStdString());
+    std::string contract = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Contract(InstrumentDefinitionID.toStdString());
     QJsonObject object{{"AssetTypeContract", QString(contract.c_str())}};
     return QJsonValue(object);
 }
@@ -755,7 +755,7 @@ QJsonValue MCRPCService::addServerContract(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string l_count = opentxs::OTAPI_Wrap::It()->AddServerContract(Contract.toStdString());
+    std::string l_count = opentxs::OTAPI_Wrap::Exec()->AddServerContract(Contract.toStdString());
     QJsonObject object{{"AddServerContractResult", l_count.c_str()}};
     return QJsonValue(object);
 }
@@ -768,7 +768,7 @@ QJsonValue MCRPCService::addUnitDefinition(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string newID = opentxs::OTAPI_Wrap::It()->AddUnitDefinition(Contract.toStdString());
+    std::string newID = opentxs::OTAPI_Wrap::Exec()->AddUnitDefinition(Contract.toStdString());
     QJsonObject object{{"AddUnitDefinitionResult", newID.c_str()}};
     return QJsonValue(object);
 }
@@ -780,7 +780,7 @@ QJsonValue MCRPCService::getNymCount(QString Username, QString APIKey)
         return QJsonValue(object);
     }
 
-    int l_count = opentxs::OTAPI_Wrap::It()->GetNymCount();
+    int l_count = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
     QJsonObject object{{"NymCount", l_count}};
     return QJsonValue(object);
 }
@@ -792,7 +792,7 @@ QJsonValue MCRPCService::getServerCount(QString Username, QString APIKey)
         return QJsonValue(object);
     }
 
-    int l_count = opentxs::OTAPI_Wrap::It()->GetServerCount();
+    int l_count = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
     QJsonObject object{{"ServerCount", l_count}};
     return QJsonValue(object);
 }
@@ -804,7 +804,7 @@ QJsonValue MCRPCService::getAssetTypeCount(QString Username, QString APIKey)
         return QJsonValue(object);
     }
 
-    int l_count = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
+    int l_count = opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount();
     QJsonObject object{{"AssetTypeCount", l_count}};
     return QJsonValue(object);
 }
@@ -816,7 +816,7 @@ QJsonValue MCRPCService::getAccountCount(QString Username, QString APIKey)
         return QJsonValue(object);
     }
 
-    int l_count = opentxs::OTAPI_Wrap::It()->GetAccountCount();
+    int l_count = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
     QJsonObject object{{"AccountCount", l_count}};
     return QJsonValue(object);
 }
@@ -828,12 +828,12 @@ QJsonValue MCRPCService::walletCanRemoveServer(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Wallet_CanRemoveServer(NotaryID.toStdString());
+    bool result = opentxs::OTAPI_Wrap::Exec()->Wallet_CanRemoveServer(NotaryID.toStdString());
     QJsonObject object{{"WalletCanRemoveServerResult", result}};
     return QJsonValue(object);
 }
@@ -845,12 +845,12 @@ QJsonValue MCRPCService::walletRemoveServer(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Wallet_RemoveServer(NotaryID.toStdString());
+    bool result = opentxs::OTAPI_Wrap::Exec()->Wallet_RemoveServer(NotaryID.toStdString());
     QJsonObject object{{"WalletRemoveServerResult", result}};
     return QJsonValue(object);
 }
@@ -862,12 +862,12 @@ QJsonValue MCRPCService::walletCanRemoveAssetType(QString Username, QString APIK
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Wallet_CanRemoveAssetType(InstrumentDefinitionID.toStdString());
+    bool result = opentxs::OTAPI_Wrap::Exec()->Wallet_CanRemoveAssetType(InstrumentDefinitionID.toStdString());
     QJsonObject object{{"WalletCanRemoveAssetTypeResult", result}};
     return QJsonValue(object);
 }
@@ -879,12 +879,12 @@ QJsonValue MCRPCService::walletRemoveAssetType(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Wallet_RemoveAssetType(InstrumentDefinitionID.toStdString());
+    bool result = opentxs::OTAPI_Wrap::Exec()->Wallet_RemoveAssetType(InstrumentDefinitionID.toStdString());
     QJsonObject object{{"WalletRemoveAssetTypeResult", result}};
     return QJsonValue(object);
 }
@@ -896,12 +896,12 @@ QJsonValue MCRPCService::walletCanRemoveNym(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Wallet_CanRemoveNym(NymID.toStdString());
+    bool result = opentxs::OTAPI_Wrap::Exec()->Wallet_CanRemoveNym(NymID.toStdString());
     QJsonObject object{{"WalletCanRemoveNymResult", result}};
     return QJsonValue(object);
 }
@@ -913,12 +913,12 @@ QJsonValue MCRPCService::walletRemoveNym(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Wallet_RemoveNym(NymID.toStdString());
+    bool result = opentxs::OTAPI_Wrap::Exec()->Wallet_RemoveNym(NymID.toStdString());
     QJsonObject object{{"WalletRemoveNymResult", result}};
     return QJsonValue(object);
 }
@@ -930,12 +930,12 @@ QJsonValue MCRPCService::walletCanRemoveAccount(QString Username, QString APIKey
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Wallet_CanRemoveAccount(AccountID.toStdString());
+    bool result = opentxs::OTAPI_Wrap::Exec()->Wallet_CanRemoveAccount(AccountID.toStdString());
     QJsonObject object{{"WalletCanRemoveAccountResult", result}};
     return QJsonValue(object);
 }
@@ -949,20 +949,20 @@ QJsonValue MCRPCService::doesBoxReceiptExist(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->DoesBoxReceiptExist(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->DoesBoxReceiptExist(NotaryID.toStdString(),
                                                                  NymID.toStdString(),
                                                                  AccountID.toStdString(),
                                                                  BoxType,
@@ -980,20 +980,20 @@ QJsonValue MCRPCService::getBoxReceipt(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->getBoxReceipt(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->getBoxReceipt(NotaryID.toStdString(),
                                                           NymID.toStdString(),
                                                           AccountID.toStdString(),
                                                           BoxType,
@@ -1010,20 +1010,20 @@ QJsonValue MCRPCService::deleteAssetAccount(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->deleteAssetAccount(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->deleteAssetAccount(NotaryID.toStdString(),
                                                                NymID.toStdString(),
                                                                AccountID.toStdString());
     QJsonObject object{{"DeleteAssetAccountResult", result}};
@@ -1037,12 +1037,12 @@ QJsonValue MCRPCService::walletExportNym(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Wallet_ExportNym(NymID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Wallet_ExportNym(NymID.toStdString());
     QJsonObject object{{"ExportedNym", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1055,7 +1055,7 @@ QJsonValue MCRPCService::walletImportNym(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Wallet_ImportNym(FileContents.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Wallet_ImportNym(FileContents.toStdString());
     QJsonObject object{{"WalletImportNymResult", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1063,7 +1063,7 @@ QJsonValue MCRPCService::walletImportNym(QString Username, QString APIKey,
 /*
 QJsonValue MCRPCService::walletChangePassphrase()
 {
-    std::string result = opentxs::OTAPI_Wrap::It()->Wallet_ChangePassphrase();
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Wallet_ChangePassphrase();
     QJsonObject object{{"WalletChangePassphraseResult", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1078,7 +1078,7 @@ QJsonValue MCRPCService::walletGetNymIdFromPartial(QString Username, QString API
     }
     /* Not putting ID check in here for the moment */
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Wallet_GetNymIDFromPartial(PartialID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Wallet_GetNymIDFromPartial(PartialID.toStdString());
     QJsonObject object{{"NymIdFromPartial", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1091,7 +1091,7 @@ QJsonValue MCRPCService::walletGetNotaryIdFromPartial(QString Username, QString 
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Wallet_GetNotaryIDFromPartial(PartialID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Wallet_GetNotaryIDFromPartial(PartialID.toStdString());
     QJsonObject object{{"NotaryIdFromPartial", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1104,7 +1104,7 @@ QJsonValue MCRPCService::walletGetInstrumentDefinitionIdFromPartial(QString User
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Wallet_GetInstrumentDefinitionIDFromPartial(PartialID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Wallet_GetInstrumentDefinitionIDFromPartial(PartialID.toStdString());
     QJsonObject object{{"InstrumentDefinitionIdFromPartial", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1117,7 +1117,7 @@ QJsonValue MCRPCService::walletGetAccountIdFromPartial(QString Username, QString
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Wallet_GetAccountIDFromPartial(PartialID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Wallet_GetAccountIDFromPartial(PartialID.toStdString());
     QJsonObject object{{"AccountIdFromPartial", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1130,7 +1130,7 @@ QJsonValue MCRPCService::getNymID(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_ID(Index);
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_ID(Index);
     QJsonObject object{{"NymID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1142,12 +1142,12 @@ QJsonValue MCRPCService::getNymName(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_Name(NymID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_Name(NymID.toStdString());
     QJsonObject object{{"NymName", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1159,16 +1159,16 @@ QJsonValue MCRPCService::isNymRegisteredAtServer(QString Username, QString APIKe
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->IsNym_RegisteredAtServer(NymID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(NymID.toStdString(),
                                                                       NotaryID.toStdString());
     QJsonObject object{{"IsNymRegisteredAtServerResult", result}};
     return QJsonValue(object);
@@ -1181,12 +1181,12 @@ QJsonValue MCRPCService::getNymStats(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_Stats(NymID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_Stats(NymID.toStdString());
     QJsonObject object{{"NymStats", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1198,16 +1198,16 @@ QJsonValue MCRPCService::getNymNymboxHash(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_NymboxHash(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_NymboxHash(NotaryID.toStdString(),
                                                                       NymID.toStdString());
     QJsonObject object{{"NymNymboxHash", QString(result.c_str())}};
     return QJsonValue(object);
@@ -1220,16 +1220,16 @@ QJsonValue MCRPCService::getNymRecentHash(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_RecentHash(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_RecentHash(NotaryID.toStdString(),
                                                                       NymID.toStdString());
     QJsonObject object{{"NymRecentHash", QString(result.c_str())}};
     return QJsonValue(object);
@@ -1242,16 +1242,16 @@ QJsonValue MCRPCService::getNymInboxHash(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_InboxHash(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_InboxHash(NotaryID.toStdString(),
                                                                      NymID.toStdString());
     QJsonObject object{{"NymInboxHash", QString(result.c_str())}};
     return QJsonValue(object);
@@ -1264,16 +1264,16 @@ QJsonValue MCRPCService::getNymOutboxHash(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_OutboxHash(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_OutboxHash(NotaryID.toStdString(),
                                                                       NymID.toStdString());
     QJsonObject object{{"NymOutboxHash", QString(result.c_str())}};
     return QJsonValue(object);
@@ -1286,12 +1286,12 @@ QJsonValue MCRPCService::getNymMailCount(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->GetNym_MailCount(NymID.toStdString());
+    int result = opentxs::OTAPI_Wrap::Exec()->GetNym_MailCount(NymID.toStdString());
     QJsonObject object{{"NymMailCount", result}};
     return QJsonValue(object);
 }
@@ -1303,13 +1303,13 @@ QJsonValue MCRPCService::getNymContentsByIndex(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_MailContentsByIndex(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_MailContentsByIndex(NymID.toStdString(),
                                                                                Index);
     QJsonObject object{{"NymContentsByIndex", QString(result.c_str())}};
     return QJsonValue(object);
@@ -1322,13 +1322,13 @@ QJsonValue MCRPCService::getNymMailSenderIDByIndex(QString Username, QString API
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_MailSenderIDByIndex(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_MailSenderIDByIndex(NymID.toStdString(),
                                                                                Index);
     QJsonObject object{{"NymMailSenderIDByIndex", QString(result.c_str())}};
     return QJsonValue(object);
@@ -1341,13 +1341,13 @@ QJsonValue MCRPCService::getNymMailNotaryIDByIndex(QString Username, QString API
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_MailNotaryIDByIndex(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_MailNotaryIDByIndex(NymID.toStdString(),
                                                                                Index);
     QJsonObject object{{"NymMailNotaryIDByIndex", QString(result.c_str())}};
     return QJsonValue(object);
@@ -1360,13 +1360,13 @@ QJsonValue MCRPCService::nymRemoveMailByIndex(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    bool result = opentxs::OTAPI_Wrap::It()->Nym_RemoveMailByIndex(NymID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Nym_RemoveMailByIndex(NymID.toStdString(),
                                                                    Index);
     QJsonObject object{{"NymRemoveMailByIndexResult", result}};
     return QJsonValue(object);
@@ -1379,13 +1379,13 @@ QJsonValue MCRPCService::nymVerifyMailByIndex(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    bool result = opentxs::OTAPI_Wrap::It()->Nym_VerifyMailByIndex(NymID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Nym_VerifyMailByIndex(NymID.toStdString(),
                                                                    Index);
     QJsonObject object{{"NymVerifyMailByIndexResult", result}};
     return QJsonValue(object);
@@ -1398,13 +1398,13 @@ QJsonValue MCRPCService::getNymOutmailCount(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    int result = opentxs::OTAPI_Wrap::It()->GetNym_OutmailCount(NymID.toStdString());
+    int result = opentxs::OTAPI_Wrap::Exec()->GetNym_OutmailCount(NymID.toStdString());
     QJsonObject object{{"NymOutmailCount", result}};
     return QJsonValue(object);
 }
@@ -1416,13 +1416,13 @@ QJsonValue MCRPCService::getNymOutmailContentsByIndex(QString Username, QString 
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_OutmailContentsByIndex(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_OutmailContentsByIndex(NymID.toStdString(),
                                                                                   Index);
     QJsonObject object{{"NymOutmailContentsIDByIndex", QString(result.c_str())}};
     return QJsonValue(object);
@@ -1435,13 +1435,13 @@ QJsonValue MCRPCService::getNymOutmailRecipientIDByIndex(QString Username, QStri
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_OutmailRecipientIDByIndex(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_OutmailRecipientIDByIndex(NymID.toStdString(),
                                                                                      Index);
     QJsonObject object{{"NymOutmailRecipientIDByIndex", QString(result.c_str())}};
     return QJsonValue(object);
@@ -1454,13 +1454,13 @@ QJsonValue MCRPCService::getNymOutmailNotaryIDByIndex(QString Username, QString 
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_OutmailNotaryIDByIndex(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_OutmailNotaryIDByIndex(NymID.toStdString(),
                                                                                   Index);
     QJsonObject object{{"NymOutmailNotaryIDIDByIndex", QString(result.c_str())}};
     return QJsonValue(object);
@@ -1473,13 +1473,13 @@ QJsonValue MCRPCService::nymRemoveOutmailByIndex(QString Username, QString APIKe
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    bool result = opentxs::OTAPI_Wrap::It()->Nym_RemoveOutmailByIndex(NymID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Nym_RemoveOutmailByIndex(NymID.toStdString(),
                                                                       Index);
     QJsonObject object{{"NymRemoveOutmailByIndexResult", result}};
     return QJsonValue(object);
@@ -1492,13 +1492,13 @@ QJsonValue MCRPCService::nymVerifyOutmailByIndex(QString Username, QString APIKe
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    bool result = opentxs::OTAPI_Wrap::It()->Nym_VerifyOutmailByIndex(NymID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Nym_VerifyOutmailByIndex(NymID.toStdString(),
                                                                       Index);
     QJsonObject object{{"NymVerifyOutmailByIndexResult", result}};
     return QJsonValue(object);
@@ -1511,13 +1511,13 @@ QJsonValue MCRPCService::getNymOutpaymentsCount(QString Username, QString APIKey
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    int result = opentxs::OTAPI_Wrap::It()->GetNym_OutpaymentsCount(NymID.toStdString());
+    int result = opentxs::OTAPI_Wrap::Exec()->GetNym_OutpaymentsCount(NymID.toStdString());
     QJsonObject object{{"NymOutpaymentsCount", result}};
     return QJsonValue(object);
 }
@@ -1529,13 +1529,13 @@ QJsonValue MCRPCService::getNymOutpaymentsContentsByIndex(QString Username, QStr
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_OutpaymentsContentsByIndex(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_OutpaymentsContentsByIndex(NymID.toStdString(),
                                                                                       Index);
     QJsonObject object{{"NymOutpaymentsContentsByIndex", QString(result.c_str())}};
     return QJsonValue(object);
@@ -1548,13 +1548,13 @@ QJsonValue MCRPCService::getNymOutpaymentsRecipientIDByIndex(QString Username, Q
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_OutpaymentsRecipientIDByIndex(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_OutpaymentsRecipientIDByIndex(NymID.toStdString(),
                                                                                          Index);
     QJsonObject object{{"NymOutpaymentsRecipientIDByIndex", QString(result.c_str())}};
     return QJsonValue(object);
@@ -1567,13 +1567,13 @@ QJsonValue MCRPCService::getNymOutpaymentsNotaryIDByIndex(QString Username, QStr
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetNym_OutpaymentsNotaryIDByIndex(NymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_OutpaymentsNotaryIDByIndex(NymID.toStdString(),
                                                                                       Index);
     QJsonObject object{{"NymOutpaymentsNotaryIDByIndex", QString(result.c_str())}};
     return QJsonValue(object);
@@ -1586,13 +1586,13 @@ QJsonValue MCRPCService::nymRemoveOutpaymentsByIndex(QString Username, QString A
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    bool result = opentxs::OTAPI_Wrap::It()->Nym_RemoveOutpaymentsByIndex(NymID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Nym_RemoveOutpaymentsByIndex(NymID.toStdString(),
                                                                           Index);
     QJsonObject object{{"NymRemoveOutpaymentsByIndexResult", result}};
     return QJsonValue(object);
@@ -1605,13 +1605,13 @@ QJsonValue MCRPCService::nymVerifyOutpaymentsByIndex(QString Username, QString A
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
 
-    bool result = opentxs::OTAPI_Wrap::It()->Nym_VerifyOutpaymentsByIndex(NymID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Nym_VerifyOutpaymentsByIndex(NymID.toStdString(),
                                                                           Index);
     QJsonObject object{{"NymVerifyOutpaymentsByIndexResult", result}};
     return QJsonValue(object);
@@ -1625,7 +1625,7 @@ QJsonValue MCRPCService::instrumentGetAmount(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetAmount(Instrument.toStdString());
+    int result = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetAmount(Instrument.toStdString());
     QJsonObject object{{"InstrumentAmount", result}};
     return QJsonValue(object);
 }
@@ -1638,7 +1638,7 @@ QJsonValue MCRPCService::instrumentGetTransactionNumber(QString Username, QStrin
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetTransNum(Instrument.toStdString());
+    int result = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetTransNum(Instrument.toStdString());
     QJsonObject object{{"InstrumentTransactionNumber", result}};
     return QJsonValue(object);
 }
@@ -1651,7 +1651,7 @@ QJsonValue MCRPCService::instrumentGetValidFrom(QString Username, QString APIKey
         return QJsonValue(object);
     }
 
-    time64_t result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetValidFrom(Instrument.toStdString());
+    time64_t result = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetValidFrom(Instrument.toStdString());
     QJsonObject object{{"InstrumentValidFrom", QString(std::to_string(result).c_str())}};
     return QJsonValue(object);
 }
@@ -1664,7 +1664,7 @@ QJsonValue MCRPCService::instrumentGetValidTo(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    time64_t result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetValidTo(Instrument.toStdString());
+    time64_t result = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetValidTo(Instrument.toStdString());
     QJsonObject object{{"InstrumentValidTo", QString(std::to_string(result).c_str())}};
     return QJsonValue(object);
 }
@@ -1677,7 +1677,7 @@ QJsonValue MCRPCService::instrumentGetType(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetType(Instrument.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetType(Instrument.toStdString());
     QJsonObject object{{"InstrumentType", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1690,7 +1690,7 @@ QJsonValue MCRPCService::instrumentGetMemo(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetMemo(Instrument.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetMemo(Instrument.toStdString());
     QJsonObject object{{"InstrumentMemo", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1703,7 +1703,7 @@ QJsonValue MCRPCService::instrumentGetNotaryID(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetNotaryID(Instrument.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetNotaryID(Instrument.toStdString());
     QJsonObject object{{"InstrumentNotaryID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1716,7 +1716,7 @@ QJsonValue MCRPCService::instrumentGetInstrumentDefinitionID(QString Username, Q
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetInstrumentDefinitionID(Instrument.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetInstrumentDefinitionID(Instrument.toStdString());
     QJsonObject object{{"InstrumentDefinitionID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1729,7 +1729,7 @@ QJsonValue MCRPCService::instrumentGetRemitterNymID(QString Username, QString AP
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetRemitterNymID(Instrument.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetRemitterNymID(Instrument.toStdString());
     QJsonObject object{{"InstrumentRemitterNymID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1742,7 +1742,7 @@ QJsonValue MCRPCService::instrumentGetRemitterAccountID(QString Username, QStrin
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetRemitterAcctID(Instrument.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetRemitterAcctID(Instrument.toStdString());
     QJsonObject object{{"InstrumentRemitterAccountID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1755,7 +1755,7 @@ QJsonValue MCRPCService::instrumentGetSenderNymID(QString Username, QString APIK
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetSenderNymID(Instrument.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetSenderNymID(Instrument.toStdString());
     QJsonObject object{{"InstrumentSenderNymID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1768,7 +1768,7 @@ QJsonValue MCRPCService::instrumentGetSenderAccountID(QString Username, QString 
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetSenderAcctID(Instrument.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetSenderAcctID(Instrument.toStdString());
     QJsonObject object{{"InstrumentSenderAccountID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1781,7 +1781,7 @@ QJsonValue MCRPCService::instrumentGetRecipientNymID(QString Username, QString A
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetRecipientNymID(Instrument.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetRecipientNymID(Instrument.toStdString());
     QJsonObject object{{"InstrumentRecipientNymID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1794,7 +1794,7 @@ QJsonValue MCRPCService::instrumentGetRecipientAccountID(QString Username, QStri
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Instrmnt_GetRecipientAcctID(Instrument.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Instrmnt_GetRecipientAcctID(Instrument.toStdString());
     QJsonObject object{{"InstrumentRecipientAccountID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1807,18 +1807,18 @@ QJsonValue MCRPCService::setNymName(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
 
-    bool result = opentxs::OTAPI_Wrap::It()->SetNym_Name(NymID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->SetNym_Name(NymID.toStdString(),
                                                          SignerNymID.toStdString(),
                                                          NewName.toStdString());
     QJsonObject object{{"SetNymNameResult", result}};
@@ -1832,13 +1832,13 @@ QJsonValue MCRPCService::setServerName(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
 
 
-    bool result = opentxs::OTAPI_Wrap::It()->SetServer_Name(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->SetServer_Name(NotaryID.toStdString(),
                                                             NewName.toStdString());
     QJsonObject object{{"SetServerNameResult", result}};
     return QJsonValue(object);
@@ -1851,13 +1851,13 @@ QJsonValue MCRPCService::setAssetTypeName(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
 
-    bool result = opentxs::OTAPI_Wrap::It()->SetAssetType_Name(InstrumentDefinitionID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->SetAssetType_Name(InstrumentDefinitionID.toStdString(),
                                                                NewName.toStdString());
     QJsonObject object{{"SetAssetTypeNameResult", result}};
     return QJsonValue(object);
@@ -1870,16 +1870,16 @@ QJsonValue MCRPCService::getNymTransactionNumberCount(QString Username, QString 
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->GetNym_TransactionNumCount(NotaryID.toStdString(), NymID.toStdString());
+    int result = opentxs::OTAPI_Wrap::Exec()->GetNym_TransactionNumCount(NotaryID.toStdString(), NymID.toStdString());
     QJsonObject object{{"NymTransactionNumberCount", result}};
     return QJsonValue(object);
 }
@@ -1892,7 +1892,7 @@ QJsonValue MCRPCService::getServerID(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetServer_ID(Index);
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetServer_ID(Index);
     QJsonObject object{{"ServerID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1904,12 +1904,12 @@ QJsonValue MCRPCService::getServerName(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(ServerID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(ServerID.toStdString())){
         QJsonObject object{{"Error", "Invalid ServerID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetServer_Name(ServerID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetServer_Name(ServerID.toStdString());
     QJsonObject object{{"ServerID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1922,7 +1922,7 @@ QJsonValue MCRPCService::getAssetTypeID(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetAssetType_ID(Index);
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetAssetType_ID(Index);
     QJsonObject object{{"AssetTypeID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1934,12 +1934,12 @@ QJsonValue MCRPCService::getAssetTypeName(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AssetTypeID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AssetTypeID.toStdString())){
         QJsonObject object{{"Error", "Invalid AssetTypeID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetAssetType_Name(AssetTypeID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(AssetTypeID.toStdString());
     QJsonObject object{{"AssetTypeName", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1951,12 +1951,12 @@ QJsonValue MCRPCService::getAssetTypeTLA(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AssetTypeID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AssetTypeID.toStdString())){
         QJsonObject object{{"Error", "Invalid AssetTypeID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetAssetType_TLA(AssetTypeID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetAssetType_TLA(AssetTypeID.toStdString());
     QJsonObject object{{"AssetTypeTLA", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1969,7 +1969,7 @@ QJsonValue MCRPCService::getAccountWalletID(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(Index);
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(Index);
     QJsonObject object{{"AccountWalletID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1981,12 +1981,12 @@ QJsonValue MCRPCService::getAccountWalletName(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountWalletID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountWalletID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountWalletID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Name(AccountWalletID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(AccountWalletID.toStdString());
     QJsonObject object{{"AccountWalletName", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -1998,12 +1998,12 @@ QJsonValue MCRPCService::getAccountWalletInboxHash(QString Username, QString API
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountWalletID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountWalletID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountWalletID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InboxHash(AccountWalletID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InboxHash(AccountWalletID.toStdString());
     QJsonObject object{{"AccountWalletInboxHash", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -2015,12 +2015,12 @@ QJsonValue MCRPCService::getAccountWalletOutboxHash(QString Username, QString AP
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountWalletID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountWalletID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountWalletID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_OutboxHash(AccountWalletID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_OutboxHash(AccountWalletID.toStdString());
     QJsonObject object{{"AccountWalletOutboxHash", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -2032,7 +2032,7 @@ QJsonValue MCRPCService::getTime(QString Username, QString APIKey)
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->GetTime();
+    int result = opentxs::OTAPI_Wrap::Exec()->GetTime();
     QJsonObject object{{"Time", result}};
     return QJsonValue(object);
 }
@@ -2045,7 +2045,7 @@ QJsonValue MCRPCService::encode(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Encode(Plaintext.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Encode(Plaintext.toStdString(),
                                                            LineBreaks);
     QJsonObject object{{"EncodedText", QString(result.c_str())}};
     return QJsonValue(object);
@@ -2059,7 +2059,7 @@ QJsonValue MCRPCService::decode(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Decode(Plaintext.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Decode(Plaintext.toStdString(),
                                                            LineBreaks);
     QJsonObject object{{"DecodedText", QString(result.c_str())}};
     return QJsonValue(object);
@@ -2072,12 +2072,12 @@ QJsonValue MCRPCService::encrypt(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(RecipientNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(RecipientNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid RecipientNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Encrypt(RecipientNymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Encrypt(RecipientNymID.toStdString(),
                                                             Plaintext.toStdString());
     QJsonObject object{{"EncryptedText", QString(result.c_str())}};
     return QJsonValue(object);
@@ -2090,12 +2090,12 @@ QJsonValue MCRPCService::decrypt(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(RecipientNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(RecipientNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid RecipientNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Decrypt(RecipientNymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Decrypt(RecipientNymID.toStdString(),
                                                             CipherText.toStdString());
     QJsonObject object{{"DecryptedText", QString(result.c_str())}};
     return QJsonValue(object);
@@ -2108,7 +2108,7 @@ QJsonValue MCRPCService::createSymmetricKey(QString Username, QString APIKey)
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->CreateSymmetricKey();
+    std::string result = opentxs::OTAPI_Wrap::Exec()->CreateSymmetricKey();
     QJsonObject object{{"SymmetricKey", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -2121,7 +2121,7 @@ QJsonValue MCRPCService::symmetricEncrypt(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SymmetricEncrypt(SymmetricKey.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SymmetricEncrypt(SymmetricKey.toStdString(),
                                                                      Plaintext.toStdString());
     QJsonObject object{{"EncryptedText", QString(result.c_str())}};
     return QJsonValue(object);
@@ -2135,7 +2135,7 @@ QJsonValue MCRPCService::symmetricDecrypt(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SymmetricDecrypt(SymmetricKey.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SymmetricDecrypt(SymmetricKey.toStdString(),
                                                                      CipherTextEnvelope.toStdString());
     QJsonObject object{{"DecryptedText", QString(result.c_str())}};
     return QJsonValue(object);
@@ -2148,12 +2148,12 @@ QJsonValue MCRPCService::signContract(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SignContract(SignerNymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SignContract(SignerNymID.toStdString(),
                                                                  Contract.toStdString());
     QJsonObject object{{"SignedContract", QString(result.c_str())}};
     return QJsonValue(object);
@@ -2167,12 +2167,12 @@ QJsonValue MCRPCService::flatSign(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->FlatSign(SignerNymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->FlatSign(SignerNymID.toStdString(),
                                                              Input.toStdString(),
                                                              ContractType.toStdString());
     QJsonObject object{{"FlatSignedText", QString(result.c_str())}};
@@ -2186,12 +2186,12 @@ QJsonValue MCRPCService::addSignature(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->AddSignature(SignerNymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->AddSignature(SignerNymID.toStdString(),
                                                                  Contract.toStdString());
     QJsonObject object{{"SignedContract", QString(result.c_str())}};
     return QJsonValue(object);
@@ -2204,12 +2204,12 @@ QJsonValue MCRPCService::verifySignature(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->VerifySignature(SignerNymID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->VerifySignature(SignerNymID.toStdString(),
                                                              Contract.toStdString());
     QJsonObject object{{"VerifySignatureResult", result}};
     return QJsonValue(object);
@@ -2222,12 +2222,12 @@ QJsonValue MCRPCService::verifyAndRetrieveXMLContents(QString Username, QString 
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->VerifyAndRetrieveXMLContents(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->VerifyAndRetrieveXMLContents(Contract.toStdString(),
                                                                                  SignerID.toStdString());
     QJsonObject object{{"ContractXMLContents", QString(result.c_str())}};
     return QJsonValue(object);
@@ -2241,20 +2241,20 @@ QJsonValue MCRPCService::verifyAccountReceipt(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->VerifyAccountReceipt(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->VerifyAccountReceipt(NotaryID.toStdString(),
                                                                   NymID.toStdString(),
                                                                   AccountID.toStdString());
     QJsonObject object{{"VerifyAccountReceiptResult", result}};
@@ -2269,16 +2269,16 @@ QJsonValue MCRPCService::setAccountWalletName(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->SetAccountWallet_Name(AccountID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->SetAccountWallet_Name(AccountID.toStdString(),
                                                                    SignerNymID.toStdString(),
                                                                    AccountName.toStdString());
     QJsonObject object{{"SetAccountWalletNameResult", result}};
@@ -2292,12 +2292,12 @@ QJsonValue MCRPCService::getAccountWalletBalance(QString Username, QString APIKe
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountWalletID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountWalletID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountWalletID"}};
         return QJsonValue(object);
     }
 
-    qint64 result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Balance(AccountWalletID.toStdString());
+    qint64 result = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance(AccountWalletID.toStdString());
     QJsonObject object{{"AccountWalletBalance", QString(std::to_string(result).c_str())}};
     return QJsonValue(object);
 }
@@ -2309,12 +2309,12 @@ QJsonValue MCRPCService::getAccountWalletType(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountWalletID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountWalletID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountWalletID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_Type(AccountWalletID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Type(AccountWalletID.toStdString());
     QJsonObject object{{"AccountWalletType", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -2326,12 +2326,12 @@ QJsonValue MCRPCService::getAccountWalletInstrumentDefinitionID(QString Username
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountWalletID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountWalletID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountWalletID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_InstrumentDefinitionID(AccountWalletID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(AccountWalletID.toStdString());
     QJsonObject object{{"AccountWalletInstrumentDefinitionID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -2343,12 +2343,12 @@ QJsonValue MCRPCService::getAccountWalletNotaryID(QString Username, QString APIK
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountWalletID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountWalletID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountWalletID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NotaryID(AccountWalletID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID(AccountWalletID.toStdString());
     QJsonObject object{{"AccountWalletNotaryID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -2360,12 +2360,12 @@ QJsonValue MCRPCService::getAccountWalletNymID(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountWalletID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountWalletID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountWalletID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetAccountWallet_NymID(AccountWalletID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID(AccountWalletID.toStdString());
     QJsonObject object{{"AccountWalletNymID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -2380,24 +2380,24 @@ QJsonValue MCRPCService::writeCheque(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SenderAccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SenderAccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid SenderAccountID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SenderNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SenderNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SenderNymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(RecipientNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(RecipientNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid RecipientNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->WriteCheque(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->WriteCheque(NotaryID.toStdString(),
                                                                 ChequeAmount,
                                                                 ValidFrom,
                                                                 ValidTo,
@@ -2417,20 +2417,20 @@ QJsonValue MCRPCService::discardCheque(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->DiscardCheque(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->DiscardCheque(NotaryID.toStdString(),
                                                            NymID.toStdString(),
                                                            AccountID.toStdString(),
                                                            Cheque.toStdString());
@@ -2452,24 +2452,24 @@ QJsonValue MCRPCService::proposePaymentPlan(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SenderNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SenderNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SenderNymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(RecipientAccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(RecipientAccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid RecipientAccountID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(RecipientNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(RecipientNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid RecipientNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->ProposePaymentPlan(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->ProposePaymentPlan(NotaryID.toStdString(),
                                                                        ValidFrom,
                                                                        ValidTo,
                                                                        SenderAccountID.toStdString(),
@@ -2499,28 +2499,28 @@ QJsonValue MCRPCService::easyProposePlan(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SenderAccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SenderAccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid SenderAccountID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SenderNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SenderNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SenderNymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(RecipientAccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(RecipientAccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid RecipientAccountID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(RecipientNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(RecipientNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid RecipientNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->EasyProposePlan(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->EasyProposePlan(NotaryID.toStdString(),
                                                                     DateRange.toStdString(),
                                                                     SenderAccountID.toStdString(),
                                                                     SenderNymID.toStdString(),
@@ -2543,25 +2543,25 @@ QJsonValue MCRPCService::confirmPaymentPlan(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SenderNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SenderNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SenderNymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SenderAccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SenderAccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid SenderAccountID"}};
         return QJsonValue(object);
     }
 
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(RecipientNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(RecipientNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid RecipientNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->ConfirmPaymentPlan(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->ConfirmPaymentPlan(NotaryID.toStdString(),
                                                                        SenderNymID.toStdString(),
                                                                        SenderAccountID.toStdString(),
                                                                        RecipientNymID.toStdString(),
@@ -2579,12 +2579,12 @@ QJsonValue MCRPCService::createSmartContract(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Create_SmartContract(SignerNymID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Create_SmartContract(SignerNymID.toStdString(),
                                                                          ValidFrom,
                                                                          ValidTo,
                                                                          SpecifyAssets,
@@ -2601,12 +2601,12 @@ QJsonValue MCRPCService::smartContractSetDates(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_SetDates(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_SetDates(Contract.toStdString(),
                                                                            SignerNymID.toStdString(),
                                                                            ValidFrom,
                                                                            ValidTo);
@@ -2622,7 +2622,7 @@ QJsonValue MCRPCService::smartArePartiesSpecified(QString Username, QString APIK
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Smart_ArePartiesSpecified(Contract.toStdString());
+    bool result = opentxs::OTAPI_Wrap::Exec()->Smart_ArePartiesSpecified(Contract.toStdString());
     QJsonObject object{{"SmartArePartiesSpecifiedResult", result}};
     return QJsonValue(object);
 }
@@ -2635,7 +2635,7 @@ QJsonValue MCRPCService::smartAreAssetTypesSpecified(QString Username, QString A
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Smart_AreAssetTypesSpecified(Contract.toStdString());
+    bool result = opentxs::OTAPI_Wrap::Exec()->Smart_AreAssetTypesSpecified(Contract.toStdString());
     QJsonObject object{{"SmartAreAssetTypesSpecifiedResult", result}};
     return QJsonValue(object);
 }
@@ -2648,12 +2648,12 @@ QJsonValue MCRPCService::smartContractAddBylaw(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_AddBylaw(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_AddBylaw(Contract.toStdString(),
                                                                            SignerNymID.toStdString(),
                                                                            BylawName.toStdString());
     QJsonObject object{{"SmartContractAddBylawResult", QString(result.c_str())}};
@@ -2669,12 +2669,12 @@ QJsonValue MCRPCService::smartContractAddClause(QString Username, QString APIKey
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_AddClause(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_AddClause(Contract.toStdString(),
                                                                             SignerNymID.toStdString(),
                                                                             BylawName.toStdString(),
                                                                             ClauseName.toStdString(),
@@ -2693,12 +2693,12 @@ QJsonValue MCRPCService::smartContractAddVariable(QString Username, QString APIK
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_AddVariable(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_AddVariable(Contract.toStdString(),
                                                                               SignerNymID.toStdString(),
                                                                               BylawName.toStdString(),
                                                                               VarName.toStdString(),
@@ -2718,12 +2718,12 @@ QJsonValue MCRPCService::smartContractAddCallback(QString Username, QString APIK
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_AddCallback(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_AddCallback(Contract.toStdString(),
                                                                               SignerNymID.toStdString(),
                                                                               BylawName.toStdString(),
                                                                               CallbackName.toStdString(),
@@ -2741,12 +2741,12 @@ QJsonValue MCRPCService::smartContractAddHook(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_AddHook(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_AddHook(Contract.toStdString(),
                                                                           SignerNymID.toStdString(),
                                                                           BylawName.toStdString(),
                                                                           HookName.toStdString(),
@@ -2764,16 +2764,16 @@ QJsonValue MCRPCService::smartContractAddParty(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(PartyNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(PartyNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid PartyNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_AddParty(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_AddParty(Contract.toStdString(),
                                                                            SignerNymID.toStdString(),
                                                                            PartyNymID.toStdString(),
                                                                            PartyName.toStdString(),
@@ -2791,15 +2791,15 @@ QJsonValue MCRPCService::smartContractAddAccount(QString Username, QString APIKe
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_AddAccount(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_AddAccount(Contract.toStdString(),
                                                                              SignerNymID.toStdString(),
                                                                              PartyName.toStdString(),
                                                                              AccountName.toStdString(),
@@ -2816,12 +2816,12 @@ QJsonValue MCRPCService::smartContractRemoveBylaw(QString Username, QString APIK
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_RemoveBylaw(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_RemoveBylaw(Contract.toStdString(),
                                                                               SignerNymID.toStdString(),
                                                                               BylawName.toStdString());
     QJsonObject object{{"SmartContractRemoveBylawResult", QString(result.c_str())}};
@@ -2837,12 +2837,12 @@ QJsonValue MCRPCService::smartContractUpdateClause(QString Username, QString API
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_UpdateClause(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_UpdateClause(Contract.toStdString(),
                                                                                SignerNymID.toStdString(),
                                                                                BylawName.toStdString(),
                                                                                ClauseName.toStdString(),
@@ -2859,12 +2859,12 @@ QJsonValue MCRPCService::smartContractRemoveClause(QString Username, QString API
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_RemoveClause(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_RemoveClause(Contract.toStdString(),
                                                                                SignerNymID.toStdString(),
                                                                                BylawName.toStdString(),
                                                                                ClauseName.toStdString());
@@ -2880,12 +2880,12 @@ QJsonValue MCRPCService::smartContractRemoveVariable(QString Username, QString A
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_RemoveVariable(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_RemoveVariable(Contract.toStdString(),
                                                                                  SignerNymID.toStdString(),
                                                                                  BylawName.toStdString(),
                                                                                  VarName.toStdString());
@@ -2901,12 +2901,12 @@ QJsonValue MCRPCService::smartContractRemoveCallback(QString Username, QString A
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_RemoveCallback(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_RemoveCallback(Contract.toStdString(),
                                                                                  SignerNymID.toStdString(),
                                                                                  BylawName.toStdString(),
                                                                                  CallbackName.toStdString());
@@ -2923,12 +2923,12 @@ QJsonValue MCRPCService::smartContractRemoveHook(QString Username, QString APIKe
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_RemoveHook(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_RemoveHook(Contract.toStdString(),
                                                                              SignerNymID.toStdString(),
                                                                              BylawName.toStdString(),
                                                                              HookName.toStdString(),
@@ -2945,12 +2945,12 @@ QJsonValue MCRPCService::smartContractRemoveParty(QString Username, QString APIK
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_RemoveParty(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_RemoveParty(Contract.toStdString(),
                                                                               SignerNymID.toStdString(),
                                                                               PartyName.toStdString());
     QJsonObject object{{"SmartContractRemovePartyResult", QString(result.c_str())}};
@@ -2965,7 +2965,7 @@ QJsonValue MCRPCService::smartContractCountNumbersNeeded(QString Username, QStri
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->SmartContract_CountNumsNeeded(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->SmartContract_CountNumsNeeded(Contract.toStdString(),
                                                                           AgentName.toStdString());
     QJsonObject object{{"SmartContractNumbersNeeded", result}};
     return QJsonValue(object);
@@ -2980,16 +2980,16 @@ QJsonValue MCRPCService::smartContractConfirmAccount(QString Username, QString A
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_ConfirmAccount(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmAccount(Contract.toStdString(),
                                                                                  SignerNymID.toStdString(),
                                                                                  PartyName.toStdString(),
                                                                                  AccountName.toStdString(),
@@ -3007,12 +3007,12 @@ QJsonValue MCRPCService::smartContractConfirmParty(QString Username, QString API
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->SmartContract_ConfirmParty(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmParty(Contract.toStdString(),
                                                                                PartyName.toStdString(),
                                                                                NymID.toStdString());
     QJsonObject object{{"SmartContractConfirmPartyResult", QString(result.c_str())}};
@@ -3027,7 +3027,7 @@ QJsonValue MCRPCService::smartAreAllPartiesConfirmed(QString Username, QString A
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Smart_AreAllPartiesConfirmed(Contract.toStdString());
+    bool result = opentxs::OTAPI_Wrap::Exec()->Smart_AreAllPartiesConfirmed(Contract.toStdString());
     QJsonObject object{{"SmartAreAllPartiesConfirmedResult", result}};
     return QJsonValue(object);
 }
@@ -3040,7 +3040,7 @@ QJsonValue MCRPCService::smartIsPartyConfirmed(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Smart_IsPartyConfirmed(Contract.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Smart_IsPartyConfirmed(Contract.toStdString(),
                                                                     PartyName.toStdString());
     QJsonObject object{{"SmartIsPartyConfirmedResult", result}};
     return QJsonValue(object);
@@ -3054,7 +3054,7 @@ QJsonValue MCRPCService::smartGetPartyCount(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Smart_GetPartyCount(Contract.toStdString());
+    int result = opentxs::OTAPI_Wrap::Exec()->Smart_GetPartyCount(Contract.toStdString());
     QJsonObject object{{"SmartPartyCount", result}};
     return QJsonValue(object);
 }
@@ -3067,7 +3067,7 @@ QJsonValue MCRPCService::smartGetBylawCount(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Smart_GetBylawCount(Contract.toStdString());
+    int result = opentxs::OTAPI_Wrap::Exec()->Smart_GetBylawCount(Contract.toStdString());
     QJsonObject object{{"SmartBylawCount", result}};
     return QJsonValue(object);
 }
@@ -3080,7 +3080,7 @@ QJsonValue MCRPCService::smartGetPartyByIndex(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Smart_GetPartyByIndex(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Smart_GetPartyByIndex(Contract.toStdString(),
                                                                           Index);
     QJsonObject object{{"SmartGetPartyByIndexResult", QString(result.c_str())}};
     return QJsonValue(object);
@@ -3094,7 +3094,7 @@ QJsonValue MCRPCService::smartGetBylawByIndex(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Smart_GetBylawByIndex(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Smart_GetBylawByIndex(Contract.toStdString(),
                                                                           Index);
     QJsonObject object{{"SmartGetBylawByIndexResult", QString(result.c_str())}};
     return QJsonValue(object);
@@ -3108,7 +3108,7 @@ QJsonValue MCRPCService::bylawGetLanguage(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Bylaw_GetLanguage(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Bylaw_GetLanguage(Contract.toStdString(),
                                                                       BylawName.toStdString());
     QJsonObject object{{"BylawLanguage", QString(result.c_str())}};
     return QJsonValue(object);
@@ -3122,7 +3122,7 @@ QJsonValue MCRPCService::bylawGetClauseCount(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Bylaw_GetClauseCount(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->Bylaw_GetClauseCount(Contract.toStdString(),
                                                                  BylawName.toStdString());
     QJsonObject object{{"BylawClauseCount", result}};
     return QJsonValue(object);
@@ -3136,7 +3136,7 @@ QJsonValue MCRPCService::bylawGetVariableCount(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Bylaw_GetVariableCount(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->Bylaw_GetVariableCount(Contract.toStdString(),
                                                                    BylawName.toStdString());
     QJsonObject object{{"BylawVariableCount", result}};
     return QJsonValue(object);
@@ -3150,7 +3150,7 @@ QJsonValue MCRPCService::bylawGetHookCount(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Bylaw_GetHookCount(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->Bylaw_GetHookCount(Contract.toStdString(),
                                                                BylawName.toStdString());
     QJsonObject object{{"BylawHookCount", result}};
     return QJsonValue(object);
@@ -3164,7 +3164,7 @@ QJsonValue MCRPCService::bylawGetCallbackCount(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Bylaw_GetCallbackCount(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->Bylaw_GetCallbackCount(Contract.toStdString(),
                                                                    BylawName.toStdString());
     QJsonObject object{{"BylawCallbackCount", result}};
     return QJsonValue(object);
@@ -3179,7 +3179,7 @@ QJsonValue MCRPCService::clauseGetNameByIndex(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Clause_GetNameByIndex(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Clause_GetNameByIndex(Contract.toStdString(),
                                                                           BylawName.toStdString(),
                                                                           Index);
     QJsonObject object{{"ClauseGetNameByIndexResult", QString(result.c_str())}};
@@ -3195,7 +3195,7 @@ QJsonValue MCRPCService::clauseGetContents(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Clause_GetContents(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Clause_GetContents(Contract.toStdString(),
                                                                        BylawName.toStdString(),
                                                                        ClauseName.toStdString());
     QJsonObject object{{"ClauseContents", QString(result.c_str())}};
@@ -3211,7 +3211,7 @@ QJsonValue MCRPCService::variableGetNameByIndex(QString Username, QString APIKey
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Variable_GetNameByIndex(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Variable_GetNameByIndex(Contract.toStdString(),
                                                                             BylawName.toStdString(),
                                                                             Index);
     QJsonObject object{{"VariableGetNameByIndexResult", QString(result.c_str())}};
@@ -3227,7 +3227,7 @@ QJsonValue MCRPCService::variableGetType(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Variable_GetType(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Variable_GetType(Contract.toStdString(),
                                                                      BylawName.toStdString(),
                                                                      VariableName.toStdString());
     QJsonObject object{{"VariableType", QString(result.c_str())}};
@@ -3243,7 +3243,7 @@ QJsonValue MCRPCService::variableGetAccess(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Variable_GetAccess(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Variable_GetAccess(Contract.toStdString(),
                                                                        BylawName.toStdString(),
                                                                        VariableName.toStdString());
     QJsonObject object{{"VariableAccess", QString(result.c_str())}};
@@ -3259,7 +3259,7 @@ QJsonValue MCRPCService::variableGetContents(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Variable_GetContents(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Variable_GetContents(Contract.toStdString(),
                                                                          BylawName.toStdString(),
                                                                          VariableName.toStdString());
     QJsonObject object{{"VariableContents", QString(result.c_str())}};
@@ -3275,7 +3275,7 @@ QJsonValue MCRPCService::hookGetNameByIndex(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Hook_GetNameByIndex(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Hook_GetNameByIndex(Contract.toStdString(),
                                                                         BylawName.toStdString(),
                                                                         Index);
     QJsonObject object{{"HookGetNameByIndexResult", QString(result.c_str())}};
@@ -3291,7 +3291,7 @@ QJsonValue MCRPCService::hookGetClauseCount(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Hook_GetClauseCount(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->Hook_GetClauseCount(Contract.toStdString(),
                                                                 BylawName.toStdString(),
                                                                 HookName.toStdString());
     QJsonObject object{{"HookClauseCount", result}};
@@ -3307,7 +3307,7 @@ QJsonValue MCRPCService::hookGetClauseAtIndex(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Hook_GetClauseAtIndex(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Hook_GetClauseAtIndex(Contract.toStdString(),
                                                                           BylawName.toStdString(),
                                                                           HookName.toStdString(),
                                                                           Index);
@@ -3324,7 +3324,7 @@ QJsonValue MCRPCService::callbackGetNameByIndex(QString Username, QString APIKey
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Callback_GetNameByIndex(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Callback_GetNameByIndex(Contract.toStdString(),
                                                                             BylawName.toStdString(),
                                                                             Index);
     QJsonObject object{{"CallbackGetNameByIndexResult", QString(result.c_str())}};
@@ -3340,7 +3340,7 @@ QJsonValue MCRPCService::callbackGetClause(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Callback_GetClause(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Callback_GetClause(Contract.toStdString(),
                                                                        BylawName.toStdString(),
                                                                        ClauseName.toStdString());
     QJsonObject object{{"CallbackGetClauseResult", QString(result.c_str())}};
@@ -3355,7 +3355,7 @@ QJsonValue MCRPCService::partyGetAccountCount(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Party_GetAcctCount(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctCount(Contract.toStdString(),
                                                                PartyName.toStdString());
     QJsonObject object{{"PartyAccountCount", result}};
     return QJsonValue(object);
@@ -3369,7 +3369,7 @@ QJsonValue MCRPCService::partyGetAgentCount(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Party_GetAgentCount(Contract.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->Party_GetAgentCount(Contract.toStdString(),
                                                                 PartyName.toStdString());
     QJsonObject object{{"PartyAgentCount", result}};
     return QJsonValue(object);
@@ -3383,7 +3383,7 @@ QJsonValue MCRPCService::partyGetID(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Party_GetID(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Party_GetID(Contract.toStdString(),
                                                                 PartyName.toStdString());
     QJsonObject object{{"PartyID", QString(result.c_str())}};
     return QJsonValue(object);
@@ -3398,7 +3398,7 @@ QJsonValue MCRPCService::partyGetAccountNameByIndex(QString Username, QString AP
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Party_GetAcctNameByIndex(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctNameByIndex(Contract.toStdString(),
                                                                              PartyName.toStdString(),
                                                                              Index);
     QJsonObject object{{"PartyGetAccountNameByIndexResult", QString(result.c_str())}};
@@ -3414,7 +3414,7 @@ QJsonValue MCRPCService::partyGetAccountID(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Party_GetAcctID(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctID(Contract.toStdString(),
                                                                     PartyName.toStdString(),
                                                                     AccountName.toStdString());
     QJsonObject object{{"PartyGetAccountIDResult", QString(result.c_str())}};
@@ -3430,7 +3430,7 @@ QJsonValue MCRPCService::partyGetAccountInstrumentDefinitionID(QString Username,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Party_GetAcctInstrumentDefinitionID(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctInstrumentDefinitionID(Contract.toStdString(),
                                                                                         PartyName.toStdString(),
                                                                                         AccountName.toStdString());
     QJsonObject object{{"PartyGetAccountInstrumentDefinitionIDResult", QString(result.c_str())}};
@@ -3446,7 +3446,7 @@ QJsonValue MCRPCService::partyGetAccountAgentName(QString Username, QString APIK
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Party_GetAcctAgentName(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctAgentName(Contract.toStdString(),
                                                                            PartyName.toStdString(),
                                                                            AccountName.toStdString());
     QJsonObject object{{"PartyAccountAgentName", QString(result.c_str())}};
@@ -3462,7 +3462,7 @@ QJsonValue MCRPCService::partyGetAgentNameByIndex(QString Username, QString APIK
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Party_GetAgentNameByIndex(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Party_GetAgentNameByIndex(Contract.toStdString(),
                                                                               PartyName.toStdString(),
                                                                               Index);
     QJsonObject object{{"PartyGetAgentNameByIndexResult", QString(result.c_str())}};
@@ -3478,7 +3478,7 @@ QJsonValue MCRPCService::partyGetAgentID(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Party_GetAgentID(Contract.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Party_GetAgentID(Contract.toStdString(),
                                                                      PartyName.toStdString(),
                                                                      AgentName.toStdString());
     QJsonObject object{{"PartyGetAgentIDResult", QString(result.c_str())}};
@@ -3493,16 +3493,16 @@ QJsonValue MCRPCService::activateSmartContract(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->activateSmartContract(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->activateSmartContract(NotaryID.toStdString(),
                                                                   NymID.toStdString(),
                                                                   SmartContract.toStdString());
     QJsonObject object{{"ActivateSmartContractResult", result}};
@@ -3518,16 +3518,16 @@ QJsonValue MCRPCService::triggerClause(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->triggerClause(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->triggerClause(NotaryID.toStdString(),
                                                           NymID.toStdString(),
                                                           TransactionNumber,
                                                           ClauseName.toStdString(),
@@ -3546,12 +3546,12 @@ QJsonValue MCRPCService::messageHarvestTransactionNumbers(QString Username, QStr
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Msg_HarvestTransactionNumbers(Message.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Msg_HarvestTransactionNumbers(Message.toStdString(),
                                                                            NymID.toStdString(),
                                                                            HarvestingForRetry,
                                                                            ReplyWasSuccess,
@@ -3569,12 +3569,12 @@ QJsonValue MCRPCService::loadPubkeyEncryption(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadPubkey_Encryption(NymID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadPubkey_Encryption(NymID.toStdString());
     QJsonObject object{{"LoadPubkeyEncryptionResult", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -3586,12 +3586,12 @@ QJsonValue MCRPCService::loadPubkeySigning(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadPubkey_Signing(NymID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadPubkey_Signing(NymID.toStdString());
     QJsonObject object{{"LoadPubkeySigningResult", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -3603,12 +3603,12 @@ QJsonValue MCRPCService::loadUserPubkeyEncryption(QString Username, QString APIK
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadUserPubkey_Encryption(NymID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadUserPubkey_Encryption(NymID.toStdString());
     QJsonObject object{{"LoadUserPubkeyEncryptionResult", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -3620,12 +3620,12 @@ QJsonValue MCRPCService::loadUserPubkeySigning(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadUserPubkey_Signing(NymID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadUserPubkey_Signing(NymID.toStdString());
     QJsonObject object{{"LoadUserPubkeySigningResult", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -3637,12 +3637,12 @@ QJsonValue MCRPCService::verifyUserPrivateKey(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->VerifyUserPrivateKey(NymID.toStdString());
+    bool result = opentxs::OTAPI_Wrap::Exec()->VerifyUserPrivateKey(NymID.toStdString());
     QJsonObject object{{"VerifyUserPrivateKeyResult", result}};
     return QJsonValue(object);
 }
@@ -3654,16 +3654,16 @@ QJsonValue MCRPCService::mintIsStillGood(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Mint_IsStillGood(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Mint_IsStillGood(NotaryID.toStdString(),
                                                               InstrumentDefinitionID.toStdString());
     QJsonObject object{{"MintIsStillGoodResult", result}};
     return QJsonValue(object);
@@ -3676,16 +3676,16 @@ QJsonValue MCRPCService::loadMint(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadMint(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadMint(NotaryID.toStdString(),
                                                              InstrumentDefinitionID.toStdString());
     QJsonObject object{{"LoadMintResult", QString(result.c_str())}};
     return QJsonValue(object);
@@ -3698,12 +3698,12 @@ QJsonValue MCRPCService::loadServerContract(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadServerContract(NotaryID.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadServerContract(NotaryID.toStdString());
     QJsonObject object{{"LoadServerContractResult", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -3716,20 +3716,20 @@ QJsonValue MCRPCService::loadAssetAccount(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadAssetAccount(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadAssetAccount(NotaryID.toStdString(),
                                                                      NymID.toStdString(),
                                                                      AccountID.toStdString());
     QJsonObject object{{"LoadAssetAccountResult", QString(result.c_str())}};
@@ -3744,16 +3744,16 @@ QJsonValue MCRPCService::nymboxGetReplyNotice(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Nymbox_GetReplyNotice(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Nymbox_GetReplyNotice(NotaryID.toStdString(),
                                                                           NymID.toStdString(),
                                                                           RequestNumber);
     QJsonObject object{{"NymboxGetReplyNoticeResult", QString(result.c_str())}};
@@ -3768,16 +3768,16 @@ QJsonValue MCRPCService::haveAlreadySeenReply(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->HaveAlreadySeenReply(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->HaveAlreadySeenReply(NotaryID.toStdString(),
                                                                   NymID.toStdString(),
                                                                   RequestNumber);
     QJsonObject object{{"HaveAlreadySeenReplyResult", result}};
@@ -3791,16 +3791,16 @@ QJsonValue MCRPCService::loadNymbox(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadNymbox(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadNymbox(NotaryID.toStdString(),
                                                                NymID.toStdString());
     QJsonObject object{{"LoadNymboxResult", QString(result.c_str())}};
     return QJsonValue(object);
@@ -3813,16 +3813,16 @@ QJsonValue MCRPCService::loadNymboxNoVerify(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadNymboxNoVerify(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadNymboxNoVerify(NotaryID.toStdString(),
                                                                        NymID.toStdString());
     QJsonObject object{{"LoadNymboxNoVerifyResult", QString(result.c_str())}};
     return QJsonValue(object);
@@ -3836,20 +3836,20 @@ QJsonValue MCRPCService::loadInbox(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadInbox(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadInbox(NotaryID.toStdString(),
                                                               NymID.toStdString(),
                                                               AccountID.toStdString());
     QJsonObject object{{"LoadInboxResult", QString(result.c_str())}};
@@ -3864,20 +3864,20 @@ QJsonValue MCRPCService::loadInboxNoVerify(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadInboxNoVerify(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadInboxNoVerify(NotaryID.toStdString(),
                                                                       NymID.toStdString(),
                                                                       AccountID.toStdString());
     QJsonObject object{{"LoadInboxResult", QString(result.c_str())}};
@@ -3892,20 +3892,20 @@ QJsonValue MCRPCService::loadOutbox(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadOutbox(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadOutbox(NotaryID.toStdString(),
                                                                NymID.toStdString(),
                                                                AccountID.toStdString());
     QJsonObject object{{"LoadOutboxResult", QString(result.c_str())}};
@@ -3920,20 +3920,20 @@ QJsonValue MCRPCService::loadOutboxNoVerify(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadOutboxNoVerify(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadOutboxNoVerify(NotaryID.toStdString(),
                                                                        NymID.toStdString(),
                                                                        AccountID.toStdString());
     QJsonObject object{{"LoadOutboxNoVerifyResult", QString(result.c_str())}};
@@ -3947,16 +3947,16 @@ QJsonValue MCRPCService::loadPaymentInbox(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadPaymentInbox(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadPaymentInbox(NotaryID.toStdString(),
                                                                      NymID.toStdString());
     QJsonObject object{{"LoadPaymentInboxResult", QString(result.c_str())}};
     return QJsonValue(object);
@@ -3969,16 +3969,16 @@ QJsonValue MCRPCService::loadPaymentInboxNoVerify(QString Username, QString APIK
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadPaymentInboxNoVerify(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadPaymentInboxNoVerify(NotaryID.toStdString(),
                                                                              NymID.toStdString());
     QJsonObject object{{"LoadPaymentInboxNoVerifyResult", QString(result.c_str())}};
     return QJsonValue(object);
@@ -3992,20 +3992,20 @@ QJsonValue MCRPCService::loadRecordBox(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadRecordBox(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadRecordBox(NotaryID.toStdString(),
                                                                   NymID.toStdString(),
                                                                   AccountID.toStdString());
     QJsonObject object{{"LoadRecordBoxResult", QString(result.c_str())}};
@@ -4020,20 +4020,20 @@ QJsonValue MCRPCService::loadRecordBoxNoVerify(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadRecordBoxNoVerify(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadRecordBoxNoVerify(NotaryID.toStdString(),
                                                                           NymID.toStdString(),
                                                                           AccountID.toStdString());
     QJsonObject object{{"LoadRecordBoxNoVerifyResult", QString(result.c_str())}};
@@ -4047,16 +4047,16 @@ QJsonValue MCRPCService::loadExpiredBox(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadExpiredBox(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadExpiredBox(NotaryID.toStdString(),
                                                                    NymID.toStdString());
     QJsonObject object{{"LoadExpiredBoxResult", QString(result.c_str())}};
     return QJsonValue(object);
@@ -4069,16 +4069,16 @@ QJsonValue MCRPCService::loadExpiredBoxNoVerify(QString Username, QString APIKey
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadExpiredBoxNoVerify(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadExpiredBoxNoVerify(NotaryID.toStdString(),
                                                                            NymID.toStdString());
     QJsonObject object{{"LoadExpiredBoxNoVerifyResult", QString(result.c_str())}};
     return QJsonValue(object);
@@ -4093,16 +4093,16 @@ QJsonValue MCRPCService::recordPayment(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->RecordPayment(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->RecordPayment(NotaryID.toStdString(),
                                                            NymID.toStdString(),
                                                            IsInbox,
                                                            Index,
@@ -4121,7 +4121,7 @@ QJsonValue MCRPCService::clearRecord(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->ClearRecord(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->ClearRecord(NotaryID.toStdString(),
                                                          NymID.toStdString(),
                                                          AccountID.toStdString(),
                                                          Index,
@@ -4138,16 +4138,16 @@ QJsonValue MCRPCService::clearExpired(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->ClearExpired(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->ClearExpired(NotaryID.toStdString(),
                                                           NymID.toStdString(),
                                                           Index,
                                                           ClearAll);
@@ -4163,20 +4163,20 @@ QJsonValue MCRPCService::ledgerGetCount(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Ledger_GetCount(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->Ledger_GetCount(NotaryID.toStdString(),
                                                             NymID.toStdString(),
                                                             AccountID.toStdString(),
                                                             Ledger.toStdString());
@@ -4192,20 +4192,20 @@ QJsonValue MCRPCService::ledgerCreateResponse(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Ledger_CreateResponse(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Ledger_CreateResponse(NotaryID.toStdString(),
                                                                           NymID.toStdString(),
                                                                           AccountID.toStdString(),
                                                                           OriginalLedger.toStdString());
@@ -4222,20 +4222,20 @@ QJsonValue MCRPCService::ledgerGetTransactionByIndex(QString Username, QString A
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Ledger_GetTransactionByIndex(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Ledger_GetTransactionByIndex(NotaryID.toStdString(),
                                                                                  NymID.toStdString(),
                                                                                  AccountID.toStdString(),
                                                                                  Ledger.toStdString(),
@@ -4253,20 +4253,20 @@ QJsonValue MCRPCService::ledgerGetTransactionByID(QString Username, QString APIK
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Ledger_GetTransactionByIndex(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Ledger_GetTransactionByIndex(NotaryID.toStdString(),
                                                                                  NymID.toStdString(),
                                                                                  AccountID.toStdString(),
                                                                                  Ledger.toStdString(),
@@ -4284,20 +4284,20 @@ QJsonValue MCRPCService::ledgerGetInstrument(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Ledger_GetInstrument(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Ledger_GetInstrument(NotaryID.toStdString(),
                                                                          NymID.toStdString(),
                                                                          AccountID.toStdString(),
                                                                          Ledger.toStdString(),
@@ -4315,20 +4315,20 @@ QJsonValue MCRPCService::ledgerGetTransactionIDByIndex(QString Username, QString
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    qint64 result = opentxs::OTAPI_Wrap::It()->Ledger_GetTransactionIDByIndex(NotaryID.toStdString(),
+    qint64 result = opentxs::OTAPI_Wrap::Exec()->Ledger_GetTransactionIDByIndex(NotaryID.toStdString(),
                                                                               NymID.toStdString(),
                                                                               AccountID.toStdString(),
                                                                               Ledger.toStdString(),
@@ -4346,20 +4346,20 @@ QJsonValue MCRPCService::ledgerAddTransaction(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Ledger_AddTransaction(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Ledger_AddTransaction(NotaryID.toStdString(),
                                                                           NymID.toStdString(),
                                                                           AccountID.toStdString(),
                                                                           Ledger.toStdString(),
@@ -4377,20 +4377,20 @@ QJsonValue MCRPCService::transactionCreateResponse(QString Username, QString API
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Transaction_CreateResponse(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Transaction_CreateResponse(NotaryID.toStdString(),
                                                                                NymID.toStdString(),
                                                                                AccountID.toStdString(),
                                                                                Ledger.toStdString(),
@@ -4408,20 +4408,20 @@ QJsonValue MCRPCService::ledgerFinalizeResponse(QString Username, QString APIKey
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Ledger_FinalizeResponse(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Ledger_FinalizeResponse(NotaryID.toStdString(),
                                                                             NymID.toStdString(),
                                                                             AccountID.toStdString(),
                                                                             Ledger.toStdString());
@@ -4437,20 +4437,20 @@ QJsonValue MCRPCService::transactionGetVoucher(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Transaction_GetVoucher(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Transaction_GetVoucher(NotaryID.toStdString(),
                                                                            NymID.toStdString(),
                                                                            AccountID.toStdString(),
                                                                            Transaction.toStdString());
@@ -4466,20 +4466,20 @@ QJsonValue MCRPCService::transactionGetSenderNymID(QString Username, QString API
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Transaction_GetSenderNymID(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Transaction_GetSenderNymID(NotaryID.toStdString(),
                                                                                NymID.toStdString(),
                                                                                AccountID.toStdString(),
                                                                                Transaction.toStdString());
@@ -4495,20 +4495,20 @@ QJsonValue MCRPCService::transactionGetRecipientNymID(QString Username, QString 
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Transaction_GetRecipientNymID(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Transaction_GetRecipientNymID(NotaryID.toStdString(),
                                                                                   NymID.toStdString(),
                                                                                   AccountID.toStdString(),
                                                                                   Transaction.toStdString());
@@ -4524,20 +4524,20 @@ QJsonValue MCRPCService::transactionGetSenderAccountID(QString Username, QString
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Transaction_GetSenderAcctID(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Transaction_GetSenderAcctID(NotaryID.toStdString(),
                                                                                 NymID.toStdString(),
                                                                                 AccountID.toStdString(),
                                                                                 Transaction.toStdString());
@@ -4553,20 +4553,20 @@ QJsonValue MCRPCService::transactionGetRecipientAccountID(QString Username, QStr
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Transaction_GetRecipientAcctID(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Transaction_GetRecipientAcctID(NotaryID.toStdString(),
                                                                                    NymID.toStdString(),
                                                                                    AccountID.toStdString(),
                                                                                    Transaction.toStdString());
@@ -4582,20 +4582,20 @@ QJsonValue MCRPCService::pendingGetNote(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Pending_GetNote(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Pending_GetNote(NotaryID.toStdString(),
                                                                     NymID.toStdString(),
                                                                     AccountID.toStdString(),
                                                                     Transaction.toStdString());
@@ -4611,20 +4611,20 @@ QJsonValue MCRPCService::transactionGetAmount(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    qint64 result = opentxs::OTAPI_Wrap::It()->Transaction_GetAmount(NotaryID.toStdString(),
+    qint64 result = opentxs::OTAPI_Wrap::Exec()->Transaction_GetAmount(NotaryID.toStdString(),
                                                                      NymID.toStdString(),
                                                                      AccountID.toStdString(),
                                                                      Transaction.toStdString());
@@ -4640,20 +4640,20 @@ QJsonValue MCRPCService::transactionGetDisplayReferenceToNumber(QString Username
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    qint64 result = opentxs::OTAPI_Wrap::It()->Transaction_GetDisplayReferenceToNum(NotaryID.toStdString(),
+    qint64 result = opentxs::OTAPI_Wrap::Exec()->Transaction_GetDisplayReferenceToNum(NotaryID.toStdString(),
                                                                                     NymID.toStdString(),
                                                                                     AccountID.toStdString(),
                                                                                     Transaction.toStdString());
@@ -4669,20 +4669,20 @@ QJsonValue MCRPCService::transactionGetType(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Transaction_GetType(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Transaction_GetType(NotaryID.toStdString(),
                                                                         NymID.toStdString(),
                                                                         AccountID.toStdString(),
                                                                         Transaction.toStdString());
@@ -4698,16 +4698,16 @@ QJsonValue MCRPCService::replyNoticeGetRequestNumber(QString Username, QString A
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    qint64 result = opentxs::OTAPI_Wrap::It()->ReplyNotice_GetRequestNum(NotaryID.toStdString(),
+    qint64 result = opentxs::OTAPI_Wrap::Exec()->ReplyNotice_GetRequestNum(NotaryID.toStdString(),
                                                                          NymID.toStdString(),
                                                                          Transaction.toStdString());
     QJsonObject object{{"ReplyNoticeRequestNumber", result}};
@@ -4722,20 +4722,20 @@ QJsonValue MCRPCService::transactionGetDateSigned(QString Username, QString APIK
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    time64_t result = opentxs::OTAPI_Wrap::It()->Transaction_GetDateSigned(NotaryID.toStdString(),
+    time64_t result = opentxs::OTAPI_Wrap::Exec()->Transaction_GetDateSigned(NotaryID.toStdString(),
                                                                            NymID.toStdString(),
                                                                            AccountID.toStdString(),
                                                                            Transaction.toStdString());
@@ -4751,20 +4751,20 @@ QJsonValue MCRPCService::transactionGetSuccess(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Transaction_GetSuccess(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Transaction_GetSuccess(NotaryID.toStdString(),
                                                                     NymID.toStdString(),
                                                                     AccountID.toStdString(),
                                                                     Transaction.toStdString());
@@ -4780,20 +4780,20 @@ QJsonValue MCRPCService::transactionIsCanceled(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Transaction_IsCanceled(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Transaction_IsCanceled(NotaryID.toStdString(),
                                                                     NymID.toStdString(),
                                                                     AccountID.toStdString(),
                                                                     Transaction.toStdString());
@@ -4809,20 +4809,20 @@ QJsonValue MCRPCService::transactionGetBalanceAgreementSuccess(QString Username,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Transaction_GetBalanceAgreementSuccess(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Transaction_GetBalanceAgreementSuccess(NotaryID.toStdString(),
                                                                                     NymID.toStdString(),
                                                                                     AccountID.toStdString(),
                                                                                     Transaction.toStdString());
@@ -4838,20 +4838,20 @@ QJsonValue MCRPCService::messageGetBalanceAgreementSuccess(QString Username, QSt
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Message_GetBalanceAgreementSuccess(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Message_GetBalanceAgreementSuccess(NotaryID.toStdString(),
                                                                                 NymID.toStdString(),
                                                                                 AccountID.toStdString(),
                                                                                 Message.toStdString());
@@ -4867,20 +4867,20 @@ QJsonValue MCRPCService::savePurse(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->SavePurse(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->SavePurse(NotaryID.toStdString(),
                                                        InstrumentDefinitionID.toStdString(),
                                                        NymID.toStdString(),
                                                        Purse.toStdString());
@@ -4896,20 +4896,20 @@ QJsonValue MCRPCService::loadPurse(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->LoadPurse(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadPurse(NotaryID.toStdString(),
                                                               InstrumentDefinitionID.toStdString(),
                                                               NymID.toStdString());
     QJsonObject object{{"Purse", QString(result.c_str())}};
@@ -4924,16 +4924,16 @@ QJsonValue MCRPCService::purseGetTotalValue(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    qint64 result = opentxs::OTAPI_Wrap::It()->Purse_GetTotalValue(NotaryID.toStdString(),
+    qint64 result = opentxs::OTAPI_Wrap::Exec()->Purse_GetTotalValue(NotaryID.toStdString(),
                                                                    InstrumentDefinitionID.toStdString(),
                                                                    Purse.toStdString());
     QJsonObject object{{"PurseTotalValue", result}};
@@ -4948,16 +4948,16 @@ QJsonValue MCRPCService::purseCount(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Purse_Count(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->Purse_Count(NotaryID.toStdString(),
                                                         InstrumentDefinitionID.toStdString(),
                                                         Purse.toStdString());
     QJsonObject object{{"PurseCount", result}};
@@ -4971,12 +4971,12 @@ QJsonValue MCRPCService::purseHasPassword(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Purse_HasPassword(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Purse_HasPassword(NotaryID.toStdString(),
                                                                Purse.toStdString());
     QJsonObject object{{"PurseHasPassword", result}};
     return QJsonValue(object);
@@ -4990,24 +4990,24 @@ QJsonValue MCRPCService::createPurse(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(OwnerID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(OwnerID.toStdString())){
         QJsonObject object{{"Error", "Invalid OwnerID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->CreatePurse(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->CreatePurse(NotaryID.toStdString(),
                                                                 InstrumentDefinitionID.toStdString(),
                                                                 OwnerID.toStdString(),
                                                                 SignerID.toStdString());
@@ -5023,20 +5023,20 @@ QJsonValue MCRPCService::createPursePassphrase(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->CreatePurse_Passphrase(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->CreatePurse_Passphrase(NotaryID.toStdString(),
                                                                            InstrumentDefinitionID.toStdString(),
                                                                            SignerID.toStdString());
     QJsonObject object{{"PursePassphrase", QString(result.c_str())}};
@@ -5051,20 +5051,20 @@ QJsonValue MCRPCService::pursePeek(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(OwnerID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(OwnerID.toStdString())){
         QJsonObject object{{"Error", "Invalid OwnerID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Purse_Peek(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Purse_Peek(NotaryID.toStdString(),
                                                                InstrumentDefinitionID.toStdString(),
                                                                OwnerID.toStdString(),
                                                                Purse.toStdString());
@@ -5080,20 +5080,20 @@ QJsonValue MCRPCService::pursePop(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(OwnerOrSignerID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(OwnerOrSignerID.toStdString())){
         QJsonObject object{{"Error", "Invalid OwnerID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Purse_Pop(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Purse_Pop(NotaryID.toStdString(),
                                                               InstrumentDefinitionID.toStdString(),
                                                               OwnerOrSignerID.toStdString(),
                                                               Purse.toStdString());
@@ -5109,20 +5109,20 @@ QJsonValue MCRPCService::purseEmpty(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Purse_Empty(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Purse_Empty(NotaryID.toStdString(),
                                                                 InstrumentDefinitionID.toStdString(),
                                                                 SignerID.toStdString(),
                                                                 Purse.toStdString());
@@ -5139,24 +5139,24 @@ QJsonValue MCRPCService::pursePush(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(OwnerID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(OwnerID.toStdString())){
         QJsonObject object{{"Error", "Invalid OwnerID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Purse_Push(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Purse_Push(NotaryID.toStdString(),
                                                                InstrumentDefinitionID.toStdString(),
                                                                SignerID.toStdString(),
                                                                OwnerID.toStdString(),
@@ -5174,20 +5174,20 @@ QJsonValue MCRPCService::walletImportPurse(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Wallet_ImportPurse(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Wallet_ImportPurse(NotaryID.toStdString(),
                                                                 InstrumentDefinitionID.toStdString(),
                                                                 NymID.toStdString(),
                                                                 Purse.toStdString());
@@ -5203,20 +5203,20 @@ QJsonValue MCRPCService::exchangePurse(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->exchangePurse(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->exchangePurse(NotaryID.toStdString(),
                                                           InstrumentDefinitionID.toStdString(),
                                                           NymID.toStdString(),
                                                           Purse.toStdString());
@@ -5233,20 +5233,20 @@ QJsonValue MCRPCService::tokenChangeOwner(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SignerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SignerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid SignerNymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Token_ChangeOwner(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Token_ChangeOwner(NotaryID.toStdString(),
                                                                       InstrumentDefinitionID.toStdString(),
                                                                       Token.toStdString(),
                                                                       SignerNymID.toStdString(),
@@ -5264,16 +5264,16 @@ QJsonValue MCRPCService::tokenGetID(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Token_GetID(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Token_GetID(NotaryID.toStdString(),
                                                                 InstrumentDefinitionID.toStdString(),
                                                                 Token.toStdString());
     QJsonObject object{{"TokenID", QString(result.c_str())}};
@@ -5288,16 +5288,16 @@ QJsonValue MCRPCService::tokenGetDenomination(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    qint64 result = opentxs::OTAPI_Wrap::It()->Token_GetDenomination(NotaryID.toStdString(),
+    qint64 result = opentxs::OTAPI_Wrap::Exec()->Token_GetDenomination(NotaryID.toStdString(),
                                                                      InstrumentDefinitionID.toStdString(),
                                                                      Token.toStdString());
     QJsonObject object{{"TokenDenomination", result}};
@@ -5312,16 +5312,16 @@ QJsonValue MCRPCService::tokenGetSeries(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Token_GetSeries(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->Token_GetSeries(NotaryID.toStdString(),
                                                             InstrumentDefinitionID.toStdString(),
                                                             Token.toStdString());
     QJsonObject object{{"TokenSeries", result}};
@@ -5336,16 +5336,16 @@ QJsonValue MCRPCService::tokenGetValidFrom(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    time64_t result = opentxs::OTAPI_Wrap::It()->Token_GetValidFrom(NotaryID.toStdString(),
+    time64_t result = opentxs::OTAPI_Wrap::Exec()->Token_GetValidFrom(NotaryID.toStdString(),
                                                                     InstrumentDefinitionID.toStdString(),
                                                                     Token.toStdString());
     QJsonObject object{{"TokenValidFrom", QString(std::to_string(result).c_str())}};
@@ -5360,16 +5360,16 @@ QJsonValue MCRPCService::tokenGetValidTo(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    time64_t result = opentxs::OTAPI_Wrap::It()->Token_GetValidTo(NotaryID.toStdString(),
+    time64_t result = opentxs::OTAPI_Wrap::Exec()->Token_GetValidTo(NotaryID.toStdString(),
                                                                   InstrumentDefinitionID.toStdString(),
                                                                   Token.toStdString());
     QJsonObject object{{"TokenValidTo", QString(std::to_string(result).c_str())}};
@@ -5384,7 +5384,7 @@ QJsonValue MCRPCService::tokenGetInstrumentDefinitionID(QString Username, QStrin
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Token_GetInstrumentDefinitionID(Token.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Token_GetInstrumentDefinitionID(Token.toStdString());
     QJsonObject object{{"TokenInstrumentDefinitionID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -5397,7 +5397,7 @@ QJsonValue MCRPCService::tokenGetNotaryID(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Token_GetNotaryID(Token.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Token_GetNotaryID(Token.toStdString());
     QJsonObject object{{"TokenNotaryID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -5409,12 +5409,12 @@ QJsonValue MCRPCService::isBasketCurrency(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->IsBasketCurrency(InstrumentDefinitionID.toStdString());
+    bool result = opentxs::OTAPI_Wrap::Exec()->IsBasketCurrency(InstrumentDefinitionID.toStdString());
     QJsonObject object{{"IsBasketCurrency", result}};
     return QJsonValue(object);
 }
@@ -5426,12 +5426,12 @@ QJsonValue MCRPCService::basketGetMemberCount(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Basket_GetMemberCount(InstrumentDefinitionID.toStdString());
+    bool result = opentxs::OTAPI_Wrap::Exec()->Basket_GetMemberCount(InstrumentDefinitionID.toStdString());
     QJsonObject object{{"BasketMemberCount", result}};
     return QJsonValue(object);
 }
@@ -5443,12 +5443,12 @@ QJsonValue MCRPCService::basketGetMemberType(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(BasketInstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(BasketInstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid BasketInstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Basket_GetMemberType(BasketInstrumentDefinitionID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Basket_GetMemberType(BasketInstrumentDefinitionID.toStdString(),
                                                                          Index);
     QJsonObject object{{"BasketMemberType", QString(result.c_str())}};
     return QJsonValue(object);
@@ -5461,12 +5461,12 @@ QJsonValue MCRPCService::basketGetMinimumTransferAmount(QString Username, QStrin
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(BasketInstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(BasketInstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid BasketInstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    qint64 result = opentxs::OTAPI_Wrap::It()->Basket_GetMinimumTransferAmount(BasketInstrumentDefinitionID.toStdString());
+    qint64 result = opentxs::OTAPI_Wrap::Exec()->Basket_GetMinimumTransferAmount(BasketInstrumentDefinitionID.toStdString());
     QJsonObject object{{"BasketMinimumTransferAmount", result}};
     return QJsonValue(object);
 }
@@ -5478,12 +5478,12 @@ QJsonValue MCRPCService::basketGetMemberMinimumTransferAmount(QString Username, 
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(BasketInstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(BasketInstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid BasketInstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    qint64 result = opentxs::OTAPI_Wrap::It()->Basket_GetMemberMinimumTransferAmount(BasketInstrumentDefinitionID.toStdString(),
+    qint64 result = opentxs::OTAPI_Wrap::Exec()->Basket_GetMemberMinimumTransferAmount(BasketInstrumentDefinitionID.toStdString(),
                                                                                      Index);
     QJsonObject object{{"BasketMemberMinimumTransferAmount", result}};
     return QJsonValue(object);
@@ -5496,16 +5496,16 @@ QJsonValue MCRPCService::pingNotary(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->pingNotary(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->pingNotary(NotaryID.toStdString(),
                                                        NymID.toStdString());
     QJsonObject object{{"PingNotaryResult", result}};
     return QJsonValue(object);
@@ -5518,16 +5518,16 @@ QJsonValue MCRPCService::registerNym(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->registerNym(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->registerNym(NotaryID.toStdString(),
                                                         NymID.toStdString());
     QJsonObject object{{"RegisterNymResult", result}};
     return QJsonValue(object);
@@ -5540,16 +5540,16 @@ QJsonValue MCRPCService::unregisterNym(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->unregisterNym(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->unregisterNym(NotaryID.toStdString(),
                                                           NymID.toStdString());
     QJsonObject object{{"UnregisterNymResult", result}};
     return QJsonValue(object);
@@ -5563,7 +5563,7 @@ QJsonValue MCRPCService::messageGetUsageCredits(QString Username, QString APIKey
         return QJsonValue(object);
     }
 
-    qint64 result = opentxs::OTAPI_Wrap::It()->Message_GetUsageCredits(Message.toStdString());
+    qint64 result = opentxs::OTAPI_Wrap::Exec()->Message_GetUsageCredits(Message.toStdString());
     QJsonObject object{{"MessageUsageCredits", result}};
     return QJsonValue(object);
 }
@@ -5576,20 +5576,20 @@ QJsonValue MCRPCService::usageCredits(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymIDCheck.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymIDCheck.toStdString())){
         QJsonObject object{{"Error", "Invalid NymIDCheck"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->usageCredits(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->usageCredits(NotaryID.toStdString(),
                                                          NymID.toStdString(),
                                                          NymIDCheck.toStdString(),
                                                          Adjustment);
@@ -5605,20 +5605,20 @@ QJsonValue MCRPCService::checkNym(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymIDCheck.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymIDCheck.toStdString())){
         QJsonObject object{{"Error", "Invalid NymIDCheck"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->checkNym(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->checkNym(NotaryID.toStdString(),
                                                      NymID.toStdString(),
                                                      NymIDCheck.toStdString());
     QJsonObject object{{"CheckNymResult", result}};
@@ -5634,20 +5634,20 @@ QJsonValue MCRPCService::sendNymMessage(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymIDRecipient.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymIDRecipient.toStdString())){
         QJsonObject object{{"Error", "Invalid NymIDRecipient"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->sendNymMessage(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->sendNymMessage(NotaryID.toStdString(),
                                                            NymID.toStdString(),
                                                            NymIDRecipient.toStdString(),
                                                            Message.toStdString());
@@ -5664,20 +5664,20 @@ QJsonValue MCRPCService::sendNymInstrument(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymIDRecipient.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymIDRecipient.toStdString())){
         QJsonObject object{{"Error", "Invalid NymIDRecipient"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->sendNymInstrument(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->sendNymInstrument(NotaryID.toStdString(),
                                                               NymID.toStdString(),
                                                               NymIDRecipient.toStdString(),
                                                               Instrument.toStdString(),
@@ -5693,16 +5693,16 @@ QJsonValue MCRPCService::getRequestNumber(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->getRequestNumber(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->getRequestNumber(NotaryID.toStdString(),
                                                              NymID.toStdString());
     QJsonObject object{{"RequestNumber", result}};
     return QJsonValue(object);
@@ -5716,16 +5716,16 @@ QJsonValue MCRPCService::registerInstrumentDefinition(QString Username, QString 
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->registerInstrumentDefinition(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->registerInstrumentDefinition(NotaryID.toStdString(),
                                                                          NymID.toStdString(),
                                                                          Contract.toStdString());
     QJsonObject object{{"RegisterInstrumentDefinitionResult", result}};
@@ -5740,20 +5740,20 @@ QJsonValue MCRPCService::getInstrumentDefinition(QString Username, QString APIKe
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->getInstrumentDefinition(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->getInstrumentDefinition(NotaryID.toStdString(),
                                                                     NymID.toStdString(),
                                                                     InstrumentDefinitionID.toStdString());
     QJsonObject object{{"InstrumentDefinition", result}};
@@ -5768,20 +5768,20 @@ QJsonValue MCRPCService::getMint(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->getMint(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->getMint(NotaryID.toStdString(),
                                                     NymID.toStdString(),
                                                     InstrumentDefinitionID.toStdString());
     QJsonObject object{{"Mint", result}};
@@ -5796,20 +5796,20 @@ QJsonValue MCRPCService::getAccountData(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->getAccountData(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->getAccountData(NotaryID.toStdString(),
                                                            NymID.toStdString(),
                                                            AccountID.toStdString());
     QJsonObject object{{"AccountData", result}};
@@ -5825,13 +5825,13 @@ QJsonValue MCRPCService::generateBasketCreation(QString Username, QString APIKey
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
     std::string result =
-        opentxs::OTAPI_Wrap::It()->GenerateBasketCreation(
+        opentxs::OTAPI_Wrap::Exec()->GenerateBasketCreation(
             NymID.toStdString(),
             Shortname.toStdString(),
             Name.toStdString(),
@@ -5850,12 +5850,12 @@ QJsonValue MCRPCService::addBasketCreationItem(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->AddBasketCreationItem(                                                                         Basket.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->AddBasketCreationItem(                                                                         Basket.toStdString(),
                                                                           InstrumentDefinitionID.toStdString(),
                                                                           MinimumTransfer);
     QJsonObject object{{"AddBasketCreationItemResult", QString(result.c_str())}};
@@ -5870,16 +5870,16 @@ QJsonValue MCRPCService::issueBasket(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->issueBasket(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->issueBasket(NotaryID.toStdString(),
                                                         NymID.toStdString(),
                                                         Basket.toStdString());
     QJsonObject object{{"IssueBasketResult", result}};
@@ -5895,24 +5895,24 @@ QJsonValue MCRPCService::generateBasketExchange(QString Username, QString APIKey
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(BasketInstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(BasketInstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid BasketInstrumentDefinitionID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(BasketAssetAccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(BasketAssetAccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid BasketAssetAccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GenerateBasketExchange(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GenerateBasketExchange(NotaryID.toStdString(),
                                                                            NymID.toStdString(),
                                                                            BasketInstrumentDefinitionID.toStdString(),
                                                                            BasketAssetAccountID.toStdString(),
@@ -5930,24 +5930,24 @@ QJsonValue MCRPCService::addBasketExchangeItem(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(InstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(InstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid InstrumentDefinitionID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AssetAccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AssetAccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AssetAccountID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->AddBasketExchangeItem(NotaryID.toStdString(),
+    std::string result = opentxs::OTAPI_Wrap::Exec()->AddBasketExchangeItem(NotaryID.toStdString(),
                                                                           NymID.toStdString(),
                                                                           Basket.toStdString(),
                                                                           InstrumentDefinitionID.toStdString(),
@@ -5965,20 +5965,20 @@ QJsonValue MCRPCService::exchangeBasket(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(BasketInstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(BasketInstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid BasketInstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->exchangeBasket(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->exchangeBasket(NotaryID.toStdString(),
                                                            NymID.toStdString(),
                                                            BasketInstrumentDefinitionID.toStdString(),
                                                            Basket.toStdString(),
@@ -5994,16 +5994,16 @@ QJsonValue MCRPCService::getTransactionNumbers(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->getTransactionNumbers(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->getTransactionNumbers(NotaryID.toStdString(),
                                                                   NymID.toStdString());
     QJsonObject object{{"TransactionNumbers", result}};
     return QJsonValue(object);
@@ -6017,20 +6017,20 @@ QJsonValue MCRPCService::notarizeWithdrawal(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->notarizeWithdrawal(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->notarizeWithdrawal(NotaryID.toStdString(),
                                                                NymID.toStdString(),
                                                                AccountID.toStdString(),
                                                                Amount);
@@ -6046,20 +6046,20 @@ QJsonValue MCRPCService::notarizeDeposit(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->notarizeDeposit(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->notarizeDeposit(NotaryID.toStdString(),
                                                             NymID.toStdString(),
                                                             AccountID.toStdString(),
                                                             Purse.toStdString());
@@ -6076,16 +6076,16 @@ QJsonValue MCRPCService::notarizeTransfer(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->notarizeTransfer(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->notarizeTransfer(NotaryID.toStdString(),
                                                              NymID.toStdString(),
                                                              AccountFrom.toStdString(),
                                                              AccountTo.toStdString(),
@@ -6102,16 +6102,16 @@ QJsonValue MCRPCService::getNymbox(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->getNymbox(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->getNymbox(NotaryID.toStdString(),
                                                       NymID.toStdString());
     QJsonObject object{{"NymBox", result}};
     return QJsonValue(object);
@@ -6125,20 +6125,20 @@ QJsonValue MCRPCService::processInbox(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->processInbox(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->processInbox(NotaryID.toStdString(),
                                                          NymID.toStdString(),
                                                          AccountID.toStdString(),
                                                          AccountLedger.toStdString());
@@ -6153,16 +6153,16 @@ QJsonValue MCRPCService::processNymbox(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->processNymbox(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->processNymbox(NotaryID.toStdString(),
                                                           NymID.toStdString());
     QJsonObject object{{"ProcessNymBoxResult", result}};
     return QJsonValue(object);
@@ -6177,24 +6177,24 @@ QJsonValue MCRPCService::withdrawVoucher(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(RecipientNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(RecipientNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid RecipientNymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->withdrawVoucher(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->withdrawVoucher(NotaryID.toStdString(),
                                                             NymID.toStdString(),
                                                             AccountID.toStdString(),
                                                             RecipientNymID.toStdString(),
@@ -6213,24 +6213,24 @@ QJsonValue MCRPCService::payDividend(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(IssuerNymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(IssuerNymID.toStdString())){
         QJsonObject object{{"Error", "Invalid IssuerNymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(DividendFromAccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(DividendFromAccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid DividendFromAccountID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(SharesInstrumentDefinitionID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(SharesInstrumentDefinitionID.toStdString())){
         QJsonObject object{{"Error", "Invalid SharesInstrumentDefinitionID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->payDividend(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->payDividend(NotaryID.toStdString(),
                                                         IssuerNymID.toStdString(),
                                                         DividendFromAccountID.toStdString(),
                                                         SharesInstrumentDefinitionID.toStdString(),
@@ -6248,20 +6248,20 @@ QJsonValue MCRPCService::depositCheque(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->depositCheque(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->depositCheque(NotaryID.toStdString(),
                                                           NymID.toStdString(),
                                                           AccountID.toStdString(),
                                                           Cheque.toStdString());
@@ -6277,16 +6277,16 @@ QJsonValue MCRPCService::depositPaymentPlan(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->depositPaymentPlan(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->depositPaymentPlan(NotaryID.toStdString(),
                                                                NymID.toStdString(),
                                                                PaymentPlan.toStdString());
     QJsonObject object{{"DepositPaymentPlanResult", result}};
@@ -6301,20 +6301,20 @@ QJsonValue MCRPCService::killMarketOffer(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AssetAccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AssetAccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AssetAccountID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->killMarketOffer(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->killMarketOffer(NotaryID.toStdString(),
                                                             NymID.toStdString(),
                                                             AssetAccountID.toStdString(),
                                                             TransactionNumber);
@@ -6330,20 +6330,20 @@ QJsonValue MCRPCService::killPaymentPlan(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(FromAccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(FromAccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid FromAccountID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->killPaymentPlan(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->killPaymentPlan(NotaryID.toStdString(),
                                                             NymID.toStdString(),
                                                             FromAccountID.toStdString(),
                                                             TransactionNumber);
@@ -6362,17 +6362,17 @@ QJsonValue MCRPCService::issueMarketOffer(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AssetAccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AssetAccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AssetAccountID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(CurrencyAccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(CurrencyAccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid CurrencyAccountID"}};
         return QJsonValue(object);
     }
 
 
-    int result = opentxs::OTAPI_Wrap::It()->issueMarketOffer(AssetAccountID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->issueMarketOffer(AssetAccountID.toStdString(),
                                                              CurrencyAccountID.toStdString(),
                                                              MarketScale,
                                                              MinimumIncrement,
@@ -6393,16 +6393,16 @@ QJsonValue MCRPCService::getMarketList(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->getMarketList(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->getMarketList(NotaryID.toStdString(),
                                                           NymID.toStdString());
     QJsonObject object{{"GetMarketListResult", result}};
     return QJsonValue(object);
@@ -6416,20 +6416,20 @@ QJsonValue MCRPCService::getMarketOffers(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(MarketID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(MarketID.toStdString())){
         QJsonObject object{{"Error", "Invalid MarketID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->getMarketOffers(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->getMarketOffers(NotaryID.toStdString(),
                                                             NymID.toStdString(),
                                                             MarketID.toStdString(),
                                                             MaxDepth);
@@ -6445,20 +6445,20 @@ QJsonValue MCRPCService::getMarketRecentTrades(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(MarketID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(MarketID.toStdString())){
         QJsonObject object{{"Error", "Invalid MarketID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->getMarketRecentTrades(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->getMarketRecentTrades(NotaryID.toStdString(),
                                                                   NymID.toStdString(),
                                                                   MarketID.toStdString());
     QJsonObject object{{"GetMarketRecentTradesResult", result}};
@@ -6472,16 +6472,16 @@ QJsonValue MCRPCService::getNymMarketOffers(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->getNymMarketOffers(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->getNymMarketOffers(NotaryID.toStdString(),
                                                                NymID.toStdString());
     QJsonObject object{{"GetNymMarketOffersResult", result}};
     return QJsonValue(object);
@@ -6495,16 +6495,16 @@ QJsonValue MCRPCService::popMessageBuffer(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->PopMessageBuffer(RequestNumber,
+    std::string result = opentxs::OTAPI_Wrap::Exec()->PopMessageBuffer(RequestNumber,
                                                                      NotaryID.toStdString(),
                                                                      NymID.toStdString());
     QJsonObject object{{"PopMessageBufferResult", QString(result.c_str())}};
@@ -6518,7 +6518,7 @@ QJsonValue MCRPCService::flushMessageBuffer(QString Username, QString APIKey)
         return QJsonValue(object);
     }
 
-    opentxs::OTAPI_Wrap::It()->FlushMessageBuffer();
+    opentxs::OTAPI_Wrap::Exec()->FlushMessageBuffer();
     QJsonObject object{{"MessageBufferFlushed", "True"}};
     return QJsonValue(object);
 }
@@ -6531,16 +6531,16 @@ QJsonValue MCRPCService::getSentMessage(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->GetSentMessage(RequestNumber,
+    std::string result = opentxs::OTAPI_Wrap::Exec()->GetSentMessage(RequestNumber,
                                                                    NotaryID.toStdString(),
                                                                    NymID.toStdString());
     QJsonObject object{{"SentMessage", QString(result.c_str())}};
@@ -6555,16 +6555,16 @@ QJsonValue MCRPCService::removeSentMessage(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->RemoveSentMessage(RequestNumber,
+    bool result = opentxs::OTAPI_Wrap::Exec()->RemoveSentMessage(RequestNumber,
                                                                NotaryID.toStdString(),
                                                                NymID.toStdString());
     QJsonObject object{{"RemoveSentMessageResult", result}};
@@ -6579,16 +6579,16 @@ QJsonValue MCRPCService::flushSentMessages(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    opentxs::OTAPI_Wrap::It()->FlushSentMessages(HarvestingForRetry,
+    opentxs::OTAPI_Wrap::Exec()->FlushSentMessages(HarvestingForRetry,
                                                  NotaryID.toStdString(),
                                                  NymID.toStdString(),
                                                  NymBox.toStdString());
@@ -6604,7 +6604,7 @@ QJsonValue MCRPCService::sleep(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    opentxs::OTAPI_Wrap::It()->Sleep(Milliseconds);
+    opentxs::OTAPI_Wrap::Exec()->Sleep(Milliseconds);
     QJsonObject object{{"Sleep", Milliseconds}};
     return QJsonValue(object);
 }
@@ -6617,16 +6617,16 @@ QJsonValue MCRPCService::resyncNymWithServer(QString Username, QString APIKey,
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->ResyncNymWithServer(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->ResyncNymWithServer(NotaryID.toStdString(),
                                                                  NymID.toStdString(),
                                                                  Message.toStdString());
     QJsonObject object{{"ResyncNymWithServerResult", result}};
@@ -6641,16 +6641,16 @@ QJsonValue MCRPCService::queryInstrumentDefinitions(QString Username, QString AP
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->queryInstrumentDefinitions(NotaryID.toStdString(),
+    int result = opentxs::OTAPI_Wrap::Exec()->queryInstrumentDefinitions(NotaryID.toStdString(),
                                                                        NymID.toStdString(),
                                                                        EncodedMap.toStdString());
     QJsonObject object{{"QueryInstrumentDefinitionsResult", result}};
@@ -6665,7 +6665,7 @@ QJsonValue MCRPCService::messageGetPayload(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Message_GetPayload(Message.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Message_GetPayload(Message.toStdString());
     QJsonObject object{{"MessagePayload", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -6678,7 +6678,7 @@ QJsonValue MCRPCService::messageGetCommand(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Message_GetCommand(Message.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Message_GetCommand(Message.toStdString());
     QJsonObject object{{"MessageCommand", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -6691,7 +6691,7 @@ QJsonValue MCRPCService::messageGetLedger(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Message_GetLedger(Message.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Message_GetLedger(Message.toStdString());
     QJsonObject object{{"MessageLedger", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -6704,7 +6704,7 @@ QJsonValue MCRPCService::messageGetNewInstrumentDefinitionID(QString Username, Q
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Message_GetNewInstrumentDefinitionID(Message.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Message_GetNewInstrumentDefinitionID(Message.toStdString());
     QJsonObject object{{"MessageNewInstrumentDefinitionID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -6717,7 +6717,7 @@ QJsonValue MCRPCService::messageGetNewIssuerAccountID(QString Username, QString 
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Message_GetNewIssuerAcctID(Message.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Message_GetNewIssuerAcctID(Message.toStdString());
     QJsonObject object{{"MessageNewIssuerAccountID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -6730,7 +6730,7 @@ QJsonValue MCRPCService::messageGetNewAccountID(QString Username, QString APIKey
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Message_GetNewAcctID(Message.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Message_GetNewAcctID(Message.toStdString());
     QJsonObject object{{"MessageNewAccountID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -6743,7 +6743,7 @@ QJsonValue MCRPCService::messageGetNymboxHash(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::It()->Message_GetNymboxHash(Message.toStdString());
+    std::string result = opentxs::OTAPI_Wrap::Exec()->Message_GetNymboxHash(Message.toStdString());
     QJsonObject object{{"MessageNymboxHash", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -6756,7 +6756,7 @@ QJsonValue MCRPCService::messageGetSuccess(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Message_GetSuccess(Message.toStdString());
+    bool result = opentxs::OTAPI_Wrap::Exec()->Message_GetSuccess(Message.toStdString());
     QJsonObject object{{"MessageNymboxHash", result}};
     return QJsonValue(object);
 }
@@ -6769,7 +6769,7 @@ QJsonValue MCRPCService::messageGetDepth(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    int result = opentxs::OTAPI_Wrap::It()->Message_GetDepth(Message.toStdString());
+    int result = opentxs::OTAPI_Wrap::Exec()->Message_GetDepth(Message.toStdString());
     QJsonObject object{{"MessageDepth", result}};
     return QJsonValue(object);
 }
@@ -6782,20 +6782,20 @@ QJsonValue MCRPCService::messageIsTransactionCanceled(QString Username, QString 
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Message_IsTransactionCanceled(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Message_IsTransactionCanceled(NotaryID.toStdString(),
                                                                            NymID.toStdString(),
                                                                            AccountID.toStdString(),
                                                                            Message.toStdString());
@@ -6811,20 +6811,20 @@ QJsonValue MCRPCService::messageGetTransactionSuccess(QString Username, QString 
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NotaryID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
         QJsonObject object{{"Error", "Invalid NotaryID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(NymID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
         QJsonObject object{{"Error", "Invalid NymID"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(AccountID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(AccountID.toStdString())){
         QJsonObject object{{"Error", "Invalid AccountID"}};
         return QJsonValue(object);
     }
 
-    bool result = opentxs::OTAPI_Wrap::It()->Message_GetTransactionSuccess(NotaryID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->Message_GetTransactionSuccess(NotaryID.toStdString(),
                                                                            NymID.toStdString(),
                                                                            AccountID.toStdString(),
                                                                            Message.toStdString());
@@ -6993,32 +6993,32 @@ QJsonValue MCRPCService::recordListPopulate(QString Username, QString APIKey)
     if(m_RecordList == nullptr)
         createRecordList(Username, APIKey);
 
-    int nServerCount  = opentxs::OTAPI_Wrap::It()->GetServerCount();
-    int nAssetCount   = opentxs::OTAPI_Wrap::It()->GetAssetTypeCount();
-    int nNymCount     = opentxs::OTAPI_Wrap::It()->GetNymCount();
-    int nAccountCount = opentxs::OTAPI_Wrap::It()->GetAccountCount();
+    int nServerCount  = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
+    int nAssetCount   = opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount();
+    int nNymCount     = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
+    int nAccountCount = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
     // ----------------------------------------------------
     for (int ii = 0; ii < nServerCount; ++ii)
     {
-        std::string NotaryID = opentxs::OTAPI_Wrap::It()->GetServer_ID(ii);
+        std::string NotaryID = opentxs::OTAPI_Wrap::Exec()->GetServer_ID(ii);
         m_RecordList->AddNotaryID(NotaryID);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAssetCount; ++ii)
     {
-        std::string InstrumentDefinitionID = opentxs::OTAPI_Wrap::It()->GetAssetType_ID(ii);
+        std::string InstrumentDefinitionID = opentxs::OTAPI_Wrap::Exec()->GetAssetType_ID(ii);
         m_RecordList->AddInstrumentDefinitionID(InstrumentDefinitionID);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nNymCount; ++ii)
     {
-        std::string nymId = opentxs::OTAPI_Wrap::It()->GetNym_ID(ii);
+        std::string nymId = opentxs::OTAPI_Wrap::Exec()->GetNym_ID(ii);
         m_RecordList->AddNymID(nymId);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAccountCount; ++ii)
     {
-        std::string accountID = opentxs::OTAPI_Wrap::It()->GetAccountWallet_ID(ii);
+        std::string accountID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(ii);
         m_RecordList->AddAccountID(accountID);
     }
     // ----------------------------------------------------
@@ -7351,7 +7351,7 @@ QJsonValue MCRPCService::isValidID(QString ID, QString Username, QString APIKey)
         QJsonObject object{{"Error", "Invalid API Key"}};
         return QJsonValue(object);
     }
-    if(!opentxs::OTAPI_Wrap::It()->IsValidID(ID.toStdString())){
+    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(ID.toStdString())){
         QJsonObject object{{"IsValidID", "False"}};
         return QJsonValue(object);
     }

@@ -187,14 +187,14 @@ bool MTMarketDetails::LowLevelRetrieveMarketOffers(opentxs::OTDB::MarketData & m
     if (strNymID.empty())
         return false;
     // ------------------------------
-    opentxs::OT_ME madeEasy;
+
 
     bool bSuccess = false;
     {
         MTSpinner         theSpinner;
-        const std::string str_reply = madeEasy.get_market_offers(marketData.notary_id, strNymID,
+        const std::string str_reply = opentxs::OT_ME::It().get_market_offers(marketData.notary_id, strNymID,
                                                                  marketData.market_id, MAX_DEPTH);
-        const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+        const int32_t     nResult   = opentxs::OT_ME::It().VerifyMessageSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }
@@ -269,12 +269,12 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
         if (NULL != pMarketData) // Should never be NULL.
         {
             std::string & str_server         = pMarketData->notary_id;
-            std::string   str_server_display = opentxs::OTAPI_Wrap::It()->GetServer_Name(str_server);
+            std::string   str_server_display = opentxs::OTAPI_Wrap::Exec()->GetServer_Name(str_server);
             QString       qstrServerName     = QString::fromStdString(str_server_display);
             // -----------------------------------------
-            int64_t lScale = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->scale);
+            int64_t lScale = opentxs::OTAPI_Wrap::Exec()->StringToLong(pMarketData->scale);
 
-            const std::string str_price_per_scale(opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id,
+            const std::string str_price_per_scale(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->instrument_definition_id,
                                                                            lScale));
             // -----------------------------------------
             {
@@ -323,24 +323,24 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
                     QString qstrTransactionID = QString::fromStdString(pData->transaction_id);
                     // -----------------------------------------------------------------------
                     std::string & str_price         = pData->price_per_scale;
-                    int64_t       lPrice            = opentxs::OTAPI_Wrap::It()->StringToLong(str_price); // this price is "per scale"
-                    std::string   str_price_display = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id, lPrice);
+                    int64_t       lPrice            = opentxs::OTAPI_Wrap::Exec()->StringToLong(str_price); // this price is "per scale"
+                    std::string   str_price_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->currency_type_id, lPrice);
 
                     QString qstrPrice = QString::fromStdString(str_price_display);
                     // -----------------------------------------------------------------------
                     std::string & str_available         = pData->available_assets;
-                    int64_t       lQuantity             = opentxs::OTAPI_Wrap::It()->StringToLong(str_available); // Total overall quantity available
-                    std::string   str_available_display = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id, lQuantity);
+                    int64_t       lQuantity             = opentxs::OTAPI_Wrap::Exec()->StringToLong(str_available); // Total overall quantity available
+                    std::string   str_available_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->instrument_definition_id, lQuantity);
 
                     QString qstrAvailable = QString::fromStdString(str_available_display);
                     // -----------------------------------------------------------------------
                     std::string & str_min_inc         = pData->minimum_increment;
-                    int64_t       lMinInc             = opentxs::OTAPI_Wrap::It()->StringToLong(str_min_inc);
-                    std::string   str_min_inc_display = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id, lMinInc);
+                    int64_t       lMinInc             = opentxs::OTAPI_Wrap::Exec()->StringToLong(str_min_inc);
+                    std::string   str_min_inc_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->instrument_definition_id, lMinInc);
 
                     QString qstrMinInc = QString::fromStdString(str_min_inc_display);
                     // -----------------------------------------------------------------------
-                    time_t tDate = static_cast<time_t>(opentxs::OTAPI_Wrap::It()->StringToLong(pData->date));
+                    time_t tDate = static_cast<time_t>(opentxs::OTAPI_Wrap::Exec()->StringToLong(pData->date));
 
                     QDateTime qdate_added   = QDateTime::fromTime_t(tDate);
                     QString   qstrDateAdded = qdate_added.toString(QString("MMM d yyyy hh:mm:ss"));
@@ -356,7 +356,7 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
                     }
                     // -----------------------------------------------------------------------
                     int64_t       lTotalCost     = (lPrice * lScaleUnits);
-                    std::string   str_total_cost = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id,
+                    std::string   str_total_cost = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->currency_type_id,
                                                                             lTotalCost);
 
                     QString qstrTotalCost = QString::fromStdString(str_total_cost);
@@ -399,24 +399,24 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
                     QString qstrTransactionID = QString::fromStdString(pData->transaction_id);
                     // -----------------------------------------------------------------------
                     std::string & str_price         = pData->price_per_scale;
-                    int64_t       lPrice            = opentxs::OTAPI_Wrap::It()->StringToLong(str_price); // this price is "per scale"
-                    std::string   str_price_display = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id, lPrice);
+                    int64_t       lPrice            = opentxs::OTAPI_Wrap::Exec()->StringToLong(str_price); // this price is "per scale"
+                    std::string   str_price_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->currency_type_id, lPrice);
 
                     QString qstrPrice = QString::fromStdString(str_price_display);
                     // -----------------------------------------------------------------------
                     std::string & str_available         = pData->available_assets;
-                    int64_t       lQuantity             = opentxs::OTAPI_Wrap::It()->StringToLong(str_available); // Total overall quantity available
-                    std::string   str_available_display = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id, lQuantity);
+                    int64_t       lQuantity             = opentxs::OTAPI_Wrap::Exec()->StringToLong(str_available); // Total overall quantity available
+                    std::string   str_available_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->instrument_definition_id, lQuantity);
 
                     QString qstrAvailable = QString::fromStdString(str_available_display);
                     // -----------------------------------------------------------------------
                     std::string & str_min_inc         = pData->minimum_increment;
-                    int64_t       lMinInc             = opentxs::OTAPI_Wrap::It()->StringToLong(str_min_inc);
-                    std::string   str_min_inc_display = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id, lMinInc);
+                    int64_t       lMinInc             = opentxs::OTAPI_Wrap::Exec()->StringToLong(str_min_inc);
+                    std::string   str_min_inc_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->instrument_definition_id, lMinInc);
 
                     QString qstrMinInc = QString::fromStdString(str_min_inc_display);
                     // -----------------------------------------------------------------------
-                    time_t tDate = static_cast<time_t>(opentxs::OTAPI_Wrap::It()->StringToLong(pData->date));
+                    time_t tDate = static_cast<time_t>(opentxs::OTAPI_Wrap::Exec()->StringToLong(pData->date));
 
                     QDateTime qdate_added   = QDateTime::fromTime_t(tDate);
                     QString   qstrDateAdded = qdate_added.toString(QString("MMM d yyyy hh:mm:ss"));
@@ -432,7 +432,7 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
                     }
                     // -----------------------------------------------------------------------
                     int64_t       lTotalCost     = (lPrice * lScaleUnits);
-                    std::string   str_total_cost = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id, lTotalCost);
+                    std::string   str_total_cost = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->currency_type_id, lTotalCost);
 
                     QString qstrTotalCost = QString::fromStdString(str_total_cost);
                     // -----------------------------------------------------------------------
@@ -514,15 +514,15 @@ bool MTMarketDetails::LowLevelRetrieveMarketTrades(opentxs::OTDB::MarketData & m
     if (strNymID.empty())
         return false;
     // ------------------------------
-    opentxs::OT_ME madeEasy;
+
 
     bool  bSuccess = false;
     {
         MTSpinner theSpinner;
 
-        const std::string str_reply = madeEasy.get_market_recent_trades(marketData.notary_id, strNymID,
+        const std::string str_reply = opentxs::OT_ME::It().get_market_recent_trades(marketData.notary_id, strNymID,
                                                                         marketData.market_id);
-        const int32_t     nResult   = madeEasy.VerifyMessageSuccess(str_reply);
+        const int32_t     nResult   = opentxs::OT_ME::It().VerifyMessageSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }
@@ -585,16 +585,16 @@ void MTMarketDetails::PopulateRecentTradesGrid(QString & qstrID, QMultiMap<QStri
         if (NULL != pMarketData) // Should never be NULL.
         {
             std::string & str_server         = pMarketData->notary_id;
-            std::string   str_server_display = opentxs::OTAPI_Wrap::It()->GetServer_Name(str_server);
+            std::string   str_server_display = opentxs::OTAPI_Wrap::Exec()->GetServer_Name(str_server);
             QString       qstrServerName     = QString::fromStdString(str_server_display);
             // -----------------------------------------
-            int64_t lScale = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->scale);
+            int64_t lScale = opentxs::OTAPI_Wrap::Exec()->StringToLong(pMarketData->scale);
             // -----------------------------------------
             QTableWidgetItem * pPriceHeader = ui->tableWidgetTrades->horizontalHeaderItem(0);
 
             if (NULL != pPriceHeader)
             {
-                const std::string str_price_per_scale(opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id,
+                const std::string str_price_per_scale(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->instrument_definition_id,
                                                                                lScale));
                 pPriceHeader->setText(QString("%1 %2").arg(tr("Price per")).
                                       arg(QString::fromStdString(str_price_per_scale)));
@@ -620,20 +620,20 @@ void MTMarketDetails::PopulateRecentTradesGrid(QString & qstrID, QMultiMap<QStri
                     // -----------------------------------------------------------------------
                     QString qstrTransactionID = QString::fromStdString(pData->transaction_id);
                     // -----------------------------------------------------------------------
-                    time_t tDate = static_cast<time_t>(opentxs::OTAPI_Wrap::It()->StringToLong(pData->date));
+                    time_t tDate = static_cast<time_t>(opentxs::OTAPI_Wrap::Exec()->StringToLong(pData->date));
 
                     QDateTime qdate_added   = QDateTime::fromTime_t(tDate);
                     QString   qstrDateAdded = qdate_added.toString(QString("MMM d yyyy hh:mm:ss"));
                     // -----------------------------------------------------------------------
                     std::string & str_price         = pData->price;
-                    int64_t       lPrice            = opentxs::OTAPI_Wrap::It()->StringToLong(str_price); // this price is "per scale"
-                    std::string   str_price_display = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id, lPrice);
+                    int64_t       lPrice            = opentxs::OTAPI_Wrap::Exec()->StringToLong(str_price); // this price is "per scale"
+                    std::string   str_price_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->currency_type_id, lPrice);
 
                     QString qstrPrice = QString::fromStdString(str_price_display);
                     // -----------------------------------------------------------------------
                     std::string & str_amount_sold    = pData->amount_sold;
-                    int64_t       lQuantity          = opentxs::OTAPI_Wrap::It()->StringToLong(str_amount_sold); // Total amount of asset sold.
-                    std::string   str_amount_display = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id, lQuantity);
+                    int64_t       lQuantity          = opentxs::OTAPI_Wrap::Exec()->StringToLong(str_amount_sold); // Total amount of asset sold.
+                    std::string   str_amount_display = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->instrument_definition_id, lQuantity);
 
                     QString qstrAmountSold = QString::fromStdString(str_amount_display);
                     // -----------------------------------------------------------------------
@@ -648,7 +648,7 @@ void MTMarketDetails::PopulateRecentTradesGrid(QString & qstrID, QMultiMap<QStri
                     }
                     // -----------------------------------------------------------------------
                     int64_t       lTotalCost     = (lPrice * lScaleUnits);
-                    std::string   str_total_cost = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id, lTotalCost);
+                    std::string   str_total_cost = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->currency_type_id, lTotalCost);
 
                     QString qstrTotalCost = QString::fromStdString(str_total_cost);
                     // -----------------------------------------------------------------------
@@ -743,8 +743,8 @@ void MTMarketDetails::refresh(QString strID, QString strName)
                 if (NULL != pMarketData) // Should never be NULL.
                 {
                     // ------------------------------------------------------
-                    int64_t     lScale    = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->scale);
-                    std::string str_scale = opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id, lScale);
+                    int64_t     lScale    = opentxs::OTAPI_Wrap::Exec()->StringToLong(pMarketData->scale);
+                    std::string str_scale = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->instrument_definition_id, lScale);
                     // ------------------------------------------------------
                     QString qstrFormattedScale = QString::fromStdString(str_scale);
                     // ------------------------------------------------------
@@ -784,8 +784,8 @@ void MTMarketDetails::refresh(QString strID, QString strName)
                     // but across multiple servers.)
                     //
                     // ------------------------------------------------------
-                    ui->lineEditAsset       ->setText(QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->instrument_definition_id)));
-                    ui->lineEditCurrency    ->setText(QString::fromStdString(opentxs::OTAPI_Wrap::It()->GetAssetType_Name(pMarketData->currency_type_id)));
+                    ui->lineEditAsset       ->setText(QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(pMarketData->instrument_definition_id)));
+                    ui->lineEditCurrency    ->setText(QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(pMarketData->currency_type_id)));
                     // ------------------------------------------------------
                     ui->lineEditInstrumentDefinitionID     ->setText(QString::fromStdString(pMarketData->instrument_definition_id));
                     ui->lineEditCurrencyID  ->setText(QString::fromStdString(pMarketData->currency_type_id));
@@ -827,11 +827,11 @@ QString MTMarketDetails::CalculateTotalAssets(QString & qstrID, QMultiMap<QStrin
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
         // -----------------------------
         if (bFirstIteration)
-            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id, 0));
+            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->instrument_definition_id, 0));
 
         bFirstIteration = false;
         // -----------------------------
-        lTotal += opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->total_assets);
+        lTotal += opentxs::OTAPI_Wrap::Exec()->StringToLong(pMarketData->total_assets);
         // --------------------
         ++it_market;
         // --------------------
@@ -839,7 +839,7 @@ QString MTMarketDetails::CalculateTotalAssets(QString & qstrID, QMultiMap<QStrin
         //
         if ((multimap.end() == it_market) || (0 != qstrID.compare(it_market.key())))
         {
-            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->instrument_definition_id, lTotal));
+            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->instrument_definition_id, lTotal));
             break;
         }
     }
@@ -872,9 +872,9 @@ QString MTMarketDetails::CalculateNumberOffers(QString & qstrID, QMultiMap<QStri
         if (NULL != pMarketData) // Should never be NULL.
         {
             if (bIsBid)
-                lTotal += opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->number_bids);
+                lTotal += opentxs::OTAPI_Wrap::Exec()->StringToLong(pMarketData->number_bids);
             else
-                lTotal += opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->number_asks);
+                lTotal += opentxs::OTAPI_Wrap::Exec()->StringToLong(pMarketData->number_asks);
         }
         // --------------------
         ++it_market;
@@ -906,12 +906,12 @@ QString MTMarketDetails::CalculateLastSalePrice(QString & qstrID, QMultiMap<QStr
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
         // -----------------------------
         if (bFirstIteration)
-            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id, 0));
+            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->currency_type_id, 0));
 
         bFirstIteration = false;
         // -----------------------------
-        int64_t lCurrentLastSaleDate  = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->last_sale_date);
-        int64_t lCurrentLastSalePrice = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->last_sale_price);
+        int64_t lCurrentLastSaleDate  = opentxs::OTAPI_Wrap::Exec()->StringToLong(pMarketData->last_sale_date);
+        int64_t lCurrentLastSalePrice = opentxs::OTAPI_Wrap::Exec()->StringToLong(pMarketData->last_sale_price);
 
         if (lCurrentLastSaleDate > lLastSaleDate)
         {
@@ -925,7 +925,7 @@ QString MTMarketDetails::CalculateLastSalePrice(QString & qstrID, QMultiMap<QStr
         //
         if ((multimap.end() == it_market) || (0 != qstrID.compare(it_market.key())))
         {
-            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id, lLastSalePrice));
+            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->currency_type_id, lLastSalePrice));
             break;
         }
     }
@@ -947,11 +947,11 @@ QString MTMarketDetails::CalculateCurrentBid(QString & qstrID, QMultiMap<QString
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
         // -----------------------------
         if (bFirstIteration)
-            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id, 0));
+            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->currency_type_id, 0));
 
         bFirstIteration = false;
         // -----------------------------
-        int64_t lCurrentHighestBid = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->current_bid);
+        int64_t lCurrentHighestBid = opentxs::OTAPI_Wrap::Exec()->StringToLong(pMarketData->current_bid);
 
         if (lCurrentHighestBid > lHighestBid)
             lHighestBid = lCurrentHighestBid;
@@ -962,7 +962,7 @@ QString MTMarketDetails::CalculateCurrentBid(QString & qstrID, QMultiMap<QString
         //
         if ((multimap.end() == it_market) || (0 != qstrID.compare(it_market.key())))
         {
-            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id, lHighestBid));
+            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->currency_type_id, lHighestBid));
             break;
         }
     }
@@ -984,11 +984,11 @@ QString MTMarketDetails::CalculateCurrentAsk(QString & qstrID, QMultiMap<QString
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
         // -----------------------------
         if (bFirstIteration)
-            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id, 0));
+            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->currency_type_id, 0));
 
         bFirstIteration = false;
         // -----------------------------
-        int64_t lCurrentLowestAsk = opentxs::OTAPI_Wrap::It()->StringToLong(pMarketData->current_ask);
+        int64_t lCurrentLowestAsk = opentxs::OTAPI_Wrap::Exec()->StringToLong(pMarketData->current_ask);
 
         if ((0 == lLowestAsk) || ((0 != lCurrentLowestAsk) && (lCurrentLowestAsk < lLowestAsk)))
             lLowestAsk = lCurrentLowestAsk;
@@ -999,7 +999,7 @@ QString MTMarketDetails::CalculateCurrentAsk(QString & qstrID, QMultiMap<QString
         //
         if ((multimap.end() == it_market) || (0 != qstrID.compare(it_market.key())))
         {
-            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::It()->FormatAmount(pMarketData->currency_type_id, lLowestAsk));
+            qstrReturnValue = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->currency_type_id, lLowestAsk));
             break;
         }
     }
