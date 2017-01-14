@@ -62,7 +62,7 @@ void DlgPairNode::on_pushButtonListen_clicked()
               QString qstrData{readData};
 
               if (!qstrData.isEmpty())
-                  ProcessSerialData(readData);
+                  ProcessSerialData(qstrData);
           }
       }
 }

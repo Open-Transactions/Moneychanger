@@ -6604,7 +6604,7 @@ QJsonValue MCRPCService::sleep(QString Username, QString APIKey,
         return QJsonValue(object);
     }
 
-    opentxs::OTAPI_Wrap::Exec()->Sleep(Milliseconds);
+    opentxs::OTAPI_Wrap::Sleep(Milliseconds);
     QJsonObject object{{"Sleep", Milliseconds}};
     return QJsonValue(object);
 }
