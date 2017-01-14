@@ -17,7 +17,7 @@ win32:CONFIG += console
 TARGET      = moneychanger-qt
 VERSION     = 0.0.1
 
-QT         += core gui sql network widgets
+QT         += core gui sql network widgets serialport
 
 DEFINES    += "OT_ZMQ_MODE=1"
 DEFINES    += "EXPORT="
@@ -40,6 +40,13 @@ include($${SOLUTION_DIR}../src/rpc/rpc.pri)
 include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
 include($${SOLUTION_DIR}../src/namecoin/namecoin.pri)
 include($${SOLUTION_DIR}../src/quazip/quazip.pri)
+
+# Package Config
+# MAC AND LINUX:
+mac:{
+    PKGCONFIG += opentxs
+    PKGCONFIG += libzmq
+}
 
 #-------------------------------------------------
 # Include
