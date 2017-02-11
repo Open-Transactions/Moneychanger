@@ -2262,11 +2262,10 @@ void Moneychanger::onNeedToDownloadMail()
         qDebug() << "Making 'Me' Nym";
 
         std::string strSource("");
-        std::string newNymId = opentxs::OT_ME::It().create_nym_hd(strSource, 0);
+        std::string newNymId = opentxs::OTAPI_Wrap::CreateIndividualNym("Me", strSource, 0);
 
         if (!newNymId.empty())
         {
-            opentxs::OTAPI_Wrap::Exec()->SetNym_Name(newNymId, newNymId, tr("Me").toLatin1().data());
             DBHandler::getInstance()->AddressBookUpdateDefaultNym(QString::fromStdString(newNymId));
             qDebug() << "Finished Making Nym";
         }
@@ -4087,11 +4086,10 @@ void Moneychanger::onNeedToDownloadAccountData()
     const auto nymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
 
     if (0 == nymCount) {
-        const std::string id = opentxs::OT_ME::It().create_nym_hd("", 0);
+        const std::string id =
+            opentxs::OTAPI_Wrap::CreateIndividualNym("Me", "", 0);
 
         if (!id.empty()) {
-            opentxs::OTAPI_Wrap::Exec()->SetNym_Name(
-                id, id, tr("Me").toLatin1().data());
             DBHandler::getInstance()->AddressBookUpdateDefaultNym(
                 QString::fromStdString(id));
         }

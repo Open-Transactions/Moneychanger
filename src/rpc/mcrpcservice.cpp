@@ -34,9 +34,10 @@ MCRPCService::~MCRPCService(){
 
 }
 
-QJsonValue MCRPCService::createNymHD(
+QJsonValue MCRPCService::CreateIndividualNym(
     QString Username,
     QString APIKey,
+    QString Name,
     QString Seed)
 {
     if (!validateAPIKey(Username, APIKey)) {
@@ -45,7 +46,7 @@ QJsonValue MCRPCService::createNymHD(
         return QJsonValue(object);
     }
     const std::string result =
-        opentxs::OTAPI_Wrap::CreateNymHD(Seed.toStdString(), 0);
+        opentxs::OTAPI_Wrap::CreateIndividualNym(Name.toStdString(), Seed.toStdString(), 0);
     QJsonObject object{{"CreateNymHDResult", QString(result.c_str())}};
 
     return QJsonValue(object);

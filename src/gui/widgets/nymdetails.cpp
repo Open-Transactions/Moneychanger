@@ -1881,10 +1881,10 @@ void MTNymDetails::AddButtonClicked()
         switch (nAlgorithmIndex)
         {
             case 0:  // ECDSA
-                str_id = opentxs::OT_ME::It().create_nym_hd(NYM_ID_SOURCE, 0);
+                str_id = opentxs::OTAPI_Wrap::CreateIndividualNym(qstrName.toStdString(), NYM_ID_SOURCE, 0);
                 break;
             case 1: // 1024-bit RSA
-                str_id = opentxs::OT_ME::It().create_nym_legacy(1024, NYM_ID_SOURCE);
+                str_id = opentxs::OTAPI_Wrap::CreateNymLegacy(1024, NYM_ID_SOURCE);
                 break;
 //            case 2: // 2048-bit RSA
 //                str_id = opentxs::OT_ME::It().create_nym_legacy(2048, NYM_ID_SOURCE);
@@ -1933,7 +1933,7 @@ void MTNymDetails::AddButtonClicked()
         // Set the Name of the new Nym.
         //
         //bool bNameSet =
-        opentxs::OTAPI_Wrap::Exec()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
+        //opentxs::OTAPI_Wrap::Exec()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
         // ------------------------------------------------------
         std::map<uint32_t, std::list<std::tuple<uint32_t, std::string, bool>>> items;
 
