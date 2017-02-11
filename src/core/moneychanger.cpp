@@ -162,9 +162,9 @@ Moneychanger::Moneychanger(QWidget *parent)
       );
 
     opentxs::App::Me().Schedule(
-        15,
+        120,
         []()->void{ opentxs::OTAPI_Wrap::Trigger_Refresh(); },
-        (std::time(nullptr)+15));
+        (std::time(nullptr)+60));
 
     //SQLite database
     // This can be moved very easily into a different class
