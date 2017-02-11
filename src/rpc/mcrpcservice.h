@@ -175,30 +175,6 @@ public Q_SLOTS:
                                QString NotaryID, QString NymID);
     QJsonValue getNymOutboxHash(QString Username, QString APIKey,
                                 QString NotaryID, QString NymID);
-    QJsonValue getNymMailCount(QString Username, QString APIKey,
-                               QString NymID);
-    QJsonValue getNymContentsByIndex(QString Username, QString APIKey,
-                                     QString NymID, int Index);
-    QJsonValue getNymMailSenderIDByIndex(QString Username, QString APIKey,
-                                         QString NymID, int Index);
-    QJsonValue getNymMailNotaryIDByIndex(QString Username, QString APIKey,
-                                         QString NymID, int Index);
-    QJsonValue nymRemoveMailByIndex(QString Username, QString APIKey,
-                                    QString NymID, int Index);
-    QJsonValue nymVerifyMailByIndex(QString Username, QString APIKey,
-                                    QString NymID, int Index);
-    QJsonValue getNymOutmailCount(QString Username, QString APIKey,
-                                  QString NymID);
-    QJsonValue getNymOutmailContentsByIndex(QString Username, QString APIKey,
-                                            QString NymID, int Index);
-    QJsonValue getNymOutmailRecipientIDByIndex(QString Username, QString APIKey,
-                                               QString NymID, int Index);
-    QJsonValue getNymOutmailNotaryIDByIndex(QString Username, QString APIKey,
-                                            QString NymID, int Index);
-    QJsonValue nymRemoveOutmailByIndex(QString Username, QString APIKey,
-                                       QString NymID, int Index);
-    QJsonValue nymVerifyOutmailByIndex(QString Username, QString APIKey,
-                                       QString NymID, int Index);
     QJsonValue getNymOutpaymentsCount(QString Username, QString APIKey,
                                       QString NymID);
     QJsonValue getNymOutpaymentsContentsByIndex(QString Username, QString APIKey,
