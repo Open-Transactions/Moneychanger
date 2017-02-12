@@ -1594,7 +1594,7 @@ QJsonValue MCRPCService::setNymName(QString Username, QString APIKey,
     }
 
 
-    bool result = opentxs::OTAPI_Wrap::Exec()->SetNym_Name(NymID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->SetNym_Alias(NymID.toStdString(),
                                                          SignerNymID.toStdString(),
                                                          NewName.toStdString());
     QJsonObject object{{"SetNymNameResult", result}};
