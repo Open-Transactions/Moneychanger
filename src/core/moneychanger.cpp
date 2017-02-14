@@ -58,15 +58,15 @@
 #include <gui/ui/agreements.hpp>
 
 
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/OT.hpp>
+#include <opentxs/api/Wallet.hpp>
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTME_too.hpp>
 #include <opentxs/core/Nym.hpp>
-#include <opentxs/core/app/App.hpp>
-#include <opentxs/core/app/Api.hpp>
-#include <opentxs/core/app/Wallet.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
 #include <opentxs/client/OTWallet.hpp>
@@ -145,12 +145,12 @@ Moneychanger::Moneychanger(QWidget *parent)
     nmc_update_timer->start (1000 * 60 * 10);
     nmc_timer_event ();
 
-    opentxs::App::Me().Schedule(
+    opentxs::OT::App().Schedule(
         5,
         [&]()->void
             {
                 const auto count =
-                    opentxs::App::Me().API().OTME_TOO().RefreshCount();
+                    opentxs::OT::App().API().OTME_TOO().RefreshCount();
                 const auto existing = refresh_count_.load();
 
                 if (existing < count) {
@@ -161,7 +161,7 @@ Moneychanger::Moneychanger(QWidget *parent)
             }
       );
 
-    opentxs::App::Me().Schedule(
+    opentxs::OT::App().Schedule(
         120,
         []()->void{ opentxs::OTAPI_Wrap::Trigger_Refresh(); },
         (std::time(nullptr)+60));
@@ -4110,7 +4110,7 @@ void Moneychanger::onNeedToDownloadAccountData()
             AddressBookUpdateDefaultAsset(get_asset_id_at(0));
     }
 
-    opentxs::App::Me().API().OTME_TOO().Refresh();
+    opentxs::OT::App().API().OTME_TOO().Refresh();
 
     return;
 }
@@ -5290,7 +5290,7 @@ void Moneychanger::onNewAssetAdded(QString qstrID)
 
 void Moneychanger::PublicNymNotify(std::string id)
 {
-        auto pNym = opentxs::App::Me().Contract().Nym(opentxs::Identifier(id));
+        auto pNym = opentxs::OT::App().Contract().Nym(opentxs::Identifier(id));
 
         if (pNym)
         {
@@ -5310,7 +5310,7 @@ void Moneychanger::PublicNymNotify(std::string id)
 void Moneychanger::ServerContractNotify(std::string id)
 {
     auto pContract =
-        opentxs::App::Me().Contract().Server(opentxs::Identifier(id));
+        opentxs::OT::App().Contract().Server(opentxs::Identifier(id));
 
     if (pContract) {
         qDebug() << "I was notified that the DHT downloaded contract "
@@ -5329,7 +5329,7 @@ void Moneychanger::AssetContractNotify(std::string id)
 {
     const opentxs::Identifier ot_id(id);
 
-    auto pContract = opentxs::App::Me().Contract().UnitDefinition(ot_id);
+    auto pContract = opentxs::OT::App().Contract().UnitDefinition(ot_id);
 
     if (pContract) {
         qDebug() << "I was notified that the DHT downloaded contract "

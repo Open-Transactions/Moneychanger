@@ -12,18 +12,17 @@
 
 #include <gui/ui/dlgexportedtopass.hpp>
 
-#include <opentxs/core/app/App.hpp>
-#include <opentxs/core/OTStorage.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OT_API.hpp>
-
 #include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/crypto/OTEnvelope.hpp>
-#include <opentxs/core/Nym.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
 #include <opentxs/core/crypto/OTSignedFile.hpp>
+#include <opentxs/core/Nym.hpp>
+#include <opentxs/core/OTStorage.hpp>
 
 #include <QKeyEvent>
 #include <QApplication>
@@ -414,7 +413,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                             opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
 
                             auto pNym =
-                                opentxs::App::Me().Contract().Nym(signer_nym_id);
+                                opentxs::OT::App().Contract().Nym(signer_nym_id);
                             if (!pNym)
                             {
                                 QString qstrErrorMsg = QString("%1: %2").
