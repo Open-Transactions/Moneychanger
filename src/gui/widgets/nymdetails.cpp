@@ -19,22 +19,17 @@
 #include <core/mtcomms.h>
 #include <core/moneychanger.hpp>
 
-
+#include <opentxs/api/OT.hpp>
 #include <opentxs/core/Nym.hpp>
-#include <opentxs-proto/verify/VerifyContacts.hpp>
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OT_ME.hpp>
-#include <opentxs/core/app/App.hpp>
 #include <opentxs/core/NumList.hpp>
 #include <opentxs/core/Proto.hpp>
 #include <opentxs/core/Types.hpp>
 
-
-
 #include <namecoin/Namecoin.hpp>
-
 
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
@@ -224,7 +219,7 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
 
     if (!str_nym_id.empty())
     {
-        auto pCurrentNym = opentxs::App::Me().Contract().Nym(id_nym);
+        auto pCurrentNym = opentxs::OT::App().Contract().Nym(id_nym);
 //        const opentxs::Nym * pCurrentNym =
 //            opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
 
@@ -1881,10 +1876,10 @@ void MTNymDetails::AddButtonClicked()
         switch (nAlgorithmIndex)
         {
             case 0:  // ECDSA
-                str_id = opentxs::OT_ME::It().create_nym_hd(NYM_ID_SOURCE, 0);
+                str_id = opentxs::OTAPI_Wrap::CreateIndividualNym(qstrName.toStdString(), NYM_ID_SOURCE, 0);
                 break;
             case 1: // 1024-bit RSA
-                str_id = opentxs::OT_ME::It().create_nym_legacy(1024, NYM_ID_SOURCE);
+                str_id = opentxs::OTAPI_Wrap::CreateNymLegacy(1024, NYM_ID_SOURCE);
                 break;
 //            case 2: // 2048-bit RSA
 //                str_id = opentxs::OT_ME::It().create_nym_legacy(2048, NYM_ID_SOURCE);
@@ -1933,7 +1928,7 @@ void MTNymDetails::AddButtonClicked()
         // Set the Name of the new Nym.
         //
         //bool bNameSet =
-        opentxs::OTAPI_Wrap::Exec()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
+        //opentxs::OTAPI_Wrap::Exec()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
         // ------------------------------------------------------
         std::map<uint32_t, std::list<std::tuple<uint32_t, std::string, bool>>> items;
 
@@ -2333,7 +2328,7 @@ void MTNymDetails::on_lineEditName_editingFinished()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = opentxs::OTAPI_Wrap::Exec()->SetNym_Name(m_pOwner->m_qstrCurrentID.toStdString(), // Nym
+        bool bSuccess = opentxs::OTAPI_Wrap::Exec()->SetNym_Alias(m_pOwner->m_qstrCurrentID.toStdString(), // Nym
                                                 m_pOwner->m_qstrCurrentID.toStdString(), // Signer
                                                 ui->lineEditName->text(). toStdString()); // New Name
         if (bSuccess)

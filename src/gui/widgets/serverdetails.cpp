@@ -8,6 +8,7 @@
 #include <gui/widgets/wizardaddcontract.hpp>
 
 #include <opentxs/core/Version.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -16,7 +17,6 @@
 #include <opentxs/core/contract/ServerContract.hpp>
 #include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/crypto/OTCachedKey.hpp>
-#include <opentxs/core/app/App.hpp>
 #include <opentxs/core/util/OTFolders.hpp>
 
 #include <quazip/quazip.h>
@@ -679,7 +679,7 @@ void MTServerDetails::refresh(QString strID, QString strName)
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
         auto contract =
-            opentxs::App::Me().Contract().Server(
+            opentxs::OT::App().Contract().Server(
                 opentxs::Identifier(strID.toStdString()));
 
         if (!contract) {return; }

@@ -34,9 +34,10 @@ MCRPCService::~MCRPCService(){
 
 }
 
-QJsonValue MCRPCService::createNymHD(
+QJsonValue MCRPCService::CreateIndividualNym(
     QString Username,
     QString APIKey,
+    QString Name,
     QString Seed)
 {
     if (!validateAPIKey(Username, APIKey)) {
@@ -45,7 +46,7 @@ QJsonValue MCRPCService::createNymHD(
         return QJsonValue(object);
     }
     const std::string result =
-        opentxs::OTAPI_Wrap::CreateNymHD(Seed.toStdString(), 0);
+        opentxs::OTAPI_Wrap::CreateIndividualNym(Name.toStdString(), Seed.toStdString(), 0);
     QJsonObject object{{"CreateNymHDResult", QString(result.c_str())}};
 
     return QJsonValue(object);
@@ -1279,231 +1280,6 @@ QJsonValue MCRPCService::getNymOutboxHash(QString Username, QString APIKey,
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getNymMailCount(QString Username, QString APIKey,
-                                         QString NymID)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-    int result = opentxs::OTAPI_Wrap::Exec()->GetNym_MailCount(NymID.toStdString());
-    QJsonObject object{{"NymMailCount", result}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::getNymContentsByIndex(QString Username, QString APIKey,
-                                               QString NymID, int Index)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-
-    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_MailContentsByIndex(NymID.toStdString(),
-                                                                               Index);
-    QJsonObject object{{"NymContentsByIndex", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::getNymMailSenderIDByIndex(QString Username, QString APIKey,
-                                                   QString NymID, int Index)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-
-    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_MailSenderIDByIndex(NymID.toStdString(),
-                                                                               Index);
-    QJsonObject object{{"NymMailSenderIDByIndex", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::getNymMailNotaryIDByIndex(QString Username, QString APIKey,
-                                                   QString NymID, int Index)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-
-    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_MailNotaryIDByIndex(NymID.toStdString(),
-                                                                               Index);
-    QJsonObject object{{"NymMailNotaryIDByIndex", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::nymRemoveMailByIndex(QString Username, QString APIKey,
-                                              QString NymID, int Index)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-
-    bool result = opentxs::OTAPI_Wrap::Exec()->Nym_RemoveMailByIndex(NymID.toStdString(),
-                                                                   Index);
-    QJsonObject object{{"NymRemoveMailByIndexResult", result}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::nymVerifyMailByIndex(QString Username, QString APIKey,
-                                              QString NymID, int Index)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-
-    bool result = opentxs::OTAPI_Wrap::Exec()->Nym_VerifyMailByIndex(NymID.toStdString(),
-                                                                   Index);
-    QJsonObject object{{"NymVerifyMailByIndexResult", result}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::getNymOutmailCount(QString Username, QString APIKey,
-                                            QString NymID)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-
-    int result = opentxs::OTAPI_Wrap::Exec()->GetNym_OutmailCount(NymID.toStdString());
-    QJsonObject object{{"NymOutmailCount", result}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::getNymOutmailContentsByIndex(QString Username, QString APIKey,
-                                                      QString NymID, int Index)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-
-    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_OutmailContentsByIndex(NymID.toStdString(),
-                                                                                  Index);
-    QJsonObject object{{"NymOutmailContentsIDByIndex", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::getNymOutmailRecipientIDByIndex(QString Username, QString APIKey,
-                                                         QString NymID, int Index)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-
-    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_OutmailRecipientIDByIndex(NymID.toStdString(),
-                                                                                     Index);
-    QJsonObject object{{"NymOutmailRecipientIDByIndex", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::getNymOutmailNotaryIDByIndex(QString Username, QString APIKey,
-                                                      QString NymID, int Index)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-
-    std::string result = opentxs::OTAPI_Wrap::Exec()->GetNym_OutmailNotaryIDByIndex(NymID.toStdString(),
-                                                                                  Index);
-    QJsonObject object{{"NymOutmailNotaryIDIDByIndex", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::nymRemoveOutmailByIndex(QString Username, QString APIKey,
-                                                 QString NymID, int Index)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-
-    bool result = opentxs::OTAPI_Wrap::Exec()->Nym_RemoveOutmailByIndex(NymID.toStdString(),
-                                                                      Index);
-    QJsonObject object{{"NymRemoveOutmailByIndexResult", result}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::nymVerifyOutmailByIndex(QString Username, QString APIKey,
-                                                 QString NymID, int Index)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-
-    bool result = opentxs::OTAPI_Wrap::Exec()->Nym_VerifyOutmailByIndex(NymID.toStdString(),
-                                                                      Index);
-    QJsonObject object{{"NymVerifyOutmailByIndexResult", result}};
-    return QJsonValue(object);
-}
-
 QJsonValue MCRPCService::getNymOutpaymentsCount(QString Username, QString APIKey,
                                                 QString NymID)
 {
@@ -1818,7 +1594,7 @@ QJsonValue MCRPCService::setNymName(QString Username, QString APIKey,
     }
 
 
-    bool result = opentxs::OTAPI_Wrap::Exec()->SetNym_Name(NymID.toStdString(),
+    bool result = opentxs::OTAPI_Wrap::Exec()->SetNym_Alias(NymID.toStdString(),
                                                          SignerNymID.toStdString(),
                                                          NewName.toStdString());
     QJsonObject object{{"SetNymNameResult", result}};

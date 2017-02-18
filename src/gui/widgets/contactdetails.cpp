@@ -20,13 +20,13 @@
 #include <core/handlers/modelverifications.hpp>
 #include <core/mtcomms.h>
 
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/Nym.hpp>
 #include <opentxs/core/Types.hpp>
-#include <opentxs/core/app/App.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
 #include <opentxs/client/OTWallet.hpp>
 
@@ -1105,7 +1105,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
         if (!str_nym_id.empty())
         {
-            auto pCurrentNym = opentxs::App::Me().Contract().Nym(id_nym);
+            auto pCurrentNym = opentxs::OT::App().Contract().Nym(id_nym);
 //          const opentxs::Nym * pCurrentNym =
 //                opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(id_nym);
 
@@ -1132,7 +1132,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
                     if (1 == nReturnVal)
                     {
-                        pCurrentNym = opentxs::App::Me().Contract().Nym(id_nym);
+                        pCurrentNym = opentxs::OT::App().Contract().Nym(id_nym);
 //                      pCurrentNym = opentxs::OTAPI_Wrap::OTAPI()->reloadAndGetNym(id_nym);
                         bANymWasChecked = true;
                         emit nymWasJustChecked(qstrNymID);
