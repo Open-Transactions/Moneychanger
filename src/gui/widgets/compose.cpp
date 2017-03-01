@@ -905,7 +905,7 @@ void MTCompose::on_viaButton_clicked()
             // else {} (should never happen.)
             // --------------------------------------
             // These calls will select the right addresses, if appropriate.
-            this->hasSender();            
+            this->hasSender();
             this->hasRecipient();
             // --------------------------------------
             this->setSenderNameBasedOnAvailableData();
@@ -971,7 +971,7 @@ bool MTCompose::CheckPotentialCommonMsgMethod(QString qstrMsgTypeAttempt, mapIDN
         //
         if (!bGotSenderAddresses || !bGotRecipientAddresses)
             return false;
-        
+
         // By this point we know that addresses of type qstrMsgTypeAttempt (such
         // as "bitmessage") are available both for sender AND recipient.
         // ------------------------------------------------------
@@ -2387,7 +2387,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
                 {
                     MTSpinner theSpinner;
 
-                    response = opentxs::OT_ME::It().register_nym(notary_id, sender_id);
+                    response = opentxs::OTAPI_Wrap::Register_Nym_Public(sender_id, notary_id);
                 }
 
                 qDebug() << QString("Nym Registration Response: %1").arg(QString::fromStdString(response));

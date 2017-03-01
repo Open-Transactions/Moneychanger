@@ -479,7 +479,7 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
             std::string response;
             {
                 MTSpinner theSpinner;
-                response = opentxs::OT_ME::It().register_nym(notary_id, my_nym_id);
+                response = opentxs::OTAPI_Wrap::Register_Nym_Public(my_nym_id, notary_id);
                 if (response.empty() && !opentxs::OTAPI_Wrap::CheckConnection(notary_id))
                 {
                     QString qstrErrorMsg;
@@ -2301,7 +2301,7 @@ void Moneychanger::onNeedToDownloadMail()
                 {
                     MTSpinner theSpinner;
 
-                    response = opentxs::OT_ME::It().register_nym(defaultNotaryID, defaultNymID);
+                    response = opentxs::OTAPI_Wrap::Register_Nym_Public(defaultNymID, defaultNotaryID);
 
                     if (!opentxs::OTAPI_Wrap::CheckConnection(defaultNotaryID))
                     {

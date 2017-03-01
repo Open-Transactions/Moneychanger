@@ -1738,9 +1738,13 @@ void MTAccountDetails::AddButtonClicked()
             {
                 MTSpinner theSpinner;
 
-                std::string strResponse = opentxs::OT_ME::It().register_nym(qstrNotaryID.toStdString(),
-                                                                qstrNymID   .toStdString()); // This also does getRequest internally, if success.
-                nSuccess                = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
+                auto strResponse = opentxs::OTAPI_Wrap::Register_Nym_Public(qstrNymID.toStdString(), qstrNotaryID.toStdString());
+
+                if (strResponse) {
+                    nSuccess = 1;
+                } else {
+                    nSuccess = 0;
+                }
             }
             // -1 is error,
             //  0 is reply received: failure
