@@ -2332,8 +2332,7 @@ void MTNymDetails::on_lineEditName_editingFinished()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = opentxs::OTAPI_Wrap::Exec()->SetNym_Alias(m_pOwner->m_qstrCurrentID.toStdString(), // Nym
-                                                m_pOwner->m_qstrCurrentID.toStdString(), // Signer
+        bool bSuccess = opentxs::OTAPI_Wrap::Exec()->Rename_Nym(m_pOwner->m_qstrCurrentID.toStdString(), // Nym
                                                 ui->lineEditName->text(). toStdString()); // New Name
         if (bSuccess)
         {
