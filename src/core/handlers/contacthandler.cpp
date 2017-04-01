@@ -1033,7 +1033,7 @@ bool MTContactHandler::AddNymToExistingContact(int nContactID, QString nym_id_st
 
         if (!str_insert_nym.isEmpty())
         {
-            qDebug() << QString("Running query: %1").arg(str_insert_nym);
+            //qDebug() << QString("Running query: %1").arg(str_insert_nym);
 
             return DBHandler::getInstance()->runQuery(str_insert_nym);
         }
@@ -2277,7 +2277,7 @@ int  MTContactHandler::CreateSmartContractTemplate(QString template_string)
                              "(`template_id`) "
                              "VALUES(NULL)");
 
-    qDebug() << QString("Running query: %1").arg(str_insert);
+    //qDebug() << QString("Running query: %1").arg(str_insert);
 
     DBHandler::getInstance()->runQuery(str_insert);
     // ----------------------------------------
@@ -2292,7 +2292,7 @@ int  MTContactHandler::CreateSmartContractTemplate(QString template_string)
         //
         str_insert = QString("UPDATE smart_contract SET template_contents='%1' WHERE template_id='%2'").arg(encoded_value).arg(nTemplateID);
 
-        qDebug() << QString("Running query: %1").arg(str_insert);
+        //qDebug() << QString("Running query: %1").arg(str_insert);
 
         DBHandler::getInstance()->runQuery(str_insert);
     }
@@ -2324,7 +2324,7 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString not
     //
     QString str_select = QString("SELECT `contact_id` FROM `nym` WHERE `nym_id`='%1'").arg(nym_id_string);
 
-    qDebug() << QString("Running query: %1").arg(str_select);
+//    qDebug() << QString("Running query: %1").arg(str_select);
 
     int  nRows      = DBHandler::getInstance()->querySize(str_select);
     bool bNymExists = false;
@@ -2349,7 +2349,7 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString not
                                              "(`contact_id`) "
                                              "VALUES(NULL)");
 
-        qDebug() << QString("Running query: %1").arg(str_insert_contact);
+        //qDebug() << QString("Running query: %1").arg(str_insert_contact);
 
         DBHandler::getInstance()->runQuery(str_insert_contact);
         // ----------------------------------------
@@ -2376,7 +2376,7 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString not
 
         if (!str_insert_nym.isEmpty())
         {
-            qDebug() << QString("Running query: %1").arg(str_insert_nym);
+            //qDebug() << QString("Running query: %1").arg(str_insert_nym);
 
             DBHandler::getInstance()->runQuery(str_insert_nym);
         }
@@ -2396,7 +2396,7 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString not
                                                 "(`nym_id`, `notary_id`) "
                                                 "VALUES('%1', '%2')").arg(nym_id_string).arg(notary_id_string);
 
-            qDebug() << QString("Running query: %1").arg(str_insert_server);
+            //qDebug() << QString("Running query: %1").arg(str_insert_server);
 
             DBHandler::getInstance()->runQuery(str_insert_server);
         }
@@ -2453,7 +2453,7 @@ int MTContactHandler::CreateContactBasedOnAddress(QString qstrAddress, QString q
                                              "(`contact_id`) "
                                              "VALUES(NULL)");
 
-        qDebug() << QString("Running query: %1").arg(str_insert_contact);
+        //qDebug() << QString("Running query: %1").arg(str_insert_contact);
 
         DBHandler::getInstance()->runQuery(str_insert_contact);
         // ----------------------------------------

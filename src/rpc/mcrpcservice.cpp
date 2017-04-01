@@ -79,7 +79,7 @@ QJsonValue MCRPCService::registerAccount(QString Username, QString APIKey,
 
     std::string result = opentxs::OT_ME::It().create_asset_acct(NotaryID.toStdString(), NymID.toStdString(), InstrumentDefinitionID.toStdString());
 
-    if (opentxs::OTAPI_Wrap::networkFailure())
+    if (!opentxs::OTAPI_Wrap::CheckConnection(NotaryID.toStdString()))
     {
 //      emit appendToLog(qstrErrorMsg); // TODO!
         qDebug() << "Network failure while trying to create asset account.";

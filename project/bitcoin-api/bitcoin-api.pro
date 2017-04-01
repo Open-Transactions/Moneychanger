@@ -25,7 +25,12 @@ PRECOMPILED_HEADER = $${SOLUTION_DIR}../src/core/stable.hpp
 
 include($${SOLUTION_DIR}../src/bitcoin-api/bitcoin-api.pri)
 
-
+# Package Config
+# MAC AND LINUX:
+mac:{
+    PKGCONFIG += opentxs
+    PKGCONFIG += libzmq
+}
 #-------------------------------------------------
 # Options
 

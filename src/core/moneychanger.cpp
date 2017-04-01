@@ -478,7 +478,7 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
             {
                 MTSpinner theSpinner;
                 response = opentxs::OT_ME::It().register_nym(notary_id, my_nym_id);
-                if (opentxs::OTAPI_Wrap::networkFailure())
+                if (response.empty() && !opentxs::OTAPI_Wrap::CheckConnection(notary_id))
                 {
                     QString qstrErrorMsg;
                     qstrErrorMsg = QString("%1: %2. %3.").
@@ -503,7 +503,7 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
                 MTSpinner theSpinner;
                 response = opentxs::OT_ME::It().check_nym(notary_id, my_nym_id, his_nym_id);
             }
-            if (opentxs::OTAPI_Wrap::networkFailure())
+            if (response.empty() && !opentxs::OTAPI_Wrap::CheckConnection(notary_id))
             {
                 QString qstrErrorMsg;
                 qstrErrorMsg = QString("%1: %2. %3.").
@@ -956,7 +956,7 @@ int64_t Moneychanger::HasUsageCredits(const std::string & notary_id,
     // the failure probably happened due to a lack of usage credits.
     // ...But what if there was a network failure? What if messages can't even get out?
     //
-    if (opentxs::OTAPI_Wrap::networkFailure())
+    if (!opentxs::OTAPI_Wrap::CheckConnection(notary_id))
     {
         QString qstrErrorMsg;
         qstrErrorMsg = tr("HasUsageCredits: Failed trying to contact the notary. Perhaps it is down, or there might be a network problem.");
@@ -2301,7 +2301,7 @@ void Moneychanger::onNeedToDownloadMail()
 
                     response = opentxs::OT_ME::It().register_nym(defaultNotaryID, defaultNymID);
 
-                    if (opentxs::OTAPI_Wrap::networkFailure())
+                    if (!opentxs::OTAPI_Wrap::CheckConnection(defaultNotaryID))
                     {
                         emit appendToLog(qstrErrorMsg);
                         return;
@@ -2342,7 +2342,7 @@ void Moneychanger::onNeedToDownloadMail()
                     bRetrievalAttempted = true;
                     bRetrievalSucceeded = opentxs::OT_ME::It().retrieve_nym(NotaryID, nymId, true);
 
-                    if (opentxs::OTAPI_Wrap::networkFailure())
+                    if (!opentxs::OTAPI_Wrap::CheckConnection(NotaryID))
                     {
                         emit appendToLog(qstrErrorMsg);
                         return;
@@ -2380,20 +2380,64 @@ bool Moneychanger::AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt)
         QString qstrReceipt;
 
         int nRowCount = pFinalReceiptProxy->rowCount();
-        for (int nIndex = 0; nIndex < nRowCount; ++nIndex)
-        {
-            if (!bEditing)
-            {
-                bEditing = true;
-                pModel->database().transaction();
-                qstrReceipt = QString::fromStdString(recordmt.GetContents());
-            }
 
-            QModelIndex proxyIndex  = pFinalReceiptProxy->index(nIndex, 0);
-            QModelIndex actualIndex = pFinalReceiptProxy->mapToSource(proxyIndex);
-            QSqlRecord  record      = pModel->record(actualIndex.row());
+        if (nRowCount > 0) // Matching rows are present.
+        {
+            for (int nIndex = 0; nIndex < nRowCount; ++nIndex)
+            {
+                if (!bEditing)
+                {
+                    bEditing = true;
+                    pModel->database().transaction();
+                    qstrReceipt = QString::fromStdString(recordmt.GetContents());
+                }
+
+                QModelIndex proxyIndex  = pFinalReceiptProxy->index(nIndex, 0);
+                QModelIndex actualIndex = pFinalReceiptProxy->mapToSource(proxyIndex);
+                QSqlRecord  record      = pModel->record(actualIndex.row());
+                record.setValue("final_receipt", qstrReceipt);
+                pModel->setRecord(actualIndex.row(), record);
+            }
+        }
+        else if (recordmt.HasOriginType() && recordmt.IsOriginTypeMarketOffer())
+        {
+            bEditing = true;
+            pModel->database().transaction();
+            qstrReceipt = QString::fromStdString(recordmt.GetContents());
+
+            QSqlRecord record = pModel->record();
+
+//            const bool bIsBid = false; // I guess I have to derive this from the record's contents...
+
+            const long lReceiptID = recordmt.GetTransactionNum();
+            const long lOfferID   = recordmt.GetTransNumForDisplay();
+            const std::string & strNotaryID = recordmt.GetNotaryID();
+            const std::string & strNymID = recordmt.GetNymID();
+
+            const time64_t tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::Exec()->StringToLong(recordmt.GetDate()));
+
+//            record.setValue("is_bid", bIsBid);
+            record.setValue("receipt_id", QVariant::fromValue(lReceiptID));
+            record.setValue("offer_id", QVariant::fromValue(lOfferID));
+//            record.setValue("scale", QVariant::fromValue(lScale));
+//            record.setValue("actual_price", QVariant::fromValue(lPrice));
+//            record.setValue("actual_paid", QVariant::fromValue(lPayQuantity));
+//            record.setValue("amount_purchased", QVariant::fromValue(lQuantity));
+            record.setValue("timestamp",  QVariant::fromValue(tDate));
+            record.setValue("notary_id", QString::fromStdString(strNotaryID));
+            record.setValue("nym_id", QString::fromStdString(strNymID));
+//            record.setValue("asset_id", QString::fromStdString(pTradeData->instrument_definition_id));
+//            record.setValue("currency_id", QString::fromStdString(pTradeData->currency_id));
+//            record.setValue("asset_acct_id", QString::fromStdString(pTradeData->asset_acct_id));
+//            record.setValue("currency_acct_id", QString::fromStdString(pTradeData->currency_acct_id));
+
+//            record.setValue("asset_receipt", QString::fromStdString(pTradeData->asset_receipt));
+//            record.setValue("currency_receipt", QString::fromStdString(pTradeData->currency_receipt));
             record.setValue("final_receipt", qstrReceipt);
-            pModel->setRecord(actualIndex.row(), record);
+
+            qDebug() << "Kind of a weird situation -- a final receipt where there were never any marketReceipts. (The offer expired without ever trading.) Importing it here anyway to see if it causes any problems.";
+
+            pModel->insertRecord(0, record);
         }
         // ----------------------------
         if (bEditing)
@@ -3185,8 +3229,8 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
             // Todo: Make sure this "finalreceipt + isnotice" contains the REASON
             // or CAUSE of the cron item to cease functioning, whether it expired,
             // or was killed by another Nym, etc. That way we can import that information
-            // here and display it for the user. We, we do have expired. And we do
-            // have canceled, but that only shows if I canceled it before he activated
+            // here and display it for the user. We do have expired. And we do have
+            // canceled, but that only shows if I canceled it before he activated
             // it in the first place. It doesn't show if someone killed it while it
             // was already running.
         }
@@ -3636,11 +3680,11 @@ void Moneychanger::modifyRecords()
         {
             opentxs::OTRecord& recordmt = record;
 
-            qDebug() << QString("modifyRecords 1\n");
+//            qDebug() << QString("modifyRecords 1\n");
 
             if (!recordmt.CanDeleteRecord())
             {
-                qDebug() << QString("modifyRecords 2\n");
+//                qDebug() << QString("modifyRecords 2\n");
 
                 // In this case we aren't going to delete the record, but we can still
                 // save a copy of it in our local database, if it's not already there.
@@ -3649,17 +3693,17 @@ void Moneychanger::modifyRecords()
                     !recordmt.IsSpecialMail() &&
                     !recordmt.IsExpired() )
                 {
-                    qDebug() << QString("modifyRecords 3\n");
+//                    qDebug() << QString("modifyRecords 3\n");
 
                     bool bShouldImportPayment   = true;  // To preserve original logic.
                     bool bShouldImportAgreement = false; // This part is new.
 
-                    if (recordmt.IsPending()
+                    if (   recordmt.IsPending()
                        && (recordmt.IsPaymentPlan() ||
                            recordmt.IsContract()) )
                     {
 
-                        qDebug() << QString("modifyRecords 4\n");
+//                        qDebug() << QString("modifyRecords 4\n");
 
 
                         bShouldImportPayment   = true;
@@ -3676,7 +3720,7 @@ void Moneychanger::modifyRecords()
             else // record can be deleted.
             {
 
-                qDebug() << QString("modifyRecords 5\n");
+//                qDebug() << QString("modifyRecords 5\n");
 
 
                 // If recordmt IsRecord() and IsReceipt() and is a "finalReceipt"
@@ -3701,8 +3745,7 @@ void Moneychanger::modifyRecords()
                 else if (recordmt.IsNotice())
                 {
 
-                    qDebug() << QString("modifyRecords 6\n");
-
+//                    qDebug() << QString("modifyRecords 6\n");
 
                     bool bShouldImportPayment   = false;
                     bool bShouldImportAgreement = false;
@@ -3710,7 +3753,7 @@ void Moneychanger::modifyRecords()
 
                     if (recordmt.HasOriginType())
                     {
-                        qDebug() << QString("modifyRecords 7\n");
+//                        qDebug() << QString("modifyRecords 7\n");
 
                         if (recordmt.IsOriginTypeMarketOffer()) {
                             qDebug() << __FUNCTION__ << ": This is where I almost just added a market notice to the payments table. I stopped myself.";
@@ -3725,13 +3768,13 @@ void Moneychanger::modifyRecords()
                             //bShouldImportFinalReceiptToTradeArchive = true;
                         }
                         else if (recordmt.IsOriginTypePaymentPlan()) {
-                            qDebug() << QString("modifyRecords 8\n");
+//                            qDebug() << QString("modifyRecords 8\n");
 
                             bShouldImportPayment   = true;
                             bShouldImportAgreement = true;
                         }
                         else if (recordmt.IsOriginTypeSmartContract()) {
-                            qDebug() << QString("modifyRecords 9\n");
+//                            qDebug() << QString("modifyRecords 9\n");
 
                             bShouldImportPayment   = true;
                             bShouldImportAgreement = true;
@@ -3741,7 +3784,7 @@ void Moneychanger::modifyRecords()
                         }
                     }
                     else {
-                        qDebug() << QString("modifyRecords 10\n");
+//                        qDebug() << QString("modifyRecords 10\n");
 
                         bShouldImportPayment = true;
 
@@ -3784,16 +3827,16 @@ void Moneychanger::modifyRecords()
                 // -----------------------------------
                 else if (recordmt.IsRecord() && !recordmt.IsExpired())
                 {
-                    qDebug() << QString("modifyRecords 11\n");
+//                    qDebug() << QString("modifyRecords 11\n");
 
                     if (recordmt.IsReceipt())
                     {
-                        qDebug() << QString("modifyRecords 12\n");
+//                        qDebug() << QString("modifyRecords 12\n");
 
                         if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
                         {
                             // We don't have to add these to the trade archive table because they
-                            // are already there. OTClient directly adds them into the TradeNymData object,
+                            // are already there. OTClient directly adds them into the TradeDataNym object,
                             // and then Moneychanger reads that object and imports it into the trade_achive
                             // table already. So basically here all we need to do is delete the market
                             // receipt records so the user doesn't have the hassle of deleting them himself.
@@ -3826,7 +3869,7 @@ void Moneychanger::modifyRecords()
                         else if (recordmt.IsFinalReceipt())
                         {
 
-                            qDebug() << QString("modifyRecords 13\n");
+//                            qDebug() << QString("modifyRecords 13\n");
 
                             // Notice here we only delete the record if we successfully
                             // added the final receipt to the trade archive table.
@@ -3854,13 +3897,17 @@ void Moneychanger::modifyRecords()
                             // logic is updated now to not even TRY to import into the trade archive
                             // unless it's specifically a finalReceipt for a market offer.
                             //
-                            if (recordmt.HasOriginType()
-                                && recordmt.IsOriginTypeMarketOffer()
-                                && AddFinalReceiptToTradeArchive(recordmt)) // <==== IMPORTS HERE.
+                            const bool has_origin_type     = recordmt.HasOriginType();
+                            const bool origin_market_offer = has_origin_type && recordmt.IsOriginTypeMarketOffer();
+                            const bool added_trade_archive = origin_market_offer && AddFinalReceiptToTradeArchive(recordmt);
+
+                            if (   has_origin_type
+                                && origin_market_offer
+                                && added_trade_archive) // <==== IMPORTS HERE.
                                 bShouldDeleteRecord = true;
                             else if (AddAgreementRecord(recordmt)) // Okay, it's for a smart contract or recurring payment plan.
                             {
-                                qDebug() << QString("modifyRecords 14\n");
+//                                qDebug() << QString("modifyRecords 14\n");
 
                                 bShouldDeleteRecord = true;
 
@@ -3889,16 +3936,16 @@ void Moneychanger::modifyRecords()
                                 //AddPaymentToPmntArchive(recordmt);
                             }
                             else
-                                qDebug() << " --- Tried to import final receipt, but it failed!";
+                                qDebug() << QString(" --- Tried to import final receipt, but it failed! has_origin_type: %1 origin_market_offer: %2 added_trade_archive: %3").arg(has_origin_type).arg(origin_market_offer).arg(added_trade_archive);
                         } // finalReceipt
                         else // All  other closed (deletable) receipts.
                         {
-                            qDebug() << QString("modifyRecords 15\n");
+//                            qDebug() << QString("modifyRecords 15\n");
 
                             if (AddPaymentToPmntArchive(recordmt))
                             {
 
-                                qDebug() << QString("modifyRecords 16\n");
+//                                qDebug() << QString("modifyRecords 16\n");
 
 
                                 bShouldDeleteRecord = true;
@@ -3910,7 +3957,7 @@ void Moneychanger::modifyRecords()
                     // -----------------------------------
                     else // All  other delete-able, non-expired records.
                     {
-                        qDebug() << QString("modifyRecords 17\n");
+//                        qDebug() << QString("modifyRecords 17\n");
 
                         // For example, an incoming cheque becomes a received cheque after depositing it.
                         // At that point, OT moves incoming cheque from the payments inbox, to the record box. So
@@ -3928,14 +3975,14 @@ void Moneychanger::modifyRecords()
                             && AddAgreementRecord(recordmt))
                         {
 
-                            qDebug() << QString("modifyRecords 18\n");
+//                            qDebug() << QString("modifyRecords 18\n");
 
                             bShouldDeleteRecord = true;
                         }
 
                         if (AddPaymentToPmntArchive(recordmt))
                         {
-                            qDebug() << QString("modifyRecords 19\n");
+//                            qDebug() << QString("modifyRecords 19\n");
 
                             bShouldDeleteRecord = true;
                         }
@@ -4002,7 +4049,7 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOp
         bRetrievalAttemptedNym = true;
         bRetrievalSucceededNym = opentxs::OT_ME::It().retrieve_nym(acctSvrID, acctNymID, true);
 
-        if (opentxs::OTAPI_Wrap::networkFailure())
+        if (!opentxs::OTAPI_Wrap::CheckConnection(acctSvrID))
         {
             emit appendToLog(qstrErrorMsg);
             return;
@@ -4014,7 +4061,7 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOp
         {
             bRetrievalSucceededNym = opentxs::OT_ME::It().retrieve_nym(acctSvrIDOptional, acctNymIDOptional, true);
 
-            if (opentxs::OTAPI_Wrap::networkFailure())
+            if (!opentxs::OTAPI_Wrap::CheckConnection(acctSvrIDOptional))
             {
                 emit appendToLog(qstrErrorMsg);
                 return;
@@ -4033,7 +4080,7 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOp
             bRetrievalSucceededAcct = opentxs::OT_ME::It().retrieve_account(acctSvrIDOptional, acctNymIDOptional, accountIdOptional, true);
         }
 
-        if (opentxs::OTAPI_Wrap::networkFailure())
+        if (!opentxs::OTAPI_Wrap::CheckConnection(acctSvrIDOptional))
         {
             emit appendToLog(qstrErrorMsg);
             return;
@@ -4083,32 +4130,25 @@ void Moneychanger::onNeedToPopulateRecordlist()
 void Moneychanger::onNeedToDownloadAccountData()
 {
 
-    const auto nymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
-
-    if (0 == nymCount) {
-        const std::string id =
-            opentxs::OTAPI_Wrap::CreateIndividualNym("Me", "", 0);
-
-        if (!id.empty()) {
-            DBHandler::getInstance()->AddressBookUpdateDefaultNym(
-                QString::fromStdString(id));
-        }
-
-    }
-
-    const auto defaultNotaryID = get_default_notary_id().toStdString();
-
-    if (defaultNotaryID.empty()) {
-        DBHandler::getInstance()->
-            AddressBookUpdateDefaultServer(get_notary_id_at(0));
-    }
-
-    const auto defaultUnitDefinitionID (get_default_asset_id().toStdString());
-
-    if (defaultUnitDefinitionID.empty()) {
-        DBHandler::getInstance()->
-            AddressBookUpdateDefaultAsset(get_asset_id_at(0));
-    }
+//    const auto nymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
+//    if (0 == nymCount) {
+//        const std::string id =
+//            opentxs::OTAPI_Wrap::CreateIndividualNym("Me", "", 0);
+//        if (!id.empty()) {
+//            DBHandler::getInstance()->AddressBookUpdateDefaultNym(
+//                QString::fromStdString(id));
+//        }
+//    }
+//    const auto defaultNotaryID = get_default_notary_id().toStdString();
+//    if (defaultNotaryID.empty()) {
+//        DBHandler::getInstance()->
+//            AddressBookUpdateDefaultServer(get_notary_id_at(0));
+//    }
+//    const auto defaultUnitDefinitionID (get_default_asset_id().toStdString());
+//    if (defaultUnitDefinitionID.empty()) {
+//        DBHandler::getInstance()->
+//            AddressBookUpdateDefaultAsset(get_asset_id_at(0));
+//    }
 
     opentxs::OT::App().API().OTME_TOO().Refresh();
 
