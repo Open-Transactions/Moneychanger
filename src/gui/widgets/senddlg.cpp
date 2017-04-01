@@ -408,14 +408,14 @@ void MTSendDlg::on_amountEdit_editingFinished()
 
 
 
-        qDebug() << "DEBUGGING. AMOUNT TEXT: " << amt;
+//        qDebug() << "DEBUGGING. AMOUNT TEXT: " << amt;
 
 
         if (!amt.isEmpty() && !str_InstrumentDefinitionID.empty())
         {
 
 
-            qDebug() << "Debugging 2.";
+//            qDebug() << "Debugging 2.";
 
 
             std::string str_temp(amt.toStdString());
@@ -423,13 +423,13 @@ void MTSendDlg::on_amountEdit_editingFinished()
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
 
-            qDebug() << "Debugging str_temp: " << QString::fromStdString(str_temp);
+//            qDebug() << "Debugging str_temp: " << QString::fromStdString(str_temp);
 
 
             int64_t     amount               = opentxs::OTAPI_Wrap::Exec()->StringToAmount(str_InstrumentDefinitionID, str_temp);
 
 
-            qDebug() << "DEBUGGING. Amount: " << amount;
+//            qDebug() << "DEBUGGING. Amount: " << amount;
 
 
             std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
@@ -437,7 +437,7 @@ void MTSendDlg::on_amountEdit_editingFinished()
 
 
             QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
-            qDebug() << "DEBUGGING. Formatted Amount: " << qstr_FinalAmount;
+//            qDebug() << "DEBUGGING. Formatted Amount: " << qstr_FinalAmount;
 
             ui->amountEdit->setText(qstr_FinalAmount);
         }
