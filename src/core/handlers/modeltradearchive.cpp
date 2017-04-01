@@ -45,7 +45,14 @@ bool FinalReceiptProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &
 
         if (nullptr != pRecordMT_)
         {
+            const int64_t lTransNum           = pRecordMT_->GetTransactionNum();
             const int64_t lTransNumForDisplay = pRecordMT_->GetTransNumForDisplay();
+
+            int64_t lClosingNum = 0;
+            const bool bClosingNum = pRecordMT_->GetClosingNum(lClosingNum);
+
+            //qDebug() << QString("lTransNumForDisplay = %1  lCurrentOfferID = %2  lClosingNum = %3  lTransNum: %4").arg(lTransNumForDisplay).arg(lCurrentOfferID).arg(lClosingNum).arg(lTransNum);
+
             return (lTransNumForDisplay == lCurrentOfferID);
         }
     }
@@ -266,7 +273,9 @@ QVariant ModelTradeArchive::data ( const QModelIndex & index, int role/* = Qt::D
         {
             QString qstrID = QSqlTableModel::data(index,role).toString();
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(str_id);
+            std::string str_name;
+            if (!str_id.empty())
+                str_name = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(str_id);
             // ------------------------
             if (str_name.empty())
                 return QSqlTableModel::data(index,role);
@@ -276,7 +285,9 @@ QVariant ModelTradeArchive::data ( const QModelIndex & index, int role/* = Qt::D
         {
             QString qstrID = QSqlTableModel::data(index,role).toString();
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(str_id);
+            std::string str_name;
+            if (!str_id.empty())
+                str_name = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(str_id);
             // ------------------------
             if (str_name.empty())
                 return QSqlTableModel::data(index,role);
