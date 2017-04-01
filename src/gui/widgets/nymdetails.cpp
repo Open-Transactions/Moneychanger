@@ -164,7 +164,7 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
                     MTSpinner theSpinner;
 
                     response = opentxs::OT_ME::It().register_nym(notary_id.toStdString(), str_nym_id);
-                    if (opentxs::OTAPI_Wrap::networkFailure())
+                    if (response.empty() && !opentxs::OTAPI_Wrap::CheckConnection(notary_id.toStdString()))
                     {
                         QString qstrErrorMsg;
                         qstrErrorMsg = QString("%1: %2. %3.").
@@ -174,7 +174,6 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
                         continue;
                     }
                 }
-
 
                 if (!opentxs::OT_ME::It().VerifyMessageSuccess(response)) {
                     Moneychanger::It()->HasUsageCredits(notary_id, nymId);
