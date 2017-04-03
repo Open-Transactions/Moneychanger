@@ -323,7 +323,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon_sendfunds      = QIcon(":/icons/icons/money_fist4_small.png");
 //  mc_systrayIcon_sendfunds      = QIcon(":/icons/sendfunds");
     mc_systrayIcon_requestfunds   = QIcon(":/icons/requestpayment");
-    mc_systrayIcon_proposeplan    = QIcon(":/icons/icons/refresh.png");
+    mc_systrayIcon_proposeplan    = QIcon(":/icons/icons/timer.png");
 //  mc_systrayIcon_contacts       = QIcon(":/icons/addressbook");
     mc_systrayIcon_contacts       = QIcon(":/icons/icons/rolodex_card2");
     mc_systrayIcon_composemessage = QIcon(":/icons/icons/pencil.png");
@@ -332,7 +332,8 @@ Moneychanger::Moneychanger(QWidget *parent)
     mc_systrayIcon_markets = QIcon(":/icons/markets");
     mc_systrayIcon_trade_archive = QIcon(":/icons/overview");
 
-
+    mc_systrayIcon_active_agreements = QIcon(":/icons/agreements");
+    mc_systrayIcon_pending = QIcon(":/icons/icons/pending.png");
 
     // ---------------------------------------------------------------
     mc_systrayIcon_bitcoin  = QIcon(":/icons/icons/bitcoin.png");
@@ -348,7 +349,8 @@ Moneychanger::Moneychanger(QWidget *parent)
 
     //Submenu
     mc_systrayIcon_advanced_import = QIcon(":/icons/icons/request.png");
-    mc_systrayIcon_advanced_smartcontracts = QIcon(":/icons/agreements");
+    mc_systrayIcon_advanced_smartcontracts = QIcon(":/icons/icons/smart_contract_64.png");
+
     mc_systrayIcon_advanced_corporations = QIcon(":/icons/icons/buildings.png");
     mc_systrayIcon_advanced_transport = QIcon(":/icons/icons/p2p.png");
     mc_systrayIcon_advanced_log = QIcon(":/icons/icons/p2p.png");
@@ -1550,15 +1552,15 @@ void Moneychanger::SetupPaymentsMenu(QPointer<QMenu> & parent_menu)
     current_menu->addAction(mc_systrayMenu_receipts);
     connect(mc_systrayMenu_receipts, SIGNAL(triggered()), this, SLOT(mc_payments_slot()));
     // --------------------------------------------------------------
-    //Pending Transactions
-    mc_systrayMenu_overview = new QAction(mc_systrayIcon_overview, tr("Pending Transactions"), current_menu);
+    //Pending Transactions    
+    mc_systrayMenu_overview = new QAction(mc_systrayIcon_pending, tr("Pending Transactions"), current_menu);
     current_menu->addAction(mc_systrayMenu_overview);
     connect(mc_systrayMenu_overview, SIGNAL(triggered()), this, SLOT(mc_overview_slot()));
     // --------------------------------------------------------------
     //Live Agreements
     if (bExpertMode_)
     {
-        mc_systrayMenu_agreements = new QAction(mc_systrayIcon_overview, tr("Active Agreements"), current_menu);
+        mc_systrayMenu_agreements = new QAction(mc_systrayIcon_active_agreements, tr("Active Agreements"), current_menu);
         current_menu->addAction(mc_systrayMenu_agreements);
         connect(mc_systrayMenu_agreements, SIGNAL(triggered()), this, SLOT(mc_agreements_slot()));
     }
@@ -1608,7 +1610,7 @@ void Moneychanger::SetupContractsMenu(QPointer<QMenu> & parent_menu)
     QPointer<QMenu> & current_menu = mc_systrayMenu_contracts;
     // -------------------------------------------------
     current_menu = new QMenu(tr("Contracts"), parent_menu);
-    current_menu->setIcon(mc_systrayIcon_advanced_smartcontracts);
+    current_menu->setIcon(mc_systrayIcon_active_agreements);
     parent_menu->addMenu(current_menu);
     // --------------------------------------------------------------
     SetupAssetMenu(current_menu);
@@ -1634,7 +1636,7 @@ void Moneychanger::SetupAdvancedMenu(QPointer<QMenu> & parent_menu)
 
     // -------------------------------------------------
     current_menu = new QMenu(tr("Advanced"), parent_menu);
-    current_menu->setIcon(mc_systrayIcon_advanced_smartcontracts);
+    current_menu->setIcon(mc_systrayIcon_active_agreements);
     parent_menu->addMenu(current_menu);
     // --------------------------------------------------------------
 //    SetupContractsMenu(current_menu);

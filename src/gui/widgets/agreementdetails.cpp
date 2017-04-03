@@ -291,7 +291,7 @@ void MTAgreementDetails::refresh(QString strID, QString strName)
 {
     if ((NULL != ui) && !strID.isEmpty())
     {
-        QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName, "", "", ":/icons/agreements", false);
+        QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName, "", "", ":/icons/icons/smart_contract_64.png", false);
 
         pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
 

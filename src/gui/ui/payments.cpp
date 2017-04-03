@@ -989,7 +989,7 @@ void Payments::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         QPixmap pixmapForward (":/icons/sendfunds");
         QPixmap pixmapDelete  (":/icons/icons/DeleteRed.png");
         QPixmap pixmapRequest (":/icons/requestpayment");
-        QPixmap pixmapPending (":/icons/overview");
+        QPixmap pixmapPending (":/icons/icons/pending.png");
         QPixmap pixmapImport  (":/icons/icons/request.png");
         QPixmap pixmapMessages(":/icons/icons/pencil.png");
         QPixmap pixmapExchange  (":/icons/markets");

@@ -1189,11 +1189,17 @@ void Agreements::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         QPixmap pixmapSize(":/icons/icons/user.png"); // This is here only for size purposes.
         QIcon   sizeButtonIcon(pixmapSize);           // Other buttons use this to set their own size.
         // ----------------------------------------------------------------
-        QPixmap pixmapRefresh (":/icons/icons/refresh.png");
-        QPixmap pixmapDelete  (":/icons/icons/DeleteRed.png");
+        QPixmap pixmapRefresh   (":/icons/icons/refresh.png");
+        QPixmap pixmapDelete    (":/icons/icons/DeleteRed.png");
+        QPixmap pixmapRecurring (":/icons/icons/timer.png");
+        QPixmap pixmapPending   (":/icons/icons/pending.png");
+        QPixmap pixmapSmart     (":/icons/icons/smart_contract_64.png");
         // ----------------------------------------------------------------
-        QIcon refreshButtonIcon (pixmapRefresh);
-        QIcon deleteButtonIcon  (pixmapDelete);
+        QIcon refreshButtonIcon    (pixmapRefresh);
+        QIcon deleteButtonIcon     (pixmapDelete);
+        QIcon recurringButtonIcon  (pixmapRecurring);
+        QIcon pendingButtonIcon    (pixmapPending);
+        QIcon smartButtonIcon      (pixmapSmart);
         // ----------------------------------------------------------------
         ui->toolButtonRefresh->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         ui->toolButtonRefresh->setAutoRaise(true);
@@ -1201,6 +1207,27 @@ void Agreements::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 //      ui->toolButtonRefresh->setIconSize(pixmapRefresh.rect().size());
         ui->toolButtonRefresh->setIconSize(pixmapSize.rect().size());
         ui->toolButtonRefresh->setText(tr("Refresh"));
+        // ----------------------------------------------------------------
+        ui->toolButtonRecurring->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonRecurring->setAutoRaise(true);
+        ui->toolButtonRecurring->setIcon(recurringButtonIcon);
+//      ui->toolButtonRecurring->setIconSize(pixmapRefresh.rect().size());
+        ui->toolButtonRecurring->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonRecurring->setText(tr("Request Recurring"));
+        // ----------------------------------------------------------------
+        ui->toolButtonPending->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonPending->setAutoRaise(true);
+        ui->toolButtonPending->setIcon(pendingButtonIcon);
+//      ui->toolButtonPending->setIconSize(pixmapRefresh.rect().size());
+        ui->toolButtonPending->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonPending->setText(tr("View Pending"));
+        // ----------------------------------------------------------------
+        ui->toolButtonSmartContracts->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+        ui->toolButtonSmartContracts->setAutoRaise(true);
+        ui->toolButtonSmartContracts->setIcon(smartButtonIcon);
+//      ui->toolButtonSmartContracts->setIconSize(pixmapRefresh.rect().size());
+        ui->toolButtonSmartContracts->setIconSize(pixmapSize.rect().size());
+        ui->toolButtonSmartContracts->setText(tr("Smart Contracts"));
         // ----------------------------------------------------------------
         ui->toolButtonDelete->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         ui->toolButtonDelete->setAutoRaise(true);
@@ -1276,6 +1303,10 @@ void Agreements::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         // --------------------------------------------------------
         connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(onNeedToPopulateRecordlist()));
         connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
+        // --------------------------------------------------------
+        connect(ui->toolButtonRecurring,      SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_proposeplan_slot()));
+        connect(ui->toolButtonPending,        SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_overview_slot()));
+        connect(ui->toolButtonSmartContracts, SIGNAL(clicked()),  Moneychanger::It(), SLOT(mc_smartcontract_slot()));
         // --------------------------------------------------------
         QWidget* pTab0 = ui->tabWidgetAgreements->widget(0);
         QWidget* pTab1 = ui->tabWidgetAgreements->widget(1);
@@ -2846,5 +2877,4 @@ bool Agreements::eventFilter(QObject *obj, QEvent *event)
     // standard event processing
     return QWidget::eventFilter(obj, event);
 }
-
 

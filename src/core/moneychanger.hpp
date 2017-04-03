@@ -338,6 +338,8 @@ private:
     QIcon mc_systrayIcon_shutdown;
 
     QIcon mc_systrayIcon_overview;
+    QIcon mc_systrayIcon_active_agreements;
+    QIcon mc_systrayIcon_pending;
 
     QIcon mc_systrayIcon_nym;
     QIcon mc_systrayIcon_server;

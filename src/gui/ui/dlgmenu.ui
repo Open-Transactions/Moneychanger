@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>718</width>
-    <height>630</height>
+    <width>716</width>
+    <height>556</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,12 +57,12 @@
          </property>
          <property name="icon">
           <iconset resource="../resource.qrc">
-           <normaloff>:/icons/overview</normaloff>:/icons/overview</iconset>
+           <normaloff>:/icons/icons/pending.png</normaloff>:/icons/icons/pending.png</iconset>
          </property>
          <property name="iconSize">
           <size>
-           <width>64</width>
-           <height>64</height>
+           <width>48</width>
+           <height>48</height>
           </size>
          </property>
          <property name="toolButtonStyle">
@@ -316,12 +316,12 @@
          </property>
          <property name="icon">
           <iconset resource="../resource.qrc">
-           <normaloff>:/icons/icons/refresh.png</normaloff>:/icons/icons/refresh.png</iconset>
+           <normaloff>:/icons/icons/timer.png</normaloff>:/icons/icons/timer.png</iconset>
          </property>
          <property name="iconSize">
           <size>
-           <width>64</width>
-           <height>64</height>
+           <width>48</width>
+           <height>48</height>
           </size>
          </property>
          <property name="toolButtonStyle">
@@ -599,6 +599,13 @@
          </property>
          <property name="text">
           <string>Smart Contract Editor</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../resource.qrc">
+           <normaloff>:/icons/icons/smart_contract_64.png</normaloff>:/icons/icons/smart_contract_64.png</iconset>
+         </property>
+         <property name="toolButtonStyle">
+          <enum>Qt::ToolButtonTextBesideIcon</enum>
          </property>
         </widget>
        </item>
