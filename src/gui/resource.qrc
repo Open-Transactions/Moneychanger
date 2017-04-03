@@ -58,5 +58,9 @@
         <file>icons/forwarded.png</file>
         <file>icons/replied.png</file>
         <file>icons/replied_forwarded.png</file>
+        <file>icons/smart_contract.png</file>
+        <file>icons/pending.png</file>
+        <file>icons/smart_contract_64.png</file>
+        <file>icons/timer.png</file>
     </qresource>
 </RCC>
