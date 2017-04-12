@@ -379,9 +379,13 @@ public Q_SLOTS:
                                            QString Contract, QString SignerNymID,
                                            QString PartyName, QString AccountName,
                                            QString AgentName, QString AccountID);
-    QJsonValue smartContractConfirmParty(QString Username, QString APIKey,
-                                         QString Contract, QString PartyName,
-                                         QString NymID);
+    QJsonValue smartContractConfirmParty(
+        QString Username,
+        QString APIKey,
+        QString Contract,
+        QString PartyName,
+        QString NymID,
+        QString NotaryID);
     QJsonValue smartAreAllPartiesConfirmed(QString Username, QString APIKey,
                                            QString Contract);
     QJsonValue smartIsPartyConfirmed(QString Username, QString APIKey,

@@ -1552,7 +1552,7 @@ void Moneychanger::SetupPaymentsMenu(QPointer<QMenu> & parent_menu)
     current_menu->addAction(mc_systrayMenu_receipts);
     connect(mc_systrayMenu_receipts, SIGNAL(triggered()), this, SLOT(mc_payments_slot()));
     // --------------------------------------------------------------
-    //Pending Transactions    
+    //Pending Transactions
     mc_systrayMenu_overview = new QAction(mc_systrayIcon_pending, tr("Pending Transactions"), current_menu);
     current_menu->addAction(mc_systrayMenu_overview);
     connect(mc_systrayMenu_overview, SIGNAL(triggered()), this, SLOT(mc_overview_slot()));
@@ -5903,7 +5903,7 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
     // Then we try to activate it or pass on to the next party.
 
     std::string confirmed =
-        opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmParty(str_template, str_party, str_lawyer_id);
+        opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmParty(str_template, str_party, str_lawyer_id, str_server);
 
     if ("" == confirmed)
     {
@@ -6178,7 +6178,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     // Then we try to activate it or pass on to the next party.
 
     std::string confirmed =
-        opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmParty(str_template, str_party, str_lawyer_id);
+        opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmParty(str_template, str_party, str_lawyer_id, str_server);
 
     if ("" == confirmed)
     {
