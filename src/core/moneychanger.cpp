@@ -2411,8 +2411,8 @@ bool Moneychanger::AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt)
 
 //            const bool bIsBid = false; // I guess I have to derive this from the record's contents...
 
-            const long lReceiptID = recordmt.GetTransactionNum();
-            const long lOfferID   = recordmt.GetTransNumForDisplay();
+            const int64_t lReceiptID = recordmt.GetTransactionNum();
+            const int64_t lOfferID   = recordmt.GetTransNumForDisplay();
             const std::string & strNotaryID = recordmt.GetNotaryID();
             const std::string & strNymID = recordmt.GetNymID();
 
@@ -2438,6 +2438,8 @@ bool Moneychanger::AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt)
             record.setValue("final_receipt", qstrReceipt);
 
             qDebug() << "Kind of a weird situation -- a final receipt where there were never any marketReceipts. (The offer expired without ever trading.) Importing it here anyway to see if it causes any problems.";
+
+            qDebug() << QString("lOfferID: %1").arg(lOfferID);
 
             pModel->insertRecord(0, record);
         }

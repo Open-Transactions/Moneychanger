@@ -59,7 +59,7 @@ public:
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const Q_DECL_OVERRIDE;
     bool filterAcceptsColumn(int source_column, const QModelIndex & source_parent) const Q_DECL_OVERRIDE;
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 
 private:
     QString nymId_;
@@ -79,14 +79,19 @@ class FinalReceiptProxyModel : public QSortFilterProxyModel
 public:
     FinalReceiptProxyModel(QObject *parent = 0);
 
-    opentxs::OTRecord * filterOpentxsRecord() const { return pRecordMT_; }
     void setFilterOpentxsRecord(opentxs::OTRecord& recordmt);
+    void clearFilter();
 
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const Q_DECL_OVERRIDE;
 
 private:
-    opentxs::OTRecord * pRecordMT_ = nullptr;
+    int64_t     lTransNum_{0};
+    int64_t     lTransNumForDisplay_{0};
+    std::string str_nym_id_;
+    bool        bIsFinalReceipt_{false};
+    int64_t     lClosingNum_{0};
+    bool        bGotClosingNum_{false};
 };
 
 
