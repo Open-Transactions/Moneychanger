@@ -27,38 +27,90 @@ FinalReceiptProxyModel::FinalReceiptProxyModel(QObject *parent /*= 0*/)
 {
 }
 
-void FinalReceiptProxyModel::setFilterOpentxsRecord(opentxs::OTRecord& recordmt)
-{
-    pRecordMT_ = &recordmt;
-    invalidateFilter();
-}
-
 bool FinalReceiptProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
-    QModelIndex theIndex = sourceModel()->index(sourceRow, 6, sourceParent); // OfferID at index 6
     QAbstractItemModel * pModel = sourceModel();
-    ModelTradeArchive  * pTradeModel = dynamic_cast<ModelTradeArchive*>(pModel);
+    ModelTradeArchive  * pTradeModel = nullptr;
+
+    if (nullptr != pModel)
+        pTradeModel = dynamic_cast<ModelTradeArchive*>(pModel);
 
     if (nullptr != pTradeModel)
     {
-        int64_t lCurrentOfferID  = pTradeModel->rawData(theIndex).toLongLong();
+        QModelIndex offerIndex = pModel->index(sourceRow, 6, sourceParent); // OfferID at index 6  todo hardcoding
+        QModelIndex nymIndex   = pModel->index(sourceRow, 9, sourceParent); // NymID at index 9  todo hardcoding
 
-        if (nullptr != pRecordMT_)
-        {
-            const int64_t lTransNum           = pRecordMT_->GetTransactionNum();
-            const int64_t lTransNumForDisplay = pRecordMT_->GetTransNumForDisplay();
+        // NOTE: What's happening is, it's ACTUALLY importing the finalReceipt FIRST,
+        // and THEN it's importing the marketReceipt (which actually happened first).
+        // So the marketReceipt import code is just ASSUMING that it's first and that
+        // no other records exist (only the finalReceipt import code checks to see if
+        // there are pre-existing marketReceipt records).
+        // So the solution (theoretically) is to just make sure when the marketReceipts
+        // are imported, that they check for a pre-existing finalReceipt record at that
+        // time.
+        //
+        // The alternate theory (which I was going with first) is that when the finalReceipt
+        // is imported, the filter fails to find the record for the other receipts (even
+        // though it supposedly already exists). Therefore causing the finalReceipt to be
+        // imported as its own record instead of being added to the pre-existing record.
+        // This theory is still plausible but, having examined the filter, and given the fact
+        // that the filter WORKS most of the time, I'd have to place my bet on the first
+        // described theory at this point.
 
-            int64_t lClosingNum = 0;
-            const bool bClosingNum = pRecordMT_->GetClosingNum(lClosingNum);
+        QString qstrBlah(offerIndex.isValid() ? "Offer index is VALID" : "Offer index is INVALID");
+        qDebug() << qstrBlah;
 
-            //qDebug() << QString("lTransNumForDisplay = %1  lCurrentOfferID = %2  lClosingNum = %3  lTransNum: %4").arg(lTransNumForDisplay).arg(lCurrentOfferID).arg(lClosingNum).arg(lTransNum);
+        int64_t lCurrentOfferID    = pTradeModel->rawData(offerIndex).toLongLong();
+        const QString qstrNymID    = pTradeModel->rawData(nymIndex).toString();
+        const std::string strNymId = qstrNymID.toStdString();
 
-            return (lTransNumForDisplay == lCurrentOfferID);
-        }
+        const bool bMatches = ((lTransNumForDisplay_ == lCurrentOfferID) &&
+                               (0 == strNymId.compare(str_nym_id_)));
+
+        QString qstrMatches(bMatches ? "TRUE" : "FALSE");
+        QString qstrFinal(bIsFinalReceipt_ ? "TRUE" : "FALSE");
+
+        qDebug() << QString("IMPORTING RECEIPT: lTransNumForDisplay = %1  lCurrentOfferID = %2  lClosingNum = %3  lTransNum: %4  bMatches: %5  IsFinalReceipt: %6 ").
+                    arg(lTransNumForDisplay_).arg(lCurrentOfferID).arg(lClosingNum_).arg(lTransNum_).arg(qstrMatches).arg(qstrFinal);
+
+        return bMatches;
     }
     return false;
+
+    // NOTE: Here's the code in the filterRow for the other (non-final) receipts:
+
+//    int64_t lCurrentOfferID  = pTradeModel->rawData(index6).toLongLong();
+//    QString qstrCurrentNymID = pTradeModel->rawData(index9).toString();
+
+//    return (( lCurrentOfferID  ==  offerId_) &&
+//            (0 == qstrCurrentNymID.compare(nymId_)));
+
 }
 
+void FinalReceiptProxyModel::setFilterOpentxsRecord(opentxs::OTRecord& recordmt)
+{
+    lTransNum_           = recordmt.GetTransactionNum();
+    lTransNumForDisplay_ = recordmt.GetTransNumForDisplay();
+    str_nym_id_          = recordmt.GetNymID();
+    bIsFinalReceipt_     = recordmt.IsFinalReceipt();
+    lClosingNum_         = 0;
+    bGotClosingNum_      = recordmt.GetClosingNum(lClosingNum_);
+
+    invalidateFilter();
+}
+
+
+void FinalReceiptProxyModel::clearFilter()
+{
+    lTransNum_           = 0;
+    lTransNumForDisplay_ = 0;
+    str_nym_id_          = "";
+    bIsFinalReceipt_     = false;
+    lClosingNum_         = 0;
+    bGotClosingNum_      = false;
+
+    invalidateFilter();
+}
 
 TradeArchiveProxyModel::TradeArchiveProxyModel(QObject *parent /*=0*/)
 : QSortFilterProxyModel(parent)
