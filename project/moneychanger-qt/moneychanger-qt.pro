@@ -46,7 +46,6 @@ include($${SOLUTION_DIR}../src/quazip/quazip.pri)
 
 # MAC AND LINUX:
 unix:{
-    PKGCONFIG += opentxs
     PKGCONFIG += libzmq
 }
 
@@ -77,6 +76,7 @@ mac:{
 #-------------------------------------------------
 # Linked Libs
 
+LIBS += -lopentxs
 LIBS += -lopentxs-proto
 LIBS += -lprotobuf-lite
 
