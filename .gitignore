@@ -48,6 +48,7 @@ Makefile.Release
 
 #text editor backup files
 *~
+*.bak
 
 # KDevelop files
 *.kdev4
