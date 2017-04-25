@@ -2775,9 +2775,13 @@ QJsonValue MCRPCService::smartContractConfirmAccount(QString Username, QString A
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::smartContractConfirmParty(QString Username, QString APIKey,
-                                                   QString Contract, QString PartyName,
-                                                   QString NymID)
+QJsonValue MCRPCService::smartContractConfirmParty(
+    QString Username,
+    QString APIKey,
+    QString Contract,
+    QString PartyName,
+    QString NymID,
+    QString NotaryID)
 {
     if(!validateAPIKey(Username, APIKey)){
         QJsonObject object{{"Error", "Invalid API Key"}};
@@ -2788,10 +2792,14 @@ QJsonValue MCRPCService::smartContractConfirmParty(QString Username, QString API
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmParty(Contract.toStdString(),
-                                                                               PartyName.toStdString(),
-                                                                               NymID.toStdString());
+    std::string result =
+        opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmParty(
+            Contract.toStdString(),
+            PartyName.toStdString(),
+            NymID.toStdString(),
+            NotaryID.toStdString());
     QJsonObject object{{"SmartContractConfirmPartyResult", QString(result.c_str())}};
+
     return QJsonValue(object);
 }
 

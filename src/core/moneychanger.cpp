@@ -479,7 +479,7 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
             std::string response;
             {
                 MTSpinner theSpinner;
-                response = opentxs::OT_ME::It().register_nym(notary_id, my_nym_id);
+                response = opentxs::OTAPI_Wrap::Register_Nym_Public(my_nym_id, notary_id);
                 if (response.empty() && !opentxs::OTAPI_Wrap::CheckConnection(notary_id))
                 {
                     QString qstrErrorMsg;
@@ -1552,7 +1552,7 @@ void Moneychanger::SetupPaymentsMenu(QPointer<QMenu> & parent_menu)
     current_menu->addAction(mc_systrayMenu_receipts);
     connect(mc_systrayMenu_receipts, SIGNAL(triggered()), this, SLOT(mc_payments_slot()));
     // --------------------------------------------------------------
-    //Pending Transactions    
+    //Pending Transactions
     mc_systrayMenu_overview = new QAction(mc_systrayIcon_pending, tr("Pending Transactions"), current_menu);
     current_menu->addAction(mc_systrayMenu_overview);
     connect(mc_systrayMenu_overview, SIGNAL(triggered()), this, SLOT(mc_overview_slot()));
@@ -2301,7 +2301,7 @@ void Moneychanger::onNeedToDownloadMail()
                 {
                     MTSpinner theSpinner;
 
-                    response = opentxs::OT_ME::It().register_nym(defaultNotaryID, defaultNymID);
+                    response = opentxs::OTAPI_Wrap::Register_Nym_Public(defaultNymID, defaultNotaryID);
 
                     if (!opentxs::OTAPI_Wrap::CheckConnection(defaultNotaryID))
                     {
@@ -5903,7 +5903,7 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
     // Then we try to activate it or pass on to the next party.
 
     std::string confirmed =
-        opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmParty(str_template, str_party, str_lawyer_id);
+        opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmParty(str_template, str_party, str_lawyer_id, str_server);
 
     if ("" == confirmed)
     {
@@ -6178,7 +6178,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     // Then we try to activate it or pass on to the next party.
 
     std::string confirmed =
-        opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmParty(str_template, str_party, str_lawyer_id);
+        opentxs::OTAPI_Wrap::Exec()->SmartContract_ConfirmParty(str_template, str_party, str_lawyer_id, str_server);
 
     if ("" == confirmed)
     {

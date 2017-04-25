@@ -163,7 +163,7 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
                 {
                     MTSpinner theSpinner;
 
-                    response = opentxs::OT_ME::It().register_nym(notary_id.toStdString(), str_nym_id);
+                    response = opentxs::OTAPI_Wrap::Register_Nym_Public(str_nym_id, notary_id.toStdString());
                     if (response.empty() && !opentxs::OTAPI_Wrap::CheckConnection(notary_id.toStdString()))
                     {
                         QString qstrErrorMsg;
@@ -2192,8 +2192,13 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                         {
                             MTSpinner theSpinner;
 
-                            std::string strResponse = opentxs::OT_ME::It().register_nym(str_notary_id, str_nym_id);
-                            nSuccess                = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
+                            auto strResponse = opentxs::OTAPI_Wrap::Register_Nym_Public(str_nym_id, str_notary_id);
+
+                            if (strResponse) {
+                                nSuccess = 1;
+                            } else {
+                                nSuccess = 0;
+                            }
                         }
                         // -1 is error,
                         //  0 is reply received: failure
@@ -2327,8 +2332,7 @@ void MTNymDetails::on_lineEditName_editingFinished()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = opentxs::OTAPI_Wrap::Exec()->SetNym_Alias(m_pOwner->m_qstrCurrentID.toStdString(), // Nym
-                                                m_pOwner->m_qstrCurrentID.toStdString(), // Signer
+        bool bSuccess = opentxs::OTAPI_Wrap::Exec()->Rename_Nym(m_pOwner->m_qstrCurrentID.toStdString(), // Nym
                                                 ui->lineEditName->text(). toStdString()); // New Name
         if (bSuccess)
         {
