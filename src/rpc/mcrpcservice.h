@@ -502,10 +502,6 @@ public Q_SLOTS:
     QJsonValue haveAlreadySeenReply(QString Username, QString APIKey,
                                     QString NotaryID, QString NymID,
                                     qint64 RequestNumber);
-    QJsonValue loadNymbox(QString Username, QString APIKey,
-                          QString NotaryID, QString NymID);
-    QJsonValue loadNymboxNoVerify(QString Username, QString APIKey,
-                                  QString NotaryID, QString NymID);
     QJsonValue loadInbox(QString Username, QString APIKey,
                          QString NotaryID, QString NymID,
                          QString AccountID);
@@ -819,9 +815,6 @@ public Q_SLOTS:
     QJsonValue removeSentMessage(QString Username, QString APIKey,
                                  qint64 RequestNumber, QString NotaryID,
                                  QString NymID);
-    QJsonValue flushSentMessages(QString Username, QString APIKey,
-                                 bool HarvestingForRetry, QString NotaryID,
-                                 QString NymID, QString NymBox);
     QJsonValue sleep(QString Username, QString APIKey,
                      qint64 Milliseconds);
     QJsonValue resyncNymWithServer(QString Username, QString APIKey,

@@ -3568,50 +3568,6 @@ QJsonValue MCRPCService::haveAlreadySeenReply(QString Username, QString APIKey,
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::loadNymbox(QString Username, QString APIKey,
-                                    QString NotaryID, QString NymID)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NotaryID"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadNymbox(NotaryID.toStdString(),
-                                                               NymID.toStdString());
-    QJsonObject object{{"LoadNymboxResult", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::loadNymboxNoVerify(QString Username, QString APIKey,
-                                            QString NotaryID, QString NymID)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NotaryID"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-    std::string result = opentxs::OTAPI_Wrap::Exec()->LoadNymboxNoVerify(NotaryID.toStdString(),
-                                                                       NymID.toStdString());
-    QJsonObject object{{"LoadNymboxNoVerifyResult", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
 QJsonValue MCRPCService::loadInbox(QString Username, QString APIKey,
                                    QString NotaryID, QString NymID,
                                    QString AccountID)
@@ -6352,31 +6308,6 @@ QJsonValue MCRPCService::removeSentMessage(QString Username, QString APIKey,
                                                                NotaryID.toStdString(),
                                                                NymID.toStdString());
     QJsonObject object{{"RemoveSentMessageResult", result}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::flushSentMessages(QString Username, QString APIKey,
-                                           bool HarvestingForRetry, QString NotaryID,
-                                           QString NymID, QString NymBox)
-{
-    if(!validateAPIKey(Username, APIKey)){
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NotaryID"}};
-        return QJsonValue(object);
-    }
-    if(!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())){
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-    opentxs::OTAPI_Wrap::Exec()->FlushSentMessages(HarvestingForRetry,
-                                                 NotaryID.toStdString(),
-                                                 NymID.toStdString(),
-                                                 NymBox.toStdString());
-    QJsonObject object{{"FlushedSentMessages", "True"}};
     return QJsonValue(object);
 }
 
