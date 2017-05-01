@@ -1,0 +1,29 @@
+---
+BasedOnStyle:  Google
+ColumnLimit: 80
+AccessModifierOffset: -4
+AlignAfterOpenBracket: AlwaysBreak
+AlignEscapedNewlinesLeft: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: true
+AllowShortFunctionsOnASingleLine: true
+AlwaysBreakBeforeMultilineStrings: false
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBraces: Linux
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializersBeforeComma: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+DerivePointerAlignment: false
+IndentFunctionDeclarationAfterType: false
+IndentWidth: 4
+KeepEmptyLinesAtTheStartOfBlocks: true
+ObjCSpaceBeforeProtocolList: true
+PenaltyBreakBeforeFirstCallParameter: 19
+PenaltyBreakComment: 60
+PenaltyReturnTypeOnItsOwnLine: 1000
+ReflowComments: true
+# SortIncludes does not handle subdirectories correctly
+SortIncludes: false
+Standard: Cpp11
+...
