@@ -1802,16 +1802,16 @@ void MTNymDetails::on_btnEditProfile_clicked()
         }
         // ------------------------------------------------
         opentxs::proto::ContactData contactData;
-        contactData.set_version(1); // todo hardcoding.
+        contactData.set_version(2); // todo hardcoding.
 
         for (auto& it: items) {
             auto newSection = contactData.add_section();
-            newSection->set_version(1);
+            newSection->set_version(2);
             newSection->set_name(static_cast<opentxs::proto::ContactSectionName>(it.first));
 
             for (auto& i: it.second) {
                 auto newItem = newSection->add_item();
-                newItem->set_version(1);
+                newItem->set_version(2);
                 newItem->set_type(static_cast<opentxs::proto::ContactItemType>(std::get<0>(i)));
                 newItem->set_value(std::get<1>(i));
                 if (std::get<2>(i)) {
@@ -1948,16 +1948,16 @@ void MTNymDetails::AddButtonClicked()
         }
 
         opentxs::proto::ContactData contactData;
-        contactData.set_version(1);
+        contactData.set_version(2);
 
         for (auto& it: items) {
             auto newSection = contactData.add_section();
-            newSection->set_version(1);
+            newSection->set_version(2);
             newSection->set_name(static_cast<opentxs::proto::ContactSectionName>(it.first));
 
             for (auto& i: it.second) {
                 auto newItem = newSection->add_item();
-                newItem->set_version(1);
+                newItem->set_version(2);
                 newItem->set_type(static_cast<opentxs::proto::ContactItemType>(std::get<0>(i)));
                 newItem->set_value(std::get<1>(i));
                 if (std::get<2>(i)) {
