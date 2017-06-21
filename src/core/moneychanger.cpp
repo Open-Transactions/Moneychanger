@@ -563,7 +563,7 @@ void Moneychanger::onCheckNym(QString nymId)
         opentxs::OTAPI_Wrap::Exec()->GetContactData(nymId.toStdString());
     auto claims =
         opentxs::proto::DataToProto<opentxs::proto::ContactData>
-            ({data.c_str(), static_cast<uint32_t>(data.length())});
+            (opentxs::Data(data.c_str(), static_cast<uint32_t>(data.length())));
 
     for (const auto& section: claims.section()) {
         for (const auto& claim: section.item()) {
@@ -621,7 +621,7 @@ void Moneychanger::onCheckNym(QString nymId)
 
     auto the_set =
         opentxs::proto::DataToProto<opentxs::proto::VerificationSet>
-            ({ver_data.c_str(), static_cast<uint32_t>(ver_data.length())});
+            (opentxs::Data(ver_data.c_str(), static_cast<uint32_t>(ver_data.length())));
 
     // Internal verifications:
     // Here I'm looping through pCurrentNym's verifications of other people's claims.
