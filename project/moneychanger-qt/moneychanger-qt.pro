@@ -41,12 +41,6 @@ include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
 include($${SOLUTION_DIR}../src/namecoin/namecoin.pri)
 include($${SOLUTION_DIR}../src/quazip/quazip.pri)
 
-# Package Config
-# MAC AND LINUX:
-mac:{
-    PKGCONFIG += libzmq
-}
-
 #-------------------------------------------------
 # Include
 
@@ -117,6 +111,7 @@ unix: {
             LIBS += -lboost_chrono-mt
             LIBS += -lboost_atomic-mt
         }
+        INCLUDEPATH += /usr/local/include
         LIBS += -L/usr/local/lib/
         LIBS += -framework Cocoa -framework CoreFoundation
     }
