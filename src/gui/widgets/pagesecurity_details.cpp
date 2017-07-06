@@ -21,3 +21,10 @@ PageSecurity_Details::~PageSecurity_Details()
 {
     delete ui;
 }
+
+void PageSecurity_Details::on_pushButtonDefaults_clicked()
+{
+    this->setField("security_contract_name",   QString("Sample Co. Share"));
+    this->setField("security_primary_unit",    QString("shares"));
+    this->setField("security_symbol",          QString("SAMPL"));
+}

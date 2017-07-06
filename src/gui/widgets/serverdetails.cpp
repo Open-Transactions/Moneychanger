@@ -545,7 +545,7 @@ void MTServerDetails::AddButtonClicked()
 
     theWizard.setField(QString("contractXML"), qstrDefaultContract);
 
-    if (QDialog::Accepted == theWizard.exec())
+    if (QDialog::Accepted == theWizard.exec())  // <=== EXECUTING WIZARD HERE.
     {
         bool bIsImporting = theWizard.field("isImporting").toBool();
         bool bIsCreating  = theWizard.field("isCreating").toBool();
@@ -640,8 +640,8 @@ void MTServerDetails::AddButtonClicked()
         // --------------------------------
         else if (bIsCreating)
         {
-            QString qstrXMLContents = theWizard.field("contractXML").toString();
-            QString qstrNymID       = theWizard.field("NymID").toString();
+//            QString qstrXMLContents = theWizard.field("contractXML").toString();
+//            QString qstrNymID       = theWizard.field("NymID").toString();
 
             std::string strContractID;
 

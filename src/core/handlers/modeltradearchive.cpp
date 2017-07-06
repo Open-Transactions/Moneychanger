@@ -64,13 +64,16 @@ bool FinalReceiptProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &
         const QString qstrNymID    = pTradeModel->rawData(nymIndex).toString();
         const std::string strNymId = qstrNymID.toStdString();
 
-        const bool bMatches = ((lTransNumForDisplay_ == lCurrentOfferID) &&
-                               (0 == strNymId.compare(str_nym_id_)));
+        const bool bNymIdMatches = //str_nym_id_.empty() ||
+                                    (0 == strNymId.compare(str_nym_id_));
 
-        QString qstrMatches(bMatches ? "TRUE" : "FALSE");
+        const bool bMatches = ((lTransNumForDisplay_ == lCurrentOfferID) && bNymIdMatches);
+
+        QString qstrMatches = QString(bMatches ? "MATCHING %1" : "MIS-match %1").
+                arg(bNymIdMatches ? "(+ Nym ID does match)" : "(+ Nym ID does NOT match)");
         QString qstrFinal(bIsFinalReceipt_ ? "TRUE" : "FALSE");
 
-        qDebug() << QString("IMPORTING RECEIPT: lTransNumForDisplay = %1  lCurrentOfferID = %2  lClosingNum = %3  lTransNum: %4  bMatches: %5  IsFinalReceipt: %6 ").
+        qDebug() << QString("%5 RECEIPT: lTransNumForDisplay_ = %1  lCurrentOfferID = %2  lClosingNum_ = %3  lTransNum_: %4 IsFinalReceipt: %6 ").
                     arg(lTransNumForDisplay_).arg(lCurrentOfferID).arg(lClosingNum_).arg(lTransNum_).arg(qstrMatches).arg(qstrFinal);
 
         return bMatches;
@@ -412,8 +415,10 @@ void ModelTradeArchive::updateDBFromOT(const std::string & strNotaryID, const st
 
             // OT constructs this record from TWO incoming receipts. So here, I'm making
             // sure that OT has already received both of those, and finished constructing
-            // this record, before I import it. (When the record is ready, BOTH asset IDs
-            // will be present, so skip whenever that's not the case.)
+            // this record, before I import it.
+            //
+            // ===> When the record is ready, BOTH asset IDs will be present, so:
+            //        Skip whenever that's not the case.
             if (pTradeData->currency_id.empty() || pTradeData->instrument_definition_id.empty())
                 continue;
             // -----------------------------------------------------------------------
@@ -459,6 +464,12 @@ void ModelTradeArchive::updateDBFromOT(const std::string & strNotaryID, const st
                 bEditing = true;
                 this->database().transaction();
             }
+            // -----------------------------------------------------------------------
+            // lOfferId is a critical value -- that plus strNymID
+
+
+
+
 
             QSqlRecord record = this->record();
 

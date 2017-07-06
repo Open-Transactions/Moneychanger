@@ -453,8 +453,8 @@ void Settings::on_pushButtonSave_clicked()
     // ----------------------------------------------
     ui->pushButtonSave->setEnabled(false);
 
-    if (bSettingsChanged)
-        QMessageBox::information(this, "Settings saved","The change will take effect after a restart of Moneychanger.");
+//    if (bSettingsChanged)
+//        QMessageBox::information(this, "Settings saved","The change will take effect after a restart of Moneychanger.");
     // ----------------------------------------------
     if (bExpertModeChanged)
         emit expertModeUpdated(ui->checkBoxExpertMode->isChecked());

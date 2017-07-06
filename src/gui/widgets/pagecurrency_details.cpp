@@ -17,6 +17,7 @@ PageCurrency_Details::PageCurrency_Details(QWidget *parent) :
     this->registerField("currency_symbol*",          ui->lineEditSymbol);
     this->registerField("currency_tla*",             ui->lineEditTLA);
     this->registerField("currency_fractional_unit*", ui->lineEditFractionalUnit);
+    this->registerField("currency_decimal_spaces*",  ui->lineEditDecimalSpaces);
 }
 
 PageCurrency_Details::~PageCurrency_Details()
@@ -28,4 +29,14 @@ PageCurrency_Details::~PageCurrency_Details()
 int PageCurrency_Details::nextId() const
 {
     return 5;
+}
+
+void PageCurrency_Details::on_pushButtonDefaults_clicked()
+{
+    this->setField("currency_contract_name",   QString("MtGox Dollar"));
+    this->setField("currency_primary_unit",    QString("dollars"));
+    this->setField("currency_symbol",          QString("$"));
+    this->setField("currency_tla",             QString("USD"));
+    this->setField("currency_fractional_unit", QString("cents"));
+    this->setField("currency_decimal_spaces",  QString("2"));
 }

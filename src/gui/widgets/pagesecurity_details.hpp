@@ -15,6 +15,9 @@ public:
     explicit PageSecurity_Details(QWidget *parent = 0);
     ~PageSecurity_Details();
 
+private slots:
+    void on_pushButtonDefaults_clicked();
+
 private:
     Ui::PageSecurity_Details *ui;
 };
