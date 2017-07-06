@@ -6221,31 +6221,6 @@ QJsonValue MCRPCService::basketGetMemberMinimumTransferAmount(
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::pingNotary(
-    QString Username,
-    QString APIKey,
-    QString NotaryID,
-    QString NymID)
-{
-    if (!validateAPIKey(Username, APIKey)) {
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if (!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())) {
-        QJsonObject object{{"Error", "Invalid NotaryID"}};
-        return QJsonValue(object);
-    }
-    if (!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())) {
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-    int result = opentxs::OTAPI_Wrap::Exec()->pingNotary(
-        NotaryID.toStdString(), NymID.toStdString());
-    QJsonObject object{{"PingNotaryResult", result}};
-    return QJsonValue(object);
-}
-
 QJsonValue MCRPCService::registerNym(
     QString Username,
     QString APIKey,
