@@ -1441,11 +1441,6 @@ public Q_SLOTS:
         QString NymIDRecipient,
         QString Instrument,
         QString InstrumentForSender);
-    QJsonValue getRequestNumber(
-        QString Username,
-        QString APIKey,
-        QString NotaryID,
-        QString NymID);
     QJsonValue registerInstrumentDefinition(
         QString Username,
         QString APIKey,

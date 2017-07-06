@@ -6446,31 +6446,6 @@ QJsonValue MCRPCService::sendNymInstrument(
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getRequestNumber(
-    QString Username,
-    QString APIKey,
-    QString NotaryID,
-    QString NymID)
-{
-    if (!validateAPIKey(Username, APIKey)) {
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if (!opentxs::OTAPI_Wrap::Exec()->IsValidID(NotaryID.toStdString())) {
-        QJsonObject object{{"Error", "Invalid NotaryID"}};
-        return QJsonValue(object);
-    }
-    if (!opentxs::OTAPI_Wrap::Exec()->IsValidID(NymID.toStdString())) {
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-    int result = opentxs::OTAPI_Wrap::Exec()->getRequestNumber(
-        NotaryID.toStdString(), NymID.toStdString());
-    QJsonObject object{{"RequestNumber", result}};
-    return QJsonValue(object);
-}
-
 QJsonValue MCRPCService::registerInstrumentDefinition(
     QString Username,
     QString APIKey,
