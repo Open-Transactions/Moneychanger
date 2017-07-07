@@ -80,6 +80,7 @@ public:
     FinalReceiptProxyModel(QObject *parent = 0);
 
     void setFilterOpentxsRecord(opentxs::OTRecord& recordmt);
+    void setFilter(int64_t lTransNumForDisplay, std::string str_nym_id, std::string str_notary_id);
     void clearFilter();
 
 protected:
@@ -89,6 +90,7 @@ private:
     int64_t     lTransNum_{0};
     int64_t     lTransNumForDisplay_{0};
     std::string str_nym_id_;
+    std::string str_notary_id_;
     bool        bIsFinalReceipt_{false};
     int64_t     lClosingNum_{0};
     bool        bGotClosingNum_{false};

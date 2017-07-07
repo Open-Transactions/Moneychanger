@@ -37,8 +37,9 @@ bool FinalReceiptProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &
 
     if (nullptr != pTradeModel)
     {
-        QModelIndex offerIndex = pModel->index(sourceRow, 6, sourceParent); // OfferID at index 6  todo hardcoding
-        QModelIndex nymIndex   = pModel->index(sourceRow, 9, sourceParent); // NymID at index 9  todo hardcoding
+        QModelIndex offerIndex  = pModel->index(sourceRow, 6, sourceParent); // OfferID at index 6  todo hardcoding
+        QModelIndex nymIndex    = pModel->index(sourceRow, 9, sourceParent); // NymID at index 9  todo hardcoding
+        QModelIndex notaryIndex = pModel->index(sourceRow, 8, sourceParent); // Notary at index 8  todo hardcoding
 
         // NOTE: What's happening is, it's ACTUALLY importing the finalReceipt FIRST,
         // and THEN it's importing the marketReceipt (which actually happened first).
@@ -62,19 +63,24 @@ bool FinalReceiptProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &
 
         int64_t lCurrentOfferID    = pTradeModel->rawData(offerIndex).toLongLong();
         const QString qstrNymID    = pTradeModel->rawData(nymIndex).toString();
+        const QString qstrNotaryID = pTradeModel->rawData(notaryIndex).toString();
         const std::string strNymId = qstrNymID.toStdString();
+        const std::string strNotaryId = qstrNotaryID.toStdString();
 
         const bool bNymIdMatches = //str_nym_id_.empty() ||
                                     (0 == strNymId.compare(str_nym_id_));
+        const bool bNotaryIdMatches = //str_notary_id_.empty() ||
+                                    (0 == strNotaryId.compare(str_notary_id_));
 
-        const bool bMatches = ((lTransNumForDisplay_ == lCurrentOfferID) && bNymIdMatches);
+        const bool bMatches = ((lTransNumForDisplay_ == lCurrentOfferID) && bNymIdMatches && bNotaryIdMatches);
 
-        QString qstrMatches = QString(bMatches ? "MATCHING %1" : "MIS-match %1").
+        QString qstrMatches = QString(bMatches ? "MATCHING %1" : "mis-match %1").
                 arg(bNymIdMatches ? "(+ Nym ID does match)" : "(+ Nym ID does NOT match)");
         QString qstrFinal(bIsFinalReceipt_ ? "TRUE" : "FALSE");
+        QString qstrNotaryMatches = QString(bNotaryIdMatches ? "True" : "False");
 
-        qDebug() << QString("%5 RECEIPT: lTransNumForDisplay_ = %1  lCurrentOfferID = %2  lClosingNum_ = %3  lTransNum_: %4 IsFinalReceipt: %6 ").
-                    arg(lTransNumForDisplay_).arg(lCurrentOfferID).arg(lClosingNum_).arg(lTransNum_).arg(qstrMatches).arg(qstrFinal);
+        qDebug() << QString("%5 RECEIPT: lTransNumForDisplay_ = %1  lCurrentOfferID = %2  lClosingNum_ = %3  lTransNum_: %4 IsFinalReceipt: %6 Notary Matches: %7").
+                    arg(lTransNumForDisplay_).arg(lCurrentOfferID).arg(lClosingNum_).arg(lTransNum_).arg(qstrMatches).arg(qstrFinal).arg(qstrNotaryMatches);
 
         return bMatches;
     }
@@ -90,11 +96,27 @@ bool FinalReceiptProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &
 
 }
 
+void FinalReceiptProxyModel::setFilter(int64_t lTransNumForDisplay, std::string str_nym_id, std::string str_notary_id)
+{
+    lTransNum_ = 0;
+    lTransNumForDisplay_ = lTransNumForDisplay; // OfferId
+    str_nym_id_ = str_nym_id;
+    str_notary_id_ = str_notary_id;
+
+    bIsFinalReceipt_ = false;
+    lClosingNum_ = 0;
+    bGotClosingNum_ = false;
+
+    invalidateFilter();
+}
+
+
 void FinalReceiptProxyModel::setFilterOpentxsRecord(opentxs::OTRecord& recordmt)
 {
     lTransNum_           = recordmt.GetTransactionNum();
     lTransNumForDisplay_ = recordmt.GetTransNumForDisplay();
     str_nym_id_          = recordmt.GetNymID();
+    str_notary_id_       = recordmt.GetNotaryID();
     bIsFinalReceipt_     = recordmt.IsFinalReceipt();
     lClosingNum_         = 0;
     bGotClosingNum_      = recordmt.GetClosingNum(lClosingNum_);
@@ -108,6 +130,7 @@ void FinalReceiptProxyModel::clearFilter()
     lTransNum_           = 0;
     lTransNumForDisplay_ = 0;
     str_nym_id_          = "";
+    str_notary_id_       = "";
     bIsFinalReceipt_     = false;
     lClosingNum_         = 0;
     bGotClosingNum_      = false;
@@ -466,33 +489,69 @@ void ModelTradeArchive::updateDBFromOT(const std::string & strNotaryID, const st
             }
             // -----------------------------------------------------------------------
             // lOfferId is a critical value -- that plus strNymID
+            //
+            QPointer<FinalReceiptProxyModel> pFinalReceiptProxy = new FinalReceiptProxyModel;
+            pFinalReceiptProxy->setSourceModel(this);
+            pFinalReceiptProxy->setFilter(lOfferID, strNymID, strNotaryID);
 
+            int nRowCount = pFinalReceiptProxy->rowCount();
 
+            if (nRowCount > 0) // Matching rows are present. Update them.
+            {
+                for (int nIndex = 0; nIndex < nRowCount; ++nIndex)
+                {
+                    QModelIndex proxyIndex  = pFinalReceiptProxy->index(nIndex, 0);
+                    QModelIndex actualIndex = pFinalReceiptProxy->mapToSource(proxyIndex);
+                    QSqlRecord  record      = this->record(actualIndex.row());
 
+                    record.setValue("is_bid", bIsBid);
+//                    record.setValue("receipt_id", QVariant::fromValue(lReceiptID));
+//                    record.setValue("offer_id", QVariant::fromValue(lOfferID));
+                    record.setValue("scale", QVariant::fromValue(lScale));
+                    record.setValue("actual_price", QVariant::fromValue(lPrice));
+                    record.setValue("actual_paid", QVariant::fromValue(lPayQuantity));
+                    record.setValue("amount_purchased", QVariant::fromValue(lQuantity));
+//                    record.setValue("timestamp",  QVariant::fromValue(tDate));
+//                    record.setValue("notary_id", QString::fromStdString(strNotaryID));
+//                    record.setValue("nym_id", QString::fromStdString(strNymID));
+                    record.setValue("asset_id", QString::fromStdString(pTradeData->instrument_definition_id));
+                    record.setValue("currency_id", QString::fromStdString(pTradeData->currency_id));
+                    record.setValue("asset_acct_id", QString::fromStdString(pTradeData->asset_acct_id));
+                    record.setValue("currency_acct_id", QString::fromStdString(pTradeData->currency_acct_id));
 
+                    record.setValue("asset_receipt", QString::fromStdString(pTradeData->asset_receipt));
+                    record.setValue("currency_receipt", QString::fromStdString(pTradeData->currency_receipt));
+//                    record.setValue("final_receipt", QString::fromStdString(pTradeData->final_receipt));
 
-            QSqlRecord record = this->record();
+                    this->setRecord(actualIndex.row(), record);
+                }
+            }
+            else // No matching rows are present. (Insert a new one).
+            {
+                QSqlRecord record = this->record();
 
-            record.setValue("is_bid", bIsBid);
-            record.setValue("receipt_id", QVariant::fromValue(lReceiptID));
-            record.setValue("offer_id", QVariant::fromValue(lOfferID));
-            record.setValue("scale", QVariant::fromValue(lScale));
-            record.setValue("actual_price", QVariant::fromValue(lPrice));
-            record.setValue("actual_paid", QVariant::fromValue(lPayQuantity));
-            record.setValue("amount_purchased", QVariant::fromValue(lQuantity));
-            record.setValue("timestamp",  QVariant::fromValue(tDate));
-            record.setValue("notary_id", QString::fromStdString(strNotaryID));
-            record.setValue("nym_id", QString::fromStdString(strNymID));
-            record.setValue("asset_id", QString::fromStdString(pTradeData->instrument_definition_id));
-            record.setValue("currency_id", QString::fromStdString(pTradeData->currency_id));
-            record.setValue("asset_acct_id", QString::fromStdString(pTradeData->asset_acct_id));
-            record.setValue("currency_acct_id", QString::fromStdString(pTradeData->currency_acct_id));
+                record.setValue("is_bid", bIsBid);
+                record.setValue("receipt_id", QVariant::fromValue(lReceiptID));
+                record.setValue("offer_id", QVariant::fromValue(lOfferID));
+                record.setValue("scale", QVariant::fromValue(lScale));
+                record.setValue("actual_price", QVariant::fromValue(lPrice));
+                record.setValue("actual_paid", QVariant::fromValue(lPayQuantity));
+                record.setValue("amount_purchased", QVariant::fromValue(lQuantity));
+                record.setValue("timestamp",  QVariant::fromValue(tDate));
+                record.setValue("notary_id", QString::fromStdString(strNotaryID));
+                record.setValue("nym_id", QString::fromStdString(strNymID));
+                record.setValue("asset_id", QString::fromStdString(pTradeData->instrument_definition_id));
+                record.setValue("currency_id", QString::fromStdString(pTradeData->currency_id));
+                record.setValue("asset_acct_id", QString::fromStdString(pTradeData->asset_acct_id));
+                record.setValue("currency_acct_id", QString::fromStdString(pTradeData->currency_acct_id));
 
-            record.setValue("asset_receipt", QString::fromStdString(pTradeData->asset_receipt));
-            record.setValue("currency_receipt", QString::fromStdString(pTradeData->currency_receipt));
-            record.setValue("final_receipt", QString::fromStdString(pTradeData->final_receipt));
+                record.setValue("asset_receipt", QString::fromStdString(pTradeData->asset_receipt));
+                record.setValue("currency_receipt", QString::fromStdString(pTradeData->currency_receipt));
+                record.setValue("final_receipt", QString::fromStdString(pTradeData->final_receipt));
 
-            this->insertRecord(0, record);
+                this->insertRecord(0, record);
+            }
+
             pTradeList->RemoveTradeDataNym(trade_index);
 
         } // for (trades)

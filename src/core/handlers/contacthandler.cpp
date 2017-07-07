@@ -958,10 +958,10 @@ bool MTContactHandler::upsertClaimVerification(const std::string & claimant_nym_
     return (nRowId > 0);
 }
 
-bool MTContactHandler::ArchivedTradeReceiptExists(int64_t lReceiptID)
+bool MTContactHandler::ArchivedTradeReceiptExists(int64_t lOfferID)
 {
     QMutexLocker locker(&m_Mutex);
-    QString str_select = QString("SELECT * FROM `trade_archive` WHERE `receipt_id`=%1 LIMIT 0,1").arg(lReceiptID);
+    QString str_select = QString("SELECT * FROM `trade_archive` WHERE `offer_id`=%1 LIMIT 0,1").arg(lOfferID);
     int nRows = DBHandler::getInstance()->querySize(str_select);
     return (nRows > 0);
 }

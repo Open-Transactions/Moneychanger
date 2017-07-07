@@ -2444,7 +2444,7 @@ bool Moneychanger::AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt)
                         "UPDATE: Maybe there WERE marketReceipts, but we just filtered it wrong, "
                         "or we got this finalReceipt first, possibly as a notice, and then get the others next.";
 
-            qDebug() << QString("lOfferID: %1").arg(lOfferID);
+            qDebug() << QString("lOfferID for new insertion: %1").arg(lOfferID);
 
             pModel->insertRecord(0, record);
         }
@@ -2463,8 +2463,8 @@ bool Moneychanger::AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt)
             {
                 pModel->database().rollback();
                 qDebug() << "Database Write Error" <<
-                           "The database reported an error: " <<
-                           pModel->lastError().text();
+                            "The database reported an error: " <<
+                            pModel->lastError().text();
             }
         }
     }

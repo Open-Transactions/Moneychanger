@@ -128,7 +128,7 @@ public:
   bool ContactExists(int nContactID);
   bool DeleteContact(int nContactID);
 
-  bool ArchivedTradeReceiptExists(int64_t lReceiptID); // TODO lookup by offerID, not receiptID. (I think).
+  bool ArchivedTradeReceiptExists(int64_t lOfferID);
   // ---------------------------------------------
   static QString Encode(QString plaintext);
   static QString Decode(QString encoded);
