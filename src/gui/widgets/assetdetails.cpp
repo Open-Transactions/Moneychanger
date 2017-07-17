@@ -599,7 +599,7 @@ void MTAssetDetails::AddButtonClicked()
 
     theWizard.setField(QString("contractXML"), qstrDefaultContract);
 
-    if (QDialog::Accepted == theWizard.exec())
+    if (QDialog::Accepted == theWizard.exec()) // <=== EXECUTING WIZARD HERE
     {
         bool bIsImporting = theWizard.field("isImporting").toBool();
         bool bIsCreating  = theWizard.field("isCreating").toBool();
@@ -692,9 +692,14 @@ void MTAssetDetails::AddButtonClicked()
         // --------------------------------
         else if (bIsCreating)
         {
-            QString qstrXMLContents = theWizard.field("contractXML").toString();
+            //QString qstrXMLContents = theWizard.field("contractXML").toString();
             QString qstrNymID       = theWizard.field("NymID").toString();
             QString qstrTerms       = theWizard.field("terms").toString();
+
+            if (qstrTerms.isEmpty())
+            {
+                qstrTerms = QString(tr("THIS SPACE INTENTIONALLY LEFT BLANK"));
+            }
 
             const bool bIsCurrency = theWizard.field("asset_type_currency").toBool();
             const bool bIsSecurity = theWizard.field("asset_type_security").toBool();
@@ -705,6 +710,7 @@ void MTAssetDetails::AddButtonClicked()
             QString qstrSymbol;
             QString qstrTLA;
             QString qstrFractionalUnit;
+            QString qstrDecimalSpaces;
 
             std::string strContractID;
 
@@ -715,6 +721,9 @@ void MTAssetDetails::AddButtonClicked()
                 qstrSymbol         = theWizard.field("currency_symbol").toString();
                 qstrTLA            = theWizard.field("currency_tla").toString();
                 qstrFractionalUnit = theWizard.field("currency_fractional_unit").toString();
+                qstrDecimalSpaces  = theWizard.field("currency_decimal_spaces").toString();
+                std::string str_decimal_spaces = qstrDecimalSpaces.toStdString();
+                opentxs::String strDecimalSpaces(str_decimal_spaces);
 
 //                EXPORT std::string CreateCurrencyContract(
 //                      const std::string& NYM_ID,
@@ -726,6 +735,8 @@ void MTAssetDetails::AddButtonClicked()
 //                      const uint32_t power,
 //                      const std::string& fraction) const;
 
+                const std::uint32_t uDecimalSpaces = strDecimalSpaces.ToUint();
+
                 strContractID =
                     opentxs::OTAPI_Wrap::Exec()->CreateCurrencyContract(
                         qstrNymID.toStdString(),
@@ -735,17 +746,16 @@ void MTAssetDetails::AddButtonClicked()
                         qstrSymbol.toStdString(),  //  Symbol.
                         qstrTLA.toStdString(),  //  "USD", etc.
 //                        100,  //   100 cents in a dollar.  Factor. (I think factor is gone now.)
-                        2,  //  A "cent" is 2 decimal places right of a "dollar." Decimal power.
+                        uDecimalSpaces,  //  A "cent" is 2 decimal places right of a "dollar." Decimal power.
                         qstrFractionalUnit.toStdString()
-
-                            );
+                        );
             }
             else if (bIsSecurity)
             {
                 qstrContractName   = theWizard.field("security_contract_name").toString();
                 qstrPrimaryUnit    = theWizard.field("security_primary_unit").toString();
                 qstrSymbol         = theWizard.field("security_symbol").toString();
-                qstrTLA            = theWizard.field("security_tla").toString();
+                //qstrTLA          = theWizard.field("security_tla").toString();
 
                 strContractID =
                     opentxs::OTAPI_Wrap::Exec()->CreateSecurityContract(
@@ -753,7 +763,7 @@ void MTAssetDetails::AddButtonClicked()
                         qstrContractName.toStdString(),  //  "Sample Co. Share" (refers to the contract.)
                         qstrTerms.toStdString(),
                         qstrPrimaryUnit.toStdString(),  //   Primary unit name "shares"
-                        qstrSymbol.toStdString());  //  Symbol.
+                        qstrSymbol.toStdString());  //  Symbol aka "SAMPL"
             }
             else if (bIsBasket)
             {

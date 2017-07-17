@@ -88,9 +88,14 @@ public:
 
     opentxs::OTRecordList & GetRecordlist();
     void setupRecordList();  // Sets up the RecordList object with the IDs etc.
-    void populateRecords();  // Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
+    void populateRecords(bool bCurrentlyModifying=false);  // Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
 
     void modifyRecords(); // After we populate the recordlist, we make some changes to the list (move messages to a separate db table, move receipts to a separate table, etc.)
+    void processImportRecord(
+            opentxs::OTRecord& recordmt,
+            const int nIndex
+            );
+
     bool AddMailToMsgArchive(opentxs::OTRecord& recordmt);
     bool AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord=true);
     bool AddPaymentBasedOnNotice(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord=true);

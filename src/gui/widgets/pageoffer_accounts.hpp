@@ -3,6 +3,7 @@
 
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
+#include "core/mapidname.hpp"
 
 #include <QWizardPage>
 
@@ -17,6 +18,8 @@ class PageOffer_Accounts : public QWizardPage
 public:
     explicit PageOffer_Accounts(QWidget *parent = 0);
     ~PageOffer_Accounts();
+
+    bool setupMapOfAccounts(mapIDName & accountMap, bool bIsAsset_or_currency);
 
 protected:
     void initializePage(); //virtual

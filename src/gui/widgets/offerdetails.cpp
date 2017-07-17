@@ -16,9 +16,9 @@
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
-#include <opentxs/core/OTStorage.hpp>
-#include <opentxs/core/OTData.hpp>
 #include <opentxs/core/recurring/OTPaymentPlan.hpp>
+#include <opentxs/core/Data.hpp>
+#include <opentxs/core/OTStorage.hpp>
 
 #include <QMessageBox>
 #include <QDateTime>
@@ -119,7 +119,7 @@ void MTOfferDetails::AddButtonClicked()
 //      const QString qstrExpire             (theWizard.field("expirationStr")      .toString());
         const int     nExpire                (theWizard.field("expiration")         .toInt   ());
         // --------------------------------------------
-        const int     timespan_array_len                  = 7;        
+        const int     timespan_array_len                  = 7;
         const int64_t array_timespan[timespan_array_len]  = {
             OT_TIME_MINUTE_IN_SECONDS,
             OT_TIME_HOUR_IN_SECONDS,

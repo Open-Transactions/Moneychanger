@@ -563,7 +563,7 @@ void Moneychanger::onCheckNym(QString nymId)
         opentxs::OTAPI_Wrap::Exec()->GetContactData(nymId.toStdString());
     auto claims =
         opentxs::proto::DataToProto<opentxs::proto::ContactData>
-            ({data.c_str(), static_cast<uint32_t>(data.length())});
+            (opentxs::Data(data.c_str(), static_cast<uint32_t>(data.length())));
 
     for (const auto& section: claims.section()) {
         for (const auto& claim: section.item()) {
@@ -621,7 +621,7 @@ void Moneychanger::onCheckNym(QString nymId)
 
     auto the_set =
         opentxs::proto::DataToProto<opentxs::proto::VerificationSet>
-            ({ver_data.c_str(), static_cast<uint32_t>(ver_data.length())});
+            (opentxs::Data(ver_data.c_str(), static_cast<uint32_t>(ver_data.length())));
 
     // Internal verifications:
     // Here I'm looping through pCurrentNym's verifications of other people's claims.
@@ -767,7 +767,7 @@ void Moneychanger::setupRecordList()
 
 // Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
 //
-void Moneychanger::populateRecords()
+void Moneychanger::populateRecords(bool bCurrentlyModifying/*=false*/)
 {
     GetRecordlist().Populate(); // Refreshes the OT data from local storage.   < << <<==============***
     // ---------------------------------------------------------------------
@@ -942,7 +942,8 @@ void Moneychanger::populateRecords()
     // and moves to their own database table.
     // Same thing for mail messages, etc.
     //
-    modifyRecords();
+    if (!bCurrentlyModifying)
+        modifyRecords();
 }
 
 
@@ -2437,9 +2438,13 @@ bool Moneychanger::AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt)
 //            record.setValue("currency_receipt", QString::fromStdString(pTradeData->currency_receipt));
             record.setValue("final_receipt", qstrReceipt);
 
-            qDebug() << "Kind of a weird situation -- a final receipt where there were never any marketReceipts. (The offer expired without ever trading.) Importing it here anyway to see if it causes any problems.";
+            qDebug() << "Kind of a weird situation -- a final receipt where there were "
+                        "never any marketReceipts. (The offer expired without ever trading.) "
+                        "Importing it here anyway to see if it causes any problems. "
+                        "UPDATE: Maybe there WERE marketReceipts, but we just filtered it wrong, "
+                        "or we got this finalReceipt first, possibly as a notice, and then get the others next.";
 
-            qDebug() << QString("lOfferID: %1").arg(lOfferID);
+            qDebug() << QString("lOfferID for new insertion: %1").arg(lOfferID);
 
             pModel->insertRecord(0, record);
         }
@@ -2458,8 +2463,8 @@ bool Moneychanger::AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt)
             {
                 pModel->database().rollback();
                 qDebug() << "Database Write Error" <<
-                           "The database reported an error: " <<
-                           pModel->lastError().text();
+                            "The database reported an error: " <<
+                            pModel->lastError().text();
             }
         }
     }
@@ -3665,7 +3670,11 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
 }
 
 
-
+// Notice that this function now does the same thing twice.
+// Only difference is, the first time around it does all NON-Final Receipts,
+// but the second time around it does all FINAL receipts. (And final receipt notices).
+// This is basically just to ensure that final receipts are always done LAST.
+//
 void Moneychanger::modifyRecords()
 {
     const int listSize = GetRecordlist().size();
@@ -3684,326 +3693,9 @@ void Moneychanger::modifyRecords()
         {
             opentxs::OTRecord& recordmt = record;
 
-//            qDebug() << QString("modifyRecords 1\n");
-
-            if (!recordmt.CanDeleteRecord())
-            {
-//                qDebug() << QString("modifyRecords 2\n");
-
-                // In this case we aren't going to delete the record, but we can still
-                // save a copy of it in our local database, if it's not already there.
-
-                if (!recordmt.IsMail() &&
-                    !recordmt.IsSpecialMail() &&
-                    !recordmt.IsExpired() )
-                {
-//                    qDebug() << QString("modifyRecords 3\n");
-
-                    bool bShouldImportPayment   = true;  // To preserve original logic.
-                    bool bShouldImportAgreement = false; // This part is new.
-
-                    if (   recordmt.IsPending()
-                       && (recordmt.IsPaymentPlan() ||
-                           recordmt.IsContract()) )
-                    {
-
-//                        qDebug() << QString("modifyRecords 4\n");
-
-
-                        bShouldImportPayment   = true;
-                        bShouldImportAgreement = true;
-                    }
-
-                    if (bShouldImportPayment)
-                        AddPaymentToPmntArchive(recordmt);
-
-                    if (bShouldImportAgreement)
-                        AddAgreementRecord(recordmt);
-                }
+            if (false == recordmt.IsFinalReceipt()) {
+                processImportRecord(recordmt, nIndex);
             }
-            else // record can be deleted.
-            {
-
-//                qDebug() << QString("modifyRecords 5\n");
-
-
-                // If recordmt IsRecord() and IsReceipt() and is a "finalReceipt"
-                // then try to look it up in the Trade Archive table. For all entries
-                // from the same transaction, we set the final receipt text in those
-                // rows.
-                //
-                // Then we delete the finalReceipt from the OT Record Box.
-                //
-                // Meanwhile, for all marketReceipts, we just deleting them since they
-                // are ALREADY in the trade_archive table.
-                //
-                // -----------------------------------
-                bool bShouldDeleteRecord = false;
-                // -----------------------------------
-                if (recordmt.IsMail() || recordmt.IsSpecialMail())
-                {
-                    if (AddMailToMsgArchive(recordmt))
-                        bShouldDeleteRecord = true;
-                }
-                // -----------------------------------
-                else if (recordmt.IsNotice())
-                {
-
-//                    qDebug() << QString("modifyRecords 6\n");
-
-                    bool bShouldImportPayment   = false;
-                    bool bShouldImportAgreement = false;
-//                  bool bShouldImportFinalReceiptToTradeArchive = false; // experimental. See note just below.
-
-                    if (recordmt.HasOriginType())
-                    {
-//                        qDebug() << QString("modifyRecords 7\n");
-
-                        if (recordmt.IsOriginTypeMarketOffer()) {
-                            qDebug() << __FUNCTION__ << ": This is where I almost just added a market notice to the payments table. I stopped myself.";
-                            // There actually IS a finalReceipt NOTICE for market exchange. (Sent to the Nym.)
-                            // (Versus the finalReceipt RECEIPTs, which are sent to 2 ACCOUNTS for each Nym.)
-                            // Therefore, AddAgreementRecord needs to check for "IsNotice" in combination with "IsFinalReceipt"
-                            // since in that case, it should know it hasn't received its official 4 ACCOUNT receipts yet,
-                            // and more importantly, that this notice should NOT overwrite any of those, but it
-                            // has still received _some_ useful information -- that the agreement itself _has_ been
-                            // terminated.
-                            //
-                            //bShouldImportFinalReceiptToTradeArchive = true;
-                        }
-                        else if (recordmt.IsOriginTypePaymentPlan()) {
-//                            qDebug() << QString("modifyRecords 8\n");
-
-                            bShouldImportPayment   = true;
-                            bShouldImportAgreement = true;
-                        }
-                        else if (recordmt.IsOriginTypeSmartContract()) {
-//                            qDebug() << QString("modifyRecords 9\n");
-
-                            bShouldImportPayment   = true;
-                            bShouldImportAgreement = true;
-                        }
-                        else {
-                            qDebug() << __FUNCTION__ << ": Importing notices, found a record with an unknown origin type.";
-                        }
-                    }
-                    else {
-//                        qDebug() << QString("modifyRecords 10\n");
-
-                        bShouldImportPayment = true;
-
-
-//                        QString tFinal = "false";
-//                        QString tContract = "false";
-//                        QString tPlan = "false";
-//                        QString tNotice = "false";
-//                        QString tExpired = "false";
-//                        QString tCanceled = "false";
-//                        QString tSuccess = "false";
-//                        bool bIsSuccess = false;
-
-//                        if (recordmt.IsFinalReceipt())          tFinal = "true";
-//                        if (recordmt.IsContract())              tContract = "true";
-//                        if (recordmt.IsPaymentPlan())           tPlan = "true";
-//                        if (recordmt.IsNotice())                tNotice = "true";
-//                        if (recordmt.IsExpired())               tExpired = "true";
-//                        if (recordmt.IsCanceled())              tCanceled = "true";
-//                        if (recordmt.HasSuccess(bIsSuccess))    tSuccess = bIsSuccess ? "true" : "false";
-
-//                        qstrTemp = QString(" IsFinalReceipt: %1\n IsContract: %2 \n IsPaymentPlan: %3 \n IsNotice: %4 \n IsExpired: %5 \n IsCanceled: %6 \n IsSuccess: %7 ")
-//                                .arg(tFinal).arg(tContract).arg(tPlan).arg(tNotice).arg(tExpired).arg(tCanceled).arg(tSuccess);
-
-//                        qDebug() << qstrTemp;
-
-
-
-
-
-                    }
-                    // -------------------------------------
-                    if (bShouldImportPayment && AddPaymentBasedOnNotice(recordmt))
-                        bShouldDeleteRecord = true;
-                    if (bShouldImportAgreement && AddAgreementRecord(recordmt))
-                        bShouldDeleteRecord = true;
-//                    if (bShouldImportFinalReceiptToTradeArchive && AddFinalReceiptToTradeArchive(recordmt))
-//                        bShouldDeleteRecord = true;
-                }
-                // -----------------------------------
-                else if (recordmt.IsRecord() && !recordmt.IsExpired())
-                {
-//                    qDebug() << QString("modifyRecords 11\n");
-
-                    if (recordmt.IsReceipt())
-                    {
-//                        qDebug() << QString("modifyRecords 12\n");
-
-                        if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
-                        {
-                            // We don't have to add these to the trade archive table because they
-                            // are already there. OTClient directly adds them into the TradeDataNym object,
-                            // and then Moneychanger reads that object and imports it into the trade_achive
-                            // table already. So basically here all we need to do is delete the market
-                            // receipt records so the user doesn't have the hassle of deleting them himself.
-                            // Now they are safe in his archive and he can do whatever he wants with them.
-
-                            bShouldDeleteRecord = true;
-                        } // marketReceipt
-                        // -----------------------------------
-                        // NOTE: PayDividend is possibly having its receipts go in here.
-                        // Todo: Fix pay dividend in UI.
-                        //
-                        else if (0 == recordmt.GetInstrumentType().compare("paymentReceipt"))
-                        {
-                            if (recordmt.HasOriginType()
-                                && (recordmt.IsOriginTypePaymentPlan() ||
-                                    recordmt.IsOriginTypeSmartContract())
-                                && AddAgreementRecord(recordmt)) // <====== IMPORTS HERE.
-                            {
-                                bShouldDeleteRecord = true;
-                            }
-//                          else
-//                              qDebug() << __FUNCTION__ << ": Failed trying to add a receipt to the agreement archive.";
-
-                            // Commenting this out for now.
-                            // It might have been added just to hide the pay dividend problems.
-                            // Now I want to see whatever pops up here.
-                            //bShouldDeleteRecord = true;
-                        } // paymentReceipt
-                        // -----------------------------------
-                        else if (recordmt.IsFinalReceipt())
-                        {
-
-//                            qDebug() << QString("modifyRecords 13\n");
-
-                            // Notice here we only delete the record if we successfully
-                            // added the final receipt to the trade archive table.
-                            // Why? Because the trade archive table contains receipts
-                            // of COMPLETED TRADES. So if we fail to find any of those
-                            // to add the final receipt to, we don't just want to DELETE
-                            // the final receipt -- the user's sole remaining copy!
-                            // - So for trades that occurred, the final receipt will be stored
-                            // with those archives next to the corresponding market receipts.
-                            // - And for trades that did NOT occur, the final receipt will
-                            // remain in the record box, so the user himself can delete those
-                            // whenever he sees fit. They will be his only notice that an
-                            // offer completed on the market without any trades occurring.
-                            // We might even change the GUI label now for final receipt records,
-                            // (in the Pending Transactions window) to explicitly say,
-                            // "offer completed on market without any trades."
-                            //
-                            // P.S. There's another reason not to just delete a finalReceipt
-                            // if we can't find any trades associated with it: because it might
-                            // not be a finalReceipt for a market offer! It might correspond to
-                            // a smart contract or a recurring payment plan.
-                            //
-                            // UPDATE: We now CAN tell for finalReceipts and paymentReceipts, whether
-                            // they are for market offers, payment plans, or smart contracts. So the
-                            // logic is updated now to not even TRY to import into the trade archive
-                            // unless it's specifically a finalReceipt for a market offer.
-                            //
-                            const bool has_origin_type     = recordmt.HasOriginType();
-                            const bool origin_market_offer = has_origin_type && recordmt.IsOriginTypeMarketOffer();
-                            const bool added_trade_archive = origin_market_offer && AddFinalReceiptToTradeArchive(recordmt);
-
-                            if (   has_origin_type
-                                && origin_market_offer
-                                && added_trade_archive) // <==== IMPORTS HERE.
-                                bShouldDeleteRecord = true;
-                            else if (AddAgreementRecord(recordmt)) // Okay, it's for a smart contract or recurring payment plan.
-                            {
-//                                qDebug() << QString("modifyRecords 14\n");
-
-                                bShouldDeleteRecord = true;
-
-                                // For now I'm doing this one here as well, so the normal payments screen
-                                // is able to realize that the agreement has finished.
-                                //
-                                // UPDATE: We no longer do this. If someone activates a payment plan, and it
-                                // says "activated" in the payments screen. (Or "canceled" or "expired" or whatever)
-                                // then that was its state when that action occurred, and it's now historical.
-                                // It "was activated." Since then, is it STILL active? If you want to know that,
-                                // you have to look at the "active agreements" window where you can see its current
-                                // status and its finalReceipts and paymentReceipts.
-                                //
-                                // UPDATE: uncommenting this for now, to see how it goes. I'm thinking that
-                                // both the payments screen AND the active agreements screen should show the
-                                // most recent status of the agreement.
-                                //
-                                // UPDATE: commented it out again. In the payments GUI, we had a sent
-                                // activated, and a received activated, and you had to go to the live
-                                // agreements GUI to see what happened beyond that. It's better to keep
-                                // it that way, since when I uncomment this, those get replaced in the
-                                // payments UI with both final receipts in the received. It's appropriate
-                                // to see those appear in the live agreements, but it's confusing to have
-                                // them appear in the payments UI, so I commented this out again.
-                                //
-                                //AddPaymentToPmntArchive(recordmt);
-                            }
-                            else
-                                qDebug() << QString(" --- Tried to import final receipt, but it failed! has_origin_type: %1 origin_market_offer: %2 added_trade_archive: %3").arg(has_origin_type).arg(origin_market_offer).arg(added_trade_archive);
-                        } // finalReceipt
-                        else // All  other closed (deletable) receipts.
-                        {
-//                            qDebug() << QString("modifyRecords 15\n");
-
-                            if (AddPaymentToPmntArchive(recordmt))
-                            {
-
-//                                qDebug() << QString("modifyRecords 16\n");
-
-
-                                bShouldDeleteRecord = true;
-                            }
-//                          else
-//                              qDebug() << __FUNCTION__ << ": Failed trying to add a receipt to the payment archive.";
-                        }
-                    }
-                    // -----------------------------------
-                    else // All  other delete-able, non-expired records.
-                    {
-//                        qDebug() << QString("modifyRecords 17\n");
-
-                        // For example, an incoming cheque becomes a received cheque after depositing it.
-                        // At that point, OT moves incoming cheque from the payments inbox, to the record box. So
-                        // it's not a cheque receipt (the payer gets that; you're the recipient) but it's the deletable
-                        // record of the incoming cheque itself, for a cheque you've since already deposited, and thus
-                        // are now moving to your payment receipts table.
-                        // There IS another relevant receipt, however -- the cheque DEPOSIT. When you deposited the cheque,
-                        // YOU got a deposit receipt. This is currently not recorded here but it really should be. That
-                        // way you can see the cheque itself, as well as your receipt from depositing that cheque. It'd just
-                        // be two different receipts on the same payment record, similar to what we do in the trade archive
-                        // table, which has potentially up to 3 different receipts for the same trade record. (Market receipt
-                        // for asset and currency accounts, plus final receipt.)
-                        //
-                        if ((recordmt.IsPaymentPlan() || recordmt.IsContract()) // They could be here maybe because they expired without ever being activated.
-                            && AddAgreementRecord(recordmt))
-                        {
-
-//                            qDebug() << QString("modifyRecords 18\n");
-
-                            bShouldDeleteRecord = true;
-                        }
-
-                        if (AddPaymentToPmntArchive(recordmt))
-                        {
-//                            qDebug() << QString("modifyRecords 19\n");
-
-                            bShouldDeleteRecord = true;
-                        }
-                    }
-                } // else if (recordmt.IsRecord() && !recordmt.IsExpired())
-                // -----------------------------------
-                if (bShouldDeleteRecord)
-                {
-                    if (recordmt.DeleteRecord())
-                    {
-                        bool bRemoved = GetRecordlist().RemoveRecord(nIndex);
-
-                        if (!bRemoved)
-                            qDebug() << "Moneychanger::modifyRecords: weird issue trying to remove deleted record from GetRecordlist() (record list.)\n";
-                    }
-                }
-            } // Record can be deleted.
         }
     } // for (GetRecordlist() in reverse)
     // -------------------------------------
@@ -4011,7 +3703,313 @@ void Moneychanger::modifyRecords()
     // since every record contains its index, and so they will be wrong until re-populated.
     //
     if (listSize != GetRecordlist().size())
-        populateRecords();
+        populateRecords(true); //bCurrentlyModifying=false by default.
+    // -------------------------------------
+    // -------------------------------------
+    const int newListSize = GetRecordlist().size();
+
+    for (int iii = 0; iii < newListSize; ++iii)
+    {
+        const int nIndex = newListSize - iii - 1; // We iterate through the list in reverse. (Since we'll be deleting stuff.)
+
+        opentxs::OTRecord record = GetRecordlist().GetRecord(nIndex);
+        {
+            opentxs::OTRecord& recordmt = record;
+
+            if (true == recordmt.IsFinalReceipt()) {
+                processImportRecord(recordmt, nIndex);
+            }
+        }
+    } // for (GetRecordlist() in reverse)
+    // -------------------------------------
+    // If the above process DID remove any records, then we have to repopulate them now,
+    // since every record contains its index, and so they will be wrong until re-populated.
+    //
+    if (listSize != GetRecordlist().size())
+        populateRecords(true); //bCurrentlyModifying=false by default.
+    // -------------------------------------
+}
+
+
+void Moneychanger::processImportRecord(
+        opentxs::OTRecord& recordmt,
+        const int nIndex
+        )
+{
+    if (!recordmt.CanDeleteRecord())
+    {
+        // In this case we aren't going to delete the record, but we can still
+        // save a copy of it in our local database, if it's not already there.
+
+        if (!recordmt.IsMail() &&
+            !recordmt.IsSpecialMail() &&
+            !recordmt.IsExpired() )
+        {
+            bool bShouldImportPayment   = true;  // To preserve original logic.
+            bool bShouldImportAgreement = false; // This part is new.
+
+            if (recordmt.IsPending()
+               && (recordmt.IsPaymentPlan() ||
+                   recordmt.IsContract()) )
+            {
+                bShouldImportPayment   = true;
+                bShouldImportAgreement = true;
+            }
+
+            if (bShouldImportPayment)
+                AddPaymentToPmntArchive(recordmt);
+
+            if (bShouldImportAgreement)
+                AddAgreementRecord(recordmt);
+        }
+    }
+    else // record can be deleted.
+    {
+        // If recordmt IsRecord() and IsReceipt() and is a "finalReceipt"
+        // then try to look it up in the Trade Archive table. For all entries
+        // from the same transaction, we set the final receipt text in those
+        // rows.
+        //
+        // Then we delete the finalReceipt from the OT Record Box.
+        //
+        // Meanwhile, for all marketReceipts, we just deleting them since they
+        // are ALREADY in the trade_archive table.
+        //
+        // -----------------------------------
+        bool bShouldDeleteRecord = false;
+        // -----------------------------------
+        if (recordmt.IsMail() || recordmt.IsSpecialMail())
+        {
+            if (AddMailToMsgArchive(recordmt))
+                bShouldDeleteRecord = true;
+        }
+        // -----------------------------------
+        else if (recordmt.IsNotice())
+        {
+            bool bShouldImportPayment   = false;
+            bool bShouldImportAgreement = false;
+//          bool bShouldImportFinalReceiptToTradeArchive = false; // experimental. See note just below.
+
+            if (recordmt.HasOriginType())
+            {
+                if (recordmt.IsOriginTypeMarketOffer()) {
+                    qDebug() << __FUNCTION__ << ": This is where I almost just added a market notice to the payments table. I stopped myself.";
+                    // There actually IS a finalReceipt NOTICE for market exchange. (Sent to the Nym.)
+                    // (Versus the finalReceipt RECEIPTs, which are sent to 2 ACCOUNTS for each Nym.)
+                    // Therefore, AddAgreementRecord needs to check for "IsNotice" in combination with "IsFinalReceipt"
+                    // since in that case, it should know it hasn't received its official 4 ACCOUNT receipts yet,
+                    // and more importantly, that this notice should NOT overwrite any of those, but it
+                    // has still received _some_ useful information -- that the agreement itself _has_ been
+                    // terminated.
+                    //
+                    //bShouldImportFinalReceiptToTradeArchive = true;
+
+                    bShouldDeleteRecord = true;
+                }
+                else if (recordmt.IsOriginTypePaymentPlan()) {
+                    bShouldImportPayment   = true;
+                    bShouldImportAgreement = true;
+                }
+                else if (recordmt.IsOriginTypeSmartContract()) {
+                    bShouldImportPayment   = true;
+                    bShouldImportAgreement = true;
+                }
+                else {
+                    qDebug() << __FUNCTION__ << ": Importing notices, found a record with an unknown origin type.";
+                }
+            }
+            else {
+                bShouldImportPayment = true;
+
+                // QString tFinal = "false";
+                // QString tContract = "false";
+                // QString tPlan = "false";
+                // QString tNotice = "false";
+                // QString tExpired = "false";
+                // QString tCanceled = "false";
+                // QString tSuccess = "false";
+                // bool bIsSuccess = false;
+                //
+                // if (recordmt.IsFinalReceipt())          tFinal = "true";
+                // if (recordmt.IsContract())              tContract = "true";
+                // if (recordmt.IsPaymentPlan())           tPlan = "true";
+                // if (recordmt.IsNotice())                tNotice = "true";
+                // if (recordmt.IsExpired())               tExpired = "true";
+                // if (recordmt.IsCanceled())              tCanceled = "true";
+                // if (recordmt.HasSuccess(bIsSuccess))    tSuccess = bIsSuccess ? "true" : "false";
+                //
+                // qstrTemp = QString(" IsFinalReceipt: %1\n IsContract: %2 \n IsPaymentPlan: %3 \n IsNotice: %4 \n IsExpired: %5 \n IsCanceled: %6 \n IsSuccess: %7 ")
+                //         .arg(tFinal).arg(tContract).arg(tPlan).arg(tNotice).arg(tExpired).arg(tCanceled).arg(tSuccess);
+                //
+                // qDebug() << qstrTemp;
+            }
+            // -------------------------------------
+            if (bShouldImportPayment && AddPaymentBasedOnNotice(recordmt))
+                bShouldDeleteRecord = true;
+            if (bShouldImportAgreement && AddAgreementRecord(recordmt))
+                bShouldDeleteRecord = true;
+         // if (bShouldImportFinalReceiptToTradeArchive && AddFinalReceiptToTradeArchive(recordmt))
+         //       bShouldDeleteRecord = true;
+        }
+        // -----------------------------------
+        else if (recordmt.IsRecord() && !recordmt.IsExpired())
+        {
+            if (recordmt.IsReceipt())
+            {
+                if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
+                {
+                    // We don't have to add these to the trade archive table because they
+                    // are already there. OTClient directly adds them into the TradeDataNym object,
+                    // and then Moneychanger reads that object and imports it into the trade_achive
+                    // table already. So basically here all we need to do is delete the market
+                    // receipt records so the user doesn't have the hassle of deleting them himself.
+                    // Now they are safe in his archive and he can do whatever he wants with them.
+
+                    bShouldDeleteRecord = true;
+                } // marketReceipt
+                // -----------------------------------
+                // NOTE: PayDividend is possibly having its receipts go in here.
+                // Todo: Fix pay dividend in UI.
+                //
+                else if (0 == recordmt.GetInstrumentType().compare("paymentReceipt"))
+                {
+                    if (recordmt.HasOriginType()
+                        && (recordmt.IsOriginTypePaymentPlan() ||
+                            recordmt.IsOriginTypeSmartContract())
+                        && AddAgreementRecord(recordmt)) // <====== IMPORTS HERE.
+                    {
+                        bShouldDeleteRecord = true;
+                    }
+                 // else
+                 //     qDebug() << __FUNCTION__ << ": Failed trying to add a receipt to the agreement archive.";
+
+                    // Commenting this out for now.
+                    // It might have been added just to hide the pay dividend problems.
+                    // Now I want to see whatever pops up here.
+                    //bShouldDeleteRecord = true;
+                } // paymentReceipt
+                // -----------------------------------
+                else if (recordmt.IsFinalReceipt())
+                {
+                    // Notice here we only delete the record if we successfully
+                    // added the final receipt to the trade archive table.
+                    // Why? Because the trade archive table contains receipts
+                    // of COMPLETED TRADES. So if we fail to find any of those
+                    // to add the final receipt to, we don't just want to DELETE
+                    // the final receipt -- the user's sole remaining copy!
+                    // - So for trades that occurred, the final receipt will be stored
+                    // with those archives next to the corresponding market receipts.
+                    // - And for trades that did NOT occur, the final receipt will
+                    // remain in the record box, so the user himself can delete those
+                    // whenever he sees fit. They will be his only notice that an
+                    // offer completed on the market without any trades occurring.
+                    // We might even change the GUI label now for final receipt records,
+                    // (in the Pending Transactions window) to explicitly say,
+                    // "offer completed on market without any trades."
+                    //
+                    // P.S. There's another reason not to just delete a finalReceipt
+                    // if we can't find any trades associated with it: because it might
+                    // not be a finalReceipt for a market offer! It might correspond to
+                    // a smart contract or a recurring payment plan.
+                    //
+                    // UPDATE: We now CAN tell for finalReceipts and paymentReceipts, whether
+                    // they are for market offers, payment plans, or smart contracts. So the
+                    // logic is updated now to not even TRY to import into the trade archive
+                    // unless it's specifically a finalReceipt for a market offer.
+                    //
+                    const bool has_origin_type     = recordmt.HasOriginType();
+                    const bool origin_market_offer = has_origin_type && recordmt.IsOriginTypeMarketOffer();
+                    const bool added_trade_archive = origin_market_offer && AddFinalReceiptToTradeArchive(recordmt);
+
+                    if (   has_origin_type
+                        && origin_market_offer
+                        && added_trade_archive) // <==== IMPORTS HERE.
+                        bShouldDeleteRecord = true;
+                    else if (AddAgreementRecord(recordmt)) // Okay, it's for a smart contract or recurring payment plan.
+                    {
+                        bShouldDeleteRecord = true;
+
+                        // For now I'm doing this one here as well, so the normal payments screen
+                        // is able to realize that the agreement has finished.
+                        //
+                        // UPDATE: We no longer do this. If someone activates a payment plan, and it
+                        // says "activated" in the payments screen. (Or "canceled" or "expired" or whatever)
+                        // then that was its state when that action occurred, and it's now historical.
+                        // It "was activated." Since then, is it STILL active? If you want to know that,
+                        // you have to look at the "active agreements" window where you can see its current
+                        // status and its finalReceipts and paymentReceipts.
+                        //
+                        // UPDATE: uncommenting this for now, to see how it goes. I'm thinking that
+                        // both the payments screen AND the active agreements screen should show the
+                        // most recent status of the agreement.
+                        //
+                        // UPDATE: commented it out again. In the payments GUI, we had a sent
+                        // activated, and a received activated, and you had to go to the live
+                        // agreements GUI to see what happened beyond that. It's better to keep
+                        // it that way, since when I uncomment this, those get replaced in the
+                        // payments UI with both final receipts in the received. It's appropriate
+                        // to see those appear in the live agreements, but it's confusing to have
+                        // them appear in the payments UI, so I commented this out again.
+                        //
+                        //AddPaymentToPmntArchive(recordmt);
+                    }
+                    else
+                        qDebug() << QString(" --- Tried to import final receipt, but it failed! has_origin_type: %1 origin_market_offer: %2 added_trade_archive: %3").arg(has_origin_type).arg(origin_market_offer).arg(added_trade_archive);
+                } // finalReceipt
+                else // All  other closed (deletable) receipts.
+                {
+                    qDebug() << __FUNCTION__ << ": FYI, IMPORTING A RECEIPT OF CLOSED 'ALL OTHER' TYPE.";
+
+                    if (AddPaymentToPmntArchive(recordmt))
+                    {
+                        bShouldDeleteRecord = true;
+                    }
+                 // else
+                 //     qDebug() << __FUNCTION__ << ": Failed trying to add a receipt to the payment archive.";
+                }
+            }
+            // -----------------------------------
+            else // All  other delete-able, non-expired records.
+            {
+
+                qDebug() << __FUNCTION__ << ": FYI, IMPORTING A NON-RECEIPT OF DELETABLE, NON-EXPIRED TYPE.";
+
+                // For example, an incoming cheque becomes a received cheque after depositing it.
+                // At that point, OT moves incoming cheque from the payments inbox, to the record box. So
+                // it's not a cheque receipt (the payer gets that; you're the recipient) but it's the deletable
+                // record of the incoming cheque itself, for a cheque you've since already deposited, and thus
+                // are now moving to your payment receipts table.
+                // There IS another relevant receipt, however -- the cheque DEPOSIT. When you deposited the cheque,
+                // YOU got a deposit receipt. This is currently not recorded here but it really should be. That
+                // way you can see the cheque itself, as well as your receipt from depositing that cheque. It'd just
+                // be two different receipts on the same payment record, similar to what we do in the trade archive
+                // table, which has potentially up to 3 different receipts for the same trade record. (Market receipt
+                // for asset and currency accounts, plus final receipt.)
+                //
+                if ((recordmt.IsPaymentPlan() || recordmt.IsContract()) // They could be here maybe because they expired without ever being activated.
+                    && AddAgreementRecord(recordmt))
+                {
+                    bShouldDeleteRecord = true;
+                }
+
+                if (AddPaymentToPmntArchive(recordmt))
+                {
+                    bShouldDeleteRecord = true;
+                }
+            }
+        } // else if (recordmt.IsRecord() && !recordmt.IsExpired())
+        // -----------------------------------
+        if (bShouldDeleteRecord)
+        {
+            if (recordmt.DeleteRecord())
+            {
+                bool bRemoved = GetRecordlist().RemoveRecord(nIndex);
+
+                if (!bRemoved)
+                    qDebug() << "Moneychanger::modifyRecords: weird issue trying to remove deleted record from GetRecordlist() (record list.)\n";
+            }
+        }
+    } // Record can be deleted.
 }
 
 

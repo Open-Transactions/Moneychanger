@@ -1394,11 +1394,6 @@ public Q_SLOTS:
         QString APIKey,
         QString BasketInstrumentDefinitionID,
         int Index);
-    QJsonValue pingNotary(
-        QString Username,
-        QString APIKey,
-        QString NotaryID,
-        QString NymID);
     QJsonValue registerNym(
         QString Username,
         QString APIKey,
@@ -1441,11 +1436,6 @@ public Q_SLOTS:
         QString NymIDRecipient,
         QString Instrument,
         QString InstrumentForSender);
-    QJsonValue getRequestNumber(
-        QString Username,
-        QString APIKey,
-        QString NotaryID,
-        QString NymID);
     QJsonValue registerInstrumentDefinition(
         QString Username,
         QString APIKey,

@@ -6,18 +6,39 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>138</height>
+    <width>323</width>
+    <height>141</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>WizardPage</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="1">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Contract name:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
     <widget class="QLineEdit" name="lineEditContractName">
      <property name="placeholderText">
       <string>e.g. Sample Co. Share</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Primary Unit Name:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QLineEdit" name="lineEditPrimaryUnit">
+     <property name="placeholderText">
+      <string>e.g. shares</string>
      </property>
     </widget>
    </item>
@@ -28,28 +49,7 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Primary Unit Name:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="lineEditPrimaryUnit">
-     <property name="placeholderText">
-      <string>e.g. shares</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Contract name:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
+   <item row="2" column="2">
     <widget class="QLineEdit" name="lineEditSymbol">
      <property name="text">
       <string/>
@@ -59,8 +59,32 @@
      </property>
     </widget>
    </item>
+   <item row="3" column="0" colspan="3">
+    <widget class="QPushButton" name="pushButtonDefaults">
+     <property name="minimumSize">
+      <size>
+       <width>300</width>
+       <height>30</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>600</width>
+       <height>40</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Use Defaults</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>lineEditContractName</tabstop>
+  <tabstop>lineEditPrimaryUnit</tabstop>
+  <tabstop>lineEditSymbol</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

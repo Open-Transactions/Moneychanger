@@ -12,8 +12,8 @@
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
+#include <opentxs/core/Data.hpp>
 #include <opentxs/core/OTStorage.hpp>
-#include <opentxs/core/OTData.hpp>
 
 #include <QDateTime>
 #include <QDebug>

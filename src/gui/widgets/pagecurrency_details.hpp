@@ -18,6 +18,9 @@ public:
     //virtual
     int nextId() const;
 
+private slots:
+    void on_pushButtonDefaults_clicked();
+
 private:
     Ui::PageCurrency_Details *ui;
 };
