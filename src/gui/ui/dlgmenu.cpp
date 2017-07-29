@@ -220,3 +220,8 @@ void DlgMenu::on_toolButton_liveAgreements_clicked()
 {
     emit sig_on_toolButton_liveAgreements_clicked();
 }
+
+void DlgMenu::on_toolButton_activity_clicked()
+{
+    emit sig_on_toolButton_activity_clicked();
+}

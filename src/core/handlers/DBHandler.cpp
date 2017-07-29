@@ -192,12 +192,14 @@ bool DBHandler::dbCreateInstance()
                " notary_id TEXT,"
                " my_nym_id TEXT,"
                " my_address TEXT,"
-               " folder INTEGER"
+               " folder INTEGER,"
+               " thread_item_id TEXT"
                ")";
         // --------------------------------------------
         QString create_message_body_table = "CREATE TABLE IF NOT EXISTS message_body"
                "(message_id INTEGER PRIMARY KEY,"
-               " body TEXT"
+               " body TEXT,"
+               " thread_item_id TEXT"
                ")";
         // --------------------------------------------
         QString create_payment_table = "CREATE TABLE IF NOT EXISTS payment"
@@ -788,6 +790,7 @@ QPointer<ModelMessages> DBHandler::getMessageModel()
         pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Me"));
         pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("My address"));
         pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Folder"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("thread_item_id"));
     }
 
     return pMessageModel_;

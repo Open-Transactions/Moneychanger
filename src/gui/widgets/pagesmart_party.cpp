@@ -57,6 +57,12 @@ void PageSmart_Party::on_pushButtonSelect_clicked()
 {
     QString qstrTemplate = field("SmartTemplate").toString();
     std::string str_template = qstrTemplate.toStdString();
+
+    if (str_template.empty()) // Should never happen.
+    {
+        QMessageBox::warning(this, tr("Moneychanger"), tr("Strange, somehow the SmartTemplate field is empty. Unable to proceed."));
+        return;
+    }
     // -------------------------------------------
     QString qstr_current_id = field("PartyName").toString();
 

@@ -28,6 +28,7 @@
 #define MSG_SOURCE_COL_MY_NYM 13
 #define MSG_SOURCE_COL_MY_ADDR 14
 #define MSG_SOURCE_COL_FOLDER 15
+#define MSG_SOURCE_COL_THREAD_ITEM_ID 16
 
 class ModelMessages : public QSqlTableModel
 {
@@ -109,6 +110,59 @@ private:
 };
 
 
+/*
+class ConvMsgsProxyModel : public QSortFilterProxyModel
+{
+    Q_OBJECT
+
+    enum FilterType {
+        FilterNone = 0,
+        FilterTopLevel = 1
+    };
+
+public:
+    ConvMsgsProxyModel(QObject *parent = 0);
+
+    void setFilterFolder(int nFolder);
+
+    void setFilterNone(); // Doesn't affect the filterFolder, but DOES affect all the others below. (Top level.)
+    void setFilterTopLevel(const std::string strContactID);
+
+    void setFilterString(QString qstrFilter);
+
+    void clearFilterType();
+
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant data    ( const QModelIndex & index, int role = Qt::DisplayRole ) const override;
+    QVariant rawData ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
+
+protected:
+    // That means there is only 1 main filter types:
+    // 1. top-level   -- contact ID is only thing passed. Look up ALL Nyms for that contact.
+    //
+    // THEREFORE at filter set, there will always be:
+    // A Contact ID by itself, OR a Notary ID + contact ID, OR a method type and address, OR
+    // But after filter set is done, it will be a Notary ID + a list of Nyms, OR a method type and address, OR a list of Nyms + a list of addresses.
+    // To keep things simple, I will set another variable so that the type is clear.
+
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const Q_DECL_OVERRIDE;
+    bool filterAcceptsColumn(int source_column, const QModelIndex & source_parent) const Q_DECL_OVERRIDE;
+
+private:
+    QString   notaryId_;
+    QString   singleMethodType_;
+    QString   singleAddress_;
+
+    QString   filterString_;
+
+    mapIDName mapNymIds_;
+    mapIDName mapAddresses_;
+
+    FilterType filterType_ = FilterNone;
+
+    int nFolder_ = 2; // 0 for outbox, 1 for inbox, and 2 for both.
+};
+*/
 
 #endif // MODELMESSAGES_H
 

@@ -42,6 +42,7 @@ class DlgPassphraseManager;
 class Messages;
 class Payments;
 class Agreements;
+class Activity;
 class QMenu;
 class QSystemTrayIcon;
 class CreateInsuranceCompany;
@@ -116,6 +117,7 @@ signals:
     void populatedRecordlist();
     void appendToLog(QString);
     void expertModeUpdated(bool);
+    void newNymAdded(QString);
     void hideNavUpdated(bool);
     void claimsUpdatedForNym(QString);
     void nymWasJustChecked(QString);
@@ -227,6 +229,7 @@ private:
     QPointer<Messages>   messages_window;
     QPointer<Payments>   payments_window;
     QPointer<Agreements> agreements_window;
+    QPointer<Activity>   activity_window;
 
     QPointer<MTDetailEdit> contactswindow;
     QPointer<MTDetailEdit> nymswindow;
@@ -301,6 +304,7 @@ private:
     void mc_messages_dialog();
     void mc_payments_dialog(int nSourceRow=-1, int nFolder=-1);
     void mc_agreements_dialog(int nSourceRow=-1, int nFolder=-1);
+    void mc_activity_dialog();
     // ------------------------------------------------
     void mc_sendfunds_show_dialog(QString qstrAcct=QString(""));
     void mc_requestfunds_show_dialog(QString qstrAcct=QString(""));
@@ -524,6 +528,7 @@ public slots:
     void mc_messages_slot();
     void mc_payments_slot();
     void mc_agreements_slot();
+    void mc_activity_slot();
     void mc_show_payment_slot(int nSourceRow, int nFolder);
     void mc_show_agreement_slot(int nSourceRow, int nFolder);
     // ---------------------------------------------------------------------------

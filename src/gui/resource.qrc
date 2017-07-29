@@ -62,5 +62,7 @@
         <file>icons/pending.png</file>
         <file>icons/smart_contract_64.png</file>
         <file>icons/timer.png</file>
+        <file>icons/green_dot.png</file>
+        <file>icons/red_dot.png</file>
     </qresource>
 </RCC>

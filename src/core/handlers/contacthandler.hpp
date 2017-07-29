@@ -256,12 +256,12 @@ public:
   bool DeleteSmartContract    (int nID);
   bool DeleteManagedPassphrase(int nID);
 
-
-  bool LowLevelUpdateMessageBody(int nMessageID, const QString & qstrBody);
-  bool CreateMessageBody(QString qstrBody);
+  bool LowLevelUpdateMessageBody(int nMessageID, const QString & qstrBody, const QString & qstrThreadItemId);
+  bool CreateMessageBody(QString qstrBody, QString qstrThreadItemId);
   bool DeleteMessageBody(int nID);
-  bool UpdateMessageBody(int nMessageID, const QString & qstrBody);
-  QString GetMessageBody(int nID);
+  bool UpdateMessageBody(int nMessageID, const QString & qstrBody, const QString qstrThreadItemId);
+  QString GetMessageBody(int nMessageID);
+  QString GetMessageBody(QString qstrThreadItemID);
 
   int  GetPaymentIdByTxnDisplayId(int64_t lTxnDisplayId, QString qstrNymId);
   bool LowLevelUpdatePaymentBody(int nPaymentID, const QString qstrBody, const QString qstrPendingBody);

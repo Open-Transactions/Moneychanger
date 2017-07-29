@@ -323,11 +323,6 @@ QVariant MessagesProxyModel::headerData(int section, Qt::Orientation orientation
 }
 
 // --------------------------------------------
-/*
-QString create_message_body_table = "CREATE TABLE IF NOT EXISTS message_body"
-       "(message_id INTEGER PRIMARY KEY,"
-       " body TEXT"
-       ")";*/
 
 bool MessagesProxyModel::filterAcceptsColumn(int source_column, const QModelIndex & source_parent) const
 {

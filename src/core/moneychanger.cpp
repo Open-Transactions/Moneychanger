@@ -56,6 +56,7 @@
 #include <gui/ui/messages.hpp>
 #include <gui/ui/payments.hpp>
 #include <gui/ui/agreements.hpp>
+#include <gui/ui/activity.hpp>
 
 
 #include <opentxs/api/Api.hpp>
@@ -1060,31 +1061,61 @@ void Moneychanger::bootTray()
     connect(this, SIGNAL(newServerAdded(QString)),         this, SIGNAL(updateMenuAndPopulateRecords()));
     connect(this, SIGNAL(newAssetAdded(QString)),          this, SIGNAL(updateMenuAndPopulateRecords()));
     // ----------------------------------------------------------------------------
+    connect(this, SIGNAL(newNymAdded(QString)),            this, SLOT(onNewNymAdded(QString)));
+    // ----------------------------------------------------------------------------
     SetupMainMenu();
     // ----------------------------------------------------------------------------
     //Show systray
     mc_systrayIcon->show();
+    // ----------------------------------------------------------------------------
+    QString qstrMenuFileExists = QString(opentxs::OTPaths::AppDataFolder().Get()) + QString("/knotworkpigeons");
+
+    if (QFile::exists(qstrMenuFileExists))
+        mc_main_menu_dialog();
     // ----------------------------------------------------------------------------
     if (!hideNav())
         mc_main_menu_dialog();
     // ----------------------------------------------------------------------------
     if (expertMode())
         mc_payments_dialog();
-    else if (!hasNyms())
-        mc_nymmanager_dialog();
-    else if (opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount() <= 0)
-        mc_assetmanager_dialog();
-    else if (opentxs::OTAPI_Wrap::Exec()->GetServerCount() <= 0)
-        mc_servermanager_dialog();
-    else if (opentxs::OTAPI_Wrap::Exec()->GetAccountCount() <= 0)
-        mc_accountmanager_dialog();
-    else
-        mc_payments_dialog();
-    // ----------------------------------------------------------------------------
-    QString qstrMenuFileExists = QString(opentxs::OTPaths::AppDataFolder().Get()) + QString("/knotworkpigeons");
+    else if (!hasNyms()) {
+        QString name;
+        name = qgetenv("USER"); // get the user name in Linux
+        if (name.isEmpty()) {
+            name = qgetenv("USERNAME"); // get the name in Windows
+        }
+        if (name.isEmpty()) {
+            mc_nymmanager_dialog();
+        }
+        else {
+            const std::string NYM_ID_SOURCE;
+            const QString qstrLabel = QString("%1 (%2)").arg(name).arg(tr("desktop"));
+            const std::string str_id = opentxs::OTAPI_Wrap::CreateIndividualNym(qstrLabel.toStdString(), NYM_ID_SOURCE, 0);
 
-    if (QFile::exists(qstrMenuFileExists))
-        mc_main_menu_dialog();
+            if (!str_id.empty()) {
+                const QString qstrNymId = QString::fromStdString(str_id);
+                mc_nymmanager_dialog(qstrNymId);
+                emit newNymAdded(qstrNymId);
+            }
+        }
+    }
+    // ----------------------------------------------------------------------------
+//    bool bEnoughForNow = false;
+//    if (opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount() <= 0) {
+//        mc_assetmanager_dialog();
+//        bEnoughForNow = true;
+//    }
+//    else if (opentxs::OTAPI_Wrap::Exec()->GetServerCount() <= 0) {
+//        mc_servermanager_dialog();
+//        bEnoughForNow = true;
+//    }
+//    // ----------------------------------------------------------------------------
+//    if (!bEnoughForNow) {
+//        if (opentxs::OTAPI_Wrap::Exec()->GetAccountCount() <= 0)
+//            mc_accountmanager_dialog();
+//        else
+//            mc_payments_dialog();
+//    }
     // ----------------------------------------------------------------------------
 }
 
@@ -2479,7 +2510,7 @@ bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
 {
     QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
     bool bSuccessAddingMsg = false;
-    QString qstrBody("");
+    QString qstrBody(""), threadItemId;
 
     if (pModel)
     {
@@ -2526,6 +2557,9 @@ bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
         if (!recordmt.GetMsgTypeDisplay().empty())
             msgTypeDisplay = QString::fromStdString(recordmt.GetMsgTypeDisplay());
 //          msgTypeDisplay = MTContactHandler::Encode(QString::fromStdString(recordmt.GetMsgTypeDisplay()));
+
+        if (!recordmt.GetThreadItemId().empty())
+            threadItemId =  QString::fromStdString(recordmt.GetThreadItemId());
         // ---------------------------------
         time64_t tDate = static_cast<time64_t>(opentxs::OTAPI_Wrap::Exec()->StringToLong(recordmt.GetDate()));
         // ---------------------------------
@@ -2572,6 +2606,9 @@ bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
             record.setValue("subject", mailDescription);
         record.setValue("folder", nFolder);
 
+        if (!threadItemId.isEmpty())
+            record.setValue("thread_item_id", threadItemId);
+
         pModel->insertRecord(0, record);
         // ---------------------------------
         if (pModel->submitAll())
@@ -2594,13 +2631,15 @@ bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
     // ------------------------------------------------
     if (bSuccessAddingMsg)
     {
-        if (!MTContactHandler::getInstance()->CreateMessageBody(qstrBody))
+        if (!MTContactHandler::getInstance()->CreateMessageBody(qstrBody, threadItemId))
         {
             qDebug() << "AddMailToMsgArchive: Succeeded adding message record to database, but then failed writing message body.\n";
             return false;
         }
         // -------------------------------------------------------
         // Now that we've added it to our database, we need to delete it from Bitmessage.
+        // (We don't need to delete normal mail messages because they are already deleted
+        //  in our calling function).
         bool bSuccessDeletingSpecial = true;
 
         if (recordmt.IsSpecialMail())
@@ -2640,12 +2679,11 @@ bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
                     }
                 }
             }
+            if (!bSuccessDeletingSpecial)
+                qDebug() << "AddMailToMsgArchive: FYI, FAILED while trying to delete special mail (probably bitmessage) from its native source.";
+            else
+                qDebug() << "AddMailToMsgArchive: FYI, SUCCESS deleting special mail (probably bitmessage) from its native source.";
         } // special mail
-
-        if (!bSuccessDeletingSpecial)
-            qDebug() << "AddMailToMsgArchive: FYI, Failed while trying to delete special mail (probably bitmessage) from its native source.";
-        else
-            qDebug() << "AddMailToMsgArchive: FYI, SUCCESS deleting special mail (probably bitmessage) from its native source.";
         // -----------------------------------
     }
 
@@ -4673,45 +4711,142 @@ void Moneychanger::mc_requestfunds_show_dialog(QString qstrAcct/*=QString("")*/)
 
 
 #include <QSerialPort>
+#include <QSerialPortInfo>
+#include <QLabel>
+#include <QScrollArea>
+
 /**
   * Pair Stash Node
   **/
 void Moneychanger::mc_pair_node_slot()
 {
+    QMessageBox::information(this, tr("Moneychanger"), tr("Make sure the pairing cable is attached, then click OK."));
+    // ----------------------------------------
+    const auto infos = QSerialPortInfo::availablePorts();
+    for (const QSerialPortInfo &info : infos) {
+        auto baudrates = info.standardBaudRates();
+        QString qstrBaudrates;
+        QList<qint32>::const_iterator i;
+        for (i = baudrates.begin(); i != baudrates.end(); ++i) {
+            if (i != baudrates.begin())
+                qstrBaudrates += QString(", ");
+            qstrBaudrates += QString::number(*i);
+        }
+        QString s = QObject::tr("Port: ") + info.portName() + "\n"
+                    + QObject::tr("Location: ") + info.systemLocation() + "\n"
+                    + QObject::tr("Description: ") + info.description() + "\n"
+                    + QObject::tr("Manufacturer: ") + info.manufacturer() + "\n"
+                    + QObject::tr("Serial number: ") + info.serialNumber() + "\n"
+                    + QObject::tr("Vendor Identifier: ") + (info.hasVendorIdentifier() ? QString::number(info.vendorIdentifier(), 16) : QString()) + "\n"
+                    + QObject::tr("Product Identifier: ") + (info.hasProductIdentifier() ? QString::number(info.productIdentifier(), 16) : QString()) + "\n"
+                    + QObject::tr("StandardBaudRates: ") + qstrBaudrates + "\n"
+                    + QObject::tr("Busy: ") + (info.isBusy() ? QObject::tr("Yes") : QObject::tr("No")) + "\n";
+        qDebug() << s;
+    }
+    // ----------------------------------------
 //    DlgPairNode dlgPair;
 
 //    if (QDialog::Accepted != dlgPair.exec())
 //        return;
     // ----------------------------------------
+    QString serialPortName = QString("/dev/tty.usbserial-A104CNRS"); // todo
+//  QString serialPortName = QString("/dev/cu.usbserial-A104CNRS");
+    QSerialPort serialPort;
+    serialPort.setPortName(serialPortName);
 
-    // Todo: actual pairing code once we've read from the serial port.
+//  int serialPortBaudRate = QSerialPort::Baud38400;
+//  serialPort.setBaudRate(serialPortBaudRate);
 
-      QSerialPort serialPort;
-      QString serialPortName = QString("/dev/cu.usbserial-A104CNRS");
-      serialPort.setPortName(serialPortName);
+    if (!serialPort.open(QIODevice::ReadOnly)) {
+        qDebug() << QObject::tr("Failed to open port %1, error: %2").arg(serialPortName).arg(serialPort.error()) << endl;
+    }
+    else
+    {
+        serialPort.setBaudRate(QSerialPort::Baud38400);
+        serialPort.setDataBits(QSerialPort::Data8);
+        serialPort.setStopBits(QSerialPort::OneStop);
+        serialPort.setParity(QSerialPort::NoParity);
+        serialPort.setFlowControl(QSerialPort::NoFlowControl);
+        /**
+         * Current flow control Options:
+         * UsbSerialInterface.FLOW_CONTROL_OFF
+         * UsbSerialInterface.FLOW_CONTROL_RTS_CTS only for CP2102 and FT232
+         * UsbSerialInterface.FLOW_CONTROL_DSR_DTR only for CP2102 and FT232
+         */
 
-      int serialPortBaudRate = QSerialPort::Baud38400;
-      serialPort.setBaudRate(serialPortBaudRate);
+        // ------------------
+        int nCounter{0};
+        QByteArray readData;
+        while (nCounter++ < 10 && serialPort.waitForReadyRead(10000)) {
+            readData.append(serialPort.readAll());
+        }
+        auto the_error = serialPort.error();
+        if (the_error == QSerialPort::ReadError) {
+            qDebug() << QObject::tr("Failed to read from port %1, error: %2").arg(serialPortName).arg(serialPort.errorString());
+        } else if ((serialPort.error() == QSerialPort::TimeoutError) && readData.isEmpty()) {
+            qDebug() << QObject::tr("No data was currently available for reading from port: %1").arg(serialPortName);
+        }
+        else {
+            QString qstrData = QString::fromUtf8(readData);
+            qDebug() << QObject::tr("Data successfully received from port %1.").arg(serialPortName);
+            //qDebug() << qstrData << endl;
+            //qDebug() << readData << endl;
 
-      if (!serialPort.open(QIODevice::ReadOnly)) {
-          qDebug() << QObject::tr("Failed to open port %1, error: %2").arg(serialPortName).arg(serialPort.error()) << endl;
-      }
-      else
-      {
-          QByteArray readData = serialPort.readAll();
-          while (serialPort.waitForReadyRead(5000))
-              readData.append(serialPort.readAll());
+            QStringList strPairs = qstrData.split("\n");
+            if (strPairs.length() >= 3) {
+                QString strPair = strPairs[1]; // This way there's at least 3 pairs and we're grabbing the middle of the three.
+                QStringList listData = strPair.split(",");
 
-          if (serialPort.error() == QSerialPort::ReadError) {
-              qDebug() << QObject::tr("Failed to read from port %1, error: %2").arg(serialPortName).arg(serialPort.errorString()) << endl;
-          } else if (serialPort.error() == QSerialPort::TimeoutError && readData.isEmpty()) {
-              qDebug() << QObject::tr("No data was currently available for reading from port %1").arg(serialPortName) << endl;
-          }
-          else {
-              qDebug() << QObject::tr("Data successfully received from port %1").arg(serialPortName) << endl;
-              qDebug() << readData << endl;
-          }
-      }
+                if (2 == listData.length())
+                {
+                    const QString qstrBridgeNymID   = listData[0];
+                    const QString qstrAdminPassword = listData[1];
+
+                    QString qstrUserNymID = Moneychanger::It()->get_default_nym_id();
+                    QString errorMessage{""};
+
+                    if (qstrBridgeNymID.isEmpty()) {
+                        errorMessage = tr("SNP Bridge Nym Id not available from pairing cable.");
+                    }
+                    if (qstrUserNymID.isEmpty()) {
+                        errorMessage = tr("Default User NymId not available from local Opentxs wallet.");
+                    }
+                    if (qstrAdminPassword.isEmpty()) {
+                        errorMessage = tr("SNP admin password not available from pairing cable.");
+                    }
+                    // -----------------------------------
+                    const std::string str_introduction_notary_id{opentxs::OTAPI_Wrap::Get_Introduction_Server()};
+
+                    if (str_introduction_notary_id.empty()) {
+                        errorMessage = tr("Introduction Notary Id not available.");
+                    }
+                    // -----------------------------------
+                    if (!errorMessage.isEmpty()) {
+                        qDebug() << errorMessage << endl;
+                        QMessageBox::warning(this, tr("Moneychanger"), errorMessage);
+                        return;
+                    }
+                    // -----------------------------------
+                    // By this point we at least know that the pre-requisites are there,
+                    // so we can go ahead and start pairing. (Or see how much is already done,
+                    // if it's already been started.)
+                    //
+                    const bool bPairNode = opentxs::OTAPI_Wrap::Pair_Node(qstrUserNymID.toStdString(), qstrBridgeNymID.toStdString(), qstrAdminPassword.toStdString());
+
+                    if (!bPairNode) {
+                        QMessageBox::warning(this, tr("Moneychanger"), tr("Pairing failed."));
+                        return;
+                    }
+                    // ---------------------------------------------------
+                    QMessageBox::information(this, tr("Moneychanger"), tr("Pairing successfully initiated in the background. You may now unplug your device."));
+                }
+            }
+            else
+            {
+                qDebug() << QString("Didn't have enough pairs from the serial port. Fix the code.") << endl;
+            }
+        }
+    }
 }
 
 /**
@@ -5165,6 +5300,10 @@ void Moneychanger::mc_payments_dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 }
 
 
+void Moneychanger::mc_activity_slot()
+{
+    mc_activity_dialog();
+}
 
 void Moneychanger::mc_agreements_slot()
 {
@@ -5174,6 +5313,23 @@ void Moneychanger::mc_agreements_slot()
 void Moneychanger::mc_show_agreement_slot(int nSourceRow, int nFolder)
 {
     mc_agreements_dialog(nSourceRow, nFolder);
+}
+
+void Moneychanger::mc_activity_dialog()
+{
+    if (!activity_window)
+    {
+        activity_window = new Activity(this);
+
+//        connect(activity_window, SIGNAL(showDashboard()),               this,              SLOT(mc_overview_slot()));
+//        connect(activity_window, SIGNAL(needToDownloadAccountData()),   this,              SLOT(onNeedToDownloadAccountData()));
+//        connect(this,            SIGNAL(populatedRecordlist()),         activity_window,   SLOT(onRecordlistPopulated()));
+//        connect(activity_window, SIGNAL(needToPopulateRecordlist()),    this,              SLOT(onNeedToPopulateRecordlist()));
+//        connect(this,            SIGNAL(balancesChanged()),             activity_window,   SLOT(onBalancesChanged()));
+//        connect(this,            SIGNAL(claimsUpdatedForNym(QString)),  activity_window,   SLOT(onClaimsUpdatedForNym(QString)));
+    }
+    // ---------------------------------
+    activity_window->dialog();
 }
 
 void Moneychanger::mc_agreements_dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
@@ -5288,7 +5444,6 @@ void Moneychanger::onNewNymAdded(QString qstrID)
         MTNameLookupQT theLookup;
         qstrNymName = QString::fromStdString(theLookup.GetNymName(qstrID.toStdString(), ""));
         int nContactID  = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrID, "");
-//      QString qstrContactID = QString::number(nContactID);
 
         if (!qstrNymName.isEmpty() && (nContactID > 0))
         {
@@ -5480,6 +5635,9 @@ void Moneychanger::mc_main_menu_dialog(bool bShow/*=true*/)
 
         connect(menuwindow, SIGNAL(sig_on_toolButton_liveAgreements_clicked()),
                 this,       SLOT(mc_agreements_slot()));
+
+        connect(menuwindow, SIGNAL(sig_on_toolButton_activity_clicked()),
+                this,       SLOT(mc_activity_slot()));
 
     }
     // ---------------------------------

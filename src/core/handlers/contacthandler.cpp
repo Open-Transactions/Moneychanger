@@ -1246,16 +1246,23 @@ QString MTContactHandler::GetSmartContract(int nID)
 
 // -------------------------------------------------
 
-QString MTContactHandler::GetMessageBody(int nID)
+QString MTContactHandler::GetMessageBody(int nMessageID)
 {
-    return MTContactHandler::GetEncryptedValueByID(nID, "body", "message_body", "message_id");
+    return MTContactHandler::GetEncryptedValueByID(nMessageID, "body", "message_body", "message_id");
 }
 
-bool MTContactHandler::UpdateMessageBody(int nMessageID, const QString & qstrBody)
+QString MTContactHandler::GetMessageBody(QString qstrThreadItemID)
+{
+    return MTContactHandler::GetEncryptedValueByID(qstrThreadItemID, "body", "message_body", "thread_item_id");
+}
+
+// -------------------------------------------------
+
+bool MTContactHandler::UpdateMessageBody(int nMessageID, const QString & qstrBody, const QString qstrThreadItemId)
 {
     QMutexLocker locker(&m_Mutex);
 
-    return LowLevelUpdateMessageBody(nMessageID, qstrBody);
+    return LowLevelUpdateMessageBody(nMessageID, qstrBody, qstrThreadItemId);
 }
 
 bool MTContactHandler::DeleteMessageBody(int nID)
@@ -1274,7 +1281,7 @@ bool MTContactHandler::DeleteMessageBody(int nID)
 // same message. So we simply look up the message_id for the last row inserted and then
 // add the body to the message_body table using that same ID.
 //
-bool MTContactHandler::CreateMessageBody(QString qstrBody)
+bool MTContactHandler::CreateMessageBody(QString qstrBody, QString qstrThreadItemId)
 {
     QMutexLocker locker(&m_Mutex);
 
@@ -1283,15 +1290,15 @@ bool MTContactHandler::CreateMessageBody(QString qstrBody)
     if (nID > 0)
     {
         QString str_insert = QString("INSERT INTO `message_body` "
-                                     "(`message_id`) "
-                                     "VALUES(%1)").arg(nID);
+                                     "(`message_id`,`thread_item_id`) "
+                                     "VALUES(%1,'%2')").arg(nID).arg(qstrThreadItemId);
         DBHandler::getInstance()->runQuery(str_insert);
         // ----------------------------------------
         const int nMessageID = DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `message_body`", 0, 0);
 
         if (nMessageID == nID)
         {
-            bool bUpdated = LowLevelUpdateMessageBody(nMessageID, qstrBody);
+            bool bUpdated = LowLevelUpdateMessageBody(nMessageID, qstrBody, QString(""));// qstrThreadItemId already set above. Sending blank to avoid double-set.
 
             if (!bUpdated)
             {
@@ -1304,7 +1311,7 @@ bool MTContactHandler::CreateMessageBody(QString qstrBody)
     return false;
 }
 
-bool MTContactHandler::LowLevelUpdateMessageBody(int nMessageID, const QString & qstrBody)
+bool MTContactHandler::LowLevelUpdateMessageBody(int nMessageID, const QString & qstrBody, const QString & qstrThreadItemId)
 {
 //  NOTE: This function ASSUMES that the calling function already locked the Mutex.
 //  QMutexLocker locker(&m_Mutex);
@@ -1313,7 +1320,17 @@ bool MTContactHandler::LowLevelUpdateMessageBody(int nMessageID, const QString &
     {
         // The body is encrypted.
         //
-        bool bSetValue = SetEncryptedValueByID(nMessageID, qstrBody, "body", "message_body", "message_id");
+        bool bSetValue = false;
+
+        if (!qstrBody.isEmpty())
+        {
+            bSetValue = SetEncryptedValueByID(nMessageID, qstrBody, "body", "message_body", "message_id");
+        }
+
+        if (!qstrThreadItemId.isEmpty())
+        {
+            bSetValue = SetValueByID(nMessageID, qstrThreadItemId, "thread_item_id", "message_body", "message_id");
+        }
         Q_UNUSED(bSetValue);
     }
     catch (const std::exception& exc)
