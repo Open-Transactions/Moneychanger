@@ -47,6 +47,8 @@ static QString dbCannotOpenStr =
 static const QString dbCreationStr =
        QObject::tr("Creating a database instance failed");
 
+typedef QSqlQuery QSqlQueryMessages;
+
 class DBHandler
 {
   private:
@@ -77,6 +79,7 @@ class DBHandler
 
     QPointer<ModelTradeArchive>  getTradeArchiveModel();
     QPointer<ModelMessages>      getMessageModel();
+    QPointer<QSqlQueryMessages>  getNewMessageModel(bool bArchived=false);
     QPointer<ModelPayments>      getPaymentModel();
     QPointer<ModelAgreements>    getAgreementModel();
     QPointer<ModelAgreementReceipts> getAgreementReceiptModel();

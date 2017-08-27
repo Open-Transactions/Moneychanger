@@ -15,6 +15,10 @@
 #include <gui/widgets/btcwalletpwdlg.hpp>
 
 
+// "SampleEscrowManager" is causing some kind of Crash in Moneychanger
+// So for now, I'm just commenting it out. It's used by the internal Bitcoin
+// wallet and we don't use that currently anyway.
+//
 _SharedPtr<SampleEscrowManager> Modules::sampleEscrowManager;
 _SharedPtr<PoolManager> Modules::poolManager;
 _SharedPtr<TransactionManager> Modules::transactionManager;
@@ -23,7 +27,7 @@ _SharedPtr<SampleEscrowClient> Modules::sampleEscrowClient;
 _SharedPtr<BtcModules> Modules::btcModules;
 BtcWalletPwDlgPtr Modules::walletPwDlg;
 
-bool Modules::shutDown;
+bool Modules::shutDown = false;
 
 
 Modules::Modules()

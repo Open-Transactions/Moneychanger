@@ -6,10 +6,12 @@
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
 #include "core/TR1_Wrapper.hpp"
+#include "core/mapidname.hpp"
 
 #include <core/handlers/focuser.h>
 
 #include <opentxs/client/OTRecordList.hpp>
+#include <opentxs/core/Proto.hpp>
 
 #include <namecoin/Namecoin.hpp>
 
@@ -94,10 +96,20 @@ public:
     void modifyRecords(); // After we populate the recordlist, we make some changes to the list (move messages to a separate db table, move receipts to a separate table, etc.)
     void processImportRecord(
             opentxs::OTRecord& recordmt,
-            const int nIndex
+            const int nIndex,
+            MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+            MapOfConversationsByNym & mapOfConversationsByNym,
+            SetNymThreadAndItem & setNewlyAddedNymThreadAndItem
             );
 
-    bool AddMailToMsgArchive(opentxs::OTRecord& recordmt);
+    bool AddMailToMsgArchive(opentxs::OTRecord& recordmt,
+                             MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+                             MapOfConversationsByNym & mapOfConversationsByNym,
+                             SetNymThreadAndItem & setNewlyAddedNymThreadAndItem);
+    bool low_level_AddMailToMsgArchive(
+        opentxs::OTRecord& recordmt,
+        MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+        MapOfConversationsByNym & mapOfConversationsByNym);
     bool AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord=true);
     bool AddPaymentBasedOnNotice(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord=true);
     void AddPaymentBasedOnNotification(const std::string & str_acct_id,
@@ -292,6 +304,15 @@ private:
                              std::string myAcctID,
                              std::string myAcctAgentName);
     // ------------------------------------------------
+    void ImportConversationsForNym(const std::string & str_nym_id,
+                                   MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+                                   SetNymThreadAndItem & setNewlyAddedNymThreadAndItem); // output
+    bool ImportConversationForNym(const std::string & str_nym_id,
+                                  const std::string & str_thread_id,
+                                  const std::string & str_thread_name,
+                                  std::shared_ptr<opentxs::proto::StorageThread> & thread,
+                                  MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+                                  SetNymThreadAndItem & setNewlyAddedNymThreadAndItem); // output
 
 private:
     /**

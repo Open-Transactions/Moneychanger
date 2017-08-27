@@ -456,8 +456,8 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
         }
     }
     // ----------------------------------------------------
-    if (subject.isEmpty())
-        subject = tr("From the desktop client. (Empty subject.)");
+//    if (subject.isEmpty())
+//        subject = tr("From the desktop client. (Empty subject.)");
     // ----------------------------------------------------
     if (body.isEmpty())
         body = tr("From the desktop client. (Empty message body.)");
@@ -471,12 +471,14 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
     qDebug() << QString("Initiating sendMessage:\n Transport:'%1'\n Server:'%2'\n From Nym:'%3'\n From Address:'%4'\n To Nym:'%5'\n To Address:'%6'\n Subject:'%7'\n Body:'%8'").
                 arg(viaTransport).arg(viaServer).arg(fromNymId).arg(fromAddress).arg(toNymId).arg(toAddress).arg(subject).arg(body);
     // ----------------------------------------------------
-    QString contents = tr("%1: %2\n\n%3").arg(tr("Subject")).arg(subject).arg(body);
+    QString contents;
+    if (subject.isEmpty())
+        contents = body;
+    else
+        contents = QString("%1: %2\n\n%3").arg(tr("Subject")).arg(subject).arg(body);
     // ----------------------------------------------------
     if (0 == viaTransport.compare("otserver"))
     {
-
-
         std::string strResponse;
         {
             MTSpinner theSpinner;

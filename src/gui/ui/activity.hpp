@@ -23,6 +23,8 @@ namespace Ui {
 class Activity;
 }
 
+class QListWidget;
+
 class Activity : public QWidget
 {
     Q_OBJECT
@@ -55,6 +57,9 @@ protected:
 
     void setupCurrentPointers();
 
+    void PopulateConversationsForNym(QListWidget * pListWidgetConversations, int & nIndex, const std::string & str_my_nym_id);
+
+    bool AddItemToConversation(int nAtIndex, const QString & qstrContents, bool bIncoming, bool bAddedByHand);
 
     mapIDName & GetOrCreateAssetIdMapByCurrencyCode(QString qstrTLA, mapOfMapIDName & bigMap);
     void GetAssetIdMapsByCurrencyCode(mapOfMapIDName & bigMap);
@@ -65,8 +70,11 @@ protected:
 
 private slots:
     void on_listWidgetConversations_currentRowChanged(int currentRow);
+    void on_listWidgetConversations_customContextMenuRequested(const QPoint &pos);
 
     void on_pushButtonSendMsg_clicked();
+
+    void on_checkBoxSearch_toggled(bool checked);
 
 private:
     Ui::Activity *ui;

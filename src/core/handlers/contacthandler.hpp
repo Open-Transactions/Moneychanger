@@ -41,6 +41,8 @@ public:
     virtual std::string GetNymName(const std::string & str_id,
                                    const std::string   p_notary_id) const;
 
+    virtual std::string GetContactName(const std::string & str_id) const;
+
     virtual std::string GetAcctName(const std::string & str_id,
                                     const std::string   p_nym_id,
                                     const std::string   p_notary_id,
@@ -229,7 +231,8 @@ public:
   bool GetMsgMethodTypesByContact(mapIDName & theMap, int nFilterByContact, bool bAddServers=false, QString filterByType="", bool bIncludeTypeInKey=true); // Method Types.
   bool GetMsgMethodTypesByNym    (mapIDName & theMap, QString filterByNym,  bool bAddServers=false);
 
-  bool GetAddressesByContact     (mapIDName & theMap, int nFilterByContact, QString filterByType, bool bIncludeTypeInKey=true);
+  bool GetAddressesByContact     (mapIDName & theMap, const std::string & strFilterByContact, QString filterByType, bool bIncludeTypeInKey=true); // Type might be NONE, or BITMESSAGE, or BITCOIN, etc.
+  bool GetAddressesByContact     (mapIDName & theMap, int                 nFilterByContact,   QString filterByType, bool bIncludeTypeInKey=true);
   bool GetAddressesByNym         (mapIDName & theMap, QString filterByNym,  QString filterByType);
   bool GetAddressesByNym         (mapIDName & theMap, QString filterByNym,  int filterByMethodID);
 
@@ -249,13 +252,27 @@ public:
 
   bool GetContacts(mapIDName & theMap);
   bool GetNyms    (mapIDName & theMap, int nFilterByContact);
+  bool GetNyms    (mapIDName & theMap, const std::string & str_contact_id);
   bool GetPaymentCodes(mapIDName & theMap, int nFilterByContact);
 
   bool GetSmartContracts(mapIDName & theMap);
   QString GetSmartContract    (int nID);
   bool DeleteSmartContract    (int nID);
   bool DeleteManagedPassphrase(int nID);
+  // -----------------------------------------------------
+  bool EnsureConversationExists(const QString & qstrMyNymId, const QString & qstrThreadId, const QString & qstrThreadName);
+  bool LowLevel_UpdateExistingConversation(const QString & qstrMyNymId, const QString & qstrThreadId, const QString & qstrThreadName);
 
+  SetOfStrings * selectThreadItemIdsForNymAndConversation(const QString & qstrMyNymId, const QString & qstrThreadId);
+  bool EnsureConversationItemExists(const QString & qstrMyNymId, const QString & qstrThreadId, const QString & qstrThreadItemId,
+                                    const QString & qstrThreadItemAccountId, const int thread_item_box,
+                                    const time64_t & thread_item_timestamp, const bool thread_item_unread);
+  bool LowLevel_UpdateExistingConversationItem(const QString & qstrMyNymId, const QString & qstrThreadId, const QString & qstrThreadItemId,
+                                               const QString & qstrThreadItemAccountId, const int thread_item_box,
+                                               const time64_t & thread_item_timestamp, const bool thread_item_unread);
+
+  SetOfStrings * selectPreimportedConversationIdsForNym(const QString &qstrMyNymId);
+  // -----------------------------------------------------
   bool LowLevelUpdateMessageBody(int nMessageID, const QString & qstrBody, const QString & qstrThreadItemId);
   bool CreateMessageBody(QString qstrBody, QString qstrThreadItemId);
   bool DeleteMessageBody(int nID);

@@ -99,7 +99,7 @@ Messages::Messages(QWidget *parent) :
     connect(ui->toolButtonContacts, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_addressbook_slot()));
     connect(this, SIGNAL(needToCheckNym(QString, QString, QString)), Moneychanger::It(), SLOT(onNeedToCheckNym(QString, QString, QString)));
 
-    if (!Moneychanger::It()->expertMode())
+//  if (!Moneychanger::It()->expertMode())
     {
         QList<int> list;
         list.append(0);

@@ -9,6 +9,10 @@
 #include <core/mtcomms.h>
 #include <core/moneychanger.hpp>
 
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/ContactManager.hpp>
+#include <opentxs/api/OT.hpp>
+#include <opentxs/contact/Contact.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -44,61 +48,127 @@ void MTNameLookupQT::notifyOfSuccessfulNotarization(const std::string & str_acct
 }
 
 
+// ----------------------------------------------------------------------------
+
+std::string MTNameLookupQT::GetContactName(const std::string & str_id) const
+{
+    if (str_id.empty() || !opentxs::Identifier::validateID(str_id))
+        return{};
+    // ------------------------
+    // This searches the new Opentxs Contacts directly:
+    //
+    std::string str_result = this->OTNameLookup::GetContactName(str_id);
+    // --------------------
+    if (!str_result.empty()) // Opentxs FOUND a name. (Supplied by Opentxs ContactManager).
+    {
+        // Help local DB to associate which Nyms are known to use which notaries.
+//        if (!p_notary_id.empty() && opentxs::Identifier::validateID(p_notary_id))
+//            MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
+//                                                                   QString::fromStdString(p_notary_id));
+        // -----------------------------------------------
+        return str_result;
+    }
+//  const auto pContact2 = opentxs::OT::App().Contact().Contact(opentxs::Identifier{str_id});
+    //
+    // NOTE: No need to do the OT::App().Contact() thing, since the above call to
+    // GetContactName already calls it. If we're in this block, that means it already
+    // failed.
+
+    return str_result;
+}
 
 std::string MTNameLookupQT::GetNymName(const std::string & str_id,
                                        const std::string   p_notary_id) const
 {
+    if (str_id.empty() || !opentxs::Identifier::validateID(str_id))
+        return{}; // p_notary_id is optional.
     // ------------------------
-//    qDebug() << QString("Attempting Name Lookup on: ") << QString(str_id.c_str());
-
+    // First we try and look it up through Opentxs itself:
+    // (including OT nym names, AND Opentxs "New Contacts" names.)
+    //
     std::string str_result = this->OTNameLookup::GetNymName(str_id, p_notary_id);
 
-//    qDebug() << QString("Result of Name Lookup: ") << QString(str_result.c_str());
-
-    // ------------------------
-    if (str_result.empty())
+    // Above call also tries the Opentxs ContactManager to see if there's a Contact
+    // with the Nym ID str_id, and retrieves the Contact Name if one is available.
+    //
+    if (!str_result.empty()) // FOUND a name. (Supplied by Opentxs, based on the NymId in str_id).
     {
-        int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID(QString::fromStdString(str_id));
+        // Help local DB to associate which Nyms are known to use which notaries.
+        if (!p_notary_id.empty() && opentxs::Identifier::validateID(p_notary_id))
+            MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
+                                                                   QString::fromStdString(p_notary_id));
+        // -----------------------------------------------
+        return str_result;
+    }
+    // Otherwise, we try the old way.
+    // IF nothing's found yet, we fall back to Moneychanger's internal tracking system
+    // in case it can turn up a useful name for the Nym in question.
+    //
+    // ------------------------
+    //
+    // Maybe the old-school "Moneychanger-style Contacts", which are still running in parallel, have
+    // a ContactID (and Name) for the passed in Nym ID.
+    //
+    // NOTE: These are NOT the new-style Opentxs contacts, which were already searched by Opentxs
+    // in the above block. These are the old ones.
+    int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID(QString::fromStdString(str_id));
 
-        if (nContactID > 0)
+    if (nContactID > 0) // Found an old-style contact.
+    {
+        QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
+
+        if (!contact_name.isEmpty()) // Found a name.
+            str_result = contact_name.toStdString();
+        else // Old-style Contact existed, but had no name.
         {
-            QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
-
-            if (!contact_name.isEmpty())
-                str_result = contact_name.toStdString();
-            else
-            {
-                QString qstrName = MTContactHandler::getInstance()->getDisplayNameFromClaims(QString::fromStdString(str_id));
-
-                if (qstrName.isEmpty())
-                    qstrName = MTContactHandler::getInstance()->GetValueByID(QString::fromStdString(str_id), "nym_display_name", "nym", "nym_id");
-
-                if (!qstrName.isEmpty())
-                {
-                    MTContactHandler::getInstance()->SetContactName(nContactID, qstrName);
-                    str_result = qstrName.toStdString();
-                }
-            }
-            // -----------------------------------------------
-            if (p_notary_id != "")
-                MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
-                                                                       QString::fromStdString(p_notary_id));
-        }
-        else // No contact found.
-        {
+            // Next, checking for imported claims for a name:
             QString qstrName = MTContactHandler::getInstance()->getDisplayNameFromClaims(QString::fromStdString(str_id));
-
+            // Try moneychanger's nym table
             if (qstrName.isEmpty())
                 qstrName = MTContactHandler::getInstance()->GetValueByID(QString::fromStdString(str_id), "nym_display_name", "nym", "nym_id");
 
-            if (!qstrName.isEmpty())
+            if (!qstrName.isEmpty()) // Found one in the claims.
             {
-                str_result = qstrName.toStdString();
-                // -----------------------------------------------
-                if (p_notary_id != "")
-                    MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
-                                                                           QString::fromStdString(p_notary_id));
+                // We'll set the Contact's name to the one from the claims,
+                // since this code path is where we DO have a contact, but he DOESN'T
+                // have a name set. So we set it.
+                MTContactHandler::getInstance()->SetContactName(nContactID, qstrName);
+                str_result = qstrName.toStdString(); // Result found.
             }
+        }
+        // -----------------------------------------------
+        // Since in this code path, we found a Contact based on the NymID arg,
+        // we know the NymID is good. Therefore as long as the notary ID is good
+        // as well, we know we can associate them.
+        if (!p_notary_id.empty() && opentxs::Identifier::validateID(p_notary_id))
+            MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
+                                                                   QString::fromStdString(p_notary_id));
+    }
+    else // No old-style Moneychanger contact found either.
+    {
+        // Try to get the name for the passed-in NymID (str_id) from
+        // previously imported Claims and other data in the local DB:
+        QString qstrName = MTContactHandler::getInstance()->getDisplayNameFromClaims(QString::fromStdString(str_id));
+        // Try moneychanger's nym table
+        if (qstrName.isEmpty())
+            qstrName = MTContactHandler::getInstance()->GetValueByID(QString::fromStdString(str_id), "nym_display_name", "nym", "nym_id");
+
+        if (!qstrName.isEmpty()) // Found a name.
+        {
+            str_result = qstrName.toStdString();
+            // -----------------------------------------------
+            // If Opentxs didn't have a Nym or Contact name for this NymId (str_id)
+            // and Moneychanger didn't have an old-style contact name for him either,
+            // AND Moneychanger had no other associations in the local database in the
+            // nym table or claims table, **then how do we know it's even a real Nym ID
+            // at all? Maybe we don't want to associate it with the accompanying NotaryID
+            // (if one was passed in).
+            // Maybe we only want to associate them if both check out as valid IDs...
+            // (Nym is done at the top of this function. Notary we'll do now)
+            //
+            if (!p_notary_id.empty() && opentxs::Identifier::validateID(p_notary_id))
+                MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
+                                                                       QString::fromStdString(p_notary_id));
         }
     }
     // ------------------------
@@ -1246,6 +1316,366 @@ QString MTContactHandler::GetSmartContract(int nID)
 
 // -------------------------------------------------
 
+// Create conversation entry in DB (if not already present)
+// Update conversation_name.
+//
+bool MTContactHandler::LowLevel_UpdateExistingConversation(const QString & qstrMyNymId, const QString & qstrThreadId, const QString & qstrThreadName)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_select = QString("SELECT `conversation_name` FROM `conversation` WHERE `conversation_id`='%1' AND `my_nym_id`='%2' LIMIT 0,1").
+            arg(qstrThreadId).arg(qstrMyNymId);
+    const int nRows = DBHandler::getInstance()->querySize(str_select);
+
+    // The conversation already exists in the DB.
+    if (nRows > 0)
+    {
+        const QString qstrEncodedOldName =
+            DBHandler::getInstance()->queryString(str_select, 0, 0);
+
+        const QString decoded_value {(!qstrEncodedOldName.isEmpty()) ? Decode(qstrEncodedOldName) : QString("")};
+
+        if (0 == decoded_value.compare(qstrThreadName)) // Already match?
+        {
+            // The conversation already exists AND the names already match.
+            // Therefore we're done.
+            //
+            return true;
+        }
+        else // Update name on existing conversation DB record.
+        {
+            bool bSetValue = false;
+            // The conversation already exists but the names DON'T match.
+            // Therefore we need to update the DB with the new name.
+            //
+            try
+            {
+                if (!qstrThreadName.isEmpty())
+                {
+                    QString encoded_value = Encode(qstrThreadName);
+                    //bSetValue = SetValueByID(qstrThreadId, encoded_value, "conversation_name", "conversation", "conversation_id");
+                    QString queryStr =
+                             QString("UPDATE `conversation` SET"
+                                     " `conversation_name` = :blah_conversation_name"
+                                     " WHERE "
+                                     "`conversation_id` = :blah_conversation_id"
+                                     " AND "
+                                     "`my_nym_id` = :blah_my_nym_id"
+                                     );
+                #ifdef CXX_11
+                    std::unique_ptr<DBHandler::PreparedQuery> qu;
+                #else /* CXX_11?  */
+                    std::auto_ptr<DBHandler::PreparedQuery> qu;
+                #endif /* CXX_11?  */
+                    qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+                    // ---------------------------------------------
+                    qu->bind (":blah_conversation_id", qstrThreadId);
+                    qu->bind (":blah_my_nym_id", qstrMyNymId);
+                    qu->bind (":blah_conversation_name", encoded_value);
+
+                    DBHandler::getInstance ()->runQuery (qu.release ());
+                }
+                Q_UNUSED(bSetValue);
+            }
+            catch (const std::exception& exc)
+            {
+                qDebug () << "Error: " << exc.what ();
+                return false; // Failed updating name (name didn't match).
+            }
+            return true;
+        } // updated name on existing record.
+        return true; // Conversation is already in DB.
+    }
+    return false; // Conversation isn't in DB yet.
+}
+
+// -------------------------------------------------
+// Higher level.
+// Create conversation entry in DB (if not already present)
+// Update conversation_name.
+bool MTContactHandler::EnsureConversationExists(const QString & qstrMyNymId, const QString & qstrThreadId, const QString & qstrThreadName)
+{
+    // Maybe it already exists.
+    if (LowLevel_UpdateExistingConversation(qstrMyNymId, qstrThreadId, qstrThreadName)) {
+        return true; // Done.
+    }
+    // ----------------------------------
+    // It's NOT already there, so we create it:
+    //
+    QMutexLocker locker(&m_Mutex);
+
+    // Conversation hasn't been imported yet to this DB.
+    // Let's create it then.
+    //
+    QString encoded_value("");
+    if (!qstrThreadName.isEmpty()) {
+        encoded_value = Encode(qstrThreadName);
+    }
+    try
+    {
+        //QString create_conversation_table = "CREATE TABLE IF NOT EXISTS conversation"
+        //       "(conversation_id TEXT,"
+        //       " my_nym_id TEXT,"
+        //       " conversation_name TEXT,"
+        //       " PRIMARY KEY (conversation_id, my_nym_id)"
+        //       ")";
+        QString queryStr = QString("INSERT INTO `conversation` "
+                           "(`conversation_id`, `my_nym_id`, `conversation_name`) "
+                           "VALUES(:blah_conversation_id, :blah_my_nym_id, :blah_conversation_name)");
+    #ifdef CXX_11
+        std::unique_ptr<DBHandler::PreparedQuery> qu;
+    #else /* CXX_11?  */
+        std::auto_ptr<DBHandler::PreparedQuery> qu;
+    #endif /* CXX_11?  */
+        qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+        qu->bind (":blah_conversation_id", qstrThreadId);
+        qu->bind (":blah_my_nym_id", qstrMyNymId);
+        qu->bind (":blah_conversation_name", encoded_value);
+
+        DBHandler::getInstance ()->runQuery (qu.release ());
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return false;
+    }
+    // ----------------------------------
+    return true;
+}
+
+// -------------------------------------------------
+
+// --------------------------------------------
+//const std::string thread_item_id = item.has_id() ? item.id() : "" ;
+//const std::string thread_item_account (item.has_account() ? item.account() : "");
+// --------------------------------------------
+//const QString qstrMyNymId  = QString::fromStdString(str_nym_id);
+//const QString qstrThreadId = QString::fromStdString(str_thread_id);
+//const QString qstrThreadItemId = QString::fromStdString(thread_item_id);
+//const QString qstrThreadItemAccountId = QString::fromStdString(thread_item_account);
+// --------------------------------------------
+//const int thread_item_box = item.has_box() ? item.box() : 0;
+//const time64_t thread_item_timestamp  = item.has_time() ? item.time() : 0;
+//const bool thread_item_unread = item.has_unread() ? item.unread() : false;
+// --------------------------------------------
+bool MTContactHandler::EnsureConversationItemExists(const QString & qstrMyNymId, const QString & qstrThreadId, const QString & qstrThreadItemId,
+                                                    const QString & qstrThreadItemAccountId, const int thread_item_box,
+                                                    const time64_t & thread_item_timestamp, const bool thread_item_unread)
+{
+    // Maybe it already exists.
+    if (LowLevel_UpdateExistingConversationItem(qstrMyNymId, qstrThreadId, qstrThreadItemId,
+                                                qstrThreadItemAccountId, thread_item_box,
+                                                thread_item_timestamp, thread_item_unread)) {
+        return true; // Done.
+    }
+    // ----------------------------------
+    // It's NOT already there, so we create it:
+    //
+    QMutexLocker locker(&m_Mutex);
+
+    // Conversation item hasn't been imported yet to this DB.
+    // Let's create it then.
+    //
+    try
+    {
+//        QString create_conversation_msg_table = "CREATE TABLE IF NOT EXISTS conversation_msg"
+//               "(conversation_id TEXT,"
+//               " my_nym_id TEXT,"
+//               " thread_item_id TEXT," // Note: this field is also in message_body table
+//               " timestamp INTEGER,"
+//               " box INTEGER,"
+//               " account TEXT,"
+//               " unread INTEGER,"
+//               " PRIMARY KEY (conversation_id, my_nym_id, thread_item_id)"
+//               ")";
+        QString queryStr = QString("INSERT INTO `conversation_msg` "
+                           "(`conversation_id`, `my_nym_id`, `thread_item_id`, `timestamp`, `box`, `account`, `unread`) "
+                           "VALUES(:blah_conversation_id, :blah_my_nym_id, :blah_thread_item_id, :blah_timestamp, "
+                                   ":blah_box, :blah_account, :blah_unread)");
+        const int nUnread = thread_item_unread ? 1 : 0;
+
+    #ifdef CXX_11
+        std::unique_ptr<DBHandler::PreparedQuery> qu;
+    #else /* CXX_11?  */
+        std::auto_ptr<DBHandler::PreparedQuery> qu;
+    #endif /* CXX_11?  */
+        qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+        qu->bind (":blah_conversation_id", qstrThreadId);
+        qu->bind (":blah_my_nym_id", qstrMyNymId);
+        qu->bind (":blah_thread_item_id", qstrThreadItemId);
+        qu->bind (":blah_timestamp", QVariant::fromValue(thread_item_timestamp));
+        qu->bind (":blah_box", QVariant::fromValue(thread_item_box));
+        qu->bind (":blah_account", qstrThreadItemAccountId);
+        qu->bind (":blah_unread", QVariant::fromValue(nUnread));
+
+        DBHandler::getInstance ()->runQuery (qu.release ());
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return false;
+    }
+    // ----------------------------------
+    return true;
+}
+
+
+//QString create_conversation_table = "CREATE TABLE IF NOT EXISTS conversation"
+//       "(conversation_id TEXT,"
+//       " my_nym_id TEXT,"
+//       " conversation_name TEXT,"
+//       " PRIMARY KEY (conversation_id, my_nym_id)"
+//       ")";
+//
+SetOfStrings *
+MTContactHandler::selectPreimportedConversationIdsForNym(
+    const QString &qstrMyNymId)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    const QString str_select = QString("SELECT GROUP_CONCAT(conversation_id, ',') "
+                                 "FROM `conversation` "
+                                 "WHERE `my_nym_id`='%1'").arg(qstrMyNymId);
+
+    const QString alreadyImportedCSV = DBHandler::getInstance()->queryString(str_select, 0, 0);
+
+    if (alreadyImportedCSV.isEmpty()) {
+        //qDebug() << "selectPreimportedConversationIdsForNym 1: I have no thread_ids imported yet for that nym.";
+        return nullptr;
+    }
+
+    const QStringList alreadyImportedIds = alreadyImportedCSV.split(",");
+
+    if (0 == alreadyImportedIds.size()) {
+        qDebug() << "selectPreimportedConversationIdsForNym 2: I have no thread_ids imported yet for that nym.";
+        return nullptr;
+    }
+
+    SetOfStrings * pSet = new SetOfStrings;
+
+    for (const auto & qstrIT : alreadyImportedIds)
+    {
+        const std::string strIT = qstrIT.toStdString();
+        pSet->insert(strIT);
+    }
+
+    return pSet;
+}
+
+SetOfStrings *
+MTContactHandler::selectThreadItemIdsForNymAndConversation(
+    const QString &qstrMyNymId,
+    const QString &qstrThreadId)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    const QString str_select = QString("SELECT GROUP_CONCAT(thread_item_id, ',') "
+                                 "FROM `conversation_msg` "
+                                 "WHERE `conversation_id`='%1' AND `my_nym_id`='%2'")
+            .arg(qstrThreadId).arg(qstrMyNymId);
+
+    const QString alreadyImportedCSV = DBHandler::getInstance()->queryString(str_select, 0, 0);
+
+    if (alreadyImportedCSV.isEmpty()) {
+        qDebug() << "selectThreadItemIdsForNymAndConversation 1: I have no thread_item_ids imported yet for that nym and thread.";
+        return nullptr;
+    }
+
+    const QStringList alreadyImportedIds = alreadyImportedCSV.split(",");
+
+    if (0 == alreadyImportedIds.size()) {
+        qDebug() << "selectThreadItemIdsForNymAndConversation 2: I have no thread_item_ids imported yet for that nym and thread.";
+        return nullptr;
+    }
+
+    SetOfStrings * pSet = new SetOfStrings;
+
+    for (const auto & qstrIT : alreadyImportedIds)
+    {
+        const std::string strIT = qstrIT.toStdString();
+        pSet->insert(strIT);
+    }
+
+    return pSet;
+}
+
+bool MTContactHandler::LowLevel_UpdateExistingConversationItem(
+            const QString & qstrMyNymId, const QString & qstrThreadId, const QString & qstrThreadItemId,
+            const QString & qstrThreadItemAccountId, const int thread_item_box,
+            const time64_t & thread_item_timestamp, const bool thread_item_unread)
+{
+    QMutexLocker locker(&m_Mutex);
+
+    QString str_select = QString("SELECT `box` FROM `conversation_msg` "
+                                 "WHERE `conversation_id`='%1' AND `my_nym_id`='%2' "
+                                 "AND `thread_item_id`='%3' LIMIT 0,1").
+            arg(qstrThreadId).arg(qstrMyNymId).arg(qstrThreadItemId);
+    const int nRows = DBHandler::getInstance()->querySize(str_select);
+
+    // The conversation item already exists in the DB.
+    if (nRows > 0)
+    {
+        // NOTE: For now we re-import conversational items.
+        // But if, in the future, it's determined that they never change,
+        // then we don't have to do that here. We could just return true.
+        bool bSetValue = false;
+        try
+        {
+//        QString create_conversation_msg_table = "CREATE TABLE IF NOT EXISTS conversation_msg"
+//               "(conversation_id TEXT,"
+//               " my_nym_id TEXT,"
+//               " thread_item_id TEXT," // Note: this field is also in message_body table
+//               " timestamp INTEGER,"
+//               " box INTEGER,"
+//               " account TEXT,"
+//               " unread INTEGER,"
+//               " PRIMARY KEY (conversation_id, my_nym_id, thread_item_id)"
+//               ")";
+            QString queryStr =
+                     QString("UPDATE `conversation_msg` SET"
+                             " `timestamp` = :blah_timestamp,"
+                             " `box` = :blah_box,"
+                             " `account` = :blah_account,"
+                             " `unread` = :blah_unread"
+                             " WHERE "
+                             "`conversation_id` = :blah_conversation_id"
+                             " AND "
+                             "`my_nym_id` = :blah_my_nym_id"
+                             " AND "
+                             "`thread_item_id` = :blah_thread_item_id"
+                             );
+            const int nUnread = thread_item_unread ? 1 : 0;
+        #ifdef CXX_11
+            std::unique_ptr<DBHandler::PreparedQuery> qu;
+        #else /* CXX_11?  */
+            std::auto_ptr<DBHandler::PreparedQuery> qu;
+        #endif /* CXX_11?  */
+            qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+            // ---------------------------------------------
+            qu->bind (":blah_conversation_id", qstrThreadId);
+            qu->bind (":blah_my_nym_id", qstrMyNymId);
+            qu->bind (":blah_thread_item_id", qstrThreadItemId);
+            qu->bind (":blah_timestamp", QVariant::fromValue(thread_item_timestamp));
+            qu->bind (":blah_box", QVariant::fromValue(thread_item_box));
+            qu->bind (":blah_account", qstrThreadItemAccountId);
+            qu->bind (":blah_unread", QVariant::fromValue(nUnread));
+
+            DBHandler::getInstance ()->runQuery (qu.release ());
+            Q_UNUSED(bSetValue);
+        }
+        catch (const std::exception& exc)
+        {
+            qDebug () << "Error: " << exc.what ();
+            return false; // Failed updating conversational item.
+        }
+        return true; // Conversation item is already in the DB. (And we updated it).
+    }
+    return false; // Conversation item isn't in DB yet. (Calling function should add it.)
+}
+
+// -------------------------------------------------
+
+
 QString MTContactHandler::GetMessageBody(int nMessageID)
 {
     return MTContactHandler::GetEncryptedValueByID(nMessageID, "body", "message_body", "message_id");
@@ -1766,6 +2196,65 @@ bool MTContactHandler::GetPaymentCodes(mapIDName & theMap, int nFilterByContact)
     return bFoundAny;
 }
 
+// Notice the contactID is a string instad of an int.
+// That's because this function returns the new-style opentxs contacts,
+// not the old-style Moneychanger contacts.
+//
+bool MTContactHandler::GetNyms(mapIDName & theMap, const std::string & str_contact_id)
+{
+    if (str_contact_id.empty() || !opentxs::Identifier::validateID(str_contact_id))
+        return false;
+    // ------------------------
+    const auto pContact = opentxs::OT::App().Contact().Contact(opentxs::Identifier{str_contact_id});
+    if (!pContact)
+    {
+        qDebug() << "No opentxs Contact found for the ID provided.";
+        return false;
+    }
+    // ------------------------
+    const std::string & str_opentxs_label = pContact->Label();
+    std::string str_alternate_label;
+
+    if (str_opentxs_label.empty())
+    {
+        str_alternate_label = this->OTNameLookup::GetContactName(str_contact_id);
+    }
+    const QString qstrContactLabel = str_opentxs_label.empty() ? QString::fromStdString(str_alternate_label) : QString::fromStdString(str_opentxs_label);
+    // ------------------------
+    std::vector<opentxs::Identifier> vector_nym_id{pContact->Nyms()};
+
+    if (vector_nym_id.empty())
+    {
+        return false;
+    }
+    // ------------------------
+    for (const auto & nym_id : vector_nym_id)
+    {
+        theMap.insert(QString::fromStdString(std::string(opentxs::String(nym_id).Get())),
+                      qstrContactLabel);
+        // NOTE: Normally we'd put a different Nym Name here for each. How else would you tell them apart?
+//      MTNameLookupQT theLookup;
+//      nym_name = QString::fromStdString(theLookup.GetNymName(nym_id.toStdString(), ""));
+    }
+    // ------------------------
+    return true;
+}
+
+// Type might be NONE, or BITMESSAGE, or BITCOIN, etc.
+bool MTContactHandler::GetAddressesByContact(mapIDName & theMap,
+                                             const std::string & strFilterByContact,
+                                             QString filterByType, // Type might be NONE, or BITMESSAGE, or BITCOIN, etc.
+                                             bool bIncludeTypeInKey/*=true*/) // "bitmessage:kjasdfkjhasdfkjhasdfkj"
+{
+    // NOTE: The Contact parameter is a string, not an int. That means it's a new-style opentxs Contact,
+    // and NOT an old-style Moneychanger Contact.
+    //
+    // (So this function returns false until such a function is available in Opentxs.)
+    //
+    return false;
+
+}
+
 bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact)
 {
     QMutexLocker locker(&m_Mutex);
@@ -2282,6 +2771,20 @@ int  MTContactHandler::CreateSmartContractTemplate(QString template_string)
 //
 int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string/*=QString("")*/, QString payment_code/*=QString("")*/)
 {
+    // NOTICE: This is an older function, which creates an old-style Moneychanger contact, based on a NymID input.
+    // These contacts exist inside the Moneychanger database, and they are NOT the same thing when we talk about
+    // the new-style Opentxs Contacts that Justus has added recently.
+    //
+    // HOWEVER, This function IS called in Moneychanger anytime a contact needs to be created from a NymID
+    // (and/or Payment Code).
+    //
+    // Therefore, I'm going to call Justus' new "Create Contact" function here at the top of this function.
+    // In effect, I'm creating two different types of Contacts for this one Contact, one for each system, the
+    // new and the old contact systems. That way, we can systematically replace
+    // the old functions
+    //
+    //
+
     QMutexLocker locker(&m_Mutex);
 
     // First, see if a contact already exists for this Nym, and if so,

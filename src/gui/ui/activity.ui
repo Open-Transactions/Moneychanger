@@ -199,6 +199,13 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <widget class="QCheckBox" name="checkBoxSearch">
+                 <property name="text">
+                  <string>Search</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </item>
              <item>
@@ -219,7 +226,14 @@
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_4">
              <item>
-              <widget class="QListWidget" name="listWidgetConversation"/>
+              <widget class="QListWidget" name="listWidgetConversation">
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTableView" name="tableViewConversation"/>
              </item>
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_2">

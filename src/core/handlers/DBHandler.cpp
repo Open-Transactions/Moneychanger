@@ -42,16 +42,15 @@ DBHandler::DBHandler()
         exit(1);
     }
 
-    qDebug() << "Adding DB";
     db = QSqlDatabase::addDatabase(dbDriverStr, dbConnNameStr);
 
     bool flag = isDbExist();
-//    qDebug() << QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr;
+//  qDebug() << QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr;
     db.setDatabaseName( QString(opentxs::OTPaths::AppDataFolder().Get()) + dbFileNameStr);
     if(!dbConnect())
         qDebug() << "Error Opening Database";
 
-//    if (!flag)  // The database now creates the tables if they don't exist, so we call this every time now.
+//  if (!flag)  // The database now creates the tables if they don't exist, so we call this every time now.
     {
         qDebug() << "Running dbCreateInstance";
         dbCreateInstance();
@@ -193,13 +192,50 @@ bool DBHandler::dbCreateInstance()
                " my_nym_id TEXT,"
                " my_address TEXT,"
                " folder INTEGER,"
-               " thread_item_id TEXT"
+               " thread_item_id TEXT,"
+               " archived INTEGER NOT NULL,"
+               " has_subject INTEGER"
                ")";
         // --------------------------------------------
         QString create_message_body_table = "CREATE TABLE IF NOT EXISTS message_body"
                "(message_id INTEGER PRIMARY KEY,"
                " body TEXT,"
                " thread_item_id TEXT"
+               ")";
+        // --------------------------------------------
+        // Two local Nyms may each have their own conversation with a given
+        // Contact ID, and that conversation ID will be set to that Contact ID.
+        // Therefore you cannot use the Conversation_ID, by itself, as a primary
+        // key, since there may be two local Nyms, and thus two local conversations
+        // that are both with Alice, and that both have Alice's ID as the conversation ID.
+        // Therefore, to prevent bugs in Moneychanger, which supports multiple Nyms,
+        // we index the conversation by Conversation ID *and* Nym ID.
+        //
+        QString create_conversation_table = "CREATE TABLE IF NOT EXISTS conversation"
+               "(conversation_id TEXT,"
+               " my_nym_id TEXT,"
+               " conversation_name TEXT,"
+               " PRIMARY KEY (conversation_id, my_nym_id)"
+               ")";
+        // --------------------------------------------
+        //        message StorageThreadItem {
+        //            optional uint32 version = 1;
+        //            optional string id = 2;
+        //            optional uint64 index = 3;
+        //            optional uint64 time = 4;
+        //            optional uint32 box = 5;
+        //            optional string account = 6;
+        //            optional bool unread = 7;
+        //        }
+        QString create_conversation_msg_table = "CREATE TABLE IF NOT EXISTS conversation_msg"
+               "(conversation_id TEXT,"
+               " my_nym_id TEXT,"
+               " thread_item_id TEXT," // Note: this field is also in message_body table
+               " timestamp INTEGER,"
+               " box INTEGER,"
+               " account TEXT,"
+               " unread INTEGER,"
+               " PRIMARY KEY (conversation_id, my_nym_id, thread_item_id)"
                ")";
         // --------------------------------------------
         QString create_payment_table = "CREATE TABLE IF NOT EXISTS payment"
@@ -451,6 +487,9 @@ bool DBHandler::dbCreateInstance()
         error += query.exec(create_payment_table);
         error += query.exec(create_payment_body_table);
         // ------------------------------------------
+        error += query.exec(create_conversation_table);
+        error += query.exec(create_conversation_msg_table);
+        // ------------------------------------------
         error += query.exec(create_claim_table);
         error += query.exec(create_claim_verification_table);
         // ------------------------------------------
@@ -464,7 +503,7 @@ bool DBHandler::dbCreateInstance()
         // ------------------------------------------
         error += query.exec(create_nmc);
         // ------------------------------------------
-        if (error != 29)  // Every query passed?
+        if (error != 31)  // Every query passed?
         {
             qDebug() << "dbCreateInstance exec count: " << error << ": ErrorStr: "
                      << dbConnectErrorStr + "--" + dbCreationStr;
@@ -579,32 +618,6 @@ QPointer<ModelClaims> DBHandler::getRelationshipClaims(const QString & qstrAbout
     setup_claims_model(pClaimsModel);
 
     return pClaimsModel;
-}
-
-
-QPointer<ModelVerifications> DBHandler::getVerificationsModel(const QString & forClaimId)
-{
-    QPointer<ModelVerifications> pModel = new ModelVerifications(0);
-
-    pModel->setQuery(QString("SELECT * FROM `claim_verification` WHERE `ver_claim_id`='%1'").
-                     arg(forClaimId), db);
-
-    if ( pModel->lastError().isValid())
-        qDebug() <<  pModel->lastError();
-
-    int column = 0;
-
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("ver_id"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Claimant"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Verifier"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Claim"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Polarity"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Start"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("End"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Signature"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Signature Verified"));
-
-    return pModel;
 }
 
 
@@ -765,8 +778,7 @@ QPointer<ModelMessages> DBHandler::getMessageModel()
         pMessageModel_->setEditStrategy(QSqlTableModel::OnManualSubmit);
 
         pMessageModel_->select();
-//        pMessageModel_->sort(MSG_SOURCE_COL_TIMESTAMP, Qt::DescendingOrder);
-
+//      pMessageModel_->sort(MSG_SOURCE_COL_TIMESTAMP, Qt::DescendingOrder);
 
         if ( pMessageModel_->lastError().isValid())
             qDebug() <<  pMessageModel_->lastError();
@@ -791,10 +803,83 @@ QPointer<ModelMessages> DBHandler::getMessageModel()
         pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("My address"));
         pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Folder"));
         pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("thread_item_id"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("archived"));
+        pMessageModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("has_subject"));
     }
 
     return pMessageModel_;
 }
+
+
+
+
+
+
+QPointer<QSqlQueryMessages> DBHandler::getNewMessageModel(bool bArchived/*=false*/)
+{
+    const int nArchived(bArchived ? 1 : 0);
+
+    QPointer<QSqlQueryMessages> pModel = new QSqlQueryMessages(0);
+
+    pModel->setQuery(QString("SELECT * FROM `message` WHERE `archived`='%1'").
+                     arg(nArchived), db);
+
+    if ( pModel->lastError().isValid())
+        qDebug() <<  pModel->lastError();
+
+    int column = 0;
+
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("message_id"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Read?"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr(" ")); //replied
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr(" ")); // forwarded
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Subject"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("From"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("From address"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("To"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("To address"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Timestamp"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("method_type"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Transport"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Notary"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Me"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("My address"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Folder"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("thread_item_id"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("archived"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("has_subject"));
+
+    return pModel;
+}
+
+
+
+
+QPointer<ModelVerifications> DBHandler::getVerificationsModel(const QString & forClaimId)
+{
+    QPointer<ModelVerifications> pModel = new ModelVerifications(0);
+
+    pModel->setQuery(QString("SELECT * FROM `claim_verification` WHERE `ver_claim_id`='%1'").
+                     arg(forClaimId), db);
+
+    if ( pModel->lastError().isValid())
+        qDebug() <<  pModel->lastError();
+
+    int column = 0;
+
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("ver_id"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Claimant"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Verifier"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Claim"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Polarity"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Start"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("End"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Signature"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Signature Verified"));
+
+    return pModel;
+}
+
 
 /*
 SELECT contact.contact_id as contact_id, contact.contact_display_name as contact_display_name,

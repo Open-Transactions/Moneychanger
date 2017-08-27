@@ -59,6 +59,7 @@
 #include <gui/ui/activity.hpp>
 
 
+#include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/api/Wallet.hpp>
@@ -84,6 +85,8 @@
 
 #include <chrono>
 #include <sstream>
+
+#include <utility>
 
 /**
  * Constructor & Destructor
@@ -173,7 +176,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 
     /** Default Nym **/
     qDebug() << "Setting up Nym table";
-    if (DBHandler::getInstance()->querySize("SELECT `nym` FROM `default_nym` WHERE `default_id`='1' LIMIT 0,1") == 0)
+    if (0 == DBHandler::getInstance()->querySize("SELECT `nym` FROM `default_nym` WHERE `default_id`='1' LIMIT 0,1"))
     {
         qDebug() << "Default Nym wasn't set in the database. Inserting blank record...";
         DBHandler::getInstance()->runQuery("INSERT INTO `default_nym` (`default_id`,`nym`) VALUES('1','')"); // Blank Row
@@ -2503,11 +2506,16 @@ bool Moneychanger::AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt)
 }
 
 
-// Todo someday: Add a setting to the configuration so a user can choose whether or not to import Bitmessages.
-// In which case they might never be added to the database here, or deleting from Bitmessage here (as they are now in both cases), unless that setting was set to true.
-//
-bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
+/// Returns true if it succeeds in creating the database record, including for the message body.
+///
+bool Moneychanger::low_level_AddMailToMsgArchive(
+    opentxs::OTRecord& recordmt,
+    MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+    MapOfConversationsByNym & mapOfConversationsByNym)
 {
+    // This function is low level because it assumes we already tried the lookup
+    // table.
+    // ------------------------------------------------------------------------------
     QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
     bool bSuccessAddingMsg = false;
     QString qstrBody(""), threadItemId;
@@ -2602,12 +2610,24 @@ bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
         record.setValue("have_read", recordmt.IsOutgoing() ? 1 : 0);
         record.setValue("have_replied", 0);
         record.setValue("have_forwarded", 0);
+        // ------------------------------------------------
+        qstrBody = QString::fromStdString(recordmt.GetContents());
+
+        const QString qstrSubject{"subject:"};
+        const bool bHasContents = !qstrBody.isEmpty();
+        const bool bHasSubject  = bHasContents && qstrBody.startsWith(qstrSubject, Qt::CaseInsensitive);
+        const int nHasSubject = bHasSubject ? 1 : 0;
+        record.setValue("has_subject", QVariant::fromValue(nHasSubject));
+
         if (!mailDescription.isEmpty())
             record.setValue("subject", mailDescription);
+        // ------------------------------------------------
         record.setValue("folder", nFolder);
 
         if (!threadItemId.isEmpty())
             record.setValue("thread_item_id", threadItemId);
+        // ------------------------------------------------
+        record.setValue("archived", 0);
 
         pModel->insertRecord(0, record);
         // ---------------------------------
@@ -2617,7 +2637,7 @@ bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
             {
                 // Success.
                 bSuccessAddingMsg = true;
-                qstrBody = QString::fromStdString(recordmt.GetContents());
+//                qstrBody = QString::fromStdString(recordmt.GetContents());
             }
         }
         else
@@ -2688,6 +2708,187 @@ bool Moneychanger::AddMailToMsgArchive(opentxs::OTRecord& recordmt)
     }
 
     return bSuccessAddingMsg;
+}
+
+// Todo someday: Add a setting to the configuration so a user can choose whether or not to import Bitmessages.
+// In which case they might never be added to the database here, or deleting from Bitmessage here (as they are now in both cases), unless that setting was set to true.
+//
+// When this function returns "true" it means "delete the record" (The mail message).
+//
+//resume
+bool Moneychanger::AddMailToMsgArchive(
+    opentxs::OTRecord& recordmt,
+    MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+    MapOfConversationsByNym & mapOfConversationsByNym,
+    SetNymThreadAndItem & setNewlyAddedNymThreadAndItem)
+{
+    // First let's make sure we're not re-importing a message we already imported before.
+    //
+    PtrSetOfStrings pAlreadyImportedIds; // For a given nymID and threadID. nullptr so far.
+
+    std::string str_correct_thread_id_for_item;
+
+    const std::string str_nym_id         = recordmt.GetNymID();
+    const std::string str_thread_item_id = recordmt.GetThreadItemId();
+
+    if ((false == recordmt.IsSpecialMail()) // Only for normal opentxs mail, not special mail integrations.
+        && !str_nym_id.empty() && !str_thread_item_id.empty())
+    {
+        // Here we need to loop through the conversation Ids for this Nym,
+        // and then search setNewlyAddedNymThreadAndItem to see if the relevant
+        // three IDs appear on the set.
+        // If it's newly-added, we'll import the message body as well. Otherwise we can
+        // assume that we already did, on some previous refresh, and thus can skip any
+        // re-importing of the message body and message table in general.
+        //
+
+//        typedef std::set<std::string> SetOfStrings;
+//        typedef std::shared_ptr<SetOfStrings> PtrSetOfStrings;
+//        typedef std::pair<std::string, std::string> PairOfStrings;
+//        typedef std::map<PairOfStrings, PtrSetOfStrings> MapOfPtrSetsOfStrings;
+//        typedef std::map<std::string, PtrSetOfStrings> MapOfConversationsByNym;
+//
+//        // NymID, (conversational) Thread Id, Thread Item Id.
+//        typedef std::tuple<std::string, std::string, std::string> TupleNymThreadAndItem;
+//        typedef std::shared_ptr<TupleNymThreadAndItem> PtrNymThreadAndItem;
+//        typedef std::set<PtrNymThreadAndItem> SetNymThreadAndItem;
+
+        MapOfConversationsByNym::iterator it_mapConversations = mapOfConversationsByNym.find(str_nym_id);
+
+        if (mapOfConversationsByNym.end() != it_mapConversations)
+        {
+            PtrSetOfStrings & conversation_ids = it_mapConversations->second;
+
+            if (conversation_ids)
+            {
+                for (auto& conversation_id : *conversation_ids)
+                {
+                    // str_nym_id, conversation_id, str_thread_item_id;
+                    // setNewlyAddedNymThreadAndItem
+
+                    const TupleNymThreadAndItem tupleNymThreadAndItem{str_nym_id, conversation_id, str_thread_item_id};
+
+                    for (auto& ptrNymThreadAndItem : setNewlyAddedNymThreadAndItem)
+                    {
+                        // If the Nym Id, Thread Id, and Thread Item Id (as a tuple, for recordMT) were found on the
+                        // set of newly-imported thread items, then let's import the message body (etc) to Moneychanger's
+                        // internal DB.
+                        //
+                        if (tupleNymThreadAndItem == *ptrNymThreadAndItem)
+                        {
+                            const bool bReturn = low_level_AddMailToMsgArchive(
+                                        recordmt,
+                                        mapOfSetsOfAlreadyImportedMsgs,
+                                        mapOfConversationsByNym);
+                            if (bReturn)
+                            {
+                                // once we've successfully imported it, can delete from this
+                                // set, since we had the set for the express purpose of seeing
+                                // which ones we need to import.
+                                //
+                                //setNewlyAddedNymThreadAndItem.erase(ptrNymThreadAndItem);
+                                // commenting out for now in case this might cause any iteration issues.
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+
+
+
+//        for (auto& it_preimportedMap : mapOfSetsOfAlreadyImportedMsgs)
+//        {
+//            PairOfStrings   & pairNymIdAndThreadId = it_preimportedMap.first;
+//            PtrSetOfStrings & pSetThreadItemIds    = it_preimportedMap.second;
+//            // ---------------------
+//            const std::string & str_current_nym_id    = pairNymIdAndThreadId.first;
+//            const std::string & str_current_thread_id = pairNymIdAndThreadId.second;
+//            // ---------------------
+//            if (0 != str_current_nym_id.compare(str_nym_id)) {
+//                continue;
+//            }
+//            if (!pSetThreadItemIds) {
+//                continue;
+//            }
+//            // ---------------------
+//            // We've got a map with the key being a pair of strings, and the value
+//            // being a smart pointer to a set of strings.
+//            // The key is a NymId/ThreadId (and we're looking to find out a ThreadID FYI)
+//            // and the value is a pointer to a set of thread ITEM IDs for that Nym/Thread.
+//            //
+//            // By this point in the function, as we loop through the entire map, we grab
+//            // the key (the two strings) first. If the NymID doesn't match the one on the
+//            // record, we just skip it.
+//            // That leads us to where we are now. We know the NymID matches, but we don't
+//            // know yet if it's the right thread. The best thing we can do for now is to
+//            // then grab it_preimported.second, which is a shared_ptr to a set of strings
+//            // (thread Item IDs). We'll loop through those, and if the thread_item_id matches
+//            // any of those, then we can confidentally say that str_current_thread_id is
+//            // a valid thread id for this thread item. (We can also say with certainty, at
+//            // that point, that it's already been imported...)
+//            //
+//            //  typedef std::set<std::string> SetOfStrings;
+//            //  typedef std::shared_ptr<SetOfStrings> PtrSetOfStrings;
+//            //  typedef std::pair<std::string, std::string> PairOfStrings;
+//            //  typedef std::map<PairOfStrings, PtrSetOfStrings> MapOfPtrSetsOfStrings;
+//            // ---------------------
+//            bool bFoundThreadId = false;
+//            for (auto& str_current_thread_item_id : *pSetThreadItemIds)
+//            {
+//                if (0 == str_current_thread_item_id.compare(str_thread_item_id)) // Match!
+//                {
+//                    bFoundThreadId = true;
+//                    pAlreadyImportedIds = pSetThreadItemIds;
+//                    str_correct_thread_id_for_item = str_current_thread_id;
+//                    break;
+//                }
+//            } // for
+//            // ---------------------
+//            if (bFoundThreadId) // This means it's already been imported.
+//            {
+//                // Therefore no need to re-import it.
+//            }
+//            else // Otherwise it definitely HASN'T been yet imported
+//            {
+
+//            }
+//            // ---------------------
+
+//        } // for
+//        // ----------------------------------------------
+
+//        MapOfPtrSetsOfStrings::const_iterator it_map = mapOfSetsOfAlreadyImportedMsgs.find(PairOfStrings{str_nym_id, str_thread_id});
+//    }
+//    if (mapOfSetsOfAlreadyImportedMsgs.end() != it_map) // the set was already on the map
+//    {
+//        pAlreadyImportedIds = it_map->second();
+//        bHaveGrabbedTheAlreadyImportedIds = true;
+//        bHaveAlreadyImportedAnyIds = (pAlreadyImportedIds->size() > 0);
+//    }
+//    // ----------------------------------------------
+
+
+
+//    // LOOP THROUGH THE NEWLY IMPORTED ONES AND LOW LEVEL ADD THEM!
+
+////  NymID, (conversational) Thread Id, Thread Item Id.
+////  typedef std::tuple<std::string, std::string, std::string> TupleNymThreadAndItem;
+
+
+//    // ----------------------------------------------
+//    bool Moneychanger::low_level_AddMailToMsgArchive(
+//        opentxs::OTRecord& recordmt,
+//        MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+//        MapOfConversationsByNym & mapOfConversationsByNym)
+
+
+
+
+
 }
 
 
@@ -3708,13 +3909,387 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
 }
 
 
-// Notice that this function now does the same thing twice.
-// Only difference is, the first time around it does all NON-Final Receipts,
-// but the second time around it does all FINAL receipts. (And final receipt notices).
-// This is basically just to ensure that final receipts are always done LAST.
+//        message StorageThreadItem {
+//            optional uint32 version = 1;
+//            optional string id = 2;
+//            optional uint64 index = 3;
+//            optional uint64 time = 4;
+//            optional uint32 box = 5;
+//            optional string account = 6;
+//            optional bool unread = 7;
+//        }
+//        enum class StorageBox : std::uint8_t {
+//            SENTPEERREQUEST = 0,
+//            INCOMINGPEERREQUEST = 1,
+//            SENTPEERREPLY = 2,
+//            INCOMINGPEERREPLY = 3,
+//            FINISHEDPEERREQUEST = 4,
+//            FINISHEDPEERREPLY = 5,
+//            PROCESSEDPEERREQUEST = 6,
+//            PROCESSEDPEERREPLY = 7,
+//            MAILINBOX = 8,
+//            MAILOUTBOX = 9
+//        };
+
+
+// Loop through conversations owned by this Nym and import copies to
+// local DB for the GUI to use. Re-import if necessary since they
+// change over time.
 //
+void Moneychanger::ImportConversationsForNym(const std::string & str_nym_id,
+                                             MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+                                             SetNymThreadAndItem & setNewlyAddedNymThreadAndItem) // output
+{
+    OT_ASSERT(!str_nym_id.empty());
+    // ----------------------------------------------
+    opentxs::ObjectList threadList = opentxs::OT::App().Activity().Threads(opentxs::Identifier{str_nym_id});
+    opentxs::ObjectList::const_iterator ci = threadList.begin();
+
+    while (threadList.end() != ci)
+    {
+        const std::pair<std::string, std::string> & threadInfo = *ci;
+
+        const std::string & str_thread_id   = threadInfo.first;
+        const std::string & str_thread_name = threadInfo.second;
+        // ----------------------------------------------
+        std::shared_ptr<opentxs::proto::StorageThread> thread;
+        opentxs::OT::App().DB().Load(str_nym_id, str_thread_id, thread);
+        // ----------------------------------------------
+        if (!thread) {
+            ++ci;
+            continue;
+        }
+        // ----------------------------------------------
+        if (false == ImportConversationForNym(str_nym_id, str_thread_id, str_thread_name, thread, mapOfSetsOfAlreadyImportedMsgs, setNewlyAddedNymThreadAndItem)) {
+            ++ci;
+            continue;
+        }
+        // ----------------------------------------------
+
+        // Anything else we might want to do can be put right here.
+        // Basically, for those times when you need to do something
+        // immediately after importing a conversation.
+
+        // ----------------------------------------------
+        ++ci;
+    }
+}
+
+bool Moneychanger::ImportConversationForNym(const std::string & str_nym_id,
+                                            const std::string & str_thread_id,
+                                            const std::string & str_thread_name,
+                                            std::shared_ptr<opentxs::proto::StorageThread> & thread,
+                                            MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+                                            SetNymThreadAndItem & setNewlyAddedNymThreadAndItem) // output
+{
+    if (!thread)
+        return false;
+    // ----------------------------------------------
+    if (thread->participant_size() <= 0)
+        return false;
+    // ----------------------------------------------
+    OT_ASSERT(0 == str_thread_id.compare(thread->id()));
+
+    // Note: in a conversation with a single contact, str_thread_id itself
+    // is also that ContactId, so I don't have to grab the first participant
+    // for his ID.
+
+    // If it's a group conversation, I ALSOS don't need the participants' IDs
+    // (in this case) since we're here mainly to import the conversation ID
+    // itself, which again would be str_thread_id.
+    //
+    // I think the only time I care about a specific participant's ID is when
+    // I'm trying to message that guy 1-on-1, and I just want to see if there's
+    // a conversation already there between us (on the GUI) before I otherwise
+    // create one and add it to the tree. But it seems, again, I can just use
+    // the contact ID (which is also the thread id in that case) to lookup the
+    // conversation on the tree.
+    //
+    //const std::string str_participant_contact_id = thread->participant(0);
+
+    const QString qstrMyNymId  = QString::fromStdString(str_nym_id);
+    const QString qstrThreadId = QString::fromStdString(str_thread_id);
+    QString qstrThreadName     = QString::fromStdString(str_thread_name);
+    // ----------------------------------------------
+    if (qstrThreadName.isEmpty()) {
+        qstrThreadName = QString("(%1)").arg(tr("Conversation name was empty"));
+    }
+    // ----------------------------------------------
+//  qstrMyNymId, qstrThreadId, qstrThreadName;
+
+    // If some of this seems like I did it weird, it's for lazy evaluation / optimization
+    // purposes, since the import can be rather slow.
+
+    // ----------------------------------------------
+    // So we don't continually re-import thread items that we already imported before.
+    //
+    PtrSetOfStrings  pAlreadyImportedIds; // nullptr so far.
+    bool bHaveAlreadyImportedAnyIds = false;
+    bool bHaveGrabbedTheAlreadyImportedIds = false;
+    // ----------------------------------------------
+    // Loop through messages in this conversation, create or update each conversation_msg
+    // record based on the thread item it's importing from. Assume we may re-import the
+    // same records, and we don't want duplicates.
+    //
+    bool bConversationExistsInDB = false; // so far. (We'll check in a lazy way).
+
+    for (const auto & item : thread->item()) //opentxs::proto::StorageThreadItem & item
+    {
+        //  QString create_conversation_msg_table = "CREATE TABLE IF NOT EXISTS conversation_msg"
+        //         "(conversation_id TEXT,"
+        //         " my_nym_id TEXT,"
+        //         " thread_item_id TEXT," // Note: this field is also in message_body table
+        //         " timestamp INTEGER,"
+        //         " box INTEGER,"
+        //         " account TEXT,"
+        //         " unread INTEGER,"
+        //         " PRIMARY KEY (conversation_id, my_nym_id, thread_item_id)"
+        //         ")";
+        // --------------------------------------------
+        const std::string thread_item_id = item.has_id() ? item.id() : "" ;
+        const std::string thread_item_account (item.has_account() ? item.account() : "");
+
+        if (thread_item_id.empty())
+        {
+            qDebug() << "Found a conversational thread item with a blank ID field. Strange, probably should not ever be happening. (Skipping it).";
+            continue;
+        }
+        // --------------------------------------------
+//      const QString qstrMyNymId  = QString::fromStdString(str_nym_id);
+//      const QString qstrThreadId = QString::fromStdString(str_thread_id);
+        const QString qstrThreadItemId = QString::fromStdString(thread_item_id);
+        const QString qstrThreadItemAccountId = QString::fromStdString(thread_item_account);
+        // --------------------------------------------
+        const int thread_item_box = item.has_box() ? item.box() : 0;
+        const time64_t thread_item_timestamp  = item.has_time() ? item.time() : 0;
+        const bool thread_item_unread = item.has_unread() ? item.unread() : false;
+        // --------------------------------------------            
+        // By this point we know there's definitely an item, we need to either import it
+        // or ignore it (if we already imported it in the past).
+        // We'll also go ahead and grab the IDs from our local DB of the ones we've already imported.
+        // We avoided doing that up until now for optimization reasons.
+        //
+        if (!bHaveGrabbedTheAlreadyImportedIds)
+        {
+            //  typedef std::set<std::string> SetOfStrings;
+            //  typedef std::shared_ptr<SetOfStrings> PtrSetOfStrings;
+            //  typedef std::pair<std::string, std::string> PairOfStrings;
+            //  typedef std::map<PairOfStrings, PtrSetOfStrings> MapOfPtrSetsOfStrings;
+
+            MapOfPtrSetsOfStrings::iterator it_map = mapOfSetsOfAlreadyImportedMsgs.find(PairOfStrings{str_nym_id, str_thread_id}); // Find the conversation on our lookup table.
+
+            if (mapOfSetsOfAlreadyImportedMsgs.end() != it_map) // the set was already on the map (conversation already on map of conversations by nym/threadIDs.)
+            {
+                bHaveGrabbedTheAlreadyImportedIds = true;
+                pAlreadyImportedIds = it_map->second;
+            }
+            else // This is the real part. Above block is just the optimization.
+            {
+                SetOfStrings * pSet = MTContactHandler::getInstance()->selectThreadItemIdsForNymAndConversation(qstrMyNymId, qstrThreadId);
+
+                if (nullptr != pSet) // We have some thread items for the given pair<nym/thread_ID>, which are already imported into our local DB.
+                {
+                    pAlreadyImportedIds.reset( pSet );
+                }
+                else // We had none already imported for this nymId and ThreadID, but we'll go ahead and instantiate the shared_ptr (with an empty set) so it's on the map and consistent with the others.
+                {    // (After all, we're currently looping through the opentxs thread items for THIS nym/threadID, so we KNOW we're GOING to be adding an item to it THIS iteration).
+                     // This also makes it easy for us to assume, for the duration of the loop, that pAlreadyImportedIds is VALID. (Should assert in fact) since it should have been
+                     // either set on a previous iteration of this loop, or on THIS iteration. Either way, below this point in the loop, we can now assume that it's good.
+                     //
+                    pAlreadyImportedIds.reset( new SetOfStrings );
+                }
+                bHaveGrabbedTheAlreadyImportedIds = true;
+
+                // for optimization (lookup table)
+                PairOfStrings nymIdAndThreadId{str_nym_id, str_thread_id};
+                std::pair<PairOfStrings, PtrSetOfStrings> the_pair = std::make_pair(nymIdAndThreadId, pAlreadyImportedIds);
+                mapOfSetsOfAlreadyImportedMsgs.insert(the_pair);
+            }
+            // --------------------------------------------
+            // Since we can assume from here on out that pAlreadyImportedIds is always a good pointer, anywhere below this point
+            // in the entire loop (see above comment) I'll just assert.
+            //
+            OT_ASSERT_MSG(pAlreadyImportedIds, "Should never happen: pAlreadyImportedIds contained nullptr.");
+
+            bHaveAlreadyImportedAnyIds = (pAlreadyImportedIds->size() > 0);
+            // --------------------------------------------
+        }
+        // --------------------------------------------
+        // I do the same assert here, since the above block will not occur every iteration of this loop.
+        //
+        OT_ASSERT_MSG(pAlreadyImportedIds, "Should never happen: pAlreadyImportedIds contained nullptr.");
+        // --------------------------------------------
+        // Now let's SEE if we have already previously imported THIS thread item (for the loop iteration
+        // we're on currently).
+        //
+        bool bHaveAlreadyImportedThisId = false;
+
+        if (bHaveAlreadyImportedAnyIds) // we only bother looking if we've previously imported ANY items for the current thread.
+        {
+            const std::set<std::string>::iterator it = pAlreadyImportedIds->find(thread_item_id);
+
+            bHaveAlreadyImportedThisId = (pAlreadyImportedIds->end() != it); // If true, no need to re-import this thread item.
+        }
+        // --------------------------------------------
+        // Make sure we have the conversation itself, before adding the
+        // conversational item.
+        // Update conversation_name also.
+        if (!bHaveAlreadyImportedThisId && !bConversationExistsInDB)
+        {
+            bConversationExistsInDB = MTContactHandler::getInstance()->EnsureConversationExists(qstrMyNymId, qstrThreadId, qstrThreadName);
+
+            if (!bConversationExistsInDB) {
+                qDebug() << "Moneychanger::ImportConversationForNym: Somehow failed to get or create conversation in DB when trying to import a conversational thread item.";
+                return false;
+            }
+//          else
+//          {
+                // Since we just imported this conversation (NOT ANY ITEMS YET, NECESSARILY) to the DB,
+                // *AND* since it wasn't previously there, we'll go ahead and add it to our lookup table
+                // as well.
+                //
+                // UPDATE: No need, due to some code higher up in this function, we already know for a
+                // fact that pAlreadyImportedIds is a valid sharedPtr to a std::set<std::string>,
+                // and it's already pointing to an instantiated set, that's already on the map, for
+                // the appropriate nym/thread ids.
+                //
+                // Of course we still need to insert the thread ITEM to it, for this iteration, but that
+                // happens below.
+//          }
+        }
+        // bConversationExistsInDB is now definitely true, below this point.
+        // --------------------------------------------
+        //
+        bool bItemExistsInDB = false;
+
+        if (bHaveAlreadyImportedThisId) // If it's on the lookup table, no need to hit the DB.
+        {
+            bItemExistsInDB = true;
+        }
+        else // We need to import this thread item -- it's never been imported before.
+        {
+            bItemExistsInDB = MTContactHandler::getInstance()->EnsureConversationItemExists(qstrMyNymId, qstrThreadId, qstrThreadItemId,
+                qstrThreadItemAccountId, thread_item_box,
+                thread_item_timestamp, thread_item_unread);
+        }
+        // --------------------------------------------
+        if (bItemExistsInDB)
+        {
+            if (!bHaveAlreadyImportedThisId) // This means we JUST NOW imported it to DB
+            {                                // (It wasn't previously there until this current loop iteration).
+                // So let's add it to our lookup table.
+                // (Just as we did above when we searched for this item in the DB
+                // when it wasn't found in the lookup table. If found in the DB,
+                // we add to the looktable table then as well.)
+                // And remember, the lookup table might ALREADY have an element for the thread
+                // itself, so we need to add the item to the existing one if that's found.
+                //
+                // UPDATE: The lookup table now DEFINITELY already has an element for the relevant
+                // thread. And pAlreadyImportedIds is DEFINITELY a valid shared_ptr to a std::set<std::string>
+                // of the thread item IDs, and it's definitely already on the lookup table map for the correct
+                // nym/threadID.
+                // So we don't have to search mapOfSetsOfAlreadyImportedMsgs here anymore. The map is already
+                // set up, and pAlreadyImportedIds is already good, and we can insert the new thread item ID
+                // into it.
+                //
+                pAlreadyImportedIds->insert(thread_item_id); // adding to lookup table since it's a new thread item that was imported.
+
+
+//                // NymID, (conversational) Thread Id, Thread Item Id.
+//                typedef std::tuple<std::string, std::string, std::string> TupleNymThreadAndItem;
+//                typedef std::shared_ptr<TupleNymThreadAndItem> PtrNymThreadAndItem;
+//                typedef std::set<PtrNymThreadAndItem> SetNymThreadAndItem;
+
+                // Add the Nym / Thread item ID pair to an output parameter so the caller will know
+                // later on, which ones need the message body imported for the first timne, versus which ones
+                // we just "ensured" were already there.
+                // UPDATE: hell, let's add the thread id while we're at it.
+                //
+                setNewlyAddedNymThreadAndItem.insert(PtrNymThreadAndItem{new TupleNymThreadAndItem{str_nym_id, str_thread_id, thread_item_id} });
+            }
+            // --------------------
+            // By this point, we know the conversational item is in the DB, AND it's in the lookup table.
+            // Done with this iteration.
+        }
+        else {
+            qDebug() << "Moneychanger::ImportConversationForNym: Somehow failed to get or create conversation ITEM in DB.";
+            return false;
+        }
+        // ----------------------------------------------
+    } // for
+    return true;
+}
+
 void Moneychanger::modifyRecords()
 {
+    MapOfPtrSetsOfStrings mapOfSetsOfAlreadyImportedMsgs; // key is a std::pair composed of nym_id/thread_id; value is shared_ptr to std::set<std::string> of thread_item_ids.
+    MapOfConversationsByNym mapOfConversationsByNym; // key is nym_id, value is shared_ptr to std::set<std::string> of thread_ids.
+
+//  typedef std::tuple<std::string, std::string, std::string> TupleNymThreadAndItem;
+//  typedef std::shared_ptr<TupleNymThreadAndItem> PtrNymThreadAndItem;
+//  typedef std::set<PtrNymThreadAndItem> SetNymThreadAndItem;
+
+    SetNymThreadAndItem setNewlyAddedNymThreadAndItem;
+    // -------------------------------------------------------------------
+    const int32_t nymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
+    for ( int32_t nymIndex = 0; nymIndex < nymCount; ++nymIndex)
+    {
+        const std::string nymId = opentxs::OTAPI_Wrap::Exec()->GetNym_ID(nymIndex);
+        const QString qstrMyNymId = QString::fromStdString(nymId);
+
+        //  typedef std::set<std::string> SetOfStrings;
+        //  typedef std::shared_ptr<SetOfStrings> PtrSetOfStrings;
+        //  typedef std::pair<std::string, std::string> PairOfStrings;
+        //  typedef std::map<PairOfStrings, PtrSetOfStrings> MapOfPtrSetsOfStrings;
+        //  typedef std::map<std::string, PtrSetOfStrings> MapOfConversationsByNym;
+
+        // Before we import the RecordList, we have to iterate through
+        // the conversations, and any messages therein, and continually re-import
+        // them (since the lifecycle items may have updated since last time).
+        //
+        // We do NOT delete anything; we just import the conversations and messages
+        // into the GUI DB for later.
+        //
+        // UPDATE: FOr now I'm adding lookup tables for thread-item-id to thread-id,
+        // (that's conversational thread) so I can later find the thread id using the
+        // thread-item-id.
+        // First that allows me to determine if a Nymn has ever seen part of a given
+        // conversation before at all. Second, it allows me to determine, without
+        // a fresh database lookup each time, for each thread-item-id, whether or not
+        // it has already been imported into my local database. (Thus sparing me from
+        // having to re-import it, in that case).
+        // That's why I ImportConversationsForNym and THEN import the record list.
+        // Because the record list has the thread-item-id for each record, but NOT its
+        // corresponding thread ID. But that's okay, since I already imported the
+        // conversations AND put them into a lookup table,
+        //
+        // This call here checks the lookup table to see if a given msg has already
+        // been imported. If it hasn't, then it checks the local database to see if
+        // it's there. When it does that, it loads ALL the thread IDs for a given Nym
+        // at the same time (into the lookup table) so it doesn't have to hit the DB
+        // every single time for each thread-item-id in that thread. (Since it has
+        // to loop through all of those).
+        //
+        ImportConversationsForNym(nymId, mapOfSetsOfAlreadyImportedMsgs,
+                                  setNewlyAddedNymThreadAndItem); // output here, for newly-imported items.
+        // ---------------------
+        // Obviously this has to go under the above call.
+        //
+        PtrSetOfStrings pPreimportedConversationIdsForNym{
+            MTContactHandler::getInstance()->selectPreimportedConversationIdsForNym(qstrMyNymId)};
+
+        mapOfConversationsByNym.insert(std::pair<std::string,PtrSetOfStrings>(
+                                            nymId,
+                                            pPreimportedConversationIdsForNym)
+                                      );
+    }
+    // By this point we've loaded up lookup tables for the nymId, threadId, and ThreadItemId.
+    // We've also imported the messages that we hadn't previously imported
+    // (and ONLY those -- with no re-importing).
+    // That way below, when we call processImportRecord, we will be able to skip those
+    // thread item IDs that have been previously imported already. (WithOUT having to
+    // search our local DB for each one to see if it's already there.)
+    // -------------------------------------------------------
     const int listSize = GetRecordlist().size();
     // -------------------------------------------------------
     // Delete the market receipts (since they are already archived in other places)
@@ -3732,10 +4307,16 @@ void Moneychanger::modifyRecords()
             opentxs::OTRecord& recordmt = record;
 
             if (false == recordmt.IsFinalReceipt()) {
-                processImportRecord(recordmt, nIndex);
+                processImportRecord(recordmt, nIndex, mapOfSetsOfAlreadyImportedMsgs, mapOfConversationsByNym, setNewlyAddedNymThreadAndItem);
             }
         }
     } // for (GetRecordlist() in reverse)
+    //
+    // Notice that this function now does the same thing twice.
+    // Only difference is, the first time around it does all NON-Final Receipts,
+    // but the second time around it does all FINAL receipts. (And final receipt notices).
+    // This is basically just to ensure that final receipts are always done LAST.
+    //
     // -------------------------------------
     // If the above process DID remove any records, then we have to repopulate them now,
     // since every record contains its index, and so they will be wrong until re-populated.
@@ -3755,7 +4336,7 @@ void Moneychanger::modifyRecords()
             opentxs::OTRecord& recordmt = record;
 
             if (true == recordmt.IsFinalReceipt()) {
-                processImportRecord(recordmt, nIndex);
+                processImportRecord(recordmt, nIndex, mapOfSetsOfAlreadyImportedMsgs, mapOfConversationsByNym, setNewlyAddedNymThreadAndItem);
             }
         }
     } // for (GetRecordlist() in reverse)
@@ -3771,7 +4352,10 @@ void Moneychanger::modifyRecords()
 
 void Moneychanger::processImportRecord(
         opentxs::OTRecord& recordmt,
-        const int nIndex
+        const int nIndex,
+        MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+        MapOfConversationsByNym & mapOfConversationsByNym,
+        SetNymThreadAndItem & setNewlyAddedNymThreadAndItem
         )
 {
     if (!recordmt.CanDeleteRecord())
@@ -3818,8 +4402,9 @@ void Moneychanger::processImportRecord(
         // -----------------------------------
         if (recordmt.IsMail() || recordmt.IsSpecialMail())
         {
-            if (AddMailToMsgArchive(recordmt))
-                bShouldDeleteRecord = true;
+            if (AddMailToMsgArchive(recordmt, mapOfSetsOfAlreadyImportedMsgs, mapOfConversationsByNym, setNewlyAddedNymThreadAndItem))
+                ;
+                //bShouldDeleteRecord = true;  // Disabling this temporarily to see if it fixes any related startup/shutdown issues.
         }
         // -----------------------------------
         else if (recordmt.IsNotice())
@@ -5434,8 +6019,8 @@ void Moneychanger::onAccountsChanged()
 void Moneychanger::onNewNymAdded(QString qstrID)
 {
     // Add a new Contact in the Address Book for this Nym as well.
-    // It's a pain having to add my own Nyms to the address book
-    // by hand for sending payments between them.
+    // (When testing, it's a pain having to add my own Nyms to the address book
+    // by hand for sending payments between them, every time I create a new Nym.)
 
     QString qstrNymName("");
 

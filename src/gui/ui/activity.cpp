@@ -11,8 +11,13 @@
 #include <core/handlers/focuser.h>
 
 #include <opentxs/api/OT.hpp>
+#include <opentxs/api/Activity.hpp>
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/ContactManager.hpp>
+#include <opentxs/contact/Contact.hpp>
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OTME_too.hpp>
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/Types.hpp>
 #include <opentxs/core/OTTransaction.hpp>
@@ -794,6 +799,13 @@ void Activity::RefreshAccountTree()
 //}
 
 
+
+
+
+//resume
+//void Activity::on_listWidgetConversations_currentRowChanged
+
+
 void Activity::on_listWidgetConversations_currentRowChanged(int currentRow)
 {
     if ((-1) == currentRow)
@@ -821,6 +833,7 @@ void Activity::on_listWidgetConversations_currentRowChanged(int currentRow)
 //            MAILINBOX = 8,
 //            MAILOUTBOX = 9
 //        };
+
 void Activity::RefreshConversationDetails(int nRow)
 {
     if (ui->listWidgetConversations->currentRow() <  0)
@@ -845,6 +858,7 @@ void Activity::RefreshConversationDetails(int nRow)
 
         if (!qstrMyNymId.isEmpty() && !qstrThreadId.isEmpty())
         {
+            // ----------------------------------------------
             const std::string str_my_nym_id = qstrMyNymId.toStdString();
             const std::string str_thread_id = qstrThreadId.toStdString();
             // ----------------------------------------------
@@ -855,7 +869,7 @@ void Activity::RefreshConversationDetails(int nRow)
                 return;
             }
             // ----------------------------------------------
-            const int thread_size = thread->item_size();
+            //const int thread_size = thread->item_size();
 
             int nConversationIndex = 0;
 
@@ -883,47 +897,69 @@ void Activity::RefreshConversationDetails(int nRow)
 //              const uint64_t item_index = item.index();
 //              const uint64_t item_time = item.time();
 //              const std::string str_item_account = item.account();
-                const std::string str_item_contents = bIncoming ?
-                            opentxs::OTAPI_Wrap::GetNym_MailContentsByIndex   (str_my_nym_id, item_id) :
-                            opentxs::OTAPI_Wrap::GetNym_OutmailContentsByIndex(str_my_nym_id, item_id);
                 // ----------------------------------------------
-                QString qstrContents = QString::fromStdString(str_item_contents);
+                const QString qstrItemId = QString::fromStdString(item_id);
 
-                // Maybe we already imported it?
+                // First let's see if we already imported it yet:
+                QString qstrContents = MTContactHandler::getInstance()->GetMessageBody(qstrItemId);
+
+                // Okay, maybe we haven't imported it yet?
+                // Let's try and grab a copy from the actual opentxs box. (inmail or outmail).
+                //
                 if (qstrContents.isEmpty())
                 {
-                    const QString qstrItemId = QString::fromStdString(item_id);
-                    qstrContents = MTContactHandler::getInstance()->GetMessageBody(qstrItemId);
+                    const std::string str_item_contents = bIncoming ?
+                                opentxs::OTAPI_Wrap::GetNym_MailContentsByIndex   (str_my_nym_id, item_id) :
+                                opentxs::OTAPI_Wrap::GetNym_OutmailContentsByIndex(str_my_nym_id, item_id);
+                    // ----------------------------------------------
+                    qstrContents = str_item_contents.empty() ? QString("") : QString::fromStdString(str_item_contents);
                 }
                 // ----------------------------------------------
                 QString qstrSubject{"subject:"};
                 const bool bHasContents = !qstrContents.isEmpty();
                 const bool bHasSubject  = bHasContents && qstrContents.startsWith(qstrSubject, Qt::CaseInsensitive);
 
-                if (bHasContents)// && !bHasSubject) // todo put this back.
+                if (bHasContents && !bHasSubject)
                 {
-                    QListWidgetItem * pItem = nullptr;
-
-                    ui->listWidgetConversation->addItem(qstrContents);
-                    pItem = ui->listWidgetConversation->item(nConversationIndex);
-
-                    if (bIncoming)
-                    {
-                        pItem->setTextColor(Qt::white);
-                        pItem->setBackgroundColor(Qt::gray);
+                    // Notice I'm passing 'false' for bAddedByHand. That's because the
+                    // item is being added from looping through an existing conversation.
+                    if (AddItemToConversation(nConversationIndex, qstrContents, bIncoming, false)) {
+                        nConversationIndex++;
                     }
-                    else
-                    {
-                        pItem->setTextColor(Qt::black);
-                        pItem->setBackgroundColor(Qt::white);
-                    }
-                    nConversationIndex++;
                 }
                 // ----------------------------------------------
             }
             // ----------------------------------------------
         }
     }
+}
+
+bool Activity::AddItemToConversation(int nAtIndex, const QString & qstrContents, bool bIncoming, bool bAddedByHand)
+{
+    if (nullptr == ui->listWidgetConversation) {
+        return false;
+    }
+
+    QListWidgetItem * pItem = nullptr;
+
+    ui->listWidgetConversation->addItem(qstrContents);
+    pItem = ui->listWidgetConversation->item(nAtIndex);
+
+    if (bIncoming)
+    {
+        pItem->setTextColor(Qt::white);
+        pItem->setBackgroundColor(Qt::gray);
+        pItem->setTextAlignment(Qt::AlignLeft);
+    }
+    else
+    {
+        const auto the_color = bAddedByHand ? Qt::gray : Qt::black;
+        pItem->setTextColor(the_color);
+        pItem->setBackgroundColor(Qt::white);
+        pItem->setTextAlignment(Qt::AlignRight);
+    }
+
+    return true;
 }
 
 void Activity::ClearListWidgetConversations()
@@ -938,81 +974,6 @@ void Activity::ClearListWidgetConversations()
     on_listWidgetConversations_currentRowChanged(-1);
 }
 
-void Activity::RefreshConversationsTab()
-{
-    QListWidget * pListWidgetConversations = ui->listWidgetConversations;
-    if (nullptr == pListWidgetConversations) {
-        return;
-    }
-    pListWidgetConversations->blockSignals(true);
-    // ----------------------------------------------
-    // Clear it
-    pListWidgetConversations->clear();
-    // ----------------------------------------------
-    // Re-populate it
-
-    int nIndex = 0;
-    QListWidgetItem * pItem = nullptr;
-
-//    pListWidgetConversations->addItem("Cliff");
-//    pItem = pListWidgetConversations->item(nIndex);
-//    nIndex++;
-//    pItem->setTextColor(Qt::white);
-//    pItem->setBackgroundColor(Qt::gray);
-//    // ----------------------------------------------
-//    pListWidgetConversations->addItem("Justus");
-//    pItem = pListWidgetConversations->item(nIndex);
-//    nIndex++;
-//    pItem->setTextColor(Qt::white);
-//    pItem->setBackgroundColor(Qt::darkGray);
-//    // ----------------------------------------------
-//    pListWidgetConversations->addItem("Jimmy");
-//    pItem = pListWidgetConversations->item(nIndex);
-//    nIndex++;
-//    pItem->setTextColor(Qt::white);
-//    pItem->setBackgroundColor(Qt::gray);
-//    // ----------------------------------------------
-//    pListWidgetConversations->addItem("Hiro");
-//    pItem = pListWidgetConversations->item(nIndex);
-//    nIndex++;
-//    pItem->setTextColor(Qt::white);
-//    pItem->setBackgroundColor(Qt::darkGray);
-//    // ----------------------------------------------
-//    pListWidgetConversations->addItem("Daniel");
-//    pItem = pListWidgetConversations->item(nIndex);
-//    nIndex++;
-//    pItem->setTextColor(Qt::white);
-//    pItem->setBackgroundColor(Qt::gray);
-//    // ----------------------------------------------
-//    pListWidgetConversations->addItem("Hiro and Cliff");
-//    pItem = pListWidgetConversations->item(nIndex);
-//    nIndex++;
-//    pItem->setTextColor(Qt::white);
-//    pItem->setBackgroundColor(Qt::darkGray);
-    // ----------------------------------------------
-    // Conversational threads.
-    //
-    const std::string str_nym_id = Moneychanger::It()->get_default_nym_id().toStdString();
-
-    if (str_nym_id.empty())
-    {
-        qDebug() << "Activity dialog, populate Conversations: Failure (default Nym was empty)." << endl;
-        return;
-    }
-    // ----------------------------------------------
-    opentxs::ObjectList threadList = opentxs::OT::App().Contract().Threads(opentxs::Identifier{str_nym_id});
-    opentxs::ObjectList::const_iterator ci = threadList.begin();
-
-    while (threadList.end() != ci)
-    {
-        const std::pair<std::string, std::string> & threadInfo = *ci;
-
-        const std::string & str_thread_id = threadInfo.first;
-        //const std::string & str_thread_name = threadInfo.second; // Justus: This field is probably blank.
-        // ----------------------------------------------
-        std::shared_ptr<opentxs::proto::StorageThread> thread;
-        opentxs::OT::App().DB().Load(str_nym_id, str_thread_id, thread);
-        // ----------------------------------------------
 //        message StorageThread {
 //            optional uint32 version = 1;
 //            optional string id = 2;
@@ -1041,6 +1002,53 @@ void Activity::RefreshConversationsTab()
 //            MAILOUTBOX = 9
 //        };
 
+void Activity::PopulateConversationsForNym(QListWidget * pListWidgetConversations, int & nIndex, const std::string & str_my_nym_id)
+{
+    const int  nNymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
+    OT_ASSERT(nNymCount > 0);
+    const bool bOnlyOneNymInWallet = (1 == nNymCount);
+    // ------------------
+    MTNameLookupQT theLookup;
+    std::string str_my_nym_name ("");
+    // ------------------
+    if (bOnlyOneNymInWallet)
+    {
+        str_my_nym_name = "Me";
+    }
+    else
+    {
+        str_my_nym_name = theLookup.GetNymName(str_my_nym_id, "");
+
+        if (str_my_nym_name.empty()) {
+            str_my_nym_name = "Me";
+        }
+    }
+//  const auto response = OT::App().Contact().NewContact(label, opentxs::Identifier{hisnym}, paymentCode);
+//  const auto pContact = OT::App().Contact().Contact(opentxs::Identifier{contact});
+
+    //NOTE: no point here, since the above lookup already uses the below code.
+    //      It finds the contact based on NymID and then gets the Label() for that contact.
+//    if (str_my_nym_name.empty()) { // still empty?
+//        get contact ID from Nym ID here. Then get pointer to contact.
+//        const auto pContact = OT::App().Contact().Contact(opentxs::Identifier{contact});
+//        pContact->
+//    }
+    // ------------------------
+    const QString qstrMyNymName = QString::fromStdString(str_my_nym_name);
+    // ------------------------
+    opentxs::ObjectList threadList = opentxs::OT::App().Activity().Threads(opentxs::Identifier{str_my_nym_id});
+    opentxs::ObjectList::const_iterator ci = threadList.begin();
+
+    while (threadList.end() != ci)
+    {
+        const std::pair<std::string, std::string> & threadInfo = *ci;
+
+        const std::string & str_thread_id = threadInfo.first;
+        const std::string & str_thread_name = threadInfo.second;
+        // ----------------------------------------------
+        std::shared_ptr<opentxs::proto::StorageThread> thread;
+        opentxs::OT::App().DB().Load(str_my_nym_id, str_thread_id, thread);
+        // ----------------------------------------------
         if (!thread) {
             ++ci;
             continue;
@@ -1051,38 +1059,75 @@ void Activity::RefreshConversationsTab()
             continue;
         }
         // ----------------------------------------------
-        const std::string str_participant_contact_id = thread->participant(0); // Todo: currently hardcoding participant at index 0 in assumption there's only one other participant in the conversation.
+        QString qstrDisplayName = bOnlyOneNymInWallet
+                ? QString("%1").arg(QString::fromStdString(str_thread_name))
+                : QString("%1 in convo with: %2")
+                  .arg(qstrMyNymName)
+                  .arg(QString::fromStdString(str_thread_name));
 
-        if (!str_participant_contact_id.empty())
-        {
-            QString qstrDisplayName = QString("Conv. w/contact id: %1").arg(QString::fromStdString(str_participant_contact_id)); // Todo lookup the actual contact display name.
-
-            pListWidgetConversations->addItem(qstrDisplayName);
-            pItem = pListWidgetConversations->item(nIndex);
-            nIndex++;
-            pItem->setTextColor(Qt::white);
-            const QString qstrThreadId = QString::fromStdString(str_thread_id);
-            const QString qstrMyNymId = QString::fromStdString(str_nym_id);
-            pItem->setData(Qt::UserRole+1, QVariant(qstrMyNymId));
-            pItem->setData(Qt::UserRole+2, QVariant(qstrThreadId));
-            pItem->setBackgroundColor((nIndex%2 == 0) ? Qt::gray : Qt::darkGray);
-        }
+        pListWidgetConversations->addItem(qstrDisplayName);
+        QListWidgetItem * pItem = pListWidgetConversations->item(nIndex);
+        nIndex++;
+        pItem->setTextColor(Qt::white);
+        const QString qstrThreadId = QString::fromStdString(str_thread_id);
+        const QString qstrMyNymId = QString::fromStdString(str_my_nym_id);
+        pItem->setData(Qt::UserRole+1, QVariant(qstrMyNymId));
+        pItem->setData(Qt::UserRole+2, QVariant(qstrThreadId));
+        pItem->setBackgroundColor((nIndex%2 == 0) ? Qt::gray : Qt::darkGray);
         // ----------------------------------------------
         ++ci;
     }
-    // ----------------------------------------------
-
-
-
-//resume
-
-
-//    const std::string GetNym_MailContentsByIndex
-
-    // ----------------------------------------------
-    pListWidgetConversations->blockSignals(false);
 }
 
+void Activity::RefreshConversationsTab()
+{
+    QListWidget * pListWidgetConversations = ui->listWidgetConversations;
+    if (nullptr == pListWidgetConversations) {
+        return;
+    }
+    pListWidgetConversations->blockSignals(true);
+    // ----------------------------------------------
+    // Clear it
+    pListWidgetConversations->clear();
+    // ----------------------------------------------
+    // Re-populate it
+
+    int nIndex = 0;
+//    QListWidgetItem * pItem = nullptr;
+
+//    pListWidgetConversations->addItem("Cliff");
+//    pItem = pListWidgetConversations->item(nIndex);
+//    nIndex++;
+//    pItem->setTextColor(Qt::white);
+//    pItem->setBackgroundColor(Qt::gray);
+//    // ----------------------------------------------
+//    pListWidgetConversations->addItem("Justus");
+//    pItem = pListWidgetConversations->item(nIndex);
+//    nIndex++;
+//    pItem->setTextColor(Qt::white);
+//    pItem->setBackgroundColor(Qt::darkGray);
+//    // ----------------------------------------------
+//    pListWidgetConversations->addItem("Hiro and Cliff");
+//    pItem = pListWidgetConversations->item(nIndex);
+//    nIndex++;
+//    pItem->setTextColor(Qt::white);
+//    pItem->setBackgroundColor(Qt::darkGray);
+    // ----------------------------------------------
+    // Conversational threads.
+    //
+//  const std::string str_nym_id = Moneychanger::It()->get_default_nym_id().toStdString();
+
+    int nNymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
+    // ----------------------------------------------------
+    for (int ii = 0; ii < nNymCount; ++ii)
+    {
+        const std::string str_nym_id = opentxs::OTAPI_Wrap::Exec()->GetNym_ID(ii);
+
+        this->PopulateConversationsForNym(pListWidgetConversations, nIndex, str_nym_id);
+    }
+    // ----------------------------------------------------
+    pListWidgetConversations->blockSignals(false);
+}
 
 void Activity::setupCurrentPointers()
 {
@@ -1191,6 +1236,9 @@ void Activity::dialog()
     }
     // -------------------------------------------
     RefreshAll();
+
+    ui->horizontalLayout_4->setAlignment(ui->checkBoxSearch, Qt::AlignRight);
+    this->on_checkBoxSearch_toggled(false);
     // -------------------------------------------
     Focuser f(this);
     f.show();
@@ -1212,14 +1260,63 @@ void Activity::dialog()
 
 }
 
-
 void Activity::on_pushButtonSendMsg_clicked()
 {
     const QString qstrPlainText = ui->plainTextEditMsg->toPlainText().simplified();
 
     if (!qstrPlainText.isEmpty())
     {
-//resume
+        const std::string message{qstrPlainText.toStdString()};
+
+        if (ui->listWidgetConversations->currentRow() <  0)
+        {
+            ui->listWidgetConversation->clear();
+        }
+        else
+        {
+            QListWidgetItem * conversation_widget = ui->listWidgetConversations->currentItem();
+
+            if (nullptr == conversation_widget) {
+                return;
+            }
+
+            const QVariant qvarMyNymId  = conversation_widget->data(Qt::UserRole+1);
+            const QVariant qvarThreadId = conversation_widget->data(Qt::UserRole+2);
+
+            const QString  qstrMyNymId  = qvarMyNymId.isValid()  ? qvarMyNymId.toString()  : QString("");
+            const QString  qstrThreadId = qvarThreadId.isValid() ? qvarThreadId.toString() : QString("");
+
+            if (!qstrMyNymId.isEmpty() && !qstrThreadId.isEmpty())
+            {
+                const std::string str_my_nym_id = qstrMyNymId.toStdString();
+                const std::string str_thread_id = qstrThreadId.toStdString();
+                // ----------------------------------------------
+                // NOTE: Sometimes the "conversational thread id" is just the contact ID,
+                // like when it's just you and the recipient in a private thread.
+                // But otherwise, it might be a group conversation, in which case the
+                // thread ID is the group ID (and thus NOT a contact ID). But it's okay
+                // to pass it either way, because Opentxs handles it properly either way.
+                //
+                const opentxs::Identifier bgthreadId
+                    {opentxs::OT::App().API().OTME_TOO().
+                        MessageContact(str_my_nym_id, str_thread_id, message)};
+
+                const auto status = opentxs::OT::App().API().OTME_TOO().Status(bgthreadId);
+
+                const bool bAddToGUI = (opentxs::ThreadStatus::FINISHED_SUCCESS == status) ||
+                                       (opentxs::ThreadStatus::RUNNING == status);
+                if (bAddToGUI) {
+                    const bool bUseGrayText = (opentxs::ThreadStatus::FINISHED_SUCCESS != status);
+                    const int nNewIndex = ui->listWidgetConversation->count();
+                    // We could "send then refresh", but instead of refreshing the entire
+                    // thread, I'm just adding the item by hand at the end of the list
+                    // with gray text. (Or black if it's already finished sending by this
+                    // point, which probably will never happen).
+                    //
+                    AddItemToConversation(nNewIndex, qstrPlainText, false, bUseGrayText);
+                }
+            }
+        }
     }
 
     ui->plainTextEditMsg->setPlainText("");
@@ -1242,6 +1339,408 @@ bool Activity::eventFilter(QObject *obj, QEvent *event)
     return QWidget::eventFilter(obj, event);
 }
 
+void Activity::on_listWidgetConversations_customContextMenuRequested(const QPoint &pos)
+{
+//    conversationsPopupMenu(pos, ui->listWidgetConversations);
+}
+
+//void Activity::conversationsPopupMenu(const QPoint &pos, QListWidget * pListWidget)
+//{
+//    QPointer<ModelMessages> pModel = DBHandler::getInstance()->getMessageModel();
+
+//    if (!pModel)
+//        return;
+//    // ------------------------
+//    QModelIndex indexAtRightClick = pListWidget->indexAt(pos);
+//    if (!indexAtRightClick.isValid())
+//        return;
+//    // I can't figure out how to ADD to the selection without UNSELECTING everything else.
+//    // The Qt docs indicate that the below options should do that -- but it doesn't work.
+//    // So this is commented out since it was deselecting everything.
+//    //pListWidget->selectionModel()->select( indexAtRightClick, QItemSelectionModel::SelectCurrent|QItemSelectionModel::Rows );
+//    // ------------------------
+//    QModelIndex sourceIndexAtRightClick = pProxyModel->mapToSource(indexAtRightClick);
+//    const int nRow = sourceIndexAtRightClick.row();
+//    // ----------------------------------
+//    popupMenu_.reset(new QMenu(this));
+//    pActionOpenNewWindow = popupMenu_->addAction(tr("Open in New Window"));
+//    pActionReply = popupMenu_->addAction(tr("Reply"));
+//    pActionForward = popupMenu_->addAction(tr("Forward"));
+//    popupMenu_->addSeparator();
+//    pActionDelete = popupMenu_->addAction(tr("Delete"));
+//    popupMenu_->addSeparator();
+//    pActionMarkRead = popupMenu_->addAction(tr("Mark as read"));
+//    pActionMarkUnread = popupMenu_->addAction(tr("Mark as unread"));
+//    // ----------------------------------
+//    pActionViewContact     = nullptr;
+//    pActionCreateContact   = nullptr;
+//    pActionExistingContact = nullptr;
+//    pActionDownloadCredentials = nullptr;
+
+//    int nContactId = 0;
+
+//    QString qstrSenderNymId;
+//    QString qstrSenderAddr;
+//    QString qstrRecipientNymId;
+//    QString qstrRecipientAddr;
+//    QString qstrNotaryId;
+//    QString qstrMethodType;
+//    QString qstrSubject;
+
+//    int nSenderContactByNym     = 0;
+//    int nSenderContactByAddr    = 0;
+//    int nRecipientContactByNym  = 0;
+//    int nRecipientContactByAddr = 0;
+
+//    // Look at the data for indexAtRightClick and see if I have a contact already in the
+//    // address book. If so, add the "View Contact" option to the menu. But if not, add the
+//    // "Create Contact" and "Add to Existing Contact" options to the menu instead.
+//    if (nRow >= 0)
+//    {
+//        QModelIndex indexSenderNym     = pModel->index(nRow, MSG_SOURCE_COL_SENDER_NYM);
+//        QModelIndex indexSenderAddr    = pModel->index(nRow, MSG_SOURCE_COL_SENDER_ADDR);
+//        QModelIndex indexRecipientNym  = pModel->index(nRow, MSG_SOURCE_COL_RECIP_NYM);
+//        QModelIndex indexRecipientAddr = pModel->index(nRow, MSG_SOURCE_COL_RECIP_ADDR);
+//        QModelIndex indexNotaryId      = pModel->index(nRow, MSG_SOURCE_COL_NOTARY_ID);
+//        QModelIndex indexMethodType    = pModel->index(nRow, MSG_SOURCE_COL_METHOD_TYPE);
+//        QModelIndex indexSubject       = pModel->index(nRow, MSG_SOURCE_COL_SUBJECT);
+
+//        QVariant varSenderNym     = pModel->rawData(indexSenderNym);
+//        QVariant varSenderAddr    = pModel->rawData(indexSenderAddr);
+//        QVariant varRecipientNym  = pModel->rawData(indexRecipientNym);
+//        QVariant varRecipientAddr = pModel->rawData(indexRecipientAddr);
+//        QVariant varNotaryId      = pModel->rawData(indexNotaryId);
+//        QVariant varMethodType    = pModel->rawData(indexMethodType);
+//        QVariant varSubject       = pModel->rawData(indexSubject);
+
+//        qstrSenderNymId    = varSenderNym    .isValid() ? varSenderNym    .toString() : QString("");
+//        qstrSenderAddr     = varSenderAddr   .isValid() ? varSenderAddr   .toString() : QString("");
+//        qstrRecipientNymId = varRecipientNym .isValid() ? varRecipientNym .toString() : QString("");
+//        qstrRecipientAddr  = varRecipientAddr.isValid() ? varRecipientAddr.toString() : QString("");
+//        qstrNotaryId       = varNotaryId     .isValid() ? varNotaryId     .toString() : QString("");
+//        qstrMethodType     = varMethodType   .isValid() ? varMethodType   .toString() : QString("");
+//        qstrSubject        = varSubject      .isValid() ? varSubject      .toString() : QString("");
+
+//        nSenderContactByNym     = qstrSenderNymId.isEmpty()    ? 0 : MTContactHandler::getInstance()->FindContactIDByNymID(qstrSenderNymId);
+//        nSenderContactByAddr    = qstrSenderAddr.isEmpty()     ? 0 : MTContactHandler::getInstance()->GetContactByAddress(qstrSenderAddr);
+//        nRecipientContactByNym  = qstrRecipientNymId.isEmpty() ? 0 : MTContactHandler::getInstance()->FindContactIDByNymID(qstrRecipientNymId);
+//        nRecipientContactByAddr = qstrRecipientAddr.isEmpty()  ? 0 : MTContactHandler::getInstance()->GetContactByAddress(qstrRecipientAddr);
+
+//        nContactId = (nSenderContactByNym > 0) ? nSenderContactByNym : nSenderContactByAddr;
+
+//        if (nContactId <= 0)
+//            nContactId = (nRecipientContactByNym > 0) ? nRecipientContactByNym : nRecipientContactByAddr;
+//        // -------------------------------
+//        popupMenu_->addSeparator();
+//        // -------------------------------
+//        if (nContactId > 0) // There's a known contact for this message.
+//            pActionViewContact = popupMenu_->addAction(tr("View contact in address book"));
+//        else // There is no known contact for this message.
+//        {
+//            pActionCreateContact = popupMenu_->addAction(tr("Create new contact in address book"));
+//            pActionExistingContact = popupMenu_->addAction(tr("Add to existing contact in address book"));
+//        }
+//        // -------------------------------
+//        popupMenu_->addSeparator();
+//        // -------------------------------
+//        pActionDownloadCredentials = popupMenu_->addAction(tr("Download credentials"));
+//    }
+//    // --------------------------------------------------
+//    QPoint globalPos = pListWidget->mapToGlobal(pos);
+//    const QAction* selectedAction = popupMenu_->exec(globalPos); // Here we popup the menu, and get the user's click.
+//    if (nullptr == selectedAction)
+//        return;
+//    // ----------------------------------
+//    if (selectedAction == pActionReply) // Only replies to the current message.
+//    {
+//        pListWidget->setCurrentIndex(indexAtRightClick);
+//        on_toolButtonReply_clicked();
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionForward) // Only fowards the current messages.
+//    {
+//        pListWidget->setCurrentIndex(indexAtRightClick);
+//        on_toolButtonForward_clicked();
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionDelete) // May delete many messages.
+//    {
+//        on_toolButtonDelete_clicked();
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionOpenNewWindow) // May open many messages.
+//    {
+//        pListWidget->setCurrentIndex(indexAtRightClick);
+
+//        if (pListWidget == ui->tableViewReceived)
+//            on_tableViewReceived_doubleClicked(indexAtRightClick); // just one for now. baby steps!
+//        else if (pListWidget == ui->tableViewSent)
+//            on_tableViewSent_doubleClicked(indexAtRightClick); // just one for now. baby steps!
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionMarkRead) // May mark many messages.
+//    {
+//        if (!pListWidget->selectionModel()->hasSelection())
+//            return;
+//        // ----------------------------------------------
+//        QItemSelection selection( pListWidget->selectionModel()->selection() );
+//        QList<int> rows;
+//        foreach( const QModelIndex & index, selection.indexes() )
+//        {
+//            if (rows.indexOf(index.row()) != (-1)) // This row is already on the list, so skip it.
+//                continue;
+//            rows.append(index.row());
+//            // -----------------------
+//            QModelIndex sourceIndex = pProxyModel->mapToSource(index);
+//            QModelIndex sourceIndexHaveRead = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_HAVE_READ, sourceIndex);
+//            // --------------------------------
+//            if (sourceIndexHaveRead.isValid())
+//                listRecordsToMarkAsRead_.append(sourceIndexHaveRead);
+//        }
+//        if (listRecordsToMarkAsRead_.count() > 0)
+//            QTimer::singleShot(0, this, SLOT(on_MarkAsRead_timer()));
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionMarkUnread) // May mark many messages.
+//    {
+//        if (!pListWidget->selectionModel()->hasSelection())
+//            return;
+//        // ----------------------------------------------
+//        QItemSelection selection( pListWidget->selectionModel()->selection() );
+//        QList<int> rows;
+//        foreach( const QModelIndex & index, selection.indexes() )
+//        {
+//            if (rows.indexOf(index.row()) != (-1)) // This row is already on the list, so skip it.
+//                continue;
+//            rows.append(index.row());
+//            // -----------------------
+//            QModelIndex sourceIndex = pProxyModel->mapToSource(index);
+//            QModelIndex sourceIndexHaveRead = pModel->sibling(sourceIndex.row(), MSG_SOURCE_COL_HAVE_READ, sourceIndex);
+//            // --------------------------------
+//            if (sourceIndexHaveRead.isValid())
+//                listRecordsToMarkAsUnread_.append(sourceIndexHaveRead);
+//        }
+//        if (listRecordsToMarkAsUnread_.count() > 0)
+//            QTimer::singleShot(0, this, SLOT(on_MarkAsUnread_timer()));
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionViewContact)
+//    {
+//        pListWidget->setCurrentIndex(indexAtRightClick);
+
+//        if (nContactId > 0)
+//        {
+//            QString qstrContactId = QString::number(nContactId);
+//            emit showContact(qstrContactId);
+//        }
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionCreateContact)
+//    {
+//        pListWidget->setCurrentIndex(indexAtRightClick);
+
+//        MTGetStringDialog nameDlg(this, tr("Enter a name for the new contact"));
+
+//        if (QDialog::Accepted != nameDlg.exec())
+//            return;
+//        // --------------------------------------
+//        QString strNewContactName = nameDlg.GetOutputString();
+//        // --------------------------------------------------
+//        // NOTE:
+//        // if nSenderContactByNym > 0, then the sender Nym already has a contact.
+//        // else if nSenderContactByNym == 0 but qstrSenderNymId exists, that means it
+//        // contains a NymID that could be added to an existing contact, or used to
+//        // create a new contact. (And the same is true for the Sender Address.)
+//        //
+//        // (And the same is also true for the recipient nymID and address.)
+//        //
+//        if ((0 == nSenderContactByNym) && !qstrSenderNymId.isEmpty())
+//            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrSenderNymId, qstrNotaryId);
+//        else if ((0 == nSenderContactByAddr) && !qstrSenderAddr.isEmpty())
+//            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnAddress(qstrSenderAddr, qstrMethodType);
+//        else if ((0 == nRecipientContactByNym) && !qstrRecipientNymId.isEmpty())
+//            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrRecipientNymId, qstrNotaryId);
+//        else if ((0 == nRecipientContactByAddr) && !qstrRecipientAddr.isEmpty())
+//            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnAddress(qstrRecipientAddr, qstrMethodType);
+//        // -----------------------------------------------------
+//        if (nContactId > 0)
+//        {
+//            MTContactHandler::getInstance()->SetContactName(nContactId, strNewContactName);
+//            // ---------------------------------
+//            QString qstrContactID = QString("%1").arg(nContactId);
+//            emit showContactAndRefreshHome(qstrContactID);
+//        }
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionDownloadCredentials)
+//    {
+//        pListWidget->setCurrentIndex(indexAtRightClick);
+
+//        const bool bHaveContact = (nContactId > 0);
+//        mapIDName mapNymIds;
+
+//        if (bHaveContact)
+//        {
+//            MTContactHandler::getInstance()->GetNyms(mapNymIds, nContactId);
+
+//            // Check to see if there is more than one Nym for this contact.
+//            // TODO: If so, get the user to select one of the Nyms, or give him the
+//            // option to do them all.
+//            // (Until then, we're just going to do them all.)
+//        }
+//        // ---------------------------------------------------
+//        QString qstrAddress, qstrNymId;
+
+//        if      (!qstrSenderNymId.isEmpty())    qstrNymId   = qstrSenderNymId;
+//        else if (!qstrRecipientNymId.isEmpty()) qstrNymId   = qstrRecipientNymId;
+//        // ---------------------------------------------------
+//        if      (!qstrSenderAddr.isEmpty())     qstrAddress = qstrSenderAddr;
+//        else if (!qstrRecipientAddr.isEmpty())  qstrAddress = qstrRecipientAddr;
+//        // ---------------------------------------------------
+//        // Might not have a contact. Even if we did, he might not have any NymIds.
+//        // Here, if there are no known NymIds, but there's one on the message,
+//        // then we add it to the map.
+//        if ( (0 == mapNymIds.size()) && (qstrNymId.size() > 0) )
+//        {
+//            mapNymIds.insert(qstrNymId, QString("Name not used here"));
+//        }
+//        // ---------------------------------------------------
+//        // By this point if there's still no Nym, we need to take the address,
+//        // and then loop through all the claims in the database to see if there's
+//        // a Nym associated with that Bitmessage address via his claims.
+//        //
+//        if ( (0 == mapNymIds.size()) && (qstrAddress.size() > 0) )
+//        {
+//            qstrNymId = MTContactHandler::getInstance()->GetNymByAddress(qstrAddress);
+
+//            if (qstrNymId.isEmpty())
+//                qstrNymId = MTContactHandler::getInstance()->getNymIdFromClaimsByBtMsg(qstrAddress);
+
+//            if (qstrNymId.size() > 0)
+//            {
+//                mapNymIds.insert(qstrNymId, QString("Name not used here"));
+//            }
+//        }
+//        // ---------------------------------------------------
+//        if (0 == mapNymIds.size())
+//        {
+//            QMessageBox::warning(this, tr("Moneychanger"), tr("Unable to find a NymId for this message. (Unable to download credentials without Id.)"));
+//            qDebug() << "UNABLE to find a NymId for this message. (Failed trying to download his credentials.)";
+//            return;
+//        }
+//        // Below this point we're guaranteed that there's at least one NymID.
+//        // ---------------------------------------------------
+//        int nFound = 0;
+//        for (mapIDName::iterator
+//             it_nyms  = mapNymIds.begin();
+//             it_nyms != mapNymIds.end();
+//             ++it_nyms)
+//        {
+//            nFound++;
+//            emit needToCheckNym("", it_nyms.key(), qstrNotaryId);
+//        }
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionExistingContact)
+//    {
+//        pListWidget->setCurrentIndex(indexAtRightClick);
+
+//        // This should never happen since we wouldn't even have gotten this menu option
+//        // in the first place, unless contact ID had been 0.
+//        if (nContactId > 0)
+//            return;
+
+//        // (And that means no contact was found for ANY of the Nym IDs or Addresses on this message.)
+//        // That means we can add the first one we find (which will probably be the only one as well.)
+//        // Because I'll EITHER have a SenderNymID OR SenderAddress,
+//        // ...OR I'll have a RecipientNymID OR RecipientAddress.
+//        // Thus, only one of the four IDs/Addresses will actually be found.
+//        // Therefore I don't care which one I find first:
+//        //
+//        QString qstrAddress, qstrNymId;
+
+//        if      (!qstrSenderNymId.isEmpty())    qstrNymId   = qstrSenderNymId;
+//        else if (!qstrSenderAddr.isEmpty())     qstrAddress = qstrSenderAddr;
+//        else if (!qstrRecipientNymId.isEmpty()) qstrNymId   = qstrRecipientNymId;
+//        else if (!qstrRecipientAddr.isEmpty())  qstrAddress = qstrRecipientAddr;
+//        // ---------------------------------------------------
+//        if (qstrNymId.isEmpty() && qstrAddress.isEmpty()) // Should never happen.
+//            return;
+//        // Below this point we're guaranteed that there's either a NymID or an Address.
+//        // ---------------------------------------------------
+//        if (!qstrNymId.isEmpty() && (MTContactHandler::getInstance()->FindContactIDByNymID(qstrNymId) > 0))
+//        {
+//            QMessageBox::warning(this, tr("Moneychanger"),
+//                                 tr("Strange: NymID %1 already belongs to an existing contact.").arg(qstrNymId));
+//            return;
+//        }
+//        // ---------------------------------------------------
+//        if (!qstrAddress.isEmpty() && MTContactHandler::getInstance()->GetContactByAddress(qstrAddress) > 0)
+//        {
+//            QMessageBox::warning(this, tr("Moneychanger"),
+//                                 tr("Strange: Address %1 already belongs to an existing contact.").arg(qstrAddress));
+//            return;
+//        }
+//        // --------------------------------------------------------------------
+//        // Pop up a Contact selection box. The user chooses an existing contact.
+//        // If OK (vs Cancel) then add the Nym / Acct to the existing contact selected.
+//        //
+//        DlgChooser theChooser(this);
+//        // -----------------------------------------------
+//        mapIDName & the_map = theChooser.m_map;
+//        MTContactHandler::getInstance()->GetContacts(the_map);
+//        // -----------------------------------------------
+//        theChooser.setWindowTitle(tr("Choose an Existing Contact"));
+//        if (theChooser.exec() != QDialog::Accepted)
+//            return;
+//        // -----------------------------------------------
+//        QString strContactID = theChooser.GetCurrentID();
+//        nContactId = strContactID.isEmpty() ? 0 : strContactID.toInt();
+
+//        if (nContactId > 0)
+//        {
+//            if (!qstrNymId.isEmpty()) // We're adding this NymID to the contact.
+//            {
+//                if (!MTContactHandler::getInstance()->AddNymToExistingContact(nContactId, qstrNymId))
+//                {
+//                    QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactId));
+//                    QMessageBox::warning(this, tr("Moneychanger"), QString("Failed while trying to add NymID %1 to existing contact '%2' with contact ID: %3").
+//                                         arg(qstrNymId).arg(strContactName).arg(nContactId));
+//                    return;
+//                }
+//                if (!qstrNotaryId.isEmpty())
+//                    MTContactHandler::getInstance()->NotifyOfNymServerPair(qstrNymId, qstrNotaryId);
+//            }
+//            else if (!qstrAddress.isEmpty()) // We're adding this Address to the contact.
+//            {
+//                if (!MTContactHandler::getInstance()->AddMsgAddressToContact(nContactId, qstrMethodType, qstrAddress))
+//                {
+//                    QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactId));
+//                    QMessageBox::warning(this, tr("Moneychanger"), QString("Failed while trying to add Address %1 to existing contact '%2' with contact ID: %3").
+//                                         arg(qstrAddress).arg(strContactName).arg(nContactId));
+//                    return;
+//                }
+//            }
+//            // ---------------------------------
+//            // Display the normal contacts dialog, with the new contact
+//            // being the one selected.
+//            //
+//            QString qstrContactID = QString("%1").arg(nContactId);
+//            emit showContactAndRefreshHome(qstrContactID);
+//            // ---------------------------------
+//        } // nContactID > 0
+//    }
+//}
+
+
 
 Activity::~Activity()
 {
@@ -1249,3 +1748,17 @@ Activity::~Activity()
 }
 
 
+
+void Activity::on_checkBoxSearch_toggled(bool checked)
+{
+    if (checked)
+    {
+        ui->lineEditSearchConversations->setVisible(true);
+        ui->pushButtonSearchConversations->setVisible(true);
+    }
+    else
+    {
+        ui->lineEditSearchConversations->setVisible(false);
+        ui->pushButtonSearchConversations->setVisible(false);
+    }
+}
