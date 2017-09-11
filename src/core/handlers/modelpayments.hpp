@@ -184,6 +184,73 @@ private:
 
 
 
+class ActivityPaymentsProxyModel : public QSortFilterProxyModel
+{
+    Q_OBJECT
+
+    enum FilterType {
+        FilterNone = 0,
+        FilterTopLevel = 1,
+        FilterNotary = 2,
+        FilterTLA = 3,
+        FilterAccount = 4
+    };
+
+public:
+    ActivityPaymentsProxyModel(QObject *parent = 0);
+
+    void setFilterFolder(int nFolder);
+
+    void setFilterNone(); // Doesn't affect the filterFolder, but DOES affect all the others below. (Top level, notary, method address.)
+    void setFilterTopLevel(QString qstrContactID);
+    void setFilterNotary(QString qstrNotaryId);
+    void setFilterTLA(QString qstrTLA);
+    void setFilterAccount(QString qstrAccountId);
+
+    void setFilterString(QString qstrFilter);
+
+    void clearFilterType();
+
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant data    ( const QModelIndex & index, int role = Qt::DisplayRole ) const override;
+    QVariant rawData ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
+
+    QWidget * CreateDetailHeaderWidget(const int nSourceRow, bool bExternal=true) const;
+
+    void setTableView(QTableView * pTableView) { pTableView_ = pTableView; }
+
+protected:
+    // That means there are 3 main filter types:
+    // 1. top-level   -- contact ID is only thing passed. Look up ALL Nyms and Addresses for that contact. Any of them is good enough for a match.
+    // 2. notary    -- must pass NotaryID as well as ContactID (that's so we can look up the Nym list for that contact.) Requirement is "any Nym from that list, plus the notary."
+    // 3. method_type -- must pass the method type and the address. That's the requirement, too (both.)
+    //
+    // THEREFORE at filter set, there will always be:
+    // A Contact ID by itself, OR a Notary ID + contact ID, OR a method type and address, OR
+    // But after filter set is done, it will be a Notary ID + a list of Nyms, OR a method type and address, OR a list of Nyms + a list of addresses.
+    // To keep things simple, I will set another variable so that the type is clear.
+
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const Q_DECL_OVERRIDE;
+    bool filterAcceptsColumn(int source_column, const QModelIndex & source_parent) const Q_DECL_OVERRIDE;
+
+private:
+    QString   notaryId_;
+    QString   accountId_;
+
+    QString   filterString_;
+
+    mapIDName mapNymIds_;
+    mapIDName mapAssetTypes_;
+
+    FilterType filterType_ = FilterNone;
+
+    int nFolder_ = 1; // 0 for outbox, 1 for inbox, and 2+ for all the other custom boxes we'll have someday.
+
+    QTableView * pTableView_=nullptr;
+};
+
+
+
 
 class AccountRecordsProxyModel : public QSortFilterProxyModel
 {

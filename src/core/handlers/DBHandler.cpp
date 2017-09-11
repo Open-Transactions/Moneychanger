@@ -812,42 +812,104 @@ QPointer<ModelMessages> DBHandler::getMessageModel()
 
 
 
+// --------------------------------------------
+//QString create_message_table = "CREATE TABLE IF NOT EXISTS message"
+//       "(message_id INTEGER PRIMARY KEY,"
+//       " have_read INTEGER,"
+//       " have_replied INTEGER,"
+//       " have_forwarded INTEGER,"
+//       " subject TEXT,"
+//       " sender_nym_id TEXT,"
+//       " sender_address TEXT,"
+//       " recipient_nym_id TEXT,"
+//       " recipient_address TEXT,"
+//       " timestamp INTEGER,"
+//       " method_type TEXT,"
+//       " method_type_display TEXT,"
+//       " notary_id TEXT,"
+//       " my_nym_id TEXT,"
+//       " my_address TEXT,"
+//       " folder INTEGER,"
+//       " thread_item_id TEXT,"
+//       " archived INTEGER NOT NULL,"
+//       " has_subject INTEGER"
+//       ")";
 
+//QString create_message_body_table = "CREATE TABLE IF NOT EXISTS message_body"
+//       "(message_id INTEGER PRIMARY KEY,"
+//       " body TEXT,"
+//       " thread_item_id TEXT"
+//       ")";
+// --------------------------------------------
+//QString create_conversation_table = "CREATE TABLE IF NOT EXISTS conversation"
+//       "(conversation_id TEXT,"
+//       " my_nym_id TEXT,"
+//       " conversation_name TEXT,"
+//       " PRIMARY KEY (conversation_id, my_nym_id)"
+//       ")";
 
+//QString create_conversation_msg_table = "CREATE TABLE IF NOT EXISTS conversation_msg"
+//       "(conversation_id TEXT,"
+//       " my_nym_id TEXT,"
+//       " thread_item_id TEXT," // Note: this field is also in message_body table
+//       " timestamp INTEGER,"
+//       " box INTEGER,"
+//       " account TEXT,"
+//       " unread INTEGER,"
+//       " PRIMARY KEY (conversation_id, my_nym_id, thread_item_id)"
+//       ")";
+// --------------------------------------------
 
-QPointer<QSqlQueryMessages> DBHandler::getNewMessageModel(bool bArchived/*=false*/)
+QSharedPointer<QSqlQueryMessages> DBHandler::getConversationItemModel(const QString & qstrMyNymId, const QString & qstrThreadId, bool bArchived/*=false*/)
 {
     const int nArchived(bArchived ? 1 : 0);
+    const int nHasNoSubject = 0;  // Chat messages have no subject. So the has_subject field is always 0 for those records.
 
-    QPointer<QSqlQueryMessages> pModel = new QSqlQueryMessages(0);
+    QSharedPointer<QSqlQueryMessages> pModel{new QSqlQueryMessages(0)};
 
-    pModel->setQuery(QString("SELECT * FROM `message` WHERE `archived`='%1'").
-                     arg(nArchived), db);
+    if (!pModel)
+    {
+        qDebug() << "QSqlQueryMessages failed to instantiate. Should never happen. Should ASSERT here.";
+        return {};
+    }
+    // --------------------------------------------
+    QString str_select = QString( "SELECT "
+        "    msg.message_id AS message_id, "
+        "    msg.my_nym_id AS my_nym_id, "
+        "    conv_msg.conversation_id AS thread_id, "
+        "    msg.thread_item_id AS thread_item_id, "
+        "    msg.timestamp AS timestamp, "
+        "    msg.folder AS folder, "
+        "    msg_body.body AS body "
+        "  FROM "
+        "     `message` AS msg "
+        "     INNER JOIN `message_body` AS msg_body "
+        "         ON  msg.message_id = msg_body.message_id "
+        "         AND msg.thread_item_id = msg_body.thread_item_id " // This line is probably superfluous. Test removing it.
+        "     INNER JOIN `conversation_msg` AS conv_msg "
+        "         ON  conv_msg.thread_item_id = msg_body.thread_item_id "
+        "         AND conv_msg.my_nym_id = msg.my_nym_id "
+        "     WHERE "
+        "           msg.archived='%1' "
+        "       AND msg.has_subject='%2' "
+        "       AND msg.my_nym_id='%3' "
+        "       AND conv_msg.conversation_id='%4' "
+        ).arg(nArchived).arg(nHasNoSubject).arg(qstrMyNymId).arg(qstrThreadId);
+    // --------------------------------------------
+    pModel->setQuery(str_select, db);
 
     if ( pModel->lastError().isValid())
         qDebug() <<  pModel->lastError();
-
+    // --------------------------------------------
     int column = 0;
 
     pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("message_id"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Read?"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr(" ")); //replied
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr(" ")); // forwarded
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Subject"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("From"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("From address"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("To"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("To address"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Timestamp"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("method_type"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Transport"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Notary"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Me"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("My address"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("Folder"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("my_nym_id"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("thread_id"));
     pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("thread_item_id"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("archived"));
-    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("has_subject"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("timestamp"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("folder"));
+    pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("body"));
 
     return pModel;
 }

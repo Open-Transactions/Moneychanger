@@ -17,6 +17,9 @@
 #include <core/handlers/modelmessages.hpp>
 #include <core/handlers/focuser.h>
 
+#include <opentxs/api/ContactManager.hpp>
+#include <opentxs/api/OT.hpp>
+#include <opentxs/contact/Contact.hpp>
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Log.hpp>
@@ -41,9 +44,9 @@
 #include <map>
 
 
-MSG_TREE_ITEM Messages::make_tree_item(int nCurrentContact, QString qstrMethodType, QString qstrViaTransport)
+MSG_TREE_ITEM Messages::make_tree_item(QString qstrCurrentContact, QString qstrMethodType, QString qstrViaTransport)
 {
-    return std::make_tuple(nCurrentContact, qstrMethodType.toStdString(), qstrViaTransport.toStdString());
+    return std::make_tuple(qstrCurrentContact.toStdString(), qstrMethodType.toStdString(), qstrViaTransport.toStdString());
 }
 
 
@@ -96,7 +99,7 @@ Messages::Messages(QWidget *parent) :
     this->installEventFilter(this);
 
     connect(ui->toolButtonCompose,  SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_composemessage_slot()));
-    connect(ui->toolButtonContacts, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_addressbook_slot()));
+    connect(ui->toolButtonContacts, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_opentxs_contacts_slot()));
     connect(this, SIGNAL(needToCheckNym(QString, QString, QString)), Moneychanger::It(), SLOT(onNeedToCheckNym(QString, QString, QString)));
 
 //  if (!Moneychanger::It()->expertMode())
@@ -369,7 +372,7 @@ void Messages::on_tableViewSentSelectionModel_currentRowChanged(const QModelInde
         // ----------------------------------------
         disableButtons();
         // ----------------------------------------
-        MSG_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
+        MSG_TREE_ITEM theItem = make_tree_item(qstrCurrentContact_, qstrMethodType_, qstrViaTransport_);
         set_outbox_msgid_for_tree_item(theItem, 0);
     }
     else
@@ -419,7 +422,7 @@ void Messages::on_tableViewSentSelectionModel_currentRowChanged(const QModelInde
                 if (!qstrBody.isEmpty())
                     ui->plainTextEditSent->setPlainText(qstrBody);
                 // -------------------------------------------------
-                MSG_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
+                MSG_TREE_ITEM theItem = make_tree_item(qstrCurrentContact_, qstrMethodType_, qstrViaTransport_);
                 set_outbox_msgid_for_tree_item(theItem, message_id);
             }
             // ----------------------------------------------------------
@@ -448,7 +451,7 @@ void Messages::on_tableViewReceivedSelectionModel_currentRowChanged(const QModel
         // ----------------------------------------
         disableButtons();
         // ----------------------------------------
-        MSG_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
+        MSG_TREE_ITEM theItem = make_tree_item(qstrCurrentContact_, qstrMethodType_, qstrViaTransport_);
         set_inbox_msgid_for_tree_item(theItem, 0);
     }
     else
@@ -498,7 +501,7 @@ void Messages::on_tableViewReceivedSelectionModel_currentRowChanged(const QModel
                 if (!qstrBody.isEmpty())
                     ui->plainTextEditReceived->setPlainText(qstrBody);
                 // -------------------------------------------------
-                MSG_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
+                MSG_TREE_ITEM theItem = make_tree_item(qstrCurrentContact_, qstrMethodType_, qstrViaTransport_);
                 set_inbox_msgid_for_tree_item(theItem, message_id);
             }
             // ----------------------------------------------------------
@@ -608,10 +611,11 @@ void Messages::dialog()
 //                    this,                  SLOT(RefreshMessages()));
         }
         // --------------------------------------------------------
-        connect(this, SIGNAL(showContact(QString)),               Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
+        connect(this, SIGNAL(showContact (QString)),         Moneychanger::It(), SLOT(mc_show_opentxs_contact_slot(QString)));
+        connect(this, SIGNAL(showContacts()),                Moneychanger::It(), SLOT(mc_opentxs_contacts_slot()));
         // --------------------------------------------------------
         connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(onNeedToPopulateRecordlist()));
-        connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
+        connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(mc_show_opentxs_contact_slot(QString)));
         // --------------------------------------------------------
         QWidget* pTab0 = ui->tabWidget->widget(0);
         QWidget* pTab1 = ui->tabWidget->widget(1);
@@ -650,28 +654,28 @@ void Messages::on_treeWidget_currentItemChanged(QTreeWidgetItem *current, QTreeW
 {
     if (nullptr != current)
     {
-        nCurrentContact_  = current->data(0, Qt::UserRole).toInt();
-        qstrMethodType_   = current->data(1, Qt::UserRole).isValid() ? current->data(1, Qt::UserRole).toString() : QString("");
-        qstrViaTransport_ = current->data(2, Qt::UserRole).isValid() ? current->data(2, Qt::UserRole).toString() : QString("");
+        qstrCurrentContact_ = current->data(0, Qt::UserRole).isValid() ? current->data(1, Qt::UserRole).toString() : QString("");
+        qstrMethodType_     = current->data(1, Qt::UserRole).isValid() ? current->data(1, Qt::UserRole).toString() : QString("");
+        qstrViaTransport_   = current->data(2, Qt::UserRole).isValid() ? current->data(2, Qt::UserRole).toString() : QString("");
 
-        if ((0 == nCurrentContact_) && qstrMethodType_.isEmpty() && qstrViaTransport_.isEmpty())
+        if (qstrCurrentContact_.isEmpty() && qstrMethodType_.isEmpty() && qstrViaTransport_.isEmpty())
         {
-            nCurrentContact_  = 0;
-            qstrMethodType_   = QString("");
-            qstrViaTransport_ = QString("");
+            qstrCurrentContact_  = QString("");
+            qstrMethodType_      = QString("");
+            qstrViaTransport_    = QString("");
 
             pMsgProxyModelInbox_ ->setFilterNone();
             pMsgProxyModelOutbox_->setFilterNone();
         }
         else if (qstrMethodType_.isEmpty() && qstrViaTransport_.isEmpty())
         {
-            pMsgProxyModelInbox_ ->setFilterTopLevel(nCurrentContact_);
-            pMsgProxyModelOutbox_->setFilterTopLevel(nCurrentContact_);
+            pMsgProxyModelInbox_ ->setFilterTopLevel(qstrCurrentContact_);
+            pMsgProxyModelOutbox_->setFilterTopLevel(qstrCurrentContact_);
         }
         else if (0 == qstrMethodType_.compare("otserver"))
         {
-            pMsgProxyModelInbox_ ->setFilterNotary(qstrViaTransport_, nCurrentContact_);
-            pMsgProxyModelOutbox_->setFilterNotary(qstrViaTransport_, nCurrentContact_);
+            pMsgProxyModelInbox_ ->setFilterNotary(qstrViaTransport_, qstrCurrentContact_);
+            pMsgProxyModelOutbox_->setFilterNotary(qstrViaTransport_, qstrCurrentContact_);
         }
         else
         {
@@ -681,7 +685,7 @@ void Messages::on_treeWidget_currentItemChanged(QTreeWidgetItem *current, QTreeW
     }
     else
     {
-        nCurrentContact_  = 0;
+        qstrCurrentContact_  = QString("");
         qstrMethodType_   = QString("");
         qstrViaTransport_ = QString("");
 
@@ -697,7 +701,7 @@ void Messages::RefreshMessages()
 {
     bRefreshingAfterUpdatedClaims_ = false;
     // -------------------------------------------
-    MSG_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
+    MSG_TREE_ITEM theItem = make_tree_item(qstrCurrentContact_, qstrMethodType_, qstrViaTransport_);
 
     bool bIsInbox = (0 == ui->tabWidget->currentIndex());
     int  nMsgID   = bIsInbox ? get_inbox_msgid_for_tree_item(theItem) : get_outbox_msgid_for_tree_item(theItem);
@@ -811,67 +815,70 @@ void Messages::RefreshTree()
     // ----------------------------------------
     mapIDName mapContacts;
 
-    if (MTContactHandler::getInstance()->GetContacts(mapContacts))
+    if (MTContactHandler::getInstance()->GetOpentxsContacts(mapContacts))
     {
         for (mapIDName::iterator ii = mapContacts.begin(); ii != mapContacts.end(); ii++)
         {
             QString qstrContactID   = ii.key();
             QString qstrContactName = ii.value();
-            int     nContactID      = qstrContactID.toInt();
+//          int     nContactID      = qstrContactID.toInt();
             // ------------------------------------
             QTreeWidgetItem * pTopItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrContactName));
-            pTopItem->setData(0, Qt::UserRole, QVariant(nContactID));
+            pTopItem->setData(0, Qt::UserRole, QVariant(qstrContactID));
             items.append(pTopItem);
             // ------------------------------------
-            mapIDName mapMethodTypes;
-            // So we can look up these names quickly without having to repeatedly hit the database
-            // for the same names over and over again.
-            MTContactHandler::getInstance()->GetMsgMethodTypes(mapMethodTypes);
-            // ------------------------------------
-            mapIDName mapTransport;
+            // Turning this off for now since it relies on the old-style Moneychanger Contacts,
+            // rather than the new-style Opentxs Contacts.
+            //
+//            mapIDName mapMethodTypes;
+//            // So we can look up these names quickly without having to repeatedly hit the database
+//            // for the same names over and over again.
+//            MTContactHandler::getInstance()->GetMsgMethodTypes(mapMethodTypes);
+//            // ------------------------------------
+//            mapIDName mapTransport;
 
-            if (MTContactHandler::getInstance()->GetMsgMethodTypesByContact(mapTransport, nContactID, true)) // True means to add the OT servers as well.
-            {
-                for (mapIDName::iterator it_transport = mapTransport.begin(); it_transport != mapTransport.end(); it_transport++)
-                {
-                    QString qstrID   = it_transport.key();
-//                  QString qstrName = it_transport.value();
+//            if (MTContactHandler::getInstance()->GetMsgMethodTypesByContact(mapTransport, nContactID, true)) // True means to add the OT servers as well.
+//            {
+//                for (mapIDName::iterator it_transport = mapTransport.begin(); it_transport != mapTransport.end(); it_transport++)
+//                {
+//                    QString qstrID   = it_transport.key();
+////                  QString qstrName = it_transport.value();
 
-                    QStringList stringlist = qstrID.split("|");
+//                    QStringList stringlist = qstrID.split("|");
 
-                    if (stringlist.size() >= 2) // Should always be 2...
-                    {
-                        QString qstrViaTransport = stringlist.at(1);
-                        QString qstrTransportName = qstrViaTransport;
-                        QString qstrMethodType = stringlist.at(0);
-                        QString qstrMethodName = qstrMethodType;
+//                    if (stringlist.size() >= 2) // Should always be 2...
+//                    {
+//                        QString qstrViaTransport = stringlist.at(1);
+//                        QString qstrTransportName = qstrViaTransport;
+//                        QString qstrMethodType = stringlist.at(0);
+//                        QString qstrMethodName = qstrMethodType;
 
-                        mapIDName::iterator it_mapMethodTypes = mapMethodTypes.find(qstrMethodType);
+//                        mapIDName::iterator it_mapMethodTypes = mapMethodTypes.find(qstrMethodType);
 
-                        if (mapMethodTypes.end() != it_mapMethodTypes)
-                        {
-                            QString qstrTemp = it_mapMethodTypes.value();
-                            if (!qstrTemp.isEmpty())
-                                qstrMethodName = qstrTemp;
-                        }
-                        // ------------------------------------------------------
-                        else if (0 == QString("otserver").compare(qstrMethodType))
-                        {
-                            qstrMethodName = tr("Notary");
-                            // ------------------------------
-                            QString qstrTemp = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(qstrViaTransport.toStdString()));
-                            if (!qstrTemp.isEmpty())
-                                qstrTransportName = qstrTemp;
-                        }
-                        // ------------------------------------------------------
-                        QTreeWidgetItem * pAddressItem = new QTreeWidgetItem(pTopItem, QStringList(qstrContactName) << qstrMethodName << qstrTransportName);
-                        pAddressItem->setData(0, Qt::UserRole, QVariant(nContactID));
-                        pAddressItem->setData(1, Qt::UserRole, QVariant(qstrMethodType));
-                        pAddressItem->setData(2, Qt::UserRole, QVariant(qstrViaTransport));
-                        items.append(pAddressItem);
-                    }
-                }
-            }
+//                        if (mapMethodTypes.end() != it_mapMethodTypes)
+//                        {
+//                            QString qstrTemp = it_mapMethodTypes.value();
+//                            if (!qstrTemp.isEmpty())
+//                                qstrMethodName = qstrTemp;
+//                        }
+//                        // ------------------------------------------------------
+//                        else if (0 == QString("otserver").compare(qstrMethodType))
+//                        {
+//                            qstrMethodName = tr("Notary");
+//                            // ------------------------------
+//                            QString qstrTemp = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(qstrViaTransport.toStdString()));
+//                            if (!qstrTemp.isEmpty())
+//                                qstrTransportName = qstrTemp;
+//                        }
+//                        // ------------------------------------------------------
+//                        QTreeWidgetItem * pAddressItem = new QTreeWidgetItem(pTopItem, QStringList(qstrContactName) << qstrMethodName << qstrTransportName);
+//                        pAddressItem->setData(0, Qt::UserRole, QVariant(nContactID));
+//                        pAddressItem->setData(1, Qt::UserRole, QVariant(qstrMethodType));
+//                        pAddressItem->setData(2, Qt::UserRole, QVariant(qstrViaTransport));
+//                        items.append(pAddressItem);
+//                    }
+//                }
+//            }
         }
         if (items.count() > 0)
         {
@@ -886,7 +893,7 @@ void Messages::RefreshTree()
     QTreeWidgetItem * previous = ui->treeWidget->currentItem();
 
     // In this case, just select the first thing on the list.
-    if ( (0 == nCurrentContact_) && qstrMethodType_.isEmpty() && qstrViaTransport_.isEmpty() )
+    if ( qstrCurrentContact_.isEmpty() && qstrMethodType_.isEmpty() && qstrViaTransport_.isEmpty() )
     {
         if (ui->treeWidget->topLevelItemCount() > 0)
             ui->treeWidget->setCurrentItem(ui->treeWidget->topLevelItem(0));
@@ -903,13 +910,13 @@ void Messages::RefreshTree()
             QVariant qvarMethodType   = (*it)->data(1, Qt::UserRole);
             QVariant qvarViaTransport = (*it)->data(2, Qt::UserRole);
 
-            const int     nContactID       = qvarContactID   .isValid() ? qvarContactID   .toInt()    :  0;
+            const QString qstrContactId    = qvarContactID   .isValid() ? qvarContactID   .toString() :  "";
             const QString qstrMethodType   = qvarMethodType  .isValid() ? qvarMethodType  .toString() : "";
             const QString qstrViaTransport = qvarViaTransport.isValid() ? qvarViaTransport.toString() : "";
 
-            if ( (nContactID == nCurrentContact_ ) &&
-                 (0 == qstrMethodType.compare(qstrMethodType_)) &&
-                 (0 == qstrViaTransport.compare(qstrViaTransport_)) )
+            if (    (0 == qstrContactId.compare(qstrCurrentContact_) )
+                 && (0 == qstrMethodType.compare(qstrMethodType_))
+                 && (0 == qstrViaTransport.compare(qstrViaTransport_)) )
             {
                 bFoundIt = true;
                 ui->treeWidget->setCurrentItem(*it);
@@ -1003,7 +1010,7 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
     pActionExistingContact = nullptr;
     pActionDownloadCredentials = nullptr;
 
-    int nContactId = 0;
+    QString qstrContactId;
 
     QString qstrSenderNymId;
     QString qstrSenderAddr;
@@ -1013,10 +1020,8 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
     QString qstrMethodType;
     QString qstrSubject;
 
-    int nSenderContactByNym     = 0;
-    int nSenderContactByAddr    = 0;
-    int nRecipientContactByNym  = 0;
-    int nRecipientContactByAddr = 0;
+    QString qstrSenderContactByNym;
+    QString qstrRecipientContactByNym;
 
     // Look at the data for indexAtRightClick and see if I have a contact already in the
     // address book. If so, add the "View Contact" option to the menu. But if not, add the
@@ -1047,19 +1052,21 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
         qstrMethodType     = varMethodType   .isValid() ? varMethodType   .toString() : QString("");
         qstrSubject        = varSubject      .isValid() ? varSubject      .toString() : QString("");
 
-        nSenderContactByNym     = qstrSenderNymId.isEmpty()    ? 0 : MTContactHandler::getInstance()->FindContactIDByNymID(qstrSenderNymId);
-        nSenderContactByAddr    = qstrSenderAddr.isEmpty()     ? 0 : MTContactHandler::getInstance()->GetContactByAddress(qstrSenderAddr);
-        nRecipientContactByNym  = qstrRecipientNymId.isEmpty() ? 0 : MTContactHandler::getInstance()->FindContactIDByNymID(qstrRecipientNymId);
-        nRecipientContactByAddr = qstrRecipientAddr.isEmpty()  ? 0 : MTContactHandler::getInstance()->GetContactByAddress(qstrRecipientAddr);
+        qstrSenderContactByNym    = qstrSenderNymId.isEmpty()
+                                            ? QString("")
+                                            : MTContactHandler::getInstance()->GetOrCreateOpentxsContactBasedOnNym("", qstrSenderNymId);
+        qstrRecipientContactByNym = qstrRecipientNymId.isEmpty()
+                                            ? QString("")
+                                            : MTContactHandler::getInstance()->GetOrCreateOpentxsContactBasedOnNym("", qstrRecipientNymId);
 
-        nContactId = (nSenderContactByNym > 0) ? nSenderContactByNym : nSenderContactByAddr;
+//      nSenderContactByAddr    = qstrSenderAddr.isEmpty()     ? 0 : MTContactHandler::getInstance()->GetContactByAddress(qstrSenderAddr);
+//      nRecipientContactByAddr = qstrRecipientAddr.isEmpty()  ? 0 : MTContactHandler::getInstance()->GetContactByAddress(qstrRecipientAddr);
 
-        if (nContactId <= 0)
-            nContactId = (nRecipientContactByNym > 0) ? nRecipientContactByNym : nRecipientContactByAddr;
+        qstrContactId = qstrSenderContactByNym.isEmpty() ? qstrRecipientContactByNym : qstrSenderContactByNym;
         // -------------------------------
         popupMenu_->addSeparator();
         // -------------------------------
-        if (nContactId > 0) // There's a known contact for this message.
+        if (!qstrContactId.isEmpty()) // There's a known contact for this message.
             pActionViewContact = popupMenu_->addAction(tr("View contact in address book"));
         else // There is no known contact for this message.
         {
@@ -1160,9 +1167,8 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
     {
         pTableView->setCurrentIndex(indexAtRightClick);
 
-        if (nContactId > 0)
+        if (qstrContactId.isEmpty())
         {
-            QString qstrContactId = QString::number(nContactId);
             emit showContact(qstrContactId);
         }
         return;
@@ -1187,21 +1193,14 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
         //
         // (And the same is also true for the recipient nymID and address.)
         //
-        if ((0 == nSenderContactByNym) && !qstrSenderNymId.isEmpty())
-            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrSenderNymId, qstrNotaryId);
-        else if ((0 == nSenderContactByAddr) && !qstrSenderAddr.isEmpty())
-            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnAddress(qstrSenderAddr, qstrMethodType);
-        else if ((0 == nRecipientContactByNym) && !qstrRecipientNymId.isEmpty())
-            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrRecipientNymId, qstrNotaryId);
-        else if ((0 == nRecipientContactByAddr) && !qstrRecipientAddr.isEmpty())
-            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnAddress(qstrRecipientAddr, qstrMethodType);
+        if (qstrSenderContactByNym.isEmpty() && !qstrSenderNymId.isEmpty())
+            qstrContactId = MTContactHandler::getInstance()->GetOrCreateOpentxsContactBasedOnNym(strNewContactName, qstrSenderNymId);
+        else if (qstrRecipientContactByNym.isEmpty() && !qstrRecipientNymId.isEmpty())
+            qstrContactId = MTContactHandler::getInstance()->GetOrCreateOpentxsContactBasedOnNym(strNewContactName, qstrRecipientNymId);
         // -----------------------------------------------------
-        if (nContactId > 0)
+        if (!qstrContactId.isEmpty())
         {
-            MTContactHandler::getInstance()->SetContactName(nContactId, strNewContactName);
-            // ---------------------------------
-            QString qstrContactID = QString("%1").arg(nContactId);
-            emit showContactAndRefreshHome(qstrContactID);
+            emit showContactAndRefreshHome(qstrContactId);
         }
         return;
     }
@@ -1210,12 +1209,12 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
     {
         pTableView->setCurrentIndex(indexAtRightClick);
 
-        const bool bHaveContact = (nContactId > 0);
+        const bool bHaveContact = !qstrContactId.isEmpty();
         mapIDName mapNymIds;
 
         if (bHaveContact)
         {
-            MTContactHandler::getInstance()->GetNyms(mapNymIds, nContactId);
+            MTContactHandler::getInstance()->GetNyms(mapNymIds, qstrContactId.toStdString());
 
             // Check to see if there is more than one Nym for this contact.
             // TODO: If so, get the user to select one of the Nyms, or give him the
@@ -1281,88 +1280,79 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
 
         // This should never happen since we wouldn't even have gotten this menu option
         // in the first place, unless contact ID had been 0.
-        if (nContactId > 0)
+        if (!qstrContactId.isEmpty())
             return;
 
-        // (And that means no contact was found for ANY of the Nym IDs or Addresses on this message.)
+        // (And that means no contact was found for ANY of the Nym IDs or Addresses on this payment.)
         // That means we can add the first one we find (which will probably be the only one as well.)
         // Because I'll EITHER have a SenderNymID OR SenderAddress,
         // ...OR I'll have a RecipientNymID OR RecipientAddress.
         // Thus, only one of the four IDs/Addresses will actually be found.
         // Therefore I don't care which one I find first:
         //
-        QString qstrAddress, qstrNymId;
+        QString qstrNymId;
 
         if      (!qstrSenderNymId.isEmpty())    qstrNymId   = qstrSenderNymId;
-        else if (!qstrSenderAddr.isEmpty())     qstrAddress = qstrSenderAddr;
         else if (!qstrRecipientNymId.isEmpty()) qstrNymId   = qstrRecipientNymId;
-        else if (!qstrRecipientAddr.isEmpty())  qstrAddress = qstrRecipientAddr;
         // ---------------------------------------------------
-        if (qstrNymId.isEmpty() && qstrAddress.isEmpty()) // Should never happen.
+        if (qstrNymId.isEmpty()) // Should never happen.
             return;
-        // Below this point we're guaranteed that there's either a NymID or an Address.
+        // Below this point we're guaranteed that there's a NymID.
         // ---------------------------------------------------
-        if (!qstrNymId.isEmpty() && (MTContactHandler::getInstance()->FindContactIDByNymID(qstrNymId) > 0))
+        const opentxs::Identifier contactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier{qstrNymId.toStdString()});
+
+        if (!contactId.empty())
         {
             QMessageBox::warning(this, tr("Moneychanger"),
                                  tr("Strange: NymID %1 already belongs to an existing contact.").arg(qstrNymId));
             return;
         }
         // ---------------------------------------------------
-        if (!qstrAddress.isEmpty() && MTContactHandler::getInstance()->GetContactByAddress(qstrAddress) > 0)
-        {
-            QMessageBox::warning(this, tr("Moneychanger"),
-                                 tr("Strange: Address %1 already belongs to an existing contact.").arg(qstrAddress));
-            return;
-        }
-        // --------------------------------------------------------------------
         // Pop up a Contact selection box. The user chooses an existing contact.
         // If OK (vs Cancel) then add the Nym / Acct to the existing contact selected.
         //
         DlgChooser theChooser(this);
         // -----------------------------------------------
         mapIDName & the_map = theChooser.m_map;
-        MTContactHandler::getInstance()->GetContacts(the_map);
+        MTContactHandler::getInstance()->GetOpentxsContacts(the_map);
         // -----------------------------------------------
         theChooser.setWindowTitle(tr("Choose an Existing Contact"));
         if (theChooser.exec() != QDialog::Accepted)
             return;
         // -----------------------------------------------
         QString strContactID = theChooser.GetCurrentID();
-        nContactId = strContactID.isEmpty() ? 0 : strContactID.toInt();
 
-        if (nContactId > 0)
+        if (!strContactID.isEmpty())
         {
             if (!qstrNymId.isEmpty()) // We're adding this NymID to the contact.
             {
-                if (!MTContactHandler::getInstance()->AddNymToExistingContact(nContactId, qstrNymId))
+                const bool bAdded = false;
+                if (!bAdded) // Todo.
+                    /*
+                     * Justus:
+                       - Identifier ContactManager::ContactID(const Identifier& nymID) const
+                         That will tell you if a nym is associated with a contact
+
+                       - bool Contact::AddNym(const Identifier& nymID, const bool primary);
+                         Will add it to an existing contact
+                    */
+
+//              if (!MTContactHandler::getInstance()->AddNymToExistingContact(nContactId, qstrNymId))
                 {
-                    QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactId));
-                    QMessageBox::warning(this, tr("Moneychanger"), QString("Failed while trying to add NymID %1 to existing contact '%2' with contact ID: %3").
-                                         arg(qstrNymId).arg(strContactName).arg(nContactId));
+                    QMessageBox::warning(this, tr("Moneychanger"),
+                                         tr("TODO: Tried to add NymID %1 to an existing contact but I don't know the API call to use.").arg(qstrNymId));
                     return;
                 }
-                if (!qstrNotaryId.isEmpty())
+                else if (!qstrNotaryId.isEmpty())
                     MTContactHandler::getInstance()->NotifyOfNymServerPair(qstrNymId, qstrNotaryId);
-            }
-            else if (!qstrAddress.isEmpty()) // We're adding this Address to the contact.
-            {
-                if (!MTContactHandler::getInstance()->AddMsgAddressToContact(nContactId, qstrMethodType, qstrAddress))
-                {
-                    QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactId));
-                    QMessageBox::warning(this, tr("Moneychanger"), QString("Failed while trying to add Address %1 to existing contact '%2' with contact ID: %3").
-                                         arg(qstrAddress).arg(strContactName).arg(nContactId));
-                    return;
-                }
             }
             // ---------------------------------
             // Display the normal contacts dialog, with the new contact
             // being the one selected.
             //
-            QString qstrContactID = QString("%1").arg(nContactId);
-            emit showContactAndRefreshHome(qstrContactID);
+            emit showContactAndRefreshHome(strContactID);
             // ---------------------------------
-        } // nContactID > 0
+        } // (!strContactID.isEmpty())
     }
 }
 
@@ -1506,6 +1496,7 @@ void Messages::on_toolButtonReply_clicked()
     // --------------------------------------------------
     const bool bUsingNotary   = !NotaryID.isEmpty();
     const bool bIsSpecialMail = !bUsingNotary;
+    bool bCanMessage{false};
     // --------------------------------------------------
     MTCompose * compose_window = new MTCompose;
     compose_window->setAttribute(Qt::WA_DeleteOnClose);
@@ -1519,21 +1510,45 @@ void Messages::on_toolButtonReply_clicked()
     }
     else if (!myAddress.isEmpty())
         compose_window->setInitialSenderAddress(myAddress);
+    // --------------------------------------------------
+    compose_window->setInitialSubject(subject);
     // ---------------------------------------
     if (!otherNymID.isEmpty()) // If there's an "other nym ID".
     {
-        if (!otherAddress.isEmpty())
-            compose_window->setInitialRecipientNym(otherNymID, otherAddress);
-        else
-            compose_window->setInitialRecipientNym(otherNymID);
-    }
+        if (!myNymID.isEmpty())
+        {
+            // Here we know we have both Nym IDs.
+            // That means we can try to see if there's an opentxs contact associated with the
+            // recipient's Nym Id, and if so, we can check Can_Message...
+            //
+            const opentxs::Identifier otherContactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier{otherNymID.toStdString()});
+            const opentxs::String     strOtherContactId(otherContactId);
+            const std::string         str_other_contact_id(strOtherContactId.Get());
+            const QString             qstrOtherContactId(str_other_contact_id.empty() ? QString("") : QString::fromStdString(str_other_contact_id));
+            // ---------------------------------------
+            if (!str_other_contact_id.empty()) // An opentxs contact was found for the recipient Nym.
+            {
+                if (0 == opentxs::OTAPI_Wrap::Can_Message(myNymID.toStdString(), str_other_contact_id))
+                {
+                    bCanMessage = true;
+                    compose_window->setInitialRecipientContactID(qstrOtherContactId, otherAddress);
+                }
+            }
+        }
+        // ---------------------------------------
+        if (!bCanMessage)
+        {
+            if (!otherAddress.isEmpty())
+                compose_window->setInitialRecipientNym(otherNymID, otherAddress);
+            else
+                compose_window->setInitialRecipientNym(otherNymID);
+        }
+    } // Else we have no other Nym ID, though we may have a Bitmessage address for the other Nym...
     else if (!otherAddress.isEmpty())
         compose_window->setInitialRecipientAddress(otherAddress);
     // --------------------------------------------------
-    if (bUsingNotary)
+    if (!bCanMessage && bUsingNotary)
         compose_window->setInitialServer(NotaryID);
-    // --------------------------------------------------
-    compose_window->setInitialSubject(subject);
     // --------------------------------------------------
     if (nMessageID > 0)
     {
@@ -1733,7 +1748,7 @@ void Messages::on_toolButtonDelete_clicked()
                    QModelIndex sourceIndexMsgID = pModel->index(current, MSG_SOURCE_COL_MSG_ID);
                    if (sourceIndexMsgID.isValid())
                        message_ids.append(pModel->data(sourceIndexMsgID).toInt());
-                   pModel->removeRows( current, 1 );
+//                 pModel->removeRows( current, 1 );
                    prev = current;
                    nCountRowsRemoved++;
                }
@@ -1741,21 +1756,28 @@ void Messages::on_toolButtonDelete_clicked()
 
             if (bRemoved)
             {
-                if (pModel->submitAll())
+                const bool bArchived = MTContactHandler::getInstance()->ArchiveMessages(message_ids);
+
+//              if (pModel->submitAll())
+                if (bArchived)
                 {
-                    pModel->database().commit();
+//                  pModel->database().commit();
                     // ------------------------
                     // Now we just deleted some messages; let's delete also the corresponding
                     // message bodies. (We saved the deleted IDs for this purpose.)
                     //
-                    for (int ii = 0; ii < message_ids.count(); ++ii)
-                    {
-                        const int nMsgID = message_ids[ii];
+//                    for (int ii = 0; ii < message_ids.count(); ++ii)
+//                    {
+//                        const int nMsgID = message_ids[ii];
 
-                        if (nMsgID > 0)
-                            if (!MTContactHandler::getInstance()->DeleteMessageBody(nMsgID))
-                                qDebug() << "Messages::on_toolButtonDelete_clicked: Failed trying to delete message body with message_id: " << nMsgID << "\n";
-                    }
+//                        if (nMsgID > 0)
+//                            if (!MTContactHandler::getInstance()->DeleteMessageBody(nMsgID))
+//                                qDebug() << "Messages::on_toolButtonDelete_clicked: Failed trying to delete message body with message_id: " << nMsgID << "\n";
+//                    }
+                    // ------------------------
+
+                    pModel->select();
+
                     // ------------------------
                     // We just deleted the selected rows.
                     // So now we need to choose another row to select.
@@ -1787,10 +1809,9 @@ void Messages::on_toolButtonDelete_clicked()
                 }
                 else
                 {
-                    pModel->database().rollback();
-                    qDebug() << "Database Write Error" <<
-                               "The database reported an error: " <<
-                               pModel->lastError().text();
+//                  pModel->database().rollback();
+                    qDebug() << "Database Write Error";
+                    //<< "The database reported an error: " << pModel->lastError().text();
                 }
             }
         }

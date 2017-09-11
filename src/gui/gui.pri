@@ -45,6 +45,7 @@ FORMS += \
     $${PWD}/widgets/marketdetails.ui \
     $${PWD}/widgets/nymdetails.ui \
     $${PWD}/widgets/offerdetails.ui \
+    $${PWD}/widgets/opentxscontactdetails.ui \
     $${PWD}/widgets/pageacct_asset.ui \
     $${PWD}/widgets/pageacct_name.ui \
     $${PWD}/widgets/pageacct_nym.ui \
@@ -139,6 +140,7 @@ HEADERS += \
     $${PWD}/widgets/marketdetails.hpp \
     $${PWD}/widgets/nymdetails.hpp \
     $${PWD}/widgets/offerdetails.hpp \
+    $${PWD}/widgets/opentxscontactdetails.hpp \
     $${PWD}/widgets/overridecursor.hpp \
     $${PWD}/widgets/pageacct_asset.hpp \
     $${PWD}/widgets/pageacct_name.hpp \
@@ -234,6 +236,7 @@ SOURCES += \
     $${PWD}/widgets/marketdetails.cpp \
     $${PWD}/widgets/nymdetails.cpp \
     $${PWD}/widgets/offerdetails.cpp \
+    $${PWD}/widgets/opentxscontactdetails.cpp \
     $${PWD}/widgets/overridecursor.cpp \
     $${PWD}/widgets/pageacct_asset.cpp \
     $${PWD}/widgets/pageacct_name.cpp \

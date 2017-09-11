@@ -12,6 +12,7 @@
 #include <gui/widgets/agreementdetails.hpp>
 #include <gui/widgets/corporationdetails.hpp>
 #include <gui/widgets/offerdetails.hpp>
+#include <gui/widgets/opentxscontactdetails.hpp>
 #include <gui/widgets/marketdetails.hpp>
 #include <gui/widgets/accountdetails.hpp>
 #include <gui/widgets/transportdetails.hpp>
@@ -273,6 +274,18 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         case MTDetailEdit::DetailEditTypeContact:
             // -------------------------------------------
             m_pDetailPane = new MTContactDetails(this, *this);
+            // -------------------------------------------
+            connect(m_pDetailPane,      SIGNAL(nymWasJustChecked(QString)),
+                    Moneychanger::It(), SLOT  (onCheckNym(QString)));
+            // -------------------------------------------
+            connect(Moneychanger::It(), SIGNAL(claimsUpdatedForNym(QString)),
+                    m_pDetailPane,      SLOT  (onClaimsUpdatedForNym(QString)));
+            // -------------------------------------------
+            break;
+
+        case MTDetailEdit::DetailEditTypeOpentxsContact:
+            // -------------------------------------------
+            m_pDetailPane = new MTOpentxsContactDetails(this, *this);
             // -------------------------------------------
             connect(m_pDetailPane,      SIGNAL(nymWasJustChecked(QString)),
                     Moneychanger::It(), SLOT  (onCheckNym(QString)));
@@ -841,6 +854,11 @@ void MTDetailEdit::RefreshRecords()
         switch (m_Type)
         {
         case MTDetailEdit::DetailEditTypeContact:
+            pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "");
+//          pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "", ":/icons/icons/user.png");
+            break;
+
+        case MTDetailEdit::DetailEditTypeOpentxsContact:
             pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "");
 //          pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, "", "", ":/icons/icons/user.png");
             break;

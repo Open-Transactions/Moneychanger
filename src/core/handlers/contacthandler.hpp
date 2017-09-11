@@ -100,6 +100,7 @@ public:
   void NotifyOfNymServerPair(QString nym_id_string, QString notary_id_string);
   void NotifyOfNymServerUnpair(QString nym_id_string, QString notary_id_string);
 
+  QString GetOrCreateOpentxsContactBasedOnNym(QString qstrLabel, QString nym_id_string, QString payment_code=QString(""));
   int  CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string=QString(""), QString payment_code=QString(""));
   int  CreateContactBasedOnAddress(QString qstrAddress, QString qstrMethodType);
 
@@ -250,10 +251,13 @@ public:
 
   bool GetAccounts(mapIDName & theMap, QString filterByNym, QString filterByServer, QString filterByAsset);
 
+  bool GetOpentxsContacts(mapIDName & theMap);
   bool GetContacts(mapIDName & theMap);
   bool GetNyms    (mapIDName & theMap, int nFilterByContact);
   bool GetNyms    (mapIDName & theMap, const std::string & str_contact_id);
   bool GetPaymentCodes(mapIDName & theMap, int nFilterByContact);
+
+  bool GetAssetIdsForTLA(mapIDName & theMap, const std::string & str_tla);
 
   bool GetSmartContracts(mapIDName & theMap);
   QString GetSmartContract    (int nID);
@@ -279,6 +283,8 @@ public:
   bool UpdateMessageBody(int nMessageID, const QString & qstrBody, const QString qstrThreadItemId);
   QString GetMessageBody(int nMessageID);
   QString GetMessageBody(QString qstrThreadItemID);
+
+  bool ArchiveMessages(QList<int> & listMsgIds);
 
   int  GetPaymentIdByTxnDisplayId(int64_t lTxnDisplayId, QString qstrNymId);
   bool LowLevelUpdatePaymentBody(int nPaymentID, const QString qstrBody, const QString qstrPendingBody);

@@ -31,6 +31,7 @@ public:
     enum DetailEditType {
         DetailEditTypeError,
         DetailEditTypeContact,
+        DetailEditTypeOpentxsContact,
         DetailEditTypeNym,
         DetailEditTypeServer,
         DetailEditTypeAsset,

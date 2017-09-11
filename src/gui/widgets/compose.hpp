@@ -61,6 +61,7 @@ public:
     void setInitialRecipientNym(QString nymId, QString address="");
     void setInitialRecipientAddress(QString address);
     void setInitialRecipientContactID(int contactid, QString address="");
+    void setInitialRecipientContactID(QString qstrContactid, QString address="");
 
     bool setRecipientNymBasedOnContact();
 
@@ -119,9 +120,12 @@ private slots:
     void on_toolButton_3_clicked();
 
 private:
-    bool already_init;
+    bool already_init{false};
 
-    Ui::MTCompose *ui;
+    Ui::MTCompose *ui{nullptr};
+
+    bool bCanMessage_{false};
+    QString qstrContactId_;
 };
 
 #endif // COMPOSE_HPP

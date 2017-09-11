@@ -14,6 +14,7 @@
 #include <opentxs/api/OT.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/core/OTStorage.hpp>
+#include <opentxs/core/crypto/PaymentCode.hpp>
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_API.hpp>
@@ -57,7 +58,7 @@ std::string MTNameLookupQT::GetContactName(const std::string & str_id) const
     // ------------------------
     // This searches the new Opentxs Contacts directly:
     //
-    std::string str_result = this->OTNameLookup::GetContactName(str_id);
+    std::string str_result = this->opentxs::OTNameLookup::GetContactName(str_id);
     // --------------------
     if (!str_result.empty()) // Opentxs FOUND a name. (Supplied by Opentxs ContactManager).
     {
@@ -1741,6 +1742,46 @@ bool MTContactHandler::CreateMessageBody(QString qstrBody, QString qstrThreadIte
     return false;
 }
 
+
+bool MTContactHandler::ArchiveMessages(QList<int> & listMsgIds)
+{
+    if (listMsgIds.size() < 1)
+        return true;
+    // ----------------------------------
+    QString qstrMsgIds;
+
+    for (int i = 0; i < listMsgIds.size(); i++)
+    {
+        qstrMsgIds += QString::number(listMsgIds[i]);
+        if (i < (listMsgIds.size()-1))
+            qstrMsgIds += "," ;
+    }
+    // ----------------------------------
+    QMutexLocker locker(&m_Mutex);
+
+    try
+    {
+        QString queryStr =
+                 QString("UPDATE `message` SET"
+                         " `archived` = 1"
+                         " WHERE `message_id` IN (%1)").arg(qstrMsgIds);
+    #ifdef CXX_11
+        std::unique_ptr<DBHandler::PreparedQuery> qu;
+    #else /* CXX_11?  */
+        std::auto_ptr<DBHandler::PreparedQuery> qu;
+    #endif /* CXX_11?  */
+        qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
+        // ---------------------------------------------
+        DBHandler::getInstance ()->runQuery (qu.release ());
+    }
+    catch (const std::exception& exc)
+    {
+        qDebug () << "Error: " << exc.what ();
+        return false;
+    }
+    return true;
+}
+
 bool MTContactHandler::LowLevelUpdateMessageBody(int nMessageID, const QString & qstrBody, const QString & qstrThreadItemId)
 {
 //  NOTE: This function ASSUMES that the calling function already locked the Mutex.
@@ -1829,7 +1870,6 @@ int MTContactHandler::GetOrCreateLiveAgreementId(const int64_t transNumDisplay, 
     // ----------------------------------------
     return DBHandler::getInstance()->queryInt("SELECT last_insert_rowid() from `agreement`", 0, 0);
 }
-
 
 bool MTContactHandler::UpdateLiveAgreementRecord(const int nAgreementId, const int64_t nNewestReceiptNum, const int nNewestKnownState,
                                                  const int64_t timestamp, const QString qstrEncodedMemo)
@@ -2111,6 +2151,21 @@ bool MTContactHandler::LowLevelUpdatePaymentBody(int nPaymentID, const QString q
 
 // ----------------------------------------------------------
 
+bool MTContactHandler::GetOpentxsContacts(mapIDName & theMap)
+{
+    bool bFoundAny{false};
+    for (const auto& it : opentxs::OT::App().Contact().ContactList()) {
+        bFoundAny = true;
+        const auto& contactID    = it.first;
+        const auto& contactLabel = it.second;
+
+        theMap.insert(QString::fromStdString(contactID), QString::fromStdString(contactLabel));
+    }
+    return bFoundAny;
+}
+
+// ----------------------------------------------------------
+
 // The contact ID (unlike all the other IDs) is an int instead of a string.
 // Therefore we just convert it to a string and return it in a map in the same
 // format as all the others.
@@ -2196,6 +2251,29 @@ bool MTContactHandler::GetPaymentCodes(mapIDName & theMap, int nFilterByContact)
     return bFoundAny;
 }
 
+
+bool MTContactHandler::GetAssetIdsForTLA(mapIDName & theMap, const std::string & str_tla)
+{
+    if (str_tla.empty())
+        return false;
+    // ------------------------
+    bool bFoundAny{false};
+
+    int32_t asset_count = opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount();
+    for (int aa = 0; aa < asset_count; aa++)
+    {
+        QString OT_asset_id   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_ID(aa));
+        QString OT_asset_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(OT_asset_id.toStdString()));
+        const std::string OT_asset_tla  = opentxs::OTAPI_Wrap::Exec()->GetCurrencyTLA(OT_asset_id.toStdString());
+
+        if (0 == OT_asset_tla.compare(str_tla)) {
+            theMap.insert(OT_asset_id, OT_asset_name);
+            bFoundAny = true;
+        }
+    }
+    return bFoundAny;
+}
+
 // Notice the contactID is a string instad of an int.
 // That's because this function returns the new-style opentxs contacts,
 // not the old-style Moneychanger contacts.
@@ -2217,7 +2295,8 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, const std::string & str_conta
 
     if (str_opentxs_label.empty())
     {
-        str_alternate_label = this->OTNameLookup::GetContactName(str_contact_id);
+        MTNameLookupQT theLookup;
+        str_alternate_label = theLookup.GetContactName(str_contact_id);
     }
     const QString qstrContactLabel = str_opentxs_label.empty() ? QString::fromStdString(str_alternate_label) : QString::fromStdString(str_opentxs_label);
     // ------------------------
@@ -2766,6 +2845,53 @@ int  MTContactHandler::CreateSmartContractTemplate(QString template_string)
     return nTemplateID;
 }
 
+
+/*
+        MTGetStringDialog nameDlg(this, tr("Enter a display label for the new contact"));
+
+        if (QDialog::Accepted != nameDlg.exec())
+            return;
+        // --------------------------------------
+        const QString strNewContactLabel = nameDlg.GetOutputString();
+        const std::string str_new_contact_label = strNewContactLabel.toStdString();
+        // --------------------------------------------------
+        auto pContact = opentxs::OT::App().Contact().NewContact(str_new_contact_label);
+
+        if (!pContact) {
+            qDebug() << "Error: Failed trying to create new Contact.";
+            return;
+        }
+        // -----------------------------------------------------
+        const opentxs::Identifier idContact{pContact->ID()};
+        const opentxs::String     strContact(idContact);
+        const std::string         str_contact(strContact.Get());
+        qstrContactId = QString::fromStdString(str_contact);
+        // -----------------------------------------------------
+        if (!qstrContactId.isEmpty())
+        {
+            emit showContactAndRefreshHome(qstrContactId);
+        }
+*/
+QString MTContactHandler::GetOrCreateOpentxsContactBasedOnNym(QString qstrLabel, QString nym_id_string, QString payment_code/*=QString("")*/)
+{
+    const opentxs::Identifier contactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier{nym_id_string.toStdString()});
+
+    if (!contactId.IsEmpty()) // Found an existing one
+    {
+        const opentxs::String strContactId(contactId);
+        const std::string str_contact_id(strContactId.Get());
+        return QString::fromStdString(str_contact_id);
+    }
+    // -------------------------------------------------------
+    // Okay so there's definitely not an existing Contact for this Nym ID.
+    // So let's create a new one instead.
+    //
+    const std::string str_label = qstrLabel.toStdString();
+    const auto response = opentxs::OT::App().Contact().NewContact(str_label, opentxs::Identifier{nym_id_string.toStdString()}, opentxs::PaymentCode{payment_code.toStdString()});
+    return response ? QString::fromStdString(std::string(opentxs::String(response->ID()).Get())) : QString("");
+}
+
+
 // Notice there is no "CreateContactBasedOnAcct" because you can call this first,
 // and then just call FindContactIDByAcctID.
 //
@@ -2780,11 +2906,15 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString not
     //
     // Therefore, I'm going to call Justus' new "Create Contact" function here at the top of this function.
     // In effect, I'm creating two different types of Contacts for this one Contact, one for each system, the
-    // new and the old contact systems. That way, we can systematically replace
-    // the old functions
+    // new and the old contact systems. That way, we can systematically replace the old functions.
     //
     //
-
+//    const std::string str_label;
+//    const auto response = opentxs::OT::App().Contact().NewContact(str_label, opentxs::Identifier{nym_id_string.toStdString()}, opentxs::PaymentCode{payment_code.toStdString()});
+//  const auto pContact = opentxs::OT::App().Contact().Contact(opentxs::Identifier{contact});
+    // -----------------------------------------------------------------------
+    // Here's the old Moneychanger Contacts, which we still create in parallel (for now):
+    //
     QMutexLocker locker(&m_Mutex);
 
     // First, see if a contact already exists for this Nym, and if so,

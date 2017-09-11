@@ -48,6 +48,7 @@ MTServerDetails::MTServerDetails(QWidget *parent, MTDetailEdit & theOwner) :
     m_pHeaderWidget  = new QWidget;
     ui->verticalLayout->insertWidget(0, m_pHeaderWidget);
     // ----------------------------------
+    ui->plainTextEditDetails->setStyleSheet("QPlainTextEdit { background-color: lightgray }");
 }
 
 MTServerDetails::~MTServerDetails()
@@ -678,24 +679,52 @@ void MTServerDetails::refresh(QString strID, QString strName)
         ui->verticalLayout->insertWidget(0, pHeaderWidget);
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
+        QString qstrContents =
+            QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->
+                GetServer_Contract(strID.toStdString()));
+        opentxs::proto::ServerContract contractProto =
+            opentxs::proto::StringToProto<opentxs::proto::ServerContract>
+                (opentxs::String(qstrContents.toStdString()));
+
+        if (m_pPlainTextEdit)
+            m_pPlainTextEdit->setPlainText(qstrContents);
+        // ----------------------------------
+        QString qstrDetails("");
+
+        qstrDetails += contractProto.has_name() ? QString("- %1: %2\n").arg(tr("Name")).arg(QString::fromStdString(contractProto.name())) : QString("");
+        qstrDetails += contractProto.has_version() ? QString("- %1: %2\n").arg(tr("Version")).arg(QString::number(contractProto.version())) : QString("");
+
+        qstrDetails += QString("\n");
+
+        auto nAddressCount = contractProto.address_size();
+
+        for (int ii = 0; ii < nAddressCount; ++ii)
+        {
+            const auto & address = contractProto.address(ii);
+
+            qstrDetails += QString("%1:\n").arg(tr("Listening address"));
+            qstrDetails += address.has_version() ? QString("- %1: %2\n").arg(tr("Version")).arg(QString::number(address.version())) : QString("");
+            qstrDetails += address.has_type() ? QString("- %1: %2\n").arg(tr("Type")).arg(QString::number(address.type())) : QString("");
+            qstrDetails += address.has_protocol() ? QString("- %1: %2\n").arg(tr("Protocol")).arg(QString::number(address.protocol())) : QString("");
+            qstrDetails += address.has_host() ? QString("- %1: %2\n").arg(tr("Host")).arg(QString::fromStdString(address.host())) : QString("");
+            qstrDetails += address.has_port() ? QString("- %1: %2\n").arg(tr("Port")).arg(QString::number(address.port())) : QString("");
+        }
+
+        qstrDetails += contractProto.has_terms() ? QString("\n- %1:\n%2").arg(tr("Terms")).arg(QString::fromStdString(contractProto.terms())) : QString("");
+
+        ui->plainTextEditDetails->setPlainText(qstrDetails);
+        // ----------------------------------
         auto contract =
             opentxs::OT::App().Contract().Server(
                 opentxs::Identifier(strID.toStdString()));
 
-        if (!contract) {return; }
+        if (!contract) { return; }
 
         QString qstrNymID("");  // contract->PublicNym()->GetIdentifier(some_variable)
 
         opentxs::Identifier id_nym;
         contract->Nym()->GetIdentifier(id_nym);
         qstrNymID = QString::fromStdString(opentxs::String(id_nym).Get());
-
-        QString qstrContents = QString::fromStdString(contract->Terms().c_str());
-
-        if (m_pPlainTextEdit)
-            m_pPlainTextEdit->setPlainText(qstrContents);
-        // ----------------------------------
-
         // ----------------------------------
         ui->lineEditID   ->setText(strID);
         ui->lineEditName ->setText(strName);
