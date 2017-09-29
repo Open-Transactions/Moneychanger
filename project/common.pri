@@ -52,9 +52,8 @@ QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wextra -Wunused-parameter -Wunused-function -Wu
 
 DEFINES     += OT_CRYPTO_USING_OPENSSL
 
-QMAKE_CXXFLAGS += -std=c++14
-
 win32:{
+    QMAKE_CXXFLAGS += -std=c++17
     DEFINES     += "_UNICODE" "NOMINMAX"
     CharacterSet = 1
     QMAKE_CXXFLAGS += /bigobj /Zm480 /wd4512 /wd4100
@@ -65,7 +64,8 @@ unix:{
     QMAKE_CXXFLAGS += -fPIC
 
     mac:{
-        CONFIG += c++14
+        QMAKE_CXXFLAGS += -std=c++1z
+        CONFIG += c++1z
 
         MAC_OS_VERSION = $$system(sw_vers -productVersion)
         MAC_OS_VERSION ~= s/\([0-9]*.[0-9]*\).*/\1/
@@ -83,6 +83,7 @@ unix:{
 
     # LINUX:
     else:{
+        QMAKE_CXXFLAGS += -std=c++17
         CONFIG += link_pkgconfig
     }
 }
