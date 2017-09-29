@@ -34,7 +34,7 @@ class IdnTool
 {
 
 private:
-  
+
   /** Whether or not to split off namespaces.  */
   bool handleNS;
 
@@ -66,10 +66,8 @@ public:
   IdnTool (bool ns = true);
 
   // Allow copying.
-#ifdef CXX_11
   IdnTool (const IdnTool&) = default;
   IdnTool& operator= (const IdnTool&) = default;
-#endif /* CXX_11?  */
 
   /**
    * Set namespace setting.  If set to true, decode() and encode() will

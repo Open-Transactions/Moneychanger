@@ -52,6 +52,8 @@ QMAKE_CXXFLAGS_WARN_ON -= -Wall -Wextra -Wunused-parameter -Wunused-function -Wu
 
 DEFINES     += OT_CRYPTO_USING_OPENSSL
 
+QMAKE_CXXFLAGS += -std=c++14
+
 win32:{
     DEFINES     += "_UNICODE" "NOMINMAX"
     CharacterSet = 1
@@ -60,20 +62,16 @@ win32:{
 
 
 unix:{
+    QMAKE_CXXFLAGS += -fPIC
+
     mac:{
+        CONFIG += c++14
+
         MAC_OS_VERSION = $$system(sw_vers -productVersion)
         MAC_OS_VERSION ~= s/\([0-9]*.[0-9]*\).*/\1/
 
         QMAKE_MACOSX_DEPLOYMENT_TARGET = $${MAC_OS_VERSION}
-
-
-        #
-        # note: copied from unix section, since this stuff WAS happening on mac anyway.
-        ##
         CONFIG += link_pkgconfig
-        QMAKE_CXXFLAGS += -fPIC     ## put only here, sub-libs pick it up from elsewhere?
-        # end: copied from unix section.
-
 
         QT_CONFIG -= no-pkg-config
 
@@ -81,37 +79,11 @@ unix:{
         PKG_CONFIG_LIBDIR = "/usr/local/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
         PKG_CONFIG_LIBDIR = "/usr/local/opt/openssl/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
         PKG_CONFIG_LIBDIR = "$${PKG_CONFIG_LIBDIR}:" #end with a colon.
-
-
-        contains(MAC_OS_VERSION, 10.9)|contains(MAC_OS_VERSION, 10.10)|contains(MAC_OS_VERSION, 10.11):{
-            # NOTE: below line copied from unix section:
-            QMAKE_CXXFLAGS += -std=c++11 -DCXX_11
-
-            CONFIG += c++11
-        }
-        else:{
-            # NOTE: below line copied from unix section:
-            QMAKE_CXXFLAGS += -std=c++03 -Dnullptr=NULL -DOT_USE_TR1
-
-            MAC_SDK  = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk
-            QMAKE_MAC_SDK=macosx10.8
-            !exists($$MAC_SDK): error("The selected Mac OSX SDK does not exist at $${MAC_SDK}!")
-        }
     }
 
     # LINUX:
     else:{
-        GCC_VERSION = $$system(g++ -dumpversion | cut -d. -f1-2)
-
         CONFIG += link_pkgconfig
-        QMAKE_CXXFLAGS += -fPIC ## put only here, sub-libs pick it up from elsewhere?
-
-        lessThan(GCC_VERSION, 4.7):{
-            QMAKE_CXXFLAGS += -std=c++03 -Dnullptr=NULL -DOT_USE_TR1
-        }
-        else:{
-            QMAKE_CXXFLAGS += -std=c++11 -DCXX_11
-        }
     }
 }
 

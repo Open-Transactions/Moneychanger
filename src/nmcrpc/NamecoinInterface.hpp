@@ -62,13 +62,6 @@ private:
    */
   static const unsigned UNLOCK_SECONDS;
 
-  // Disable copying and default constructor.
-#ifndef CXX_11
-  NamecoinInterface ();
-  NamecoinInterface (const NamecoinInterface&);
-  NamecoinInterface& operator= (const NamecoinInterface&);
-#endif /* !CXX_11  */
-
 public:
 
   /**
@@ -82,11 +75,9 @@ public:
   }
 
   // We want no default constructor or copying.
-#ifdef CXX_11
   NamecoinInterface () = delete;
   NamecoinInterface (const NamecoinInterface&) = delete;
   NamecoinInterface& operator= (const NamecoinInterface&) = delete;
-#endif /* CXX_11?  */
 
   /**
    * Run a simple test command and return whether the connection seems to
@@ -224,10 +215,8 @@ public:
   }
 
   // Copying is ok.
-#ifdef CXX_11
   Address (const Address&) = default;
   Address& operator= (const Address&) = default;
-#endif /* CXX_11?  */
 
   /**
    * Get the address as string.
@@ -353,10 +342,8 @@ public:
   }
 
   // Copying is ok.
-#ifdef CXX_11
   Name (const Name&) = default;
   Name& operator= (const Name&) = default;
-#endif /* CXX_11?  */
 
   /**
    * Get the name as string.
@@ -487,13 +474,6 @@ private:
   /** Whether we actually unlocked the wallet.  */
   bool unlocked;
 
-  // Disable copying and default constructor.
-#ifndef CXX_11
-  WalletUnlocker ();
-  WalletUnlocker (const WalletUnlocker&);
-  WalletUnlocker& operator= (const WalletUnlocker&);
-#endif /* !CXX_11  */
-
 public:
 
   /**
@@ -503,11 +483,9 @@ public:
   explicit WalletUnlocker (NamecoinInterface& n);
 
   // No default constructor or copying.
-#ifdef CXX_11
   WalletUnlocker () = delete;
   WalletUnlocker (const WalletUnlocker&) = delete;
   WalletUnlocker& operator= (const WalletUnlocker&) = delete;
-#endif /* CXX_11?  */
 
   /**
    * Lock the wallet on destruct.
@@ -538,11 +516,6 @@ private:
   /** The name that was not found.  */
   std::string name;
 
-  // Disable default constructor.
-#ifndef CXX_11
-  NameNotFound ();
-#endif /* !CXX_11  */
-
 public:
 
   /**
@@ -556,17 +529,9 @@ public:
   }
 
   /* No default constructor, but copying ok.  */
-#ifdef CXX_11
   NameNotFound () = delete;
   NameNotFound (const NameNotFound&) = default;
   NameNotFound& operator= (const NameNotFound&) = default;
-#endif /* CXX_11?  */
-
-  // Specify throw() explicitly.
-#ifndef CXX_11
-  inline ~NameNotFound () throw ()
-  {}
-#endif /* !CXX_11  */
 
   /**
    * Get the name of this error.
@@ -587,13 +552,6 @@ public:
 class NamecoinInterface::NoPrivateKey : public std::runtime_error
 {
 
-private:
-
-  // Disable default constructor.
-#ifndef CXX_11
-  NoPrivateKey ();
-#endif /* !CXX_11  */
-
 public:
 
   /**
@@ -607,12 +565,9 @@ public:
   }
 
   /* No default constructor, but copying ok.  */
-#ifdef CXX_11
   NoPrivateKey () = delete;
   NoPrivateKey (const NoPrivateKey&) = default;
   NoPrivateKey& operator= (const NoPrivateKey&) = default;
-#endif /* CXX_11?  */
-
 };
 
 /**
@@ -621,13 +576,6 @@ public:
  */
 class NamecoinInterface::UnlockFailure : public std::runtime_error
 {
-
-private:
-
-  // Disable default constructor.
-#ifndef CXX_11
-  UnlockFailure ();
-#endif /* !CXX_11  */
 
 public:
 
@@ -642,12 +590,9 @@ public:
   }
 
   /* No default constructor, but copying ok.  */
-#ifdef CXX_11
   UnlockFailure () = delete;
   UnlockFailure (const UnlockFailure&) = default;
   UnlockFailure& operator= (const UnlockFailure&) = default;
-#endif /* CXX_11?  */
-
 };
 
 /* ************************************************************************** */

@@ -171,11 +171,7 @@ NMC_NameManager::startRegistration (const QString& nym, const QString& cred)
       const QString queryStr = "INSERT INTO `nmc_names`"
                                "  (`name`, `nym`, `cred`, `active`, `regData`)"
                                "  VALUES (:name, :nym, :cred, 0, :regData)";
-#ifdef CXX_11
       std::unique_ptr<DBHandler::PreparedQuery> qu;
-#else /* CXX_11?  */
-      std::auto_ptr<DBHandler::PreparedQuery> qu;
-#endif /* CXX_11?  */
       qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
       qu->bind (":name", nm.getName ().c_str ());
       qu->bind (":nym", nym);
@@ -245,11 +241,7 @@ NMC_NameManager::updateName (const QString& nym, const QString& cred)
       QString queryStr = "UPDATE `nmc_names`"
                          "  SET `updateTx` = :txid"
                          "  WHERE `name` = :name";
-#ifdef CXX_11
       std::unique_ptr<DBHandler::PreparedQuery> qu;
-#else /* CXX_11?  */
-      std::auto_ptr<DBHandler::PreparedQuery> qu;
-#endif /* CXX_11?  */
       qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
       qu->bind (":txid", txid.c_str ());
       qu->bind (":name", nm.getName ().c_str ());
@@ -333,11 +325,7 @@ NMC_NameManager::timerUpdate ()
               QString queryStr = "UPDATE `nmc_names`"
                                  "  SET `regData` = NULL, `active` = 1"
                                  "  WHERE `name` = :name";
-#ifdef CXX_11
               std::unique_ptr<DBHandler::PreparedQuery> qu;
-#else /* CXX_11?  */
-              std::auto_ptr<DBHandler::PreparedQuery> qu;
-#endif /* CXX_11?  */
               qu.reset (db.prepareQuery (queryStr));
               qu->bind (":name", i->getName ().c_str ());
               db.runQuery (qu.release ());
@@ -374,11 +362,7 @@ NMC_NameManager::timerUpdate ()
               const QString queryStr = "UPDATE `nmc_names`"
                                        "  SET `regData` = :regData"
                                        "  WHERE `name` = :name";
-#ifdef CXX_11
               std::unique_ptr<DBHandler::PreparedQuery> qu;
-#else /* CXX_11?  */
-              std::auto_ptr<DBHandler::PreparedQuery> qu;
-#endif /* CXX_11?  */
               qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
               qu->bind (":name", i->getName ().c_str ());
               qu->bind (":regData", out.str ().c_str ());

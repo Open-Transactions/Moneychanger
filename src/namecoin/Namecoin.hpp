@@ -54,12 +54,6 @@ private:
   /** High-level interface used.  */
   nmcrpc::NamecoinInterface* nc;
 
-  // Disable copying.
-#ifndef CXX_11
-  NMC_Interface (const NMC_Interface&);
-  NMC_Interface& operator= (const NMC_Interface&);
-#endif /* !CXX_11  */
-
 public:
 
   /**
@@ -73,10 +67,8 @@ public:
   ~NMC_Interface ();
 
   // No copying.
-#ifdef CXX_11
   NMC_Interface (const NMC_Interface&) = delete;
   NMC_Interface& operator= (const NMC_Interface&) = delete;
-#endif /* CXX_11?  */
 
   /**
    * Get JSON-RPC connection.
@@ -149,7 +141,7 @@ private:
     AddPendingRegFunctor ();
 
   public:
-    
+
     inline explicit
     AddPendingRegFunctor (NMC_NameManager& m)
       : me(m)
@@ -223,7 +215,7 @@ private:
 
   /** High-level Namecoin interface used.  */
   nmcrpc::NamecoinInterface& nc;
-  
+
   /** The "real" wallet unlocker object used behind-the-scenes.  */
   nmcrpc::NamecoinInterface::WalletUnlocker unlocker;
 
@@ -260,13 +252,6 @@ public:
 class NMC_WalletUnlocker::UnlockFailure : public std::runtime_error
 {
 
-private:
-
-  // No default constructor.
-#ifndef CXX_11
-  UnlockFailure ();
-#endif /* !CXX_11  */
-
 public:
 
   /**
@@ -280,12 +265,9 @@ public:
   }
 
   /* No default constructor, but copying ok.  */
-#ifdef CXX_11
   UnlockFailure () = delete;
   UnlockFailure (const UnlockFailure&) = default;
   UnlockFailure& operator= (const UnlockFailure&) = default;
-#endif /* CXX_11?  */
-
 };
 
 /* ************************************************************************** */
@@ -304,13 +286,6 @@ private:
   /** Namecoin interface to use.  */
   nmcrpc::NamecoinInterface& nc;
 
-  // Disable copying.
-#ifndef CXX_11
-  NMC_Verifier ();
-  NMC_Verifier (const NMC_Verifier&);
-  NMC_Verifier& operator= (const NMC_Verifier&);
-#endif /* !CXX_11  */
-
 public:
 
   /**
@@ -324,11 +299,9 @@ public:
   }
 
   // No default constructor or copying.
-#ifdef CXX_11
   NMC_Verifier () = delete;
   NMC_Verifier (const NMC_Verifier&) = delete;
   NMC_Verifier& operator= (const NMC_Verifier&) = delete;
-#endif /* CXX_11?  */
 
   /**
    * Verify a credentials hash.

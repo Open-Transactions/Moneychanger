@@ -36,13 +36,8 @@ template<typename L>
   JsonRpc::executeRpcList (const std::string& method, const L& params)
 {
   JsonData arr(Json::arrayValue);
-#ifdef CXX_11
   for (const auto& elem : params)
     arr.append (JsonData (elem));
-#else /* CXX_11?  */
-  for (typename L::const_iterator i = params.begin (); i != params.end (); ++i)
-    arr.append (JsonData (*i));
-#endif /* CXX_11?  */
 
   return executeRpcArray (method, arr);
 }

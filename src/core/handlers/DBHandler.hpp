@@ -58,7 +58,7 @@ class DBHandler
     QSqlDatabase db;
     FileHandler dbFile;
     QMutex dbMutex;
-    
+
     QPointer<ModelTradeArchive>         pTradeArchiveModel_;
     QPointer<ModelMessages>             pMessageModel_;
     QPointer<ModelPayments>             pPaymentModel_;
@@ -156,7 +156,7 @@ class DBHandler::PreparedQuery
 {
 
   private:
-    
+
     friend class DBHandler;
 
     /** The backing QSqlQuery object.  */
@@ -176,13 +176,6 @@ class DBHandler::PreparedQuery
       query.prepare (queryStr);
     }
 
-    // Disable copying.
-#ifndef CXX_11
-    PreparedQuery ();
-    PreparedQuery (const PreparedQuery&);
-    PreparedQuery& operator= (const PreparedQuery&);
-#endif /* !CXX_11  */
-
     /**
      * Execute the query.
      * @return True in case of success.
@@ -194,11 +187,9 @@ class DBHandler::PreparedQuery
     QString lastQuery();
 
     // No copying.
-#ifdef CXX_11
     PreparedQuery () = delete;
     PreparedQuery (const PreparedQuery&) = delete;
     PreparedQuery& operator= (const PreparedQuery&) = delete;
-#endif /* CXX_11?  */
 
     /**
      * Add a bound value.

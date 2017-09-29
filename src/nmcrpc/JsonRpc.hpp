@@ -62,13 +62,6 @@ private:
   /** The next ID to use for JSON-RPC queries.  */
   unsigned nextId;
 
-  // Disable copying.
-#ifndef CXX_11
-  JsonRpc ();
-  JsonRpc (const JsonRpc&);
-  JsonRpc& operator= (const JsonRpc&);
-#endif /* !CXX_11  */
-
   /**
    * Perform a HTTP query with JSON data.  However, this routine does not
    * know/care about JSON, it just sends the raw string and returns the
@@ -94,11 +87,9 @@ public:
   }
 
   // We want no default constructor or copying.
-#ifdef CXX_11
   JsonRpc () = delete;
   JsonRpc (const JsonRpc&) = delete;
   JsonRpc& operator= (const JsonRpc&) = delete;
-#endif /* CXX_11?  */
 
   /**
    * Decode JSON from a string.
@@ -195,13 +186,6 @@ public:
 class JsonRpc::Exception : public std::runtime_error
 {
 
-private:
-
-  // Disable default constructor.
-#ifndef CXX_11
-  Exception ();
-#endif /* !CXX_11  */
-
 public:
 
   /**
@@ -215,12 +199,9 @@ public:
   }
 
   /* No default constructor, but copying ok.  */
-#ifdef CXX_11
   Exception () = delete;
   Exception (const Exception&) = default;
   Exception& operator= (const Exception&) = default;
-#endif /* CXX_11?  */
-
 };
 
 /**
@@ -228,13 +209,6 @@ public:
  */
 class JsonRpc::JsonParseError : public JsonRpc::Exception
 {
-
-private:
-
-  // Disable default constructor.
-#ifndef CXX_11
-  JsonParseError ();
-#endif /* !CXX_11  */
 
 public:
 
@@ -249,12 +223,9 @@ public:
   }
 
   /* No default constructor, but copying ok.  */
-#ifdef CXX_11
   JsonParseError () = delete;
   JsonParseError (const JsonParseError&) = default;
   JsonParseError& operator= (const JsonParseError&) = default;
-#endif /* CXX_11?  */
-
 };
 
 /**
@@ -267,11 +238,6 @@ private:
 
   /** The response code.  */
   unsigned code;
-
-  // Disable copy constructor.
-#ifndef CXX_11
-  HttpError ();
-#endif /* !CXX_11  */
 
 public:
 
@@ -287,11 +253,9 @@ public:
   }
 
   /* Default copying, no default constructor.  */
-#ifdef CXX_11
   HttpError () = delete;
   HttpError (const HttpError&) = default;
   HttpError& operator= (const HttpError&) = default;
-#endif /* CXX_11?  */
 
   /**
    * Query HTTP response code.
@@ -319,11 +283,6 @@ private:
   /** Error message (from RPC).  */
   std::string message;
 
-  // Disable default constructor.
-#ifndef CXX_11
-  RpcError ();
-#endif /* !CXX_11  */
-
 public:
 
   /**
@@ -339,17 +298,9 @@ public:
   }
 
   /* No default constructor but copying allowed.  */
-#ifdef CXX_11
   RpcError () = delete;
   RpcError (const RpcError&) = default;
   RpcError& operator= (const RpcError&) = default;
-#endif /* CXX_11?  */
-
-  // Set explicit throw() for destructor in C++03 mode.
-#ifndef CXX_11
-  inline ~RpcError () throw ()
-  {}
-#endif /* !CXX_11  */
 
   /**
    * Get the error code.

@@ -96,17 +96,8 @@ performUpdate (JsonRpc& rpc, NamecoinInterface& nc,
                bool hasVal, const std::string& val,
                bool hasAddr, const std::string& addr)
 {
-#ifdef CXX_11
   for (const auto& nm : names)
-#else /* CXX_11  */
-  for (std::vector<std::string>::const_iterator i = names.begin ();
-       i != names.end (); ++i)
-#endif /* CXX_11  */
     {
-#ifndef CXX_11
-      const std::string& nm = *i;
-#endif /* !CXX_11  */
-
       std::cout << "Updating " << nm << ": ";
       NamecoinInterface::Name name = nc.queryName (nm);
 
@@ -140,30 +131,6 @@ compareNames (const NamecoinInterface::Name& a,
   return a.getName () < b.getName ();
 }
 
-/* Functor instead of addName lambda if we don't have C++11.  */
-#ifndef CXX_11
-class addNameFunctor
-{
-private:
-
-  std::vector<NamecoinInterface::Name>& names;
-
-public:
-
-  explicit inline
-  addNameFunctor (std::vector<NamecoinInterface::Name>& n)
-    : names(n)
-  {}
-
-  inline void
-  operator() (const NamecoinInterface::Name& nm)
-  {
-    names.push_back (nm);
-  }
-
-};
-#endif /* !CXX_11  */
-
 /**
  * Main routine with the usual interface.
  */
@@ -194,30 +161,17 @@ main (int argc, char** argv)
         {
           std::vector<NamecoinInterface::Name> names;
 
-#ifdef CXX_11
           const auto addName = [&names] (const NamecoinInterface::Name& nm)
             {
               names.push_back (nm);
             };
-#else /* CXX_11  */
-          addNameFunctor addName(names);
-#endif /* CXX_11  */
 
           nc.forMyNames (addName);
 
           std::sort (names.begin (), names.end (), &compareNames);
 
-#ifdef CXX_11
           for (const auto& el : names)
-#else /* CXX_11  */
-          std::vector<NamecoinInterface::Name>::const_iterator i;
-          for (i = names.begin (); i != names.end (); ++i)
-#endif /* CXX_11  */
             {
-#ifndef CXX_11
-              const NamecoinInterface::Name& el = *i;
-#endif /* !CXX_11  */
-
               std::cout.width (30);
               if (!el.isExpired ())
                 std::cout << el.getName () << ": "

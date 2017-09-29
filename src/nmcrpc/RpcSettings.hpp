@@ -73,10 +73,8 @@ public:
   }
 
   // Allow copying.
-#ifdef CXX_11
   RpcSettings (const RpcSettings&) = default;
   RpcSettings& operator= (const RpcSettings&) = default;
-#endif /* CXX_11?  */
 
   /**
    * Try to read the given input file and update settings when corresponding

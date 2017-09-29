@@ -64,17 +64,8 @@ static void
 doInfo (const RegistrationManager& reg)
 {
   std::cout << "Names in registration:" << std::endl << std::endl;
-#ifdef CXX_11
   for (const auto& nm : reg)
-#else /* CXX_11  */
-  for (RegistrationManager::const_iterator i = reg.begin ();
-       i != reg.end (); ++i)
-#endif /* CXX_11  */
     {
-#ifndef CXX_11
-      const NameRegistration& nm = *i;
-#endif /* !CXX_11  */
-
       std::cout << nm.getName () << ": ";
       switch (nm.getState ())
         {
@@ -174,7 +165,7 @@ doCheck (NamecoinInterface& nc, const std::string& file)
           std::cout << std::endl;
         }
     }
-  
+
   std::cout << found << " found, " << notFound << " available." << std::endl;
 }
 
@@ -263,7 +254,7 @@ main (int argc, char** argv)
 
               doRegister (reg, nc, name, val);
             }
-          else if (command == "multi") 
+          else if (command == "multi")
             {
               if (argc != 5)
                 throw std::runtime_error ("Expected: nmreg multi"

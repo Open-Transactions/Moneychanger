@@ -53,15 +53,9 @@ private:
 
   /** Data to be posted.  */
   std::string data;
-  
+
   /** Store response body here.  */
   std::string response;
-
-  // Disable copying.
-#ifndef CXX_11
-  CurlPost (const CurlPost& o);
-  CurlPost& operator= (const CurlPost& o);
-#endif /* !CXX_11  */
 
   /**
    * Write function for cURL.
@@ -86,10 +80,8 @@ public:
   }
 
   // No copying.
-#ifdef CXX_11
   CurlPost (const CurlPost& o) = delete;
   CurlPost& operator= (const CurlPost& o) = delete;
-#endif /* CXX_11?  */
 
   /**
    * Destory, which cleans up the cURL connection.
@@ -173,7 +165,7 @@ CurlPost::init ()
   if (!handle)
     throw JsonRpc::Exception ("Initialisation of cURL failed.");
 }
-  
+
 void
 CurlPost::addHeader (const std::string& header, const std::string& value)
 {

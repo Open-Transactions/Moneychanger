@@ -43,11 +43,7 @@ template<typename T>
   bool
   DBHandler::queryMultiple (PreparedQuery* run, T cb)
 {
-#ifdef CXX_11
   std::unique_ptr<PreparedQuery> query(run);
-#else /* CXX_11?  */
-  std::auto_ptr<PreparedQuery> query(run);
-#endif /* CXX_11?  */
   QMutexLocker locker(&dbMutex);
 
   if (!db.isOpen ())
