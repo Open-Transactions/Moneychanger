@@ -226,13 +226,8 @@ RegistrationManager::~RegistrationManager ()
 void
 RegistrationManager::clear ()
 {
-#ifdef CXX_11
   for (auto ptr : names)
     delete ptr;
-#else /* CXX_11  */
-  for (nameListT::iterator i = names.begin (); i != names.end (); ++i)
-    delete *i;
-#endif /* CXX_11  */
   names.clear ();
 }
 
@@ -246,12 +241,7 @@ RegistrationManager::clear ()
 NameRegistration&
 RegistrationManager::registerName (const NamecoinInterface::Name& nm)
 {
-#ifdef CXX_11
   std::unique_ptr<NameRegistration> ptr;
-#else /* CXX_11  */
-  std::auto_ptr<NameRegistration> ptr;
-#endif /* CXX_11  */
-
   ptr.reset (new NameRegistration (rpc, nc));
   ptr->registerName (nm);
 
@@ -265,15 +255,8 @@ RegistrationManager::registerName (const NamecoinInterface::Name& nm)
 void
 RegistrationManager::update ()
 {
-#ifdef CXX_11
   for (auto& nm : *this)
-#else /* CXX_11  */
-  for (iterator i = begin (); i != end (); ++i)
-#endif /* CXX_11  */
     {
-#ifndef CXX_11
-      NameRegistration& nm = *i;
-#endif /* !CXX_11  */
       if (nm.canActivate ())
         nm.activate ();
     }
@@ -317,16 +300,8 @@ operator<< (std::ostream& out, const RegistrationManager& obj)
   outVal["version"] = 1;
 
   JsonRpc::JsonData arr(Json::arrayValue);
-#ifdef CXX_11
   for (const auto& nm : obj)
-#else /* CXX_11  */
-  for (RegistrationManager::const_iterator i = obj.begin ();
-       i != obj.end (); ++i)
-#endif /* CXX_11  */
     {
-#ifndef CXX_11
-      const NameRegistration& nm = *i;
-#endif /* !CXX_11  */
       std::ostringstream val;
       val << nm;
       arr.append (val.str ());
@@ -360,24 +335,10 @@ operator>> (std::istream& in, RegistrationManager& obj)
     throw std::runtime_error ("Invalid JSON for RegistrationManager.");
 
   obj.clear ();
-#ifdef CXX_11
   for (const JsonRpc::JsonData el : elements)
-#else /* CXX_11  */
-  for (JsonRpc::JsonData::const_iterator i = elements.begin ();
-       i != elements.end (); ++i)
-#endif /* CXX_11  */
     {
-#ifndef CXX_11
-      const JsonRpc::JsonData& el = *i;
-#endif /* !CXX_11  */
-
       std::istringstream val(el.asString ());
-#ifdef CXX_11
       std::unique_ptr<NameRegistration> ptr;
-#else /* CXX_11  */
-      std::auto_ptr<NameRegistration> ptr;
-#endif /* CXX_11  */
-
       ptr.reset (new NameRegistration (obj.rpc, obj.nc));
       val >> *ptr;
       obj.names.push_back (ptr.release ());

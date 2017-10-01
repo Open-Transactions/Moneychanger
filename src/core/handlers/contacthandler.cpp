@@ -253,11 +253,7 @@ bool MTContactHandler::claimRecordExists(const QString & claim_id)
 
 //    try
 //    {
-//    #ifdef CXX_11
 //        std::unique_ptr<DBHandler::PreparedQuery> qu;
-//    #else /* CXX_11?  */
-//        std::auto_ptr<DBHandler::PreparedQuery> qu;
-//    #endif /* CXX_11?  */
 //        qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
 //        // ---------------------------------------------
 //        qu->bind (":ver_idBlah", qstrVerificationId);
@@ -828,11 +824,7 @@ bool MTContactHandler::upsertClaim(
 
     try
     {
-    #ifdef CXX_11
         std::unique_ptr<DBHandler::PreparedQuery> qu;
-    #else /* CXX_11?  */
-        std::auto_ptr<DBHandler::PreparedQuery> qu;
-    #endif /* CXX_11?  */
         qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
         // ---------------------------------------------
         qu->bind (":claim_idBlah", claim_id);
@@ -1367,11 +1359,7 @@ int MTContactHandler::GetOrCreateLiveAgreementId(const int64_t transNumDisplay, 
                            "VALUES(NULL, :blah_have_read, :blah_txn_id_display, :blah_notary_id, "
                                    "%2"
                                    ":blah_folder)").arg(memo1).arg(memo2);
-    #ifdef CXX_11
         std::unique_ptr<DBHandler::PreparedQuery> qu;
-    #else /* CXX_11?  */
-        std::auto_ptr<DBHandler::PreparedQuery> qu;
-    #endif /* CXX_11?  */
         qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
         qu->bind (":blah_have_read", have_read);
         qu->bind (":blah_txn_id_display", QVariant::fromValue(transNumDisplay));
@@ -1423,11 +1411,7 @@ bool MTContactHandler::UpdateLiveAgreementRecord(const int nAgreementId, const i
                          "%2" // memo
                          " `timestamp` = :blah_timestamp"
                          " WHERE `agreement_id` = :blah_agreement_id").arg(qstrKnownState).arg(qstrMemo);
-    #ifdef CXX_11
         std::unique_ptr<DBHandler::PreparedQuery> qu;
-    #else /* CXX_11?  */
-        std::auto_ptr<DBHandler::PreparedQuery> qu;
-    #endif /* CXX_11?  */
         qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
         // ---------------------------------------------
         qu->bind (":blah_newest_receipt_id", QVariant::fromValue(nNewestReceiptNum));
@@ -1943,11 +1927,7 @@ bool MTContactHandler::SetPaymentFlags(int nPaymentID, qint64 nFlags)
         QString queryStr("UPDATE `payment`"
                          " SET `flags` = :strdflags"
                          " WHERE `payment_id` = :pymntid");
-    #ifdef CXX_11
         std::unique_ptr<DBHandler::PreparedQuery> qu;
-    #else /* CXX_11?  */
-        std::auto_ptr<DBHandler::PreparedQuery> qu;
-    #endif /* CXX_11?  */
         qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
         // ---------------------------------------------
         qu->bind (":strdflags", storedFlags);
@@ -1988,11 +1968,7 @@ bool MTContactHandler::UpdateAgreementReceiptRecord(int nAgreementReceiptID, QMa
         QString queryStr = QString("UPDATE `agreement_receipt`"
                                    " SET %1"
                                    " WHERE `agreement_receipt_key` = :agrectid").arg(queryDetails);
-    #ifdef CXX_11
         std::unique_ptr<DBHandler::PreparedQuery> qu;
-    #else /* CXX_11?  */
-        std::auto_ptr<DBHandler::PreparedQuery> qu;
-    #endif /* CXX_11?  */
         qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
         // ---------------------------------------------
         // Now we bind all the values.
@@ -2052,11 +2028,7 @@ bool MTContactHandler::UpdatePaymentRecord(int nPaymentID, QMap<QString, QVarian
         QString queryStr = QString("UPDATE `payment`"
                                    " SET %1"
                                    " WHERE `payment_id` = :pymntid").arg(queryDetails);
-    #ifdef CXX_11
         std::unique_ptr<DBHandler::PreparedQuery> qu;
-    #else /* CXX_11?  */
-        std::auto_ptr<DBHandler::PreparedQuery> qu;
-    #endif /* CXX_11?  */
         qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
         // ---------------------------------------------
         // Now we bind all the values.
@@ -2104,11 +2076,7 @@ bool MTContactHandler::LowLevelUpdateManagedPassphrase(int nPassphraseID,
         QString queryStr = "UPDATE `managed_passphrase`"
                            "  SET `passphrase_title` = :passtitle,`passphrase_username` = :passusername,`passphrase_url` = :passurl"
                            "  WHERE `passphrase_id` = :passid";
-    #ifdef CXX_11
         std::unique_ptr<DBHandler::PreparedQuery> qu;
-    #else /* CXX_11?  */
-        std::auto_ptr<DBHandler::PreparedQuery> qu;
-    #endif /* CXX_11?  */
         qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
         qu->bind (":passid", nPassphraseID);
         qu->bind (":passtitle", qstrTitle);
@@ -2154,11 +2122,7 @@ bool MTContactHandler::GetManagedPassphrase(int nPassphraseID,
 
         QString queryStr = "SELECT `passphrase_title`, `passphrase_username`, `passphrase_url` FROM `managed_passphrase`"
                            "  WHERE `passphrase_id` = :passid";
-#ifdef CXX_11
         std::unique_ptr<DBHandler::PreparedQuery> qu;
-#else /* CXX_11?  */
-        std::auto_ptr<DBHandler::PreparedQuery> qu;
-#endif /* CXX_11?  */
         qu.reset (db.prepareQuery (queryStr));
         qu->bind (":passid", nPassphraseID);
         QSqlRecord rec = db.queryOne (qu.release ());
@@ -2250,11 +2214,7 @@ bool MTContactHandler::GetManagedPassphrases(mapIDName & mapTitle, mapIDName & m
     else
         queryStr = QString("SELECT `passphrase_id`,`passphrase_title`,`passphrase_url` FROM `managed_passphrase` ");
 
-  #ifdef CXX_11
     std::unique_ptr<DBHandler::PreparedQuery> qu;
-  #else /* CXX_11?  */
-    std::auto_ptr<DBHandler::PreparedQuery> qu;
-  #endif /* CXX_11?  */
     qu.reset (db.prepareQuery (queryStr));
 
     try
@@ -3821,11 +3781,7 @@ void MTContactHandler::NotifyOfNymNamePair(QString nym_id_string, QString name_s
 
     try
     {
-    #ifdef CXX_11
         std::unique_ptr<DBHandler::PreparedQuery> qu;
-    #else /* CXX_11?  */
-        std::auto_ptr<DBHandler::PreparedQuery> qu;
-    #endif /* CXX_11?  */
         qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
         // ---------------------------------------------
         qu->bind (":nym_idBlah", nym_id_string);

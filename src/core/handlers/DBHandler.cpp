@@ -886,13 +886,9 @@ QString DBHandler::formatValue(QSqlField & sqlField)
 
 bool DBHandler::runQuery(PreparedQuery* query)
 {
-#ifdef CXX_11
   std::unique_ptr<PreparedQuery> qu(query);
-#else /* CXX_11?  */
-  std::auto_ptr<PreparedQuery> qu(query);
-#endif /* CXX_11?  */
-
   QMutexLocker locker(&dbMutex);
+
   if (!db.isOpen ())
     return false;
 
@@ -901,13 +897,9 @@ bool DBHandler::runQuery(PreparedQuery* query)
 
 QSqlRecord DBHandler::queryOne(PreparedQuery* query)
 {
-#ifdef CXX_11
   std::unique_ptr<PreparedQuery> qu(query);
-#else /* CXX_11?  */
-  std::auto_ptr<PreparedQuery> qu(query);
-#endif /* CXX_11?  */
-
   QMutexLocker locker(&dbMutex);
+
   if (!db.isOpen ())
     throw std::runtime_error ("Database is not open.");
 

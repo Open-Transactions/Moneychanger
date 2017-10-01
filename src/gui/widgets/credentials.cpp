@@ -276,11 +276,7 @@ MTCredentials::getNamecoinStatus (const std::string& nym,
   const QString queryStr = "SELECT `name`, `active`, `updateTx`"
                            "  FROM `nmc_names`"
                            "  WHERE `nym` = :nym AND `cred` = :cred";
-#ifdef CXX_11
   std::unique_ptr<DBHandler::PreparedQuery> qu;
-#else /* CXX_11?  */
-  std::auto_ptr<DBHandler::PreparedQuery> qu;
-#endif /* CXX_11?  */
   qu.reset (db.prepareQuery (queryStr));
   qu->bind (":nym", nym.c_str ());
   qu->bind (":cred", cred.c_str ());

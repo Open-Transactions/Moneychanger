@@ -35,15 +35,8 @@ template<typename T>
 {
   const JsonRpc::JsonData res = rpc.executeRpc ("name_list");
   assert (res.isArray ());
-#ifdef CXX_11
   for (const JsonRpc::JsonData& val : res)
-#else /* CXX_11?  */
-  for (JsonRpc::JsonData::const_iterator i = res.begin (); i != res.end (); ++i)
-#endif /* CXX_11?  */
     {
-#ifndef CXX_11
-      const JsonRpc::JsonData& val = *i;
-#endif /* !CXX_11?  */
       NamecoinInterface::Name nm = queryName (val["name"].asString ());
       if (nm.getAddress ().isMine ())
         cb (nm);
