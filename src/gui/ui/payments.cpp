@@ -103,7 +103,7 @@ Payments::Payments(QWidget *parent) :
     connect(ui->toolButtonContacts, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_addressbook_slot()));
     connect(this, SIGNAL(needToCheckNym(QString, QString, QString)), Moneychanger::It(), SLOT(onNeedToCheckNym(QString, QString, QString)));
 
-    if (!Moneychanger::It()->expertMode())
+//  if (!Moneychanger::It()->expertMode())
     {
         QList<int> list;
         list.append(0);
@@ -128,15 +128,14 @@ static void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel
 
 //    if (pSourceModel)
     {
-//        QModelIndex sourceIndex = pSourceModel->index(0, PMNT_SOURCE_COL_TIMESTAMP);
-//        QModelIndex proxyIndex  = (static_cast<PaymentsProxyModel *>(pProxyModel)) -> mapFromSource(sourceIndex);
+//      QModelIndex sourceIndex = pSourceModel->index(0, PMNT_SOURCE_COL_TIMESTAMP);
+//      QModelIndex proxyIndex  = (static_cast<PaymentsProxyModel *>(pProxyModel)) -> mapFromSource(sourceIndex);
         // ----------------------------------
-//        PaymentsProxyModel * pPmntProxyModel = static_cast<PaymentsProxyModel *>(pProxyModel);
+//      PaymentsProxyModel * pPmntProxyModel = static_cast<PaymentsProxyModel *>(pProxyModel);
 
-      pView->sortByColumn(7, Qt::DescendingOrder); // The timestamp ends up at index 7 in all the proxy views.
+        pView->sortByColumn(7, Qt::DescendingOrder); // The timestamp ends up at index 7 in all the proxy views.
 
-//        qDebug() << "SORT COLUMN: " << proxyIndex.column() << "\n";
-
+//      qDebug() << "SORT COLUMN: " << proxyIndex.column() << "\n";
     }
     pView->setContextMenuPolicy(Qt::CustomContextMenu);
     pView->verticalHeader()->hide();

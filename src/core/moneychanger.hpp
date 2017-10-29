@@ -6,10 +6,12 @@
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
 #include "core/TR1_Wrapper.hpp"
+#include "core/mapidname.hpp"
 
 #include <core/handlers/focuser.h>
 
 #include <opentxs/client/OTRecordList.hpp>
+#include <opentxs/core/Proto.hpp>
 
 #include <namecoin/Namecoin.hpp>
 
@@ -42,6 +44,7 @@ class DlgPassphraseManager;
 class Messages;
 class Payments;
 class Agreements;
+class Activity;
 class QMenu;
 class QSystemTrayIcon;
 class CreateInsuranceCompany;
@@ -93,10 +96,20 @@ public:
     void modifyRecords(); // After we populate the recordlist, we make some changes to the list (move messages to a separate db table, move receipts to a separate table, etc.)
     void processImportRecord(
             opentxs::OTRecord& recordmt,
-            const int nIndex
+            const int nIndex,
+            MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+            MapOfConversationsByNym & mapOfConversationsByNym,
+            SetNymThreadAndItem & setNewlyAddedNymThreadAndItem
             );
 
-    bool AddMailToMsgArchive(opentxs::OTRecord& recordmt);
+    bool AddMailToMsgArchive(opentxs::OTRecord& recordmt,
+                             MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+                             MapOfConversationsByNym & mapOfConversationsByNym,
+                             SetNymThreadAndItem & setNewlyAddedNymThreadAndItem);
+    bool low_level_AddMailToMsgArchive(
+        opentxs::OTRecord& recordmt,
+        MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+        MapOfConversationsByNym & mapOfConversationsByNym);
     bool AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord=true);
     bool AddPaymentBasedOnNotice(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord=true);
     void AddPaymentBasedOnNotification(const std::string & str_acct_id,
@@ -116,6 +129,7 @@ signals:
     void populatedRecordlist();
     void appendToLog(QString);
     void expertModeUpdated(bool);
+    void newNymAdded(QString);
     void hideNavUpdated(bool);
     void claimsUpdatedForNym(QString);
     void nymWasJustChecked(QString);
@@ -227,8 +241,10 @@ private:
     QPointer<Messages>   messages_window;
     QPointer<Payments>   payments_window;
     QPointer<Agreements> agreements_window;
+    QPointer<Activity>   activity_window;
 
     QPointer<MTDetailEdit> contactswindow;
+    QPointer<MTDetailEdit> opentxscontactswindow;
     QPointer<MTDetailEdit> nymswindow;
     QPointer<MTDetailEdit> serverswindow;
     QPointer<MTDetailEdit> assetswindow;
@@ -262,8 +278,19 @@ private:
     void mc_accountmanager_dialog(QString qstrAcctID=QString(""));
 
     void mc_addressbook_show(QString text=QString(""));
+    void mc_opentxs_contact_show(QString text=QString(""));
 
     void mc_overview_dialog_refresh();
+
+    void processPeerMessages();
+    void process_peer_replies();
+    void process_peer_replies_forNym(const opentxs::Identifier & nymID);
+    void process_peer_requests();
+    void process_peer_requests_forNym(const opentxs::Identifier & nymID);
+    void process_request_bailment(const opentxs::Identifier & nymID, const opentxs::proto::PeerReply& reply);
+    void process_store_secret(const opentxs::Identifier & nymID, const opentxs::proto::PeerReply& reply);
+    void process_connection_info(const opentxs::Identifier & nymID, const opentxs::proto::PeerReply& reply);
+    void process_pending_bailment(const opentxs::Identifier & nymID, const opentxs::proto::PeerRequest& request);
 
 private:
     void SetupAdvancedMenu(QPointer<QMenu> & parent_menu);
@@ -289,6 +316,15 @@ private:
                              std::string myAcctID,
                              std::string myAcctAgentName);
     // ------------------------------------------------
+    void ImportConversationsForNym(const std::string & str_nym_id,
+                                   MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+                                   SetNymThreadAndItem & setNewlyAddedNymThreadAndItem); // output
+    bool ImportConversationForNym(const std::string & str_nym_id,
+                                  const std::string & str_thread_id,
+                                  const std::string & str_thread_name,
+                                  std::shared_ptr<opentxs::proto::StorageThread> & thread,
+                                  MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+                                  SetNymThreadAndItem & setNewlyAddedNymThreadAndItem); // output
 
 private:
     /**
@@ -301,12 +337,13 @@ private:
     void mc_messages_dialog();
     void mc_payments_dialog(int nSourceRow=-1, int nFolder=-1);
     void mc_agreements_dialog(int nSourceRow=-1, int nFolder=-1);
+    void mc_activity_dialog();
     // ------------------------------------------------
-    void mc_sendfunds_show_dialog(QString qstrAcct=QString(""));
-    void mc_requestfunds_show_dialog(QString qstrAcct=QString(""));
-    void mc_proposeplan_show_dialog(QString qstrAcct=QString(""));
+    void mc_sendfunds_show_dialog(QString qstrAcct=QString(""), QString qstrContact=QString(""));
+    void mc_requestfunds_show_dialog(QString qstrAcct=QString(""), QString qstrContact=QString(""));
+    void mc_proposeplan_show_dialog(QString qstrAcct=QString(""), QString qstrContact=QString(""));
     // ------------------------------------------------
-    void mc_composemessage_show_dialog();
+    void mc_composemessage_show_dialog(QString qstrToOpentxsContact=QString(""),QString qstrFromNym=QString(""));
     // ------------------------------------------------
     void mc_encrypt_show_dialog(bool bEncrypt=true, bool bSign=true);
     void mc_decrypt_show_dialog();
@@ -490,7 +527,10 @@ public slots:
     void mc_main_menu_slot();               // Main Menu
     // ---------------------------------------------------------------------------
     void mc_addressbook_slot();             // Address Book
-    void mc_showcontact_slot(QString text); // Address Book, Select a Contact
+    void mc_showcontact_slot(QString text); // Address Book, Select a Contact (integer ID in the string)
+    // ---------------------------------------------------------------------------
+    void mc_opentxs_contacts_slot();        // Opentxs Contact (new-style).
+    void mc_show_opentxs_contact_slot(QString text); // Opentxs Contacts, Select a Contact (string ID).
     // ---------------------------------------------------------------------------
     void mc_transport_slot();                 // Various Transport connection strings
     void mc_showtransport_slot(QString text); // Same, except choose a specific one when opening.
@@ -520,16 +560,22 @@ public slots:
     void mc_sendfunds_slot();               // Send Funds
     void mc_requestfunds_slot();            // Request Funds
     void mc_proposeplan_slot();             // Propose Payment Plan
-    void mc_composemessage_slot();          // Compose Message
+    void mc_composemessage_slot(); // Compose Message
+    void mc_message_contact_slot(QString qstrFromNym, QString qstrToOpentxsContact); // Compose Message to specific opentxs contact
     void mc_messages_slot();
     void mc_payments_slot();
     void mc_agreements_slot();
+    void mc_activity_slot();
     void mc_show_payment_slot(int nSourceRow, int nFolder);
     void mc_show_agreement_slot(int nSourceRow, int nFolder);
     // ---------------------------------------------------------------------------
-    void mc_proposeplan_from_acct (QString qstrAcct);
+    void mc_proposeplan_to_acct (QString qstrAcct);
     void mc_send_from_acct (QString qstrAcct);
+    void mc_send_from_acct_to_contact (QString qstrAcct, QString qstrContact);
     void mc_request_to_acct(QString qstrAcct);
+    void mc_request_to_acct_from_contact(QString qstrAcct, QString qstrContact);
+
+    void mc_proposeplan_to_acct_from_contact(QString qstrAcct, QString qstrContact);
     // ---------------------------------------------------------------------------
     void mc_passphrase_manager_slot();
     void mc_crypto_encrypt_slot();

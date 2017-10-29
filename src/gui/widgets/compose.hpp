@@ -29,9 +29,9 @@ class MTCompose : public QWidget
     int     m_recipientContactId; // Recipient Nym kjsdfds982345 might be Contact #2. (Or Nym itself might be blank, with ONLY Contact!)
     QString m_recipientAddress;   // If msgtype is "bitmessage" this will contain a Bitmessage address.
 
-    bool    m_bSent;
+    bool    m_bSent{false};
 
-    bool    m_bForwarding = false;
+    bool    m_bForwarding{false};
     QString m_forwardSenderNymId;
     QString m_forwardRecipientNymId;
     QString m_forwardSenderAddress;
@@ -61,6 +61,7 @@ public:
     void setInitialRecipientNym(QString nymId, QString address="");
     void setInitialRecipientAddress(QString address);
     void setInitialRecipientContactID(int contactid, QString address="");
+    void setInitialRecipientContactID(QString qstrContactid, QString address="");
 
     bool setRecipientNymBasedOnContact();
 
@@ -119,9 +120,12 @@ private slots:
     void on_toolButton_3_clicked();
 
 private:
-    bool already_init;
+    bool already_init{false};
 
-    Ui::MTCompose *ui;
+    Ui::MTCompose *ui{nullptr};
+
+    bool bCanMessage_{false};
+    QString qstrContactId_;
 };
 
 #endif // COMPOSE_HPP

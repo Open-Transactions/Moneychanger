@@ -587,7 +587,6 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     const bool bExpires             = ui->checkBoxExpires  ->isChecked();
     // ----------------------------------------------------
     {
-
         if (!opentxs::OT_ME::It().make_sure_enough_trans_nums(2, notaryID, myNymId))
         {
             const QString qstrErr("Failed trying to acquire 2 transaction numbers (to write the recurring payment with.)");

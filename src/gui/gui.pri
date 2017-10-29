@@ -45,6 +45,7 @@ FORMS += \
     $${PWD}/widgets/marketdetails.ui \
     $${PWD}/widgets/nymdetails.ui \
     $${PWD}/widgets/offerdetails.ui \
+    $${PWD}/widgets/opentxscontactdetails.ui \
     $${PWD}/widgets/pageacct_asset.ui \
     $${PWD}/widgets/pageacct_name.ui \
     $${PWD}/widgets/pageacct_nym.ui \
@@ -95,7 +96,8 @@ FORMS += \
     $$PWD/widgets/pagecurrency_details.ui \
     $$PWD/widgets/pagecontract_terms.ui \
     $$PWD/widgets/pagesecurity_details.ui \
-    $$PWD/widgets/wizardconfirmsmartcontract.ui
+    $$PWD/widgets/wizardconfirmsmartcontract.ui \
+    $$PWD/ui/activity.ui
 
 HEADERS += \
     $${PWD}/ui/dlgexportcash.hpp \
@@ -138,6 +140,7 @@ HEADERS += \
     $${PWD}/widgets/marketdetails.hpp \
     $${PWD}/widgets/nymdetails.hpp \
     $${PWD}/widgets/offerdetails.hpp \
+    $${PWD}/widgets/opentxscontactdetails.hpp \
     $${PWD}/widgets/overridecursor.hpp \
     $${PWD}/widgets/pageacct_asset.hpp \
     $${PWD}/widgets/pageacct_name.hpp \
@@ -189,7 +192,8 @@ HEADERS += \
     $$PWD/widgets/pagecontract_terms.hpp \
     $$PWD/widgets/pagesecurity_details.hpp \
     $$PWD/widgets/wizardconfirmsmartcontract.hpp \
-    $$PWD/ui/dlgpairnode.hpp
+    $$PWD/ui/dlgpairnode.hpp \
+    $$PWD/ui/activity.hpp
 
 SOURCES += \
     $${PWD}/ui/dlgexportcash.cpp \
@@ -232,6 +236,7 @@ SOURCES += \
     $${PWD}/widgets/marketdetails.cpp \
     $${PWD}/widgets/nymdetails.cpp \
     $${PWD}/widgets/offerdetails.cpp \
+    $${PWD}/widgets/opentxscontactdetails.cpp \
     $${PWD}/widgets/overridecursor.cpp \
     $${PWD}/widgets/pageacct_asset.cpp \
     $${PWD}/widgets/pageacct_name.cpp \
@@ -283,7 +288,8 @@ SOURCES += \
     $$PWD/widgets/pagecontract_terms.cpp \
     $$PWD/widgets/pagesecurity_details.cpp \
     $$PWD/widgets/wizardconfirmsmartcontract.cpp \
-    $$PWD/ui/dlgpairnode.cpp
+    $$PWD/ui/dlgpairnode.cpp \
+    $$PWD/ui/activity.cpp
 
 TRANSLATIONS += $${PWD}/translations/en_US.ts \
                 $${PWD}/translations/de_DE.ts

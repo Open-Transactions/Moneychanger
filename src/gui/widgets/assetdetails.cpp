@@ -34,7 +34,6 @@ MTAssetDetails::MTAssetDetails(QWidget *parent, MTDetailEdit & theOwner) :
 
     ui->lineEditID   ->setStyleSheet("QLineEdit { background-color: lightgray }");
     ui->lineEditNymID->setStyleSheet("QLineEdit { background-color: lightgray }");
-
     // ----------------------------------
     // Note: This is a placekeeper, so later on I can just erase
     // the widget at 0 and replace it with the real header widget.
@@ -42,6 +41,8 @@ MTAssetDetails::MTAssetDetails(QWidget *parent, MTDetailEdit & theOwner) :
     m_pHeaderWidget  = new QWidget;
     ui->verticalLayout->insertWidget(0, m_pHeaderWidget);
     // ----------------------------------
+    ui->plainTextEditDetails->setStyleSheet("QPlainTextEdit { background-color: lightgray }");
+    ui->plainTextEditDetails->setReadOnly(true);
 }
 
 MTAssetDetails::~MTAssetDetails()
@@ -228,7 +229,7 @@ void MTAssetDetails::on_pushButton_clicked()
 
                                         const std::string str_reply = opentxs::OT_ME::It().retrieve_contract(qstrNotaryID.toStdString(),
                                                                                                  qstrNymID   .toStdString(),
-                                                                                                 qstrContents.toStdString());
+                                                                                                 qstrAssetID .toStdString());
                                         const int32_t     nResult   = opentxs::OT_ME::It().VerifyMessageSuccess(str_reply);
 
                                         bSuccess = (1 == nResult);
@@ -437,6 +438,8 @@ void MTAssetDetails::ClearContents()
 
     if (m_pPlainTextEdit)
         m_pPlainTextEdit->setPlainText("");
+
+    ui->plainTextEditDetails->setPlainText("");
 }
 
 // ------------------------------------------------------
@@ -835,7 +838,39 @@ void MTAssetDetails::refresh(QString strID, QString strName)
 
         if (m_pPlainTextEdit)
             m_pPlainTextEdit->setPlainText(qstrContents);
-        // --------------------------
+        // ----------------------------------
+        QString qstrDetails("");
+
+        qstrDetails += contractProto.has_name() ? QString("- %1: %2\n").arg(tr("Name")).arg(QString::fromStdString(contractProto.name())) : QString("");
+        qstrDetails += contractProto.has_version() ? QString("- %1: %2\n").arg(tr("Version")).arg(QString::number(contractProto.version())) : QString("");
+        qstrDetails += contractProto.has_shortname() ? QString("- %1: %2\n").arg(tr("Short Name")).arg(QString::fromStdString(contractProto.shortname())) : QString("");
+        qstrDetails += contractProto.has_symbol() ? QString("- %1: %2\n").arg(tr("Symbol")).arg(QString::fromStdString(contractProto.symbol())) : QString("");
+
+        qstrDetails += QString("\n");
+
+        if (contractProto.has_currency()) {
+            qstrDetails += QString("%1:\n").arg(tr("Is currency"));
+            auto & params = contractProto.currency();
+            qstrDetails += params.has_tla() ? QString("- %1: %2\n").arg(tr("TLA")).arg(QString::fromStdString(params.tla())) : QString("");
+            qstrDetails += params.has_version() ? QString("- %1: %2\n").arg(tr("Version")).arg(QString::number(params.version())) : QString("");
+            qstrDetails += params.has_fraction() ? QString("- %1: %2\n").arg(tr("Fraction")).arg(QString::fromStdString(params.fraction())) : QString("");
+            qstrDetails += params.has_power() ? QString("- %1: %2\n").arg(tr("Power")).arg(QString::number(params.power())) : QString("");
+        }
+        if (contractProto.has_security()) {
+            qstrDetails += QString("%1:\n").arg(tr("Is shares"));
+            auto & params = contractProto.security();
+            qstrDetails += params.has_version() ? QString("- %1: %2\n").arg(tr("Version")).arg(QString::number(params.version())) : QString("");
+        }
+        if (contractProto.has_basket()) {
+            qstrDetails += QString("%1:\n").arg(tr("Is basket"));
+            auto & params = contractProto.basket();
+            qstrDetails += params.has_version() ? QString("- %1: %2\n").arg(tr("Version")).arg(QString::number(params.version())) : QString("");
+        }
+
+        qstrDetails += contractProto.has_terms() ? QString("\n- %1:\n%2").arg(tr("Terms")).arg(QString::fromStdString(contractProto.terms())) : QString("");
+
+        ui->plainTextEditDetails->setPlainText(qstrDetails);
+        // ----------------------------------
         QString qstrNymID("");
 
         ui->pushButton->setVisible(false);

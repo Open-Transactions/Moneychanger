@@ -18,7 +18,7 @@
 // to a certain filter. Like if you clicked on Alice, then back
 // to Bob, the same row would be selected for you that was
 // selected before.
-typedef std::tuple<int, std::string, std::string> MSG_TREE_ITEM;
+typedef std::tuple<std::string, std::string, std::string> MSG_TREE_ITEM;
 typedef std::map< MSG_TREE_ITEM, int> mapOfMsgTreeItems;
 
 namespace Ui {
@@ -49,7 +49,7 @@ protected:
     void enableButtons();
     void disableButtons();
 
-    MSG_TREE_ITEM make_tree_item(int nCurrentContact, QString qstrMethodType, QString qstrViaTransport);
+    MSG_TREE_ITEM make_tree_item(QString qstrCurrentContact, QString qstrMethodType, QString qstrViaTransport);
     void set_inbox_msgid_for_tree_item(MSG_TREE_ITEM & theItem, int nMsgID);
     void set_outbox_msgid_for_tree_item(MSG_TREE_ITEM & theItem, int nMsgID);
     int get_inbox_msgid_for_tree_item(MSG_TREE_ITEM & theItem); // returns message ID
@@ -71,6 +71,7 @@ public slots:
 signals:
     void needToDownloadMail();
     void showContact(QString);
+    void showContacts();
     void showContactAndRefreshHome(QString);
     void needToCheckNym(QString, QString, QString);
 
@@ -104,7 +105,7 @@ private slots:
     void on_tableViewReceived_doubleClicked(const QModelIndex &index);
 
 private:
-    Ui::Messages *ui;
+    Ui::Messages *ui{nullptr};
 
     QScopedPointer<QMenu> popupMenu_;
 
@@ -119,15 +120,15 @@ private:
     QAction * pActionExistingContact = nullptr;
     QAction * pActionDownloadCredentials = nullptr;
 
-    int nCurrentContact_ = 0;
+    QString qstrCurrentContact_;
     QString qstrMethodType_;
     QString qstrViaTransport_;
 
     QPointer<MessagesProxyModel> pMsgProxyModelInbox_;
     QPointer<MessagesProxyModel> pMsgProxyModelOutbox_;
 
-    QTableView         * pCurrentTabTableView_  = nullptr;
-    MessagesProxyModel * pCurrentTabProxyModel_ = nullptr;
+    QTableView         * pCurrentTabTableView_ {nullptr};
+    MessagesProxyModel * pCurrentTabProxyModel_{nullptr};
 
     mapOfMsgTreeItems    mapCurrentRows_inbox; // For each tree item, we store a "currently selected" row so we can re-select it when that tree item is clicked.
     mapOfMsgTreeItems    mapCurrentRows_outbox;
@@ -138,7 +139,7 @@ private:
     QList<QModelIndex> listRecordsToMarkAsReplied_;
     QList<QModelIndex> listRecordsToMarkAsForwarded_;
 
-    bool bRefreshingAfterUpdatedClaims_=false;
+    bool bRefreshingAfterUpdatedClaims_{false};
 };
 
 #endif // MESSAGES_HPP

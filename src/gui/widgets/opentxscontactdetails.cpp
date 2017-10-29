@@ -2,8 +2,8 @@
 #include <core/stable.hpp>
 #endif
 
-#include <gui/widgets/contactdetails.hpp>
-#include <ui_contactdetails.h>
+#include <gui/widgets/opentxscontactdetails.hpp>
+#include <ui_opentxscontactdetails.h>
 
 #include <gui/widgets/credentials.hpp>
 #include <gui/ui/dlgnewcontact.hpp>
@@ -21,7 +21,6 @@
 #include <core/handlers/modelverifications.hpp>
 #include <core/mtcomms.h>
 
-
 #include <opentxs/api/OT.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/client/OTAPI_Wrap.hpp>
@@ -33,7 +32,6 @@
 #include <opentxs/core/Types.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
 #include <opentxs/client/OTWallet.hpp>
-
 
 #include <QComboBox>
 #include <QPushButton>
@@ -59,9 +57,9 @@
 #define TREE_ITEM_TYPE_VERIFICATION    12
 
 
-MTContactDetails::MTContactDetails(QWidget *parent, MTDetailEdit & theOwner) :
+MTOpentxsContactDetails::MTOpentxsContactDetails(QWidget *parent, MTDetailEdit & theOwner) :
     MTEditDetails(parent, theOwner),
-    ui(new Ui::MTContactDetails)
+    ui(new Ui::MTOpentxsContactDetails)
 {
     ui->setupUi(this);
     this->setContentsMargins(0, 0, 0, 0);
@@ -82,7 +80,7 @@ MTContactDetails::MTContactDetails(QWidget *parent, MTDetailEdit & theOwner) :
     }
 }
 
-MTContactDetails::~MTContactDetails()
+MTOpentxsContactDetails::~MTOpentxsContactDetails()
 {
     delete ui;
 }
@@ -90,13 +88,13 @@ MTContactDetails::~MTContactDetails()
 
 // ----------------------------------
 //virtual
-int MTContactDetails::GetCustomTabCount()
+int MTOpentxsContactDetails::GetCustomTabCount()
 {
     return (Moneychanger::It()->expertMode()) ? 4 : 2;
 }
 // ----------------------------------
 //virtual
-QWidget * MTContactDetails::CreateCustomTab(int nTab)
+QWidget * MTOpentxsContactDetails::CreateCustomTab(int nTab)
 {
     const int nCustomTabCount = this->GetCustomTabCount();
     // -----------------------------
@@ -232,7 +230,7 @@ QWidget * MTContactDetails::CreateCustomTab(int nTab)
         break;
 
     default:
-        qDebug() << QString("Unexpected: MTContactDetails::CreateCustomTab was called with bad index: %1").arg(nTab);
+        qDebug() << QString("Unexpected: MTOpentxsContactDetails::CreateCustomTab was called with bad index: %1").arg(nTab);
         return NULL;
     }
     // -----------------------------
@@ -240,7 +238,7 @@ QWidget * MTContactDetails::CreateCustomTab(int nTab)
 }
 // ---------------------------------
 //virtual
-QString  MTContactDetails::GetCustomTabName(int nTab)
+QString  MTOpentxsContactDetails::GetCustomTabName(int nTab)
 {
     const int nCustomTabCount = this->GetCustomTabCount();
     // -----------------------------
@@ -257,7 +255,7 @@ QString  MTContactDetails::GetCustomTabName(int nTab)
     case 3:  qstrReturnValue = "Known IDs";    break;
 
     default:
-        qDebug() << QString("Unexpected: MTContactDetails::GetCustomTabName was called with bad index: %1").arg(nTab);
+        qDebug() << QString("Unexpected: MTOpentxsContactDetails::GetCustomTabName was called with bad index: %1").arg(nTab);
         return QString("");
     }
     // -----------------------------
@@ -268,12 +266,12 @@ QString  MTContactDetails::GetCustomTabName(int nTab)
 
 
 //virtual
-void MTContactDetails::DeleteButtonClicked()
+void MTOpentxsContactDetails::DeleteButtonClicked()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = MTContactHandler::getInstance()->DeleteContact(m_pOwner->m_qstrCurrentID.toInt());
-
+        bool bSuccess{false}; // TODO
+//      bool bSuccess = MTContactHandler::getInstance()->DeleteContact(m_pOwner->m_qstrCurrentID.toInt());
         if (bSuccess)
         {
             m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
@@ -284,8 +282,53 @@ void MTContactDetails::DeleteButtonClicked()
     }
 }
 
+
+/*
+        MTGetStringDialog nameDlg(this, tr("Enter a display label for the new contact"));
+
+        if (QDialog::Accepted != nameDlg.exec())
+            return;
+        // --------------------------------------
+        const QString strNewContactLabel = nameDlg.GetOutputString();
+        const std::string str_new_contact_label = strNewContactLabel.toStdString();
+        // --------------------------------------------------
+        auto pContact = opentxs::OT::App().Contact().NewContact(str_new_contact_label);
+
+        if (!pContact) {
+            qDebug() << "Error: Failed trying to create new Contact.";
+            return;
+        }
+        // -----------------------------------------------------
+        const opentxs::Identifier idContact{pContact->ID()};
+        const opentxs::String     strContact(idContact);
+        const std::string         str_contact(strContact.Get());
+        qstrContactId = QString::fromStdString(str_contact);
+        // -----------------------------------------------------
+        if (!qstrContactId.isEmpty())
+        {
+            emit showContactAndRefreshHome(qstrContactId);
+        }
+
+    const opentxs::Identifier contactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier{nym_id_string.toStdString()});
+
+    if (!contactId.IsEmpty()) // Found an existing one
+    {
+        const opentxs::String strContactId(contactId);
+        const std::string str_contact_id(strContactId.Get());
+        return QString::fromStdString(str_contact_id);
+    }
+    // -------------------------------------------------------
+    // Okay so there's definitely not an existing Contact for this Nym ID.
+    // So let's create a new one instead.
+    //
+    const std::string str_label = qstrLabel.toStdString();
+    const auto response = opentxs::OT::App().Contact().NewContact(str_label, opentxs::Identifier{nym_id_string.toStdString()}, opentxs::PaymentCode{payment_code.toStdString()});
+    return response ? QString::fromStdString(std::string(opentxs::String(response->ID()).Get())) : QString("");
+
+*/
+
 //virtual
-void MTContactDetails::AddButtonClicked()
+void MTOpentxsContactDetails::AddButtonClicked()
 {
     MTDlgNewContact theNewContact(this);
     theNewContact.setWindowTitle(tr("Create New Contact"));
@@ -374,8 +417,15 @@ void MTContactDetails::AddButtonClicked()
         nContactId = nExistingContactId;
 
         if (bCreatedOpentxsContactJustNow) {
-            // The opentxs contact was just created, and so the opentxs contacts dialog may wish to refresh itself.
-            //  After this block we'll make sure it's the one selected. (We know it already exists here).
+            // We JUST NOW created the Opentxs contact, but the old-style
+            // Moneychanger contact already existed. But since we are currently in the
+            // new-style "Opentxs Contacts" dialog part of the code, we should therefore
+            // still insert the entry into our list in the GUI on this dialog. (Since we
+            // really did just create it, as far as this dialog is concerned).
+            //
+            m_pOwner->m_map.insert(qstrContactId, qstrNewContactLabel);
+            m_pOwner->SetPreSelected(qstrContactId);
+            emit RefreshRecordsAndUpdateMenu();
         }
         else if (bPreexistingOpentxsContact) { // This block means the old-style Moneychanger Contact already existed, AND the new-style Opentxs Contact already existed as well!
             QString contactName = MTContactHandler::getInstance()->GetContactName(nExistingContactId);
@@ -383,6 +433,8 @@ void MTContactDetails::AddButtonClicked()
                                  tr("Contact '%1' already exists with NymID: %2").arg(contactName).arg(nymID));
             // Since it already exists, we'll select it in the GUI, so the user can see what we're
             // talking about when we tell him that it already exists.
+            m_pOwner->SetPreSelected(qstrContactId);
+            emit RefreshRecordsAndUpdateMenu();
         }
         else {
             // This block means the old-style Moneychanger Contact already existed, and the
@@ -394,9 +446,6 @@ void MTContactDetails::AddButtonClicked()
                                     "However, failed creating a new corresponding Opentxs Contact. (Should never happen).")
                                  .arg(contactName).arg(nymID));
         }
-        const QString qstrContactID = QString::number(nContactId);
-        m_pOwner->SetPreSelected(qstrContactID);
-        emit RefreshRecordsAndUpdateMenu();
         return;
     }
     else // bHaveAValidOpentxsContact && !bPreexistingMnychrContact
@@ -419,6 +468,8 @@ void MTContactDetails::AddButtonClicked()
             QMessageBox::warning(this, tr("Moneychanger"),
                                  tr("Failed trying to create old-style contact for NymID: %1, "
                                     "even though the new-style Opentxs Contact exists (%2).").arg(nymID).arg(qstrContactId));
+            m_pOwner->SetPreSelected(qstrContactId);
+            emit RefreshRecordsAndUpdateMenu();
             return;
         }
         else {
@@ -433,9 +484,8 @@ void MTContactDetails::AddButtonClicked()
         // Now let's add this contact to the Map, and refresh the dialog,
         // and then set the new contact as the current one.
         //
-        const QString qstrContactID = QString::number(nContactId);
-        m_pOwner->m_map.insert(qstrContactID, qstrNewContactLabel); // Since it wasn't pre-existing.
-        m_pOwner->SetPreSelected(qstrContactID);
+        m_pOwner->m_map.insert(qstrContactId, qstrNewContactLabel);
+        m_pOwner->SetPreSelected(qstrContactId);
         emit RefreshRecordsAndUpdateMenu();
     }
 }
@@ -445,14 +495,11 @@ void MTContactDetails::AddButtonClicked()
 
 
 
-void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &pos)
+void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &pos)
 {
     if (m_pOwner->m_qstrCurrentID.isEmpty())
         return;
-
-    const int nContactId = m_pOwner->m_qstrCurrentID.isEmpty() ? 0 : m_pOwner->m_qstrCurrentID.toInt();
-
-    if (nContactId > 0)
+    else
     {
         QTreeWidgetItem * pItem = treeWidgetClaims_->itemAt(pos);
 
@@ -607,10 +654,11 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                         //
                         mapIDName theNymMap;
 
-                        if (!MTContactHandler::getInstance()->GetNyms(theNymMap, nContactId))
+                        if (!MTContactHandler::getInstance()->GetNyms(
+                              theNymMap, m_pOwner->m_qstrCurrentID.toStdString()))
                         {
                             QMessageBox::warning(this, tr("Moneychanger"),
-                                                 tr("Sorry, there are no opentxs NymIDs associated with this contact. "
+                                                 tr("Sorry, there are no opentxs NymIDs associated with this opentxs contact. "
                                                     "(Only Open-Transactions identities can create secure relationships.)"));
                             return;
                         }
@@ -625,9 +673,11 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                         }
                         else // There are multiple Nyms to choose from.
                         {
+                            // TODO: Grab the primary Nym by default (as denoted on the credentials).
+                            //
                             DlgChooser theNymChooser(this);
                             theNymChooser.m_map = theNymMap;
-                            theNymChooser.setWindowTitle(tr("Contact has multiple Nyms. (Please choose one.)"));
+                            theNymChooser.setWindowTitle(tr("Opentxs Contact has multiple Nyms. (Please choose one.)"));
                             // -----------------------------------------------
                             if (theNymChooser.exec() == QDialog::Accepted)
                                 qstrContactNymId = theNymChooser.m_qstrCurrentID;
@@ -1002,7 +1052,7 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
 
 
 
-void MTContactDetails::ClearTree()
+void MTOpentxsContactDetails::ClearTree()
 {
     metInPerson_ = nullptr;
 
@@ -1015,12 +1065,9 @@ void MTContactDetails::ClearTree()
 }
 
 
-void MTContactDetails::on_pushButtonRefresh_clicked()
+void MTOpentxsContactDetails::on_pushButtonRefresh_clicked()
 {
     if (m_pOwner->m_qstrCurrentID.isEmpty())
-        return;
-    int nContactId = m_pOwner->m_qstrCurrentID.toInt();
-    if (nContactId <= 0)
         return;
     // --------------------------------
     const QString qstrDefaultNymId = Moneychanger::It()->getDefaultNymID();
@@ -1041,7 +1088,8 @@ void MTContactDetails::on_pushButtonRefresh_clicked()
     // and thus save the time we waste ascertaining the display Name, which here,
     // we aren't even using.
     //
-    const bool bGotNyms = MTContactHandler::getInstance()->GetNyms(mapNyms, nContactId);
+    const bool bGotNyms = MTContactHandler::getInstance()->GetNyms(mapNyms,
+                                                                   m_pOwner->m_qstrCurrentID.toStdString());
     // --------------------------------
     if (!bGotNyms)
     {
@@ -1065,7 +1113,7 @@ void MTContactDetails::on_pushButtonRefresh_clicked()
 
         if (qstrNymID.isEmpty()) // Weird, should never happen.
         {
-            qDebug() << "MTContactDetails::on_pushButtonRefresh_clicked: Unexpected empty NymId, should not happen. (Returning.)";
+            qDebug() << "MTOpentxsContactDetails::on_pushButtonRefresh_clicked: Unexpected empty NymId, should not happen. (Returning.)";
             return;
         }
         const std::string str_nym_id = qstrNymID.toStdString();
@@ -1088,7 +1136,7 @@ void MTContactDetails::on_pushButtonRefresh_clicked()
 
             if (qstrNotaryID.isEmpty()) // Weird, should never happen.
             {
-                qDebug() << "MTContactDetails::on_pushButtonRefresh_clicked: Unexpected empty NotaryID, should not happen. (Returning.)";
+                qDebug() << "MTOpentxsContactDetails::on_pushButtonRefresh_clicked: Unexpected empty NotaryID, should not happen. (Returning.)";
                 return;
             }
             const std::string notary_id = qstrNotaryID.toStdString();
@@ -1117,7 +1165,7 @@ void MTContactDetails::on_pushButtonRefresh_clicked()
     }
 }
 
-void MTContactDetails::onClaimsUpdatedTimer()
+void MTOpentxsContactDetails::onClaimsUpdatedTimer()
 {
     bTimerFired_ = false; //reset it here so it'll work again next time.
 
@@ -1130,7 +1178,7 @@ void MTContactDetails::onClaimsUpdatedTimer()
     emit RefreshRecordsAndUpdateMenu();
 }
 
-void MTContactDetails::onClaimsUpdatedForNym(QString nymId)
+void MTOpentxsContactDetails::onClaimsUpdatedForNym(QString nymId)
 {
     if (!bTimerFired_)
     {
@@ -1145,14 +1193,14 @@ void MTContactDetails::onClaimsUpdatedForNym(QString nymId)
     }
 }
 
-void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
+void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & qstrlistNymIDs)
 {
     if (!treeWidgetClaims_ || (NULL == ui))
         return;
     // ----------------------------------------
     ClearTree();
     // ----------------------------------------
-    if ( (0 == nContactId) || (0 == qstrlistNymIDs.size()) )
+    if ( qstrContactId.isEmpty() || (0 == qstrlistNymIDs.size()) )
         return;
     // ----------------------------------------
     treeWidgetClaims_->blockSignals(true);
@@ -1264,7 +1312,9 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 //  QPointer<ClaimsProxyModel> pProxyModelClaims_;
 
     pProxyModelClaims_ = nullptr;
-    pModelClaims_ = DBHandler::getInstance()->getClaimsModel(nContactId);
+    
+    pModelClaims_=nullptr; // TODO
+    //pModelClaims_ = DBHandler::getInstance()->getClaimsModel(nContactId);
 
     if (!pModelClaims_)
         return;
@@ -1314,7 +1364,8 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
     // that they "have met" the Nyms represented by this Contact.
     // Now let's add those here as sub-items under the metInPerson_ top-level item.
     //
-    QPointer<ModelClaims> pRelationships = DBHandler::getInstance()->getRelationshipClaims(nContactId);
+    QPointer<ModelClaims> pRelationships;// TODO
+    //QPointer<ModelClaims> pRelationships = DBHandler::getInstance()->getRelationshipClaims(nContactId);
 
     if (!pRelationships) // Should never happen, even if the result set is empty.
         return;
@@ -1852,7 +1903,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
     treeWidgetClaims_->resizeColumnToContents(4);
 }
 
-void MTContactDetails::ClearContents()
+void MTOpentxsContactDetails::ClearContents()
 {
     ui->lineEditID  ->setText("");
     ui->lineEditName->setText("");
@@ -1870,300 +1921,16 @@ void MTContactDetails::ClearContents()
     // ------------------------------------------
     ui->pushButtonMsg->setEnabled(false);
     ui->pushButtonPay->setEnabled(false);
-    ui->pushButtonMsg->setProperty("contactid", 0);
-    ui->pushButtonPay->setProperty("contactid", 0);
-    // ------------------------------------------
-    if (m_pAddresses)
-    {
-        QWidget * pTab = GetTab(2); // Tab 2 is the index (starting at 0) for tab 3. So this means tab 3.
-
-        if (nullptr != pTab)
-        {
-            QLayout * pLayout = pTab->layout();
-
-            if (nullptr != pLayout)
-                pLayout->removeWidget(m_pAddresses);
-        }
-
-        m_pAddresses->setParent(NULL);
-        m_pAddresses->disconnect();
-        m_pAddresses->deleteLater();
-        m_pAddresses = NULL;
-    }
+    ui->pushButtonMsg->setProperty("contactid", QString(""));
+    ui->pushButtonPay->setProperty("contactid", QString(""));
 }
 
-
-QGroupBox * MTContactDetails::createAddressGroupBox(QString strContactID)
+void MTOpentxsContactDetails::on_pushButtonPay_clicked()
 {
-    QGroupBox   * pBox = new QGroupBox(tr("P2P Addresses"));
-    QVBoxLayout * vbox = new QVBoxLayout;
-    // -----------------------------------------------------------------
-    // Loop through all known transport methods (communications addresses)
-    // known for this Nym,
-    mapIDName theMap;
+    QVariant varContactID  = ui->pushButtonPay->property("contactid");
+    QString  qstrContactID = varContactID.toString();
 
-    int nContactID = strContactID.isEmpty() ? 0 : strContactID.toInt();
-
-    if ((nContactID > 0) && MTContactHandler::getInstance()->GetAddressesByContact(theMap, nContactID, QString("")))
-    {
-        for (mapIDName::iterator it = theMap.begin(); it != theMap.end(); ++it)
-        {
-            QString qstrID          = it.key();   // QString("%1|%2").arg(qstrType).arg(qstrAddress)
-            QString qstrDisplayAddr = it.value(); // QString("%1: %2").arg(qstrTypeDisplay).arg(qstrAddress);
-
-            QStringList stringlist = qstrID.split("|");
-
-            if (stringlist.size() >= 2) // Should always be 2...
-            {
-                QString qstrType     = stringlist.at(0);
-                QString qstrAddress  = stringlist.at(1);
-                // --------------------------------------
-                std::string strTypeDisplay = MTComms::displayName(qstrType.toStdString());
-                QString    qstrTypeDisplay = QString::fromStdString(strTypeDisplay);
-
-                QWidget * pWidget = this->createSingleAddressWidget(nContactID, qstrType, qstrTypeDisplay, qstrAddress);
-
-                if (NULL != pWidget)
-                    vbox->addWidget(pWidget);
-            }
-        }
-    }
-    // -----------------------------------------------------------------
-    QWidget * pWidget = (nContactID > 0) ? this->createNewAddressWidget(nContactID) : NULL;
-
-    if (NULL != pWidget)
-        vbox->addWidget(pWidget);
-    // -----------------------------------------------------------------
-    pBox->setLayout(vbox);
-
-    return pBox;
-}
-
-
-
-QWidget * MTContactDetails::createSingleAddressWidget(int nContactID, QString qstrType, QString qstrTypeDisplay, QString qstrAddress)
-{
-    QWidget     * pWidget    = new QWidget;
-    QLineEdit   * pType      = new QLineEdit(qstrTypeDisplay);
-    QLabel      * pLabel     = new QLabel(tr("Address:"));
-//  QLineEdit   * pAddress   = new QLineEdit(qstrDisplayAddr);
-    QLineEdit   * pAddress   = new QLineEdit(qstrAddress);
-    QPushButton * pBtnDelete = new QPushButton(tr("Delete"));
-    // ----------------------------------------------------------
-    pType   ->setMinimumWidth(60);
-    pLabel  ->setMinimumWidth(55);
-    pLabel  ->setMaximumWidth(55);
-    pAddress->setMinimumWidth(60);
-
-    pType   ->setReadOnly(true);
-    pAddress->setReadOnly(true);
-
-    pType   ->setStyleSheet("QLineEdit { background-color: lightgray }");
-    pAddress->setStyleSheet("QLineEdit { background-color: lightgray }");
-
-    pBtnDelete->setProperty("contactid",    nContactID);
-    pBtnDelete->setProperty("methodtype",   qstrType);
-    pBtnDelete->setProperty("methodaddr",   qstrAddress);
-    pBtnDelete->setProperty("methodwidget", VPtr<QWidget>::asQVariant(pWidget));
-    // ----------------------------------------------------------
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->addWidget(pType);
-    layout->addWidget(pLabel);
-    layout->addWidget(pAddress);
-    layout->addWidget(pBtnDelete);
-    // ----------------------------------------------------------
-    pWidget->setLayout(layout);
-
-    connect(pBtnDelete, SIGNAL(clicked()), this, SLOT(on_btnAddressDelete_clicked()));
-    // ----------------------------------------------------------
-    layout->setStretch(0,  1);
-    layout->setStretch(1, -1);
-    layout->setStretch(2,  3);
-    layout->setStretch(3,  1);
-    // ----------------------------------------------------------
-    pType   ->home(false);
-    pAddress->home(false);
-    // ----------------------------------------------------------
-    return pWidget;
-}
-
-
-QWidget * MTContactDetails::createNewAddressWidget(int nContactID)
-{
-    QWidget     * pWidget = new QWidget;
-    QPushButton * pBtnAdd = new QPushButton(tr("Add"));
-    /*
-    QString create_msg_method = "CREATE TABLE msg_method"
-            " (method_id INTEGER PRIMARY KEY,"   // 1, 2, etc.
-            "  method_display_name TEXT,"        // "Localhost"
-            "  method_type TEXT,"                // "bitmessage"
-            "  method_type_display TEXT,"        // "Bitmessage"
-            "  method_connect TEXT)";            // "http://username:password@http://127.0.0.1:8332/"
-    */
-  //QString create_nym_method
-  // = "CREATE TABLE nym_method(nym_id TEXT, method_id INTEGER, address TEXT, PRIMARY KEY(nym_id, method_id, address))";
-  //QString create_contact_method
-  // = "CREATE TABLE contact_method(contact_id INTEGER, method_type TEXT, address TEXT, PRIMARY KEY(contact_id, method_type, address))";
-
-    QComboBox   * pCombo  = new QComboBox;
-    mapIDName     mapMethodTypes;
-    MTContactHandler::getInstance()->GetMsgMethodTypes(mapMethodTypes);
-    // -----------------------------------------------
-    int nIndex = -1;
-    for (mapIDName::iterator ii = mapMethodTypes.begin(); ii != mapMethodTypes.end(); ++ii)
-    {
-        ++nIndex; // 0 on first iteration.
-        // ------------------------------
-        QString method_type         = ii.key();
-        QString method_type_display = ii.value();
-        // ------------------------------
-        pCombo->insertItem(nIndex, method_type_display, method_type);
-    }
-    // -----------------------------------------------
-    if (mapMethodTypes.size() > 0)
-        pCombo->setCurrentIndex(0);
-    else
-        pBtnAdd->setEnabled(false);
-    // -----------------------------------------------
-    QLabel      * pLabel   = new QLabel(tr("Address:"));
-    QLineEdit   * pAddress = new QLineEdit;
-    QHBoxLayout * layout   = new QHBoxLayout;
-    // -----------------------------------------------
-    pCombo   ->setMinimumWidth(60);
-    pLabel   ->setMinimumWidth(55);
-    pLabel   ->setMaximumWidth(55);
-    pAddress ->setMinimumWidth(60);
-
-    pBtnAdd->setProperty("contactid",    nContactID);
-    pBtnAdd->setProperty("methodcombo",  VPtr<QWidget>::asQVariant(pCombo));
-    pBtnAdd->setProperty("addressedit",  VPtr<QWidget>::asQVariant(pAddress));
-    pBtnAdd->setProperty("methodwidget", VPtr<QWidget>::asQVariant(pWidget));
-    // -----------------------------------------------
-    layout->addWidget(pCombo);
-    layout->addWidget(pLabel);
-    layout->addWidget(pAddress);
-    layout->addWidget(pBtnAdd);
-    // -----------------------------------------------
-    pWidget->setLayout(layout);
-    // -----------------------------------------------
-    layout->setStretch(0,  1);
-    layout->setStretch(1, -1);
-    layout->setStretch(2,  3);
-    layout->setStretch(3,  1);
-    // -----------------------------------------------
-    connect(pBtnAdd, SIGNAL(clicked()), this, SLOT(on_btnAddressAdd_clicked()));
-    // -----------------------------------------------
-    return pWidget;
-}
-
-void MTContactDetails::on_btnAddressAdd_clicked()
-{
-    QObject * pqobjSender = QObject::sender();
-
-    if (NULL != pqobjSender)
-    {
-        QPushButton * pBtnAdd = dynamic_cast<QPushButton *>(pqobjSender);
-
-        if (m_pAddresses && (NULL != pBtnAdd))
-        {
-            QVariant    varContactID   = pBtnAdd->property("contactid");
-            QVariant    varMethodCombo = pBtnAdd->property("methodcombo");
-            QVariant    varAddressEdit = pBtnAdd->property("addressedit");
-            int         nContactID     = varContactID.toInt();
-            QComboBox * pCombo         = VPtr<QComboBox>::asPtr(varMethodCombo);
-            QLineEdit * pAddressEdit   = VPtr<QLineEdit>::asPtr(varAddressEdit);
-            QWidget   * pWidget        = VPtr<QWidget>::asPtr(pBtnAdd->property("methodwidget"));
-
-            if ((nContactID > 0) && (NULL != pCombo) && (NULL != pAddressEdit) && (NULL != pWidget))
-            {
-                QString qstrMethodType  = QString("");
-                QString qstrAddress     = QString("");
-                // --------------------------------------------------
-                if (pCombo->currentIndex() < 0)
-                    return;
-                // --------------------------------------------------
-                QVariant varMethodType = pCombo->itemData(pCombo->currentIndex());
-                qstrMethodType = varMethodType.toString();
-
-                if (qstrMethodType.isEmpty())
-                    return;
-                // --------------------------------------------------
-                qstrAddress = pAddressEdit->text();
-
-                if (qstrAddress.isEmpty())
-                    return;
-                // --------------------------------------------------
-                bool bAdded = MTContactHandler::getInstance()->AddMsgAddressToContact(nContactID, qstrMethodType, qstrAddress);
-
-                if (bAdded) // Let's add it to the GUI, too, then.
-                {
-                    QString qstrTypeDisplay = pCombo->currentText();
-                    // --------------------------------------------------
-                    QLayout     * pLayout = m_pAddresses->layout();
-                    QVBoxLayout * pVBox   = (NULL == pLayout) ? NULL : dynamic_cast<QVBoxLayout *>(pLayout);
-
-                    if (NULL != pVBox)
-                    {
-                        QWidget * pNewWidget = this->createSingleAddressWidget(nContactID, qstrMethodType, qstrTypeDisplay, qstrAddress);
-
-                        if (NULL != pNewWidget)
-                            pVBox->insertWidget(pVBox->count()-1, pNewWidget);
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-void MTContactDetails::on_btnAddressDelete_clicked()
-{
-    QObject * pqobjSender = QObject::sender();
-
-    if (NULL != pqobjSender)
-    {
-        QPushButton * pBtnDelete = dynamic_cast<QPushButton *>(pqobjSender);
-
-        if (m_pAddresses && (NULL != pBtnDelete))
-        {
-            QVariant  varContactID   = pBtnDelete->property("contactid");
-            QVariant  varMethodType  = pBtnDelete->property("methodtype");
-            QVariant  varMethodAddr  = pBtnDelete->property("methodaddr");
-            int       nContactID     = varContactID .toInt();
-            QString   qstrMethodType = varMethodType.toString();
-            QString   qstrAddress    = varMethodAddr.toString();
-            QWidget * pWidget        = VPtr<QWidget>::asPtr(pBtnDelete->property("methodwidget"));
-
-            if (NULL != pWidget)
-            {
-                bool bRemoved = MTContactHandler::getInstance()->RemoveMsgAddressFromContact(nContactID, qstrMethodType, qstrAddress);
-
-                if (bRemoved) // Let's remove it from the GUI, too, then.
-                {
-                    QLayout * pLayout = m_pAddresses->layout();
-
-                    if (NULL != pLayout)
-                    {
-                        pLayout->removeWidget(pWidget);
-
-                        pWidget->setParent(NULL);
-                        pWidget->disconnect();
-                        pWidget->deleteLater();
-
-                        pWidget = NULL;
-                    }
-                }
-            }
-        }
-    }
-}
-
-void MTContactDetails::on_pushButtonPay_clicked()
-{
-    QVariant varContactID = ui->pushButtonPay->property("contactid");
-    int      nContactID   = varContactID.toInt();
-
-    if (nContactID > 0)
+    if (!qstrContactID.isEmpty())
     {
         // --------------------------------------------------
         MTSendDlg * send_window = new MTSendDlg(NULL);
@@ -2177,9 +1944,9 @@ void MTContactDetails::on_pushButtonPay_clicked()
         // ---------------------------------------
         mapIDName theNymMap;
 
-        if (!MTContactHandler::getInstance()->GetNyms(theNymMap, nContactID))
+        if (!MTContactHandler::getInstance()->GetNyms(theNymMap, qstrContactID.toStdString()))
         {
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Sorry, there are no NymIDs associated with this contact. Currently only Open-Transactions payments are supported."));
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Sorry, there are no NymIDs associated with this opentxs contact. Currently only Open-Transactions payments are supported."));
             return;
         }
         else
@@ -2194,7 +1961,7 @@ void MTContactDetails::on_pushButtonPay_clicked()
 //              QString qstrNymName = theNymIt.value();
             }
             else // There are multiple Nyms to choose from.
-            {
+            {    // TODO: Choose one automatically from the CREDENTIALS!
                 DlgChooser theNymChooser(this);
                 theNymChooser.m_map = theNymMap;
                 theNymChooser.setWindowTitle(tr("Recipient has multiple Nyms. (Please choose one.)"));
@@ -2216,67 +1983,74 @@ void MTContactDetails::on_pushButtonPay_clicked()
     }
 }
 
-void MTContactDetails::on_pushButtonMsg_clicked()
+void MTOpentxsContactDetails::on_pushButtonMsg_clicked()
 {
     QVariant varContactID = ui->pushButtonMsg->property("contactid");
-    int      nContactID   = varContactID.toInt();
+    QString  qstrContactID = varContactID.isValid() ? varContactID.toString() : QString("");
 
-    //qDebug() << QString("nContactID: %1").arg(nContactID);
-
-    if (nContactID > 0)
+    if (!qstrContactID.isEmpty())
     {
         // --------------------------------------------------
         MTCompose * compose_window = new MTCompose;
         compose_window->setAttribute(Qt::WA_DeleteOnClose);
         // --------------------------------------------------
+        bool bCanMessage{false};
         // If Moneychanger has a default Nym set, we use that for the Sender.
         // (User can always change it.)
         //
         QString qstrDefaultNym = Moneychanger::It()->get_default_nym_id();
 
         if (!qstrDefaultNym.isEmpty())
+        {
             compose_window->setInitialSenderNym(qstrDefaultNym);
 
-        compose_window->setInitialRecipientContactID(nContactID); // We definitely know this, since we're on the Contacts page.
-        // --------------------------------------------------
-        if (!qstrDefaultNym.isEmpty()) // Sender Nym is set.
-        {
-            QString qstrTransportType("");
-            mapOfCommTypes mapTypes;
-
-            if (MTComms::types(mapTypes) && (mapTypes.size() > 0))
-            {
-                mapOfCommTypes::iterator it = mapTypes.begin();
-                qstrTransportType = QString::fromStdString(it->first);
-            } // Likely now qstrTransportType contains "bitmessage"
-            // --------------------------------------------------------
-            // Do they both support Bitmessage?
-            //
-            mapIDName mapSenderAddresses, mapRecipientAddresses;
-
-            if (!qstrTransportType.isEmpty() && compose_window->CheckPotentialCommonMsgMethod(qstrTransportType, &mapSenderAddresses, &mapRecipientAddresses))
-            {
-                compose_window->setInitialMsgType(qstrTransportType);
-                // ----------------------------------------------------
-                std::string strTypeDisplay = MTComms::displayName(qstrTransportType.toStdString());
-                QString    qstrTypeDisplay = QString::fromStdString(strTypeDisplay);
-
-                compose_window->chooseSenderAddress   (mapSenderAddresses,    qstrTypeDisplay, true); //bForce=false by default.
-                compose_window->chooseRecipientAddress(mapRecipientAddresses, qstrTypeDisplay);
-            }
-            // --------------------------------------------------------
-            // No? Okay then let's try the default OT server, if one is available.
-            else
-            {
-                QString qstrDefaultServer = Moneychanger::It()->get_default_notary_id();
-
-                if (!qstrDefaultServer.isEmpty() && compose_window->setRecipientNymBasedOnContact() &&
-                    compose_window->verifySenderAgainstServer   (false, qstrDefaultServer) &&
-                    compose_window->verifyRecipientAgainstServer(false, qstrDefaultServer)) // Notice the false? That's so it doesn't pop up a dialog asking questions.
-                    // ---------------------------------------------------
-                    compose_window->setInitialServer(qstrDefaultServer);
-            }
+            bCanMessage = (0 == opentxs::OTAPI_Wrap::Can_Message(qstrDefaultNym.toStdString(), qstrContactID.toStdString()));
         }
+        compose_window->setInitialRecipientContactID(qstrContactID); // We definitely know this, since we're on the Contacts page.
+        // --------------------------------------------------
+//        compose_window->setInitialRecipientContactID(nContactID); // We definitely know this, since we're on the Contacts page.
+        // --------------------------------------------------
+        // This is where it tries to figure out which OT server to set as the default transport.
+        // (Or if they have a Bitmessage address in common, etc).
+        //
+//        if (!qstrDefaultNym.isEmpty()) // Sender Nym is set.
+//        {
+//            QString qstrTransportType("");
+//            mapOfCommTypes mapTypes;
+//
+//            if (MTComms::types(mapTypes) && (mapTypes.size() > 0))
+//            {
+//                mapOfCommTypes::iterator it = mapTypes.begin();
+//                qstrTransportType = QString::fromStdString(it->first);
+//            } // Likely now qstrTransportType contains "bitmessage"
+//            // --------------------------------------------------------
+//            // Do they both support Bitmessage?
+//            //
+//            mapIDName mapSenderAddresses, mapRecipientAddresses;
+//
+//            if (!qstrTransportType.isEmpty() && compose_window->CheckPotentialCommonMsgMethod(qstrTransportType, &mapSenderAddresses, &mapRecipientAddresses))
+//            {
+//                compose_window->setInitialMsgType(qstrTransportType);
+//                // ----------------------------------------------------
+//                std::string strTypeDisplay = MTComms::displayName(qstrTransportType.toStdString());
+//                QString    qstrTypeDisplay = QString::fromStdString(strTypeDisplay);
+//
+//                compose_window->chooseSenderAddress   (mapSenderAddresses,    qstrTypeDisplay, true); //bForce=false by default.
+//                compose_window->chooseRecipientAddress(mapRecipientAddresses, qstrTypeDisplay);
+//            }
+//            // --------------------------------------------------------
+//            // No? Okay then let's try the default OT server, if one is available.
+//            else
+//            {
+//                QString qstrDefaultServer = Moneychanger::It()->get_default_notary_id();
+//
+//                if (!qstrDefaultServer.isEmpty() && compose_window->setRecipientNymBasedOnContact() &&
+//                    compose_window->verifySenderAgainstServer   (false, qstrDefaultServer) &&
+//                    compose_window->verifyRecipientAgainstServer(false, qstrDefaultServer)) // Notice the false? That's so it doesn't pop up a dialog asking questions.
+//                    // ---------------------------------------------------
+//                    compose_window->setInitialServer(qstrDefaultServer);
+//            }
+//        }
         // --------------------------------------------------
         compose_window->dialog();
 
@@ -2324,14 +2098,14 @@ static void blah()
     // If we've repudiated any claims, you can add their IDs to the repudiated field in the verification set.
 }
 //virtual
-void MTContactDetails::refresh(QString strID, QString strName)
+void MTOpentxsContactDetails::refresh(QString strID, QString strName)
 {
     if ((NULL == ui) || strID.isEmpty())
     {
         ui->pushButtonMsg->setEnabled(false);
         ui->pushButtonPay->setEnabled(false);
-        ui->pushButtonMsg->setProperty("contactid", 0);
-        ui->pushButtonPay->setProperty("contactid", 0);
+        ui->pushButtonMsg->setProperty("contactid", QString(""));
+        ui->pushButtonPay->setProperty("contactid", QString(""));
 
         if (m_pPlainTextEdit)
             m_pPlainTextEdit->setPlainText("");
@@ -2343,6 +2117,29 @@ void MTContactDetails::refresh(QString strID, QString strName)
             ClearTree();
 
         return;
+    }
+    bool bCanMessage = false;
+    // -----------------------------
+    QString qstrDefaultNym = Moneychanger::It()->get_default_nym_id();
+
+    if (!qstrDefaultNym.isEmpty())
+    {
+        bCanMessage = (0 == opentxs::OTAPI_Wrap::Can_Message(qstrDefaultNym.toStdString(), strID.toStdString()));
+    }
+    // -----------------------------
+    if (bCanMessage)
+    {
+        ui->pushButtonMsg->setProperty("contactid", strID);
+        ui->pushButtonPay->setProperty("contactid", strID);
+        ui->pushButtonMsg->setEnabled(true);
+        ui->pushButtonPay->setEnabled(true);
+    }
+    else
+    {
+        ui->pushButtonMsg->setProperty("contactid", QString(""));
+        ui->pushButtonPay->setProperty("contactid", QString(""));
+        ui->pushButtonMsg->setEnabled(false);
+        ui->pushButtonPay->setEnabled(false);
     }
     // -----------------------------
     QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName, "", "", ":/icons/icons/rolodex_small", false);
@@ -2365,69 +2162,22 @@ void MTContactDetails::refresh(QString strID, QString strName)
     ui->lineEditID  ->setText(strID);
     ui->lineEditName->setText(strName);
     // --------------------------------------------
-    QLayout   * pLayout    = nullptr;
-    QGroupBox * pAddresses = this->createAddressGroupBox(strID);
-
-    QWidget   * pTab = GetTab(2); // Tab 2 is the index (starting at 0) for tab 3. So this means tab 3.
-
-    if (nullptr != pTab)
-        pLayout = pTab->layout();
-
-    if (m_pAddresses) // Delete the old one.
-    {
-        if (nullptr != pLayout)
-            pLayout->removeWidget(m_pAddresses);
-
-        m_pAddresses->setParent(NULL);
-        m_pAddresses->disconnect();
-        m_pAddresses->deleteLater();
-        m_pAddresses = NULL;
-    }
-
-    if (nullptr != pLayout)
-    {
-        pLayout->addWidget(pAddresses);
-        m_pAddresses = pAddresses;
-    }
-    else // Should never actually happen.
-    {
-        delete pAddresses;
-        pAddresses = nullptr;
-    }
-    // ----------------------------------
     QString     strDetails;
     QStringList qstrlistNymIDs;
     // ------------------------------------------
-    int nContactID = strID.toInt();
-    // ------------------------------------------
-    if (nContactID > 0)
-    {
-        ui->pushButtonMsg->setProperty("contactid", nContactID);
-        ui->pushButtonPay->setProperty("contactid", nContactID);
-        ui->pushButtonMsg->setEnabled(true);
-        ui->pushButtonPay->setEnabled(true);
-    }
-    else
-    {
-        ui->pushButtonMsg->setProperty("contactid", 0);
-        ui->pushButtonMsg->setEnabled(false);
-        ui->pushButtonPay->setProperty("contactid", 0);
-        ui->pushButtonPay->setEnabled(false);
+    if (m_pPlainTextEdit)
+        m_pPlainTextEdit->setPlainText("");
 
-        if (m_pPlainTextEdit)
-            m_pPlainTextEdit->setPlainText("");
+    if (m_pPlainTextEditNotes)
+        m_pPlainTextEditNotes->setPlainText("");
 
-        if (m_pPlainTextEditNotes)
-            m_pPlainTextEditNotes->setPlainText("");
-
-        if (treeWidgetClaims_)
-            ClearTree();
-    }
+    if (treeWidgetClaims_)
+        ClearTree();
     // ------------------------------------------
     {
         mapIDName theNymMap;
 
-        if (MTContactHandler::getInstance()->GetNyms(theNymMap, nContactID))
+        if (MTContactHandler::getInstance()->GetNyms(theNymMap, strID.toStdString()))
         {
             strDetails += tr("Nyms:\n");
 
@@ -2478,7 +2228,7 @@ void MTContactDetails::refresh(QString strID, QString strName)
     // --------------------------------------------
     // TAB: "Profile"
     //
-    RefreshTree(nContactID, qstrlistNymIDs);
+    RefreshTree(strID, qstrlistNymIDs);
     // --------------------------------------------
     // TAB: "Known IDs"
     //
@@ -2503,24 +2253,33 @@ void MTContactDetails::refresh(QString strID, QString strName)
 //
 //         bool MTContactHandler::DeleteContact(int nContactID);
 
-void MTContactDetails::on_lineEditName_editingFinished()
+void MTOpentxsContactDetails::on_lineEditName_editingFinished()
 {
-    int nContactID = m_pOwner->m_qstrCurrentID.toInt();
-
-    if (nContactID > 0)
+    if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = MTContactHandler::getInstance()->SetContactName(nContactID, ui->lineEditName->text());
+        //bool bSuccess{false}; // TODO
+        //int nContactID = m_pOwner->m_qstrCurrentID.toInt();
+        //bool bSuccess = MTContactHandler::getInstance()->SetContactName(nContactID, ui->lineEditName->text());
 
-        if (bSuccess)
-        {
-            m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
-            m_pOwner->m_map.insert(m_pOwner->m_qstrCurrentID, ui->lineEditName->text());
+        const std::string str_contact_id{m_pOwner->m_qstrCurrentID.toStdString()};
+        const opentxs::String strContactId{str_contact_id};
+        // -------------------------------
+        auto mutableContactEditor{opentxs::OT::App().Contact().mutable_Contact(opentxs::Identifier{strContactId})};
 
-            m_pOwner->SetPreSelected(m_pOwner->m_qstrCurrentID);
-            // ------------------------------------------------
-            emit RefreshRecordsAndUpdateMenu();
-            // ------------------------------------------------
+        if (mutableContactEditor) {
+            auto & mutableContact = mutableContactEditor->It();
+            mutableContact.SetLabel(ui->lineEditName->text().toStdString());
         }
+
+        qDebug() << "WARNING: I'm NOT calling the Opentxs Contact-renaming function since it won't compile (yet).";
+
+        m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
+        m_pOwner->m_map.insert(m_pOwner->m_qstrCurrentID, ui->lineEditName->text());
+
+        m_pOwner->SetPreSelected(m_pOwner->m_qstrCurrentID);
+        // ------------------------------------------------
+        emit RefreshRecordsAndUpdateMenu();
+        // ------------------------------------------------
     }
 }
 

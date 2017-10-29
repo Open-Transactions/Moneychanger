@@ -80,7 +80,7 @@ void MTApplicationMC::appStarting()
     // ----------------------------------------
     // Set Password Callback.
     //
-    static opentxs::OTCaller           passwordCaller;
+    static opentxs::OTCaller  passwordCaller;
     static MTPasswordCallback passwordCallback;
 
     if (!SetupPasswordCallback(passwordCaller, passwordCallback))

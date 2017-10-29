@@ -47,6 +47,7 @@ static QString dbCannotOpenStr =
 static const QString dbCreationStr =
        QObject::tr("Creating a database instance failed");
 
+
 class DBHandler
 {
   private:
@@ -86,6 +87,10 @@ class DBHandler
     QPointer<ModelClaims>        getRelationshipClaims(const QString & qstrAboutNymId);
 
     QPointer<ModelVerifications> getVerificationsModel(const QString & forClaimId);
+
+
+    QSharedPointer<QSqlQueryMessages>  getConversationItemModel(const QString & qstrMyNymId, const QString & qstrThreadId, bool bArchived=false);
+
 
     QString formatValue(QSqlField & sqlField);
 

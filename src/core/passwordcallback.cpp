@@ -20,7 +20,7 @@ void MTPasswordCallback::runOne(const char * szDisplay, opentxs::OTPassword & th
         return;
     }
 
-//    MTDlgPassword * pDlg = new MTDlgPassword(NULL, theOutput);
+//  MTDlgPassword * pDlg = new MTDlgPassword(NULL, theOutput);
     MTDlgPassword * pDlg = new MTDlgPassword(Moneychanger::It(), theOutput);
 
     pDlg->setAttribute(Qt::WA_DeleteOnClose);
@@ -39,7 +39,7 @@ void MTPasswordCallback::runTwo(const char * szDisplay, opentxs::OTPassword & th
         return;
     }
 
-//    MTDlgPasswordConfirm * pDlg = new MTDlgPasswordConfirm(NULL, theOutput);
+//  MTDlgPasswordConfirm * pDlg = new MTDlgPasswordConfirm(NULL, theOutput);
     MTDlgPasswordConfirm * pDlg = new MTDlgPasswordConfirm(Moneychanger::It(), theOutput);
 
     pDlg->setAttribute(Qt::WA_DeleteOnClose);

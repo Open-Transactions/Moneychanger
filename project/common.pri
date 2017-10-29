@@ -64,7 +64,7 @@ unix:{
     QMAKE_CXXFLAGS += -fPIC
 
     mac:{
-        QMAKE_CXXFLAGS += -std=c++1z
+        QMAKE_CXXFLAGS += -std=c++1z -Wno-dynamic-exception-spec
         CONFIG += c++1z
 
         MAC_OS_VERSION = $$system(sw_vers -productVersion)

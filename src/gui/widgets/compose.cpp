@@ -13,10 +13,15 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
 
+#include <opentxs/api/OT.hpp>
+#include <opentxs/api/Activity.hpp>
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/ContactManager.hpp>
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
-
+#include <opentxs/client/OTME_too.hpp>
+#include <opentxs/contact/Contact.hpp>
 #include <opentxs/core/String.hpp>
 #include <opentxs/core/Identifier.hpp>
 
@@ -170,7 +175,7 @@ void MTCompose::setSenderNameBasedOnAvailableData()
 
         if (!this->m_senderAddress.isEmpty())
             qstrAddressPortion = QString(" (%1)").arg(this->m_senderAddress);
-        else if (!sendingThroughOTServer())
+        else if (!bCanMessage_ && !sendingThroughOTServer())
         {
             QString qstrMsgTypeDisplay = m_msgtype.isEmpty() ? QString(tr("transport or ")) :
                                                                QString("%1 ").arg(QString::fromStdString(MTComms::displayName(m_msgtype.toStdString())));
@@ -205,17 +210,23 @@ void MTCompose::setRecipientNameBasedOnAvailableData()
     {
         QString qstrNymName("");
 
-        if (!m_recipientNymId.isEmpty())
-        {
-            MTNameLookupQT theLookup;
-
-            qstrNymName = QString::fromStdString(theLookup.GetNymName(m_recipientNymId.toStdString(), ""));
-        }
         // ---------------------------
         QString qstrContactName;
 
-        if (m_recipientContactId > 0)
+        if (bCanMessage_)
+        {
+            MTNameLookupQT theLookup;
+            qstrContactName = QString::fromStdString(theLookup.GetContactName(qstrContactId_.toStdString()));
+        }
+        else if (!m_recipientNymId.isEmpty())
+        {
+            MTNameLookupQT theLookup;
+            qstrNymName = QString::fromStdString(theLookup.GetNymName(m_recipientNymId.toStdString(), ""));
+        }
+        else if (qstrContactName.isEmpty() && m_recipientContactId > 0)
+        {
             qstrContactName = MTContactHandler::getInstance()->GetContactName(m_recipientContactId);
+        }
         // ---------------------------
         if (qstrContactName.isEmpty())
             qstrContactName = qstrNymName;
@@ -232,7 +243,7 @@ void MTCompose::setRecipientNameBasedOnAvailableData()
                 qstrContactName = QString::fromStdString(theLookup.GetAddressName(this->m_recipientAddress.toStdString()));
             }
         }
-        else if (!sendingThroughOTServer())
+        else if (!bCanMessage_ && !sendingThroughOTServer())
         {
             QString qstrMsgTypeDisplay = m_msgtype.isEmpty() ? QString(tr("transport or ")) :
                                                                QString("%1 ").arg(QString::fromStdString(MTComms::displayName(m_msgtype.toStdString())));
@@ -304,8 +315,61 @@ bool MTCompose::setRecipientNymBasedOnContact()
     return false;
 }
 
+
+void MTCompose::setInitialRecipientContactID(QString qstrContactid, QString address/*=""*/)
+{
+    QString qstrSenderNym = m_senderNymId;
+    QString qstrDefaultNym = Moneychanger::It()->get_default_nym_id();
+    if (qstrSenderNym.isEmpty() && !qstrDefaultNym.isEmpty()) {
+        qstrSenderNym = qstrDefaultNym;
+        m_senderNymId = qstrDefaultNym;
+    }
+    if (!qstrSenderNym.isEmpty() && !qstrContactid.isEmpty()) {
+        bCanMessage_ = (0 == opentxs::OTAPI_Wrap::Can_Message(qstrSenderNym.toStdString(), qstrContactid.toStdString()));
+    }
+    // -------------------------------------------
+    mapIDName theMap;
+    const bool bGotNyms = MTContactHandler::getInstance()->GetNyms(theMap, qstrContactid.toStdString());
+
+    if (bGotNyms) {
+        //const bool bRecipientNymChosen =
+                chooseRecipientNym(theMap);
+
+//      if (bRecipientNymChosen)
+//          return;
+    }
+    // -------------------------------------------
+    if (bCanMessage_) {
+        qstrContactId_ = qstrContactid;
+
+        if (m_subject.isEmpty())
+        {
+            ui->subjectEdit->setVisible(false);
+            ui->subjectLabel->setVisible(false);
+        }
+
+        ui->label_3->setVisible(false);
+        ui->toolButton_3->setVisible(false);
+
+        ui->toolButtonTo->setVisible(false);
+        ui->toolButtonFrom->setVisible(false);
+
+        ui->viaButton->setVisible(false);
+        ui->toolButtonFrom->setEnabled(false);
+        ui->toolButtonTo->setEnabled(false);
+
+        ui->fromButton->setEnabled(false);
+        ui->toButton->setEnabled(false);
+        return;
+    }
+}
+
+
 void MTCompose::setInitialRecipientContactID(int contactid, QString address/*=""*/)
 {
+    if (bCanMessage_)
+        return;
+
     m_recipientContactId = contactid;    // Recipient Nym kjsdfds982345 might be Contact #2. (Or Nym itself might be blank, with ONLY Contact!)
     m_recipientNymId     = QString("");  // If not available, then m_recipientContactID must be available. (For Bitmessage, for example, Nym is optional.)
 
@@ -315,6 +379,9 @@ void MTCompose::setInitialRecipientContactID(int contactid, QString address/*=""
 
 void MTCompose::setInitialRecipient(QString nymId, int contactid/*=0*/, QString address/*=""*/)
 {
+    if (bCanMessage_)
+        return;
+
     m_recipientNymId     = nymId;       // If not available, then m_recipientContactID must be available. (For Bitmessage, for example, Nym is optional.)
     m_recipientContactId = contactid;   // Recipient Nym kjsdfds982345 might be Contact #2. (Or Nym itself might be blank, with ONLY Contact!)
 
@@ -351,6 +418,9 @@ void MTCompose::setInitialMsgType(QString msgtype, QString server/*=""*/)
 
 void MTCompose::setInitialServer(QString NotaryID)
 {
+    if (bCanMessage_)
+        return;
+
     // If someone passed in an empty server Id, but the msgType IS set,
     // then if msgType is "otserver", we keep the NotaryID we already had,
     // and we don't blank it out. But if msgtype is "bitmessage" or something,
@@ -386,7 +456,7 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
 {
     NetworkModule * pModule = NULL;
 
-    if (viaTransport.isEmpty())
+    if (!bCanMessage_ && viaTransport.isEmpty())
     {
         qDebug() << "Cannot send a message via a blank transport type, aborting.";
         return false;
@@ -398,7 +468,7 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
         return false;
     }
     // ----------------------------------------------------
-    if (0 == viaTransport.compare("otserver"))
+    if (!bCanMessage_ && 0 == viaTransport.compare("otserver"))
     {
         if (viaServer.isEmpty())
         {
@@ -412,7 +482,7 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
             return false;
         }
     }
-    else // All other transport types.
+    else if (!bCanMessage_) // All other transport types.
     {
         if (fromAddress.isEmpty())
         {
@@ -456,8 +526,8 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
         }
     }
     // ----------------------------------------------------
-    if (subject.isEmpty())
-        subject = tr("From the desktop client. (Empty subject.)");
+//    if (subject.isEmpty())
+//        subject = tr("From the desktop client. (Empty subject.)");
     // ----------------------------------------------------
     if (body.isEmpty())
         body = tr("From the desktop client. (Empty message body.)");
@@ -471,32 +541,44 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
     qDebug() << QString("Initiating sendMessage:\n Transport:'%1'\n Server:'%2'\n From Nym:'%3'\n From Address:'%4'\n To Nym:'%5'\n To Address:'%6'\n Subject:'%7'\n Body:'%8'").
                 arg(viaTransport).arg(viaServer).arg(fromNymId).arg(fromAddress).arg(toNymId).arg(toAddress).arg(subject).arg(body);
     // ----------------------------------------------------
-    QString contents = tr("%1: %2\n\n%3").arg(tr("Subject")).arg(subject).arg(body);
+    QString contents;
+    if (subject.isEmpty())
+        contents = body;
+    else
+        contents = QString("%1: %2\n\n%3").arg(tr("Subject")).arg(subject).arg(body);
     // ----------------------------------------------------
-    if (0 == viaTransport.compare("otserver"))
+    if (bCanMessage_)
     {
+        const opentxs::Identifier bgthreadId
+            {opentxs::OT::App().API().OTME_TOO().
+                MessageContact(str_fromNymId, qstrContactId_.toStdString(), contents.toStdString())};
 
+        const auto status = opentxs::OT::App().API().OTME_TOO().Status(bgthreadId);
 
-        std::string strResponse;
-        {
+        const bool bAddToGUI = (opentxs::ThreadStatus::FINISHED_SUCCESS == status) ||
+                               (opentxs::ThreadStatus::RUNNING == status);
+        if (bAddToGUI) {
+            const bool bUseGrayText = (opentxs::ThreadStatus::FINISHED_SUCCESS != status);
+            m_bSent = true; // This means it's queued, not actually sent to the notary yet.
+        }
+    }
+    // ----------------------------------------------------
+    else if (0 == viaTransport.compare("otserver"))
+    {
+        std::string strResponse; {
             MTSpinner theSpinner;
-
             strResponse = opentxs::OT_ME::It().send_user_msg(str_NotaryID, str_fromNymId, str_toNymId, contents.toStdString());
         }
 
-        int32_t nReturnVal = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
-
-        if (1 != nReturnVal)
-        {
+        int32_t  nReturnVal = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
+        if (1 != nReturnVal) {
             qDebug() << "OT send_message: Failed.";
-
             Moneychanger::It()->HasUsageCredits(str_NotaryID, str_fromNymId);
-
             return false;
         }
 
         qDebug() << "Success in OT send_message!";
-        m_bSent = true;
+        m_bSent = true; // In this case it means it actually sent it through the notary.
     }
     // ---------------------------------------------------------
     else if (NULL != pModule) // Anything but otserver. (Bitmessage, probably.)
@@ -508,15 +590,13 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
 
             bSuccessSending = pModule->sendMail(message);
         }
-
         if (!bSuccessSending)
         {
             qDebug() << "send_message: Failed.";
             return false;
         }
-
         qDebug() << "Success in send_message!";
-        m_bSent = true;
+        m_bSent = true; // Sent via whatever the msg method is for this address.
     }
     // ---------------------------------------------------------
     return m_bSent;
@@ -531,6 +611,9 @@ bool MTCompose::hasSenderAndRecipient()
 
 bool MTCompose::hasSender()
 {
+    if (bCanMessage_) {
+        return true;
+    }
     // If there IS NO message type, then we determine whether or not a sender
     // exists by whether or not the Sender Nym ID is set.
     //
@@ -597,6 +680,9 @@ bool MTCompose::hasSender()
 
 bool MTCompose::hasRecipient()
 {
+    if (bCanMessage_) {
+        return true;
+    }
     // If there's no contact ID, but there IS a Nym ID, let's go ahead
     // and try to find the contact ID based on the Nym ID, just for shits
     // and giggles. (We may or may not find it.)
@@ -1021,7 +1107,7 @@ void MTCompose::on_sendButton_clicked()
     if (!MakeSureCommonMsgMethod())
         return;
     // -----------------------------------------------------------------
-    if (ui->subjectEdit->text().isEmpty())
+    if (ui->subjectEdit->isVisible() && ui->subjectEdit->text().isEmpty())
     {
         QMessageBox::StandardButton reply;
 
@@ -1219,6 +1305,9 @@ bool MTCompose::chooseServer(mapIDName & theMap)
 // Recipient has just changed. Does Sender exist? If so, make sure he is compatible with msgtype or find a new one that matches both.
 void MTCompose::FindSenderMsgMethod()
 {
+    if (bCanMessage_) {
+        return;
+    }
     // If sender doesn't exist, we can just return now.
     // BUT the sender could be m_senderNymId, m_senderAddress,
     // or some combination. Let's find what we can...
@@ -1371,13 +1460,10 @@ void MTCompose::FindSenderMsgMethod()
 
 
 
-    qDebug() << QString("m_senderAddress: %1").arg(m_senderAddress);
-    qDebug() << QString("m_recipientAddress: %1").arg(m_recipientAddress);
-    qDebug() << QString("qstrMethodTypeSender: %1").arg(qstrMethodTypeSender);
-    qDebug() << QString("qstrMethodTypeRecipient: %1").arg(qstrMethodTypeRecipient);
-
-
-
+//    qDebug() << QString("m_senderAddress: %1").arg(m_senderAddress);
+//    qDebug() << QString("m_recipientAddress: %1").arg(m_recipientAddress);
+//    qDebug() << QString("qstrMethodTypeSender: %1").arg(qstrMethodTypeSender);
+//    qDebug() << QString("qstrMethodTypeRecipient: %1").arg(qstrMethodTypeRecipient);
 
 
     // If the recipient and sender both have addresses, see if they are of a matching type
@@ -1511,6 +1597,9 @@ void MTCompose::FindSenderMsgMethod()
 // Sender has just changed. Does Recipient exist? If so, make sure he is compatible with msgtype or find a new one that matches both.
 void MTCompose::FindRecipientMsgMethod()
 {
+    if (bCanMessage_) {
+        return;
+    }
     // We use the sender's ID in this function, so let's make sure it's ready...
     //
     if (m_senderNymId.isEmpty() && !m_senderAddress.isEmpty())
@@ -1837,6 +1926,10 @@ QString MTCompose::FindIDMatch(mapIDName map1, mapIDName map2)
 //
 bool MTCompose::MakeSureCommonMsgMethod()
 {
+    if (bCanMessage_) {
+        return true;
+    }
+
     // If we have both Nym IDs... (sender / recipient.)
     // That's the presupposition of this entire function.
     //
@@ -2364,6 +2457,9 @@ bool MTCompose::MakeSureCommonMsgMethod()
 
 bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotaryID/*=QString("")*/)   // Assumes senderNymId and NotaryID are set.
 {
+    if (bCanMessage_)
+        return true;
+
     if (qstrNotaryID.isEmpty())
         qstrNotaryID = m_NotaryID;
 
@@ -2414,6 +2510,9 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
 
 bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrNotaryID/*=QString("")*/) // Assumes m_senderNymId, m_recipientNymId and NotaryID are set.
 {
+    if (bCanMessage_)
+        return true;
+
     if (qstrNotaryID.isEmpty())
         qstrNotaryID = m_NotaryID;
 
@@ -2481,6 +2580,9 @@ bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrNot
 
 void MTCompose::on_fromButton_clicked()
 {
+    if (bCanMessage_)
+        return;
+
     if (!m_senderAddress.isEmpty())
     {
         QString qstrOldNymByAddress  = MTContactHandler::getInstance()->GetNymByAddress(m_senderAddress);
@@ -2609,6 +2711,9 @@ bool MTCompose::chooseRecipientNym(mapIDName & theMap)
 
 void MTCompose::on_toButton_clicked()
 {
+    if (bCanMessage_)
+        return;
+
     // Select recipient from the address book and convert to Nym ID.
     // -----------------------------------------------
     DlgChooser theChooser(this);
@@ -2723,7 +2828,7 @@ void MTCompose::dialog()
         connect(this, SIGNAL(balancesChanged()), Moneychanger::It(), SLOT  (onBalancesChanged()));
         connect(this, SIGNAL(nymWasJustChecked(QString)), Moneychanger::It(), SLOT  (onCheckNym(QString)));
         // ---------------------------------------
-        this->setWindowTitle(tr("Compose: (no subject)"));
+        this->setWindowTitle(tr("Compose Message"));
 
         QString style_sheet = "QPushButton{border: none; border-style: outset; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa);}"
                 "QPushButton:pressed {border: 1px solid black; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa); }"
@@ -2912,10 +3017,13 @@ MTCompose::~MTCompose()
 
 void MTCompose::on_subjectEdit_textChanged(const QString &arg1)
 {
-    if (arg1.isEmpty())
+    if (arg1.isEmpty()) // Subject is empty
     {
         m_subject = QString("");
-        this->setWindowTitle(tr("Compose: (no subject)"));
+        if (bCanMessage_)
+            this->setWindowTitle(tr("Compose message"));
+        else
+            this->setWindowTitle(tr("Compose: (no subject)"));
     }
     else
     {
@@ -2926,6 +3034,9 @@ void MTCompose::on_subjectEdit_textChanged(const QString &arg1)
 
 void MTCompose::on_toolButtonTo_clicked()
 {
+    if (bCanMessage_)
+        return;
+
     QString qstrContactID("");
     // ------------------------------------------------
     if (m_recipientContactId > 0)
@@ -2945,6 +3056,9 @@ void MTCompose::on_toolButtonTo_clicked()
 
 void MTCompose::on_toolButtonFrom_clicked()
 {
+    if (bCanMessage_)
+        return;
+
     QString qstrNymID("");
     // ------------------------------------------------
     if (!m_senderNymId.isEmpty())
@@ -2955,6 +3069,9 @@ void MTCompose::on_toolButtonFrom_clicked()
 
 void MTCompose::on_toolButton_3_clicked()
 {
+    if (bCanMessage_)
+        return;
+
     if ((QString("otserver") == m_msgtype) && !m_NotaryID.isEmpty())
         emit ShowServer(m_NotaryID);
     else if (QString("otserver") != m_msgtype)

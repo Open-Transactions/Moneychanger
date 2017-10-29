@@ -41,6 +41,8 @@ public:
     virtual std::string GetNymName(const std::string & str_id,
                                    const std::string   p_notary_id) const;
 
+    virtual std::string GetContactName(const std::string & str_id) const;
+
     virtual std::string GetAcctName(const std::string & str_id,
                                     const std::string   p_nym_id,
                                     const std::string   p_notary_id,
@@ -98,6 +100,7 @@ public:
   void NotifyOfNymServerPair(QString nym_id_string, QString notary_id_string);
   void NotifyOfNymServerUnpair(QString nym_id_string, QString notary_id_string);
 
+  QString GetOrCreateOpentxsContactBasedOnNym(QString qstrLabel, QString nym_id_string, QString payment_code=QString(""));
   int  CreateContactBasedOnNym(QString nym_id_string, QString notary_id_string=QString(""), QString payment_code=QString(""));
   int  CreateContactBasedOnAddress(QString qstrAddress, QString qstrMethodType);
 
@@ -229,7 +232,8 @@ public:
   bool GetMsgMethodTypesByContact(mapIDName & theMap, int nFilterByContact, bool bAddServers=false, QString filterByType="", bool bIncludeTypeInKey=true); // Method Types.
   bool GetMsgMethodTypesByNym    (mapIDName & theMap, QString filterByNym,  bool bAddServers=false);
 
-  bool GetAddressesByContact     (mapIDName & theMap, int nFilterByContact, QString filterByType, bool bIncludeTypeInKey=true);
+  bool GetAddressesByContact     (mapIDName & theMap, const std::string & strFilterByContact, QString filterByType, bool bIncludeTypeInKey=true); // Type might be NONE, or BITMESSAGE, or BITCOIN, etc.
+  bool GetAddressesByContact     (mapIDName & theMap, int                 nFilterByContact,   QString filterByType, bool bIncludeTypeInKey=true);
   bool GetAddressesByNym         (mapIDName & theMap, QString filterByNym,  QString filterByType);
   bool GetAddressesByNym         (mapIDName & theMap, QString filterByNym,  int filterByMethodID);
 
@@ -247,21 +251,40 @@ public:
 
   bool GetAccounts(mapIDName & theMap, QString filterByNym, QString filterByServer, QString filterByAsset);
 
+  bool GetOpentxsContacts(mapIDName & theMap);
   bool GetContacts(mapIDName & theMap);
   bool GetNyms    (mapIDName & theMap, int nFilterByContact);
+  bool GetNyms    (mapIDName & theMap, const std::string & str_contact_id);
   bool GetPaymentCodes(mapIDName & theMap, int nFilterByContact);
+
+  bool GetAssetIdsForTLA(mapIDName & theMap, const std::string & str_tla);
 
   bool GetSmartContracts(mapIDName & theMap);
   QString GetSmartContract    (int nID);
   bool DeleteSmartContract    (int nID);
   bool DeleteManagedPassphrase(int nID);
+  // -----------------------------------------------------
+  bool EnsureConversationExists(const QString & qstrMyNymId, const QString & qstrThreadId, const QString & qstrThreadName);
+  bool LowLevel_UpdateExistingConversation(const QString & qstrMyNymId, const QString & qstrThreadId, const QString & qstrThreadName);
 
+  SetOfStrings * selectThreadItemIdsForNymAndConversation(const QString & qstrMyNymId, const QString & qstrThreadId);
+  bool EnsureConversationItemExists(const QString & qstrMyNymId, const QString & qstrThreadId, const QString & qstrThreadItemId,
+                                    const QString & qstrThreadItemAccountId, const int thread_item_box,
+                                    const time64_t & thread_item_timestamp, const bool thread_item_unread);
+  bool LowLevel_UpdateExistingConversationItem(const QString & qstrMyNymId, const QString & qstrThreadId, const QString & qstrThreadItemId,
+                                               const QString & qstrThreadItemAccountId, const int thread_item_box,
+                                               const time64_t & thread_item_timestamp, const bool thread_item_unread);
 
-  bool LowLevelUpdateMessageBody(int nMessageID, const QString & qstrBody);
-  bool CreateMessageBody(QString qstrBody);
+  SetOfStrings * selectPreimportedConversationIdsForNym(const QString &qstrMyNymId);
+  // -----------------------------------------------------
+  bool LowLevelUpdateMessageBody(int nMessageID, const QString & qstrBody, const QString & qstrThreadItemId);
+  bool CreateMessageBody(QString qstrBody, QString qstrThreadItemId);
   bool DeleteMessageBody(int nID);
-  bool UpdateMessageBody(int nMessageID, const QString & qstrBody);
-  QString GetMessageBody(int nID);
+  bool UpdateMessageBody(int nMessageID, const QString & qstrBody, const QString qstrThreadItemId);
+  QString GetMessageBody(int nMessageID);
+  QString GetMessageBody(QString qstrThreadItemID);
+
+  bool ArchiveMessages(QList<int> & listMsgIds);
 
   int  GetPaymentIdByTxnDisplayId(int64_t lTxnDisplayId, QString qstrNymId);
   bool LowLevelUpdatePaymentBody(int nPaymentID, const QString qstrBody, const QString qstrPendingBody);
