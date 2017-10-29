@@ -4655,8 +4655,7 @@ QJsonValue MCRPCService::ledgerCreateResponse(
     QString APIKey,
     QString NotaryID,
     QString NymID,
-    QString AccountID,
-    QString OriginalLedger)
+    QString AccountID)
 {
     if (!validateAPIKey(Username, APIKey)) {
         QJsonObject object{{"Error", "Invalid API Key"}};
@@ -4678,8 +4677,7 @@ QJsonValue MCRPCService::ledgerCreateResponse(
     std::string result = opentxs::OTAPI_Wrap::Exec()->Ledger_CreateResponse(
         NotaryID.toStdString(),
         NymID.toStdString(),
-        AccountID.toStdString(),
-        OriginalLedger.toStdString());
+        AccountID.toStdString());
     QJsonObject object{{"LedgerResponse", QString(result.c_str())}};
     return QJsonValue(object);
 }

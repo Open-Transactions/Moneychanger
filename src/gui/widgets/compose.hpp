@@ -29,9 +29,9 @@ class MTCompose : public QWidget
     int     m_recipientContactId; // Recipient Nym kjsdfds982345 might be Contact #2. (Or Nym itself might be blank, with ONLY Contact!)
     QString m_recipientAddress;   // If msgtype is "bitmessage" this will contain a Bitmessage address.
 
-    bool    m_bSent;
+    bool    m_bSent{false};
 
-    bool    m_bForwarding = false;
+    bool    m_bForwarding{false};
     QString m_forwardSenderNymId;
     QString m_forwardRecipientNymId;
     QString m_forwardSenderAddress;

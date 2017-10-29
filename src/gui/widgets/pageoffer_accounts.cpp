@@ -5,6 +5,9 @@
 #include <gui/widgets/pageoffer_accounts.hpp>
 #include <ui_pageoffer_accounts.h>
 
+#include <QMessageBox>
+#include <QTimer>
+
 #include <core/moneychanger.hpp>
 
 #include <gui/widgets/dlgchooser.hpp>
@@ -449,6 +452,15 @@ void PageOffer_Accounts::initializePage()
             }
             qstrCurrencyAccountID = field("CurrencyAcctID").toString();
         }
+    }
+    // -------------------------------------------
+    if (qstrCurrencyAccountID.isEmpty() || qstrAssetAccountID.isEmpty())
+    {
+        QMessageBox::warning(this, tr("Moneychanger"),
+                             tr("Your nym doesn't have matching asset accounts for the selected asset (or currency) type. "
+                                "Please create the appropriate asset accounts first, or select a different asset/currency pair to trade."));
+        QTimer::singleShot(0, wizard(), SLOT(back()));
+        return;
     }
     // -------------------------------------------
     const bool bIsBid        = field("bid").toBool();

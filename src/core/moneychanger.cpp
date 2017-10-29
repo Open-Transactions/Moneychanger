@@ -5705,6 +5705,11 @@ void Moneychanger::mc_requestfunds_show_dialog(QString qstrAcct/*=QString("")*/,
 
     if (!qstr_acct_id.isEmpty())
         request_window->setInitialMyAcct(qstr_acct_id);
+    // --------------------------------------------------
+    if (!qstrContact.isEmpty())
+    {
+        request_window->setInitialHisContact(qstrContact);
+    }
     // ---------------------------------------
     request_window->dialog();
     // --------------------------------------------------

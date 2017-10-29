@@ -20,28 +20,32 @@ class MTRequestDlg : public QWidget
 {
     Q_OBJECT
 
-    QString m_hisNymId;  // From:
+    QString m_hisContactId;  // From: (contact)
+    QString m_hisNymId;  // From: (nym)
     QString m_myAcctId;  // To:
     QString m_memo;      // Memo:
     QString m_amount;    // Amount:
 
-    bool m_bSent;
+    bool m_bSent{false};
+    bool canMessage_{false};
+    bool lockInvoicee_{false};
 
 public:
     explicit MTRequestDlg(QWidget *parent=0);
     ~MTRequestDlg();
 
-    void setInitialHisNym (QString nymId)  { m_hisNymId  = nymId;  } // From:
-    void setInitialMyAcct (QString acctId) { m_myAcctId  = acctId; } // To:
-    void setInitialMemo   (QString memo)   { m_memo      = memo;   } // Memo:
-    void setInitialAmount (QString amount) { m_amount    = amount; } // Amount:
+    void setInitialHisContact (QString contactId, bool bUsedInternally=false); // Payment From: (contact)
+    void setInitialHisNym     (QString nymId)     { m_hisNymId     = nymId;  } // Payment From: (nym)
+    void setInitialMyAcct     (QString acctId)    { m_myAcctId     = acctId; } // Payment To:
+    void setInitialMemo       (QString memo)      { m_memo         = memo;   } // Memo:
+    void setInitialAmount     (QString amount)    { m_amount       = amount; } // Amount:
 
     void dialog();
     // --------------------------
     bool requestFunds(QString memo, QString amount);
 
-    bool sendInvoice        (int64_t amount, QString toNymId, QString fromAcctId, QString note);
-    bool sendChequeLowLevel (int64_t amount, QString toNymId, QString fromAcctId, QString note, bool isInvoice);
+    bool sendInvoice        (int64_t amount, QString toNymId, QString toContactId, QString fromAcctId, QString note);
+    bool sendChequeLowLevel (int64_t amount, QString toNymId, QString toContactId, QString fromAcctId, QString note, bool isInvoice);
 
 signals:
     void balancesChanged();
@@ -69,9 +73,9 @@ private slots:
     void on_toolButtonManageAccts_clicked();
 
 private:
-    bool already_init;
+    bool already_init{false};
 
-    Ui::MTRequestDlg *ui;
+    Ui::MTRequestDlg *ui{nullptr};
 };
 
 #endif // REQUESTDLG_HPP

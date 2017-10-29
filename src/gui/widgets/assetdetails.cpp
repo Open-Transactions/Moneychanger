@@ -229,7 +229,7 @@ void MTAssetDetails::on_pushButton_clicked()
 
                                         const std::string str_reply = opentxs::OT_ME::It().retrieve_contract(qstrNotaryID.toStdString(),
                                                                                                  qstrNymID   .toStdString(),
-                                                                                                 qstrContents.toStdString());
+                                                                                                 qstrAssetID .toStdString());
                                         const int32_t     nResult   = opentxs::OT_ME::It().VerifyMessageSuccess(str_reply);
 
                                         bSuccess = (1 == nResult);

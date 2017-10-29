@@ -1076,8 +1076,7 @@ public Q_SLOTS:
         QString APIKey,
         QString NotaryID,
         QString NymID,
-        QString AccountID,
-        QString OriginalLedger);
+        QString AccountID);
     QJsonValue ledgerGetTransactionByIndex(
         QString Username,
         QString APIKey,

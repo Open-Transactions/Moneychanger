@@ -712,7 +712,7 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                         }
                         // ------------------------------------------------
                         opentxs::proto::ContactItem item;
-                        item.set_version(CONTACT_DATA_VERSION);
+                        item.set_version(CONTACT_CONTACT_DATA_VERSION);
                         item.set_type(
                             static_cast<opentxs::proto::ContactItemType>
                                 (sectionType));
