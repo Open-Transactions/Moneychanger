@@ -25,6 +25,7 @@
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/contact/Contact.hpp>
+#include <opentxs/contact/ContactData.hpp>
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OTME_too.hpp>
@@ -675,7 +676,7 @@ void Activity::RefreshAccountTree()
                     const QString qstrAccountId = mapAccounts.begin().key();
                     const std::string str_acct_id = qstrAccountId.toStdString();
                     const std::string str_asset_id = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
-                    const int64_t lBalance = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance(str_acct_id);                    
+                    const int64_t lBalance = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance(str_acct_id);
                     const std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmountWithoutSymbol(str_asset_id, lBalance);
 //                  const std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_asset_id, lBalance);
 
@@ -755,7 +756,7 @@ void Activity::RefreshAccountTree()
                         const QString qstrAccountId = ci_accounts.key();
                         const std::string str_acct_id = qstrAccountId.toStdString();
                         const std::string str_asset_id = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
-                        const int64_t lBalance = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance(str_acct_id);                        
+                        const int64_t lBalance = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance(str_acct_id);
                         const std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmountWithoutSymbol(str_asset_id, lBalance);
     //                  const std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_asset_id, lBalance);
                         const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);

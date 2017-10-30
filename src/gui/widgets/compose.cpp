@@ -22,6 +22,7 @@
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTME_too.hpp>
 #include <opentxs/contact/Contact.hpp>
+#include <opentxs/contact/ContactData.hpp>
 #include <opentxs/core/String.hpp>
 #include <opentxs/core/Identifier.hpp>
 
