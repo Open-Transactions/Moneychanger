@@ -20,6 +20,7 @@
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/contact/Contact.hpp>
+#include <opentxs/contact/ContactData.hpp>
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Log.hpp>

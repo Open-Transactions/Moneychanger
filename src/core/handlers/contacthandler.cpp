@@ -13,6 +13,7 @@
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/contact/Contact.hpp>
+#include <opentxs/contact/ContactData.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/crypto/PaymentCode.hpp>
 #include <opentxs/client/OTAPI_Wrap.hpp>

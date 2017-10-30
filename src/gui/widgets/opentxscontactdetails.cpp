@@ -28,6 +28,7 @@
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/contact/Contact.hpp>
+#include <opentxs/contact/ContactData.hpp>
 #include <opentxs/core/Nym.hpp>
 #include <opentxs/core/Types.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
@@ -1312,7 +1313,7 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
 //  QPointer<ClaimsProxyModel> pProxyModelClaims_;
 
     pProxyModelClaims_ = nullptr;
-    
+
     pModelClaims_=nullptr; // TODO
     //pModelClaims_ = DBHandler::getInstance()->getClaimsModel(nContactId);
 
