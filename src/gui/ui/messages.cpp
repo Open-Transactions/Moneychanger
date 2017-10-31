@@ -21,7 +21,7 @@
 #include <opentxs/api/OT.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/OTTransaction.hpp>
@@ -867,7 +867,7 @@ void Messages::RefreshTree()
 //                        {
 //                            qstrMethodName = tr("Notary");
 //                            // ------------------------------
-//                            QString qstrTemp = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(qstrViaTransport.toStdString()));
+//                            QString qstrTemp = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(qstrViaTransport.toStdString()));
 //                            if (!qstrTemp.isEmpty())
 //                                qstrTransportName = qstrTemp;
 //                        }
@@ -1529,7 +1529,7 @@ void Messages::on_toolButtonReply_clicked()
             // ---------------------------------------
             if (!str_other_contact_id.empty()) // An opentxs contact was found for the recipient Nym.
             {
-                if (0 == opentxs::OTAPI_Wrap::Can_Message(myNymID.toStdString(), str_other_contact_id))
+                if (0 == opentxs::SwigWrap::Can_Message(myNymID.toStdString(), str_other_contact_id))
                 {
                     bCanMessage = true;
                     compose_window->setInitialRecipientContactID(qstrOtherContactId, otherAddress);

@@ -7,7 +7,7 @@
 
 #include <core/moneychanger.hpp>
 
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 
 #include <QMessageBox>
@@ -82,12 +82,12 @@ void PageSmart_PartyAcct::on_pushButtonSelect_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    int32_t acct_count = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctCount(str_template, str_party);
+    int32_t acct_count = opentxs::SwigWrap::Exec()->Party_GetAcctCount(str_template, str_party);
 
     for (int32_t i = 0; i < acct_count; i++)
     {
         std::string acctName =
-            opentxs::OTAPI_Wrap::Exec()->Party_GetAcctNameByIndex(str_template, str_party, i);
+            opentxs::SwigWrap::Exec()->Party_GetAcctNameByIndex(str_template, str_party, i);
 
         if ("" == acctName) {
             QMessageBox::information(this, tr("Moneychanger"), tr("Strange, there is an account on this smart contract without a name. Failure."));
@@ -99,7 +99,7 @@ void PageSmart_PartyAcct::on_pushButtonSelect_clicked()
 
         bool alreadyConfirmed = (mapConfirmed.end() != it);
 
-        std::string partyAcctID = opentxs::OTAPI_Wrap::Exec()->Party_GetAcctID(str_template, str_party, acctName);
+        std::string partyAcctID = opentxs::SwigWrap::Exec()->Party_GetAcctID(str_template, str_party, acctName);
 
         if (alreadyConfirmed || "" != partyAcctID) {
             continue;

@@ -26,7 +26,7 @@
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OTME_too.hpp>
 #include <opentxs/core/Log.hpp>
@@ -330,12 +330,12 @@ mapIDName & Activity::GetOrCreateAssetIdMapByCurrencyCode(QString qstrTLA, mapOf
 
 void Activity::GetAssetIdMapsByCurrencyCode(mapOfMapIDName & bigMap)
 {
-    int32_t  asset_count = opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount();
+    int32_t  asset_count = opentxs::SwigWrap::Exec()->GetAssetTypeCount();
     for (int32_t ii = 0; ii < asset_count; ii++)
     {
-        const QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_ID(ii));
-        const QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(OT_id.toStdString()));
-        const QString qstrTLA = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetCurrencyTLA(OT_id.toStdString()));
+        const QString OT_id   = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_ID(ii));
+        const QString OT_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_Name(OT_id.toStdString()));
+        const QString qstrTLA = QString::fromStdString(opentxs::SwigWrap::Exec()->GetCurrencyTLA(OT_id.toStdString()));
         mapIDName & mapTLA = GetOrCreateAssetIdMapByCurrencyCode(qstrTLA, bigMap);
         mapTLA.insert(OT_id, OT_name);
     }
@@ -350,16 +350,16 @@ int64_t Activity::GetAccountBalancesTotaledForUnitTypes(const mapIDName & mapUni
     {
         QString qstrUnitTypeId = ci.key();
         // ----------------------------------------------------
-        const int nAccountCount = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
+        const int nAccountCount = opentxs::SwigWrap::Exec()->GetAccountCount();
         for (int ii = 0; ii < nAccountCount; ++ii)
         {
-            std::string accountID   = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(ii);
-            std::string assetTypeID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(accountID);
+            std::string accountID   = opentxs::SwigWrap::Exec()->GetAccountWallet_ID(ii);
+            std::string assetTypeID = opentxs::SwigWrap::Exec()->GetAccountWallet_InstrumentDefinitionID(accountID);
 
             QString qstrAssetTypeId = QString::fromStdString(assetTypeID);
             if (0 == qstrAssetTypeId.compare(qstrUnitTypeId))
             {
-                const int64_t lSubtotal = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance(accountID);
+                const int64_t lSubtotal = opentxs::SwigWrap::Exec()->GetAccountWallet_Balance(accountID);
 
                 // We don't count the negative balances, since those are for issuer accounts,
                 // and if we included them, the total would always balance out to zero anyway.
@@ -378,17 +378,17 @@ int64_t Activity::GetAccountBalancesTotaledForUnitTypes(const mapIDName & mapUni
 
 void Activity::GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, bool bPairedOrHosted) // true == paired, false == hosted.
 {
-    int32_t  account_count = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
+    int32_t  account_count = opentxs::SwigWrap::Exec()->GetAccountCount();
 
     for (int32_t ii = 0; ii < account_count; ii++)
     {
-        const QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(ii));
-        const QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(OT_id.toStdString()));
-        const QString qstrServerId = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID(OT_id.toStdString()));
+        const QString OT_id   = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAccountWallet_ID(ii));
+        const QString OT_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAccountWallet_Name(OT_id.toStdString()));
+        const QString qstrServerId = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAccountWallet_NotaryID(OT_id.toStdString()));
         const std::string str_server_id = qstrServerId.toStdString();
 
         // bPaireding means, paired or in the process of pairing.
-        const bool bPaireding = opentxs::OTAPI_Wrap::Pair_Started(str_server_id);
+        const bool bPaireding = opentxs::SwigWrap::Pair_Started(str_server_id);
 
         // Basically the caller either wants a list of accounts by server ID for PAIRED servers,
         // OR he wants a list of accounts by server ID for NON-Paired (hosted) servers.
@@ -469,7 +469,7 @@ mapIDName & Activity::GetOrCreateAccountIdMapByServerId(QString qstrServerId, ma
 //void blah(QString strID) // asset ID
 //{
 //    // ----------------------------------
-//    const QString qstrContents = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_Contract(strID.toStdString()));
+//    const QString qstrContents = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_Contract(strID.toStdString()));
 //    opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
 //                                                    (opentxs::String(qstrContents.toStdString()));
 //    // ----------------------------------
@@ -547,10 +547,10 @@ void Activity::RefreshAccountTree()
             const int64_t nBalanceTotal = GetAccountBalancesTotaledForUnitTypes(mapTLA);
             const QString qstrFirstAssetTypeId = mapTLA.begin().key();
             const std::string first_unit_type  = qstrFirstAssetTypeId.toStdString();
-            const std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmountWithoutSymbol(first_unit_type, nBalanceTotal);
+            const std::string str_formatted_amount = opentxs::SwigWrap::Exec()->FormatAmountWithoutSymbol(first_unit_type, nBalanceTotal);
             const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
 
-            const std::string asset_contract = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Contract(first_unit_type);
+            const std::string asset_contract = opentxs::SwigWrap::Exec()->GetAssetType_Contract(first_unit_type);
             opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
                                                             (opentxs::String(asset_contract));
             const std::string str_shortname = contractProto.has_shortname() ? contractProto.shortname() : "";
@@ -581,7 +581,7 @@ void Activity::RefreshAccountTree()
     // ----------------------------------------
     mapOfMapIDName bigMapPairedAccounts;
 
-    const uint64_t paired_node_count = opentxs::OTAPI_Wrap::Paired_Node_Count();
+    const uint64_t paired_node_count = opentxs::SwigWrap::Paired_Node_Count();
 
     if (paired_node_count > 0)
     {
@@ -609,25 +609,25 @@ void Activity::RefreshAccountTree()
         const std::string str_index = QString::number(index).toStdString();
 
         // bPaireding means, paired or in the process of pairing.
-        const bool bPaireding = opentxs::OTAPI_Wrap::Pair_Started(str_index);
+        const bool bPaireding = opentxs::SwigWrap::Pair_Started(str_index);
         bool bConnected = false;
         // ------------------------------------------------------------------------
         if (bPaireding)  // If paired or pairing.
         {
-            const std::string str_snp_server_id = opentxs::OTAPI_Wrap::Paired_Server(str_index);
+            const std::string str_snp_server_id = opentxs::SwigWrap::Paired_Server(str_index);
             const bool bGotNotaryId = str_snp_server_id.size() > 0;
 
             if (bGotNotaryId)
             {
                 qstrServerId = QString::fromStdString(str_snp_server_id);
 
-                bConnected = opentxs::OTAPI_Wrap::Exec()->CheckConnection(str_snp_server_id);
+                bConnected = opentxs::SwigWrap::Exec()->CheckConnection(str_snp_server_id);
                 QString strConnected = QString(bConnected ? "Connected" : "Not connected");
 
                 //String strLog = "SNP Notary ID: " + str_snp_server_id + " - " + strConnected;
                 //Log.d("MService", strLog);
 
-                QString strTemp = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(str_snp_server_id));
+                QString strTemp = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(str_snp_server_id));
                 if (strTemp.size() > 0)
                 {
                     qstrSnpName = strTemp;
@@ -669,18 +669,18 @@ void Activity::RefreshAccountTree()
             {
                 const mapIDName & mapAccounts = ci_paired.value();
                 const std::string str_server_id = qstrServerId.toStdString();
-                qstrSnpName = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(str_server_id));
+                qstrSnpName = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(str_server_id));
 
                 if (1 == mapAccounts.size())
                 {
                     const QString qstrAccountId = mapAccounts.begin().key();
                     const std::string str_acct_id = qstrAccountId.toStdString();
-                    const std::string str_asset_id = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
-                    const int64_t lBalance = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance(str_acct_id);
-                    const std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmountWithoutSymbol(str_asset_id, lBalance);
-//                  const std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_asset_id, lBalance);
+                    const std::string str_asset_id = opentxs::SwigWrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+                    const int64_t lBalance = opentxs::SwigWrap::Exec()->GetAccountWallet_Balance(str_acct_id);
+                    const std::string str_formatted_amount = opentxs::SwigWrap::Exec()->FormatAmountWithoutSymbol(str_asset_id, lBalance);
+//                  const std::string str_formatted_amount = opentxs::SwigWrap::Exec()->FormatAmount(str_asset_id, lBalance);
 
-                    const std::string asset_contract = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Contract(str_asset_id);
+                    const std::string asset_contract = opentxs::SwigWrap::Exec()->GetAssetType_Contract(str_asset_id);
                     opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
                                                                     (opentxs::String(asset_contract));
 
@@ -688,7 +688,7 @@ void Activity::RefreshAccountTree()
                     const QString qstrSymbol(QString::fromStdString(str_symbol));
                     const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
                     const QString qstrAssetTypeId = QString::fromStdString(str_asset_id);
-                    const QString qstrTLA = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetCurrencyTLA(str_asset_id));
+                    const QString qstrTLA = QString::fromStdString(opentxs::SwigWrap::Exec()->GetCurrencyTLA(str_asset_id));
                     // ------------------
                     QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrSnpName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
                     items.append(pPairedItem);
@@ -755,21 +755,21 @@ void Activity::RefreshAccountTree()
                     {
                         const QString qstrAccountId = ci_accounts.key();
                         const std::string str_acct_id = qstrAccountId.toStdString();
-                        const std::string str_asset_id = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
-                        const int64_t lBalance = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance(str_acct_id);
-                        const std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmountWithoutSymbol(str_asset_id, lBalance);
-    //                  const std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_asset_id, lBalance);
+                        const std::string str_asset_id = opentxs::SwigWrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+                        const int64_t lBalance = opentxs::SwigWrap::Exec()->GetAccountWallet_Balance(str_acct_id);
+                        const std::string str_formatted_amount = opentxs::SwigWrap::Exec()->FormatAmountWithoutSymbol(str_asset_id, lBalance);
+    //                  const std::string str_formatted_amount = opentxs::SwigWrap::Exec()->FormatAmount(str_asset_id, lBalance);
                         const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
 
-                        const std::string asset_contract = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Contract(str_asset_id);
+                        const std::string asset_contract = opentxs::SwigWrap::Exec()->GetAssetType_Contract(str_asset_id);
                         opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
                                                                         (opentxs::String(asset_contract));
 
                         const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
                         const QString qstrSymbol(QString::fromStdString(str_symbol));
-                        const QString qstrAcctName = QString("     %1").arg(QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(str_acct_id)));
+                        const QString qstrAcctName = QString("     %1").arg(QString::fromStdString(opentxs::SwigWrap::Exec()->GetAccountWallet_Name(str_acct_id)));
                         const QString qstrAssetTypeId = QString::fromStdString(str_asset_id);
-                        const QString qstrTLA = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetCurrencyTLA(str_asset_id));
+                        const QString qstrTLA = QString::fromStdString(opentxs::SwigWrap::Exec()->GetCurrencyTLA(str_asset_id));
                         // ------------------
                         QTreeWidgetItem * pSubItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrAcctName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
                         items.append(pSubItem);
@@ -867,29 +867,29 @@ void Activity::RefreshAccountTree()
             const QString qstrServerId = ci_servers.key();
             const mapIDName & mapAccounts = ci_servers.value();
             const std::string str_server_id = qstrServerId.toStdString();
-            const bool bIsConnectionAlive = opentxs::OTAPI_Wrap::Exec()->CheckConnection(str_server_id);
+            const bool bIsConnectionAlive = opentxs::SwigWrap::Exec()->CheckConnection(str_server_id);
 
-            QString qstrServerName = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(str_server_id));
+            QString qstrServerName = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(str_server_id));
 
             if (1 == mapAccounts.size())
             {
                 const QString qstrAccountId = mapAccounts.begin().key();
                 const std::string str_acct_id = qstrAccountId.toStdString();
-                const std::string str_asset_id = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
-                const int64_t lBalance = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance(str_acct_id);
+                const std::string str_asset_id = opentxs::SwigWrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+                const int64_t lBalance = opentxs::SwigWrap::Exec()->GetAccountWallet_Balance(str_acct_id);
 
-                const std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmountWithoutSymbol(str_asset_id, lBalance);
-//              const std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_asset_id, lBalance);
+                const std::string str_formatted_amount = opentxs::SwigWrap::Exec()->FormatAmountWithoutSymbol(str_asset_id, lBalance);
+//              const std::string str_formatted_amount = opentxs::SwigWrap::Exec()->FormatAmount(str_asset_id, lBalance);
                 const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
 
-                const std::string asset_contract = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Contract(str_asset_id);
+                const std::string asset_contract = opentxs::SwigWrap::Exec()->GetAssetType_Contract(str_asset_id);
                 opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
                                                                 (opentxs::String(asset_contract));
 
                 const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
                 const QString qstrSymbol(QString::fromStdString(str_symbol));
                 const QString qstrAssetTypeId = QString::fromStdString(str_asset_id);
-                const QString qstrTLA = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetCurrencyTLA(str_asset_id));
+                const QString qstrTLA = QString::fromStdString(opentxs::SwigWrap::Exec()->GetCurrencyTLA(str_asset_id));
                 // ------------------
                 QTreeWidgetItem * pHostedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrServerName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
                 items.append(pHostedItem);
@@ -957,21 +957,21 @@ void Activity::RefreshAccountTree()
                 {
                     const QString qstrAccountId = ci_accounts.key();
                     const std::string str_acct_id = qstrAccountId.toStdString();
-                    const std::string str_asset_id = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
-                    const int64_t lBalance = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance(str_acct_id);
-                    const std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmountWithoutSymbol(str_asset_id, lBalance);
-//                  const std::string str_formatted_amount = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_asset_id, lBalance);
+                    const std::string str_asset_id = opentxs::SwigWrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+                    const int64_t lBalance = opentxs::SwigWrap::Exec()->GetAccountWallet_Balance(str_acct_id);
+                    const std::string str_formatted_amount = opentxs::SwigWrap::Exec()->FormatAmountWithoutSymbol(str_asset_id, lBalance);
+//                  const std::string str_formatted_amount = opentxs::SwigWrap::Exec()->FormatAmount(str_asset_id, lBalance);
                     const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
 
-                    const std::string asset_contract = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Contract(str_asset_id);
+                    const std::string asset_contract = opentxs::SwigWrap::Exec()->GetAssetType_Contract(str_asset_id);
                     opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
                                                                     (opentxs::String(asset_contract));
 
                     const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
                     const QString qstrSymbol(QString::fromStdString(str_symbol));
-                    const QString qstrAcctName = QString("     %1").arg(QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(str_acct_id)));
+                    const QString qstrAcctName = QString("     %1").arg(QString::fromStdString(opentxs::SwigWrap::Exec()->GetAccountWallet_Name(str_acct_id)));
                     const QString qstrAssetTypeId = QString::fromStdString(str_asset_id);
-                    const QString qstrTLA = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetCurrencyTLA(str_asset_id));
+                    const QString qstrTLA = QString::fromStdString(opentxs::SwigWrap::Exec()->GetCurrencyTLA(str_asset_id));
                     // ------------------
                     QTreeWidgetItem * pSubItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrAcctName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
                     items.append(pSubItem);
@@ -1336,7 +1336,7 @@ void Activity::ClearListWidgetConversations()
 
 void Activity::PopulateConversationsForNym(QListWidget * pListWidgetConversations, int & nIndex, const std::string & str_my_nym_id)
 {
-    const int  nNymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
+    const int  nNymCount = opentxs::SwigWrap::Exec()->GetNymCount();
     OT_ASSERT(nNymCount > 0);
     const bool bOnlyOneNymInWallet = (1 == nNymCount);
     // ------------------
@@ -1449,11 +1449,11 @@ void Activity::RefreshConversationsTab()
     //
 //  const std::string str_nym_id = Moneychanger::It()->get_default_nym_id().toStdString();
 
-    int nNymCount = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
+    int nNymCount = opentxs::SwigWrap::Exec()->GetNymCount();
     // ----------------------------------------------------
     for (int ii = 0; ii < nNymCount; ++ii)
     {
-        const std::string str_nym_id = opentxs::OTAPI_Wrap::Exec()->GetNym_ID(ii);
+        const std::string str_nym_id = opentxs::SwigWrap::Exec()->GetNym_ID(ii);
 
         this->PopulateConversationsForNym(pListWidgetConversations, nIndex, str_nym_id);
     }
@@ -1631,8 +1631,8 @@ void Activity::RefreshConversationDetails(int nRow)
 //            //
 //            if (qstrContents.isEmpty()) {
 //                const std::string str_item_contents = bIncoming ?
-//                            opentxs::OTAPI_Wrap::GetNym_MailContentsByIndex   (str_my_nym_id, item_id) :
-//                            opentxs::OTAPI_Wrap::GetNym_OutmailContentsByIndex(str_my_nym_id, item_id);
+//                            opentxs::SwigWrap::GetNym_MailContentsByIndex   (str_my_nym_id, item_id) :
+//                            opentxs::SwigWrap::GetNym_OutmailContentsByIndex(str_my_nym_id, item_id);
 //                qstrContents = str_item_contents.empty() ? QString("") : QString::fromStdString(str_item_contents);
 //            }
 //            // ----------------------------------------------
@@ -2648,7 +2648,7 @@ void Activity::RefreshPayments()
 //                        {
 //                            qstrMethodName = tr("Notary");
 //                            // ------------------------------
-//                            QString qstrTemp = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(qstrViaTransport.toStdString()));
+//                            QString qstrTemp = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(qstrViaTransport.toStdString()));
 //                            if (!qstrTemp.isEmpty())
 //                                qstrTransportName = qstrTemp;
 //                        }
@@ -3999,7 +3999,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     //
     else if (bSelectedContact) {
         pActionViewContact = popupMenuAccounts_->addAction(tr("View this contact"));
-        if (0 == opentxs::OTAPI_Wrap::Can_Message(str_my_nym_id, qstrContactId.toStdString()))
+        if (0 == opentxs::SwigWrap::Can_Message(str_my_nym_id, qstrContactId.toStdString()))
         {
             pActionContactMsg = popupMenuAccounts_->addAction(tr("Message this contact"));
             pActionContactPay = popupMenuAccounts_->addAction(tr("Send payment"));
@@ -4093,7 +4093,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
             qDebug() << "Unable to download credentials without a default Nym ID being set";
             return;
         }
-        opentxs::OTAPI_Wrap::Can_Message(str_my_nym_id, qstrContactId.toStdString());
+        opentxs::SwigWrap::Can_Message(str_my_nym_id, qstrContactId.toStdString());
 
         // Todo: emit some signal in a few seconds that an Opentxs Contact was just re-downloaded recently probably?
 

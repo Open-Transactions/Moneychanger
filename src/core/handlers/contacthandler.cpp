@@ -16,7 +16,7 @@
 #include <opentxs/contact/ContactData.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/core/crypto/PaymentCode.hpp>
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OTWallet.hpp>
@@ -422,7 +422,7 @@ static void blah()
 //    opentxs::String strVerifierNymId = qstrVerifierNymId.toStdString();
 //    opentxs::Identifier verifierNymId(strVerifierNymId);
 
-//    opentxs::Nym * pVerifierNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(verifierNymId, false, __FUNCTION__);
+//    opentxs::Nym * pVerifierNym = opentxs::SwigWrap::OTAPI()->GetOrLoadPrivateNym(verifierNymId, false, __FUNCTION__);
 
 //    if (nullptr == pVerifierNym)
 //    {
@@ -446,7 +446,7 @@ static void blah()
 
 
 
-//    opentxs::proto::VerificationSet   verification_set = opentxs::OTAPI_Wrap::OTAPI()->GetVerificationSet(*pVerifierNym);
+//    opentxs::proto::VerificationSet   verification_set = opentxs::SwigWrap::OTAPI()->GetVerificationSet(*pVerifierNym);
 //    opentxs::proto::VerificationSetMap & internal         = std::get<0>(verification_set);
 //    opentxs::proto::VerificationSetMap & external         = std::get<1>(verification_set);
 //    std::set<std::string>            & repudiatedIDs    = std::get<2>(verification_set);
@@ -562,7 +562,7 @@ bool MTContactHandler::claimVerificationLowlevel(const QString & qstrClaimId, co
 
     opentxs::OTPasswordData thePWData(QString(QObject::tr("We've almost bubbled up to the top!! Confirming/refuting a claim.")).toStdString().c_str());
 
-    auto data = opentxs::OTAPI_Wrap::Exec()->SetVerification(
+    auto data = opentxs::SwigWrap::Exec()->SetVerification(
                 bChanged,
                 qstrVerifierNymId.toStdString(),
                 qstrClaimantNymId.toStdString(),
@@ -1139,7 +1139,7 @@ bool MTContactHandler::GetServers(mapIDName & theMap, QString filterByNym, bool 
 
         if (!notary_id.isEmpty())
         {
-            QString server_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(notary_id.toStdString()));
+            QString server_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(notary_id.toStdString()));
 
             if (!server_name.isEmpty())
             {
@@ -1176,12 +1176,12 @@ bool MTContactHandler::GetServers(mapIDName & theMap, QString filterByNym, bool 
 bool MTContactHandler::GetServers(mapIDName & theMap, bool bPrependOTType/*=false*/)
 {
     bool    bFoundAny    = false;
-    int32_t nServerCount = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
+    int32_t nServerCount = opentxs::SwigWrap::Exec()->GetServerCount();
 
     for (int32_t ii = 0; ii < nServerCount; ++ii)
     {
-        std::string str_notary_id   = opentxs::OTAPI_Wrap::Exec()->GetServer_ID(ii);
-        std::string str_server_name = opentxs::OTAPI_Wrap::Exec()->GetServer_Name(str_notary_id);
+        std::string str_notary_id   = opentxs::SwigWrap::Exec()->GetServer_ID(ii);
+        std::string str_server_name = opentxs::SwigWrap::Exec()->GetServer_Name(str_notary_id);
 
         QString qstrNotaryID   = QString::fromStdString(str_notary_id);
         QString qstrServerName = QString::fromStdString(str_server_name);
@@ -1226,7 +1226,7 @@ bool MTContactHandler::GetServers(mapIDName & theMap, int nFilterByContact, bool
 
         if (!notary_id.isEmpty())
         {
-            QString server_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(notary_id.toStdString()));
+            QString server_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(notary_id.toStdString()));
 
             if (!server_name.isEmpty())
             {
@@ -2260,12 +2260,12 @@ bool MTContactHandler::GetAssetIdsForTLA(mapIDName & theMap, const std::string &
     // ------------------------
     bool bFoundAny{false};
 
-    int32_t asset_count = opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount();
+    int32_t asset_count = opentxs::SwigWrap::Exec()->GetAssetTypeCount();
     for (int aa = 0; aa < asset_count; aa++)
     {
-        QString OT_asset_id   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_ID(aa));
-        QString OT_asset_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(OT_asset_id.toStdString()));
-        const std::string OT_asset_tla  = opentxs::OTAPI_Wrap::Exec()->GetCurrencyTLA(OT_asset_id.toStdString());
+        QString OT_asset_id   = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_ID(aa));
+        QString OT_asset_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_Name(OT_asset_id.toStdString()));
+        const std::string OT_asset_tla  = opentxs::SwigWrap::Exec()->GetCurrencyTLA(OT_asset_id.toStdString());
 
         if (0 == OT_asset_tla.compare(str_tla)) {
             theMap.insert(OT_asset_id, OT_asset_name);
@@ -3376,7 +3376,7 @@ QString MTContactHandler::Encrypt(QString plaintext)
 
     if (!plaintext.isEmpty())
     {
-        opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet("MTContactHandler::Encrypt"); // This logs and ASSERTs already.
+        opentxs::OTWallet * pWallet = opentxs::SwigWrap::OTAPI()->GetWallet("MTContactHandler::Encrypt"); // This logs and ASSERTs already.
 
         if (NULL != pWallet)
         {
@@ -3403,7 +3403,7 @@ QString MTContactHandler::Decrypt(QString ciphertext)
 
     if (!ciphertext.isEmpty())
     {
-        opentxs::OTWallet * pWallet = opentxs::OTAPI_Wrap::OTAPI()->GetWallet("MTContactHandler::Decrypt"); // This logs and ASSERTs already.
+        opentxs::OTWallet * pWallet = opentxs::SwigWrap::OTAPI()->GetWallet("MTContactHandler::Decrypt"); // This logs and ASSERTs already.
 
         if (NULL != pWallet)
         {

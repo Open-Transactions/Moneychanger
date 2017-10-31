@@ -9,7 +9,7 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/moneychanger.hpp>
 
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 
 #include <QMessageBox>
@@ -54,12 +54,12 @@ void PageSmart_NymAcct::on_pushButtonManageAcct_clicked()
     QString qstrPreselected   = field("AcctID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
-    int32_t the_count = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
+    int32_t the_count = opentxs::SwigWrap::Exec()->GetAccountCount();
 
     for (int32_t ii = 0; ii < the_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(ii));
-        QString OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAccountWallet_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAccountWallet_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
 
@@ -117,7 +117,7 @@ void PageSmart_NymAcct::on_pushButtonSelect_clicked()
     std::string str_acct_name = qstrAcctName.toStdString();
     // -------------------------------------------
     std::string templateInstrumentDefinitionID =
-        opentxs::OTAPI_Wrap::Exec()->Party_GetAcctInstrumentDefinitionID(str_template, str_party, str_acct_name);
+        opentxs::SwigWrap::Exec()->Party_GetAcctInstrumentDefinitionID(str_template, str_party, str_acct_name);
     bool foundTemplateInstrumentDefinitionID = "" != templateInstrumentDefinitionID;
     // -------------------------------------------
     QString qstr_current_id = field("AcctID").toString();
@@ -127,12 +127,12 @@ void PageSmart_NymAcct::on_pushButtonSelect_clicked()
     mapIDName & the_map = theChooser.m_map;
 
     bool bFoundDefault = false;
-    int32_t acct_count = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
+    int32_t acct_count = opentxs::SwigWrap::Exec()->GetAccountCount();
 
     for (int32_t i = 0; i < acct_count; i++)
     {
         std::string acctID =
-            opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(i);
+            opentxs::SwigWrap::Exec()->GetAccountWallet_ID(i);
 
         if ("" == acctID) {
             QMessageBox::information(this, tr("Moneychanger"),
@@ -153,10 +153,10 @@ void PageSmart_NymAcct::on_pushButtonSelect_clicked()
         if (alreadyConfirmed)
             continue;
         // --------------------------------------
-        std::string acctNotaryID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID(acctID);
-        std::string acctNymID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID(acctID);
+        std::string acctNotaryID = opentxs::SwigWrap::Exec()->GetAccountWallet_NotaryID(acctID);
+        std::string acctNymID = opentxs::SwigWrap::Exec()->GetAccountWallet_NymID(acctID);
         std::string acctInstrumentDefinitionID =
-            opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(acctID);
+            opentxs::SwigWrap::Exec()->GetAccountWallet_InstrumentDefinitionID(acctID);
 
         if (str_notary_id != acctNotaryID || str_nym_id != acctNymID)
             continue;
@@ -176,7 +176,7 @@ void PageSmart_NymAcct::on_pushButtonSelect_clicked()
                 if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                     bFoundDefault = true;
                 // -----------------------------------------------
-                QString qstrTemp = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(OT_id.toStdString()));
+                QString qstrTemp = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAccountWallet_Name(OT_id.toStdString()));
 
                 if (!qstrTemp.isEmpty())
                     OT_name = qstrTemp;

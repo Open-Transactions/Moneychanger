@@ -9,7 +9,7 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/crypto/OTAsymmetricKey.hpp>
 #include <opentxs/client/OTRecordList.hpp>
@@ -46,7 +46,7 @@ void MTApplicationMC::appStarting()
     // ----------------------------------------
     // Load OTAPI Wallet
     //
-    opentxs::OTAPI_Wrap::Exec()->LoadWallet();
+    opentxs::SwigWrap::Exec()->LoadWallet();
     // ----------------------------------------
     /** Init Moneychanger code (Start when necessary below) **/
 
