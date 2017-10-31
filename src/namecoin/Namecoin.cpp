@@ -25,7 +25,7 @@
 
 #include <nmcrpc/RpcSettings.hpp>
 
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/crypto/OTPassword.hpp>
 
@@ -205,7 +205,7 @@ NMC_NameManager::startRegistration (const QString& nym, const QString& cred)
 bool
 NMC_NameManager::updateName (const QString& nym, const QString& cred)
 {
-  std::string addrStr = opentxs::OTAPI_Wrap::Exec()->GetNym_SourceForID (nym.toStdString ());
+  std::string addrStr = opentxs::SwigWrap::Exec()->GetNym_SourceForID (nym.toStdString ());
   const nmcrpc::NamecoinInterface::Address addr = nc.queryAddress (addrStr);
 
   if (!addr.isValid () || !addr.isMine ())

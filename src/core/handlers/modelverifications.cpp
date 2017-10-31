@@ -10,7 +10,7 @@
 #include <core/handlers/modelverifications.hpp>
 
 #include <opentxs/core/OTStorage.hpp>
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
@@ -72,7 +72,7 @@ QVariant VerificationsProxyModel::data ( const QModelIndex & index, int role/* =
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::OTAPI_Wrap::Exec()->GetNym_Name(str_id);
+                str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetNym_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())
@@ -88,7 +88,7 @@ QVariant VerificationsProxyModel::data ( const QModelIndex & index, int role/* =
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::OTAPI_Wrap::Exec()->GetNym_Name(str_id);
+                str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetNym_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())

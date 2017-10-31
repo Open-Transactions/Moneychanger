@@ -10,7 +10,7 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_API.hpp>
 
@@ -97,7 +97,7 @@ Settings::Settings(QWidget *parent) :
     ui->lineEditNotaryId->setContextMenuPolicy(Qt::CustomContextMenu);
 
     // ----------------------------------------------
-    ui->plainTextEditSeed->setPlainText(QString::fromStdString(opentxs::OTAPI_Wrap::OTAPI()->Wallet_GetWords()));
+    ui->plainTextEditSeed->setPlainText(QString::fromStdString(opentxs::SwigWrap::OTAPI()->Wallet_GetWords()));
 }
 
 Settings::~Settings()
@@ -195,7 +195,7 @@ void Settings::on_pushButton_clicked()
     const QString NymID    = ui->lineEditNymId   ->text();
     const QString NotaryID = ui->lineEditNotaryId->text();
     // ---------------------------
-    opentxs::NumList numlistCronIds ( opentxs::OTAPI_Wrap::Exec()->GetNym_ActiveCronItemIDs(NymID   .toStdString(),
+    opentxs::NumList numlistCronIds ( opentxs::SwigWrap::Exec()->GetNym_ActiveCronItemIDs(NymID   .toStdString(),
                                                                                           NotaryID.toStdString()) );
     std::set<int64_t> cronIds;
     const bool bIdsArePresent = numlistCronIds.Output(cronIds);
@@ -213,7 +213,7 @@ void Settings::on_pushButton_clicked()
         QString qstrMyColumn1, qstrMyColumn2;
         // --------------------------------------
         const auto strCronItem =
-            opentxs::String(opentxs::OTAPI_Wrap::Exec()->GetActiveCronItem(
+            opentxs::String(opentxs::SwigWrap::Exec()->GetActiveCronItem(
                 NotaryID.toStdString(),
                 cronId));
 
@@ -286,7 +286,7 @@ void Settings::on_pushButton_clicked()
 
                     if ( !str_asset_type.empty() )
                     {
-                        str_formatted = opentxs::OTAPI_Wrap::Exec()->FormatAmount(str_asset_type, initialPaymentAmount);
+                        str_formatted = opentxs::SwigWrap::Exec()->FormatAmount(str_asset_type, initialPaymentAmount);
                         bFormatted = !str_formatted.empty();
                     }
                     // ----------------------------------------

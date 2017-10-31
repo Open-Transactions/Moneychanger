@@ -10,7 +10,7 @@
 #include <QMessageBox>
 #include <QDebug>
 
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 
 MTPageAddContract::MTPageAddContract(QWidget *parent) :
@@ -59,7 +59,7 @@ bool MTPageAddContract::validatePage()
     //
     if ((0 == qstrType.compare("server")) &&
         ui->radioButton_2->isChecked() && // "Create" (versus "Import".)
-        (opentxs::OTAPI_Wrap::Exec()->GetAccountCount() > 0)) {
+        (opentxs::SwigWrap::Exec()->GetAccountCount() > 0)) {
         QMessageBox::StandardButton reply;
 
         reply = QMessageBox::question(this, "", QString("%1<br/><br/>%2<br/><br/>%3").arg(tr("Are you sure you want to create a server contract?")).

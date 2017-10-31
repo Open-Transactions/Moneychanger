@@ -10,7 +10,7 @@
 #include <opentxs/core/Version.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_API.hpp>
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OTWallet.hpp>
 #include <opentxs/core/OTStorage.hpp>
@@ -225,7 +225,7 @@ void MTServerDetails::DeleteButtonClicked()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         // ----------------------------------------------------
-        bool bCanRemove = opentxs::OTAPI_Wrap::Exec()->Wallet_CanRemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
+        bool bCanRemove = opentxs::SwigWrap::Exec()->Wallet_CanRemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
 
         if (!bCanRemove)
         {
@@ -240,7 +240,7 @@ void MTServerDetails::DeleteButtonClicked()
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
-            bool bSuccess = opentxs::OTAPI_Wrap::Exec()->Wallet_RemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
+            bool bSuccess = opentxs::SwigWrap::Exec()->Wallet_RemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
 
             if (bSuccess)
             {
@@ -285,7 +285,7 @@ void MTServerDetails::ImportContract(QString qstrContents)
         return;
     }
     // ---------------------------------------------------
-    std::string newID = opentxs::OTAPI_Wrap::Exec()->AddServerContract(qstrContents.toStdString());
+    std::string newID = opentxs::SwigWrap::Exec()->AddServerContract(qstrContents.toStdString());
 
     if (newID.empty())
     {
@@ -294,7 +294,7 @@ void MTServerDetails::ImportContract(QString qstrContents)
         return;
     }
     // -----------------------------------------------
-    QString qstrContractName = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(newID));
+    QString qstrContractName = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(newID));
     // -----------------------------------------------
     // Commenting this out for now.
     //
@@ -680,7 +680,7 @@ void MTServerDetails::refresh(QString strID, QString strName)
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
         QString qstrContents =
-            QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->
+            QString::fromStdString(opentxs::SwigWrap::Exec()->
                 GetServer_Contract(strID.toStdString()));
         opentxs::proto::ServerContract contractProto =
             opentxs::proto::StringToProto<opentxs::proto::ServerContract>
@@ -740,7 +740,7 @@ void MTServerDetails::on_lineEditName_editingFinished()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = opentxs::OTAPI_Wrap::Exec()->SetServer_Name(m_pOwner->m_qstrCurrentID.toStdString(),  // Server
+        bool bSuccess = opentxs::SwigWrap::Exec()->SetServer_Name(m_pOwner->m_qstrCurrentID.toStdString(),  // Server
                                                    ui->lineEditName->text(). toStdString()); // New Name
         if (bSuccess)
         {

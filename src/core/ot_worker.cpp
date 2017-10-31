@@ -6,7 +6,7 @@
 
 #include <core/handlers/contacthandler.hpp>
 
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Log.hpp>
 
@@ -19,32 +19,32 @@ ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookup
      **/
     overview_list = new QList< QMap<QString,QVariant> >();
 
-    int nServerCount  = opentxs::OTAPI_Wrap::Exec()->GetServerCount();
-    int nAssetCount   = opentxs::OTAPI_Wrap::Exec()->GetAssetTypeCount();
-    int nNymCount     = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
-    int nAccountCount = opentxs::OTAPI_Wrap::Exec()->GetAccountCount();
+    int nServerCount  = opentxs::SwigWrap::Exec()->GetServerCount();
+    int nAssetCount   = opentxs::SwigWrap::Exec()->GetAssetTypeCount();
+    int nNymCount     = opentxs::SwigWrap::Exec()->GetNymCount();
+    int nAccountCount = opentxs::SwigWrap::Exec()->GetAccountCount();
     // ----------------------------------------------------
     for (int ii = 0; ii < nServerCount; ++ii)
     {
-        std::string NotaryID = opentxs::OTAPI_Wrap::Exec()->GetServer_ID(ii);
+        std::string NotaryID = opentxs::SwigWrap::Exec()->GetServer_ID(ii);
         list.AddNotaryID(NotaryID);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAssetCount; ++ii)
     {
-        std::string InstrumentDefinitionID = opentxs::OTAPI_Wrap::Exec()->GetAssetType_ID(ii);
+        std::string InstrumentDefinitionID = opentxs::SwigWrap::Exec()->GetAssetType_ID(ii);
         list.AddInstrumentDefinitionID(InstrumentDefinitionID);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nNymCount; ++ii)
     {
-        std::string nymId = opentxs::OTAPI_Wrap::Exec()->GetNym_ID(ii);
+        std::string nymId = opentxs::SwigWrap::Exec()->GetNym_ID(ii);
         list.AddNymID(nymId);
     }
     // ----------------------------------------------------
     for (int ii = 0; ii < nAccountCount; ++ii)
     {
-        std::string accountID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_ID(ii);
+        std::string accountID = opentxs::SwigWrap::Exec()->GetAccountWallet_ID(ii);
         list.AddAccountID(accountID);
     }
     // ----------------------------------------------------

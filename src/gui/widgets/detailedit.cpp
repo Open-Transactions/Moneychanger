@@ -21,7 +21,7 @@
 #include <core/moneychanger.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/OTStorage.hpp>
 
@@ -630,16 +630,16 @@ void MTDetailEdit::RefreshLawyerCombo()
     // -----------------------------------------------
     m_mapLawyers.clear();
     // -----------------------------------------------
-    const int32_t the_count = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
+    const int32_t the_count = opentxs::SwigWrap::Exec()->GetNymCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < the_count; ++ii)
     {
-        QString OT_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_ID(ii));
+        QString OT_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetNym_ID(ii));
         QString OT_name("");
         // -----------------------------------------------
         if (!OT_id.isEmpty())
         {
-            OT_name = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_Name(OT_id.toStdString()));
+            OT_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetNym_Name(OT_id.toStdString()));
             // -----------------------------------------------
             m_mapLawyers.insert(OT_id, OT_name);
         }
@@ -928,8 +928,8 @@ void MTDetailEdit::RefreshRecords()
                     if (NULL != pMarketData) // Should never be NULL.
                     {
                         // ------------------------------------------------------
-                        int64_t     lScale    = opentxs::OTAPI_Wrap::Exec()->StringToLong(pMarketData->scale);
-                        std::string str_scale = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pMarketData->instrument_definition_id, lScale);
+                        int64_t     lScale    = opentxs::SwigWrap::Exec()->StringToLong(pMarketData->scale);
+                        std::string str_scale = opentxs::SwigWrap::Exec()->FormatAmount(pMarketData->instrument_definition_id, lScale);
                         // ------------------------------------------------------
                         QString qstrFormattedScale = QString::fromStdString(str_scale);
                         // ------------------------------------------------------
@@ -969,14 +969,14 @@ void MTDetailEdit::RefreshRecords()
                     {
                         bool        bSelling          = pOfferData->selling;
                         // ------------------------------------------------------
-                        int64_t     lTotalAssets      = opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->total_assets);
-                        int64_t     lFinished         = opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->finished_so_far);
+                        int64_t     lTotalAssets      = opentxs::SwigWrap::Exec()->StringToLong(pOfferData->total_assets);
+                        int64_t     lFinished         = opentxs::SwigWrap::Exec()->StringToLong(pOfferData->finished_so_far);
                         // ------------------------------------------------------
-                        int64_t     lScale            = opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->scale);
-                        std::string str_scale         = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lScale);
+                        int64_t     lScale            = opentxs::SwigWrap::Exec()->StringToLong(pOfferData->scale);
+                        std::string str_scale         = opentxs::SwigWrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lScale);
                         // ------------------------------------------------------
-                        int64_t     lPrice            = opentxs::OTAPI_Wrap::Exec()->StringToLong(pOfferData->price_per_scale);
-                        std::string str_price         = opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->currency_type_id, lPrice);
+                        int64_t     lPrice            = opentxs::SwigWrap::Exec()->StringToLong(pOfferData->price_per_scale);
+                        std::string str_price         = opentxs::SwigWrap::Exec()->FormatAmount(pOfferData->currency_type_id, lPrice);
                         // ------------------------------------------------------
                         QString qstrPrice(tr("market order"));
 
@@ -987,10 +987,10 @@ void MTDetailEdit::RefreshRecords()
 
                         qstrPrice += QString(" (%1 %2)").arg(tr("per")).arg(qstrFormattedScale);
                         // ------------------------------------------------------
-                        QString qstrTotalAssets       = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lTotalAssets));
-                        QString qstrSoldOrPurchased   = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lFinished));
+                        QString qstrTotalAssets       = QString::fromStdString(opentxs::SwigWrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lTotalAssets));
+                        QString qstrSoldOrPurchased   = QString::fromStdString(opentxs::SwigWrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lFinished));
                         // ------------------------------------------------------
-                        std::string str_asset_name    = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(pOfferData->instrument_definition_id);
+                        std::string str_asset_name    = opentxs::SwigWrap::Exec()->GetAssetType_Name(pOfferData->instrument_definition_id);
                         // -----------------------------------------------------------------------
                         QString qstrBuySell = bSelling ? tr("Sell") : tr("Buy");
                         QString qstrAmounts;

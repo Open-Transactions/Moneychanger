@@ -12,7 +12,7 @@
 
 #include <bitcoin-api/btcmodules.hpp>
 
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/crypto/OTCaller.hpp>
 #include <opentxs/core/Log.hpp>
@@ -94,12 +94,12 @@ public:
         // ----------------------------------------
         // SSL gets initialized in here, before any keys are loaded.
         //
-        opentxs::OTAPI_Wrap::AppInit();
+        opentxs::SwigWrap::AppInit();
     }
     ~__OTclient_RAII()
     {
 
-        opentxs::OTAPI_Wrap::AppCleanup();
+        opentxs::SwigWrap::AppCleanup();
     }
 };
 
@@ -122,9 +122,9 @@ int main(int argc, char *argv[])
     //
     __OTclient_RAII the_client_cleanup;  // <===== SECOND constructor is called here.
     // ----------------------------------------
-    if (nullptr == opentxs::OTAPI_Wrap::Exec())
+    if (nullptr == opentxs::SwigWrap::Exec())
     {
-        opentxs::Log::vError(0, "Error, exiting: opentxs::OTAPI_Wrap::AppInit() call must have failed.\n");
+        opentxs::Log::vError(0, "Error, exiting: opentxs::SwigWrap::AppInit() call must have failed.\n");
         return -1;
     }
     // ----------------------------------------

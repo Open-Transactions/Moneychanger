@@ -13,7 +13,7 @@
 #include <gui/ui/dlgexportedtopass.hpp>
 
 #include <opentxs/api/OT.hpp>
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OT_API.hpp>
@@ -97,11 +97,11 @@ void DlgEncrypt::PopulateCombo()
         int nDefaultNymIndex    = 0;
         bool bFoundNymDefault   = false;
         // -----------------------------------------------
-        const int32_t nym_count = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
+        const int32_t nym_count = opentxs::SwigWrap::Exec()->GetNymCount();
         // -----------------------------------------------
         for (int32_t ii = 0; ii < nym_count; ++ii)
         {
-            QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_ID(ii));
+            QString OT_nym_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetNym_ID(ii));
             QString OT_nym_name("");
             // -----------------------------------------------
             if (!OT_nym_id.isEmpty())
@@ -273,7 +273,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                 {
                     opentxs::OTPasswordData thePWData("Signer passphrase");
 
-                    opentxs::Nym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
+                    opentxs::Nym * pNym = opentxs::SwigWrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
                                                                            false, //bChecking=false
                                                                            __FUNCTION__,
                                                                            &thePWData);
@@ -327,7 +327,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                         }
                     } // else (we have pNym.)
                 }
-//              std::string  str_output (opentxs::OTAPI_Wrap::Exec()->FlatSign(str_nym, str_encoded, str_type));
+//              std::string  str_output (opentxs::SwigWrap::Exec()->FlatSign(str_nym, str_encoded, str_type));
             }
         }
         // --------------------------------
@@ -361,7 +361,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     {
                         opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
 
-                        const opentxs::Nym * pNym = opentxs::OTAPI_Wrap::OTAPI()->GetOrLoadNym(nym_id,
+                        const opentxs::Nym * pNym = opentxs::SwigWrap::OTAPI()->GetOrLoadNym(nym_id,
                                                                                false, //bChecking=false
                                                                                __FUNCTION__,
                                                                                &thePWData);

@@ -18,7 +18,7 @@
 #include <core/network/Network.h>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/OTTransaction.hpp>
@@ -308,7 +308,7 @@ QString MTHome::cashBalance(QString qstr_notary_id, QString qstr_asset_id, QStri
     std::string str_output;
 
     balance    = MTHome::rawCashBalance(qstr_notary_id, qstr_asset_id, qstr_nym_id);
-    str_output = opentxs::OTAPI_Wrap::Exec()->FormatAmount(qstr_asset_id.toStdString(), balance);
+    str_output = opentxs::SwigWrap::Exec()->FormatAmount(qstr_asset_id.toStdString(), balance);
 
     if (!str_output.empty())
         return_value = QString::fromStdString(str_output);
@@ -327,11 +327,11 @@ int64_t MTHome::rawCashBalance(QString qstr_notary_id, QString qstr_asset_id, QS
     std::string InstrumentDefinitionID (qstr_asset_id.toStdString());
     std::string nymId   (qstr_nym_id.toStdString());
 
-    std::string str_purse = opentxs::OTAPI_Wrap::Exec()->LoadPurse(NotaryID, InstrumentDefinitionID, nymId);
+    std::string str_purse = opentxs::SwigWrap::Exec()->LoadPurse(NotaryID, InstrumentDefinitionID, nymId);
 
     if (!str_purse.empty())
     {
-        int64_t temp_balance = opentxs::OTAPI_Wrap::Exec()->Purse_GetTotalValue(NotaryID, InstrumentDefinitionID, str_purse);
+        int64_t temp_balance = opentxs::SwigWrap::Exec()->Purse_GetTotalValue(NotaryID, InstrumentDefinitionID, str_purse);
 
         if (temp_balance >= 0)
             balance = temp_balance;
@@ -351,27 +351,27 @@ QString MTHome::shortAcctBalance(QString qstr_acct_id, QString qstr_asset_id/*=Q
         return return_value; // Might want to assert here... (returns blank string.)
     // -------------------------------------------
     std::string  acctID     = qstr_acct_id.toStdString();
-    int64_t      balance    = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance(acctID);
+    int64_t      balance    = opentxs::SwigWrap::Exec()->GetAccountWallet_Balance(acctID);
     std::string  InstrumentDefinitionID;
     // -------------------------------------------
     if (!qstr_asset_id.isEmpty())
         InstrumentDefinitionID = qstr_asset_id.toStdString();
     else
-        InstrumentDefinitionID = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(acctID);
+        InstrumentDefinitionID = opentxs::SwigWrap::Exec()->GetAccountWallet_InstrumentDefinitionID(acctID);
     // -------------------------------------------
     std::string  str_output;
 
     if (!InstrumentDefinitionID.empty())
     {
         str_output = bWithSymbol ?
-                     opentxs::OTAPI_Wrap::Exec()->FormatAmount(InstrumentDefinitionID, balance) :
-                     opentxs::OTAPI_Wrap::Exec()->FormatAmountWithoutSymbol(InstrumentDefinitionID, balance);
+                     opentxs::SwigWrap::Exec()->FormatAmount(InstrumentDefinitionID, balance) :
+                     opentxs::SwigWrap::Exec()->FormatAmountWithoutSymbol(InstrumentDefinitionID, balance);
 
         if (!str_output.empty())
             return_value = QString::fromStdString(str_output);
         else
         {
-            std::string  str_asset_name = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(InstrumentDefinitionID);
+            std::string  str_asset_name = opentxs::SwigWrap::Exec()->GetAssetType_Name(InstrumentDefinitionID);
             return_value = QString("%1 %2").arg(balance).arg(QString::fromStdString(str_asset_name));
         }
     }
@@ -384,7 +384,7 @@ QString MTHome::shortAcctBalance(QString qstr_acct_id, QString qstr_asset_id/*=Q
 //static
 int64_t MTHome::rawAcctBalance(QString qstrAcctId)
 {
-    int64_t ret = qstrAcctId.isEmpty() ? 0 : opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Balance(qstrAcctId.toStdString());
+    int64_t ret = qstrAcctId.isEmpty() ? 0 : opentxs::SwigWrap::Exec()->GetAccountWallet_Balance(qstrAcctId.toStdString());
     return ret;
 }
 
@@ -402,9 +402,9 @@ QString MTHome::FormDisplayLabelForAcctButton(QString qstr_acct_id, QString qstr
         display_name = qstr_display_name;
     // -----------------------------------------
     std::string str_acct_id     = qstr_acct_id.toStdString();
-    std::string str_acct_nym    = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID      (str_acct_id);
-    std::string str_acct_server = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID   (str_acct_id);
-    std::string str_acct_asset  = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+    std::string str_acct_nym    = opentxs::SwigWrap::Exec()->GetAccountWallet_NymID      (str_acct_id);
+    std::string str_acct_server = opentxs::SwigWrap::Exec()->GetAccountWallet_NotaryID   (str_acct_id);
+    std::string str_acct_asset  = opentxs::SwigWrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
     // -----------------------------------------
     QString qstr_acct_nym    = QString::fromStdString(str_acct_nym);
     QString qstr_acct_server = QString::fromStdString(str_acct_server);
@@ -467,25 +467,25 @@ QWidget * MTHome::CreateUserBarWidget()
     {
         // -----------------------------------
         std::string str_acct_id     = qstr_acct_id.toStdString();
-        std::string str_acct_nym    = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NymID(str_acct_id);
-        std::string str_acct_server = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_NotaryID(str_acct_id);
-        std::string str_acct_asset  = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+        std::string str_acct_nym    = opentxs::SwigWrap::Exec()->GetAccountWallet_NymID(str_acct_id);
+        std::string str_acct_server = opentxs::SwigWrap::Exec()->GetAccountWallet_NotaryID(str_acct_id);
+        std::string str_acct_asset  = opentxs::SwigWrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
         // -----------------------------------
         qstr_acct_nym    = QString::fromStdString(str_acct_nym);
         qstr_acct_server = QString::fromStdString(str_acct_server);
         qstr_acct_asset  = QString::fromStdString(str_acct_asset);
         // -----------------------------------
-        std::string str_tla = opentxs::OTAPI_Wrap::Exec()->GetCurrencyTLA(str_acct_asset);
+        std::string str_tla = opentxs::SwigWrap::Exec()->GetCurrencyTLA(str_acct_asset);
         qstr_tla = QString("<font color=grey>%1</font>").arg(QString::fromStdString(str_tla));
 
         qstr_balance = MTHome::shortAcctBalance(qstr_acct_id, qstr_acct_asset, false);
 //      qstr_balance = QString("<font color=grey>%1</font> %2").arg(QString::fromStdString(str_tla)).arg(qstrTempBalance);
         // -----------------------------------
-        std::string str_acct_name  = opentxs::OTAPI_Wrap::Exec()->GetAccountWallet_Name(str_acct_id);
+        std::string str_acct_name  = opentxs::SwigWrap::Exec()->GetAccountWallet_Name(str_acct_id);
         // -----------------------------------
         if (!str_acct_asset.empty())
         {
-            std::string str_asset_name = opentxs::OTAPI_Wrap::Exec()->GetAssetType_Name(str_acct_asset);
+            std::string str_asset_name = opentxs::SwigWrap::Exec()->GetAssetType_Name(str_acct_asset);
             qstr_acct_asset_name = QString::fromStdString(str_asset_name);
         }
         // -----------------------------------

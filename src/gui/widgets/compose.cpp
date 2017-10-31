@@ -17,7 +17,7 @@
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
-#include <opentxs/client/OTAPI_Wrap.hpp>
+#include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTME_too.hpp>
@@ -141,7 +141,7 @@ void MTCompose::setTransportDisplayBasedOnAvailableData()
 
         if (sendingThroughOTServer() && !m_NotaryID.isEmpty())
         {
-            qstrMsgTypeDisplay = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetServer_Name(m_NotaryID.toStdString()));
+            qstrMsgTypeDisplay = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(m_NotaryID.toStdString()));
 
             if (qstrMsgTypeDisplay.isEmpty())
                 qstrMsgTypeDisplay = m_NotaryID;
@@ -326,7 +326,7 @@ void MTCompose::setInitialRecipientContactID(QString qstrContactid, QString addr
         m_senderNymId = qstrDefaultNym;
     }
     if (!qstrSenderNym.isEmpty() && !qstrContactid.isEmpty()) {
-        bCanMessage_ = (0 == opentxs::OTAPI_Wrap::Can_Message(qstrSenderNym.toStdString(), qstrContactid.toStdString()));
+        bCanMessage_ = (0 == opentxs::SwigWrap::Can_Message(qstrSenderNym.toStdString(), qstrContactid.toStdString()));
     }
     // -------------------------------------------
     mapIDName theMap;
@@ -1417,7 +1417,7 @@ void MTCompose::FindSenderMsgMethod()
                         std::string notary_id    = qstrNotaryID.toStdString();
                         std::string sender_id    = m_senderNymId.toStdString();
 
-                        if (opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(sender_id, notary_id))
+                        if (opentxs::SwigWrap::Exec()->IsNym_RegisteredAtServer(sender_id, notary_id))
                         {
                             setInitialServer(qstrNotaryID);
                             return; // SUCCESS!
@@ -1708,7 +1708,7 @@ void MTCompose::FindRecipientMsgMethod()
                         std::string notary_id    = qstrNotaryID.toStdString();
                         std::string sender_id    = m_senderNymId.toStdString();
 
-                        if (opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(sender_id, notary_id))
+                        if (opentxs::SwigWrap::Exec()->IsNym_RegisteredAtServer(sender_id, notary_id))
                         {
                             setInitialServer(qstrNotaryID);
                             return; // SUCCESS!
@@ -2469,7 +2469,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
     std::string notary_id    = qstrNotaryID .toStdString();
     std::string sender_id    = m_senderNymId.toStdString();
 
-    if (!opentxs::OTAPI_Wrap::Exec()->IsNym_RegisteredAtServer(sender_id, notary_id))
+    if (!opentxs::SwigWrap::Exec()->IsNym_RegisteredAtServer(sender_id, notary_id))
     {
         if (bAsk)
         {
@@ -2484,7 +2484,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
                 {
                     MTSpinner theSpinner;
 
-                    response = opentxs::OTAPI_Wrap::Register_Nym_Public(sender_id, notary_id);
+                    response = opentxs::SwigWrap::Register_Nym_Public(sender_id, notary_id);
                 }
 
                 qDebug() << QString("Nym Registration Response: %1").arg(QString::fromStdString(response));
@@ -2602,12 +2602,12 @@ void MTCompose::on_fromButton_clicked()
     mapIDName & the_map = theChooser.m_map;
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t nym_count = opentxs::OTAPI_Wrap::Exec()->GetNymCount();
+    const int32_t nym_count = opentxs::SwigWrap::Exec()->GetNymCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < nym_count; ++ii)
     {
         //Get OT Nym ID
-        QString OT_nym_id = QString::fromStdString(opentxs::OTAPI_Wrap::Exec()->GetNym_ID(ii));
+        QString OT_nym_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetNym_ID(ii));
         QString OT_nym_name("");
         // -----------------------------------------------
         if (!OT_nym_id.isEmpty())
