@@ -2,21 +2,26 @@
 #include <core/stable.hpp>
 #endif
 
+
+#include <core/passwordcallback.hpp>
 #include <core/moneychanger.hpp>
 #include <core/applicationmc.hpp>
 #include <core/modules.hpp>
 #include <core/translation.hpp>
+#include <core/handlers/contacthandler.hpp>
 
 #include <bitcoin-api/btcmodules.hpp>
 
 #include <opentxs/client/OTAPI_Wrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/crypto/OTCaller.hpp>
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
 
 #include <QTimer>
 #include <QApplication>
 #include <QDir>
+#include <QDebug>
 
 
 void shutdown_app()
@@ -25,12 +30,70 @@ void shutdown_app()
 }
 
 
+
+bool SetupPasswordCallback(opentxs::OTCaller & passwordCaller, opentxs::OTCallback & passwordCallback)
+{
+    passwordCaller.setCallback(&passwordCallback);
+
+    bool bSuccess = OT_API_Set_PasswordCallback(passwordCaller);
+
+    if (!bSuccess)
+    {
+        qDebug() << QString("Error setting password callback!");
+        return false;
+    }
+
+    return true;
+}
+
+
+bool SetupAddressBookCallback(opentxs::OTLookupCaller & theCaller, opentxs::OTNameLookup & theCallback)
+{
+    theCaller.setCallback(&theCallback);
+
+    bool bSuccess = OT_API_Set_AddrBookCallback(theCaller);
+
+    if (!bSuccess)
+    {
+        qDebug() << QString("Error setting address book callback!");
+        return false;
+    }
+
+    return true;
+}
+
+
+
 class __OTclient_RAII
 {
 public:
     __OTclient_RAII()
     {
+        // ----------------------------------------
+        // Set Password Callback.
+        //
+        static opentxs::OTCaller  passwordCaller;
+        static MTPasswordCallback passwordCallback;
+
+        if (!SetupPasswordCallback(passwordCaller, passwordCallback))
+        {
+            qDebug() << "Failure setting password callback in MTApplicationMC";
+            abort();
+        }
+        // ----------------------------------------
+        // Set Address Book Callback.
+        //
+        static opentxs::OTLookupCaller theCaller;
+        static MTNameLookupQT theCallback;
+
+        if (!SetupAddressBookCallback(theCaller, theCallback))
+        {
+            qDebug() << "Failure setting address book callback in MTApplicationMC";
+            abort();
+        }
+        // ----------------------------------------
         // SSL gets initialized in here, before any keys are loaded.
+        //
         opentxs::OTAPI_Wrap::AppInit();
     }
     ~__OTclient_RAII()

@@ -4,7 +4,6 @@
 
 #include <core/applicationmc.hpp>
 
-#include <core/passwordcallback.hpp>
 #include <core/moneychanger.hpp>
 
 #include <core/handlers/contacthandler.hpp>
@@ -21,39 +20,6 @@
 #include <QSystemTrayIcon>
 #include <QDialog>
 #include <QLabel>
-
-
-
-bool SetupPasswordCallback(opentxs::OTCaller & passwordCaller, opentxs::OTCallback & passwordCallback)
-{
-    passwordCaller.setCallback(&passwordCallback);
-
-    bool bSuccess = OT_API_Set_PasswordCallback(passwordCaller);
-
-    if (!bSuccess)
-    {
-        qDebug() << QString("Error setting password callback!");
-        return false;
-    }
-
-    return true;
-}
-
-
-bool SetupAddressBookCallback(opentxs::OTLookupCaller & theCaller, opentxs::OTNameLookup & theCallback)
-{
-    theCaller.setCallback(&theCallback);
-
-    bool bSuccess = OT_API_Set_AddrBookCallback(theCaller);
-
-    if (!bSuccess)
-    {
-        qDebug() << QString("Error setting address book callback!");
-        return false;
-    }
-
-    return true;
-}
 
 
 
@@ -77,28 +43,6 @@ void MTApplicationMC::appStarting()
 
     //Compiled details
     QString mc_window_title = mc_app_name+" | "+mc_version;
-    // ----------------------------------------
-    // Set Password Callback.
-    //
-    static opentxs::OTCaller  passwordCaller;
-    static MTPasswordCallback passwordCallback;
-
-    if (!SetupPasswordCallback(passwordCaller, passwordCallback))
-    {
-        qDebug() << "Failure setting password callback in MTApplicationMC";
-        abort();
-    }
-    // ----------------------------------------
-    // Set Address Book Callback.
-    //
-    static opentxs::OTLookupCaller theCaller;
-    static MTNameLookupQT theCallback;
-
-    if (!SetupAddressBookCallback(theCaller, theCallback))
-    {
-        qDebug() << "Failure setting address book callback in MTApplicationMC";
-        abort();
-    }
     // ----------------------------------------
     // Load OTAPI Wallet
     //
