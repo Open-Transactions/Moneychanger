@@ -1448,10 +1448,10 @@ void Moneychanger::bootTray()
     // ----------------------------------------------------------------------------
     connect(this, SIGNAL(newNymAdded(QString)),            this, SLOT(onNewNymAdded(QString)));
     // ----------------------------------------------------------------------------
-    SetupMainMenu();
-    // ----------------------------------------------------------------------------
     //Show systray
     mc_systrayIcon->show();
+    // ----------------------------------------------------------------------------
+    SetupMainMenu();
     // ----------------------------------------------------------------------------
     QString qstrMenuFileExists = QString(opentxs::OTPaths::AppDataFolder().Get()) + QString("/knotworkpigeons");
 
@@ -1476,8 +1476,12 @@ void Moneychanger::bootTray()
             const std::string str_id = opentxs::SwigWrap::CreateIndividualNym(qstrLabel.toStdString(), NYM_ID_SOURCE, 0);
 
             if (!str_id.empty()) {
+                setDefaultNym(QString::fromStdString(str_id), qstrLabel);
+
+                //DBHandler::getInstance()->AddressBookUpdateDefaultNym(QString::fromStdString(str_id));
+                // -----------------------------------------------------------------------------------
                 const QString qstrNymId = QString::fromStdString(str_id);
-                mc_nymmanager_dialog(qstrNymId);
+//              mc_nymmanager_dialog(qstrNymId);
                 emit newNymAdded(qstrNymId);
             }
         }
@@ -2639,7 +2643,8 @@ void Moneychanger::setDefaultNym(QString nym_id, QString nym_name)
     //Rename "NYM:" if a nym is loaded
     if (nym_id != "")
     {
-        mc_systrayMenu_nym->setTitle(tr("Identity: ")+nym_name);
+        if (mc_systrayMenu_nym)
+            mc_systrayMenu_nym->setTitle(tr("Identity: ")+nym_name);
 
         if (mc_overall_init)
         {
@@ -2649,6 +2654,7 @@ void Moneychanger::setDefaultNym(QString nym_id, QString nym_name)
             // If one matches, set the "checked" property to true, and for
             // all others, set to false.
 
+            if (mc_systrayMenu_nym)
             foreach (QAction* a, mc_systrayMenu_nym->actions())
             {
                 QString qstrActionData = a->data().toString();
@@ -3297,7 +3303,7 @@ bool Moneychanger::AddMailToMsgArchive(
 //        MapOfConversationsByNym & mapOfConversationsByNym)
 
 
-
+    return false;
 
 
 }
