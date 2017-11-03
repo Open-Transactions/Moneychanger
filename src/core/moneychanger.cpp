@@ -232,7 +232,7 @@ void Moneychanger::process_peer_replies_forNym(const opentxs::Identifier & nymID
             case opentxs::proto::PEERREQUEST_BAILMENT: {
                 opentxs::otErr  << __FUNCTION__
                                << ": Received bailment reply." << std::endl;
-                process_request_bailment(nymID, *reply);
+                process_request_bailment_reply(nymID, *reply);
             } break;
             case opentxs::proto::PEERREQUEST_OUTBAILMENT: {
                 opentxs::otErr  << __FUNCTION__
@@ -243,12 +243,12 @@ void Moneychanger::process_peer_replies_forNym(const opentxs::Identifier & nymID
                 opentxs::otErr  << __FUNCTION__
                                << ": Received connection info reply."
                                << std::endl;
-                process_connection_info(nymID, *reply);
+                process_connection_info_reply(nymID, *reply);
             } break;
             case opentxs::proto::PEERREQUEST_STORESECRET: {
                 opentxs::otErr  << __FUNCTION__
                                << ": Received store secret reply." << std::endl;
-                process_store_secret(nymID, *reply);
+                process_store_secret_reply(nymID, *reply);
             } break;
             case opentxs::proto::PEERREQUEST_ERROR:
             case opentxs::proto::PEERREQUEST_PENDINGBAILMENT:
@@ -290,7 +290,7 @@ void Moneychanger::process_peer_requests_forNym(const opentxs::Identifier & nymI
                 opentxs::otErr  << __FUNCTION__
                                << ": Received pending bailment notification."
                                << std::endl;
-                process_pending_bailment(nymID, *request);
+                process_pending_bailment_notification(nymID, *request);
             } break;
             case opentxs::proto::PEERREQUEST_ERROR:
             case opentxs::proto::PEERREQUEST_BAILMENT:
@@ -313,7 +313,7 @@ void Moneychanger::process_peer_requests_forNym(const opentxs::Identifier & nymI
 
 
 
-void Moneychanger::process_pending_bailment(
+void Moneychanger::process_pending_bailment_notification(
     const opentxs::Identifier & nymID,
     const opentxs::proto::PeerRequest& request)
 {
@@ -329,7 +329,8 @@ void Moneychanger::process_pending_bailment(
 
     // TODO: verify that bailmentServer and unit are correct.
 
-    opentxs::otErr << "Server: " << bailmentServer << "\n"
+    opentxs::otErr << __FUNCTION__ << "\n"
+                   << "Server: " << bailmentServer << "\n"
                    << "Unit: " << unit << "\n"
                    << "txid: " << txid << std::endl;
 
@@ -343,7 +344,16 @@ void Moneychanger::process_pending_bailment(
     }
 }
 
-void Moneychanger::process_request_bailment(
+
+
+// First I send a bailment request.
+// Then I receive this bailment reply.
+// It contains a deposit address, so I can send an out-of-band litecoin deposit.
+// When the SNP sees this, it sends me a process_pending_bailment_notification which
+// I receive above.
+// I guess that's all I will see until the actual cheque hits my account.
+//
+void Moneychanger::process_request_bailment_reply(
     const opentxs::Identifier & nymID,
     const opentxs::proto::PeerReply& reply)
 {
@@ -356,11 +366,19 @@ void Moneychanger::process_request_bailment(
     } else {
         opentxs::otErr  << __FUNCTION__
                        << ": Received deposit address " << address << std::endl;
+
+
 //        Lock lock(lock_);
 //        deposit_address_ = address;
 
         // Todo
 //        blockchain_.AddTestSend(deposit_address_);
+
+
+
+
+
+
 
     }
 
@@ -369,7 +387,7 @@ void Moneychanger::process_request_bailment(
 
 
 
-void Moneychanger::process_store_secret(
+void Moneychanger::process_store_secret_reply(
     const opentxs::Identifier & nymID,
     const opentxs::proto::PeerReply& reply)
 {
@@ -392,7 +410,7 @@ void Moneychanger::process_store_secret(
 
 
 
-void Moneychanger::process_connection_info(
+void Moneychanger::process_connection_info_reply(
     const opentxs::Identifier & nymID,
     const opentxs::proto::PeerReply& reply)
 {
