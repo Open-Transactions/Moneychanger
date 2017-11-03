@@ -19,12 +19,14 @@
 #include <core/mtcomms.h>
 #include <core/moneychanger.hpp>
 
+#include <opentxs/core/Version.hpp>
+#include <opentxs/api/Api.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/core/Nym.hpp>
-#include <opentxs/client/SwigWrap.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OT_ME.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OTME_too.hpp>
 #include <opentxs/core/NumList.hpp>
 #include <opentxs/core/Proto.hpp>
 #include <opentxs/core/Types.hpp>
@@ -135,7 +137,7 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
     opentxs::String     strNymId    (str_nym_id);
     opentxs::Identifier id_nym      (strNymId);
     // -------------------------------------
-    opentxs::Nym * pCurrentNym = opentxs::SwigWrap::OTAPI()->GetOrLoadPrivateNym(id_nym) ;
+    opentxs::Nym * pCurrentNym = opentxs::OT::App().API().OTAPI().GetOrLoadPrivateNym(id_nym) ;
 
     if (nullptr == pCurrentNym)
         return;
@@ -143,7 +145,7 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
 
 //    qDebug() << "DEBUGGING: onClaimsUpdatedForNym 3 ";
 
-    const int32_t server_count = opentxs::SwigWrap::Exec()->GetServerCount();
+    const int32_t server_count = opentxs::OT::App().API().Exec().GetServerCount();
     // -----------------------------------------------
     // Loop through all the servers and for each, see if the Nym  is registered
     // there. For every server that he IS registered on, RE-register so it has
@@ -151,11 +153,11 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
     //
     for (int32_t ii = 0; ii < server_count; ++ii)
     {
-        QString notary_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_ID(ii));
+        QString notary_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_ID(ii));
         // -----------------------------------------------
         if (!notary_id.isEmpty())
         {
-            const bool isReg = opentxs::SwigWrap::Exec()->IsNym_RegisteredAtServer(str_nym_id, notary_id.toStdString());
+            const bool isReg = opentxs::OT::App().API().Exec().IsNym_RegisteredAtServer(str_nym_id, notary_id.toStdString());
 
             if (isReg) // We only RE-REGISTER at servers where we're ALREADY registered.
             {          // (To update their copy of the credentials we just edited.)
@@ -163,8 +165,8 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
                 {
                     MTSpinner theSpinner;
 
-                    response = opentxs::SwigWrap::Register_Nym_Public(str_nym_id, notary_id.toStdString());
-                    if (response.empty() && !opentxs::SwigWrap::CheckConnection(notary_id.toStdString()))
+                    response = opentxs::OT::App().API().OTME_TOO().RegisterNym(str_nym_id, notary_id.toStdString(), true);
+                    if (response.empty() && !opentxs::OT::App().API().Exec().CheckConnection(notary_id.toStdString()))
                     {
                         QString qstrErrorMsg;
                         qstrErrorMsg = QString("%1: %2. %3.").
@@ -220,11 +222,11 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
     {
         auto pCurrentNym = opentxs::OT::App().Contract().Nym(id_nym);
 //        const opentxs::Nym * pCurrentNym =
-//            opentxs::SwigWrap::OTAPI()->GetOrLoadNym(id_nym);
+//            opentxs::OT::App().API().OTAPI().GetOrLoadNym(id_nym);
 
         if (pCurrentNym)
         {
-//          opentxs::ClaimSet claims = opentxs::SwigWrap::OTAPI()->GetClaims(*pCurrentNym);
+//          opentxs::ClaimSet claims = opentxs::OT::App().API().OTAPI().GetClaims(*pCurrentNym);
             // ---------------------------------------
 //          nym_claims.insert( NymClaims(str_nym_id, claims) );
             nym_names.insert(std::pair<std::string, std::string>(str_nym_id, str_nym_name));
@@ -297,15 +299,15 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
         QMap<uint32_t, QString> mapTypeNames;
         // ----------------------------------------
         const std::string sectionName =
-            opentxs::SwigWrap::Exec()->ContactSectionName(
+            opentxs::OT::App().API().Exec().ContactSectionName(
                 opentxs::proto::CONTACTSECTION_RELATIONSHIP);
         const auto sectionTypes =
-            opentxs::SwigWrap::Exec()->ContactSectionTypeList(
+            opentxs::OT::App().API().Exec().ContactSectionTypeList(
                 opentxs::proto::CONTACTSECTION_RELATIONSHIP);
 
         for (const auto& indexSectionType: sectionTypes) {
             const std::string typeName =
-                opentxs::SwigWrap::Exec()->ContactTypeName(indexSectionType);
+                opentxs::OT::App().API().Exec().ContactTypeName(indexSectionType);
             mapTypeNames.insert(
                 indexSectionType,
                 QString::fromStdString(typeName));
@@ -464,7 +466,7 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
 
     // Now we loop through the sections, and for each, we populate its
     // itemwidgets by looping through the nym_claims we got above.
-    const auto sections = opentxs::SwigWrap::Exec()->ContactSectionList();
+    const auto sections = opentxs::OT::App().API().Exec().ContactSectionList();
 
     for (const auto& indexSection: sections) {
         if (opentxs::proto::CONTACTSECTION_RELATIONSHIP == indexSection)
@@ -473,13 +475,13 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
         QMap<uint32_t, QString> mapTypeNames;
 
         std::string sectionName =
-            opentxs::SwigWrap::Exec()->ContactSectionName(indexSection);
+            opentxs::OT::App().API().Exec().ContactSectionName(indexSection);
         const auto sectionTypes =
-            opentxs::SwigWrap::Exec()->ContactSectionTypeList(indexSection);
+            opentxs::OT::App().API().Exec().ContactSectionTypeList(indexSection);
 
         for (auto& indexSectionType: sectionTypes) {
             const std::string typeName =
-                opentxs::SwigWrap::Exec()->ContactTypeName(indexSectionType);
+                opentxs::OT::App().API().Exec().ContactTypeName(indexSectionType);
             mapTypeNames.insert(
                 indexSectionType,
                 QString::fromStdString(typeName));
@@ -1452,7 +1454,7 @@ void MTNymDetails::refresh(QString strID, QString strName)
 
     if ((NULL != ui) && !strID.isEmpty())
     {
-        std::string nym_description = opentxs::SwigWrap::Exec()->GetNym_Description(strID.toStdString());
+        std::string nym_description = opentxs::OT::App().API().Exec().GetNym_Description(strID.toStdString());
         ui->toolButtonQrCode->setString(QString::fromStdString(nym_description));
         ui->lineEditDescription->setText(QString::fromStdString(nym_description));
 
@@ -1489,14 +1491,14 @@ void MTNymDetails::refresh(QString strID, QString strName)
             pTableWidgetNotaries_->blockSignals(true);
             // ----------------------------
             std::string nymId   = strID.toStdString();
-            const int32_t serverCount = opentxs::SwigWrap::Exec()->GetServerCount();
+            const int32_t serverCount = opentxs::OT::App().API().Exec().GetServerCount();
 
             for (int32_t serverIndex = 0; serverIndex < serverCount; ++serverIndex)
             {
-                std::string NotaryID   = opentxs::SwigWrap::Exec()->GetServer_ID(serverIndex);
+                std::string NotaryID   = opentxs::OT::App().API().Exec().GetServer_ID(serverIndex);
                 QString qstrNotaryID   = QString::fromStdString(NotaryID);
-                QString qstrNotaryName = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(NotaryID));
-                bool    bStatus        = opentxs::SwigWrap::Exec()->IsNym_RegisteredAtServer(nymId, NotaryID);
+                QString qstrNotaryName = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(NotaryID));
+                bool    bStatus        = opentxs::OT::App().API().Exec().IsNym_RegisteredAtServer(nymId, NotaryID);
                 QString qstrStatus     = bStatus ? tr("Registered") : tr("Not registered");
                 // ----------------------------------
                 int column = 0;
@@ -1567,7 +1569,7 @@ void MTNymDetails::refresh(QString strID, QString strName)
         //
         if (m_pPlainTextEdit)
         {
-            QString strContents = QString::fromStdString(opentxs::SwigWrap::Exec()->GetNym_Stats(strID.toStdString()));
+            QString strContents = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Stats(strID.toStdString()));
             m_pPlainTextEdit->setPlainText(strContents);
         }
         // -----------------------------------
@@ -1684,7 +1686,7 @@ void MTNymDetails::DeleteButtonClicked()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         // ----------------------------------------------------
-        bool bCanRemove = opentxs::SwigWrap::Exec()->Wallet_CanRemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
+        bool bCanRemove = opentxs::OT::App().API().Exec().Wallet_CanRemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
 
         if (!bCanRemove)
         {
@@ -1701,7 +1703,7 @@ void MTNymDetails::DeleteButtonClicked()
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
-            bool bSuccess = opentxs::SwigWrap::Exec()->Wallet_RemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
+            bool bSuccess = opentxs::OT::App().API().Exec().Wallet_RemoveNym(m_pOwner->m_qstrCurrentID.toStdString());
 
             if (bSuccess)
             {
@@ -1742,7 +1744,7 @@ void MTNymDetails::on_btnEditProfile_clicked()
     theWizard.listContactDataTuples_.clear();
 
     const auto claims_data =
-        opentxs::SwigWrap::Exec()->GetContactData(str_nym_id);
+        opentxs::OT::App().API().Exec().GetContactData(str_nym_id);
     const auto claims =
         opentxs::proto::DataToProto<opentxs::proto::ContactData>
             (opentxs::Data(
@@ -1826,7 +1828,7 @@ void MTNymDetails::on_btnEditProfile_clicked()
         const auto armored =
             opentxs::proto::ProtoAsArmored(contactData, "CONTACT DATA");
         const bool set =
-            opentxs::SwigWrap::Exec()->SetContactData(str_nym_id, armored.Get());
+            opentxs::OT::App().API().Exec().SetContactData(str_nym_id, armored.Get());
         if (!set) {
             qDebug() << __FUNCTION__ << ": ERROR: Failed trying to Set Contact "
                      << "Data!";
@@ -1877,10 +1879,10 @@ void MTNymDetails::AddButtonClicked()
         switch (nAlgorithmIndex)
         {
             case 0:  // ECDSA
-                str_id = opentxs::SwigWrap::CreateIndividualNym(qstrName.toStdString(), NYM_ID_SOURCE, 0);
+                str_id = opentxs::OT::App().API().Exec().CreateNymHD(opentxs::proto::CITEMTYPE_INDIVIDUAL, qstrName.toStdString(), NYM_ID_SOURCE, 0);
                 break;
             case 1: // 1024-bit RSA
-                str_id = opentxs::SwigWrap::CreateNymLegacy(1024, NYM_ID_SOURCE);
+                str_id = opentxs::OT::App().API().Exec().CreateNymLegacy(1024, NYM_ID_SOURCE);
                 break;
 //            case 2: // 2048-bit RSA
 //                str_id = opentxs::OT_ME::It().create_nym_legacy(2048, NYM_ID_SOURCE);
@@ -1911,7 +1913,7 @@ void MTNymDetails::AddButtonClicked()
         // Register the Namecoin name.
         if (nAuthorityIndex == 1)
         {
-            const unsigned cnt = opentxs::SwigWrap::Exec()->GetNym_MasterCredentialCount (str_id);
+            const unsigned cnt = opentxs::OT::App().API().Exec().GetNym_MasterCredentialCount (str_id);
             if (cnt != 1)
             {
                 qDebug () << "Expected one master credential, got " << cnt
@@ -1919,7 +1921,7 @@ void MTNymDetails::AddButtonClicked()
             }
             else
             {
-                const std::string cred = opentxs::SwigWrap::Exec()->GetNym_MasterCredentialID (str_id, 0);
+                const std::string cred = opentxs::OT::App().API().Exec().GetNym_MasterCredentialID (str_id, 0);
                 const QString qCred = QString::fromStdString (cred);
                 NMC_NameManager& nmc = NMC_NameManager::getInstance ();
                 nmc.startRegistration (qstrID, qCred);
@@ -1929,7 +1931,7 @@ void MTNymDetails::AddButtonClicked()
         // Set the Name of the new Nym.
         //
         //bool bNameSet =
-        //opentxs::SwigWrap::Exec()->SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
+        //opentxs::OT::App().API().Exec().SetNym_Name(qstrID.toStdString(), qstrID.toStdString(), qstrName.toStdString());
         // ------------------------------------------------------
         std::map<uint32_t, std::list<std::tuple<uint32_t, std::string, bool>>> items;
 
@@ -1972,7 +1974,7 @@ void MTNymDetails::AddButtonClicked()
         auto armored =
             opentxs::proto::ProtoAsArmored(contactData, "CONTACT DATA");
 
-        if (!opentxs::SwigWrap::Exec()->SetContactData(str_id, armored.Get())) {
+        if (!opentxs::OT::App().API().Exec().SetContactData(str_id, armored.Get())) {
             qDebug() << __FUNCTION__ << ": ERROR: Failed trying to Set Contact "
                      << "Data!";
         } else {
@@ -2171,7 +2173,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
             {
                 QString qstrNotaryID = pTableWidgetNotaries_->item(nRow, 0)->data(Qt::UserRole).toString();
                 std::string str_notary_id = qstrNotaryID.toStdString();
-                QString qstrNotaryName = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(str_notary_id));
+                QString qstrNotaryName = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(str_notary_id));
                 // ------------------------
                 QPoint globalPos = pTableWidgetNotaries_->mapToGlobal(pos);
                 // ------------------------
@@ -2179,7 +2181,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                 // ------------------------
                 if (selectedAction == pActionRegister_)
                 {
-                    if (opentxs::SwigWrap::Exec()->IsNym_RegisteredAtServer(str_nym_id, str_notary_id))
+                    if (opentxs::OT::App().API().Exec().IsNym_RegisteredAtServer(str_nym_id, str_notary_id))
                     {
                         QMessageBox::information(this, tr("Moneychanger"), QString("%1 '%2' %3 '%4'.").arg(tr("The Nym")).
                                                  arg(qstrNymName).arg(tr("is already registered on notary")).arg(qstrNotaryName));
@@ -2194,7 +2196,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                         {
                             MTSpinner theSpinner;
 
-                            auto strResponse = opentxs::SwigWrap::Register_Nym_Public(str_nym_id, str_notary_id);
+                            auto strResponse = opentxs::OT::App().API().OTME_TOO().RegisterNym(str_nym_id, str_notary_id, true);
 
                             if (strResponse) {
                                 nSuccess = 1;
@@ -2246,7 +2248,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                 // ------------------------
                 else if (selectedAction == pActionUnregister_)
                 {
-                    if (!opentxs::SwigWrap::Exec()->IsNym_RegisteredAtServer(str_nym_id, str_notary_id))
+                    if (!opentxs::OT::App().API().Exec().IsNym_RegisteredAtServer(str_nym_id, str_notary_id))
                     {
                         QMessageBox::information(this, tr("Moneychanger"), QString("%1 '%2' %3 '%4'.").arg(tr("The Nym")).
                                                  arg(qstrNymName).arg(tr("is already not registered on notary")).arg(qstrNotaryName));
@@ -2334,7 +2336,7 @@ void MTNymDetails::on_lineEditName_editingFinished()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = opentxs::SwigWrap::Exec()->Rename_Nym(m_pOwner->m_qstrCurrentID.toStdString(), // Nym
+        bool bSuccess = opentxs::OT::App().API().Exec().Rename_Nym(m_pOwner->m_qstrCurrentID.toStdString(), // Nym
                                                 ui->lineEditName->text(). toStdString()); // New Name
         if (bSuccess)
         {

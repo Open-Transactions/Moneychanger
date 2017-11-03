@@ -13,13 +13,13 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/api/OT.hpp>
+#include <opentxs/core/Version.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
-#include <opentxs/client/SwigWrap.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_ME.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OTME_too.hpp>
 
 #include <QDebug>
@@ -93,7 +93,7 @@ bool MTRequestDlg::sendInvoice(int64_t amount, QString toNymId, QString toContac
     // --------------------------------
     if (   toNymId.isEmpty()
         || toContactId.isEmpty()
-        ||  (0 != opentxs::SwigWrap::Can_Message(toNymId.toStdString(), toContactId.toStdString())))
+        ||  (opentxs::Messagability::READY != opentxs::OT::App().API().OTME_TOO().CanMessage(toNymId.toStdString(), toContactId.toStdString())))
     {
         QMessageBox::warning(this, tr("Not yet messageable"), tr("This contact is not yet messageable. "
                                                           "However, credentials are being requested in the background, "
@@ -140,8 +140,8 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString t
     std::string str_toNymId   (toNymId   .toStdString());
     std::string str_fromAcctId(fromAcctId.toStdString());
     // ------------------------------------------------------------
-    std::string str_fromNymId(opentxs::SwigWrap::Exec()->GetAccountWallet_NymID   (str_fromAcctId));
-    std::string str_NotaryID (opentxs::SwigWrap::Exec()->GetAccountWallet_NotaryID(str_fromAcctId));
+    std::string str_fromNymId(opentxs::OT::App().API().Exec().GetAccountWallet_NymID   (str_fromAcctId));
+    std::string str_NotaryID (opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID(str_fromAcctId));
     // ------------------------------------------------------------
     int64_t SignedAmount = amount;
     int64_t trueAmount   = isInvoice ? (SignedAmount*(-1)) : SignedAmount;
@@ -150,7 +150,7 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString t
 //                arg(nsChequeType).arg(QString::fromStdString(str_NotaryID)).arg(QString::fromStdString(str_fromNymId)).
 //                arg(fromAcctId).arg(toNymId).arg(SignedAmount).arg(note);
     // ------------------------------------------------------------
-    time64_t tFrom = opentxs::SwigWrap::Exec()->GetTime();
+    time64_t tFrom = opentxs::OT::App().API().Exec().GetTime();
     time64_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
     // ------------------------------------------------------------
     if (!opentxs::OT_ME::It().make_sure_enough_trans_nums(1, str_NotaryID, str_fromNymId)) {
@@ -158,7 +158,7 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString t
         return false;
     }
     // ------------------------------------------------------------
-    std::string strCheque = opentxs::SwigWrap::Exec()->WriteCheque(str_NotaryID, trueAmount, tFrom, tTo,
+    std::string strCheque = opentxs::OT::App().API().Exec().WriteCheque(str_NotaryID, trueAmount, tFrom, tTo,
                                                     str_fromAcctId, str_fromNymId, note.toStdString(),
                                                     str_toNymId);
     if (strCheque.empty())
@@ -236,7 +236,7 @@ void MTRequestDlg::on_amountEdit_editingFinished()
 {
     if (!m_myAcctId.isEmpty() && !m_bSent)
     {
-        std::string str_InstrumentDefinitionID(opentxs::SwigWrap::Exec()->GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
+        std::string str_InstrumentDefinitionID(opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
         QString     amt = ui->amountEdit->text();
 
         if (!amt.isEmpty() && !str_InstrumentDefinitionID.empty())
@@ -246,8 +246,8 @@ void MTRequestDlg::on_amountEdit_editingFinished()
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
 
-            int64_t     amount               = opentxs::SwigWrap::Exec()->StringToAmount(str_InstrumentDefinitionID, str_temp);
-            std::string str_formatted_amount = opentxs::SwigWrap::Exec()->FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
+            int64_t     amount               = opentxs::OT::App().API().Exec().StringToAmount(str_InstrumentDefinitionID, str_temp);
+            std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
             QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
 
             ui->amountEdit->setText(qstr_FinalAmount);
@@ -274,10 +274,10 @@ void MTRequestDlg::setInitialHisContact (QString contactId, bool bUsedInternally
 
     if (!m_myAcctId.isEmpty() && !m_hisContactId.isEmpty())
     {
-        const std::string str_my_nym_id = opentxs::SwigWrap::Exec()->GetAccountWallet_NymID(m_myAcctId.toStdString());
+        const std::string str_my_nym_id = opentxs::OT::App().API().Exec().GetAccountWallet_NymID(m_myAcctId.toStdString());
 
         if (   !str_my_nym_id.empty()
-            && (0 == opentxs::SwigWrap::Can_Message(str_my_nym_id, m_hisContactId.toStdString())))
+            && (opentxs::Messagability::READY == opentxs::OT::App().API().OTME_TOO().CanMessage(str_my_nym_id, m_hisContactId.toStdString())))
         {
             canMessage_ = true;
 
@@ -326,7 +326,7 @@ bool MTRequestDlg::requestFunds(QString memo, QString qstr_amount)
         qstr_amount = QString("0");
     // ----------------------------------------------------
     int64_t     amount = 0;
-    std::string str_InstrumentDefinitionID(opentxs::SwigWrap::Exec()->GetAccountWallet_InstrumentDefinitionID(fromAcctId.toStdString()));
+    std::string str_InstrumentDefinitionID(opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(fromAcctId.toStdString()));
 
     if (!str_InstrumentDefinitionID.empty())
     {
@@ -335,7 +335,7 @@ bool MTRequestDlg::requestFunds(QString memo, QString qstr_amount)
         if (std::string::npos == str_amount.find(".")) // not found
             str_amount += '.';
 
-        amount = opentxs::SwigWrap::Exec()->StringToAmount(str_InstrumentDefinitionID, str_amount);
+        amount = opentxs::OT::App().API().Exec().StringToAmount(str_InstrumentDefinitionID, str_amount);
     }
     // ----------------------------------------------------
     if (amount <= 0)
@@ -452,12 +452,12 @@ void MTRequestDlg::on_toButton_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t acct_count = opentxs::SwigWrap::Exec()->GetAccountCount();
+    const int32_t acct_count = opentxs::OT::App().API().Exec().GetAccountCount();
     // -----------------------------------------------
     for(int32_t ii = 0; ii < acct_count; ++ii)
     {
         //Get OT Acct ID
-        QString OT_acct_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAccountWallet_ID(ii));
+        QString OT_acct_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_ID(ii));
         QString OT_acct_name("");
         // -----------------------------------------------
         if (!OT_acct_id.isEmpty())

@@ -7,6 +7,7 @@
 
 #include <core/modules.hpp>
 
+#include <opentxs/core/Version.hpp>
 #include <opentxs/core/Log.hpp>
 
 #include <QTimer>
@@ -479,7 +480,7 @@ void SampleEscrowServer::CheckTransactions()
             if(tx->status == SampleEscrowTransaction::Pending)
                 tx->CheckTransaction(this->minConfirms);
 
-            unspentOutputs.push_back(outputFromTx);           
+            unspentOutputs.push_back(outputFromTx);
         }
     }
 
@@ -609,7 +610,7 @@ BtcUnspentOutputs SampleEscrowServer::GetOutputsToSpend(const std::string &clien
     if(clientBalanceMap == this->clientBalancesMap.end())
     {
         this->mutex->unlock();
-        return outputsToSpend;        
+        return outputsToSpend;
     }
 
     int64_t currentBalance = int64_t(0);

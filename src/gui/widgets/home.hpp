@@ -4,6 +4,7 @@
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
 
+#include <opentxs/core/Version.hpp>
 #include <opentxs/client/OTRecordList.hpp>
 
 #include <QPointer>
@@ -20,7 +21,7 @@ class QFrame;
 class MTHome : public QWidget
 {
     Q_OBJECT
-    
+
 private:
     /** Functions **/
 
@@ -50,7 +51,7 @@ private:
 public:
     explicit MTHome(QWidget *parent = 0);
     ~MTHome();
-    
+
     void dialog();
 
     void SetRefreshBtnRed();

@@ -12,11 +12,14 @@
 
 #include <bitcoin-api/btcmodules.hpp>
 
+#include <opentxs/core/Version.hpp>
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/crypto/OTCaller.hpp>
-#include <opentxs/core/Log.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
+#include <opentxs/core/Log.hpp>
 
 #include <QTimer>
 #include <QApplication>
@@ -122,11 +125,8 @@ int main(int argc, char *argv[])
     //
     __OTclient_RAII the_client_cleanup;  // <===== SECOND constructor is called here.
     // ----------------------------------------
-    if (nullptr == opentxs::SwigWrap::Exec())
-    {
-        opentxs::Log::vError(0, "Error, exiting: opentxs::SwigWrap::AppInit() call must have failed.\n");
-        return -1;
-    }
+    // Will assert if AppInit has not been called.
+    opentxs::OT::App().API().Exec();
     // ----------------------------------------
     //Init qApp
     MTApplicationMC theApplication(argc, argv);  // <====== THIRD constructor (they are destroyed in reverse order.)

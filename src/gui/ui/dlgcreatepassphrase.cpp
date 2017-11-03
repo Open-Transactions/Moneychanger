@@ -11,8 +11,9 @@
 #include <QPushButton>
 #include <QClipboard>
 
-#include <opentxs/core/String.hpp>
+#include <opentxs/core/Version.hpp>
 #include <opentxs/core/crypto/OTPassword.hpp>
+#include <opentxs/core/String.hpp>
 
 
 #define PASSWORDS_MATCH_STR  tr("Passwords match!")

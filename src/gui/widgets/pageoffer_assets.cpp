@@ -10,7 +10,9 @@
 #include <gui/widgets/dlgchooser.hpp>
 #include <gui/widgets/detailedit.hpp>
 
-#include <opentxs/client/SwigWrap.hpp>
+#include <opentxs/core/Version.hpp>
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 
 
@@ -54,13 +56,13 @@ void PageOffer_Assets::on_pushButtonManageAsset_clicked()
     QString qstrPreselected   = field("InstrumentDefinitionID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
-    int32_t the_count = opentxs::SwigWrap::Exec()->GetAssetTypeCount();
+    int32_t the_count = opentxs::OT::App().API().Exec().GetAssetTypeCount();
     bool    bStartingWithNone = (the_count < 1);
 
     for (int32_t ii = 0; ii < the_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_ID(ii));
-        QString OT_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
 
@@ -75,13 +77,13 @@ void PageOffer_Assets::on_pushButtonManageAsset_clicked()
     // -------------------------------------
     pWindow->dialog(MTDetailEdit::DetailEditTypeAsset, true);
     // -------------------------------------
-    if (bStartingWithNone && (opentxs::SwigWrap::Exec()->GetAssetTypeCount() > 0))
+    if (bStartingWithNone && (opentxs::OT::App().API().Exec().GetAssetTypeCount() > 0))
     {
-        std::string str_id = opentxs::SwigWrap::Exec()->GetAssetType_ID(0);
+        std::string str_id = opentxs::OT::App().API().Exec().GetAssetType_ID(0);
 
         if (!str_id.empty())
         {
-            std::string str_name = opentxs::SwigWrap::Exec()->GetAssetType_Name(str_id);
+            std::string str_name = opentxs::OT::App().API().Exec().GetAssetType_Name(str_id);
 
             if (str_name.empty())
                 str_name = str_id;
@@ -93,7 +95,7 @@ void PageOffer_Assets::on_pushButtonManageAsset_clicked()
         }
     }
     // -------------------------------------
-    else if (opentxs::SwigWrap::Exec()->GetAssetTypeCount() < 1)
+    else if (opentxs::OT::App().API().Exec().GetAssetTypeCount() < 1)
         SetAssetBlank();
 }
 
@@ -110,13 +112,13 @@ void PageOffer_Assets::on_pushButtonManageCurrency_clicked()
     QString qstrPreselected   = field("CurrencyID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
-    int32_t the_count = opentxs::SwigWrap::Exec()->GetAssetTypeCount();
+    int32_t the_count = opentxs::OT::App().API().Exec().GetAssetTypeCount();
     bool    bStartingWithNone = (the_count < 1);
 
     for (int32_t ii = 0; ii < the_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_ID(ii));
-        QString OT_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
 
@@ -131,13 +133,13 @@ void PageOffer_Assets::on_pushButtonManageCurrency_clicked()
     // -------------------------------------
     pWindow->dialog(MTDetailEdit::DetailEditTypeAsset, true);
     // -------------------------------------
-    if (bStartingWithNone && (opentxs::SwigWrap::Exec()->GetAssetTypeCount() > 0))
+    if (bStartingWithNone && (opentxs::OT::App().API().Exec().GetAssetTypeCount() > 0))
     {
-        std::string str_id = opentxs::SwigWrap::Exec()->GetAssetType_ID(0);
+        std::string str_id = opentxs::OT::App().API().Exec().GetAssetType_ID(0);
 
         if (!str_id.empty())
         {
-            std::string str_name = opentxs::SwigWrap::Exec()->GetAssetType_Name(str_id);
+            std::string str_name = opentxs::OT::App().API().Exec().GetAssetType_Name(str_id);
 
             if (str_name.empty())
                 str_name = str_id;
@@ -149,7 +151,7 @@ void PageOffer_Assets::on_pushButtonManageCurrency_clicked()
         }
     }
     // -------------------------------------
-    else if (opentxs::SwigWrap::Exec()->GetAssetTypeCount() < 1)
+    else if (opentxs::OT::App().API().Exec().GetAssetTypeCount() < 1)
         SetCurrencyBlank();
 }
 
@@ -158,8 +160,8 @@ void PageOffer_Assets::on_pushButtonSelectAsset_clicked()
     // -------------------------------------------
     QString qstr_current_id = field("InstrumentDefinitionID").toString();
     // -------------------------------------------
-    if (qstr_current_id.isEmpty() && (opentxs::SwigWrap::Exec()->GetAssetTypeCount() > 0))
-        qstr_current_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_ID(0));
+    if (qstr_current_id.isEmpty() && (opentxs::OT::App().API().Exec().GetAssetTypeCount() > 0))
+        qstr_current_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_ID(0));
     // -------------------------------------------
     // Select from Asset Types in local wallet.
     //
@@ -169,11 +171,11 @@ void PageOffer_Assets::on_pushButtonSelectAsset_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t the_count = opentxs::SwigWrap::Exec()->GetAssetTypeCount();
+    const int32_t the_count = opentxs::OT::App().API().Exec().GetAssetTypeCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < the_count; ++ii)
     {
-        QString OT_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_ID(ii));
+        QString OT_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_ID(ii));
         QString OT_name("");
         // -----------------------------------------------
         if (!OT_id.isEmpty())
@@ -181,7 +183,7 @@ void PageOffer_Assets::on_pushButtonSelectAsset_clicked()
             if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                 bFoundDefault = true;
             // -----------------------------------------------
-            OT_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_Name(OT_id.toStdString()));
+            OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(OT_id.toStdString()));
             // -----------------------------------------------
             the_map.insert(OT_id, OT_name);
         }
@@ -211,8 +213,8 @@ void PageOffer_Assets::on_pushButtonSelectCurrency_clicked()
     // -------------------------------------------
     QString qstr_current_id = field("CurrencyID").toString();
     // -------------------------------------------
-    if (qstr_current_id.isEmpty() && (opentxs::SwigWrap::Exec()->GetAssetTypeCount() > 0))
-        qstr_current_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_ID(0));
+    if (qstr_current_id.isEmpty() && (opentxs::OT::App().API().Exec().GetAssetTypeCount() > 0))
+        qstr_current_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_ID(0));
     // -------------------------------------------
     // Select from Asset Types in local wallet.
     //
@@ -222,11 +224,11 @@ void PageOffer_Assets::on_pushButtonSelectCurrency_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t the_count = opentxs::SwigWrap::Exec()->GetAssetTypeCount();
+    const int32_t the_count = opentxs::OT::App().API().Exec().GetAssetTypeCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < the_count; ++ii)
     {
-        QString OT_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_ID(ii));
+        QString OT_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_ID(ii));
         QString OT_name("");
         // -----------------------------------------------
         if (!OT_id.isEmpty())
@@ -234,7 +236,7 @@ void PageOffer_Assets::on_pushButtonSelectCurrency_clicked()
             if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                 bFoundDefault = true;
             // -----------------------------------------------
-            OT_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_Name(OT_id.toStdString()));
+            OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(OT_id.toStdString()));
             // -----------------------------------------------
             the_map.insert(OT_id, OT_name);
         }

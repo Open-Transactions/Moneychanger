@@ -8,6 +8,7 @@
 #include <QDialog>
 #include <QCloseEvent>
 
+#include <opentxs/core/Version.hpp>
 #include <opentxs/core/crypto/OTPassword.hpp>
 
 

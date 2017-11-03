@@ -9,13 +9,14 @@
 
 #include <core/handlers/modelclaims.hpp>
 
-#include <opentxs/core/OTStorage.hpp>
-#include <opentxs/client/SwigWrap.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/Version.hpp>
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_ME.hpp>
-#include <opentxs/core/util/OTPaths.hpp>
-
+#include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OTRecordList.hpp>
+#include <opentxs/core/util/OTPaths.hpp>
+#include <opentxs/core/OTStorage.hpp>
 
 #include <QDebug>
 #include <QtGlobal>
@@ -69,7 +70,7 @@ QVariant ClaimsProxyModel::data ( const QModelIndex & index, int role/* = Qt::Di
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetNym_Name(str_id);
+                str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetNym_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())

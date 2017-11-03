@@ -11,9 +11,11 @@
 #include <core/moneychanger.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/client/SwigWrap.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/Version.hpp>
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_ME.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Data.hpp>
 #include <opentxs/core/OTStorage.hpp>
 
@@ -521,13 +523,13 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrNotaryID, QString qstrNymID, 
                 // -----------------------------------------------------------------------
                 QString qstrBuySell = pOfferData->selling ? tr("Sell") : tr("Buy");
 
-                const std::string str_asset_name = opentxs::SwigWrap::Exec()->GetAssetType_Name(pOfferData->instrument_definition_id);
+                const std::string str_asset_name = opentxs::OT::App().API().Exec().GetAssetType_Name(pOfferData->instrument_definition_id);
                 // --------------------------
-                int64_t lTotalAssets   = opentxs::SwigWrap::Exec()->StringToLong(pOfferData->total_assets);
-                int64_t lFinishedSoFar = opentxs::SwigWrap::Exec()->StringToLong(pOfferData->finished_so_far);
+                int64_t lTotalAssets   = opentxs::OT::App().API().Exec().StringToLong(pOfferData->total_assets);
+                int64_t lFinishedSoFar = opentxs::OT::App().API().Exec().StringToLong(pOfferData->finished_so_far);
                 // --------------------------
-                const std::string str_total_assets    = opentxs::SwigWrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lTotalAssets);
-                const std::string str_finished_so_far = opentxs::SwigWrap::Exec()->FormatAmount(pOfferData->instrument_definition_id, lFinishedSoFar);
+                const std::string str_total_assets    = opentxs::OT::App().API().Exec().FormatAmount(pOfferData->instrument_definition_id, lTotalAssets);
+                const std::string str_finished_so_far = opentxs::OT::App().API().Exec().FormatAmount(pOfferData->instrument_definition_id, lFinishedSoFar);
                 // --------------------------
                 QString qstrAmounts;
 
@@ -660,8 +662,8 @@ bool DlgMarkets::LowLevelLoadMarketList(QString qstrNotaryID, QString qstrNymID,
 
             if (the_map.end() == it_map)
             {
-                const std::string str_asset_name    = opentxs::SwigWrap::Exec()->GetAssetType_Name(pMarketData->instrument_definition_id);
-                const std::string str_currency_name = opentxs::SwigWrap::Exec()->GetAssetType_Name(pMarketData->currency_type_id);
+                const std::string str_asset_name    = opentxs::OT::App().API().Exec().GetAssetType_Name(pMarketData->instrument_definition_id);
+                const std::string str_currency_name = opentxs::OT::App().API().Exec().GetAssetType_Name(pMarketData->currency_type_id);
                 // --------------------------
                 QString qstrMarketName = QString("%1 for %2").
                         arg(QString::fromStdString(str_asset_name)).
@@ -834,10 +836,10 @@ void DlgMarkets::LoadOrRetrieveMarkets()
                     if (NULL != pMarketData) // Should never be NULL.
                     {
                         // ------------------------------------------------------
-                        int64_t     lScale    = opentxs::SwigWrap::Exec()->StringToLong(pMarketData->scale);
+                        int64_t     lScale    = opentxs::OT::App().API().Exec().StringToLong(pMarketData->scale);
                         if (lScale > 1)
                         {
-                            std::string str_scale = opentxs::SwigWrap::Exec()->FormatAmount(pMarketData->instrument_definition_id, lScale);
+                            std::string str_scale = opentxs::OT::App().API().Exec().FormatAmount(pMarketData->instrument_definition_id, lScale);
                             // ------------------------------------------------------
                             QString qstrFormattedScale = QString::fromStdString(str_scale);
                             // ------------------------------------------------------
@@ -982,13 +984,13 @@ void DlgMarkets::RefreshRecords()
         nDefaultServerIndex = 0;
     }
     // ----------------------------
-    const int32_t server_count = opentxs::SwigWrap::Exec()->GetServerCount();
+    const int32_t server_count = opentxs::OT::App().API().Exec().GetServerCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < server_count; ++ii)
     {
         //Get OT Server ID
         //
-        QString OT_notary_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_ID(ii));
+        QString OT_notary_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_ID(ii));
         QString OT_server_name("");
         // -----------------------------------------------
         if (!OT_notary_id.isEmpty())
@@ -999,7 +1001,7 @@ void DlgMarkets::RefreshRecords()
                 nDefaultServerIndex = ii+1; // the +1 is because of "all" in the 0 position. (Servers only.)
             }
             // -----------------------------------------------
-            OT_server_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(OT_notary_id.toStdString()));
+            OT_server_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(OT_notary_id.toStdString()));
             // -----------------------------------------------
             m_mapServers.insert(OT_notary_id, OT_server_name);
             ui->comboBoxServer->insertItem(ii+1, OT_server_name);
@@ -1009,12 +1011,12 @@ void DlgMarkets::RefreshRecords()
 
     // -----------------------------------------------
     bool bFoundNymDefault = false;
-    const int32_t nym_count = opentxs::SwigWrap::Exec()->GetNymCount();
+    const int32_t nym_count = opentxs::OT::App().API().Exec().GetNymCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < nym_count; ++ii)
     {
         //Get OT Nym ID
-        QString OT_nym_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetNym_ID(ii));
+        QString OT_nym_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_ID(ii));
         QString OT_nym_name("");
         // -----------------------------------------------
         if (!OT_nym_id.isEmpty())

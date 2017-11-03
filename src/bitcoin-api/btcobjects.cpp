@@ -6,6 +6,7 @@
 
 #include <bitcoin-api/btchelper.hpp>
 
+#include <opentxs/core/Version.hpp>
 #include <opentxs/core/util/Assert.hpp>
 
 #include <cstdlib>

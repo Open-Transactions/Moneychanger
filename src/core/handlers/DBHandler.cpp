@@ -7,6 +7,7 @@
 #include <core/handlers/modelmessages.hpp>
 #include <core/handlers/modelpayments.hpp>
 
+#include <opentxs/core/Version.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
 
 #include <QSqlRecord>
