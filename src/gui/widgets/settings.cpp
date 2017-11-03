@@ -375,6 +375,65 @@ void Settings::showEvent (QShowEvent * event)
     // ----------------------------------------------
 }
 
+
+
+
+void Settings::on_pushButtonPair_clicked()
+{
+
+    const QString qstrBridgeNymID   = ui->lineEditBridgeNymId->text();
+    const QString qstrAdminPassword = ui->lineEditAdminPassword->text();
+
+    QString qstrUserNymID = Moneychanger::It()->get_default_nym_id();
+    QString errorMessage{""};
+
+    if (qstrBridgeNymID.isEmpty()) {
+        errorMessage = tr("SNP Bridge Nym Id not available from pairing cable (in this case, from settings UI).");
+    }
+    if (qstrUserNymID.isEmpty()) {
+        errorMessage = tr("Default User NymId not available from local Opentxs wallet.");
+    }
+    if (qstrAdminPassword.isEmpty()) {
+        errorMessage = tr("SNP admin password not available from pairing cable (in this case, from settings UI).");
+    }
+    // -----------------------------------
+    const std::string str_introduction_notary_id{opentxs::SwigWrap::Get_Introduction_Server()};
+
+    if (str_introduction_notary_id.empty()) {
+        errorMessage = tr("Introduction Notary Id not available.");
+    }
+    // -----------------------------------
+    if (!errorMessage.isEmpty()) {
+        qDebug() << errorMessage << endl;
+        QMessageBox::warning(this, tr("Moneychanger"), errorMessage);
+        return;
+    }
+    // -----------------------------------
+    // By this point we at least know that the pre-requisites are there,
+    // so we can go ahead and start pairing. (Or see how much is already done,
+    // if it's already been started.)
+    //
+    const bool bPairNode = opentxs::SwigWrap::Pair_Node(qstrUserNymID.toStdString(), qstrBridgeNymID.toStdString(), qstrAdminPassword.toStdString());
+
+    if (!bPairNode) {
+        QMessageBox::warning(this, tr("Moneychanger"), tr("Pairing failed."));
+        return;
+    }
+    // ---------------------------------------------------
+    QMessageBox::information(this, tr("Moneychanger"), tr("Pairing successfully initiated in the background. You may now unplug your device."));
+}
+
+void Settings::on_pushButtonSetSocksProxy_clicked()
+{
+    const QString qstrProxy = ui->lineEditSocksProxy->text();
+    const std::string proxy_str = qstrProxy.toStdString();
+    const bool bOnOrOff = !qstrProxy.isEmpty();
+    const bool bSuccess = opentxs::SwigWrap::OTAPI()->SetSocksProxy(proxy_str, bOnOrOff);
+    const QString qstrSuccess = QString("%1.%2").arg(bSuccess ? tr("Success") : tr("Failure")).arg(bSuccess ? tr(" You may need to restart the application.") : QString(""));
+    QMessageBox::information(this, tr("Moneychanger"), qstrSuccess);
+}
+
+
 void Settings::on_comboBoxLanguage_currentIndexChanged(int index)
 {
     ui->pushButtonSave->setEnabled(true);
@@ -464,5 +523,6 @@ void Settings::on_pushButtonSave_clicked()
     // ----------------------------------------------
 //  hide();
 }
+
 
 

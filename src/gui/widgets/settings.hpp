@@ -35,8 +35,10 @@ private slots:
     void on_pushButton_clicked();
 
     void on_lineEditNymId_customContextMenuRequested(const QPoint &pos);
-
     void on_lineEditNotaryId_customContextMenuRequested(const QPoint &pos);
+
+    void on_pushButtonSetSocksProxy_clicked();
+    void on_pushButtonPair_clicked();
 
 private:
     Ui::Settings *ui;
