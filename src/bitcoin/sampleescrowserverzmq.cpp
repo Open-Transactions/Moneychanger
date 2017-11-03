@@ -5,6 +5,7 @@
 
 #include <bitcoin-api/btchelper.hpp>
 
+#include <opentxs/core/Version.hpp>
 #include <opentxs/core/Log.hpp>
 
 //#ifdef OT_USE_ZMQ4
@@ -94,7 +95,7 @@ bool SampleEscrowServerZmq::ClientConnected(SampleEscrowClient *client)
 }
 
 bool SampleEscrowServerZmq::ClientConnected(BtcNetMsgConnectPtr clientMsg)
-{ 
+{
     SampleEscrowClient* client = new SampleEscrowClient();
     client->clientName = clientMsg->client;
     SampleEscrowServer::ClientConnected(client);
@@ -118,7 +119,7 @@ bool SampleEscrowServerZmq::RequestEscrowDeposit(const std::string &client, cons
 
     delete[] rawReply;
 
-    return static_cast<bool>(reply->accepted);   
+    return static_cast<bool>(reply->accepted);
 }
 
 bool SampleEscrowServerZmq::RequestEscrowDeposit(BtcNetMsgReqDepositPtr message)
@@ -594,7 +595,7 @@ void SampleEscrowServerZmq::UpdateServer()
             break;
         }
         case RequestRelease:
-        {      
+        {
             BtcNetMsgReqWithdrawPtr message = BtcNetMsgReqWithdrawPtr(new BtcNetMsgReqWithdraw());
             memcpy(message->data, zmq_msg_data(&request), NetMessageSizes[messageType]);
             bool accepted = RequestEscrowWithdrawal(message);

@@ -4,6 +4,7 @@
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
 
+#include <opentxs/core/Version.hpp>
 #include <opentxs/client/OTRecordList.hpp>
 
 #include <QPointer>
@@ -32,11 +33,11 @@ enum TransactionTableViewCellType {
 class MTHomeDetail : public QWidget
 {
     Q_OBJECT
-    
+
 public:
     explicit MTHomeDetail(QWidget *parent = 0);
     ~MTHomeDetail();
-    
+
     static QWidget * CreateDetailHeaderWidget(opentxs::OTRecord& recordmt, bool bExternal=true);
 
     void SetHomePointer(MTHome & theHome);

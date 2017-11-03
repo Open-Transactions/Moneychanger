@@ -10,6 +10,7 @@
 
 #include <core/handlers/focuser.h>
 
+#include <opentxs/core/Version.hpp>
 #include <opentxs/client/OTRecordList.hpp>
 #include <opentxs/core/Proto.hpp>
 

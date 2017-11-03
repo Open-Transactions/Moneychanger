@@ -18,9 +18,11 @@
 #include <QRadioButton>
 #include <QDebug>
 
-#include <opentxs/client/SwigWrap.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/Version.hpp>
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_API.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/util/Assert.hpp>
 
 #include <set>
@@ -570,7 +572,7 @@ void MTPageNym_AltLocation::initializePage() //virtual
     int nCurrentTab = 0;
 
     const auto sections =
-        opentxs::SwigWrap::Exec()->ContactSectionList();
+        opentxs::OT::App().API().Exec().ContactSectionList();
 
     for (auto & indexSection: sections) {
         if (opentxs::proto::CONTACTSECTION_RELATIONSHIP == indexSection) {
@@ -585,16 +587,16 @@ void MTPageNym_AltLocation::initializePage() //virtual
         // Create a new (tab page) Widget.
         QWidget * pTab = new QWidget(this);
         const std::string sectionName =
-            opentxs::SwigWrap::Exec()->ContactSectionName(indexSection);
+            opentxs::OT::App().API().Exec().ContactSectionName(indexSection);
 
         QList<GroupBoxContactItems *> * pListGroupBoxes = new QList<GroupBoxContactItems *>;
 
         const auto sectionTypes =
-            opentxs::SwigWrap::Exec()->ContactSectionTypeList(indexSection);
+            opentxs::OT::App().API().Exec().ContactSectionTypeList(indexSection);
 
         for (const auto& indexSectionType: sectionTypes) {
             const std::string typeName =
-                opentxs::SwigWrap::Exec()->ContactTypeName(indexSectionType);
+                opentxs::OT::App().API().Exec().ContactTypeName(indexSectionType);
             mapTypeNames.insert(
                 indexSectionType,
                 QString::fromStdString(typeName));

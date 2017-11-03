@@ -14,12 +14,14 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/core/OTStorage.hpp>
-#include <opentxs/client/SwigWrap.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OT_ME.hpp>
-#include <opentxs/core/util/Assert.hpp>
+#include <opentxs/core/Version.hpp>
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_API.hpp>
+#include <opentxs/client/OT_ME.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/util/Assert.hpp>
+#include <opentxs/core/OTStorage.hpp>
 
 #include <QKeyEvent>
 #include <QApplication>

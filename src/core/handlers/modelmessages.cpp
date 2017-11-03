@@ -5,16 +5,16 @@
 #include <core/moneychanger.hpp>
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
-
 #include <core/handlers/modelmessages.hpp>
 
-#include <opentxs/core/OTStorage.hpp>
-#include <opentxs/client/SwigWrap.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/Version.hpp>
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_ME.hpp>
-#include <opentxs/core/util/OTPaths.hpp>
-
+#include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OTRecordList.hpp>
+#include <opentxs/core/util/OTPaths.hpp>
+#include <opentxs/core/OTStorage.hpp>
 
 #include <QDebug>
 #include <QtGlobal>
@@ -336,7 +336,7 @@ QVariant ConvMsgsProxyModel::data ( const QModelIndex & index, int role/* = Qt::
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetNym_Name(str_id);
+                str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetNym_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())
@@ -466,7 +466,7 @@ QWidget * ConvMsgsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, boo
 
 //    if ( !qstrAssetId.isEmpty() )
 //    {
-//        str_formatted = opentxs::SwigWrap::Exec()->FormatAmount(qstrAssetId.toStdString(), lAmount);
+//        str_formatted = opentxs::OT::App().API().Exec().FormatAmount(qstrAssetId.toStdString(), lAmount);
 //        bFormatted = !str_formatted.empty();
 //    }
 //    // ----------------------------------------
@@ -682,7 +682,7 @@ bool ConvMsgsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
 ////            const QVariant dataSubject    = pMsgModel->data(indexSubject);
 ////            const QString  qstrSubject    = dataSubject.isValid()  ? dataSubject.toString() : "";
 //            const QString  qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
-//                                                QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(qstrNotaryID.toStdString()));
+//                                                QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrNotaryID.toStdString()));
 //            MTNameLookupQT theLookup;
 //            QString qstrSenderName    = qstrSenderNym   .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrSenderNym   .toStdString(), ""));
 //            QString qstrRecipientName = qstrRecipientNym.isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrRecipientNym.toStdString(), ""));
@@ -921,7 +921,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetNym_Name(str_id);
+                str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetNym_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())
@@ -936,7 +936,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
 //            if (!qstrNymID.isEmpty())
 //            {
 //                const std::string str_id = qstrNymID.toStdString();
-//                const std::string str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetNym_Name(str_id);
+//                const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetNym_Name(str_id);
 //                // ------------------------
 //                if (!str_name.empty())
 //                    return QVariant(QString::fromStdString(str_name));
@@ -1017,7 +1017,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
             // Else if the method t
             QString qstrID = sourceData.isValid() ? sourceData.toString() : "";
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetServer_Name(str_id);
+            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetServer_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -1318,7 +1318,7 @@ bool MessagesProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
             const QVariant dataSubject    = pMsgModel->data(indexSubject);
             const QString  qstrSubject    = dataSubject.isValid()  ? dataSubject.toString() : "";
             const QString  qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
-                                                QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(qstrNotaryID.toStdString()));
+                                                QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrNotaryID.toStdString()));
             MTNameLookupQT theLookup;
             QString qstrSenderName    = qstrSenderNym   .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrSenderNym   .toStdString(), ""));
             QString qstrRecipientName = qstrRecipientNym.isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrRecipientNym.toStdString(), ""));

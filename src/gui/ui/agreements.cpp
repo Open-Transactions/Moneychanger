@@ -19,12 +19,14 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/client/SwigWrap.hpp>
+#include <opentxs/core/Version.hpp>
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OTRecordList.hpp>
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/OTTransaction.hpp>
 #include <opentxs/core/OTTransactionType.hpp>
-#include <opentxs/client/OTRecordList.hpp>
 
 #include <QLabel>
 #include <QToolButton>
@@ -203,24 +205,24 @@ QWidget * Agreements::CreateUserBarWidget()
     {
         // -----------------------------------
         std::string str_acct_id     = qstr_acct_id.toStdString();
-        std::string str_acct_nym    = opentxs::SwigWrap::Exec()->GetAccountWallet_NymID(str_acct_id);
-        std::string str_acct_server = opentxs::SwigWrap::Exec()->GetAccountWallet_NotaryID(str_acct_id);
-        std::string str_acct_asset  = opentxs::SwigWrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+        std::string str_acct_nym    = opentxs::OT::App().API().Exec().GetAccountWallet_NymID(str_acct_id);
+        std::string str_acct_server = opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID(str_acct_id);
+        std::string str_acct_asset  = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
         // -----------------------------------
         qstr_acct_nym    = QString::fromStdString(str_acct_nym);
         qstr_acct_server = QString::fromStdString(str_acct_server);
         qstr_acct_asset  = QString::fromStdString(str_acct_asset);
         // -----------------------------------
-        std::string str_tla = opentxs::SwigWrap::Exec()->GetCurrencyTLA(str_acct_asset);
+        std::string str_tla = opentxs::OT::App().API().Exec().GetCurrencyTLA(str_acct_asset);
         qstr_tla = QString("<font color=grey>%1</font>").arg(QString::fromStdString(str_tla));
 
         qstr_balance = MTHome::shortAcctBalance(qstr_acct_id, qstr_acct_asset, false);
         // -----------------------------------
-        std::string str_acct_name  = opentxs::SwigWrap::Exec()->GetAccountWallet_Name(str_acct_id);
+        std::string str_acct_name  = opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_acct_id);
         // -----------------------------------
         if (!str_acct_asset.empty())
         {
-            std::string str_asset_name = opentxs::SwigWrap::Exec()->GetAssetType_Name(str_acct_asset);
+            std::string str_asset_name = opentxs::OT::App().API().Exec().GetAssetType_Name(str_acct_asset);
             qstr_acct_asset_name = QString::fromStdString(str_asset_name);
         }
         // -----------------------------------
@@ -305,7 +307,7 @@ QWidget * Agreements::CreateUserBarWidget()
 
     if (!qstr_acct_nym.isEmpty())
     {
-        payment_code = opentxs::SwigWrap::Exec()->GetNym_Description(qstr_acct_nym.toStdString());
+        payment_code = opentxs::OT::App().API().Exec().GetNym_Description(qstr_acct_nym.toStdString());
         qstrPaymentCode = QString::fromStdString(payment_code);
         // ----------------------------
         MTNameLookupQT theLookup;
@@ -1343,7 +1345,7 @@ void Agreements::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 
 //        on_tabWidgetReceipts_currentChanged(0);
     }
-    // -------------------------------------------    
+    // -------------------------------------------
     Focuser f(this);
     f.show();
     f.focus();

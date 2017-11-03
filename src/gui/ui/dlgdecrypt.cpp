@@ -12,11 +12,12 @@
 #include <core/moneychanger.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/client/SwigWrap.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/Version.hpp>
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OT_API.hpp>
-
+#include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/crypto/OTEnvelope.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
@@ -123,7 +124,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                         {
                             opentxs::OTPasswordData thePWData("Recipient passphrase");
 
-                            opentxs::Nym * pNym = opentxs::SwigWrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
+                            opentxs::Nym * pNym = opentxs::OT::App().API().OTAPI().GetOrLoadPrivateNym(nym_id,
                                                                                    false, //bChecking=false
                                                                                    __FUNCTION__,
                                                                                    &thePWData);
@@ -144,12 +145,12 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                     // ------------
                     if (!bSuccessDecrypting) // Default nym is NOT available. Okay let's loop through all the Nyms in the wallet then, and try then all...
                     {
-                        const int32_t nym_count = opentxs::SwigWrap::Exec()->GetNymCount();
+                        const int32_t nym_count = opentxs::OT::App().API().Exec().GetNymCount();
                         // -----------------------------------------------
                         for (int32_t ii = 0; ii < nym_count; ++ii)
                         {
                             //Get OT Nym ID
-                            QString OT_nym_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetNym_ID(ii));
+                            QString OT_nym_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_ID(ii));
 
                             if (!OT_nym_id.isEmpty())
                             {
@@ -161,7 +162,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                                 {
                                     opentxs::OTPasswordData thePWData("Recipient passphrase");
 
-                                    opentxs::Nym * pNym = opentxs::SwigWrap::OTAPI()->GetOrLoadPrivateNym(nym_id,
+                                    opentxs::Nym * pNym = opentxs::OT::App().API().OTAPI().GetOrLoadPrivateNym(nym_id,
                                                                                            false, //bChecking=false
                                                                                            "DlgEncrypt::on_pushButtonDecrypt_clicked",
                                                                                            &thePWData);
@@ -228,7 +229,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                         {
                             opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
                             opentxs::Identifier id_signer_nym(strSignerNymID);
-                            const opentxs::Nym * pNym = opentxs::SwigWrap::OTAPI()->GetOrLoadNym(id_signer_nym,
+                            const opentxs::Nym * pNym = opentxs::OT::App().API().OTAPI().GetOrLoadNym(id_signer_nym,
                                                                                    false, //bChecking=false
                                                                                    __FUNCTION__,
                                                                                    &thePWData);

@@ -10,10 +10,12 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 
+#include <opentxs/core/Version.hpp>
+#include <opentxs/api/Api.hpp>
 #include <opentxs/api/OT.hpp>
-#include <opentxs/client/SwigWrap.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_API.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OTME_too.hpp>
 #include <opentxs/core/cron/OTCronItem.hpp>
 #include <opentxs/core/recurring/OTPaymentPlan.hpp>
 #include <opentxs/core/script/OTSmartContract.hpp>
@@ -98,7 +100,7 @@ Settings::Settings(QWidget *parent) :
     ui->lineEditNotaryId->setContextMenuPolicy(Qt::CustomContextMenu);
 
     // ----------------------------------------------
-    ui->plainTextEditSeed->setPlainText(QString::fromStdString(opentxs::SwigWrap::OTAPI()->Wallet_GetWords()));
+    ui->plainTextEditSeed->setPlainText(QString::fromStdString(opentxs::OT::App().API().OTAPI().Wallet_GetWords()));
 }
 
 Settings::~Settings()
@@ -196,7 +198,7 @@ void Settings::on_pushButton_clicked()
     const QString NymID    = ui->lineEditNymId   ->text();
     const QString NotaryID = ui->lineEditNotaryId->text();
     // ---------------------------
-    opentxs::NumList numlistCronIds ( opentxs::SwigWrap::Exec()->GetNym_ActiveCronItemIDs(NymID   .toStdString(),
+    opentxs::NumList numlistCronIds ( opentxs::OT::App().API().Exec().GetNym_ActiveCronItemIDs(NymID   .toStdString(),
                                                                                           NotaryID.toStdString()) );
     std::set<int64_t> cronIds;
     const bool bIdsArePresent = numlistCronIds.Output(cronIds);
@@ -214,7 +216,7 @@ void Settings::on_pushButton_clicked()
         QString qstrMyColumn1, qstrMyColumn2;
         // --------------------------------------
         const auto strCronItem =
-            opentxs::String(opentxs::SwigWrap::Exec()->GetActiveCronItem(
+            opentxs::String(opentxs::OT::App().API().Exec().GetActiveCronItem(
                 NotaryID.toStdString(),
                 cronId));
 
@@ -287,7 +289,7 @@ void Settings::on_pushButton_clicked()
 
                     if ( !str_asset_type.empty() )
                     {
-                        str_formatted = opentxs::SwigWrap::Exec()->FormatAmount(str_asset_type, initialPaymentAmount);
+                        str_formatted = opentxs::OT::App().API().Exec().FormatAmount(str_asset_type, initialPaymentAmount);
                         bFormatted = !str_formatted.empty();
                     }
                     // ----------------------------------------
@@ -398,7 +400,7 @@ void Settings::on_pushButtonPair_clicked()
         errorMessage = tr("SNP admin password not available from pairing cable (in this case, from settings UI).");
     }
     // -----------------------------------
-    const std::string str_introduction_notary_id{opentxs::SwigWrap::Get_Introduction_Server()};
+    const std::string str_introduction_notary_id{opentxs::String(opentxs::OT::App().API().OTME_TOO().GetIntroductionServer()).Get()};
 
     if (str_introduction_notary_id.empty()) {
         errorMessage = tr("Introduction Notary Id not available.");
@@ -414,7 +416,7 @@ void Settings::on_pushButtonPair_clicked()
     // so we can go ahead and start pairing. (Or see how much is already done,
     // if it's already been started.)
     //
-    const bool bPairNode = opentxs::SwigWrap::Pair_Node(qstrUserNymID.toStdString(), qstrBridgeNymID.toStdString(), qstrAdminPassword.toStdString());
+    const bool bPairNode = opentxs::OT::App().API().OTME_TOO().PairNode(qstrUserNymID.toStdString(), qstrBridgeNymID.toStdString(), qstrAdminPassword.toStdString());
 
     if (!bPairNode) {
         QMessageBox::warning(this, tr("Moneychanger"), tr("Pairing failed."));

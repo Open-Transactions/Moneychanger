@@ -17,16 +17,18 @@
 #include <core/handlers/modelmessages.hpp>
 #include <core/handlers/focuser.h>
 
+#include <opentxs/core/Version.hpp>
+#include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/OT.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OTME_too.hpp>
+#include <opentxs/client/OTRecordList.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
-#include <opentxs/client/SwigWrap.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/OTTransaction.hpp>
 #include <opentxs/core/OTTransactionType.hpp>
-#include <opentxs/client/OTRecordList.hpp>
 
 #include <QLabel>
 #include <QDebug>
@@ -867,7 +869,7 @@ void Messages::RefreshTree()
 //                        {
 //                            qstrMethodName = tr("Notary");
 //                            // ------------------------------
-//                            QString qstrTemp = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(qstrViaTransport.toStdString()));
+//                            QString qstrTemp = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrViaTransport.toStdString()));
 //                            if (!qstrTemp.isEmpty())
 //                                qstrTransportName = qstrTemp;
 //                        }
@@ -1529,7 +1531,7 @@ void Messages::on_toolButtonReply_clicked()
             // ---------------------------------------
             if (!str_other_contact_id.empty()) // An opentxs contact was found for the recipient Nym.
             {
-                if (0 == opentxs::SwigWrap::Can_Message(myNymID.toStdString(), str_other_contact_id))
+                if (opentxs::Messagability::READY == opentxs::OT::App().API().OTME_TOO().CanMessage(myNymID.toStdString(), str_other_contact_id))
                 {
                     bCanMessage = true;
                     compose_window->setInitialRecipientContactID(qstrOtherContactId, otherAddress);

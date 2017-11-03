@@ -9,13 +9,14 @@
 
 #include <core/handlers/modelpayments.hpp>
 
-#include <opentxs/core/OTStorage.hpp>
-#include <opentxs/client/SwigWrap.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/Version.hpp>
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_ME.hpp>
-#include <opentxs/core/util/OTPaths.hpp>
-
+#include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OTRecordList.hpp>
+#include <opentxs/core/util/OTPaths.hpp>
+#include <opentxs/core/OTStorage.hpp>
 
 #include <QDebug>
 #include <QtGlobal>
@@ -229,7 +230,7 @@ QWidget * AccountRecordsProxyModel::CreateDetailHeaderWidget(const int nSourceRo
 
     if ( !qstrAssetId.isEmpty() )
     {
-        str_formatted = opentxs::SwigWrap::Exec()->FormatAmount(qstrAssetId.toStdString(), lAmount);
+        str_formatted = opentxs::OT::App().API().Exec().FormatAmount(qstrAssetId.toStdString(), lAmount);
         bFormatted = !str_formatted.empty();
     }
     // ----------------------------------------
@@ -351,7 +352,7 @@ QVariant AccountRecordsProxyModel::data ( const QModelIndex & index, int role/* 
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetNym_Name(str_id);
+                str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetNym_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())
@@ -367,7 +368,7 @@ QVariant AccountRecordsProxyModel::data ( const QModelIndex & index, int role/* 
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetAccountWallet_Name(str_id);
+                str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())
@@ -457,7 +458,7 @@ QVariant AccountRecordsProxyModel::data ( const QModelIndex & index, int role/* 
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString() : "";
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetServer_Name(str_id);
+            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetServer_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -479,11 +480,11 @@ QVariant AccountRecordsProxyModel::data ( const QModelIndex & index, int role/* 
             QModelIndex sibling   = sourceIndex.sibling(sourceIndex.row(), PMNT_SOURCE_COL_MY_ASSET_TYPE);
             QString qstrAssetType = sourceModel()->data(sibling,role).isValid() ? sourceModel()->data(sibling,role).toString() : QString("");
 
-            QString qstrAmount = QString::fromStdString(opentxs::SwigWrap::Exec()->LongToString(lAmount));
+            QString qstrAmount = QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lAmount));
 
             if (!qstrAssetType.isEmpty())
             {
-                QString qstrTemp = QString::fromStdString(opentxs::SwigWrap::Exec()->FormatAmount(qstrAssetType.toStdString(), lAmount));
+                QString qstrTemp = QString::fromStdString(opentxs::OT::App().API().Exec().FormatAmount(qstrAssetType.toStdString(), lAmount));
                 if (!qstrTemp.isEmpty())
                     qstrAmount = qstrTemp;
             }
@@ -494,7 +495,7 @@ QVariant AccountRecordsProxyModel::data ( const QModelIndex & index, int role/* 
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString() : "";
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetAssetType_Name(str_id);
+            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetAssetType_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -780,8 +781,8 @@ bool AccountRecordsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex
 
         const int64_t lTxnId               = dataTxnId.isValid() ? dataTxnId.toLongLong() : 0;
         const int64_t lTxnIdDisplay        = dataTxnIdDisplay.isValid() ? dataTxnIdDisplay.toLongLong() : 0;
-        const QString qstrTxnId            = lTxnId        > 0 ? QString::fromStdString(opentxs::SwigWrap::Exec()->LongToString(lTxnId       )) : "";
-        const QString qstrTxnIdDisplay     = lTxnIdDisplay > 0 ? QString::fromStdString(opentxs::SwigWrap::Exec()->LongToString(lTxnIdDisplay)) : "";
+        const QString qstrTxnId            = lTxnId        > 0 ? QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lTxnId       )) : "";
+        const QString qstrTxnIdDisplay     = lTxnIdDisplay > 0 ? QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lTxnIdDisplay)) : "";
         const QString qstrMyNym            = dataMyNym.isValid() ? dataMyNym.toString() : "";
         const QString qstrMyAcct           = dataMyAcct.isValid() ? dataMyAcct.toString() : "";
         const QString qstrAssetType        = dataAssetType.isValid() ? dataAssetType.toString() : "";
@@ -807,12 +808,12 @@ bool AccountRecordsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex
             const QString qstrDescription = dataDescription.isValid() ? dataDescription.toString() : "";
 
             const QString qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(qstrNotaryID.toStdString()));
+                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrNotaryID.toStdString()));
 
             const QString qstrMyAcctName = qstrMyAcct.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::SwigWrap::Exec()->GetAccountWallet_Name(qstrMyAcct.toStdString()));
+                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(qstrMyAcct.toStdString()));
             const QString qstrAssetName = qstrAssetType.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_Name(qstrAssetType.toStdString()));
+                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrAssetType.toStdString()));
 
             MTNameLookupQT theLookup;
             QString qstrMyName        = qstrMyNym       .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrMyNym       .toStdString(), ""));
@@ -1103,7 +1104,7 @@ QWidget * PaymentsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, boo
 
     if ( !qstrAssetId.isEmpty() )
     {
-        str_formatted = opentxs::SwigWrap::Exec()->FormatAmount(qstrAssetId.toStdString(), lAmount);
+        str_formatted = opentxs::OT::App().API().Exec().FormatAmount(qstrAssetId.toStdString(), lAmount);
         bFormatted = !str_formatted.empty();
     }
     // ----------------------------------------
@@ -1225,7 +1226,7 @@ QVariant PaymentsProxyModel::data ( const QModelIndex & index, int role/* = Qt::
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetNym_Name(str_id);
+                str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetNym_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())
@@ -1241,7 +1242,7 @@ QVariant PaymentsProxyModel::data ( const QModelIndex & index, int role/* = Qt::
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetAccountWallet_Name(str_id);
+                str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())
@@ -1331,7 +1332,7 @@ QVariant PaymentsProxyModel::data ( const QModelIndex & index, int role/* = Qt::
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString() : "";
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetServer_Name(str_id);
+            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetServer_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -1353,11 +1354,11 @@ QVariant PaymentsProxyModel::data ( const QModelIndex & index, int role/* = Qt::
             QModelIndex sibling   = sourceIndex.sibling(sourceIndex.row(), PMNT_SOURCE_COL_MY_ASSET_TYPE);
             QString qstrAssetType = sourceModel()->data(sibling,role).isValid() ? sourceModel()->data(sibling,role).toString() : QString("");
 
-            QString qstrAmount = QString::fromStdString(opentxs::SwigWrap::Exec()->LongToString(lAmount));
+            QString qstrAmount = QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lAmount));
 
             if (!qstrAssetType.isEmpty())
             {
-                QString qstrTemp = QString::fromStdString(opentxs::SwigWrap::Exec()->FormatAmount(qstrAssetType.toStdString(), lAmount));
+                QString qstrTemp = QString::fromStdString(opentxs::OT::App().API().Exec().FormatAmount(qstrAssetType.toStdString(), lAmount));
                 if (!qstrTemp.isEmpty())
                     qstrAmount = qstrTemp;
             }
@@ -1368,7 +1369,7 @@ QVariant PaymentsProxyModel::data ( const QModelIndex & index, int role/* = Qt::
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString() : "";
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetAssetType_Name(str_id);
+            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetAssetType_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -1682,8 +1683,8 @@ bool PaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
 
         const int64_t lTxnId               = dataTxnId.isValid() ? dataTxnId.toLongLong() : 0;
         const int64_t lTxnIdDisplay        = dataTxnIdDisplay.isValid() ? dataTxnIdDisplay.toLongLong() : 0;
-        const QString qstrTxnId            = lTxnId        > 0 ? QString::fromStdString(opentxs::SwigWrap::Exec()->LongToString(lTxnId       )) : "";
-        const QString qstrTxnIdDisplay     = lTxnIdDisplay > 0 ? QString::fromStdString(opentxs::SwigWrap::Exec()->LongToString(lTxnIdDisplay)) : "";
+        const QString qstrTxnId            = lTxnId        > 0 ? QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lTxnId       )) : "";
+        const QString qstrTxnIdDisplay     = lTxnIdDisplay > 0 ? QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lTxnIdDisplay)) : "";
         const QString qstrMyNym            = dataMyNym.isValid() ? dataMyNym.toString() : "";
         const QString qstrMyAcct           = dataMyAcct.isValid() ? dataMyAcct.toString() : "";
         const QString qstrAssetType        = dataAssetType.isValid() ? dataAssetType.toString() : "";
@@ -1704,12 +1705,12 @@ bool PaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
             const QString qstrDescription = dataDescription.isValid() ? dataDescription.toString() : "";
 
             const QString qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(qstrNotaryID.toStdString()));
+                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrNotaryID.toStdString()));
 
             const QString qstrMyAcctName = qstrMyAcct.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::SwigWrap::Exec()->GetAccountWallet_Name(qstrMyAcct.toStdString()));
+                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(qstrMyAcct.toStdString()));
             const QString qstrAssetName = qstrAssetType.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_Name(qstrAssetType.toStdString()));
+                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrAssetType.toStdString()));
 
             MTNameLookupQT theLookup;
             QString qstrMyName        = qstrMyNym       .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrMyNym       .toStdString(), ""));
@@ -2105,7 +2106,7 @@ QWidget * ActivityPaymentsProxyModel::CreateDetailHeaderWidget(const int nSource
 
     if ( !qstrAssetId.isEmpty() )
     {
-        str_formatted = opentxs::SwigWrap::Exec()->FormatAmount(qstrAssetId.toStdString(), lAmount);
+        str_formatted = opentxs::OT::App().API().Exec().FormatAmount(qstrAssetId.toStdString(), lAmount);
         bFormatted = !str_formatted.empty();
     }
     // ----------------------------------------
@@ -2227,7 +2228,7 @@ QVariant ActivityPaymentsProxyModel::data ( const QModelIndex & index, int role/
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetNym_Name(str_id);
+                str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetNym_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())
@@ -2243,7 +2244,7 @@ QVariant ActivityPaymentsProxyModel::data ( const QModelIndex & index, int role/
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetAccountWallet_Name(str_id);
+                str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())
@@ -2333,7 +2334,7 @@ QVariant ActivityPaymentsProxyModel::data ( const QModelIndex & index, int role/
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString() : "";
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetServer_Name(str_id);
+            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetServer_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -2355,11 +2356,11 @@ QVariant ActivityPaymentsProxyModel::data ( const QModelIndex & index, int role/
             QModelIndex sibling   = sourceIndex.sibling(sourceIndex.row(), PMNT_SOURCE_COL_MY_ASSET_TYPE);
             QString qstrAssetType = sourceModel()->data(sibling,role).isValid() ? sourceModel()->data(sibling,role).toString() : QString("");
 
-            QString qstrAmount = QString::fromStdString(opentxs::SwigWrap::Exec()->LongToString(lAmount));
+            QString qstrAmount = QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lAmount));
 
             if (!qstrAssetType.isEmpty())
             {
-                QString qstrTemp = QString::fromStdString(opentxs::SwigWrap::Exec()->FormatAmount(qstrAssetType.toStdString(), lAmount));
+                QString qstrTemp = QString::fromStdString(opentxs::OT::App().API().Exec().FormatAmount(qstrAssetType.toStdString(), lAmount));
                 if (!qstrTemp.isEmpty())
                     qstrAmount = qstrTemp;
             }
@@ -2370,7 +2371,7 @@ QVariant ActivityPaymentsProxyModel::data ( const QModelIndex & index, int role/
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString() : "";
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = str_id.empty() ? "" : opentxs::SwigWrap::Exec()->GetAssetType_Name(str_id);
+            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetAssetType_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -2684,8 +2685,8 @@ bool ActivityPaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
 
         const int64_t lTxnId               = dataTxnId.isValid() ? dataTxnId.toLongLong() : 0;
         const int64_t lTxnIdDisplay        = dataTxnIdDisplay.isValid() ? dataTxnIdDisplay.toLongLong() : 0;
-        const QString qstrTxnId            = lTxnId        > 0 ? QString::fromStdString(opentxs::SwigWrap::Exec()->LongToString(lTxnId       )) : "";
-        const QString qstrTxnIdDisplay     = lTxnIdDisplay > 0 ? QString::fromStdString(opentxs::SwigWrap::Exec()->LongToString(lTxnIdDisplay)) : "";
+        const QString qstrTxnId            = lTxnId        > 0 ? QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lTxnId       )) : "";
+        const QString qstrTxnIdDisplay     = lTxnIdDisplay > 0 ? QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lTxnIdDisplay)) : "";
         const QString qstrMyNym            = dataMyNym.isValid() ? dataMyNym.toString() : "";
         const QString qstrMyAcct           = dataMyAcct.isValid() ? dataMyAcct.toString() : "";
         const QString qstrAssetType        = dataAssetType.isValid() ? dataAssetType.toString() : "";
@@ -2706,12 +2707,12 @@ bool ActivityPaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
             const QString qstrDescription = dataDescription.isValid() ? dataDescription.toString() : "";
 
             const QString qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(qstrNotaryID.toStdString()));
+                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrNotaryID.toStdString()));
 
             const QString qstrMyAcctName = qstrMyAcct.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::SwigWrap::Exec()->GetAccountWallet_Name(qstrMyAcct.toStdString()));
+                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(qstrMyAcct.toStdString()));
             const QString qstrAssetName = qstrAssetType.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_Name(qstrAssetType.toStdString()));
+                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrAssetType.toStdString()));
 
             MTNameLookupQT theLookup;
             QString qstrMyName        = qstrMyNym       .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrMyNym       .toStdString(), ""));

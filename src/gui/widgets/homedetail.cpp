@@ -15,9 +15,11 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
 
-#include <opentxs/client/SwigWrap.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/core/Version.hpp>
+#include <opentxs/api/Api.hpp>
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_ME.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Log.hpp>
 
 #include <QGridLayout>
@@ -426,11 +428,11 @@ QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
         // account in the first place.)
         // -----------------------------------
         str_acct_id      = qstr_acct_id.toStdString();
-        str_acct_nym     = opentxs::SwigWrap::Exec()->GetAccountWallet_NymID      (str_acct_id);
-        str_acct_server  = opentxs::SwigWrap::Exec()->GetAccountWallet_NotaryID   (str_acct_id);
-        str_acct_asset   = opentxs::SwigWrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+        str_acct_nym     = opentxs::OT::App().API().Exec().GetAccountWallet_NymID      (str_acct_id);
+        str_acct_server  = opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID   (str_acct_id);
+        str_acct_asset   = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
         // -----------------------------------
-        str_acct_type    = opentxs::SwigWrap::Exec()->GetAccountWallet_Type(str_acct_id);
+        str_acct_type    = opentxs::OT::App().API().Exec().GetAccountWallet_Type(str_acct_id);
         // -----------------------------------
         qstr_acct_nym    = QString::fromStdString(str_acct_nym);
         qstr_acct_server = QString::fromStdString(str_acct_server);
@@ -478,12 +480,12 @@ QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
         // -----------------------------------------------
         mapIDName & the_map = theChooser.m_map;
         // -----------------------------------------------
-        const int32_t acct_count = opentxs::SwigWrap::Exec()->GetAccountCount();
+        const int32_t acct_count = opentxs::OT::App().API().Exec().GetAccountCount();
         // -----------------------------------------------
         for (int32_t ii = 0; ii < acct_count; ++ii)
         {
             //Get OT Acct ID
-            QString OT_acct_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAccountWallet_ID(ii));
+            QString OT_acct_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_ID(ii));
             QString OT_acct_name("");
             // -----------------------------------------------
             if (!OT_acct_id.isEmpty()) // Should never be empty.
@@ -491,11 +493,11 @@ QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
                 qstr_acct_id     = OT_acct_id;
                 // -----------------------------------
                 str_acct_id      = qstr_acct_id.toStdString();
-                str_acct_nym     = opentxs::SwigWrap::Exec()->GetAccountWallet_NymID      (str_acct_id);
-                str_acct_server  = opentxs::SwigWrap::Exec()->GetAccountWallet_NotaryID   (str_acct_id);
-                str_acct_asset   = opentxs::SwigWrap::Exec()->GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+                str_acct_nym     = opentxs::OT::App().API().Exec().GetAccountWallet_NymID      (str_acct_id);
+                str_acct_server  = opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID   (str_acct_id);
+                str_acct_asset   = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
                 // -----------------------------------
-                str_acct_type    = opentxs::SwigWrap::Exec()->GetAccountWallet_Type(str_acct_id);
+                str_acct_type    = opentxs::OT::App().API().Exec().GetAccountWallet_Type(str_acct_id);
                 // -----------------------------------
                 qstr_acct_nym    = QString::fromStdString(str_acct_nym);
                 qstr_acct_server = QString::fromStdString(str_acct_server);
@@ -642,8 +644,8 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
 //                // -------------------------------------------
 //                QString qstr_current_id = qstr_default_id;
 //                // -------------------------------------------
-//                if (qstr_current_id.isEmpty() && (opentxs::SwigWrap::Exec()->GetNymCount() > 0))
-//                    qstr_current_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetNym_ID(0));
+//                if (qstr_current_id.isEmpty() && (opentxs::OT::App().API().Exec().GetNymCount() > 0))
+//                    qstr_current_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_ID(0));
 //                // -------------------------------------------
 //                // Select from Nyms in local wallet.
 //                //
@@ -653,11 +655,11 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
 //
 //                bool bFoundDefault = false;
 //                // -----------------------------------------------
-//                const int32_t the_count = opentxs::SwigWrap::Exec()->GetNymCount();
+//                const int32_t the_count = opentxs::OT::App().API().Exec().GetNymCount();
 //                // -----------------------------------------------
 //                for (int32_t ii = 0; ii < the_count; ++ii)
 //                {
-//                    QString OT_id = QString::fromStdString(opentxs::SwigWrap::Exec()->GetNym_ID(ii));
+//                    QString OT_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_ID(ii));
 //                    QString OT_name("");
 //                    // -----------------------------------------------
 //                    if (!OT_id.isEmpty())
@@ -665,7 +667,7 @@ void MTHomeDetail::on_acceptButton_clicked(bool checked /*=false*/)
 //                        if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
 //                            bFoundDefault = true;
 //                        // -----------------------------------------------
-//                        OT_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetNym_Name(OT_id.toStdString()));
+//                        OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(OT_id.toStdString()));
 //                        // -----------------------------------------------
 //                        the_map.insert(OT_id, OT_name);
 //                    }
@@ -1110,8 +1112,8 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(opentxs::OTRecord& recordmt, bo
     //
     if (recordmt.IsInvoice() || recordmt.IsPaymentPlan() || recordmt.IsNotice() ||
         ((0 == recordmt.GetInstrumentType().compare("chequeReceipt")) &&
-         (( recordmt.IsOutgoing() && (opentxs::SwigWrap::Exec()->StringToLong(recordmt.GetAmount()) > 0)) ||
-          (!recordmt.IsOutgoing() && (opentxs::SwigWrap::Exec()->StringToLong(recordmt.GetAmount()) < 0)))
+         (( recordmt.IsOutgoing() && (opentxs::OT::App().API().Exec().StringToLong(recordmt.GetAmount()) > 0)) ||
+          (!recordmt.IsOutgoing() && (opentxs::OT::App().API().Exec().StringToLong(recordmt.GetAmount()) < 0)))
          ))
         cellType = (recordmt.IsOutgoing() ?
                     (recordmt.IsPending() ?
@@ -1124,7 +1126,7 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(opentxs::OTRecord& recordmt, bo
     // --------------------------------------------------------------------------------------------
     if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
     {
-        const int64_t lAmount = opentxs::SwigWrap::Exec()->StringToAmount(recordmt.GetInstrumentDefinitionID(), recordmt.GetAmount());
+        const int64_t lAmount = opentxs::OT::App().API().Exec().StringToAmount(recordmt.GetInstrumentDefinitionID(), recordmt.GetAmount());
 
         cellType = (lAmount > 0) ? TransactionTableViewCellTypeReceived : TransactionTableViewCellTypeSent;
     }
@@ -1291,7 +1293,7 @@ QWidget * MTHomeDetail::CreateDetailHeaderWidget(opentxs::OTRecord& recordmt, bo
     //Calc/convert date/times
     QDateTime timestamp;
 
-    long lDate = opentxs::SwigWrap::Exec()->StringToLong(recordmt.GetDate());
+    long lDate = opentxs::OT::App().API().Exec().StringToLong(recordmt.GetDate());
 
     timestamp.setTime_t(lDate);
 
@@ -1435,7 +1437,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     QWidget * pHeader = MTHomeDetail::CreateDetailHeaderWidget(recordmt, false);
 
     if (NULL != pHeader)
-    {            
+    {
         pHeader->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
         m_pDetailLayout->addWidget(pHeader, nCurrentRow, nCurrentColumn, 1, 2);
         m_pDetailLayout->setAlignment(pHeader, Qt::AlignTop);
@@ -1983,7 +1985,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     {
         QLabel    * pLabel    = new QLabel(QString("%1: ").arg(tr("Server")));
 
-        QString qstr_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetServer_Name(qstr_NotaryID.toStdString()));
+        QString qstr_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstr_NotaryID.toStdString()));
 
         m_pLineEdit_notary_id       = new QLineEdit(qstr_NotaryID);
         m_pLineEdit_Server_Name     = new QLineEdit(qstr_name);
@@ -2011,7 +2013,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     {
         QLabel    * pLabel    = new QLabel(QString("%1: ").arg(tr("Asset Type")));
 
-        QString qstr_name = QString::fromStdString(opentxs::SwigWrap::Exec()->GetAssetType_Name(qstr_AssetTypeID.toStdString()));
+        QString qstr_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstr_AssetTypeID.toStdString()));
 
         m_pLineEdit_AssetType_ID    = new QLineEdit(qstr_AssetTypeID);
         m_pLineEdit_AssetType_Name  = new QLineEdit(qstr_name);
@@ -2129,7 +2131,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
             pTabWidget->addTab(pTab2Widget, tr("Contents"));
         }
         // -------------------------------
-    }    
+    }
 
 
     pTab1Widget->setLayout(m_pDetailLayout);
@@ -2149,7 +2151,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     {
         if (recordmt.HasInitialPayment() || recordmt.HasPaymentPlan())
         {
-            std::string str_asset_name = opentxs::SwigWrap::Exec()->GetAssetType_Name(recordmt.GetInstrumentDefinitionID().c_str());
+            std::string str_asset_name = opentxs::OT::App().API().Exec().GetAssetType_Name(recordmt.GetInstrumentDefinitionID().c_str());
             // ---------------------------------
             std::stringstream sss;
             sss << "Payments use the currency: " << str_asset_name << "\n";
@@ -2167,7 +2169,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
                 dateString = [formatter stringFromDate:[NSDate date]];
 
                 long        lAmount    = recordmt.GetInitialPaymentAmount();
-                std::string str_output = opentxs::SwigWrap::Exec()->FormatAmount(recordmt.GetInstrumentDefinitionID().c_str(),
+                std::string str_output = opentxs::OT::App().API().Exec().FormatAmount(recordmt.GetInstrumentDefinitionID().c_str(),
                                                                         static_cast<int64_t>(lAmount));
                 sss << "Initial payment of " << str_output << " due: " << dateString.UTF8String << "\n";
             }
@@ -2179,7 +2181,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
                 dateString = [formatter stringFromDate:[NSDate date]];
 
                 long        lAmount    = recordmt.GetPaymentPlanAmount();
-                std::string str_output = opentxs::SwigWrap::Exec()->FormatAmount(recordmt.GetInstrumentDefinitionID().c_str(),
+                std::string str_output = opentxs::OT::App().API().Exec().FormatAmount(recordmt.GetInstrumentDefinitionID().c_str(),
                                                                         static_cast<int64_t>(lAmount));
                 sss << "Recurring payments of " << str_output << " begin: " << dateString.UTF8String << " ";
                 // ----------------------------------------------------------------

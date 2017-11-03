@@ -7,6 +7,8 @@
 #include "rpcusermanager.h"
 
 #include <qjsonrpcservice.h>
+
+#include <opentxs/core/Version.hpp>
 #include <opentxs/client/OTRecordList.hpp>
 #include <opentxs/core/crypto/OTPassword.hpp>
 
