@@ -10,15 +10,16 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 
+#include <opentxs/api/OT.hpp>
 #include <opentxs/client/SwigWrap.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_API.hpp>
-
 #include <opentxs/core/cron/OTCronItem.hpp>
 #include <opentxs/core/recurring/OTPaymentPlan.hpp>
-#include <opentxs/core/NumList.hpp>
 #include <opentxs/core/script/OTSmartContract.hpp>
+#include <opentxs/core/NumList.hpp>
 #include <opentxs/ext/OTPayment.hpp>
+#include <opentxs/network/ZMQ.hpp>
 
 #include <QDir>
 #include <QMessageBox>
@@ -426,10 +427,8 @@ void Settings::on_pushButtonPair_clicked()
 void Settings::on_pushButtonSetSocksProxy_clicked()
 {
     const QString qstrProxy = ui->lineEditSocksProxy->text();
-    const std::string proxy_str = qstrProxy.toStdString();
-    const bool bOnOrOff = !qstrProxy.isEmpty();
-    const bool bSuccess = opentxs::SwigWrap::OTAPI()->SetSocksProxy(proxy_str, bOnOrOff);
-    const QString qstrSuccess = QString("%1.%2").arg(bSuccess ? tr("Success") : tr("Failure")).arg(bSuccess ? tr(" You may need to restart the application.") : QString(""));
+    const bool bSuccess = opentxs::OT::App().ZMQ().SetSocksProxy(qstrProxy.toStdString());
+    const QString qstrSuccess = QString("%1.%2").arg(bSuccess ? tr("Success") : tr("Failure")).arg(bSuccess ? tr("") : QString(""));
     QMessageBox::information(this, tr("Moneychanger"), qstrSuccess);
 }
 
