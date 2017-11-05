@@ -9,7 +9,6 @@
 #include <core/mtcomms.h>
 #include <core/moneychanger.hpp>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/OT.hpp>
@@ -24,7 +23,7 @@
 #include <opentxs/core/crypto/PaymentCode.hpp>
 #include <opentxs/core/NumList.hpp>
 #include <opentxs/core/OTStorage.hpp>
-#include <opentxs/core/Proto.hpp>
+#include <opentxs/Proto.hpp>
 
 #include <QDebug>
 #include <QObject>

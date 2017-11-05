@@ -7,7 +7,6 @@
 
 #include <gui/widgets/wizardaddcontract.hpp>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_API.hpp>
@@ -715,7 +714,7 @@ void MTServerDetails::refresh(QString strID, QString strName)
         ui->plainTextEditDetails->setPlainText(qstrDetails);
         // ----------------------------------
         auto contract =
-            opentxs::OT::App().Contract().Server(
+            opentxs::OT::App().Wallet().Server(
                 opentxs::Identifier(strID.toStdString()));
 
         if (!contract) { return; }

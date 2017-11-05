@@ -19,7 +19,6 @@
 #include <core/mtcomms.h>
 #include <core/moneychanger.hpp>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/core/Nym.hpp>
@@ -28,8 +27,8 @@
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OTME_too.hpp>
 #include <opentxs/core/NumList.hpp>
-#include <opentxs/core/Proto.hpp>
-#include <opentxs/core/Types.hpp>
+#include <opentxs/Proto.hpp>
+#include <opentxs/Types.hpp>
 
 #include <namecoin/Namecoin.hpp>
 
@@ -220,7 +219,7 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
 
     if (!str_nym_id.empty())
     {
-        auto pCurrentNym = opentxs::OT::App().Contract().Nym(id_nym);
+        auto pCurrentNym = opentxs::OT::App().Wallet().Nym(id_nym);
 //        const opentxs::Nym * pCurrentNym =
 //            opentxs::OT::App().API().OTAPI().GetOrLoadNym(id_nym);
 

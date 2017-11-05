@@ -17,7 +17,6 @@
 #include <core/handlers/modelmessages.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/OT.hpp>

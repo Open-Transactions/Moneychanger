@@ -11,7 +11,6 @@
 
 #include <bitcoin-api/btctest.hpp>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/core/Log.hpp>
 
 

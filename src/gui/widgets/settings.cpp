@@ -10,7 +10,6 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_API.hpp>

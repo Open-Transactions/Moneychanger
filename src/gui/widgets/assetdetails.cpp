@@ -11,13 +11,12 @@
 
 #include <core/moneychanger.hpp>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OTME_too.hpp>
-#include <opentxs/core/Proto.hpp>
+#include <opentxs/Proto.hpp>
 
 #include <QPlainTextEdit>
 #include <QMessageBox>

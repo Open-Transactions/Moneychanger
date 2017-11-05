@@ -22,7 +22,6 @@
 #include <core/mtcomms.h>
 
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/OT.hpp>
@@ -34,7 +33,7 @@
 #include <opentxs/contact/ContactData.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
 #include <opentxs/core/Nym.hpp>
-#include <opentxs/core/Types.hpp>
+#include <opentxs/Types.hpp>
 
 
 #include <QComboBox>
@@ -1186,7 +1185,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
         if (!str_nym_id.empty())
         {
-            auto pCurrentNym = opentxs::OT::App().Contract().Nym(id_nym);
+            auto pCurrentNym = opentxs::OT::App().Wallet().Nym(id_nym);
 //          const opentxs::Nym * pCurrentNym =
 //                opentxs::OT::App().API().OTAPI().GetOrLoadNym(id_nym);
 
@@ -1213,7 +1212,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
                     if (1 == nReturnVal)
                     {
-                        pCurrentNym = opentxs::OT::App().Contract().Nym(id_nym);
+                        pCurrentNym = opentxs::OT::App().Wallet().Nym(id_nym);
 //                      pCurrentNym = opentxs::OT::App().API().OTAPI().reloadAndGetNym(id_nym);
                         bANymWasChecked = true;
                         emit nymWasJustChecked(qstrNymID);
