@@ -1,7 +1,6 @@
 #ifndef MONEYCHANGER_HPP
 #define MONEYCHANGER_HPP
 
-#include <opentxs/core/Version.hpp>
 
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
@@ -10,9 +9,8 @@
 
 #include <core/handlers/focuser.h>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/client/OTRecordList.hpp>
-#include <opentxs/core/Proto.hpp>
+#include <opentxs/Proto.hpp>
 
 #include <namecoin/Namecoin.hpp>
 

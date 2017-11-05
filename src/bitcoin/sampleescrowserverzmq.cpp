@@ -5,7 +5,6 @@
 
 #include <bitcoin-api/btchelper.hpp>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/core/Log.hpp>
 
 //#ifdef OT_USE_ZMQ4

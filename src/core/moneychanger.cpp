@@ -58,7 +58,6 @@
 #include <gui/ui/agreements.hpp>
 #include <gui/ui/activity.hpp>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/OT.hpp>

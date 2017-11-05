@@ -7,7 +7,6 @@
 
 #include <core/modules.hpp>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/core/Log.hpp>
 
 #include <QTimer>

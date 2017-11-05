@@ -20,7 +20,6 @@
 #include <core/handlers/modelpayments.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
@@ -33,7 +32,7 @@
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/OTTransaction.hpp>
 #include <opentxs/core/OTTransactionType.hpp>
-#include <opentxs/core/Types.hpp>
+#include <opentxs/Types.hpp>
 
 #include <QLabel>
 #include <QDebug>

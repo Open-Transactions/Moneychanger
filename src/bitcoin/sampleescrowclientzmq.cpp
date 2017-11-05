@@ -2,7 +2,6 @@
 
 #include <zmq.hpp>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/OTLog.hpp>
 
 SampleEscrowClientZmq::SampleEscrowClientZmq()
