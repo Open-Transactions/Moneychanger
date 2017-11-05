@@ -220,7 +220,7 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
 
     if (!str_nym_id.empty())
     {
-        auto pCurrentNym = opentxs::OT::App().Contract().Nym(id_nym);
+        auto pCurrentNym = opentxs::OT::App().Wallet().Nym(id_nym);
 //        const opentxs::Nym * pCurrentNym =
 //            opentxs::OT::App().API().OTAPI().GetOrLoadNym(id_nym);
 

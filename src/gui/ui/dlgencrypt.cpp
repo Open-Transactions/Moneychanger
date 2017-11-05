@@ -414,7 +414,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                             opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
 
                             auto pNym =
-                                opentxs::OT::App().Contract().Nym(signer_nym_id);
+                                opentxs::OT::App().Wallet().Nym(signer_nym_id);
                             if (!pNym)
                             {
                                 QString qstrErrorMsg = QString("%1: %2").

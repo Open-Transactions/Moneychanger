@@ -1186,7 +1186,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
         if (!str_nym_id.empty())
         {
-            auto pCurrentNym = opentxs::OT::App().Contract().Nym(id_nym);
+            auto pCurrentNym = opentxs::OT::App().Wallet().Nym(id_nym);
 //          const opentxs::Nym * pCurrentNym =
 //                opentxs::OT::App().API().OTAPI().GetOrLoadNym(id_nym);
 
@@ -1213,7 +1213,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
 
                     if (1 == nReturnVal)
                     {
-                        pCurrentNym = opentxs::OT::App().Contract().Nym(id_nym);
+                        pCurrentNym = opentxs::OT::App().Wallet().Nym(id_nym);
 //                      pCurrentNym = opentxs::OT::App().API().OTAPI().reloadAndGetNym(id_nym);
                         bANymWasChecked = true;
                         emit nymWasJustChecked(qstrNymID);

@@ -210,7 +210,7 @@ void Moneychanger::process_peer_replies()
 
 void Moneychanger::process_peer_replies_forNym(const opentxs::Identifier & nymID)
 {
-    const auto& wallet = opentxs::OT::App().Contract();
+    const auto& wallet = opentxs::OT::App().Wallet();
     auto replies = wallet.PeerReplyIncoming(nymID);
 
     for (const auto& it : replies) {
@@ -267,7 +267,7 @@ void Moneychanger::process_peer_replies_forNym(const opentxs::Identifier & nymID
 
 void Moneychanger::process_peer_requests_forNym(const opentxs::Identifier & nymID)
 {
-    const auto& wallet = opentxs::OT::App().Contract();
+    const auto& wallet = opentxs::OT::App().Wallet();
     auto requests = wallet.PeerRequestIncoming(nymID);
 
     for (const auto& it : requests) {
@@ -381,7 +381,7 @@ void Moneychanger::process_request_bailment_reply(
 
     }
 
-    opentxs::OT::App().Contract().PeerRequestComplete(nymID, replyID);
+    opentxs::OT::App().Wallet().PeerRequestComplete(nymID, replyID);
 }
 
 
@@ -404,7 +404,7 @@ void Moneychanger::process_store_secret_reply(
                        << std::endl;
     }
 
-    opentxs::OT::App().Contract().PeerRequestComplete(nymID, replyID);
+    opentxs::OT::App().Wallet().PeerRequestComplete(nymID, replyID);
 }
 
 
@@ -413,7 +413,7 @@ void Moneychanger::process_connection_info_reply(
     const opentxs::Identifier & nymID,
     const opentxs::proto::PeerReply& reply)
 {
-    auto& wallet = opentxs::OT::App().Contract();
+    auto& wallet = opentxs::OT::App().Wallet();
     const auto& id = reply.id();
     const opentxs::Identifier replyID(id);
     const opentxs::Identifier requestID(reply.cookie());
@@ -483,7 +483,7 @@ void Moneychanger::process_connection_info_reply(
                        << "Key: " << key << std::endl;
     }
 
-    opentxs::OT::App().Contract().PeerRequestComplete(nymID, replyID);
+    opentxs::OT::App().Wallet().PeerRequestComplete(nymID, replyID);
 }
 
 
@@ -6544,7 +6544,7 @@ void Moneychanger::onNewAssetAdded(QString qstrID)
 
 void Moneychanger::PublicNymNotify(std::string id)
 {
-        auto pNym = opentxs::OT::App().Contract().Nym(opentxs::Identifier(id));
+        auto pNym = opentxs::OT::App().Wallet().Nym(opentxs::Identifier(id));
 
         if (pNym)
         {
@@ -6564,7 +6564,7 @@ void Moneychanger::PublicNymNotify(std::string id)
 void Moneychanger::ServerContractNotify(std::string id)
 {
     auto pContract =
-        opentxs::OT::App().Contract().Server(opentxs::Identifier(id));
+        opentxs::OT::App().Wallet().Server(opentxs::Identifier(id));
 
     if (pContract) {
         qDebug() << "I was notified that the DHT downloaded contract "
@@ -6583,7 +6583,7 @@ void Moneychanger::AssetContractNotify(std::string id)
 {
     const opentxs::Identifier ot_id(id);
 
-    auto pContract = opentxs::OT::App().Contract().UnitDefinition(ot_id);
+    auto pContract = opentxs::OT::App().Wallet().UnitDefinition(ot_id);
 
     if (pContract) {
         qDebug() << "I was notified that the DHT downloaded contract "

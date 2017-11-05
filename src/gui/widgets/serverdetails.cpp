@@ -715,7 +715,7 @@ void MTServerDetails::refresh(QString strID, QString strName)
         ui->plainTextEditDetails->setPlainText(qstrDetails);
         // ----------------------------------
         auto contract =
-            opentxs::OT::App().Contract().Server(
+            opentxs::OT::App().Wallet().Server(
                 opentxs::Identifier(strID.toStdString()));
 
         if (!contract) { return; }
