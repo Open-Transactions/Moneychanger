@@ -8,11 +8,12 @@
 #include <gui/widgets/compose.hpp>
 #include <gui/ui/dlgexportedtopass.hpp>
 #include <gui/ui/dlgexportedcash.hpp>
+#include <gui/ui/dlgoutbailment.hpp>
+#include <gui/ui/getstringdialog.hpp>
 
 #include <gui/widgets/home.hpp>
 #include <gui/widgets/dlgchooser.hpp>
 #include <gui/widgets/qrwidget.hpp>
-#include <gui/ui/getstringdialog.hpp>
 
 #include <core/moneychanger.hpp>
 #include <core/handlers/DBHandler.hpp>
@@ -20,19 +21,24 @@
 #include <core/handlers/modelpayments.hpp>
 #include <core/handlers/focuser.h>
 
+#include <opentxs/core/Version.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/OT.hpp>
+#include <opentxs/api/Wallet.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
+#include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTME_too.hpp>
 #include <opentxs/client/OTRecordList.hpp>
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/OTTransaction.hpp>
 #include <opentxs/core/OTTransactionType.hpp>
 #include <opentxs/Types.hpp>
+
 
 #include <QLabel>
 #include <QDebug>
@@ -556,7 +562,7 @@ void Activity::RefreshAccountTree()
             const std::string str_name = contractProto.has_name() ? contractProto.name() : "";
             const QString qstrName(QString::fromStdString(str_name));
             const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
-            const QString qstrSymbol(QString::fromStdString(str_symbol));
+            const QString qstrSymbol = QString::fromUtf8(str_symbol.c_str());
 
             QTreeWidgetItem * pCurrencyCodeWidgetItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrName) << qstrSymbol<< qstrFormattedAmount << QStringList(qstrCurrencyCode));
             items.append(pCurrencyCodeWidgetItem);
@@ -3855,6 +3861,100 @@ void Activity::resetPopupMenus()
     pActionContactPay          = nullptr;
     pActionContactInvoice      = nullptr;
     pActionContactRecurring    = nullptr;
+
+    pActionBailment            = nullptr;
+    pActionOutbailment         = nullptr;
+}
+
+/// Returns true if it found ANY.
+/// Otherwise returns false.
+///
+/// bigMapAccountsByServer contains all the account IDs in the wallet, mapped by server ID.
+/// We want to loop through all the accounts for a particular server, qstrServerId, and nym (str_my_nym_id).
+/// We want to get a map of the unit types used by those accounts, with the TLA of each.
+/// We also want to get a map of all the TLAs used by those accounts, with a map of asset types for each.
+/// Each of those maps of asset types gives us the issuer nym Id for each asset type.
+///
+bool Activity::GetUnitAndTLAMapForAccountsOnServer(mapIDName& mapUnitTLA, // output
+                                                   mapOfMapIDName& bigMapAccountsByServer, // data being searched (input)
+                                                   mapOfMapIDName& bigMapAssetsByTLA, // primary output
+                                                   QString qstrServerId, // primary input
+                                                   const std::string & str_my_nym_id)
+{
+    bool bFoundSome = false;
+
+    // So let's see if there are any accounts for that server Id.
+    mapOfMapIDName::const_iterator ci_paired = bigMapAccountsByServer.find(qstrServerId);
+
+    if (ci_paired != bigMapAccountsByServer.end() && (0 == qstrServerId.compare(ci_paired.key()))) // Found some.
+    {
+        const mapIDName & mapAccounts = ci_paired.value();
+        mapIDName::const_iterator ci_accounts = mapAccounts.begin();
+        while (ci_accounts != mapAccounts.end())
+        {
+            const QString qstrAccountId = ci_accounts.key();
+            const std::string str_acct_id = qstrAccountId.toStdString();
+            const std::string str_current_nym_id = opentxs::OT::App().API().Exec().GetAccountWallet_NymID(str_acct_id);
+
+            if (0 != str_current_nym_id.compare(str_my_nym_id)) {
+                continue;
+            }
+            // ---------------------------------
+            const std::string str_asset_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+            const QString qstrUnitTypeId = QString::fromStdString(str_asset_id);
+            const QString qstrTLA = QString::fromStdString(opentxs::OT::App().API().Exec().GetCurrencyTLA(str_asset_id));
+            // ---------------------------------
+            mapIDName::iterator it_unit_type = mapUnitTLA.find(qstrUnitTypeId);
+
+            if (it_unit_type != mapUnitTLA.end() && it_unit_type.key() == qstrUnitTypeId) {
+                // TRhe unit type is already there. (Which is to be expected, since many
+                // users will have multiple accounts of the same asset type).
+                //
+            }
+            else { // It's not already there. Let's add it.
+                // This map tracks the TLA for each unit type.
+                mapUnitTLA.insert(qstrUnitTypeId, qstrTLA);
+                bFoundSome = true;
+            }
+            // ---------------------------------
+            const opentxs::Identifier asset_id(str_asset_id);
+            opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Contract().UnitDefinition(asset_id);
+            opentxs::ConstNym issuer_nym = unit_definition->Nym();
+            const opentxs::Identifier & issuer_nym_id = issuer_nym->ID();
+            const opentxs::String strIssuerNymId(issuer_nym_id);
+            const std::string str_issuer_nym_id(strIssuerNymId.Get());
+            const QString qstrIssuerNymId(QString::fromStdString(str_issuer_nym_id));
+
+            // This map tracks a list of assets for each TLA.
+            //
+            mapOfMapIDName::iterator it_TLA = bigMapAssetsByTLA.find(qstrTLA);
+
+            if (it_TLA != bigMapAssetsByTLA.end() && (0 == qstrTLA.compare(it_TLA.key()))) {
+                // There's a map of assets existing for the TLA searched.
+                mapIDName & mapAssets = it_TLA.value();
+                // Let's see if our unit type is already on that map...
+                mapIDName::iterator it_assets = mapAssets.find(qstrUnitTypeId);
+                if (it_assets != mapAssets.end() && (0 == qstrUnitTypeId.compare(it_assets.key()))) {
+                    // It's already there.
+                }
+                else { // Add our unit type to the map of unit types for that TLA.
+                    // The map connects unit type to issuer nym id.
+                    mapAssets.insert(qstrUnitTypeId, qstrIssuerNymId);
+                }
+            }
+            else { // There's not (yet) a map of assets in existence for the TLA searched.
+                // Let's create it, and add the unit/issuer pair to it.
+                //
+                bigMapAssetsByTLA[qstrTLA] = mapIDName{};
+                it_TLA = bigMapAssetsByTLA.find(qstrTLA);
+                mapIDName & mapAssets = it_TLA.value();
+                mapAssets.insert(qstrUnitTypeId, qstrIssuerNymId);
+            }
+            // ---------------------------------
+            ci_accounts++;
+        }
+    }
+    return bFoundSome;
 }
 
 /*
@@ -3972,6 +4072,12 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     resetPopupMenus();
     popupMenuAccounts_.reset(new QMenu(this));
     // --------------------------------------------------
+    const bool bSelectedSNP = (AC_NODE_TYPE_SNP_NOTARY  == nTreeNodeType)
+                           || (AC_NODE_TYPE_SNP_ACCOUNT == nTreeNodeType);
+    // --------------------------------------------------
+    const bool bSelectedHosted = (AC_NODE_TYPE_HOSTED_NOTARY  == nTreeNodeType)
+                              || (AC_NODE_TYPE_HOSTED_ACCOUNT == nTreeNodeType);
+    // --------------------------------------------------
     const bool bSelectedNotary = !qstrServerId.isEmpty() &&
                                  (   AC_NODE_TYPE_SNP_NOTARY    == nTreeNodeType
                                   || AC_NODE_TYPE_HOSTED_NOTARY == nTreeNodeType );
@@ -4021,6 +4127,12 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     }
     popupMenuAccounts_->addSeparator();
     // --------------------------------------------------
+    if (bSelectedNotary || bSelectedAccount) {
+        pActionBailment    = popupMenuAccounts_->addAction(tr("Deposit (from blockchain)"));
+        pActionOutbailment = popupMenuAccounts_->addAction(tr("Withdraw (to blockchain)"));
+        popupMenuAccounts_->addSeparator();
+    }
+    // --------------------------------------------------
     if (nullptr == pActionManageContacts && nullptr == pActionViewContact) {
         pActionManageContacts = popupMenuAccounts_->addAction(tr("Manage contacts"));
     }
@@ -4041,12 +4153,12 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     popupMenuAccounts_->addSeparator();
     // --------------------------------------------------
     pActionPairWithSNP = popupMenuAccounts_->addAction(tr("Pair a Stash Node Pro"));
-    // --------------------------------------------------
+    // ==============================================================================
     QPoint globalPos = pTreeWidget->mapToGlobal(pos);
     const QAction* selectedAction = popupMenuAccounts_->exec(globalPos); // Here we popup the menu, and get the user's click.
     if (nullptr == selectedAction)
         return;
-    // ----------------------------------
+    // ==============================================================================
     if (selectedAction == pActionViewContact)
     {
         if (nullptr != pTreeItem)
@@ -4056,37 +4168,41 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
         {
             emit showContact(qstrContactId);
         }
-        return;
     }
     // ----------------------------------
     // Merge 2 existing opentxs contacts together.
     //
     else if (selectedAction == pActionExistingContact)
     {
+        popupMenuAccounts_->close();
+
         if (nullptr != pTreeItem)
             pTreeItem->setSelected(true);
 
         // This should never happen since we wouldn't even have gotten this menu option
         // in the first place, unless contact ID had been 0.
-        if (qstrContactId.isEmpty())
+        if (qstrContactId.isEmpty()) {
             return;
+        }
 
         // TODO:  Make sure there are 2 or more Contacts selected first?
 
         // Then call Justus new Contact merging function.
 
         // until then...
-
-        return;
+        qDebug() << "TOD: ******** Merging contacts. *********";
     }
     // ----------------------------------
     else if (selectedAction == pActionDownloadCredentials)
     {
+        popupMenuAccounts_->close();
+
         if (nullptr != pTreeItem)
             pTreeItem->setSelected(true);
 
-        if (qstrContactId.isEmpty())
+        if (qstrContactId.isEmpty()) {
             return;
+        }
 
         if (str_my_nym_id.empty()) {
             qDebug() << "Unable to download credentials without a default Nym ID being set";
@@ -4100,13 +4216,16 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     // ----------------------------------------------
     else if (selectedAction == pActionCreateContact)
     {
+        popupMenuAccounts_->close();
+
         if (nullptr != pTreeItem)
             pTreeItem->setSelected(true);
 
         MTGetStringDialog nameDlg(this, tr("Enter a display label for the new contact"));
 
-        if (QDialog::Accepted != nameDlg.exec())
+        if (QDialog::Accepted != nameDlg.exec()) {
             return;
+        }
         // --------------------------------------
         const QString strNewContactLabel = nameDlg.GetOutputString();
         const std::string str_new_contact_label = strNewContactLabel.toStdString();
@@ -4127,72 +4246,894 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
         {
             emit showContactAndRefreshHome(qstrContactId);
         }
-        return;
     }
     // ----------------------------------------------
     else if (selectedAction == pActionPairWithSNP)
     {
+        popupMenuAccounts_->close();
+
         emit needToPairStashNode();
-        return;
     }
     // ----------------------------------------------
     else if (selectedAction == pActionManageNotaries)
     {
+        popupMenuAccounts_->close();
+
         emit showServer(qstrServerId); // qstrServerId may be empty; that's okay.
-        return;
     }
     // ----------------------------------
     else if (selectedAction == pActionManageAssets)
     {
+        popupMenuAccounts_->close();
+
         emit showAsset(qstrAssetTypeId); // asset ID may be empty, which is okay.
-        return;
     }
     // ----------------------------------
     else if (selectedAction == pActionManageAccounts)
     {
+        popupMenuAccounts_->close();
+
         emit showAccount(qstrAccountId); // account ID may be empty, which is okay.
-        return;
     }
     // ----------------------------------
     else if (selectedAction == pActionManageContacts)
     {
+        popupMenuAccounts_->close();
+
         emit showContacts();
-        return;
     }
     // ----------------------------------
     else if (selectedAction == pActionContactMsg)
     {
+        popupMenuAccounts_->close();
+
         emit messageContact(QString::fromStdString(str_my_nym_id), qstrContactId);
-        return;
     }
     // ----------------------------------
     else if (selectedAction == pActionContactPay)
     {
+        popupMenuAccounts_->close();
+
         // todo: qstrAccountId is empty here, so maybe should just have
         // "pay to contact" signal.
         emit payFromAccountToContact(qstrAccountId, qstrContactId);
-        return;
     }
     // ----------------------------------
     else if (selectedAction == pActionContactInvoice)
     {
+        popupMenuAccounts_->close();
+
         // todo: qstrAccountId is empty here, so maybe should just have
         // "request from contact" signal.
         emit requestToAccountFromContact(qstrAccountId, qstrContactId);
-        return;
     }
     // ----------------------------------
     else if (selectedAction == pActionContactRecurring)
     {
+        popupMenuAccounts_->close();
+
         // todo: qstrAccountId is empty here, so maybe should just have
         // "propose from contact" signal.
         emit proposeToAccountFromContact(qstrAccountId, qstrContactId);
-        return;
     }
-    // ----------------------------------
-    popupMenuAccounts_->close();
+    // *****************************************************************
+    else if (selectedAction == pActionBailment)
+    {
+        popupMenuAccounts_->close();
+
+        if (str_my_nym_id.empty()) {
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Please set your default Nym and then try again."));
+            qDebug() << "Unable to request bailment without a default Nym ID being set";
+            return;
+        }
+        if (qstrServerId.isEmpty()) {
+
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Unable to request bailment without a Notary ID being set. (Should never happen in this case...)"));
+            qDebug() << "Unable to request bailment without a Notary ID being set. (Should never happen in this case...)";
+            return;
+        }
+        // ---------------------------------------
+        // These two cases (both selected or neither selected) are theoretically impossible.
+        //
+        if (!bSelectedSNP && !bSelectedHosted) {
+
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Weird, this problem should never happen."));
+            qDebug() << "Somehow, neither a paired SNP or account, nor a hosted notary or account, "
+                        "is available from the point of the click, and so I am unable to continue the "
+                        "bailment attempt. I'd have to ask you at this point to pick a notary/SNP from a list.";
+            return;
+        }
+        if (bSelectedSNP && bSelectedHosted) {
+
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Weird, this problem should never happen."));
+            qDebug() << "Somehow, both a _paired_ SNP or account, AND a _hosted_ notary or account, "
+                        "is available from the point of the click, and so I am unable to continue the "
+                        "bailment attempt. Should never happen...";
+            return;
+        }
+        // -----------------------------------------------
+        // Grab the currently-selected default asset type ID (and its TLA),
+        // if there is one selected at all.
+        // We'll find it useful soon.
+        //
+        const QString qstrDefaultAssetId = Moneychanger::It()->get_default_asset_id();
+        const std::string default_asset_id = qstrDefaultAssetId.isEmpty()
+                ? ""
+                : qstrDefaultAssetId.toStdString();
+        const QString qstrDefaultTLA = qstrDefaultAssetId.isEmpty()
+                ? QString("")
+                : QString::fromStdString(opentxs::OT::App().API().Exec().GetCurrencyTLA( default_asset_id ));
+        // -----------------------------------------------
+        mapIDName mapUnitTLA;
+        mapOfMapIDName bigMapAccountsByServer, bigMapAssetsByTLA;
+        GetAccountIdMapsByServerId(bigMapAccountsByServer, bSelectedSNP); // true == paired, false == hosted.
+
+        const bool bFoundSome = GetUnitAndTLAMapForAccountsOnServer(
+                    mapUnitTLA,
+                    bigMapAccountsByServer,
+                    bigMapAssetsByTLA,
+                    qstrServerId,
+                    str_my_nym_id);
+
+        if (!bFoundSome) {
+
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Sorry, you don't have any accounts on this notary that can receive a deposit. Make sure you have a default nym selected."
+                                                              "TODO: Ask the user to choose an asset type and nym right here, and then create the appropriate account automatically."));
+            qDebug() << "No accounts available to do a bailment into, for the given notary and nym.";
+            return;
+        }
+        // -----------------------------------------------
+        // Below this point, we know we found at least one account for the given server and nym.
+        // (And thus, at least one "TLA/asset type ID/issuer nym ID" to use in order to initiate a bailment).
+        //
+        mapIDName * pMapAssets = nullptr;
+
+        // NOTE: TLA can be empty here. Maybe I'm clicked on a Stash Node Pro,
+        // and the TLAs available there are listed BELOW this line (not ON it).
+        // In the case where it's empty, just ask the user to choose which TLA
+        // he wants to deposit.
+        //
+        if (qstrTLA.isEmpty() && (1 == bigMapAssetsByTLA.size())) {
+            // If there is only one TLA, we just select it automatically.
+            //
+            qstrTLA = bigMapAssetsByTLA.begin().key();
+            mapIDName & mapAssets = bigMapAssetsByTLA.begin().value();
+            pMapAssets = &mapAssets;
+        }
+        else if (qstrTLA.isEmpty()) { // There are more than one TLA available in the wallet.
+
+            // We can iterate bigMapAssetsByTLA to see all the available TLAs.
+            // We'll let the user choose which TLA he's bailing in.
+            //
+            DlgChooser theChooser(this);
+            mapIDName & the_map = theChooser.m_map;
+
+            mapOfMapIDName::iterator it_TLA = bigMapAssetsByTLA.begin();
+
+            // Set up the list of TLAs for the user to choose from.
+            //
+            while (it_TLA != bigMapAssetsByTLA.end()) {
+                const QString qstrTLA = it_TLA.key();
+                the_map.insert(qstrTLA, qstrTLA);
+                it_TLA++;
+            }
+            // -----------------------------------------------
+            // Pre-select the default TLA, if the application has a default asset type set already.
+            //
+            mapOfMapIDName::iterator it_default_TLA;
+
+            if (!qstrDefaultTLA.isEmpty()) {
+                it_default_TLA = bigMapAssetsByTLA.find(qstrDefaultTLA);
+            }
+            // If there's a default asset type ID already set in the application,
+            // and if the TLA for that asset type appears in the list we refined above
+            // for the set of accounts for a given notary and nym, then we pre-select it
+            // as the default TLA, when we ask the user to choose a TLA for the deposit.
+
+            if (!qstrDefaultTLA.isEmpty() && (it_default_TLA != bigMapAssetsByTLA.end()))
+            {
+                theChooser.SetPreSelected(qstrDefaultTLA);
+            }
+            // -----------------------------------------------
+            theChooser.setWindowTitle(tr("Choose asset type to deposit"));
+            // -----------------------------------------------
+
+            if (theChooser.exec() == QDialog::Accepted)
+            {
+                qstrTLA = theChooser.m_qstrCurrentID;    //  <============= qstrTLA is set.
+                mapOfMapIDName::iterator it_selected_TLA;
+                if (!qstrTLA.isEmpty()) {
+                    it_selected_TLA = bigMapAssetsByTLA.find(qstrTLA);
+                }
+                if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
+
+                    QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to select a TLA. Should never happen."));
+                    qDebug() << "Somehow failed to select a TLA. Should never happen.";
+                    return;
+                }
+                mapIDName & mapAssets = it_selected_TLA.value();
+                pMapAssets = &mapAssets;     //  <============= pMapAssets is set.
+            }
+            else {
+                return;
+            }
+        }
+        // ----------------------------------------
+        if (qstrTLA.isEmpty() || (nullptr == pMapAssets) || (0 == pMapAssets->size())) {
+
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to choose an asset type for the deposit. "
+                                                              "Make sure there is a default nym selected, "
+                                                              "so the application knows which accounts to filter for."));
+            qDebug() << "Somehow failed to select a TLA.";
+            return;
+        }
+        mapIDName & mapAssets = *pMapAssets;
+        // =================================================
+//      QString  qstrTLA;
+//      QString  qstrAssetTypeId;
+//      QString  qstrServerId;
+        QString  qstrBailmentAssetTypeId;
+        QString  qstrIssuerNymId;
+
+        // Below this point, qstrTLA and its associated mapAssets are both guaranteed to exist.
+        // Next we need to find the exact unit type ID and its issuer Nym ID, so we can initiate
+        // the bailment request.
+        //
+        // In the case where there's only a single unit type ID for that TLA, then just use it.
+        //
+        if (1 == mapAssets.size()) {
+            const QString qstrSelectedAssetId = mapAssets.begin().key();
+            const QString qstrSelectedIssuerNymId = mapAssets.begin().value();
+
+//            if (!qstrAssetTypeId.isEmpty() && (0 != qstrAssetTypeId.compare(qstrSelectedAssetId))) {
+//                // NOTE: This is a case here where it's possible that the selected asset ID
+//                // doesn't match the one the user clicked on. Perhaps, for example, the right-click
+//                // happened to be on a gold account on Alice's SNP, but the default Nym is currently Bob,
+//                // and Bob only owns a Bitcoin account on this SNP. (This means the user has more than one
+//                // Nym in his desktop wallet, of course). So Bob's Bitcoin account's asset type of "Bitcoin"
+//                // doesn't match the "Gold" asset type that was right-clicked on. But anyway, the user will
+//                // have to confirm the bailment request before it goes out, and so we can deal with this case
+//                // later on.
+//            }
+
+            qstrBailmentAssetTypeId = qstrSelectedAssetId;
+            qstrIssuerNymId = qstrSelectedIssuerNymId;
+        }
+        // Otherwise pop up a list of the unit type IDs, perhaps showing the short name, and ask
+        // the user to double-click one of them.
+        //
+        // At some point in the future we will use verified claims to prove which issuer (and unit
+        // type IDs from that issuer) are the "official" ones owned by your stash-node-manager bot,
+        // versus some other currency that also happens to be issued on that box by some other issuer.
+        // (Which is possible).
+        //
+        else {
+            DlgChooser theChooser(this);
+            mapIDName & the_map = theChooser.m_map;
+
+            mapIDName::iterator it_assets = mapAssets.begin();
+
+            QString qstrDefaultKeyToPreselect;
+
+            // Set up the list of asset types for the user to choose from.
+            // (For a given TLA).
+            //
+            while (it_assets != mapAssets.end()) {
+                const QString qstrCurrentAssetTypeId = it_assets.key();
+                const QString qstrCurrentIssuerNymId = it_assets.value();
+                const QString qstrKey = QString("%1,%2").arg(qstrCurrentAssetTypeId).arg(qstrCurrentIssuerNymId);
+                // ------------------------------------------
+                MTNameLookupQT theLookup;
+                QString OT_issuer_name = QString::fromStdString(theLookup.GetNymName(qstrCurrentIssuerNymId.toStdString(), ""));
+                if (OT_issuer_name.isEmpty()) {
+                    OT_issuer_name = qstrCurrentIssuerNymId;
+                }
+                // ------------------------------------------
+                const opentxs::Identifier asset_id(qstrCurrentAssetTypeId.toStdString());
+                opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Contract().UnitDefinition(asset_id);
+                const QString OT_asset_name = QString::fromStdString(unit_definition->Alias());
+//              const QString OT_asset_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrCurrentAssetTypeId.toStdString()));
+                const QString qstrValue = QString("'%1' %2: %3").arg(OT_asset_name).arg(tr("issued by")).arg(OT_issuer_name);
+                // ------------------------------------------
+                the_map.insert(qstrKey, qstrValue);
+
+                // So we can set the default selection in the chooser based on the application's
+                // default asset type ID -- if one is even set.
+                //
+                if (!qstrDefaultAssetId.isEmpty() && (0 == qstrDefaultAssetId.compare(qstrCurrentAssetTypeId))) {
+                    qstrDefaultKeyToPreselect = qstrKey;
+                }
+                it_assets++;
+            }
+            // -----------------------------------------------
+            // Preselect the application's default asset ID in the chooser dialog,
+            // if one is available.
+            //
+            if (!qstrDefaultKeyToPreselect.isEmpty())
+            {
+                theChooser.SetPreSelected(qstrDefaultKeyToPreselect);
+            }
+            // -----------------------------------------------
+            theChooser.setWindowTitle(tr("Choose exact asset type to deposit"));
+            // -----------------------------------------------
+
+            if (theChooser.exec() == QDialog::Accepted)
+            {
+                const QString qstrSelectedKey = theChooser.m_qstrCurrentID;
+                QStringList stringlist = qstrSelectedKey.split(",");
+                qstrBailmentAssetTypeId = stringlist.at(0);
+                qstrIssuerNymId = stringlist.at(1);
+            }
+            else {
+                return;
+            }
+        }
+        // ----------------------------------------
+        if (qstrBailmentAssetTypeId.isEmpty() || qstrIssuerNymId.isEmpty()) {
+
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen."));
+            qDebug() << "Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen.";
+            return;
+        }
+        // ----------------------------------------
+//      QString  qstrTLA;
+//      QString  qstrServerId;
+//      QString  qstrBailmentAssetTypeId;
+//      QString  qstrIssuerNymId;
+//      std::string str_my_nym_id;
+
+        const bool bRequested = request_deposit_address(
+            qstrServerId.toStdString(),
+            str_my_nym_id,
+            qstrIssuerNymId.toStdString(),
+            qstrBailmentAssetTypeId.toStdString());
+
+        if (bRequested) {
+            QMessageBox::information(this, tr("Moneychanger"),
+                              tr("Success requesting a deposit address. (Soon, it should pop up on the screen in a separate window). "
+                                 "TODO: Reserve these addresses in advance, so the user doesn't have to wait."));
+        }
+        else {
+            QMessageBox::warning(this, tr("Moneychanger"),
+                                 tr("Somehow failed to request a deposit address. Try again sometime soon?"));
+        }
+    }
+
+    // *********************************************************************
+
+    else if (selectedAction == pActionOutbailment)
+    {
+        popupMenuAccounts_->close();
+
+        if (str_my_nym_id.empty()) {
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Please set your default Nym and then try again."));
+            qDebug() << "Unable to request outbailment without a default Nym ID being set";
+            return;
+        }
+        if (qstrServerId.isEmpty()) {
+
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Unable to request a withdrawal without a Notary ID being set. (Should never happen in this case...)"));
+            qDebug() << "Unable to request outbailment without a Notary ID being set. (Should never happen in this case...)";
+            return;
+        }
+        // ---------------------------------------
+        // These two cases (both selected or neither selected) are theoretically impossible.
+        //
+        if (!bSelectedSNP && !bSelectedHosted) {
+
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Weird, this problem should never happen."));
+            qDebug() << "Somehow, neither a paired SNP or account, nor a hosted notary or account, "
+                        "is available from the point of the click, and so I am unable to continue the "
+                        "outbailment attempt. I'd have to ask you at this point to pick a notary/SNP from a list.";
+            return;
+        }
+        if (bSelectedSNP && bSelectedHosted) {
+
+            QMessageBox::warning(this, tr("Moneychanger"), tr("Weird, this problem should never happen."));
+            qDebug() << "Somehow, both a _paired_ SNP or account, AND a _hosted_ notary or account, "
+                        "is available from the point of the click, and so I am unable to continue the "
+                        "outbailment attempt. Should never happen...";
+            return;
+        }
+        // -----------------------------------------------
+        // Grab the currently-selected default account ID,
+        // if there is one selected at all.
+        // We'll find it useful soon.
+        //
+        const QString qstrDefaultAccountId = Moneychanger::It()->get_default_account_id();
+        const std::string default_account_id = qstrDefaultAccountId.isEmpty()
+                ? ""
+                : qstrDefaultAccountId.toStdString();
+        // -----------------------------------------------
+        // When you WITHDRAW funds back to the blockchain, you cannot withdraw merely
+        // from an asset ID. You must have an account ID. (For the funds withdrawn are
+        // coming out of an opentxs account).
+        //
+        // Once the account ID is selected, we will have the correct asset type ID,
+        // and we will also know the maximum amount we can try to withdraw. (Based on
+        // the account's balance...)
+        //
+        // Interestingly, however, the application doesn't need the account ID to send
+        // the actual outbailment request. Because the outbailment results in an invoice
+        // being sent to the user, and only then does the user need to choose which account
+        // he will process the invoice with.
+        //
+        // However, a good GUI will still acquire the account from the right-click whenever
+        // possible, and that way it can automate the processing of the invoice when it comes
+        // in, by remembering which account to process the invoice with. In the meantime,
+        // the user will actually choose the account when he manually pays the invoice.
+        //
+        // But here we do still try to see if the user has right-clicked an account, so we
+        // can derive the asset ID and issuer ID in that way. Otherwise we still have to get
+        // the user to choose an asset ID, based on those available from filtering the user's
+        // accounts on that server.
+        //
+        mapIDName theAccountMap;
+        const QString qstrMyNymId(QString::fromStdString(str_my_nym_id));
+        if (false == MTContactHandler::getInstance()->GetAccounts(theAccountMap, qstrMyNymId, qstrServerId, QString("")))
+        {
+
+            QMessageBox::warning(this, tr("Moneychanger"),
+                tr("Sorry, you don't have any accounts on this notary that can withdraw to blockchain. "
+                   "Make sure you have a default nym selected, so we know we're looking at the right accounts. "
+                   "(Accounts are filtered by the owner Nym)."));
+            qDebug() << "No accounts available to do an outbailment from, for the given notary and nym.";
+            return;
+        }
+        // -----------------------------------------------
+//      QString  qstrTLA;
+//      QString  qstrAssetTypeId;
+//      QString  qstrAccountId;
+//      QString  qstrServerId;
+
+        std::string  strIssuerNymId;
+        std::string  strBailmentAssetTypeId;
+        QString      qstrBailmentAssetTypeId;
+        QString      qstrIssuerNymId;
+        // -----------------------------------------------
+        // TODO: Make sure the above four variables are set properly,
+        // so we can initiate the outbailment.
+        //
+        // Starting with strBailmentAssetTypeId...
+        // -----------------------------------------------
+        // If a given account was already selected (via the right-click), let's see if
+        // it's on the map for the current Nym. If so, we can use its asset type ID.
+        //
+        if (!qstrAccountId.isEmpty()) {
+            mapIDName::iterator it_accounts = theAccountMap.find(qstrAccountId);
+
+            if ((it_accounts != theAccountMap.end()) && (0 == qstrAccountId.compare(it_accounts.key()))) {
+                // Looks like the account the user right-clicked on, IS an available account based on
+                // filtering for the current nym and the selected notary.
+                //
+                strBailmentAssetTypeId = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(qstrAccountId.toStdString());
+
+                if (!strBailmentAssetTypeId.empty()) {
+                    const opentxs::Identifier asset_id(strBailmentAssetTypeId);
+                    if (!asset_id.empty()) {
+                        opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Contract().UnitDefinition(asset_id);
+                        if (unit_definition) {
+                            opentxs::ConstNym issuer_nym = unit_definition->Nym();
+                            if (issuer_nym) {
+                                const opentxs::Identifier & issuer_nym_id = issuer_nym->ID();
+                                const opentxs::String otstrIssuerNymId(issuer_nym_id);
+                                const std::string str_issuer_nym_id(otstrIssuerNymId.Get());
+                                strIssuerNymId = str_issuer_nym_id;
+                            }
+                        }
+                    }
+                    // ---------------------------------
+                    if (strIssuerNymId.empty()) {
+                        qDebug() << "Error: Found asset type ID based on selected account, "
+                                    "but couldn't find issuer Nym ID from there. Should never happen.";
+
+                        return;
+                    }
+                }
+            }
+        } // if (!qstrAccountId.isEmpty())
+        // -----------------------------------------------
+        if (!strBailmentAssetTypeId.empty() && !strIssuerNymId.empty()) {
+            qstrBailmentAssetTypeId = QString::fromStdString(strBailmentAssetTypeId);
+            qstrIssuerNymId = QString::fromStdString(strIssuerNymId);
+        }
+        // -----------------------------------------------
+        else {
+            // Grab the currently-selected default asset type ID (and its TLA),
+            // if there is one selected at all. We'll find it useful soon.
+            //
+            const QString qstrDefaultAssetId = Moneychanger::It()->get_default_asset_id();
+            const std::string default_asset_id = qstrDefaultAssetId.isEmpty()
+                    ? ""
+                    : qstrDefaultAssetId.toStdString();
+            const QString qstrDefaultTLA = qstrDefaultAssetId.isEmpty()
+                    ? QString("")
+                    : QString::fromStdString(opentxs::OT::App().API().Exec().GetCurrencyTLA( default_asset_id ));
+            // -----------------------------------------------
+            mapIDName mapUnitTLA;
+            mapOfMapIDName bigMapAccountsByServer, bigMapAssetsByTLA;
+            GetAccountIdMapsByServerId(bigMapAccountsByServer, bSelectedSNP); // true == paired, false == hosted.
+
+            const bool bFoundSome = GetUnitAndTLAMapForAccountsOnServer(
+                        mapUnitTLA,
+                        bigMapAccountsByServer,
+                        bigMapAssetsByTLA,
+                        qstrServerId,
+                        str_my_nym_id);
+
+            if (!bFoundSome) {
+
+                QMessageBox::warning(this, tr("Moneychanger"),
+                    tr("Sorry, you don't have any accounts on this notary that can withdraw to blockchain. "
+                       "Make sure you have a default nym selected. (Accounts are filtered based on the owner Nym)."));
+                qDebug() << "No accounts available to do an outbailment from, for the given notary and nym.";
+                return;
+            }
+            // -----------------------------------------------
+            // Below this point, we know we found at least one account for the given server and nym.
+            // (And thus, at least one "TLA/asset type ID/issuer nym ID" to use in order to initiate an outbailment).
+            //
+            mapIDName * pMapAssets = nullptr;
+
+            // NOTE: TLA can be empty here. Maybe I'm clicked on a Stash Node Pro,
+            // and the TLAs available there are listed BELOW this line (not ON it).
+            // In the case where it's empty, just ask the user to choose which TLA
+            // he wants to withdraw.
+            //
+            if (qstrTLA.isEmpty() && (1 == bigMapAssetsByTLA.size())) {
+                // If there is only one TLA, we just select it automatically.
+                //
+                qstrTLA = bigMapAssetsByTLA.begin().key();
+                mapIDName & mapAssets = bigMapAssetsByTLA.begin().value();
+                pMapAssets = &mapAssets;
+            }
+            else if (qstrTLA.isEmpty()) { // There must be multiple TLAs to choose from, since we already know there's not zero. (Above, bFoundSome).
+
+                // We can iterate bigMapAssetsByTLA to see all the available TLAs.
+                // We'll let the user choose which TLA he's bailing in.
+                //
+                DlgChooser theChooser(this);
+                mapIDName & the_map = theChooser.m_map;
+
+                mapOfMapIDName::iterator it_TLA = bigMapAssetsByTLA.begin();
+
+                // Set up the list of TLAs for the user to choose from.
+                //
+                while (it_TLA != bigMapAssetsByTLA.end()) {
+                    const QString qstrTLA = it_TLA.key();
+                    the_map.insert(qstrTLA, qstrTLA);
+                    it_TLA++;
+                }
+                // -----------------------------------------------
+                // Pre-select the default TLA, if the application has a default asset type set already.
+                //
+                mapOfMapIDName::iterator it_default_TLA;
+                if (!qstrDefaultTLA.isEmpty()) {
+                    it_default_TLA = bigMapAssetsByTLA.find(qstrDefaultTLA);
+                }
+                // If there's a default asset type ID already set in the application,
+                // and if the TLA for that asset type appears in the list we refined above
+                // for the set of accounts for a given notary and nym, then we pre-select it
+                // as the default TLA, when we ask the user to choose a TLA for the withdrawal.
+                //
+                if (!qstrDefaultTLA.isEmpty() && (it_default_TLA != bigMapAssetsByTLA.end()))
+                {
+                    theChooser.SetPreSelected(qstrDefaultTLA);
+                }
+                // -----------------------------------------------
+                theChooser.setWindowTitle(tr("Choose asset type to withdraw"));
+                // -----------------------------------------------
+                if (theChooser.exec() == QDialog::Accepted)
+                {
+                    qstrTLA = theChooser.m_qstrCurrentID;    //  <============= qstrTLA is set.
+                    mapOfMapIDName::iterator it_selected_TLA;
+                    if (!qstrTLA.isEmpty()) {
+                        it_selected_TLA = bigMapAssetsByTLA.find(qstrTLA);
+                    }
+                    if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
+
+                        QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to select a TLA. Should never happen."));
+                        qDebug() << "Somehow failed to select a TLA. Should never happen.";
+                        return;
+                    }
+                    mapIDName & mapAssets = it_selected_TLA.value();
+                    pMapAssets = &mapAssets;     //  <============= pMapAssets is set.
+                }
+                else {
+                    // User canceled.
+                    return;
+                }
+            }
+            // ----------------------------------------
+            if (qstrTLA.isEmpty() || (nullptr == pMapAssets) || (0 == pMapAssets->size())) {
+
+                QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to choose an asset type for the withdrawal to blockchain. "
+                                                                  "Make sure there is a default nym selected, since the application "
+                                                                  "filters accounts based on owner Nym."));
+                qDebug() << "Somehow failed to select a TLA. Should never happen.";
+                return;
+            }
+            mapIDName & mapAssets = *pMapAssets;
+            // =================================================
+    //      QString  qstrTLA;
+    //      QString  qstrAssetTypeId;
+    //      QString  qstrServerId;
+    //      QString  qstrBailmentAssetTypeId;
+    //      QString  qstrIssuerNymId;
+
+            // Below this point, qstrTLA and its associated mapAssets are both guaranteed to exist.
+            // Next we need to find the exact unit type ID from that list (and its issuer Nym ID),
+            // so we can initiate the outbailment request.
+            //
+            // In the case where there's only a single unit type ID for that TLA, then just use it.
+            //
+            if (1 == mapAssets.size()) {
+                const QString qstrSelectedAssetId = mapAssets.begin().key();
+                const QString qstrSelectedIssuerNymId = mapAssets.begin().value();
+
+    //            if (!qstrAssetTypeId.isEmpty() && (0 != qstrAssetTypeId.compare(qstrSelectedAssetId))) {
+    //                // NOTE: This is a case here where it's possible that the selected asset ID
+    //                // doesn't match the one the user clicked on. Perhaps, for example, the right-click
+    //                // happened to be on a gold account on Alice's SNP, but the default Nym is currently Bob,
+    //                // and Bob only owns a Bitcoin account on this SNP. (This means the user has more than one
+    //                // Nym in his desktop wallet, of course). So Bob's Bitcoin account's asset type of "Bitcoin"
+    //                // doesn't match the "Gold" asset type that was right-clicked on. But anyway, the user will
+    //                // have to confirm the bailment request before it goes out, and so we can deal with this case
+    //                // later on. No point causing some weird unexplained failure on this spot when we can just
+    //                // ask later.
+    //            }
+
+                qstrBailmentAssetTypeId = qstrSelectedAssetId;
+                qstrIssuerNymId = qstrSelectedIssuerNymId;
+            }
+            // Otherwise pop up a list of the unit type IDs, perhaps showing the short name, and ask
+            // the user to double-click one of them.
+            //
+            // At some point in the future we will use verified claims to prove which issuer (and unit
+            // type IDs from that issuer) are the "official" ones owned by your stash-node-manager bot,
+            // versus some other currency that also happens to be issued on that box by some other issuer.
+            // (Which is possible).
+            //
+            else {
+                DlgChooser theChooser(this);
+                mapIDName & the_map = theChooser.m_map;
+                QString qstrDefaultKeyToPreselect;
+                mapIDName::iterator it_assets = mapAssets.begin();
+
+                // Set up the list of asset types for the user to choose from.
+                // (For a given TLA).
+                //
+                while (it_assets != mapAssets.end()) {
+                    const QString qstrCurrentAssetTypeId = it_assets.key();
+                    const QString qstrCurrentIssuerNymId = it_assets.value();
+                    const QString qstrKey = QString("%1,%2").arg(qstrCurrentAssetTypeId).arg(qstrCurrentIssuerNymId);
+                    // ------------------------------------------
+                    MTNameLookupQT theLookup;
+                    QString OT_issuer_name = QString::fromStdString(theLookup.GetNymName(qstrCurrentIssuerNymId.toStdString(), ""));
+                    if (OT_issuer_name.isEmpty()) {
+                        OT_issuer_name = qstrCurrentIssuerNymId;
+                    }
+                    // ------------------------------------------
+                    const opentxs::Identifier asset_id(qstrCurrentAssetTypeId.toStdString());
+                    opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Contract().UnitDefinition(asset_id);
+                    const QString OT_asset_name  = QString::fromStdString(unit_definition->Alias());
+    //              const QString OT_asset_name  = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrCurrentAssetTypeId.toStdString()));
+                    const QString qstrExtra = QString(" (%1: %2)").arg(tr("ID")).arg(qstrCurrentIssuerNymId);
+                    const QString qstrValue = QString("'%1' %2: %3%4").arg(OT_asset_name).arg(tr("issued by")).arg(OT_issuer_name)
+                            .arg( (0 == OT_issuer_name.compare(qstrCurrentIssuerNymId)) ? QString("") :  qstrExtra);
+                    // ------------------------------------------
+                    the_map.insert(qstrKey, qstrValue);
+
+                    // So we can set the default selection in the chooser based on the application's
+                    // default asset type ID -- if one is even set.
+                    //
+                    if (!qstrDefaultAssetId.isEmpty() && (0 == qstrDefaultAssetId.compare(qstrCurrentAssetTypeId))) {
+                        qstrDefaultKeyToPreselect = qstrKey;
+                    }
+                    it_assets++;
+                }
+                // -----------------------------------------------
+                // Preselect the application's default asset ID in the chooser dialog,
+                // if one is available.
+                //
+                if (!qstrDefaultKeyToPreselect.isEmpty())
+                {
+                    theChooser.SetPreSelected(qstrDefaultKeyToPreselect);
+                }
+                // -----------------------------------------------
+                theChooser.setWindowTitle(tr("Choose exact asset type to withdraw"));
+                // -----------------------------------------------
+                if (theChooser.exec() == QDialog::Accepted)
+                {
+                    const QString qstrSelectedKey = theChooser.m_qstrCurrentID;
+                    QStringList stringlist = qstrSelectedKey.split(",");
+                    qstrBailmentAssetTypeId = stringlist.at(0);
+                    qstrIssuerNymId = stringlist.at(1);
+                }
+                else {
+                    // User canceled.
+                    return;
+                }
+            } // dlgChooser
+            // ----------------------------------------
+            if (qstrBailmentAssetTypeId.isEmpty() || qstrIssuerNymId.isEmpty()) {
+
+                QMessageBox::warning(this, tr("Moneychanger"),
+                                     tr("Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen."));
+                qDebug() << "Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen.";
+                return;
+            }
+            strBailmentAssetTypeId = qstrBailmentAssetTypeId.toStdString();
+            strIssuerNymId = qstrIssuerNymId.toStdString();
+        }
+        // ******************************************************************
+
+        OT_ASSERT(!strBailmentAssetTypeId.empty());
+        OT_ASSERT(!strIssuerNymId.empty());
+        OT_ASSERT(!qstrBailmentAssetTypeId.isEmpty());
+        OT_ASSERT(!qstrIssuerNymId.isEmpty());
+
+        // ******************************************************************
+
+        std::int64_t AMOUNT{0};
+        std::string  strToBlockchainAddress;
+        const std::string str_notary_id (qstrServerId.toStdString());
+        const std::string unit_type_id  (qstrBailmentAssetTypeId.toStdString());
+        // -----------------------------------------------
+        DlgOutbailment dlgOutbailment(this, AMOUNT, strToBlockchainAddress,
+                                      qstrBailmentAssetTypeId, qstrIssuerNymId, qstrServerId);
+
+        if (dlgOutbailment.exec() == QDialog::Accepted) {
+            if (AMOUNT <= 0) {
+                QMessageBox::warning(this, tr("Moneychanger"),
+                                     tr("Failure: Cannot withdraw a negative or zero amount."));
+                return;
+            }
+            if (strToBlockchainAddress.empty()) {
+                QMessageBox::warning(this, tr("Moneychanger"),
+                                     tr("Failure: Cannot withdraw a negative or zero amount."));
+                return;
+            }
+            // -----------------------------------------------
+
+
+            // TODO: Validate blockchain address here.
+
+
+            // -----------------------------------------------
+            const bool bRequestOutbailment = request_outbailment(
+                str_notary_id,
+                str_my_nym_id,
+                strIssuerNymId,
+                unit_type_id,
+                AMOUNT,
+                strToBlockchainAddress);
+        }
+    } // Outbailment
+    // -----------------------------
 }
 
+
+// EXPORT std::string initiate_outbailment(
+//     const std::string& NOTARY_ID,
+//     const std::string& NYM_ID,
+//     const std::string& TARGET_NYM_ID,
+//     const std::string& INSTRUMENT_DEFINITION_ID,
+//     const std::int64_t& AMOUNT,
+//     const std::string& THE_MESSAGE) const;
+
+bool Activity::request_outbailment(
+    const std::string str_notary_id,
+    const std::string str_my_nym_id,
+    const std::string str_issuer_nym_id,
+    const std::string str_unit_type_id,
+    const std::int64_t amount,
+    const std::string str_blockchain_address)
+{
+    OT_ASSERT(!str_notary_id.empty());
+    OT_ASSERT(!str_my_nym_id.empty());
+    OT_ASSERT(!str_issuer_nym_id.empty());
+    OT_ASSERT(!str_unit_type_id.empty());
+    OT_ASSERT(!str_blockchain_address.empty());
+
+    if (amount < 0) {
+        qDebug() << "Failed attempt to request outbailment due to negative amount: " << QString::number(amount);
+        return false;
+    }
+
+    auto& me = opentxs::OT::App().API().OTME();
+    opentxs::otErr << __FUNCTION__
+                   << ": Requesting outbailment." << std::endl;
+    std::string result{};
+
+    try {
+        result = me.initiate_outbailment(
+            str_notary_id,
+            str_my_nym_id,
+            str_issuer_nym_id,
+            str_unit_type_id,
+            amount,
+            str_blockchain_address);
+    } catch (const std::runtime_error& e) {
+        opentxs::otErr << __FUNCTION__ << ": " << e.what();
+        return false;
+    }
+
+    if (result.empty()) {
+        qDebug() << "Failed to receive a reply from the notary (while trying to initiate an outbailment).";
+        QMessageBox::warning(this, tr("Moneychanger"),
+            tr("Failed to receive a reply from the notary while trying to initiate a withdrawal to blockchain."));
+        return false;
+    }
+    // -----------------------------
+    const bool output = (1 == me.VerifyMessageSuccess(result));
+
+    if (!output) {
+        qDebug() << "Failed trying to request outbailment.";
+        QMessageBox::warning(this, tr("Moneychanger"),
+                             tr("Withdrawal request failed."));
+    }
+    else {
+        opentxs::otErr << __FUNCTION__
+                       << ": Initiate outbailment request sent.\n"
+                       << "Address: " << str_blockchain_address << std::endl;
+        const QString qstrMessage = QString("%1: %2. %3.")
+                .arg(tr("Success requesting a withdrawal to blockchain address"))
+                .arg(QString::fromStdString(str_blockchain_address))
+                .arg(tr("You should receive an invoice soon; pay it to complete your withdrawal"));
+        QMessageBox::information(this, tr("Moneychanger"), qstrMessage);
+    }
+    return output;
+}
+
+
+//EXPORT std::string initiate_bailment(
+//     const std::string& NOTARY_ID,
+//     const std::string& NYM_ID,
+//     const std::string& TARGET_NYM_ID,
+//     const std::string& INSTRUMENT_DEFINITION_ID) const;
+
+bool Activity::request_deposit_address(
+    const std::string str_notary_id,
+    const std::string str_my_nym_id,
+    const std::string str_issuer_nym_id,
+    const std::string str_unit_type_id)
+{
+    OT_ASSERT(!str_notary_id.empty());
+    OT_ASSERT(!str_my_nym_id.empty());
+    OT_ASSERT(!str_issuer_nym_id.empty());
+    OT_ASSERT(!str_unit_type_id.empty());
+
+    auto& me = opentxs::OT::App().API().OTME();
+    opentxs::otErr << __FUNCTION__
+                   << ": Requesting deposit address." << std::endl;
+    std::string result{};
+
+    try {
+        result = me.initiate_bailment(
+            str_notary_id,
+            str_my_nym_id,
+            str_issuer_nym_id,
+            str_unit_type_id);
+    } catch (const std::runtime_error& e) {
+        opentxs::otErr << __FUNCTION__ << ": " << e.what();
+        return false;
+    }
+
+    if (result.empty()) {
+        qDebug() << "Failed to receive a reply from the notary while trying to initiate bailment.";
+        return false;
+    }
+    // -----------------------------
+    const bool output = (1 == me.VerifyMessageSuccess(result));
+
+    if (!output) {
+        opentxs::otErr << __FUNCTION__
+                       << ": Initiate request bailment failed. Oh well, have to try again sometime soon."
+                       << std::endl;
+    }
+    return output;
+}
 
 void Activity::on_tabWidgetMain_currentChanged(int index)
 {

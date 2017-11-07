@@ -169,6 +169,28 @@ protected:
     mapIDName & GetOrCreateAccountIdMapByServerId(QString qstrServerId, mapOfMapIDName & bigMap);
     void GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, bool bPairedOrHosted); // true == paired, false == hosted.
 
+
+    bool request_deposit_address(
+        const std::string str_notary_id,
+        const std::string str_my_nym_id,
+        const std::string str_issuer_nym_id,
+        const std::string str_unit_type_id);
+
+    bool request_outbailment(
+        const std::string str_notary_id,
+        const std::string str_my_nym_id,
+        const std::string str_issuer_nym_id,
+        const std::string str_unit_type_id,
+        const std::int64_t amount,
+        const std::string str_blockchain_address);
+
+    bool GetUnitAndTLAMapForAccountsOnServer(mapIDName& mapUnitTLA,
+                                             mapOfMapIDName& bigMapAccountsByServer,
+                                             mapOfMapIDName& bigMapAssetsByTLA,
+                                             QString qstrServerId,
+                                             const std::string & str_my_nym_id);
+
+
     void resetConversationItemsDataModel(const bool bProvidedIds=false, const QString * pstrMyNymID=nullptr, const QString * pstrThreadID=nullptr);
 
     void setAsCurrentPayment(int nSourceRow, int nFolder);
@@ -271,6 +293,9 @@ private:
     QAction * pActionContactPay          {nullptr};
     QAction * pActionContactInvoice      {nullptr};
     QAction * pActionContactRecurring    {nullptr};
+
+    QAction * pActionBailment            {nullptr};
+    QAction * pActionOutbailment         {nullptr};
 
     QSharedPointer<QSqlQueryMessages>  pModelMessages_;
     QSharedPointer<ConvMsgsProxyModel> pThreadItemsProxyModel_;

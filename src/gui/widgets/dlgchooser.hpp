@@ -38,7 +38,6 @@ public:
     mapIDName   m_map; // qstr/qstr for id/name
 
 protected:
-
     QString     m_PreSelected;
 
     virtual void showEvent(QShowEvent * event);

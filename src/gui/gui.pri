@@ -97,7 +97,8 @@ FORMS += \
     $$PWD/widgets/pagecontract_terms.ui \
     $$PWD/widgets/pagesecurity_details.ui \
     $$PWD/widgets/wizardconfirmsmartcontract.ui \
-    $$PWD/ui/activity.ui
+    $$PWD/ui/activity.ui \
+    $$PWD/ui/dlgoutbailment.ui
 
 HEADERS += \
     $${PWD}/ui/dlgexportcash.hpp \
@@ -193,7 +194,8 @@ HEADERS += \
     $$PWD/widgets/pagesecurity_details.hpp \
     $$PWD/widgets/wizardconfirmsmartcontract.hpp \
     $$PWD/ui/dlgpairnode.hpp \
-    $$PWD/ui/activity.hpp
+    $$PWD/ui/activity.hpp \
+    $$PWD/ui/dlgoutbailment.hpp
 
 SOURCES += \
     $${PWD}/ui/dlgexportcash.cpp \
@@ -289,7 +291,8 @@ SOURCES += \
     $$PWD/widgets/pagesecurity_details.cpp \
     $$PWD/widgets/wizardconfirmsmartcontract.cpp \
     $$PWD/ui/dlgpairnode.cpp \
-    $$PWD/ui/activity.cpp
+    $$PWD/ui/activity.cpp \
+    $$PWD/ui/dlgoutbailment.cpp
 
 TRANSLATIONS += $${PWD}/translations/en_US.ts \
                 $${PWD}/translations/de_DE.ts
