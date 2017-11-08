@@ -5,7 +5,6 @@
 #include <gui/ui/dlgoutbailment.hpp>
 #include <ui_dlgoutbailment.h>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
@@ -48,7 +47,7 @@ DlgOutbailment::DlgOutbailment(QWidget *parent, std::int64_t & AMOUNT, std::stri
     ui->lineEditNotaryId    ->setText(notary);
 
     const opentxs::Identifier asset_id(asset_type_.toStdString());
-    opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Contract().UnitDefinition(asset_id);
+    opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
     const QString qstrAssetAlias = QString::fromStdString(unit_definition->Alias());
 
     ui->labelAsset->setText(qstrAssetAlias);

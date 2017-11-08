@@ -21,7 +21,6 @@
 #include <core/handlers/modelpayments.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/core/Version.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
@@ -3918,7 +3917,7 @@ bool Activity::GetUnitAndTLAMapForAccountsOnServer(mapIDName& mapUnitTLA, // out
             }
             // ---------------------------------
             const opentxs::Identifier asset_id(str_asset_id);
-            opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Contract().UnitDefinition(asset_id);
+            opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
             opentxs::ConstNym issuer_nym = unit_definition->Nym();
             const opentxs::Identifier & issuer_nym_id = issuer_nym->ID();
             const opentxs::String strIssuerNymId(issuer_nym_id);
@@ -4530,7 +4529,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
                 }
                 // ------------------------------------------
                 const opentxs::Identifier asset_id(qstrCurrentAssetTypeId.toStdString());
-                opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Contract().UnitDefinition(asset_id);
+                opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
                 const QString OT_asset_name = QString::fromStdString(unit_definition->Alias());
 //              const QString OT_asset_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrCurrentAssetTypeId.toStdString()));
                 const QString qstrValue = QString("'%1' %2: %3").arg(OT_asset_name).arg(tr("issued by")).arg(OT_issuer_name);
@@ -4711,7 +4710,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
                 if (!strBailmentAssetTypeId.empty()) {
                     const opentxs::Identifier asset_id(strBailmentAssetTypeId);
                     if (!asset_id.empty()) {
-                        opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Contract().UnitDefinition(asset_id);
+                        opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
                         if (unit_definition) {
                             opentxs::ConstNym issuer_nym = unit_definition->Nym();
                             if (issuer_nym) {
@@ -4915,7 +4914,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
                     }
                     // ------------------------------------------
                     const opentxs::Identifier asset_id(qstrCurrentAssetTypeId.toStdString());
-                    opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Contract().UnitDefinition(asset_id);
+                    opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
                     const QString OT_asset_name  = QString::fromStdString(unit_definition->Alias());
     //              const QString OT_asset_name  = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrCurrentAssetTypeId.toStdString()));
                     const QString qstrExtra = QString(" (%1: %2)").arg(tr("ID")).arg(qstrCurrentIssuerNymId);
