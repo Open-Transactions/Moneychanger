@@ -4393,8 +4393,6 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
         // he wants to deposit.
         //
         if (qstrTLA.isEmpty() && (1 == bigMapAssetsByTLA.size())) {
-            // If there is only one TLA, we just select it automatically.
-            //
             qstrTLA = bigMapAssetsByTLA.begin().key();
             mapIDName & mapAssets = bigMapAssetsByTLA.begin().value();
             pMapAssets = &mapAssets;
@@ -4457,8 +4455,27 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
                 return;
             }
         }
+        else {
+            mapOfMapIDName::iterator it_selected_TLA;
+            it_selected_TLA = bigMapAssetsByTLA.find(qstrTLA);
+            if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
+
+                QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to select a TLA. Should never happen."));
+                qDebug() << "Somehow failed to select a TLA. Should never happen.";
+                return;
+            }
+            mapIDName & mapAssets = it_selected_TLA.value();
+            pMapAssets = &mapAssets;     //  <============= pMapAssets is set.
+        }
         // ----------------------------------------
         if (qstrTLA.isEmpty() || (nullptr == pMapAssets) || (0 == pMapAssets->size())) {
+
+//            qDebug() << "qstrTLA: " << qstrTLA;
+
+//            qDebug() << "pMapAssets: " << ((nullptr == pMapAssets) ? QString("is null") : QString("not null"));
+
+//            if (pMapAssets)
+//                qDebug() << "pMapAssets size: " << QString::number(pMapAssets->size());
 
             QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to choose an asset type for the deposit. "
                                                               "Make sure there is a default nym selected, "
@@ -4842,6 +4859,18 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
                     // User canceled.
                     return;
                 }
+            }
+            else {
+                mapOfMapIDName::iterator it_selected_TLA;
+                it_selected_TLA = bigMapAssetsByTLA.find(qstrTLA);
+                if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
+
+                    QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to select a TLA. Should never happen."));
+                    qDebug() << "Somehow failed to select a TLA. Should never happen.";
+                    return;
+                }
+                mapIDName & mapAssets = it_selected_TLA.value();
+                pMapAssets = &mapAssets;     //  <============= pMapAssets is set.
             }
             // ----------------------------------------
             if (qstrTLA.isEmpty() || (nullptr == pMapAssets) || (0 == pMapAssets->size())) {
