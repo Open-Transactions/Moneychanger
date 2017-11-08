@@ -429,10 +429,9 @@ void Settings::on_pushButtonSetSocksProxy_clicked()
 {
     const QString qstrProxy = ui->lineEditSocksProxy->text();
     const bool bSuccess = opentxs::OT::App().ZMQ().SetSocksProxy(qstrProxy.toStdString());
-    const QString qstrSuccess = QString("%1.%2").arg(bSuccess ? tr("Success") : tr("Failure")).arg(bSuccess ? tr("") : QString(""));
+    const QString qstrSuccess = QString("%1").arg(bSuccess ? tr("Success") : tr("Failure"));
     QMessageBox::information(this, tr("Moneychanger"), qstrSuccess);
 }
-
 
 void Settings::on_comboBoxLanguage_currentIndexChanged(int index)
 {
