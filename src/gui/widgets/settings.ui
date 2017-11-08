@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>4</number>
      </property>
      <widget class="QWidget" name="tabUI">
       <attribute name="title">
@@ -232,7 +232,7 @@
        <item>
         <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Normal pairing involves connecting a cable. However, if you already have the two critical pieces of information, you can attempt a pair without the cable.</string>
+          <string>Normal pairing involves connecting a cable. However, if you already have the two critical pieces of information, you can attempt a pair without the cable. (That is, via this settings page. Otherwise you need to use the &quot;Pairing&quot; menu option if you want to use the cable).</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>

@@ -51,6 +51,7 @@
 #include <gui/ui/dlgtradearchive.hpp>
 #include <gui/ui/dlgencrypt.hpp>
 #include <gui/ui/dlgdecrypt.hpp>
+#include <gui/ui/dlginbailment.hpp>
 #include <gui/ui/dlgpairnode.hpp>
 #include <gui/ui/dlgpassphrasemanager.hpp>
 #include <gui/ui/messages.hpp>
@@ -340,6 +341,18 @@ void Moneychanger::process_pending_bailment_notification(
                        << ": Failed to acknowledge pending bailment "
                        << "notification: " << id << std::endl;
     }
+    else {
+        std::string str_tla = opentxs::OT::App().API().Exec().GetCurrencyTLA(unit);
+
+        QString qstrMessage = QString("%1. %2: %3 (%4)")
+            .arg(tr("FYI: just received (and acknowledged) a notification that your blockchain deposit "
+                    "has been received and is being processed"))
+            .arg(tr("Unit type"))
+            .arg(QString::fromStdString(str_tla))
+            .arg(QString::fromStdString(unit));
+
+        emit appendToLog(qstrMessage);
+    }
 }
 
 
@@ -358,26 +371,44 @@ void Moneychanger::process_request_bailment_reply(
     const auto& address = reply.bailment().instructions();
     const opentxs::Identifier replyID(reply.id());
 
-    if (address.empty()) {
+    if (address.empty()) {  // TODO: better address validation.
         opentxs::otErr  << __FUNCTION__
                        << ": Invalid deposit address." << std::endl;
     } else {
         opentxs::otErr  << __FUNCTION__
                        << ": Received deposit address " << address << std::endl;
 
+        const auto server = reply.server();
+        const auto issuer_nym = reply.recipient();
+        const auto my_nym = reply.initiator();
+        const auto cookie = reply.cookie();
 
-//        Lock lock(lock_);
-//        deposit_address_ = address;
+        const opentxs::Identifier request_id(cookie);
 
-        // Todo
-//        blockchain_.AddTestSend(deposit_address_);
+        const auto& wallet = opentxs::OT::App().Wallet();
 
+        std::string unitId;
+        std::time_t time{};
+        const auto request = wallet.PeerRequest(
+            nymID, request_id, opentxs::StorageBox::FINISHEDPEERREQUEST, time);
 
+        if (!request) {
+            opentxs::otErr  << __FUNCTION__ << ": Failed to load "
+                           << "peer request: " << cookie << std::endl;
+        }
+        else {
+            unitId = request->bailment().unitid();
+        }
+        // ------------------------------------------------------
+        DlgInbailment * pDlgInbailment = new DlgInbailment(this,
+            QString::fromStdString(server),
+            QString::fromStdString(issuer_nym),
+            QString::fromStdString(my_nym),
+            QString::fromStdString(unitId),
+            QString::fromStdString(address));
 
-
-
-
-
+        pDlgInbailment->setAttribute(Qt::WA_DeleteOnClose);
+        pDlgInbailment->show();
     }
 
     opentxs::OT::App().Wallet().PeerRequestComplete(nymID, replyID);

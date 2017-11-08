@@ -36,6 +36,7 @@
 #include <QTreeWidgetItem>
 #include <QStringList>
 #include <QMessageBox>
+#include <QClipboard>
 #include <QStringList>
 #include <QComboBox>
 #include <QLabel>
@@ -44,7 +45,6 @@
 #include <QHBoxLayout>
 #include <QRadioButton>
 #include <QPlainTextEdit>
-#include <QClipboard>
 #include <QDebug>
 #include <QGroupBox>
 #include <QTableWidget>

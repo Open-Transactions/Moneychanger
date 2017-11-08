@@ -58,6 +58,7 @@ DlgOutbailment::DlgOutbailment(QWidget *parent, std::int64_t & AMOUNT, std::stri
 DlgOutbailment::~DlgOutbailment()
 {
     delete ui;
+    ui=nullptr;
 }
 
 void DlgOutbailment::on_pushButtonWithdraw_clicked()
