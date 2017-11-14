@@ -16,6 +16,7 @@
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
+#include <opentxs/api/Native.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -152,7 +153,7 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString t
     time64_t tFrom = opentxs::OT::App().API().Exec().GetTime();
     time64_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
     // ------------------------------------------------------------
-    if (!opentxs::OT_ME::It().make_sure_enough_trans_nums(1, str_NotaryID, str_fromNymId)) {
+    if (!opentxs::OT::App().API().OTME().make_sure_enough_trans_nums(1, str_NotaryID, str_fromNymId)) {
         qDebug() << QString("Failed trying to acquire a transaction number to write the cheque with.");
         return false;
     }
@@ -209,10 +210,10 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString t
         // Therefore we always much prefer using the new Opentxs API
         // and its MessageContact call.
         //
-        strResponse = opentxs::OT_ME::It().send_user_payment(str_NotaryID, str_fromNymId, str_toNymId, strCheque);
+        strResponse = opentxs::OT::App().API().OTME().send_user_payment(str_NotaryID, str_fromNymId, str_toNymId, strCheque);
     }
 
-    int32_t nReturnVal  = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
+    int32_t nReturnVal  = opentxs::OT::App().API().OTME().VerifyMessageSuccess(strResponse);
     if (1 != nReturnVal)
     {
         qDebug() << QString("send %1: failed.").arg(nsChequeType);

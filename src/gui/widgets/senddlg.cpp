@@ -14,6 +14,7 @@
 #include <core/handlers/focuser.h>
 
 #include <opentxs/api/Api.hpp>
+#include <opentxs/api/Native.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -91,7 +92,7 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString fromAcctId, QS
     {
         MTSpinner theSpinner;
 
-        bReturnValue = opentxs::OT_ME::It().withdraw_and_send_cash(str_fromAcctId, str_toNymId, SignedAmount);
+        bReturnValue = opentxs::OT::App().API().OTME().withdraw_and_send_cash(str_fromAcctId, str_toNymId, SignedAmount);
     }
     // ------------------------------------------------------------
     if (!bReturnValue)
@@ -146,11 +147,11 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     {
         MTSpinner theSpinner;
 
-        strResponse = opentxs::OT_ME::It().withdraw_voucher(str_NotaryID, str_fromNymId, str_fromAcctId,
+        strResponse = opentxs::OT::App().API().OTME().withdraw_voucher(str_NotaryID, str_fromNymId, str_fromAcctId,
                                                 str_toNymId, note.toStdString(), SignedAmount);
     }
 
-    int32_t nInterpretReply = opentxs::OT_ME::It().InterpretTransactionMsgReply(str_NotaryID, str_fromNymId, str_fromAcctId,
+    int32_t nInterpretReply = opentxs::OT::App().API().OTME().InterpretTransactionMsgReply(str_NotaryID, str_fromNymId, str_fromAcctId,
                                                                     strAttempt, strResponse);
 
     if (1 != nInterpretReply) // Failure
@@ -198,7 +199,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
         // Notice how I can send an instrument to myself. This doesn't actually send anything --
         // it just puts a copy into my outpayments box for safe-keeping.
         //
-        opentxs::OT_ME::It().send_user_payment(str_NotaryID, str_fromNymId, str_fromNymId, strVoucher);
+        opentxs::OT::App().API().OTME().send_user_payment(str_NotaryID, str_fromNymId, str_fromNymId, strVoucher);
     }
     // ---------------------------------------------------------
     // Download all the intermediary files (account balance, inbox, outbox, etc)
@@ -208,7 +209,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     {
         MTSpinner theSpinner;
 
-        bRetrieved = opentxs::OT_ME::It().retrieve_account(str_NotaryID, str_fromNymId, str_fromAcctId, true); //bForceDownload defaults to false.
+        bRetrieved = opentxs::OT::App().API().OTME().retrieve_account(str_NotaryID, str_fromNymId, str_fromAcctId, true); //bForceDownload defaults to false.
     }
     qDebug() << QString("%1 retrieving intermediary files for account %2. (After withdraw voucher.)").
                 arg(bRetrieved ? QString("Success") : QString("Failed")).arg(str_fromAcctId.c_str());
@@ -228,10 +229,10 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
     {
         MTSpinner theSpinner;
 
-        strSendResponse = opentxs::OT_ME::It().send_user_payment(str_NotaryID, str_fromNymId, str_toNymId, strVoucher);
+        strSendResponse = opentxs::OT::App().API().OTME().send_user_payment(str_NotaryID, str_fromNymId, str_toNymId, strVoucher);
     }
 
-    int32_t nReturnVal = opentxs::OT_ME::It().VerifyMessageSuccess(strSendResponse);
+    int32_t nReturnVal = opentxs::OT::App().API().OTME().VerifyMessageSuccess(strSendResponse);
 
     if (1 != nReturnVal)
     {
@@ -357,7 +358,7 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
     // ------------------------------------------------------------
 
 
-    if (!opentxs::OT_ME::It().make_sure_enough_trans_nums(1, str_NotaryID, str_fromNymId)) {
+    if (!opentxs::OT::App().API().OTME().make_sure_enough_trans_nums(1, str_NotaryID, str_fromNymId)) {
         qDebug() << QString("Failed trying to acquire a transaction number to write the cheque with.");
         return false;
     }
@@ -375,10 +376,10 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
     {
         MTSpinner theSpinner;
 
-        strResponse = opentxs::OT_ME::It().send_user_payment(str_NotaryID, str_fromNymId, str_toNymId, strCheque);
+        strResponse = opentxs::OT::App().API().OTME().send_user_payment(str_NotaryID, str_fromNymId, str_toNymId, strCheque);
     }
 
-    int32_t nReturnVal  = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
+    int32_t nReturnVal  = opentxs::OT::App().API().OTME().VerifyMessageSuccess(strResponse);
 
     if (1 != nReturnVal)
     {

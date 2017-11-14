@@ -13,6 +13,7 @@
 #include <QRunnable>
 
 #include <opentxs/api/Api.hpp>
+#include <opentxs/api/Native.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -77,7 +78,7 @@ QJsonValue MCRPCService::registerAccount(
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OT_ME::It().create_asset_acct(
+    std::string result = opentxs::OT::App().API().OTME().create_asset_acct(
         NotaryID.toStdString(),
         NymID.toStdString(),
         InstrumentDefinitionID.toStdString());
@@ -94,7 +95,7 @@ QJsonValue MCRPCService::registerAccount(
 
     // -1 error, 0 failure, 1 success.
     //
-    if (1 != opentxs::OT_ME::It().VerifyMessageSuccess(result)) {
+    if (1 != opentxs::OT::App().API().OTME().VerifyMessageSuccess(result)) {
         const int64_t lUsageCredits =
             Moneychanger::It()->HasUsageCredits(NotaryID, NymID);
 

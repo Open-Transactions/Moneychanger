@@ -15,6 +15,7 @@
 #include <core/handlers/focuser.h>
 
 #include <opentxs/api/Api.hpp>
+#include <opentxs/api/Native.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -588,7 +589,7 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     const bool bExpires             = ui->checkBoxExpires  ->isChecked();
     // ----------------------------------------------------
     {
-        if (!opentxs::OT_ME::It().make_sure_enough_trans_nums(2, notaryID, myNymId))
+        if (!opentxs::OT::App().API().OTME().make_sure_enough_trans_nums(2, notaryID, myNymId))
         {
             const QString qstrErr("Failed trying to acquire 2 transaction numbers (to write the recurring payment with.)");
             qDebug() << qstrErr;
@@ -648,10 +649,10 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     std::string  strResponse;
     {
         MTSpinner      theSpinner;
-        strResponse  = opentxs::OT_ME::It().send_user_payment(notaryID, myNymId, hisNymId, str_plan);
+        strResponse  = opentxs::OT::App().API().OTME().send_user_payment(notaryID, myNymId, hisNymId, str_plan);
     }
     // ------------------------------------------------------------
-    const int32_t nReturnVal = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
+    const int32_t nReturnVal = opentxs::OT::App().API().OTME().VerifyMessageSuccess(strResponse);
 
     if (1 != nReturnVal)
     {
