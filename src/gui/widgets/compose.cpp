@@ -568,10 +568,10 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
     {
         std::string strResponse; {
             MTSpinner theSpinner;
-            strResponse = opentxs::OT_ME::It().send_user_msg(str_NotaryID, str_fromNymId, str_toNymId, contents.toStdString());
+            strResponse = opentxs::OT::App().API().OTME().send_user_msg(str_NotaryID, str_fromNymId, str_toNymId, contents.toStdString());
         }
 
-        int32_t  nReturnVal = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
+        int32_t  nReturnVal = opentxs::OT::App().API().OTME().VerifyMessageSuccess(strResponse);
         if (1 != nReturnVal) {
             qDebug() << "OT send_message: Failed.";
             Moneychanger::It()->HasUsageCredits(str_NotaryID, str_fromNymId);
@@ -2489,7 +2489,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
 
                 qDebug() << QString("Nym Registration Response: %1").arg(QString::fromStdString(response));
 
-                int32_t nReturnVal = opentxs::OT_ME::It().VerifyMessageSuccess(response);
+                int32_t nReturnVal = opentxs::OT::App().API().OTME().VerifyMessageSuccess(response);
 
                 if (1 != nReturnVal)
                 {
@@ -2552,10 +2552,10 @@ bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrNot
                     {
                         MTSpinner theSpinner;
 
-                        response = opentxs::OT_ME::It().check_nym(notary_id, sender_id, recipient_id);
+                        response = opentxs::OT::App().API().OTME().check_nym(notary_id, sender_id, recipient_id);
                     }
 
-                    int32_t nReturnVal = opentxs::OT_ME::It().VerifyMessageSuccess(response);
+                    int32_t nReturnVal = opentxs::OT::App().API().OTME().VerifyMessageSuccess(response);
 
                     if (1 != nReturnVal)
                     {

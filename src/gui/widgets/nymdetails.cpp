@@ -177,7 +177,7 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
                     }
                 }
 
-                if (!opentxs::OT_ME::It().VerifyMessageSuccess(response)) {
+                if (!opentxs::OT::App().API().OTME().VerifyMessageSuccess(response)) {
                     Moneychanger::It()->HasUsageCredits(notary_id, nymId);
                     continue;
                 }
@@ -1885,13 +1885,13 @@ void MTNymDetails::AddButtonClicked()
                 str_id = opentxs::OT::App().API().Exec().CreateNymLegacy(1024, NYM_ID_SOURCE);
                 break;
 //            case 2: // 2048-bit RSA
-//                str_id = opentxs::OT_ME::It().create_nym_legacy(2048, NYM_ID_SOURCE);
+//                str_id = opentxs::OT::App().API().OTME().create_nym_legacy(2048, NYM_ID_SOURCE);
 //                break;
 //            case 3: // 4096-bit RSA
-//                str_id = opentxs::OT_ME::It().create_nym_legacy(4096, NYM_ID_SOURCE);
+//                str_id = opentxs::OT::App().API().OTME().create_nym_legacy(4096, NYM_ID_SOURCE);
 //                break;
 //            case 4: // 8192-bit RSA
-//                str_id = opentxs::OT_ME::It().create_nym_legacy(8192, NYM_ID_SOURCE);
+//                str_id = opentxs::OT::App().API().OTME().create_nym_legacy(8192, NYM_ID_SOURCE);
 //                break;
             default:
                 QMessageBox::warning(this, tr("Moneychanger"),
@@ -2280,8 +2280,8 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                             {
                                 MTSpinner theSpinner;
 
-                                std::string strResponse = opentxs::OT_ME::It().unregister_nym(str_notary_id, str_nym_id);
-                                nSuccess                = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
+                                std::string strResponse = opentxs::OT::App().API().OTME().unregister_nym(str_notary_id, str_nym_id);
+                                nSuccess                = opentxs::OT::App().API().OTME().VerifyMessageSuccess(strResponse);
                             }
                             // -1 is error,
                             //  0 is reply received: failure

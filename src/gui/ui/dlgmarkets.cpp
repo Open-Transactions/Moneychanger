@@ -413,9 +413,9 @@ bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrNotaryID, QString qstrNym
     {
         MTSpinner theSpinner;
 
-        const std::string str_reply = opentxs::OT_ME::It().get_nym_market_offers(qstrNotaryID.toStdString(),
+        const std::string str_reply = opentxs::OT::App().API().OTME().get_nym_market_offers(qstrNotaryID.toStdString(),
                                                                      qstrNymID   .toStdString());
-        const int32_t     nResult   = opentxs::OT_ME::It().VerifyMessageSuccess(str_reply);
+        const int32_t     nResult   = opentxs::OT::App().API().OTME().VerifyMessageSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }
@@ -720,9 +720,9 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrNotaryID, QString qstrNy
     {
         MTSpinner theSpinner;
 
-        const std::string str_reply = opentxs::OT_ME::It().get_market_list(qstrNotaryID.toStdString(),
+        const std::string str_reply = opentxs::OT::App().API().OTME().get_market_list(qstrNotaryID.toStdString(),
                                                                qstrNymID   .toStdString());
-        const int32_t     nResult   = opentxs::OT_ME::It().VerifyMessageSuccess(str_reply);
+        const int32_t     nResult   = opentxs::OT::App().API().OTME().VerifyMessageSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }

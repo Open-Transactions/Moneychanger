@@ -200,7 +200,7 @@ void MTOfferDetails::AddButtonClicked()
         {
             MTSpinner theSpinner;
             // --------------------------------------------------------------
-            strResponse = opentxs::OT_ME::It().create_market_offer(str_asset_acct_id,
+            strResponse = opentxs::OT::App().API().OTME().create_market_offer(str_asset_acct_id,
                                                        str_currency_acct_id,
                                                        lScale,
                                                        lMinIncrement,
@@ -214,7 +214,7 @@ void MTOfferDetails::AddButtonClicked()
         // --------------------------------------------------------
         const std::string strAttempt("create_market_offer");
 
-        int32_t nInterpretReply = opentxs::OT_ME::It().InterpretTransactionMsgReply(str_notary_id,
+        int32_t nInterpretReply = opentxs::OT::App().API().OTME().InterpretTransactionMsgReply(str_notary_id,
                                                                         str_nym_id,
                                                                         str_asset_acct_id,
                                                                         strAttempt, strResponse);
@@ -284,7 +284,7 @@ void MTOfferDetails::DeleteButtonClicked()
                 {
                     MTSpinner theSpinner;
                     // --------------------------------------------------------------
-                    strResponse = opentxs::OT_ME::It().kill_market_offer(str_notary_id,
+                    strResponse = opentxs::OT::App().API().OTME().kill_market_offer(str_notary_id,
                                                              str_nym_id,
                                                              str_asset_acct_id,
                                                              lTransID);
@@ -292,7 +292,7 @@ void MTOfferDetails::DeleteButtonClicked()
                 // --------------------------------------------------------
                 const std::string strAttempt("kill_market_offer");
 
-                int32_t nInterpretReply = opentxs::OT_ME::It().InterpretTransactionMsgReply(str_notary_id,
+                int32_t nInterpretReply = opentxs::OT::App().API().OTME().InterpretTransactionMsgReply(str_notary_id,
                                                                                 str_nym_id,
                                                                                 str_asset_acct_id,
                                                                                 strAttempt, strResponse);

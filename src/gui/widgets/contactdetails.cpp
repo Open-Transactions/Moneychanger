@@ -1105,10 +1105,10 @@ void MTContactDetails::on_pushButtonRefresh_clicked()
             {
                 MTSpinner theSpinner;
 
-                response = opentxs::OT_ME::It().check_nym(notary_id, my_nym_id, str_nym_id);
+                response = opentxs::OT::App().API().OTME().check_nym(notary_id, my_nym_id, str_nym_id);
             }
 
-            int32_t nReturnVal = opentxs::OT_ME::It().VerifyMessageSuccess(response);
+            int32_t nReturnVal = opentxs::OT::App().API().OTME().VerifyMessageSuccess(response);
 
             if (1 == nReturnVal)
             {
@@ -1206,10 +1206,10 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
                     {
                         MTSpinner theSpinner;
 
-                        response = opentxs::OT_ME::It().check_nym(notary_id, my_nym_id, str_nym_id);
+                        response = opentxs::OT::App().API().OTME().check_nym(notary_id, my_nym_id, str_nym_id);
                     }
 
-                    int32_t nReturnVal = opentxs::OT_ME::It().VerifyMessageSuccess(response);
+                    int32_t nReturnVal = opentxs::OT::App().API().OTME().VerifyMessageSuccess(response);
 
                     if (1 == nReturnVal)
                     {

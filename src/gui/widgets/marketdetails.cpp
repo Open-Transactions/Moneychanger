@@ -194,9 +194,9 @@ bool MTMarketDetails::LowLevelRetrieveMarketOffers(opentxs::OTDB::MarketData & m
     bool bSuccess = false;
     {
         MTSpinner         theSpinner;
-        const std::string str_reply = opentxs::OT_ME::It().get_market_offers(marketData.notary_id, strNymID,
+        const std::string str_reply = opentxs::OT::App().API().OTME().get_market_offers(marketData.notary_id, strNymID,
                                                                  marketData.market_id, MAX_DEPTH);
-        const int32_t     nResult   = opentxs::OT_ME::It().VerifyMessageSuccess(str_reply);
+        const int32_t     nResult   = opentxs::OT::App().API().OTME().VerifyMessageSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }
@@ -522,9 +522,9 @@ bool MTMarketDetails::LowLevelRetrieveMarketTrades(opentxs::OTDB::MarketData & m
     {
         MTSpinner theSpinner;
 
-        const std::string str_reply = opentxs::OT_ME::It().get_market_recent_trades(marketData.notary_id, strNymID,
+        const std::string str_reply = opentxs::OT::App().API().OTME().get_market_recent_trades(marketData.notary_id, strNymID,
                                                                         marketData.market_id);
-        const int32_t     nResult   = opentxs::OT_ME::It().VerifyMessageSuccess(str_reply);
+        const int32_t     nResult   = opentxs::OT::App().API().OTME().VerifyMessageSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }

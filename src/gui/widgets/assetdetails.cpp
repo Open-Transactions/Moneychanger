@@ -230,10 +230,10 @@ void MTAssetDetails::on_pushButton_clicked()
                                     {
                                         MTSpinner theSpinner;
 
-                                        const std::string str_reply = opentxs::OT_ME::It().retrieve_contract(qstrNotaryID.toStdString(),
+                                        const std::string str_reply = opentxs::OT::App().API().OTME().retrieve_contract(qstrNotaryID.toStdString(),
                                                                                                  qstrNymID   .toStdString(),
                                                                                                  qstrAssetID .toStdString());
-                                        const int32_t     nResult   = opentxs::OT_ME::It().VerifyMessageSuccess(str_reply);
+                                        const int32_t     nResult   = opentxs::OT::App().API().OTME().VerifyMessageSuccess(str_reply);
 
                                         bSuccess = (1 == nResult);
                                     }
@@ -254,10 +254,10 @@ void MTAssetDetails::on_pushButton_clicked()
                                     {
                                         MTSpinner theSpinner;
 
-                                        const std::string str_reply = opentxs::OT_ME::It().issue_asset_type(qstrNotaryID.toStdString(),
+                                        const std::string str_reply = opentxs::OT::App().API().OTME().issue_asset_type(qstrNotaryID.toStdString(),
                                                                                                 qstrNymID   .toStdString(),
                                                                                                 qstrContents.toStdString());
-                                        const int32_t     nResult   = opentxs::OT_ME::It().VerifyMessageSuccess(str_reply);
+                                        const int32_t     nResult   = opentxs::OT::App().API().OTME().VerifyMessageSuccess(str_reply);
 
                                         bSuccess = (1 == nResult);
 

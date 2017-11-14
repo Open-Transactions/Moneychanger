@@ -1618,7 +1618,7 @@ void MTAccountDetails::DeleteButtonClicked()
         {
             MTSpinner theSpinner;
 
-            bRetrieved = opentxs::OT_ME::It().retrieve_account(str_notary_id, str_owner_nym_id, str_account_id, true); //bForceDownload defaults to false.
+            bRetrieved = opentxs::OT::App().API().OTME().retrieve_account(str_notary_id, str_owner_nym_id, str_account_id, true); //bForceDownload defaults to false.
         }
         qDebug() << QString("%1 retrieving intermediary files for account %2. (Precursor to delete account.)").
                     arg(bRetrieved ? QString("Success") : QString("Failed")).arg(str_account_id.c_str());
@@ -1649,8 +1649,8 @@ void MTAccountDetails::DeleteButtonClicked()
             {
                 MTSpinner theSpinner;
 
-                std::string strResponse = opentxs::OT_ME::It().unregister_account(str_notary_id, str_owner_nym_id, str_account_id);
-                nSuccess                = opentxs::OT_ME::It().VerifyMessageSuccess(strResponse);
+                std::string strResponse = opentxs::OT::App().API().OTME().unregister_account(str_notary_id, str_owner_nym_id, str_account_id);
+                nSuccess                = opentxs::OT::App().API().OTME().VerifyMessageSuccess(strResponse);
             }
             // -1 is error,
             //  0 is reply received: failure
@@ -1791,13 +1791,13 @@ void MTAccountDetails::AddButtonClicked()
         {
             MTSpinner theSpinner;
 
-            strResponse = opentxs::OT_ME::It().create_asset_acct(qstrNotaryID.toStdString(),
+            strResponse = opentxs::OT::App().API().OTME().create_asset_acct(qstrNotaryID.toStdString(),
                                                      qstrNymID   .toStdString(),
                                                      qstrInstrumentDefinitionID .toStdString());
         }
         // -1 error, 0 failure, 1 success.
         //
-        if (1 != opentxs::OT_ME::It().VerifyMessageSuccess(strResponse))
+        if (1 != opentxs::OT::App().API().OTME().VerifyMessageSuccess(strResponse))
         {
             const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(qstrNotaryID, qstrNymID);
 
