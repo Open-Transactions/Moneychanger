@@ -22,6 +22,7 @@
 #include <core/handlers/focuser.h>
 
 #include <opentxs/api/Api.hpp>
+#include <opentxs/api/Native.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/OTStorage.hpp>

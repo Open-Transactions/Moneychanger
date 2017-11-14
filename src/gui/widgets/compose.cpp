@@ -13,6 +13,7 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
 
+#include <opentxs/api/Native.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>

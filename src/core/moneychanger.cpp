@@ -61,6 +61,7 @@
 
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
+#include <opentxs/api/Native.hpp>
 #include <opentxs/api/OT.hpp>
 #include <opentxs/api/Wallet.hpp>
 #include <opentxs/client/OT_API.hpp>
@@ -579,7 +580,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     nmc_timer_event ();
 
     opentxs::OT::App().Schedule(
-        5,
+        std::chrono::seconds(5),
         [&]()->void
             {
                 const auto count =
@@ -595,9 +596,9 @@ Moneychanger::Moneychanger(QWidget *parent)
       );
 
     opentxs::OT::App().Schedule(
-        120,
+        std::chrono::seconds(120),
         []()->void{ opentxs::OT::App().API().OTME_TOO().Refresh(); },
-        (std::time(nullptr)+60));
+        (std::chrono::seconds(std::time(nullptr)+60)));
 
     //SQLite database
     // This can be moved very easily into a different class
