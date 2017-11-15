@@ -21,11 +21,12 @@
 #include <core/handlers/modelpayments.hpp>
 #include <core/handlers/focuser.h>
 
+#include <opentxs/api/storage/Storage.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/api/OT.hpp>
+#include <opentxs/OT.hpp>
 #include <opentxs/api/Wallet.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>

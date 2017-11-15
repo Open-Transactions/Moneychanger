@@ -59,10 +59,10 @@
 #include <gui/ui/agreements.hpp>
 #include <gui/ui/activity.hpp>
 
+#include <opentxs/api/storage/Storage.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/api/OT.hpp>
 #include <opentxs/api/Wallet.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OT_ME.hpp>
@@ -73,6 +73,7 @@
 #include <opentxs/core/crypto/OTPasswordData.hpp>
 #include <opentxs/core/Nym.hpp>
 #include <opentxs/ext/OTPayment.hpp>
+#include <opentxs/OT.hpp>
 
 #include <QMenu>
 #include <QApplication>
