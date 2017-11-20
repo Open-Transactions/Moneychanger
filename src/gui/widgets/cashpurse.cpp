@@ -146,12 +146,13 @@ void MTCashPurse::refresh(QString strID, QString strName)
         // -----------------------------------
         if (raw_cash_balance > 0)
         {
-            // --------------------------------------
+#if OT_CASH
             std::string str_purse = opentxs::OT::App().API().Exec().LoadPurse(str_acct_server, str_acct_asset, str_acct_nym);
 
             if (!str_purse.empty())
             {
                 int32_t purse_count = opentxs::OT::App().API().Exec().Purse_Count(str_acct_server, str_acct_asset, str_purse);
+
                 // -------------------------------------------------------
                 ui->tableWidget->setRowCount(static_cast<int>(purse_count));
                 // -------------------------------------------------------
@@ -207,10 +208,13 @@ void MTCashPurse::refresh(QString strID, QString strName)
                         connect(pCheckbox, SIGNAL(stateChanged(int) ), this, SLOT(checkboxClicked(int)));
                     }
 
+#if OT_CASH
                     str_purse = opentxs::OT::App().API().Exec().Purse_Pop(str_acct_server, str_acct_asset, str_acct_nym, str_purse);
+#endif  // OT_CASH
                 } // for
                 // -------------------------------------------------------
             } // if purse not empty.
+#endif  // OT_CASH
         } // if cash balance > 0.
     }
     // --------------------------------------------

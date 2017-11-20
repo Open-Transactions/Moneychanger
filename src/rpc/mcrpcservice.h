@@ -954,6 +954,7 @@ public Q_SLOTS:
         QString Username,
         QString APIKey,
         QString NymID);
+#if OT_CASH
     QJsonValue mintIsStillGood(
         QString Username,
         QString APIKey,
@@ -964,6 +965,7 @@ public Q_SLOTS:
         QString APIKey,
         QString NotaryID,
         QString InstrumentDefinitionID);
+#endif  // OT_CASH
     QJsonValue loadServerContract(
         QString Username,
         QString APIKey,
@@ -1238,6 +1240,7 @@ public Q_SLOTS:
         QString NymID,
         QString AccountID,
         QString Message);
+#if OT_CASH
     QJsonValue savePurse(
         QString Username,
         QString APIKey,
@@ -1372,6 +1375,7 @@ public Q_SLOTS:
         QString Username,
         QString APIKey,
         QString Token);
+#endif  // OT_CASH
     QJsonValue isBasketCurrency(
         QString Username,
         QString APIKey,
@@ -1516,6 +1520,7 @@ public Q_SLOTS:
         QString APIKey,
         QString NotaryID,
         QString NymID);
+#if OT_CASH
     QJsonValue notarizeWithdrawal(
         QString Username,
         QString APIKey,
@@ -1530,6 +1535,7 @@ public Q_SLOTS:
         QString NymID,
         QString AccountID,
         QString Purse);
+#endif  // OT_CASH
     QJsonValue notarizeTransfer(
         QString Username,
         QString APIKey,

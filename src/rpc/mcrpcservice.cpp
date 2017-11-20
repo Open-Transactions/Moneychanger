@@ -4102,6 +4102,7 @@ QJsonValue MCRPCService::verifyUserPrivateKey(
     return QJsonValue(object);
 }
 
+#if OT_CASH
 QJsonValue MCRPCService::mintIsStillGood(
     QString Username,
     QString APIKey,
@@ -4153,6 +4154,7 @@ QJsonValue MCRPCService::loadMint(
     QJsonObject object{{"LoadMintResult", QString(result.c_str())}};
     return QJsonValue(object);
 }
+#endif  // OT_CASH
 
 QJsonValue MCRPCService::loadServerContract(
     QString Username,
@@ -5454,6 +5456,7 @@ QJsonValue MCRPCService::messageGetBalanceAgreementSuccess(
     return QJsonValue(object);
 }
 
+#if OT_CASH
 QJsonValue MCRPCService::savePurse(
     QString Username,
     QString APIKey,
@@ -6111,6 +6114,7 @@ QJsonValue MCRPCService::tokenGetNotaryID(
     QJsonObject object{{"TokenNotaryID", QString(result.c_str())}};
     return QJsonValue(object);
 }
+#endif  // OT_CASH
 
 QJsonValue MCRPCService::isBasketCurrency(
     QString Username,
@@ -6771,6 +6775,7 @@ QJsonValue MCRPCService::getTransactionNumbers(
     return QJsonValue(object);
 }
 
+#if OT_CASH
 QJsonValue MCRPCService::notarizeWithdrawal(
     QString Username,
     QString APIKey,
@@ -6838,6 +6843,7 @@ QJsonValue MCRPCService::notarizeDeposit(
     QJsonObject object{{"NotarizeDepositResult", result}};
     return QJsonValue(object);
 }
+#endif  // OT_CASH
 
 QJsonValue MCRPCService::notarizeTransfer(
     QString Username,
