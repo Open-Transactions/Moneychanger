@@ -6024,6 +6024,7 @@ void Moneychanger::mc_import_slot()
     // Next, let's see if the purse is password-protected, and if not,
     // let's see if the recipient Nym is named on the instrument. (He may not be.)
     //
+#if OT_CASH
     const bool  bHasPassword = opentxs::OT::App().API().Exec().Purse_HasPassword(strNotaryID, strInstrument);
     std::string strPurseOwner("");
 
@@ -6210,6 +6211,9 @@ void Moneychanger::mc_import_slot()
             }
         }
     }
+#else
+    return;
+#endif  // OT_CASH
 }
 
 // -----------------------------------------------

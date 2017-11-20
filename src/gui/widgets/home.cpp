@@ -329,6 +329,7 @@ int64_t MTHome::rawCashBalance(QString qstr_notary_id, QString qstr_asset_id, QS
     std::string InstrumentDefinitionID (qstr_asset_id.toStdString());
     std::string nymId   (qstr_nym_id.toStdString());
 
+#if OT_CASH
     std::string str_purse = opentxs::OT::App().API().Exec().LoadPurse(NotaryID, InstrumentDefinitionID, nymId);
 
     if (!str_purse.empty())
@@ -338,6 +339,7 @@ int64_t MTHome::rawCashBalance(QString qstr_notary_id, QString qstr_asset_id, QS
         if (temp_balance >= 0)
             balance = temp_balance;
     }
+#endif  // OT_CASH
 
     return balance;
 }

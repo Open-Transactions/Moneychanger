@@ -10,6 +10,7 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 
+#include <opentxs/api/network/ZMQ.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
 #include <opentxs/OT.hpp>
@@ -21,7 +22,6 @@
 #include <opentxs/core/script/OTSmartContract.hpp>
 #include <opentxs/core/NumList.hpp>
 #include <opentxs/ext/OTPayment.hpp>
-#include <opentxs/network/ZMQ.hpp>
 
 #include <QDir>
 #include <QMessageBox>
