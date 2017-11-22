@@ -44,16 +44,16 @@ QSqlQueryMessages::QSqlQueryMessages(QObject *parent/*=0*/) : QSqlQueryModel(par
 
 QVariant QSqlQueryMessages::data ( const QModelIndex & index, int role/*=Qt::DisplayRole*/) const
 {
-    if (role==Qt::DisplayRole && QSqlQueryModel::data(index,role).isValid())
-    {
-        if (index.column() == CONV_SOURCE_COL_BODY) // message body
-        {
-            QVariant qvarData      = QSqlQueryModel::data(index,role);
-            QString  qstrData      = qvarData.isValid() ? qvarData.toString() : "";
-            QString  qstrDecrypted = qstrData.isEmpty() ? "" : MTContactHandler::Decrypt(qstrData);
-            return QVariant(qstrDecrypted);
-        }
-    }
+//    if (role==Qt::DisplayRole && QSqlQueryModel::data(index,role).isValid())
+//    {
+//        if (index.column() == CONV_SOURCE_COL_BODY) // message body
+//        {
+//            QVariant qvarData      = QSqlQueryModel::data(index,role);
+//            QString  qstrData      = qvarData.isValid() ? qvarData.toString() : "";
+//            QString  qstrDecrypted = qstrData.isEmpty() ? "" : MTContactHandler::Decrypt(qstrData);
+//            return QVariant(qstrDecrypted);
+//        }
+//    }
     return QSqlQueryModel::data(index,role);
 }
 
@@ -303,12 +303,11 @@ QVariant ConvMsgsProxyModel::data ( const QModelIndex & index, int role/* = Qt::
 //    }
 //    // ----------------------------------------
     else
-    if ( role==Qt::DisplayRole && index.isValid() &&
-        QSortFilterProxyModel::data(index,role).isValid())
+    if ( role==Qt::DisplayRole && index.isValid())
+//      && QSortFilterProxyModel::data(index,role).isValid())
     {
         const int nSourceRow    = headerData(index.row(),    Qt::Vertical,   Qt::UserRole).toInt();
         const int nSourceColumn = headerData(index.column(), Qt::Horizontal, Qt::UserRole).toInt();
-
         QModelIndex sourceIndex = sourceModel()->index(nSourceRow, nSourceColumn);
         QVariant    sourceData  = sourceModel()->data(sourceIndex, role);
 
@@ -316,12 +315,13 @@ QVariant ConvMsgsProxyModel::data ( const QModelIndex & index, int role/* = Qt::
         {
             if (nullptr != pTableView_)
             {
-                if (nullptr == pTableView_->indexWidget(index))
+                if (   (nullptr == pTableView_->indexWidget(index))
+                    && sourceData.isValid())
                 {
                     QWidget * pWidget = CreateDetailHeaderWidget(nSourceRow);
                     pWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Ignored);
                     pTableView_->setIndexWidget(index, pWidget);
-                    pTableView_->setRowHeight(index.row(), pWidget->height()*1.2);
+//                  pTableView_->setRowHeight(index.row(), pWidget->height()*1.2);
                 }
             }
             return QVariant();
@@ -388,41 +388,44 @@ QVariant ConvMsgsProxyModel::data ( const QModelIndex & index, int role/* = Qt::
 //#define CONV_SOURCE_COL_BODY 6
 
 // TODO: Make this appear as a bubble chat style conversation.
-QWidget * ConvMsgsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, bool bExternal/*=true*/) const
+QWidget * ConvMsgsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, bool bExternal/*=false*/) const
 {
-    QModelIndex sourceIndex_MsgId          = sourceModel()->index(nSourceRow, CONV_SOURCE_COL_MSG_ID);
-    QModelIndex sourceIndex_MyNymId        = sourceModel()->index(nSourceRow, CONV_SOURCE_COL_MY_NYM);
-    QModelIndex sourceIndex_ThreadId       = sourceModel()->index(nSourceRow, CONV_SOURCE_COL_THREAD_ID);
-    QModelIndex sourceIndex_ThreadItemId   = sourceModel()->index(nSourceRow, CONV_SOURCE_COL_ITEM_ID);
-    QModelIndex sourceIndex_Timestamp      = sourceModel()->index(nSourceRow, CONV_SOURCE_COL_TIMESTAMP);
+//  QModelIndex sourceIndex_MsgId          = sourceModel()->index(nSourceRow, CONV_SOURCE_COL_MSG_ID);
+//  QModelIndex sourceIndex_MyNymId        = sourceModel()->index(nSourceRow, CONV_SOURCE_COL_MY_NYM);
+//  QModelIndex sourceIndex_ThreadId       = sourceModel()->index(nSourceRow, CONV_SOURCE_COL_THREAD_ID);
+//  QModelIndex sourceIndex_ThreadItemId   = sourceModel()->index(nSourceRow, CONV_SOURCE_COL_ITEM_ID);
+//  QModelIndex sourceIndex_Timestamp      = sourceModel()->index(nSourceRow, CONV_SOURCE_COL_TIMESTAMP);
     QModelIndex sourceIndex_Folder         = sourceModel()->index(nSourceRow, CONV_SOURCE_COL_FOLDER);
     QModelIndex sourceIndex_Body           = sourceModel()->index(nSourceRow, CONV_SOURCE_COL_BODY);
 
-    QVariant sourceData_MsgId          = sourceModel()->data(sourceIndex_MsgId,        Qt::DisplayRole);
-    QVariant sourceData_MyNymId        = sourceModel()->data(sourceIndex_MyNymId,      Qt::DisplayRole);
-    QVariant sourceData_ThreadId       = sourceModel()->data(sourceIndex_ThreadId,     Qt::DisplayRole);
-    QVariant sourceData_ThreadItemId   = sourceModel()->data(sourceIndex_ThreadItemId, Qt::DisplayRole);
-    QVariant sourceData_Timestamp      = sourceModel()->data(sourceIndex_Timestamp,    Qt::DisplayRole);
+//  QVariant sourceData_MsgId          = sourceModel()->data(sourceIndex_MsgId,        Qt::DisplayRole);
+//  QVariant sourceData_MyNymId        = sourceModel()->data(sourceIndex_MyNymId,      Qt::DisplayRole);
+//  QVariant sourceData_ThreadId       = sourceModel()->data(sourceIndex_ThreadId,     Qt::DisplayRole);
+//  QVariant sourceData_ThreadItemId   = sourceModel()->data(sourceIndex_ThreadItemId, Qt::DisplayRole);
+//  QVariant sourceData_Timestamp      = sourceModel()->data(sourceIndex_Timestamp,    Qt::DisplayRole);
     QVariant sourceData_Folder         = sourceModel()->data(sourceIndex_Folder,       Qt::DisplayRole);
     QVariant sourceData_Body           = sourceModel()->data(sourceIndex_Body,         Qt::DisplayRole);
 
-    const int64_t lMsgId  = sourceData_MsgId.isValid() ? sourceData_MsgId.toLongLong() : 0;
+//  const int64_t lMsgId  = sourceData_MsgId.isValid() ? sourceData_MsgId.toLongLong() : 0;
     const int     nFolder = sourceData_Folder.isValid() ? sourceData_Folder.toInt() : -1;
 
-    QString     qstrMyNymId     = sourceData_MyNymId.isValid() ? sourceData_MyNymId.toString() : "";
-    QString     qstrThreadId = sourceData_ThreadId.isValid() ? sourceData_ThreadId   .toString() : "";
-    QString     qstrThreadItemId  = sourceData_ThreadItemId.isValid() ? sourceData_ThreadItemId.toString() : "";
-    QString     qstrBody = sourceData_Body.isValid() ? sourceData_Body.toString() : "";
+//  QString     qstrMyNymId     = sourceData_MyNymId.isValid() ? sourceData_MyNymId.toString() : "";
+//  QString     qstrThreadId = sourceData_ThreadId.isValid() ? sourceData_ThreadId   .toString() : "";
+//  QString     qstrThreadItemId  = sourceData_ThreadItemId.isValid() ? sourceData_ThreadItemId.toString() : "";
 
-    time64_t the_time = sourceData_Timestamp.isValid() ? sourceData_Timestamp.toLongLong() : 0;
-    QDateTime timestamp;
-    timestamp.setTime_t(the_time);
-    QString qstrTimestamp = QString(timestamp.toString(Qt::SystemLocaleShortDate));
+    const QString qstrEncryptedBody = sourceData_Body.isValid() ? sourceData_Body.toString() : "";
+    QString qstrBody = (!qstrEncryptedBody.isEmpty() && bExternal)
+            ? MTContactHandler::Decrypt(qstrEncryptedBody)
+            : qstrEncryptedBody;
+
+//  time64_t the_time = sourceData_Timestamp.isValid() ? sourceData_Timestamp.toLongLong() : 0;
+//  QDateTime timestamp;
+//  timestamp.setTime_t(the_time);
+//  QString qstrTimestamp = QString(timestamp.toString(Qt::SystemLocaleShortDate));
     // -------------------------------------------------
     const bool bIsOutgoing     = (nFolder == 0);
     // --------------------------------------------------------------------------------------------
-//    std::string str_desc = qstrDescription.toStdString();
-//    // ---------------------------------------
+//  std::string str_desc = qstrDescription.toStdString();
     // --------------------------------------------------------------------------------------------
     QWidget * row_widget = new QWidget;
     QGridLayout * row_widget_layout = new QGridLayout;
@@ -514,7 +517,7 @@ QWidget * ConvMsgsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, boo
 
     const QString qstrStyleSheet = QString("QLabel { background-color : %1; color : %2; font-size:11pt;}").arg(strBackgroundColor).arg(strTextColor);
 
-//    row_content_body_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
+//  row_content_body_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
     row_content_body_label->setStyleSheet(qstrStyleSheet);
     row_content_body_label->setWordWrap(true);
     row_content_body_label->setMargin(2);
@@ -522,6 +525,7 @@ QWidget * ConvMsgsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, boo
     row_content_body_string.replace("\r\n"," ");
     row_content_body_string.replace("\n\r"," ");
     row_content_body_string.replace("\n",  " ");
+    row_content_body_string.replace("\r",  " ");
     row_content_body_label->setText(row_content_body_string);
 
     if(bIsOutgoing)

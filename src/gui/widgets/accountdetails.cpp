@@ -27,6 +27,7 @@
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OTME_too.hpp>
+#include <opentxs/core/Account.hpp>
 
 #include <QMessageBox>
 #include <QMenu>
@@ -1633,8 +1634,14 @@ void MTAccountDetails::DeleteButtonClicked()
 
         if (!bCanRemove)
         {
-            QMessageBox::warning(this, tr("Account Cannot Be Deleted"),
-                                 tr("This Account cannot be deleted until it has a zero balance and an empty inbox."));
+            const opentxs::Identifier id_acct{str_account_id};
+            const opentxs::Account * pAccount = opentxs::OT::App().API().OTAPI().GetAccount(id_acct, __FUNCTION__);
+
+            QString qstrMessage = QString("%1. %2")
+                    .arg(tr("This Account cannot be deleted until it has a zero balance and an empty inbox"))
+                    .arg((nullptr != pAccount && pAccount->IsIssuer())
+                         ? QString(tr("Also, issuer accounts cannot simply be deleted. The unit type itself must be un-issued first."))
+                         : QString(""));
             return;
         }
         // ----------------------------------------------------

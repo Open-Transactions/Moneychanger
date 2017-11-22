@@ -178,7 +178,7 @@ public:
 
     void setTableView(QTableView * pTableView) { pTableView_ = pTableView; }
 
-    QWidget * CreateDetailHeaderWidget(const int nSourceRow, bool bExternal=true) const;
+    QWidget * CreateDetailHeaderWidget(const int nSourceRow, bool bExternal=false) const;
 
 protected:
     // That means there is only 1 main filter type:
