@@ -167,8 +167,14 @@ protected:
     int64_t GetAccountBalancesTotaledForUnitTypes(const mapIDName & mapUnitTypeIds);
 
     mapIDName & GetOrCreateAccountIdMapByServerId(QString qstrServerId, mapOfMapIDName & bigMap);
-    void GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, bool bPairedOrHosted); // true == paired, false == hosted.
+    void GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, bool bPairedOrHosted, // true == paired, false == hosted.
+                                    mapIDName * pMapTLAbyAccountId=nullptr);
 
+    void GetAccountsByTLAFromMap(const mapIDName & mapAccounts, // input
+                                 const mapIDName & mapTLAByAccountId, // input
+                                 mapOfMapIDName  & bigMap); // output
+
+    mapIDName & GetOrCreateAccountIdMapByTLA(QString qstrTLA, mapOfMapIDName & bigMap);
 
     bool request_deposit_address(
         const std::string str_notary_id,
@@ -261,6 +267,8 @@ private slots:
     void on_toolButton_decrypt_clicked();
     void on_toolButton_transport_clicked();
     void on_toolButton_liveAgreements_clicked();
+
+    void on_tableViewConversation_clicked(const QModelIndex &index);
 
 private:
     Ui::Activity *ui{nullptr};

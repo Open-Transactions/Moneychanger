@@ -380,16 +380,25 @@ int64_t Activity::GetAccountBalancesTotaledForUnitTypes(const mapIDName & mapUni
 }
 
 
-void Activity::GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, bool bPairedOrHosted) // true == paired, false == hosted.
+void Activity::GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, bool bPairedOrHosted, // true == paired, false == hosted.
+                                          mapIDName * pMapTLAbyAccountId/*=nullptr*/)
 {
+    const bool bCallerWantsToSeePairedNodes = bPairedOrHosted;
+
     int32_t  account_count = opentxs::OT::App().API().Exec().GetAccountCount();
 
     for (int32_t ii = 0; ii < account_count; ii++)
     {
         const QString OT_id   = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_ID(ii));
         const QString OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(OT_id.toStdString()));
-        const QString qstrServerId = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID(OT_id.toStdString()));
-        const std::string str_server_id = qstrServerId.toStdString();
+        const std::string str_server_id = opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID(OT_id.toStdString());
+        const QString qstrServerId = QString::fromStdString(str_server_id);
+
+        const std::string str_unit_type_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(OT_id.toStdString());
+        const QString qstrUnitTypeId = QString::fromStdString(str_unit_type_id);
+
+        const std::string OT_asset_TLA  = opentxs::OT::App().API().Exec().GetCurrencyTLA(str_unit_type_id);
+        const QString qstrTLA = QString::fromStdString(OT_asset_TLA);
 
         // bPaireding means, paired or in the process of pairing.
         const bool bPaireding = opentxs::OT::App().API().OTME_TOO().PairingStarted(str_server_id);
@@ -397,10 +406,15 @@ void Activity::GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, bool bPairedO
         // Basically the caller either wants a list of accounts by server ID for PAIRED servers,
         // OR he wants a list of accounts by server ID for NON-Paired (hosted) servers.
         // So those are the two cases where we add the server to the list.
-        if ( (bPairedOrHosted && bPaireding) || (!bPairedOrHosted && !bPaireding))
+        if (    ( bPaireding &&  bCallerWantsToSeePairedNodes)
+             || (!bPaireding && !bCallerWantsToSeePairedNodes))
         {
             mapIDName & mapServerId = GetOrCreateAccountIdMapByServerId(qstrServerId, bigMap);
             mapServerId.insert(OT_id, OT_name);
+
+            if (nullptr != pMapTLAbyAccountId) {
+                pMapTLAbyAccountId->insert(OT_id, qstrTLA);
+            }
         }
     }
 }
@@ -408,14 +422,52 @@ void Activity::GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, bool bPairedO
 mapIDName & Activity::GetOrCreateAccountIdMapByServerId(QString qstrServerId, mapOfMapIDName & bigMap)
 {
     mapOfMapIDName::iterator i = bigMap.find(qstrServerId);
-    while (i != bigMap.end() && i.key() == qstrServerId) {
+    while ((i != bigMap.end()) && (0 == qstrServerId.compare(i.key()))) {
         return i.value();
     }
     // else create it.
-    bigMap[qstrServerId] = mapIDName{};
+    bigMap.insert(qstrServerId, mapIDName{});
     i = bigMap.find(qstrServerId);
     return i.value();
 }
+
+
+
+void Activity::GetAccountsByTLAFromMap(
+    const mapIDName & mapAccounts, // input
+    const mapIDName & mapTLAByAccountId, // input
+    mapOfMapIDName  & bigMap) // ouput
+{
+    mapIDName::const_iterator it_accounts = mapAccounts.begin();
+
+    while (it_accounts != mapAccounts.end()) {
+
+        const QString & qstrKey   = it_accounts.key(); // account id
+        const QString & qstrValue = it_accounts.value(); // account name
+
+        mapIDName::const_iterator it_TLA = mapTLAByAccountId.find(qstrKey);
+
+        if (it_TLA != mapTLAByAccountId.end()) {
+            const QString qstrTLA = it_TLA.value();
+            mapIDName & mapAccounts = GetOrCreateAccountIdMapByTLA(qstrTLA, bigMap);
+            mapAccounts.insert(qstrKey, qstrValue);
+        }
+        it_accounts++;
+    }
+}
+
+mapIDName & Activity::GetOrCreateAccountIdMapByTLA(QString qstrTLA, mapOfMapIDName & bigMap)
+{
+    mapOfMapIDName::iterator i = bigMap.find(qstrTLA);
+    while ((i != bigMap.end()) && (0 == qstrTLA.compare(i.key()))) {
+        return i.value();
+    }
+    // else create it.
+    bigMap.insert(qstrTLA, mapIDName{});
+    i = bigMap.find(qstrTLA);
+    return i.value();
+}
+
 
 
 /*
@@ -584,12 +636,16 @@ void Activity::RefreshAccountTree()
 
     // ----------------------------------------
     mapOfMapIDName bigMapPairedAccounts;
+    mapIDName mapTLAByAccountId;
+
+    // First we'll do paired notaries.
 
     const uint64_t paired_node_count = opentxs::OT::App().API().OTME_TOO().PairedNodeCount();
 
     if (paired_node_count > 0)
     {
-        this->GetAccountIdMapsByServerId(bigMapPairedAccounts, true); // True means, only give me paired servers.
+        this->GetAccountIdMapsByServerId(bigMapPairedAccounts, true, // True means, only give me accounts on paired servers.
+                                         &mapTLAByAccountId);
         // ----------------------------------------
         QTreeWidgetItem * pYourNodeItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Your Stash Node")));
         items.append(pYourNodeItem);
@@ -671,65 +727,167 @@ void Activity::RefreshAccountTree()
 
             if (ci_paired != bigMapPairedAccounts.end() && (0 == qstrServerId.compare(ci_paired.key()))) // Found some.
             {
+//                mapOfMapIDName bigMapAccountsByTLA;
+//                const mapIDName & mapAccounts = ci_paired.value();
+//                const std::string str_server_id = qstrServerId.toStdString();
+//                qstrSnpName = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(str_server_id));
+//                // ------------------------------------------------------
+//                this->GetAccountsByTLAFromMap(mapAccounts, // input
+//                                              mapTLAByAccountId, // input
+//                                              bigMapAccountsByTLA); // output
+
+//                mapOfMapIDName::const_iterator ci_acct_TLA = bigMapAccountsByTLA.begin();
+
+//                bool bServerHasBeenShownAlready = false;
+
+//                while (ci_acct_TLA != bigMapAccountsByTLA.end())
+//                {
+
+//                    const QString qstrTLA              = ci_acct_TLA.key();
+//                    const mapIDName & mapAccountsByTLA = ci_acct_TLA.value();
+//                    // ------------------------------------------------------
+
+//                    // FOR EACH TLA:
+
+//                    if (!bServerHasBeenShownAlready &&
+//                            bigMapAccountsByTLA.size() > 1)  // If there are multiple TLAs
+//                    {
+//                        // ------------------
+//                        QString qstrTempSNPName;
+//                        if (!bServerHasBeenShownAlready) {
+//                            qstrTempSNPName = qstrSnpName;
+//                            //bServerHasBeenShownAlready = true;
+//                        }
+//                        // ------------------
+//                        QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
+//                                                                            QStringList(qstrTempSNPName) << QString("") << QString(""));
+//                        items.append(pPairedItem);
+//                        pPairedItem->setExpanded(true);
+
+////                      if (!bServerHasBeenShownAlready)
+//                        {
+//                            bServerHasBeenShownAlready = true;
+//                            const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+//                            pPairedItem->setIcon(0, QIcon(qstrIconPath));
+//                            if (bConnected)
+//                            {
+//                                //pPairedItem->setTextColor(0, Qt::black);
+//                                //pPairedItem->setTextColor(1, Qt::black);
+//                            }
+//                            else
+//                            {
+//                                pPairedItem->setTextColor(0, Qt::gray);
+//                                pPairedItem->setTextColor(1, Qt::gray);
+//                            }
+//                            pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+//                        }
+
+//                        pPairedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_SNP_NOTARY));
+//                        pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
+//                        if (!qstrServerId.isEmpty()) {
+//                            pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+//                        }
+//                    }
+//                    // -------
+//                    //const mapIDName & mapAccountsByTLA = ci_acct_TLA.value();
+
+//                    mapIDName::const_iterator ci_accounts = mapAccountsByTLA.begin();
+
+//                    while (ci_accounts != mapAccountsByTLA.end())
+//                    {
+//                        const QString qstrAccountId = ci_accounts.key();
+
+//                        qDebug() << "DEBUGGING   qstrAccountId: " << qstrAccountId;
+
+
+//                        const std::string str_acct_id = qstrAccountId.toStdString();
+//                        const std::string str_asset_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+//                        const int64_t lBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_acct_id);
+//                        const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(str_asset_id, lBalance);
+//    //                  const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmount(str_asset_id, lBalance);
+//                        const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
+
+//                        const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id);
+//                        opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
+//                                                                        (opentxs::String(asset_contract));
+
+//                        const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
+//                        const QString qstrSymbol(QString::fromStdString(str_symbol));
+//                        const QString qstrAcctName = QString("     %1").arg(QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_acct_id)));
+//                        const QString qstrAssetTypeId = QString::fromStdString(str_asset_id);
+//                        //const QString qstrTLA = QString::fromStdString(opentxs::OT::App().API().Exec().GetCurrencyTLA(str_asset_id));
+//                        // ------------------
+//                        QTreeWidgetItem * pSubItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrAcctName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
+//                        items.append(pSubItem);
+//                        pSubItem->setExpanded(false);
+//                        //pSubItem->setIcon(0, QIcon(":/icons/icons/red_dot.png"));
+//                        if (bConnected)
+//                        {
+//                            //pSubItem->setTextColor(0, Qt::black);
+//                            //pSubItem->setTextColor(1, Qt::black);
+//                        }
+//                        else
+//                        {
+//                            pSubItem->setTextColor(0, Qt::gray);
+//                            pSubItem->setTextColor(1, Qt::gray);
+//                        }
+//                        pSubItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+//                        //todo
+//                        pSubItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_SNP_ACCOUNT));
+//                        pSubItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
+
+//                        if (!qstrTLA.isEmpty()) {
+//                            pSubItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
+//                        }
+//                        if (!qstrAssetTypeId.isEmpty()) {
+//                            pSubItem->setData(0, Qt::UserRole+3, QVariant(qstrAssetTypeId));
+//                        }
+//                        if (!qstrAccountId.isEmpty()) {
+//                            pSubItem->setData(0, Qt::UserRole+4, QVariant(qstrAccountId));
+//                        }
+
+//                        if (!qstrServerId.isEmpty()) {
+//                            pSubItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+//                        }
+
+
+
+//                        ++ci_accounts;
+//                    }
+//                    // ------------------------------------------------------
+//                    ci_acct_TLA++;
+//                }
+
+
+                bool bServerHasBeenShownAlready = false;
+                mapOfMapIDName bigMapAccountsByTLA;
+                const QString qstrServerId = ci_paired.key();
                 const mapIDName & mapAccounts = ci_paired.value();
                 const std::string str_server_id = qstrServerId.toStdString();
-                qstrSnpName = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(str_server_id));
+                const bool bConnected = opentxs::OT::App().API().Exec().CheckConnection(str_server_id);
 
-                if (1 == mapAccounts.size())
+                QString qstrServerName = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(str_server_id));
+
+
+                // ------------------------------------------------------
+                this->GetAccountsByTLAFromMap(mapAccounts, // input
+                                              mapTLAByAccountId, // input
+                                              bigMapAccountsByTLA); // output
+
+
+
+
+                if (!bServerHasBeenShownAlready &&
+                        bigMapAccountsByTLA.size() > 1)  // If there are multiple TLAs, then we HAVE to show the server above them on its own line.
                 {
-                    const QString qstrAccountId = mapAccounts.begin().key();
-                    const std::string str_acct_id = qstrAccountId.toStdString();
-                    const std::string str_asset_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
-                    const int64_t lBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_acct_id);
-                    const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(str_asset_id, lBalance);
-//                  const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmount(str_asset_id, lBalance);
-
-                    const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id);
-                    opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
-                                                                    (opentxs::String(asset_contract));
-
-                    const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
-                    const QString qstrSymbol(QString::fromStdString(str_symbol));
-                    const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
-                    const QString qstrAssetTypeId = QString::fromStdString(str_asset_id);
-                    const QString qstrTLA = QString::fromStdString(opentxs::OT::App().API().Exec().GetCurrencyTLA(str_asset_id));
+                    QString qstrTempSNPName;
+                    if (!bServerHasBeenShownAlready) {
+                        qstrTempSNPName = qstrServerName;
+                    }
                     // ------------------
-                    QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrSnpName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
-                    items.append(pPairedItem);
-                    pPairedItem->setExpanded(false);
-
-                    const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
-                    pPairedItem->setIcon(0, QIcon(qstrIconPath));
-                    if (bConnected)
-                    {
-    //                    pPairedItem->setTextColor(0, Qt::black);
-    //                    pPairedItem->setTextColor(1, Qt::black);
-                    }
-                    else
-                    {
-                        pPairedItem->setTextColor(0, Qt::gray);
-                        pPairedItem->setTextColor(1, Qt::gray);
-                    }
-                    pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-
-                    pPairedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_SNP_NOTARY));
-                    pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
-                    if (!qstrTLA.isEmpty()) {
-                        pPairedItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
-                    }
-                    if (!qstrAssetTypeId.isEmpty()) {
-                        pPairedItem->setData(0, Qt::UserRole+3, QVariant(qstrAssetTypeId));
-                    }
-                    if (!qstrAccountId.isEmpty()) {
-                        pPairedItem->setData(0, Qt::UserRole+4, QVariant(qstrAccountId));
-                    }
-                    if (!qstrServerId.isEmpty()) {
-                        pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
-                    }
-                }
-                else // Multiple accounts exist for this server ID.
-                {
-                    QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrSnpName) << QString("") << QString(""));
+                    QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
+                                                                        QStringList(qstrTempSNPName) << QString("") << QString(""));
                     items.append(pPairedItem);
                     pPairedItem->setExpanded(true);
 
@@ -737,8 +895,8 @@ void Activity::RefreshAccountTree()
                     pPairedItem->setIcon(0, QIcon(qstrIconPath));
                     if (bConnected)
                     {
-    //                    pPairedItem->setTextColor(0, Qt::black);
-    //                    pPairedItem->setTextColor(1, Qt::black);
+                        //pPairedItem->setTextColor(0, Qt::black);
+                        //pPairedItem->setTextColor(1, Qt::black);
                     }
                     else
                     {
@@ -752,67 +910,217 @@ void Activity::RefreshAccountTree()
                     if (!qstrServerId.isEmpty()) {
                         pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
                     }
-                    // -------
-                    mapIDName::const_iterator ci_accounts = mapAccounts.begin();
 
-                    while (ci_accounts != mapAccounts.end())
+                    bServerHasBeenShownAlready = true;
+                }
+
+
+                mapOfMapIDName::const_iterator ci_acct_TLA = bigMapAccountsByTLA.begin();
+
+                while (ci_acct_TLA != bigMapAccountsByTLA.end())
+                {
+
+                    // FOR EACH TLA:
+
+                    const QString qstrTLA              = ci_acct_TLA.key();
+                    const mapIDName & mapAccountsByTLA = ci_acct_TLA.value();
+                    // ------------------------------------------------------
+                    mapIDName::const_iterator ci_accounts = mapAccountsByTLA.begin();
+
+                    while (ci_accounts != mapAccountsByTLA.end())
                     {
-                        const QString qstrAccountId = ci_accounts.key();
-                        const std::string str_acct_id = qstrAccountId.toStdString();
-                        const std::string str_asset_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
-                        const int64_t lBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_acct_id);
-                        const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(str_asset_id, lBalance);
-    //                  const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmount(str_asset_id, lBalance);
-                        const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
+                            QString qstrDisplayName;
+                            bool bRollingUp = true;
+                            bool bAccountNamesExist = false;
+                            int64_t lTotalBalance = 0;
+                            int64_t lDisplayBalance = 0;
+                            std::string str_acct_id;
+                            std::string str_asset_id;
+                            std::string str_asset_id_for_formatting;
+                            std::string str_formatted_amount;
+                            std::string str_symbol_for_display;
+                            QString qstrAssetTypeId; // Used when known.
+                            QString qstrAccountId;
 
-                        const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id);
-                        opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
-                                                                        (opentxs::String(asset_contract));
+                            bool bAllAcctsForTLAHaveSameUnitTypeId = true;
 
-                        const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
-                        const QString qstrSymbol(QString::fromStdString(str_symbol));
-                        const QString qstrAcctName = QString("     %1").arg(QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_acct_id)));
-                        const QString qstrAssetTypeId = QString::fromStdString(str_asset_id);
-                        const QString qstrTLA = QString::fromStdString(opentxs::OT::App().API().Exec().GetCurrencyTLA(str_asset_id));
-                        // ------------------
-                        QTreeWidgetItem * pSubItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrAcctName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
-                        items.append(pSubItem);
-                        pSubItem->setExpanded(false);
-                        //pSubItem->setIcon(0, QIcon(":/icons/icons/red_dot.png"));
-                        if (bConnected)
-                        {
-        //                    pSubItem->setTextColor(0, Qt::black);
-        //                    pSubItem->setTextColor(1, Qt::black);
-                        }
-                        else
-                        {
-                            pSubItem->setTextColor(0, Qt::gray);
-                            pSubItem->setTextColor(1, Qt::gray);
-                        }
-                        pSubItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+                            for (mapIDName::const_iterator ci_accounts2 = mapAccountsByTLA.begin();
+                                 ci_accounts2 != mapAccountsByTLA.end(); ci_accounts2++)
+                            {
 
-                        //todo
-                        pSubItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_SNP_ACCOUNT));
-                        pSubItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
+                                // TODO: set bAllAcctsForTLAHaveSameUnitTypeId to false in the case
+                                // where the current iteration's unit type doesn't match the first
+                                // iteration's unit type.
+                                // Until that is coded, for now, set it to false:
+                                bAllAcctsForTLAHaveSameUnitTypeId = false;
 
-                        if (!qstrTLA.isEmpty()) {
-                            pSubItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
-                        }
-                        if (!qstrAssetTypeId.isEmpty()) {
-                            pSubItem->setData(0, Qt::UserRole+3, QVariant(qstrAssetTypeId));
-                        }
-                        if (!qstrAccountId.isEmpty()) {
-                            pSubItem->setData(0, Qt::UserRole+4, QVariant(qstrAccountId));
-                        }
+                                const QString qstrCurrentAccountId = ci_accounts2.key();
+                                const std::string str_current_acct_id = qstrCurrentAccountId.toStdString();
+                                str_asset_id_for_formatting = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_current_acct_id);
+                                const QString qstrCurrentAcctName = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_current_acct_id));
+                                const int64_t lCurrentBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_current_acct_id);
 
-                        if (!qstrServerId.isEmpty()) {
-                            pSubItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
-                        }
+                                if (str_symbol_for_display.empty())
+                                {
+                                    const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id_for_formatting);
+                                    opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
+                                                                                    (opentxs::String(asset_contract));
+                                    const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
+                                    str_symbol_for_display = str_symbol;
+                                }
 
+                                if (lCurrentBalance < 0) { // We don't include negative accounts (issuer accounts) on this screen.
+                                    continue;
+                                }
+                                lTotalBalance += lCurrentBalance; // Total balance for all non-negative accounts
+                                if (!qstrCurrentAcctName.isEmpty()) {
+                                    bAccountNamesExist = true;
+                                    bRollingUp = false;
+                                }
+                            }
+
+                            // In this case display all the accounts (for this TLA) on a single line.
+                            // Else multiple lines.
+                            //
+                            if (bRollingUp) // Rollup!
+                            {
+                                lDisplayBalance = lTotalBalance;
+
+                                qstrDisplayName = bServerHasBeenShownAlready ? QString("") : qstrServerName;
+
+                                // If we're rolling up, we can still set CERTAIN IDs, IF they are known.
+                                // (From case to case). For example, the TLA is already known for all of them, and the server ID.
+                                // Also for example, if there's only one account, we have an account ID AND an asset type ID.
+                                //
+                                if (1 == mapAccountsByTLA.begin().key()) {
+                                    bAllAcctsForTLAHaveSameUnitTypeId = true;
+                                    qstrAccountId = ci_accounts.key();
+                                }
+
+                                // Here if we knew that all the accounts for a given TLA were all also the
+                                // same unit type ID, we could set the unit type for any of them as the official
+                                // unit type for this line on the tree.
+
+                                if (bAllAcctsForTLAHaveSameUnitTypeId) {
+                                    qstrAssetTypeId = QString::fromStdString(str_asset_id_for_formatting);
+                                }
+
+
+                            }
+                            // Else multiple lines.
+                            //
+                            else
+                            {
+                                // The server has not yet been shown, and we're NOT rolling up.
+                                // Therefore we have to show the server on its own line before
+                                // showing the accounts.
+                                if (!bServerHasBeenShownAlready)
+                                {
+                                    QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
+                                                                                        QStringList(qstrServerName) << QString("") << QString(""));
+                                    items.append(pPairedItem);
+                                    pPairedItem->setExpanded(true);
+
+                                    const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+                                    pPairedItem->setIcon(0, QIcon(qstrIconPath));
+                                    if (bConnected)
+                                    {
+                                        //pPairedItem->setTextColor(0, Qt::black);
+                                        //pPairedItem->setTextColor(1, Qt::black);
+                                    }
+                                    else
+                                    {
+                                        pPairedItem->setTextColor(0, Qt::gray);
+                                        pPairedItem->setTextColor(1, Qt::gray);
+                                    }
+                                    pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+                                    pPairedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_SNP_NOTARY));
+                                    pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
+                                    if (!qstrServerId.isEmpty()) {
+                                        pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+                                    }
+
+                                    bServerHasBeenShownAlready = true;
+                                }
+                                // --------------------------------------------------
+                                qstrAccountId = ci_accounts.key(); // Because we're on the first one.
+                                str_acct_id = qstrAccountId.toStdString();
+                                str_asset_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+                                str_asset_id_for_formatting = str_asset_id;
+                                qstrAssetTypeId = QString::fromStdString(str_asset_id);
+                                lDisplayBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_acct_id);
+
+                                const QString qstrCurrentAcctName = QString("     %1")
+                                        .arg(QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_acct_id)));
+
+                                qstrDisplayName = qstrCurrentAcctName;
+                                // ------------------
+                                const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id);
+                                opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
+                                                                                (opentxs::String(asset_contract));
+                                const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
+                                str_symbol_for_display = str_symbol;
+                            }
+                            // ------------------
+                            if (lDisplayBalance < 0) {
+                                ++ci_accounts;
+                                continue;
+                            }
+                            // ------------------
+                            str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(str_asset_id_for_formatting, lDisplayBalance);
+                            const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
+                            // ------------------
+                            const QString qstrSymbol(QString::fromStdString(str_symbol_for_display)); // May be empty
+                            // ------------------
+                            QTreeWidgetItem * pHostedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrDisplayName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
+                            items.append(pHostedItem);
+                            pHostedItem->setExpanded(false);
+
+                            pHostedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_SNP_ACCOUNT));
+                            pHostedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
+                            if (!qstrTLA.isEmpty()) {
+                                pHostedItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
+                            }
+                            if (!qstrAssetTypeId.isEmpty()) {
+                                pHostedItem->setData(0, Qt::UserRole+3, QVariant(qstrAssetTypeId));
+                            }
+                            if (!qstrAccountId.isEmpty()) {
+                                pHostedItem->setData(0, Qt::UserRole+4, QVariant(qstrAccountId));
+                            }
+                            if (!qstrServerId.isEmpty()) {
+                                pHostedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+                            }
+                            // --------------------------------------------
+                            if (!bServerHasBeenShownAlready) {
+                                const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+                                pHostedItem->setIcon(0, QIcon(qstrIconPath));
+                            }
+
+                            if (bConnected)
+                            {
+            //                    pHostedItem->setTextColor(0, Qt::black);
+            //                    pHostedItem->setTextColor(1, Qt::black);
+                            }
+                            else
+                            {
+                                pHostedItem->setTextColor(0, Qt::gray);
+                                pHostedItem->setTextColor(1, Qt::gray);
+                            }
+                            pHostedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+                            bServerHasBeenShownAlready = true;
+
+                            if (bRollingUp) {
+                                break; // Done, for this TLA anyway.
+                            }
 
                         ++ci_accounts;
                     }
+                    // ------------------------------------------------------
+                    ci_acct_TLA++;
                 }
+
             }
             else // found no accounts for this server ID.
             {
@@ -830,16 +1138,21 @@ void Activity::RefreshAccountTree()
                 }
             }
         }
-    }
+    } // For each paired or pairing node.
     // ------------------------------------------------------------------------
 
     mapOfMapIDName bigMapAccounts;
+    mapTLAByAccountId.clear();
+//  mapIDName mapTLAByAccountId;
 
-    this->GetAccountIdMapsByServerId(bigMapAccounts, false); // false means, only give me non-paired servers.
+    this->GetAccountIdMapsByServerId(bigMapAccounts, false, // false means, only give me non-paired servers.
+                                     &mapTLAByAccountId);
 
     if (bigMapAccounts.size() > 0)
     {
         // ----------------------------------------
+        //QTreeWidgetItem * pHostedAccountsItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Your Stash Node")));
+        // TODO: put this back. I only changed it for the video.
         QTreeWidgetItem * pHostedAccountsItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Hosted Accounts")));
         items.append(pHostedAccountsItem);
         pHostedAccountsItem->setExpanded(true);
@@ -868,148 +1181,265 @@ void Activity::RefreshAccountTree()
         mapOfMapIDName::const_iterator ci_servers = bigMapAccounts.begin();
 
         while (ci_servers != bigMapAccounts.end()) {
+            bool bServerHasBeenShownAlready = false;
+            mapOfMapIDName bigMapAccountsByTLA;
             const QString qstrServerId = ci_servers.key();
             const mapIDName & mapAccounts = ci_servers.value();
             const std::string str_server_id = qstrServerId.toStdString();
-            const bool bIsConnectionAlive = opentxs::OT::App().API().Exec().CheckConnection(str_server_id);
+            const bool bConnected = opentxs::OT::App().API().Exec().CheckConnection(str_server_id);
 
             QString qstrServerName = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(str_server_id));
 
-            if (1 == mapAccounts.size())
+
+            // ------------------------------------------------------
+            this->GetAccountsByTLAFromMap(mapAccounts, // input
+                                          mapTLAByAccountId, // input
+                                          bigMapAccountsByTLA); // output
+
+
+
+
+            if (!bServerHasBeenShownAlready &&
+                    bigMapAccountsByTLA.size() > 1)  // If there are multiple TLAs, then we HAVE to show the server above them on its own line.
             {
-                const QString qstrAccountId = mapAccounts.begin().key();
-                const std::string str_acct_id = qstrAccountId.toStdString();
-                const std::string str_asset_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
-                const int64_t lBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_acct_id);
-
-                const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(str_asset_id, lBalance);
-//              const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmount(str_asset_id, lBalance);
-                const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
-
-                const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id);
-                opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
-                                                                (opentxs::String(asset_contract));
-
-                const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
-                const QString qstrSymbol(QString::fromStdString(str_symbol));
-                const QString qstrAssetTypeId = QString::fromStdString(str_asset_id);
-                const QString qstrTLA = QString::fromStdString(opentxs::OT::App().API().Exec().GetCurrencyTLA(str_asset_id));
+                QString qstrTempSNPName;
+                if (!bServerHasBeenShownAlready) {
+                    qstrTempSNPName = qstrServerName;
+                }
                 // ------------------
-                QTreeWidgetItem * pHostedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrServerName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
-                items.append(pHostedItem);
-                pHostedItem->setExpanded(false);
+                QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
+                                                                    QStringList(qstrTempSNPName) << QString("") << QString(""));
+                items.append(pPairedItem);
+                pPairedItem->setExpanded(true);
 
-                const QString qstrIconPath = QString(bIsConnectionAlive ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
-                pHostedItem->setIcon(0, QIcon(qstrIconPath));
-                if (bIsConnectionAlive)
+                const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+                pPairedItem->setIcon(0, QIcon(qstrIconPath));
+                if (bConnected)
                 {
-//                    pHostedItem->setTextColor(0, Qt::black);
-//                    pHostedItem->setTextColor(1, Qt::black);
+                    //pPairedItem->setTextColor(0, Qt::black);
+                    //pPairedItem->setTextColor(1, Qt::black);
                 }
                 else
                 {
-                    pHostedItem->setTextColor(0, Qt::gray);
-                    pHostedItem->setTextColor(1, Qt::gray);
+                    pPairedItem->setTextColor(0, Qt::gray);
+                    pPairedItem->setTextColor(1, Qt::gray);
                 }
-                pHostedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+                pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
 
-                pHostedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_HOSTED_NOTARY));
-                pHostedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
-                if (!qstrTLA.isEmpty()) {
-                    pHostedItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
-                }
-                if (!qstrAssetTypeId.isEmpty()) {
-                    pHostedItem->setData(0, Qt::UserRole+3, QVariant(qstrAssetTypeId));
-                }
-                if (!qstrAccountId.isEmpty()) {
-                    pHostedItem->setData(0, Qt::UserRole+4, QVariant(qstrAccountId));
-                }
+                pPairedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_HOSTED_NOTARY));
+                pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
                 if (!qstrServerId.isEmpty()) {
-                    pHostedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+                    pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
                 }
+
+                bServerHasBeenShownAlready = true;
             }
-            else // Multiple accounts exist for this server ID.
+
+
+            mapOfMapIDName::const_iterator ci_acct_TLA = bigMapAccountsByTLA.begin();
+
+            while (ci_acct_TLA != bigMapAccountsByTLA.end())
             {
-                QTreeWidgetItem * pHostedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrServerName));
-                items.append(pHostedItem);
-                pHostedItem->setExpanded(true);
 
-                const QString qstrIconPath = QString(bIsConnectionAlive ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
-                pHostedItem->setIcon(0, QIcon(qstrIconPath));
-                if (bIsConnectionAlive)
+                // FOR EACH TLA:
+
+                const QString qstrTLA              = ci_acct_TLA.key();
+                const mapIDName & mapAccountsByTLA = ci_acct_TLA.value();
+                // ------------------------------------------------------
+                mapIDName::const_iterator ci_accounts = mapAccountsByTLA.begin();
+
+                while (ci_accounts != mapAccountsByTLA.end())
                 {
-//                    pHostedItem->setTextColor(0, Qt::black);
-//                    pHostedItem->setTextColor(1, Qt::black);
-                }
-                else
-                {
-                    pHostedItem->setTextColor(0, Qt::gray);
-                    pHostedItem->setTextColor(1, Qt::gray);
-                }
-                pHostedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+                        QString qstrDisplayName;
+                        bool bRollingUp = true;
+                        bool bAccountNamesExist = false;
+                        int64_t lTotalBalance = 0;
+                        int64_t lDisplayBalance = 0;
+                        std::string str_acct_id;
+                        std::string str_asset_id;
+                        std::string str_asset_id_for_formatting;
+                        std::string str_formatted_amount;
+                        std::string str_symbol_for_display;
+                        QString qstrAssetTypeId; // Used when known.
+                        QString qstrAccountId;
 
-                pHostedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_HOSTED_NOTARY));
-                pHostedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
-                if (!qstrServerId.isEmpty()) {
-                    pHostedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
-                }
+                        bool bAllAcctsForTLAHaveSameUnitTypeId = true;
 
-                // -------
-                mapIDName::const_iterator ci_accounts = mapAccounts.begin();
+                        for (mapIDName::const_iterator ci_accounts2 = mapAccountsByTLA.begin();
+                             ci_accounts2 != mapAccountsByTLA.end(); ci_accounts2++)
+                        {
 
-                while (ci_accounts != mapAccounts.end())
-                {
-                    const QString qstrAccountId = ci_accounts.key();
-                    const std::string str_acct_id = qstrAccountId.toStdString();
-                    const std::string str_asset_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
-                    const int64_t lBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_acct_id);
-                    const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(str_asset_id, lBalance);
-//                  const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmount(str_asset_id, lBalance);
-                    const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
+                            // TODO: set bAllAcctsForTLAHaveSameUnitTypeId to false in the case
+                            // where the current iteration's unit type doesn't match the first
+                            // iteration's unit type.
+                            // Until that is coded, for now, set it to false:
+                            bAllAcctsForTLAHaveSameUnitTypeId = false;
 
-                    const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id);
-                    opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
-                                                                    (opentxs::String(asset_contract));
+                            const QString qstrCurrentAccountId = ci_accounts2.key();
+                            const std::string str_current_acct_id = qstrCurrentAccountId.toStdString();
+                            str_asset_id_for_formatting = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_current_acct_id);
+                            const QString qstrCurrentAcctName = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_current_acct_id));
+                            const int64_t lCurrentBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_current_acct_id);
 
-                    const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
-                    const QString qstrSymbol(QString::fromStdString(str_symbol));
-                    const QString qstrAcctName = QString("     %1").arg(QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_acct_id)));
-                    const QString qstrAssetTypeId = QString::fromStdString(str_asset_id);
-                    const QString qstrTLA = QString::fromStdString(opentxs::OT::App().API().Exec().GetCurrencyTLA(str_asset_id));
-                    // ------------------
-                    QTreeWidgetItem * pSubItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrAcctName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
-                    items.append(pSubItem);
-                    pSubItem->setExpanded(false);
-                    //pSubItem->setIcon(0, QIcon(":/icons/icons/red_dot.png"));
-                    if (bIsConnectionAlive)
-                    {
-    //                    pSubItem->setTextColor(0, Qt::black);
-    //                    pSubItem->setTextColor(1, Qt::black);
-                    }
-                    else
-                    {
-                        pSubItem->setTextColor(0, Qt::gray);
-                        pSubItem->setTextColor(1, Qt::gray);
-                    }
-                    pSubItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+                            if (str_symbol_for_display.empty())
+                            {
+                                const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id_for_formatting);
+                                opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
+                                                                                (opentxs::String(asset_contract));
+                                const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
+                                str_symbol_for_display = str_symbol;
+                            }
 
-                    pSubItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_HOSTED_ACCOUNT));
-                    pSubItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
-                    if (!qstrTLA.isEmpty()) {
-                        pSubItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
-                    }
-                    if (!qstrAssetTypeId.isEmpty()) {
-                        pSubItem->setData(0, Qt::UserRole+3, QVariant(qstrAssetTypeId));
-                    }
-                    if (!qstrAccountId.isEmpty()) {
-                        pSubItem->setData(0, Qt::UserRole+4, QVariant(qstrAccountId));
-                    }
-                    if (!qstrServerId.isEmpty()) {
-                        pSubItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
-                    }
+                            if (lCurrentBalance < 0) { // We don't include negative accounts (issuer accounts) on this screen.
+                                continue;
+                            }
+                            lTotalBalance += lCurrentBalance; // Total balance for all non-negative accounts
+                            if (!qstrCurrentAcctName.isEmpty()) {
+                                bAccountNamesExist = true;
+                                bRollingUp = false;
+                            }
+                        }
+
+                        // In this case display all the accounts (for this TLA) on a single line.
+                        // Else multiple lines.
+                        //
+                        if (bRollingUp) // Rollup!
+                        {
+                            lDisplayBalance = lTotalBalance;
+
+                            qstrDisplayName = bServerHasBeenShownAlready ? QString("") : qstrServerName;
+
+                            // If we're rolling up, we can still set CERTAIN IDs, IF they are known.
+                            // (From case to case). For example, the TLA is already known for all of them, and the server ID.
+                            // Also for example, if there's only one account, we have an account ID AND an asset type ID.
+                            //
+                            if (1 == mapAccountsByTLA.begin().key()) {
+                                bAllAcctsForTLAHaveSameUnitTypeId = true;
+                                qstrAccountId = ci_accounts.key();
+                            }
+
+                            // Here if we knew that all the accounts for a given TLA were all also the
+                            // same unit type ID, we could set the unit type for any of them as the official
+                            // unit type for this line on the tree.
+
+                            if (bAllAcctsForTLAHaveSameUnitTypeId) {
+                                qstrAssetTypeId = QString::fromStdString(str_asset_id_for_formatting);
+                            }
+
+
+                        }
+                        // Else multiple lines.
+                        //
+                        else
+                        {
+                            // The server has not yet been shown, and we're NOT rolling up.
+                            // Therefore we have to show the server on its own line before
+                            // showing the accounts.
+                            if (!bServerHasBeenShownAlready)
+                            {
+                                QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
+                                                                                    QStringList(qstrServerName) << QString("") << QString(""));
+                                items.append(pPairedItem);
+                                pPairedItem->setExpanded(true);
+
+                                const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+                                pPairedItem->setIcon(0, QIcon(qstrIconPath));
+                                if (bConnected)
+                                {
+                                    //pPairedItem->setTextColor(0, Qt::black);
+                                    //pPairedItem->setTextColor(1, Qt::black);
+                                }
+                                else
+                                {
+                                    pPairedItem->setTextColor(0, Qt::gray);
+                                    pPairedItem->setTextColor(1, Qt::gray);
+                                }
+                                pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+                                pPairedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_HOSTED_NOTARY));
+                                pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
+                                if (!qstrServerId.isEmpty()) {
+                                    pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+                                }
+
+                                bServerHasBeenShownAlready = true;
+                            }
+                            // --------------------------------------------------
+                            qstrAccountId = ci_accounts.key(); // Because we're on the first one.
+                            str_acct_id = qstrAccountId.toStdString();
+                            str_asset_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+                            str_asset_id_for_formatting = str_asset_id;
+                            qstrAssetTypeId = QString::fromStdString(str_asset_id);
+                            lDisplayBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_acct_id);
+
+                            const QString qstrCurrentAcctName = QString("     %1")
+                                    .arg(QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_acct_id)));
+
+                            qstrDisplayName = qstrCurrentAcctName;
+                            // ------------------
+                            const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id);
+                            opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
+                                                                            (opentxs::String(asset_contract));
+                            const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
+                            str_symbol_for_display = str_symbol;
+                        }
+                        // ------------------
+                        if (lDisplayBalance < 0) {
+                            ++ci_accounts;
+                            continue;
+                        }
+                        // ------------------
+                        str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(str_asset_id_for_formatting, lDisplayBalance);
+                        const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
+                        // ------------------
+                        const QString qstrSymbol(QString::fromStdString(str_symbol_for_display)); // May be empty
+                        // ------------------
+                        QTreeWidgetItem * pHostedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrDisplayName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
+                        items.append(pHostedItem);
+                        pHostedItem->setExpanded(false);
+
+                        pHostedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_HOSTED_ACCOUNT));
+                        pHostedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
+                        if (!qstrTLA.isEmpty()) {
+                            pHostedItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
+                        }
+                        if (!qstrAssetTypeId.isEmpty()) {
+                            pHostedItem->setData(0, Qt::UserRole+3, QVariant(qstrAssetTypeId));
+                        }
+                        if (!qstrAccountId.isEmpty()) {
+                            pHostedItem->setData(0, Qt::UserRole+4, QVariant(qstrAccountId));
+                        }
+                        if (!qstrServerId.isEmpty()) {
+                            pHostedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+                        }
+                        // --------------------------------------------
+                        if (!bServerHasBeenShownAlready) {
+                            const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+                            pHostedItem->setIcon(0, QIcon(qstrIconPath));
+                        }
+
+                        if (bConnected)
+                        {
+        //                    pHostedItem->setTextColor(0, Qt::black);
+        //                    pHostedItem->setTextColor(1, Qt::black);
+                        }
+                        else
+                        {
+                            pHostedItem->setTextColor(0, Qt::gray);
+                            pHostedItem->setTextColor(1, Qt::gray);
+                        }
+                        pHostedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+                        bServerHasBeenShownAlready = true;
+
+                        if (bRollingUp) {
+                            break; // Done, for this TLA anyway.
+                        }
 
                     ++ci_accounts;
                 }
+                // ------------------------------------------------------
+                ci_acct_TLA++;
             }
 
             ++ci_servers;
@@ -1017,7 +1447,7 @@ void Activity::RefreshAccountTree()
 
 
 
-    }
+    } // The hosted accounts
     // ----------------------------------------
 
 //    {
@@ -1742,6 +2172,49 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
     setAsCurrentPayment(nSourceRow, nFolder);
 }
 
+
+void Activity::on_tableViewConversation_clicked(const QModelIndex &index)
+{
+    if (!pModelMessages_ || !pThreadItemsProxyModel_ || !index.isValid()) {
+        return;
+    }
+
+
+    //resume
+
+    QTableView * pTableView = ui->tableViewConversation;
+
+//    QModelIndex indexAtClick = pTableView->indexAt(pos);
+//    if (!indexAtClick.isValid())
+//        return;
+    // I can't figure out how to ADD to the selection without UNSELECTING everything else.
+    // The Qt docs indicate that the below options should do that -- but it doesn't work.
+    // So this is commented out since it was deselecting everything.
+    //pTableView->selectionModel()->select( indexAtClick, QItemSelectionModel::SelectCurrent|QItemSelectionModel::Rows );
+    // ------------------------
+    QModelIndex sourceIndexAtClick = pThreadItemsProxyModel_->mapToSource(index);
+    const int nSourceRow = sourceIndexAtClick.row();
+//  QModelIndex sourceIndexAtBody  = pModelMessages_->sibling(nSourceRow, CONV_SOURCE_COL_BODY, sourceIndexAtClick);
+//  QVariant qvarData = pModelMessages_->data(sourceIndexAtBody,Qt::DisplayRole);
+//  QString  qstrData      = qvarData.isValid() ? qvarData.toString() : "";
+//  QString  qstrDecrypted = qstrData.isEmpty() ? "" : MTContactHandler::Decrypt(qstrData);
+
+
+
+    //resume
+
+    QWidget * pOldWidget = pTableView->indexWidget(index);
+    QWidget * pNewWidget = pThreadItemsProxyModel_->CreateDetailHeaderWidget(nSourceRow, true);
+
+
+    pTableView->setIndexWidget(index, pNewWidget);
+
+    pTableView->setRowHeight(index.row(), pNewWidget->height()*1.2);
+
+
+//    qDebug() << "DECRYPTED THE MESSAGE YOU JUST CLICKED: \n\n" << qstrDecrypted;
+
+}
 
 
 void Activity::on_tableViewSentSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous)
@@ -4152,14 +4625,20 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     popupMenuAccounts_->addSeparator();
     // --------------------------------------------------
     pActionPairWithSNP = popupMenuAccounts_->addAction(tr("Pair a Stash Node Pro"));
+
     // ==============================================================================
+
     QPoint globalPos = pTreeWidget->mapToGlobal(pos);
     const QAction* selectedAction = popupMenuAccounts_->exec(globalPos); // Here we popup the menu, and get the user's click.
     if (nullptr == selectedAction)
         return;
+
     // ==============================================================================
+
     if (selectedAction == pActionViewContact)
     {
+        popupMenuAccounts_->close();
+
         if (nullptr != pTreeItem)
             pTreeItem->setSelected(true);
 
@@ -5279,3 +5758,4 @@ void Activity::on_toolButton_sign_clicked() { emit sig_on_toolButton_sign_clicke
 void Activity::on_toolButton_decrypt_clicked() { emit sig_on_toolButton_decrypt_clicked(); }
 void Activity::on_toolButton_transport_clicked() { emit sig_on_toolButton_transport_clicked(); }
 void Activity::on_toolButton_liveAgreements_clicked() { emit sig_on_toolButton_liveAgreements_clicked(); }
+
