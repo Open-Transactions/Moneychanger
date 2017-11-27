@@ -994,7 +994,7 @@ void Activity::RefreshAccountTree()
                                 // (From case to case). For example, the TLA is already known for all of them, and the server ID.
                                 // Also for example, if there's only one account, we have an account ID AND an asset type ID.
                                 //
-                                if (1 == mapAccountsByTLA.begin().key()) {
+                                if (1 == mapAccountsByTLA.size()) {
                                     bAllAcctsForTLAHaveSameUnitTypeId = true;
                                     qstrAccountId = ci_accounts.key();
                                 }
@@ -1315,7 +1315,7 @@ void Activity::RefreshAccountTree()
                             // (From case to case). For example, the TLA is already known for all of them, and the server ID.
                             // Also for example, if there's only one account, we have an account ID AND an asset type ID.
                             //
-                            if (1 == mapAccountsByTLA.begin().key()) {
+                            if (1 == mapAccountsByTLA.size()) {
                                 bAllAcctsForTLAHaveSameUnitTypeId = true;
                                 qstrAccountId = ci_accounts.key();
                             }
