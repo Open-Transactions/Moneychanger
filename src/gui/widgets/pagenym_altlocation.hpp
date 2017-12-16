@@ -59,12 +59,12 @@ private slots:
     void on_btnPrimary_toggled(bool checked);
 
 private:
-    Ui::MTPageNym_AltLocation *ui;
+    Ui::MTPageNym_AltLocation *ui{nullptr};
 
     QList<QWidget *>  listTabs_;
     QMap<uint32_t, QList<GroupBoxContactItems *> * > mapGroupBoxLists_;
 
-    bool bInitialized=false;
+    bool bInitialized{false};
 };
 
 #endif // PAGENYM_ALTLOCATION_HPP

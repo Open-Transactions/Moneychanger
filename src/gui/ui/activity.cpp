@@ -1006,8 +1006,6 @@ void Activity::RefreshAccountTree()
                                 if (bAllAcctsForTLAHaveSameUnitTypeId) {
                                     qstrAssetTypeId = QString::fromStdString(str_asset_id_for_formatting);
                                 }
-
-
                             }
                             // Else multiple lines.
                             //
