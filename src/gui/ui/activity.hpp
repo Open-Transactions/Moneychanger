@@ -162,12 +162,15 @@ protected:
 
     bool AddItemToPending(int nAtIndex, const QString & qstrContents, bool bIncoming=false, bool bAddedByHand=true);
 
+    int PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers=nullptr);
+    bool PairingStarted(const opentxs::Identifier & nymId, const opentxs::Identifier & issuerNymId);
+
     mapIDName & GetOrCreateAssetIdMapByCurrencyCode(QString qstrTLA, mapOfMapIDName & bigMap);
     void GetAssetIdMapsByCurrencyCode(mapOfMapIDName & bigMap);
     int64_t GetAccountBalancesTotaledForUnitTypes(const mapIDName & mapUnitTypeIds);
 
     mapIDName & GetOrCreateAccountIdMapByServerId(QString qstrServerId, mapOfMapIDName & bigMap);
-    void GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, bool bPairedOrHosted, // true == paired, false == hosted.
+    void GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, const bool bTrusted, // true == paired, false == hosted.
                                     mapIDName * pMapTLAbyAccountId=nullptr);
 
     void GetAccountsByTLAFromMap(const mapIDName & mapAccounts, // input

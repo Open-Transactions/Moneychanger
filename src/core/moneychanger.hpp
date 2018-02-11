@@ -281,17 +281,17 @@ private:
 
     void mc_overview_dialog_refresh();
 
-    void processPeerMessages();
-    void process_peer_replies();
-    void process_peer_replies_forNym(const opentxs::Identifier & nymID);
-    void process_peer_requests();
-    void process_peer_requests_forNym(const opentxs::Identifier & nymID);
+//    void processPeerMessages();
+//    void process_peer_replies();
+//    void process_peer_replies_forNym(const opentxs::Identifier & nymID);
+//    void process_peer_requests();
+//    void process_peer_requests_forNym(const opentxs::Identifier & nymID);
 
-    void process_request_bailment_reply(const opentxs::Identifier & nymID, const opentxs::proto::PeerReply& reply);
-    void process_store_secret_reply(const opentxs::Identifier & nymID, const opentxs::proto::PeerReply& reply);
-    void process_connection_info_reply(const opentxs::Identifier & nymID, const opentxs::proto::PeerReply& reply);
+//    void process_request_bailment_reply(const opentxs::Identifier & nymID, const opentxs::proto::PeerReply& reply);
+//    void process_store_secret_reply(const opentxs::Identifier & nymID, const opentxs::proto::PeerReply& reply);
+//    void process_connection_info_reply(const opentxs::Identifier & nymID, const opentxs::proto::PeerReply& reply);
 
-    void process_pending_bailment_notification(const opentxs::Identifier & nymID, const opentxs::proto::PeerRequest& request);
+//    void process_pending_bailment_notification(const opentxs::Identifier & nymID, const opentxs::proto::PeerRequest& request);
 
 private:
     void SetupAdvancedMenu(QPointer<QMenu> & parent_menu);

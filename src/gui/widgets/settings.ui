@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>534</width>
-    <height>366</height>
+    <width>583</width>
+    <height>434</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -232,7 +232,7 @@
        <item>
         <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Normal pairing involves connecting a cable. However, if you already have the two critical pieces of information, you can attempt a pair without the cable. (That is, via this settings page. Otherwise you need to use the &quot;Pairing&quot; menu option if you want to use the cable).</string>
+          <string>Normal pairing involves connecting a cable. However, if you already have the two critical pieces of information, you can attempt a pair without the cable. (That is, via this settings page. Otherwise you need to use the &quot;Pairing&quot; menu option if you want to use the cable).       Oh, and an IMPORTANT WARNING: Do not provide an admin password AT ALL (Leave it blank) unless the Bridge Nym is a trusted issuer (that is, you own and control the device it's running on) because if you trust this device, this UI application you are using right now will send it a copy of your backup seed, which a malicious entity could use to steal your money.</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
@@ -251,7 +251,7 @@
          <item row="0" column="1">
           <widget class="QLineEdit" name="lineEditBridgeNymId">
            <property name="text">
-            <string>otptQfnYa9nEWwA3VYGrreAGY1VKvFz9EaG</string>
+            <string>otq8wx7niDpX3XnNRaqNUFNwnaXdg5AULBa</string>
            </property>
           </widget>
          </item>
@@ -265,7 +265,7 @@
          <item row="1" column="1">
           <widget class="QLineEdit" name="lineEditAdminPassword">
            <property name="text">
-            <string>Cm4mytL8QfDKb6iDTMjH6cAMYKa</string>
+            <string/>
            </property>
           </widget>
          </item>
