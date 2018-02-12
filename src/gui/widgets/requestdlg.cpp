@@ -13,14 +13,14 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/focuser.h>
 
+#include <opentxs/api/client/Sync.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OTME_too.hpp>
+#include <opentxs/OT.hpp>
 
 #include <QDebug>
 #include <QMessageBox>
@@ -93,7 +93,7 @@ bool MTRequestDlg::sendInvoice(int64_t amount, QString toNymId, QString toContac
     // --------------------------------
     if (   toNymId.isEmpty()
         || toContactId.isEmpty()
-        ||  (opentxs::Messagability::READY != opentxs::OT::App().API().OTME_TOO().CanMessage(toNymId.toStdString(), toContactId.toStdString())))
+        ||  (opentxs::Messagability::READY != opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(toNymId.toStdString()), opentxs::Identifier(toContactId.toStdString()))))
     {
         QMessageBox::warning(this, tr("Not yet messageable"), tr("This contact is not yet messageable. "
                                                           "However, credentials are being requested in the background, "
@@ -171,15 +171,15 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString t
 //  if (canMessage_) // TODO: Put this back. Deactivated temporarily until MessageContact has a payment option.
     {
         const opentxs::Identifier bgthreadId
-            {opentxs::OT::App().API().OTME_TOO().
-                MessageContact(str_fromNymId, toContactId.toStdString(), strCheque)};
+            {opentxs::OT::App().API().Sync().
+                MessageContact(opentxs::Identifier(str_fromNymId), opentxs::Identifier(toContactId.toStdString()), strCheque)};
 
         // TODO: ^^^ The MessageContact needs to be "PayContact" or something, so that
         // it does a send_user_instrument instead of a send_user_message.
         // Until that it fixed, I can't use MessageContact here yet, which is why
         // this block has an if(false) at the top of it. Fix!
         //
-        const auto status = opentxs::OT::App().API().OTME_TOO().Status(bgthreadId);
+        const auto status = opentxs::OT::App().API().Sync().Status(bgthreadId);
 
         const bool bAddToGUI = (opentxs::ThreadStatus::FINISHED_SUCCESS == status) ||
                                (opentxs::ThreadStatus::RUNNING == status);
@@ -277,7 +277,7 @@ void MTRequestDlg::setInitialHisContact (QString contactId, bool bUsedInternally
         const std::string str_my_nym_id = opentxs::OT::App().API().Exec().GetAccountWallet_NymID(m_myAcctId.toStdString());
 
         if (   !str_my_nym_id.empty()
-            && (opentxs::Messagability::READY == opentxs::OT::App().API().OTME_TOO().CanMessage(str_my_nym_id, m_hisContactId.toStdString())))
+            && (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(str_my_nym_id), opentxs::Identifier(m_hisContactId.toStdString()))))
         {
             canMessage_ = true;
 

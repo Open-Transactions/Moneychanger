@@ -19,15 +19,15 @@
 #include <core/mtcomms.h>
 #include <core/moneychanger.hpp>
 
+#include <opentxs/api/client/Sync.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/core/Nym.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OTME_too.hpp>
 #include <opentxs/core/NumList.hpp>
+#include <opentxs/core/Nym.hpp>
+#include <opentxs/OT.hpp>
 #include <opentxs/Proto.hpp>
 #include <opentxs/Types.hpp>
 
@@ -165,7 +165,7 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
                 {
                     MTSpinner theSpinner;
 
-                    response = opentxs::OT::App().API().OTME_TOO().RegisterNym(str_nym_id, notary_id.toStdString(), true);
+                    response = opentxs::String(opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier(str_nym_id), opentxs::Identifier(notary_id.toStdString()), true)).Get();
                     if (response.empty() && !opentxs::OT::App().API().Exec().CheckConnection(notary_id.toStdString()))
                     {
                         QString qstrErrorMsg;
@@ -2196,9 +2196,9 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                         {
                             MTSpinner theSpinner;
 
-                            auto strResponse = opentxs::OT::App().API().OTME_TOO().RegisterNym(str_nym_id, str_notary_id, true);
+                            auto strResponse = opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier(str_nym_id), opentxs::Identifier(str_notary_id), true);
 
-                            if (strResponse) {
+                            if (false == strResponse.empty()) {
                                 nSuccess = 1;
                             } else {
                                 nSuccess = 0;

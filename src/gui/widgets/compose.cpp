@@ -13,18 +13,18 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
 
-#include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
+#include <opentxs/api/client/Sync.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
+#include <opentxs/api/Native.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OTME_too.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
 #include <opentxs/core/Identifier.hpp>
 #include <opentxs/core/String.hpp>
+#include <opentxs/OT.hpp>
 
 #include <QMessageBox>
 #include <QDebug>
@@ -326,7 +326,7 @@ void MTCompose::setInitialRecipientContactID(QString qstrContactid, QString addr
         m_senderNymId = qstrDefaultNym;
     }
     if (!qstrSenderNym.isEmpty() && !qstrContactid.isEmpty()) {
-        bCanMessage_ = (opentxs::Messagability::READY == opentxs::OT::App().API().OTME_TOO().CanMessage(qstrSenderNym.toStdString(), qstrContactid.toStdString()));
+        bCanMessage_ = (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(qstrSenderNym.toStdString()), opentxs::Identifier(qstrContactid.toStdString())));
     }
     // -------------------------------------------
     mapIDName theMap;
@@ -551,10 +551,10 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
     if (bCanMessage_)
     {
         const opentxs::Identifier bgthreadId
-            {opentxs::OT::App().API().OTME_TOO().
-                MessageContact(str_fromNymId, qstrContactId_.toStdString(), contents.toStdString())};
+            {opentxs::OT::App().API().Sync().
+                MessageContact(opentxs::Identifier(str_fromNymId), opentxs::Identifier(qstrContactId_.toStdString()), contents.toStdString())};
 
-        const auto status = opentxs::OT::App().API().OTME_TOO().Status(bgthreadId);
+        const auto status = opentxs::OT::App().API().Sync().Status(bgthreadId);
 
         const bool bAddToGUI = (opentxs::ThreadStatus::FINISHED_SUCCESS == status) ||
                                (opentxs::ThreadStatus::RUNNING == status);
@@ -2484,7 +2484,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
                 {
                     MTSpinner theSpinner;
 
-                    response = opentxs::OT::App().API().OTME_TOO().RegisterNym(sender_id, notary_id, true);
+                    response = opentxs::String(opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier(sender_id), opentxs::Identifier(notary_id), true)).Get();
                 }
 
                 qDebug() << QString("Nym Registration Response: %1").arg(QString::fromStdString(response));

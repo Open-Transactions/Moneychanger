@@ -59,16 +59,16 @@
 #include <gui/ui/agreements.hpp>
 #include <gui/ui/activity.hpp>
 
+#include <opentxs/api/client/Pair.hpp>
+#include <opentxs/api/client/Sync.hpp>
+#include <opentxs/api/client/Wallet.hpp>
 #include <opentxs/api/storage/Storage.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/api/client/Pair.hpp>
-#include <opentxs/api/client/Wallet.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OTME_too.hpp>
 #include <opentxs/client/OTWallet.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
@@ -588,7 +588,7 @@ Moneychanger::Moneychanger(QWidget *parent)
         [&]()->void
             {
                 const auto count =
-                    opentxs::OT::App().API().OTME_TOO().RefreshCount();
+                    opentxs::OT::App().API().Sync().RefreshCount();
                 const auto existing = refresh_count_.load();
 
                 if (existing < count) {
@@ -601,7 +601,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 
     opentxs::OT::App().Schedule(
         std::chrono::seconds(120),
-        []()->void{ opentxs::OT::App().API().OTME_TOO().Refresh(); },
+        []()->void{ opentxs::OT::App().API().Sync().Refresh(); },
         (std::chrono::seconds(std::time(nullptr)+60)));
 
     //SQLite database
@@ -917,7 +917,7 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
             std::string response;
             {
                 MTSpinner theSpinner;
-                response = opentxs::OT::App().API().OTME_TOO().RegisterNym(my_nym_id, notary_id, true);
+                response = opentxs::String(opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier(my_nym_id), opentxs::Identifier(notary_id), true)).Get();
                 if (response.empty() && !opentxs::OT::App().API().Exec().CheckConnection(notary_id))
                 {
                     QString qstrErrorMsg;
@@ -2807,7 +2807,7 @@ void Moneychanger::onNeedToDownloadMail()
                 {
                     MTSpinner theSpinner;
 
-                    response = opentxs::OT::App().API().OTME_TOO().RegisterNym(defaultNymID, defaultNotaryID, true);
+                    response = opentxs::String(opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier(defaultNymID), opentxs::Identifier(defaultNotaryID), true)).Get();
 
                     if (!opentxs::OT::App().API().Exec().CheckConnection(defaultNotaryID))
                     {
@@ -5246,7 +5246,7 @@ void Moneychanger::onNeedToDownloadAccountData()
 //            AddressBookUpdateDefaultAsset(get_asset_id_at(0));
 //    }
 
-    opentxs::OT::App().API().OTME_TOO().Refresh();
+    opentxs::OT::App().API().Sync().Refresh();
 
     return;
 }
@@ -5881,7 +5881,7 @@ void Moneychanger::mc_pair_node_slot()
                         errorMessage = tr("SNP admin password not available from pairing cable.");
                     }
                     // -----------------------------------
-                    const std::string str_introduction_notary_id{opentxs::String(opentxs::OT::App().API().OTME_TOO().GetIntroductionServer()).Get()};
+                    const std::string str_introduction_notary_id{opentxs::String(opentxs::OT::App().API().Sync().IntroductionServer()).Get()};
 
                     if (str_introduction_notary_id.empty()) {
                         errorMessage = tr("Introduction Notary Id not available.");

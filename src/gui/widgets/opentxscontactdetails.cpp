@@ -21,19 +21,19 @@
 #include <core/handlers/modelverifications.hpp>
 #include <core/mtcomms.h>
 
+#include <opentxs/api/client/Sync.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OTME_too.hpp>
 #include <opentxs/client/OTWallet.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
 #include <opentxs/core/Nym.hpp>
+#include <opentxs/OT.hpp>
 #include <opentxs/Types.hpp>
 
 #include <QComboBox>
@@ -2007,7 +2007,7 @@ void MTOpentxsContactDetails::on_pushButtonMsg_clicked()
         {
             compose_window->setInitialSenderNym(qstrDefaultNym);
 
-            bCanMessage = (opentxs::Messagability::READY == opentxs::OT::App().API().OTME_TOO().CanMessage(qstrDefaultNym.toStdString(), qstrContactID.toStdString()));
+            bCanMessage = (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(qstrDefaultNym.toStdString()), opentxs::Identifier(qstrContactID.toStdString())));
         }
         compose_window->setInitialRecipientContactID(qstrContactID); // We definitely know this, since we're on the Contacts page.
         // --------------------------------------------------
@@ -2127,7 +2127,7 @@ void MTOpentxsContactDetails::refresh(QString strID, QString strName)
 
     if (!qstrDefaultNym.isEmpty())
     {
-        bCanMessage = (opentxs::Messagability::READY == opentxs::OT::App().API().OTME_TOO().CanMessage(qstrDefaultNym.toStdString(), strID.toStdString()));
+        bCanMessage = (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(qstrDefaultNym.toStdString()), opentxs::Identifier(strID.toStdString())));
     }
     // -----------------------------
     if (bCanMessage)
