@@ -573,7 +573,7 @@ bool MTContactHandler::claimVerificationLowlevel(const QString & qstrClaimId, co
 
     const auto the_set =
         opentxs::proto::DataToProto<opentxs::proto::VerificationSet>(
-            opentxs::Data(data.c_str(), static_cast<uint32_t>(data.length())));
+            opentxs::Data::Factory(data.c_str(), static_cast<uint32_t>(data.length())));
 
 
     qDebug() << QString("%1").arg(QString(bChanged ? "YES, I CHANGED A VALUE (ACCORDING TO OT)" : "**NO** didn't CHANGE A VALUE, ACCORDING TO OT." ));
