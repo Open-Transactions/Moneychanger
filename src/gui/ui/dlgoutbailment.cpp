@@ -9,11 +9,12 @@
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/Native.hpp>
+#include <opentxs/api/client/Wallet.hpp>
 #include <opentxs/OT.hpp>
-#include <opentxs/api/Wallet.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Identifier.hpp>
+#include <opentxs/core/contract/UnitDefinition.hpp>
 
 #include <QKeyEvent>
 #include <QMessageBox>
@@ -48,7 +49,7 @@ DlgOutbailment::DlgOutbailment(QWidget *parent, std::int64_t & AMOUNT, std::stri
     ui->lineEditNotaryId    ->setText(notary);
 
     const opentxs::Identifier asset_id(asset_type_.toStdString());
-    opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
+    auto unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
     const QString qstrAssetAlias = QString::fromStdString(unit_definition->Alias());
 
     ui->labelAsset->setText(qstrAssetAlias);

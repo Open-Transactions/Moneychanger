@@ -645,7 +645,6 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
         return false;
     }
     // ------------------------------------------------------------
-
     std::string  strResponse;
     {
         MTSpinner      theSpinner;

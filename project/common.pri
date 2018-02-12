@@ -76,9 +76,9 @@ unix:{
         QT_CONFIG -= no-pkg-config
 
         #we do it this way, since we don't want any more tokens.
-        PKG_CONFIG_LIBDIR = "/usr/local/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
+        PKG_CONFIG_LIBDIR = "/usr/local/lib/pkgconfig:" #end with a colon.
         PKG_CONFIG_LIBDIR = "/usr/local/opt/openssl/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
-        PKG_CONFIG_LIBDIR = "$${PKG_CONFIG_LIBDIR}:" #end with a colon.
+        PKG_CONFIG_LIBDIR = "/usr/local/opt/qt/lib/pkgconfig:$${PKG_CONFIG_LIBDIR}"
     }
 
     # LINUX:

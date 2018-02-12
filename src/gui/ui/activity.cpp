@@ -8,6 +8,7 @@
 #include <gui/widgets/compose.hpp>
 #include <gui/ui/dlgexportedtopass.hpp>
 #include <gui/ui/dlgexportedcash.hpp>
+#include <gui/ui/dlginbailment.hpp>
 #include <gui/ui/dlgoutbailment.hpp>
 #include <gui/ui/getstringdialog.hpp>
 
@@ -21,20 +22,26 @@
 #include <core/handlers/modelpayments.hpp>
 #include <core/handlers/focuser.h>
 
+#include <opentxs/api/client/Issuer.hpp>
+#include <opentxs/api/client/Wallet.hpp>
 #include <opentxs/api/storage/Storage.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/Native.hpp>
 #include <opentxs/OT.hpp>
-#include <opentxs/api/Wallet.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
+#include <opentxs/contact/ContactGroup.hpp>
+#include <opentxs/contact/ContactItem.hpp>
+#include <opentxs/contact/ContactSection.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTME_too.hpp>
 #include <opentxs/client/OTRecordList.hpp>
+#include <opentxs/core/contract/UnitDefinition.hpp>
+#include <opentxs/core/Identifier.hpp>
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/OTTransaction.hpp>
 #include <opentxs/core/OTTransactionType.hpp>
@@ -382,28 +389,227 @@ int64_t Activity::GetAccountBalancesTotaledForUnitTypes(const mapIDName & mapUni
 }
 
 
-void Activity::GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, bool bPairedOrHosted, // true == paired, false == hosted.
+// NOTE: There may be multiple Nyms in the same wallet, who are all paired to
+// an issuer on the same server.
+// Therefore, if Alice and Bob are both only paired to Issuer A, this function
+// will return a "1" instead of a "2". Put another way, it returns a count based
+// on a DEDUPLICATED server list.
+//
+int Activity::PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers/*=nullptr*/)
+{
+    std::set<opentxs::Identifier> uniqueServers;
+
+    if (nullptr == pUniqueServers) {
+        pUniqueServers = &uniqueServers;
+    }
+
+    pUniqueServers->clear();
+
+    //auto servers = opentxs::OT::App().Wallet().ServerList();
+
+    /*
+    Justus
+    It depends
+    15:31
+    That returns all nyms known to the wallet, not just your nyms
+    15:31
+    C
+    Chris
+    what if I only want my own?
+    15:31
+    J
+    Justus
+    You have to use OTAPI_Exec still
+    */
+    opentxs::ObjectList myNyms;
+    const auto nNymCount = opentxs::OT::App().API().Exec().GetNymCount();
+
+    for (int nym_index = 0; nym_index < nNymCount; ++nym_index)
+    {
+        const std::string nym_id = opentxs::OT::App().API().Exec().GetNym_ID(nym_index);
+
+        if (!nym_id.empty())
+        {
+            const std::string nym_name = opentxs::OT::App().API().Exec().GetNym_Name(nym_id);
+            myNyms.push_back(std::pair<std::string, std::string>{nym_id, nym_name});
+        }
+    }
+    if (0 == myNyms.size()) {
+        return 0;
+    }
+    // ----------------------------------------------------
+    const auto & nyms = myNyms;
+//  const auto   nyms = opentxs::OT::App().Wallet().NymList();
+
+    for (const auto & [ nym_id, nym_alias] : nyms)
+    {
+        const opentxs::Identifier nymId{nym_id};
+        auto setIssuerIDs = opentxs::OT::App().Wallet().IssuerList(nymId);
+
+        auto it_issuer = setIssuerIDs.begin();
+
+        while (it_issuer != setIssuerIDs.end())
+        {
+            const opentxs::Identifier issuerId = *it_issuer;
+            it_issuer++;
+
+            auto pIssuer = opentxs::OT::App().Wallet().Issuer(nymId, issuerId);
+
+            if (!pIssuer) {
+                continue;
+            }
+            // -------------------------------------------------
+            // This call to Paired will soon be renamed to "Trusted"
+            // and it actually means "Paired or in the process of Pairing"
+            // (Aka "paireding").
+            //
+            if (pIssuer->Paired()) {
+                pUniqueServers->insert(pIssuer->PrimaryServer());
+                // -------------------------------
+                //
+                // The purpose of the below section is simply to notify Moneychanger
+                // about the various relationships, such as that account_id A is
+                // on notary B, and is owned by Nym C, and consists of asset type D.
+                // There are many places in the Moneychanger code that query for
+                // information about these relationships. So until all those places
+                // are ported to use the new API calls, I do the below code so that
+                // Moneychanger's existing system will continue functioning properly
+                // by, for example, being able to search for accounts of a given unit
+                // type or on a given notary.
+                //
+                auto pIssuerNym = opentxs::OT::App().Wallet().Nym(issuerId);
+
+                if (pIssuerNym)
+                {
+                    const opentxs::String strNotaryId{pIssuer->PrimaryServer()};
+                    const std::string str_notary_id{strNotaryId.Get()};
+
+                    auto units = pIssuerNym->Claims().Section(opentxs::proto::CONTACTSECTION_CONTRACT);
+
+                    for (const auto& [type, group] : *units) {
+                        // type is a proto::ContactItemType which represents the unit of account
+                        // such as BTC or LTC etc. This is what the UI needs to be converted to
+                        // use, instead of the TLA or "3 digit code" it uses now.
+
+                        for (const auto& [id, claim] : *group) {
+                            // claim.Value() is a unit definition id;
+
+                            const std::string str_unit_type_id{claim->Value()};
+                            const opentxs::Identifier unit_type_id{str_unit_type_id};
+
+                            std::set<opentxs::Identifier> accountList = pIssuer->AccountList(type, unit_type_id);
+
+                            for (auto & accountId : accountList) {
+                                // Note: we don't actually need the below name.
+                                // We're just calling this function because it notifies
+                                // Moneychanger's internal DB about the relationships
+                                // between these IDs. This ensures that various queries
+                                // pre-existing all over Moneychanger's code will
+                                // continue to work properly until everything is converted
+                                // to the new API.
+                                //
+                                const opentxs::String strAccountId{accountId};
+                                const std::string str_account_id = strAccountId.Get();
+                                MTNameLookupQT theLookup;
+                                const std::string str_acct_name =
+                                    theLookup.GetAcctName(str_account_id, nym_id, str_notary_id, str_unit_type_id);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return pUniqueServers->size();
+}
+
+/*
+To loop through an issuer's claims about the currencies he's issued:
+
+auto issuerNym = OT::App().Wallet().Nym(Issuer.IssuerID());
+
+auto issued_unit_types = issuerNym->Claims().Section(proto::CONTACTSECTION_CONTRACT)
+
+for (const auto& [type, group] : *issued_unit_types) {
+    // type is a proto::ContactItemType which represents the unit of account
+
+    for (const auto& [id, claim] : group) {
+        // claim.Value() is a unit definition id;
+    }
+}
+*/
+
+bool Activity::PairingStarted(const opentxs::Identifier & nymId, const opentxs::Identifier & issuerNymId)
+{
+    auto pIssuer = opentxs::OT::App().Wallet().Issuer(nymId, issuerNymId);
+
+    if (!pIssuer) {
+        return false;
+    }
+    // -------------------------------------------------
+    // This call to Paired will soon be renamed to "Trusted"
+    // and it actually means "Paired or in the process of Pairing"
+    // (Aka "paireding").
+    //
+    else if (pIssuer->Paired()) {
+        return true;
+    }
+    return false;
+}
+
+void Activity::GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, const bool bTrusted, // true == paired, false == hosted.
                                           mapIDName * pMapTLAbyAccountId/*=nullptr*/)
 {
-    const bool bCallerWantsToSeePairedNodes = bPairedOrHosted;
+    const bool bCallerWantsToSeePairedNodes = bTrusted;
 
-    int32_t  account_count = opentxs::OT::App().API().Exec().GetAccountCount();
 
-    for (int32_t ii = 0; ii < account_count; ii++)
+    // NOTE: Someday OT will provide an API that provides all of my accounts in a single
+    // function call as an ObjectList. Until then, we create that ObjectList here.
+    // So someday, this top loop will be entirely removed, and replaced with an OT API call.
+    //
+    opentxs::ObjectList myAccounts;
+    const int32_t  account_count = opentxs::OT::App().API().Exec().GetAccountCount();
+
+    for (int32_t account_index = 0; account_index < account_count; ++account_index)
     {
-        const QString OT_id   = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_ID(ii));
-        const QString OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(OT_id.toStdString()));
-        const std::string str_server_id = opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID(OT_id.toStdString());
+        const std::string account_id = opentxs::OT::App().API().Exec().GetAccountWallet_ID(account_index);
+
+        if (!account_id.empty())
+        {
+            const std::string account_name = opentxs::OT::App().API().Exec().GetAccountWallet_Name(account_id);
+            myAccounts.push_back(std::pair<std::string, std::string>{account_id, account_name});
+        }
+    }
+    // ----------------------------------------------------
+    for (const auto & [ account_id, account_name] : myAccounts)
+    {
+        const QString OT_id   = QString::fromStdString(account_id);
+        const QString OT_name = QString::fromStdString(account_name);
+        const std::string str_nym_id = opentxs::OT::App().API().Exec().GetAccountWallet_NymID(account_id);
+        const opentxs::Identifier nymId{str_nym_id};
+        const std::string str_server_id = opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID(account_id);
         const QString qstrServerId = QString::fromStdString(str_server_id);
 
-        const std::string str_unit_type_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(OT_id.toStdString());
+        const std::string str_unit_type_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(account_id);
+        const opentxs::Identifier unit_type_id{str_unit_type_id};
         const QString qstrUnitTypeId = QString::fromStdString(str_unit_type_id);
 
         const std::string OT_asset_TLA  = opentxs::OT::App().API().Exec().GetCurrencyTLA(str_unit_type_id);
         const QString qstrTLA = QString::fromStdString(OT_asset_TLA);
 
+        auto unitTypeContract = opentxs::OT::App().Wallet().UnitDefinition(unit_type_id);
+
+        if (!unitTypeContract) {
+            qDebug() << "GetAccountIdMapsByServerId: I own an account yet somehow dont have the unit type contract in my wallet.";
+            continue;
+        }
+
+        const opentxs::Identifier issuerNymId = unitTypeContract->Nym()->ID();
+        //std::string GetSignerNymID(const std::string& str_Contract) const;
+
         // bPaireding means, paired or in the process of pairing.
-        const bool bPaireding = opentxs::OT::App().API().OTME_TOO().PairingStarted(str_server_id);
+        const bool bPaireding = PairingStarted(nymId, issuerNymId);
+        //const bool bPaireding = opentxs::OT::App().API().OTME_TOO().PairingStarted(str_server_id);
 
         // Basically the caller either wants a list of accounts by server ID for PAIRED servers,
         // OR he wants a list of accounts by server ID for NON-Paired (hosted) servers.
@@ -561,6 +767,7 @@ mapIDName & Activity::GetOrCreateAccountIdMapByTLA(QString qstrTLA, mapOfMapIDNa
 
 //}
 
+
 void Activity::RefreshAccountTree()
 {
     // ----------------------------------------
@@ -642,7 +849,9 @@ void Activity::RefreshAccountTree()
 
     // First we'll do paired notaries.
 
-    const uint64_t paired_node_count = opentxs::OT::App().API().OTME_TOO().PairedNodeCount();
+    std::set<opentxs::Identifier> uniquePairedServers;
+
+    const uint64_t paired_node_count = PairedNodeCount(&uniquePairedServers);
 
     if (paired_node_count > 0)
     {
@@ -664,19 +873,51 @@ void Activity::RefreshAccountTree()
         pYourNodeItem->setFlags(pYourNodeItem->flags()&~Qt::ItemIsSelectable);
     }
 
-    for (int index = 0; index < paired_node_count; index++) // FOR EACH PAIRED OR PAIRING NODE.
+    /*
+Justus
+OT::App().Wallet().IssuerList() gives you the list of issuers
+06:58
+In fact, this is the only list you should display.
+06:59
+Don't worry about displaying accounts that were not added through the new Issuer interface.
+06:59
+TUESDAY 10:37
+C
+Chris
+Is there any differentiator between "Hosted Accounts" and "Paired Nodes" ?
+10:37
+used to be 2 lists
+10:37
+J
+Justus
+An issuer can be trusted or not
+10:38
+C
+Chris
+ok
+10:38
+J
+*/
+
+    for (const opentxs::Identifier & serverId : uniquePairedServers)
+//  for (int index = 0; index < paired_node_count; index++) // FOR EACH PAIRED OR PAIRING NODE.
     {
         QString qstrSnpName = tr("Pairing Stash Node...");
         QString qstrServerId;
-        const std::string str_index = QString::number(index).toStdString();
+        //const std::string str_index = QString::number(index).toStdString();
 
         // bPaireding means, paired or in the process of pairing.
-        const bool bPaireding = opentxs::OT::App().API().OTME_TOO().PairingStarted(str_index);
+        // UPDATE: the fact we're even in this loop at all means we're paireding.
+        //
+        const bool bPaireding = true; //opentxs::OT::App().API().OTME_TOO().PairingStarted(str_index);
         bool bConnected = false;
         // ------------------------------------------------------------------------
         if (bPaireding)  // If paired or pairing.
-        {
-            const std::string str_snp_server_id = opentxs::OT::App().API().OTME_TOO().GetPairedServer(str_index);
+        {            
+            opentxs::String strServerId{serverId};
+
+            const std::string str_snp_server_id{strServerId.Get()};
+//          const std::string str_snp_server_id = opentxs::OT::App().API().OTME_TOO().GetPairedServer(str_index);
             const bool bGotNotaryId = str_snp_server_id.size() > 0;
 
             if (bGotNotaryId)
@@ -701,12 +942,12 @@ void Activity::RefreshAccountTree()
             }
             else
             {
-                qDebug() << "Failed to get notary ID for this index: " << QString::fromStdString(str_index);
+//              qDebug() << "Failed to get notary ID for this index: " << QString::fromStdString(str_index);
             }
         }
         else
         {
-            qDebug() << "This index is NOT paired or pairing yet: str_index: " << QString::fromStdString(str_index);
+//            qDebug() << "This index is NOT paired or pairing yet: str_index: " << QString::fromStdString(str_index);
         }
         // ------------------------------------------------------------------------
         if (qstrServerId.isEmpty())
@@ -1006,8 +1247,6 @@ void Activity::RefreshAccountTree()
                                 if (bAllAcctsForTLAHaveSameUnitTypeId) {
                                     qstrAssetTypeId = QString::fromStdString(str_asset_id_for_formatting);
                                 }
-
-
                             }
                             // Else multiple lines.
                             //
@@ -5079,20 +5318,53 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
 //      QString  qstrIssuerNymId;
 //      std::string str_my_nym_id;
 
-        const bool bRequested = request_deposit_address(
+        opentxs::Identifier bailmentId;
+        std::string bailmentInstructions;
+
+        const bool bGotAddress = get_deposit_address(
             qstrServerId.toStdString(),
             str_my_nym_id,
             qstrIssuerNymId.toStdString(),
-            qstrBailmentAssetTypeId.toStdString());
+            qstrBailmentAssetTypeId.toStdString(),
+            bailmentId,
+            bailmentInstructions);
 
-        if (bRequested) {
-            QMessageBox::information(this, tr("Moneychanger"),
-                              tr("Success requesting a deposit address. (Soon, it should pop up on the screen in a separate window). "
-                                 "TODO: Reserve these addresses in advance, so the user doesn't have to wait."));
+        if (bGotAddress)
+        {
+            const opentxs::Identifier my_nym_id{str_my_nym_id};
+            const opentxs::Identifier issuer_nym_id{opentxs::String{qstrIssuerNymId.toStdString()}};
+
+            auto editor = opentxs::OT::App().Wallet().mutable_Issuer(my_nym_id, issuer_nym_id);
+            auto& issuer = editor.It();
+
+//          if (pIssuer)
+            {
+                issuer.SetUsed(opentxs::proto::PEERREQUEST_BAILMENT, bailmentId);
+
+                DlgInbailment * pDlgInbailment =
+                new DlgInbailment(this,
+                                  qstrServerId,
+                                  qstrIssuerNymId,
+                                  QString::fromStdString(str_my_nym_id),
+                                  qstrBailmentAssetTypeId,
+                                  QString::fromStdString(bailmentInstructions));
+
+                pDlgInbailment->setAttribute(Qt::WA_DeleteOnClose);
+                pDlgInbailment->show();
+            }
+//            else {
+//                QMessageBox::warning(this, tr("Moneychanger"),
+//                                     tr("Sorry, but the issuer information is not current available. Failure."));
+//            }
+
+//          QMessageBox::information(this, tr("Moneychanger"),
+//            tr("Success requesting a deposit address. "
+//               "(Soon, it should pop up on the screen in a separate window). "
+//               "TODO: Reserve these addresses in advance, so the user doesn't have to wait."));
         }
         else {
             QMessageBox::warning(this, tr("Moneychanger"),
-                                 tr("Somehow failed to request a deposit address. Try again sometime soon?"));
+                                 tr("Sorry, but a deposit address is currently unavailable. A new one is already being requested (normally I keep a few laying around for these situations...) Please try again soon."));
         }
     }
 
@@ -5602,46 +5874,96 @@ bool Activity::request_outbailment(
 //     const std::string& TARGET_NYM_ID,
 //     const std::string& INSTRUMENT_DEFINITION_ID) const;
 
-bool Activity::request_deposit_address(
+bool Activity::get_deposit_address(
     const std::string str_notary_id,
     const std::string str_my_nym_id,
     const std::string str_issuer_nym_id,
-    const std::string str_unit_type_id)
+    const std::string str_unit_type_id,
+    opentxs::Identifier & returnBailmentId,
+    std::string & returnBailmentInstructions)
 {
     OT_ASSERT(!str_notary_id.empty());
     OT_ASSERT(!str_my_nym_id.empty());
     OT_ASSERT(!str_issuer_nym_id.empty());
     OT_ASSERT(!str_unit_type_id.empty());
 
-    auto& me = opentxs::OT::App().API().OTME();
-    opentxs::otErr << __FUNCTION__
-                   << ": Requesting deposit address." << std::endl;
-    std::string result{};
+    /*
+    Issuer::BailmentInstructions() is what you want
+    13:13
+     virtual std::vector<BailmentDetails> BailmentInstructions(
+        const Identifier& unitID,
+        const bool onlyUnused = true) const = 0;
 
-    try {
-        result = me.initiate_bailment(
-            str_notary_id,
-            str_my_nym_id,
-            str_issuer_nym_id,
-            str_unit_type_id);
-    } catch (const std::runtime_error& e) {
-        opentxs::otErr << __FUNCTION__ << ": " << e.what();
+    That will give you a vector of identifier, proto::BailmentReply pairs.
+    13:15
+    Grab the address from the BailmentReply.
+    13:15
+    When you display one of those addresses as a QR code,
+    call SetUsed() to cause the state machine to grab a new one.
+     */
+
+    const opentxs::Identifier nymId{str_my_nym_id};
+    const opentxs::Identifier issuerNymId{str_issuer_nym_id};
+    const opentxs::Identifier unitTypeId{str_unit_type_id};
+
+    if (nymId.empty() || issuerNymId.empty() || unitTypeId.empty()) {
+        qDebug() << "get_deposit_address: Error: Local Nym, Issuer Nym, or Unit Type was empty...";
         return false;
     }
+    // ---------------------------------------------------------------
+    auto pIssuer = opentxs::OT::App().Wallet().Issuer(nymId, issuerNymId);
 
-    if (result.empty()) {
-        qDebug() << "Failed to receive a reply from the notary while trying to initiate bailment.";
+    if (!pIssuer) {
+        qDebug() << "get_deposit_address: Somehow failed to retrieve the issuer needed. (Failure).";
         return false;
     }
-    // -----------------------------
-    const bool output = (1 == me.VerifyMessageSuccess(result));
+    // ---------------------------------------------------------------
+    auto bailmentDetails = pIssuer->BailmentInstructions(unitTypeId);
 
-    if (!output) {
-        opentxs::otErr << __FUNCTION__
-                       << ": Initiate request bailment failed. Oh well, have to try again sometime soon."
-                       << std::endl;
+    for (auto & [ bailmentId, bailmentReply ] : bailmentDetails)
+    {
+        if (bailmentId.empty() || !bailmentReply.has_instructions()) {
+            qDebug() << "get_deposit_address: Error: missing bailment reply Id or instructions.";
+            continue;
+        }
+
+        returnBailmentId = bailmentId;
+        returnBailmentInstructions = bailmentReply.instructions();
+        return true;
     }
-    return output;
+
+    return false;
+
+
+//    auto& me = opentxs::OT::App().API().OTME();
+//    opentxs::otErr << __FUNCTION__
+//                   << ": Requesting deposit address." << std::endl;
+//    std::string result{};
+//
+//    try {
+//        result = me.initiate_bailment(
+//            str_notary_id,
+//            str_my_nym_id,
+//            str_issuer_nym_id,
+//            str_unit_type_id);
+//    } catch (const std::runtime_error& e) {
+//        opentxs::otErr << __FUNCTION__ << ": " << e.what();
+//        return false;
+//    }
+//
+//    if (result.empty()) {
+//        qDebug() << "Failed to receive a reply from the notary while trying to initiate bailment.";
+//        return false;
+//    }
+//    // -----------------------------
+//    const bool output = (1 == me.VerifyMessageSuccess(result));
+//
+//    if (!output) {
+//        opentxs::otErr << __FUNCTION__
+//                       << ": Initiate request bailment failed. Oh well, have to try again sometime soon."
+//                       << std::endl;
+//    }
+//    return output;
 }
 
 void Activity::on_tabWidgetMain_currentChanged(int index)

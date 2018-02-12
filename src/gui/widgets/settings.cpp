@@ -13,6 +13,7 @@
 #include <opentxs/api/network/ZMQ.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
+#include <opentxs/api/client/Pair.hpp>
 #include <opentxs/OT.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -396,9 +397,85 @@ void Settings::on_pushButtonPair_clicked()
     if (qstrUserNymID.isEmpty()) {
         errorMessage = tr("Default User NymId not available from local Opentxs wallet.");
     }
-    if (qstrAdminPassword.isEmpty()) {
-        errorMessage = tr("SNP admin password not available from pairing cable (in this case, from settings UI).");
-    }
+    // Allowed in this case (this experimental testing-only UI)
+/*
+Justus:
+If you have a manual pairing dialog it should be hidden in expert mode in a debug window with plenty of warnings.
+*/
+//    if (qstrAdminPassword.isEmpty()) {
+//        errorMessage = tr("SNP admin password not available from pairing cable (in this case, from settings UI).");
+//    }
+/*
+ *
+ * Chris
+I assume in AddIssuer(localNymId, bridgeNymId, pairingCode)...
+the pairingCode is the admin password field?
+09:05
+J
+Justus
+pairingCode can be an empty identifier
+09:06
+yes
+09:06
+C
+Chris
+well either it will be empty because the pairing cable passed it in as empty (unlikely)
+...or it will be empty because the user left the "admin password" field empty on the settings UI for Pairing (which I will make sure to allow. Probably old version didn't allow that).
+09:09
+
+IMPORTANT:
+
+Chris
+I guess you could just put a bullshit password and the system would ignore it anyway.
+09:09
+J
+Justus
+That's a very bad idea
+09:09
+C
+Chris
+yeah but you can't prevent user from putting a bullshit password, no?
+09:09
+J
+Justus
+If you put a password in there the library will assume this is a trusted issuer and will give it your BIP-39 seed
+09:09
+C
+Chris
+Ah!
+09:10
+Will add a warning to the UI.
+09:10
+J
+Justus
+The idea of a manual pairing dialog is something that should be for development/debugging use only, not something we expose to users.
+09:10
+C
+Chris
+it's in settings for now. Otherwise you have to use cable.
+09:10
+I will add a note also that users should not touch it, experimental only. I'm sure we'll hide it anyway in the released version.
+09:10
+.
+09:11
+C
+Chris
+So maybe the client SHOULDN'T send the seed except if the "acquisition of admin powers" is fully confirmed successful first.
+09:11
+to prevent even API users from fucking that up;
+09:11
+.
+09:11
+J
+Justus
+The ways in which a user should connect to an issuer:
+
+1) Serial cable or QR code scan
+2) Receiving a payment from another nym
+3) Importing a payment as an armored string
+09:12
+If you have a manual pairing dialog it should be hidden in expert mode in a debug window with plenty of warnings
+*/
     // -----------------------------------
     const std::string str_introduction_notary_id{opentxs::String(opentxs::OT::App().API().OTME_TOO().GetIntroductionServer()).Get()};
 
@@ -416,7 +493,42 @@ void Settings::on_pushButtonPair_clicked()
     // so we can go ahead and start pairing. (Or see how much is already done,
     // if it's already been started.)
     //
-    const bool bPairNode = opentxs::OT::App().API().OTME_TOO().PairNode(qstrUserNymID.toStdString(), qstrBridgeNymID.toStdString(), qstrAdminPassword.toStdString());
+
+    /*
+
+namespace opentxs
+{
+class Identifier;
+
+namespace api
+{
+namespace client
+{
+
+class Pair
+{
+public:
+    bool AddIssuer(
+        const Identifier& localNymID,
+        const Identifier& issuerNymID,
+        const std::string& pairingCode) const;
+
+    std::string IssuerDetails(
+        const Identifier& localNymID,
+        const Identifier& issuerNymID) const;
+
+    std::set<Identifier> IssuerList(
+        const Identifier& localNymID,
+        const bool onlyTrusted) const;
+*/
+
+    const opentxs::Identifier localNymID{qstrUserNymID.toStdString()};
+    const opentxs::Identifier issuerNymID{qstrBridgeNymID.toStdString()};
+    const std::string pairingCode{qstrAdminPassword.toStdString()};
+
+    // NEW JUSTUS API
+    const bool bPairNode = opentxs::OT::App().API().Pair().AddIssuer(localNymID, issuerNymID, pairingCode);
+//  const bool bPairNode = opentxs::OT::App().API().OTME_TOO().PairNode(qstrUserNymID.toStdString(), qstrBridgeNymID.toStdString(), qstrAdminPassword.toStdString());
 
     if (!bPairNode) {
         QMessageBox::warning(this, tr("Moneychanger"), tr("Pairing failed."));

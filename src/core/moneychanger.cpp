@@ -63,7 +63,8 @@
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/api/Wallet.hpp>
+#include <opentxs/api/client/Pair.hpp>
+#include <opentxs/api/client/Wallet.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
@@ -91,13 +92,13 @@
 
 
 
-void Moneychanger::processPeerMessages()
-{
-    process_peer_requests();
-    process_peer_replies();
+//void Moneychanger::processPeerMessages()
+//{
+//    process_peer_requests();
+//    process_peer_replies();
 
-    // processPairNodeFollowup?
-}
+//    // processPairNodeFollowup?
+//}
 
 
 //private void processPairNodeFollowup() {
@@ -185,6 +186,7 @@ void Moneychanger::processPeerMessages()
 //    }
 //}
 
+/*
 
 void Moneychanger::process_peer_requests()
 {
@@ -197,7 +199,6 @@ void Moneychanger::process_peer_requests()
         process_peer_requests_forNym(opentxs::Identifier{str_nym_id});
     }
 }
-
 void Moneychanger::process_peer_replies()
 {
     int32_t nym_count = opentxs::OT::App().API().Exec().GetNymCount();
@@ -517,6 +518,8 @@ void Moneychanger::process_connection_info_reply(
 
     opentxs::OT::App().Wallet().PeerRequestComplete(nymID, replyID);
 }
+*/
+
 
 
 /**
@@ -590,7 +593,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 
                 if (existing < count) {
                     refresh_count_.store(count);
-                    processPeerMessages();
+                    //processPeerMessages();
                     emit needToPopulateRecordlist();
                 }
             }
@@ -5894,7 +5897,40 @@ void Moneychanger::mc_pair_node_slot()
                     // so we can go ahead and start pairing. (Or see how much is already done,
                     // if it's already been started.)
                     //
-                    const bool bPairNode = opentxs::OT::App().API().OTME_TOO().PairNode(qstrUserNymID.toStdString(), qstrBridgeNymID.toStdString(), qstrAdminPassword.toStdString());
+
+                    /*
+
+namespace opentxs
+{
+class Identifier;
+
+namespace api
+{
+namespace client
+{
+
+class Pair
+{
+public:
+    virtual bool AddIssuer(
+        const Identifier& localNymID,
+        const Identifier& issuerNymID,
+        const std::string& pairingCode) const = 0;
+    virtual std::string IssuerDetails(
+        const Identifier& localNymID,
+        const Identifier& issuerNymID) const = 0;
+    virtual std::set<Identifier> IssuerList(
+        const Identifier& localNymID,
+        const bool onlyTrusted) const = 0;
+
+*/
+                    const opentxs::Identifier localNymID{qstrUserNymID.toStdString()};
+                    const opentxs::Identifier issuerNymID{qstrBridgeNymID.toStdString()};
+                    const std::string pairingCode{qstrAdminPassword.toStdString()};
+
+                    // NEW JUSTUS API
+                    const bool bPairNode = opentxs::OT::App().API().Pair().AddIssuer(localNymID, issuerNymID, pairingCode);
+                    //const bool bPairNode = opentxs::OT::App().API().OTME_TOO().PairNode(qstrUserNymID.toStdString(), qstrBridgeNymID.toStdString(), qstrAdminPassword.toStdString());
 
                     if (!bPairNode) {
                         QMessageBox::warning(this, tr("Moneychanger"), tr("Pairing failed."));
