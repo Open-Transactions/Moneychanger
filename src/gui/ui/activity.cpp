@@ -23,28 +23,28 @@
 #include <core/handlers/focuser.h>
 
 #include <opentxs/api/client/Issuer.hpp>
+#include <opentxs/api/client/Sync.hpp>
 #include <opentxs/api/client/Wallet.hpp>
 #include <opentxs/api/storage/Storage.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
+#include <opentxs/client/OT_API.hpp>
+#include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/OT_ME.hpp>
+#include <opentxs/client/OTRecordList.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
 #include <opentxs/contact/ContactGroup.hpp>
 #include <opentxs/contact/ContactItem.hpp>
 #include <opentxs/contact/ContactSection.hpp>
-#include <opentxs/client/OT_API.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OT_ME.hpp>
-#include <opentxs/client/OTME_too.hpp>
-#include <opentxs/client/OTRecordList.hpp>
 #include <opentxs/core/contract/UnitDefinition.hpp>
 #include <opentxs/core/Identifier.hpp>
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/OTTransaction.hpp>
 #include <opentxs/core/OTTransactionType.hpp>
+#include <opentxs/OT.hpp>
 #include <opentxs/Types.hpp>
 
 
@@ -913,7 +913,7 @@ J
         bool bConnected = false;
         // ------------------------------------------------------------------------
         if (bPaireding)  // If paired or pairing.
-        {            
+        {
             opentxs::String strServerId{serverId};
 
             const std::string str_snp_server_id{strServerId.Get()};
@@ -2624,10 +2624,10 @@ void Activity::on_pushButtonSendMsg_clicked()
                 // to pass it either way, because Opentxs handles it properly either way.
                 //
                 const opentxs::Identifier bgthreadId
-                    {opentxs::OT::App().API().OTME_TOO().
-                        MessageContact(str_my_nym_id, str_thread_id, message)};
+                    {opentxs::OT::App().API().Sync().
+                        MessageContact(opentxs::Identifier(str_my_nym_id), opentxs::Identifier(str_thread_id), message)};
 
-                const auto status = opentxs::OT::App().API().OTME_TOO().Status(bgthreadId);
+                const auto status = opentxs::OT::App().API().Sync().Status(bgthreadId);
 
                 const bool bAddToGUI = (opentxs::ThreadStatus::FINISHED_SUCCESS == status) ||
                                        (opentxs::ThreadStatus::RUNNING == status);
@@ -4817,7 +4817,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     //
     else if (bSelectedContact) {
         pActionViewContact = popupMenuAccounts_->addAction(tr("View this contact"));
-        if (opentxs::Messagability::READY == opentxs::OT::App().API().OTME_TOO().CanMessage(str_my_nym_id, qstrContactId.toStdString()))
+        if (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(str_my_nym_id), opentxs::Identifier(qstrContactId.toStdString())))
         {
             pActionContactMsg = popupMenuAccounts_->addAction(tr("Message this contact"));
             pActionContactPay = popupMenuAccounts_->addAction(tr("Send payment"));
@@ -4927,7 +4927,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
             qDebug() << "Unable to download credentials without a default Nym ID being set";
             return;
         }
-        opentxs::OT::App().API().OTME_TOO().CanMessage(str_my_nym_id, qstrContactId.toStdString());
+        opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(str_my_nym_id), opentxs::Identifier(qstrContactId.toStdString()));
 
         // Todo: emit some signal in a few seconds that an Opentxs Contact was just re-downloaded recently probably?
 

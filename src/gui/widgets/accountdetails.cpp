@@ -21,13 +21,13 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 
+#include <opentxs/api/client/Sync.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OTME_too.hpp>
 #include <opentxs/core/Account.hpp>
+#include <opentxs/OT.hpp>
 
 #include <QMessageBox>
 #include <QMenu>
@@ -1748,9 +1748,9 @@ void MTAccountDetails::AddButtonClicked()
             {
                 MTSpinner theSpinner;
 
-                auto strResponse = opentxs::OT::App().API().OTME_TOO().RegisterNym(qstrNymID.toStdString(), qstrNotaryID.toStdString(), true);
+                auto strResponse = opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier(qstrNymID.toStdString()), opentxs::Identifier(qstrNotaryID.toStdString()), true);
 
-                if (strResponse) {
+                if (false == strResponse.empty()) {
                     nSuccess = 1;
                 } else {
                     nSuccess = 0;

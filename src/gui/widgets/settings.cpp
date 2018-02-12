@@ -10,19 +10,19 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 
+#include <opentxs/api/client/Pair.hpp>
+#include <opentxs/api/client/Sync.hpp>
 #include <opentxs/api/network/ZMQ.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/api/client/Pair.hpp>
-#include <opentxs/OT.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OTME_too.hpp>
 #include <opentxs/core/cron/OTCronItem.hpp>
 #include <opentxs/core/recurring/OTPaymentPlan.hpp>
 #include <opentxs/core/script/OTSmartContract.hpp>
 #include <opentxs/core/NumList.hpp>
 #include <opentxs/ext/OTPayment.hpp>
+#include <opentxs/OT.hpp>
 
 #include <QDir>
 #include <QMessageBox>
@@ -477,7 +477,7 @@ The ways in which a user should connect to an issuer:
 If you have a manual pairing dialog it should be hidden in expert mode in a debug window with plenty of warnings
 */
     // -----------------------------------
-    const std::string str_introduction_notary_id{opentxs::String(opentxs::OT::App().API().OTME_TOO().GetIntroductionServer()).Get()};
+    const std::string str_introduction_notary_id{opentxs::String(opentxs::OT::App().API().Sync().IntroductionServer()).Get()};
 
     if (str_introduction_notary_id.empty()) {
         errorMessage = tr("Introduction Notary Id not available.");
