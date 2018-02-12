@@ -179,11 +179,13 @@ protected:
 
     mapIDName & GetOrCreateAccountIdMapByTLA(QString qstrTLA, mapOfMapIDName & bigMap);
 
-    bool request_deposit_address(
+    bool get_deposit_address(
         const std::string str_notary_id,
         const std::string str_my_nym_id,
         const std::string str_issuer_nym_id,
-        const std::string str_unit_type_id);
+        const std::string str_unit_type_id,
+        opentxs::Identifier & returnBailmentId,
+        std::string & returnBailmentInstructions);
 
     bool request_outbailment(
         const std::string str_notary_id,

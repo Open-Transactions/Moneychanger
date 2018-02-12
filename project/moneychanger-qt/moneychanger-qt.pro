@@ -59,7 +59,7 @@ win32:{
 }
 
 #mac:{
-#    !contains(MAC_OS_VERSION, 10.9):!contains(MAC_OS_VERSION, 10.10):!contains(MAC_OS_VERSION, 10.11): {
+#    !contains(MAC_OS_VERSION, 10.9):!contains(MAC_OS_VERSION, 10.10):!contains(MAC_OS_VERSION, 10.11):!contains(MAC_OS_VERSION, 10.12):!contains(MAC_OS_VERSION, 10.13):{
 #        INCLUDEPATH += $$QMAKE_MAC_SDK/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers
 #    }
 #}
@@ -105,7 +105,7 @@ unix: {
 
         QMAKE_LFLAGS_SONAME  = -Wl,-install_name,@executable_path/../Frameworks/
 
-        !contains(MAC_OS_VERSION, 10.9):!contains(MAC_OS_VERSION, 10.10):!contains(MAC_OS_VERSION, 10.11)|!contains(MAC_OS_VERSION, 10.12)|!contains(MAC_OS_VERSION, 10.13):{
+        !contains(MAC_OS_VERSION, 10.9):!contains(MAC_OS_VERSION, 10.10):!contains(MAC_OS_VERSION, 10.11):!contains(MAC_OS_VERSION, 10.12):!contains(MAC_OS_VERSION, 10.13):{
             # if not on Mavericks
             LIBS += -lboost_system-mt
             LIBS += -lboost_thread-mt
