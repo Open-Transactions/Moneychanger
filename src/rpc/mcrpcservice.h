@@ -1403,13 +1403,6 @@ public Q_SLOTS:
         QString Basket,
         QString InstrumentDefinitionID,
         QString AssetAccountID);
-    QJsonValue popMessageBuffer(
-        QString Username,
-        QString APIKey,
-        qint64 RequestNumber,
-        QString NotaryID,
-        QString NymID);
-    QJsonValue flushMessageBuffer(QString Username, QString APIKey);
     QJsonValue getSentMessage(
         QString Username,
         QString APIKey,

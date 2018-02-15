@@ -6210,44 +6210,6 @@ QJsonValue MCRPCService::addBasketExchangeItem(
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::popMessageBuffer(
-    QString Username,
-    QString APIKey,
-    qint64 RequestNumber,
-    QString NotaryID,
-    QString NymID)
-{
-    if (!validateAPIKey(Username, APIKey)) {
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if (!opentxs::OT::App().API().Exec().IsValidID(NotaryID.toStdString())) {
-        QJsonObject object{{"Error", "Invalid NotaryID"}};
-        return QJsonValue(object);
-    }
-    if (!opentxs::OT::App().API().Exec().IsValidID(NymID.toStdString())) {
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-
-    std::string result = opentxs::OT::App().API().Exec().PopMessageBuffer(
-        RequestNumber, NotaryID.toStdString(), NymID.toStdString());
-    QJsonObject object{{"PopMessageBufferResult", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::flushMessageBuffer(QString Username, QString APIKey)
-{
-    if (!validateAPIKey(Username, APIKey)) {
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-
-    opentxs::OT::App().API().Exec().FlushMessageBuffer();
-    QJsonObject object{{"MessageBufferFlushed", "True"}};
-    return QJsonValue(object);
-}
-
 QJsonValue MCRPCService::getSentMessage(
     QString Username,
     QString APIKey,
