@@ -600,9 +600,9 @@ Moneychanger::Moneychanger(QWidget *parent)
       );
 
     opentxs::OT::App().Schedule(
-        std::chrono::seconds(120),
+        std::chrono::seconds(20),
         []()->void{ opentxs::OT::App().API().Sync().Refresh(); },
-        (std::chrono::seconds(std::time(nullptr)+60)));
+        (std::chrono::seconds(std::time(nullptr))));
 
     //SQLite database
     // This can be moved very easily into a different class
@@ -3247,6 +3247,8 @@ bool Moneychanger::AddMailToMsgArchive(
                         //
                         if (tupleNymThreadAndItem == *ptrNymThreadAndItem)
                         {
+                            qDebug() << "Importing conversation item...";
+
                             const bool bReturn = low_level_AddMailToMsgArchive(
                                         recordmt,
                                         mapOfSetsOfAlreadyImportedMsgs,

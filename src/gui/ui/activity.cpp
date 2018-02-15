@@ -5038,7 +5038,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     // *****************************************************************
     else if (selectedAction == pActionBailment)
     {
-        popupMenuAccounts_->close();
+        resetPopupMenus();
 
         if (str_my_nym_id.empty()) {
             QMessageBox::warning(this, tr("Moneychanger"), tr("Please set your default Nym and then try again."));
