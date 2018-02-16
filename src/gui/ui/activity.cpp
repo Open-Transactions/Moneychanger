@@ -4875,7 +4875,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
 
     if (selectedAction == pActionViewContact)
     {
-        popupMenuAccounts_->close();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         if (nullptr != pTreeItem)
             pTreeItem->setSelected(true);
@@ -4890,7 +4890,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     //
     else if (selectedAction == pActionExistingContact)
     {
-        popupMenuAccounts_->close();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         if (nullptr != pTreeItem)
             pTreeItem->setSelected(true);
@@ -4911,7 +4911,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     // ----------------------------------
     else if (selectedAction == pActionDownloadCredentials)
     {
-        popupMenuAccounts_->close();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         if (nullptr != pTreeItem)
             pTreeItem->setSelected(true);
@@ -4932,7 +4932,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     // ----------------------------------------------
     else if (selectedAction == pActionCreateContact)
     {
-        popupMenuAccounts_->close();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         if (nullptr != pTreeItem)
             pTreeItem->setSelected(true);
@@ -4966,49 +4966,49 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     // ----------------------------------------------
     else if (selectedAction == pActionPairWithSNP)
     {
-        popupMenuAccounts_->close();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         emit needToPairStashNode();
     }
     // ----------------------------------------------
     else if (selectedAction == pActionManageNotaries)
     {
-        popupMenuAccounts_->close();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         emit showServer(qstrServerId); // qstrServerId may be empty; that's okay.
     }
     // ----------------------------------
     else if (selectedAction == pActionManageAssets)
     {
-        popupMenuAccounts_->close();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         emit showAsset(qstrAssetTypeId); // asset ID may be empty, which is okay.
     }
     // ----------------------------------
     else if (selectedAction == pActionManageAccounts)
     {
-        popupMenuAccounts_->close();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         emit showAccount(qstrAccountId); // account ID may be empty, which is okay.
     }
     // ----------------------------------
     else if (selectedAction == pActionManageContacts)
     {
-        popupMenuAccounts_->close();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         emit showContacts();
     }
     // ----------------------------------
     else if (selectedAction == pActionContactMsg)
     {
-        popupMenuAccounts_->close();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         emit messageContact(QString::fromStdString(str_my_nym_id), qstrContactId);
     }
     // ----------------------------------
     else if (selectedAction == pActionContactPay)
     {
-        popupMenuAccounts_->close();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         // todo: qstrAccountId is empty here, so maybe should just have
         // "pay to contact" signal.
@@ -5017,7 +5017,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     // ----------------------------------
     else if (selectedAction == pActionContactInvoice)
     {
-        popupMenuAccounts_->close();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         // todo: qstrAccountId is empty here, so maybe should just have
         // "request from contact" signal.
@@ -5026,7 +5026,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     // ----------------------------------
     else if (selectedAction == pActionContactRecurring)
     {
-        popupMenuAccounts_->close();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         // todo: qstrAccountId is empty here, so maybe should just have
         // "propose from contact" signal.
@@ -5035,7 +5035,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     // *****************************************************************
     else if (selectedAction == pActionBailment)
     {
-        resetPopupMenus();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         if (str_my_nym_id.empty()) {
             QMessageBox::warning(this, tr("Moneychanger"), tr("Please set your default Nym and then try again."));
@@ -5369,7 +5369,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
 
     else if (selectedAction == pActionOutbailment)
     {
-        popupMenuAccounts_->close();
+        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         if (str_my_nym_id.empty()) {
             QMessageBox::warning(this, tr("Moneychanger"), tr("Please set your default Nym and then try again."));
