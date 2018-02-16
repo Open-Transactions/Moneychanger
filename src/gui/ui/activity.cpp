@@ -5810,14 +5810,17 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
                                       qstrBailmentAssetTypeId, qstrIssuerNymId, qstrServerId);
 
         if (dlgOutbailment.exec() == QDialog::Accepted) {
-            if (AMOUNT <= 0) {
+
+            const std::int64_t intZero{0};
+
+            if (AMOUNT <= intZero) {
                 QMessageBox::warning(this, tr("Moneychanger"),
                                      tr("Failure: Cannot withdraw a negative or zero amount."));
                 return;
             }
             if (strToBlockchainAddress.empty()) {
                 QMessageBox::warning(this, tr("Moneychanger"),
-                                     tr("Failure: Cannot withdraw a negative or zero amount."));
+                                     tr("Failure: Blockchain address is empty."));
                 return;
             }
             // -----------------------------------------------
