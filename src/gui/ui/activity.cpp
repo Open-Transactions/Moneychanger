@@ -34,6 +34,7 @@
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTRecordList.hpp>
+#include <opentxs/client/OTWallet.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
 #include <opentxs/contact/ContactGroup.hpp>
@@ -46,7 +47,6 @@
 #include <opentxs/core/OTTransactionType.hpp>
 #include <opentxs/OT.hpp>
 #include <opentxs/Types.hpp>
-
 
 #include <QLabel>
 #include <QDebug>
@@ -1117,9 +1117,6 @@ J
                 this->GetAccountsByTLAFromMap(mapAccounts, // input
                                               mapTLAByAccountId, // input
                                               bigMapAccountsByTLA); // output
-
-
-
 
                 if (!bServerHasBeenShownAlready &&
                         bigMapAccountsByTLA.size() > 1)  // If there are multiple TLAs, then we HAVE to show the server above them on its own line.
@@ -5437,17 +5434,65 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
         // the user to choose an asset ID, based on those available from filtering the user's
         // accounts on that server.
         //
-        mapIDName theAccountMap;
-        const QString qstrMyNymId(QString::fromStdString(str_my_nym_id));
-        if (false == MTContactHandler::getInstance()->GetAccounts(theAccountMap, qstrMyNymId, qstrServerId, QString("")))
-        {
 
+//        std::set<AccountInfo> OTWallet::AccountList() const
+//        {
+//            std::set<AccountInfo> output{};
+//
+//            Lock lock(lock_);
+//
+//            for (const auto & [ accountID, entry ] : m_mapAccounts) {
+//                const auto & [ nymID, serverID, unitID, account ] = entry;
+//
+//                OT_ASSERT(account)
+//
+//                output.emplace(accountID, nymID, serverID, unitID);
+//            }
+//
+//            return output;
+//        }
+//resume
+
+
+        const QString qstrMyNymId(QString::fromStdString(str_my_nym_id));
+
+        std::set<opentxs::AccountInfo> filteredAccounts;
+
+        opentxs::OTWallet * pWallet = opentxs::OT::App().API().OTAPI().GetWallet("Moneychanger::activity::outbailment");
+        auto accountSet = pWallet->AccountList();
+
+        for (const auto & accountInfo : accountSet)
+        {
+            const auto & [ accountID, nymID, serverID, unitID ] = accountInfo;
+
+            if (opentxs::Identifier(str_my_nym_id) != nymID)
+                continue;
+            if (opentxs::Identifier(qstrServerId.toStdString()) != serverID)
+                continue;
+            filteredAccounts.insert(accountInfo);
+        }
+
+        if (filteredAccounts.size() < 1)
+        {
             QMessageBox::warning(this, tr("Moneychanger"),
-                tr("Sorry, you don't have any accounts on this notary that can withdraw to blockchain. "
-                   "Make sure you have a default nym selected, so we know we're looking at the right accounts. "
-                   "(Accounts are filtered by the owner Nym)."));
-            qDebug() << "No accounts available to do an outbailment from, for the given notary and nym.";
+                                 tr("Sorry, you don't have any accounts on this notary that can withdraw to blockchain. "
+                                    "Make sure you have a default nym selected, so we know we're looking at the right accounts. "
+                                    "(Accounts are filtered by the owner Nym)."));
+            qDebug() << "No accounts available to do an outbailment from, for the given notary " << qstrServerId << "and nym " << qstrMyNymId << ".";
             return;
+        }
+
+        mapIDName theAccountMap;
+
+        for (const auto & accountInfo : filteredAccounts) {
+            const auto & [ accountID, nymID, serverID, unitID ] = accountInfo;
+
+            const opentxs::String strCurrentAccountId{accountID};
+            const std::string str_current_acct_id(strCurrentAccountId.Get());
+            const std::string account_name = opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_current_acct_id);
+
+            theAccountMap.insert(QString::fromStdString(str_current_acct_id),
+                                 QString::fromStdString(account_name));
         }
         // -----------------------------------------------
 //      QString  qstrTLA;
