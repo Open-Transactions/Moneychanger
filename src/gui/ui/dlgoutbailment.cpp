@@ -18,6 +18,7 @@
 
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <QDebug>
 
 DlgOutbailment::DlgOutbailment(QWidget *parent, std::int64_t & AMOUNT, std::string & blockchain_address,
                                QString asset_type, QString issuer_nym, QString notary) :
@@ -105,9 +106,14 @@ void DlgOutbailment::on_pushButtonWithdraw_clicked()
 
 void DlgOutbailment::on_lineEditBlockchain_editingFinished()
 {
-    // todo
-
-
+    if (!withdrawalPerformed_)
+    {
+        QString address = ui->lineEditBlockchain->text().trimmed();
+        if (!address.isEmpty())
+        {
+            blockchain_address_ = address.toStdString();
+        }
+    }
 }
 
 void DlgOutbailment::on_lineEditAmount_editingFinished()
@@ -122,10 +128,13 @@ void DlgOutbailment::on_lineEditAmount_editingFinished()
             std::string str_temp(amt.toStdString());
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
+
             AMOUNT_ = opentxs::OT::App().API().Exec().StringToAmount(asset_type_.toStdString(), str_temp);
+
             std::string  str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmount(
                          asset_type_.toStdString(),
                          static_cast<int64_t>(AMOUNT_));
+
             QString      qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
             ui->lineEditAmount->setText(qstr_FinalAmount);
         }
