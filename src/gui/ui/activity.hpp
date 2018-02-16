@@ -89,14 +89,13 @@ public:
     void DiscardOutgoingCash(QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
     void DiscardIncoming    (QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
 
-    void resetPopupMenus();
-
 public slots:
     void onClaimsUpdatedForNym(QString nymId);
     void onRecordlistPopulated();
     void onBalancesChanged();
     void onNeedToRefreshUserBar();
     void onNeedToRefreshRecords();
+    void resetPopupMenus();
 
 signals:
     void showDashboard();
