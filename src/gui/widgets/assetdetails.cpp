@@ -63,7 +63,7 @@ void MTAssetDetails::on_pushButton_clicked()
     // --------------------------
     if (opentxs::OT::App().API().Exec().GetServerCount() <= 0)
     {
-        QMessageBox::information(this, tr("Moneychanger"),
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("There are no server contracts in this wallet. "
                                     "(The notary is the server.) Please add a server contract (aka notary "
                                     "contract) to your wallet, and then come back here and try to issue an asset onto that server."));
@@ -240,7 +240,7 @@ void MTAssetDetails::on_pushButton_clicked()
                                     // -----------------------------------
                                     if (bSuccess)
                                     {
-                                        QMessageBox::information(this, tr("Moneychanger"),
+                                        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                                                  tr("Apparently this asset is already registered on the selected notary. "
                                                                     "(I just asked the notary.)"));
                                         return;
@@ -267,7 +267,7 @@ void MTAssetDetails::on_pushButton_clicked()
                                     // -----------------------------------
                                     if (!bSuccess)
                                     {
-                                        QMessageBox::information(this, tr("Moneychanger"),
+                                        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                                                  QString(tr("%1 '%2' %3 '%4'. %5")).
                                                                  arg(tr("Failed to register")).
                                                                  arg(ui->lineEditName->text()).
@@ -282,7 +282,7 @@ void MTAssetDetails::on_pushButton_clicked()
 
                                     QString qstrNewIssuerAcct(QString::fromStdString(str_issuer_acct));
 
-                                    QMessageBox::information(this, tr("Moneychanger"),
+                                    QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                                              QString(tr("%1 '%2' %3 '%4'. %5: %6")).
                                                              arg(tr("Successfully registered")).
                                                              arg(ui->lineEditName->text()).
@@ -304,7 +304,7 @@ void MTAssetDetails::on_pushButton_clicked()
                 }
                 else // There's no private key in this wallet, for this asset contract.
                 {
-                    QMessageBox::information(this, tr("Moneychanger"),
+                    QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                              tr("Sorry, but only the Nym who signed that asset contract can register it onto a notary."));
                     return;
                 }
@@ -485,7 +485,7 @@ void MTAssetDetails::DeleteButtonClicked()
 
         if (!bCanRemove)
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("This asset contract cannot be removed, because there are still accounts in the wallet that are using it. Please delete those accounts first."));
             return;
         }

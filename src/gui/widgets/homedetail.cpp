@@ -228,14 +228,14 @@ void MTHomeDetail::on_existingContactButton_clicked(bool checked /*=false*/)
 
         if (MTContactHandler::getInstance()->FindContactIDByNymID(nymID) > 0)
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Strange: NymID %1 already belongs to an existing contact.").arg(nymID));
             return;
         }
 
         if (MTContactHandler::getInstance()->FindContactIDByAcctID(accountID, nymID, NotaryID, InstrumentDefinitionID) > 0)
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Strange: accountID %1 already belongs to an existing contact.").arg(accountID));
             return;
         }
@@ -938,7 +938,7 @@ void MTHomeDetail::copyIDToClipboard(const QString qstr_field, const QString & t
     {
         clipboard->setText(text);
 
-        QMessageBox::information(this, tr("Moneychanger"), QString("%1 %2 %3:<br/>%4").
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), QString("%1 %2 %3:<br/>%4").
                                  arg(tr("Copied")).arg(qstr_field).arg(tr("to the clipboard")).
                                  arg(text));
     }

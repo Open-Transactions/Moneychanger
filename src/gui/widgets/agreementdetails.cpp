@@ -1801,7 +1801,7 @@ void MTAgreementDetails::ImportContract(QString qstrContents)
 {
     if (qstrContents.isEmpty())
     {
-        QMessageBox::warning(this, tr("Moneychanger"),
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
             tr("Failed importing: contract is empty."));
         return;
     }
@@ -1817,7 +1817,7 @@ void MTAgreementDetails::ImportContract(QString qstrContents)
 
         if (nullptr == pSmartContract)
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                 tr("Failed importing: Unable to load the contract up as a smart contract."));
             return;
         }
@@ -1872,7 +1872,7 @@ void MTAgreementDetails::DeleteButtonClicked()
     {
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, tr("Moneychanger"), tr("Are you sure you want to delete this Smart Contract?"),
+        reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), tr("Are you sure you want to delete this Smart Contract?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
@@ -1886,7 +1886,7 @@ void MTAgreementDetails::DeleteButtonClicked()
                 // ------------------------------------------------
             }
             else
-                QMessageBox::warning(this, tr("Moneychanger"),
+                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                      tr("Failed trying to delete this Smart Contract."));
         }
     }
@@ -2166,7 +2166,7 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
                 if (0 == nBylawCount)
                     qstrErrMsg = QString(tr("You must create a bylaw first, before creating any variables."));
 
-                QMessageBox::information(this, tr("Moneychanger"), qstrErrMsg);
+                QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), qstrErrMsg);
                 return;
             }
 
@@ -2183,7 +2183,7 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
 
             if (qstrAccess.isEmpty() || qstrType.isEmpty())
             {
-                QMessageBox::information(this, tr("Moneychanger"),
+                QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                          tr("Failed due to missing settings. Please make sure the variable 'Access' and 'Type' are selected, and then try again."));
                 return;
             }
@@ -2192,7 +2192,7 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
             // ----------------------------------------------
             if (qstrValue.isEmpty())
             {
-                QMessageBox::information(this, tr("Moneychanger"),
+                QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                          tr("Failed due to empty value. Please make sure the variable's initial value is set."));
                 return;
             }
@@ -2212,7 +2212,7 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
                 if (0 == nBylawCount)
                     qstrErrMsg = QString(tr("You must create a bylaw first, before creating any clauses."));
 
-                QMessageBox::information(this, tr("Moneychanger"), qstrErrMsg);
+                QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), qstrErrMsg);
                 return;
             }
             // --------------------------
@@ -2232,7 +2232,7 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
                 if (0 == nBylawCount)
                     qstrErrMsg = QString(tr("You must create a bylaw first, before creating any hooks."));
 
-                QMessageBox::information(this, tr("Moneychanger"), qstrErrMsg);
+                QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), qstrErrMsg);
                 return;
             }
             // -------------------------------------
@@ -2244,7 +2244,7 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
 
             QMessageBox msgBox(
                         QMessageBox::Question,
-                        tr("Moneychanger"),
+                        tr(MONEYCHANGER_APP_NAME),
                         tr("Create a new clause to be triggered by the hook, or select an existing clause?"),
                         QMessageBox::Cancel | QMessageBox::Yes | QMessageBox::No, this);
 
@@ -2266,7 +2266,7 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
                     str_template = strTempResult;
                 else
                 {
-                    QMessageBox::information(this, tr("Moneychanger"),
+                    QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                              tr("Failed creating hook: couldn't create a clause to attach it to."));
                     return;
                 }
@@ -2326,7 +2326,7 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
                 if (0 == nBylawCount)
                     qstrErrMsg = QString(tr("You must create a bylaw first, before creating any callbacks."));
 
-                QMessageBox::information(this, tr("Moneychanger"), qstrErrMsg);
+                QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), qstrErrMsg);
                 return;
             }
             // ------------------------------------------
@@ -2338,7 +2338,7 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
 
             if (!str_clause.empty())
             {
-                QMessageBox::information(this, tr("Moneychanger"),
+                QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                          QString(tr("This callback already triggers clause '%1'. (Unable to add the same callback twice.) "
                                                     "Delete the callback first, if you wish to add it for a different clause.")).
                                          arg(QString::fromStdString(str_clause)) );
@@ -2434,7 +2434,7 @@ void MTAgreementDetails::on_pushButtonDeleteVariable_clicked()
     // ------------------------------
     QMessageBox::StandardButton reply;
 
-    reply = QMessageBox::question(this, tr("Moneychanger"), tr("Are you sure you want to delete this Variable?"),
+    reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), tr("Are you sure you want to delete this Variable?"),
                                   QMessageBox::Yes|QMessageBox::No);
     if (QMessageBox::Yes != reply)
         return;
@@ -2509,7 +2509,7 @@ void MTAgreementDetails::on_pushButtonDeleteClause_clicked()
     // ------------------------------
     QMessageBox::StandardButton reply;
 
-    reply = QMessageBox::question(this, tr("Moneychanger"), tr("Are you sure you want to delete this Clause?"),
+    reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), tr("Are you sure you want to delete this Clause?"),
                                   QMessageBox::Yes|QMessageBox::No);
     if (QMessageBox::Yes != reply)
         return;
@@ -2593,7 +2593,7 @@ void MTAgreementDetails::on_pushButtonDeleteCallback_clicked()
     // ------------------------------
     QMessageBox::StandardButton reply;
 
-    reply = QMessageBox::question(this, tr("Moneychanger"), tr("Are you sure you want to delete this Callback?"),
+    reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), tr("Are you sure you want to delete this Callback?"),
                                   QMessageBox::Yes|QMessageBox::No);
     if (QMessageBox::Yes != reply)
         return;
@@ -2668,7 +2668,7 @@ void MTAgreementDetails::on_pushButtonDeleteAccount_clicked()
     // ------------------------------
     QMessageBox::StandardButton reply;
 
-    reply = QMessageBox::question(this, tr("Moneychanger"), tr("Are you sure you want to delete this Account?"),
+    reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), tr("Are you sure you want to delete this Account?"),
                                   QMessageBox::Yes|QMessageBox::No);
     if (QMessageBox::Yes != reply)
         return;
@@ -2720,7 +2720,7 @@ void MTAgreementDetails::on_pushButtonDeleteParty_clicked()
     // ------------------------------
     QMessageBox::StandardButton reply;
 
-    reply = QMessageBox::question(this, tr("Moneychanger"), tr("Are you sure you want to delete this Party?"),
+    reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), tr("Are you sure you want to delete this Party?"),
                                   QMessageBox::Yes|QMessageBox::No);
     if (QMessageBox::Yes != reply)
         return;
@@ -2772,7 +2772,7 @@ void MTAgreementDetails::on_pushButtonDeleteBylaw_clicked()
     // ------------------------------
     QMessageBox::StandardButton reply;
 
-    reply = QMessageBox::question(this, tr("Moneychanger"), tr("Are you sure you want to delete this Bylaw?"),
+    reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), tr("Are you sure you want to delete this Bylaw?"),
                                   QMessageBox::Yes|QMessageBox::No);
     if (QMessageBox::Yes != reply)
         return;

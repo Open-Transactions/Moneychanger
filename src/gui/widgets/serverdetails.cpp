@@ -229,7 +229,7 @@ void MTServerDetails::DeleteButtonClicked()
 
         if (!bCanRemove)
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("This server contract cannot be removed, because there are still accounts and/or nyms in the wallet that are registered there. Please unregister the relevant nyms, and/or delete the relevant accounts, first."));
             return;
         }

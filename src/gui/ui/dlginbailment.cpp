@@ -52,7 +52,7 @@ void DlgInbailment::on_toolButtonCopyAddress_clicked()
     {
         clipboard->setText(ui->lineEditAddress->text());
 
-        QMessageBox::information(this, tr("Moneychanger"), QString("%1:<br/>%2").
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), QString("%1:<br/>%2").
                                  arg(tr("Copied blockchain deposit address to the clipboard")).
                                  arg(ui->lineEditAddress->text()));
     }
@@ -70,7 +70,7 @@ void DlgInbailment::on_toolButtonQrCode_clicked()
 
         clipboard->setPixmap(pixmapQR);
 
-        QMessageBox::information(this, tr("Moneychanger"), QString("%1:<br/>%2").
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), QString("%1:<br/>%2").
                                  arg(tr("Copied QR CODE IMAGE to the clipboard, of blockchain deposit address")).
                                  arg(ui->lineEditAddress->text()));
     }

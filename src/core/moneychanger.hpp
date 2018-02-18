@@ -70,6 +70,8 @@ public:
     void PublicNymNotify(std::string id);
     void AssetContractNotify(std::string id);
     // ------------------------------------------------
+    static bool is_base64(QString string);
+
     virtual ~Moneychanger();
 
     static Moneychanger * It(QWidget *parent = 0, bool bShuttingDown = false);

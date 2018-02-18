@@ -1,3 +1,7 @@
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
+#endif
+
 #include "pagesmart_party.hpp"
 #include "ui_pagesmart_party.h"
 
@@ -62,7 +66,7 @@ void PageSmart_Party::on_pushButtonSelect_clicked()
 
     if (str_template.empty()) // Should never happen.
     {
-        QMessageBox::warning(this, tr("Moneychanger"), tr("Strange, somehow the SmartTemplate field is empty. Unable to proceed."));
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Strange, somehow the SmartTemplate field is empty. Unable to proceed."));
         return;
     }
     // -------------------------------------------
@@ -86,7 +90,7 @@ void PageSmart_Party::on_pushButtonSelect_clicked()
         std::string name = opentxs::OT::App().API().Exec().Smart_GetPartyByIndex(str_template, i);
 
         if ("" == name) {
-            QMessageBox::information(this, tr("Moneychanger"), tr("Strange, there is a party on this smart contract without a name. Failure."));
+            QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Strange, there is a party on this smart contract without a name. Failure."));
             wizard()->reject();
             return;
         }
@@ -108,7 +112,7 @@ void PageSmart_Party::on_pushButtonSelect_clicked()
     // -----------------------------------------------
     if (0 == the_map.size())
     {
-        QMessageBox::information(this, tr("Moneychanger"), tr("Strange: though I didn't think it was the case at first, I'm sure now that all parties ARE already confirmed on this contract. (Failure.)"));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Strange: though I didn't think it was the case at first, I'm sure now that all parties ARE already confirmed on this contract. (Failure.)"));
         wizard()->reject();
         return;
     }

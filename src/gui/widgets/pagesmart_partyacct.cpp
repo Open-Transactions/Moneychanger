@@ -1,3 +1,7 @@
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
+#endif
+
 #include "pagesmart_partyacct.hpp"
 #include "ui_pagesmart_partyacct.h"
 
@@ -92,7 +96,7 @@ void PageSmart_PartyAcct::on_pushButtonSelect_clicked()
             opentxs::OT::App().API().Exec().Party_GetAcctNameByIndex(str_template, str_party, i);
 
         if ("" == acctName) {
-            QMessageBox::information(this, tr("Moneychanger"), tr("Strange, there is an account on this smart contract without a name. Failure."));
+            QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Strange, there is an account on this smart contract without a name. Failure."));
             wizard()->reject();
             return;
         }
@@ -131,7 +135,7 @@ void PageSmart_PartyAcct::on_pushButtonSelect_clicked()
     //
     if (0 == the_map.size())
     {
-        QMessageBox::information(this, tr("Moneychanger"),
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Strange: though I didn't think it was the case at first, It seems now that all accounts ARE already confirmed on this contract. (Failure.)"));
         wizard()->reject();
         return;

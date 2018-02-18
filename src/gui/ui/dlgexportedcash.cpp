@@ -65,7 +65,7 @@ void DlgExportedCash::on_pushButton_clicked()
     {
         clipboard->setText(ui->plainTextEdit->toPlainText());
 
-        QMessageBox::information(this, tr("Moneychanger"), tr("Copied"));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Copied"));
     }
 }
 
@@ -77,7 +77,7 @@ void DlgExportedCash::on_pushButtonCopy_clicked()
     {
         clipboard->setText(ui->plainTextEditCopy->toPlainText());
 
-        QMessageBox::information(this, tr("Moneychanger"), tr("Copied"));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Copied"));
     }
 }
 

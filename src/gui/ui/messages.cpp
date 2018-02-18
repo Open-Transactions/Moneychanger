@@ -1260,7 +1260,7 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
         // ---------------------------------------------------
         if (0 == mapNymIds.size())
         {
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Unable to find a NymId for this message. (Unable to download credentials without Id.)"));
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Unable to find a NymId for this message. (Unable to download credentials without Id.)"));
             qDebug() << "UNABLE to find a NymId for this message. (Failed trying to download his credentials.)";
             return;
         }
@@ -1306,7 +1306,7 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
 
         if (!contactId.empty())
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Strange: NymID %1 already belongs to an existing contact.").arg(qstrNymId));
             return;
         }
@@ -1342,7 +1342,7 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
 
 //              if (!MTContactHandler::getInstance()->AddNymToExistingContact(nContactId, qstrNymId))
                 {
-                    QMessageBox::warning(this, tr("Moneychanger"),
+                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                          tr("TODO: Tried to add NymID %1 to an existing contact but I don't know the API call to use.").arg(qstrNymId));
                     return;
                 }
@@ -1712,7 +1712,7 @@ void Messages::on_toolButtonDelete_clicked()
         // ----------------------------------------------
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, tr("Moneychanger"), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to delete these messages?")).
+        reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to delete these messages?")).
                                       arg(tr("WARNING: This is not reversible!")),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply != QMessageBox::Yes)

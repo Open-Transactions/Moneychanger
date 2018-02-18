@@ -1,3 +1,7 @@
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
+#endif
+
 #include "dlgdecrypt.hpp"
 #include "ui_dlgdecrypt.h"
 
@@ -76,8 +80,11 @@ void DlgDecrypt::on_pushButtonClipboard_clicked()
 
 void DlgDecrypt::on_pushButtonDecrypt_clicked()
 {
-    bool bSuccessDecrypting = false;
-    bool bSuccessVerifying  = false;
+    bool bSuccessDecrypting         = false;
+    bool bSuccessVerifying          = false;
+    bool bSuccessDecodingBase64     = false;
+    bool bSuccessDecodingArmor      = false;
+    bool bSuccessDecodingSignedFile = false;
 
     QString qstrNymWhoDecrypted;
     QString qstrNymWhoVerified;
@@ -95,8 +102,8 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
     // --------------------------------
     else //qstrText not empty.
     {
-        std::string str_input(qstrText.toStdString());
-        opentxs::String    strInput (str_input.c_str());
+        std::string     str_input(qstrText.toStdString());
+        opentxs::String strInput (str_input.c_str());
 
         if (strInput.Exists())
         {
@@ -204,13 +211,16 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
             // --------------------------------------------
             // This call to DecodeIfArmored is what handles the: "-----BEGIN OT ARMORED ... -----"
 
-            if (strInput.DecodeIfArmored(false)) // bEscapedIsAllowed=true by default.
+            if (strInput.DecodeIfArmored()) // bEscapedIsAllowed=true by default.
             {
                 std::string str_decoded(strInput.Get());
                 QString qstrDecoded(QString::fromStdString(str_decoded));
 
-                if (!qstrDecoded.isEmpty())
+                if (!qstrDecoded.isEmpty()) {
+                    bSuccessDecodingArmor = true;
                     qstrText = qstrDecoded;
+                    str_input = str_decoded;
+                }
                 // -----------------------------------
                 // At this point, we know it's been decrypted, if applicable, and it's been
                 // de-armored, if applicable. So now we check to see if it's a signed file.
@@ -244,6 +254,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
 
                                     if (strContents.Exists())
                                     {
+                                        bSuccessDecodingSignedFile = true;
                                         strInput  = strContents;
                                         str_input = strInput.Get();
                                         qstrText  = QString::fromStdString(str_input);
@@ -254,6 +265,18 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                     } // signed file: load contract from string.
                 } // "BEGIN SIGNED FILE"
             } // Decode If Armored.
+            // -----------------------------------------------
+
+            if (Moneychanger::is_base64(qstrText))
+            {
+                opentxs::OTASCIIArmor ascText{str_input.c_str()};
+                ascText.GetString(strInput);
+                str_input = strInput.Get();
+                qstrText  = QString::fromStdString(str_input);
+
+                bSuccessDecodingBase64 = true;
+            }
+
             // -----------------------------------------------
             // if qstrText still contains something, pop up a dialog to display the result to the user.
             //
@@ -277,8 +300,18 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                 else if (qstrNymWhoVerifiedName != qstrNymWhoVerified)
                     qstrNymWhoVerifiedName += QString(" (%1)").arg(qstrNymWhoVerified);
                 // -------------------------------
-                QString qstrType("Output:");
+                QString qstrType(QString("%1:").arg(tr("Output")));
 
+                if (bSuccessDecodingArmor) {
+                    qstrType = QString("%1:").arg(tr("Decoded armored text"));
+                }
+                if (bSuccessDecodingBase64) {
+                    qstrType = QString("%1:").arg(tr("Decoded base64 text"));
+                }
+                if (bSuccessDecodingSignedFile) {
+                    qstrType = QString("%1:").arg(tr("Decoded signed file"));
+                }
+                // -------------------------------
                 if (bSuccessVerifying)
                 {
                     qstrType = QString("%1: %2").arg(tr("Verified signature by Nym")).arg(qstrNymWhoVerifiedName);

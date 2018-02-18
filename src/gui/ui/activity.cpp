@@ -3883,7 +3883,7 @@ void Activity::tableViewPayments_PopupMenu(const QPoint &pos, QTableView * pTabl
         // ---------------------------------------------------
         if (0 == mapNymIds.size())
         {
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Unable to find a NymId for this message. (Unable to download credentials without Id.)"));
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Unable to find a NymId for this message. (Unable to download credentials without Id.)"));
             qDebug() << "Unable to find a NymId for this message. (Unable to download credentials without Id.)";
             return;
         }
@@ -3929,7 +3929,7 @@ void Activity::tableViewPayments_PopupMenu(const QPoint &pos, QTableView * pTabl
 
         if (!contactId.empty())
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Strange: NymID %1 already belongs to an existing contact.").arg(qstrNymId));
             return;
         }
@@ -3965,7 +3965,7 @@ void Activity::tableViewPayments_PopupMenu(const QPoint &pos, QTableView * pTabl
 
 //              if (!MTContactHandler::getInstance()->AddNymToExistingContact(nContactId, qstrNymId))
                 {
-                    QMessageBox::warning(this, tr("Moneychanger"),
+                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                          tr("TODO: Tried to add NymID %1 to an existing contact but I don't know the API call to use.").arg(qstrNymId));
                     return;
                 }
@@ -4331,7 +4331,7 @@ void Activity::on_toolButtonDelete_clicked()
         // ----------------------------------------------
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, tr("Moneychanger"), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to delete these receipts?")).
+        reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to delete these receipts?")).
                                       arg(tr("WARNING: This is not reversible!")),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply != QMessageBox::Yes)
@@ -5038,13 +5038,13 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
         QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         if (str_my_nym_id.empty()) {
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Please set your default Nym and then try again."));
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Please set your default Nym and then try again."));
             qDebug() << "Unable to request bailment without a default Nym ID being set";
             return;
         }
         if (qstrServerId.isEmpty()) {
 
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Unable to request bailment without a Notary ID being set. (Should never happen in this case...)"));
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Unable to request bailment without a Notary ID being set. (Should never happen in this case...)"));
             qDebug() << "Unable to request bailment without a Notary ID being set. (Should never happen in this case...)";
             return;
         }
@@ -5053,7 +5053,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
         //
         if (!bSelectedSNP && !bSelectedHosted) {
 
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Weird, this problem should never happen."));
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Weird, this problem should never happen."));
             qDebug() << "Somehow, neither a paired SNP or account, nor a hosted notary or account, "
                         "is available from the point of the click, and so I am unable to continue the "
                         "bailment attempt. I'd have to ask you at this point to pick a notary/SNP from a list.";
@@ -5061,7 +5061,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
         }
         if (bSelectedSNP && bSelectedHosted) {
 
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Weird, this problem should never happen."));
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Weird, this problem should never happen."));
             qDebug() << "Somehow, both a _paired_ SNP or account, AND a _hosted_ notary or account, "
                         "is available from the point of the click, and so I am unable to continue the "
                         "bailment attempt. Should never happen...";
@@ -5093,7 +5093,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
 
         if (!bFoundSome) {
 
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Sorry, you don't have any accounts on this notary that can receive a deposit. Make sure you have a default nym selected."
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Sorry, you don't have any accounts on this notary that can receive a deposit. Make sure you have a default nym selected."
                                                               "TODO: Ask the user to choose an asset type and nym right here, and then create the appropriate account automatically."));
             qDebug() << "No accounts available to do a bailment into, for the given notary and nym.";
             return;
@@ -5161,7 +5161,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
                 }
                 if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
 
-                    QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to select a TLA. Should never happen."));
+                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select a TLA. Should never happen."));
                     qDebug() << "Somehow failed to select a TLA. Should never happen.";
                     return;
                 }
@@ -5177,7 +5177,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
             it_selected_TLA = bigMapAssetsByTLA.find(qstrTLA);
             if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
 
-                QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to select a TLA. Should never happen."));
+                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select a TLA. Should never happen."));
                 qDebug() << "Somehow failed to select a TLA. Should never happen.";
                 return;
             }
@@ -5194,7 +5194,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
 //            if (pMapAssets)
 //                qDebug() << "pMapAssets size: " << QString::number(pMapAssets->size());
 
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to choose an asset type for the deposit. "
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to choose an asset type for the deposit. "
                                                               "Make sure there is a default nym selected, "
                                                               "so the application knows which accounts to filter for."));
             qDebug() << "Somehow failed to select a TLA.";
@@ -5304,7 +5304,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
         // ----------------------------------------
         if (qstrBailmentAssetTypeId.isEmpty() || qstrIssuerNymId.isEmpty()) {
 
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen."));
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen."));
             qDebug() << "Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen.";
             return;
         }
@@ -5350,17 +5350,17 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
                 pDlgInbailment->show();
             }
 //            else {
-//                QMessageBox::warning(this, tr("Moneychanger"),
+//                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
 //                                     tr("Sorry, but the issuer information is not current available. Failure."));
 //            }
 
-//          QMessageBox::information(this, tr("Moneychanger"),
+//          QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
 //            tr("Success requesting a deposit address. "
 //               "(Soon, it should pop up on the screen in a separate window). "
 //               "TODO: Reserve these addresses in advance, so the user doesn't have to wait."));
         }
         else {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Sorry, but a deposit address is currently unavailable. A new one is already being requested (normally I keep a few laying around for these situations...) Please try again soon."));
         }
     }
@@ -5372,13 +5372,13 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
         QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
         if (str_my_nym_id.empty()) {
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Please set your default Nym and then try again."));
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Please set your default Nym and then try again."));
             qDebug() << "Unable to request outbailment without a default Nym ID being set";
             return;
         }
         if (qstrServerId.isEmpty()) {
 
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Unable to request a withdrawal without a Notary ID being set. (Should never happen in this case...)"));
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Unable to request a withdrawal without a Notary ID being set. (Should never happen in this case...)"));
             qDebug() << "Unable to request outbailment without a Notary ID being set. (Should never happen in this case...)";
             return;
         }
@@ -5387,7 +5387,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
         //
         if (!bSelectedSNP && !bSelectedHosted) {
 
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Weird, this problem should never happen."));
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Weird, this problem should never happen."));
             qDebug() << "Somehow, neither a paired SNP or account, nor a hosted notary or account, "
                         "is available from the point of the click, and so I am unable to continue the "
                         "outbailment attempt. I'd have to ask you at this point to pick a notary/SNP from a list.";
@@ -5395,7 +5395,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
         }
         if (bSelectedSNP && bSelectedHosted) {
 
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Weird, this problem should never happen."));
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Weird, this problem should never happen."));
             qDebug() << "Somehow, both a _paired_ SNP or account, AND a _hosted_ notary or account, "
                         "is available from the point of the click, and so I am unable to continue the "
                         "outbailment attempt. Should never happen...";
@@ -5474,7 +5474,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
 
         if (filteredAccounts.size() < 1)
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Sorry, you don't have any accounts on this notary that can withdraw to blockchain. "
                                     "Make sure you have a default nym selected, so we know we're looking at the right accounts. "
                                     "(Accounts are filtered by the owner Nym)."));
@@ -5577,7 +5577,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
 
             if (!bFoundSome) {
 
-                QMessageBox::warning(this, tr("Moneychanger"),
+                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                     tr("Sorry, you don't have any accounts on this notary that can withdraw to blockchain. "
                        "Make sure you have a default nym selected. (Accounts are filtered based on the owner Nym)."));
                 qDebug() << "No accounts available to do an outbailment from, for the given notary and nym.";
@@ -5646,7 +5646,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
                     }
                     if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
 
-                        QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to select a TLA. Should never happen."));
+                        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select a TLA. Should never happen."));
                         qDebug() << "Somehow failed to select a TLA. Should never happen.";
                         return;
                     }
@@ -5663,7 +5663,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
                 it_selected_TLA = bigMapAssetsByTLA.find(qstrTLA);
                 if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
 
-                    QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to select a TLA. Should never happen."));
+                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select a TLA. Should never happen."));
                     qDebug() << "Somehow failed to select a TLA. Should never happen.";
                     return;
                 }
@@ -5673,7 +5673,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
             // ----------------------------------------
             if (qstrTLA.isEmpty() || (nullptr == pMapAssets) || (0 == pMapAssets->size())) {
 
-                QMessageBox::warning(this, tr("Moneychanger"), tr("Somehow failed to choose an asset type for the withdrawal to blockchain. "
+                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to choose an asset type for the withdrawal to blockchain. "
                                                                   "Make sure there is a default nym selected, since the application "
                                                                   "filters accounts based on owner Nym."));
                 qDebug() << "Somehow failed to select a TLA. Should never happen.";
@@ -5784,7 +5784,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
             // ----------------------------------------
             if (qstrBailmentAssetTypeId.isEmpty() || qstrIssuerNymId.isEmpty()) {
 
-                QMessageBox::warning(this, tr("Moneychanger"),
+                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                      tr("Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen."));
                 qDebug() << "Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen.";
                 return;
@@ -5814,12 +5814,12 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
             const std::int64_t intZero{0};
 
             if (AMOUNT <= intZero) {
-                QMessageBox::warning(this, tr("Moneychanger"),
+                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                      tr("Failure: Cannot withdraw a negative or zero amount."));
                 return;
             }
             if (strToBlockchainAddress.empty()) {
-                QMessageBox::warning(this, tr("Moneychanger"),
+                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                      tr("Failure: Blockchain address is empty."));
                 return;
             }
@@ -5890,7 +5890,7 @@ bool Activity::request_outbailment(
 
     if (result.empty()) {
         qDebug() << "Failed to receive a reply from the notary (while trying to initiate an outbailment).";
-        QMessageBox::warning(this, tr("Moneychanger"),
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
             tr("Failed to receive a reply from the notary while trying to initiate a withdrawal to blockchain."));
         return false;
     }
@@ -5899,7 +5899,7 @@ bool Activity::request_outbailment(
 
     if (!output) {
         qDebug() << "Failed trying to request outbailment.";
-        QMessageBox::warning(this, tr("Moneychanger"),
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                              tr("Withdrawal request failed."));
     }
     else {
@@ -5910,7 +5910,7 @@ bool Activity::request_outbailment(
                 .arg(tr("Success requesting a withdrawal to blockchain address"))
                 .arg(QString::fromStdString(str_blockchain_address))
                 .arg(tr("You should receive an invoice soon; pay it to complete your withdrawal"));
-        QMessageBox::information(this, tr("Moneychanger"), qstrMessage);
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), qstrMessage);
     }
     return output;
 }

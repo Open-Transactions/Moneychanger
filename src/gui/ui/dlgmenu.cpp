@@ -60,7 +60,7 @@ void DlgMenu::closeEvent(QCloseEvent *event)
         QDialog::closeEvent(event);
 //    else
 //    {
-//        QMessageBox::information(this, tr("Moneychanger"),
+//        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
 //                                tr("To hide this window, there is an option in the Settings. To quit the application entirely, click 'Quit'."));
 ////      this->setVisible(false);
 //        event->ignore();

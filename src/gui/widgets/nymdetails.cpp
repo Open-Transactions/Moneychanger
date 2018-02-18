@@ -806,7 +806,7 @@ void MTNymDetails::on_toolButtonDescription_clicked()
     {
         clipboard->setText(ui->lineEditDescription->text());
 
-        QMessageBox::information(this, tr("Moneychanger"), QString("%1:<br/>%2").
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), QString("%1:<br/>%2").
                                  arg(tr("Copied payment address to the clipboard")).
                                  arg(ui->lineEditDescription->text()));
     }
@@ -825,7 +825,7 @@ void MTNymDetails::on_toolButtonQrCode_clicked()
 
         clipboard->setPixmap(pixmapQR);
 
-        QMessageBox::information(this, tr("Moneychanger"), QString("%1:<br/>%2").
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), QString("%1:<br/>%2").
                                  arg(tr("Copied QR CODE IMAGE to the clipboard, of payment address")).
                                  arg(ui->lineEditDescription->text()));
     }
@@ -1690,7 +1690,7 @@ void MTNymDetails::DeleteButtonClicked()
 
         if (!bCanRemove)
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("For your protection, Nyms already registered on a notary cannot be summarily deleted. "
                                     "Please unregister first. (You may also delete need to any accounts you may have registered "
                                     "at that same notary using the same Nym.)"));
@@ -1699,7 +1699,7 @@ void MTNymDetails::DeleteButtonClicked()
         // ----------------------------------------------------
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, tr("Moneychanger"), tr("Are you sure you want to delete this Nym?"),
+        reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), tr("Are you sure you want to delete this Nym?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
@@ -1713,7 +1713,7 @@ void MTNymDetails::DeleteButtonClicked()
                 // ------------------------------------------------
             }
             else
-                QMessageBox::warning(this, tr("Moneychanger"),
+                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                      tr("Failed trying to delete this Nym."));
         }
     }
@@ -1894,14 +1894,14 @@ void MTNymDetails::AddButtonClicked()
 //                str_id = opentxs::OT::App().API().OTME().create_nym_legacy(8192, NYM_ID_SOURCE);
 //                break;
             default:
-                QMessageBox::warning(this, tr("Moneychanger"),
+                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                     tr("Unexpected key type."));
                 return;
         }
         // --------------------------------------------------
         if (str_id.empty())
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                 tr("Failed trying to create Nym."));
             return;
         }
@@ -2183,7 +2183,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                 {
                     if (opentxs::OT::App().API().Exec().IsNym_RegisteredAtServer(str_nym_id, str_notary_id))
                     {
-                        QMessageBox::information(this, tr("Moneychanger"), QString("%1 '%2' %3 '%4'.").arg(tr("The Nym")).
+                        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), QString("%1 '%2' %3 '%4'.").arg(tr("The Nym")).
                                                  arg(qstrNymName).arg(tr("is already registered on notary")).arg(qstrNotaryName));
                         return;
                     }
@@ -2217,7 +2217,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                                 MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_nym_id),
                                                                                        QString::fromStdString(str_notary_id));
 
-                                QMessageBox::information(this, tr("Moneychanger"),
+                                QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                     tr("Success!"));
                                 // ------------------------------------------------
                                 emit nymsChanged();
@@ -2226,13 +2226,13 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                             }
                         case (0):
                             {
-                                QMessageBox::warning(this, tr("Moneychanger"),
+                                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                     tr("Failed while trying to register nym on Server."));
                                 break;
                             }
                         default:
                             {
-                                QMessageBox::warning(this, tr("Moneychanger"),
+                                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                     tr("Error while trying to register nym on Server."));
                                 break;
                             }
@@ -2250,7 +2250,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                 {
                     if (!opentxs::OT::App().API().Exec().IsNym_RegisteredAtServer(str_nym_id, str_notary_id))
                     {
-                        QMessageBox::information(this, tr("Moneychanger"), QString("%1 '%2' %3 '%4'.").arg(tr("The Nym")).
+                        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), QString("%1 '%2' %3 '%4'.").arg(tr("The Nym")).
                                                  arg(qstrNymName).arg(tr("is already not registered on notary")).arg(qstrNotaryName));
                         return;
                     }
@@ -2262,13 +2262,13 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                         mapIDName accountMap;
                         if (MTContactHandler::getInstance()->GetAccounts(accountMap, qstrNymID, qstrNotaryID, QString("")))
                         {
-                            QMessageBox::information(this, tr("Moneychanger"), QString("%1 '%2' %3 '%4'. %5.").arg(tr("The Nym")).
+                            QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), QString("%1 '%2' %3 '%4'. %5.").arg(tr("The Nym")).
                                                      arg(qstrNymName).arg(tr("still has asset accounts on the notary")).arg(qstrNotaryName).arg(tr("Please delete those first")));
                             return;
                         }
                         // -----------------------------------
                         QMessageBox::StandardButton reply;
-                        reply = QMessageBox::question(this, tr("Moneychanger"),
+                        reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME),
                                                       tr("Are you sure you want to unregister your Nym from this notary?"),
                                                       QMessageBox::Yes|QMessageBox::No);
                         if (reply == QMessageBox::Yes)
@@ -2296,7 +2296,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                                     MTContactHandler::getInstance()->NotifyOfNymServerUnpair(QString::fromStdString(str_nym_id),
                                                                                              QString::fromStdString(str_notary_id));
 
-                                    QMessageBox::information(this, tr("Moneychanger"),
+                                    QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                         tr("Success!"));
                                     // ------------------------------------------------
                                     emit nymsChanged();
@@ -2305,13 +2305,13 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                                 }
                             case (0):
                                 {
-                                    QMessageBox::warning(this, tr("Moneychanger"),
+                                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                         tr("Failed while trying to unregister nym from Server."));
                                     break;
                                 }
                             default:
                                 {
-                                    QMessageBox::warning(this, tr("Moneychanger"),
+                                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                         tr("Error while trying to unregister nym from Server."));
                                     break;
                                 }
