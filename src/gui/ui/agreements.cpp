@@ -2248,7 +2248,7 @@ void Agreements::tableViewReceiptsPopupMenu(const QPoint &pos, QTableView * pTab
         // ---------------------------------------------------
         if (0 == mapNymIds.size())
         {
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Unable to find a NymId for this message. (Unable to download credentials without Id.)"));
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Unable to find a NymId for this message. (Unable to download credentials without Id.)"));
             qDebug() << "Unable to find a NymId for this message. (Unable to download credentials without Id.)";
             return;
         }
@@ -2294,14 +2294,14 @@ void Agreements::tableViewReceiptsPopupMenu(const QPoint &pos, QTableView * pTab
         // ---------------------------------------------------
         if (!qstrNymId.isEmpty() && (MTContactHandler::getInstance()->FindContactIDByNymID(qstrNymId) > 0))
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Strange: NymID %1 already belongs to an existing contact.").arg(qstrNymId));
             return;
         }
         // ---------------------------------------------------
         if (!qstrAddress.isEmpty() && MTContactHandler::getInstance()->GetContactByAddress(qstrAddress) > 0)
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Strange: Address %1 already belongs to an existing contact.").arg(qstrAddress));
             return;
         }
@@ -2328,7 +2328,7 @@ void Agreements::tableViewReceiptsPopupMenu(const QPoint &pos, QTableView * pTab
                 if (!MTContactHandler::getInstance()->AddNymToExistingContact(nContactId, qstrNymId))
                 {
                     QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactId));
-                    QMessageBox::warning(this, tr("Moneychanger"), QString("Failed while trying to add NymID %1 to existing contact '%2' with contact ID: %3").
+                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), QString("Failed while trying to add NymID %1 to existing contact '%2' with contact ID: %3").
                                          arg(qstrNymId).arg(strContactName).arg(nContactId));
                     return;
                 }
@@ -2340,7 +2340,7 @@ void Agreements::tableViewReceiptsPopupMenu(const QPoint &pos, QTableView * pTab
                 if (!MTContactHandler::getInstance()->AddMsgAddressToContact(nContactId, qstrMethodType, qstrAddress))
                 {
                     QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactId));
-                    QMessageBox::warning(this, tr("Moneychanger"), QString("Failed while trying to add Address %1 to existing contact '%2' with contact ID: %3").
+                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), QString("Failed while trying to add Address %1 to existing contact '%2' with contact ID: %3").
                                          arg(qstrAddress).arg(strContactName).arg(nContactId));
                     return;
                 }
@@ -2546,7 +2546,7 @@ void Agreements::killSelectedAgreement()
     // ----------------------------------------------
     QMessageBox::StandardButton reply;
 
-    reply = QMessageBox::question(this, tr("Moneychanger"), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to kill all selected active agreement(s)?")).
+    reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to kill all selected active agreement(s)?")).
                                   arg(tr("WARNING: This is not reversible!")),
                                   QMessageBox::Yes|QMessageBox::No);
     if (reply != QMessageBox::Yes)
@@ -2723,7 +2723,7 @@ void Agreements::on_toolButtonDelete_clicked()
         // ----------------------------------------------
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, tr("Moneychanger"), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to delete these receipts?")).
+        reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to delete these receipts?")).
                                       arg(tr("WARNING: This is not reversible!")),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply != QMessageBox::Yes)

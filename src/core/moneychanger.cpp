@@ -72,6 +72,7 @@
 #include <opentxs/client/OTWallet.hpp>
 #include <opentxs/core/util/OTPaths.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
+#include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/Nym.hpp>
 #include <opentxs/ext/OTPayment.hpp>
 #include <opentxs/OT.hpp>
@@ -79,10 +80,12 @@
 #include <QMenu>
 #include <QApplication>
 #include <QFile>
+#include <QDateTime>
 #include <QDebug>
 #include <QMessageBox>
 #include <QSystemTrayIcon>
 #include <QTimer>
+#include <QRegExp>
 #include <QFlags>
 
 #include <chrono>
@@ -91,6 +94,16 @@
 #include <utility>
 
 
+bool Moneychanger::is_base64(QString string)
+{
+    QRegExp rx("[^a-zA-Z0-9+/=]");
+    if (   rx.indexIn(string)  == -1
+        && (string.length()%4) ==  0
+        && string.length()>=4) {
+        return true;
+    }
+    return false;
+}
 
 //void Moneychanger::processPeerMessages()
 //{
@@ -1651,7 +1664,7 @@ void Moneychanger::SetupMainMenu()
     //Init Skeleton of system tray menu
 
     //App name
-//    mc_systrayMenu_headertext = new QAction(tr("Moneychanger"), mc_systrayMenu);
+//    mc_systrayMenu_headertext = new QAction(tr(MONEYCHANGER_APP_NAME), mc_systrayMenu);
 //    mc_systrayMenu_headertext->setDisabled(1);
 //    mc_systrayMenu->addAction(mc_systrayMenu_headertext);
     // --------------------------------------------------------------
@@ -5788,7 +5801,7 @@ void Moneychanger::mc_requestfunds_show_dialog(QString qstrAcct/*=QString("")*/,
   **/
 void Moneychanger::mc_pair_node_slot()
 {
-    QMessageBox::information(this, tr("Moneychanger"), tr("Make sure the pairing cable is attached, then click OK."));
+    QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Make sure the pairing cable is attached, then click OK."));
     // ----------------------------------------
     const auto infos = QSerialPortInfo::availablePorts();
     for (const QSerialPortInfo &info : infos) {
@@ -5891,7 +5904,7 @@ void Moneychanger::mc_pair_node_slot()
                     // -----------------------------------
                     if (!errorMessage.isEmpty()) {
                         qDebug() << errorMessage << endl;
-                        QMessageBox::warning(this, tr("Moneychanger"), errorMessage);
+                        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), errorMessage);
                         return;
                     }
                     // -----------------------------------
@@ -5935,11 +5948,11 @@ public:
                     //const bool bPairNode = opentxs::OT::App().API().OTME_TOO().PairNode(qstrUserNymID.toStdString(), qstrBridgeNymID.toStdString(), qstrAdminPassword.toStdString());
 
                     if (!bPairNode) {
-                        QMessageBox::warning(this, tr("Moneychanger"), tr("Pairing failed."));
+                        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Pairing failed."));
                         return;
                     }
                     // ---------------------------------------------------
-                    QMessageBox::information(this, tr("Moneychanger"), tr("Pairing successfully initiated in the background. You may now unplug your device."));
+                    QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Pairing successfully initiated in the background. You may now unplug your device."));
                 }
             }
             else
@@ -5962,27 +5975,27 @@ void Moneychanger::mc_import_slot()
     if (QDialog::Accepted != dlgImport.exec())
         return;
     // ----------------------------------------
-    QString qstrContents;
+    QString qstrInstrument;
     // ----------------------------------------
     if (dlgImport.IsPasted()) // Pasted contents (not filename)
-        qstrContents = dlgImport.GetPasted(); // Dialog prohibits empty contents, so no need to check here.
+        qstrInstrument = dlgImport.GetPasted(); // Dialog prohibits empty contents, so no need to check here.
     // --------------------------------
     else  // Filename
     {
         QString fileName = dlgImport.GetFilename(); // Dialog prohibits empty filename, so no need to check here.
         // -----------------------------------------------
-        QFile   plainFile(fileName);
+        QFile plainFile(fileName);
 
         if (plainFile.open(QIODevice::ReadOnly))//| QIODevice::Text)) // Text flag translates /n/r to /n
         {
             QTextStream in(&plainFile); // Todo security: check filesize here and place a maximum size.
-            qstrContents = in.readAll();
+            qstrInstrument = in.readAll();
 
             plainFile.close();
             // ----------------------------
-            if (qstrContents.isEmpty())
+            if (qstrInstrument.isEmpty())
             {
-                QMessageBox::warning(this, tr("Moneychanger"),
+                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                      QString("%1: %2").arg(tr("File was apparently empty")).arg(fileName));
                 return;
             }
@@ -5990,7 +6003,7 @@ void Moneychanger::mc_import_slot()
         }
         else
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  QString("%1: %2").arg(tr("Failed trying to read file")).arg(fileName));
             return;
         }
@@ -5999,18 +6012,259 @@ void Moneychanger::mc_import_slot()
     // By this point, we have the contents of the instrument,
     // and we know they aren't empty.
     //
-    std::string strInstrument = qstrContents.toStdString();
-    // ---------------------------------------------
-    std::string strType = opentxs::OT::App().API().Exec().Instrmnt_GetType(strInstrument);
-
-    if (strType.empty())
+    std::string strInstrument{qstrInstrument.trimmed().toStdString()};
+    opentxs::String otstrInstrument{strInstrument};
+    qstrInstrument = QString::fromStdString(strInstrument);
+    // -----------------------------------------------
+    // This is for cases where the entire input is base64 (without bookends).
+    //
+    if (Moneychanger::is_base64(qstrInstrument))
     {
-        QMessageBox::warning(this, tr("Moneychanger"),
-                             tr("Unable to determine instrument type. Are you sure this is a financial instrument?"));
+        opentxs::OTASCIIArmor ascInstrument(strInstrument.c_str());
+        ascInstrument.GetString(otstrInstrument);
+        strInstrument  = otstrInstrument.Get();
+        qstrInstrument = QString::fromStdString(strInstrument);
+    }
+    // -----------------------------------------------
+    // This handles "BEGIN SIGNED CHEQUE"
+    // as well as "BEGIN OT ARMORED CHEQUE"
+    //
+    std::shared_ptr<opentxs::OTPayment> payment(new opentxs::OTPayment(otstrInstrument));
+
+    if (!payment) {
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+                             tr("Failed instantiation. (Should never happen)."));
         return;
     }
-    // -----------------------
+    else if (!payment->IsValid() || !payment->SetTempValues()) {
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+                             tr("Failure: Unable to load financial instrument from text."));
+        return;
+    }
+    // -----------------------------------------------
+    bool bExpired{false};
+    bool bWithinValidDateRange{false};
+    time64_t validFrom{}, validTo{};
+    QString  qstrDateFrom, qstrDateTo;
+    QDateTime qdate_from, qdate_to;
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+
+    QString qstrExpiration;
+
+    if (payment->GetValidFrom(validFrom))
+    {
+        // ---------------------------------------------------------------------
+        qdate_from = QDateTime::fromTime_t(validFrom);
+        qstrDateFrom = qdate_from.toString(QString("MMM d yyyy hh:mm:ss"));
+        // ---------------------------------------------------------------------
+        if (currentDateTime < qdate_from)
+        {
+            qstrExpiration = QString("%1: %2")
+                .arg(tr("Failed to import: This instrument is not valid yet, until"))
+                .arg(qstrDateFrom);
+        }
+    }
+    if (payment->GetValidTo(validTo))
+    {
+        qdate_to = QDateTime::fromTime_t(validTo);
+        qstrDateTo = qdate_to.toString(QString("MMM d yyyy hh:mm:ss"));
+    }
+    // If we were able to retrieve expiration info
+    // AND that info shows expired=true...
+    if (payment->IsExpired(bExpired) && bExpired)
+    {
+        qstrExpiration = QString("%1: %2: %3")
+            .arg(tr("Failed to import"))
+            .arg(tr("This instrument expired on"))
+            .arg(qstrDateTo);
+    }
+    // If we were able to retrieve date range info
+    // AND that info shows we're NOT within the valid date range...
+    if (payment->VerifyCurrentDate(bWithinValidDateRange) && !bWithinValidDateRange)
+    {
+        if (qstrExpiration.isEmpty())
+            qstrExpiration = QString("%1: %2: %3 %4 %5")
+                .arg(tr("Failed to import"))
+                .arg(tr("This instrument is outside its valid date range of"))
+                .arg(qstrDateFrom)
+                .arg(tr("to"))
+                .arg(qstrDateTo);
+    }
+    // -------------
+    if (!qstrExpiration.isEmpty())
+    {
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), qstrExpiration);
+        return;
+    }
+    // -----------------------------------------------
+    QString qstrErrorMsg;
+
+    switch (payment->GetType()) {
+        case opentxs::OTPayment::PAYMENT_PLAN: {
+            qstrErrorMsg = tr("Sorry, we don't yet allow importing payment plans.");
+            break;
+        }
+        case opentxs::OTPayment::SMART_CONTRACT: {
+            qstrErrorMsg = tr("Sorry, we don't yet allow importing smart contracts.");
+            break;
+        }
+        case opentxs::OTPayment::NOTICE: {
+            qstrErrorMsg = tr("Sorry, we don't yet allow importing notices.");
+            break;
+        }
+        case opentxs::OTPayment::CHEQUE: {
+            break; // Instrument is allowed.
+        }
+        case opentxs::OTPayment::VOUCHER: {
+            break; // Instrument is allowed.
+        }
+        case opentxs::OTPayment::INVOICE: {
+            qstrErrorMsg = tr("Sorry, we don't yet allow importing invoices.");
+            break;
+        }
+        case opentxs::OTPayment::PURSE: {
+            break; // Instrument is allowed.
+        }
+        default: {
+            const std::string instrument_type{payment->GetTypeString()};
+            const QString qstrInstrumentType = QString::fromStdString(instrument_type);
+            qstrErrorMsg = QString("%1: %2")
+                .arg("Failed to import; unexpected financial instrument type")
+                .arg(qstrInstrumentType);
+            break;
+        }
+    }
+
+    if (!qstrErrorMsg.isEmpty()) {
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), qstrErrorMsg);
+        return;
+    }
+    // -----------------------------------------------
+    opentxs::Identifier recipient_nym_id, sender_nym_id, remitter_nym_id, notary_id;
+    const bool has_recipient_nym = payment->GetRecipientNymID(recipient_nym_id);
+    const bool has_sender_nym    = payment->GetSenderNymID(sender_nym_id);
+    const bool has_remitter_nym  = payment->IsVoucher() && payment->GetRemitterNymID(remitter_nym_id);
+    const bool has_notary_id     = payment->GetNotaryID(notary_id);
+
+    auto myNyms = opentxs::OT::App().API().OTAPI().LocalNymList();
+
+    const bool recipientNymIsMine = has_recipient_nym && (1 == myNyms.count(recipient_nym_id));
+    const bool senderNymIsMine    = has_sender_nym    && (1 == myNyms.count(sender_nym_id));
+    const bool remitterNymIsMine  = has_remitter_nym  && (1 == myNyms.count(remitter_nym_id));
+
+    const bool bISentThisThing = (senderNymIsMine || remitterNymIsMine);
+
+    if (bISentThisThing && has_recipient_nym && !recipientNymIsMine)
+    {
+        // Todo: We might allow this in the future, in the case where you want
+        // to CANCEL a cheque that you wrote. In this spot, the UI might pop up
+        // and ask if you want to cancel the cheque.
+        //
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+                             tr("Failed: Cannot import an instrument that you yourself created, "
+                                "unless you are also a valid recipient on that instrument (which you are not, in this case). "
+                                "Anyway, it should already be in your sent box!"));
+        return;
+    }
+    // -----------------------------------------------
+    std::string str_notary_id;
+
+    if (has_notary_id) {
+        opentxs::String strNotaryId{notary_id};
+        str_notary_id = strNotaryId.Get();
+    }
+    // -----------------------------------------------
+
+//    bool bPaymentSenderIsNym {false};
+//    bool bFromAcctIsAvailable{false};
+//
+//    Identifier theSenderNymID, theSenderAcctID;
+//
+//    if (thePayment.IsVoucher()) {
+//        bPaymentSenderIsNym =
+//            (thePayment.GetRemitterNymID(theSenderNymID) &&
+//             nymfile->CompareID(theSenderNymID));
+//
+//        bFromAcctIsAvailable =
+//            thePayment.GetRemitterAcctID(theSenderAcctID);
+//    } else {
+//        bPaymentSenderIsNym =
+//            (thePayment.GetSenderNymID(theSenderNymID) &&
+//             nymfile->CompareID(theSenderNymID));
+//        bFromAcctIsAvailable =
+//            thePayment.GetSenderAcctID(theSenderAcctID);
+//    }
+
+
+    // This is for all financial instruments EXCEPT a cash purse.
+    //
+    if (false == payment->IsPurse())
+    {
+        if (has_recipient_nym)
+        {
+            if (recipientNymIsMine)
+            {
+                const opentxs::Identifier taskId = opentxs::OT::App().API().Sync().
+                    DepositPayment(recipient_nym_id, payment);
+                const opentxs::String strTaskId(taskId);
+                const std::string str_task_id{strTaskId.Get()};
+                const QString qstrTaskId{QString::fromStdString(str_task_id)};
+
+                const QString qstrMsg = QString("%1. %2: ")
+                    .arg(tr("Successfully initiated deposit"))
+                    .arg(tr("Make sure you write down your Task ID"))
+                    .arg(qstrTaskId);
+
+                QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), qstrMsg);
+                return;
+            }
+            //else: There's a recipient Nym, but it's not mine.
+            MTNameLookupQT theLookup;
+            const opentxs::String strRecipientNymId{recipient_nym_id};
+            const std::string str_recipient_nym_id{strRecipientNymId.Get()};
+            std::string str_recipient_name = theLookup.GetNymName(str_recipient_nym_id, str_notary_id);
+
+            QString qstrRecipientId = str_recipient_nym_id.empty()
+                ? QString("")
+                : QString::fromStdString(str_recipient_nym_id);
+
+            QString qstrRecipientName = str_recipient_name.empty()
+                ? QString("")
+                : QString::fromStdString(str_recipient_name);
+
+            const QString qstrMsg = QString("%1: %2. %3: %4, \"%5\"")
+                .arg(tr("Unable to import this instrument"))
+                .arg(tr("It has a recipient, but the recipient is NOT you"))
+                .arg(tr("Recipient ID and name (if known)"))
+                .arg(qstrRecipientId)
+                .arg(qstrRecipientName);
+
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), qstrMsg);
+            return;
+        }
+        // else has no recipient...
+
+
+        // Here it's NOT a purse (something else)
+        // and it does NOT have a recipient Nym.
+        //
+        // So it might be a cheque with a blank recipient,
+        // because we already know it's not cash.
+
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+                             tr("Sorry - it's probably a cheque with a blank recipient, and this import dialog can't handle those yet. (Soon!)"));
+
+        //todo, resume
+
+        return;
+    }
+    // ************************************************************************
+    // else CASH PURSE...
+    //
     std::string strNotaryID = opentxs::OT::App().API().Exec().Instrmnt_GetNotaryID(strInstrument);
+
+
+    //resume
 
     if (strNotaryID.empty())
     {
@@ -6048,14 +6302,7 @@ void Moneychanger::mc_import_slot()
         return;
     }
     // -----------------------
-    if (0 != strType.compare("PURSE"))
-    {
-        QMessageBox::warning(this, tr("Not a Purse"),
-                             QString("%1 '%2'<br/>%3").arg(tr("Expected a cash PURSE, but instead found a")).
-                             arg(QString::fromStdString(strType)).arg(tr("Currently, only cash PURSE is supported. (Sorry.)")));
-        return;
-    }
-    // -----------------------
+
     // By this point, we know it's a purse, and we know it has Server
     // and Asset IDs for contracts that are found in this wallet.
     //
@@ -6166,6 +6413,17 @@ void Moneychanger::mc_import_slot()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
+
+    // NEW WAY TO ITERATE ACCOUNTS:
+    //
+//    opentxs::OTWallet * pWallet = opentxs::OT::App().API().OTAPI().GetWallet("Moneychanger::mc_import_slot");
+//    auto accountSet = pWallet->AccountList();
+//
+//    for (const auto & accountInfo : accountSet)
+//    {
+//        const auto & [ accountID, nymID, serverID, unitID ] = accountInfo;
+//    }
+
     const int32_t acct_count = opentxs::OT::App().API().Exec().GetAccountCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < acct_count; ++ii)
@@ -6992,13 +7250,13 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
     // ------------------------------------------------
     if (0 == opentxs::OT::App().API().Exec().Smart_GetPartyCount(str_template))
     {
-       QMessageBox::information(this, tr("Moneychanger"), tr("There are no parties listed on this smart contract, so you cannot sign it as a party."));
+       QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("There are no parties listed on this smart contract, so you cannot sign it as a party."));
        return;
     }
     // ------------------------------------------------
     if (opentxs::OT::App().API().Exec().Smart_AreAllPartiesConfirmed(str_template))
     {
-        QMessageBox::information(this, tr("Moneychanger"), tr("Strange, all parties are already confirmed on this contract. (Failure.)"));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Strange, all parties are already confirmed on this contract. (Failure.)"));
         return;
     }
     // ------------------------------------------------
@@ -7043,12 +7301,12 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
     //
     std::string serverFromContract = opentxs::OT::App().API().Exec().Instrmnt_GetNotaryID(str_template);
     if ("" != serverFromContract && str_server != serverFromContract) {
-        QMessageBox::information(this, tr("Moneychanger"), tr("Mismatched server ID in contract. (Failure.)"));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Mismatched server ID in contract. (Failure.)"));
         return;
     }
     // ----------------------------------------------------
     if (!opentxs::OT::App().API().Exec().IsNym_RegisteredAtServer(str_lawyer_id, str_server)) {
-        QMessageBox::information(this, tr("Moneychanger"), tr("Nym is not registered on server. (Failure.)"));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Nym is not registered on server. (Failure.)"));
         return;
     }
     // ----------------------------------------------------
@@ -7059,7 +7317,7 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
 
     if (0 >= nAccountCount)
     {
-        QMessageBox::information(this, tr("Moneychanger"), tr("Strange, the chosen party has no accounts named on this smart contract. (Failed.)"));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Strange, the chosen party has no accounts named on this smart contract. (Failed.)"));
         return;
     }
     // ----------------------------------------------------
@@ -7103,7 +7361,7 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
 
         if ("" == agentName)
         {
-            QMessageBox::information(this, tr("Moneychanger"), tr("Strange, but apparently this smart contract doesn't have any agents for this party. (Failed.)"));
+            QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Strange, but apparently this smart contract doesn't have any agents for this party. (Failed.)"));
             return;
         }
 
@@ -7129,7 +7387,7 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
 
     if (!opentxs::OT::App().API().OTME().make_sure_enough_trans_nums(needed + 1, str_server, str_lawyer_id))
     {
-        QMessageBox::information(this, tr("Moneychanger"), tr("Failed trying to reserve enough transaction numbers from the notary."));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Failed trying to reserve enough transaction numbers from the notary."));
         return;
     }
     // --------------------------------------------
@@ -7177,7 +7435,7 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
                   << qstrCurrentAcctName << "  Agent Name: " << qstrCurrentAgentname
                   << "  Acct ID: " << qstrCurrentAcctID << " \n";
 
-            QMessageBox::information(this, tr("Moneychanger"), tr("Failed while calling OT_API_SmartContract_ConfirmAccount."));
+            QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Failed while calling OT_API_SmartContract_ConfirmAccount."));
 
             opentxs::OT::App().API().Exec().Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
 
@@ -7195,7 +7453,7 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
     if ("" == confirmed)
     {
         qDebug() << "Error: cannot confirm smart contract party.\n";
-        QMessageBox::information(this, tr("Moneychanger"), tr("Failed while calling SmartContract_ConfirmParty."));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Failed while calling SmartContract_ConfirmParty."));
         opentxs::OT::App().API().Exec().Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
         return;
     }
@@ -7276,13 +7534,13 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     // ------------------------------------------------
     if (0 == opentxs::OT::App().API().Exec().Smart_GetPartyCount(str_template))
     {
-       QMessageBox::information(this, tr("Moneychanger"), tr("There are no parties listed on this smart contract, so you cannot sign it as a party."));
+       QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("There are no parties listed on this smart contract, so you cannot sign it as a party."));
        return;
     }
     // ------------------------------------------------
     if (opentxs::OT::App().API().Exec().Smart_AreAllPartiesConfirmed(str_template))
     {
-        QMessageBox::information(this, tr("Moneychanger"), tr("Strange, all parties are already confirmed on this contract. (Failure.)"));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Strange, all parties are already confirmed on this contract. (Failure.)"));
         return;
     }
     // ------------------------------------------------
@@ -7318,12 +7576,12 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     //
     std::string serverFromContract = opentxs::OT::App().API().Exec().Instrmnt_GetNotaryID(str_template);
     if ("" != serverFromContract && str_server != serverFromContract) {
-        QMessageBox::information(this, tr("Moneychanger"), tr("Mismatched server ID in contract. (Failure.)"));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Mismatched server ID in contract. (Failure.)"));
         return;
     }
     // ----------------------------------------------------
     if (!opentxs::OT::App().API().Exec().IsNym_RegisteredAtServer(str_lawyer_id, str_server)) {
-        QMessageBox::information(this, tr("Moneychanger"), tr("Nym is not registered on server. (Failure.)"));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Nym is not registered on server. (Failure.)"));
         return;
     }
     // ----------------------------------------------------
@@ -7334,7 +7592,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
 
     if (0 >= nAccountCount)
     {
-        QMessageBox::information(this, tr("Moneychanger"), tr("Strange, the chosen party has no accounts named on this smart contract. (Failed.)"));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Strange, the chosen party has no accounts named on this smart contract. (Failed.)"));
         return;
     }
     // ----------------------------------------------------
@@ -7378,7 +7636,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
 
         if ("" == agentName)
         {
-            QMessageBox::information(this, tr("Moneychanger"), tr("Strange, but apparently this smart contract doesn't have any agents for this party. (Failed.)"));
+            QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Strange, but apparently this smart contract doesn't have any agents for this party. (Failed.)"));
             return;
         }
 
@@ -7404,7 +7662,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
 
     if (!opentxs::OT::App().API().OTME().make_sure_enough_trans_nums(needed + 1, str_server, str_lawyer_id))
     {
-        QMessageBox::information(this, tr("Moneychanger"), tr("Failed trying to reserve enough transaction numbers from the notary."));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Failed trying to reserve enough transaction numbers from the notary."));
         return;
     }
     // --------------------------------------------
@@ -7452,7 +7710,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
                   << qstrCurrentAcctName << "  Agent Name: " << qstrCurrentAgentname
                   << "  Acct ID: " << qstrCurrentAcctID << " \n";
 
-            QMessageBox::information(this, tr("Moneychanger"), tr("Failed while calling OT_API_SmartContract_ConfirmAccount."));
+            QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Failed while calling OT_API_SmartContract_ConfirmAccount."));
 
             opentxs::OT::App().API().Exec().Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
 
@@ -7470,7 +7728,7 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     if ("" == confirmed)
     {
         qDebug() << "Error: cannot confirm smart contract party.\n";
-        QMessageBox::information(this, tr("Moneychanger"), tr("Failed while calling SmartContract_ConfirmParty."));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Failed while calling SmartContract_ConfirmParty."));
         opentxs::OT::App().API().Exec().Msg_HarvestTransactionNumbers(str_template, str_lawyer_id, false, false, false, false, false);
         return;
     }
@@ -7642,7 +7900,7 @@ int32_t Moneychanger::sendToNextParty(const std::string& server, const std::stri
     if (1 != opentxs::OT::App().API().OTME().VerifyMessageSuccess(response)) {
         qDebug() << "\nFor whatever reason, our attempt to send the instrument on "
                  "to the next user has failed.\n";
-        QMessageBox::information(this, tr("Moneychanger"), tr("Failed while calling send_user_payment."));
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Failed while calling send_user_payment."));
         return opentxs::OT::App().API().Exec().Msg_HarvestTransactionNumbers(contract, mynym, false, false, false, false, false);
     }
 
@@ -7676,7 +7934,7 @@ int32_t Moneychanger::sendToNextParty(const std::string& server, const std::stri
     // In the meantime, this is good enough.
 
     qDebug() << "Success sending the agreement on to the next party.\n";
-    QMessageBox::information(this, tr("Moneychanger"), tr("Success sending the agreement on to the next party."));
+    QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Success sending the agreement on to the next party."));
 
     return 1;
 }

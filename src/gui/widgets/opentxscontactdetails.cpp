@@ -371,7 +371,7 @@ void MTOpentxsContactDetails::AddButtonClicked()
     // --------------------------------------------------------
     if (!opentxs::OT::App().API().Exec().IsValidID(str_nym_id))
     {
-        QMessageBox::warning(this, tr("Moneychanger"),
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                              tr("Sorry, that is not a valid Open-Transactions Nym ID."));
         return;
     }
@@ -403,7 +403,7 @@ void MTOpentxsContactDetails::AddButtonClicked()
     const bool bHaveAValidOpentxsContact = opentxs::OT::App().API().Exec().IsValidID(qstrContactId.toStdString());
     if (      !bHaveAValidOpentxsContact)
     {
-        QMessageBox::warning(this, tr("Moneychanger"),
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                              tr("Unable to get or create opentxs contact based on provided id: %1").arg(rawId));
         return;
     }
@@ -432,7 +432,7 @@ void MTOpentxsContactDetails::AddButtonClicked()
         }
         else if (bPreexistingOpentxsContact) { // This block means the old-style Moneychanger Contact already existed, AND the new-style Opentxs Contact already existed as well!
             QString contactName = MTContactHandler::getInstance()->GetContactName(nExistingContactId);
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Contact '%1' already exists with NymID: %2").arg(contactName).arg(nymID));
             // Since it already exists, we'll select it in the GUI, so the user can see what we're
             // talking about when we tell him that it already exists.
@@ -444,7 +444,7 @@ void MTOpentxsContactDetails::AddButtonClicked()
             // new-style Opentxs Contact did NOT already exist, but then we failed trying to
             // create that.
             QString contactName = MTContactHandler::getInstance()->GetContactName(nExistingContactId);
-            QMessageBox::warning(this, tr("Moneychanger"), // Should never happen.
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), // Should never happen.
                                  tr("Old-style contact '%1' already exists with NymID: %2. "
                                     "However, failed creating a new corresponding Opentxs Contact. (Should never happen).")
                                  .arg(contactName).arg(nymID));
@@ -468,7 +468,7 @@ void MTOpentxsContactDetails::AddButtonClicked()
         const int nNewContactId  = MTContactHandler::getInstance()->CreateContactBasedOnNym(nymID);
         if (      nNewContactId <= 0)
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Failed trying to create old-style contact for NymID: %1, "
                                     "even though the new-style Opentxs Contact exists (%2).").arg(nymID).arg(qstrContactId));
             m_pOwner->SetPreSelected(qstrContactId);
@@ -660,7 +660,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
                         if (!MTContactHandler::getInstance()->GetNyms(
                               theNymMap, m_pOwner->m_qstrCurrentID.toStdString()))
                         {
-                            QMessageBox::warning(this, tr("Moneychanger"),
+                            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                                  tr("Sorry, there are no opentxs NymIDs associated with this opentxs contact. "
                                                     "(Only Open-Transactions identities can create secure relationships.)"));
                             return;
@@ -697,7 +697,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
 
                         if (qstrDefaultNymId.isEmpty())
                         {
-                            QMessageBox::warning(this, tr("Moneychanger"),
+                            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                                  QString("%1").arg(tr("Your default identity is not set. Please do that and then try again. "
                                                                       "(It will be the signing identity used.)")));
                             return;
@@ -708,7 +708,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
                         // (If so, advise the user to select a different default nym.)
                         if (0 == qstrClaimantNymId.compare(qstrContactNymId))
                         {
-                            QMessageBox::warning(this, tr("Moneychanger"),
+                            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                                  QString("%1").arg(tr("Sorry, an identity (a Nym) cannot make relationship claims about himself. "
                                                                       "You could try selecting a different default Nym for yourself, "
                                                                       "or select a different Nym for this contact, if one is available.")));
@@ -827,7 +827,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
 
                     if (qstrDefaultNymId.isEmpty())
                     {
-                        QMessageBox::warning(this, tr("Moneychanger"),
+                        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                              QString("%1").arg(tr("Your default identity is not set. Please do that and then try again. "
                                                                   "(It will be the signing identity used.)")));
                         return;
@@ -836,7 +836,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
                     // -----------------------------------------------
                     if (qstrClaimId.isEmpty() || qstrClaimantNymId.isEmpty())
                     {
-                        QMessageBox::warning(this, tr("Moneychanger"),
+                        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                              QString("%1").arg(tr("Strange - Either the ClaimId or ClaimantNymId was unexpectedly blank.")));
                         return;
                     }
@@ -865,7 +865,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
                     {
                         if (0 == qstrClaimantNymId.compare(qstrVerifierNymId))
                         {
-                            QMessageBox::warning(this, tr("Moneychanger"),
+                            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                                  QString("%1").arg(tr("An identity can't confirm or refute its own claims. "
                                                                       "(You can verify using a different Nym - just change the "
                                                                       "default Nym and then try again.)")));
@@ -886,7 +886,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
                     {
                         if (0 == qstrClaimantNymId.compare(qstrVerifierNymId))
                         {
-                            QMessageBox::warning(this, tr("Moneychanger"),
+                            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                                  QString("%1").arg(tr("An identity can't confirm or refute its own claims. "
                                                                       "(But you CAN verify this contact, by just using a different Nym - "
                                                                       "to do that, try selecting a different default Nym for your wallet, "
@@ -905,7 +905,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
                     {
                         if (0 == qstrClaimantNymId.compare(qstrVerifierNymId))
                         {
-                            QMessageBox::warning(this, tr("Moneychanger"),
+                            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                                  QString("%1").arg(tr("An identity can't confirm or refute its own claims. "
                                                                       "(You can verify using a different Nym - just change "
                                                                       "the default Nym and then try again.)")));
@@ -976,7 +976,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
                     // -----------------------------------------------
                     if (qstrClaimId.isEmpty() || qstrClaimantNymId.isEmpty())
                     {
-                        QMessageBox::warning(this, tr("Moneychanger"),
+                        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                              QString("%1").arg(tr("Strange - Either the ClaimId or ClaimantNymId was unexpectedly blank. ")));
                         return;
                     }
@@ -1077,7 +1077,7 @@ void MTOpentxsContactDetails::on_pushButtonRefresh_clicked()
 
     if (qstrDefaultNymId.isEmpty())
     {
-        QMessageBox::warning(this, tr("Moneychanger"),
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                              QString("%1").arg(tr("Your default identity is not set. Please do that and then try again. "
                                                   "(It's needed since an identity must be used to communicate with your "
                                                   "Contact's server in order to download the credentials.)")));
@@ -1101,7 +1101,7 @@ void MTOpentxsContactDetails::on_pushButtonRefresh_clicked()
         // the BIP47 payment code, if we have one. That would occur here, and then we could
         // re-try the GetNyms call.
 
-        QMessageBox::warning(this, tr("Moneychanger"),
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                              QString("%1").arg(tr("Sorry but there are no Nyms associated with this contact yet. "
                                                   "(This is where we will, in the future, just download those from the DHT.)")));
         return;
@@ -1949,7 +1949,7 @@ void MTOpentxsContactDetails::on_pushButtonPay_clicked()
 
         if (!MTContactHandler::getInstance()->GetNyms(theNymMap, qstrContactID.toStdString()))
         {
-            QMessageBox::warning(this, tr("Moneychanger"), tr("Sorry, there are no NymIDs associated with this opentxs contact. Currently only Open-Transactions payments are supported."));
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Sorry, there are no NymIDs associated with this opentxs contact. Currently only Open-Transactions payments are supported."));
             return;
         }
         else

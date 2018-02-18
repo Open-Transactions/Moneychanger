@@ -368,7 +368,7 @@ void ProposePlanDlg::on_sendButton_clicked()
     // To:
     if (m_hisNymId.isEmpty())
     {
-        QMessageBox::warning(this, tr("Moneychanger"),
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                              tr("No customer selected. Please choose one."));
         return;
     }
@@ -376,7 +376,7 @@ void ProposePlanDlg::on_sendButton_clicked()
     // From:
     if (m_myAcctId.isEmpty())
     {
-        QMessageBox::warning(this, tr("Moneychanger"),
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                              tr("No merchant account selected. Please choose an account to receive the payments."));
         return;
     }
@@ -386,7 +386,7 @@ void ProposePlanDlg::on_sendButton_clicked()
     {
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, tr("Moneychanger"), tr("The memo is blank. Are you sure you want to send?"),
+        reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), tr("The memo is blank. Are you sure you want to send?"),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::No)
           return;
@@ -396,7 +396,7 @@ void ProposePlanDlg::on_sendButton_clicked()
     //
     if (!ui->checkBoxInitial->isChecked() && !ui->checkBoxRecurring->isChecked())
     {
-        QMessageBox::warning(this, tr("Moneychanger"),
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                              tr("Please enter at least an initial payment or a recurring payment. (Or both.)"));
         return;
     }
@@ -406,13 +406,13 @@ void ProposePlanDlg::on_sendButton_clicked()
     {
         if (ui->initialAmountEdit->text().isEmpty())
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Please enter the amount for the initial payment."));
             return;
         }
         if (ui->initialDelayEdit->text().isEmpty())
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("When will the one-time payment occur? (The field is empty.)"));
             return;
         }
@@ -423,19 +423,19 @@ void ProposePlanDlg::on_sendButton_clicked()
     {
         if (ui->recurringAmountEdit->text().isEmpty())
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Please enter the amount for the recurring payment."));
             return;
         }
         if (ui->recurringDelayEdit->text().isEmpty())
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("When do recurring payments begin? (The field is empty.)"));
             return;
         }
         if (ui->recurringPeriodEdit->text().isEmpty())
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("How often do recurring payments repeat? (The field is empty.)"));
             return;
         }
@@ -493,7 +493,7 @@ void ProposePlanDlg::on_sendButton_clicked()
             arg(qstrNumberWarning).
             arg(tr("Send to customer?"));
 
-    reply = QMessageBox::question(this, tr("Moneychanger"), qstrWarning, QMessageBox::Yes|QMessageBox::No);
+    reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), qstrWarning, QMessageBox::Yes|QMessageBox::No);
     if (reply != QMessageBox::Yes)
         return;
     // -----------------------------------------------------------------
@@ -533,13 +533,13 @@ void ProposePlanDlg::on_sendButton_clicked()
     // ----------------------------------------------------
     if (initial_amount < 0)
     {
-        QMessageBox::warning(this, tr("Moneychanger"),
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                              tr("Cannot use a negative initial amount."));
         return;
     }
     if (recurring_amount < 0)
     {
-        QMessageBox::warning(this, tr("Moneychanger"),
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                              tr("Cannot use a negative recurring amount."));
         return;
     }

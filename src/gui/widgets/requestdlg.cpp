@@ -63,7 +63,7 @@ bool MTRequestDlg::sendInvoice(int64_t amount, QString toNymId, QString toContac
 
             if (!MTContactHandler::getInstance()->GetNyms(theNymMap, toContactId.toStdString()))
             {
-                QMessageBox::warning(this, tr("Moneychanger"),
+                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                     tr("Sorry, there are no NymIds associated with this opentxs contact. "
                        "Currently only Open-Transactions invoices are supported, for requesting payment."));
                 return false;

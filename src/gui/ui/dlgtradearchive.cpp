@@ -108,7 +108,7 @@ void DlgTradeArchive::on_tableView_customContextMenuRequested(const QPoint &pos)
             qstrReceipt = pModel->rawData(index14).toString();
 
             if (qstrReceipt.isEmpty())
-                QMessageBox::information(ui->tableView, tr("Moneychanger"), tr("Sorry, no asset receipt is available for this record."));
+                QMessageBox::information(ui->tableView, tr(MONEYCHANGER_APP_NAME), tr("Sorry, no asset receipt is available for this record."));
             else
             {
                 bShowOutputDialog = true;
@@ -122,7 +122,7 @@ void DlgTradeArchive::on_tableView_customContextMenuRequested(const QPoint &pos)
             qstrReceipt = pModel->rawData(index15).toString();
 
             if (qstrReceipt.isEmpty())
-                QMessageBox::information(ui->tableView, tr("Moneychanger"), tr("Sorry, no currency receipt is available for this record."));
+                QMessageBox::information(ui->tableView, tr(MONEYCHANGER_APP_NAME), tr("Sorry, no currency receipt is available for this record."));
             else
             {
                 bShowOutputDialog = true;
@@ -136,7 +136,7 @@ void DlgTradeArchive::on_tableView_customContextMenuRequested(const QPoint &pos)
             qstrReceipt = pModel->rawData(index16).toString();
 
             if (qstrReceipt.isEmpty())
-                QMessageBox::information(ui->tableView, tr("Moneychanger"), tr("Sorry, no final (closing) receipt is available for this record. (Maybe the offer is still live on the market?)"));
+                QMessageBox::information(ui->tableView, tr(MONEYCHANGER_APP_NAME), tr("Sorry, no final (closing) receipt is available for this record. (Maybe the offer is still live on the market?)"));
             else
             {
                 bShowOutputDialog = true;
@@ -218,7 +218,7 @@ void DlgTradeArchive::on_pushButton_clicked()
     // ----------------------------------------------
     QMessageBox::StandardButton reply;
 
-    reply = QMessageBox::question(this, tr("Moneychanger"), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to delete these records?")).
+    reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to delete these records?")).
                                   arg(tr("WARNING: This is not reversible!")),
                                   QMessageBox::Yes|QMessageBox::No);
     if (reply != QMessageBox::Yes)

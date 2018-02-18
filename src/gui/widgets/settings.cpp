@@ -485,7 +485,7 @@ If you have a manual pairing dialog it should be hidden in expert mode in a debu
     // -----------------------------------
     if (!errorMessage.isEmpty()) {
         qDebug() << errorMessage << endl;
-        QMessageBox::warning(this, tr("Moneychanger"), errorMessage);
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), errorMessage);
         return;
     }
     // -----------------------------------
@@ -531,11 +531,11 @@ public:
 //  const bool bPairNode = opentxs::OT::App().API().OTME_TOO().PairNode(qstrUserNymID.toStdString(), qstrBridgeNymID.toStdString(), qstrAdminPassword.toStdString());
 
     if (!bPairNode) {
-        QMessageBox::warning(this, tr("Moneychanger"), tr("Pairing failed."));
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Pairing failed."));
         return;
     }
     // ---------------------------------------------------
-    QMessageBox::information(this, tr("Moneychanger"), tr("Pairing successfully initiated in the background. You may now unplug your device."));
+    QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Pairing successfully initiated in the background. You may now unplug your device."));
 }
 
 void Settings::on_pushButtonSetSocksProxy_clicked()
@@ -543,7 +543,7 @@ void Settings::on_pushButtonSetSocksProxy_clicked()
     const QString qstrProxy = ui->lineEditSocksProxy->text();
     const bool bSuccess = opentxs::OT::App().ZMQ().SetSocksProxy(qstrProxy.toStdString());
     const QString qstrSuccess = QString("%1").arg(bSuccess ? tr("Success") : tr("Failure"));
-    QMessageBox::information(this, tr("Moneychanger"), qstrSuccess);
+    QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), qstrSuccess);
 }
 
 void Settings::on_comboBoxLanguage_currentIndexChanged(int index)

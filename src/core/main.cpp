@@ -27,6 +27,8 @@
 #include <QDebug>
 
 
+
+
 void shutdown_app()
 {
 
@@ -130,6 +132,7 @@ int main(int argc, char *argv[])
     // ----------------------------------------
     //Init qApp
     MTApplicationMC theApplication(argc, argv);  // <====== THIRD constructor (they are destroyed in reverse order.)
+    theApplication.setApplicationName(MONEYCHANGER_APP_NAME); // Access later using QCoreApplication::applicationName()
     theApplication.setQuitOnLastWindowClosed(false);
 
     { Modules modules; }    // run constructor once, initialize static pointers

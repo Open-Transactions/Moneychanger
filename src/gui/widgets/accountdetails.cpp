@@ -507,14 +507,14 @@ void MTAccountDetails::on_tableView_customContextMenuRequested(const QPoint &pos
         // ---------------------------------------------------
         if (!qstrNymId.isEmpty() && (MTContactHandler::getInstance()->FindContactIDByNymID(qstrNymId) > 0))
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Strange: NymID %1 already belongs to an existing contact.").arg(qstrNymId));
             return;
         }
         // ---------------------------------------------------
         if (!qstrAddress.isEmpty() && MTContactHandler::getInstance()->GetContactByAddress(qstrAddress) > 0)
         {
-            QMessageBox::warning(this, tr("Moneychanger"),
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Strange: Address %1 already belongs to an existing contact.").arg(qstrAddress));
             return;
         }
@@ -541,7 +541,7 @@ void MTAccountDetails::on_tableView_customContextMenuRequested(const QPoint &pos
                 if (!MTContactHandler::getInstance()->AddNymToExistingContact(nContactId, qstrNymId))
                 {
                     QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactId));
-                    QMessageBox::warning(this, tr("Moneychanger"), QString("Failed while trying to add NymID %1 to existing contact '%2' with contact ID: %3").
+                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), QString("Failed while trying to add NymID %1 to existing contact '%2' with contact ID: %3").
                                          arg(qstrNymId).arg(strContactName).arg(nContactId));
                     return;
                 }
@@ -553,7 +553,7 @@ void MTAccountDetails::on_tableView_customContextMenuRequested(const QPoint &pos
                 if (!MTContactHandler::getInstance()->AddMsgAddressToContact(nContactId, qstrMethodType, qstrAddress))
                 {
                     QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactId));
-                    QMessageBox::warning(this, tr("Moneychanger"), QString("Failed while trying to add Address %1 to existing contact '%2' with contact ID: %3").
+                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), QString("Failed while trying to add Address %1 to existing contact '%2' with contact ID: %3").
                                          arg(qstrAddress).arg(strContactName).arg(nContactId));
                     return;
                 }
@@ -856,7 +856,7 @@ void MTAccountDetails::on_toolButtonDelete_clicked()
         // ----------------------------------------------
         QMessageBox::StandardButton reply;
 
-        reply = QMessageBox::question(this, tr("Moneychanger"), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to delete these receipts?")).
+        reply = QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), QString("%1<br/><br/>%2").arg(tr("Are you sure you want to delete these receipts?")).
                                       arg(tr("WARNING: This is not reversible!")),
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply != QMessageBox::Yes)
@@ -1672,13 +1672,13 @@ void MTAccountDetails::DeleteButtonClicked()
                 }
             case (0):
                 {
-                    QMessageBox::warning(this, tr("Moneychanger"),
+                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                         tr("Failed while trying to unregister account from Server."));
                     break;
                 }
             default:
                 {
-                    QMessageBox::warning(this, tr("Moneychanger"),
+                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                         tr("Error while trying to unregister account from Server."));
                     break;
                 }

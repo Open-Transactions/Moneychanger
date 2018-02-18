@@ -1,3 +1,7 @@
+#ifndef __STABLE_HPP__
+#include <core/stable.hpp>
+#endif
+
 #include "pagesmart_nymacct.hpp"
 #include "ui_pagesmart_nymacct.h"
 
@@ -137,7 +141,7 @@ void PageSmart_NymAcct::on_pushButtonSelect_clicked()
             opentxs::OT::App().API().Exec().GetAccountWallet_ID(i);
 
         if ("" == acctID) {
-            QMessageBox::information(this, tr("Moneychanger"),
+            QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                      tr("Strange, there is an account in your wallet without an ID. (Failure.)"));
             wizard()->reject();
             return;
@@ -190,7 +194,7 @@ void PageSmart_NymAcct::on_pushButtonSelect_clicked()
     // -----------------------------------------------
     if (0 == the_map.size())
     {
-        QMessageBox::information(this, tr("Moneychanger"),
+        QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Sorry, but for the Nym and Server selected (and possibly the asset type), "
                                     "there are no matching accounts available (or they're already used.) "
                                     "Failure activating smart contract."));

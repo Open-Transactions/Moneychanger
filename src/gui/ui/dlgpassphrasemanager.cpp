@@ -171,11 +171,11 @@ void DlgPassphraseManager::on_pushButtonAdd_clicked()
                 ui->tableWidget->blockSignals(false);
             } // GetManagedPassphrase
             else
-                QMessageBox::warning(this, tr("Moneychanger"), tr("Strange: I just created a new "
+                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Strange: I just created a new "
                                                                   "passphrase entry, but then couldn't retrieve it from the local database."));
         } // Passphrase ID >0
         else
-            QMessageBox::warning(this, tr("Moneychanger"), tr("An error occurred while trying to create a new passphrase entry."));
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("An error occurred while trying to create a new passphrase entry."));
     } // Dialog accepted.
 }
 
@@ -222,7 +222,7 @@ void DlgPassphraseManager::on_pushButtonEdit_clicked()
                         ui->tableWidget->item(nRow, 1)->setText(theDlg.m_qstrURL);
                     }
                     else
-                        QMessageBox::warning(this, tr("Moneychanger"),
+                        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                              tr("An error occurred while trying to update a passphrase entry."));
                 } // Dialog accepted.
             } // Found passphrase in db.
@@ -245,7 +245,7 @@ void DlgPassphraseManager::on_pushButtonDelete_clicked()
             // Then ask the user "are you sure?"
             // Then delete it from the database.
             //
-            if (QMessageBox::Yes == QMessageBox::question(this, tr("Moneychanger"), tr("PERMAMENT: Are you sure you want to delete this entry?"),
+            if (QMessageBox::Yes == QMessageBox::question(this, tr(MONEYCHANGER_APP_NAME), tr("PERMAMENT: Are you sure you want to delete this entry?"),
                                                           QMessageBox::Yes|QMessageBox::No))
             {
                 // Delete it from the database.
@@ -278,7 +278,7 @@ void DlgPassphraseManager::on_pushButtonDelete_clicked()
                     ui->tableWidget->blockSignals(false);
                 }
                 else
-                    QMessageBox::warning(this, tr("Moneychanger"),
+                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                          QString("%1: %2").arg("DlgPassphraseManager::on_pushButtonDelete_clicked")
                                          .arg(tr("Error occurred while trying to delete the passphrase entry from the local database.")));
             }

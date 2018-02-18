@@ -458,7 +458,7 @@ void PageOffer_Accounts::initializePage()
     // -------------------------------------------
     if (qstrCurrencyAccountID.isEmpty() || qstrAssetAccountID.isEmpty())
     {
-        QMessageBox::warning(this, tr("Moneychanger"),
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                              tr("Your nym doesn't have matching asset accounts for the selected asset (or currency) type. "
                                 "Please create the appropriate asset accounts first, or select a different asset/currency pair to trade."));
         QTimer::singleShot(0, wizard(), SLOT(back()));
