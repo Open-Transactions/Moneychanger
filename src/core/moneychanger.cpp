@@ -58,6 +58,7 @@
 #include <gui/ui/payments.hpp>
 #include <gui/ui/agreements.hpp>
 #include <gui/ui/activity.hpp>
+#include <gui/ui/getstringdialog.hpp>
 
 #include <opentxs/api/client/Pair.hpp>
 #include <opentxs/api/client/Sync.hpp>
@@ -1527,29 +1528,51 @@ void Moneychanger::bootTray()
         mc_activity_dialog();
     // ----------------------------------------------------------------------------
     if (!hasNyms()) {
-        QString name;
-        name = qgetenv("USER"); // get the user name in Linux
-        if (name.isEmpty()) {
-            name = qgetenv("USERNAME"); // get the name in Windows
-        }
-        if (name.isEmpty()) {
-            mc_nymmanager_dialog();
-        }
-        else {
-            const std::string NYM_ID_SOURCE;
-            const QString qstrLabel = QString("%1 (%2)").arg(name).arg(tr("desktop"));
-            const std::string str_id = opentxs::OT::App().API().Exec().CreateNymHD(
-        opentxs::proto::CITEMTYPE_INDIVIDUAL, qstrLabel.toStdString(), NYM_ID_SOURCE, 0);
+        std::string strSource(""), strMyName("Me");
+        // --------------------------------------
+        MTGetStringDialog nameDlg(this, tr("Creating your Nym. "
+                                           "Enter your display name (that others will see)"));
 
-            if (!str_id.empty()) {
-                setDefaultNym(QString::fromStdString(str_id), qstrLabel);
-
-                //DBHandler::getInstance()->AddressBookUpdateDefaultNym(QString::fromStdString(str_id));
-                // -----------------------------------------------------------------------------------
-                const QString qstrNymId = QString::fromStdString(str_id);
-//              mc_nymmanager_dialog(qstrNymId);
-                emit newNymAdded(qstrNymId);
+        bool bNameEmpty{true};
+        if (QDialog::Accepted == nameDlg.exec())
+        {
+            const QString qstrNewMyName = nameDlg.GetOutputString();
+            if (!qstrNewMyName.isEmpty()) {
+                bNameEmpty = false;
+                strMyName = qstrNewMyName.toStdString();
             }
+        }
+        // --------------------------------------------------
+        if (bNameEmpty) {
+            QString name;
+            name = qgetenv("USER"); // get the user name in Linux
+            if (!name.isEmpty()) {
+                bNameEmpty = false;
+                strMyName = name.toStdString();
+            }
+            else {
+                name = qgetenv("USERNAME"); // get the name in Windows
+            }
+            if (!name.isEmpty()) {
+                bNameEmpty = false;
+                strMyName = name.toStdString();
+            }
+        }
+        // --------------------------------------------------
+        std::string str_id = opentxs::OT::App().API().Exec().CreateNymHD(
+            opentxs::proto::CITEMTYPE_INDIVIDUAL, strMyName, strSource, 0);
+
+        if (!str_id.empty())
+        {
+            setDefaultNym(QString::fromStdString(str_id), QString::fromStdString(strMyName));
+            //DBHandler::getInstance()->AddressBookUpdateDefaultNym(QString::fromStdString(newNymId));
+            // -----------------------------------------------------------------------------------
+
+            SetupMainMenu(); // Since we just created a new default nym since setting up the menu.
+
+            const QString qstrNymId = QString::fromStdString(str_id);
+//          mc_nymmanager_dialog(qstrNymId);
+            emit newNymAdded(qstrNymId);
         }
     }
     // ----------------------------------------------------------------------------
@@ -2774,17 +2797,44 @@ void Moneychanger::onNeedToDownloadMail()
     QString qstrErrorMsg;
     qstrErrorMsg = tr("Failed trying to contact the notary. Perhaps it is down, or there might be a network problem.");
     // -----------------------------
-
     int32_t nymCount = opentxs::OT::App().API().Exec().GetNymCount();
 
     if (0 == nymCount)
     {
-        qDebug() << "Making 'Me' Nym";
+        std::string strSource(""), strMyName("Me");
+        // --------------------------------------
+        MTGetStringDialog nameDlg(this, tr("Creating your Nym. "
+                                           "Enter your display name (that others will see)"));
 
-        std::string strSource("");
+        bool bNameEmpty{true};
+        if (QDialog::Accepted == nameDlg.exec())
+        {
+            const QString qstrNewMyName = nameDlg.GetOutputString();
+            if (!qstrNewMyName.isEmpty()) {
+                bNameEmpty = false;
+                strMyName = qstrNewMyName.toStdString();
+            }
+        }
+        // --------------------------------------------------
+        if (bNameEmpty) {
+            QString name;
+            name = qgetenv("USER"); // get the user name in Linux
+            if (!name.isEmpty()) {
+                bNameEmpty = false;
+                strMyName = name.toStdString();
+            }
+            else {
+                name = qgetenv("USERNAME"); // get the name in Windows
+            }
+            if (!name.isEmpty()) {
+                bNameEmpty = false;
+                strMyName = name.toStdString();
+            }
+        }
+        // --------------------------------------------------
         std::string newNymId = opentxs::OT::App().API().Exec().CreateNymHD(
-        opentxs::proto::CITEMTYPE_INDIVIDUAL, "Me", strSource, 0);
-
+            opentxs::proto::CITEMTYPE_INDIVIDUAL, strMyName, strSource, 0);
+        // --------------------------------------------------
         if (!newNymId.empty())
         {
             DBHandler::getInstance()->AddressBookUpdateDefaultNym(QString::fromStdString(newNymId));

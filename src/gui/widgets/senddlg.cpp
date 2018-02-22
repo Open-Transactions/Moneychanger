@@ -5,6 +5,7 @@
 #include <gui/widgets/senddlg.hpp>
 #include <ui_senddlg.h>
 
+#include <gui/ui/dlgexportedtopass.hpp>
 #include <gui/widgets/home.hpp>
 #include <gui/widgets/overridecursor.hpp>
 #include <gui/widgets/dlgchooser.hpp>
@@ -349,6 +350,16 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
     int64_t SignedAmount = amount;
     int64_t trueAmount   = isInvoice ? (SignedAmount*(-1)) : SignedAmount;
     // ------------------------------------------------------------
+//    std::string str_InstrumentDefinitionID(opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(fromAcctId.toStdString()));
+//
+//    if (!str_InstrumentDefinitionID.empty())
+//    {
+//        std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmount(str_InstrumentDefinitionID, amount);
+//        QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
+//    }
+
+    const QString qstrAmount = ui->amountEdit->text();
+
 //    qDebug() << QString("Sending %1:\n Server:'%2'\n Nym:'%3'\n Acct:'%4'\n ToNym:'%5'\n Amount:'%6'\n Note:'%7'").
 //                arg(nsChequeType).arg(QString::fromStdString(str_NotaryID)).arg(QString::fromStdString(str_fromNymId)).
 //                arg(fromAcctId).arg(toNymId).arg(SignedAmount).arg(note);
@@ -356,8 +367,6 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
     time64_t tFrom = opentxs::OT::App().API().Exec().GetTime();
     time64_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
     // ------------------------------------------------------------
-
-
     if (!opentxs::OT::App().API().OTME().make_sure_enough_trans_nums(1, str_NotaryID, str_fromNymId)) {
         qDebug() << QString("Failed trying to acquire a transaction number to write the cheque with.");
         return false;
@@ -370,6 +379,37 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
     {
         qDebug() << QString("Failed creating %1.").arg(nsChequeType);
         return false;
+    }
+    // ------------------------------------------------------------
+    const QString qstrFromAccountName = ui->fromButton->text();
+    const QString qstrToContactName   = ui->toButton->text();
+    // ------------------------------------------------------------
+    opentxs::String otstr_cheque(strCheque.c_str());
+    opentxs::OTASCIIArmor asc_cheque(otstr_cheque);
+    opentxs::String strArmoredCheque; // TODO: Encrypt to contact's pubkey if available.
+    if (asc_cheque.WriteArmoredString(strArmoredCheque, "CHEQUE"))
+    {
+        const std::string str_armored_cheque(strArmoredCheque.Get());
+        const QString qstrPayment = QString::fromStdString(str_armored_cheque);
+
+        const QString qstrFrom = QString("%1 %2: %3").arg(qstrAmount).arg(tr("from account")).arg(qstrFromAccountName);
+        const QString qstrTo   = QString("%1: %2").arg(tr("To Contact")).arg(qstrToContactName);
+        // ------------------------------------------------------------
+        DlgExportedToPass * dlgExported = new DlgExportedToPass(NULL, qstrPayment,
+                                                                qstrFrom,
+                                                                qstrTo, false);
+        dlgExported->setAttribute(Qt::WA_DeleteOnClose);
+        // --------------------------------------------------
+        dlgExported->setWindowTitle(QString("%1: %2").arg(tr("Memo")).arg(note));
+        dlgExported->show();
+    }
+    // ------------------------------------------------------------
+    QMessageBox::StandardButton reply;
+
+    reply = QMessageBox::question(this, "", tr("The cheque has been written and placed in your outbox. Do you want to SEND IT now?"),
+                                  QMessageBox::Yes|QMessageBox::No);
+    if (reply == QMessageBox::No) {
+        return true;
     }
     // ------------------------------------------------------------
     std::string  strResponse;
@@ -498,7 +538,7 @@ bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
     else
     {
         qDebug() << "Success in send funds!";
-        QMessageBox::information(this, tr("Success"), QString("%1 %2.").arg(tr("Success sending")).arg(qstrPaymentType));
+        QMessageBox::information(this, tr("Success"), QString("%1 (%2).").arg(tr("Success")).arg(qstrPaymentType));
     }
     // ---------------------------------------------------------
     return m_bSent;
@@ -572,7 +612,7 @@ void MTSendDlg::on_sendButton_clicked()
     QMessageBox::StandardButton reply;
 
     reply = QMessageBox::question(this, "", QString("%1 '%2'<br/>%3").
-                                  arg(tr("The amount is")).arg(ui->amountEdit->text()).arg(tr("Send?")),
+                                  arg(tr("The amount is")).arg(ui->amountEdit->text()).arg(tr("Continue?")),
                                   QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::Yes)
     {
