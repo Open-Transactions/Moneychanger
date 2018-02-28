@@ -64,6 +64,7 @@ private:
     opentxs::OTZMQListenCallback notify_bailment_callback_;
     opentxs::OTZMQSubscribeSocket notify_bailment_;
 
+    void check_pairing() const;
     void process_notify_bailment(const opentxs::network::zeromq::Message& message) const;
     bool retrieve_nym(
         const std::string& strNotaryID,
@@ -289,18 +290,6 @@ private:
     void mc_opentxs_contact_show(QString text=QString(""));
 
     void mc_overview_dialog_refresh();
-
-//    void processPeerMessages();
-//    void process_peer_replies();
-//    void process_peer_replies_forNym(const opentxs::Identifier & nymID);
-//    void process_peer_requests();
-//    void process_peer_requests_forNym(const opentxs::Identifier & nymID);
-
-//    void process_request_bailment_reply(const opentxs::Identifier & nymID, const opentxs::proto::PeerReply& reply);
-//    void process_store_secret_reply(const opentxs::Identifier & nymID, const opentxs::proto::PeerReply& reply);
-//    void process_connection_info_reply(const opentxs::Identifier & nymID, const opentxs::proto::PeerReply& reply);
-
-//    void process_pending_bailment_notification(const opentxs::Identifier & nymID, const opentxs::proto::PeerRequest& request);
 
 private:
     void SetupAdvancedMenu(QPointer<QMenu> & parent_menu);
@@ -627,7 +616,6 @@ public slots:
     void mc_rpc_manage_nyms_show_dialog();
     void mc_rpc_manage_assets_show_dialog();
     void mc_rpc_manage_smartcontracts_show_dialog();
-
 };
 
 #endif // MONEYCHANGER_HPP
