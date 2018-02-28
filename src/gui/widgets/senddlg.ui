@@ -185,7 +185,7 @@
       <enum>Qt::LeftToRight</enum>
      </property>
      <property name="text">
-      <string>Continue</string>
+      <string>Pay</string>
      </property>
     </widget>
    </item>

@@ -67,6 +67,7 @@
 #include <opentxs/api/storage/Storage.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
+#include <opentxs/api/UI.hpp>
 #include <opentxs/api/Native.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OT_ME.hpp>
@@ -83,6 +84,54 @@
 #include <opentxs/network/zeromq/SubscribeSocket.hpp>
 #include <opentxs/OT.hpp>
 #include <opentxs/Proto.hpp>
+
+#include <opentxs/ui/ContactList.hpp>
+#include <opentxs/ui/ContactListItem.hpp>
+
+
+//    CmdShowContacts::CmdShowContacts()
+//    {
+//        command = "showcontacts";
+//        args[0] = "--mynym <nym>";
+//        category = catOtherUsers;
+//        help = "Show the contact list for a nym in the wallet.";
+//    }
+//
+//    std::int32_t CmdShowContacts::runWithOptions()
+//    {
+//        return run(getOption("mynym"));
+//    }
+//
+//    std::int32_t CmdShowContacts::run(std::string mynym)
+//    {
+//        if (!checkNym("mynym", mynym)) {
+//            return -1;
+//        }
+//
+//        const Identifier nymID{mynym};
+//        auto& list = OT::App().UI().ContactList(nymID);
+//        otOut << "Contacts:\n";
+//        dashLine();
+//        auto& line = list.First();
+//        auto last = line.Last();
+//        otOut << " " << line.Section() << " " << line.DisplayName() << " ("
+//        << line.ContactID() << ")\n";
+//
+//        while (false == last) {
+//            auto& line = list.Next();
+//            last = line.Last();
+//            otOut << " " << line.Section() << "  " << line.DisplayName() << " ("
+//            << line.ContactID() << ")\n";
+//        }
+//
+//        otOut << std::endl;
+//
+//        return 1;
+//    }
+//
+
+
+
 
 #include <QMenu>
 #include <QApplication>
@@ -5884,26 +5933,240 @@ void Moneychanger::mc_import_slot()
 
     // This is for all financial instruments EXCEPT a cash purse.
     //
-    if (false == payment->IsPurse())
+//  if (false == payment->IsPurse())
+    if (payment->IsCheque() || payment->IsVoucher())
     {
         if (has_recipient_nym)
         {
             if (recipientNymIsMine)
             {
-                const opentxs::Identifier taskId = ot_.API().Sync().
-                    DepositPayment(recipient_nym_id, payment);
-                const opentxs::String strTaskId(taskId);
-                const std::string str_task_id{strTaskId.Get()};
-                const QString qstrTaskId{QString::fromStdString(str_task_id)};
+                // Not ready to turn this on yet, since I need to be able to
+                // run it both ways in order to test the difference in how
+                // the receipts show up in the inbox. (Which was a problem
+                // last time I tested it).
+                // Once I can verify the receipts are showing up correctly,
+                // I will uncomment this and remove the other code.
+                //
+                // COMING SOON:
+                //
+//                const opentxs::Identifier taskId = ot_.API().Sync().
+//                    DepositPayment(recipient_nym_id, payment);
+//                const opentxs::String strTaskId(taskId);
+//                const std::string str_task_id{strTaskId.Get()};
+//                const QString qstrTaskId{QString::fromStdString(str_task_id)};
+//
+//                const QString qstrMsg = QString("%1. "
+//                                                "%2: %3"
+//                                                )
+//                                    .arg(tr("Successfully initiated deposit"))
+//                                    .arg(tr("Make sure you write down your Task ID"))
+//                                    .arg(qstrTaskId);
+//
+//                QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), qstrMsg);
+//                return;
 
-                const QString qstrMsg = QString("%1. %2: ")
-                    .arg(tr("Successfully initiated deposit"))
-                    .arg(tr("Make sure you write down your Task ID"))
-                    .arg(qstrTaskId);
+                const opentxs::String otstr_recip(recipient_nym_id);
+                const std::string str_recipient_nym_id(otstr_recip.Get());
 
-                QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), qstrMsg);
-                return;
-            }
+                opentxs::Identifier unit_type_id;
+                payment->GetInstrumentDefinitionID(unit_type_id);
+                const opentxs::String otstr_unit(unit_type_id);
+                const std::string str_unit_type_id(otstr_unit.Get());
+
+                // Maybe we ALREADY have an account of the correct type, that we
+                // can deposit this cheque into. Let's try and look it up.
+                //
+                DlgChooser theChooser(this);
+                theChooser.SetIsAccounts();
+                // -----------------------------------------------
+                mapIDName & the_map = theChooser.m_map;
+
+                bool bFoundDefault = false;
+                // -----------------------------------------------
+
+                // NEW WAY TO ITERATE ACCOUNTS:
+                //
+                opentxs::OTWallet * pWallet =
+                    opentxs::OT::App().API().OTAPI().GetWallet("Moneychanger::mc_import_slot");
+                auto accountSet = pWallet->AccountList();
+
+                for (const auto & accountInfo : accountSet)
+                {
+                    const auto & [ accountID, nymID, serverID, unitID ] = accountInfo;
+
+                    const opentxs::String otstrAccountId{accountID};
+                    const opentxs::String otstrNymId{nymID};
+                    const opentxs::String otstrServerId{serverID};
+                    const opentxs::String otstrUnitId{unitID};
+
+                    const std::string str_account_id{otstrAccountId.Get()};
+
+                    QString OT_acct_id = QString::fromStdString(str_account_id);
+                    QString OT_acct_name("");
+
+                    const std::string str_acct_nym_id    = otstrNymId.Get();
+                    const std::string str_acct_asset_id  = otstrUnitId.Get();
+                    const std::string str_acct_notary_id = otstrServerId.Get();
+
+                    if (!str_recipient_nym_id.empty() && (0 != str_recipient_nym_id.compare(str_acct_nym_id)))
+                        continue;
+                    if (0 != str_unit_type_id.compare(str_acct_asset_id))
+                        continue;
+                    if (0 != str_notary_id.compare(str_acct_notary_id))
+                        continue;
+                    // -----------------------------------------------
+                    if (!default_account_id.isEmpty() && (OT_acct_id == default_account_id))
+                        bFoundDefault = true;
+                    // -----------------------------------------------
+                    MTNameLookupQT theLookup;
+
+                    OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString(), "", "", ""));
+                    // -----------------------------------------------
+                    the_map.insert(OT_acct_id, OT_acct_name);
+                }
+                // -----------------------------------------------
+                if (the_map.size() < 1)
+                {
+//                    QMessageBox::warning(this, tr("No Matching Accounts"),
+//                                         tr("The Nym doesn't have any accounts of the appropriate asset type, "
+//                                            "on the appropriate server. Please create one and then try again."));
+
+                    // This is where we can just call Justus' function.
+                    // (There's no matching account, so the new API stuff can just
+                    //  create that account for us).
+                    //
+                    // This way for now, I can test the new code (by trying it
+                    // with zero accounts, which Justus should create) AND I
+                    // can compare it to the behavior of the old code (by trying
+                    // it when I already have accounts created). That way I can
+                    // compare behavior in terms of what receipts show up in the
+                    // UI, and make sure that's behaving properly in the new code.
+                    //
+                    const opentxs::Identifier taskId = opentxs::OT::App().API().Sync().
+                        DepositPayment(recipient_nym_id, payment);
+                    const opentxs::String strTaskId(taskId);
+                    const std::string str_task_id{strTaskId.Get()};
+                    const QString qstrTaskId{QString::fromStdString(str_task_id)};
+
+                    const QString qstrMsg = QString("%1. "
+                                                    "%2: %3"
+                                                    )
+                                .arg(tr("Successfully initiated deposit"))
+                                .arg(tr("Make sure you write down your Task ID"))
+                                .arg(qstrTaskId);
+
+                    QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), qstrMsg);
+                    return;
+                }
+                // -----------------------------------------------
+                // There's exactly one matching account in existence already.
+                // (With the right Nym, Server, and Unit type to deposit this
+                //  cheque).
+                //
+                else if (1 == the_map.size())
+                {
+                    const std::string str_deposit_acct_id(the_map.firstKey().toStdString());
+
+                    int32_t nDepositCheque = 0;
+                    {
+                        MTSpinner theSpinner;
+
+                        std::string response =
+                            opentxs::OT::App().API().OTME().deposit_cheque(str_notary_id,
+                                                                           str_recipient_nym_id,
+                                                                           str_deposit_acct_id,
+                                                                           strInstrument);
+
+                        nDepositCheque = opentxs::OT::App().API().OTME().InterpretTransactionMsgReply(str_notary_id, str_recipient_nym_id, str_deposit_acct_id, "import_cash_or_cheque", response);
+                    }
+                    // --------------------------------------------
+                    if (1 == nDepositCheque)
+                    {
+                        QMessageBox::information(this, tr("Success"), tr("Success depositing cheque or voucher."));
+                        emit balancesChanged();
+                    }
+                    else
+                    {
+                        const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(str_notary_id, str_recipient_nym_id);
+
+                        // In the case of -2 and 0, the problem has to do with the usage credits,
+                        // and it already pops up an error box. Otherwise, the user had enough usage
+                        // credits, so there must have been some other problem, so we pop up an error box.
+                        //
+                        if ((lUsageCredits != (-2)) && (lUsageCredits != 0)) {
+                            QMessageBox::information(this, tr("Import Failure"), tr("Failed trying to deposit cheque or voucher."));
+                        }
+                    }
+                    return;
+                }
+                // -----------------------------------------------
+
+//                const opentxs::Identifier taskId = opentxs::OT::App().API().Sync().
+//                DepositPayment(recipient_nym_id, payment);
+//                const opentxs::String strTaskId(taskId);
+//                const std::string str_task_id{strTaskId.Get()};
+//                const QString qstrTaskId{QString::fromStdString(str_task_id)};
+//
+//                const QString qstrMsg = QString("%1. "
+//                                                "%2: %3"
+//                                                )
+//                .arg(tr("Successfully initiated deposit via Sync().DepositPayment"))
+//                .arg(tr("Make sure you write down your Task ID"))
+//                .arg(qstrTaskId);
+//
+//                QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), qstrMsg);
+//                return;
+
+
+                // NOTE: The above commented-out code is what we should actually
+                // be using.
+
+                if (bFoundDefault && !default_account_id.isEmpty())
+                    theChooser.SetPreSelected(default_account_id);
+                // -----------------------------------------------
+                theChooser.setWindowTitle(tr("Deposit Cheque to Which Account?"));
+                // -----------------------------------------------
+                if (theChooser.exec() == QDialog::Accepted)
+                {
+                    if (!theChooser.m_qstrCurrentID.isEmpty())
+                    {
+                        const std::string str_deposit_acct_id(theChooser.m_qstrCurrentID.toStdString());
+
+                        int32_t nDepositCheque = 0;
+                        {
+                            MTSpinner theSpinner;
+
+                            std::string response =
+                                opentxs::OT::App().API().OTME().deposit_cheque(str_notary_id,
+                                                                               str_recipient_nym_id,
+                                                                               str_deposit_acct_id,
+                                                                               strInstrument);
+
+                            nDepositCheque = opentxs::OT::App().API().OTME().InterpretTransactionMsgReply(str_notary_id, str_recipient_nym_id, str_deposit_acct_id, "import_cash_or_cheque", response);
+                        }
+                        // --------------------------------------------
+                        if (1 == nDepositCheque)
+                        {
+                            QMessageBox::information(this, tr("Success"), tr("Success depositing cheque."));
+                            emit balancesChanged();
+                        }
+                        else
+                        {
+                            const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(str_notary_id, str_recipient_nym_id);
+
+                            // In the case of -2 and 0, the problem has to do with the usage credits,
+                            // and it already pops up an error box. Otherwise, the user had enough usage
+                            // credits, so there must have been some other problem, so we pop up an error box.
+                            //
+                            if ((lUsageCredits != (-2)) && (lUsageCredits != 0)) {
+                                QMessageBox::information(this, tr("Import Failure"), tr("Failed trying to deposit cheque."));
+                                return;
+                            }
+                        }
+                    }
+                } // dialog accepted.
+            } // recipient Nym is mine.
+            // ----------------------------
             //else: There's a recipient Nym, but it's not mine.
             MTNameLookupQT theLookup;
             const opentxs::String strRecipientNymId{recipient_nym_id};
@@ -5925,10 +6188,14 @@ void Moneychanger::mc_import_slot()
                 .arg(qstrRecipientId)
                 .arg(qstrRecipientName);
 
+            // todo: Use a different dlg here and actually display the
+            // unarmored plaintext of the instrument so the user can view it,
+            // and copy to clipboard.
+
             QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), qstrMsg);
             return;
         }
-        // else has no recipient...
+        // else has no recipient at all...
 
 
         // Here it's NOT a purse (something else)
@@ -5940,7 +6207,13 @@ void Moneychanger::mc_import_slot()
         QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                              tr("Sorry - it's probably a cheque with a blank recipient, and this import dialog can't handle those yet. (Soon!)"));
 
-        //todo, resume
+        //todo, resume  (invoices, plus cheques with no recipient ID).
+
+        // "This is an invoice, requesting payment from you. Do you want to
+        // pay it now?"
+        //
+        // "This cheque has a blank recipient. Do you want to go ahead and
+        // deposit it?"
 
         return;
     }
@@ -6516,7 +6789,7 @@ void Moneychanger::onNewNymAdded(QString qstrID)
         MTNameLookupQT theLookup;
         qstrNymName = QString::fromStdString(theLookup.GetNymName(qstrID.toStdString(), ""));
         if (!qstrNymName.isEmpty())
-            qstrNymName += tr(" (local wallet)");
+            qstrNymName += QString(" (%1)").arg(tr("Me"));
 //      QString qstrContactID  = MTContactHandler::getInstance()->GetOrCreateOpentxsContactBasedOnNym(qstrNymName, qstrID, "");
 
         int nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrID);
