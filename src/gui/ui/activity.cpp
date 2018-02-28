@@ -4817,7 +4817,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
         if (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(str_my_nym_id), opentxs::Identifier(qstrContactId.toStdString())))
         {
             pActionContactMsg = popupMenuAccounts_->addAction(tr("Message this contact"));
-            pActionContactPay = popupMenuAccounts_->addAction(tr("Send payment"));
+            pActionContactPay = popupMenuAccounts_->addAction(tr("Pay this contact"));
             pActionContactInvoice = popupMenuAccounts_->addAction(tr("Request payment"));
             pActionContactRecurring = popupMenuAccounts_->addAction(tr("Request recurring payments"));
         }

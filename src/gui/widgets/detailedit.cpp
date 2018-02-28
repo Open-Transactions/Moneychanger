@@ -200,6 +200,18 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         switch (m_Type)
         {
         case MTDetailEdit::DetailEditTypeServer:
+
+            if (Moneychanger::It()->expertMode())
+            {
+                EnableAdd   (true);
+                EnableDelete(true);
+            }
+            else
+            {
+                EnableAdd   (false);
+                EnableDelete(false);
+            }
+
             m_pDetailPane = new MTServerDetails(this, *this);
             // -------------------------------------------
             connect(m_pDetailPane,      SIGNAL(newServerAdded(QString)),
@@ -217,6 +229,17 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
             break;
 
         case MTDetailEdit::DetailEditTypeAsset:
+            if (Moneychanger::It()->expertMode())
+            {
+                EnableAdd   (true);
+                EnableDelete(true);
+            }
+            else
+            {
+                EnableAdd   (false);
+                EnableDelete(false);
+            }
+
             m_pDetailPane = new MTAssetDetails(this, *this);
             // -------------------------------------------
             connect(m_pDetailPane,      SIGNAL(newAssetAdded(QString)),
@@ -246,6 +269,17 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
             break;
 
         case MTDetailEdit::DetailEditTypeNym:
+            if (Moneychanger::It()->expertMode())
+            {
+                EnableAdd   (true);
+                EnableDelete(true);
+            }
+            else
+            {
+                EnableAdd   (false);
+                EnableDelete(false);
+            }
+
             m_pDetailPane = new MTNymDetails(this, *this);
             // -------------------------------------------
             connect(m_pDetailPane,      SIGNAL(newNymAdded(QString)),    // This also adds the new Nym as a Contact in the address book.
@@ -327,6 +361,17 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
             break;
 
         case MTDetailEdit::DetailEditTypeAccount:
+            if (Moneychanger::It()->expertMode())
+            {
+                EnableAdd   (true);
+                EnableDelete(true);
+            }
+            else
+            {
+                EnableAdd   (false);
+                EnableDelete(false);
+            }
+
             m_pDetailPane = new MTAccountDetails(this, *this);
             // -------------------------------------------
             connect(m_pDetailPane,      SIGNAL(DefaultAccountChanged(QString, QString)),
@@ -430,9 +475,13 @@ void MTDetailEdit::FirstRun(MTDetailEdit::DetailEditType theType)
         // ----------------------------------
         if (!m_bEnableAdd)
             ui->addButton->setVisible(false);
+        else
+            ui->addButton->setVisible(true);
         // ----------------------------------
         if (!m_bEnableDelete)
             ui->deleteButton->setVisible(false);
+        else
+            ui->deleteButton->setVisible(true);
         // ----------------------------------
         if (m_pDetailPane)
             m_pDetailPane->setVisible(false);
@@ -452,7 +501,28 @@ void MTDetailEdit::onRefreshRecords()
 
 void MTDetailEdit::onExpertModeUpdated(bool bExpertMode)
 {
+    if (bExpertMode)
+    {
+        EnableAdd   (true);
+        EnableDelete(true);
+    }
+    else
+    {
+        EnableAdd   (false);
+        EnableDelete(false);
+    }
 
+    // ----------------------------------
+    if (!m_bEnableAdd)
+        ui->addButton->setVisible(false);
+    else
+        ui->addButton->setVisible(true);
+    // ----------------------------------
+    if (!m_bEnableDelete)
+        ui->deleteButton->setVisible(false);
+    else
+        ui->deleteButton->setVisible(true);
+    // ----------------------------------
 }
 
 void MTDetailEdit::showEvent(QShowEvent * event)
