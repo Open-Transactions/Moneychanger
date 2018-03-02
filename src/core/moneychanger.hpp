@@ -59,7 +59,12 @@ private:
     /** Constructor & Destructor **/
     Moneychanger(QWidget *parent = 0);
 
+    const opentxs::api::Native& ot_;
     std::atomic<std::uint64_t> refresh_count_;
+    opentxs::OTZMQListenCallback notify_bailment_callback_;
+    opentxs::OTZMQSubscribeSocket notify_bailment_;
+
+    void process_notify_bailment(const opentxs::network::zeromq::Message& message) const;
 
 public:
     // Note: These are callback functions needed by OT.
