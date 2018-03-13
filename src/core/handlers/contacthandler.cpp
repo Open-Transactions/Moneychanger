@@ -2888,7 +2888,7 @@ QString MTContactHandler::GetOrCreateOpentxsContactBasedOnNym(QString qstrLabel,
     // So let's create a new one instead.
     //
     const std::string str_label = qstrLabel.toStdString();
-    const auto response = opentxs::OT::App().Contact().NewContact(str_label, opentxs::Identifier{nym_id_string.toStdString()}, opentxs::PaymentCode{payment_code.toStdString()});
+    const auto response = opentxs::OT::App().Contact().NewContact(str_label, opentxs::Identifier{nym_id_string.toStdString()}, opentxs::PaymentCode::Factory(payment_code.toStdString()));
     return response ? QString::fromStdString(std::string(opentxs::String(response->ID()).Get())) : QString("");
 }
 
