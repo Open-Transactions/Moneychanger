@@ -11,11 +11,13 @@
 
 #include <core/moneychanger.hpp>
 
+#include <opentxs/api/client/ServerAction.hpp>
 #include <opentxs/api/client/Sync.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/ServerAction.hpp>
+#include <opentxs/core/Identifier.hpp>
 #include <opentxs/OT.hpp>
 #include <opentxs/Proto.hpp>
 
@@ -224,16 +226,16 @@ void MTAssetDetails::on_pushButton_clicked()
                             //
                             if (bIsRegiseredAtServer)
                             {
+                            	const opentxs::Identifier notaryID{qstrNotaryID.toStdString()}, nymID{qstrNymID.toStdString()}, assetID{qstrAssetID.toStdString()};
                                 // -----------------------------------
                                 {
                                     bool bSuccess = false;
                                     {
                                         MTSpinner theSpinner;
 
-                                        const std::string str_reply = opentxs::OT::App().API().OTME().retrieve_contract(qstrNotaryID.toStdString(),
-                                                                                                 qstrNymID   .toStdString(),
-                                                                                                 qstrAssetID .toStdString());
-                                        const int32_t     nResult   = opentxs::OT::App().API().OTME().VerifyMessageSuccess(str_reply);
+                                        auto action = opentxs::OT::App().API().ServerAction().DownloadContract(nymID, notaryID, assetID);
+                                        const std::string str_reply = action->Run();
+                                        const int32_t     nResult   = opentxs::OT::App().API().Exec().Message_GetSuccess(str_reply);
 
                                         bSuccess = (1 == nResult);
                                     }
@@ -254,10 +256,10 @@ void MTAssetDetails::on_pushButton_clicked()
                                     {
                                         MTSpinner theSpinner;
 
-                                        const std::string str_reply = opentxs::OT::App().API().OTME().issue_asset_type(qstrNotaryID.toStdString(),
-                                                                                                qstrNymID   .toStdString(),
-                                                                                                qstrContents.toStdString());
-                                        const int32_t     nResult   = opentxs::OT::App().API().OTME().VerifyMessageSuccess(str_reply);
+                                        auto action = opentxs::OT::App().API().ServerAction().IssueUnitDefinition(nymID, notaryID, 
+                                        		contractProto);
+                                        const std::string str_reply = action->Run();
+                                        const int32_t     nResult   = opentxs::OT::App().API().Exec().Message_GetSuccess(str_reply);
 
                                         bSuccess = (1 == nResult);
 

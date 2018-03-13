@@ -16,7 +16,6 @@
 #include <opentxs/api/Native.hpp>
 #include <opentxs/OT.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/crypto/OTEnvelope.hpp>

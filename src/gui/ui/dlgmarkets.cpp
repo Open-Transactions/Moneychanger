@@ -11,12 +11,14 @@
 #include <core/moneychanger.hpp>
 #include <core/handlers/focuser.h>
 
+#include <opentxs/api/client/ServerAction.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
 #include <opentxs/OT.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/ServerAction.hpp>
 #include <opentxs/core/Data.hpp>
+#include <opentxs/core/Identifier.hpp>
 #include <opentxs/core/OTStorage.hpp>
 
 #include <QKeyEvent>
@@ -413,9 +415,10 @@ bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrNotaryID, QString qstrNym
     {
         MTSpinner theSpinner;
 
-        const std::string str_reply = opentxs::OT::App().API().OTME().get_nym_market_offers(qstrNotaryID.toStdString(),
-                                                                     qstrNymID   .toStdString());
-        const int32_t     nResult   = opentxs::OT::App().API().OTME().VerifyMessageSuccess(str_reply);
+        auto action = opentxs::OT::App().API().ServerAction().DownloadNymMarketOffers(opentxs::Identifier(qstrNymID.toStdString()),
+                opentxs::Identifier(qstrNotaryID.toStdString()));
+        const std::string str_reply = action->Run();
+        const int32_t     nResult   = opentxs::OT::App().API().Exec().Message_GetSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }
@@ -720,9 +723,10 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrNotaryID, QString qstrNy
     {
         MTSpinner theSpinner;
 
-        const std::string str_reply = opentxs::OT::App().API().OTME().get_market_list(qstrNotaryID.toStdString(),
-                                                               qstrNymID   .toStdString());
-        const int32_t     nResult   = opentxs::OT::App().API().OTME().VerifyMessageSuccess(str_reply);
+        auto action = opentxs::OT::App().API().ServerAction().DownloadMarketList(opentxs::Identifier(qstrNymID.toStdString()),
+        	opentxs::Identifier(qstrNotaryID.toStdString()));
+        const std::string str_reply = action->Run();
+        const int32_t nResult = opentxs::OT::App().API().Exec().Message_GetSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }

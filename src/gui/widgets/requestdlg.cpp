@@ -13,13 +13,15 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/focuser.h>
 
+#include <opentxs/api/client/ServerAction.hpp>
 #include <opentxs/api/client/Sync.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/ServerAction.hpp>
+#include <opentxs/ext/OTPayment.hpp>
 #include <opentxs/OT.hpp>
 
 #include <QDebug>
@@ -153,7 +155,8 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString t
     time64_t tFrom = opentxs::OT::App().API().Exec().GetTime();
     time64_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
     // ------------------------------------------------------------
-    if (!opentxs::OT::App().API().OTME().make_sure_enough_trans_nums(1, str_NotaryID, str_fromNymId)) {
+    const opentxs::Identifier notaryID{str_NotaryID}, nymID{str_fromNymId};
+    if (!opentxs::OT::App().API().ServerAction().GetTransactionNumbers(nymID, notaryID, 1)) {
         qDebug() << QString("Failed trying to acquire a transaction number to write the cheque with.");
         return false;
     }
@@ -210,10 +213,13 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString t
         // Therefore we always much prefer using the new Opentxs API
         // and its MessageContact call.
         //
-        strResponse = opentxs::OT::App().API().OTME().send_user_payment(str_NotaryID, str_fromNymId, str_toNymId, strCheque);
+        std::unique_ptr<opentxs::OTPayment> payment =
+            std::make_unique<opentxs::OTPayment>(opentxs::String(strCheque.c_str()));
+        auto action = opentxs::OT::App().API().ServerAction().SendPayment(nymID, notaryID, opentxs::Identifier(str_toNymId), payment);
+    	strResponse = action->Run();
     }
 
-    int32_t nReturnVal  = opentxs::OT::App().API().OTME().VerifyMessageSuccess(strResponse);
+    int32_t nReturnVal  = opentxs::OT::App().API().Exec().Message_GetSuccess(strResponse);
     if (1 != nReturnVal)
     {
         qDebug() << QString("send %1: failed.").arg(nsChequeType);

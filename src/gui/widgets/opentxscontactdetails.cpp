@@ -21,17 +21,19 @@
 #include <core/handlers/modelverifications.hpp>
 #include <core/mtcomms.h>
 
+#include <opentxs/api/client/ServerAction.hpp>
 #include <opentxs/api/client/Sync.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/client/OT_API.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OTWallet.hpp>
+#include <opentxs/client/ServerAction.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
+#include <opentxs/core/Identifier.hpp>
 #include <opentxs/core/Nym.hpp>
 #include <opentxs/OT.hpp>
 #include <opentxs/Types.hpp>
@@ -1154,10 +1156,12 @@ void MTOpentxsContactDetails::on_pushButtonRefresh_clicked()
             {
                 MTSpinner theSpinner;
 
-                response = opentxs::OT::App().API().OTME().check_nym(notary_id, my_nym_id, str_nym_id);
+                 auto action = opentxs::OT::App().API().ServerAction().DownloadNym(
+                		opentxs::Identifier(my_nym_id), opentxs::Identifier(notary_id), opentxs::Identifier(str_nym_id));
+                 response = action->Run();
             }
 
-            int32_t nReturnVal = opentxs::OT::App().API().OTME().VerifyMessageSuccess(response);
+            int32_t nReturnVal = opentxs::OT::App().API().Exec().Message_GetSuccess(response);
 
             if (1 == nReturnVal)
             {
@@ -1255,10 +1259,12 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
                     {
                         MTSpinner theSpinner;
 
-                        response = opentxs::OT::App().API().OTME().check_nym(notary_id, my_nym_id, str_nym_id);
+                        auto action = opentxs::OT::App().API().ServerAction().DownloadNym(
+                        		opentxs::Identifier(my_nym_id), opentxs::Identifier(notary_id), opentxs::Identifier(str_nym_id));
+                        response = action->Run();
                     }
 
-                    int32_t nReturnVal = opentxs::OT::App().API().OTME().VerifyMessageSuccess(response);
+                    int32_t nReturnVal = opentxs::OT::App().API().Exec().Message_GetSuccess(response);
 
                     if (1 == nReturnVal)
                     {

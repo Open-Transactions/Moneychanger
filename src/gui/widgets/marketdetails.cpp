@@ -9,12 +9,14 @@
 
 #include <core/moneychanger.hpp>
 
+#include <opentxs/api/client/ServerAction.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
 #include <opentxs/OT.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/ServerAction.hpp>
 #include <opentxs/core/Data.hpp>
+#include <opentxs/core/Identifier.hpp>
 #include <opentxs/core/OTStorage.hpp>
 
 #include <QDateTime>
@@ -194,9 +196,10 @@ bool MTMarketDetails::LowLevelRetrieveMarketOffers(opentxs::OTDB::MarketData & m
     bool bSuccess = false;
     {
         MTSpinner         theSpinner;
-        const std::string str_reply = opentxs::OT::App().API().OTME().get_market_offers(marketData.notary_id, strNymID,
-                                                                 marketData.market_id, MAX_DEPTH);
-        const int32_t     nResult   = opentxs::OT::App().API().OTME().VerifyMessageSuccess(str_reply);
+        auto action = opentxs::OT::App().API().ServerAction().DownloadMarketOffers(
+        		opentxs::Identifier(strNymID), opentxs::Identifier(marketData.notary_id), opentxs::Identifier(marketData.market_id), MAX_DEPTH);
+        const std::string str_reply = action->Run();
+        const int32_t     nResult   = opentxs::OT::App().API().Exec().Message_GetSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }
@@ -522,9 +525,10 @@ bool MTMarketDetails::LowLevelRetrieveMarketTrades(opentxs::OTDB::MarketData & m
     {
         MTSpinner theSpinner;
 
-        const std::string str_reply = opentxs::OT::App().API().OTME().get_market_recent_trades(marketData.notary_id, strNymID,
-                                                                        marketData.market_id);
-        const int32_t     nResult   = opentxs::OT::App().API().OTME().VerifyMessageSuccess(str_reply);
+        auto action = opentxs::OT::App().API().ServerAction().DownloadMarketRecentTrades(
+        		opentxs::Identifier(strNymID), opentxs::Identifier(marketData.notary_id), opentxs::Identifier(marketData.market_id));
+        const std::string str_reply = action->Run();
+        const int32_t     nResult   = opentxs::OT::App().API().Exec().Message_GetSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }
