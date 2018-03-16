@@ -80,6 +80,7 @@
 #include <opentxs/core/crypto/OTPasswordData.hpp>
 #include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/script/OTSmartContract.hpp>
+#include <opentxs/core/Cheque.hpp>
 #include <opentxs/core/Identifier.hpp>
 #include <opentxs/core/Nym.hpp>
 #include <opentxs/ext/OTPayment.hpp>
@@ -6513,13 +6514,39 @@ void Moneychanger::mc_import_slot()
                     {
                         MTSpinner theSpinner;
 
-                        std::string response =
-                            opentxs::OT::App().API().OTME().deposit_cheque(str_notary_id,
-                                                                           str_recipient_nym_id,
-                                                                           str_deposit_acct_id,
-                                                                           strInstrument);
+                        opentxs::Identifier deposit_acct_id{str_deposit_acct_id};
+                        
+                        std::unique_ptr<opentxs::Cheque> cheque = std::make_unique<opentxs::Cheque>();
+                        cheque->LoadContractFromString(opentxs::String(strInstrument.c_str()));
+                        
+                        OT_ASSERT(cheque);
 
-                        nDepositCheque = opentxs::OT::App().API().OTME().InterpretTransactionMsgReply(str_notary_id, str_recipient_nym_id, str_deposit_acct_id, "import_cash_or_cheque", response);
+                        auto action = opentxs::OT::App().API().ServerAction().DepositCheque(recipient_nym_id, 
+                        		notary_id,
+								deposit_acct_id,
+								cheque);
+                        std::string response = action->Run();
+                        
+                        QString qResponse = QString::fromStdString(response);
+                        nDepositCheque = ot_.API().Exec().Message_GetSuccess(response);
+						if (1 != nDepositCheque) {
+							qDebug() << ": Reply received: success == FALSE. Reply message:\n"
+									<< qResponse << "\n";
+						}
+                        if (0 < nDepositCheque) {
+                        	nDepositCheque = ot_.API().Exec().Message_GetBalanceAgreementSuccess(str_notary_id, str_recipient_nym_id, str_deposit_acct_id, response);
+							if (1 != nDepositCheque) {
+								qDebug() << ": Reply received: success == FALSE. Reply message:\n"
+										<< qResponse << "\n";
+							}
+                        }
+                        if (0 < nDepositCheque) {
+							nDepositCheque = ot_.API().Exec().Message_GetTransactionSuccess(str_notary_id, str_recipient_nym_id, str_deposit_acct_id, response);
+							if (1 != nDepositCheque) {
+								qDebug() << ": Reply received: success == FALSE. Reply message:\n"
+										<< qResponse << "\n";
+							}
+                        }
                     }
                     // --------------------------------------------
                     if (1 == nDepositCheque)
@@ -6578,13 +6605,39 @@ void Moneychanger::mc_import_slot()
                         {
                             MTSpinner theSpinner;
 
-                            std::string response =
-                                opentxs::OT::App().API().OTME().deposit_cheque(str_notary_id,
-                                                                               str_recipient_nym_id,
-                                                                               str_deposit_acct_id,
-                                                                               strInstrument);
+                            opentxs::Identifier deposit_acct_id{str_deposit_acct_id};
+                            
+                            std::unique_ptr<opentxs::Cheque> cheque = std::make_unique<opentxs::Cheque>();
+                            cheque->LoadContractFromString(opentxs::String(strInstrument.c_str()));
+                            
+                            OT_ASSERT(cheque);
 
-                            nDepositCheque = opentxs::OT::App().API().OTME().InterpretTransactionMsgReply(str_notary_id, str_recipient_nym_id, str_deposit_acct_id, "import_cash_or_cheque", response);
+                            auto action = opentxs::OT::App().API().ServerAction().DepositCheque(recipient_nym_id, 
+                            		notary_id,
+    								deposit_acct_id,
+    								cheque);
+                            std::string response = action->Run();
+                            
+                            QString qResponse = QString::fromStdString(response);
+                            nDepositCheque = ot_.API().Exec().Message_GetSuccess(response);
+    						if (1 != nDepositCheque) {
+    							qDebug() << ": Reply received: success == FALSE. Reply message:\n"
+    									<< qResponse << "\n";
+    						}
+                            if (0 < nDepositCheque) {
+                            	nDepositCheque = ot_.API().Exec().Message_GetBalanceAgreementSuccess(str_notary_id, str_recipient_nym_id, str_deposit_acct_id, response);
+    							if (1 != nDepositCheque) {
+    								qDebug() << ": Reply received: success == FALSE. Reply message:\n"
+    										<< qResponse << "\n";
+    							}
+                            }
+                            if (0 < nDepositCheque) {
+    							nDepositCheque = ot_.API().Exec().Message_GetTransactionSuccess(str_notary_id, str_recipient_nym_id, str_deposit_acct_id, response);
+    							if (1 != nDepositCheque) {
+    								qDebug() << ": Reply received: success == FALSE. Reply message:\n"
+    										<< qResponse << "\n";
+    							}
+                            }
                         }
                         // --------------------------------------------
                         if (1 == nDepositCheque)
