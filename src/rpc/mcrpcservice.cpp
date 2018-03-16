@@ -18,6 +18,7 @@
 #include <opentxs/OT.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/core/Log.hpp>
 
 #include <core/moneychanger.hpp>
@@ -96,7 +97,7 @@ QJsonValue MCRPCService::registerAccount(
 
     // -1 error, 0 failure, 1 success.
     //
-    if (1 != opentxs::OT::App().API().Exec().Message_GetSuccess(result)) {
+    if (1 != opentxs::VerifyMessageSuccess(result)) {
         const int64_t lUsageCredits =
             Moneychanger::It()->HasUsageCredits(NotaryID, NymID);
 

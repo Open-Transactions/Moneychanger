@@ -17,6 +17,7 @@
 #include <opentxs/OT.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/core/Data.hpp>
 #include <opentxs/core/Identifier.hpp>
 #include <opentxs/core/OTStorage.hpp>
@@ -418,7 +419,7 @@ bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrNotaryID, QString qstrNym
         auto action = opentxs::OT::App().API().ServerAction().DownloadNymMarketOffers(opentxs::Identifier(qstrNymID.toStdString()),
                 opentxs::Identifier(qstrNotaryID.toStdString()));
         const std::string str_reply = action->Run();
-        const int32_t     nResult   = opentxs::OT::App().API().Exec().Message_GetSuccess(str_reply);
+        const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }
@@ -726,7 +727,7 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrNotaryID, QString qstrNy
         auto action = opentxs::OT::App().API().ServerAction().DownloadMarketList(opentxs::Identifier(qstrNymID.toStdString()),
         	opentxs::Identifier(qstrNotaryID.toStdString()));
         const std::string str_reply = action->Run();
-        const int32_t nResult = opentxs::OT::App().API().Exec().Message_GetSuccess(str_reply);
+        const int32_t nResult = opentxs::VerifyMessageSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }

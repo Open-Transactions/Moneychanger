@@ -21,6 +21,7 @@
 #include <opentxs/OT.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/ext/OTPayment.hpp>
 
 
@@ -157,13 +158,8 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
         strResponse = action->Run();
     }
 
-    int32_t nInterpretReply = opentxs::OT::App().API().Exec().Message_GetSuccess(strResponse);
-    if (0 < nInterpretReply) {
-    	nInterpretReply = opentxs::OT::App().API().Exec().Message_GetBalanceAgreementSuccess(str_NotaryID, str_fromNymId, str_fromAcctId, strResponse);
-    }
-    if (0 < nInterpretReply) {
-    	nInterpretReply = opentxs::OT::App().API().Exec().Message_GetTransactionSuccess(str_NotaryID, str_fromNymId, str_fromAcctId, strResponse);
-    }
+    int32_t nInterpretReply = opentxs::InterpretTransactionMsgReply(str_NotaryID, str_fromNymId, str_fromAcctId,
+                                                                    strAttempt, strResponse);
 
     if (1 != nInterpretReply) // Failure
     {
@@ -256,7 +252,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString fromA
         strSendResponse = action->Run();
     }
 
-    int32_t nReturnVal = opentxs::OT::App().API().Exec().Message_GetSuccess(strSendResponse);
+    int32_t nReturnVal = opentxs::VerifyMessageSuccess(strSendResponse);
 
     if (1 != nReturnVal)
     {
@@ -449,7 +445,7 @@ bool MTSendDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString from
         strResponse = action->Run();
     }
 
-    int32_t nReturnVal  = opentxs::OT::App().API().Exec().Message_GetSuccess(strResponse);
+    int32_t nReturnVal  = opentxs::VerifyMessageSuccess(strResponse);
 
     if (1 != nReturnVal)
     {

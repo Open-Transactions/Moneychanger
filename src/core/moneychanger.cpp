@@ -1065,7 +1065,7 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
                 }
             }
 
-            if (!ot_.API().Exec().Message_GetSuccess(response)) {
+            if (!opentxs::VerifyMessageSuccess(response)) {
                 Moneychanger::It()->HasUsageCredits(notary_id, my_nym_id);
                 continue;
             }
@@ -1091,7 +1091,7 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
                 continue;
             }
 
-            int32_t  nReturnVal = ot_.API().Exec().Message_GetSuccess(response);
+            int32_t  nReturnVal = opentxs::VerifyMessageSuccess(response);
             if (1 == nReturnVal)
             {
                 emit nymWasJustChecked(hisNymId);
@@ -3003,7 +3003,7 @@ void Moneychanger::onNeedToDownloadMail()
                     }
                 }
 
-                if (!ot_.API().Exec().Message_GetSuccess(response)) {
+                if (!opentxs::VerifyMessageSuccess(response)) {
                     Moneychanger::It()->HasUsageCredits(defaultNotaryID, defaultNymID);
                     return;
                 }
@@ -6527,26 +6527,7 @@ void Moneychanger::mc_import_slot()
 								cheque);
                         std::string response = action->Run();
                         
-                        QString qResponse = QString::fromStdString(response);
-                        nDepositCheque = ot_.API().Exec().Message_GetSuccess(response);
-						if (1 != nDepositCheque) {
-							qDebug() << ": Reply received: success == FALSE. Reply message:\n"
-									<< qResponse << "\n";
-						}
-                        if (0 < nDepositCheque) {
-                        	nDepositCheque = ot_.API().Exec().Message_GetBalanceAgreementSuccess(str_notary_id, str_recipient_nym_id, str_deposit_acct_id, response);
-							if (1 != nDepositCheque) {
-								qDebug() << ": Reply received: success == FALSE. Reply message:\n"
-										<< qResponse << "\n";
-							}
-                        }
-                        if (0 < nDepositCheque) {
-							nDepositCheque = ot_.API().Exec().Message_GetTransactionSuccess(str_notary_id, str_recipient_nym_id, str_deposit_acct_id, response);
-							if (1 != nDepositCheque) {
-								qDebug() << ": Reply received: success == FALSE. Reply message:\n"
-										<< qResponse << "\n";
-							}
-                        }
+                        nDepositCheque = opentxs::InterpretTransactionMsgReply(str_notary_id, str_recipient_nym_id, str_deposit_acct_id, "import_cash_or_cheque", response);
                     }
                     // --------------------------------------------
                     if (1 == nDepositCheque)
@@ -6618,26 +6599,7 @@ void Moneychanger::mc_import_slot()
     								cheque);
                             std::string response = action->Run();
                             
-                            QString qResponse = QString::fromStdString(response);
-                            nDepositCheque = ot_.API().Exec().Message_GetSuccess(response);
-    						if (1 != nDepositCheque) {
-    							qDebug() << ": Reply received: success == FALSE. Reply message:\n"
-    									<< qResponse << "\n";
-    						}
-                            if (0 < nDepositCheque) {
-                            	nDepositCheque = ot_.API().Exec().Message_GetBalanceAgreementSuccess(str_notary_id, str_recipient_nym_id, str_deposit_acct_id, response);
-    							if (1 != nDepositCheque) {
-    								qDebug() << ": Reply received: success == FALSE. Reply message:\n"
-    										<< qResponse << "\n";
-    							}
-                            }
-                            if (0 < nDepositCheque) {
-    							nDepositCheque = ot_.API().Exec().Message_GetTransactionSuccess(str_notary_id, str_recipient_nym_id, str_deposit_acct_id, response);
-    							if (1 != nDepositCheque) {
-    								qDebug() << ": Reply received: success == FALSE. Reply message:\n"
-    										<< qResponse << "\n";
-    							}
-                            }
+                            nDepositCheque = opentxs::InterpretTransactionMsgReply(str_notary_id, str_recipient_nym_id, str_deposit_acct_id, "import_cash_or_cheque", response);
                         }
                         // --------------------------------------------
                         if (1 == nDepositCheque)
@@ -8322,24 +8284,17 @@ int32_t Moneychanger::activateContract(const std::string& server, const std::str
     auto action = ot_.API().ServerAction().ActivateSmartContract(myNymID, notaryID, accountID, myAcctAgentName, smartContract);
     std::string response = action->Run();
     
-    if (1 != ot_.API().Exec().Message_GetSuccess(response))
+    if (1 != opentxs::VerifyMessageSuccess(response))
     {
         qDebug() << "Error: cannot activate smart contract.\n";
         return ot_.API().Exec().Msg_HarvestTransactionNumbers(contract, mynym, false, false, false, false, false);
     }
 
     // BELOW THIS POINT, the transaction has definitely processed.
-    QString qResponse = QString::fromStdString(response);
-    int32_t reply = ot_.API().Exec().Message_GetBalanceAgreementSuccess(server, mynym, myAcctID, response);
+
+    int32_t reply = opentxs::InterpretTransactionMsgReply(server, mynym, myAcctID, "activate_smart_contract", response);
+
     if (1 != reply) {
-    	qDebug() << ": Reply received: success == FALSE. Reply message:\n"
-                << qResponse << "\n";
-        return reply;
-    }
-    reply = ot_.API().Exec().Message_GetTransactionSuccess(server, mynym, myAcctID, response);
-    if (1 != reply) {
-    	qDebug() << ": Reply received: success == FALSE. Reply message:\n"
-                << qResponse << "\n";
         return reply;
     }
 
@@ -8371,7 +8326,7 @@ int32_t Moneychanger::sendToNextParty(const std::string& server, const std::stri
     auto action = ot_.API().ServerAction().SendPayment(opentxs::Identifier(mynym), opentxs::Identifier(server), opentxs::Identifier(hisNymID), payment);
     std::string response = action->Run();
     
-    if (1 != ot_.API().Exec().Message_GetSuccess(response)) {
+    if (1 != opentxs::VerifyMessageSuccess(response)) {
         qDebug() << "\nFor whatever reason, our attempt to send the instrument on "
                  "to the next user has failed.\n";
         QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Failed while calling send_user_payment."));

@@ -26,6 +26,7 @@
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/core/NumList.hpp>
 #include <opentxs/core/Identifier.hpp>
 #include <opentxs/core/Nym.hpp>
@@ -179,7 +180,7 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
                     }
                 }
 
-                if (!opentxs::OT::App().API().Exec().Message_GetSuccess(response)) {
+                if (!opentxs::VerifyMessageSuccess(response)) {
                     Moneychanger::It()->HasUsageCredits(notary_id, nymId);
                     continue;
                 }
@@ -2285,7 +2286,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                                 auto action = opentxs::OT::App().API().ServerAction().UnregisterNym(
                                 		opentxs::Identifier(str_nym_id), opentxs::Identifier(str_notary_id));
                                 std::string strResponse = action->Run();
-                                nSuccess                = opentxs::OT::App().API().Exec().Message_GetSuccess(strResponse);
+                                nSuccess                = opentxs::VerifyMessageSuccess(strResponse);
                             }
                             // -1 is error,
                             //  0 is reply received: failure

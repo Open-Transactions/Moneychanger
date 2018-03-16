@@ -27,6 +27,7 @@
 #include <opentxs/api/Native.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/core/Account.hpp>
 #include <opentxs/core/Identifier.hpp>
 #include <opentxs/OT.hpp>
@@ -1662,7 +1663,7 @@ void MTAccountDetails::DeleteButtonClicked()
 
                 auto action = opentxs::OT::App().API().ServerAction().UnregisterAccount(theNymID, theNotaryID, theAcctID);
                 std::string strResponse = action->Run();
-                nSuccess                = opentxs::OT::App().API().Exec().Message_GetSuccess(strResponse);
+                nSuccess                = opentxs::VerifyMessageSuccess(strResponse);
             }
             // -1 is error,
             //  0 is reply received: failure
@@ -1812,7 +1813,7 @@ void MTAccountDetails::AddButtonClicked()
         }
         // -1 error, 0 failure, 1 success.
         //
-        if (1 != opentxs::OT::App().API().Exec().Message_GetSuccess(strResponse))
+        if (1 != opentxs::VerifyMessageSuccess(strResponse))
         {
             const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(qstrNotaryID, qstrNymID);
 

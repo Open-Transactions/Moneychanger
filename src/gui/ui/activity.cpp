@@ -36,6 +36,7 @@
 #include <opentxs/client/OTRecordList.hpp>
 #include <opentxs/client/OTWallet.hpp>
 #include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
 #include <opentxs/contact/ContactGroup.hpp>
@@ -5896,7 +5897,7 @@ bool Activity::request_outbailment(
         return false;
     }
     // -----------------------------
-    const bool output = (1 == opentxs::OT::App().API().Exec().Message_GetSuccess(result));
+    const bool output = (1 == opentxs::VerifyMessageSuccess(result));
 
     if (!output) {
         qDebug() << "Failed trying to request outbailment.";

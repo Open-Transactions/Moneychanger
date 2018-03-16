@@ -19,6 +19,7 @@
 #include <opentxs/OT.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/core/recurring/OTPaymentPlan.hpp>
 #include <opentxs/core/Data.hpp>
 #include <opentxs/core/Identifier.hpp>
@@ -215,19 +216,12 @@ void MTOfferDetails::AddButtonClicked()
             strResponse = action->Run();
         }
         // --------------------------------------------------------
-        int32_t nInterpretReply = 0;
-        if (strResponse.size() < 10) {
-        	nInterpretReply = -1;
-        }
-        else {
-        	nInterpretReply = opentxs::OT::App().API().Exec().Message_GetSuccess(strResponse);
-			if (0 < nInterpretReply) {
-				nInterpretReply = opentxs::OT::App().API().Exec().Message_GetBalanceAgreementSuccess(str_notary_id, str_nym_id, str_asset_acct_id, strResponse);
-			}
-			if (0 < nInterpretReply) {
-				nInterpretReply = opentxs::OT::App().API().Exec().Message_GetTransactionSuccess(str_notary_id, str_nym_id, str_asset_acct_id, strResponse);
-			}
-        }
+        const std::string strAttempt("create_market_offer");
+
+        int32_t nInterpretReply = opentxs::InterpretTransactionMsgReply(str_notary_id,
+                                                                        str_nym_id,
+                                                                        str_asset_acct_id,
+                                                                        strAttempt, strResponse);
         const bool bPlacedOffer = (1 == nInterpretReply);
         // ---------------------------------------------------------
         if (!bPlacedOffer)
@@ -301,13 +295,12 @@ void MTOfferDetails::DeleteButtonClicked()
                     strResponse = action->Run();
                 }
                 // --------------------------------------------------------
-                int32_t nInterpretReply = opentxs::OT::App().API().Exec().Message_GetSuccess(strResponse);
-                if (0 < nInterpretReply) {
-                	nInterpretReply = opentxs::OT::App().API().Exec().Message_GetBalanceAgreementSuccess(str_notary_id, str_nym_id, str_asset_acct_id, strResponse);
-                }
-                if (0 < nInterpretReply) {
-                	nInterpretReply = opentxs::OT::App().API().Exec().Message_GetTransactionSuccess(str_notary_id, str_nym_id, str_asset_acct_id, strResponse);
-                }
+                const std::string strAttempt("kill_market_offer");
+
+                int32_t nInterpretReply = opentxs::InterpretTransactionMsgReply(str_notary_id,
+                                                                                str_nym_id,
+                                                                                str_asset_acct_id,
+                                                                                strAttempt, strResponse);
                 const bool bKilledOffer = (1 == nInterpretReply);
                 // ---------------------------------------------------------
                 if (!bKilledOffer)

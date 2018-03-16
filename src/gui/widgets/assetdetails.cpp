@@ -17,6 +17,7 @@
 #include <opentxs/api/Native.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/core/Identifier.hpp>
 #include <opentxs/OT.hpp>
 #include <opentxs/Proto.hpp>
@@ -235,7 +236,7 @@ void MTAssetDetails::on_pushButton_clicked()
 
                                         auto action = opentxs::OT::App().API().ServerAction().DownloadContract(nymID, notaryID, assetID);
                                         const std::string str_reply = action->Run();
-                                        const int32_t     nResult   = opentxs::OT::App().API().Exec().Message_GetSuccess(str_reply);
+                                        const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);
 
                                         bSuccess = (1 == nResult);
                                     }
@@ -259,7 +260,7 @@ void MTAssetDetails::on_pushButton_clicked()
                                         auto action = opentxs::OT::App().API().ServerAction().IssueUnitDefinition(nymID, notaryID, 
                                         		contractProto);
                                         const std::string str_reply = action->Run();
-                                        const int32_t     nResult   = opentxs::OT::App().API().Exec().Message_GetSuccess(str_reply);
+                                        const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);
 
                                         bSuccess = (1 == nResult);
 

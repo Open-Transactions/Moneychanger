@@ -15,6 +15,7 @@
 #include <opentxs/OT.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/core/Data.hpp>
 #include <opentxs/core/Identifier.hpp>
 #include <opentxs/core/OTStorage.hpp>
@@ -199,7 +200,7 @@ bool MTMarketDetails::LowLevelRetrieveMarketOffers(opentxs::OTDB::MarketData & m
         auto action = opentxs::OT::App().API().ServerAction().DownloadMarketOffers(
         		opentxs::Identifier(strNymID), opentxs::Identifier(marketData.notary_id), opentxs::Identifier(marketData.market_id), MAX_DEPTH);
         const std::string str_reply = action->Run();
-        const int32_t     nResult   = opentxs::OT::App().API().Exec().Message_GetSuccess(str_reply);
+        const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }

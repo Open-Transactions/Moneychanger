@@ -20,6 +20,7 @@
 #include <opentxs/OT.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/core/Identifier.hpp>
 #include <opentxs/ext/OTPayment.hpp>
 
@@ -661,7 +662,7 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
         strResponse = action->Run();
     }
     // ------------------------------------------------------------
-    const int32_t nReturnVal = opentxs::OT::App().API().Exec().Message_GetSuccess(strResponse);
+    const int32_t nReturnVal = opentxs::VerifyMessageSuccess(strResponse);
 
     if (1 != nReturnVal)
     {

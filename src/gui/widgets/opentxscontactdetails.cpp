@@ -30,6 +30,7 @@
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OTWallet.hpp>
 #include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
@@ -1161,7 +1162,7 @@ void MTOpentxsContactDetails::on_pushButtonRefresh_clicked()
                  response = action->Run();
             }
 
-            int32_t nReturnVal = opentxs::OT::App().API().Exec().Message_GetSuccess(response);
+            int32_t nReturnVal = opentxs::VerifyMessageSuccess(response);
 
             if (1 == nReturnVal)
             {
@@ -1264,7 +1265,7 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
                         response = action->Run();
                     }
 
-                    int32_t nReturnVal = opentxs::OT::App().API().Exec().Message_GetSuccess(response);
+                    int32_t nReturnVal = opentxs::VerifyMessageSuccess(response);
 
                     if (1 == nReturnVal)
                     {

@@ -21,6 +21,7 @@
 #include <opentxs/api/Native.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
 #include <opentxs/core/Identifier.hpp>
@@ -574,7 +575,7 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
             strResponse = action->Run();
         }
 
-        int32_t  nReturnVal = opentxs::OT::App().API().Exec().Message_GetSuccess(strResponse);
+        int32_t  nReturnVal = opentxs::VerifyMessageSuccess(strResponse);
         if (1 != nReturnVal) {
             qDebug() << "OT send_message: Failed.";
             Moneychanger::It()->HasUsageCredits(str_NotaryID, str_fromNymId);
@@ -2492,7 +2493,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
 
                 qDebug() << QString("Nym Registration Response: %1").arg(QString::fromStdString(response));
 
-                int32_t nReturnVal = opentxs::OT::App().API().Exec().Message_GetSuccess(response);
+                int32_t nReturnVal = opentxs::VerifyMessageSuccess(response);
 
                 if (1 != nReturnVal)
                 {
@@ -2560,7 +2561,7 @@ bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrNot
                         response = action->Run();
                     }
 
-                    int32_t nReturnVal = opentxs::OT::App().API().Exec().Message_GetSuccess(response);
+                    int32_t nReturnVal = opentxs::VerifyMessageSuccess(response);
 
                     if (1 != nReturnVal)
                     {

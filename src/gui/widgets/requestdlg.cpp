@@ -21,6 +21,7 @@
 #include <opentxs/api/Native.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/ext/OTPayment.hpp>
 #include <opentxs/OT.hpp>
 
@@ -219,7 +220,7 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString t
     	strResponse = action->Run();
     }
 
-    int32_t nReturnVal  = opentxs::OT::App().API().Exec().Message_GetSuccess(strResponse);
+    int32_t nReturnVal  = opentxs::VerifyMessageSuccess(strResponse);
     if (1 != nReturnVal)
     {
         qDebug() << QString("send %1: failed.").arg(nsChequeType);
