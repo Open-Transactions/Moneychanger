@@ -14,11 +14,15 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/focuser.h>
 
+#include <opentxs/api/client/ServerAction.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
 #include <opentxs/OT.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
+#include <opentxs/core/Identifier.hpp>
+#include <opentxs/ext/OTPayment.hpp>
 
 #include <QDebug>
 #include <QMessageBox>
@@ -567,7 +571,7 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
 {
     const std::string myAcctId = m_myAcctId.toStdString();
     const std::string myNymId  = opentxs::OT::App().API().Exec().GetAccountWallet_NymID(myAcctId);
-    const std::string notaryID = opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID(myAcctId);
+    const std::string notaryId = opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID(myAcctId);
     const std::string hisNymId = m_hisNymId.toStdString();
     // ----------------------------------------------------
     const QDateTime qtimeFrom    = ui->dateTimeEditFrom->dateTime();
@@ -588,8 +592,9 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     const bool bHasRecurringPayment = ui->checkBoxRecurring->isChecked();
     const bool bExpires             = ui->checkBoxExpires  ->isChecked();
     // ----------------------------------------------------
+    const opentxs::Identifier notaryID{notaryId}, myNymID{myNymId};
     {
-        if (!opentxs::OT::App().API().OTME().make_sure_enough_trans_nums(2, notaryID, myNymId))
+        if (!opentxs::OT::App().API().ServerAction().GetTransactionNumbers(myNymID, notaryID, 2))
         {
             const QString qstrErr("Failed trying to acquire 2 transaction numbers (to write the recurring payment with.)");
             qDebug() << qstrErr;
@@ -604,7 +609,7 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     const time64_t recurringPeriod       = timeNextRecurring  - timeFirstRecurring;
     // ------------------------------------------------------------
     const std::string str_plan = opentxs::OT::App().API().Exec().ProposePaymentPlan(
-        notaryID,
+        notaryId,
         timeFrom,
         validityLength, //"valid to" is apparently ADDED to "valid from" so it's a bit misnamed.
         "", // This is the customer's asset account, but we don't know that yet.
@@ -648,10 +653,16 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     std::string  strResponse;
     {
         MTSpinner      theSpinner;
-        strResponse  = opentxs::OT::App().API().OTME().send_user_payment(notaryID, myNymId, hisNymId, str_plan);
+        std::unique_ptr<opentxs::OTPayment> payment =
+            std::make_unique<opentxs::OTPayment>(opentxs::String(str_plan.c_str()));
+        
+        OT_ASSERT(payment);
+        
+        auto action = opentxs::OT::App().API().ServerAction().SendPayment(myNymID, notaryID, opentxs::Identifier(hisNymId), payment);
+        strResponse = action->Run();
     }
     // ------------------------------------------------------------
-    const int32_t nReturnVal = opentxs::OT::App().API().OTME().VerifyMessageSuccess(strResponse);
+    const int32_t nReturnVal = opentxs::VerifyMessageSuccess(strResponse);
 
     if (1 != nReturnVal)
     {
@@ -660,7 +671,7 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
         // ------------------------------------
         const QString qstrErr("Failed trying to send proposed recurring payment plan to recipient. Perhaps network is down? (Or notary is down?)");
         qDebug() << qstrErr;
-        Moneychanger::It()->HasUsageCredits(notaryID, myNymId);
+        Moneychanger::It()->HasUsageCredits(notaryId, myNymId);
         emit showLog(qstrErr);
     }
     else

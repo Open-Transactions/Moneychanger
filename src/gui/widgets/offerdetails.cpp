@@ -13,13 +13,16 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/modeltradearchive.hpp>
 
+#include <opentxs/api/client/ServerAction.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
 #include <opentxs/OT.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/core/recurring/OTPaymentPlan.hpp>
 #include <opentxs/core/Data.hpp>
+#include <opentxs/core/Identifier.hpp>
 #include <opentxs/core/OTStorage.hpp>
 
 #include <QMessageBox>
@@ -200,21 +203,22 @@ void MTOfferDetails::AddButtonClicked()
         {
             MTSpinner theSpinner;
             // --------------------------------------------------------------
-            strResponse = opentxs::OT::App().API().OTME().create_market_offer(str_asset_acct_id,
-                                                       str_currency_acct_id,
-                                                       lScale,
-                                                       lMinIncrement,
-                                                       lTotalAsset,
-                                                       lActualPrice,
-                                                       bSelling,
-                                                       lExpire,  // 0 does default of 86400 == 1 day.
-                                                       str_stop_sign, // If a stop order, must be "<" or ">"
-                                                       lActivationPrice); // For stop orders.
+            auto action = opentxs::OT::App().API().ServerAction().CreateMarketOffer(opentxs::Identifier(str_asset_acct_id),
+            		opentxs::Identifier(str_currency_acct_id),
+                    lScale,
+					lMinIncrement,
+					lTotalAsset,
+					lActualPrice,
+                    bSelling,
+					std::chrono::seconds(lExpire),  // 0 does default of 86400 == 1 day.
+                    str_stop_sign, // If a stop order, must be "<" or ">"
+                    lActivationPrice); // For stop orders.
+            strResponse = action->Run();
         }
         // --------------------------------------------------------
         const std::string strAttempt("create_market_offer");
 
-        int32_t nInterpretReply = opentxs::OT::App().API().OTME().InterpretTransactionMsgReply(str_notary_id,
+        int32_t nInterpretReply = opentxs::InterpretTransactionMsgReply(str_notary_id,
                                                                         str_nym_id,
                                                                         str_asset_acct_id,
                                                                         strAttempt, strResponse);
@@ -284,15 +288,16 @@ void MTOfferDetails::DeleteButtonClicked()
                 {
                     MTSpinner theSpinner;
                     // --------------------------------------------------------------
-                    strResponse = opentxs::OT::App().API().OTME().kill_market_offer(str_notary_id,
-                                                             str_nym_id,
-                                                             str_asset_acct_id,
-                                                             lTransID);
+                    auto action = opentxs::OT::App().API().ServerAction().KillMarketOffer(opentxs::Identifier(str_nym_id),
+                    		opentxs::Identifier(str_notary_id),
+							opentxs::Identifier(str_asset_acct_id),
+                            lTransID);
+                    strResponse = action->Run();
                 }
                 // --------------------------------------------------------
                 const std::string strAttempt("kill_market_offer");
 
-                int32_t nInterpretReply = opentxs::OT::App().API().OTME().InterpretTransactionMsgReply(str_notary_id,
+                int32_t nInterpretReply = opentxs::InterpretTransactionMsgReply(str_notary_id,
                                                                                 str_nym_id,
                                                                                 str_asset_acct_id,
                                                                                 strAttempt, strResponse);

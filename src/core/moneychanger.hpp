@@ -65,7 +65,9 @@ private:
     opentxs::OTZMQSubscribeSocket notify_bailment_;
 
     void process_notify_bailment(const opentxs::network::zeromq::Message& message) const;
-
+    bool retrieve_nym(
+        const std::string& strNotaryID,
+        const std::string& strMyNymID) const;
 public:
     // Note: These are callback functions needed by OT.
     // Specifically, whenever the DHT downloads a contract, it notifies interested parties

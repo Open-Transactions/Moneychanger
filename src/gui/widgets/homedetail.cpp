@@ -15,10 +15,10 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
 
+#include <opentxs/api/client/Cash.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
 #include <opentxs/OT.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/core/Log.hpp>
 
@@ -777,7 +777,7 @@ void MTHomeDetail::on_cancelButton_clicked(bool checked /*=false*/)
 
                     MTSpinner theSpinner;
                     // -----------------------------------------
-                    const int32_t nDepositCash = opentxs::OT::App().API().OTME().deposit_cash(recordmt.GetNotaryID(), recordmt.GetNymID(),
+                    const int32_t nDepositCash = opentxs::OT::App().API().Cash().deposit_cash(recordmt.GetNotaryID(), recordmt.GetNymID(),
                                                                        qstr_acct_id.toStdString(), recordmt.GetContents());
                     // -----------------------------------------
                     if (1 == nDepositCash)

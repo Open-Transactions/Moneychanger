@@ -16,10 +16,10 @@
 
 #include <core/moneychanger.hpp>
 
+#include <opentxs/api/client/Cash.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
 #include <opentxs/OT.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 
 #include <QDateTime>
@@ -272,7 +272,7 @@ void MTCashPurse::on_pushButtonWithdraw_clicked()
 
         MTSpinner theSpinner;
 
-        bSent = (1 == opentxs::OT::App().API().OTME().easy_withdraw_cash(accountID, lAmount));
+        bSent = (1 == opentxs::OT::App().API().Cash().easy_withdraw_cash(accountID, lAmount));
     }
     // -----------------------------------------------------------------
     if (!bSent)
@@ -373,7 +373,7 @@ void MTCashPurse::on_pushButtonExport_clicked()
         std::string str_exported,  // The exported cash, encrypted to recipient (or passphrase.)
                     str_retained;  // The exported cash, encrypted to sender (just in case...)
 
-        str_exported = opentxs::OT::App().API().OTME().export_cash(str_acct_server,
+        str_exported = opentxs::OT::App().API().Cash().export_cash(str_acct_server,
                                             str_acct_nym,
                                             str_acct_asset,
                                             qstrRecipNymID.toStdString(),
@@ -466,7 +466,7 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
             MTSpinner    theSpinner;
             std::string  str_selected_indices(qstrSelectedIndices.toStdString()); // (FYI, you can also use "all" for all indices.)
 
-            bSent = (1 == opentxs::OT::App().API().OTME().deposit_local_purse(str_acct_server, // <=======
+            bSent = (1 == opentxs::OT::App().API().Cash().deposit_local_purse(str_acct_server, // <=======
                                                        str_acct_nym,
                                                        str_acct_id,
                                                        str_selected_indices));

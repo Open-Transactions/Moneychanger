@@ -12,11 +12,13 @@
 #include <QThreadPool>
 #include <QRunnable>
 
+#include <opentxs/api/client/ServerAction.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
 #include <opentxs/OT.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/core/Log.hpp>
 
 #include <core/moneychanger.hpp>
@@ -78,10 +80,10 @@ QJsonValue MCRPCService::registerAccount(
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OT::App().API().OTME().create_asset_acct(
-        NotaryID.toStdString(),
-        NymID.toStdString(),
-        InstrumentDefinitionID.toStdString());
+    const opentxs::Identifier notaryID{NotaryID.toStdString()}, nymID{NymID.toStdString()}, instrumentDefinitionID{InstrumentDefinitionID.toStdString()};
+    auto action = opentxs::OT::App().API().ServerAction().RegisterAccount(
+    		nymID, notaryID, instrumentDefinitionID);
+    std::string result = action->Run();
 
     if (!opentxs::OT::App().API().Exec().CheckConnection(NotaryID.toStdString())) {
         //      emit appendToLog(qstrErrorMsg); // TODO!
@@ -95,7 +97,7 @@ QJsonValue MCRPCService::registerAccount(
 
     // -1 error, 0 failure, 1 success.
     //
-    if (1 != opentxs::OT::App().API().OTME().VerifyMessageSuccess(result)) {
+    if (1 != opentxs::VerifyMessageSuccess(result)) {
         const int64_t lUsageCredits =
             Moneychanger::It()->HasUsageCredits(NotaryID, NymID);
 

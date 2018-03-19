@@ -19,13 +19,16 @@
 #include <core/mtcomms.h>
 #include <core/moneychanger.hpp>
 
+#include <opentxs/api/client/ServerAction.hpp>
 #include <opentxs/api/client/Sync.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
 #include <opentxs/client/OT_API.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/core/NumList.hpp>
+#include <opentxs/core/Identifier.hpp>
 #include <opentxs/core/Nym.hpp>
 #include <opentxs/OT.hpp>
 #include <opentxs/Proto.hpp>
@@ -177,7 +180,7 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
                     }
                 }
 
-                if (!opentxs::OT::App().API().OTME().VerifyMessageSuccess(response)) {
+                if (!opentxs::VerifyMessageSuccess(response)) {
                     Moneychanger::It()->HasUsageCredits(notary_id, nymId);
                     continue;
                 }
@@ -2280,8 +2283,10 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                             {
                                 MTSpinner theSpinner;
 
-                                std::string strResponse = opentxs::OT::App().API().OTME().unregister_nym(str_notary_id, str_nym_id);
-                                nSuccess                = opentxs::OT::App().API().OTME().VerifyMessageSuccess(strResponse);
+                                auto action = opentxs::OT::App().API().ServerAction().UnregisterNym(
+                                		opentxs::Identifier(str_nym_id), opentxs::Identifier(str_notary_id));
+                                std::string strResponse = action->Run();
+                                nSuccess                = opentxs::VerifyMessageSuccess(strResponse);
                             }
                             // -1 is error,
                             //  0 is reply received: failure

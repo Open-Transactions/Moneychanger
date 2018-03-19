@@ -21,12 +21,15 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 
+#include <opentxs/api/client/ServerAction.hpp>
 #include <opentxs/api/client/Sync.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/core/Account.hpp>
+#include <opentxs/core/Identifier.hpp>
 #include <opentxs/OT.hpp>
 
 #include <QMessageBox>
@@ -1615,11 +1618,13 @@ void MTAccountDetails::DeleteButtonClicked()
         // Download all the intermediary files (account balance, inbox, outbox, etc)
         // to make sure we're looking at the latest inbox.
         //
+        const opentxs::Identifier theNotaryID{str_owner_nym_id}, theNymID{str_owner_nym_id}, theAcctID{str_account_id};
         bool bRetrieved = false;
         {
             MTSpinner theSpinner;
 
-            bRetrieved = opentxs::OT::App().API().OTME().retrieve_account(str_notary_id, str_owner_nym_id, str_account_id, true); //bForceDownload defaults to false.
+            bRetrieved = opentxs::OT::App().API().ServerAction().DownloadAccount(
+            		theNymID, theNotaryID, theAcctID, true);
         }
         qDebug() << QString("%1 retrieving intermediary files for account %2. (Precursor to delete account.)").
                     arg(bRetrieved ? QString("Success") : QString("Failed")).arg(str_account_id.c_str());
@@ -1656,8 +1661,9 @@ void MTAccountDetails::DeleteButtonClicked()
             {
                 MTSpinner theSpinner;
 
-                std::string strResponse = opentxs::OT::App().API().OTME().unregister_account(str_notary_id, str_owner_nym_id, str_account_id);
-                nSuccess                = opentxs::OT::App().API().OTME().VerifyMessageSuccess(strResponse);
+                auto action = opentxs::OT::App().API().ServerAction().UnregisterAccount(theNymID, theNotaryID, theAcctID);
+                std::string strResponse = action->Run();
+                nSuccess                = opentxs::VerifyMessageSuccess(strResponse);
             }
             // -1 is error,
             //  0 is reply received: failure
@@ -1798,13 +1804,16 @@ void MTAccountDetails::AddButtonClicked()
         {
             MTSpinner theSpinner;
 
-            strResponse = opentxs::OT::App().API().OTME().create_asset_acct(qstrNotaryID.toStdString(),
-                                                     qstrNymID   .toStdString(),
-                                                     qstrInstrumentDefinitionID .toStdString());
+            std::string nymID = qstrNymID.toStdString();
+            std::string notaryID = qstrNotaryID.toStdString();
+            std::string instrumentDefinitionID = qstrInstrumentDefinitionID.toStdString();
+            auto action = opentxs::OT::App().API().ServerAction().RegisterAccount(
+            		opentxs::Identifier(nymID), opentxs::Identifier(notaryID), opentxs::Identifier(instrumentDefinitionID));
+            strResponse = action->Run();
         }
         // -1 error, 0 failure, 1 success.
         //
-        if (1 != opentxs::OT::App().API().OTME().VerifyMessageSuccess(strResponse))
+        if (1 != opentxs::VerifyMessageSuccess(strResponse))
         {
             const int64_t lUsageCredits = Moneychanger::It()->HasUsageCredits(qstrNotaryID, qstrNymID);
 

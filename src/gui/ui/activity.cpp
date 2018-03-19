@@ -23,6 +23,7 @@
 #include <core/handlers/focuser.h>
 
 #include <opentxs/api/client/Issuer.hpp>
+#include <opentxs/api/client/ServerAction.hpp>
 #include <opentxs/api/client/Sync.hpp>
 #include <opentxs/api/client/Wallet.hpp>
 #include <opentxs/api/storage/Storage.hpp>
@@ -32,9 +33,10 @@
 #include <opentxs/api/Native.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTRecordList.hpp>
 #include <opentxs/client/OTWallet.hpp>
+#include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
 #include <opentxs/contact/ContactGroup.hpp>
@@ -5870,19 +5872,19 @@ bool Activity::request_outbailment(
         return false;
     }
 
-    auto& me = opentxs::OT::App().API().OTME();
     opentxs::otErr << __FUNCTION__
                    << ": Requesting outbailment." << std::endl;
     std::string result{};
 
     try {
-        result = me.initiate_outbailment(
-            str_notary_id,
-            str_my_nym_id,
-            str_issuer_nym_id,
-            str_unit_type_id,
+        auto action = opentxs::OT::App().API().ServerAction().InitiateOutbailment(
+            opentxs::Identifier(str_my_nym_id),
+			opentxs::Identifier(str_notary_id),
+			opentxs::Identifier(str_issuer_nym_id),
+			opentxs::Identifier(str_unit_type_id),
             amount,
             str_blockchain_address);
+        result = action->Run();
     } catch (const std::runtime_error& e) {
         opentxs::otErr << __FUNCTION__ << ": " << e.what();
         return false;
@@ -5895,7 +5897,7 @@ bool Activity::request_outbailment(
         return false;
     }
     // -----------------------------
-    const bool output = (1 == me.VerifyMessageSuccess(result));
+    const bool output = (1 == opentxs::VerifyMessageSuccess(result));
 
     if (!output) {
         qDebug() << "Failed trying to request outbailment.";

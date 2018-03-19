@@ -13,13 +13,15 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
 
+#include <opentxs/api/client/ServerAction.hpp>
 #include <opentxs/api/client/Sync.hpp>
 #include <opentxs/api/Activity.hpp>
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/client/OT_ME.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
+#include <opentxs/client/ServerAction.hpp>
+#include <opentxs/client/Utility.hpp>
 #include <opentxs/contact/Contact.hpp>
 #include <opentxs/contact/ContactData.hpp>
 #include <opentxs/core/Identifier.hpp>
@@ -568,10 +570,12 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
     {
         std::string strResponse; {
             MTSpinner theSpinner;
-            strResponse = opentxs::OT::App().API().OTME().send_user_msg(str_NotaryID, str_fromNymId, str_toNymId, contents.toStdString());
+            auto action = opentxs::OT::App().API().ServerAction().SendMessage(
+            		opentxs::Identifier(str_fromNymId), opentxs::Identifier(str_NotaryID), opentxs::Identifier(str_toNymId), contents.toStdString());
+            strResponse = action->Run();
         }
 
-        int32_t  nReturnVal = opentxs::OT::App().API().OTME().VerifyMessageSuccess(strResponse);
+        int32_t  nReturnVal = opentxs::VerifyMessageSuccess(strResponse);
         if (1 != nReturnVal) {
             qDebug() << "OT send_message: Failed.";
             Moneychanger::It()->HasUsageCredits(str_NotaryID, str_fromNymId);
@@ -2489,7 +2493,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
 
                 qDebug() << QString("Nym Registration Response: %1").arg(QString::fromStdString(response));
 
-                int32_t nReturnVal = opentxs::OT::App().API().OTME().VerifyMessageSuccess(response);
+                int32_t nReturnVal = opentxs::VerifyMessageSuccess(response);
 
                 if (1 != nReturnVal)
                 {
@@ -2552,10 +2556,12 @@ bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrNot
                     {
                         MTSpinner theSpinner;
 
-                        response = opentxs::OT::App().API().OTME().check_nym(notary_id, sender_id, recipient_id);
+                        auto action = opentxs::OT::App().API().ServerAction().DownloadNym(
+                        		opentxs::Identifier(sender_id), opentxs::Identifier(notary_id), opentxs::Identifier(recipient_id));
+                        response = action->Run();
                     }
 
-                    int32_t nReturnVal = opentxs::OT::App().API().OTME().VerifyMessageSuccess(response);
+                    int32_t nReturnVal = opentxs::VerifyMessageSuccess(response);
 
                     if (1 != nReturnVal)
                     {
