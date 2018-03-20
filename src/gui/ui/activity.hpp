@@ -309,7 +309,10 @@ private:
     QAction * pActionBailment            {nullptr};
     QAction * pActionOutbailment         {nullptr};
 
-    QSharedPointer<QSqlQueryMessages>  pModelMessages_;
+    QSharedPointer<QStandardItemModel>  pStandardModelMessages_;
+
+//  QSharedPointer<QSqlQueryMessages>  pModelMessages_;
+    QSharedPointer<QStandardItemModel> pModelMessages_;
     QSharedPointer<ConvMsgsProxyModel> pThreadItemsProxyModel_;
 
     QPointer<ActivityPaymentsProxyModel> pPmntProxyModelInbox_;

@@ -19,6 +19,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlQueryModel>
+#include <QStandardItemModel>
 #include <QSqlRecord>
 #include <QString>
 #include <QVariant>
@@ -89,8 +90,15 @@ class DBHandler
     QPointer<ModelVerifications> getVerificationsModel(const QString & forClaimId);
 
 
-    QSharedPointer<QSqlQueryMessages>  getConversationItemModel(const QString & qstrMyNymId, const QString & qstrThreadId, bool bArchived=false);
+    QSharedPointer<QSqlQueryMessages>  getConversationItemModel(
+        const QString & qstrMyNymId,
+        const QString & qstrThreadId,
+        bool bArchived=false);
 
+    QSharedPointer<QStandardItemModel>  getNewConversationItemModel(
+        const QString & qstrMyNymId,
+        const QString & qstrThreadId,
+        bool bArchived=false);
 
     QString formatValue(QSqlField & sqlField);
 

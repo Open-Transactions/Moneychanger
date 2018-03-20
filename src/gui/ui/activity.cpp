@@ -31,6 +31,7 @@
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/ContactManager.hpp>
 #include <opentxs/api/Native.hpp>
+#include <opentxs/api/UI.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OTRecordList.hpp>
@@ -47,6 +48,8 @@
 #include <opentxs/core/Log.hpp>
 #include <opentxs/core/OTTransaction.hpp>
 #include <opentxs/core/OTTransactionType.hpp>
+#include <opentxs/ui/ActivityThread.hpp>
+#include <opentxs/ui/ActivityThreadItem.hpp>
 #include <opentxs/OT.hpp>
 #include <opentxs/Types.hpp>
 
@@ -67,6 +70,7 @@
 #include <string>
 #include <map>
 #include <tuple>
+#include <ctime>
 
 
 
@@ -2178,6 +2182,7 @@ static void setup_tableview(QTableView * pView, QAbstractItemModel * pProxyModel
 
 
 
+//QSharedPointer<QStandardItemModel>  pStandardModelMessages_;
 
 //QSharedPointer<QSqlQueryMessages>  pModelMessages_;
 //QSharedPointer<ConvMsgsProxyModel> pThreadItemsProxyModel_;
@@ -2200,15 +2205,16 @@ void Activity::resetConversationItemsDataModel(const bool bProvidedIds/*=false*/
     // By this point we know if bProvidedIds is true,
     // that neither of the optional parameters are nullptr.
     // --------------------------------------------------------
-    QSharedPointer<QSqlQueryMessages> pNewSourceModel;
+//    QSharedPointer<QSqlQueryMessages> pNewSourceModel;
+    QSharedPointer<QStandardItemModel> pNewSourceModel;
 
     if (!bProvidedIds)
     {
-        pNewSourceModel.reset(new QSqlQueryMessages(0)); // An empty one, since there's no IDs for a real one.
+        pNewSourceModel.reset(new QStandardItemModel(0)); // An empty one, since there's no IDs for a real one.
     }
     else // bProvidedIds is definitely true...
     {
-        pNewSourceModel = DBHandler::getInstance()->getConversationItemModel(*pstrMyNymID, *pstrThreadID);
+        pNewSourceModel = DBHandler::getInstance()->getNewConversationItemModel(*pstrMyNymID, *pstrThreadID);
     }
     // --------------------------------------------------------
     QSharedPointer<ConvMsgsProxyModel> pThreadItemsProxyModel{new ConvMsgsProxyModel}; // A new proxy
@@ -2221,7 +2227,74 @@ void Activity::resetConversationItemsDataModel(const bool bProvidedIds/*=false*/
     // ---------------------------------
     pThreadItemsProxyModel->setTableView(ui->tableViewConversation);
     ui->tableViewConversation->setModel(pThreadItemsProxyModel.data());
+
+
+
+
+
+//    {
+//        const Identifier nymID{mynym};
+//        auto& activity = OT::App().UI().ActivitySummary(nymID);
+//        otOut << "Activity:\n";
+//        dashLine();
+//        auto& line = activity.First();
+//
+//        if (false == line.Valid()) {
+//
+//            return 1;
+//        }
+//
+//        auto last = line.Last();
+//        otOut << "* " << line.DisplayName() << " (" << line.ThreadID() << "): "
+//        << time(line.Timestamp()) << "\n  " << line.Text() << "\n";
+//
+//        while (false == last) {
+//            auto& line = activity.Next();
+//            last = line.Last();
+//            otOut << "* " << line.DisplayName() << " (" << line.ThreadID() << "): "
+//            << time(line.Timestamp()) << "\n  " << line.Text() << "\n";
+//        }
+//    }
+
+//
+//
+//    QString str_select = QString(
+//     "SELECT "
+//     "    msg.message_id AS message_id, "
+//     "    msg.my_nym_id AS my_nym_id, "
+//     "    conv_msg.conversation_id AS thread_id, "
+//     "    msg.thread_item_id AS thread_item_id, "
+//     "    msg.timestamp AS timestamp, "
+//     "    msg.folder AS folder, "
+//     "    msg_body.body AS body "
+//     "  FROM "
+//     "     `message` AS msg "
+//     "     INNER JOIN `message_body` AS msg_body "
+//     "         ON  msg.message_id = msg_body.message_id "
+//     "         AND msg.thread_item_id = msg_body.thread_item_id " // This line is probably superfluous. Test removing it.
+//     "     INNER JOIN `conversation_msg` AS conv_msg "
+//     "         ON  conv_msg.thread_item_id = msg_body.thread_item_id "
+//     "         AND conv_msg.my_nym_id = msg.my_nym_id "
+//     "     WHERE "
+//     "           msg.archived='%1' "
+//     "       AND msg.has_subject='%2' "
+//     "       AND msg.my_nym_id='%3' "
+//     "       AND conv_msg.conversation_id='%4' "
+//     ).arg(nArchived).arg(nHasNoSubject).arg(qstrMyNymId).arg(qstrThreadId);
+//
+//    if (bProvidedIds)
+//    {
+//    }
+//
+
+
+
+
+
+
 }
+
+
 
 
 void Activity::RefreshConversationDetails(int nRow)
@@ -2252,6 +2325,35 @@ void Activity::RefreshConversationDetails(int nRow)
         }
         // ----------------------------------------------
         resetConversationItemsDataModel(true, &qstrMyNymId, &qstrThreadId);
+
+
+//        const std::string str_my_nym_id = qstrMyNymId.toStdString();
+//        const std::string str_thread_id = qstrThreadId.toStdString();
+//
+//        const auto& thread = opentxs::OT::App().UI().ActivityThread(
+//            opentxs::Identifier(str_my_nym_id),
+//            opentxs::Identifier(str_thread_id));
+//        const auto& first = thread.First();
+//        qDebug() << QString::fromStdString(thread.DisplayName()) << "\n";
+//
+//        if (false == first.Valid()) {
+//            return;
+//        }
+//
+//        auto last = first.Last();
+//        qDebug() << " * "
+//        // << time(first.Timestamp())
+//        << " " << QString::fromStdString(first.Text()) << "\n";
+//
+//        while (false == last) {
+//            auto& line = thread.Next();
+//            last = line.Last();
+//            qDebug() << " * "
+//            //<< time(line.Timestamp())
+//            << " "
+//            << QString::fromStdString(line.Text()) << "\n";
+//        }
+
 
         return;
         // ----------------------------------------------
