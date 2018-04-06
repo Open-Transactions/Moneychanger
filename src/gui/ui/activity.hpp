@@ -277,6 +277,14 @@ private slots:
 private:
     Ui::Activity *ui{nullptr};
 
+    QWidget * pTab0_ {nullptr};
+    QWidget * pTab1_ {nullptr};
+    QWidget * pTab2_ {nullptr};
+    QWidget * pTab3_ {nullptr};
+    QWidget * pTab4_ {nullptr};
+    QWidget * pTab5_ {nullptr};
+    QWidget * pTab6_ {nullptr};
+
     QScopedPointer<QMenu> popupMenuPayments_;
     QScopedPointer<QMenu> popupMenuAccounts_;
 
