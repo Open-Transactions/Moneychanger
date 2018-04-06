@@ -2433,6 +2433,8 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 {
     if (!already_init)
     {
+        this->setWindowTitle(tr(MONEYCHANGER_APP_NAME));
+
         ui->horizontalLayout_4->setAlignment(ui->checkBoxSearchConversations, Qt::AlignRight);
         ui->horizontalLayout_6->setAlignment(ui->checkBoxSearchPayments,      Qt::AlignRight);
         ui->horizontalLayout_6->setAlignment(ui->toolButtonMyIdentity,        Qt::AlignLeft);
@@ -2500,10 +2502,54 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 
         this->on_checkBoxSearchConversations_toggled(false);
         this->on_checkBoxSearchPayments_toggled(false);
+        // ------------------------
+        //ui->tabWidgetMain->setStyleSheet("QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: none; }");
 
+        pTab0_ = ui->tabWidgetMain->widget(0);
+        pTab1_ = ui->tabWidgetMain->widget(1);
+        pTab2_ = ui->tabWidgetMain->widget(2);
+        pTab3_ = ui->tabWidgetMain->widget(3);
+        pTab4_ = ui->tabWidgetMain->widget(4);
+        pTab5_ = ui->tabWidgetMain->widget(5);
+        pTab6_ = ui->tabWidgetMain->widget(6);
+
+        // ------------------------
         /** Flag Already Init **/
         already_init = true;
     }
+    // -------------------------------------------
+    /*
+     Currently the tabs are:
+
+     0 - Accounts
+     1 - Conversations
+     2 - Messages
+     3 - Agreements
+     4 - Exchange
+     5 - Tools
+     6 - Settings
+
+     For now, unless we're in expert mode, we'll turn them ALL OFF except
+     for Accounts, Conversations, and Settings.
+     */
+
+    ui->tabWidgetMain->blockSignals(true);
+
+    while (ui->tabWidgetMain->count() > 0) {
+        ui->tabWidgetMain->removeTab(0);
+    }
+
+    ui->tabWidgetMain->addTab(pTab0_, tr("Accounts"));
+    ui->tabWidgetMain->addTab(pTab1_, tr("Conversations"));
+
+    if (Moneychanger::It()->expertMode()) ui->tabWidgetMain->addTab(pTab2_, tr("Messages")); // Messages
+    if (Moneychanger::It()->expertMode()) ui->tabWidgetMain->addTab(pTab3_, tr("Agreements")); // Agreements
+    if (Moneychanger::It()->expertMode()) ui->tabWidgetMain->addTab(pTab4_, tr("Exchange")); // Exchange
+    if (Moneychanger::It()->expertMode()) ui->tabWidgetMain->addTab(pTab5_, tr("Tools")); // Tools
+
+    ui->tabWidgetMain->addTab(pTab6_, tr("Settings"));
+
+    ui->tabWidgetMain->blockSignals(false);
     // -------------------------------------------
     RefreshAll();
     // -------------------------------------------
@@ -6129,14 +6175,15 @@ void Activity::on_tabWidgetMain_currentChanged(int index)
      * 5 Tools
      * 6 Settings
      */
-    switch (index) {
-    case 0: {
+    QWidget * pCurrentWidget = ui->tabWidgetMain->currentWidget();
+
+    if (pCurrentWidget == pTab0_) {
         nSelectedTab_ = index;
-    } break;
-    case 1: {
+    }
+    else if (pCurrentWidget == pTab1_) {
         nSelectedTab_ = index;
-    } break;
-    case 2: { // Messages
+    }
+    else if (pCurrentWidget == pTab2_)  { // Messages
         ui->tabWidgetMain->blockSignals(true);
         ui->tabWidgetMain->setCurrentIndex(nSelectedTab_); // Set it back (don't allow the user to change to this tab)
         ui->tabWidgetMain->blockSignals(false);
@@ -6144,8 +6191,8 @@ void Activity::on_tabWidgetMain_currentChanged(int index)
         // Then pop up the messages dialog:
         emit showMessages();
         return;
-    } break;
-    case 3: { // Active Agreements
+    }
+    else if (pCurrentWidget == pTab3_)  { // Active Agreements
         ui->tabWidgetMain->blockSignals(true);
         ui->tabWidgetMain->setCurrentIndex(nSelectedTab_); // Set it back (don't allow the user to change to this tab)
         ui->tabWidgetMain->blockSignals(false);
@@ -6153,8 +6200,8 @@ void Activity::on_tabWidgetMain_currentChanged(int index)
         // Then pop up the agreements dialog:
         emit showActiveAgreements();
         return;
-    } break;
-    case 4: { // Exchange
+    }
+    else if (pCurrentWidget == pTab4_)  { // Exchange
         ui->tabWidgetMain->blockSignals(true);
         ui->tabWidgetMain->setCurrentIndex(nSelectedTab_); // Set it back (don't allow the user to change to this tab)
         ui->tabWidgetMain->blockSignals(false);
@@ -6162,11 +6209,11 @@ void Activity::on_tabWidgetMain_currentChanged(int index)
         // Then pop up the exchange dialog:
         emit showExchange();
         return;
-    } break;
-    case 5: { // Tools
+    }
+    else if (pCurrentWidget == pTab5_)  { // Tools
         nSelectedTab_ = index;
-    } break;
-    case 6: { // Settings
+    }
+    else if (pCurrentWidget == pTab6_)  { // Settings
         ui->tabWidgetMain->blockSignals(true);
         ui->tabWidgetMain->setCurrentIndex(nSelectedTab_); // Set it back (don't allow the user to change to this tab)
         ui->tabWidgetMain->blockSignals(false);
@@ -6174,11 +6221,10 @@ void Activity::on_tabWidgetMain_currentChanged(int index)
         // Then pop up the settings dialog:
         emit showSettings();
         return;
-    } break;
-    default: { // should never happen
+    }
+    else { // should never happen
         qDebug() << QString("Activity::on_tabWidgetMain_currentChanged: Bad index: %1").arg(index);
         return;
-    } break;
     }
 }
 

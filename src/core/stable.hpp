@@ -6,7 +6,7 @@
 //#include <opentxs/core/stdafx.hpp>
 
 #ifndef MONEYCHANGER_APP_NAME
-#define MONEYCHANGER_APP_NAME "Moneychanger"
+#define MONEYCHANGER_APP_NAME "Stash Toolkit"
 #endif // MONEYCHANGER_APP_NAME
 
 #endif // __STABLE_HPP__

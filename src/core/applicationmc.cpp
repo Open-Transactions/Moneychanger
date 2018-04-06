@@ -40,7 +40,7 @@ void MTApplicationMC::appStarting()
 {
     // ----------------------------------------
     //Moneychanger Details
-    QString mc_app_name = "moneychanger-qt";
+    QString mc_app_name = tr(MONEYCHANGER_APP_NAME);
     QString mc_version = "v0.0.x";
 
     //Compiled details

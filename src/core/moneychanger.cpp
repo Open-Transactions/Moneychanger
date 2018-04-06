@@ -156,6 +156,8 @@
 #include <utility>
 
 
+#define DEMO_SERVER_NYM "otqHAZTKobdWCon2FL7T3thYfTAvoJr9Ck8"
+
 bool Moneychanger::is_base64(QString string)
 {
     QRegExp rx("[^a-zA-Z0-9+/=]");
@@ -166,436 +168,6 @@ bool Moneychanger::is_base64(QString string)
     }
     return false;
 }
-
-//void Moneychanger::processPeerMessages()
-//{
-//    process_peer_requests();
-//    process_peer_replies();
-
-//    // processPairNodeFollowup?
-//}
-
-
-//private void processPairNodeFollowup() {
-//        final long paired_node_count = OTWrapper.Paired_Node_Count();
-//        Log.i("MService", "PairNodeFollowup: About to iterate nodes ("+paired_node_count+")");
-//        for (long index = 0; index < paired_node_count; index++) // FOR EACH PAIRED OR PAIRING NODE.
-//        {
-//            String strIndex = Long.toString(index);
-//            boolean shouldRename = OTWrapper.Pair_ShouldRename(strIndex);
-//            Log.d("MService", "Should rename: "+shouldRename+" ("+OTMeta.getInstance().isRenaming()+")");
-//            if (shouldRename) { // This one is the important one.
-//                if (!OTMeta.getInstance().isRenaming()) {
-//                    String strUserSNPNotaryId = SwigWrap.Paired_Server(strIndex);
-
-//                    final boolean bGotNotaryId = StringUtil.verify(strUserSNPNotaryId);
-
-//                    if (!bGotNotaryId) {
-//                        Log.i("MService", "processPairNodeFollowup - ASSERT! Failed to get notary ID for index: " + strIndex);
-//                    }
-//                    else if (SwigWrap.GetNymCount() > 0) {
-//                        // -----------------------------------------------------------
-//                        OTMeta.getInstance().setPaired(true);
-//                        OTMeta.getInstance().setRenaming(true); // So another rename process can't mess with this one until it's done.
-//                        // -----------------------------------------------------------
-//                        // Request btcd connection info.
-//                        //
-//                        // Issue #9, Milestone #4
-//                        //
-//                        // When the reply comes in (elsewhere), we save it locally.
-//                        // Here's where we send the request:
-//                        //
-//                        Log.d("MService", "Sendind Node Rename Notification");
-//                        Intent resultIntent = new Intent(this, HomeActivity.class);
-//                        resultIntent.putExtra("snp_notary_id", strUserSNPNotaryId);
-//                        resultIntent.putExtra("do_rename", true);
-//                        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-//                        stackBuilder.addParentStack(HomeActivity.class);
-//                        stackBuilder.addNextIntent(resultIntent);
-//                        PendingIntent resultPendingIntent =
-//                                stackBuilder.getPendingIntent(
-//                                        0,
-//                                        PendingIntent.FLAG_UPDATE_CURRENT
-//                                );
-//                        PendingIntent laterPendingIntent = NotificationActivity.getDismissIntent(RENAME_NODE_NOTIFICATION_ID, this);
-
-//                        NotificationCompat.Action okAction =
-//                                new NotificationCompat.Action.Builder(R.drawable.ic_edit_black_24dp, getString(R.string.ok), resultPendingIntent)
-//                                .build();
-//                        NotificationCompat.Action cancelAction =
-//                                new NotificationCompat.Action.Builder(R.drawable.ic_schedule_black_24dp, getString(R.string.later), laterPendingIntent)
-//                                        .build();
-//                        NotificationBuilder.sendNotificationWithActions(this, getString(R.string.app_name), getString(R.string.pairing_rename_device), resultPendingIntent, RENAME_NODE_NOTIFICATION_ID, okAction, cancelAction);
-
-//                        Intent intent = new Intent(this, HomeActivity.class);
-//                        intent.putExtra("snp_notary_id", strUserSNPNotaryId);
-//                        intent.putExtra("do_rename", true);
-//                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//                        startActivity(intent);
-//                    }
-//                }
-//            }
-//        }
-//    }
-
-//    private void checkConnectionInfo() {
-//        if (null != NodeInfoUtil.getInstance().getDefaultNode()) { return; }
-//        try {
-//            final long paired_node_count = OTWrapper.Paired_Node_Count();
-//            for (int index = 0; index < paired_node_count; index++)
-//            {
-//                String strIndex = Integer.toString(index);
-//                final boolean bSuccessPairing = OTWrapper.Pair_Success(strIndex);
-//                String strUserNymId = OTMeta.getInstance().getNymID();;
-//                if (bSuccessPairing && StringUtil.verify(strUserNymId)) {
-//                    final long lConnectionInfoBtcRpc = Long.valueOf(PeerEnums.ConnectionInfoType.CONNECTIONINFO_BTCRPC_VALUE);
-//                    if (OTWrapper.Node_Request_Connection(strUserNymId, strIndex, lConnectionInfoBtcRpc)) {
-//                        return;
-//                    }
-//                }
-//            } // for
-//        }
-//        catch(Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//}
-
-/*
-
-void Moneychanger::process_peer_requests()
-{
-    int32_t nym_count = opentxs::OT::App().API().Exec().GetNymCount();
-
-    for (int32_t a = 0; a < nym_count; a++)
-    {
-        const std::string str_nym_id = opentxs::OT::App().API().Exec().GetNym_ID(a);
-        if (str_nym_id.empty()) continue; // should never happen
-        process_peer_requests_forNym(opentxs::Identifier{str_nym_id});
-    }
-}
-void Moneychanger::process_peer_replies()
-{
-    int32_t nym_count = opentxs::OT::App().API().Exec().GetNymCount();
-
-    for (int32_t a = 0; a < nym_count; a++)
-    {
-        const std::string str_nym_id = opentxs::OT::App().API().Exec().GetNym_ID(a);
-        if (str_nym_id.empty()) continue; // should never happen
-        process_peer_replies_forNym(opentxs::Identifier{str_nym_id});
-    }
-}
-
-void Moneychanger::process_peer_replies_forNym(const opentxs::Identifier & nymID)
-{
-    const auto& wallet = opentxs::OT::App().Wallet();
-    auto replies = wallet.PeerReplyIncoming(nymID);
-
-    for (const auto& it : replies) {
-        const opentxs::Identifier replyID(it.first);
-        const auto reply = wallet.PeerReply(
-            nymID, replyID, opentxs::StorageBox::INCOMINGPEERREPLY);
-
-        if (!reply) {
-            opentxs::otErr  << __FUNCTION__
-                           << ": Failed to load peer reply " << it.first
-                           << std::endl;
-            continue;
-        }
-
-        const auto& type = reply->type();
-
-        switch (type) {
-            case opentxs::proto::PEERREQUEST_BAILMENT: {
-                opentxs::otErr  << __FUNCTION__
-                               << ": Received bailment reply." << std::endl;
-                process_request_bailment_reply(nymID, *reply);
-            } break;
-            case opentxs::proto::PEERREQUEST_OUTBAILMENT: {
-                opentxs::otErr  << __FUNCTION__
-                               << ": Received outbailment reply." << std::endl;
-                // TODO
-            } break;
-            case opentxs::proto::PEERREQUEST_CONNECTIONINFO: {
-                opentxs::otErr  << __FUNCTION__
-                               << ": Received connection info reply."
-                               << std::endl;
-                process_connection_info_reply(nymID, *reply);
-            } break;
-            case opentxs::proto::PEERREQUEST_STORESECRET: {
-                opentxs::otErr  << __FUNCTION__
-                               << ": Received store secret reply." << std::endl;
-                process_store_secret_reply(nymID, *reply);
-            } break;
-            case opentxs::proto::PEERREQUEST_ERROR:
-            case opentxs::proto::PEERREQUEST_PENDINGBAILMENT:
-            case opentxs::proto::PEERREQUEST_VERIFICATIONOFFER:
-//          case opentxs::proto::PEERREQUEST_FAUCET:
-            default: {
-                opentxs::otErr
-                     << __FUNCTION__
-                    << ": Unhandled reply type: " << std::to_string(type)
-                    << "\n"
-                    << "ID: " << it.first << std::endl;
-                continue;
-            }
-        }
-    }
-}
-
-void Moneychanger::process_peer_requests_forNym(const opentxs::Identifier & nymID)
-{
-    const auto& wallet = opentxs::OT::App().Wallet();
-    auto requests = wallet.PeerRequestIncoming(nymID);
-
-    for (const auto& it : requests) {
-        const opentxs::Identifier requestID(it.first);
-        std::time_t time{};
-        const auto request = wallet.PeerRequest(
-            nymID, requestID, opentxs::StorageBox::INCOMINGPEERREQUEST, time);
-
-        if (!request) {
-            opentxs::otErr  << __FUNCTION__ << ": Failed to load "
-                           << "peer request " << it.first << std::endl;
-            continue;
-        }
-
-        const auto& type = request->type();
-
-        switch (type) {
-            case opentxs::proto::PEERREQUEST_PENDINGBAILMENT: {
-                opentxs::otErr  << __FUNCTION__
-                               << ": Received pending bailment notification."
-                               << std::endl;
-                process_pending_bailment_notification(nymID, *request);
-            } break;
-            case opentxs::proto::PEERREQUEST_ERROR:
-            case opentxs::proto::PEERREQUEST_BAILMENT:
-            case opentxs::proto::PEERREQUEST_OUTBAILMENT:
-            case opentxs::proto::PEERREQUEST_CONNECTIONINFO:
-            case opentxs::proto::PEERREQUEST_STORESECRET:
-            case opentxs::proto::PEERREQUEST_VERIFICATIONOFFER:
-//          case opentxs::proto::PEERREQUEST_FAUCET:
-            default: {
-                opentxs::otErr
-                     << __FUNCTION__
-                    << ": Unhandled request type: " << std::to_string(type)
-                    << "\n"
-                    << "ID: " << it.first << std::endl;
-                continue;
-            }
-        }
-    }
-}
-
-
-
-void Moneychanger::process_pending_bailment_notification(
-    const opentxs::Identifier & nymID,
-    const opentxs::proto::PeerRequest& request)
-{
-    auto& me = opentxs::OT::App().API().OTME();
-    const auto& id = request.id();
-    const auto& server = request.server();
-    const auto& sender = request.initiator();
-    const auto& recipient = request.recipient();
-    const auto& pendingBailment = request.pendingbailment();
-    const auto& unit = pendingBailment.unitid();
-    const auto& bailmentServer = pendingBailment.serverid();
-    const auto& txid = pendingBailment.txid();
-
-    // TODO: verify that bailmentServer and unit are correct.
-
-    opentxs::otErr << __FUNCTION__ << "\n"
-                   << "Server: " << bailmentServer << "\n"
-                   << "Unit: " << unit << "\n"
-                   << "txid: " << txid << std::endl;
-
-    const auto result =
-        me.acknowledge_notice(server, recipient, sender, id, true);
-
-    if (1 != me.VerifyMessageSuccess(result)) {
-        opentxs::otErr  << __FUNCTION__
-                       << ": Failed to acknowledge pending bailment "
-                       << "notification: " << id << std::endl;
-    }
-    else {
-        std::string str_tla = opentxs::OT::App().API().Exec().GetCurrencyTLA(unit);
-
-        QString qstrMessage = QString("%1. %2: %3 (%4)")
-            .arg(tr("FYI: just received (and acknowledged) a notification that your blockchain deposit "
-                    "has been received and is being processed"))
-            .arg(tr("Unit type"))
-            .arg(QString::fromStdString(str_tla))
-            .arg(QString::fromStdString(unit));
-
-        emit appendToLog(qstrMessage);
-    }
-}
-
-
-
-// First I send a bailment request.
-// Then I receive this bailment reply.
-// It contains a deposit address, so I can send an out-of-band litecoin deposit.
-// When the SNP sees this, it sends me a process_pending_bailment_notification which
-// I receive above.
-// I guess that's all I will see until the actual cheque hits my account.
-//
-void Moneychanger::process_request_bailment_reply(
-    const opentxs::Identifier & nymID,
-    const opentxs::proto::PeerReply& reply)
-{
-    const auto& address = reply.bailment().instructions();
-    const opentxs::Identifier replyID(reply.id());
-
-    if (address.empty()) {  // TODO: better address validation.
-        opentxs::otErr  << __FUNCTION__
-                       << ": Invalid deposit address." << std::endl;
-    } else {
-        opentxs::otErr  << __FUNCTION__
-                       << ": Received deposit address " << address << std::endl;
-
-        const auto server = reply.server();
-        const auto issuer_nym = reply.recipient();
-        const auto my_nym = reply.initiator();
-        const auto cookie = reply.cookie();
-
-        const opentxs::Identifier request_id(cookie);
-
-        const auto& wallet = opentxs::OT::App().Wallet();
-
-        std::string unitId;
-        std::time_t time{};
-        const auto request = wallet.PeerRequest(
-            nymID, request_id, opentxs::StorageBox::FINISHEDPEERREQUEST, time);
-
-        if (!request) {
-            opentxs::otErr  << __FUNCTION__ << ": Failed to load "
-                           << "peer request: " << cookie << std::endl;
-        }
-        else {
-            unitId = request->bailment().unitid();
-        }
-        // ------------------------------------------------------
-        DlgInbailment * pDlgInbailment = new DlgInbailment(this,
-            QString::fromStdString(server),
-            QString::fromStdString(issuer_nym),
-            QString::fromStdString(my_nym),
-            QString::fromStdString(unitId),
-            QString::fromStdString(address));
-
-        pDlgInbailment->setAttribute(Qt::WA_DeleteOnClose);
-        pDlgInbailment->show();
-    }
-
-    opentxs::OT::App().Wallet().PeerRequestComplete(nymID, replyID);
-}
-
-
-
-void Moneychanger::process_store_secret_reply(
-    const opentxs::Identifier & nymID,
-    const opentxs::proto::PeerReply& reply)
-{
-    const auto& result = reply.notice().ack();
-    const opentxs::Identifier replyID(reply.id());
-
-    if (result) {
-        opentxs::otErr  << __FUNCTION__
-                       << ": Store secret response indicates success."
-                       << std::endl;
-        // TODO read the backup file and make sure it has the correct contents
-    } else {
-        opentxs::otErr  << __FUNCTION__
-                       << ": Store secret response indicates failure."
-                       << std::endl;
-    }
-
-    opentxs::OT::App().Wallet().PeerRequestComplete(nymID, replyID);
-}
-
-
-
-void Moneychanger::process_connection_info_reply(
-    const opentxs::Identifier & nymID,
-    const opentxs::proto::PeerReply& reply)
-{
-    auto& wallet = opentxs::OT::App().Wallet();
-    const auto& id = reply.id();
-    const opentxs::Identifier replyID(id);
-    const opentxs::Identifier requestID(reply.cookie());
-    const auto& info = reply.connectioninfo();
-    const auto& success = info.success();
-    const auto& url = info.url();
-    const auto& login = info.login();
-    const auto& password = info.password();
-    const auto& key = info.key();
-    std::time_t notUsed{};
-    auto originalRequest = wallet.PeerRequest(
-        nymID, requestID, opentxs::StorageBox::FINISHEDPEERREQUEST, notUsed);
-
-    OT_ASSERT(originalRequest);
-
-    const auto& type = originalRequest->connectioninfo().type();
-
-    if (false == success) {
-        opentxs::otErr  << __FUNCTION__
-                       << ": Connection info response indicates failure."
-                       << std::endl;
-    } else {
-        switch (type) {
-            case opentxs::proto::CONNECTIONINFO_BITCOIN: {
-                opentxs::otErr  << __FUNCTION__
-                               << ": Received successful bitcoin daemon "
-                               << "connection info." << std::endl;
-            } break;
-            case opentxs::proto::CONNECTIONINFO_BTCRPC: {
-                opentxs::otErr  << __FUNCTION__
-                               << ": Received successful btcd rpc connection "
-                               << "info." << std::endl;
-            } break;
-            case opentxs::proto::CONNECTIONINFO_BITMESSAGE: {
-                opentxs::otErr  << __FUNCTION__
-                               << ": Received successful bitmessage daemon "
-                               << "connection info." << std::endl;
-            } break;
-            case opentxs::proto::CONNECTIONINFO_BITMESSAGERPC: {
-                opentxs::otErr  << __FUNCTION__
-                               << ": Received successful bitmessage rpc "
-                               << "connection info." << std::endl;
-            } break;
-            case opentxs::proto::CONNECTIONINFO_SSH: {
-                opentxs::otErr  << __FUNCTION__
-                               << ": Received successful ssh connection info."
-                               << std::endl;
-            } break;
-            case opentxs::proto::CONNECTIONINFO_CJDNS: {
-                opentxs::otErr  << __FUNCTION__
-                               << ": Received successful cjdns daemon "
-                               << "connection info." << std::endl;
-            } break;
-            case opentxs::proto::CONNECTIONINFO_ERROR:
-            default: {
-                opentxs::otErr
-                     << __FUNCTION__
-                    << ": Unhandled request type: " << std::to_string(type)
-                    << "\n"
-                    << "ID: " << id << std::endl;
-            }
-        }
-
-        opentxs::otErr << "URL: " << url << "\n"
-                       << "Login: " << login << "\n"
-                       << "Password: " << password << "\n"
-                       << "Key: " << key << std::endl;
-    }
-
-    opentxs::OT::App().Wallet().PeerRequestComplete(nymID, replyID);
-}
-*/
-
-
 
 /**
  * Constructor & Destructor
@@ -688,6 +260,8 @@ Moneychanger::Moneychanger(QWidget *parent)
         std::chrono::seconds(20),
         [this]()->void{ ot_.API().Sync().Refresh(); },
         (std::chrono::seconds(std::time(nullptr))));
+
+    check_pairing();
 
     //SQLite database
     // This can be moved very easily into a different class
@@ -916,7 +490,28 @@ void Moneychanger::process_notify_bailment(
               << request.pendingbailment().txid().c_str();
 }
 
+void Moneychanger::check_pairing() const
+{
+    if (default_nym_id.isEmpty()) {
 
+        return;
+    }
+
+    const opentxs::Identifier nymID(default_nym_id.toStdString());
+    const opentxs::Identifier demoNymID(std::string(DEMO_SERVER_NYM));
+
+    if (nymID.empty()) {
+
+        return;
+    }
+
+    const auto& pair = ot_.API().Pair();
+    auto paired = pair.IssuerList(nymID, false);
+
+    if (0 == paired.count(demoNymID)) {
+        pair.AddIssuer(nymID, demoNymID, "");
+    }
+}
 
 // RETRIEVE NYM INTERMEDIARY FILES
 // Returns:
@@ -1697,6 +1292,8 @@ void Moneychanger::bootTray()
             const QString qstrNymId = QString::fromStdString(str_id);
 //          mc_nymmanager_dialog(qstrNymId);
             emit newNymAdded(qstrNymId);
+
+            check_pairing();
         }
     }
     // ----------------------------------------------------------------------------
@@ -1825,13 +1422,13 @@ void Moneychanger::SetupMainMenu()
     // --------------------------------------------------------------
     if (hasAccounts())
         SetupPaymentsMenu(mc_systrayMenu);
-    if (hasNyms())
+    if (expertMode() && hasNyms())
         SetupMessagingMenu(mc_systrayMenu);
     // --------------------------------------------------------------
     //mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
     //Passphrase Manager
-//  if (hasNyms())
+    if (expertMode())
     {
         mc_systrayMenu_passphrase_manager = new QAction(mc_systrayIcon_crypto, tr("Secrets"), mc_systrayMenu);
         mc_systrayMenu->addAction(mc_systrayMenu_passphrase_manager);
@@ -1845,13 +1442,13 @@ void Moneychanger::SetupMainMenu()
     //            mc_systrayMenu_aboveBlank->setDisabled(1);
     //            mc_systrayMenu->addAction(mc_systrayMenu_aboveBlank);
     // --------------------------------------------------------------
-    if (hasAccounts())
+    if (expertMode() && hasAccounts())
     {
         SetupExchangeMenu(mc_systrayMenu);
         mc_systrayMenu->addSeparator();
     }
     // --------------------------------------------------------------
-//    if (expertMode())
+//  if (expertMode())
     {
         SetupContractsMenu(mc_systrayMenu);
         mc_systrayMenu->addSeparator();
@@ -2280,7 +1877,7 @@ void Moneychanger::SetupAdvancedMenu(QPointer<QMenu> & parent_menu)
     // --------------------------------------------------------------
     current_menu->addSeparator();
     // --------------------------------------------------------------
-    if (hasNyms())
+    if (bExpertMode_ && hasNyms())
     {
         mc_systrayMenu_smart_contracts = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Smart Contract Editor"), current_menu);
         current_menu->addAction(mc_systrayMenu_smart_contracts);
@@ -2304,11 +1901,22 @@ void Moneychanger::SetupAdvancedMenu(QPointer<QMenu> & parent_menu)
 //        // --------------------------------------------------------------
 //        current_menu->addSeparator();
 //    }
+    // -------------------------------------------------
+    current_menu->addSeparator();
+    // -------------------------------------------------
+    mc_systrayMenu_pair_node = new QAction(mc_systrayIcon_advanced_corporations, tr("Pair Stash Node"), current_menu);
+    current_menu->addAction(mc_systrayMenu_pair_node);
+    connect(mc_systrayMenu_pair_node, SIGNAL(triggered()), this, SLOT(mc_pair_node_slot()));
+    // --------------------------------------------------------------
+    //Separator
+    current_menu->addSeparator();
     // --------------------------------------------------------------
     // Transport
-    mc_systrayMenu_p2p_transport = new QAction(mc_systrayIcon_advanced_transport, tr("P2P Transport"), current_menu);
-    current_menu->addAction(mc_systrayMenu_p2p_transport);
-    connect(mc_systrayMenu_p2p_transport, SIGNAL(triggered()), this, SLOT(mc_transport_slot()));
+    if (bExpertMode_) {
+        mc_systrayMenu_p2p_transport = new QAction(mc_systrayIcon_advanced_transport, tr("P2P Transport"), current_menu);
+        current_menu->addAction(mc_systrayMenu_p2p_transport);
+        connect(mc_systrayMenu_p2p_transport, SIGNAL(triggered()), this, SLOT(mc_transport_slot()));
+    }
     // --------------------------------------------------------------
     // Error Log
     mc_systrayMenu_error_log = new QAction(mc_systrayIcon_overview, tr("Error Log"), current_menu);
@@ -2342,7 +1950,7 @@ void Moneychanger::SetupExperimentalMenu(QPointer<QMenu> & parent_menu)
     connect(mc_systrayMenu_pair_node, SIGNAL(triggered()), this, SLOT(mc_pair_node_slot()));
     // --------------------------------------------------------------
     //Separator
-    current_menu->addSeparator();
+//    current_menu->addSeparator();
     // --------------------------------------------------------------
     // Corporations submenu
 //    mc_systrayMenu_company_create = new QMenu(tr("Create"), 0);
@@ -2354,49 +1962,49 @@ void Moneychanger::SetupExperimentalMenu(QPointer<QMenu> & parent_menu)
 //    connect(mc_systrayMenu_company_create_insurance, SIGNAL(triggered()), this, SLOT(mc_createinsurancecompany_slot()));
     // --------------------------------------------------------------
     // Bazaar
-    mc_systrayMenu_bazaar = new QMenu(tr("Bazaar"), current_menu);
-    current_menu->addMenu(mc_systrayMenu_bazaar);
-
-    // Bazaar actions
-    mc_systrayMenu_bazaar_search = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Search Listings"), mc_systrayMenu_bazaar);
-    mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_search);
-//  connect(mc_systrayMenu_bazaar_search, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
-
-    mc_systrayMenu_bazaar_post = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Post an Ad"), mc_systrayMenu_bazaar);
-    mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_post);
-//  connect(mc_systrayMenu_bazaar_post, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
-
-    mc_systrayMenu_bazaar_orders = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Orders"), mc_systrayMenu_bazaar);
-    mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_orders);
-//  connect(mc_systrayMenu_bazaar_orders, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
+//    mc_systrayMenu_bazaar = new QMenu(tr("Bazaar"), current_menu);
+//    current_menu->addMenu(mc_systrayMenu_bazaar);
+//
+//    // Bazaar actions
+//    mc_systrayMenu_bazaar_search = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Search Listings"), mc_systrayMenu_bazaar);
+//    mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_search);
+////  connect(mc_systrayMenu_bazaar_search, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
+//
+//    mc_systrayMenu_bazaar_post = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Post an Ad"), mc_systrayMenu_bazaar);
+//    mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_post);
+////  connect(mc_systrayMenu_bazaar_post, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
+//
+//    mc_systrayMenu_bazaar_orders = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Orders"), mc_systrayMenu_bazaar);
+//    mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_orders);
+////  connect(mc_systrayMenu_bazaar_orders, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
     // -------------------------------------------------
-    current_menu->addSeparator();
+//    current_menu->addSeparator();
     // -------------------------------------------------
     // Bitcoin
-    mc_systrayMenu_bitcoin = new QMenu(tr("Bitcoin"), current_menu);
-    mc_systrayMenu_bitcoin->setIcon(mc_systrayIcon_bitcoin);
-
-    current_menu->addMenu(mc_systrayMenu_bitcoin);
-
-    mc_systrayMenu_bitcoin_test = new QAction(tr("Test"), mc_systrayMenu_bitcoin);
-    mc_systrayMenu_bitcoin_connect = new QAction(tr("Connect to wallet"), mc_systrayMenu_bitcoin);
-    mc_systrayMenu_bitcoin_pools = new QAction(tr("Pools"), mc_systrayMenu_bitcoin);
-    mc_systrayMenu_bitcoin_transactions = new QAction(tr("Transactions"), mc_systrayMenu_bitcoin);
-    mc_systrayMenu_bitcoin_send = new QAction(tr("Send"), mc_systrayMenu_bitcoin);
-    mc_systrayMenu_bitcoin_receive = new QAction(tr("Receive"), mc_systrayMenu_bitcoin);
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_connect);
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_send);
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_receive);
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_transactions);
-    mc_systrayMenu_bitcoin->addSeparator();
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_test);
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_pools);
-    connect(mc_systrayMenu_bitcoin_test, SIGNAL(triggered()), this, SLOT(mc_bitcoin_slot()));
-    connect(mc_systrayMenu_bitcoin_connect, SIGNAL(triggered()), this, SLOT(mc_bitcoin_connect_slot()));
-    connect(mc_systrayMenu_bitcoin_pools, SIGNAL(triggered()), this, SLOT(mc_bitcoin_pools_slot()));
-    connect(mc_systrayMenu_bitcoin_transactions, SIGNAL(triggered()), this, SLOT(mc_bitcoin_transactions_slot()));
-    connect(mc_systrayMenu_bitcoin_send, SIGNAL(triggered()), this, SLOT(mc_bitcoin_send_slot()));
-    connect(mc_systrayMenu_bitcoin_receive, SIGNAL(triggered()), this, SLOT(mc_bitcoin_receive_slot()));
+//    mc_systrayMenu_bitcoin = new QMenu(tr("Bitcoin"), current_menu);
+//    mc_systrayMenu_bitcoin->setIcon(mc_systrayIcon_bitcoin);
+//
+//    current_menu->addMenu(mc_systrayMenu_bitcoin);
+//
+//    mc_systrayMenu_bitcoin_test = new QAction(tr("Test"), mc_systrayMenu_bitcoin);
+//    mc_systrayMenu_bitcoin_connect = new QAction(tr("Connect to wallet"), mc_systrayMenu_bitcoin);
+//    mc_systrayMenu_bitcoin_pools = new QAction(tr("Pools"), mc_systrayMenu_bitcoin);
+//    mc_systrayMenu_bitcoin_transactions = new QAction(tr("Transactions"), mc_systrayMenu_bitcoin);
+//    mc_systrayMenu_bitcoin_send = new QAction(tr("Send"), mc_systrayMenu_bitcoin);
+//    mc_systrayMenu_bitcoin_receive = new QAction(tr("Receive"), mc_systrayMenu_bitcoin);
+//    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_connect);
+//    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_send);
+//    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_receive);
+//    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_transactions);
+//    mc_systrayMenu_bitcoin->addSeparator();
+//    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_test);
+//    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_pools);
+//    connect(mc_systrayMenu_bitcoin_test, SIGNAL(triggered()), this, SLOT(mc_bitcoin_slot()));
+//    connect(mc_systrayMenu_bitcoin_connect, SIGNAL(triggered()), this, SLOT(mc_bitcoin_connect_slot()));
+//    connect(mc_systrayMenu_bitcoin_pools, SIGNAL(triggered()), this, SLOT(mc_bitcoin_pools_slot()));
+//    connect(mc_systrayMenu_bitcoin_transactions, SIGNAL(triggered()), this, SLOT(mc_bitcoin_transactions_slot()));
+//    connect(mc_systrayMenu_bitcoin_send, SIGNAL(triggered()), this, SLOT(mc_bitcoin_send_slot()));
+//    connect(mc_systrayMenu_bitcoin_receive, SIGNAL(triggered()), this, SLOT(mc_bitcoin_receive_slot()));
     // --------------------------------------------------------------
     //Separator
 //    current_menu->addSeparator();
@@ -2744,6 +2352,24 @@ void Moneychanger::onExpertModeUpdated(bool bExpertMode)
     bExpertMode_ = bExpertMode;
     // --------------------------------
     SetupMainMenu();
+    // --------------------------------
+    bool bActivityWindowVisible = false;
+
+    if (activity_window)
+    {
+        bActivityWindowVisible = activity_window->isVisible();
+        // -------------------------------------
+        activity_window->setParent(NULL);
+        activity_window->disconnect();
+        activity_window->setAttribute(Qt::WA_DeleteOnClose, true);
+        activity_window->close();
+    }
+
+    activity_window = nullptr;
+
+    if (bActivityWindowVisible) {
+        mc_activity_slot();
+    }
     // --------------------------------
     bool bNymsWindowVisible = false;
     QString nym_id("");
@@ -5062,8 +4688,9 @@ void Moneychanger::processImportRecord(
         // -----------------------------------
         if (recordmt.IsMail() || recordmt.IsSpecialMail())
         {
-            if (AddMailToMsgArchive(recordmt, mapOfSetsOfAlreadyImportedMsgs, mapOfConversationsByNym, setNewlyAddedNymThreadAndItem))
+            if (AddMailToMsgArchive(recordmt, mapOfSetsOfAlreadyImportedMsgs, mapOfConversationsByNym, setNewlyAddedNymThreadAndItem)) {
                 ;
+            }
                 //bShouldDeleteRecord = true;  // Disabling this temporarily to see if it fixes any related startup/shutdown issues.
         }
         // -----------------------------------
