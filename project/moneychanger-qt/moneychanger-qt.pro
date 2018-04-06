@@ -14,11 +14,11 @@ TEMPLATE    = app
 CONFIG     += precompile_header
 win32:CONFIG += console
 
-#TARGET      = moneychanger-qt
 CONFIG(debug, debug|release) {
     TARGET = moneychanger-qtd
 } else {
-    TARGET = moneychanger-qt
+    TARGET = stash-toolkit
+#    TARGET = moneychanger-qt
 }VERSION     = 0.0.1
 
 QT         += core gui sql network widgets serialport

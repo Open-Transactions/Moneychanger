@@ -1825,13 +1825,13 @@ void Moneychanger::SetupMainMenu()
     // --------------------------------------------------------------
     if (hasAccounts())
         SetupPaymentsMenu(mc_systrayMenu);
-    if (hasNyms())
+    if (expertMode() && hasNyms())
         SetupMessagingMenu(mc_systrayMenu);
     // --------------------------------------------------------------
     //mc_systrayMenu->addSeparator();
     // --------------------------------------------------------------
     //Passphrase Manager
-//  if (hasNyms())
+    if (expertMode())
     {
         mc_systrayMenu_passphrase_manager = new QAction(mc_systrayIcon_crypto, tr("Secrets"), mc_systrayMenu);
         mc_systrayMenu->addAction(mc_systrayMenu_passphrase_manager);
@@ -1845,13 +1845,13 @@ void Moneychanger::SetupMainMenu()
     //            mc_systrayMenu_aboveBlank->setDisabled(1);
     //            mc_systrayMenu->addAction(mc_systrayMenu_aboveBlank);
     // --------------------------------------------------------------
-    if (hasAccounts())
+    if (expertMode() && hasAccounts())
     {
         SetupExchangeMenu(mc_systrayMenu);
         mc_systrayMenu->addSeparator();
     }
     // --------------------------------------------------------------
-//    if (expertMode())
+//  if (expertMode())
     {
         SetupContractsMenu(mc_systrayMenu);
         mc_systrayMenu->addSeparator();
@@ -2280,7 +2280,7 @@ void Moneychanger::SetupAdvancedMenu(QPointer<QMenu> & parent_menu)
     // --------------------------------------------------------------
     current_menu->addSeparator();
     // --------------------------------------------------------------
-    if (hasNyms())
+    if (bExpertMode_ && hasNyms())
     {
         mc_systrayMenu_smart_contracts = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Smart Contract Editor"), current_menu);
         current_menu->addAction(mc_systrayMenu_smart_contracts);
@@ -2304,11 +2304,22 @@ void Moneychanger::SetupAdvancedMenu(QPointer<QMenu> & parent_menu)
 //        // --------------------------------------------------------------
 //        current_menu->addSeparator();
 //    }
+    // -------------------------------------------------
+    current_menu->addSeparator();
+    // -------------------------------------------------
+    mc_systrayMenu_pair_node = new QAction(mc_systrayIcon_advanced_corporations, tr("Pair Stash Node"), current_menu);
+    current_menu->addAction(mc_systrayMenu_pair_node);
+    connect(mc_systrayMenu_pair_node, SIGNAL(triggered()), this, SLOT(mc_pair_node_slot()));
+    // --------------------------------------------------------------
+    //Separator
+    current_menu->addSeparator();
     // --------------------------------------------------------------
     // Transport
-    mc_systrayMenu_p2p_transport = new QAction(mc_systrayIcon_advanced_transport, tr("P2P Transport"), current_menu);
-    current_menu->addAction(mc_systrayMenu_p2p_transport);
-    connect(mc_systrayMenu_p2p_transport, SIGNAL(triggered()), this, SLOT(mc_transport_slot()));
+    if (bExpertMode_) {
+        mc_systrayMenu_p2p_transport = new QAction(mc_systrayIcon_advanced_transport, tr("P2P Transport"), current_menu);
+        current_menu->addAction(mc_systrayMenu_p2p_transport);
+        connect(mc_systrayMenu_p2p_transport, SIGNAL(triggered()), this, SLOT(mc_transport_slot()));
+    }
     // --------------------------------------------------------------
     // Error Log
     mc_systrayMenu_error_log = new QAction(mc_systrayIcon_overview, tr("Error Log"), current_menu);
@@ -2342,7 +2353,7 @@ void Moneychanger::SetupExperimentalMenu(QPointer<QMenu> & parent_menu)
     connect(mc_systrayMenu_pair_node, SIGNAL(triggered()), this, SLOT(mc_pair_node_slot()));
     // --------------------------------------------------------------
     //Separator
-    current_menu->addSeparator();
+//    current_menu->addSeparator();
     // --------------------------------------------------------------
     // Corporations submenu
 //    mc_systrayMenu_company_create = new QMenu(tr("Create"), 0);
@@ -2354,49 +2365,49 @@ void Moneychanger::SetupExperimentalMenu(QPointer<QMenu> & parent_menu)
 //    connect(mc_systrayMenu_company_create_insurance, SIGNAL(triggered()), this, SLOT(mc_createinsurancecompany_slot()));
     // --------------------------------------------------------------
     // Bazaar
-    mc_systrayMenu_bazaar = new QMenu(tr("Bazaar"), current_menu);
-    current_menu->addMenu(mc_systrayMenu_bazaar);
-
-    // Bazaar actions
-    mc_systrayMenu_bazaar_search = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Search Listings"), mc_systrayMenu_bazaar);
-    mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_search);
-//  connect(mc_systrayMenu_bazaar_search, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
-
-    mc_systrayMenu_bazaar_post = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Post an Ad"), mc_systrayMenu_bazaar);
-    mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_post);
-//  connect(mc_systrayMenu_bazaar_post, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
-
-    mc_systrayMenu_bazaar_orders = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Orders"), mc_systrayMenu_bazaar);
-    mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_orders);
-//  connect(mc_systrayMenu_bazaar_orders, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
+//    mc_systrayMenu_bazaar = new QMenu(tr("Bazaar"), current_menu);
+//    current_menu->addMenu(mc_systrayMenu_bazaar);
+//
+//    // Bazaar actions
+//    mc_systrayMenu_bazaar_search = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Search Listings"), mc_systrayMenu_bazaar);
+//    mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_search);
+////  connect(mc_systrayMenu_bazaar_search, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
+//
+//    mc_systrayMenu_bazaar_post = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Post an Ad"), mc_systrayMenu_bazaar);
+//    mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_post);
+////  connect(mc_systrayMenu_bazaar_post, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
+//
+//    mc_systrayMenu_bazaar_orders = new QAction(mc_systrayIcon_advanced_smartcontracts, tr("Orders"), mc_systrayMenu_bazaar);
+//    mc_systrayMenu_bazaar->addAction(mc_systrayMenu_bazaar_orders);
+////  connect(mc_systrayMenu_bazaar_orders, SIGNAL(triggered()), this, SLOT(mc_bazaar_search_slot()));
     // -------------------------------------------------
-    current_menu->addSeparator();
+//    current_menu->addSeparator();
     // -------------------------------------------------
     // Bitcoin
-    mc_systrayMenu_bitcoin = new QMenu(tr("Bitcoin"), current_menu);
-    mc_systrayMenu_bitcoin->setIcon(mc_systrayIcon_bitcoin);
-
-    current_menu->addMenu(mc_systrayMenu_bitcoin);
-
-    mc_systrayMenu_bitcoin_test = new QAction(tr("Test"), mc_systrayMenu_bitcoin);
-    mc_systrayMenu_bitcoin_connect = new QAction(tr("Connect to wallet"), mc_systrayMenu_bitcoin);
-    mc_systrayMenu_bitcoin_pools = new QAction(tr("Pools"), mc_systrayMenu_bitcoin);
-    mc_systrayMenu_bitcoin_transactions = new QAction(tr("Transactions"), mc_systrayMenu_bitcoin);
-    mc_systrayMenu_bitcoin_send = new QAction(tr("Send"), mc_systrayMenu_bitcoin);
-    mc_systrayMenu_bitcoin_receive = new QAction(tr("Receive"), mc_systrayMenu_bitcoin);
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_connect);
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_send);
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_receive);
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_transactions);
-    mc_systrayMenu_bitcoin->addSeparator();
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_test);
-    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_pools);
-    connect(mc_systrayMenu_bitcoin_test, SIGNAL(triggered()), this, SLOT(mc_bitcoin_slot()));
-    connect(mc_systrayMenu_bitcoin_connect, SIGNAL(triggered()), this, SLOT(mc_bitcoin_connect_slot()));
-    connect(mc_systrayMenu_bitcoin_pools, SIGNAL(triggered()), this, SLOT(mc_bitcoin_pools_slot()));
-    connect(mc_systrayMenu_bitcoin_transactions, SIGNAL(triggered()), this, SLOT(mc_bitcoin_transactions_slot()));
-    connect(mc_systrayMenu_bitcoin_send, SIGNAL(triggered()), this, SLOT(mc_bitcoin_send_slot()));
-    connect(mc_systrayMenu_bitcoin_receive, SIGNAL(triggered()), this, SLOT(mc_bitcoin_receive_slot()));
+//    mc_systrayMenu_bitcoin = new QMenu(tr("Bitcoin"), current_menu);
+//    mc_systrayMenu_bitcoin->setIcon(mc_systrayIcon_bitcoin);
+//
+//    current_menu->addMenu(mc_systrayMenu_bitcoin);
+//
+//    mc_systrayMenu_bitcoin_test = new QAction(tr("Test"), mc_systrayMenu_bitcoin);
+//    mc_systrayMenu_bitcoin_connect = new QAction(tr("Connect to wallet"), mc_systrayMenu_bitcoin);
+//    mc_systrayMenu_bitcoin_pools = new QAction(tr("Pools"), mc_systrayMenu_bitcoin);
+//    mc_systrayMenu_bitcoin_transactions = new QAction(tr("Transactions"), mc_systrayMenu_bitcoin);
+//    mc_systrayMenu_bitcoin_send = new QAction(tr("Send"), mc_systrayMenu_bitcoin);
+//    mc_systrayMenu_bitcoin_receive = new QAction(tr("Receive"), mc_systrayMenu_bitcoin);
+//    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_connect);
+//    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_send);
+//    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_receive);
+//    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_transactions);
+//    mc_systrayMenu_bitcoin->addSeparator();
+//    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_test);
+//    mc_systrayMenu_bitcoin->addAction(mc_systrayMenu_bitcoin_pools);
+//    connect(mc_systrayMenu_bitcoin_test, SIGNAL(triggered()), this, SLOT(mc_bitcoin_slot()));
+//    connect(mc_systrayMenu_bitcoin_connect, SIGNAL(triggered()), this, SLOT(mc_bitcoin_connect_slot()));
+//    connect(mc_systrayMenu_bitcoin_pools, SIGNAL(triggered()), this, SLOT(mc_bitcoin_pools_slot()));
+//    connect(mc_systrayMenu_bitcoin_transactions, SIGNAL(triggered()), this, SLOT(mc_bitcoin_transactions_slot()));
+//    connect(mc_systrayMenu_bitcoin_send, SIGNAL(triggered()), this, SLOT(mc_bitcoin_send_slot()));
+//    connect(mc_systrayMenu_bitcoin_receive, SIGNAL(triggered()), this, SLOT(mc_bitcoin_receive_slot()));
     // --------------------------------------------------------------
     //Separator
 //    current_menu->addSeparator();
@@ -2744,6 +2755,24 @@ void Moneychanger::onExpertModeUpdated(bool bExpertMode)
     bExpertMode_ = bExpertMode;
     // --------------------------------
     SetupMainMenu();
+    // --------------------------------
+    bool bActivityWindowVisible = false;
+
+    if (activity_window)
+    {
+        bActivityWindowVisible = activity_window->isVisible();
+        // -------------------------------------
+        activity_window->setParent(NULL);
+        activity_window->disconnect();
+        activity_window->setAttribute(Qt::WA_DeleteOnClose, true);
+        activity_window->close();
+    }
+
+    activity_window = nullptr;
+
+    if (bActivityWindowVisible) {
+        mc_activity_slot();
+    }
     // --------------------------------
     bool bNymsWindowVisible = false;
     QString nym_id("");
