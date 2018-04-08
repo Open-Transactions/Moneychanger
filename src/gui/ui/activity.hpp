@@ -159,8 +159,6 @@ protected:
 
     void PopulateConversationsForNym(QListWidget * pListWidgetConversations, int & nIndex, const std::string & str_my_nym_id);
 
-    bool AddItemToPending(int nAtIndex, const QString & qstrContents, bool bIncoming=false, bool bAddedByHand=true);
-
     int PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers=nullptr);
     bool PairingStarted(const opentxs::Identifier & nymId, const opentxs::Identifier & issuerNymId);
 
@@ -251,9 +249,14 @@ private slots:
     void on_toolButtonDelete_clicked();
     void on_toolButtonRefresh_clicked();
 
-    void on_treeWidgetAccounts_customContextMenuRequested(const QPoint &pos);
+    void on_toolButtonAddContact_clicked();
+    void on_toolButtonPayContact_clicked();
+    void on_toolButtonMsgContact_clicked();
+    void on_toolButtonInvoiceContact_clicked();
+    void on_toolButtonImportCash_clicked();
+    void on_toolButtonSettings_clicked();
 
-    void on_checkBoxPending_toggled(bool checked);
+    void on_treeWidgetAccounts_customContextMenuRequested(const QPoint &pos);
 
     void on_tabWidgetMain_currentChanged(int index);
 

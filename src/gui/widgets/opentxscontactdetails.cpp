@@ -337,7 +337,7 @@ void MTOpentxsContactDetails::DeleteButtonClicked()
 void MTOpentxsContactDetails::AddButtonClicked()
 {
     MTDlgNewContact theNewContact(this);
-    theNewContact.setWindowTitle(tr("Create New Contact"));
+    theNewContact.setWindowTitle(tr("Add Contact"));
     // -----------------------------------------------
     if (theNewContact.exec() != QDialog::Accepted)
         return;
