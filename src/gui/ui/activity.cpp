@@ -9,6 +9,7 @@
 #include <gui/ui/dlgexportedtopass.hpp>
 #include <gui/ui/dlgexportedcash.hpp>
 #include <gui/ui/dlginbailment.hpp>
+#include <gui/ui/dlgnewcontact.hpp>
 #include <gui/ui/dlgoutbailment.hpp>
 #include <gui/ui/getstringdialog.hpp>
 
@@ -2440,9 +2441,6 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         ui->horizontalLayout_6->setAlignment(ui->toolButtonMyIdentity,        Qt::AlignLeft);
         ui->horizontalLayout_4->setAlignment(ui->toolButtonMyIdentity2,       Qt::AlignLeft);
 
-        ui->checkBoxPending->setVisible(false);
-        ui->listWidgetPending->setVisible(false);
-
         setup_tableview_conversation(ui->tableViewConversation);
 
         ui->treeWidgetAccounts->header()->close();
@@ -2547,7 +2545,7 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
     if (Moneychanger::It()->expertMode()) ui->tabWidgetMain->addTab(pTab4_, tr("Exchange")); // Exchange
     if (Moneychanger::It()->expertMode()) ui->tabWidgetMain->addTab(pTab5_, tr("Tools")); // Tools
 
-    ui->tabWidgetMain->addTab(pTab6_, tr("Settings"));
+//    ui->tabWidgetMain->addTab(pTab6_, tr("Settings"));
 
     ui->tabWidgetMain->blockSignals(false);
     // -------------------------------------------
@@ -2780,29 +2778,9 @@ void Activity::on_pushButtonSendMsg_clicked()
                                        (opentxs::ThreadStatus::RUNNING == status);
                 if (bAddToGUI) {
                     const bool bUseGrayText = (opentxs::ThreadStatus::FINISHED_SUCCESS != status);
-
-                    // NOTE: Here is where I could add a gray outgoing item when sending.
-                    ui->checkBoxPending->setVisible(true);
-                    ui->checkBoxPending->setChecked(true);
-                    ui->listWidgetPending->setVisible(true);
-
-                    const int nNewIndex = ui->listWidgetPending->count();
-                    // We could "send, then refresh", but instead of refreshing the entire
-                    // thread, I'm just adding the item by hand at the end of the list
-                    // with gray text. (Or black if it's already finished sending by this
-                    // point, which probably will never happen).
-                    // Beyond that, I'm now sticking it in a separate control so it doesn't
-                    // disappear when the top one gets re-populated.
-                    //
-                    AddItemToPending(nNewIndex, QString("%1: %2").arg(bUseGrayText ? tr("Queued") : tr("Sent")).arg(qstrPlainText), false, bUseGrayText);
                 }
                 else {
-                    ui->checkBoxPending->setVisible(true);
-                    ui->checkBoxPending->setChecked(true);
-                    ui->listWidgetPending->setVisible(true);
 
-                    const int nNewIndex = ui->listWidgetPending->count();
-                    AddItemToPending(nNewIndex, QString("%1: %2").arg(tr("Permanent failure")).arg(qstrPlainText), false, true);
                 }
             }
         }
@@ -2810,48 +2788,6 @@ void Activity::on_pushButtonSendMsg_clicked()
 
     ui->plainTextEditMsg->setPlainText("");
 }
-
-
-void Activity::on_checkBoxPending_toggled(bool checked)
-{
-    if (checked)
-    {
-        ui->listWidgetPending->setVisible(true);
-    }
-    else
-    {
-        ui->listWidgetPending->setVisible(false);
-    }
-}
-
-bool   Activity::AddItemToPending(int nAtIndex, const QString & qstrContents, bool bIncoming, bool bAddedByHand)
-//bool           AddItemToPending(int nAtIndex, const QString & qstrContents, bool bIncoming=false, bool bAddedByHand=true);
-{
-    if (nullptr == ui->listWidgetPending) {
-        return false;
-    }
-
-    QListWidgetItem * pItem = nullptr;
-
-    ui->listWidgetPending->addItem(qstrContents);
-    pItem = ui->listWidgetPending->item(nAtIndex);
-
-    if (bIncoming)
-    {
-        pItem->setTextColor(Qt::white);
-        pItem->setBackgroundColor(Qt::gray);
-        pItem->setTextAlignment(Qt::AlignLeft);
-    }
-    else
-    {
-        const auto the_color = bAddedByHand ? Qt::gray : Qt::black;
-        pItem->setTextColor(the_color);
-        pItem->setBackgroundColor(Qt::white);
-        pItem->setTextAlignment(Qt::AlignRight);
-    }
-    return true;
-}
-
 
 bool Activity::eventFilter(QObject *obj, QEvent *event)
 {
@@ -6264,6 +6200,215 @@ Activity::Activity(QWidget *parent) :
     connect(this, SIGNAL(sig_on_toolButton_sign_clicked()), Moneychanger::It(), SLOT(mc_crypto_sign_slot()));
     connect(this, SIGNAL(sig_on_toolButton_decrypt_clicked()), Moneychanger::It(), SLOT(mc_crypto_decrypt_slot()));
     connect(this, SIGNAL(sig_on_toolButton_liveAgreements_clicked()), Moneychanger::It(), SLOT(mc_agreements_slot()));
+    // --------------------------------------------------
+//    connect(ui->toolButtonAddContact, SIGNAL(clicked()), this, SLOT(on_toolButtonAddContact_clicked()));
+//    connect(ui->toolButtonPayContact, SIGNAL(clicked()), this, SLOT(on_toolButtonPayContact_clicked()));
+//    connect(ui->toolButtonMsgContact, SIGNAL(clicked()), this, SLOT(on_toolButtonMsgContact_clicked()));
+//    connect(ui->toolButtonInvoiceContact, SIGNAL(clicked()), this, SLOT(on_toolButtonInvoiceContact_clicked()));
+//    connect(ui->toolButtonImportCash, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_import_slot()));
+}
+
+void Activity::on_toolButtonAddContact_clicked()
+{
+    qDebug() << "on_toolButtonAddContact_clicked was successfully called.";
+
+    MTDlgNewContact theNewContact(this);
+    theNewContact.setWindowTitle(tr("Add Contact"));
+    // -----------------------------------------------
+    if (theNewContact.exec() != QDialog::Accepted)
+        return;
+    // -----------------------------------------------
+    QString     rawId  = theNewContact.GetId();
+    std::string raw_id = rawId.toStdString();
+    std::string str_nym_id = raw_id;
+    std::string payment_code;
+
+    int nContactId{0};
+
+    QString qstrNewContactLabel;
+    QString nymID(rawId);
+    //QString nymID = theNewContact.GetId();
+
+    if (nymID.isEmpty())
+        return;
+    // --------------------------------------------------------
+    // Might be a Payment Code.
+    if (!opentxs::OT::App().API().Exec().IsValidID(raw_id))
+    {
+        nymID = "";
+        str_nym_id = "";
+
+        const std::string str_temp = opentxs::OT::App().API().Exec().NymIDFromPaymentCode(raw_id);
+
+        if (!str_temp.empty())
+        {
+            payment_code = raw_id;
+            str_nym_id = str_temp;
+            nymID = QString::fromStdString(str_nym_id);
+        }
+    }
+    // --------------------------------------------------------
+    if (!opentxs::OT::App().API().Exec().IsValidID(str_nym_id))
+    {
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+                             tr("Sorry, that is not a valid Paycode or Nym ID."));
+        return;
+    }
+    // Below this point we know we've got a valid Opentxs NymId for the Contact
+    // we're adding. (Though a contact may already exist, we'll find out next...)
+    // --------------------------------------------------------
+    QString qstrContactId;
+    const opentxs::Identifier existingContactId{opentxs::OT::App().Contact().ContactID(opentxs::Identifier{str_nym_id})};
+    const bool bPreexistingOpentxsContact{!existingContactId.IsEmpty()};
+    bool bCreatedOpentxsContactJustNow{false};
+
+    if (bPreexistingOpentxsContact) // It already exists.
+    {
+        const opentxs::String strExistingContact(existingContactId);
+        qstrContactId = QString::fromStdString(std::string(strExistingContact.Get()));
+    }
+    else
+        //if (existingContactId.IsEmpty()) so it definitely doesn't exist yet in opentxs...
+    { // Let's create one.
+        MTGetStringDialog nameDlg(this, tr("Enter a display label for the new contact"));
+        if (QDialog::Accepted != nameDlg.exec())
+            return;
+        qstrNewContactLabel = nameDlg.GetOutputString();
+        // --------------------------------------
+        qstrContactId = MTContactHandler::getInstance()->GetOrCreateOpentxsContactBasedOnNym(qstrNewContactLabel, nymID, QString::fromStdString(payment_code));
+        bCreatedOpentxsContactJustNow = !qstrContactId.isEmpty();
+    }
+    // --------------------------------------------------------
+    const bool bHaveAValidOpentxsContact = opentxs::OT::App().API().Exec().IsValidID(qstrContactId.toStdString());
+    if (      !bHaveAValidOpentxsContact)
+    {
+        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+                             tr("Unable to get or create opentxs contact based on provided id: %1").arg(rawId));
+        return;
+    }
+    // Below this point, we know for a fact that an Opentxs Contact now exists for
+    // the provided NymId or PaymentCode. Next, let's make sure we've mirrored that
+    // reality in our local Contacts database (the old style) so all the old dialogs
+    // continue to work until we can switch them all over.
+    // --------------------------------------------------------
+    const int nExistingContactId = MTContactHandler::getInstance()->FindContactIDByNymID(nymID);
+    const bool bPreexistingMnychrContact = (nExistingContactId > 0);
+
+    if (bPreexistingMnychrContact)
+    {
+        nContactId = nExistingContactId;
+
+        if (bCreatedOpentxsContactJustNow) {
+//             We JUST NOW created the Opentxs contact, but the old-style
+//             Moneychanger contact already existed. But since we are currently in the
+//             new-style "Opentxs Contacts" dialog part of the code, we should therefore
+//             still insert the entry into our list in the GUI on this dialog. (Since we
+//             really did just create it, as far as this dialog is concerned).
+//
+//            m_pOwner->m_map.insert(qstrContactId, qstrNewContactLabel);
+//            m_pOwner->SetPreSelected(qstrContactId);
+//            emit RefreshRecordsAndUpdateMenu();
+        }
+        else if (bPreexistingOpentxsContact) { // This block means the old-style Moneychanger Contact already existed, AND the new-style Opentxs Contact already existed as well!
+            QString contactName = MTContactHandler::getInstance()->GetContactName(nExistingContactId);
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+                                 tr("Contact '%1' already exists with NymID: %2").arg(contactName).arg(nymID));
+//            // Since it already exists, we'll select it in the GUI, so the user can see what we're
+//            // talking about when we tell him that it already exists.
+//            m_pOwner->SetPreSelected(qstrContactId);
+//            emit RefreshRecordsAndUpdateMenu();
+        }
+        else {
+            // This block means the old-style Moneychanger Contact already existed, and the
+            // new-style Opentxs Contact did NOT already exist, but then we failed trying to
+            // create that.
+            QString contactName = MTContactHandler::getInstance()->GetContactName(nExistingContactId);
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), // Should never happen.
+                                 tr("Old-style contact '%1' already exists with NymID: %2. "
+                                    "However, failed creating a new corresponding Opentxs Contact. (Should never happen).")
+                                 .arg(contactName).arg(nymID));
+        }
+        return;
+    }
+    else // bHaveAValidOpentxsContact && !bPreexistingMnychrContact
+    {
+        // In this block, the old-style Moneychanger Contact does NOT already exist.
+        // But we DO know (for a fact) that we have a valid Opentxs Contact.
+        //
+        // Therefore we need to create the old-style one.
+        // --------------------------------------
+        if (qstrNewContactLabel.isEmpty()) {
+            MTGetStringDialog nameDlg(this, tr("Enter a display label for the new contact"));
+            if (QDialog::Accepted != nameDlg.exec())
+                return;
+            qstrNewContactLabel = nameDlg.GetOutputString();
+        }
+        // --------------------------------------
+        const int nNewContactId  = MTContactHandler::getInstance()->CreateContactBasedOnNym(nymID);
+        if (      nNewContactId <= 0)
+        {
+            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+                                 tr("Failed trying to create old-style contact for NymID: %1, "
+                                    "even though the new-style Opentxs Contact exists (%2).").arg(nymID).arg(qstrContactId));
+//            m_pOwner->SetPreSelected(qstrContactId);
+//            emit RefreshRecordsAndUpdateMenu();
+            return;
+        }
+        else {
+            nContactId = nNewContactId;
+            MTContactHandler::getInstance()->SetContactName(nNewContactId, qstrNewContactLabel);
+        }
+        // Below this point, we know that the old-style Contact exists as nContactId,
+        // and we know that the new-style Opentxs Contact exists as qstrContactId.
+        // We also know that at least some of that was created, since we would have
+        // already returned by now if both had already existed. Therefore, success!
+        // -------------------------------------------------------
+//        // Now let's add this contact to the Map, and refresh the dialog,
+//        // and then set the new contact as the current one.
+//        //
+//        m_pOwner->m_map.insert(qstrContactId, qstrNewContactLabel);
+//        m_pOwner->SetPreSelected(qstrContactId);
+//        emit RefreshRecordsAndUpdateMenu();
+    }
+}
+
+void Activity::on_toolButtonPayContact_clicked()
+{
+    qDebug() << "on_toolButtonPayContact_clicked was successfully called.";
+
+    const QString qstrAccountId, qstrContactId;
+    emit payFromAccountToContact(qstrAccountId, qstrContactId);
+}
+
+void Activity::on_toolButtonMsgContact_clicked()
+{
+    qDebug() << "on_toolButtonMsgContact_clicked was successfully called.";
+
+    const QString qstrMyNymId, qstrContactId;
+
+    emit messageContact(qstrMyNymId, qstrContactId);
+}
+
+void Activity::on_toolButtonInvoiceContact_clicked()
+{
+    qDebug() << "on_toolButtonInvoiceContact_clicked was successfully called.";
+
+    const QString qstrAccountId, qstrContactId;
+    emit requestToAccountFromContact(qstrAccountId, qstrContactId);
+}
+
+void Activity::on_toolButtonImportCash_clicked()
+{
+    qDebug() << "on_toolButtonImportCash_clicked was successfully called.";
+
+    emit sig_on_toolButton_importCash_clicked();
+}
+
+void Activity::on_toolButtonSettings_clicked()
+{
+    qDebug() << "on_toolButtonSettings_clicked was successfully called.";
+
+    emit showSettings();
 }
 
 void Activity::on_toolButton_payments_clicked() { emit sig_on_toolButton_payments_clicked(); }

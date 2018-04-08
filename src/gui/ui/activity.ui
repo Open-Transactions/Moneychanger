@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>998</width>
-    <height>616</height>
+    <width>978</width>
+    <height>499</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -150,6 +150,104 @@
                <string>Code</string>
               </property>
              </column>
+            </widget>
+           </item>
+           <item>
+            <widget class="QWidget" name="widgetActions" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>40</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>12000</width>
+               <height>40</height>
+              </size>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_8">
+              <item>
+               <widget class="QToolButton" name="toolButtonAddContact">
+                <property name="toolTip">
+                 <string/>
+                </property>
+                <property name="text">
+                 <string>Add Contact</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButtonPayContact">
+                <property name="text">
+                 <string>Pay</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButtonMsgContact">
+                <property name="text">
+                 <string>Message</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButtonInvoiceContact">
+                <property name="text">
+                 <string>Invoice</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButtonImportCash">
+                <property name="text">
+                 <string>Import</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButtonSettings">
+                <property name="minimumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>25</width>
+                  <height>25</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Settings</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../resource.qrc">
+                  <normaloff>:/icons/icons/gear.jpg</normaloff>:/icons/icons/gear.jpg</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_5">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>
@@ -343,19 +441,9 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
            <item>
-            <layout class="QVBoxLayout" name="verticalLayout_4" stretch="5,0,1,0">
+            <layout class="QVBoxLayout" name="verticalLayout_4" stretch="5,0">
              <item>
               <widget class="QTableView" name="tableViewConversation"/>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="checkBoxPending">
-               <property name="text">
-                <string>Show sent pending messages</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QListWidget" name="listWidgetPending"/>
              </item>
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_2">

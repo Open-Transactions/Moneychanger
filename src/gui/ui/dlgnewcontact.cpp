@@ -52,7 +52,7 @@ void MTDlgNewContact::showEvent(QShowEvent * event)
 
         ui->frame->setLayout(m_pIdLayout);
         // --------------------------------------------------
-        QString qstrLabel = QString("%1 %2: ").arg(tr("Nym")).arg(tr("ID"));
+        QString qstrLabel = QString("%1: ").arg(tr("Paycode"));
         m_pIdWidget->SetLabel(qstrLabel);
     } // first run.
     // -------------------------------------
