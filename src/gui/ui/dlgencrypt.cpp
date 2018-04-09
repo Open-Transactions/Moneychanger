@@ -273,11 +273,8 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                 {
                     opentxs::OTPasswordData thePWData("Signer passphrase");
 
-                    opentxs::Nym * pNym = opentxs::OT::App().API().OTAPI().GetOrLoadPrivateNym(nym_id,
-                                                                           false, //bChecking=false
-                                                                           __FUNCTION__,
-                                                                           &thePWData);
-                    if (NULL == pNym)
+                    std::shared_ptr<const opentxs::Nym> pNym = opentxs::OT::App().Wallet().Nym(nym_id);
+                    if (false == bool(pNym))
                     {
                         QString qstrErrorMsg = QString("%1: %2").arg(tr("Failed loading the signer; unable to continue. NymID")).arg(m_nymId);
                         QMessageBox::warning(this, tr("Failed Loading Signer"), qstrErrorMsg);
@@ -361,11 +358,8 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     {
                         opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
 
-                        const opentxs::Nym * pNym = opentxs::OT::App().API().OTAPI().GetOrLoadNym(nym_id,
-                                                                               false, //bChecking=false
-                                                                               __FUNCTION__,
-                                                                               &thePWData);
-                        if (NULL == pNym)
+                        std::shared_ptr<const opentxs::Nym> pNym = opentxs::OT::App().Wallet().Nym(nym_id);
+                        if (false == bool(pNym))
                         {
                             QString qstrErrorMsg = QString("%1: %2").arg(tr("Failed loading a recipient; attempting to continue without. NymID")).arg(qstrNymID);
 
@@ -373,7 +367,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                         }
                         else
                         {
-                            setRecipients.insert(setRecipients.begin(), pNym);
+                            setRecipients.insert(setRecipients.begin(), pNym.get());
                         }
                     }
                     // qstrNymID will be passed to opentxs::OTEnvelope on its recipient list.

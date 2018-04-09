@@ -130,11 +130,8 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                         {
                             opentxs::OTPasswordData thePWData("Recipient passphrase");
 
-                            opentxs::Nym * pNym = opentxs::OT::App().API().OTAPI().GetOrLoadPrivateNym(nym_id,
-                                                                                   false, //bChecking=false
-                                                                                   __FUNCTION__,
-                                                                                   &thePWData);
-                            if (NULL != pNym)
+                            std::shared_ptr<const opentxs::Nym> pNym = opentxs::OT::App().Wallet().Nym(nym_id);
+                            if (false != bool(pNym))
                             {
                                 if (theEnvelope.Open(*pNym, strOutput) && strOutput.Exists())
                                 {
@@ -168,11 +165,8 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                                 {
                                     opentxs::OTPasswordData thePWData("Recipient passphrase");
 
-                                    opentxs::Nym * pNym = opentxs::OT::App().API().OTAPI().GetOrLoadPrivateNym(nym_id,
-                                                                                           false, //bChecking=false
-                                                                                           "DlgEncrypt::on_pushButtonDecrypt_clicked",
-                                                                                           &thePWData);
-                                    if (NULL != pNym)
+                                    std::shared_ptr<const opentxs::Nym> pNym = opentxs::OT::App().Wallet().Nym(nym_id);
+                                    if (false != bool(pNym))
                                     {
                                         // Okay there is a private key available for this Nym, so let's
                                         // try to open the envelope using it.
@@ -238,11 +232,8 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                         {
                             opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
                             opentxs::Identifier id_signer_nym(strSignerNymID);
-                            const opentxs::Nym * pNym = opentxs::OT::App().API().OTAPI().GetOrLoadNym(id_signer_nym,
-                                                                                   false, //bChecking=false
-                                                                                   __FUNCTION__,
-                                                                                   &thePWData);
-                            if (NULL != pNym)
+                            std::shared_ptr<const opentxs::Nym> pNym = opentxs::OT::App().Wallet().Nym(id_signer_nym);
+                            if (false != bool(pNym))
                             {
                                 if (theSignedFile.VerifySignature(*pNym, &thePWData))
                                 {
