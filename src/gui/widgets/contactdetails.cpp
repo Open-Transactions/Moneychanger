@@ -706,11 +706,10 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                         // just downloaded and overwritten.
                         //
                         opentxs::OTPasswordData thePWData("Adding relationship claim.");
-                        opentxs::Nym * pClaimantNym =
-                            opentxs::OT::App().API().OTAPI().
-                                reloadAndGetPrivateNym(claimant_nym_id, false, __FUNCTION__,  &thePWData);
+                        std::shared_ptr<const opentxs::Nym> pClaimantNym =
+                        	opentxs::OT::App().Wallet().Nym(claimant_nym_id);
 
-                        if (nullptr == pClaimantNym)
+                        if (false == bool(pClaimantNym))
                         {
                             qDebug() << __FUNCTION__ << "Strange: failed trying to get reloadAndGetNym from the Wallet.";
                             return;

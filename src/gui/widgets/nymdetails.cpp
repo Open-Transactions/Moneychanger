@@ -140,9 +140,9 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
     opentxs::String     strNymId    (str_nym_id);
     opentxs::Identifier id_nym      (strNymId);
     // -------------------------------------
-    opentxs::Nym * pCurrentNym = opentxs::OT::App().API().OTAPI().GetOrLoadPrivateNym(id_nym) ;
+    std::shared_ptr<const opentxs::Nym> pCurrentNym = opentxs::OT::App().Wallet().Nym(id_nym) ;
 
-    if (nullptr == pCurrentNym)
+    if (false == bool(pCurrentNym))
         return;
 
 

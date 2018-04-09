@@ -1116,14 +1116,12 @@ void Moneychanger::onCheckNym(QString nymId)
     // Get the Nym. Make sure we have the latest copy, since his credentials were apparently
     // just downloaded and overwritten.
     //
-    opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
-    const opentxs::Nym * pCurrentNym =
-        ot_.API().OTAPI().
-            reloadAndGetNym(id_nym, false, __FUNCTION__,  &thePWData);
+    std::shared_ptr<const opentxs::Nym> pCurrentNym =
+		ot_.Wallet().Nym(id_nym);
 
-    if (nullptr == pCurrentNym)
+    if (false == bool(pCurrentNym))
     {
-        qDebug() << "onCheckNym: GetOrLoadNym failed. (Which should NOT happen since we supposedly JUST downloaded that Nym's credentials...)";
+        qDebug() << "onCheckNym: Loading the nym failed. (Which should NOT happen since we supposedly JUST downloaded that Nym's credentials...)";
         return;
     }
     // ------------------------------------------------
