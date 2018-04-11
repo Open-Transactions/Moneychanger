@@ -412,10 +412,11 @@ QWidget * ConvMsgsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, boo
 //  QString     qstrThreadId = sourceData_ThreadId.isValid() ? sourceData_ThreadId   .toString() : "";
 //  QString     qstrThreadItemId  = sourceData_ThreadItemId.isValid() ? sourceData_ThreadItemId.toString() : "";
 
-    const QString qstrEncryptedBody = sourceData_Body.isValid() ? sourceData_Body.toString() : "";
-    QString qstrBody = (!qstrEncryptedBody.isEmpty() && bExternal)
-            ? MTContactHandler::Decrypt(qstrEncryptedBody)
-            : qstrEncryptedBody;
+    //const QString qstrEncryptedBody = sourceData_Body.isValid() ? sourceData_Body.toString() : "";
+    QString qstrBody = sourceData_Body.isValid() ? sourceData_Body.toString() : "";
+//    QString qstrBody = (!qstrEncryptedBody.isEmpty() && bExternal)
+//            ? MTContactHandler::Decrypt(qstrEncryptedBody)
+//            : qstrEncryptedBody;
 
 //  time64_t the_time = sourceData_Timestamp.isValid() ? sourceData_Timestamp.toLongLong() : 0;
 //  QDateTime timestamp;

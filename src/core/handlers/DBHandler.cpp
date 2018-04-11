@@ -980,7 +980,7 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
         opentxs::Identifier(str_thread_id));
     const auto& first = thread.First();
 
-    qDebug() << QString::fromStdString(thread.DisplayName()) << "\n";
+//    qDebug() << QString::fromStdString(thread.DisplayName()) << "\n";
 
     if (false == first.Valid()) {
         return pModel;
@@ -1025,9 +1025,9 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
 
     auto last = first.Last();
 
-    qDebug() << " * "
-          // << time(first.Timestamp())
-             << " " << QString::fromStdString(first.Text()) << "\n";
+//    qDebug() << " * "
+//          // << time(first.Timestamp())
+//             << " " << QString::fromStdString(first.Text()) << "\n";
 
     while (false == last) {
         auto& line = thread.Next();
@@ -1069,10 +1069,10 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
 
         pModel->appendRow(qlistItems);
 
-        qDebug() << " * "
-        //<< time(line.Timestamp())
-        << " "
-        << QString::fromStdString(line.Text()) << "\n";
+//        qDebug() << " * "
+//        //<< time(line.Timestamp())
+//        << " "
+//        << QString::fromStdString(line.Text()) << "\n";
     }
 
     return pModel;

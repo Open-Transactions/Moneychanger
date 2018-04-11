@@ -64,5 +64,6 @@
         <file>icons/timer.png</file>
         <file>icons/green_dot.png</file>
         <file>icons/red_dot.png</file>
+        <file>icons/gear.jpg</file>
     </qresource>
 </RCC>

@@ -14,6 +14,7 @@
 #include <QScopedPointer>
 #include <QPointer>
 #include <QList>
+#include <QListWidgetItem>
 #include <QSqlRecord>
 #include <QTimer>
 #include <QDebug>
@@ -78,6 +79,9 @@ public:
 
     int nSelectedTab_{0};
 
+    std::string active_thread_{""};
+    std::map<std::string, std::string> thread_summary_;
+
     QString qstrCurrentTLA_;  // If the user clicks on "BTC" near the top, the current TLA is "BTC".
     QString qstrCurrentNotary_; // If the user clicks on "localhost" (hosted notary) then that Notary ID is set here.
     QString qstrCurrentAccount_; // If the user clicks on one of his Opentxs accounts, or a notary with only 1 account under it, we put the acct ID here.
@@ -96,8 +100,10 @@ public slots:
     void onNeedToRefreshUserBar();
     void onNeedToRefreshRecords();
     void resetPopupMenus();
+    void onOpentxsWidgetUpdated(QString qstrWidgetID);
 
 signals:
+    void RefreshRecordsAndUpdateMenu();
     void showDashboard();
     void needToPopulateRecordlist();
     void needToDownloadAccountData();
@@ -134,6 +140,21 @@ signals:
     void sig_on_toolButton_liveAgreements_clicked();
 
 protected:
+    void RetrieveSelectedIds(
+        QString  & qstrTLA,
+        QString  & qstrAssetTypeId,
+        QString  & qstrAccountId,
+        QString  & qstrServerId,
+        QString  & qstrContactId,
+        bool     & bSelectedSNP,
+        bool     & bSelectedHosted,
+        bool     & bSelectedNotary,
+        bool     & bSelectedAcctLowLevel,
+        bool     & bSelectedAccount,
+        bool     & bSelectedAsset,
+        bool     & bSelectedContact
+        );
+
     void enableButtons();
     void disableButtons();
 
@@ -152,14 +173,16 @@ protected:
     void RefreshUserBar();
     void RefreshAccountTab();
     void ClearAccountTree();
-    void RefreshAccountTree();
     void RefreshConversationsTab();
     void RefreshConversationDetails(int nRow);
     void ClearListWidgetConversations();
 
-    void PopulateConversationsForNym(QListWidget * pListWidgetConversations, int & nIndex, const std::string & str_my_nym_id);
-
-    bool AddItemToPending(int nAtIndex, const QString & qstrContents, bool bIncoming=false, bool bAddedByHand=true);
+    void PopulateConversationsForNym(
+        QListWidget * pListWidgetConversations,
+        int & nIndex,
+        const std::string & str_my_nym_id,
+        const std::string & activity_summary_id,
+        QListWidgetItem  *& pItemToSelect);
 
     int PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers=nullptr);
     bool PairingStarted(const opentxs::Identifier & nymId, const opentxs::Identifier & issuerNymId);
@@ -216,6 +239,8 @@ private slots:
 
     void on_treeWidgetAccounts_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 
+    void on_plainTextEditMsg_textChanged();
+
     void on_pushButtonSendMsg_clicked();
 
     void on_checkBoxSearchConversations_toggled(bool checked);
@@ -238,6 +263,7 @@ private slots:
     void on_MarkAsReplied_timer();
     void on_MarkAsForwarded_timer();
 
+    void RefreshAccountTree();
     void RefreshPayments();
 
     void on_tableViewReceived_customContextMenuRequested(const QPoint &pos);
@@ -251,9 +277,14 @@ private slots:
     void on_toolButtonDelete_clicked();
     void on_toolButtonRefresh_clicked();
 
-    void on_treeWidgetAccounts_customContextMenuRequested(const QPoint &pos);
+    void on_toolButtonAddContact_clicked();
+    void on_toolButtonPayContact_clicked();
+    void on_toolButtonMsgContact_clicked();
+    void on_toolButtonInvoiceContact_clicked();
+    void on_toolButtonImportCash_clicked();
+    void on_toolButtonSettings_clicked();
 
-    void on_checkBoxPending_toggled(bool checked);
+    void on_treeWidgetAccounts_customContextMenuRequested(const QPoint &pos);
 
     void on_tabWidgetMain_currentChanged(int index);
 
