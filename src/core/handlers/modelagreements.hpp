@@ -162,8 +162,8 @@ public:
     void setFilterMySignerId(QString qstrFilter); // unused so far.
     void setFilterAgreementId(int nFilter); // In use!
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-    QVariant data    ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant data    ( const QModelIndex & index, int role = Qt::DisplayRole ) const override;
     QVariant rawData ( const QModelIndex & index, int role = Qt::DisplayRole ) const;
 
     QWidget * CreateDetailHeaderWidget(const int nSourceRow, bool bExternal=true) const;
