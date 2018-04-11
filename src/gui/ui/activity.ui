@@ -184,6 +184,13 @@
                </widget>
               </item>
               <item>
+               <widget class="QToolButton" name="toolButtonInvite">
+                <property name="text">
+                 <string>Invite</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QToolButton" name="toolButtonPayContact">
                 <property name="text">
                  <string>Pay</string>

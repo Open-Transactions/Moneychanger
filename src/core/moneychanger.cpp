@@ -636,6 +636,13 @@ Moneychanger::Moneychanger(QWidget *parent)
   notify_bailment_(
       ot_.ZMQ().Context().SubscribeSocket(
           notify_bailment_callback_.get())),
+  widget_update_callback_(opentxs::network::zeromq::ListenCallback::Factory(
+          [this](const opentxs::network::zeromq::Message& message) -> void {
+              this->process_widget_update(message);
+          })),
+  widget_update_(
+      ot_.ZMQ().Context().SubscribeSocket(
+          widget_update_callback_.get())),
   m_list(*(new MTNameLookupQT)),
   nmc(new NMC_Interface ()),
   nmc_names(NULL),
@@ -658,6 +665,9 @@ Moneychanger::Moneychanger(QWidget *parent)
     notify_bailment_->Start(
         opentxs::network::zeromq::Socket::PendingBailmentEndpoint);
 
+    widget_update_->Start(
+        opentxs::network::zeromq::Socket::WidgetUpdateEndpoint);
+
     /* Set up Namecoin name manager.  */
     nmc_names = new NMC_NameManager (*nmc);
 
@@ -668,6 +678,7 @@ Moneychanger::Moneychanger(QWidget *parent)
     nmc_update_timer->start (1000 * 60 * 10);
     nmc_timer_event ();
 
+    
     ot_.Schedule(
         std::chrono::seconds(5),
         [&]()->void
@@ -916,7 +927,14 @@ void Moneychanger::process_notify_bailment(
               << request.pendingbailment().txid().c_str();
 }
 
+void Moneychanger::process_widget_update(
+    const opentxs::network::zeromq::Message& message)
+{
+    const std::string str_msg = std::string(message);
+    const QString qstrMsg = QString::fromStdString(str_msg);
 
+    emit opentxsWidgetUpdated(qstrMsg);
+}
 
 // RETRIEVE NYM INTERMEDIARY FILES
 // Returns:
@@ -5089,9 +5107,12 @@ void Moneychanger::processImportRecord(
         // -----------------------------------
         if (recordmt.IsMail() || recordmt.IsSpecialMail())
         {
-            if (AddMailToMsgArchive(recordmt, mapOfSetsOfAlreadyImportedMsgs, mapOfConversationsByNym, setNewlyAddedNymThreadAndItem))
-                ;
+            if (expertMode() &&
+                AddMailToMsgArchive(recordmt, mapOfSetsOfAlreadyImportedMsgs, mapOfConversationsByNym, setNewlyAddedNymThreadAndItem))
+            {
                 //bShouldDeleteRecord = true;  // Disabling this temporarily to see if it fixes any related startup/shutdown issues.
+                ;
+            }
         }
         // -----------------------------------
         else if (recordmt.IsNotice())
@@ -7038,6 +7059,7 @@ void Moneychanger::mc_composemessage_slot()
     mc_composemessage_show_dialog();
 }
 
+//Send a message, optionally from a given Nym and optionally to a given Contact.
 void Moneychanger::mc_message_contact_slot(QString qstrFromNym, QString qstrToOpentxsContact) // Compose Message to specific opentxs contact
 {
     mc_composemessage_show_dialog(qstrToOpentxsContact, qstrFromNym);
@@ -7156,6 +7178,9 @@ void Moneychanger::mc_activity_dialog()
         connect(activity_window, SIGNAL(needToPopulateRecordlist()),    this,              SLOT(onNeedToPopulateRecordlist()));
         connect(this,            SIGNAL(balancesChanged()),             activity_window,   SLOT(onBalancesChanged()));
         connect(this,            SIGNAL(claimsUpdatedForNym(QString)),  activity_window,   SLOT(onClaimsUpdatedForNym(QString)));
+
+        connect(this,            SIGNAL(opentxsWidgetUpdated(QString)), activity_window,   SLOT(onOpentxsWidgetUpdated(QString)));
+
     }
     // ---------------------------------
     activity_window->dialog();

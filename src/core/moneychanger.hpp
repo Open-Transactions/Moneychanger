@@ -64,7 +64,12 @@ private:
     opentxs::OTZMQListenCallback notify_bailment_callback_;
     opentxs::OTZMQSubscribeSocket notify_bailment_;
 
+    opentxs::OTZMQListenCallback widget_update_callback_;
+    opentxs::OTZMQSubscribeSocket widget_update_;
+
     void process_notify_bailment(const opentxs::network::zeromq::Message& message) const;
+    void process_widget_update(const opentxs::network::zeromq::Message& message);
+
     bool retrieve_nym(
         const std::string& strNotaryID,
         const std::string& strMyNymID) const;
@@ -146,6 +151,8 @@ signals:
     void newServerAdded(QString);
     void newAssetAdded(QString);
     void needToCheckNym(QString, QString, QString);
+
+    void opentxsWidgetUpdated(QString);
 
 public slots:
     void onBalancesChanged();

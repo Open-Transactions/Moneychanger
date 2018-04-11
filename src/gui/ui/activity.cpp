@@ -50,9 +50,12 @@
 #include <opentxs/core/OTTransaction.hpp>
 #include <opentxs/core/OTTransactionType.hpp>
 #include <opentxs/ui/ActivityThread.hpp>
+#include <opentxs/ui/ActivitySummary.hpp>
 #include <opentxs/ui/ActivityThreadItem.hpp>
+#include <opentxs/Forward.hpp>
 #include <opentxs/OT.hpp>
 #include <opentxs/Types.hpp>
+
 
 #include <QLabel>
 #include <QDebug>
@@ -326,11 +329,123 @@ void Activity::RefreshAll()
 
 void Activity::RefreshAccountTab()
 {
-    RefreshAccountTree();
+    QTimer::singleShot(0, this, SLOT(RefreshAccountTree()));
 }
 
 void Activity::ClearAccountTree()
 {
+    QTreeWidget * pTreeWidgetAccounts = ui->treeWidgetAccounts;
+    if (nullptr == pTreeWidgetAccounts) {
+        return;
+    }
+    // ----------------------------------------
+    QTreeWidgetItem * pItem = pTreeWidgetAccounts->currentItem();
+
+    if (nullptr != pItem)
+    {
+        const int nNodeType = pItem->data(0, Qt::UserRole+0).toInt();
+        const int nHeader   = pItem->data(0, Qt::UserRole+1).toInt();
+
+        switch (nNodeType) {
+            case AC_NODE_TYPE_HEADER: {
+//                qstrCurrentTLA_      = QString("");
+//                qstrCurrentNotary_   = QString("");
+//                qstrCurrentAccount_  = QString("");
+//                qstrCurrentContact_  = QString("");
+                ;
+            } break;
+
+            case AC_NODE_TYPE_ASSET_TOTAL: {
+                const QVariant qvarTLA = pItem->data(0, Qt::UserRole+2);
+
+                qstrCurrentTLA_      = qvarTLA.isValid() ? qvarTLA.toString() : QString("");
+                qstrCurrentNotary_   = QString("");
+                qstrCurrentAccount_  = QString("");
+                qstrCurrentContact_  = QString("");
+
+//                qDebug() << "Setting qstrCurrentContact_ to empty string! 1\n";
+
+            } break;
+
+                // Todo someday. Currently Moneychanger doesn't have its own local Bitcoin wallet.
+            case AC_NODE_TYPE_LOCAL_WALLET:
+            case AC_NODE_TYPE_LOCAL_ACCOUNT: {
+                qstrCurrentTLA_      = QString("");
+                qstrCurrentNotary_   = QString("");
+                qstrCurrentAccount_  = QString("");
+                qstrCurrentContact_  = QString("");
+
+//                qDebug() << "Setting qstrCurrentContact_ to empty string! 2\n";
+
+            } break;
+
+            case AC_NODE_TYPE_SNP_NOTARY:
+            case AC_NODE_TYPE_HOSTED_NOTARY: {
+                // If a Notary has a single account, it may display them on a single line.
+                // In which case, sometimes we'll want the Notary ID off that line, but
+                // sometimes we'll want the account ID. (But the account ID will sometimes
+                // not be there, if there are sub-accounts listed under the notary in the UI).
+                //
+//              const QVariant qvarAccountId = pItem->data(0, Qt::UserRole+4);
+                const QVariant qvarNotaryId  = pItem->data(0, Qt::UserRole+5);
+
+                qstrCurrentTLA_      = QString("");
+                qstrCurrentAccount_  = QString("");
+//              qstrCurrentAccount_  = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
+                qstrCurrentNotary_   = qvarNotaryId.isValid()  ? qvarNotaryId.toString()  : QString("");
+                qstrCurrentContact_  = QString("");
+
+//                qDebug() << "Setting qstrCurrentContact_ to empty string! 3\n";
+
+            } break;
+
+            case AC_NODE_TYPE_SNP_ACCOUNT:
+            case AC_NODE_TYPE_HOSTED_ACCOUNT: {
+                const QVariant qvarAccountId = pItem->data(0, Qt::UserRole+4);
+
+                qstrCurrentTLA_      = QString("");
+                qstrCurrentNotary_   = QString("");
+                qstrCurrentAccount_  = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
+                qstrCurrentContact_  = QString("");
+
+//                qDebug() << "Setting qstrCurrentContact_ to empty string! 4\n";
+
+            } break;
+
+            case AC_NODE_TYPE_CONTACT: {
+                const QVariant qvarContactId = pItem->data(0, Qt::UserRole+6);
+
+                qstrCurrentTLA_      = QString("");
+                qstrCurrentNotary_   = QString("");
+                qstrCurrentAccount_  = QString("");
+                qstrCurrentContact_  = qvarContactId.isValid() ? qvarContactId.toString() : QString("");
+            } break;
+
+            default: {
+                qstrCurrentTLA_      = QString("");
+                qstrCurrentNotary_   = QString("");
+                qstrCurrentAccount_  = QString("");
+                qstrCurrentContact_  = QString("");
+
+//                qDebug() << "Setting qstrCurrentContact_ to empty string! 5 it's a default case: " << QString::number(nNodeType) << "\n";
+
+            } break;
+        }
+    }
+    else
+    {
+        // NOTE: This may have been the bug that caused the left-hand of
+        // activity page to lose selection after a few seconds delay.
+        // Commenting it out now to test that. May keep it that way, if it fixes it.
+//        qstrCurrentTLA_      = QString("");
+//        qstrCurrentNotary_   = QString("");
+//        qstrCurrentAccount_  = QString("");
+//        qstrCurrentContact_  = QString("");
+
+//        qDebug() << "Setting qstrCurrentContact_ to empty string! 6 it's nullptr\n";
+
+    }
+    // --------------------------------------
     ui->treeWidgetAccounts->clear();
 }
 
@@ -533,7 +648,7 @@ int Activity::PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers/*=n
 /*
 To loop through an issuer's claims about the currencies he's issued:
 
-auto issuerNym = OT::App().Wallet().Nym(Issuer.IssuerID());
+auto issuerNym = opentxs::OT::App().Wallet().Nym(Issuer.IssuerID());
 
 auto issued_unit_types = issuerNym->Claims().Section(proto::CONTACTSECTION_CONTRACT)
 
@@ -777,13 +892,13 @@ mapIDName & Activity::GetOrCreateAccountIdMapByTLA(QString qstrTLA, mapOfMapIDNa
 
 void Activity::RefreshAccountTree()
 {
-    // ----------------------------------------
-    ClearAccountTree();
-    // ----------------------------------------
     QTreeWidget * pTreeWidgetAccounts = ui->treeWidgetAccounts;
     if (nullptr == pTreeWidgetAccounts) {
         return;
     }
+    // ----------------------------------------
+    ClearAccountTree();
+    // ----------------------------------------
     pTreeWidgetAccounts->blockSignals(true);
     // ----------------------------------------
     QList<QTreeWidgetItem *> items;
@@ -798,7 +913,7 @@ void Activity::RefreshAccountTree()
         QTreeWidgetItem * pUnfilteredItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Totals")));
         items.append(pUnfilteredItem);
         pUnfilteredItem->setExpanded(true);
-        pUnfilteredItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_HEADER));
+        pUnfilteredItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HEADER));
         pUnfilteredItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_TOTALS));
         pUnfilteredItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
         pUnfilteredItem->setFlags(pUnfilteredItem->flags()&~Qt::ItemIsSelectable);
@@ -834,7 +949,7 @@ void Activity::RefreshAccountTree()
             QTreeWidgetItem * pCurrencyCodeWidgetItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrName) << qstrSymbol<< qstrFormattedAmount << QStringList(qstrCurrencyCode));
             items.append(pCurrencyCodeWidgetItem);
             pCurrencyCodeWidgetItem->setExpanded(false);
-            pCurrencyCodeWidgetItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_ASSET_TOTAL));
+            pCurrencyCodeWidgetItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_ASSET_TOTAL));
             pCurrencyCodeWidgetItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_TOTALS));
             pCurrencyCodeWidgetItem->setData(0, Qt::UserRole+2, QVariant(qstrCurrencyCode));
 
@@ -868,7 +983,7 @@ void Activity::RefreshAccountTree()
         QTreeWidgetItem * pYourNodeItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Your Stash Node")));
         items.append(pYourNodeItem);
         pYourNodeItem->setExpanded(true);
-        pYourNodeItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_HEADER));
+        pYourNodeItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HEADER));
         pYourNodeItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
         pYourNodeItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
         pYourNodeItem->setTextColor(0, Qt::white);
@@ -966,7 +1081,7 @@ J
             pNodeItem->setIcon(0, QIcon(qstrIconPath));
             pNodeItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
 
-            pNodeItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_SNP_NOTARY));
+            pNodeItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
             pNodeItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
 
         }
@@ -1032,7 +1147,7 @@ J
 //                            pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
 //                        }
 
-//                        pPairedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_SNP_NOTARY));
+//                        pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
 //                        pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
 //                        if (!qstrServerId.isEmpty()) {
 //                            pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
@@ -1084,7 +1199,7 @@ J
 //                        pSubItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
 
 //                        //todo
-//                        pSubItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_SNP_ACCOUNT));
+//                        pSubItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_ACCOUNT));
 //                        pSubItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
 
 //                        if (!qstrTLA.isEmpty()) {
@@ -1152,7 +1267,7 @@ J
                     }
                     pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
 
-                    pPairedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_SNP_NOTARY));
+                    pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
                     pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
                     if (!qstrServerId.isEmpty()) {
                         pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
@@ -1280,7 +1395,7 @@ J
                                     }
                                     pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
 
-                                    pPairedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_SNP_NOTARY));
+                                    pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
                                     pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
                                     if (!qstrServerId.isEmpty()) {
                                         pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
@@ -1322,7 +1437,7 @@ J
                             items.append(pHostedItem);
                             pHostedItem->setExpanded(false);
 
-                            pHostedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_SNP_ACCOUNT));
+                            pHostedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_ACCOUNT));
                             pHostedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
                             if (!qstrTLA.isEmpty()) {
                                 pHostedItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
@@ -1376,7 +1491,7 @@ J
                 pNodeItem->setIcon(0, QIcon(qstrIconPath));
                 pNodeItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
 
-                pNodeItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_SNP_NOTARY));
+                pNodeItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
                 pNodeItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
                 if (!qstrServerId.isEmpty()) {
                     pNodeItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
@@ -1401,7 +1516,7 @@ J
         QTreeWidgetItem * pHostedAccountsItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Hosted Accounts")));
         items.append(pHostedAccountsItem);
         pHostedAccountsItem->setExpanded(true);
-        pHostedAccountsItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_HEADER));
+        pHostedAccountsItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HEADER));
         pHostedAccountsItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
         pHostedAccountsItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
         pHostedAccountsItem->setTextColor(0, Qt::white);
@@ -1471,7 +1586,7 @@ J
                 }
                 pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
 
-                pPairedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_HOSTED_NOTARY));
+                pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HOSTED_NOTARY));
                 pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
                 if (!qstrServerId.isEmpty()) {
                     pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
@@ -1601,7 +1716,7 @@ J
                                 }
                                 pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
 
-                                pPairedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_HOSTED_NOTARY));
+                                pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HOSTED_NOTARY));
                                 pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
                                 if (!qstrServerId.isEmpty()) {
                                     pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
@@ -1643,7 +1758,7 @@ J
                         items.append(pHostedItem);
                         pHostedItem->setExpanded(false);
 
-                        pHostedItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_HOSTED_ACCOUNT));
+                        pHostedItem->setData(0, Qt::UserRole, QVariant(AC_NODE_TYPE_HOSTED_ACCOUNT));
                         pHostedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
                         if (!qstrTLA.isEmpty()) {
                             pHostedItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
@@ -1722,7 +1837,7 @@ J
         QTreeWidgetItem * pContactsItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Contacts")));
         items.append(pContactsItem);
         pContactsItem->setExpanded(true);
-        pContactsItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_HEADER));
+        pContactsItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HEADER));
         pContactsItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_CONTACTS));
         pContactsItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
         pContactsItem->setTextColor(0, Qt::white);
@@ -1745,7 +1860,7 @@ J
             // ------------------------------------
             QTreeWidgetItem * pTopItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrContactName));
 
-            pTopItem->setData(0, Qt::UserRole  , QVariant(AC_NODE_TYPE_CONTACT));
+            pTopItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_CONTACT));
             pTopItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_CONTACTS));
 
             if (!qstrContactID.isEmpty()) {
@@ -1774,11 +1889,22 @@ J
 
     QTreeWidgetItem * previous = pTreeWidgetAccounts->currentItem();
 
+    QTreeWidgetItem * pItemToSelect {nullptr};
+
     // In this case, just select the first thing on the list.
-    if ( qstrCurrentTLA_.isEmpty() && qstrCurrentNotary_.isEmpty() && qstrCurrentAccount_.isEmpty() && qstrCurrentContact_.isEmpty() )
+    if (    qstrCurrentTLA_.isEmpty()
+         && qstrCurrentNotary_.isEmpty()
+         && qstrCurrentAccount_.isEmpty()
+         && qstrCurrentContact_.isEmpty() )
     {
+//        qDebug() << "RefreshAccountTree: the strings were all empty\n";
+
         if (pTreeWidgetAccounts->topLevelItemCount() > 0)
-            pTreeWidgetAccounts->setCurrentItem(pTreeWidgetAccounts->topLevelItem(0));
+        {
+            //qDebug() << "RefreshAccountTree: setting to 0th top level item. 1\n";
+
+//            pItemToSelect = pTreeWidgetAccounts->topLevelItem(0);
+        }
     }
     else // Find the one that was selected before the refresh.
     {
@@ -1786,9 +1912,11 @@ J
 
         QTreeWidgetItemIterator it(pTreeWidgetAccounts);
 
+//        qDebug() << "RefreshAccountTree: entering while loop...\n";
+
         while (*it)
         {
-            const int      nNodeType       = (*it)->data(0, Qt::UserRole  ).toInt();
+            const int      nNodeType       = (*it)->data(0, Qt::UserRole+0).toInt();
             const int      nHeader         = (*it)->data(0, Qt::UserRole+1).toInt();
             const QVariant qvarTLA         = (*it)->data(0, Qt::UserRole+2);
             const QVariant qvarAssetTypeId = (*it)->data(0, Qt::UserRole+3);
@@ -1802,29 +1930,64 @@ J
             const QString  qstrAccountId   = qvarAccountId.isValid()   ? qvarAccountId.toString()   : "";
             const QString  qstrContactId   = qvarContactId.isValid()   ? qvarContactId.toString()   : "";
             // ------------------------------------------------------------
-            if (    (0 == qstrTLA.compare(qstrCurrentTLA_ ))
-                 && (0 == qstrServerId.compare(qstrCurrentNotary_))
-                 && (0 == qstrAccountId.compare(qstrCurrentAccount_))
-                 && (0 == qstrContactId.compare(qstrCurrentContact_)) )
+            const bool bContactsMatch = !qstrContactId.isEmpty() && (0 == qstrContactId.compare(qstrCurrentContact_));
+            const bool bAccountsMatch = !qstrAccountId.isEmpty() && (0 == qstrAccountId.compare(qstrCurrentAccount_));
+            const bool bOtherMatch    = (   (0 == qstrTLA.compare(qstrCurrentTLA_ ))
+                                         && (0 == qstrServerId.compare(qstrCurrentNotary_))
+                                         && (0 == qstrAccountId.compare(qstrCurrentAccount_))
+                                         && (0 == qstrContactId.compare(qstrCurrentContact_))
+                                         );
+            if (bContactsMatch || bOtherMatch || bAccountsMatch)
             {
+//                qDebug() << "RefreshAccountTree: MATCHED.\n";
+//
+//                if (bContactsMatch)
+//                    qDebug() << "RefreshAccountTree: Contacts MATCHED.\n";
+//                if (bOtherMatch)
+//                    qDebug() << "RefreshAccountTree: Other MATCHED.\n";
+//                if (bAccountsMatch)
+//                    qDebug() << "RefreshAccountTree: Accounts MATCHED.\n";
+
                 bFoundIt = true;
-                pTreeWidgetAccounts->setCurrentItem(*it);
+                pItemToSelect = *it;
+
                 break;
+            }
+            else
+            {
+//                qDebug() << "RefreshAccountTree: DID NOT match:";
+//                qDebug() << "qstrTLA: " << qstrTLA << "qstrCurrentTLA_: " << qstrCurrentTLA_;
+//                qDebug() << "qstrServerId: " << qstrServerId << "qstrCurrentNotary_: " << qstrCurrentNotary_;
+//                qDebug() << "qstrAccountId: " << qstrAccountId << "qstrCurrentAccount_: " << qstrCurrentAccount_;
+//                qDebug() << "qstrContactId: " << qstrContactId << "qstrCurrentContact_: " << qstrCurrentContact_ << "\n";
             }
             // ------------------------
             ++it;
         } //while
         if (!bFoundIt)
         {
-            if (pTreeWidgetAccounts->topLevelItemCount() > 0)
-                pTreeWidgetAccounts->setCurrentItem(pTreeWidgetAccounts->topLevelItem(0));
+//            if (pTreeWidgetAccounts->topLevelItemCount() > 0)
+//            {
+//                qDebug() << "RefreshAccountTree: setting to 0th top level item. 2\n";
+//
+//                pItemToSelect = pTreeWidgetAccounts->topLevelItem(0);
+//            }
         }
     }
 //  pTreeWidgetAccounts->expandAll();
     // ----------------------------------------
     pTreeWidgetAccounts->blockSignals(false);
     // ----------------------------------------
-    on_treeWidgetAccounts_currentItemChanged(pTreeWidgetAccounts->currentItem(), previous);
+//    if (nullptr == pItemToSelect)
+//    {
+//        pItemToSelect = pTreeWidgetAccounts->topLevelItem(0);
+//    }
+    // ----------------------------------------
+    if (nullptr != pItemToSelect)
+    {
+        pTreeWidgetAccounts->setCurrentItem(pItemToSelect);
+//        on_treeWidgetAccounts_currentItemChanged(pItemToSelect, previous);
+    }
 }
 
 //void Activity::RefreshAccountList()
@@ -1953,6 +2116,9 @@ void Activity::on_listWidgetConversations_currentRowChanged(int currentRow)
 //    ui->tableViewConversation->resize(qs);
 
 }
+
+
+
 //        message StorageThread {
 //            optional uint32 version = 1;
 //            optional string id = 2;
@@ -2013,8 +2179,15 @@ void Activity::ClearListWidgetConversations()
 //            MAILOUTBOX = 9
 //        };
 
-void Activity::PopulateConversationsForNym(QListWidget * pListWidgetConversations, int & nIndex, const std::string & str_my_nym_id)
+void Activity::PopulateConversationsForNym(
+   QListWidget * pListWidgetConversations,
+   int & nIndex,
+   const std::string & str_my_nym_id,
+   const std::string & activity_summary_id,
+   QListWidgetItem  *& pItemToSelect)
 {
+    pItemToSelect = nullptr;
+
     const int  nNymCount = opentxs::OT::App().API().Exec().GetNymCount();
     OT_ASSERT(nNymCount > 0);
     const bool bOnlyOneNymInWallet = (1 == nNymCount);
@@ -2034,14 +2207,14 @@ void Activity::PopulateConversationsForNym(QListWidget * pListWidgetConversation
             str_my_nym_name = "Me";
         }
     }
-//  const auto response = OT::App().Contact().NewContact(label, opentxs::Identifier{hisnym}, opentxs::PaymentCode{paymentCode});
-//  const auto pContact = OT::App().Contact().Contact(opentxs::Identifier{contact});
+//  const auto response = opentxs::OT::App().Contact().NewContact(label, opentxs::Identifier{hisnym}, opentxs::PaymentCode{paymentCode});
+//  const auto pContact = opentxs::OT::App().Contact().Contact(opentxs::Identifier{contact});
 
     //NOTE: no point here, since the above lookup already uses the below code.
     //      It finds the contact based on NymID and then gets the Label() for that contact.
 //    if (str_my_nym_name.empty()) { // still empty?
 //        get contact ID from Nym ID here. Then get pointer to contact.
-//        const auto pContact = OT::App().Contact().Contact(opentxs::Identifier{contact});
+//        const auto pContact = opentxs::OT::App().Contact().Contact(opentxs::Identifier{contact});
 //        pContact->
 //    }
     // ------------------------
@@ -2082,8 +2255,44 @@ void Activity::PopulateConversationsForNym(QListWidget * pListWidgetConversation
         pItem->setTextColor(Qt::white);
         const QString qstrThreadId = QString::fromStdString(str_thread_id);
         const QString qstrMyNymId = QString::fromStdString(str_my_nym_id);
+
+        QString qstrActivitySummaryId;
+
+        if (!qstrMyNymId.isEmpty())
+        {
+            auto& thread_summary = opentxs::OT::App().UI().ActivitySummary(
+                opentxs::Identifier(str_my_nym_id));
+
+            std::map<std::string,std::string>::iterator
+                it_thread_summary =
+                    thread_summary_.find(str_my_nym_id);
+            if (thread_summary_.end() != it_thread_summary)
+            {
+                thread_summary_.erase(it_thread_summary);
+            }
+            thread_summary_[str_my_nym_id] = thread_summary.WidgetID().str();
+            qstrActivitySummaryId = QString::fromStdString(thread_summary_[str_my_nym_id]);
+        }
+
         pItem->setData(Qt::UserRole+1, QVariant(qstrMyNymId));
         pItem->setData(Qt::UserRole+2, QVariant(qstrThreadId));
+        pItem->setData(Qt::UserRole+3, QVariant(qstrActivitySummaryId));
+
+        if (!qstrActivitySummaryId.isEmpty())
+        {
+            const std::string str_current_summary_id = qstrActivitySummaryId.toStdString();
+            const std::string str_current_thread_id  = qstrThreadId.toStdString();
+
+            if (!activity_summary_id.empty() && !active_thread_.empty() &&
+                0 == str_current_summary_id.compare(activity_summary_id) &&
+                0 == str_current_thread_id.compare(active_thread_))
+            {
+                pItemToSelect = pItem;
+            }
+        }
+        // ----------------------------------------------
+        // BACKGROUND COLOR
+
         pItem->setBackgroundColor((nIndex%2 == 0) ? Qt::gray : Qt::darkGray);
         // ----------------------------------------------
         ++ci;
@@ -2096,6 +2305,32 @@ void Activity::RefreshConversationsTab()
     if (nullptr == pListWidgetConversations) {
         return;
     }
+    // --------------------------------------
+    // Make some temporary record of which item was selected,
+    // before we refresh, so that we can re-select it afterwards.
+    //
+    int nCurrentRow = pListWidgetConversations->currentRow();
+
+    std::string selected_my_nym_id, selected_thread_id, activity_summary_id;
+    QListWidgetItem * pItem = pListWidgetConversations->currentItem();
+
+    if (nullptr != pItem) {
+        QVariant qvarSelectedMyNymId  = pItem->data(Qt::UserRole+1);
+        QVariant qvarSelectedThreadId = pItem->data(Qt::UserRole+2);
+        QVariant qvarActivitySummaryId = pItem->data(Qt::UserRole+3);
+
+        QString  qstrSelectedMyNymId = qvarSelectedMyNymId.isValid() ?
+            qvarSelectedMyNymId.toString() : QString("");
+        QString  qstrSelectedThreadId = qvarSelectedThreadId.isValid() ?
+            qvarSelectedThreadId.toString() : QString("");
+        QString  qstrActivitySummaryId = qvarActivitySummaryId.isValid() ?
+            qvarActivitySummaryId.toString() : QString("");
+
+        selected_my_nym_id  = qstrSelectedMyNymId.toStdString();
+        selected_thread_id  = qstrSelectedThreadId.toStdString();
+        activity_summary_id = qstrActivitySummaryId.toStdString();
+    }
+    // ----------------------------------------------
     pListWidgetConversations->blockSignals(true);
     // ----------------------------------------------
     // Clear it
@@ -2128,16 +2363,54 @@ void Activity::RefreshConversationsTab()
     //
 //  const std::string str_nym_id = Moneychanger::It()->get_default_nym_id().toStdString();
 
-    int nNymCount = opentxs::OT::App().API().Exec().GetNymCount();
-    // ----------------------------------------------------
-    for (int ii = 0; ii < nNymCount; ++ii)
-    {
-        const std::string str_nym_id = opentxs::OT::App().API().Exec().GetNym_ID(ii);
 
-        this->PopulateConversationsForNym(pListWidgetConversations, nIndex, str_nym_id);
+    opentxs::ObjectList myNyms;
+    const auto nNymCount = opentxs::OT::App().API().Exec().GetNymCount();
+
+    for (int nym_index = 0; nym_index < nNymCount; ++nym_index)
+    {
+        const std::string nym_id = opentxs::OT::App().API().Exec().GetNym_ID(nym_index);
+
+        if (!nym_id.empty())
+        {
+            const std::string nym_name = opentxs::OT::App().API().Exec().GetNym_Name(nym_id);
+            myNyms.push_back(std::pair<std::string, std::string>{nym_id, nym_name});
+        }
+    }
+    // ----------------------------------------------------
+    QListWidgetItem * pItemToSelect     {nullptr};
+    QListWidgetItem * pItemToSelectLoop {nullptr};
+
+    const auto & nyms = myNyms;
+//  const auto   nyms = opentxs::OT::App().Wallet().NymList();
+
+    for (const auto & [ nym_id, nym_alias] : nyms)
+    {
+        const opentxs::Identifier nymId{nym_id};
+
+        bool bMatchesActivitySummaryId {false};
+        this->PopulateConversationsForNym(pListWidgetConversations,
+                                          nIndex,
+                                          nym_id,
+                                          activity_summary_id,
+                                          pItemToSelectLoop);
+
+        if (nullptr != pItemToSelectLoop)
+        {
+            pItemToSelect = pItemToSelectLoop;
+        }
     }
     // ----------------------------------------------------
     pListWidgetConversations->blockSignals(false);
+
+    if (nullptr != pItemToSelect)
+    {
+        pListWidgetConversations->setCurrentItem(pItemToSelect);
+    }
+    else
+    {
+        pListWidgetConversations->setCurrentRow(nCurrentRow);
+    }
 }
 
 
@@ -2234,8 +2507,8 @@ void Activity::resetConversationItemsDataModel(const bool bProvidedIds/*=false*/
 
 
 //    {
-//        const Identifier nymID{mynym};
-//        auto& activity = OT::App().UI().ActivitySummary(nymID);
+//        const opentxs::Identifier nymID{mynym};
+//        auto& activity = opentxs::OT::App().UI().ActivitySummary(nymID);
 //        otOut << "Activity:\n";
 //        dashLine();
 //        auto& line = activity.First();
@@ -2296,12 +2569,49 @@ void Activity::resetConversationItemsDataModel(const bool bProvidedIds/*=false*/
 }
 
 
+void Activity::onOpentxsWidgetUpdated(QString qstrWidgetID)
+{
+//    qDebug() << "Activity::onOpentxsWidgetUpdated: " << qstrWidgetID
+//    << " Current thread ID: " << QString::fromStdString(active_thread_);
+
+    const std::string widget_id = qstrWidgetID.toStdString();
+
+    if (!widget_id.empty())
+    {
+        for (auto & [nym_id, summary_id] : thread_summary_)
+        {
+            if (0 == widget_id.compare(summary_id))
+            {
+                // The conversations tab contains a list of conversations
+                // on the left-hand side.
+                // These conversations may be threads owned by local Nym Alice,
+                // or they might be threads owned by local nym Bob.
+                // Therefore there are potentially multiple activity_summary_ids
+                // since there may be multiple local Nyms, and the conversations
+                // of ALL of these Nyms will appear listed on the left-hand side.
+                // Therefore, if ANY of these Nyms have broadcasted a change to
+                // their activity summary (perhaps including new conversations)
+                // then we need to refresh the conversations tab.
+                RefreshConversationsTab();
+                return;
+            }
+        }
+        // -------------------------------------------
+        if (0 == widget_id.compare(active_thread_))
+        {
+            RefreshConversationDetails(ui->listWidgetConversations->currentRow());
+        }
+    }
+}
 
 
 void Activity::RefreshConversationDetails(int nRow)
 {
-    if (nRow <  0)
+    if (nRow < 0)
     {
+        qDebug() << "WARNING!!! I'm setting active_thread_ to an empty string in Activity::RefreshConversationDetails!!!!";
+        active_thread_ = "";
+        ui->plainTextEditMsg->setPlainText("");
         resetConversationItemsDataModel();
     }
     else // nRow >=0
@@ -2309,6 +2619,9 @@ void Activity::RefreshConversationDetails(int nRow)
         QListWidgetItem * conversation_widget = ui->listWidgetConversations->currentItem();
 
         if (nullptr == conversation_widget) {
+            qDebug() << "WARNING!!! I'm setting active_thread_ to an empty string in Activity::RefreshConversationDetails 2!!!!";
+            active_thread_ = "";
+            ui->plainTextEditMsg->setPlainText("");
             resetConversationItemsDataModel();
             return;
         }
@@ -2316,14 +2629,68 @@ void Activity::RefreshConversationDetails(int nRow)
         const QVariant qvarMyNymId  = conversation_widget->data(Qt::UserRole+1);
         const QVariant qvarThreadId = conversation_widget->data(Qt::UserRole+2);
 
-        const QString  qstrMyNymId  = qvarMyNymId.isValid()  ? qvarMyNymId.toString()  : QString("");
+        QString  qstrMyNymId  = qvarMyNymId.isValid()  ? qvarMyNymId.toString()  : QString("");
         const QString  qstrThreadId = qvarThreadId.isValid() ? qvarThreadId.toString() : QString("");
 
+        std::string str_my_nym_id;
+
+        if (qstrMyNymId.isEmpty())
+        {
+            qstrMyNymId = Moneychanger::It()->get_default_nym_id();
+            str_my_nym_id = qstrMyNymId.toStdString();
+        }
+        else
+        {
+            str_my_nym_id = qstrMyNymId.toStdString();
+        }
+        // -------------------------------------------
+        if (!qstrMyNymId.isEmpty())
+        {
+            auto& thread_summary = opentxs::OT::App().UI().ActivitySummary(
+                opentxs::Identifier(str_my_nym_id));
+
+            std::map<std::string,std::string>::iterator
+                it_thread_summary =
+                    thread_summary_.find(str_my_nym_id);
+            if (thread_summary_.end() != it_thread_summary)
+            {
+                thread_summary_.erase(it_thread_summary);
+            }
+
+            thread_summary_[str_my_nym_id] = thread_summary.WidgetID().str();
+        }
+        // -------------------------------------------
         if (qstrMyNymId.isEmpty() || qstrThreadId.isEmpty())
         {
+            qDebug() << "WARNING!!! I'm setting active_thread_ to an empty string in Activity::RefreshConversationDetails 3!!!!";
+
+            active_thread_ = "";
+            ui->plainTextEditMsg->setPlainText("");
             resetConversationItemsDataModel();
             return; // Should never happen.
         }
+        // ----------------------------------------------
+//      const std::string str_my_nym_id = qstrMyNymId.toStdString();
+        const std::string str_thread_id = qstrThreadId.toStdString();
+        // ----------------------------------------------
+        // NOTE: Sometimes the "conversational thread id" is just the contact ID,
+        // like when it's just you and the recipient in a private thread.
+        // But otherwise, it might be a group conversation, in which case the
+        // thread ID is the group ID (and thus NOT a contact ID). But it's okay
+        // to pass it either way, because Opentxs handles it properly either way.
+        //
+        const opentxs::Identifier nymID(str_my_nym_id);
+        const opentxs::Identifier threadID(str_thread_id);
+        auto& thread = opentxs::OT::App().UI().ActivityThread(nymID, threadID);
+
+        active_thread_ = thread.WidgetID().str();
+
+//        qDebug() << "I'm setting active_thread_ to Widget ID: " <<
+//            QString::fromStdString(active_thread_);
+
+        QString qstrMsg = QString::fromStdString(thread.GetDraft()).simplified();
+
+        ui->plainTextEditMsg->setPlainText(qstrMsg);
         // ----------------------------------------------
         resetConversationItemsDataModel(true, &qstrMyNymId, &qstrThreadId);
 
@@ -2483,7 +2850,11 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         // --------------------------------------------------------
         connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(onNeedToPopulateRecordlist()));
         connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(mc_show_opentxs_contact_slot(QString)));
+        connect(this, SIGNAL(RefreshRecordsAndUpdateMenu()),      Moneychanger::It(), SLOT(onNeedToUpdateMenu()));
+        connect(this, SIGNAL(RefreshRecordsAndUpdateMenu()),      Moneychanger::It(), SLOT(onRefreshRecords()));
         // --------------------------------------------------------
+
+
         QWidget* pTab0 = ui->tabWidgetTransactions->widget(0);
         QWidget* pTab1 = ui->tabWidgetTransactions->widget(1);
 
@@ -2510,6 +2881,10 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         pTab4_ = ui->tabWidgetMain->widget(4);
         pTab5_ = ui->tabWidgetMain->widget(5);
         pTab6_ = ui->tabWidgetMain->widget(6);
+
+        // ------------------------
+
+
 
         // ------------------------
         /** Flag Already Init **/
@@ -2731,13 +3106,15 @@ void Activity::on_tableViewReceivedSelectionModel_currentRowChanged(const QModel
     }
 }
 
+// This button is on the "Conversation" tab. (Not the main activity tab).
+//
 void Activity::on_pushButtonSendMsg_clicked()
 {
     const QString qstrPlainText = ui->plainTextEditMsg->toPlainText().simplified();
 
     if (!qstrPlainText.isEmpty())
     {
-        const std::string message{qstrPlainText.toStdString()};
+        const std::string message {qstrPlainText.toStdString()};
 
         if (ui->listWidgetConversations->currentRow() <  0)
         {
@@ -2768,25 +3145,74 @@ void Activity::on_pushButtonSendMsg_clicked()
                 // thread ID is the group ID (and thus NOT a contact ID). But it's okay
                 // to pass it either way, because Opentxs handles it properly either way.
                 //
-                const opentxs::Identifier bgthreadId
-                    {opentxs::OT::App().API().Sync().
-                        MessageContact(opentxs::Identifier(str_my_nym_id), opentxs::Identifier(str_thread_id), message)};
+                const opentxs::Identifier nymID(str_my_nym_id);
+                const opentxs::Identifier threadID(str_thread_id);
+                auto& thread = opentxs::OT::App().UI().ActivityThread(nymID, threadID);
 
-                const auto status = opentxs::OT::App().API().Sync().Status(bgthreadId);
+                // NOTE: Normally I'd assume that the draft is already set by
+                // the time we get to this point. But since we're here, might
+                // as well make sure we have the very latest version before we
+                // send it out.
+                //
+                const auto loaded = thread.SetDraft(message);
 
-                const bool bAddToGUI = (opentxs::ThreadStatus::FINISHED_SUCCESS == status) ||
-                                       (opentxs::ThreadStatus::RUNNING == status);
-                if (bAddToGUI) {
-                    const bool bUseGrayText = (opentxs::ThreadStatus::FINISHED_SUCCESS != status);
-                }
-                else {
+                OT_ASSERT(loaded)
 
+                const auto sent = thread.SendDraft();
+                if (sent) {
+                    ui->plainTextEditMsg->setPlainText("");
                 }
             }
         }
     }
+}
 
-    ui->plainTextEditMsg->setPlainText("");
+void Activity::on_plainTextEditMsg_textChanged()
+{
+    const QString qstrPlainText = ui->plainTextEditMsg->toPlainText().simplified();
+
+    if (!qstrPlainText.isEmpty())
+    {
+        const std::string message{qstrPlainText.toStdString()};
+
+        if (ui->listWidgetConversations->currentRow() <  0)
+        {
+//          ui->listWidgetConversation->clear();
+        }
+        else
+        {
+            QListWidgetItem * conversation_widget = ui->listWidgetConversations->currentItem();
+
+            if (nullptr == conversation_widget) {
+                return;
+            }
+
+            const QVariant qvarMyNymId  = conversation_widget->data(Qt::UserRole+1);
+            const QVariant qvarThreadId = conversation_widget->data(Qt::UserRole+2);
+
+            const QString  qstrMyNymId  = qvarMyNymId.isValid()  ? qvarMyNymId.toString()  : QString("");
+            const QString  qstrThreadId = qvarThreadId.isValid() ? qvarThreadId.toString() : QString("");
+
+            if (!qstrMyNymId.isEmpty() && !qstrThreadId.isEmpty())
+            {
+                const std::string str_my_nym_id = qstrMyNymId.toStdString();
+                const std::string str_thread_id = qstrThreadId.toStdString();
+                // ----------------------------------------------
+                // NOTE: Sometimes the "conversational thread id" is just the contact ID,
+                // like when it's just you and the recipient in a private thread.
+                // But otherwise, it might be a group conversation, in which case the
+                // thread ID is the group ID (and thus NOT a contact ID). But it's okay
+                // to pass it either way, because Opentxs handles it properly either way.
+                //
+                const opentxs::Identifier nymID(str_my_nym_id);
+                const opentxs::Identifier threadID(str_thread_id);
+                auto& thread = opentxs::OT::App().UI().ActivityThread(nymID, threadID);
+                const auto loaded = thread.SetDraft(message);
+
+                OT_ASSERT(loaded)
+            }
+        }
+    }
 }
 
 bool Activity::eventFilter(QObject *obj, QEvent *event)
@@ -3168,10 +3594,18 @@ void Activity::on_treeWidgetAccounts_currentItemChanged(QTreeWidgetItem *current
 
     if (nullptr != current)
     {
-        const int nNodeType = current->data(0, Qt::UserRole  ).toInt();
+        const int nNodeType = current->data(0, Qt::UserRole+0).toInt();
         const int nHeader   = current->data(0, Qt::UserRole+1).toInt();
 
         switch (nNodeType) {
+            case AC_NODE_TYPE_HEADER: {
+//                qstrCurrentTLA_      = QString("");
+//                qstrCurrentNotary_   = QString("");
+//                qstrCurrentAccount_  = QString("");
+//                qstrCurrentContact_  = QString("");
+                ;
+            } break;
+
             case AC_NODE_TYPE_ASSET_TOTAL: {
                 const QVariant qvarTLA = current->data(0, Qt::UserRole+2);
 
@@ -3179,6 +3613,8 @@ void Activity::on_treeWidgetAccounts_currentItemChanged(QTreeWidgetItem *current
                 qstrCurrentNotary_   = QString("");
                 qstrCurrentAccount_  = QString("");
                 qstrCurrentContact_  = QString("");
+
+//                qDebug() << "Setting qstrCurrentContact_ to empty string! 7\n";
 
                 pPmntProxyModelInbox_ ->setFilterTLA(qstrCurrentTLA_);
                 pPmntProxyModelOutbox_->setFilterTLA(qstrCurrentTLA_);
@@ -3191,6 +3627,9 @@ void Activity::on_treeWidgetAccounts_currentItemChanged(QTreeWidgetItem *current
                 qstrCurrentNotary_   = QString("");
                 qstrCurrentAccount_  = QString("");
                 qstrCurrentContact_  = QString("");
+
+//                qDebug() << "Setting qstrCurrentContact_ to empty string! 8\n";
+
                 // Todo someday.
                 pPmntProxyModelInbox_ ->setFilterNone();
                 pPmntProxyModelOutbox_->setFilterNone();
@@ -3212,6 +3651,8 @@ void Activity::on_treeWidgetAccounts_currentItemChanged(QTreeWidgetItem *current
                 qstrCurrentNotary_   = qvarNotaryId.isValid()  ? qvarNotaryId.toString()  : QString("");
                 qstrCurrentContact_  = QString("");
 
+//                qDebug() << "Setting qstrCurrentContact_ to empty string! 9\n";
+
                 pPmntProxyModelInbox_ ->setFilterNotary(qstrCurrentNotary_);
                 pPmntProxyModelOutbox_->setFilterNotary(qstrCurrentNotary_);
             } break;
@@ -3224,6 +3665,8 @@ void Activity::on_treeWidgetAccounts_currentItemChanged(QTreeWidgetItem *current
                 qstrCurrentNotary_   = QString("");
                 qstrCurrentAccount_  = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
                 qstrCurrentContact_  = QString("");
+
+//                qDebug() << "Setting qstrCurrentContact_ to empty string! 10\n";
 
                 pPmntProxyModelInbox_ ->setFilterAccount(qstrCurrentAccount_);
                 pPmntProxyModelOutbox_->setFilterAccount(qstrCurrentAccount_);
@@ -3247,6 +3690,10 @@ void Activity::on_treeWidgetAccounts_currentItemChanged(QTreeWidgetItem *current
                 qstrCurrentAccount_  = QString("");
                 qstrCurrentContact_  = QString("");
 
+//                qDebug() << "Setting qstrCurrentContact_ to empty string! 11 default case\n";
+
+//                qDebug() << "NODE TYPE: " << QString::number(nNodeType);
+
                 pPmntProxyModelInbox_ ->setFilterNone();
                 pPmntProxyModelOutbox_->setFilterNone();
             } break;
@@ -3254,13 +3701,18 @@ void Activity::on_treeWidgetAccounts_currentItemChanged(QTreeWidgetItem *current
     }
     else
     {
-        qstrCurrentTLA_      = QString("");
-        qstrCurrentNotary_   = QString("");
-        qstrCurrentAccount_  = QString("");
-        qstrCurrentContact_  = QString("");
+        // NOTE: This may have been the bug that caused the left-hand of
+        // activity page to lose selection after a few seconds delay.
+        // Commenting it out now to test that. May keep it that way, if it fixes it.
+//        qstrCurrentTLA_      = QString("");
+//        qstrCurrentNotary_   = QString("");
+//        qstrCurrentAccount_  = QString("");
+//        qstrCurrentContact_  = QString("");
 
-        pPmntProxyModelInbox_ ->setFilterNone();
-        pPmntProxyModelOutbox_->setFilterNone();
+//        qDebug() << "Setting qstrCurrentContact_ to empty string! 12 (it was nullptr)\n";
+
+//        pPmntProxyModelInbox_ ->setFilterNone();
+//        pPmntProxyModelOutbox_->setFilterNone();
     }
     // --------------------------------------
     RefreshPayments();
@@ -4042,10 +4494,10 @@ void Activity::tableViewPayments_PopupMenu(const QPoint &pos, QTableView * pTabl
                 if (!bAdded) // Todo.
                     /*
                      * Justus:
-                       - Identifier ContactManager::ContactID(const Identifier& nymID) const
+                       - opentxs::Identifier ContactManager::ContactID(const opentxs::Identifier& nymID) const
                          That will tell you if a nym is associated with a contact
 
-                       - bool Contact::AddNym(const Identifier& nymID, const bool primary);
+                       - bool Contact::AddNym(const opentxs::Identifier& nymID, const bool primary);
                          Will add it to an existing contact
                     */
 
@@ -4821,7 +5273,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
     // ------------------------
     if ( nullptr != pTreeItem )
     {
-        const QVariant qvarTreeNodeType = pTreeItem->data(0, Qt::UserRole  );
+        const QVariant qvarTreeNodeType = pTreeItem->data(0, Qt::UserRole+0);
         nTreeNodeType = qvarTreeNodeType.isValid() ? qvarTreeNodeType.toInt() : -1;
         // ------------------------
         const QVariant qvarUnderHeader = pTreeItem->data(0, Qt::UserRole+1);
@@ -4904,7 +5356,7 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
         {
             pActionContactMsg = popupMenuAccounts_->addAction(tr("Message this contact"));
             pActionContactPay = popupMenuAccounts_->addAction(tr("Pay this contact"));
-            pActionContactInvoice = popupMenuAccounts_->addAction(tr("Request payment"));
+            pActionContactInvoice = popupMenuAccounts_->addAction(tr("Invoice this contact"));
             pActionContactRecurring = popupMenuAccounts_->addAction(tr("Request recurring payments"));
         }
         //pActionExistingContact = popupMenuAccounts_->addAction(tr("Merge with existing Opentxs Contact"));
@@ -6025,10 +6477,10 @@ bool Activity::get_deposit_address(
     Issuer::BailmentInstructions() is what you want
     13:13
      virtual std::vector<BailmentDetails> BailmentInstructions(
-        const Identifier& unitID,
+        const opentxs::Identifier& unitID,
         const bool onlyUnused = true) const = 0;
 
-    That will give you a vector of identifier, proto::BailmentReply pairs.
+    That will give you a vector of opentxs::Identifier, proto::BailmentReply pairs.
     13:15
     Grab the address from the BailmentReply.
     13:15
@@ -6307,7 +6759,7 @@ void Activity::on_toolButtonAddContact_clicked()
 //
 //            m_pOwner->m_map.insert(qstrContactId, qstrNewContactLabel);
 //            m_pOwner->SetPreSelected(qstrContactId);
-//            emit RefreshRecordsAndUpdateMenu();
+            emit RefreshRecordsAndUpdateMenu();
         }
         else if (bPreexistingOpentxsContact) { // This block means the old-style Moneychanger Contact already existed, AND the new-style Opentxs Contact already existed as well!
             QString contactName = MTContactHandler::getInstance()->GetContactName(nExistingContactId);
@@ -6316,7 +6768,7 @@ void Activity::on_toolButtonAddContact_clicked()
 //            // Since it already exists, we'll select it in the GUI, so the user can see what we're
 //            // talking about when we tell him that it already exists.
 //            m_pOwner->SetPreSelected(qstrContactId);
-//            emit RefreshRecordsAndUpdateMenu();
+            emit RefreshRecordsAndUpdateMenu();
         }
         else {
             // This block means the old-style Moneychanger Contact already existed, and the
@@ -6351,7 +6803,7 @@ void Activity::on_toolButtonAddContact_clicked()
                                  tr("Failed trying to create old-style contact for NymID: %1, "
                                     "even though the new-style Opentxs Contact exists (%2).").arg(nymID).arg(qstrContactId));
 //            m_pOwner->SetPreSelected(qstrContactId);
-//            emit RefreshRecordsAndUpdateMenu();
+            emit RefreshRecordsAndUpdateMenu();
             return;
         }
         else {
@@ -6368,15 +6820,148 @@ void Activity::on_toolButtonAddContact_clicked()
 //        //
 //        m_pOwner->m_map.insert(qstrContactId, qstrNewContactLabel);
 //        m_pOwner->SetPreSelected(qstrContactId);
-//        emit RefreshRecordsAndUpdateMenu();
+        emit RefreshRecordsAndUpdateMenu();
     }
 }
+
+
+
+void Activity::RetrieveSelectedIds(
+   QString  & qstrTLA,
+   QString  & qstrAssetTypeId,
+   QString  & qstrAccountId,
+   QString  & qstrServerId,
+   QString  & qstrContactId,
+   bool     & bSelectedSNP,
+   bool     & bSelectedHosted,
+   bool     & bSelectedNotary,
+   bool     & bSelectedAcctLowLevel,
+   bool     & bSelectedAccount,
+   bool     & bSelectedAsset,
+   bool     & bSelectedContact
+)
+{
+    QTreeWidget * pTreeWidgetAccounts = ui->treeWidgetAccounts;
+    if (nullptr == pTreeWidgetAccounts) {
+        return;
+    }
+    // ----------------------------------------
+    int nTreeNodeType{-1};
+    int nUnderHeader {-1};
+
+    QTreeWidgetItem * pTreeItem = pTreeWidgetAccounts->currentItem(); // Might be Null...
+    // ------------------------
+    if ( nullptr != pTreeItem )
+    {
+        const QVariant qvarTreeNodeType = pTreeItem->data(0, Qt::UserRole+0);
+        nTreeNodeType = qvarTreeNodeType.isValid() ? qvarTreeNodeType.toInt() : -1;
+        // ------------------------
+        const QVariant qvarUnderHeader = pTreeItem->data(0, Qt::UserRole+1);
+        nUnderHeader = qvarUnderHeader.isValid() ? qvarUnderHeader.toInt() : -1;
+        // ------------------------
+        if(   (-1) != nTreeNodeType
+           && (-1) != nUnderHeader)
+        {
+            const QVariant qvarTLA = pTreeItem->data(0, Qt::UserRole+2);
+            const QVariant qvarAssetTypeId = pTreeItem->data(0, Qt::UserRole+3);
+            const QVariant qvarAccountId = pTreeItem->data(0, Qt::UserRole+4);
+            const QVariant qvarServerId = pTreeItem->data(0, Qt::UserRole+5);
+            const QVariant qvarContactId = pTreeItem->data(0, Qt::UserRole+6);
+            // ------------------------
+            qstrTLA = qvarTLA.isValid() ? qvarTLA.toString() : QString("");
+            qstrAssetTypeId = qvarAssetTypeId.isValid() ? qvarAssetTypeId.toString() : QString("");
+            qstrAccountId = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
+            qstrServerId = qvarServerId.isValid() ? qvarServerId.toString() : QString("");
+            qstrContactId = qvarContactId.isValid() ? qvarContactId.toString() : QString("");
+        }
+    }
+    // ------------------------
+    /*
+     #define ACTIVITY_TREE_HEADER_TOTALS   0
+     #define ACTIVITY_TREE_HEADER_LOCAL    1
+     #define ACTIVITY_TREE_HEADER_SNP      2
+     #define ACTIVITY_TREE_HEADER_HOSTED   3
+     #define ACTIVITY_TREE_HEADER_CONTACTS 4
+
+     #define AC_NODE_TYPE_HEADER          0
+     #define AC_NODE_TYPE_ASSET_TOTAL     1
+     #define AC_NODE_TYPE_CONTACT         2
+     #define AC_NODE_TYPE_LOCAL_WALLET    3
+     #define AC_NODE_TYPE_LOCAL_ACCOUNT   4
+     #define AC_NODE_TYPE_SNP_NOTARY      5
+     #define AC_NODE_TYPE_SNP_ACCOUNT     6
+     #define AC_NODE_TYPE_HOSTED_NOTARY   7
+     #define AC_NODE_TYPE_HOSTED_ACCOUNT  8
+     */
+
+    bSelectedSNP = (AC_NODE_TYPE_SNP_NOTARY  == nTreeNodeType)
+    || (AC_NODE_TYPE_SNP_ACCOUNT == nTreeNodeType);
+    // --------------------------------------------------
+    bSelectedHosted = (AC_NODE_TYPE_HOSTED_NOTARY  == nTreeNodeType)
+    || (AC_NODE_TYPE_HOSTED_ACCOUNT == nTreeNodeType);
+    // --------------------------------------------------
+    bSelectedNotary = !qstrServerId.isEmpty() &&
+    (   AC_NODE_TYPE_SNP_NOTARY    == nTreeNodeType
+     || AC_NODE_TYPE_HOSTED_NOTARY == nTreeNodeType );
+
+    bSelectedAcctLowLevel = !qstrAccountId.isEmpty() &&
+    (   AC_NODE_TYPE_SNP_ACCOUNT    == nTreeNodeType
+     || AC_NODE_TYPE_HOSTED_ACCOUNT == nTreeNodeType);
+
+    // If the user has selected an actual account tree node, or he has selected
+    // a notary tree node that also happens to be rolled up from a single account ID,
+    // either way, there's an account ID and the user has "selected an account".
+    //
+    bSelectedAccount =  (bSelectedAcctLowLevel ||
+                                    (bSelectedNotary && !qstrAccountId.isEmpty()) );
+    bSelectedAsset   = !qstrAssetTypeId.isEmpty();
+    bSelectedContact = (ACTIVITY_TREE_HEADER_CONTACTS == nUnderHeader) && !qstrContactId.isEmpty();
+    // --------------------------------------------------
+    if (qstrAccountId.isEmpty()) {
+        qstrAccountId = Moneychanger::It()->get_default_account_id();
+    }
+    // --------------------------------------------------
+    if (qstrAccountId.isEmpty()) {
+        qstrAccountId = qstrCurrentAccount_;
+    }
+    // --------------------------------------------------
+    if (qstrContactId.isEmpty()) {
+        qstrContactId = qstrCurrentContact_;
+    }
+}
+
 
 void Activity::on_toolButtonPayContact_clicked()
 {
     qDebug() << "on_toolButtonPayContact_clicked was successfully called.";
 
-    const QString qstrAccountId, qstrContactId;
+    QString  qstrTLA;
+    QString  qstrAssetTypeId;
+    QString  qstrAccountId;
+    QString  qstrServerId;
+    QString  qstrContactId;
+    bool     bSelectedSNP;
+    bool     bSelectedHosted;
+    bool     bSelectedNotary;
+    bool     bSelectedAcctLowLevel;
+    bool     bSelectedAccount;
+    bool     bSelectedAsset;
+    bool     bSelectedContact;
+
+    RetrieveSelectedIds(qstrTLA,
+                        qstrAssetTypeId,
+                        qstrAccountId,
+                        qstrServerId,
+                        qstrContactId,
+                        bSelectedSNP,
+                        bSelectedHosted,
+                        bSelectedNotary,
+                        bSelectedAcctLowLevel,
+                        bSelectedAccount,
+                        bSelectedAsset,
+                        bSelectedContact
+                        );
+    // ------------------------
     emit payFromAccountToContact(qstrAccountId, qstrContactId);
 }
 
@@ -6384,7 +6969,34 @@ void Activity::on_toolButtonMsgContact_clicked()
 {
     qDebug() << "on_toolButtonMsgContact_clicked was successfully called.";
 
-    const QString qstrMyNymId, qstrContactId;
+    QString  qstrTLA;
+    QString  qstrAssetTypeId;
+    QString  qstrAccountId;
+    QString  qstrServerId;
+    QString  qstrContactId;
+    bool     bSelectedSNP;
+    bool     bSelectedHosted;
+    bool     bSelectedNotary;
+    bool     bSelectedAcctLowLevel;
+    bool     bSelectedAccount;
+    bool     bSelectedAsset;
+    bool     bSelectedContact;
+
+    RetrieveSelectedIds(qstrTLA,
+                        qstrAssetTypeId,
+                        qstrAccountId,
+                        qstrServerId,
+                        qstrContactId,
+                        bSelectedSNP,
+                        bSelectedHosted,
+                        bSelectedNotary,
+                        bSelectedAcctLowLevel,
+                        bSelectedAccount,
+                        bSelectedAsset,
+                        bSelectedContact
+                        );
+    // ------------------------
+    const QString qstrMyNymId = Moneychanger::It()->get_default_nym_id();
 
     emit messageContact(qstrMyNymId, qstrContactId);
 }
@@ -6393,7 +7005,33 @@ void Activity::on_toolButtonInvoiceContact_clicked()
 {
     qDebug() << "on_toolButtonInvoiceContact_clicked was successfully called.";
 
-    const QString qstrAccountId, qstrContactId;
+    QString  qstrTLA;
+    QString  qstrAssetTypeId;
+    QString  qstrAccountId;
+    QString  qstrServerId;
+    QString  qstrContactId;
+    bool     bSelectedSNP;
+    bool     bSelectedHosted;
+    bool     bSelectedNotary;
+    bool     bSelectedAcctLowLevel;
+    bool     bSelectedAccount;
+    bool     bSelectedAsset;
+    bool     bSelectedContact;
+
+    RetrieveSelectedIds(qstrTLA,
+                        qstrAssetTypeId,
+                        qstrAccountId,
+                        qstrServerId,
+                        qstrContactId,
+                        bSelectedSNP,
+                        bSelectedHosted,
+                        bSelectedNotary,
+                        bSelectedAcctLowLevel,
+                        bSelectedAccount,
+                        bSelectedAsset,
+                        bSelectedContact
+                        );
+    // ------------------------
     emit requestToAccountFromContact(qstrAccountId, qstrContactId);
 }
 
