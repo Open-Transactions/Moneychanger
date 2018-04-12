@@ -1355,6 +1355,7 @@ void Moneychanger::setupRecordList()
     GetRecordlist().AcceptChequesAutomatically  (true);
     GetRecordlist().AcceptReceiptsAutomatically (true);
     GetRecordlist().AcceptTransfersAutomatically(false);
+    GetRecordlist().IgnoreMail(!expertMode());
 }
 
 // Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
@@ -2847,6 +2848,7 @@ void Moneychanger::onExpertModeUpdated(bool bExpertMode)
     if (bContactWindowVisible)
         mc_showcontact_slot(contact_id);
     // --------------------------------
+    GetRecordlist().IgnoreMail(!bExpertMode);
 }
 
 void Moneychanger::mc_nymmanager_dialog(QString qstrPresetID/*=QString("")*/)
