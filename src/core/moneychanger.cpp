@@ -8372,8 +8372,8 @@ int32_t Moneychanger::sendToNextParty(const std::string& server, const std::stri
     // ID or Name as well (I think there's an API call for that...)
     std::string hisNymID = hisnym;
 
-    std::unique_ptr<opentxs::OTPayment> payment =
-        std::make_unique<opentxs::OTPayment>(opentxs::String(contract.c_str()));
+    std::shared_ptr<const opentxs::OTPayment> payment =
+        std::make_shared<const opentxs::OTPayment>(opentxs::String(contract.c_str()));
     
     OT_ASSERT(payment);
     

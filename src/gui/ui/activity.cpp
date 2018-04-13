@@ -2850,8 +2850,6 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         // --------------------------------------------------------
         connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(onNeedToPopulateRecordlist()));
         connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(mc_show_opentxs_contact_slot(QString)));
-        connect(this, SIGNAL(RefreshRecordsAndUpdateMenu()),      Moneychanger::It(), SLOT(onNeedToUpdateMenu()));
-        connect(this, SIGNAL(RefreshRecordsAndUpdateMenu()),      Moneychanger::It(), SLOT(onRefreshRecords()));
         // --------------------------------------------------------
 
 
@@ -6961,7 +6959,25 @@ void Activity::on_toolButtonPayContact_clicked()
                         bSelectedAsset,
                         bSelectedContact
                         );
-    // ------------------------
+    // ---------------------------------------------------
+    // If the qstrContactId is empty, need to make the user choose from a list.
+    //
+    if (qstrContactId.isEmpty())
+    {
+        // Pop up a Contact selection box. The user chooses an existing contact.
+        //
+        DlgChooser theChooser(this);
+        // -----------------------------------------------
+        mapIDName & the_map = theChooser.m_map;
+        MTContactHandler::getInstance()->GetOpentxsContacts(the_map);
+        // -----------------------------------------------
+        theChooser.setWindowTitle(tr("Choose a contact"));
+        if (theChooser.exec() != QDialog::Accepted)
+            return;
+        // -----------------------------------------------
+        qstrContactId = theChooser.GetCurrentID();
+    }
+    // ---------------------------------------------------
     emit payFromAccountToContact(qstrAccountId, qstrContactId);
 }
 
@@ -6997,7 +7013,26 @@ void Activity::on_toolButtonMsgContact_clicked()
                         );
     // ------------------------
     const QString qstrMyNymId = Moneychanger::It()->get_default_nym_id();
-
+    // ---------------------------------------------------
+    // If the qstrContactId is empty, need to make the user choose from a list.
+    // That way we ALWAYS emit both IDs.
+    //
+    if (qstrContactId.isEmpty())
+    {
+        // Pop up a Contact selection box. The user chooses an existing contact.
+        //
+        DlgChooser theChooser(this);
+        // -----------------------------------------------
+        mapIDName & the_map = theChooser.m_map;
+        MTContactHandler::getInstance()->GetOpentxsContacts(the_map);
+        // -----------------------------------------------
+        theChooser.setWindowTitle(tr("Choose a contact"));
+        if (theChooser.exec() != QDialog::Accepted)
+            return;
+        // -----------------------------------------------
+        qstrContactId = theChooser.GetCurrentID();
+    }
+    // ---------------------------------------------------
     emit messageContact(qstrMyNymId, qstrContactId);
 }
 
@@ -7031,7 +7066,25 @@ void Activity::on_toolButtonInvoiceContact_clicked()
                         bSelectedAsset,
                         bSelectedContact
                         );
-    // ------------------------
+    // ---------------------------------------------------
+    // If the qstrContactId is empty, need to make the user choose from a list.
+    //
+    if (qstrContactId.isEmpty())
+    {
+        // Pop up a Contact selection box. The user chooses an existing contact.
+        //
+        DlgChooser theChooser(this);
+        // -----------------------------------------------
+        mapIDName & the_map = theChooser.m_map;
+        MTContactHandler::getInstance()->GetOpentxsContacts(the_map);
+        // -----------------------------------------------
+        theChooser.setWindowTitle(tr("Choose a contact"));
+        if (theChooser.exec() != QDialog::Accepted)
+            return;
+        // -----------------------------------------------
+        qstrContactId = theChooser.GetCurrentID();
+    }
+    // ---------------------------------------------------
     emit requestToAccountFromContact(qstrAccountId, qstrContactId);
 }
 

@@ -45,7 +45,13 @@ public:
     bool requestFunds(QString memo, QString amount);
 
     bool sendInvoice        (int64_t amount, QString toNymId, QString toContactId, QString fromAcctId, QString note);
-    bool sendChequeLowLevel (int64_t amount, QString toNymId, QString toContactId, QString fromAcctId, QString note, bool isInvoice);
+    bool sendChequeLowLevel (int64_t amount,
+                             QString toNymId,
+                             QString toContactId,
+                             QString fromAcctId,
+                             QString note,
+                             bool isInvoice,
+                             bool payerNymIsBlank); // Meaning ANY Nym can pay this invoice.
 
 signals:
     void balancesChanged();
@@ -59,17 +65,12 @@ protected:
 
 private slots:
     void onBalancesChanged();
-
     void on_toButton_clicked();
     void on_fromButton_clicked();
     void on_requestButton_clicked();
-
     void on_memoEdit_textChanged(const QString &arg1);
-
     void on_amountEdit_editingFinished();
-
     void on_toolButton_clicked();
-
     void on_toolButtonManageAccts_clicked();
 
 private:
