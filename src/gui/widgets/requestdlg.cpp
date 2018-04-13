@@ -31,29 +31,66 @@
 
 
 // ----------------------------------------------------------------------
+// Note that on the request dialog, we are sending invoices.
+// Therefore the "from" account is payee's account where funds will
+// flow in the event that the invoice is processed by its recipient.
+//
 bool MTRequestDlg::sendInvoice(int64_t amount, QString toNymId, QString toContactId, QString fromAcctId, QString note)
 {
+    // This is already verified by the calling function.
+//    if (fromAcctId.isEmpty())
+//    {
+//        QMessageBox::warning(this, tr("Missing Payee Account"),
+//            tr("You must choose which of your accounts will receive the funds."));
+//        return false;
+//    }
+    std::string str_fromAcctId(fromAcctId.toStdString());
+    std::string str_fromNymId(opentxs::OT::App().API().Exec().GetAccountWallet_NymID(str_fromAcctId));
+    // ------------------------------------------------------------
     // If there's a contact ID for recipient but no Nym ID, then we need to find
-    // out the Nym ID, so we can write him the cheque (invoice).
+    // out the Nym ID, so we can WRITE him the cheque (invoice). (Unless we deliberately
+    // leave the recipient blank on the invoice, so we can give it to anyone).
     //
-    // If there's a recipient Nym Id but no Contact Id, then we need to find out
+    // If there's no Contact Id, then we need to find out
     // the Contact ID, so we can SEND him the cheque (invoice).
     //
     // So both are needed / preferred though I suppose it's possible to leave the field
     // blank on the invoice itself (like a blank cheque, which opentxs supports) so we can
     // still write the cheque, worst case. And it's still possible to send through the server
     // where the cheque is drawn, though there's no guarantee that the recipient has ever
-    // seen that server before!
+    // seen that server before! (Whereas with a Contact, you definitely KNOW you are
+    // sending the instrument via a method where the recipient WILL receive it).
+    //
+    // Already done higher up.
+//    if (toContactId.isEmpty())
+//    {
+//        if (!toNymId.isEmpty())
+//        {
+//            const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
+//                    .ContactID(opentxs::Identifier{toNymId.toStdString()});
+//            const opentxs::String strToContactId(toContact_Id);
+//            toContactId = toContact_Id.empty() ? QString("") : QString::fromStdString(std::string(strToContactId.Get()));
+//        }
+//    }
+    // --------------------------------
+    // Perhaps the payee wishes to leave the payer Nym blank, so that
+    // ANYONE could pay this invoice, and not just a specific person.
+    // Fair enough.
+    //
+    // But even so, he still needs a Contact ID or he won't have
+    // anyone to SEND the message that contains the invoice!
+    //
+    // Therefore by this point, we MUST have a Contact Id, even if the NymID
+    // remains blank. (Alternately, we could just pop up the invoice in a dialog
+    // so the user, in that case, can just copy it and send out-of-band.)
     //
     if (toContactId.isEmpty())
     {
-        if (!toNymId.isEmpty())
-        {
-            const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
-                    .ContactID(opentxs::Identifier{toNymId.toStdString()});
-            const opentxs::String     strToContactId(toContact_Id);
-            toContactId = toContact_Id.empty() ? QString("") : QString::fromStdString(std::string(strToContactId.Get()));
-        }
+        qDebug() << "Cannot request funds from an empty contact id, aborting.";
+        // todo: someday we will allow this, by popping up a dialog so the
+        // user can copy the invoice and send it out-of-band.
+        //
+        return false;
     }
     // --------------------------------
     if (toNymId.isEmpty())
@@ -62,13 +99,20 @@ bool MTRequestDlg::sendInvoice(int64_t amount, QString toNymId, QString toContac
         {
             // Need to get nyms (or primary nym, or whatever) for this contact. Here.
             //
+            // Todo: We really don't need to find the "to Nym" at this point.
+            // Instead we could just ask the user here if he wants to leave
+            // the invoicee field blank. Only if the user says "No" do we then
+            // do the below code and choose a Nym as the payer.
+
             mapIDName theNymMap;
 
             if (!MTContactHandler::getInstance()->GetNyms(theNymMap, toContactId.toStdString()))
             {
+                // Again: could choose at this point just to leave the invoicee
+                // blank on the instrument.
+                //
                 QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
-                    tr("Sorry, there are no NymIds associated with this opentxs contact. "
-                       "Currently only Open-Transactions invoices are supported, for requesting payment."));
+                    tr("Sorry, there are no NymIds associated with this opentxs contact. "));
                 return false;
             }
             else
@@ -88,46 +132,67 @@ bool MTRequestDlg::sendInvoice(int64_t amount, QString toNymId, QString toContac
                     if (theNymChooser.exec() == QDialog::Accepted)
                         toNymId = theNymChooser.m_qstrCurrentID;
                     else // User must have cancelled.
-                        toNymId = QString("");
+                        return  false;
                 }
             }
         }
     }
     // --------------------------------
-    if (   toNymId.isEmpty()
-        || toContactId.isEmpty()
-        ||  (opentxs::Messagability::READY != opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(toNymId.toStdString()), opentxs::Identifier(toContactId.toStdString()))))
+    if (   toContactId.isEmpty()
+        || str_fromNymId.empty()
+        ||  (opentxs::Messagability::READY !=
+             opentxs::OT::App().API().Sync()
+             .CanMessage(opentxs::Identifier(str_fromNymId),
+                         opentxs::Identifier(toContactId.toStdString()))))
     {
-        QMessageBox::warning(this, tr("Not yet messageable"), tr("This contact is not yet messageable. "
-                                                          "However, credentials are being requested in the background, "
-                                                          "so it's worth trying again sometime soon."));
+        QMessageBox::warning(this, tr("Not yet messageable"),
+                             tr("This contact is not yet messageable. However, "
+                                "credentials are being requested in the background, "
+                                "so it's worth trying again sometime soon."));
         return false;
     }
     else
         canMessage_ = true;
     // --------------------------------
-    return sendChequeLowLevel(amount, toNymId, toContactId, fromAcctId, note, true); //isInvoice = true
+    return sendChequeLowLevel(amount, toNymId, toContactId, fromAcctId, note,
+                              true, //isInvoice = true
+                              toNymId.isEmpty()); // payerNymIsBlank
 }
 
 // -------------------------------------------------------------------
 
-bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString toContactId, QString fromAcctId, QString note, bool isInvoice)
+bool MTRequestDlg::sendChequeLowLevel(
+    int64_t amount,
+    QString toNymId,
+    QString toContactId,
+    QString fromAcctId,
+    QString note,
+    bool isInvoice,
+    bool payerNymIsBlank)  // Meaning ANY Nym can pay this invoice.
 {
     QString nsChequeType = isInvoice ? QString("invoice") : QString("cheque");
     // ------------------------------------------------------------
-    if (toNymId.size() == 0 || toContactId.size() == 0)
+    if (toNymId.isEmpty() && !payerNymIsBlank)
     {
-        qDebug() << QString("Cannot send %1 to an empty nym/contact id, aborting.").arg(nsChequeType);
+        qDebug() << QString("Cannot send %1 to an empty nym id, aborting.").arg(nsChequeType);
         return false;
     }
-    if (fromAcctId.size() == 0)
+    if (toContactId.isEmpty())
+    {
+        qDebug() << QString("Cannot send %1 to an empty contact id, aborting.").arg(nsChequeType);
+        return false;
+        // Todo: someday we could allow this case, and just pop up the invoice
+        // on the screen in a dialog for export so the user can copy/paste it
+        // out-of-band.
+    }
+    if (fromAcctId.isEmpty())
     {
         qDebug() << QString("Cannot send %1 from a non-existent account id, aborting.").arg(nsChequeType);
         return false;
     }
     if (amount <= 0)
     {
-        qDebug() << QString("Why send 0 (or less) units? Aborting send %1.").arg(nsChequeType);
+        qDebug() << QString("Why invoice an amount of 0 (or less) units? Aborting send %1.").arg(nsChequeType);
         return false;
     }
     // Note: in the case of cheques we don't have to see if the amount exceeds the
@@ -138,7 +203,7 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString t
     // Also of course, in the case of invoices, your account balance is irrelevant
     // since an invoice can only increase your balance, not decrease it.
     if (note.isEmpty())
-        note = QString("From the Qt systray app.");
+        note = QString("Request for payment.");
     // ------------------------------------------------------------
     std::string str_toNymId   (toNymId   .toStdString());
     std::string str_fromAcctId(fromAcctId.toStdString());
@@ -158,30 +223,44 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString t
     // ------------------------------------------------------------
     const opentxs::Identifier notaryID{str_NotaryID}, nymID{str_fromNymId};
     if (!opentxs::OT::App().API().ServerAction().GetTransactionNumbers(nymID, notaryID, 1)) {
-        qDebug() << QString("Failed trying to acquire a transaction number to write the cheque with.");
+        qDebug() << QString("Failed trying to acquire a transaction number to write the %1 with.").arg(nsChequeType);
         return false;
     }
     // ------------------------------------------------------------
-    std::string strCheque = opentxs::OT::App().API().Exec().WriteCheque(str_NotaryID, trueAmount, tFrom, tTo,
-                                                    str_fromAcctId, str_fromNymId, note.toStdString(),
-                                                    str_toNymId);
-    if (strCheque.empty())
+    // No point even writing the cheque if we already know it will fail
+    // to be sent...
+    //
+    if (canMessage_)
     {
-        qDebug() << QString("Failed creating %1.").arg(nsChequeType);
-        return false;
-    }
-    // ----------------------------------------------------
-    if (false)
-//  if (canMessage_) // TODO: Put this back. Deactivated temporarily until MessageContact has a payment option.
-    {
+        std::string strCheque = opentxs::OT::App().API().Exec().WriteCheque(
+                                    str_NotaryID, trueAmount, tFrom, tTo,
+                                    str_fromAcctId, str_fromNymId, note.toStdString(),
+                                    str_toNymId);
+        if (strCheque.empty())
+        {
+            qDebug() << QString("Failed creating %1.").arg(nsChequeType);
+            return false;
+        }
+        // ----------------------------------------------------
+//      Identifier PayContact(
+//          const Identifier& senderNymID,
+//          const Identifier& contactID,
+//          std::unique_ptr<OTPayment>& payment) const = 0;
+
+        const opentxs::String otstrCheque(strCheque.c_str());
+
+        std::shared_ptr<const opentxs::OTPayment> pPayment
+            (new opentxs::OTPayment(otstrCheque));
+
         const opentxs::Identifier bgthreadId
             {opentxs::OT::App().API().Sync().
-                MessageContact(opentxs::Identifier(str_fromNymId), opentxs::Identifier(toContactId.toStdString()), strCheque)};
+                PayContact(opentxs::Identifier(str_fromNymId),
+                           opentxs::Identifier(toContactId.toStdString()),
+                           pPayment
+                           )};
 
-        // TODO: ^^^ The MessageContact needs to be "PayContact" or something, so that
-        // it does a send_user_instrument instead of a send_user_message.
-        // Until that it fixed, I can't use MessageContact here yet, which is why
-        // this block has an if(false) at the top of it. Fix!
+        // Instead of MessageContact we use PayContact, so that it does
+        // a send_user_instrument instead of a send_user_message.
         //
         const auto status = opentxs::OT::App().API().Sync().Status(bgthreadId);
 
@@ -199,41 +278,9 @@ bool MTRequestDlg::sendChequeLowLevel(int64_t amount, QString toNymId, QString t
         return false;
     }
     // ------------------------------------------------------------
-
-    // TODO: Entirely remove the below code, once the above block is fixed.
-    // We can't presume the invoicee has an account on our account's notary,
-    // just because we happen to have an account there. We have to message him
-    // where he actually RECEIVES messages.
-    //
-    std::string  strResponse;
-    {
-        MTSpinner theSpinner;
-
-        // Just because *I* have an account on the notary, does NOT
-        // mean that the RECIPIENT NYM has an account on that Notary!
-        // Therefore we always much prefer using the new Opentxs API
-        // and its MessageContact call.
-        //
-        std::unique_ptr<opentxs::OTPayment> payment =
-            std::make_unique<opentxs::OTPayment>(opentxs::String(strCheque.c_str()));
-        auto action = opentxs::OT::App().API().ServerAction().SendPayment(nymID, notaryID, opentxs::Identifier(str_toNymId), payment);
-    	strResponse = action->Run();
-    }
-
-    int32_t nReturnVal  = opentxs::VerifyMessageSuccess(strResponse);
-    if (1 != nReturnVal)
-    {
-        qDebug() << QString("send %1: failed.").arg(nsChequeType);
-        Moneychanger::It()->HasUsageCredits(str_NotaryID, str_fromNymId);
-    }
-    else
-    {
-        qDebug() << QString("Success in send %1!").arg(nsChequeType);
-        return true;
-    }
     // NOTE: We do not retrieve the account files here, in the case of success.
     // That's because none of them have changed yet from this operation -- not
-    // until the recipient deposits the cheque.
+    // until the recipient processes the invoice.
     return false;
 }
 
@@ -281,10 +328,13 @@ void MTRequestDlg::setInitialHisContact (QString contactId, bool bUsedInternally
 
     if (!m_myAcctId.isEmpty() && !m_hisContactId.isEmpty())
     {
-        const std::string str_my_nym_id = opentxs::OT::App().API().Exec().GetAccountWallet_NymID(m_myAcctId.toStdString());
+        const std::string str_my_nym_id = opentxs::OT::App().API().Exec()
+            .GetAccountWallet_NymID(m_myAcctId.toStdString());
 
         if (   !str_my_nym_id.empty()
-            && (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(str_my_nym_id), opentxs::Identifier(m_hisContactId.toStdString()))))
+            && (opentxs::Messagability::READY == opentxs::OT::App().API().Sync()
+                .CanMessage(opentxs::Identifier(str_my_nym_id),
+                            opentxs::Identifier(m_hisContactId.toStdString()))))
         {
             canMessage_ = true;
 
@@ -308,21 +358,38 @@ void MTRequestDlg::setInitialHisContact (QString contactId, bool bUsedInternally
 
 bool MTRequestDlg::requestFunds(QString memo, QString qstr_amount)
 {
-    // Send INVOICE TO NYM, FROM ACCOUNT.
+    // Send invoice TO Contact, drawn on MY account.
     //
     QString & toNymId     = m_hisNymId;
     QString & toContactId = m_hisContactId;
     QString & fromAcctId  = m_myAcctId;
     // ----------------------------------------------------
-    if (toNymId.isEmpty() && toContactId.isEmpty())
+    // Already done by caller function.
+    //
+//  if (toContactId.isEmpty() || toNymId.isEmpty())
+//    if (toContactId.isEmpty())
+//    {
+//        if (!toNymId.isEmpty())
+//        {
+//            const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
+//            .ContactID(opentxs::Identifier{toNymId.toStdString()});
+//            const opentxs::String strToContactId(toContact_Id);
+//            toContactId = toContact_Id.empty() ? QString("") : QString::fromStdString(std::string(strToContactId.Get()));
+//        }
+//    }
+    // ----------------------------------------------------
+    if (toContactId.isEmpty())
     {
-        qDebug() << "Cannot request funds from an empty nym/contact id, aborting.";
+        qDebug() << "Cannot request funds from an empty contact id, aborting.";
+        // todo: someday we will allow this, by popping up a dialog so the
+        // user can copy the invoice and send it out-of-band.
+        //
         return false;
     }
     // ----------------------------------------------------
     if (fromAcctId.isEmpty())
     {
-        qDebug() << "Cannot request funds to an empty acct id, aborting.";
+        qDebug() << "Cannot request funds to an empty payee account; aborting.";
         return false;
     }
     // ----------------------------------------------------
@@ -333,7 +400,8 @@ bool MTRequestDlg::requestFunds(QString memo, QString qstr_amount)
         qstr_amount = QString("0");
     // ----------------------------------------------------
     int64_t     amount = 0;
-    std::string str_InstrumentDefinitionID(opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(fromAcctId.toStdString()));
+    std::string str_InstrumentDefinitionID(opentxs::OT::App().API().Exec()
+        .GetAccountWallet_InstrumentDefinitionID(fromAcctId.toStdString()));
 
     if (!str_InstrumentDefinitionID.empty())
     {
@@ -342,7 +410,8 @@ bool MTRequestDlg::requestFunds(QString memo, QString qstr_amount)
         if (std::string::npos == str_amount.find(".")) // not found
             str_amount += '.';
 
-        amount = opentxs::OT::App().API().Exec().StringToAmount(str_InstrumentDefinitionID, str_amount);
+        amount = opentxs::OT::App().API().Exec()
+            .StringToAmount(str_InstrumentDefinitionID, str_amount);
     }
     // ----------------------------------------------------
     if (amount <= 0)
@@ -372,19 +441,61 @@ void MTRequestDlg::on_requestButton_clicked()
 {
     // Send invoice and then close dialog. Use progress bar.
     // -----------------------------------------------------------------
-    // From:
-    if (m_hisContactId.isEmpty() && m_hisNymId.isEmpty())
+    // If the Contact ID is empty, but the NYM is set, we try to retrieve
+    // the Contact ID using his Nym ID.
+    //
+    if (m_hisContactId.isEmpty())
     {
-        QMessageBox::warning(this, tr("No Invoicee"),
-                             tr("Please choose an invoicee for the request."));
+        if (!m_hisNymId.isEmpty())
+        {
+            const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
+                .ContactID(opentxs::Identifier{m_hisNymId.toStdString()});
+            const opentxs::String strToContactId(toContact_Id);
+            m_hisContactId = toContact_Id.empty()
+                ? QString("")
+                : QString::fromStdString(std::string(strToContactId.Get()));
+        }
+    }
+    // --------------------------------
+    // Perhaps the payee wishes to leave the payer Nym blank, so that
+    // ANYONE could pay this invoice, and not just a specific person.
+    // Fair enough.
+    //
+    // But even so, he still needs a Contact ID or he won't have
+    // anyone to SEND the message that contains the invoice!
+    //
+    // Therefore by this point, we MUST have a Contact Id, even if the NymID
+    // remains blank.
+    //
+    if (m_hisContactId.isEmpty()) // STILL empty?
+    {
+        // todo here:
+        // We could just pop up the inoice in a dialog so the user, in that
+        // case, can just copy/paste it out-of-band.
+
+        QMessageBox::warning(this, tr("No Contact Selected"),
+                             tr("You must select a contact for the invoice to be sent to. "
+                                "(Even if the invoice is made out to a blank payer)."));
         return;
     }
     // -----------------------------------------------------------------
-    // To:
+    // Explicitly allowing the payer's Nym ID to be empty, separate from whether
+    // or not we have a Contact to send the invoice to.
+    // This way, ANYONE could pay this invoice, not just the person it was
+    // sent to.
+    //
+//    if (m_hisNymId.isEmpty())
+//    {
+//        QMessageBox::warning(this, tr("No Invoicee"),
+//                             tr("Please choose an invoicee."));
+//        return;
+//    }
+    // -----------------------------------------------------------------
+    // Upon payment, funds to be received into my account:
     if (m_myAcctId.isEmpty())
     {
         QMessageBox::warning(this, tr("No Payee Account"),
-                             tr("Please choose an account to receive the funds into."));
+                             tr("Please choose which of your accounts will receive the funds."));
         return;
     }
     // -----------------------------------------------------------------
@@ -407,6 +518,21 @@ void MTRequestDlg::on_requestButton_clicked()
         return;
     }
     // -----------------------------------------------------------------
+    // Make sure I'm not sending to myself (since that will fail...)
+    //
+    std::string str_fromAcctId(m_myAcctId.toStdString());
+    QString     qstr_fromNymId(QString::fromStdString(
+        opentxs::OT::App().API().Exec().GetAccountWallet_NymID(str_fromAcctId)));
+
+    if (0 == qstr_fromNymId.compare(m_hisNymId))
+    {
+        QMessageBox::warning(this, tr("Cannot Invoice Yourself"),
+                             tr("Sorry, but you cannot invoice yourself. "
+                                "Please choose another invoicee, or change "
+                                "the payee account."));
+        return;
+    }
+    // -----------------------------------------------------------------
 
     on_amountEdit_editingFinished();
 
@@ -421,8 +547,10 @@ void MTRequestDlg::on_requestButton_clicked()
 
     QMessageBox::StandardButton reply;
 
-    reply = QMessageBox::question(this, "", QString("%1 '%2'<br/>%3").
-                                  arg(tr("The amount is")).arg(ui->amountEdit->text()).arg(tr("Send Invoice?")),
+    reply = QMessageBox::question(this, "", QString("%1 '%2'<br/>%3")
+                                  .arg(tr("The amount is"))
+                                  .arg(ui->amountEdit->text())
+                                  .arg(tr("Send Invoice?")),
                                   QMessageBox::Yes|QMessageBox::No);
     if (reply == QMessageBox::Yes)
     {
@@ -432,7 +560,7 @@ void MTRequestDlg::on_requestButton_clicked()
         QString memo   = ui->memoEdit  ->text();
         QString amount = ui->amountEdit->text();
 
-        bool bSent = this->requestFunds(memo, amount);
+        const bool bSent = this->requestFunds(memo, amount);
         // -----------------------------------------------------------------
         if (bSent)
             emit balancesChanged();
@@ -588,7 +716,9 @@ void MTRequestDlg::on_fromButton_clicked()
         const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
                 .ContactID(opentxs::Identifier{m_hisNymId.toStdString()});
         const opentxs::String     strToContactId(toContact_Id);
-        m_hisContactId = toContact_Id.empty() ? QString("") : QString::fromStdString(std::string(strToContactId.Get()));
+        m_hisContactId = toContact_Id.empty()
+            ? QString("")
+            : QString::fromStdString(std::string(strToContactId.Get()));
         if (!m_hisContactId.isEmpty())
             theChooser.SetPreSelected(m_hisContactId);
     }
@@ -834,12 +964,12 @@ void MTRequestDlg::on_memoEdit_textChanged(const QString &arg1)
     if (arg1.isEmpty())
     {
         m_memo = QString("");
-        this->setWindowTitle(tr("Request Funds"));
+        this->setWindowTitle(tr("Invoice (Request Funds)"));
     }
     else
     {
         m_memo = arg1;
-        this->setWindowTitle(QString("%1 %2").arg(tr("Request Funds | Memo:")).arg(arg1));
+        this->setWindowTitle(QString("%1 %2").arg(tr("Invoice (Request Funds) | Memo:")).arg(arg1));
     }
 }
 

@@ -19,21 +19,29 @@ class MTSendDlg : public QWidget
 {
     Q_OBJECT
 
-    QString m_hisNymId;  // To:
+    QString m_hisContactId;  // To: (contact)
+    QString m_hisNymId;  // To: (nym)
     QString m_myAcctId;  // From:
     QString m_memo;      // Memo:
     QString m_amount;    // Amount:
 
-    bool m_bSent;
+    bool m_bSent{false};
+    bool canMessage_{false};
+    bool lockPayee_{false};
+    bool inviteMode_{false};
 
 public:
     explicit MTSendDlg(QWidget *parent=0);
     ~MTSendDlg();
 
-    void setInitialHisNym (QString nymId)  { m_hisNymId  = nymId;  } // To:
-    void setInitialMyAcct (QString acctId) { m_myAcctId  = acctId; } // From:
-    void setInitialMemo   (QString memo)   { m_memo      = memo;   } // Memo:
-    void setInitialAmount (QString amount) { m_amount    = amount; } // Amount:
+    bool inviteMode() const { return inviteMode_; }
+    void setInviteMode(bool invite_mode) { inviteMode_ = invite_mode; }
+
+    void setInitialHisContact (QString contactId, bool bUsedInternally=false); // Payment To: (contact)
+    void setInitialHisNym     (QString nymId)  { m_hisNymId  = nymId;  } // Payment To: (nym)
+    void setInitialMyAcct     (QString acctId) { m_myAcctId  = acctId; } // From:
+    void setInitialMemo       (QString memo)   { m_memo      = memo;   } // Memo:
+    void setInitialAmount     (QString amount) { m_amount    = amount; } // Amount:
 
     void dialog();
     // --------------------------
@@ -45,13 +53,18 @@ public:
     // --------------------------
     bool sendFunds(QString memo, QString amount);
 
-    bool sendCash           (int64_t amount, QString toNymId, QString fromAcctId, QString note);
-    bool sendCashierCheque  (int64_t amount, QString toNymId, QString fromAcctId, QString note);
-    bool sendCheque         (int64_t amount, QString toNymId, QString fromAcctId, QString note);
+    bool sendCash           (int64_t amount, QString toNymId, QString toContactId, QString fromAcctId, QString note);
+    bool sendCashierCheque  (int64_t amount, QString toNymId, QString toContactId, QString fromAcctId, QString note);
+    bool sendCheque         (int64_t amount, QString toNymId, QString toContactId, QString fromAcctId, QString note);
 
-    bool sendChequeLowLevel (int64_t amount, QString toNymId, QString fromAcctId, QString note, bool isInvoice);
-
-//  bool sendInvoice:(NSUInteger)amount toNymId:(NSString*)toNymId withNote:(NSString*)note;
+    bool sendChequeLowLevel (int64_t amount, QString toNymId, QString toContactId, QString fromAcctId, QString note, bool isInvoice);
+    bool sendChequeLowLevel (int64_t amount,
+                             QString toNymId,
+                             QString toContactId,
+                             QString fromAcctId,
+                             QString note,
+                             bool isInvoice,
+                             bool payeeNymIsBlank); // Meaning ANY Nym can deposit this cheque.
 
 signals:
     void balancesChanged();
@@ -74,9 +87,9 @@ private slots:
     void on_toolButtonManageAccts_clicked();
 
 private:
-    bool already_init;
+    bool already_init{false};
 
-    Ui::MTSendDlg *ui;
+    Ui::MTSendDlg *ui{nullptr};
 };
 
 #endif // SENDDLG_HPP

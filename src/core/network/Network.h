@@ -100,11 +100,11 @@ public:
     
     virtual std::string moduleType(){return "";}
     
-    virtual bool createAddress(std::string label=""){return false;}
-    virtual bool createDeterministicAddress(std::string key, std::string label=""){return false;}
-    virtual bool deleteLocalAddress(std::string address){return false;}
+    virtual bool createAddress(std::string label="");
+    virtual bool createDeterministicAddress(std::string key, std::string label="");
+    virtual bool deleteLocalAddress(std::string address);
     
-    virtual bool addressAccessible(std::string address){return false;}  // Checks to see if an address is useable for sending messages.
+    virtual bool addressAccessible(std::string address);  // Checks to see if an address is useable for sending messages.
     
     virtual std::vector<std::pair<std::string, std::string> > getLocalAddresses(){return std::vector<std::pair<std::string, std::string> >();}
     virtual std::vector<std::pair<std::string, std::string> > getRemoteAddresses(){return std::vector<std::pair<std::string, std::string> >();}
@@ -112,22 +112,22 @@ public:
     virtual bool checkRemoteAddresses(){return false;} // Asks the API to refresh its list of contacts.
     
     virtual bool checkMail(){return false;} // Asks the network interface to manually check for messages
-    virtual bool newMailExists(std::string address=""){return false;} // checks for new mail, returns true if there is new mail in the queue.
+    virtual bool newMailExists(std::string address=""); // checks for new mail, returns true if there is new mail in the queue.
     // In BitMessage this checks for unread mail in the queue, it will return true
     // If a read message has been marked unread manually.
     
-    virtual std::vector<_SharedPtr<NetworkMail> > getInbox(std::string address=""){return std::vector<_SharedPtr<NetworkMail> >();}
+    virtual std::vector<_SharedPtr<NetworkMail> > getInbox(std::string address="");
     virtual std::vector<_SharedPtr<NetworkMail> > getAllInboxes(){return std::vector<_SharedPtr<NetworkMail> >();}
-    virtual std::vector<_SharedPtr<NetworkMail> > getOutbox(std::string address=""){return std::vector<_SharedPtr<NetworkMail> >();}
+    virtual std::vector<_SharedPtr<NetworkMail> > getOutbox(std::string address="");
     virtual std::vector<_SharedPtr<NetworkMail> > getAllOutboxes(){return std::vector<_SharedPtr<NetworkMail> >();}
-    virtual std::vector<_SharedPtr<NetworkMail> > getUnreadMail(std::string address){return std::vector<_SharedPtr<NetworkMail> >();}
+    virtual std::vector<_SharedPtr<NetworkMail> > getUnreadMail(std::string address);
     virtual std::vector<_SharedPtr<NetworkMail> > getAllUnreadMail(){return std::vector<_SharedPtr<NetworkMail> >();}
     
-    virtual bool deleteMessage(std::string messageID){return false;} // passed as a string, as different protocols handle message ID's differently (BitMessage for example)
-    virtual bool deleteOutMessage(std::string messageID){return false;} // passed as a string, as different protocols handle message ID's differently (BitMessage for example)
-    virtual bool markRead(std::string messageID, bool read=true){return false;} // By default this marks a given message as read or not, not all API's will support this and should thus return false.
+    virtual bool deleteMessage(std::string messageID); // passed as a string, as different protocols handle message ID's differently (BitMessage for example)
+    virtual bool deleteOutMessage(std::string messageID); // passed as a string, as different protocols handle message ID's differently (BitMessage for example)
+    virtual bool markRead(std::string messageID, bool read=true); // By default this marks a given message as read or not, not all API's will support this and should thus return false.
     
-    virtual bool sendMail(NetworkMail message){return false;} // Need To, From, Subject and Message in formatted NetworkMail object
+    virtual bool sendMail(NetworkMail message); // Need To, From, Subject and Message in formatted NetworkMail object
     
     virtual bool publishSupport(){return false;}
     virtual std::vector<std::pair<std::string,std::string> > getSubscriptions(){return std::vector<std::pair<std::string, std::string> >();}
@@ -135,18 +135,18 @@ public:
     
     // Broadcasting Functions
     
-    virtual bool createBroadcastAddress(){return false;}
-    virtual bool broadcastOnAddress(std::string address){return false;}
-    virtual bool subscribeToAddress(std::string address){return false;}
+    virtual bool createBroadcastAddress();
+    virtual bool broadcastOnAddress(std::string address);
+    virtual bool subscribeToAddress(std::string address);
     
     // Functions for importing/exporting from BitMessage server addressbook
     
     
-    virtual std::string getLabel(std::string address){return "";}
-    virtual bool setLabel(std::string label, std::string address){return false;}
-    virtual std::string getAddressFromLabel(std::string label){return "";}
+    virtual std::string getLabel(std::string address);
+    virtual bool setLabel(std::string label, std::string address);
+    virtual std::string getAddressFromLabel(std::string label);
     
-    virtual bool addContact(std::string label, std::string address){return false;}
+    virtual bool addContact(std::string label, std::string address);
     
     // Return a vector of pairs, containing the Label and Addressess respectively
     virtual std::vector<std::pair<std::string, std::string> > getAllContacts(){return std::vector<std::pair<std::string, std::string> >();}
