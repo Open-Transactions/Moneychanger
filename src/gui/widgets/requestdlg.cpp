@@ -666,6 +666,11 @@ void MTRequestDlg::on_toButton_clicked()
 }
 
 
+void MTRequestDlg::on_toolButtonManageAccts_clicked()
+{
+    emit ShowAccount(m_myAcctId);
+}
+
 
 void MTRequestDlg::on_toolButton_clicked()
 {
@@ -686,14 +691,6 @@ void MTRequestDlg::on_toolButton_clicked()
             emit ShowContact(m_hisContactId);
     }
 }
-
-
-
-void MTRequestDlg::on_toolButtonManageAccts_clicked()
-{
-    emit ShowAccount(m_myAcctId);
-}
-
 
 void MTRequestDlg::on_fromButton_clicked()
 {
@@ -844,7 +841,7 @@ void MTRequestDlg::dialog()
         connect(this,               SIGNAL(balancesChanged()),
                 Moneychanger::It(), SLOT  (onBalancesChanged()));
         // ---------------------------------------
-        this->setWindowTitle(tr("Request Funds"));
+        this->setWindowTitle(tr("Invoice (Request Funds)"));
 
         QString style_sheet = "QPushButton{border: none; border-style: outset; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa);}"
                 "QPushButton:pressed {border: 1px solid black; text-align:left; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa); }"
@@ -876,9 +873,10 @@ void MTRequestDlg::dialog()
         }
         else
         {
-            QString from_button_text = MTHome::FormDisplayLabelForAcctButton(m_myAcctId, QString::fromStdString(str_my_name));
+            QString to_button_text = MTHome::FormDisplayLabelForAcctButton(m_myAcctId,
+                                        QString::fromStdString(str_my_name));
 
-            ui->toButton->setText(from_button_text);
+            ui->toButton->setText(to_button_text);
         }
         // -------------------------------------------
         std::string str_his_name;
@@ -909,7 +907,7 @@ void MTRequestDlg::dialog()
             QString qstrTemp = m_memo;
             ui->memoEdit->setText(qstrTemp);
             // -----------------------
-            this->setWindowTitle(QString("%1 %2").arg(tr("Request Funds | Memo:")).arg(qstrTemp));
+            this->setWindowTitle(QString("%1 %2").arg(tr("Invoice (Request Funds) | Memo:")).arg(qstrTemp));
         }
         // -------------------------------------------
 

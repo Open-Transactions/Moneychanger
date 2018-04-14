@@ -5979,46 +5979,6 @@ void Moneychanger::mc_serverselection_triggered(QAction * action_triggered)
 
 
 
-/**
- * Request Funds
- **/
-
-void Moneychanger::mc_requestfunds_slot()
-{
-    mc_requestfunds_show_dialog();
-}
-
-void Moneychanger::mc_request_to_acct_from_contact(QString qstrAcct, QString qstrContact)
-{
-    mc_requestfunds_show_dialog(qstrAcct, qstrContact);
-}
-
-void Moneychanger::mc_request_to_acct(QString qstrAcct)
-{
-    mc_requestfunds_show_dialog(qstrAcct);
-}
-
-void Moneychanger::mc_requestfunds_show_dialog(QString qstrAcct/*=QString("")*/, QString qstrContact/*=QString("")*/)
-{
-    // --------------------------------------------------
-    MTRequestDlg * request_window = new MTRequestDlg(NULL);
-    request_window->setAttribute(Qt::WA_DeleteOnClose);
-    // --------------------------------------------------
-    QString qstr_acct_id = qstrAcct.isEmpty() ? this->get_default_account_id() : qstrAcct;
-
-    if (!qstr_acct_id.isEmpty())
-        request_window->setInitialMyAcct(qstr_acct_id);
-    // --------------------------------------------------
-    if (!qstrContact.isEmpty())
-    {
-        request_window->setInitialHisContact(qstrContact);
-    }
-    // ---------------------------------------
-    request_window->dialog();
-    // --------------------------------------------------
-}
-
-
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QLabel>
@@ -7018,12 +6978,57 @@ void Moneychanger::mc_proposeplan_to_acct_from_contact(QString qstrAcct, QString
 
 
 /**
+ * Request Funds
+ **/
+
+void Moneychanger::mc_requestfunds_slot()
+{
+    mc_requestfunds_show_dialog();
+}
+
+void Moneychanger::mc_request_to_acct_from_contact(QString qstrAcct, QString qstrContact)
+{
+    mc_requestfunds_show_dialog(qstrAcct, qstrContact);
+}
+
+void Moneychanger::mc_request_to_acct(QString qstrAcct)
+{
+    mc_requestfunds_show_dialog(qstrAcct);
+}
+
+void Moneychanger::mc_requestfunds_show_dialog(QString qstrAcct/*=QString("")*/, QString qstrContact/*=QString("")*/)
+{
+    // --------------------------------------------------
+    MTRequestDlg * request_window = new MTRequestDlg(NULL);
+    request_window->setAttribute(Qt::WA_DeleteOnClose);
+    // --------------------------------------------------
+    QString qstr_acct_id = qstrAcct.isEmpty() ? this->get_default_account_id() : qstrAcct;
+
+    if (!qstr_acct_id.isEmpty())
+        request_window->setInitialMyAcct(qstr_acct_id);
+    // --------------------------------------------------
+    if (!qstrContact.isEmpty())
+    {
+        request_window->setInitialHisContact(qstrContact);
+    }
+    // ---------------------------------------
+    request_window->dialog();
+    // --------------------------------------------------
+}
+
+
+/**
  * Send Funds
  **/
 
 void Moneychanger::mc_sendfunds_slot()
 {
     mc_sendfunds_show_dialog();
+}
+
+void Moneychanger::mc_send_from_acct_to_contact(QString qstrAcct, QString qstrContact)
+{
+    mc_sendfunds_show_dialog(qstrAcct, qstrContact);
 }
 
 void Moneychanger::mc_sendfunds_show_dialog(QString qstrAcct/*=QString("")*/, QString qstrContact/*=QString("")*/)
@@ -7036,6 +7041,11 @@ void Moneychanger::mc_sendfunds_show_dialog(QString qstrAcct/*=QString("")*/, QS
 
     if (!qstr_acct_id.isEmpty())
         send_window->setInitialMyAcct(qstr_acct_id);
+    // --------------------------------------------------
+    if (!qstrContact.isEmpty())
+    {
+        send_window->setInitialHisContact(qstrContact);
+    }
     // ---------------------------------------
     send_window->dialog();
     // --------------------------------------------------
@@ -7044,11 +7054,6 @@ void Moneychanger::mc_sendfunds_show_dialog(QString qstrAcct/*=QString("")*/, QS
 void Moneychanger::mc_send_from_acct(QString qstrAcct)
 {
     mc_sendfunds_show_dialog(qstrAcct);
-}
-
-void Moneychanger::mc_send_from_acct_to_contact(QString qstrAcct, QString qstrContact)
-{
-    mc_sendfunds_show_dialog(qstrAcct, qstrContact);
 }
 
 

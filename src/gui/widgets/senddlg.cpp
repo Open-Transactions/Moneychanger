@@ -1061,6 +1061,52 @@ void MTSendDlg::on_amountEdit_editingFinished()
 }
 
 // ----------------------------------------------------------------------
+
+void MTSendDlg::setInitialHisContact (QString contactId, bool bUsedInternally/*=false*/) // Payment To: (contact)
+{
+    canMessage_ = false;
+
+    if (!lockPayee_)
+    {
+        ui->toButton->setEnabled(true);
+        ui->toolButton->setEnabled(true);
+        if (Moneychanger::It()->expertMode()) {
+            ui->toolButton->setVisible(true);
+        }
+    }
+
+    m_hisContactId = contactId;
+
+    if (!m_myAcctId.isEmpty() && !m_hisContactId.isEmpty())
+    {
+        const std::string str_my_nym_id = opentxs::OT::App().API().Exec()
+            .GetAccountWallet_NymID(m_myAcctId.toStdString());
+
+        if (   !str_my_nym_id.empty()
+            && (opentxs::Messagability::READY == opentxs::OT::App().API().Sync()
+                .CanMessage(opentxs::Identifier(str_my_nym_id),
+                            opentxs::Identifier(m_hisContactId.toStdString()))))
+        {
+            canMessage_ = true;
+
+            if (!bUsedInternally)
+                lockPayee_ = true;
+
+            if (lockPayee_)
+            {
+                ui->toButton->setEnabled(false);
+                ui->toolButton->setEnabled(false);
+                ui->toolButton->setVisible(false);
+            }
+
+            MTNameLookupQT theLookup;
+            const std::string str_contact_label = theLookup.GetContactName(m_hisContactId.toStdString());
+            ui->toButton->setText(QString::fromStdString(str_contact_label));
+        }
+    }
+}
+
+// ----------------------------------------------------------------------
 bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
 {
     QString & toNymId     = m_hisNymId;
@@ -1212,15 +1258,15 @@ void MTSendDlg::on_sendButton_clicked()
     //
     if (m_hisNymId.isEmpty())
     {
-        QMessageBox::warning(this, tr("No Recipient Selected"),
-                             tr("Please choose a recipient for these funds, before sending."));
+        QMessageBox::warning(this, tr("No Payee Selected"),
+                             tr("Please choose a payee for these funds, before sending."));
         return;
     }
     // -----------------------------------------------------------------
     // From:
     if (m_myAcctId.isEmpty())
     {
-        QMessageBox::warning(this, tr("No Sender Account Selected"),
+        QMessageBox::warning(this, tr("No Payer Account Selected"),
                              tr("Please choose an account to pay from."));
         return;
     }
@@ -1335,7 +1381,7 @@ void MTSendDlg::on_fromButton_clicked()
     if (bFoundDefault && !m_myAcctId.isEmpty())
         theChooser.SetPreSelected(m_myAcctId);
     // -----------------------------------------------
-    theChooser.setWindowTitle(tr("Select the Source Account"));
+    theChooser.setWindowTitle(tr("Select your Payer Account"));
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
@@ -1367,11 +1413,22 @@ void MTSendDlg::on_fromButton_clicked()
     // -----------------------------------------------
     m_myAcctId = QString("");
     ui->fromButton->setText(tr("<Click to choose Account>"));
+
+    // This might have been true before, but now we know there's no account selected,
+    // meaning it's impossible to know if we "Can_Message" anymore, until we get sender
+    // and recipient both set again, and we can check to answer that question.
+    //
+    if (canMessage_)
+    {
+        canMessage_ = false;
+
+        if (!lockPayee_)
+        {
+            ui->toButton->setEnabled(true);
+            ui->toolButton->setEnabled(true);
+        }
+    }
 }
-
-
-
-
 
 void MTSendDlg::on_toolButtonManageAccts_clicked()
 {
@@ -1380,18 +1437,26 @@ void MTSendDlg::on_toolButtonManageAccts_clicked()
 
 void MTSendDlg::on_toolButton_clicked()
 {
-    QString qstrContactID("");
+    if (!m_hisContactId.isEmpty())
+    {
+        emit ShowContact(m_hisContactId);
+        return;
+    }
     // ------------------------------------------------
     if (!m_hisNymId.isEmpty())
     {
-        int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID(m_hisNymId);
+        const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
+            .ContactID(opentxs::Identifier{m_hisNymId.toStdString()});
+        const opentxs::String     strToContactId(toContact_Id);
+        m_hisContactId = toContact_Id.empty() ? QString("") : QString::fromStdString(std::string(strToContactId.Get()));
 
-        if (nContactID > 0)
-            qstrContactID = QString("%1").arg(nContactID);
+        if (!m_hisContactId.isEmpty())
+            emit ShowContact(m_hisContactId);
     }
-    // ------------------------------------------------
-    emit ShowContact(qstrContactID);
 }
+
+
+
 
 
 void MTSendDlg::on_toButton_clicked()
@@ -1401,21 +1466,28 @@ void MTSendDlg::on_toButton_clicked()
     DlgChooser theChooser(this);
     // -----------------------------------------------
     mapIDName & the_map = theChooser.m_map;
+    MTContactHandler::getInstance()->GetOpentxsContacts(the_map);
 
-    MTContactHandler::getInstance()->GetContacts(the_map);
+//  QString m_hisContactId;  // To: (contact)
+//  QString m_hisNymId;  // To: (nym)
 
-    if (!m_hisNymId.isEmpty())
+    if (!m_hisContactId.isEmpty())
     {
-        int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID(m_hisNymId);
-
-        if (nContactID > 0)
-        {
-            QString strTempID = QString("%1").arg(nContactID);
-            theChooser.SetPreSelected(strTempID);
-        }
+        theChooser.SetPreSelected(m_hisContactId);
+    }
+    else if (!m_hisNymId.isEmpty())
+    {
+        const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
+                .ContactID(opentxs::Identifier{m_hisNymId.toStdString()});
+        const opentxs::String     strToContactId(toContact_Id);
+        m_hisContactId = toContact_Id.empty()
+            ? QString("")
+            : QString::fromStdString(std::string(strToContactId.Get()));
+        if (!m_hisContactId.isEmpty())
+            theChooser.SetPreSelected(m_hisContactId);
     }
     // -----------------------------------------------
-    theChooser.setWindowTitle(tr("Choose the Recipient"));
+    theChooser.setWindowTitle(tr("Choose Payee"));
     // -----------------------------------------------
     if (theChooser.exec() == QDialog::Accepted)
     {
@@ -1423,27 +1495,28 @@ void MTSendDlg::on_toButton_clicked()
 
         // If not the same as before, then we have to choose a NymID based on the selected Contact.
         //
-        int nSelectedContactID = theChooser.m_qstrCurrentID.toInt();
-        int nOldNymContactID   = MTContactHandler::getInstance()->FindContactIDByNymID(m_hisNymId);
+        QString qstrSelectedContact = theChooser.m_qstrCurrentID;
 
         // If they had matched, then we could have kept m_hisNymId as it was.
         // But since they are different, we have to figure out a NymID to use, based
         // on nSelectedContactID.
         //
-        if (nSelectedContactID != nOldNymContactID)
+        if (qstrSelectedContact != m_hisContactId)
         {
             QString qstrContactName;
 
-            if (nSelectedContactID <= 0) // Should never happen.
+            if (qstrSelectedContact.isEmpty()) // Should never happen.
             {
                 qstrContactName  = QString("");
                 m_hisNymId = QString("");
-                ui->toButton->setText(tr("<Click to choose Recipient>"));
+                m_hisContactId = QString("");
+                canMessage_ = false;
+                ui->toButton->setText(tr("<Click to choose Payee>"));
                 return;
             }
             // else...
             //
-            qstrContactName = MTContactHandler::getInstance()->GetContactName(nSelectedContactID);
+            qstrContactName = theChooser.m_qstrCurrentName;
 
             if (qstrContactName.isEmpty())
                 ui->toButton->setText(tr("(Contact has a blank name)"));
@@ -1454,7 +1527,7 @@ void MTSendDlg::on_toButton_clicked()
             //
             mapIDName theNymMap;
 
-            if (MTContactHandler::getInstance()->GetNyms(theNymMap, nSelectedContactID))
+            if (MTContactHandler::getInstance()->GetNyms(theNymMap, qstrSelectedContact.toStdString()))
             {
                 if (theNymMap.size() == 1)
                 {
@@ -1463,17 +1536,20 @@ void MTSendDlg::on_toButton_clicked()
                     if (theNymIt != theNymMap.end())
                     {
                         QString qstrNymID   = theNymIt.key();
-                        QString qstrNymName = theNymIt.value();
-
+//                      QString qstrNymName = theNymIt.value();
                         m_hisNymId = qstrNymID;
+                        m_hisContactId = qstrSelectedContact;
+                        ui->toButton->setText(qstrContactName);
                     }
-                    else
+                    else // should never happen
                     {
                         m_hisNymId = QString("");
-                        ui->toButton->setText(tr("<Click to choose Recipient>"));
+                        m_hisContactId = QString("");
+                        canMessage_ = false;
+                        ui->toButton->setText(tr("<Click to choose payee>"));
                         // -------------------------------------
                         QMessageBox::warning(this, tr("Contact has no known identities"),
-                                             tr("Sorry, Contact '%1' has no known NymIDs (to send funds to.)").arg(qstrContactName));
+                                             tr("Sorry, Contact '%1' has no known NymIds (to pay funds to.)").arg(qstrContactName));
                         return;
                     }
                 }
@@ -1481,24 +1557,28 @@ void MTSendDlg::on_toButton_clicked()
                 {
                     DlgChooser theNymChooser(this);
                     theNymChooser.m_map = theNymMap;
-                    theNymChooser.setWindowTitle(tr("Recipient has multiple Nyms. (Please choose one.)"));
+                    theNymChooser.setWindowTitle(tr("Payee has multiple Nyms. (Please choose one.)"));
                     // -----------------------------------------------
                     if (theNymChooser.exec() == QDialog::Accepted)
                         m_hisNymId = theNymChooser.m_qstrCurrentID;
-                    else // User must have cancelled.
+                    else // User must have canceled.
                     {
-                        m_hisNymId = QString("");
-                        ui->toButton->setText(tr("<Click to choose Recipient>"));
+//                        m_hisNymId = QString("");
+//                        m_hisContactId = QString("");
+//                        canMessage_ = false;
+//                        ui->fromButton->setText(tr("<Click to choose payee>"));
                     }
                 }
             }
             else // No nyms found for this ContactID.
             {
                 m_hisNymId = QString("");
-                ui->toButton->setText(tr("<Click to choose Recipient>"));
+                m_hisContactId = QString("");
+                canMessage_ = false;
+                ui->toButton->setText(tr("<Click to choose payee>"));
                 // -------------------------------------
                 QMessageBox::warning(this, tr("Contact has no known identities"),
-                                     tr("Sorry, Contact '%1' has no known NymIDs (to send funds to.)").arg(qstrContactName));
+                                     tr("Sorry, Contact '%1' has no known NymIDs (to pay funds to.)").arg(qstrContactName));
                 return;
             }
             // --------------------------------
@@ -1558,7 +1638,7 @@ void MTSendDlg::dialog()
         if (str_my_name.empty())
         {
             m_myAcctId = QString("");
-            ui->fromButton->setText(tr("<Click to Select Account>"));
+            ui->fromButton->setText(tr("<Click to Select Payer Account>"));
         }
         else
         {
@@ -1582,24 +1662,23 @@ void MTSendDlg::dialog()
                 str_his_name = m_hisNymId.toStdString();
         }
         // -------------------------------------------
-        if (str_his_name.empty())
+        if (!lockPayee_)
         {
-            m_hisNymId = QString("");
-            ui->toButton->setText(tr("<Click to choose Recipient>"));
+            if (str_his_name.empty())
+            {
+                m_hisNymId = QString("");
+                ui->toButton->setText(tr("<Click to choose Payee>"));
+            }
+            else
+                ui->toButton->setText(QString::fromStdString(str_his_name));
         }
-        else
-            ui->toButton->setText(QString::fromStdString(str_his_name));
-        // -------------------------------------------
-
-
-
         // -------------------------------------------
         if (!m_memo.isEmpty())
         {
             QString qstrTemp = m_memo;
             ui->memoEdit->setText(qstrTemp);
             // -----------------------
-            this->setWindowTitle(tr("Send Funds | Memo: %1").arg(qstrTemp));
+            this->setWindowTitle(QString("%1 %2").arg(tr("Pay Funds | Memo:")).arg(qstrTemp));
         }
         // -------------------------------------------
 
@@ -1615,7 +1694,9 @@ void MTSendDlg::dialog()
 
         ui->comboBox->setCurrentIndex(1); // Cheque.
 
-        ui->toButton->setFocus();
+        ui->memoEdit->setFocus();
+
+//        ui->toButton->setFocus();
 
 
         /** Flag Already Init **/
