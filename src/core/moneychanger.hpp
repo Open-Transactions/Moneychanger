@@ -63,11 +63,13 @@ private:
     std::atomic<std::uint64_t> refresh_count_;
     opentxs::OTZMQListenCallback notify_bailment_callback_;
     opentxs::OTZMQSubscribeSocket notify_bailment_;
-
+    opentxs::OTZMQPairEventCallback pair_event_callback_;
+    opentxs::OTZMQSubscribeSocket pair_events_;
     opentxs::OTZMQListenCallback widget_update_callback_;
     opentxs::OTZMQSubscribeSocket widget_update_;
 
     void process_notify_bailment(const opentxs::network::zeromq::Message& message) const;
+    void process_pair_event(const opentxs::proto::PairEvent& event) const;
     void process_widget_update(const opentxs::network::zeromq::Message& message);
 
     bool retrieve_nym(
