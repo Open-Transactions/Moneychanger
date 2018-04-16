@@ -10,6 +10,7 @@
 #include <core/handlers/focuser.h>
 
 #include <opentxs/client/OTRecordList.hpp>
+#include <opentxs/core/Identifier.hpp>
 #include <opentxs/Proto.hpp>
 
 #include <namecoin/Namecoin.hpp>

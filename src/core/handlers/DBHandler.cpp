@@ -11,7 +11,7 @@
 #include <opentxs/api/UI.hpp>
 #include <opentxs/ui/ActivityThread.hpp>
 #include <opentxs/ui/ActivityThreadItem.hpp>
-
+#include <opentxs/core/Identifier.hpp>
 #include <opentxs/OT.hpp>
 
 #include <opentxs/core/util/OTPaths.hpp>
