@@ -22,6 +22,7 @@
 #include <opentxs/core/crypto/OTPassword.hpp>
 #include <opentxs/core/crypto/OTPasswordData.hpp>
 #include <opentxs/core/crypto/PaymentCode.hpp>
+#include <opentxs/core/Identifier.hpp>
 #include <opentxs/core/NumList.hpp>
 #include <opentxs/core/OTStorage.hpp>
 #include <opentxs/Proto.hpp>

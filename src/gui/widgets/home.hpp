@@ -5,6 +5,7 @@
 #include "core/ExportWrapper.h"
 
 #include <opentxs/client/OTRecordList.hpp>
+#include <opentxs/core/Identifier.hpp>
 
 #include <QPointer>
 #include <QWidget>

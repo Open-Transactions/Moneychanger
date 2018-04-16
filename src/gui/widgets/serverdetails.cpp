@@ -9,7 +9,6 @@
 
 #include <opentxs/api/Api.hpp>
 #include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
 #include <opentxs/client/OT_API.hpp>
 #include <opentxs/client/OTAPI_Exec.hpp>
 #include <opentxs/client/OTWallet.hpp>
@@ -17,7 +16,9 @@
 #include <opentxs/core/crypto/OTASCIIArmor.hpp>
 #include <opentxs/core/crypto/OTCachedKey.hpp>
 #include <opentxs/core/util/OTFolders.hpp>
+#include <opentxs/core/Identifier.hpp>
 #include <opentxs/core/OTStorage.hpp>
+#include <opentxs/OT.hpp>
 
 #include <quazip/quazip.h>
 #include <quazip/quazipfile.h>
