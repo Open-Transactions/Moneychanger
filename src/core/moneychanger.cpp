@@ -435,7 +435,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 }
 
 void Moneychanger::process_notify_bailment(
-    const opentxs::network::zeromq::Message& message) const
+    const opentxs::network::zeromq::Message& message)
 {
     auto request =
         opentxs::proto::TextToProto<opentxs::proto::PeerRequest>(message);
@@ -453,11 +453,16 @@ void Moneychanger::process_notify_bailment(
         return;
     }
 
+    QString txid = QString::fromStdString(request.pendingbailment().txid());
+    QString msg = QString(tr("Received notice of pending deposit from "
+                             "blockchain: ")) + txid;
+    emit appendToLog(msg);
+
     std::cout << __FUNCTION__ << ": Received notice of pending bailment: "
               << request.pendingbailment().txid().c_str() << std::endl;
 }
 
-void Moneychanger::process_pair_event(const opentxs::proto::PairEvent& event) const
+void Moneychanger::process_pair_event(const opentxs::proto::PairEvent& event)
 {
     std::cout << __FUNCTION__ << ": Received pair event" << std::endl;
 
@@ -467,6 +472,10 @@ void Moneychanger::process_pair_event(const opentxs::proto::PairEvent& event) co
                       << " is ready to be renamed." << std::endl;
         } break;
         case opentxs::proto::PAIREVENT_STORESECRET: {
+            QString msg(tr("Your seed backup has been stored on your Stash "
+                           "Node Pro. You may now remove the backup USB device "
+                           "and store it in a safe location."));
+            emit appendToLog(msg);
             std::cout << __FUNCTION__ << ": Issuer " << event.issuer()
                       << " has stored a seed backup for us." << std::endl;
         } break;

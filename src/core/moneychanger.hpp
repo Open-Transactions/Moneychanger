@@ -9,9 +9,7 @@
 
 #include <core/handlers/focuser.h>
 
-#include <opentxs/client/OTRecordList.hpp>
-#include <opentxs/core/Identifier.hpp>
-#include <opentxs/Proto.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <namecoin/Namecoin.hpp>
 
@@ -69,8 +67,9 @@ private:
     opentxs::OTZMQListenCallback widget_update_callback_;
     opentxs::OTZMQSubscribeSocket widget_update_;
 
-    void process_notify_bailment(const opentxs::network::zeromq::Message& message) const;
-    void process_pair_event(const opentxs::proto::PairEvent& event) const;
+    void process_notify_bailment(const opentxs::network::zeromq::Message& message);
+    void process_pair_event(const opentxs::proto::PairEvent& event);
+
     void process_widget_update(const opentxs::network::zeromq::Message& message);
 
     bool retrieve_nym(
