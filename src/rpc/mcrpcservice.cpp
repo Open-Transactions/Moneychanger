@@ -12,14 +12,7 @@
 #include <QThreadPool>
 #include <QRunnable>
 
-#include <opentxs/api/client/ServerAction.hpp>
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/ServerAction.hpp>
-#include <opentxs/client/Utility.hpp>
-#include <opentxs/core/Log.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <core/moneychanger.hpp>
 #include <core/handlers/contacthandler.hpp>

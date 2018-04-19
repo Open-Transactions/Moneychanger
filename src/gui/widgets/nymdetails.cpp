@@ -19,20 +19,7 @@
 #include <core/mtcomms.h>
 #include <core/moneychanger.hpp>
 
-#include <opentxs/api/client/ServerAction.hpp>
-#include <opentxs/api/client/Sync.hpp>
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/client/OT_API.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/ServerAction.hpp>
-#include <opentxs/client/Utility.hpp>
-#include <opentxs/core/NumList.hpp>
-#include <opentxs/core/Identifier.hpp>
-#include <opentxs/core/Nym.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/Proto.hpp>
-#include <opentxs/Types.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <namecoin/Namecoin.hpp>
 

@@ -6,12 +6,7 @@
 
 #include <core/handlers/contacthandler.hpp>
 
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/core/Identifier.hpp>
-#include <opentxs/core/Log.hpp>
-#include <opentxs/OT.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <QVariant>
 

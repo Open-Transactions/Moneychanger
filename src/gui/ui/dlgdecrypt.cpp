@@ -16,17 +16,7 @@
 #include <core/moneychanger.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/client/OT_API.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/core/crypto/OTASCIIArmor.hpp>
-#include <opentxs/core/crypto/OTEnvelope.hpp>
-#include <opentxs/core/crypto/OTPasswordData.hpp>
-#include <opentxs/core/crypto/OTSignedFile.hpp>
-#include <opentxs/core/Nym.hpp>
-
+#include <opentxs/opentxs.hpp>
 
 DlgDecrypt::DlgDecrypt(QWidget *parent) :
     QDialog(parent),

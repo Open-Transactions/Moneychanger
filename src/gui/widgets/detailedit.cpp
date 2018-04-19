@@ -21,11 +21,7 @@
 #include <core/moneychanger.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/core/OTStorage.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <QDialog>
 #include <QKeyEvent>

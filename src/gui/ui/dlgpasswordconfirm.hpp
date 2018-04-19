@@ -8,8 +8,7 @@
 #include <QDialog>
 #include <QCloseEvent>
 
-#include <opentxs/core/crypto/OTPassword.hpp>
-
+#include <opentxs/opentxs.hpp>
 
 namespace Ui {
 class MTDlgPasswordConfirm;

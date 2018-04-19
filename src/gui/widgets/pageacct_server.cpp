@@ -10,11 +10,7 @@
 
 #include <core/moneychanger.hpp>
 
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-
+#include <opentxs/opentxs.hpp>
 
 MTPageAcct_Server::MTPageAcct_Server(QWidget *parent) :
     QWizardPage(parent),

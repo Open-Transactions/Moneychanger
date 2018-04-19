@@ -12,17 +12,7 @@
 
 #include <gui/ui/dlgexportedtopass.hpp>
 
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OT_API.hpp>
-#include <opentxs/core/crypto/OTASCIIArmor.hpp>
-#include <opentxs/core/crypto/OTEnvelope.hpp>
-#include <opentxs/core/crypto/OTPasswordData.hpp>
-#include <opentxs/core/crypto/OTSignedFile.hpp>
-#include <opentxs/core/Nym.hpp>
-#include <opentxs/core/OTStorage.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <QKeyEvent>
 #include <QApplication>

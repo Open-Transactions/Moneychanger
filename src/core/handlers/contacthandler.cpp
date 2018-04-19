@@ -9,23 +9,7 @@
 #include <core/mtcomms.h>
 #include <core/moneychanger.hpp>
 
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/ContactManager.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/contact/Contact.hpp>
-#include <opentxs/contact/ContactData.hpp>
-#include <opentxs/client/OT_API.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OTWallet.hpp>
-#include <opentxs/core/crypto/OTASCIIArmor.hpp>
-#include <opentxs/core/crypto/OTPassword.hpp>
-#include <opentxs/core/crypto/OTPasswordData.hpp>
-#include <opentxs/core/crypto/PaymentCode.hpp>
-#include <opentxs/core/Identifier.hpp>
-#include <opentxs/core/NumList.hpp>
-#include <opentxs/core/OTStorage.hpp>
-#include <opentxs/Proto.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <QDebug>
 #include <QObject>

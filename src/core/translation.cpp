@@ -5,7 +5,7 @@
 #include <core/translation.hpp>
 #include <core/handlers/DBHandler.hpp>
 
-#include <opentxs/core/Identifier.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <QDebug>
 

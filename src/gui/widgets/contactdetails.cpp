@@ -21,24 +21,7 @@
 #include <core/handlers/modelverifications.hpp>
 #include <core/mtcomms.h>
 
-
-#include <opentxs/api/client/ServerAction.hpp>
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/ContactManager.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/client/OT_API.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OTWallet.hpp>
-#include <opentxs/client/ServerAction.hpp>
-#include <opentxs/client/Utility.hpp>
-#include <opentxs/contact/Contact.hpp>
-#include <opentxs/contact/ContactData.hpp>
-#include <opentxs/core/crypto/OTPasswordData.hpp>
-#include <opentxs/core/Identifier.hpp>
-#include <opentxs/core/Nym.hpp>
-#include <opentxs/Types.hpp>
-
+#include <opentxs/opentxs.hpp>
 
 #include <QComboBox>
 #include <QPushButton>

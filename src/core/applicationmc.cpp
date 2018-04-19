@@ -9,13 +9,7 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OTRecordList.hpp>
-#include <opentxs/core/crypto/OTAsymmetricKey.hpp>
-#include <opentxs/core/crypto/OTCaller.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <QVBoxLayout>
 #include <QDebug>

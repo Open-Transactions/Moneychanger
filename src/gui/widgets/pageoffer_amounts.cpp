@@ -5,12 +5,7 @@
 #include <gui/widgets/pageoffer_amounts.hpp>
 #include <ui_pageoffer_amounts.h>
 
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/core/recurring/OTPaymentPlan.hpp>
-#include <opentxs/core/Identifier.hpp>
-#include <opentxs/OT.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <cmath>
 
