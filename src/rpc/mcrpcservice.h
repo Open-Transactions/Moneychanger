@@ -8,8 +8,7 @@
 
 #include <qjsonrpcservice.h>
 
-#include <opentxs/client/OTRecordList.hpp>
-#include <opentxs/core/crypto/OTPassword.hpp>
+#include <opentxs/opentxs.hpp>
 
 class MCRPCService : public QJsonRpcService
 {

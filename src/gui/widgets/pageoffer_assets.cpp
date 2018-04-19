@@ -10,11 +10,7 @@
 #include <gui/widgets/dlgchooser.hpp>
 #include <gui/widgets/detailedit.hpp>
 
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-
+#include <opentxs/opentxs.hpp>
 
 PageOffer_Assets::PageOffer_Assets(QWidget *parent) :
     QWizardPage(parent),

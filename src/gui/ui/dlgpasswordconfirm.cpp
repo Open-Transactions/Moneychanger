@@ -7,8 +7,7 @@
 
 #include <gui/widgets/overridecursor.hpp>
 
-#include <opentxs/core/crypto/OTPassword.hpp>
-
+#include <opentxs/opentxs.hpp>
 
 MTDlgPasswordConfirm::MTDlgPasswordConfirm(QWidget *parent, opentxs::OTPassword & thePassword) :
     QDialog(parent),

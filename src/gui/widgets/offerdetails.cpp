@@ -13,17 +13,7 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/modeltradearchive.hpp>
 
-#include <opentxs/api/client/ServerAction.hpp>
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/ServerAction.hpp>
-#include <opentxs/client/Utility.hpp>
-#include <opentxs/core/recurring/OTPaymentPlan.hpp>
-#include <opentxs/core/Data.hpp>
-#include <opentxs/core/Identifier.hpp>
-#include <opentxs/core/OTStorage.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <QMessageBox>
 #include <QDateTime>

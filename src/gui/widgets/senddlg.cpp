@@ -14,18 +14,7 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/api/client/Cash.hpp>
-#include <opentxs/api/client/ServerAction.hpp>
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/api/client/Sync.hpp>
-#include <opentxs/api/ContactManager.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/ServerAction.hpp>
-#include <opentxs/client/Utility.hpp>
-#include <opentxs/ext/OTPayment.hpp>
-
+#include <opentxs/opentxs.hpp>
 
 #include <QDebug>
 #include <QMessageBox>

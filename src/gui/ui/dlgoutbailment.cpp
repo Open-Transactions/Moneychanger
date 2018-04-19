@@ -5,16 +5,7 @@
 #include <gui/ui/dlgoutbailment.hpp>
 #include <ui_dlgoutbailment.h>
 
-#include <opentxs/api/Activity.hpp>
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/ContactManager.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/api/client/Wallet.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/client/OT_API.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/core/Identifier.hpp>
-#include <opentxs/core/contract/UnitDefinition.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <QKeyEvent>
 #include <QMessageBox>

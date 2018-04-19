@@ -11,16 +11,7 @@
 
 #include <core/moneychanger.hpp>
 
-#include <opentxs/api/client/ServerAction.hpp>
-#include <opentxs/api/client/Sync.hpp>
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/ServerAction.hpp>
-#include <opentxs/client/Utility.hpp>
-#include <opentxs/core/Identifier.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/Proto.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <QPlainTextEdit>
 #include <QMessageBox>

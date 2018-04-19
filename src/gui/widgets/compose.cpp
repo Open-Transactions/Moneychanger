@@ -13,20 +13,7 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/mtcomms.h>
 
-#include <opentxs/api/client/ServerAction.hpp>
-#include <opentxs/api/client/Sync.hpp>
-#include <opentxs/api/Activity.hpp>
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/ContactManager.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/ServerAction.hpp>
-#include <opentxs/client/Utility.hpp>
-#include <opentxs/contact/Contact.hpp>
-#include <opentxs/contact/ContactData.hpp>
-#include <opentxs/core/Identifier.hpp>
-#include <opentxs/core/String.hpp>
-#include <opentxs/OT.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <QMessageBox>
 #include <QDebug>

@@ -4,8 +4,7 @@
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
 
-#include <opentxs/core/crypto/OTCallback.hpp>
-#include <opentxs/core/crypto/OTPassword.hpp>
+#include <opentxs/opentxs.hpp>
 
 class MTPasswordCallback : public opentxs::OTCallback
 {

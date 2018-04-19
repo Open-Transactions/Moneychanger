@@ -4,7 +4,7 @@
 #include "core/WinsockWrapper.h"
 #include "core/ExportWrapper.h"
 
-#include <opentxs/core/util/Timer.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <QMutex>
 #include <QWaitCondition>

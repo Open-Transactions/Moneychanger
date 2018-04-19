@@ -8,11 +8,7 @@
 #include "core/ExportWrapper.h"
 #include "core/mapidname.hpp"
 
-#include <opentxs/client/OTRecordList.hpp>
-#include <opentxs/core/Identifier.hpp>
-#include <opentxs/core/Nym.hpp>
-#include <opentxs/Proto.hpp>
-#include <opentxs/Types.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <core/network/Network.h>
 

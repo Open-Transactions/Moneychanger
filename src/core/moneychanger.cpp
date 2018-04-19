@@ -60,41 +60,7 @@
 #include <gui/ui/activity.hpp>
 #include <gui/ui/getstringdialog.hpp>
 
-#include <opentxs/api/client/Cash.hpp>
-#include <opentxs/api/client/Pair.hpp>
-#include <opentxs/api/client/ServerAction.hpp>
-#include <opentxs/api/client/Sync.hpp>
-#include <opentxs/api/client/Wallet.hpp>
-#include <opentxs/api/network/ZMQ.hpp>
-#include <opentxs/api/storage/Storage.hpp>
-#include <opentxs/api/Activity.hpp>
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/UI.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/client/OT_API.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OTWallet.hpp>
-#include <opentxs/client/ServerAction.hpp>
-#include <opentxs/client/Utility.hpp>
-#include <opentxs/core/util/OTPaths.hpp>
-#include <opentxs/core/crypto/OTPasswordData.hpp>
-#include <opentxs/core/crypto/OTASCIIArmor.hpp>
-#include <opentxs/core/script/OTSmartContract.hpp>
-#include <opentxs/core/Cheque.hpp>
-#include <opentxs/core/Identifier.hpp>
-#include <opentxs/core/Nym.hpp>
-#include <opentxs/ext/OTPayment.hpp>
-#include <opentxs/network/zeromq/Context.hpp>
-#include <opentxs/network/zeromq/ListenCallback.hpp>
-#include <opentxs/network/zeromq/Message.hpp>
-#include <opentxs/network/zeromq/PairEventCallback.hpp>
-#include <opentxs/network/zeromq/SubscribeSocket.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/Proto.hpp>
-
-#include <opentxs/ui/ContactList.hpp>
-#include <opentxs/ui/ContactListItem.hpp>
-
+#include <opentxs/opentxs.hpp>
 
 #include <QMenu>
 #include <QApplication>

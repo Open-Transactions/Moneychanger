@@ -9,13 +9,7 @@
 
 #include <core/handlers/modelclaims.hpp>
 
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OTRecordList.hpp>
-#include <opentxs/core/util/OTPaths.hpp>
-#include <opentxs/core/OTStorage.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <QDebug>
 #include <QtGlobal>

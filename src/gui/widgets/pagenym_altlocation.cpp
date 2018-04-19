@@ -18,13 +18,7 @@
 #include <QRadioButton>
 #include <QDebug>
 
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/client/OT_API.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/core/util/Assert.hpp>
-#include <opentxs/core/Identifier.hpp>
-#include <opentxs/OT.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <set>
 #include <tuple>

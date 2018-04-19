@@ -10,19 +10,7 @@
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 
-#include <opentxs/api/client/Pair.hpp>
-#include <opentxs/api/client/Sync.hpp>
-#include <opentxs/api/network/ZMQ.hpp>
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/client/OT_API.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/core/cron/OTCronItem.hpp>
-#include <opentxs/core/recurring/OTPaymentPlan.hpp>
-#include <opentxs/core/script/OTSmartContract.hpp>
-#include <opentxs/core/NumList.hpp>
-#include <opentxs/ext/OTPayment.hpp>
-#include <opentxs/OT.hpp>
+#include <opentxs/opentxs.hpp>
 
 #include <QDir>
 #include <QMessageBox>

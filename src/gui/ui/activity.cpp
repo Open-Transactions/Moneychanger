@@ -23,39 +23,7 @@
 #include <core/handlers/modelpayments.hpp>
 #include <core/handlers/focuser.h>
 
-#include <opentxs/api/client/Issuer.hpp>
-#include <opentxs/api/client/ServerAction.hpp>
-#include <opentxs/api/client/Sync.hpp>
-#include <opentxs/api/client/Wallet.hpp>
-#include <opentxs/api/storage/Storage.hpp>
-#include <opentxs/api/Activity.hpp>
-#include <opentxs/api/Api.hpp>
-#include <opentxs/api/ContactManager.hpp>
-#include <opentxs/api/Native.hpp>
-#include <opentxs/api/UI.hpp>
-#include <opentxs/client/OT_API.hpp>
-#include <opentxs/client/OTAPI_Exec.hpp>
-#include <opentxs/client/OTRecordList.hpp>
-#include <opentxs/client/OTWallet.hpp>
-#include <opentxs/client/ServerAction.hpp>
-#include <opentxs/client/Utility.hpp>
-#include <opentxs/contact/Contact.hpp>
-#include <opentxs/contact/ContactData.hpp>
-#include <opentxs/contact/ContactGroup.hpp>
-#include <opentxs/contact/ContactItem.hpp>
-#include <opentxs/contact/ContactSection.hpp>
-#include <opentxs/core/contract/UnitDefinition.hpp>
-#include <opentxs/core/Identifier.hpp>
-#include <opentxs/core/Log.hpp>
-#include <opentxs/core/OTTransaction.hpp>
-#include <opentxs/core/OTTransactionType.hpp>
-#include <opentxs/ui/ActivityThread.hpp>
-#include <opentxs/ui/ActivitySummary.hpp>
-#include <opentxs/ui/ActivityThreadItem.hpp>
-#include <opentxs/Forward.hpp>
-#include <opentxs/OT.hpp>
-#include <opentxs/Types.hpp>
-
+#include <opentxs/opentxs.hpp>
 
 #include <QLabel>
 #include <QDebug>

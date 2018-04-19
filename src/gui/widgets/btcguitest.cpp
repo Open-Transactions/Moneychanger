@@ -11,8 +11,7 @@
 
 #include <bitcoin-api/btctest.hpp>
 
-#include <opentxs/core/Log.hpp>
-
+#include <opentxs/opentxs.hpp>
 
 BtcGuiTest::BtcGuiTest(QWidget *parent) :
     QWidget(parent, Qt::Window),
