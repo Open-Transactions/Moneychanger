@@ -1747,7 +1747,7 @@ void MTAccountDetails::AddButtonClicked()
 
                 auto strResponse = opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier(qstrNymID.toStdString()), opentxs::Identifier(qstrNotaryID.toStdString()), true);
 
-                if (false == strResponse.empty()) {
+                if (false == strResponse->empty()) {
                     nSuccess = 1;
                 } else {
                     nSuccess = 0;
