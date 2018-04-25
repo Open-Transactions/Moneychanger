@@ -174,7 +174,7 @@ void MTAssetDetails::on_pushButton_clicked()
 
                                     auto strResponse = opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier(qstrNymID.toStdString()), opentxs::Identifier(qstrNotaryID.toStdString()), true);
 
-                                    if (false == strResponse.empty()) {
+                                    if (false == strResponse->empty()) {
                                         nSuccess = 1;
                                     } else {
                                         nSuccess = 0;
@@ -248,7 +248,7 @@ void MTAssetDetails::on_pushButton_clicked()
                                     {
                                         MTSpinner theSpinner;
 
-                                        auto action = opentxs::OT::App().API().ServerAction().IssueUnitDefinition(nymID, notaryID, 
+                                        auto action = opentxs::OT::App().API().ServerAction().IssueUnitDefinition(nymID, notaryID,
                                         		contractProto);
                                         const std::string str_reply = action->Run();
                                         const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);

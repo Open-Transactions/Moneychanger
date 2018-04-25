@@ -2188,7 +2188,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
 
                             auto strResponse = opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier(str_nym_id), opentxs::Identifier(str_notary_id), true);
 
-                            if (false == strResponse.empty()) {
+                            if (false == strResponse->empty()) {
                                 nSuccess = 1;
                             } else {
                                 nSuccess = 0;
