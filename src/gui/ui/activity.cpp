@@ -2238,7 +2238,7 @@ void Activity::PopulateConversationsForNym(
             {
                 thread_summary_.erase(it_thread_summary);
             }
-            thread_summary_[str_my_nym_id] = thread_summary.WidgetID().str();
+            thread_summary_[str_my_nym_id] = thread_summary.WidgetID()->str();
             qstrActivitySummaryId = QString::fromStdString(thread_summary_[str_my_nym_id]);
         }
 
@@ -2625,7 +2625,7 @@ void Activity::RefreshConversationDetails(int nRow)
                 thread_summary_.erase(it_thread_summary);
             }
 
-            thread_summary_[str_my_nym_id] = thread_summary.WidgetID().str();
+            thread_summary_[str_my_nym_id] = thread_summary.WidgetID()->str();
         }
         // -------------------------------------------
         if (qstrMyNymId.isEmpty() || qstrThreadId.isEmpty())
@@ -2651,7 +2651,7 @@ void Activity::RefreshConversationDetails(int nRow)
         const opentxs::Identifier threadID(str_thread_id);
         auto& thread = opentxs::OT::App().UI().ActivityThread(nymID, threadID);
 
-        active_thread_ = thread.WidgetID().str();
+        active_thread_ = thread.WidgetID()->str();
 
 //        qDebug() << "I'm setting active_thread_ to Widget ID: " <<
 //            QString::fromStdString(active_thread_);
