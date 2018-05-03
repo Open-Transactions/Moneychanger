@@ -587,7 +587,7 @@ int Activity::PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers/*=n
                             const std::string str_unit_type_id{claim->Value()};
                             const opentxs::Identifier unit_type_id{str_unit_type_id};
 
-                            std::set<opentxs::Identifier> accountList = pIssuer->AccountList(type, unit_type_id);
+                            auto accountList = pIssuer->AccountList(type, unit_type_id);
 
                             for (auto & accountId : accountList) {
                                 // Note: we don't actually need the below name.
@@ -598,11 +598,9 @@ int Activity::PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers/*=n
                                 // continue to work properly until everything is converted
                                 // to the new API.
                                 //
-                                const opentxs::String strAccountId{accountId};
-                                const std::string str_account_id = strAccountId.Get();
                                 MTNameLookupQT theLookup;
                                 const std::string str_acct_name =
-                                    theLookup.GetAcctName(str_account_id, nym_id, str_notary_id, str_unit_type_id);
+                                    theLookup.GetAcctName(accountId->str(), nym_id, str_notary_id, str_unit_type_id);
                             }
                         }
                     }
@@ -6474,7 +6472,7 @@ bool Activity::get_deposit_address(
 
     for (auto & [ bailmentId, bailmentReply ] : bailmentDetails)
     {
-        if (bailmentId.empty() || !bailmentReply.has_instructions()) {
+        if (bailmentId->empty() || !bailmentReply.has_instructions()) {
             qDebug() << "get_deposit_address: Error: missing bailment reply Id or instructions.";
             continue;
         }

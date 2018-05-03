@@ -2286,7 +2286,7 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, const std::string & str_conta
     }
     const QString qstrContactLabel = str_opentxs_label.empty() ? QString::fromStdString(str_alternate_label) : QString::fromStdString(str_opentxs_label);
     // ------------------------
-    std::vector<opentxs::Identifier> vector_nym_id{pContact->Nyms()};
+    auto vector_nym_id{pContact->Nyms()};
 
     if (vector_nym_id.empty())
     {
@@ -2295,8 +2295,7 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, const std::string & str_conta
     // ------------------------
     for (const auto & nym_id : vector_nym_id)
     {
-        theMap.insert(QString::fromStdString(std::string(opentxs::String(nym_id).Get())),
-                      qstrContactLabel);
+        theMap.insert(QString::fromStdString(nym_id->str()), qstrContactLabel);
         // NOTE: Normally we'd put a different Nym Name here for each. How else would you tell them apart?
 //      MTNameLookupQT theLookup;
 //      nym_name = QString::fromStdString(theLookup.GetNymName(nym_id.toStdString(), ""));
