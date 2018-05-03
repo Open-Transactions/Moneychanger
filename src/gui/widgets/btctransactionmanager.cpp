@@ -171,6 +171,7 @@ void BtcTransactionManager::RefreshPoolTransactions(bool refreshAll)
                 break;
             case SampleEscrowTransaction::NotStarted:
                 status = "Not started";
+                break;
             case SampleEscrowTransaction::Failed:
                 status = "Failed";
                 break;
