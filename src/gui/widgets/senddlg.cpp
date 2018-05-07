@@ -1125,14 +1125,14 @@ bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
         return false;
     }
     // ----------------------------------------------------
-    if (!inviteMode() && toNymId.isEmpty())
-    {
-        qDebug() << "Cannot send funds to an empty nym id, aborting.";
-        // todo: someday we will allow this, by leaving the payee blank on
-        // the cheque itself.
-        // NOTE: If INVITE MODE is turned ON, we would allow this.
-        return false;
-    }
+//    if (!inviteMode() && toNymId.isEmpty())
+//    {
+//        qDebug() << "Cannot send funds to an empty nym id, aborting.";
+//        // todo: someday we will allow this, by leaving the payee blank on
+//        // the cheque itself.
+//        // NOTE: If INVITE MODE is turned ON, we would allow this.
+//        return false;
+//    }
     // ----------------------------------------------------
     if (fromAcctId.isEmpty())
     {
@@ -1245,12 +1245,14 @@ void MTSendDlg::on_sendButton_clicked()
     // send a cheque with the recipient set to blank. But for now, we'll
     // insist on a Nym to make the cheque out to.
     //
-    if (m_hisNymId.isEmpty())
-    {
-        QMessageBox::warning(this, tr("No Payee Selected"),
-                             tr("Please choose a payee for these funds, before sending."));
-        return;
-    }
+//    if (m_hisNymId.isEmpty())
+//    {
+//        QMessageBox::warning(this, tr("No Payee Selected"),
+//                             tr("Please choose a payee for these funds, before sending."));
+//        return;
+//    }
+    // NOTE: allowing this for now since a deeper function will already
+    // lookup the NymID as long as the ContactID is set.
     // -----------------------------------------------------------------
     // From:
     if (m_myAcctId.isEmpty())

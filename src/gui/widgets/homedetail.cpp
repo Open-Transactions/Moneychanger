@@ -500,7 +500,15 @@ QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
                 // -----------------------------------------------
 
 
+                qDebug() << "\n DEBUGGING loop qstr_record_nym: " << qstr_record_nym;
                 qDebug() << "\n DEBUGGING loop qstr_acct_nym: " << qstr_acct_nym;
+
+                qDebug() << "\n DEBUGGING loop qstr_record_server: " << qstr_record_server;
+                qDebug() << "\n DEBUGGING loop qstr_acct_server: " << qstr_acct_server;
+
+                qDebug() << "\n DEBUGGING loop qstr_record_asset: " << qstr_record_asset;
+                qDebug() << "\n DEBUGGING loop qstr_acct_asset: " << qstr_acct_asset;
+
                 qDebug() << "\n DEBUGGING loop str_acct_type: " << QString::fromStdString(str_acct_type);
 
                 if ((0 == qstr_record_nym   .compare(qstr_acct_nym)   ) &&

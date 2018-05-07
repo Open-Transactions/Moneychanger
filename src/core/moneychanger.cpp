@@ -3159,7 +3159,8 @@ bool Moneychanger::AddMailToMsgArchive(
 //
 void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id,
                                                  const std::string & p_nym_id,
-                                                 const std::string & p_notary_id,
+                                                 const std::string & p_msg_notary_id,
+                                                 const std::string & p_pmnt_notary_id,
                                                  const std::string & p_txn_contents,
                                                  int64_t & lTransactionNum,
                                                  int64_t & lTransNumForDisplay)
@@ -3182,9 +3183,11 @@ void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id
         if (!str_acct_id.empty())
             myAcctID = QString::fromStdString(str_acct_id);
         // ---------------------------------
-        QString notaryID;
-        if (!p_notary_id.empty())
-            notaryID = QString::fromStdString(p_notary_id);
+        QString msgNotaryID, pmntNotaryID;
+        if (!p_msg_notary_id.empty())
+            msgNotaryID = QString::fromStdString(p_msg_notary_id);
+        if (!p_pmnt_notary_id.empty())
+            pmntNotaryID = QString::fromStdString(p_pmnt_notary_id);
         // ---------------------------------
         int64_t & transNum        = lTransactionNum;
         int64_t & transNumDisplay = lTransNumForDisplay;
@@ -3215,7 +3218,8 @@ void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id
         if (transNumDisplay > 0) mapFinalValues.insert("txn_id_display", QVariant::fromValue(transNumDisplay));
         if (nPending > 0) mapFinalValues.insert("pending_found",   QVariant::fromValue(nPending));
         if (nCompleted > 0) mapFinalValues.insert("completed_found",   QVariant::fromValue(nCompleted));
-        if (!notaryID.isEmpty()) mapFinalValues.insert("notary_id", notaryID);
+        if (!msgNotaryID.isEmpty()) mapFinalValues.insert("msg_notary_id", msgNotaryID);
+        if (!pmntNotaryID.isEmpty()) mapFinalValues.insert("pmnt_notary_id", pmntNotaryID);
 
 
 //      qDebug() << "DEBUGGING AddPaymentBasedOnNotification. transNum: " << transNum << " transNumDisplay: " << transNumDisplay << "\n";
@@ -3951,10 +3955,13 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
 //              senderAddress = MTContactHandler::Encode(QString::fromStdString(recordmt.GetOtherAddress()));
         }
         // ---------------------------------
-        QString notaryID, msgType, msgTypeDisplay;
+        QString msgNotaryID, pmntNotaryID, msgType, msgTypeDisplay;
 
-        if (!recordmt.GetNotaryID().empty())
-            notaryID = QString::fromStdString(recordmt.GetNotaryID());
+        if (!recordmt.GetMsgNotaryID().empty())
+            msgNotaryID = QString::fromStdString(recordmt.GetMsgNotaryID());
+
+        if (!recordmt.GetPmntNotaryID().empty())
+        pmntNotaryID = QString::fromStdString(recordmt.GetPmntNotaryID());
 
         if (!recordmt.GetMsgType().empty())
             msgType = QString::fromStdString(recordmt.GetMsgType());
@@ -4034,7 +4041,8 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
 
         if (!msgType.isEmpty()) mapFinalValues.insert("method_type", msgType);
         if (!msgTypeDisplay.isEmpty()) mapFinalValues.insert("method_type_display", msgTypeDisplay);
-        if (!notaryID.isEmpty()) mapFinalValues.insert("notary_id", notaryID);
+        if (!msgNotaryID.isEmpty()) mapFinalValues.insert("msg_notary_id", notaryID);
+        if (!pmntNotaryID.isEmpty()) mapFinalValues.insert("pmnt_notary_id", notaryID);
         if (!qstrMemo.isEmpty()) mapFinalValues.insert("memo", qstrMemo);
         if (!mailDescription.isEmpty()) mapFinalValues.insert("description", mailDescription);
         if (!qstrName.isEmpty()) mapFinalValues.insert("record_name", qstrName);

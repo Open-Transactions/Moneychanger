@@ -264,11 +264,12 @@ bool DBHandler::dbCreateInstance()
                " txn_id_display INTEGER,"
                " method_type TEXT,"
                " method_type_display TEXT,"
-               " notary_id TEXT,"
+               " pmnt_notary_id TEXT,"  //" pmnt_notary_id TEXT,"
                " record_name TEXT,"
                " instrument_type TEXT,"
                " folder INTEGER,"
-               " flags INTEGER"
+               " flags INTEGER,"
+               " msg_notary_id TEXT" //" msg_notary_id TEXT,"
                ")";
         // --------------------------------------------
         QString create_payment_body_table = "CREATE TABLE IF NOT EXISTS payment_body"
@@ -758,10 +759,11 @@ QPointer<ModelPayments> DBHandler::getPaymentModel()
         pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("txn_id_display"));
         pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("method_type"));
         pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Transport"));
-        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Notary"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Payment Notary"));
         pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("record_name"));
         pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Instrument"));
         pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Folder"));
+        pPaymentModel_->setHeaderData(column++, Qt::Horizontal, QObject::tr("Transport Notary"));
     }
 
     return pPaymentModel_;

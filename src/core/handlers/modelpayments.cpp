@@ -447,11 +447,14 @@ QVariant AccountRecordsProxyModel::data ( const QModelIndex & index, int role/* 
 
             return sourceData;
         }
-        else if (nSourceColumn == PMNT_SOURCE_COL_NOTARY_ID) // notary_id
+        else if ((nSourceColumn == PMNT_SOURCE_COL_MSG_NOTARY_ID) // notary_id
+              || (nSourceColumn == PMNT_SOURCE_COL_PMNT_NOTARY_ID))
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString() : "";
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetServer_Name(str_id);
+            const std::string str_name = str_id.empty()
+                ? ""
+                : opentxs::OT::App().API().Exec().GetServer_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -498,7 +501,7 @@ QVariant AccountRecordsProxyModel::data ( const QModelIndex & index, int role/* 
 
             return sourceData;
         }
-        else if (nSourceColumn == PMNT_SOURCE_COL_METHOD_TYPE_DISP) // Method type display (if blank, we see if there's a notary ID. If so, then transport shows "otserver".)
+        else if (nSourceColumn == PMNT_SOURCE_COL_METHOD_TYPE_DISP) // Method type display (if blank, we see if there's a notary ID. If so, then transport shows "opentxs".)
         {
             QString qstrType = sourceData.isValid() ? sourceData.toString() : "";
             // ------------------------
@@ -670,7 +673,8 @@ bool AccountRecordsProxyModel::filterAcceptsColumn(int source_column, const QMod
         bReturn = false;
     }
         break;
-    case PMNT_SOURCE_COL_NOTARY_ID:
+    case PMNT_SOURCE_COL_MSG_NOTARY_ID:
+    case PMNT_SOURCE_COL_PMNT_NOTARY_ID:
     {
         bReturn = false;
     }
@@ -728,7 +732,8 @@ bool AccountRecordsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex
     QModelIndex indexRecipAcct    = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_RECIP_ACCT,     sourceParent); // recipient_acct_id
     QModelIndex indexRecipAddr    = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_RECIP_ADDR,     sourceParent); // recipient_address
     QModelIndex indexMethodType   = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_METHOD_TYPE,    sourceParent); // method_type
-    QModelIndex indexNotary       = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_NOTARY_ID,      sourceParent); // notary_id
+    QModelIndex indexMsgNotary    = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_MSG_NOTARY_ID,  sourceParent); // msg_notary_id
+    QModelIndex indexPmntNotary   = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_PMNT_NOTARY_ID, sourceParent); // pmnt_notary_id
     QModelIndex indexFolder       = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_FOLDER,         sourceParent); // folder
     QModelIndex indexMemo         = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_MEMO,           sourceParent); // memo
     QModelIndex indexDescription  = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_DESCRIPTION,    sourceParent); // description
@@ -764,7 +769,8 @@ bool AccountRecordsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex
         const QVariant dataRecipientAcct    = pMsgModel->data(indexRecipAcct);
         const QVariant dataSenderAddress    = pMsgModel->data(indexSenderAddr);
         const QVariant dataRecipientAddress = pMsgModel->data(indexRecipAddr);
-        const QVariant dataNotaryID         = pMsgModel->data(indexNotary);
+        const QVariant dataMsgNotaryID      = pMsgModel->data(indexMsgNotary);
+        const QVariant dataPmntNotaryID     = pMsgModel->data(indexPmntNotary);
         const QVariant dataMemo             = pMsgModel->data(indexMemo);
         const QVariant dataDescription      = pMsgModel->data(indexDescription);
 
@@ -786,7 +792,8 @@ bool AccountRecordsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex
         const QString qstrRecipientAcct    = dataRecipientAcct.isValid() ? dataRecipientAcct.toString() : "";
         const QString qstrSenderAddress    = dataSenderAddress.isValid() ? dataSenderAddress.toString() : "";
         const QString qstrRecipientAddress = dataRecipientAddress.isValid() ? dataRecipientAddress.toString() : "";
-        const QString qstrNotaryID         = dataNotaryID.isValid() ? dataNotaryID.toString() : "";
+        const QString qstrMsgNotaryID      = dataMsgNotaryID.isValid() ? dataMsgNotaryID.toString() : "";
+        const QString qstrPmntNotaryID     = dataPmntNotaryID.isValid() ? dataPmntNotaryID.toString() : "";
         // ------------------------------------
         // Here we check filterAccount_, which is for the account details screen.
         // So we want to filter for records that match filterAccount_ to qstrMyAcct.
@@ -800,13 +807,21 @@ bool AccountRecordsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex
             const QString qstrMemo        = dataMemo       .isValid() ? dataMemo       .toString() : "";
             const QString qstrDescription = dataDescription.isValid() ? dataDescription.toString() : "";
 
-            const QString qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrNotaryID.toStdString()));
+            const QString qstrMsgNotaryName = qstrMsgNotaryID.isEmpty()
+                ? QString("")
+                : QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrMsgNotaryID.toStdString()));
 
-            const QString qstrMyAcctName = qstrMyAcct.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(qstrMyAcct.toStdString()));
-            const QString qstrAssetName = qstrAssetType.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrAssetType.toStdString()));
+            const QString qstrPmntNotaryName = qstrPmntNotaryID.isEmpty()
+                ? QString("")
+                : QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrPmntNotaryID.toStdString()));
+
+            const QString qstrMyAcctName = qstrMyAcct.isEmpty()
+                ? QString("")
+                : QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(qstrMyAcct.toStdString()));
+
+            const QString qstrAssetName = qstrAssetType.isEmpty()
+                ? QString("")
+                : QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrAssetType.toStdString()));
 
             MTNameLookupQT theLookup;
             QString qstrMyName        = qstrMyNym       .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrMyNym       .toStdString(), ""));
@@ -840,13 +855,15 @@ bool AccountRecordsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex
                 !qstrSenderAddress.contains(filterString_) &&
                 !qstrRecipientAddress.contains(filterString_) &&
                 !qstrAssetType.contains(filterString_) &&
-                !qstrNotaryID.contains(filterString_) &&
+                !qstrMsgNotaryID.contains(filterString_) &&
+                !qstrPmntNotaryID.contains(filterString_) &&
                 !qstrMyName.contains(filterString_) &&
                 !qstrMyAcctName.contains(filterString_) &&
                 !qstrSenderName.contains(filterString_) &&
                 !qstrRecipientName.contains(filterString_) &&
-                !qstrAssetName.contains(filterString_) &&
-                !qstrNotaryName.contains(filterString_) )
+                !qstrMsgNotaryName.contains(filterString_) &&
+                !qstrPmntNotaryName.contains(filterString_) &&
+                !qstrAssetName.contains(filterString_) )
                 return false;
         }
     }
@@ -1321,7 +1338,8 @@ QVariant PaymentsProxyModel::data ( const QModelIndex & index, int role/* = Qt::
 
             return sourceData;
         }
-        else if (nSourceColumn == PMNT_SOURCE_COL_NOTARY_ID) // notary_id
+        else if ((nSourceColumn == PMNT_SOURCE_COL_MSG_NOTARY_ID) // notary_id
+              || (nSourceColumn == PMNT_SOURCE_COL_PMNT_NOTARY_ID))
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString() : "";
             const std::string str_id = qstrID.toStdString();
@@ -1572,7 +1590,8 @@ bool PaymentsProxyModel::filterAcceptsColumn(int source_column, const QModelInde
             bReturn = false;
     }
         break;
-    case PMNT_SOURCE_COL_NOTARY_ID:
+    case PMNT_SOURCE_COL_MSG_NOTARY_ID:
+    case PMNT_SOURCE_COL_PMNT_NOTARY_ID:
     {
         if (FilterMethodAddress == filterType_)
             bReturn = false;
@@ -1635,7 +1654,8 @@ bool PaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
     QModelIndex indexRecipAcct    = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_RECIP_ACCT,     sourceParent); // recipient_acct_id
     QModelIndex indexRecipAddr    = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_RECIP_ADDR,     sourceParent); // recipient_address
     QModelIndex indexMethodType   = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_METHOD_TYPE,    sourceParent); // method_type
-    QModelIndex indexNotary       = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_NOTARY_ID,      sourceParent); // notary_id
+    QModelIndex indexMsgNotary    = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_MSG_NOTARY_ID,  sourceParent); // msg_notary_id
+    QModelIndex indexPmntNotary   = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_PMNT_NOTARY_ID, sourceParent); // pmnt_notary_id
     QModelIndex indexFolder       = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_FOLDER,         sourceParent); // folder
     QModelIndex indexMemo         = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_MEMO,           sourceParent); // memo
     QModelIndex indexDescription  = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_DESCRIPTION,    sourceParent); // description
@@ -1666,7 +1686,8 @@ bool PaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
         const QVariant dataRecipientAcct    = pMsgModel->data(indexRecipAcct);
         const QVariant dataSenderAddress    = pMsgModel->data(indexSenderAddr);
         const QVariant dataRecipientAddress = pMsgModel->data(indexRecipAddr);
-        const QVariant dataNotaryID         = pMsgModel->data(indexNotary);
+        const QVariant dataMsgNotaryID      = pMsgModel->data(indexMsgNotary);
+        const QVariant dataPmntNotaryID     = pMsgModel->data(indexPmntNotary);
         const QVariant dataMemo             = pMsgModel->data(indexMemo);
         const QVariant dataDescription      = pMsgModel->data(indexDescription);
 
@@ -1688,7 +1709,8 @@ bool PaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
         const QString qstrRecipientAcct    = dataRecipientAcct.isValid() ? dataRecipientAcct.toString() : "";
         const QString qstrSenderAddress    = dataSenderAddress.isValid() ? dataSenderAddress.toString() : "";
         const QString qstrRecipientAddress = dataRecipientAddress.isValid() ? dataRecipientAddress.toString() : "";
-        const QString qstrNotaryID         = dataNotaryID.isValid() ? dataNotaryID.toString() : "";
+        const QString qstrMsgNotaryID      = dataMsgNotaryID.isValid() ? dataMsgNotaryID.toString() : "";
+        const QString qstrPmntNotaryID     = dataPmntNotaryID.isValid() ? dataPmntNotaryID.toString() : "";
         // ------------------------------------
         // Here we check the filterString (optional string the user can type.)
         //
@@ -1697,13 +1719,21 @@ bool PaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
             const QString qstrMemo        = dataMemo       .isValid() ? dataMemo       .toString() : "";
             const QString qstrDescription = dataDescription.isValid() ? dataDescription.toString() : "";
 
-            const QString qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrNotaryID.toStdString()));
+            const QString qstrMsgNotaryName = qstrMsgNotaryID.isEmpty()
+                ? QString("")
+                : QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrMsgNotaryID.toStdString()));
 
-            const QString qstrMyAcctName = qstrMyAcct.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(qstrMyAcct.toStdString()));
-            const QString qstrAssetName = qstrAssetType.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrAssetType.toStdString()));
+            const QString qstrPmntNotaryName = qstrPmntNotaryID.isEmpty()
+                ? QString("")
+                : QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrPmntNotaryID.toStdString()));
+
+            const QString qstrMyAcctName = qstrMyAcct.isEmpty()
+                ? QString("")
+                : QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(qstrMyAcct.toStdString()));
+
+            const QString qstrAssetName = qstrAssetType.isEmpty()
+                ? QString("")
+                : QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrAssetType.toStdString()));
 
             MTNameLookupQT theLookup;
             QString qstrMyName        = qstrMyNym       .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrMyNym       .toStdString(), ""));
@@ -1737,13 +1767,15 @@ bool PaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
                 !qstrSenderAddress.contains(filterString_) &&
                 !qstrRecipientAddress.contains(filterString_) &&
                 !qstrAssetType.contains(filterString_) &&
-                !qstrNotaryID.contains(filterString_) &&
+                !qstrMsgNotaryID.contains(filterString_) &&
+                !qstrPmntNotaryID.contains(filterString_) &&
                 !qstrMyName.contains(filterString_) &&
                 !qstrMyAcctName.contains(filterString_) &&
                 !qstrSenderName.contains(filterString_) &&
                 !qstrRecipientName.contains(filterString_) &&
-                !qstrAssetName.contains(filterString_) &&
-                !qstrNotaryName.contains(filterString_) )
+                !qstrMsgNotaryName.contains(filterString_) &&
+                !qstrPmntNotaryName.contains(filterString_) &&
+                !qstrAssetName.contains(filterString_) )
                 return false;
         }
         // ------------------------------------
@@ -1797,7 +1829,9 @@ bool PaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
 //            const QString  qstrSenderNym    = dataSenderNym.isValid() ? dataSenderNym.toString() : "";
 //            const QString  qstrRecipientNym = dataRecipientNym.isValid() ? dataRecipientNym.toString() : "";
 
-            if (!notaryId_.isEmpty() && (qstrNotaryID != notaryId_)) // The row doesn't match our filter.
+            if (   !notaryId_.isEmpty()  // The row doesn't match our filter.
+                && (qstrMsgNotaryID != notaryId_)
+                && (qstrPmntNotaryID != notaryId_))
                 return false;
 
             for (mapIDName::const_iterator ii = mapNymIds_.begin(); ii != mapNymIds_.end(); ii++)
@@ -2323,7 +2357,8 @@ QVariant ActivityPaymentsProxyModel::data ( const QModelIndex & index, int role/
 
             return sourceData;
         }
-        else if (nSourceColumn == PMNT_SOURCE_COL_NOTARY_ID) // notary_id
+        else if ((nSourceColumn == PMNT_SOURCE_COL_MSG_NOTARY_ID) // notary_id
+              || (nSourceColumn == PMNT_SOURCE_COL_PMNT_NOTARY_ID))
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString() : "";
             const std::string str_id = qstrID.toStdString();
@@ -2574,7 +2609,8 @@ bool ActivityPaymentsProxyModel::filterAcceptsColumn(int source_column, const QM
             bReturn = false;
     }
         break;
-    case PMNT_SOURCE_COL_NOTARY_ID:
+    case PMNT_SOURCE_COL_MSG_NOTARY_ID:
+    case PMNT_SOURCE_COL_PMNT_NOTARY_ID:
     {
         if (FilterNotary == filterType_)
             bReturn = false;
@@ -2637,7 +2673,8 @@ bool ActivityPaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
     QModelIndex indexRecipAcct    = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_RECIP_ACCT,     sourceParent); // recipient_acct_id
     QModelIndex indexRecipAddr    = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_RECIP_ADDR,     sourceParent); // recipient_address
     QModelIndex indexMethodType   = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_METHOD_TYPE,    sourceParent); // method_type
-    QModelIndex indexNotary       = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_NOTARY_ID,      sourceParent); // notary_id
+    QModelIndex indexMsgNotary    = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_MSG_NOTARY_ID,  sourceParent); // msg_notary_id
+    QModelIndex indexPmntNotary   = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_PMNT_NOTARY_ID, sourceParent); // pmnt_notary_id
     QModelIndex indexFolder       = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_FOLDER,         sourceParent); // folder
     QModelIndex indexMemo         = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_MEMO,           sourceParent); // memo
     QModelIndex indexDescription  = sourceModel()->index(sourceRow, PMNT_SOURCE_COL_DESCRIPTION,    sourceParent); // description
@@ -2668,7 +2705,8 @@ bool ActivityPaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
         const QVariant dataRecipientAcct    = pMsgModel->data(indexRecipAcct);
         const QVariant dataSenderAddress    = pMsgModel->data(indexSenderAddr);
         const QVariant dataRecipientAddress = pMsgModel->data(indexRecipAddr);
-        const QVariant dataNotaryID         = pMsgModel->data(indexNotary);
+        const QVariant dataMsgNotaryID      = pMsgModel->data(indexMsgNotary);
+        const QVariant dataPmntNotaryID     = pMsgModel->data(indexPmntNotary);
         const QVariant dataMemo             = pMsgModel->data(indexMemo);
         const QVariant dataDescription      = pMsgModel->data(indexDescription);
 
@@ -2690,7 +2728,8 @@ bool ActivityPaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
         const QString qstrRecipientAcct    = dataRecipientAcct.isValid() ? dataRecipientAcct.toString() : "";
         const QString qstrSenderAddress    = dataSenderAddress.isValid() ? dataSenderAddress.toString() : "";
         const QString qstrRecipientAddress = dataRecipientAddress.isValid() ? dataRecipientAddress.toString() : "";
-        const QString qstrNotaryID         = dataNotaryID.isValid() ? dataNotaryID.toString() : "";
+        const QString qstrMsgNotaryID      = dataMsgNotaryID.isValid() ? dataMsgNotaryID.toString() : "";
+        const QString qstrPmntNotaryID     = dataPmntNotaryID.isValid() ? dataPmntNotaryID.toString() : "";
         // ------------------------------------
         // Here we check the filterString (optional string the user can type.)
         //
@@ -2699,13 +2738,21 @@ bool ActivityPaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
             const QString qstrMemo        = dataMemo       .isValid() ? dataMemo       .toString() : "";
             const QString qstrDescription = dataDescription.isValid() ? dataDescription.toString() : "";
 
-            const QString qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrNotaryID.toStdString()));
+            const QString qstrMsgNotaryName = qstrMsgNotaryID.isEmpty()
+                ? QString("")
+                : QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrMsgNotaryID.toStdString()));
 
-            const QString qstrMyAcctName = qstrMyAcct.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(qstrMyAcct.toStdString()));
-            const QString qstrAssetName = qstrAssetType.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrAssetType.toStdString()));
+            const QString qstrPmntNotaryName = qstrPmntNotaryID.isEmpty()
+                ? QString("")
+                : QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrPmntNotaryID.toStdString()));
+
+            const QString qstrMyAcctName = qstrMyAcct.isEmpty()
+                ? QString("")
+                : QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(qstrMyAcct.toStdString()));
+
+            const QString qstrAssetName = qstrAssetType.isEmpty()
+                ? QString("")
+                : QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrAssetType.toStdString()));
 
             MTNameLookupQT theLookup;
             QString qstrMyName        = qstrMyNym       .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrMyNym       .toStdString(), ""));
@@ -2739,13 +2786,15 @@ bool ActivityPaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
                 !qstrSenderAddress.contains(filterString_) &&
                 !qstrRecipientAddress.contains(filterString_) &&
                 !qstrAssetType.contains(filterString_) &&
-                !qstrNotaryID.contains(filterString_) &&
+                !qstrMsgNotaryID.contains(filterString_) &&
+                !qstrPmntNotaryID.contains(filterString_) &&
                 !qstrMyName.contains(filterString_) &&
                 !qstrMyAcctName.contains(filterString_) &&
                 !qstrSenderName.contains(filterString_) &&
                 !qstrRecipientName.contains(filterString_) &&
-                !qstrAssetName.contains(filterString_) &&
-                !qstrNotaryName.contains(filterString_) )
+                !qstrMsgNotaryName.contains(filterString_) &&
+                !qstrPmntNotaryName.contains(filterString_) &&
+                !qstrAssetName.contains(filterString_) )
                 return false;
         }
         // ------------------------------------
@@ -2803,7 +2852,8 @@ bool ActivityPaymentsProxyModel::filterAcceptsRow(int sourceRow, const QModelInd
 //            const QString  qstrSenderNym    = dataSenderNym.isValid() ? dataSenderNym.toString() : "";
 //            const QString  qstrRecipientNym = dataRecipientNym.isValid() ? dataRecipientNym.toString() : "";
 
-            if ( (qstrNotaryID == notaryId_)) // The row matches our filter.
+            if (   (qstrMsgNotaryID  == notaryId_)
+                || (qstrPmntNotaryID == notaryId_)) // The row matches our filter.
                 return true;
 
             return false;
