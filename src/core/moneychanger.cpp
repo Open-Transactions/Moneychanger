@@ -2679,7 +2679,8 @@ bool Moneychanger::AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt)
 
             const int64_t lReceiptID = recordmt.GetTransactionNum();
             const int64_t lOfferID   = recordmt.GetTransNumForDisplay();
-            const std::string & strNotaryID = recordmt.GetNotaryID();
+            const std::string & strMsgNotaryID = recordmt.GetMsgNotaryID();
+            const std::string & strPmntNotaryID = recordmt.GetPmntNotaryID();
             const std::string & strNymID = recordmt.GetNymID();
 
             const time64_t tDate = static_cast<time64_t>(ot_.API().Exec().StringToLong(recordmt.GetDate()));
@@ -2692,7 +2693,8 @@ bool Moneychanger::AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt)
 //            record.setValue("actual_paid", QVariant::fromValue(lPayQuantity));
 //            record.setValue("amount_purchased", QVariant::fromValue(lQuantity));
             record.setValue("timestamp",  QVariant::fromValue(tDate));
-            record.setValue("notary_id", QString::fromStdString(strNotaryID));
+            record.setValue("msg_notary_id", QString::fromStdString(strMsgNotaryID));
+            record.setValue("pmnt_notary_id", QString::fromStdString(strPmntNotaryID));
             record.setValue("nym_id", QString::fromStdString(strNymID));
 //            record.setValue("asset_id", QString::fromStdString(pTradeData->instrument_definition_id));
 //            record.setValue("currency_id", QString::fromStdString(pTradeData->currency_id));
@@ -2784,10 +2786,12 @@ bool Moneychanger::low_level_AddMailToMsgArchive(
 //              senderAddress = MTContactHandler::Encode(QString::fromStdString(recordmt.GetOtherAddress()));
         }
         // ---------------------------------
-        QString notaryID, msgType, msgTypeDisplay;
+        QString msgNotaryID, pmntNotaryID, msgType, msgTypeDisplay;
 
-        if (!recordmt.GetNotaryID().empty())
-            notaryID = QString::fromStdString(recordmt.GetNotaryID());
+        if (!recordmt.GetMsgNotaryID().empty())
+            msgNotaryID = QString::fromStdString(recordmt.GetMsgNotaryID());
+        if (!recordmt.GetPmntNotaryID().empty())
+            pmntNotaryID = QString::fromStdString(recordmt.GetPmntNotaryID());
 
         if (!recordmt.GetMsgType().empty())
             msgType = QString::fromStdString(recordmt.GetMsgType());
@@ -2835,8 +2839,10 @@ bool Moneychanger::low_level_AddMailToMsgArchive(
             record.setValue("method_type",  msgType);
         if (!msgTypeDisplay.isEmpty())
             record.setValue("method_type_display", msgTypeDisplay);
-        if (!notaryID.isEmpty())
-            record.setValue("notary_id", notaryID);
+        if (!msgNotaryID.isEmpty())
+            record.setValue("msg_notary_id", msgNotaryID);
+        if (!pmntNotaryID.isEmpty())
+            record.setValue("pmnt_notary_id", pmntNotaryID);
         record.setValue("timestamp", QVariant::fromValue(tDate));
         record.setValue("have_read", recordmt.IsOutgoing() ? 1 : 0);
         record.setValue("have_replied", 0);
@@ -3159,7 +3165,8 @@ bool Moneychanger::AddMailToMsgArchive(
 //
 void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id,
                                                  const std::string & p_nym_id,
-                                                 const std::string & p_notary_id,
+                                                 const std::string & p_msg_notary_id,
+                                                 const std::string & p_pmnt_notary_id,
                                                  const std::string & p_txn_contents,
                                                  int64_t & lTransactionNum,
                                                  int64_t & lTransNumForDisplay)
@@ -3182,9 +3189,11 @@ void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id
         if (!str_acct_id.empty())
             myAcctID = QString::fromStdString(str_acct_id);
         // ---------------------------------
-        QString notaryID;
-        if (!p_notary_id.empty())
-            notaryID = QString::fromStdString(p_notary_id);
+        QString msgNotaryID, pmntNotaryID;
+        if (!p_msg_notary_id.empty())
+            msgNotaryID = QString::fromStdString(p_msg_notary_id);
+        if (!p_pmnt_notary_id.empty())
+            pmntNotaryID = QString::fromStdString(p_pmnt_notary_id);
         // ---------------------------------
         int64_t & transNum        = lTransactionNum;
         int64_t & transNumDisplay = lTransNumForDisplay;
@@ -3215,7 +3224,8 @@ void Moneychanger::AddPaymentBasedOnNotification(const std::string & str_acct_id
         if (transNumDisplay > 0) mapFinalValues.insert("txn_id_display", QVariant::fromValue(transNumDisplay));
         if (nPending > 0) mapFinalValues.insert("pending_found",   QVariant::fromValue(nPending));
         if (nCompleted > 0) mapFinalValues.insert("completed_found",   QVariant::fromValue(nCompleted));
-        if (!notaryID.isEmpty()) mapFinalValues.insert("notary_id", notaryID);
+        if (!msgNotaryID.isEmpty()) mapFinalValues.insert("msg_notary_id", msgNotaryID);
+        if (!pmntNotaryID.isEmpty()) mapFinalValues.insert("pmnt_notary_id", pmntNotaryID);
 
 
 //      qDebug() << "DEBUGGING AddPaymentBasedOnNotification. transNum: " << transNum << " transNumDisplay: " << transNumDisplay << "\n";
@@ -3398,8 +3408,8 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
             instrumentType = QString::fromStdString(recordmt.GetInstrumentType());
         // ---------------------------------
         QString myAssetTypeID;
-        if (!recordmt.GetInstrumentDefinitionID().empty())
-            myAssetTypeID = QString::fromStdString(recordmt.GetInstrumentDefinitionID());
+        if (!recordmt.GetUnitTypeID().empty())
+            myAssetTypeID = QString::fromStdString(recordmt.GetUnitTypeID());
         // ---------------------------------
         QString myAddress;
         if (!recordmt.GetAddress().empty())
@@ -3434,10 +3444,12 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
 //              senderAddress = MTContactHandler::Encode(QString::fromStdString(recordmt.GetOtherAddress()));
         }
         // ---------------------------------
-        QString notaryID, msgType, msgTypeDisplay;
+        QString msgNotaryID, pmntNotaryID, msgType, msgTypeDisplay;
 
-        if (!recordmt.GetNotaryID().empty())
-            notaryID = QString::fromStdString(recordmt.GetNotaryID());
+        if (!recordmt.GetMsgNotaryID().empty())
+            msgNotaryID = QString::fromStdString(recordmt.GetMsgNotaryID());
+        if (!recordmt.GetPmntNotaryID().empty())
+            pmntNotaryID = QString::fromStdString(recordmt.GetPmntNotaryID());
 
         if (!recordmt.GetMsgType().empty())
             msgType = QString::fromStdString(recordmt.GetMsgType());
@@ -3528,9 +3540,9 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
         // ---------------------------------
         const int nFolder = recordmt.IsOutgoing() ? 0 : 1; // 0 for moneychanger's outbox, and 1 for inbox.
         // ---------------------------------
-        if (notaryID.isEmpty())
+        if (pmntNotaryID.isEmpty())
         {
-            qDebug() << __FUNCTION__ << ": Strange: notaryID was empty. (And I needed it. Returning false. Sigh.)";
+            qDebug() << __FUNCTION__ << ": Strange: pmntNotaryID was empty. (And I needed it. Returning false. Sigh.)";
             return false;
         }
         // ----------------------------------------------------------
@@ -3565,7 +3577,8 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
         // (Can't use TxnDisplay for unique key since there are multiple notaries out there...)
         //
         int nLastKnownState = 0;
-        nAgreementId = MTContactHandler::getInstance()->GetOrCreateLiveAgreementId(transNumDisplay, notaryID, qstrMemo, nAgreementFolder, nLastKnownState);
+        nAgreementId = MTContactHandler::getInstance()->GetOrCreateLiveAgreementId(
+            transNumDisplay, pmntNotaryID, qstrMemo, nAgreementFolder, nLastKnownState);
 
         if (nAgreementId <= 0)
         {
@@ -3667,7 +3680,8 @@ bool Moneychanger::AddAgreementRecord(opentxs::OTRecord& recordmt)
         if (!msgType.isEmpty()) mapFinalValues.insert("method_type", msgType);
         if (!msgTypeDisplay.isEmpty()) mapFinalValues.insert("method_type_display", msgTypeDisplay);
 
-        if (!notaryID.isEmpty()) mapFinalValues.insert("notary_id", notaryID);
+        if (!msgNotaryID.isEmpty()) mapFinalValues.insert("msg_notary_id", msgNotaryID);
+        if (!pmntNotaryID.isEmpty()) mapFinalValues.insert("pmnt_notary_id", pmntNotaryID);
         if (!mailDescription.isEmpty()) mapFinalValues.insert("description", mailDescription);
         if (!qstrName.isEmpty()) mapFinalValues.insert("record_name", qstrName);
         if (!instrumentType.isEmpty()) mapFinalValues.insert("instrument_type", instrumentType);
@@ -3915,8 +3929,8 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
             instrumentType = QString::fromStdString(recordmt.GetInstrumentType());
         // ---------------------------------
         QString myAssetTypeID;
-        if (!recordmt.GetInstrumentDefinitionID().empty())
-            myAssetTypeID = QString::fromStdString(recordmt.GetInstrumentDefinitionID());
+        if (!recordmt.GetUnitTypeID().empty())
+            myAssetTypeID = QString::fromStdString(recordmt.GetUnitTypeID());
         // ---------------------------------
         QString myAddress;
         if (!recordmt.GetAddress().empty())
@@ -3951,10 +3965,13 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
 //              senderAddress = MTContactHandler::Encode(QString::fromStdString(recordmt.GetOtherAddress()));
         }
         // ---------------------------------
-        QString notaryID, msgType, msgTypeDisplay;
+        QString msgNotaryID, pmntNotaryID, msgType, msgTypeDisplay;
 
-        if (!recordmt.GetNotaryID().empty())
-            notaryID = QString::fromStdString(recordmt.GetNotaryID());
+        if (!recordmt.GetMsgNotaryID().empty())
+            msgNotaryID = QString::fromStdString(recordmt.GetMsgNotaryID());
+
+        if (!recordmt.GetPmntNotaryID().empty())
+        pmntNotaryID = QString::fromStdString(recordmt.GetPmntNotaryID());
 
         if (!recordmt.GetMsgType().empty())
             msgType = QString::fromStdString(recordmt.GetMsgType());
@@ -4034,7 +4051,8 @@ bool Moneychanger::AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bo
 
         if (!msgType.isEmpty()) mapFinalValues.insert("method_type", msgType);
         if (!msgTypeDisplay.isEmpty()) mapFinalValues.insert("method_type_display", msgTypeDisplay);
-        if (!notaryID.isEmpty()) mapFinalValues.insert("notary_id", notaryID);
+        if (!msgNotaryID.isEmpty()) mapFinalValues.insert("msg_notary_id", msgNotaryID);
+        if (!pmntNotaryID.isEmpty()) mapFinalValues.insert("pmnt_notary_id", pmntNotaryID);
         if (!qstrMemo.isEmpty()) mapFinalValues.insert("memo", qstrMemo);
         if (!mailDescription.isEmpty()) mapFinalValues.insert("description", mailDescription);
         if (!qstrName.isEmpty()) mapFinalValues.insert("record_name", qstrName);

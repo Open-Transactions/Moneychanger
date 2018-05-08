@@ -187,14 +187,15 @@ void ot_worker::mc_overview_ping(){
                 record_map.insert("shortMail", qstrDesc);
             }
 
-            record_map.insert("InstrumentDefinitionID", QString::fromStdString(recordmt.GetInstrumentDefinitionID()));
+            record_map.insert("InstrumentDefinitionID", QString::fromStdString(recordmt.GetUnitTypeID()));
             record_map.insert("currencyTLA", QString::fromStdString(recordmt.GetCurrencyTLA()));
             record_map.insert("date", QString::fromStdString(recordmt.GetDate()));
             record_map.insert("instrumentType", QString::fromStdString(recordmt.GetInstrumentType()));
             record_map.insert("name", QString::fromStdString(recordmt.GetName()));
             record_map.insert("nymId", QString::fromStdString(recordmt.GetNymID()));
             record_map.insert("recordType", recordmt.GetRecordType());
-            record_map.insert("NotaryID", QString::fromStdString(recordmt.GetNotaryID()));
+            record_map.insert("MsgNotaryID", QString::fromStdString(recordmt.GetMsgNotaryID()));
+            record_map.insert("PmntNotaryID", QString::fromStdString(recordmt.GetPmntNotaryID()));
 
             //Special retrieval
             //Format Description
