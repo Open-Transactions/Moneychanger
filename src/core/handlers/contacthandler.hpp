@@ -59,7 +59,8 @@ public:
     //
     virtual void notifyOfSuccessfulNotarization(const std::string & str_acct_id,
                                                 const std::string   p_nym_id,
-                                                const std::string   p_notary_id,
+                                                const std::string   p_msg_notary_id,
+                                                const std::string   p_pmnt_notary_id,
                                                 const std::string   p_txn_contents,
                                                 int64_t lTransactionNum,
                                                 int64_t lTransNumForDisplay) const;

@@ -6797,9 +6797,9 @@ QJsonValue MCRPCService::recordListRetrieve(
          qint64(m_RecordList->GetRecord(Index).GetInitialPaymentAmount())},
         {"InitialPaymentDate",
          qint64(m_RecordList->GetRecord(Index).GetInitialPaymentDate())},
-        {"InstrumentDefinitionID",
+        {"UnitType",
          QString(m_RecordList->GetRecord(Index)
-                     .GetInstrumentDefinitionID()
+                     .GetUnitTypeID()
                      .c_str())},
         {"InstrumentType",
          QString(m_RecordList->GetRecord(Index).GetInstrumentType().c_str())},
@@ -6814,8 +6814,10 @@ QJsonValue MCRPCService::recordListRetrieve(
         {"MessageTypeDisplay",
          QString(m_RecordList->GetRecord(Index).GetMsgTypeDisplay().c_str())},
         {"Name", QString(m_RecordList->GetRecord(Index).GetName().c_str())},
-        {"NotaryID",
-         QString(m_RecordList->GetRecord(Index).GetNotaryID().c_str())},
+        {"MsgNotaryID",
+         QString(m_RecordList->GetRecord(Index).GetMsgNotaryID().c_str())},
+        {"PmntNotaryID",
+         QString(m_RecordList->GetRecord(Index).GetPmntNotaryID().c_str())},
         {"NymID", QString(m_RecordList->GetRecord(Index).GetNymID().c_str())},
         {"OtherAccountID",
          QString(m_RecordList->GetRecord(Index).GetOtherAccountID().c_str())},
@@ -6913,9 +6915,9 @@ QJsonValue MCRPCService::recordListRetrieve(
              qint64(m_RecordList->GetRecord(x).GetInitialPaymentAmount())},
             {"InitialPaymentDate",
              qint64(m_RecordList->GetRecord(x).GetInitialPaymentDate())},
-            {"InstrumentDefinitionID",
+            {"UnitTypeID",
              QString(m_RecordList->GetRecord(x)
-                         .GetInstrumentDefinitionID()
+                         .GetUnitTypeID()
                          .c_str())},
             {"InstrumentType",
              QString(m_RecordList->GetRecord(x).GetInstrumentType().c_str())},
@@ -6930,8 +6932,10 @@ QJsonValue MCRPCService::recordListRetrieve(
             {"MessageTypeDisplay",
              QString(m_RecordList->GetRecord(x).GetMsgTypeDisplay().c_str())},
             {"Name", QString(m_RecordList->GetRecord(x).GetName().c_str())},
-            {"NotaryID",
-             QString(m_RecordList->GetRecord(x).GetNotaryID().c_str())},
+            {"MsgNotaryID",
+             QString(m_RecordList->GetRecord(x).GetMsgNotaryID().c_str())},
+            {"PmntNotaryID",
+             QString(m_RecordList->GetRecord(x).GetPmntNotaryID().c_str())},
             {"NymID", QString(m_RecordList->GetRecord(x).GetNymID().c_str())},
             {"OtherAccountID",
              QString(m_RecordList->GetRecord(x).GetOtherAccountID().c_str())},

@@ -1592,7 +1592,8 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
     QString qstrSenderAddr;
     QString qstrRecipientNymId;
     QString qstrRecipientAddr;
-    QString qstrNotaryId;
+    QString qstrMsgNotaryId;
+    QString qstrPmntNotaryId;
     QString qstrMethodType;
 //  QString qstrSubject;
 
@@ -1617,7 +1618,8 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
         QModelIndex indexSenderAddr    = pModel->index(nRow, PMNT_SOURCE_COL_SENDER_ADDR);
         QModelIndex indexRecipientNym  = pModel->index(nRow, PMNT_SOURCE_COL_RECIP_NYM);
         QModelIndex indexRecipientAddr = pModel->index(nRow, PMNT_SOURCE_COL_RECIP_ADDR);
-        QModelIndex indexNotaryId      = pModel->index(nRow, PMNT_SOURCE_COL_NOTARY_ID);
+        QModelIndex indexMsgNotaryId   = pModel->index(nRow, PMNT_SOURCE_COL_MSG_NOTARY_ID);
+        QModelIndex indexPmntNotaryId  = pModel->index(nRow, PMNT_SOURCE_COL_PMNT_NOTARY_ID);
         QModelIndex indexMethodType    = pModel->index(nRow, PMNT_SOURCE_COL_METHOD_TYPE);
         QModelIndex indexFlags         = pModel->index(nRow, PMNT_SOURCE_COL_FLAGS);
 //      QModelIndex indexSubject       = pModel->index(nRow, PMNT_SOURCE_COL_MEMO);
@@ -1626,7 +1628,8 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
         QVariant varSenderAddr    = pModel->rawData(indexSenderAddr);
         QVariant varRecipientNym  = pModel->rawData(indexRecipientNym);
         QVariant varRecipientAddr = pModel->rawData(indexRecipientAddr);
-        QVariant varNotaryId      = pModel->rawData(indexNotaryId);
+        QVariant varMsgNotaryId   = pModel->rawData(indexMsgNotaryId);
+        QVariant varPmntNotaryId  = pModel->rawData(indexPmntNotaryId);
         QVariant varMethodType    = pModel->rawData(indexMethodType);
         QVariant varFlags         = pModel->rawData(indexFlags);
 //      QVariant varSubject       = pModel->rawData(indexSubject);
@@ -1636,7 +1639,8 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
         qstrSenderAddr     = varSenderAddr   .isValid() ? varSenderAddr   .toString()   : QString("");
         qstrRecipientNymId = varRecipientNym .isValid() ? varRecipientNym .toString()   : QString("");
         qstrRecipientAddr  = varRecipientAddr.isValid() ? varRecipientAddr.toString()   : QString("");
-        qstrNotaryId       = varNotaryId     .isValid() ? varNotaryId     .toString()   : QString("");
+        qstrMsgNotaryId    = varMsgNotaryId  .isValid() ? varMsgNotaryId  .toString()   : QString("");
+        qstrPmntNotaryId   = varPmntNotaryId .isValid() ? varPmntNotaryId .toString()   : QString("");
         qstrMethodType     = varMethodType   .isValid() ? varMethodType   .toString()   : QString("");
 //      qstrSubject        = varSubject      .isValid() ? varSubject      .toString()   : QString("");
 
@@ -1924,11 +1928,11 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
         // (And the same is also true for the recipient nymID and address.)
         //
         if ((0 == nSenderContactByNym) && !qstrSenderNymId.isEmpty())
-            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrSenderNymId, qstrNotaryId);
+            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrSenderNymId, qstrMsgNotaryId);
         else if ((0 == nSenderContactByAddr) && !qstrSenderAddr.isEmpty())
             nContactId = MTContactHandler::getInstance()->CreateContactBasedOnAddress(qstrSenderAddr, qstrMethodType);
         else if ((0 == nRecipientContactByNym) && !qstrRecipientNymId.isEmpty())
-            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrRecipientNymId, qstrNotaryId);
+            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrRecipientNymId, qstrMsgNotaryId);
         else if ((0 == nRecipientContactByAddr) && !qstrRecipientAddr.isEmpty())
             nContactId = MTContactHandler::getInstance()->CreateContactBasedOnAddress(qstrRecipientAddr, qstrMethodType);
         // -----------------------------------------------------
@@ -2007,7 +2011,7 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
              ++it_nyms)
         {
             nFound++;
-            emit needToCheckNym("", it_nyms.key(), qstrNotaryId);
+            emit needToCheckNym("", it_nyms.key(), qstrMsgNotaryId);
         }
     }
     // ----------------------------------
@@ -2078,8 +2082,8 @@ void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Pa
                                          arg(qstrNymId).arg(strContactName).arg(nContactId));
                     return;
                 }
-                if (!qstrNotaryId.isEmpty())
-                    MTContactHandler::getInstance()->NotifyOfNymServerPair(qstrNymId, qstrNotaryId);
+                if (!qstrMsgNotaryId.isEmpty())
+                    MTContactHandler::getInstance()->NotifyOfNymServerPair(qstrNymId, qstrMsgNotaryId);
             }
             else if (!qstrAddress.isEmpty()) // We're adding this Address to the contact.
             {
@@ -2244,8 +2248,10 @@ void Payments::on_toolButtonReply_clicked()
     const QVariant qvar_recipient_nym_id = record.value(PMNT_SOURCE_COL_RECIP_NYM);
     const QString  recipientNymID = qvar_recipient_nym_id.isValid() ? qvar_recipient_nym_id.toString() : "";
 
-    const QVariant qvar_notary_id = record.value(PMNT_SOURCE_COL_NOTARY_ID);
-    const QString  NotaryID = qvar_notary_id.isValid() ? qvar_notary_id.toString() : "";
+    const QVariant qvar_msg_notary_id = record.value(PMNT_SOURCE_COL_MSG_NOTARY_ID);
+    const QVariant qvar_pmnt_notary_id = record.value(PMNT_SOURCE_COL_PMNT_NOTARY_ID);
+    const QString  MsgNotaryID = qvar_msg_notary_id.isValid() ? qvar_msg_notary_id.toString() : "";
+    const QString  PmntNotaryID = qvar_pmnt_notary_id.isValid() ? qvar_pmnt_notary_id.toString() : "";
 
     const QVariant qvar_sender_addr = record.value(PMNT_SOURCE_COL_SENDER_ADDR);
     const QString  senderAddr = qvar_sender_addr.isValid() ? qvar_sender_addr.toString() : "";
@@ -2259,7 +2265,7 @@ void Payments::on_toolButtonReply_clicked()
     const QString& otherNymID = bOutgoing ? recipientNymID : senderNymID;
     const QString& otherAddress  = bOutgoing ? recipientAddr  : senderAddr;
     // --------------------------------------------------
-    const bool bUsingNotary   = !NotaryID.isEmpty();
+    const bool bUsingNotary   = !MsgNotaryID.isEmpty();
     const bool bIsSpecialMail = !bUsingNotary;
     // --------------------------------------------------
     MTCompose * compose_window = new MTCompose;
@@ -2286,7 +2292,7 @@ void Payments::on_toolButtonReply_clicked()
         compose_window->setInitialRecipientAddress(otherAddress);
     // --------------------------------------------------
     if (bUsingNotary)
-        compose_window->setInitialServer(NotaryID);
+        compose_window->setInitialServer(MsgNotaryID);
     // --------------------------------------------------
     compose_window->setInitialSubject(subject);
     // --------------------------------------------------
@@ -2363,8 +2369,10 @@ void Payments::on_toolButtonForward_clicked()
     const QVariant qvar_recipient_nym_id = record.value(PMNT_SOURCE_COL_RECIP_NYM);
     const QString  recipientNymID = qvar_recipient_nym_id.isValid() ? qvar_recipient_nym_id.toString() : "";
 
-    const QVariant qvar_notary_id = record.value(PMNT_SOURCE_COL_NOTARY_ID);
-    const QString  NotaryID = qvar_notary_id.isValid() ? qvar_notary_id.toString() : "";
+    const QVariant qvar_msg_notary_id = record.value(PMNT_SOURCE_COL_MSG_NOTARY_ID);
+    const QVariant qvar_pmnt_notary_id = record.value(PMNT_SOURCE_COL_PMNT_NOTARY_ID);
+    const QString  MsgNotaryID = qvar_msg_notary_id.isValid() ? qvar_msg_notary_id.toString() : "";
+    const QString  PmntNotaryID = qvar_pmnt_notary_id.isValid() ? qvar_pmnt_notary_id.toString() : "";
 
     const QVariant qvar_sender_addr = record.value(PMNT_SOURCE_COL_SENDER_ADDR);
     const QString  senderAddr = qvar_sender_addr.isValid() ? qvar_sender_addr.toString() : "";
@@ -2378,7 +2386,7 @@ void Payments::on_toolButtonForward_clicked()
     const QString& otherNymID = bOutgoing ? recipientNymID : senderNymID;
     const QString& otherAddress  = bOutgoing ? recipientAddr  : senderAddr;
     // --------------------------------------------------
-    const bool bUsingNotary   = !NotaryID.isEmpty();
+    const bool bUsingNotary   = !MsgNotaryID.isEmpty();
     const bool bIsSpecialMail = !bUsingNotary;
     // --------------------------------------------------
     MTCompose * compose_window = new MTCompose;
@@ -2405,7 +2413,7 @@ void Payments::on_toolButtonForward_clicked()
 //        compose_window->setInitialRecipientAddress(otherAddress);
     // --------------------------------------------------
     if (bUsingNotary)
-        compose_window->setInitialServer(NotaryID);
+        compose_window->setInitialServer(MsgNotaryID);
     // --------------------------------------------------
     compose_window->setInitialSubject(subject);
     // --------------------------------------------------
