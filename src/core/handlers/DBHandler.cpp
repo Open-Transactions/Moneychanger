@@ -995,7 +995,7 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
 
     QList<QStandardItem*> qlistItems;
     QDateTime dateTime;
-    dateTime.setTime_t(first.Time());
+    dateTime.setTime_t(std::chrono::system_clock::to_time_t(first.Timestamp()));
 
     qlistItems.append(new QStandardItem(QString::fromStdString(str_thread_item_id))); // message_id
     qlistItems.append(new QStandardItem(QString::fromStdString(str_my_nym_id)));  // my_nym_id
@@ -1048,7 +1048,7 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
 
         QList<QStandardItem*> qlistItems;
         QDateTime dateTime;
-        dateTime.setTime_t(line.Time());
+        dateTime.setTime_t(std::chrono::system_clock::to_time_t(line.Timestamp()));
         qlistItems.append(new QStandardItem(QString::fromStdString(str_thread_item_id))); // message_id
         qlistItems.append(new QStandardItem(QString::fromStdString(str_my_nym_id)));  // my_nym_id
         qlistItems.append(new QStandardItem(QString::fromStdString(str_thread_id))); // thread_id
