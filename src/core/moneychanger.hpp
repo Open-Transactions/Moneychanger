@@ -67,6 +67,7 @@ private:
     opentxs::OTZMQListenCallback widget_update_callback_;
     opentxs::OTZMQSubscribeSocket widget_update_;
 
+    void accept_cheques() const;
     void process_notify_bailment(const opentxs::network::zeromq::Message& message);
     void process_pair_event(const opentxs::proto::PairEvent& event);
 
