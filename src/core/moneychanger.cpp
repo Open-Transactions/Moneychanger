@@ -184,7 +184,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 
                 if (existing < count) {
                     refresh_count_.store(count);
-                    //processPeerMessages();
+                    accept_cheques();
                     emit needToPopulateRecordlist();
                 }
             }
@@ -398,6 +398,15 @@ Moneychanger::Moneychanger(QWidget *parent)
     setupRecordList();
 
     mc_overall_init = true;
+}
+
+void Moneychanger::accept_cheques() const
+{
+    const auto nyms = ot_.API().OTAPI().LocalNymList();
+
+    for (const auto& nym : nyms) {
+         ot_.API().Sync().DepositCheques(nym);
+    }
 }
 
 void Moneychanger::process_notify_bailment(
