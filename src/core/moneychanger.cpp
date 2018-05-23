@@ -124,7 +124,7 @@ Moneychanger::Moneychanger(QWidget *parent)
 : QWidget(parent),
   ot_(opentxs::OT::App()),
   notify_bailment_callback_(opentxs::network::zeromq::ListenCallback::Factory(
-          [this](const opentxs::network::zeromq::Message& message) -> void {
+          [this](const opentxs::network::zeromq::MultipartMessage& message) -> void {
               this->process_notify_bailment(message);
           })),
   notify_bailment_(ot_.ZMQ().Context().SubscribeSocket(notify_bailment_callback_)),
@@ -134,7 +134,7 @@ Moneychanger::Moneychanger(QWidget *parent)
           })),
   pair_events_(ot_.ZMQ().Context().PairEventListener(pair_event_callback_)),
   widget_update_callback_(opentxs::network::zeromq::ListenCallback::Factory(
-          [this](const opentxs::network::zeromq::Message& message) -> void {
+          [this](const opentxs::network::zeromq::MultipartMessage& message) -> void {
               this->process_widget_update(message);
           })),
   widget_update_(ot_.ZMQ().Context().SubscribeSocket(widget_update_callback_)),
@@ -410,8 +410,11 @@ void Moneychanger::accept_cheques() const
 }
 
 void Moneychanger::process_notify_bailment(
-    const opentxs::network::zeromq::Message& message)
+    const opentxs::network::zeromq::MultipartMessage& multipartMessage)
 {
+    OT_ASSERT(1 == multipartMessage.Body().size());
+
+    std::string message(*multipartMessage.Body().begin());
     auto request =
         opentxs::proto::TextToProto<opentxs::proto::PeerRequest>(message);
 
@@ -463,8 +466,11 @@ void Moneychanger::process_pair_event(const opentxs::proto::PairEvent& event)
 }
 
 void Moneychanger::process_widget_update(
-    const opentxs::network::zeromq::Message& message)
+    const opentxs::network::zeromq::MultipartMessage& multipartMessage)
 {
+    OT_ASSERT(1 == multipartMessage.Body().size());
+
+    std::string message(*multipartMessage.Body().begin());
     const std::string str_msg = std::string(message);
     const QString qstrMsg = QString::fromStdString(str_msg);
 
