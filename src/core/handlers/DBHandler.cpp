@@ -977,25 +977,25 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
 
 //    qDebug() << QString::fromStdString(thread.DisplayName()) << "\n";
 
-    if (false == first.Valid()) {
+    if (false == first->Valid()) {
         return pModel;
     }
 
     // 0 for moneychanger's outbox, and 1 for inbox.
     int nFolder = -1;
-    if (opentxs::StorageBox::MAILINBOX == first.Type()) {
+    if (opentxs::StorageBox::MAILINBOX == first->Type()) {
         nFolder = 1;
     }
-    else if (opentxs::StorageBox::MAILOUTBOX == first.Type()) {
+    else if (opentxs::StorageBox::MAILOUTBOX == first->Type()) {
         nFolder = 0;
     }
-    else if (opentxs::StorageBox::DRAFT == first.Type()) {
+    else if (opentxs::StorageBox::DRAFT == first->Type()) {
         nFolder = static_cast<int>(opentxs::StorageBox::DRAFT);
     }
 
     QList<QStandardItem*> qlistItems;
     QDateTime dateTime;
-    dateTime.setTime_t(std::chrono::system_clock::to_time_t(first.Timestamp()));
+    dateTime.setTime_t(std::chrono::system_clock::to_time_t(first->Timestamp()));
 
     qlistItems.append(new QStandardItem(QString::fromStdString(str_thread_item_id))); // message_id
     qlistItems.append(new QStandardItem(QString::fromStdString(str_my_nym_id)));  // my_nym_id
@@ -1003,11 +1003,11 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
     qlistItems.append(new QStandardItem(QString::fromStdString(str_thread_item_id))); // thread_item_id
     qlistItems.append(new QStandardItem(dateTime.toString()));  // Timestamp
     qlistItems.append(new QStandardItem(QString::number(nFolder)));  // Folder
-    if (first.Loading() && first.Text().empty()) {
+    if (first->Loading() && first->Text().empty()) {
         qlistItems.append(new QStandardItem(QString("%1...").arg(QObject::tr("Loading"))));  // Body
     }
     else {
-        qlistItems.append(new QStandardItem(QString::fromStdString(first.Text())));  // Body
+        qlistItems.append(new QStandardItem(QString::fromStdString(first->Text())));  // Body
     }
 
     pModel->appendRow(qlistItems);
@@ -1018,56 +1018,56 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
 
     // TODO: Populate the first thread item here.
 
-    auto last = first.Last();
+    auto last = first->Last();
 
 //    qDebug() << " * "
-//          // << time(first.Timestamp())
-//             << " " << QString::fromStdString(first.Text()) << "\n";
+//          // << time(first->Timestamp())
+//             << " " << QString::fromStdString(first->Text()) << "\n";
 
     while (false == last) {
-        auto& line = thread.Next();
-        last = line.Last();
+        auto line = thread.Next();
+        last = line->Last();
 
         // TODO: Populate the succeeding thread items here.
 
-        if (false == line.Valid()) {
+        if (false == line->Valid()) {
             return pModel;
         }
 
         // 0 for moneychanger's outbox, and 1 for inbox.
         int nFolder = -1;
-        if (opentxs::StorageBox::MAILINBOX == line.Type()) {
+        if (opentxs::StorageBox::MAILINBOX == line->Type()) {
             nFolder = 1;
         }
-        else if (opentxs::StorageBox::MAILOUTBOX == line.Type()) {
+        else if (opentxs::StorageBox::MAILOUTBOX == line->Type()) {
             nFolder = 0;
         }
-        else if (opentxs::StorageBox::DRAFT == line.Type()) {
+        else if (opentxs::StorageBox::DRAFT == line->Type()) {
             nFolder = static_cast<int>(opentxs::StorageBox::DRAFT);
         }
 
         QList<QStandardItem*> qlistItems;
         QDateTime dateTime;
-        dateTime.setTime_t(std::chrono::system_clock::to_time_t(line.Timestamp()));
+        dateTime.setTime_t(std::chrono::system_clock::to_time_t(line->Timestamp()));
         qlistItems.append(new QStandardItem(QString::fromStdString(str_thread_item_id))); // message_id
         qlistItems.append(new QStandardItem(QString::fromStdString(str_my_nym_id)));  // my_nym_id
         qlistItems.append(new QStandardItem(QString::fromStdString(str_thread_id))); // thread_id
         qlistItems.append(new QStandardItem(QString::fromStdString(str_thread_item_id))); // thread_item_id
         qlistItems.append(new QStandardItem(dateTime.toString()));  // Timestamp
         qlistItems.append(new QStandardItem(QString::number(nFolder)));  // Folder
-        if (line.Loading() && line.Text().empty()) {
+        if (line->Loading() && line->Text().empty()) {
             qlistItems.append(new QStandardItem(QString("%1...").arg(QObject::tr("Loading"))));  // Body
         }
         else {
-            qlistItems.append(new QStandardItem(QString::fromStdString(line.Text())));  // Body
+            qlistItems.append(new QStandardItem(QString::fromStdString(line->Text())));  // Body
         }
 
         pModel->appendRow(qlistItems);
 
 //        qDebug() << " * "
-//        //<< time(line.Timestamp())
+//        //<< time(line->Timestamp())
 //        << " "
-//        << QString::fromStdString(line.Text()) << "\n";
+//        << QString::fromStdString(line->Text()) << "\n";
     }
 
     return pModel;
