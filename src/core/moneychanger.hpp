@@ -68,10 +68,10 @@ private:
     opentxs::OTZMQSubscribeSocket widget_update_;
 
     void accept_cheques() const;
-    void process_notify_bailment(const opentxs::network::zeromq::MultipartMessage& message);
+    void process_notify_bailment(const opentxs::network::zeromq::Message& message);
     void process_pair_event(const opentxs::proto::PairEvent& event);
 
-    void process_widget_update(const opentxs::network::zeromq::MultipartMessage& message);
+    void process_widget_update(const opentxs::network::zeromq::Message& message);
 
     bool retrieve_nym(
         const std::string& strNotaryID,
