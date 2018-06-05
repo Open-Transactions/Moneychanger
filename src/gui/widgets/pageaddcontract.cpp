@@ -58,7 +58,7 @@ bool MTPageAddContract::validatePage()
     //
     if ((0 == qstrType.compare("server")) &&
         ui->radioButton_2->isChecked() && // "Create" (versus "Import".)
-        (opentxs::OT::App().API().Exec().GetAccountCount() > 0)) {
+        (opentxs::OT::App().DB().AccountList().size() > 0)) {
         QMessageBox::StandardButton reply;
 
         reply = QMessageBox::question(this, "", QString("%1<br/><br/>%2<br/><br/>%3").arg(tr("Are you sure you want to create a server contract?")).

@@ -20,7 +20,6 @@ ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookup
     int nServerCount  = opentxs::OT::App().API().Exec().GetServerCount();
     int nAssetCount   = opentxs::OT::App().API().Exec().GetAssetTypeCount();
     int nNymCount     = opentxs::OT::App().API().Exec().GetNymCount();
-    int nAccountCount = opentxs::OT::App().API().Exec().GetAccountCount();
     // ----------------------------------------------------
     for (int ii = 0; ii < nServerCount; ++ii)
     {
@@ -40,9 +39,8 @@ ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookup
         list.AddNymID(nymId);
     }
     // ----------------------------------------------------
-    for (int ii = 0; ii < nAccountCount; ++ii)
+    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
     {
-        std::string accountID = opentxs::OT::App().API().Exec().GetAccountWallet_ID(ii);
         list.AddAccountID(accountID);
     }
     // ----------------------------------------------------

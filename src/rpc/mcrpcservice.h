@@ -212,7 +212,6 @@ public Q_SLOTS:
     QJsonValue getNymCount(QString Username, QString APIKey);
     QJsonValue getServerCount(QString Username, QString APIKey);
     QJsonValue getAssetTypeCount(QString Username, QString APIKey);
-    QJsonValue getAccountCount(QString Username, QString APIKey);
     QJsonValue walletCanRemoveServer(
         QString Username,
         QString APIKey,
@@ -415,16 +414,7 @@ public Q_SLOTS:
         QString Username,
         QString APIKey,
         QString AssetTypeID);
-    QJsonValue getAccountWalletID(QString Username, QString APIKey, int Index);
     QJsonValue getAccountWalletName(
-        QString Username,
-        QString APIKey,
-        QString AccountWalletID);
-    QJsonValue getAccountWalletInboxHash(
-        QString Username,
-        QString APIKey,
-        QString AccountWalletID);
-    QJsonValue getAccountWalletOutboxHash(
         QString Username,
         QString APIKey,
         QString AccountWalletID);
@@ -940,12 +930,6 @@ public Q_SLOTS:
         QString Username,
         QString APIKey,
         QString NotaryID);
-    QJsonValue loadAssetAccount(
-        QString Username,
-        QString APIKey,
-        QString NotaryID,
-        QString NymID,
-        QString AccountID);
     QJsonValue nymboxGetReplyNotice(
         QString Username,
         QString APIKey,

@@ -936,18 +936,6 @@ QJsonValue MCRPCService::getAssetTypeCount(QString Username, QString APIKey)
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getAccountCount(QString Username, QString APIKey)
-{
-    if (!validateAPIKey(Username, APIKey)) {
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-
-    int l_count = opentxs::OT::App().API().Exec().GetAccountCount();
-    QJsonObject object{{"AccountCount", l_count}};
-    return QJsonValue(object);
-}
-
 QJsonValue MCRPCService::walletCanRemoveServer(
     QString Username,
     QString APIKey,
@@ -1957,22 +1945,6 @@ QJsonValue MCRPCService::getAssetTypeTLA(
     return QJsonValue(object);
 }
 
-QJsonValue MCRPCService::getAccountWalletID(
-    QString Username,
-    QString APIKey,
-    int Index)
-{
-    if (!validateAPIKey(Username, APIKey)) {
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-
-    std::string result =
-        opentxs::OT::App().API().Exec().GetAccountWallet_ID(Index);
-    QJsonObject object{{"AccountWalletID", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
 QJsonValue MCRPCService::getAccountWalletName(
     QString Username,
     QString APIKey,
@@ -1991,50 +1963,6 @@ QJsonValue MCRPCService::getAccountWalletName(
     std::string result = opentxs::OT::App().API().Exec().GetAccountWallet_Name(
         AccountWalletID.toStdString());
     QJsonObject object{{"AccountWalletName", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::getAccountWalletInboxHash(
-    QString Username,
-    QString APIKey,
-    QString AccountWalletID)
-{
-    if (!validateAPIKey(Username, APIKey)) {
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if (!opentxs::OT::App().API().Exec().IsValidID(
-            AccountWalletID.toStdString())) {
-        QJsonObject object{{"Error", "Invalid AccountWalletID"}};
-        return QJsonValue(object);
-    }
-
-    std::string result =
-        opentxs::OT::App().API().Exec().GetAccountWallet_InboxHash(
-            AccountWalletID.toStdString());
-    QJsonObject object{{"AccountWalletInboxHash", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::getAccountWalletOutboxHash(
-    QString Username,
-    QString APIKey,
-    QString AccountWalletID)
-{
-    if (!validateAPIKey(Username, APIKey)) {
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if (!opentxs::OT::App().API().Exec().IsValidID(
-            AccountWalletID.toStdString())) {
-        QJsonObject object{{"Error", "Invalid AccountWalletID"}};
-        return QJsonValue(object);
-    }
-
-    std::string result =
-        opentxs::OT::App().API().Exec().GetAccountWallet_OutboxHash(
-            AccountWalletID.toStdString());
-    QJsonObject object{{"AccountWalletOutboxHash", QString(result.c_str())}};
     return QJsonValue(object);
 }
 
@@ -4032,36 +3960,6 @@ QJsonValue MCRPCService::loadServerContract(
     std::string result =
         opentxs::OT::App().API().Exec().LoadServerContract(NotaryID.toStdString());
     QJsonObject object{{"LoadServerContractResult", QString(result.c_str())}};
-    return QJsonValue(object);
-}
-
-QJsonValue MCRPCService::loadAssetAccount(
-    QString Username,
-    QString APIKey,
-    QString NotaryID,
-    QString NymID,
-    QString AccountID)
-{
-    if (!validateAPIKey(Username, APIKey)) {
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-    if (!opentxs::OT::App().API().Exec().IsValidID(NotaryID.toStdString())) {
-        QJsonObject object{{"Error", "Invalid NotaryID"}};
-        return QJsonValue(object);
-    }
-    if (!opentxs::OT::App().API().Exec().IsValidID(NymID.toStdString())) {
-        QJsonObject object{{"Error", "Invalid NymID"}};
-        return QJsonValue(object);
-    }
-    if (!opentxs::OT::App().API().Exec().IsValidID(AccountID.toStdString())) {
-        QJsonObject object{{"Error", "Invalid AccountID"}};
-        return QJsonValue(object);
-    }
-
-    std::string result = opentxs::OT::App().API().Exec().LoadAssetAccount(
-        NotaryID.toStdString(), NymID.toStdString(), AccountID.toStdString());
-    QJsonObject object{{"LoadAssetAccountResult", QString(result.c_str())}};
     return QJsonValue(object);
 }
 
@@ -6689,7 +6587,6 @@ QJsonValue MCRPCService::recordListPopulate(QString Username, QString APIKey)
     int nServerCount = opentxs::OT::App().API().Exec().GetServerCount();
     int nAssetCount = opentxs::OT::App().API().Exec().GetAssetTypeCount();
     int nNymCount = opentxs::OT::App().API().Exec().GetNymCount();
-    int nAccountCount = opentxs::OT::App().API().Exec().GetAccountCount();
     // ----------------------------------------------------
     for (int ii = 0; ii < nServerCount; ++ii) {
         std::string NotaryID = opentxs::OT::App().API().Exec().GetServer_ID(ii);
@@ -6707,9 +6604,8 @@ QJsonValue MCRPCService::recordListPopulate(QString Username, QString APIKey)
         m_RecordList->AddNymID(nymId);
     }
     // ----------------------------------------------------
-    for (int ii = 0; ii < nAccountCount; ++ii) {
-        std::string accountID =
-            opentxs::OT::App().API().Exec().GetAccountWallet_ID(ii);
+    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
+    {
         m_RecordList->AddAccountID(accountID);
     }
     // ----------------------------------------------------

@@ -862,7 +862,6 @@ void Moneychanger::setupRecordList()
     int nServerCount  = ot_.API().Exec().GetServerCount();
     int nAssetCount   = ot_.API().Exec().GetAssetTypeCount();
     int nNymCount     = ot_.API().Exec().GetNymCount();
-    int nAccountCount = ot_.API().Exec().GetAccountCount();
     // ----------------------------------------------------
     GetRecordlist().ClearServers();
     GetRecordlist().ClearAssets();
@@ -887,9 +886,8 @@ void Moneychanger::setupRecordList()
         GetRecordlist().AddNymID(nymId);
     }
     // ----------------------------------------------------
-    for (int ii = 0; ii < nAccountCount; ++ii)
+    for (const auto& [accountID, alias] : ot_.DB().AccountList())
     {
-        std::string accountID = ot_.API().Exec().GetAccountWallet_ID(ii);
         GetRecordlist().AddAccountID(accountID);
     }
     // ----------------------------------------------------
@@ -1483,7 +1481,7 @@ void Moneychanger::SetupMainMenu()
 bool Moneychanger::hasAccounts() const
 {
     return (!default_account_id.isEmpty() ||
-            (ot_.API().Exec().GetAccountCount() > 0));
+            (ot_.DB().AccountList().size() > 0));
 }
 
 bool Moneychanger::hasNyms() const
@@ -2046,16 +2044,15 @@ void Moneychanger::SetupMessagingMenu(QPointer<QMenu> & parent_menu)
 
 void Moneychanger::SetupAccountMenu(QPointer<QMenu> & parent_menu)
 {
-    if (default_account_id.isEmpty() && (ot_.API().Exec().GetAccountCount() > 0))
+    const auto accounts = ot_.DB().AccountList();
+
+    if (default_account_id.isEmpty() && (accounts.size() > 0))
     {
-        default_account_id = QString::fromStdString(ot_.API().Exec().GetAccountWallet_ID(0));
+        default_account_id = QString::fromStdString(std::get<0>(accounts.front()));
     }
     // -------------------------------------------------
-    if (ot_.API().Exec().GetAccountCount() <= 0)
+    if (accounts.size() <= 0)
     {
-//        if (mc_systrayMenu_account)
-//            mc_systrayMenu_account->disconnect();
-//        mc_systrayMenu_account = nullptr;
         QAction * manage_accounts = new QAction(tr("Create an account..."), parent_menu);
         parent_menu->addAction(manage_accounts);
         connect(manage_accounts, SIGNAL(triggered()), this, SLOT(mc_defaultaccount_slot()));
@@ -2086,12 +2083,11 @@ void Moneychanger::SetupAccountMenu(QPointer<QMenu> & parent_menu)
     account_list_id   = new QList<QVariant>;
     account_list_name = new QList<QVariant>;
     // ------------------------------------------
-    int32_t account_count = ot_.API().Exec().GetAccountCount();
 
-    for (int aa = 0; aa < account_count; aa++)
+    for (const auto& [accountID, alias] : ot_.DB().AccountList())
     {
-        QString OT_account_id   = QString::fromStdString(ot_.API().Exec().GetAccountWallet_ID(aa));
-        QString OT_account_name = QString::fromStdString(ot_.API().Exec().GetAccountWallet_Name(OT_account_id.toStdString()));
+        QString OT_account_id   = QString::fromStdString(accountID);
+        QString OT_account_name = QString::fromStdString(alias);
 
         account_list_id  ->append(QVariant(OT_account_id));
         account_list_name->append(QVariant(OT_account_name));
@@ -5245,13 +5241,12 @@ void Moneychanger::mc_accountmanager_dialog(QString qstrAcctID/*=QString("")*/)
     // -------------------------------------
     the_map.clear();
     // -------------------------------------
-    int32_t acct_count = ot_.API().Exec().GetAccountCount();
     bool bFoundDefault = false;
 
-    for (int32_t ii = 0; ii < acct_count; ii++)
+    for (const auto& [accountID, alias] : ot_.DB().AccountList())
     {
-        QString OT_id   = QString::fromStdString(ot_.API().Exec().GetAccountWallet_ID(ii));
-        QString OT_name = QString::fromStdString(ot_.API().Exec().GetAccountWallet_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(accountID);
+        QString OT_name = QString::fromStdString(alias);
 
         the_map.insert(OT_id, OT_name);
         // ------------------------------
@@ -5995,21 +5990,19 @@ void Moneychanger::mc_import_slot()
 
                 bool bFoundDefault = false;
                 // -----------------------------------------------
+                const auto& db = ot_.DB();
 
-                // NEW WAY TO ITERATE ACCOUNTS:
-                //
-                opentxs::OTWallet * pWallet =
-                    opentxs::OT::App().API().OTAPI().GetWallet("Moneychanger::mc_import_slot");
-                auto accountSet = pWallet->AccountList();
-
-                for (const auto & accountInfo : accountSet)
+                for (const auto& [id, alias] : db.AccountList())
                 {
-                    const auto & [ accountID, nymID, serverID, unitID ] = accountInfo;
+                    const auto accountID = opentxs::Identifier::Factory(id);
+                    const auto nymID = db.AccountOwner(accountID);
+                    const auto serverID = db.AccountServer(accountID);
+                    const auto unitID = db.AccountUnit(accountID);
 
-                    const opentxs::String otstrAccountId{accountID};
-                    const opentxs::String otstrNymId{nymID};
-                    const opentxs::String otstrServerId{serverID};
-                    const opentxs::String otstrUnitId{unitID};
+                    const opentxs::String otstrAccountId{accountID.get()};
+                    const opentxs::String otstrNymId{nymID.get()};
+                    const opentxs::String otstrServerId{serverID.get()};
+                    const opentxs::String otstrUnitId{unitID.get()};
 
                     const std::string str_account_id{otstrAccountId.Get()};
 
@@ -6054,7 +6047,7 @@ void Moneychanger::mc_import_slot()
                     // compare behavior in terms of what receipts show up in the
                     // UI, and make sure that's behaving properly in the new code.
                     //
-                    const opentxs::Identifier taskId = opentxs::OT::App().API().Sync().
+                    const opentxs::Identifier taskId = ot_.API().Sync().
                         DepositPayment(recipient_nym_id, payment);
                     const opentxs::String strTaskId(taskId);
                     const std::string str_task_id{strTaskId.Get()};
@@ -6090,7 +6083,7 @@ void Moneychanger::mc_import_slot()
 
                         OT_ASSERT(cheque);
 
-                        auto action = opentxs::OT::App().API().ServerAction().DepositCheque(recipient_nym_id,
+                        auto action = ot_.API().ServerAction().DepositCheque(recipient_nym_id,
                         		notary_id,
 								deposit_acct_id,
 								cheque);
@@ -6120,7 +6113,7 @@ void Moneychanger::mc_import_slot()
                 }
                 // -----------------------------------------------
 
-//                const opentxs::Identifier taskId = opentxs::OT::App().API().Sync().
+//                const opentxs::Identifier taskId = ot_.API().Sync().
 //                DepositPayment(recipient_nym_id, payment);
 //                const opentxs::String strTaskId(taskId);
 //                const std::string str_task_id{strTaskId.Get()};
@@ -6162,7 +6155,7 @@ void Moneychanger::mc_import_slot()
 
                             OT_ASSERT(cheque);
 
-                            auto action = opentxs::OT::App().API().ServerAction().DepositCheque(recipient_nym_id,
+                            auto action = ot_.API().ServerAction().DepositCheque(recipient_nym_id,
                             		notary_id,
     								deposit_acct_id,
     								cheque);
@@ -6397,24 +6390,11 @@ void Moneychanger::mc_import_slot()
     mapIDName & the_map = theChooser.m_map;
 
     bool bFoundDefault = false;
-    // -----------------------------------------------
 
-    // NEW WAY TO ITERATE ACCOUNTS:
-    //
-//    opentxs::OTWallet * pWallet = ot_.API().OTAPI().GetWallet("Moneychanger::mc_import_slot");
-//    auto accountSet = pWallet->AccountList();
-//
-//    for (const auto & accountInfo : accountSet)
-//    {
-//        const auto & [ accountID, nymID, serverID, unitID ] = accountInfo;
-//    }
-
-    const int32_t acct_count = ot_.API().Exec().GetAccountCount();
-    // -----------------------------------------------
-    for (int32_t ii = 0; ii < acct_count; ++ii)
+    for (const auto& [accountID, alias] : ot_.DB().AccountList())
     {
         //Get OT Acct ID
-        QString OT_acct_id = QString::fromStdString(ot_.API().Exec().GetAccountWallet_ID(ii));
+        QString OT_acct_id = QString::fromStdString(accountID);
         QString OT_acct_name("");
         // -----------------------------------------------
         if (!OT_acct_id.isEmpty())

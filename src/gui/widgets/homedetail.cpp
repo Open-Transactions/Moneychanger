@@ -481,13 +481,11 @@ QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
         theChooser.SetIsAccounts();
         // -----------------------------------------------
         mapIDName & the_map = theChooser.m_map;
-        // -----------------------------------------------
-        const int32_t acct_count = opentxs::OT::App().API().Exec().GetAccountCount();
-        // -----------------------------------------------
-        for (int32_t ii = 0; ii < acct_count; ++ii)
+
+        for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
         {
             //Get OT Acct ID
-            QString OT_acct_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_ID(ii));
+            QString OT_acct_id = QString::fromStdString(accountID);
             QString OT_acct_name("");
             // -----------------------------------------------
             if (!OT_acct_id.isEmpty()) // Should never be empty.

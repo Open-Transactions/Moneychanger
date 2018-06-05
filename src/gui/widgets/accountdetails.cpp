@@ -1641,12 +1641,12 @@ void MTAccountDetails::DeleteButtonClicked()
 
         if (!bCanRemove)
         {
-            const opentxs::Identifier id_acct{str_account_id};
-            const auto pAccount = opentxs::OT::App().API().OTAPI().GetAccount(id_acct, __FUNCTION__);
+            const auto id_acct = opentxs::Identifier::Factory(str_account_id);
+            const auto account = opentxs::OT::App().Wallet().Account(id_acct);
 
             QString qstrMessage = QString("%1. %2")
                     .arg(tr("This Account cannot be deleted until it has a zero balance and an empty inbox"))
-                    .arg((pAccount && pAccount->IsIssuer())
+                    .arg((account && account.get().IsIssuer())
                          ? QString(tr("Also, issuer accounts cannot simply be deleted. The unit type itself must be un-issued first."))
                          : QString(""));
             return;

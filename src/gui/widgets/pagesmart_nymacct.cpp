@@ -57,12 +57,11 @@ void PageSmart_NymAcct::on_pushButtonManageAcct_clicked()
     QString qstrPreselected   = field("AcctID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
-    int32_t the_count = opentxs::OT::App().API().Exec().GetAccountCount();
 
-    for (int32_t ii = 0; ii < the_count; ii++)
+    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
     {
-        QString OT_id   = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_ID(ii));
-        QString OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(accountID);
+        QString OT_name = QString::fromStdString(alias);
 
         the_map.insert(OT_id, OT_name);
 
@@ -130,13 +129,9 @@ void PageSmart_NymAcct::on_pushButtonSelect_clicked()
     mapIDName & the_map = theChooser.m_map;
 
     bool bFoundDefault = false;
-    int32_t acct_count = opentxs::OT::App().API().Exec().GetAccountCount();
 
-    for (int32_t i = 0; i < acct_count; i++)
+    for (const auto& [acctID, alias] : opentxs::OT::App().DB().AccountList())
     {
-        std::string acctID =
-            opentxs::OT::App().API().Exec().GetAccountWallet_ID(i);
-
         if ("" == acctID) {
             QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                      tr("Strange, there is an account in your wallet without an ID. (Failure.)"));

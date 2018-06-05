@@ -147,13 +147,11 @@ void PageOffer_Accounts::on_pushButtonManageAssetAcct_clicked()
     // -------------------------------------
     QString qstrPreselected   = field("AssetAcctID").toString();
     bool    bFoundPreselected = false;
-    // -------------------------------------
-    int32_t the_count = opentxs::OT::App().API().Exec().GetAccountCount();
 
-    for (int32_t ii = 0; ii < the_count; ii++)
+    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
     {
-        QString OT_id   = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_ID(ii));
-        QString OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(accountID);
+        QString OT_name = QString::fromStdString(alias);
 
         the_map.insert(OT_id, OT_name);
 
@@ -181,13 +179,11 @@ void PageOffer_Accounts::on_pushButtonManageCurrencyAcct_clicked()
     // -------------------------------------
     QString qstrPreselected   = field("CurrencyAcctID").toString();
     bool    bFoundPreselected = false;
-    // -------------------------------------
-    int32_t the_count = opentxs::OT::App().API().Exec().GetAccountCount();
 
-    for (int32_t ii = 0; ii < the_count; ii++)
+    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
     {
-        QString OT_id   = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_ID(ii));
-        QString OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(accountID);
+        QString OT_name = QString::fromStdString(alias);
 
         the_map.insert(OT_id, OT_name);
 
@@ -225,12 +221,10 @@ bool PageOffer_Accounts::setupMapOfAccounts(mapIDName & accountMap, bool bIsAsse
     QString qstr_current_id = bIsAsset_or_currency ? field("AssetAcctID").toString() : field("CurrencyAcctID").toString();
     // -------------------------------------------
     bool bFoundDefault = false;
-    // -----------------------------------------------
-    const int32_t the_count = opentxs::OT::App().API().Exec().GetAccountCount();
-    // -----------------------------------------------
-    for (int32_t ii = 0; ii < the_count; ++ii)
+
+    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
     {
-        QString OT_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_ID(ii));
+        QString OT_id = QString::fromStdString(accountID);
         QString OT_name("");
         // -----------------------------------------------
         if (!OT_id.isEmpty())
@@ -266,9 +260,10 @@ void PageOffer_Accounts::on_pushButtonSelectAssetAcct_clicked()
     QString qstrNotaryID = field("NotaryID").toString();
     // -------------------------------------------
     QString qstr_current_id = field("AssetAcctID").toString();
-    // -------------------------------------------
-    if (qstr_current_id.isEmpty() && (opentxs::OT::App().API().Exec().GetAccountCount() > 0))
-        qstr_current_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_ID(0));
+    const auto accounts = opentxs::OT::App().DB().AccountList();
+
+    if (qstr_current_id.isEmpty() && (accounts.size() > 0))
+        qstr_current_id = QString::fromStdString(std::get<0>(accounts.front()));
     // -------------------------------------------
     // Select from asset accounts in local wallet.
     //
@@ -309,9 +304,10 @@ void PageOffer_Accounts::on_pushButtonSelectCurrencyAcct_clicked()
     QString qstrNotaryID                = field("NotaryID")   .toString();
     // -------------------------------------------
     QString qstr_current_id = field("CurrencyAcctID").toString();
-    // -------------------------------------------
-    if (qstr_current_id.isEmpty() && (opentxs::OT::App().API().Exec().GetAccountCount() > 0))
-        qstr_current_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_ID(0));
+    const auto accounts = opentxs::OT::App().DB().AccountList();
+
+    if (qstr_current_id.isEmpty() && (accounts.size() > 0))
+        qstr_current_id = QString::fromStdString(std::get<0>(accounts.front()));
     // -------------------------------------------
     // Select from currency accounts in local wallet.
     //
