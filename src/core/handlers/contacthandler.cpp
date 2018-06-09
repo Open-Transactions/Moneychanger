@@ -1354,11 +1354,7 @@ bool MTContactHandler::LowLevel_UpdateExistingConversation(const QString & qstrM
                                      " AND "
                                      "`my_nym_id` = :blah_my_nym_id"
                                      );
-                #ifdef CXX_11
                     std::unique_ptr<DBHandler::PreparedQuery> qu;
-                #else /* CXX_11?  */
-                    std::auto_ptr<DBHandler::PreparedQuery> qu;
-                #endif /* CXX_11?  */
                     qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
                     // ---------------------------------------------
                     qu->bind (":blah_conversation_id", qstrThreadId);
@@ -1414,11 +1410,7 @@ bool MTContactHandler::EnsureConversationExists(const QString & qstrMyNymId, con
         QString queryStr = QString("INSERT INTO `conversation` "
                            "(`conversation_id`, `my_nym_id`, `conversation_name`) "
                            "VALUES(:blah_conversation_id, :blah_my_nym_id, :blah_conversation_name)");
-    #ifdef CXX_11
         std::unique_ptr<DBHandler::PreparedQuery> qu;
-    #else /* CXX_11?  */
-        std::auto_ptr<DBHandler::PreparedQuery> qu;
-    #endif /* CXX_11?  */
         qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
         qu->bind (":blah_conversation_id", qstrThreadId);
         qu->bind (":blah_my_nym_id", qstrMyNymId);
@@ -1486,11 +1478,7 @@ bool MTContactHandler::EnsureConversationItemExists(const QString & qstrMyNymId,
                                    ":blah_box, :blah_account, :blah_unread)");
         const int nUnread = thread_item_unread ? 1 : 0;
 
-    #ifdef CXX_11
         std::unique_ptr<DBHandler::PreparedQuery> qu;
-    #else /* CXX_11?  */
-        std::auto_ptr<DBHandler::PreparedQuery> qu;
-    #endif /* CXX_11?  */
         qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
         qu->bind (":blah_conversation_id", qstrThreadId);
         qu->bind (":blah_my_nym_id", qstrMyNymId);
@@ -1637,11 +1625,7 @@ bool MTContactHandler::LowLevel_UpdateExistingConversationItem(
                              "`thread_item_id` = :blah_thread_item_id"
                              );
             const int nUnread = thread_item_unread ? 1 : 0;
-        #ifdef CXX_11
             std::unique_ptr<DBHandler::PreparedQuery> qu;
-        #else /* CXX_11?  */
-            std::auto_ptr<DBHandler::PreparedQuery> qu;
-        #endif /* CXX_11?  */
             qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
             // ---------------------------------------------
             qu->bind (":blah_conversation_id", qstrThreadId);
@@ -1756,11 +1740,7 @@ bool MTContactHandler::ArchiveMessages(QList<int> & listMsgIds)
                  QString("UPDATE `message` SET"
                          " `archived` = 1"
                          " WHERE `message_id` IN (%1)").arg(qstrMsgIds);
-    #ifdef CXX_11
         std::unique_ptr<DBHandler::PreparedQuery> qu;
-    #else /* CXX_11?  */
-        std::auto_ptr<DBHandler::PreparedQuery> qu;
-    #endif /* CXX_11?  */
         qu.reset (DBHandler::getInstance ()->prepareQuery (queryStr));
         // ---------------------------------------------
         DBHandler::getInstance ()->runQuery (qu.release ());
