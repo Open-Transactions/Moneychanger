@@ -452,11 +452,9 @@ int64_t Activity::GetAccountBalancesTotaledForUnitTypes(const mapIDName & mapUni
     while (ci != mapUnitTypeIds.end())
     {
         QString qstrUnitTypeId = ci.key();
-        // ----------------------------------------------------
-        const int nAccountCount = opentxs::OT::App().API().Exec().GetAccountCount();
-        for (int ii = 0; ii < nAccountCount; ++ii)
+
+        for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
         {
-            std::string accountID   = opentxs::OT::App().API().Exec().GetAccountWallet_ID(ii);
             std::string assetTypeID = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(accountID);
 
             QString qstrAssetTypeId = QString::fromStdString(assetTypeID);
@@ -649,26 +647,8 @@ void Activity::GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, const bool bT
                                           mapIDName * pMapTLAbyAccountId/*=nullptr*/)
 {
     const bool bCallerWantsToSeePairedNodes = bTrusted;
+    const auto myAccounts = opentxs::OT::App().DB().AccountList();
 
-
-    // NOTE: Someday OT will provide an API that provides all of my accounts in a single
-    // function call as an ObjectList. Until then, we create that ObjectList here.
-    // So someday, this top loop will be entirely removed, and replaced with an OT API call.
-    //
-    opentxs::ObjectList myAccounts;
-    const int32_t  account_count = opentxs::OT::App().API().Exec().GetAccountCount();
-
-    for (int32_t account_index = 0; account_index < account_count; ++account_index)
-    {
-        const std::string account_id = opentxs::OT::App().API().Exec().GetAccountWallet_ID(account_index);
-
-        if (!account_id.empty())
-        {
-            const std::string account_name = opentxs::OT::App().API().Exec().GetAccountWallet_Name(account_id);
-            myAccounts.push_back(std::pair<std::string, std::string>{account_id, account_name});
-        }
-    }
-    // ----------------------------------------------------
     for (const auto & [ account_id, account_name] : myAccounts)
     {
         const QString OT_id   = QString::fromStdString(account_id);
@@ -5945,42 +5925,12 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
         // accounts on that server.
         //
 
-//        std::set<AccountInfo> OTWallet::AccountList() const
-//        {
-//            std::set<AccountInfo> output{};
-//
-//            Lock lock(lock_);
-//
-//            for (const auto & [ accountID, entry ] : m_mapAccounts) {
-//                const auto & [ nymID, serverID, unitID, account ] = entry;
-//
-//                OT_ASSERT(account)
-//
-//                output.emplace(accountID, nymID, serverID, unitID);
-//            }
-//
-//            return output;
-//        }
-//resume
-
-
         const QString qstrMyNymId(QString::fromStdString(str_my_nym_id));
-
-        std::set<opentxs::AccountInfo> filteredAccounts;
-
-        opentxs::OTWallet * pWallet = opentxs::OT::App().API().OTAPI().GetWallet("Moneychanger::activity::outbailment");
-        auto accountSet = pWallet->AccountList();
-
-        for (const auto & accountInfo : accountSet)
-        {
-            const auto & [ accountID, nymID, serverID, unitID ] = accountInfo;
-
-            if (opentxs::Identifier(str_my_nym_id) != nymID)
-                continue;
-            if (opentxs::Identifier(qstrServerId.toStdString()) != serverID)
-                continue;
-            filteredAccounts.insert(accountInfo);
-        }
+        const auto& db = opentxs::OT::App().DB();
+        std::vector<opentxs::OTIdentifier> filteredAccounts;
+        const auto nymAccounts = db.AccountsByOwner(opentxs::Identifier::Factory(str_my_nym_id));
+        const auto serverAccounts = db.AccountsByServer(opentxs::Identifier::Factory(qstrServerId.toStdString()));
+        std::set_intersection(nymAccounts.begin(), nymAccounts.end(), serverAccounts.begin(), serverAccounts.end(), filteredAccounts.begin());
 
         if (filteredAccounts.size() < 1)
         {
@@ -5994,12 +5944,9 @@ void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTr
 
         mapIDName theAccountMap;
 
-        for (const auto & accountInfo : filteredAccounts) {
-            const auto & [ accountID, nymID, serverID, unitID ] = accountInfo;
-
-            const opentxs::String strCurrentAccountId{accountID};
-            const std::string str_current_acct_id(strCurrentAccountId.Get());
-            const std::string account_name = opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_current_acct_id);
+        for (const auto& accountID : filteredAccounts) {
+            const auto str_current_acct_id = accountID->str();
+            const auto account_name = opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_current_acct_id);
 
             theAccountMap.insert(QString::fromStdString(str_current_acct_id),
                                  QString::fromStdString(account_name));

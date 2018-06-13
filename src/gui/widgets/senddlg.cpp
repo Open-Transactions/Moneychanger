@@ -559,7 +559,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
         //
         std::shared_ptr<const opentxs::OTPayment> payment =
             std::make_shared<const opentxs::OTPayment>(opentxs::String(strVoucher.c_str()));
-        
+
         OT_ASSERT(payment);
         // SENDING HERE TO MYSELF (FOR OUTBOX)
         auto action = opentxs::OT::App().API().ServerAction().SendPayment(fromNymID, notaryID, fromNymID, payment);
@@ -1347,13 +1347,11 @@ void MTSendDlg::on_fromButton_clicked()
     mapIDName & the_map = theChooser.m_map;
 
     bool bFoundDefault = false;
-    // -----------------------------------------------
-    const int32_t acct_count = opentxs::OT::App().API().Exec().GetAccountCount();
-    // -----------------------------------------------
-    for(int32_t ii = 0; ii < acct_count; ++ii)
+
+    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
     {
         //Get OT Acct ID
-        QString OT_acct_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_ID(ii));
+        QString OT_acct_id = QString::fromStdString(accountID);
         QString OT_acct_name("");
         // -----------------------------------------------
         if (!OT_acct_id.isEmpty())

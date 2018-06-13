@@ -647,9 +647,9 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
         MTSpinner      theSpinner;
         std::shared_ptr<const opentxs::OTPayment> payment =
             std::make_shared<const opentxs::OTPayment>(opentxs::String(str_plan.c_str()));
-        
+
         OT_ASSERT(payment);
-        
+
         auto action = opentxs::OT::App().API().ServerAction().SendPayment(myNymID, notaryID, opentxs::Identifier(hisNymId), payment);
         strResponse = action->Run();
     }
@@ -744,12 +744,10 @@ void ProposePlanDlg::on_merchantButton_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t acct_count = opentxs::OT::App().API().Exec().GetAccountCount();
-    // -----------------------------------------------
-    for(int32_t ii = 0; ii < acct_count; ++ii)
+    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
     {
         //Get OT Acct ID
-        QString OT_acct_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_ID(ii));
+        QString OT_acct_id = QString::fromStdString(accountID);
         QString OT_acct_name("");
         // -----------------------------------------------
         if (!OT_acct_id.isEmpty())
