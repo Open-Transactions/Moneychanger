@@ -1869,7 +1869,7 @@ void MTNymDetails::AddButtonClicked()
         switch (nAlgorithmIndex)
         {
             case 0:  // ECDSA
-                str_id = opentxs::OT::App().API().Exec().CreateNymHD(opentxs::proto::CITEMTYPE_INDIVIDUAL, qstrName.toStdString(), NYM_ID_SOURCE, 0);
+                str_id = opentxs::OT::App().API().Exec().CreateNymHD(opentxs::proto::CITEMTYPE_INDIVIDUAL, qstrName.toStdString(), NYM_ID_SOURCE, -1);
                 break;
             case 1: // 1024-bit RSA
                 str_id = opentxs::OT::App().API().Exec().CreateNymLegacy(1024, NYM_ID_SOURCE);
