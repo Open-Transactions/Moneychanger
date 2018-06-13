@@ -5997,7 +5997,7 @@ void Moneychanger::mc_import_slot()
                     const auto accountID = opentxs::Identifier::Factory(id);
                     const auto nymID = db.AccountOwner(accountID);
                     const auto serverID = db.AccountServer(accountID);
-                    const auto unitID = db.AccountUnit(accountID);
+                    const auto unitID = db.AccountContract(accountID);
 
                     const opentxs::String otstrAccountId{accountID.get()};
                     const opentxs::String otstrNymId{nymID.get()};
