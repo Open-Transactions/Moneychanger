@@ -154,16 +154,13 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
             // ------------------------------------------
             // Next: any credentials under this Nym?
             //
-            const int32_t nCountCredentials = opentxs::OT::App().API().Exec().GetNym_MasterCredentialCount(str_nym_id);
-
-            for (int nCred = 0; nCred < nCountCredentials; ++nCred)
+            auto nym = opentxs::OT::App().Wallet().Nym(opentxs::Identifier::Factory(str_nym_id));
+            OT_ASSERT(nym);
+            auto masterCredentialIDs = nym->GetMasterCredentialIDs();
+            for (auto masterCredentialID : masterCredentialIDs)
             {
-                std::string str_cred_id = opentxs::OT::App().API().Exec().GetNym_MasterCredentialID(str_nym_id, nCred);
-
-                if (str_cred_id.empty()) // should never happen.
-                    continue;
                 // ---------------------------------------
-                QString qstrCredID = QString::fromStdString(str_cred_id);
+                QString qstrCredID = QString::fromStdString(masterCredentialID->str());
                 // ---------------------------------------
                 // Add the credential ID to the tree.
                 //
@@ -171,7 +168,7 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
                 // ---------------------------------------
                 cred_item->setText(0, tr("Master Credential"));
                 cred_item->setText(1, qstrCredID);
-                cred_item->setText(2, getNamecoinStatus(str_nym_id, str_cred_id));
+                cred_item->setText(2, getNamecoinStatus(str_nym_id, masterCredentialID->str()));
                 // ---------------------------------------
                 topLevel->addChild(cred_item);
                 ui->treeWidget->expandItem(cred_item);
@@ -182,16 +179,11 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
                 // ---------------------------------------
                 // Next: any subcredentials under this credential?
                 //
-                const int32_t nCountSubcred = opentxs::OT::App().API().Exec().GetNym_ChildCredentialCount(str_nym_id, str_cred_id);
-
-                for (int nSubcred = 0; nSubcred < nCountSubcred; ++nSubcred)
+                auto childCredentialIDs = nym->GetChildCredentialIDs(masterCredentialID->str());
+                for (auto childCredentialID : childCredentialIDs)
                 {
-                    std::string str_sub_cred_id = opentxs::OT::App().API().Exec().GetNym_ChildCredentialID(str_nym_id, str_cred_id, nSubcred);
-
-                    if (str_sub_cred_id.empty()) // should never happen.
-                        continue;
                     // ---------------------------------------
-                    QString qstrSubcredID = QString::fromStdString(str_sub_cred_id);
+                    QString qstrSubcredID = QString::fromStdString(childCredentialID->str());
                     // ---------------------------------------
                     // Add the subcredential ID to the tree.
                     //

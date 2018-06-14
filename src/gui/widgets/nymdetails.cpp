@@ -1903,7 +1903,10 @@ void MTNymDetails::AddButtonClicked()
         // Register the Namecoin name.
         if (nAuthorityIndex == 1)
         {
-            const unsigned cnt = opentxs::OT::App().API().Exec().GetNym_MasterCredentialCount (str_id);
+        	auto nym = opentxs::OT::App().Wallet().Nym(opentxs::Identifier::Factory(str_id));
+        	OT_ASSERT(nym);
+        	auto masterCredentialIDs = nym->GetMasterCredentialIDs();
+        	const unsigned cnt = masterCredentialIDs.size();
             if (cnt != 1)
             {
                 qDebug () << "Expected one master credential, got " << cnt
@@ -1911,7 +1914,7 @@ void MTNymDetails::AddButtonClicked()
             }
             else
             {
-                const std::string cred = opentxs::OT::App().API().Exec().GetNym_MasterCredentialID (str_id, 0);
+                const std::string cred = masterCredentialIDs[0]->str();
                 const QString qCred = QString::fromStdString (cred);
                 NMC_NameManager& nmc = NMC_NameManager::getInstance ();
                 nmc.startRegistration (qstrID, qCred);
