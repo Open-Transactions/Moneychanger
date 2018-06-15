@@ -318,8 +318,9 @@ QJsonValue MCRPCService::getNymMasterCredentialCount(
         return QJsonValue(object);
     }
 
-    int result = opentxs::OT::App().API().Exec().GetNym_MasterCredentialCount(
-        NymID.toStdString());
+    auto nym = opentxs::OT::App().Wallet().Nym(opentxs::Identifier::Factory(NymID.toStdString()));
+    OT_ASSERT(nym);
+    int result = nym->GetMasterCredentialIDs().size();
     QJsonObject object{{"NymCredentialCount", result}};
     return QJsonValue(object);
 }
@@ -339,8 +340,10 @@ QJsonValue MCRPCService::getNymMasterCredentialID(
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OT::App().API().Exec().GetNym_MasterCredentialID(
-        NymID.toStdString(), Index);
+    auto nym = opentxs::OT::App().Wallet().Nym(opentxs::Identifier::Factory(NymID.toStdString()));
+    OT_ASSERT(nym);
+    auto masterCredentialIDs = nym->GetMasterCredentialIDs();
+    std::string result = masterCredentialIDs[Index]->str();
     QJsonObject object{{"NymCredentialID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -381,8 +384,10 @@ QJsonValue MCRPCService::getNymRevokedCount(
         return QJsonValue(object);
     }
 
-    int result = opentxs::OT::App().API().Exec().GetNym_RevokedCredCount(
-        NymID.toStdString());
+    auto nym = opentxs::OT::App().Wallet().Nym(opentxs::Identifier::Factory(NymID.toStdString()));
+    OT_ASSERT(nym);
+    auto revokedCredentialIDs = nym->GetRevokedCredentialIDs();
+    int result = revokedCredentialIDs.size();
     QJsonObject object{{"NymRevokedCredCount", result}};
     return QJsonValue(object);
 }
@@ -402,8 +407,10 @@ QJsonValue MCRPCService::getNymRevokedCredID(
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OT::App().API().Exec().GetNym_RevokedCredID(
-        NymID.toStdString(), Index);
+    auto nym = opentxs::OT::App().Wallet().Nym(opentxs::Identifier::Factory(NymID.toStdString()));
+    OT_ASSERT(nym);
+    auto revokedCredentialIDs = nym->GetRevokedCredentialIDs();
+    std::string result = revokedCredentialIDs[Index]->str();
     QJsonObject object{{"NymRevokedCredID", QString(result.c_str())}};
     return QJsonValue(object);
 }
@@ -449,8 +456,10 @@ QJsonValue MCRPCService::getNymChildCredentialCount(
         return QJsonValue(object);
     }
 
-    int result = opentxs::OT::App().API().Exec().GetNym_ChildCredentialCount(
-        NymID.toStdString(), MasterCredID.toStdString());
+    auto nym = opentxs::OT::App().Wallet().Nym(opentxs::Identifier::Factory(NymID.toStdString()));
+    OT_ASSERT(nym);
+    auto childCredentialIDs = nym->GetChildCredentialIDs(MasterCredID.toStdString());
+    int result = childCredentialIDs.size();
     QJsonObject object{{"NymChildCredentialCount", result}};
     return QJsonValue(object);
 }
@@ -475,8 +484,10 @@ QJsonValue MCRPCService::getNymChildCredentialID(
         return QJsonValue(object);
     }
 
-    std::string result = opentxs::OT::App().API().Exec().GetNym_ChildCredentialID(
-        NymID.toStdString(), MasterCredID.toStdString(), Index);
+    auto nym = opentxs::OT::App().Wallet().Nym(opentxs::Identifier::Factory(NymID.toStdString()));
+    OT_ASSERT(nym);
+    auto childCredentialIDs = nym->GetChildCredentialIDs(MasterCredID.toStdString());
+    std::string result = childCredentialIDs[Index]->str();
     QJsonObject object{{"NymChildCredentialID", QString(result.c_str())}};
     return QJsonValue(object);
 }
