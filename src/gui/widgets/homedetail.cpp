@@ -1373,21 +1373,19 @@ void MTHomeDetail::onRefresh(int nRow, opentxs::OTRecordList & theList)
 
 void MTHomeDetail::refresh(int nRow, opentxs::OTRecordList & theList)
 {
-//  qDebug() << QString("MTHomeDetail::refresh: nRow: %1").arg(nRow);
-
     if ((nRow >= 0) && (nRow < theList.size()))
     {
-        opentxs::OTRecord * pRecord = new opentxs::OTRecord(theList.GetRecord(nRow));
-        // --------------------------------------------------
-        m_record = std::shared_ptr<opentxs::OTRecord>(pRecord);
-        opentxs::OTRecord& recordmt = *pRecord;
-        // --------------------------------------------------
-        refresh(recordmt);
+//        opentxs::OTRecord * pRecord = new opentxs::OTRecord(theList.GetRecord(nRow));
+//        // --------------------------------------------------
+//        m_record = std::shared_ptr<opentxs::OTRecord>(pRecord);
+//        opentxs::OTRecord& recordmt = *pRecord;
+//        // --------------------------------------------------
+//        refresh(recordmt);
     }
-//  else
-//      qDebug() << QString("MTHomeDetail::refresh: nRow %1 is out of bounds. (Max size is %2.)").arg(nRow).arg(theList.size());
-    else
+    else {
         RecreateLayout(); // This blanks out the detail side.
+//      qDebug() << QString("MTHomeDetail::refresh: nRow %1 is out of bounds. (Max size is %2.)").arg(nRow).arg(theList.size());
+    }
 }
 
 

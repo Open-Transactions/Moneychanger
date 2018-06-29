@@ -852,10 +852,10 @@ Moneychanger::~Moneychanger()
     nmc = nullptr;
 }
 
-opentxs::OTRecordList & Moneychanger::GetRecordlist()
-{
-    return m_list;
-}
+//opentxs::OTRecordList & Moneychanger::GetRecordlist()
+//{
+//    return m_list;
+//}
 
 void Moneychanger::setupRecordList()
 {

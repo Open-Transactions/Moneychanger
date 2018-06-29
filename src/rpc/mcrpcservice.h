@@ -1488,15 +1488,15 @@ public Q_SLOTS:
     QJsonValue userLogout(QString Username, QString PlaintextPassword);
     QJsonValue refreshAPIKey(QString Username, QString PlaintextPassword);
 
-    // RecordList Methods
-    QJsonValue recordListPopulate(QString Username, QString APIKey);
-    QJsonValue recordListCount(QString Username, QString APIKey);
-    QJsonValue recordListRetrieve(QString Username, QString APIKey, int Index);
-    QJsonValue recordListRetrieve(
-        QString Username,
-        QString APIKey,
-        int BeginIndex,
-        int EndIndex);
+//    // RecordList Methods
+//    QJsonValue recordListPopulate(QString Username, QString APIKey);
+//    QJsonValue recordListCount(QString Username, QString APIKey);
+//    QJsonValue recordListRetrieve(QString Username, QString APIKey, int Index);
+//    QJsonValue recordListRetrieve(
+//        QString Username,
+//        QString APIKey,
+//        int BeginIndex,
+//        int EndIndex);
 
     QJsonValue setDefaultNym(
         QString Username,
@@ -1529,9 +1529,9 @@ public Q_SLOTS:
     QJsonValue isValidID(QString ID, QString Username, QString APIKey);
 
 private:
-    // RecordList Methods
-    opentxs::OTRecordList* m_RecordList = nullptr;
-    bool createRecordList(QString Username, QString APIKey);
+//    // RecordList Methods
+//    opentxs::OTRecordList* m_RecordList{nullptr};
+//    bool createRecordList(QString Username, QString APIKey);
 
     RPCUserManager m_userManager;
 

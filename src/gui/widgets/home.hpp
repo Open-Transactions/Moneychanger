@@ -42,8 +42,8 @@ private:
     // ------------------------------------------------
     QPointer<QFrame>        m_pHeaderFrame;
     // ------------------------------------------------
-    opentxs::OTRecordList   m_list;
-    opentxs::OTRecordList & GetRecordlist();
+//    opentxs::OTRecordList   m_list;
+//    opentxs::OTRecordList & GetRecordlist();
     // ------------------------------------------------
     bool    m_bTurnRefreshBtnRed;
     // ------------------------------------------------
