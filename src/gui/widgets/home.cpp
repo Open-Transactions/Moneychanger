@@ -33,7 +33,7 @@
 MTHome::MTHome(QWidget *parent) :
     QWidget(parent, Qt::Window),
     already_init(false),
-    m_list(*(new MTNameLookupQT)),
+//    m_list(*(new MTNameLookupQT)),
     m_bTurnRefreshBtnRed(false),
     ui(new Ui::MTHome)
 {
@@ -138,7 +138,7 @@ void MTHome::on_tableWidget_currentCellChanged(int row, int column, int previous
         else
             m_pDetailPane->setVisible(true);
 
-        emit needToRefreshDetails(row, GetRecordlist());
+        emit needToRefreshDetails(row);
     }
 }
 

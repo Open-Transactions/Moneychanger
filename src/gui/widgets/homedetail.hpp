@@ -58,7 +58,7 @@ protected:
     bool eventFilter(QObject *obj, QEvent *event);
 
 public slots:
-    void onRefresh(int nRow, opentxs::OTRecordList & theList);
+    void onRefresh(int nRow);
 
 private slots:
     void on_viewContactButton_clicked(bool checked = false);
@@ -83,7 +83,7 @@ private slots:
 
 private:
     void refresh(opentxs::OTRecord& recordmt);
-    void refresh(int nRow, opentxs::OTRecordList & theList);
+    void refresh(int nRow);
 
     void copyIDToClipboard(const QString qstr_field, const QString & text);
 

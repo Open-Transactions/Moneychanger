@@ -18,6 +18,7 @@
 #include <opentxs/opentxs.hpp>
 
 #include <QGridLayout>
+#include <QTabWidget>
 #include <QMessageBox>
 #include <QClipboard>
 #include <QLabel>
@@ -52,7 +53,7 @@ void MTHomeDetail::SetHomePointer(MTHome & theHome)
     connect(this, SIGNAL(confirmSmartContract(QString, QString, int32_t)),
             Moneychanger::It(), SLOT(onConfirmSmartContract(QString, QString, int32_t)));
     // --------------------------------------------------------
-    connect(m_pHome, SIGNAL(needToRefreshDetails(int, opentxs::OTRecordList&)), this, SLOT(onRefresh(int, opentxs::OTRecordList&)));
+    connect(m_pHome, SIGNAL(needToRefreshDetails(int)), this, SLOT(onRefresh(int)));
 }
 
 MTHomeDetail::MTHomeDetail(QWidget *parent) :
@@ -1366,14 +1367,14 @@ void increment_cell(int & nCurrentRow, int & nCurrentColumn)
     }
 }
 
-void MTHomeDetail::onRefresh(int nRow, opentxs::OTRecordList & theList)
+void MTHomeDetail::onRefresh(int nRow)
 {
-    refresh(nRow, theList);
+    refresh(nRow);
 }
 
-void MTHomeDetail::refresh(int nRow, opentxs::OTRecordList & theList)
+void MTHomeDetail::refresh(int nRow)
 {
-    if ((nRow >= 0) && (nRow < theList.size()))
+//    if ((nRow >= 0) && (nRow < theList.size()))
     {
 //        opentxs::OTRecord * pRecord = new opentxs::OTRecord(theList.GetRecord(nRow));
 //        // --------------------------------------------------
@@ -1382,7 +1383,8 @@ void MTHomeDetail::refresh(int nRow, opentxs::OTRecordList & theList)
 //        // --------------------------------------------------
 //        refresh(recordmt);
     }
-    else {
+//    else
+    {
         RecreateLayout(); // This blanks out the detail side.
 //      qDebug() << QString("MTHomeDetail::refresh: nRow %1 is out of bounds. (Max size is %2.)").arg(nRow).arg(theList.size());
     }

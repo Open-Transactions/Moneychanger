@@ -68,7 +68,7 @@ public:
 signals:
     void needToPopulateRecordlist();
     void needToDownloadAccountData();
-    void needToRefreshDetails(int nRow, opentxs::OTRecordList & theList);
+    void needToRefreshDetails(int nRow);
 
 public slots:
     void onRecordlistPopulated();

@@ -4,6 +4,7 @@
 
 #include <QPainter>
 #include <QStylePainter>
+#include <QStyleOption>
 #include <QImage>
 
 QrToolButton::QrToolButton(QWidget *parent) :
@@ -97,11 +98,15 @@ int QrToolButton::getQRWidth() const
 void QrToolButton::paintEvent(QPaintEvent *)
 {
     QStylePainter p(this);
-    p.drawComplexControl(QStyle::CC_ToolButton, 0);
+    QStyleOptionToolButton sotb;
+    sotb.initFrom(this);
+
+    p.drawComplexControl(QStyle::CC_ToolButton, sotb);
+//  void QStylePainter::drawComplexControl(QStyle::ComplexControl cc, const QStyleOptionComplex &opt)
 
 
     QPainter & painter(p);
-//    QPainter painter(this);
+//  QPainter painter(this);
     QColor background(Qt::white);
     painter.setBrush(background);
     painter.setPen(Qt::NoPen);
