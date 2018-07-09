@@ -27,24 +27,6 @@ void shutdown_app()
 
 }
 
-
-
-bool SetupPasswordCallback(opentxs::OTCaller & passwordCaller, opentxs::OTCallback & passwordCallback)
-{
-    passwordCaller.setCallback(&passwordCallback);
-
-    bool bSuccess = OT_API_Set_PasswordCallback(passwordCaller);
-
-    if (!bSuccess)
-    {
-        qDebug() << QString("Error setting password callback!");
-        return false;
-    }
-
-    return true;
-}
-
-
 bool SetupAddressBookCallback(opentxs::OTLookupCaller & theCaller, opentxs::OTNameLookup & theCallback)
 {
     theCaller.setCallback(&theCallback);
@@ -66,18 +48,16 @@ class __OTclient_RAII
 {
 public:
     __OTclient_RAII()
+        : password_callback_{new MTPasswordCallback}
+        , password_caller_{new opentxs::OTCaller}
     {
-        // ----------------------------------------
-        // Set Password Callback.
-        //
-        static opentxs::OTCaller  passwordCaller;
-        static MTPasswordCallback passwordCallback;
+        assert(password_callback_);
+        assert(password_caller_);
 
-        if (!SetupPasswordCallback(passwordCaller, passwordCallback))
-        {
-            qDebug() << "Failure setting password callback in MTApplicationMC";
-            abort();
-        }
+        password_caller_->setCallback(password_callback_.get());
+
+        assert(password_caller_->isCallbackSet());
+
         // ----------------------------------------
         // Set Address Book Callback.
         //
@@ -89,16 +69,19 @@ public:
             qDebug() << "Failure setting address book callback in MTApplicationMC";
             abort();
         }
-        // ----------------------------------------
-        // SSL gets initialized in here, before any keys are loaded.
-        //
-        opentxs::SwigWrap::AppInit();
+
+         opentxs::OT::ClientFactory({}, {}, password_caller_.get());
     }
     ~__OTclient_RAII()
     {
-
-        opentxs::SwigWrap::AppCleanup();
+        opentxs::OT::Cleanup();
+        password_caller_.reset();
+        password_callback_.reset();
     }
+
+private:
+    std::unique_ptr<MTPasswordCallback> password_callback_{nullptr};
+    std::unique_ptr<opentxs::OTCaller> password_caller_{nullptr};
 };
 
 // ----------------------------------------
