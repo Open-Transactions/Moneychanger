@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     __OTclient_RAII the_client_cleanup;  // <===== SECOND constructor is called here.
     // ----------------------------------------
     // Will assert if AppInit has not been called.
-    opentxs::OT::App().API().Exec();
+    opentxs::OT::App().API().Exec(); // deprecated?
     // ----------------------------------------
     //Init qApp
     MTApplicationMC theApplication(argc, argv);  // <====== THIRD constructor (they are destroyed in reverse order.)

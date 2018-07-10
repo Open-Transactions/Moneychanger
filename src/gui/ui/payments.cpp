@@ -21,6 +21,12 @@
 #include <core/handlers/focuser.h>
 
 #include <opentxs/opentxs.hpp>
+#include <opentxs/ui/IssuerItem.hpp>
+#include <opentxs/ui/ActivitySummary.hpp>
+#include <opentxs/ui/ActivityThread.hpp>
+#include <opentxs/ui/ActivityThreadItem.hpp>
+#include <opentxs/ui/ActivitySummaryItem.hpp>
+#include <opentxs/SharedPimpl.hpp>
 
 #include <QLabel>
 #include <QDebug>
@@ -1379,6 +1385,101 @@ void Payments::RefreshPayments()
     ui->tableViewReceived->horizontalHeader()->setStretchLastSection(true);
 }
 
+
+void print_accounts(const opentxs::ui::IssuerItem& issuer) ;
+void print_line(const opentxs::ui::IssuerItem& line) ;
+void print_line(
+    const opentxs::ui::AccountSummaryItem& line) ;
+
+
+void print_accounts(const opentxs::ui::IssuerItem& issuer)
+{
+    auto account = issuer.First();
+    auto lastAccount = account->Last();
+
+    if (false == account->Valid()) { return; }
+
+    print_line(account.get());
+
+    while (false == lastAccount) {
+        account = issuer.Next();
+        lastAccount = account->Last();
+        print_line(account.get());
+    }
+}
+
+void print_line(const opentxs::ui::IssuerItem& line)
+{
+    opentxs::otOut << "* " << line.Name() << " [";
+
+    if (line.ConnectionState()) {
+        opentxs::otOut << "*";
+    } else {
+        opentxs::otOut << " ";
+    }
+
+    opentxs::otOut << "]\n";
+    print_accounts(line);
+}
+
+void print_line(
+    const opentxs::ui::AccountSummaryItem& line)
+{
+    opentxs::otOut << " * " << line.Name() << " " << line.DisplayBalance() << "\n";
+
+
+    // This is the spot, ultimately, where the item would actually be added to the tree widget.
+    // TODO.
+}
+
+
+
+
+#define OT_MAX_CURRENCY_TYPE 10
+
+void Payments::RefreshSummaryTree()
+{
+    const int32_t nymCount = opentxs::OT::App().API().Exec().GetNymCount();
+    for (int32_t nymIndex = 0; nymIndex < nymCount; ++nymIndex)
+    {
+        std::string mynym = opentxs::OT::App().API().Exec().GetNym_ID(nymIndex);
+
+        // For each Nym, loop through all currency type IDs (enumerated type)
+        // and lookup the accounts for each currency type ID (for that Nym).
+        // Resulting data structure should be a map <currency type ID, map <nymID, map<unitTypeId, accountID>>>
+        // Or at least map <currency type ID, map <nymID, accountID>>
+        //
+        for (int currency_type = 0; currency_type <= OT_MAX_CURRENCY_TYPE; currency_type++)
+        {
+            const auto currencyType = opentxs::proto::ContactItemType(currency_type);
+
+            const opentxs::Identifier nymID{mynym};
+            auto& list = opentxs::OT::App().UI().AccountSummary(nymID, currencyType);
+            opentxs::otOut << "Issuers:\n";
+//          dashLine();
+            auto issuer = list.First();
+
+            if (false == issuer->Valid()) {
+
+                continue;
+            }
+
+            auto lastIssuer = issuer->Last();
+            print_line(issuer.get());
+
+            while (false == lastIssuer) {
+                issuer = list.Next();
+                lastIssuer = issuer->Last();
+                print_line(issuer.get());
+
+            }
+
+            opentxs::otOut << std::endl;
+        }
+    }
+}
+
+
 void Payments::RefreshTree()
 {
     ClearTree();
@@ -2575,7 +2676,9 @@ void Payments::onRecordlistPopulated()
 void Payments::RefreshAll()
 {
     RefreshUserBar();
-    RefreshTree();
+    RefreshTree();  // Deprecated in favor of the below.
+
+    RefreshSummaryTree();
 }
 
 void Payments::onBalancesChanged()

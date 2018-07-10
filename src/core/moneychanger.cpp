@@ -859,223 +859,223 @@ Moneychanger::~Moneychanger()
 
 void Moneychanger::setupRecordList()
 {
-    int nServerCount  = ot_.API().Exec().GetServerCount();
-    int nAssetCount   = ot_.API().Exec().GetAssetTypeCount();
-    int nNymCount     = ot_.API().Exec().GetNymCount();
-    // ----------------------------------------------------
-    GetRecordlist().ClearServers();
-    GetRecordlist().ClearAssets();
-    GetRecordlist().ClearNyms();
-    GetRecordlist().ClearAccounts();
-    // ----------------------------------------------------
-    for (int ii = 0; ii < nServerCount; ++ii)
-    {
-        std::string NotaryID = ot_.API().Exec().GetServer_ID(ii);
-        GetRecordlist().AddNotaryID(NotaryID);
-    }
-    // ----------------------------------------------------
-    for (int ii = 0; ii < nAssetCount; ++ii)
-    {
-        std::string InstrumentDefinitionID = ot_.API().Exec().GetAssetType_ID(ii);
-        GetRecordlist().AddInstrumentDefinitionID(InstrumentDefinitionID);
-    }
-    // ----------------------------------------------------
-    for (int ii = 0; ii < nNymCount; ++ii)
-    {
-        std::string nymId = ot_.API().Exec().GetNym_ID(ii);
-        GetRecordlist().AddNymID(nymId);
-    }
-    // ----------------------------------------------------
-    for (const auto& [accountID, alias] : ot_.DB().AccountList())
-    {
-        GetRecordlist().AddAccountID(accountID);
-    }
-    // ----------------------------------------------------
-    GetRecordlist().AcceptChequesAutomatically  (true);
-    GetRecordlist().AcceptReceiptsAutomatically (true);
-    GetRecordlist().AcceptTransfersAutomatically(false);
-    GetRecordlist().IgnoreMail(!expertMode());
+//    int nServerCount  = ot_.API().Exec().GetServerCount();
+//    int nAssetCount   = ot_.API().Exec().GetAssetTypeCount();
+//    int nNymCount     = ot_.API().Exec().GetNymCount();
+//    // ----------------------------------------------------
+//    GetRecordlist().ClearServers();
+//    GetRecordlist().ClearAssets();
+//    GetRecordlist().ClearNyms();
+//    GetRecordlist().ClearAccounts();
+//    // ----------------------------------------------------
+//    for (int ii = 0; ii < nServerCount; ++ii)
+//    {
+//        std::string NotaryID = ot_.API().Exec().GetServer_ID(ii);
+//        GetRecordlist().AddNotaryID(NotaryID);
+//    }
+//    // ----------------------------------------------------
+//    for (int ii = 0; ii < nAssetCount; ++ii)
+//    {
+//        std::string InstrumentDefinitionID = ot_.API().Exec().GetAssetType_ID(ii);
+//        GetRecordlist().AddInstrumentDefinitionID(InstrumentDefinitionID);
+//    }
+//    // ----------------------------------------------------
+//    for (int ii = 0; ii < nNymCount; ++ii)
+//    {
+//        std::string nymId = ot_.API().Exec().GetNym_ID(ii);
+//        GetRecordlist().AddNymID(nymId);
+//    }
+//    // ----------------------------------------------------
+//    for (const auto& [accountID, alias] : ot_.DB().AccountList())
+//    {
+//        GetRecordlist().AddAccountID(accountID);
+//    }
+//    // ----------------------------------------------------
+//    GetRecordlist().AcceptChequesAutomatically  (true);
+//    GetRecordlist().AcceptReceiptsAutomatically (true);
+//    GetRecordlist().AcceptTransfersAutomatically(false);
+//    GetRecordlist().IgnoreMail(!expertMode());
 }
 
 // Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
 //
 void Moneychanger::populateRecords(bool bCurrentlyModifying/*=false*/)
 {
-    GetRecordlist().Populate(); // Refreshes the OT data from local storage.   < << <<==============***
+//    GetRecordlist().Populate(); // Refreshes the OT data from local storage.   < << <<==============***
     // ---------------------------------------------------------------------
-    QList<QString> listCheckOnlyOnce; // So we don't call checkMail more than once for the same connect string.
-    // ---------------------------------------------------------------------
-    // Let's see if, additionally, there are any Bitmessage records (etc)
-    // for the Nyms that we care about. (If we didn't add a Nym ID to GetRecordlist()'s
-    // list of Nyms, then we don't care about any Bitmessages for that Nym.)
-    //
-    bool bNeedsReSorting = false;
+//    QList<QString> listCheckOnlyOnce; // So we don't call checkMail more than once for the same connect string.
+//    // ---------------------------------------------------------------------
+//    // Let's see if, additionally, there are any Bitmessage records (etc)
+//    // for the Nyms that we care about. (If we didn't add a Nym ID to GetRecordlist()'s
+//    // list of Nyms, then we don't care about any Bitmessages for that Nym.)
+//    //
+//    bool bNeedsReSorting = false;
 
-    const opentxs::list_of_strings & the_nyms = GetRecordlist().GetNyms();
+//    const opentxs::list_of_strings & the_nyms = GetRecordlist().GetNyms();
 
-    for (opentxs::list_of_strings::const_iterator it = the_nyms.begin(); it != the_nyms.end(); ++it)
-    {
-        const std::string str_nym_id = *it;
-        // -----------------------------
-        mapIDName mapMethods;
-        QString   filterByNym = QString::fromStdString(str_nym_id);
+//    for (opentxs::list_of_strings::const_iterator it = the_nyms.begin(); it != the_nyms.end(); ++it)
+//    {
+//        const std::string str_nym_id = *it;
+//        // -----------------------------
+//        mapIDName mapMethods;
+//        QString   filterByNym = QString::fromStdString(str_nym_id);
 
-        bool bGotMethods = !filterByNym.isEmpty() ? MTContactHandler::getInstance()->GetMsgMethodsByNym(mapMethods, filterByNym, false, QString("")) : false;
+//        bool bGotMethods = !filterByNym.isEmpty() ? MTContactHandler::getInstance()->GetMsgMethodsByNym(mapMethods, filterByNym, false, QString("")) : false;
 
-        if (bGotMethods)
-        {
-            // Loop through mapMethods and for each methodID, call GetAddressesByNym.
-            // Then for each address, grab the inbox and outbox from MTComms, and add
-            // the messages to GetRecordlist().
-            //
-            for (mapIDName::iterator ii = mapMethods.begin(); ii != mapMethods.end(); ++ii)
-            {
-                QString qstrID        = ii.key();
-                int nFilterByMethodID = 0;
+//        if (bGotMethods)
+//        {
+//            // Loop through mapMethods and for each methodID, call GetAddressesByNym.
+//            // Then for each address, grab the inbox and outbox from MTComms, and add
+//            // the messages to GetRecordlist().
+//            //
+//            for (mapIDName::iterator ii = mapMethods.begin(); ii != mapMethods.end(); ++ii)
+//            {
+//                QString qstrID        = ii.key();
+//                int nFilterByMethodID = 0;
 
-                QStringList stringlist = qstrID.split("|");
+//                QStringList stringlist = qstrID.split("|");
 
-                if (stringlist.size() >= 2) // Should always be 2...
-                {
-//                  QString qstrType     = stringlist.at(0);
-                    QString qstrMethodID = stringlist.at(1);
-                    nFilterByMethodID    = qstrMethodID.isEmpty() ? 0 : qstrMethodID.toInt();
-                    // --------------------------------------
-                    if (nFilterByMethodID > 0)
-                    {
-                        QString   qstrMethodType  = MTContactHandler::getInstance()->GetMethodType       (nFilterByMethodID);
-                        QString   qstrTypeDisplay = MTContactHandler::getInstance()->GetMethodTypeDisplay(nFilterByMethodID);
-                        QString   qstrConnectStr  = MTContactHandler::getInstance()->GetMethodConnectStr (nFilterByMethodID);
+//                if (stringlist.size() >= 2) // Should always be 2...
+//                {
+////                  QString qstrType     = stringlist.at(0);
+//                    QString qstrMethodID = stringlist.at(1);
+//                    nFilterByMethodID    = qstrMethodID.isEmpty() ? 0 : qstrMethodID.toInt();
+//                    // --------------------------------------
+//                    if (nFilterByMethodID > 0)
+//                    {
+//                        QString   qstrMethodType  = MTContactHandler::getInstance()->GetMethodType       (nFilterByMethodID);
+//                        QString   qstrTypeDisplay = MTContactHandler::getInstance()->GetMethodTypeDisplay(nFilterByMethodID);
+//                        QString   qstrConnectStr  = MTContactHandler::getInstance()->GetMethodConnectStr (nFilterByMethodID);
 
-                        if (!qstrConnectStr.isEmpty())
-                        {
-                            NetworkModule * pModule = MTComms::find(qstrConnectStr.toStdString());
+//                        if (!qstrConnectStr.isEmpty())
+//                        {
+//                            NetworkModule * pModule = MTComms::find(qstrConnectStr.toStdString());
 
-                            if ((NULL == pModule) && MTComms::add(qstrMethodType.toStdString(), qstrConnectStr.toStdString()))
-                                pModule = MTComms::find(qstrConnectStr.toStdString());
+//                            if ((NULL == pModule) && MTComms::add(qstrMethodType.toStdString(), qstrConnectStr.toStdString()))
+//                                pModule = MTComms::find(qstrConnectStr.toStdString());
 
-                            if (NULL == pModule)
-                                // todo probably need a messagebox here.
-                                qDebug() << QString("PopulateRecords: Unable to add a %1 interface with connection string: %2").arg(qstrMethodType).arg(qstrConnectStr);
+//                            if (NULL == pModule)
+//                                // todo probably need a messagebox here.
+//                                qDebug() << QString("PopulateRecords: Unable to add a %1 interface with connection string: %2").arg(qstrMethodType).arg(qstrConnectStr);
 
-                            if ((NULL != pModule) && pModule->accessible())
-                            {
-                                if ((-1) == listCheckOnlyOnce.indexOf(qstrConnectStr)) // Not on the list yet.
-                                {
-                                    pModule->checkMail();
-                                    listCheckOnlyOnce.insert(0, qstrConnectStr);
-                                }
-                                // ------------------------------
-                                mapIDName mapAddresses;
+//                            if ((NULL != pModule) && pModule->accessible())
+//                            {
+//                                if ((-1) == listCheckOnlyOnce.indexOf(qstrConnectStr)) // Not on the list yet.
+//                                {
+//                                    pModule->checkMail();
+//                                    listCheckOnlyOnce.insert(0, qstrConnectStr);
+//                                }
+//                                // ------------------------------
+//                                mapIDName mapAddresses;
 
-                                if (MTContactHandler::getInstance()->GetAddressesByNym(mapAddresses, filterByNym, nFilterByMethodID))
-                                {
-                                    for (mapIDName::iterator jj = mapAddresses.begin(); jj != mapAddresses.end(); ++jj)
-                                    {
-                                        QString qstrAddress = jj.key();
+//                                if (MTContactHandler::getInstance()->GetAddressesByNym(mapAddresses, filterByNym, nFilterByMethodID))
+//                                {
+//                                    for (mapIDName::iterator jj = mapAddresses.begin(); jj != mapAddresses.end(); ++jj)
+//                                    {
+//                                        QString qstrAddress = jj.key();
 
-                                        if (!qstrAddress.isEmpty())
-                                        {
-                                            // --------------------------------------------------------------------------------------------
-                                            // INBOX
-                                            //
-                                            std::vector< _SharedPtr<NetworkMail> > theInbox = pModule->getInbox(qstrAddress.toStdString());
+//                                        if (!qstrAddress.isEmpty())
+//                                        {
+//                                            // --------------------------------------------------------------------------------------------
+//                                            // INBOX
+//                                            //
+//                                            std::vector< _SharedPtr<NetworkMail> > theInbox = pModule->getInbox(qstrAddress.toStdString());
 
-                                            for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theInbox.size(); ++nIndex)
-                                            {
-                                                _SharedPtr<NetworkMail> & theMsg = theInbox[nIndex];
+//                                            for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theInbox.size(); ++nIndex)
+//                                            {
+//                                                _SharedPtr<NetworkMail> & theMsg = theInbox[nIndex];
 
-                                                std::string strSubject  = theMsg->getSubject();
-                                                std::string strContents = theMsg->getMessage();
-                                                // ----------------------------------------------------
-                                                QString qstrFinal;
+//                                                std::string strSubject  = theMsg->getSubject();
+//                                                std::string strContents = theMsg->getMessage();
+//                                                // ----------------------------------------------------
+//                                                QString qstrFinal;
 
-                                                if (!strSubject.empty())
-                                                    qstrFinal = QString("%1: %2\n%3").
-                                                            arg(tr("Subject")).
-                                                            arg(QString::fromStdString(strSubject)).
-                                                            arg(QString::fromStdString(strContents));
-                                                else
-                                                    qstrFinal = QString::fromStdString(strContents);
-                                                // ----------------------------------------------------
-                                                bNeedsReSorting = true;
+//                                                if (!strSubject.empty())
+//                                                    qstrFinal = QString("%1: %2\n%3").
+//                                                            arg(tr("Subject")).
+//                                                            arg(QString::fromStdString(strSubject)).
+//                                                            arg(QString::fromStdString(strContents));
+//                                                else
+//                                                    qstrFinal = QString::fromStdString(strContents);
+//                                                // ----------------------------------------------------
+//                                                bNeedsReSorting = true;
 
-                                                if (!theMsg->getMessageID().empty())
-                                                    GetRecordlist().AddSpecialMsg(theMsg->getMessageID(),
-                                                                         false, //bIsOutgoing=false
-                                                                         static_cast<int32_t>(nFilterByMethodID),
-                                                                         qstrFinal.toStdString(),
-                                                                         theMsg->getTo(),
-                                                                         theMsg->getFrom(),
-                                                                         qstrMethodType.toStdString(),
-                                                                         qstrTypeDisplay.toStdString(),
-                                                                         str_nym_id,
-                                                                         static_cast<time64_t>(theMsg->getReceivedTime()));
-                                            } // for (inbox)
-                                            // --------------------------------------------------------------------------------------------
-                                            // OUTBOX
-                                            //
-                                            std::vector< _SharedPtr<NetworkMail> > theOutbox = pModule->getOutbox(qstrAddress.toStdString());
+//                                                if (!theMsg->getMessageID().empty())
+//                                                    GetRecordlist().AddSpecialMsg(theMsg->getMessageID(),
+//                                                                         false, //bIsOutgoing=false
+//                                                                         static_cast<int32_t>(nFilterByMethodID),
+//                                                                         qstrFinal.toStdString(),
+//                                                                         theMsg->getTo(),
+//                                                                         theMsg->getFrom(),
+//                                                                         qstrMethodType.toStdString(),
+//                                                                         qstrTypeDisplay.toStdString(),
+//                                                                         str_nym_id,
+//                                                                         static_cast<time64_t>(theMsg->getReceivedTime()));
+//                                            } // for (inbox)
+//                                            // --------------------------------------------------------------------------------------------
+//                                            // OUTBOX
+//                                            //
+//                                            std::vector< _SharedPtr<NetworkMail> > theOutbox = pModule->getOutbox(qstrAddress.toStdString());
 
-                                            for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theOutbox.size(); ++nIndex)
-                                            {
-                                                _SharedPtr<NetworkMail> & theMsg = theOutbox[nIndex];
+//                                            for (std::vector< _SharedPtr<NetworkMail> >::size_type nIndex = 0; nIndex < theOutbox.size(); ++nIndex)
+//                                            {
+//                                                _SharedPtr<NetworkMail> & theMsg = theOutbox[nIndex];
 
-                                                std::string strSubject  = theMsg->getSubject();
-                                                std::string strContents = theMsg->getMessage();
-                                                // ----------------------------------------------------
-                                                QString qstrFinal;
+//                                                std::string strSubject  = theMsg->getSubject();
+//                                                std::string strContents = theMsg->getMessage();
+//                                                // ----------------------------------------------------
+//                                                QString qstrFinal;
 
-                                                if (!strSubject.empty())
-                                                    qstrFinal = QString("%1: %2\n%3").
-                                                            arg(tr("Subject")).
-                                                            arg(QString::fromStdString(strSubject)).
-                                                            arg(QString::fromStdString(strContents));
-                                                else
-                                                    qstrFinal = QString::fromStdString(strContents);
-                                                // ----------------------------------------------------
-                                                bNeedsReSorting = true;
+//                                                if (!strSubject.empty())
+//                                                    qstrFinal = QString("%1: %2\n%3").
+//                                                            arg(tr("Subject")).
+//                                                            arg(QString::fromStdString(strSubject)).
+//                                                            arg(QString::fromStdString(strContents));
+//                                                else
+//                                                    qstrFinal = QString::fromStdString(strContents);
+//                                                // ----------------------------------------------------
+//                                                bNeedsReSorting = true;
 
-//                                                qDebug() << QString("Adding OUTGOING theMsg->getMessageID(): %1 \n filterByNym: %2 \n qstrAddress: %3 \n nIndex: %4")
-//                                                            .arg(QString::fromStdString(theMsg->getMessageID()))
-//                                                            .arg(filterByNym)
-//                                                            .arg(qstrAddress)
-//                                                            .arg(nIndex)
-//                                                            ;
+////                                                qDebug() << QString("Adding OUTGOING theMsg->getMessageID(): %1 \n filterByNym: %2 \n qstrAddress: %3 \n nIndex: %4")
+////                                                            .arg(QString::fromStdString(theMsg->getMessageID()))
+////                                                            .arg(filterByNym)
+////                                                            .arg(qstrAddress)
+////                                                            .arg(nIndex)
+////                                                            ;
 
 
-                                                if (!theMsg->getMessageID().empty())
-                                                    GetRecordlist().AddSpecialMsg(theMsg->getMessageID(),
-                                                                         true, //bIsOutgoing=true
-                                                                         static_cast<int32_t>(nFilterByMethodID),
-                                                                         qstrFinal.toStdString(),
-                                                                         theMsg->getFrom(),
-                                                                         theMsg->getTo(),
-                                                                         qstrMethodType.toStdString(),
-                                                                         qstrTypeDisplay.toStdString(),
-                                                                         str_nym_id,
-                                                                         static_cast<time64_t>(theMsg->getSentTime()));
-                                            } // for (outbox)
-                                        } // if (!qstrAddress.isEmpty())
-                                    } // for (addresses)
-                                } // if GetAddressesByNym
-                            } // if ((NULL != pModule) && pModule->accessible())
-                        } // if (!qstrConnectStr.isEmpty())
-                    } // if nFilterByMethodID > 0
-                } // if (stringlist.size() >= 2)
-            } // for (methods)
-        } // if bGotMethods
-    } // for (nyms)
-    // -----------------------------------------------------
-    if (bNeedsReSorting)
-        GetRecordlist().SortRecords();
-    // -----------------------------------------------------
-    // This takes things like market receipts out of the record list
-    // and moves to their own database table.
-    // Same thing for mail messages, etc.
-    //
-    if (!bCurrentlyModifying)
-        modifyRecords();
+//                                                if (!theMsg->getMessageID().empty())
+//                                                    GetRecordlist().AddSpecialMsg(theMsg->getMessageID(),
+//                                                                         true, //bIsOutgoing=true
+//                                                                         static_cast<int32_t>(nFilterByMethodID),
+//                                                                         qstrFinal.toStdString(),
+//                                                                         theMsg->getFrom(),
+//                                                                         theMsg->getTo(),
+//                                                                         qstrMethodType.toStdString(),
+//                                                                         qstrTypeDisplay.toStdString(),
+//                                                                         str_nym_id,
+//                                                                         static_cast<time64_t>(theMsg->getSentTime()));
+//                                            } // for (outbox)
+//                                        } // if (!qstrAddress.isEmpty())
+//                                    } // for (addresses)
+//                                } // if GetAddressesByNym
+//                            } // if ((NULL != pModule) && pModule->accessible())
+//                        } // if (!qstrConnectStr.isEmpty())
+//                    } // if nFilterByMethodID > 0
+//                } // if (stringlist.size() >= 2)
+//            } // for (methods)
+//        } // if bGotMethods
+//    } // for (nyms)
+//    // -----------------------------------------------------
+//    if (bNeedsReSorting)
+//        GetRecordlist().SortRecords();
+//    // -----------------------------------------------------
+//    // This takes things like market receipts out of the record list
+//    // and moves to their own database table.
+//    // Same thing for mail messages, etc.
+//    //
+//    if (!bCurrentlyModifying)
+//        modifyRecords();
 }
 
 
@@ -2385,7 +2385,7 @@ void Moneychanger::onExpertModeUpdated(bool bExpertMode)
     if (bContactWindowVisible)
         mc_showcontact_slot(contact_id);
     // --------------------------------
-    GetRecordlist().IgnoreMail(!bExpertMode);
+//    GetRecordlist().IgnoreMail(!bExpertMode);
 }
 
 void Moneychanger::mc_nymmanager_dialog(QString qstrPresetID/*=QString("")*/)
@@ -4552,62 +4552,62 @@ void Moneychanger::modifyRecords()
     // thread item IDs that have been previously imported already. (WithOUT having to
     // search our local DB for each one to see if it's already there.)
     // -------------------------------------------------------
-    const int listSize = GetRecordlist().size();
-    // -------------------------------------------------------
-    // Delete the market receipts (since they are already archived in other places)
-    // and find any finalReceipts that correspond to those, so we can add them
-    // to the trade archive table as well (and delete them as well.)
-    // Leave any other final receipts, since they may correspond to offers that
-    // completed without a trade, or to a smart contract, or to a recurring payment, etc.
-    //
-    for (int ii = 0; ii < listSize; ++ii)
-    {
-        const int nIndex = listSize - ii - 1; // We iterate through the list in reverse. (Since we'll be deleting stuff.)
+//    const int listSize = GetRecordlist().size();
+//    // -------------------------------------------------------
+//    // Delete the market receipts (since they are already archived in other places)
+//    // and find any finalReceipts that correspond to those, so we can add them
+//    // to the trade archive table as well (and delete them as well.)
+//    // Leave any other final receipts, since they may correspond to offers that
+//    // completed without a trade, or to a smart contract, or to a recurring payment, etc.
+//    //
+//    for (int ii = 0; ii < listSize; ++ii)
+//    {
+//        const int nIndex = listSize - ii - 1; // We iterate through the list in reverse. (Since we'll be deleting stuff.)
 
-        opentxs::OTRecord record = GetRecordlist().GetRecord(nIndex);
-        {
-            opentxs::OTRecord& recordmt = record;
+//        opentxs::OTRecord record = GetRecordlist().GetRecord(nIndex);
+//        {
+//            opentxs::OTRecord& recordmt = record;
 
-            if (false == recordmt.IsFinalReceipt()) {
-                processImportRecord(recordmt, nIndex, mapOfSetsOfAlreadyImportedMsgs, mapOfConversationsByNym, setNewlyAddedNymThreadAndItem);
-            }
-        }
-    } // for (GetRecordlist() in reverse)
-    //
-    // Notice that this function now does the same thing twice.
-    // Only difference is, the first time around it does all NON-Final Receipts,
-    // but the second time around it does all FINAL receipts. (And final receipt notices).
-    // This is basically just to ensure that final receipts are always done LAST.
-    //
-    // -------------------------------------
-    // If the above process DID remove any records, then we have to repopulate them now,
-    // since every record contains its index, and so they will be wrong until re-populated.
-    //
-    if (listSize != GetRecordlist().size())
-        populateRecords(true); //bCurrentlyModifying=false by default.
-    // -------------------------------------
-    // -------------------------------------
-    const int newListSize = GetRecordlist().size();
+//            if (false == recordmt.IsFinalReceipt()) {
+//                processImportRecord(recordmt, nIndex, mapOfSetsOfAlreadyImportedMsgs, mapOfConversationsByNym, setNewlyAddedNymThreadAndItem);
+//            }
+//        }
+//    } // for (GetRecordlist() in reverse)
+//    //
+//    // Notice that this function now does the same thing twice.
+//    // Only difference is, the first time around it does all NON-Final Receipts,
+//    // but the second time around it does all FINAL receipts. (And final receipt notices).
+//    // This is basically just to ensure that final receipts are always done LAST.
+//    //
+//    // -------------------------------------
+//    // If the above process DID remove any records, then we have to repopulate them now,
+//    // since every record contains its index, and so they will be wrong until re-populated.
+//    //
+//    if (listSize != GetRecordlist().size())
+//        populateRecords(true); //bCurrentlyModifying=false by default.
+//    // -------------------------------------
+//    // -------------------------------------
+//    const int newListSize = GetRecordlist().size();
 
-    for (int iii = 0; iii < newListSize; ++iii)
-    {
-        const int nIndex = newListSize - iii - 1; // We iterate through the list in reverse. (Since we'll be deleting stuff.)
+//    for (int iii = 0; iii < newListSize; ++iii)
+//    {
+//        const int nIndex = newListSize - iii - 1; // We iterate through the list in reverse. (Since we'll be deleting stuff.)
 
-        opentxs::OTRecord record = GetRecordlist().GetRecord(nIndex);
-        {
-            opentxs::OTRecord& recordmt = record;
+//        opentxs::OTRecord record = GetRecordlist().GetRecord(nIndex);
+//        {
+//            opentxs::OTRecord& recordmt = record;
 
-            if (true == recordmt.IsFinalReceipt()) {
-                processImportRecord(recordmt, nIndex, mapOfSetsOfAlreadyImportedMsgs, mapOfConversationsByNym, setNewlyAddedNymThreadAndItem);
-            }
-        }
-    } // for (GetRecordlist() in reverse)
-    // -------------------------------------
-    // If the above process DID remove any records, then we have to repopulate them now,
-    // since every record contains its index, and so they will be wrong until re-populated.
-    //
-    if (listSize != GetRecordlist().size())
-        populateRecords(true); //bCurrentlyModifying=false by default.
+//            if (true == recordmt.IsFinalReceipt()) {
+//                processImportRecord(recordmt, nIndex, mapOfSetsOfAlreadyImportedMsgs, mapOfConversationsByNym, setNewlyAddedNymThreadAndItem);
+//            }
+//        }
+//    } // for (GetRecordlist() in reverse)
+//    // -------------------------------------
+//    // If the above process DID remove any records, then we have to repopulate them now,
+//    // since every record contains its index, and so they will be wrong until re-populated.
+//    //
+//    if (listSize != GetRecordlist().size())
+//        populateRecords(true); //bCurrentlyModifying=false by default.
     // -------------------------------------
 }
 
@@ -4620,284 +4620,284 @@ void Moneychanger::processImportRecord(
         SetNymThreadAndItem & setNewlyAddedNymThreadAndItem
         )
 {
-    if (!recordmt.CanDeleteRecord())
-    {
-        // In this case we aren't going to delete the record, but we can still
-        // save a copy of it in our local database, if it's not already there.
+//    if (!recordmt.CanDeleteRecord())
+//    {
+//        // In this case we aren't going to delete the record, but we can still
+//        // save a copy of it in our local database, if it's not already there.
 
-        if (!recordmt.IsMail() &&
-            !recordmt.IsSpecialMail() &&
-            !recordmt.IsExpired() )
-        {
-            bool bShouldImportPayment   = true;  // To preserve original logic.
-            bool bShouldImportAgreement = false; // This part is new.
+//        if (!recordmt.IsMail() &&
+//            !recordmt.IsSpecialMail() &&
+//            !recordmt.IsExpired() )
+//        {
+//            bool bShouldImportPayment   = true;  // To preserve original logic.
+//            bool bShouldImportAgreement = false; // This part is new.
 
-            if (recordmt.IsPending()
-               && (recordmt.IsPaymentPlan() ||
-                   recordmt.IsContract()) )
-            {
-                bShouldImportPayment   = true;
-                bShouldImportAgreement = true;
-            }
+//            if (recordmt.IsPending()
+//               && (recordmt.IsPaymentPlan() ||
+//                   recordmt.IsContract()) )
+//            {
+//                bShouldImportPayment   = true;
+//                bShouldImportAgreement = true;
+//            }
 
-            if (bShouldImportPayment)
-                AddPaymentToPmntArchive(recordmt);
+//            if (bShouldImportPayment)
+//                AddPaymentToPmntArchive(recordmt);
 
-            if (bShouldImportAgreement)
-                AddAgreementRecord(recordmt);
-        }
-    }
-    else // record can be deleted.
-    {
-        // If recordmt IsRecord() and IsReceipt() and is a "finalReceipt"
-        // then try to look it up in the Trade Archive table. For all entries
-        // from the same transaction, we set the final receipt text in those
-        // rows.
-        //
-        // Then we delete the finalReceipt from the OT Record Box.
-        //
-        // Meanwhile, for all marketReceipts, we just deleting them since they
-        // are ALREADY in the trade_archive table.
-        //
-        // -----------------------------------
-        bool bShouldDeleteRecord = false;
-        // -----------------------------------
-        if (recordmt.IsMail() || recordmt.IsSpecialMail())
-        {
-            if (expertMode() &&
-                AddMailToMsgArchive(recordmt, mapOfSetsOfAlreadyImportedMsgs, mapOfConversationsByNym, setNewlyAddedNymThreadAndItem))
-            {
-                //bShouldDeleteRecord = true;  // Disabling this temporarily to see if it fixes any related startup/shutdown issues.
-                ;
-            }
-        }
-        // -----------------------------------
-        else if (recordmt.IsNotice())
-        {
-            bool bShouldImportPayment   = false;
-            bool bShouldImportAgreement = false;
-//          bool bShouldImportFinalReceiptToTradeArchive = false; // experimental. See note just below.
+//            if (bShouldImportAgreement)
+//                AddAgreementRecord(recordmt);
+//        }
+//    }
+//    else // record can be deleted.
+//    {
+//        // If recordmt IsRecord() and IsReceipt() and is a "finalReceipt"
+//        // then try to look it up in the Trade Archive table. For all entries
+//        // from the same transaction, we set the final receipt text in those
+//        // rows.
+//        //
+//        // Then we delete the finalReceipt from the OT Record Box.
+//        //
+//        // Meanwhile, for all marketReceipts, we just deleting them since they
+//        // are ALREADY in the trade_archive table.
+//        //
+//        // -----------------------------------
+//        bool bShouldDeleteRecord = false;
+//        // -----------------------------------
+//        if (recordmt.IsMail() || recordmt.IsSpecialMail())
+//        {
+//            if (expertMode() &&
+//                AddMailToMsgArchive(recordmt, mapOfSetsOfAlreadyImportedMsgs, mapOfConversationsByNym, setNewlyAddedNymThreadAndItem))
+//            {
+//                //bShouldDeleteRecord = true;  // Disabling this temporarily to see if it fixes any related startup/shutdown issues.
+//                ;
+//            }
+//        }
+//        // -----------------------------------
+//        else if (recordmt.IsNotice())
+//        {
+//            bool bShouldImportPayment   = false;
+//            bool bShouldImportAgreement = false;
+////          bool bShouldImportFinalReceiptToTradeArchive = false; // experimental. See note just below.
 
-            if (recordmt.HasOriginType())
-            {
-                if (recordmt.IsOriginTypeMarketOffer()) {
-                    qDebug() << __FUNCTION__ << ": This is where I almost just added a market notice to the payments table. I stopped myself.";
-                    // There actually IS a finalReceipt NOTICE for market exchange. (Sent to the Nym.)
-                    // (Versus the finalReceipt RECEIPTs, which are sent to 2 ACCOUNTS for each Nym.)
-                    // Therefore, AddAgreementRecord needs to check for "IsNotice" in combination with "IsFinalReceipt"
-                    // since in that case, it should know it hasn't received its official 4 ACCOUNT receipts yet,
-                    // and more importantly, that this notice should NOT overwrite any of those, but it
-                    // has still received _some_ useful information -- that the agreement itself _has_ been
-                    // terminated.
-                    //
-                    //bShouldImportFinalReceiptToTradeArchive = true;
+//            if (recordmt.HasOriginType())
+//            {
+//                if (recordmt.IsOriginTypeMarketOffer()) {
+//                    qDebug() << __FUNCTION__ << ": This is where I almost just added a market notice to the payments table. I stopped myself.";
+//                    // There actually IS a finalReceipt NOTICE for market exchange. (Sent to the Nym.)
+//                    // (Versus the finalReceipt RECEIPTs, which are sent to 2 ACCOUNTS for each Nym.)
+//                    // Therefore, AddAgreementRecord needs to check for "IsNotice" in combination with "IsFinalReceipt"
+//                    // since in that case, it should know it hasn't received its official 4 ACCOUNT receipts yet,
+//                    // and more importantly, that this notice should NOT overwrite any of those, but it
+//                    // has still received _some_ useful information -- that the agreement itself _has_ been
+//                    // terminated.
+//                    //
+//                    //bShouldImportFinalReceiptToTradeArchive = true;
 
-                    bShouldDeleteRecord = true;
-                }
-                else if (recordmt.IsOriginTypePaymentPlan()) {
-                    bShouldImportPayment   = true;
-                    bShouldImportAgreement = true;
-                }
-                else if (recordmt.IsOriginTypeSmartContract()) {
-                    bShouldImportPayment   = true;
-                    bShouldImportAgreement = true;
-                }
-                else {
-                    qDebug() << __FUNCTION__ << ": Importing notices, found a record with an unknown origin type.";
-                }
-            }
-            else {
-                bShouldImportPayment = true;
+//                    bShouldDeleteRecord = true;
+//                }
+//                else if (recordmt.IsOriginTypePaymentPlan()) {
+//                    bShouldImportPayment   = true;
+//                    bShouldImportAgreement = true;
+//                }
+//                else if (recordmt.IsOriginTypeSmartContract()) {
+//                    bShouldImportPayment   = true;
+//                    bShouldImportAgreement = true;
+//                }
+//                else {
+//                    qDebug() << __FUNCTION__ << ": Importing notices, found a record with an unknown origin type.";
+//                }
+//            }
+//            else {
+//                bShouldImportPayment = true;
 
-                // QString tFinal = "false";
-                // QString tContract = "false";
-                // QString tPlan = "false";
-                // QString tNotice = "false";
-                // QString tExpired = "false";
-                // QString tCanceled = "false";
-                // QString tSuccess = "false";
-                // bool bIsSuccess = false;
-                //
-                // if (recordmt.IsFinalReceipt())          tFinal = "true";
-                // if (recordmt.IsContract())              tContract = "true";
-                // if (recordmt.IsPaymentPlan())           tPlan = "true";
-                // if (recordmt.IsNotice())                tNotice = "true";
-                // if (recordmt.IsExpired())               tExpired = "true";
-                // if (recordmt.IsCanceled())              tCanceled = "true";
-                // if (recordmt.HasSuccess(bIsSuccess))    tSuccess = bIsSuccess ? "true" : "false";
-                //
-                // qstrTemp = QString(" IsFinalReceipt: %1\n IsContract: %2 \n IsPaymentPlan: %3 \n IsNotice: %4 \n IsExpired: %5 \n IsCanceled: %6 \n IsSuccess: %7 ")
-                //         .arg(tFinal).arg(tContract).arg(tPlan).arg(tNotice).arg(tExpired).arg(tCanceled).arg(tSuccess);
-                //
-                // qDebug() << qstrTemp;
-            }
-            // -------------------------------------
-            if (bShouldImportPayment && AddPaymentBasedOnNotice(recordmt))
-                bShouldDeleteRecord = true;
-            if (bShouldImportAgreement && AddAgreementRecord(recordmt))
-                bShouldDeleteRecord = true;
-         // if (bShouldImportFinalReceiptToTradeArchive && AddFinalReceiptToTradeArchive(recordmt))
-         //       bShouldDeleteRecord = true;
-        }
-        // -----------------------------------
-        else if (recordmt.IsRecord() && !recordmt.IsExpired())
-        {
-            if (recordmt.IsReceipt())
-            {
-                if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
-                {
-                    // We don't have to add these to the trade archive table because they
-                    // are already there. OTClient directly adds them into the TradeDataNym object,
-                    // and then Moneychanger reads that object and imports it into the trade_achive
-                    // table already. So basically here all we need to do is delete the market
-                    // receipt records so the user doesn't have the hassle of deleting them himself.
-                    // Now they are safe in his archive and he can do whatever he wants with them.
+//                // QString tFinal = "false";
+//                // QString tContract = "false";
+//                // QString tPlan = "false";
+//                // QString tNotice = "false";
+//                // QString tExpired = "false";
+//                // QString tCanceled = "false";
+//                // QString tSuccess = "false";
+//                // bool bIsSuccess = false;
+//                //
+//                // if (recordmt.IsFinalReceipt())          tFinal = "true";
+//                // if (recordmt.IsContract())              tContract = "true";
+//                // if (recordmt.IsPaymentPlan())           tPlan = "true";
+//                // if (recordmt.IsNotice())                tNotice = "true";
+//                // if (recordmt.IsExpired())               tExpired = "true";
+//                // if (recordmt.IsCanceled())              tCanceled = "true";
+//                // if (recordmt.HasSuccess(bIsSuccess))    tSuccess = bIsSuccess ? "true" : "false";
+//                //
+//                // qstrTemp = QString(" IsFinalReceipt: %1\n IsContract: %2 \n IsPaymentPlan: %3 \n IsNotice: %4 \n IsExpired: %5 \n IsCanceled: %6 \n IsSuccess: %7 ")
+//                //         .arg(tFinal).arg(tContract).arg(tPlan).arg(tNotice).arg(tExpired).arg(tCanceled).arg(tSuccess);
+//                //
+//                // qDebug() << qstrTemp;
+//            }
+//            // -------------------------------------
+//            if (bShouldImportPayment && AddPaymentBasedOnNotice(recordmt))
+//                bShouldDeleteRecord = true;
+//            if (bShouldImportAgreement && AddAgreementRecord(recordmt))
+//                bShouldDeleteRecord = true;
+//         // if (bShouldImportFinalReceiptToTradeArchive && AddFinalReceiptToTradeArchive(recordmt))
+//         //       bShouldDeleteRecord = true;
+//        }
+//        // -----------------------------------
+//        else if (recordmt.IsRecord() && !recordmt.IsExpired())
+//        {
+//            if (recordmt.IsReceipt())
+//            {
+//                if (0 == recordmt.GetInstrumentType().compare("marketReceipt"))
+//                {
+//                    // We don't have to add these to the trade archive table because they
+//                    // are already there. OTClient directly adds them into the TradeDataNym object,
+//                    // and then Moneychanger reads that object and imports it into the trade_achive
+//                    // table already. So basically here all we need to do is delete the market
+//                    // receipt records so the user doesn't have the hassle of deleting them himself.
+//                    // Now they are safe in his archive and he can do whatever he wants with them.
 
-                    bShouldDeleteRecord = true;
-                } // marketReceipt
-                // -----------------------------------
-                // NOTE: PayDividend is possibly having its receipts go in here.
-                // Todo: Fix pay dividend in UI.
-                //
-                else if (0 == recordmt.GetInstrumentType().compare("paymentReceipt"))
-                {
-                    if (recordmt.HasOriginType()
-                        && (recordmt.IsOriginTypePaymentPlan() ||
-                            recordmt.IsOriginTypeSmartContract())
-                        && AddAgreementRecord(recordmt)) // <====== IMPORTS HERE.
-                    {
-                        bShouldDeleteRecord = true;
-                    }
-                 // else
-                 //     qDebug() << __FUNCTION__ << ": Failed trying to add a receipt to the agreement archive.";
+//                    bShouldDeleteRecord = true;
+//                } // marketReceipt
+//                // -----------------------------------
+//                // NOTE: PayDividend is possibly having its receipts go in here.
+//                // Todo: Fix pay dividend in UI.
+//                //
+//                else if (0 == recordmt.GetInstrumentType().compare("paymentReceipt"))
+//                {
+//                    if (recordmt.HasOriginType()
+//                        && (recordmt.IsOriginTypePaymentPlan() ||
+//                            recordmt.IsOriginTypeSmartContract())
+//                        && AddAgreementRecord(recordmt)) // <====== IMPORTS HERE.
+//                    {
+//                        bShouldDeleteRecord = true;
+//                    }
+//                 // else
+//                 //     qDebug() << __FUNCTION__ << ": Failed trying to add a receipt to the agreement archive.";
 
-                    // Commenting this out for now.
-                    // It might have been added just to hide the pay dividend problems.
-                    // Now I want to see whatever pops up here.
-                    //bShouldDeleteRecord = true;
-                } // paymentReceipt
-                // -----------------------------------
-                else if (recordmt.IsFinalReceipt())
-                {
-                    // Notice here we only delete the record if we successfully
-                    // added the final receipt to the trade archive table.
-                    // Why? Because the trade archive table contains receipts
-                    // of COMPLETED TRADES. So if we fail to find any of those
-                    // to add the final receipt to, we don't just want to DELETE
-                    // the final receipt -- the user's sole remaining copy!
-                    // - So for trades that occurred, the final receipt will be stored
-                    // with those archives next to the corresponding market receipts.
-                    // - And for trades that did NOT occur, the final receipt will
-                    // remain in the record box, so the user himself can delete those
-                    // whenever he sees fit. They will be his only notice that an
-                    // offer completed on the market without any trades occurring.
-                    // We might even change the GUI label now for final receipt records,
-                    // (in the Pending Transactions window) to explicitly say,
-                    // "offer completed on market without any trades."
-                    //
-                    // P.S. There's another reason not to just delete a finalReceipt
-                    // if we can't find any trades associated with it: because it might
-                    // not be a finalReceipt for a market offer! It might correspond to
-                    // a smart contract or a recurring payment plan.
-                    //
-                    // UPDATE: We now CAN tell for finalReceipts and paymentReceipts, whether
-                    // they are for market offers, payment plans, or smart contracts. So the
-                    // logic is updated now to not even TRY to import into the trade archive
-                    // unless it's specifically a finalReceipt for a market offer.
-                    //
-                    const bool has_origin_type     = recordmt.HasOriginType();
-                    const bool origin_market_offer = has_origin_type && recordmt.IsOriginTypeMarketOffer();
-                    const bool added_trade_archive = origin_market_offer && AddFinalReceiptToTradeArchive(recordmt);
+//                    // Commenting this out for now.
+//                    // It might have been added just to hide the pay dividend problems.
+//                    // Now I want to see whatever pops up here.
+//                    //bShouldDeleteRecord = true;
+//                } // paymentReceipt
+//                // -----------------------------------
+//                else if (recordmt.IsFinalReceipt())
+//                {
+//                    // Notice here we only delete the record if we successfully
+//                    // added the final receipt to the trade archive table.
+//                    // Why? Because the trade archive table contains receipts
+//                    // of COMPLETED TRADES. So if we fail to find any of those
+//                    // to add the final receipt to, we don't just want to DELETE
+//                    // the final receipt -- the user's sole remaining copy!
+//                    // - So for trades that occurred, the final receipt will be stored
+//                    // with those archives next to the corresponding market receipts.
+//                    // - And for trades that did NOT occur, the final receipt will
+//                    // remain in the record box, so the user himself can delete those
+//                    // whenever he sees fit. They will be his only notice that an
+//                    // offer completed on the market without any trades occurring.
+//                    // We might even change the GUI label now for final receipt records,
+//                    // (in the Pending Transactions window) to explicitly say,
+//                    // "offer completed on market without any trades."
+//                    //
+//                    // P.S. There's another reason not to just delete a finalReceipt
+//                    // if we can't find any trades associated with it: because it might
+//                    // not be a finalReceipt for a market offer! It might correspond to
+//                    // a smart contract or a recurring payment plan.
+//                    //
+//                    // UPDATE: We now CAN tell for finalReceipts and paymentReceipts, whether
+//                    // they are for market offers, payment plans, or smart contracts. So the
+//                    // logic is updated now to not even TRY to import into the trade archive
+//                    // unless it's specifically a finalReceipt for a market offer.
+//                    //
+//                    const bool has_origin_type     = recordmt.HasOriginType();
+//                    const bool origin_market_offer = has_origin_type && recordmt.IsOriginTypeMarketOffer();
+//                    const bool added_trade_archive = origin_market_offer && AddFinalReceiptToTradeArchive(recordmt);
 
-                    if (   has_origin_type
-                        && origin_market_offer
-                        && added_trade_archive) // <==== IMPORTS HERE.
-                        bShouldDeleteRecord = true;
-                    else if (AddAgreementRecord(recordmt)) // Okay, it's for a smart contract or recurring payment plan.
-                    {
-                        bShouldDeleteRecord = true;
+//                    if (   has_origin_type
+//                        && origin_market_offer
+//                        && added_trade_archive) // <==== IMPORTS HERE.
+//                        bShouldDeleteRecord = true;
+//                    else if (AddAgreementRecord(recordmt)) // Okay, it's for a smart contract or recurring payment plan.
+//                    {
+//                        bShouldDeleteRecord = true;
 
-                        // For now I'm doing this one here as well, so the normal payments screen
-                        // is able to realize that the agreement has finished.
-                        //
-                        // UPDATE: We no longer do this. If someone activates a payment plan, and it
-                        // says "activated" in the payments screen. (Or "canceled" or "expired" or whatever)
-                        // then that was its state when that action occurred, and it's now historical.
-                        // It "was activated." Since then, is it STILL active? If you want to know that,
-                        // you have to look at the "active agreements" window where you can see its current
-                        // status and its finalReceipts and paymentReceipts.
-                        //
-                        // UPDATE: uncommenting this for now, to see how it goes. I'm thinking that
-                        // both the payments screen AND the active agreements screen should show the
-                        // most recent status of the agreement.
-                        //
-                        // UPDATE: commented it out again. In the payments GUI, we had a sent
-                        // activated, and a received activated, and you had to go to the live
-                        // agreements GUI to see what happened beyond that. It's better to keep
-                        // it that way, since when I uncomment this, those get replaced in the
-                        // payments UI with both final receipts in the received. It's appropriate
-                        // to see those appear in the live agreements, but it's confusing to have
-                        // them appear in the payments UI, so I commented this out again.
-                        //
-                        //AddPaymentToPmntArchive(recordmt);
-                    }
-                    else
-                        qDebug() << QString(" --- Tried to import final receipt, but it failed! has_origin_type: %1 origin_market_offer: %2 added_trade_archive: %3").arg(has_origin_type).arg(origin_market_offer).arg(added_trade_archive);
-                } // finalReceipt
-                else // All  other closed (deletable) receipts.
-                {
-                    qDebug() << __FUNCTION__ << ": FYI, IMPORTING A RECEIPT OF CLOSED 'ALL OTHER' TYPE.";
+//                        // For now I'm doing this one here as well, so the normal payments screen
+//                        // is able to realize that the agreement has finished.
+//                        //
+//                        // UPDATE: We no longer do this. If someone activates a payment plan, and it
+//                        // says "activated" in the payments screen. (Or "canceled" or "expired" or whatever)
+//                        // then that was its state when that action occurred, and it's now historical.
+//                        // It "was activated." Since then, is it STILL active? If you want to know that,
+//                        // you have to look at the "active agreements" window where you can see its current
+//                        // status and its finalReceipts and paymentReceipts.
+//                        //
+//                        // UPDATE: uncommenting this for now, to see how it goes. I'm thinking that
+//                        // both the payments screen AND the active agreements screen should show the
+//                        // most recent status of the agreement.
+//                        //
+//                        // UPDATE: commented it out again. In the payments GUI, we had a sent
+//                        // activated, and a received activated, and you had to go to the live
+//                        // agreements GUI to see what happened beyond that. It's better to keep
+//                        // it that way, since when I uncomment this, those get replaced in the
+//                        // payments UI with both final receipts in the received. It's appropriate
+//                        // to see those appear in the live agreements, but it's confusing to have
+//                        // them appear in the payments UI, so I commented this out again.
+//                        //
+//                        //AddPaymentToPmntArchive(recordmt);
+//                    }
+//                    else
+//                        qDebug() << QString(" --- Tried to import final receipt, but it failed! has_origin_type: %1 origin_market_offer: %2 added_trade_archive: %3").arg(has_origin_type).arg(origin_market_offer).arg(added_trade_archive);
+//                } // finalReceipt
+//                else // All  other closed (deletable) receipts.
+//                {
+//                    qDebug() << __FUNCTION__ << ": FYI, IMPORTING A RECEIPT OF CLOSED 'ALL OTHER' TYPE.";
 
-                    if (AddPaymentToPmntArchive(recordmt))
-                    {
-                        bShouldDeleteRecord = true;
-                    }
-                 // else
-                 //     qDebug() << __FUNCTION__ << ": Failed trying to add a receipt to the payment archive.";
-                }
-            }
-            // -----------------------------------
-            else // All  other delete-able, non-expired records.
-            {
+//                    if (AddPaymentToPmntArchive(recordmt))
+//                    {
+//                        bShouldDeleteRecord = true;
+//                    }
+//                 // else
+//                 //     qDebug() << __FUNCTION__ << ": Failed trying to add a receipt to the payment archive.";
+//                }
+//            }
+//            // -----------------------------------
+//            else // All  other delete-able, non-expired records.
+//            {
 
-                qDebug() << __FUNCTION__ << ": FYI, IMPORTING A NON-RECEIPT OF DELETABLE, NON-EXPIRED TYPE.";
+//                qDebug() << __FUNCTION__ << ": FYI, IMPORTING A NON-RECEIPT OF DELETABLE, NON-EXPIRED TYPE.";
 
-                // For example, an incoming cheque becomes a received cheque after depositing it.
-                // At that point, OT moves incoming cheque from the payments inbox, to the record box. So
-                // it's not a cheque receipt (the payer gets that; you're the recipient) but it's the deletable
-                // record of the incoming cheque itself, for a cheque you've since already deposited, and thus
-                // are now moving to your payment receipts table.
-                // There IS another relevant receipt, however -- the cheque DEPOSIT. When you deposited the cheque,
-                // YOU got a deposit receipt. This is currently not recorded here but it really should be. That
-                // way you can see the cheque itself, as well as your receipt from depositing that cheque. It'd just
-                // be two different receipts on the same payment record, similar to what we do in the trade archive
-                // table, which has potentially up to 3 different receipts for the same trade record. (Market receipt
-                // for asset and currency accounts, plus final receipt.)
-                //
-                if ((recordmt.IsPaymentPlan() || recordmt.IsContract()) // They could be here maybe because they expired without ever being activated.
-                    && AddAgreementRecord(recordmt))
-                {
-                    bShouldDeleteRecord = true;
-                }
+//                // For example, an incoming cheque becomes a received cheque after depositing it.
+//                // At that point, OT moves incoming cheque from the payments inbox, to the record box. So
+//                // it's not a cheque receipt (the payer gets that; you're the recipient) but it's the deletable
+//                // record of the incoming cheque itself, for a cheque you've since already deposited, and thus
+//                // are now moving to your payment receipts table.
+//                // There IS another relevant receipt, however -- the cheque DEPOSIT. When you deposited the cheque,
+//                // YOU got a deposit receipt. This is currently not recorded here but it really should be. That
+//                // way you can see the cheque itself, as well as your receipt from depositing that cheque. It'd just
+//                // be two different receipts on the same payment record, similar to what we do in the trade archive
+//                // table, which has potentially up to 3 different receipts for the same trade record. (Market receipt
+//                // for asset and currency accounts, plus final receipt.)
+//                //
+//                if ((recordmt.IsPaymentPlan() || recordmt.IsContract()) // They could be here maybe because they expired without ever being activated.
+//                    && AddAgreementRecord(recordmt))
+//                {
+//                    bShouldDeleteRecord = true;
+//                }
 
-                if (AddPaymentToPmntArchive(recordmt))
-                {
-                    bShouldDeleteRecord = true;
-                }
-            }
-        } // else if (recordmt.IsRecord() && !recordmt.IsExpired())
-        // -----------------------------------
-        if (bShouldDeleteRecord)
-        {
-            if (recordmt.DeleteRecord())
-            {
-                bool bRemoved = GetRecordlist().RemoveRecord(nIndex);
+//                if (AddPaymentToPmntArchive(recordmt))
+//                {
+//                    bShouldDeleteRecord = true;
+//                }
+//            }
+//        } // else if (recordmt.IsRecord() && !recordmt.IsExpired())
+//        // -----------------------------------
+//        if (bShouldDeleteRecord)
+//        {
+//            if (recordmt.DeleteRecord())
+//            {
+//                bool bRemoved = GetRecordlist().RemoveRecord(nIndex);
 
-                if (!bRemoved)
-                    qDebug() << "Moneychanger::modifyRecords: weird issue trying to remove deleted record from GetRecordlist() (record list.)\n";
-            }
-        }
-    } // Record can be deleted.
+//                if (!bRemoved)
+//                    qDebug() << "Moneychanger::modifyRecords: weird issue trying to remove deleted record from GetRecordlist() (record list.)\n";
+//            }
+//        }
+//    } // Record can be deleted.
 }
 
 
@@ -6857,7 +6857,7 @@ void Moneychanger::onNewNymAdded(QString qstrID)
                 mc_addressbook_show();
         }
         // --------------------------------------------------
-        GetRecordlist().AddNymID(qstrID.toStdString());
+//        GetRecordlist().AddNymID(qstrID.toStdString());
     }
 
     onNymsChanged();
@@ -6865,7 +6865,7 @@ void Moneychanger::onNewNymAdded(QString qstrID)
 
 void Moneychanger::onNewAccountAdded(QString qstrID)
 {
-    GetRecordlist().AddAccountID(qstrID.toStdString());
+//    GetRecordlist().AddAccountID(qstrID.toStdString());
     onAccountsChanged();
 }
 
@@ -6875,14 +6875,14 @@ void Moneychanger::onNewAccountAdded(QString qstrID)
 
 void Moneychanger::onNewServerAdded(QString qstrID)
 {
-    GetRecordlist().AddNotaryID(qstrID.toStdString());
+//    GetRecordlist().AddNotaryID(qstrID.toStdString());
 
     onServersChanged();
 }
 
 void Moneychanger::onNewAssetAdded(QString qstrID)
 {
-    GetRecordlist().AddInstrumentDefinitionID(qstrID.toStdString());
+//    GetRecordlist().AddInstrumentDefinitionID(qstrID.toStdString());
 
     onAssetsChanged();
 }

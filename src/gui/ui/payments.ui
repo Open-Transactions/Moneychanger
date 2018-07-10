@@ -277,6 +277,15 @@
          </column>
         </widget>
        </item>
+       <item>
+        <widget class="QTreeWidget" name="treeWidgetSummary">
+         <column>
+          <property name="text">
+           <string notr="true">1</string>
+          </property>
+         </column>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QTabWidget" name="tabWidget">
@@ -305,6 +314,9 @@
         </property>
         <item>
          <widget class="QTableView" name="tableViewReceived"/>
+        </item>
+        <item>
+         <widget class="QTableWidget" name="tableWidgetPayments"/>
         </item>
        </layout>
       </widget>

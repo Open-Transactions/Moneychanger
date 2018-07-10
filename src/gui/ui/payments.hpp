@@ -48,6 +48,8 @@ protected:
     void ClearTree();
     void RefreshTree();
 
+    void RefreshSummaryTree();
+
     void enableButtons();
     void disableButtons();
 
