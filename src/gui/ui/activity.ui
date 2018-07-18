@@ -153,6 +153,15 @@
             </widget>
            </item>
            <item>
+            <widget class="QTreeWidget" name="treeWidgetSummary">
+             <column>
+              <property name="text">
+               <string notr="true">1</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+           <item>
             <widget class="QWidget" name="widgetActions" native="true">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -317,6 +326,7 @@
            </layout>
           </widget>
          </widget>
+         <widget class="QTableWidget" name="tableWidgetPayments"/>
         </widget>
        </item>
       </layout>

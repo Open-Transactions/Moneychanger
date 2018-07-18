@@ -45,7 +45,6 @@
 #include <ctime>
 
 
-
 /*
  * The tree items will have certain values attached to them.
  * I will have to figure out what those are.
@@ -834,6 +833,124 @@ mapIDName & Activity::GetOrCreateAccountIdMapByTLA(QString qstrTLA, mapOfMapIDNa
 //    qstrDetails += contractProto.has_terms() ? QString("- %1:\n%2").arg(tr("Terms")).arg(QString::fromStdString(contractProto.terms())) : QString("");
 
 //}
+
+
+
+
+void print_accounts(const opentxs::ui::IssuerItem& issuer) ;
+void print_line(const opentxs::ui::IssuerItem& line) ;
+void print_line(
+    const opentxs::ui::AccountSummaryItem& line) ;
+
+
+void print_accounts(const opentxs::ui::IssuerItem& issuer)
+{
+//    opentxs::otOut << "Top of print_ccounts..." << std::endl;
+
+    auto account = issuer.First();
+
+    if (false == account->Valid()) { opentxs::otOut << "RETURNING SINCE NO VALID ACCOUNT 1"; return; }
+
+    print_line(account.get());
+
+    auto lastAccount = account->Last();
+    while (false == lastAccount) {
+        opentxs::otOut << "Iterating another account..." << std::endl;
+        account = issuer.Next();
+        if (false == account->Valid()) { return; }
+        lastAccount = account->Last();
+        print_line(account.get());
+    }
+}
+
+void print_line(const opentxs::ui::IssuerItem& line)
+{
+    opentxs::otOut << "* " << line.Name() << " [";
+
+    if (line.ConnectionState()) {
+        opentxs::otOut << "*";
+    } else {
+        opentxs::otOut << " ";
+    }
+
+    opentxs::otOut << "]\n";
+    print_accounts(line);
+}
+
+void print_line(
+    const opentxs::ui::AccountSummaryItem& line)
+{
+    opentxs::otOut << " Account display label: '" << line.Name() << "' " << "Balance: " << line.DisplayBalance() << std::endl;
+
+    // This is the spot, ultimately, where the item would actually be added to the tree widget.
+    // TODO.
+}
+
+
+
+
+// Note: If this function was even called in the first place, that means
+// one of the widget IDs definitely did match to the one in the published notice.
+// Otherwise we wouldn't bother refreshing this tree at all.
+//
+void Activity::RefreshSummaryTree()
+{
+//    opentxs::otErr << "Activity::RefreshSummaryTree was called!! We're at the top now!!" << std::endl;
+
+
+    QTreeWidget * pTreeWidget = ui->treeWidgetSummary;
+    if (nullptr == pTreeWidget) {
+        return;
+    }
+    // ----------------------------------------
+    ClearAccountTree();
+    // ----------------------------------------
+    pTreeWidget->blockSignals(true);
+    // ----------------------------------------
+    QList<QTreeWidgetItem *> items;
+    // ------------------------------------
+
+
+    std::set<int> currency_types = opentxs::SwigWrap::GetCurrencyTypesForLocalAccounts();
+
+    for (const auto currency_type : currency_types)
+    {
+        std::set<std::string> set_unit_types = opentxs::SwigWrap::GetContractIdsForCurrencyType(currency_type);
+
+        for (const auto & unit_type_id : set_unit_types)
+        {
+           std::set<std::string> accounts = opentxs::SwigWrap::GetAccountIdsForContractId(unit_type_id);
+
+           for (const auto & account_id : accounts)
+           {
+               const std::string account_label   = opentxs::SwigWrap::GetAccountWallet_Name(account_id);
+               const std::string unit_type_label = opentxs::SwigWrap::GetAssetType_Name(unit_type_id);
+
+
+
+               // Here we have:
+               //   account_id, account_label
+               //   unit_type_id, unit_type_label
+               //   currency_type,
+           }
+
+        }
+    }
+
+
+
+
+
+
+    //resume
+
+
+
+
+
+}
+
+
 
 
 void Activity::RefreshAccountTree()
@@ -2507,12 +2624,10 @@ void Activity::resetConversationItemsDataModel(const bool bProvidedIds/*=false*/
 //    }
 //
 
-
-
-
-
-
 }
+
+
+
 
 
 void Activity::onOpentxsWidgetUpdated(QString qstrWidgetID)
@@ -2546,6 +2661,52 @@ void Activity::onOpentxsWidgetUpdated(QString qstrWidgetID)
         if (0 == widget_id.compare(active_thread_))
         {
             RefreshConversationDetails(ui->listWidgetConversations->currentRow());
+        }
+        // -------------------------------------------
+
+        PopulateIssuerWidgetIds();
+
+        //opentxs::otErr << "Activity::onOpentxsWidgetUpdated: RECEIVED WIDGET ID NEEDING UPDATE: " << widget_id << std::endl;
+
+        bool bNeedToRefreshSummaryTree = false;
+
+        // We save list->Widget().str() in a map owned by Activity, called issuers_.
+        // based on myNymId and the currencyType pair as the key for each issuer.
+        // That way later (here) we can look up to see if the widget ID for any of
+        // those issuers matches the one that was passed into this function, so we
+        // can see if we need to call RefreshSummaryTree.
+
+        //    std::map<std::pair<nym_id_str, currency>, widget_id_str> MapActivityWidgetIds;
+        //typedef std::map<std::pair<std::string, int>, std::string> MapActivityWidgetIds;
+
+        for (auto & [key, issuer_widget_id] : issuers_)
+        {
+            //auto & [nym_id, currency_type] = key;
+            if (0 == issuer_widget_id.compare(widget_id)) {
+                opentxs::otErr << "Activity::onOpentxsWidgetUpdated: FOUND MATCHING ISSUER WIDGET ID !!" << std::endl;
+
+                bNeedToRefreshSummaryTree = true;
+                break;
+            }
+        }
+
+        if (!bNeedToRefreshSummaryTree) { // Haven't found anything yet? Let's try the account Widget IDs then...
+            for (auto & [account_id, account_widget_id] : accountWidgets_) {
+                if (0 == account_widget_id.compare(widget_id)) {
+                    opentxs::otErr << "Activity::onOpentxsWidgetUpdated: FOUND MATCHING ACCOUNT WIDGET ID !!" << std::endl;
+
+                    bNeedToRefreshSummaryTree = true;
+                    break;
+                }
+            }
+        }
+
+        if (bNeedToRefreshSummaryTree) {
+            RefreshSummaryTree();
+        }
+        else
+        {
+            opentxs::otErr << "Activity::onOpentxsWidgetUpdated: Oh well, Widget ID being refreshed did NOT match my list of IDs (this time!)" << std::endl;
         }
     }
 }
@@ -2829,7 +2990,6 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         // ------------------------
 
 
-
         // ------------------------
         /** Flag Already Init **/
         already_init = true;
@@ -2864,7 +3024,7 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
     if (Moneychanger::It()->expertMode()) ui->tabWidgetMain->addTab(pTab4_, tr("Exchange")); // Exchange
     if (Moneychanger::It()->expertMode()) ui->tabWidgetMain->addTab(pTab5_, tr("Tools")); // Tools
 
-//    ui->tabWidgetMain->addTab(pTab6_, tr("Settings"));
+//  ui->tabWidgetMain->addTab(pTab6_, tr("Settings"));
 
     ui->tabWidgetMain->blockSignals(false);
     // -------------------------------------------
@@ -2875,8 +3035,83 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
     f.focus();
     // -------------------------------------------
     setAsCurrentPayment(nSourceRow, nFolder);
+
+
+
+    PopulateIssuerWidgetIds();
+
 }
 
+void Activity::PopulateIssuerWidgetIds()
+{
+
+
+
+
+
+    //resume
+
+    std::set<int> currency_types = opentxs::SwigWrap::GetCurrencyTypesForLocalAccounts();
+
+    for (const auto currency_type : currency_types)
+    {
+        const auto currencyType = opentxs::proto::ContactItemType(currency_type);
+
+        const int32_t nymCount = opentxs::OT::App().API().Exec().GetNymCount();
+        for (int32_t nymIndex = 0; nymIndex < nymCount; ++nymIndex)
+        {
+            std::string mynym = opentxs::OT::App().API().Exec().GetNym_ID(nymIndex);
+
+            const opentxs::Identifier nymID{mynym};
+            auto& list = opentxs::OT::App().UI().AccountSummary(nymID, currencyType);
+            auto issuer = list.First();
+
+            if (false == issuer->Valid()) {
+
+                continue;
+            }
+            // ---------------
+            // There's a valid issuer for this MyNym/CurrencyType pair.
+            // Add its widget ID to our issuers_ map so that later we can see if a widget
+            // publication from opentxs (which we are subscribed to) matches that same
+            // widget ID, which is our signal to call RefreshSummaryTree.
+            //
+            auto pairCurrencyKey = std::pair<std::string, int>(mynym, currency_type);
+
+            auto it_existing = issuers_.find(pairCurrencyKey);
+            if (it_existing != issuers_.end()) // Found it already there
+            {
+                issuers_.erase(it_existing); // Now we know when we re-insert it, it will succeed and contain the latest version.
+            }
+
+            auto pairToInsert = std::pair<std::pair<std::string, int>, std::string>(pairCurrencyKey, list.WidgetID()->str());
+
+            issuers_.insert(pairToInsert);
+            // ---------------
+
+            accountWidgets_.clear();
+
+            auto account = issuer->First();
+
+            if (account->Valid()) {
+                const std::string account_id(account->AccountID());
+                const std::string account_widget_id(account->WidgetID()->str());
+                std::pair<std::string, std::string> accountPairToInsert(account_id, account_widget_id);
+                accountWidgets_.insert(accountPairToInsert);
+                auto lastAccount = account->Last();
+                while (false == lastAccount) {
+                    account = issuer->Next();
+                    if (false == account->Valid()) { break; }
+                    lastAccount = account->Last();
+                    const std::string account_id(account->AccountID());
+                    const std::string account_widget_id(account->WidgetID()->str());
+                    std::pair<std::string, std::string> accountPairToInsert(account_id, account_widget_id);
+                    accountWidgets_.insert(accountPairToInsert);
+                }
+            }
+        }
+    }
+}
 
 void Activity::on_tableViewConversation_clicked(const QModelIndex &index)
 {

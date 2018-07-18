@@ -18,6 +18,9 @@
 #include <sstream>
 #include <stdexcept>
 
+template class opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem>;
+
+
 DBHandler * DBHandler::_instance = NULL;
 
 DBHandler* DBHandler::getInstance()

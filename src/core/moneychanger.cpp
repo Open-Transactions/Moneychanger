@@ -79,6 +79,9 @@
 #include <utility>
 
 
+template class opentxs::Pimpl<opentxs::network::zeromq::PairEventCallback>;
+
+
 bool Moneychanger::is_base64(QString string)
 {
     QRegExp rx("[^a-zA-Z0-9+/=]");
@@ -185,7 +188,7 @@ Moneychanger::Moneychanger(QWidget *parent)
                 if (existing < count) {
                     refresh_count_.store(count);
                     accept_cheques();
-                    emit needToPopulateRecordlist();
+                    //emit needToPopulateRecordlist();
                 }
             }
       );
@@ -2635,7 +2638,7 @@ void Moneychanger::onNeedToDownloadMail()
             }
         }
         // ----------------------------------------------------------------
-        onNeedToPopulateRecordlist();
+//        onNeedToPopulateRecordlist();
         return;
     }
     else
@@ -5003,7 +5006,7 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOp
                 pModel->updateDBFromOT();
             }
             // ----------------------------------------------------------------
-            onNeedToPopulateRecordlist();
+//          onNeedToPopulateRecordlist();
             return;
         }
     }
@@ -5013,10 +5016,10 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOp
 
 void Moneychanger::onNeedToPopulateRecordlist()
 {
-    setupRecordList();
-    populateRecords(); // This updates the record list. (It assumes a download has recently occurred.)
-    // ----------------------------------------------------------------
-    emit populatedRecordlist();
+//    setupRecordList();
+//    populateRecords(); // This updates the record list. (It assumes a download has recently occurred.)
+//    // ----------------------------------------------------------------
+//    emit populatedRecordlist();
 }
 
 // ----------------------------------------------------------------
@@ -5386,7 +5389,7 @@ void Moneychanger::setDefaultAccount(QString account_id, QString account_name)
                 }
             }
             // ----------------------------------------------------------------
-            onNeedToPopulateRecordlist();
+//            onNeedToPopulateRecordlist();
         }
     }
 }

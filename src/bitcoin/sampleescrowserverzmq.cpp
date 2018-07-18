@@ -97,7 +97,7 @@ bool SampleEscrowServerZmq::ClientConnected(BtcNetMsgConnectPtr clientMsg)
 {
     SampleEscrowClient* client = new SampleEscrowClient();
     client->clientName = clientMsg->client;
-    SampleEscrowServer::ClientConnected(client);
+    return SampleEscrowServer::ClientConnected(client);
 }
 
 bool SampleEscrowServerZmq::RequestEscrowDeposit(const std::string &client, const int64_t &amount)

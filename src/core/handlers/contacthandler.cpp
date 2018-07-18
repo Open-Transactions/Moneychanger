@@ -19,6 +19,9 @@
 
 #include <tuple>
 
+template class opentxs::Pimpl<opentxs::PaymentCode>;
+
+
 void MTNameLookupQT::notifyOfSuccessfulNotarization(const std::string & str_acct_id,
                                                     const std::string   p_nym_id,
                                                     const std::string   p_msg_notary_id,

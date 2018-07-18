@@ -64,6 +64,40 @@ class QTreeWidgetItem;
 typedef std::tuple<std::string, std::string, std::string, std::string> ACTIVITY_TREE_ITEM;
 typedef std::map< ACTIVITY_TREE_ITEM, int> mapOfActivityTreeItems;
 
+//    std::map<std::pair<nym_id_str, currency>, widget_id_str> MapActivityWidgetIds;
+typedef std::map<std::pair<std::string, int>, std::string> MapActivityWidgetIds;
+
+/*
+ std::set<int> currency_types = opentxs::SwigWrap::GetCurrencyTypesForLocalAccounts();
+
+ for (const auto currency_type : currency_types)
+ {
+     std::set<std::string> set_unit_types = opentxs::SwigWrap::GetContractIdsForCurrencyType(currency_type);
+
+     for (const auto & unit_type_id : set_unit_types)
+     {
+        std::set<std::string> accounts = opentxs::SwigWrap::GetAccountIdsForContractId(unit_type_id);
+
+        for (const auto & account_id : accounts)
+        {
+            // Here we have:
+            //   account_id
+            //   unit_type_id
+            //   currency_type
+        }
+
+     }
+ }
+
+ Okay these are now in SwigWrap:
+    EXPORT static std::string GetAccountsByCurrency(const int currency);
+    EXPORT static std::set<int> GetCurrencyTypesForLocalAccounts();
+    EXPORT static std::set<std::string> GetContractIdsForCurrencyType(
+        const int currency);
+    EXPORT static std::set<std::string> GetAccountIdsForContractId(
+        const std::string& ASSET_ID);
+*/
+
 class Activity : public QWidget
 {
     Q_OBJECT
@@ -79,8 +113,12 @@ public:
 
     int nSelectedTab_{0};
 
-    std::string active_thread_{""};
+    std::string active_thread_;
     std::map<std::string, std::string> thread_summary_;
+
+    std::map<std::string, std::string> accountWidgets_;
+
+    MapActivityWidgetIds issuers_;
 
     QString qstrCurrentTLA_;  // If the user clicks on "BTC" near the top, the current TLA is "BTC".
     QString qstrCurrentNotary_; // If the user clicks on "localhost" (hosted notary) then that Notary ID is set here.
@@ -140,6 +178,9 @@ signals:
     void sig_on_toolButton_liveAgreements_clicked();
 
 protected:
+
+    void PopulateIssuerWidgetIds();
+
     void RetrieveSelectedIds(
         QString  & qstrTLA,
         QString  & qstrAssetTypeId,
@@ -264,6 +305,7 @@ private slots:
     void on_MarkAsForwarded_timer();
 
     void RefreshAccountTree();
+    void RefreshSummaryTree();
     void RefreshPayments();
 
     void on_tableViewReceived_customContextMenuRequested(const QPoint &pos);
