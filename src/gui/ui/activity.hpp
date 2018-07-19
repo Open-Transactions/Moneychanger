@@ -18,9 +18,12 @@
 #include <QSqlRecord>
 #include <QTimer>
 #include <QDebug>
+#include <QIcon>
 
 #include <tuple>
 #include <map>
+#include <set>
+#include <string>
 
 
 namespace Ui {
@@ -64,8 +67,10 @@ class QTreeWidgetItem;
 typedef std::tuple<std::string, std::string, std::string, std::string> ACTIVITY_TREE_ITEM;
 typedef std::map< ACTIVITY_TREE_ITEM, int> mapOfActivityTreeItems;
 
+typedef std::map<std::string, int> StringIntMap;
+typedef std::pair<std::string, int> StringIntPair;
 //    std::map<std::pair<nym_id_str, currency>, widget_id_str> MapActivityWidgetIds;
-typedef std::map<std::pair<std::string, int>, std::string> MapActivityWidgetIds;
+typedef std::map<StringIntPair, std::string> MapActivityWidgetIds;
 
 /*
  std::set<int> currency_types = opentxs::SwigWrap::GetCurrencyTypesForLocalAccounts();
@@ -105,6 +110,8 @@ class Activity : public QWidget
 private:
     bool already_init{false};
 
+    QIcon icon_nym_;
+
 public:
     explicit Activity(QWidget *parent = 0);
     ~Activity();
@@ -130,6 +137,12 @@ public:
     void CancelOutgoing     (QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
     void DiscardOutgoingCash(QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
     void DiscardIncoming    (QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
+
+    void GetAssetContractIdsInWallet(std::map<std::string, std::string> & map_output);
+    void GetCurrencyTypesByAssetContractsInWallet(std::set<StringIntPair> & set_output);
+
+    void Populate_comboBoxMyNym();
+    void Populate_comboBoxCurrency();
 
 public slots:
     void onClaimsUpdatedForNym(QString nymId);
@@ -272,13 +285,13 @@ protected:
     void tableViewPayments_PopupMenu(const QPoint &pos, QTableView * pTableView, ActivityPaymentsProxyModel * pProxyModel);
     void tableViewPayments_DoubleClicked(const QModelIndex &index, ActivityPaymentsProxyModel * pProxyModel);
 
-    void treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTreeWidget);
+    void treeWidgetSummary_PopupMenu(const QPoint &pos, QTreeWidget * pTreeWidget);
 
 private slots:
     void on_listWidgetConversations_currentRowChanged(int currentRow);
     void on_listWidgetConversations_customContextMenuRequested(const QPoint &pos);
 
-    void on_treeWidgetAccounts_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+    void on_treeWidgetSummary_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 
     void on_plainTextEditMsg_textChanged();
 
@@ -290,9 +303,7 @@ private slots:
     void on_lineEditSearchConversations_returnPressed();
 
     void on_checkBoxSearchPayments_toggled(bool checked);
-    void on_pushButtonSearchPayments_clicked();
     void on_lineEditSearchPayments_textChanged(const QString &arg1);
-    void on_lineEditSearchPayments_returnPressed();
 
     void on_tableViewSentSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous);
     void on_tableViewReceivedSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous);
@@ -326,7 +337,7 @@ private slots:
     void on_toolButtonImportCash_clicked();
     void on_toolButtonSettings_clicked();
 
-    void on_treeWidgetAccounts_customContextMenuRequested(const QPoint &pos);
+    void on_treeWidgetSummary_customContextMenuRequested(const QPoint &pos);
 
     void on_tabWidgetMain_currentChanged(int index);
 
@@ -346,6 +357,10 @@ private slots:
     void on_toolButton_liveAgreements_clicked();
 
     void on_tableViewConversation_clicked(const QModelIndex &index);
+
+    void on_comboBoxMyNym_activated(int index);
+    void on_comboBoxCurrency_activated(int index);
+
 
 private:
     Ui::Activity *ui{nullptr};

@@ -79,7 +79,7 @@ class FinalReceiptProxyModel : public QSortFilterProxyModel
 public:
     FinalReceiptProxyModel(QObject *parent = 0);
 
-    void setFilterOpentxsRecord(opentxs::OTRecord& recordmt);
+//    void setFilterOpentxsRecord(opentxs::OTRecord& recordmt);
     void setFilter(int64_t lTransNumForDisplay, std::string str_nym_id,
                    std::string str_pmnt_notary_id);
     void clearFilter();

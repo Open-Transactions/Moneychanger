@@ -105,18 +105,17 @@ void FinalReceiptProxyModel::setFilter(int64_t lTransNumForDisplay, std::string 
 }
 
 
-void FinalReceiptProxyModel::setFilterOpentxsRecord(opentxs::OTRecord& recordmt)
-{
-    lTransNum_           = recordmt.GetTransactionNum();
-    lTransNumForDisplay_ = recordmt.GetTransNumForDisplay();
-    str_nym_id_          = recordmt.GetNymID();
-    str_notary_id_       = recordmt.GetPmntNotaryID();
-    bIsFinalReceipt_     = recordmt.IsFinalReceipt();
-    lClosingNum_         = 0;
-    bGotClosingNum_      = recordmt.GetClosingNum(lClosingNum_);
-
-    invalidateFilter();
-}
+//void FinalReceiptProxyModel::setFilterOpentxsRecord(opentxs::OTRecord& recordmt)
+//{
+//    lTransNum_           = recordmt.GetTransactionNum();
+//    lTransNumForDisplay_ = recordmt.GetTransNumForDisplay();
+//    str_nym_id_          = recordmt.GetNymID();
+//    str_notary_id_       = recordmt.GetPmntNotaryID();
+//    bIsFinalReceipt_     = recordmt.IsFinalReceipt();
+//    lClosingNum_         = 0;
+//    bGotClosingNum_      = recordmt.GetClosingNum(lClosingNum_);
+//    invalidateFilter();
+//}
 
 
 void FinalReceiptProxyModel::clearFilter()

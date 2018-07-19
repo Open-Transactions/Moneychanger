@@ -33,13 +33,13 @@ void MTNameLookupQT::notifyOfSuccessfulNotarization(const std::string & str_acct
     // Add/update record to payments table for whatever
     // transaction just occurred.
 
-    Moneychanger::It()->AddPaymentBasedOnNotification(str_acct_id,
-                                                      p_nym_id,
-                                                      p_msg_notary_id,
-                                                      p_pmnt_notary_id,
-                                                      p_txn_contents,
-                                                      lTransactionNum,
-                                                      lTransNumForDisplay);
+//    Moneychanger::It()->AddPaymentBasedOnNotification(str_acct_id,
+//                                                      p_nym_id,
+//                                                      p_msg_notary_id,
+//                                                      p_pmnt_notary_id,
+//                                                      p_txn_contents,
+//                                                      lTransactionNum,
+//                                                      lTransNumForDisplay);
 }
 
 

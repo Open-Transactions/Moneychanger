@@ -24,7 +24,7 @@ public:
     QMutex overview_list_mutex;
 
 private:
-    opentxs::OTRecordList list;
+//    opentxs::OTRecordList list;
     QList< QMap<QString,QVariant> > * overview_list;
 
 signals:

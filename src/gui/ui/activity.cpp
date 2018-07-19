@@ -27,6 +27,7 @@
 
 #include <QLabel>
 #include <QDebug>
+#include <QVariant>
 #include <QToolButton>
 #include <QKeyEvent>
 #include <QApplication>
@@ -44,6 +45,8 @@
 #include <tuple>
 #include <ctime>
 
+template class opentxs::SharedPimpl<opentxs::ui::IssuerItem>;
+template class opentxs::SharedPimpl<opentxs::ui::AccountSummaryItem>;
 
 /*
  * The tree items will have certain values attached to them.
@@ -281,7 +284,6 @@ void Activity::RefreshUserBar()
     // ----------------------------------------
     MTNameLookupQT theLookup;
     const QString qstrNymName = QString::fromStdString(theLookup.GetNymName(str_my_nym_id, ""));
-    ui->toolButtonMyIdentity->setText(qstrNymName);
     ui->toolButtonMyIdentity2->setText(qstrNymName);
 }
 
@@ -301,119 +303,119 @@ void Activity::RefreshAccountTab()
 
 void Activity::ClearAccountTree()
 {
-    QTreeWidget * pTreeWidgetAccounts = ui->treeWidgetAccounts;
-    if (nullptr == pTreeWidgetAccounts) {
-        return;
-    }
-    // ----------------------------------------
-    QTreeWidgetItem * pItem = pTreeWidgetAccounts->currentItem();
+//    QTreeWidget * pTreeWidgetAccounts = ui->treeWidgetAccounts;
+//    if (nullptr == pTreeWidgetAccounts) {
+//        return;
+//    }
+//    // ----------------------------------------
+//    QTreeWidgetItem * pItem = pTreeWidgetAccounts->currentItem();
 
-    if (nullptr != pItem)
-    {
-        const int nNodeType = pItem->data(0, Qt::UserRole+0).toInt();
-        const int nHeader   = pItem->data(0, Qt::UserRole+1).toInt();
+//    if (nullptr != pItem)
+//    {
+//        const int nNodeType = pItem->data(0, Qt::UserRole+0).toInt();
+//        const int nHeader   = pItem->data(0, Qt::UserRole+1).toInt();
 
-        switch (nNodeType) {
-            case AC_NODE_TYPE_HEADER: {
+//        switch (nNodeType) {
+//            case AC_NODE_TYPE_HEADER: {
+////                qstrCurrentTLA_      = QString("");
+////                qstrCurrentNotary_   = QString("");
+////                qstrCurrentAccount_  = QString("");
+////                qstrCurrentContact_  = QString("");
+//                ;
+//            } break;
+
+//            case AC_NODE_TYPE_ASSET_TOTAL: {
+//                const QVariant qvarTLA = pItem->data(0, Qt::UserRole+2);
+
+//                qstrCurrentTLA_      = qvarTLA.isValid() ? qvarTLA.toString() : QString("");
+//                qstrCurrentNotary_   = QString("");
+//                qstrCurrentAccount_  = QString("");
+//                qstrCurrentContact_  = QString("");
+
+////                qDebug() << "Setting qstrCurrentContact_ to empty string! 1\n";
+
+//            } break;
+
+//                // Todo someday. Currently Moneychanger doesn't have its own local Bitcoin wallet.
+//            case AC_NODE_TYPE_LOCAL_WALLET:
+//            case AC_NODE_TYPE_LOCAL_ACCOUNT: {
 //                qstrCurrentTLA_      = QString("");
 //                qstrCurrentNotary_   = QString("");
 //                qstrCurrentAccount_  = QString("");
 //                qstrCurrentContact_  = QString("");
-                ;
-            } break;
 
-            case AC_NODE_TYPE_ASSET_TOTAL: {
-                const QVariant qvarTLA = pItem->data(0, Qt::UserRole+2);
+////                qDebug() << "Setting qstrCurrentContact_ to empty string! 2\n";
 
-                qstrCurrentTLA_      = qvarTLA.isValid() ? qvarTLA.toString() : QString("");
-                qstrCurrentNotary_   = QString("");
-                qstrCurrentAccount_  = QString("");
-                qstrCurrentContact_  = QString("");
+//            } break;
 
-//                qDebug() << "Setting qstrCurrentContact_ to empty string! 1\n";
+//            case AC_NODE_TYPE_SNP_NOTARY:
+//            case AC_NODE_TYPE_HOSTED_NOTARY: {
+//                // If a Notary has a single account, it may display them on a single line.
+//                // In which case, sometimes we'll want the Notary ID off that line, but
+//                // sometimes we'll want the account ID. (But the account ID will sometimes
+//                // not be there, if there are sub-accounts listed under the notary in the UI).
+//                //
+////              const QVariant qvarAccountId = pItem->data(0, Qt::UserRole+4);
+//                const QVariant qvarNotaryId  = pItem->data(0, Qt::UserRole+5);
 
-            } break;
+//                qstrCurrentTLA_      = QString("");
+//                qstrCurrentAccount_  = QString("");
+////              qstrCurrentAccount_  = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
+//                qstrCurrentNotary_   = qvarNotaryId.isValid()  ? qvarNotaryId.toString()  : QString("");
+//                qstrCurrentContact_  = QString("");
 
-                // Todo someday. Currently Moneychanger doesn't have its own local Bitcoin wallet.
-            case AC_NODE_TYPE_LOCAL_WALLET:
-            case AC_NODE_TYPE_LOCAL_ACCOUNT: {
-                qstrCurrentTLA_      = QString("");
-                qstrCurrentNotary_   = QString("");
-                qstrCurrentAccount_  = QString("");
-                qstrCurrentContact_  = QString("");
+////                qDebug() << "Setting qstrCurrentContact_ to empty string! 3\n";
 
-//                qDebug() << "Setting qstrCurrentContact_ to empty string! 2\n";
+//            } break;
 
-            } break;
+//            case AC_NODE_TYPE_SNP_ACCOUNT:
+//            case AC_NODE_TYPE_HOSTED_ACCOUNT: {
+//                const QVariant qvarAccountId = pItem->data(0, Qt::UserRole+4);
 
-            case AC_NODE_TYPE_SNP_NOTARY:
-            case AC_NODE_TYPE_HOSTED_NOTARY: {
-                // If a Notary has a single account, it may display them on a single line.
-                // In which case, sometimes we'll want the Notary ID off that line, but
-                // sometimes we'll want the account ID. (But the account ID will sometimes
-                // not be there, if there are sub-accounts listed under the notary in the UI).
-                //
-//              const QVariant qvarAccountId = pItem->data(0, Qt::UserRole+4);
-                const QVariant qvarNotaryId  = pItem->data(0, Qt::UserRole+5);
+//                qstrCurrentTLA_      = QString("");
+//                qstrCurrentNotary_   = QString("");
+//                qstrCurrentAccount_  = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
+//                qstrCurrentContact_  = QString("");
 
-                qstrCurrentTLA_      = QString("");
-                qstrCurrentAccount_  = QString("");
-//              qstrCurrentAccount_  = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
-                qstrCurrentNotary_   = qvarNotaryId.isValid()  ? qvarNotaryId.toString()  : QString("");
-                qstrCurrentContact_  = QString("");
+////                qDebug() << "Setting qstrCurrentContact_ to empty string! 4\n";
 
-//                qDebug() << "Setting qstrCurrentContact_ to empty string! 3\n";
+//            } break;
 
-            } break;
+//            case AC_NODE_TYPE_CONTACT: {
+//                const QVariant qvarContactId = pItem->data(0, Qt::UserRole+6);
 
-            case AC_NODE_TYPE_SNP_ACCOUNT:
-            case AC_NODE_TYPE_HOSTED_ACCOUNT: {
-                const QVariant qvarAccountId = pItem->data(0, Qt::UserRole+4);
+//                qstrCurrentTLA_      = QString("");
+//                qstrCurrentNotary_   = QString("");
+//                qstrCurrentAccount_  = QString("");
+//                qstrCurrentContact_  = qvarContactId.isValid() ? qvarContactId.toString() : QString("");
+//            } break;
 
-                qstrCurrentTLA_      = QString("");
-                qstrCurrentNotary_   = QString("");
-                qstrCurrentAccount_  = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
-                qstrCurrentContact_  = QString("");
+//            default: {
+//                qstrCurrentTLA_      = QString("");
+//                qstrCurrentNotary_   = QString("");
+//                qstrCurrentAccount_  = QString("");
+//                qstrCurrentContact_  = QString("");
 
-//                qDebug() << "Setting qstrCurrentContact_ to empty string! 4\n";
+////                qDebug() << "Setting qstrCurrentContact_ to empty string! 5 it's a default case: " << QString::number(nNodeType) << "\n";
 
-            } break;
+//            } break;
+//        }
+//    }
+//    else
+//    {
+//        // NOTE: This may have been the bug that caused the left-hand of
+//        // activity page to lose selection after a few seconds delay.
+//        // Commenting it out now to test that. May keep it that way, if it fixes it.
+////        qstrCurrentTLA_      = QString("");
+////        qstrCurrentNotary_   = QString("");
+////        qstrCurrentAccount_  = QString("");
+////        qstrCurrentContact_  = QString("");
 
-            case AC_NODE_TYPE_CONTACT: {
-                const QVariant qvarContactId = pItem->data(0, Qt::UserRole+6);
+////        qDebug() << "Setting qstrCurrentContact_ to empty string! 6 it's nullptr\n";
 
-                qstrCurrentTLA_      = QString("");
-                qstrCurrentNotary_   = QString("");
-                qstrCurrentAccount_  = QString("");
-                qstrCurrentContact_  = qvarContactId.isValid() ? qvarContactId.toString() : QString("");
-            } break;
-
-            default: {
-                qstrCurrentTLA_      = QString("");
-                qstrCurrentNotary_   = QString("");
-                qstrCurrentAccount_  = QString("");
-                qstrCurrentContact_  = QString("");
-
-//                qDebug() << "Setting qstrCurrentContact_ to empty string! 5 it's a default case: " << QString::number(nNodeType) << "\n";
-
-            } break;
-        }
-    }
-    else
-    {
-        // NOTE: This may have been the bug that caused the left-hand of
-        // activity page to lose selection after a few seconds delay.
-        // Commenting it out now to test that. May keep it that way, if it fixes it.
-//        qstrCurrentTLA_      = QString("");
-//        qstrCurrentNotary_   = QString("");
-//        qstrCurrentAccount_  = QString("");
-//        qstrCurrentContact_  = QString("");
-
-//        qDebug() << "Setting qstrCurrentContact_ to empty string! 6 it's nullptr\n";
-
-    }
-    // --------------------------------------
-    ui->treeWidgetAccounts->clear();
+//    }
+//    // --------------------------------------
+//    ui->treeWidgetAccounts->clear();
 }
 
 //typedef QMap<QString, mapIDName> mapOfMapIDName; // TLA or share symbol, map of IDs/display names.
@@ -428,6 +430,33 @@ mapIDName & Activity::GetOrCreateAssetIdMapByCurrencyCode(QString qstrTLA, mapOf
     bigMap[qstrTLA] = mapIDName{};
     i = bigMap.find(qstrTLA);
     return i.value();
+}
+
+void Activity::GetAssetContractIdsInWallet(std::map<std::string, std::string> & map_output)
+{
+    const int32_t  asset_count = opentxs::OT::App().API().Exec().GetAssetTypeCount();
+    for (int32_t ii = 0; ii < asset_count; ii++)
+    {
+        const std::string OT_id   = opentxs::OT::App().API().Exec().GetAssetType_ID(ii);
+        const std::string OT_name = opentxs::OT::App().API().Exec().GetAssetType_TLA(OT_id);
+        map_output.insert(std::pair<std::string, std::string>(OT_id, OT_name));
+    }
+}
+
+void Activity::GetCurrencyTypesByAssetContractsInWallet(std::set<StringIntPair> & set_output)
+{
+    std::map<std::string, std::string> map_units;
+    GetAssetContractIdsInWallet(map_units);
+
+    for (const auto & unit : map_units)
+    {
+        const auto & unit_type_id = unit.first;
+        const auto & unit_TLA     = unit.second;
+        auto unitTypeId = opentxs::Identifier::Factory(unit_type_id);
+        const opentxs::proto::ContactItemType currency_type =
+                opentxs::OT::App().Wallet().CurrencyTypeBasedOnUnitType(unitTypeId);
+        set_output.insert(StringIntPair(unit_TLA, static_cast<int>(currency_type)));
+    }
 }
 
 void Activity::GetAssetIdMapsByCurrencyCode(mapOfMapIDName & bigMap)
@@ -903,39 +932,203 @@ void Activity::RefreshSummaryTree()
         return;
     }
     // ----------------------------------------
-    ClearAccountTree();
+
+    const QVariant currentDataMyNym    = ui->comboBoxMyNym->currentData();
+    const QVariant currentDataCurrency = ui->comboBoxCurrency->currentData();
+
     // ----------------------------------------
     pTreeWidget->blockSignals(true);
+
+    pTreeWidget->clear();
     // ----------------------------------------
-    QList<QTreeWidgetItem *> items;
-    // ------------------------------------
 
-
-    std::set<int> currency_types = opentxs::SwigWrap::GetCurrencyTypesForLocalAccounts();
-
-    for (const auto currency_type : currency_types)
+    if (!currentDataMyNym.isValid() ||
+        !currentDataCurrency.isValid())
     {
-        std::set<std::string> set_unit_types = opentxs::SwigWrap::GetContractIdsForCurrencyType(currency_type);
+        pTreeWidget->blockSignals(false);
+        return;
+    }
+    // ------------------------------------
+    const int currency_type = currentDataCurrency.toInt();
+    const std::string mynym = currentDataMyNym.toString().toStdString();
 
-        for (const auto & unit_type_id : set_unit_types)
-        {
-           std::set<std::string> accounts = opentxs::SwigWrap::GetAccountIdsForContractId(unit_type_id);
+    const auto currencyType = opentxs::proto::ContactItemType(currency_type);
+    const opentxs::Identifier nymID{mynym};
+    // ------------------------------------
+    //resume
+    QList<QTreeWidgetItem *> items;
 
-           for (const auto & account_id : accounts)
-           {
-               const std::string account_label   = opentxs::SwigWrap::GetAccountWallet_Name(account_id);
-               const std::string unit_type_label = opentxs::SwigWrap::GetAssetType_Name(unit_type_id);
+    QTreeWidgetItem * pHostedAccountsItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Hosted Accounts")));
+    items.append(pHostedAccountsItem);
+    pHostedAccountsItem->setExpanded(true);
+    pHostedAccountsItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HEADER));
+    pHostedAccountsItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
+    pHostedAccountsItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+    pHostedAccountsItem->setTextColor(0, Qt::white);
+    pHostedAccountsItem->setTextColor(1, Qt::white);
+    pHostedAccountsItem->setBackgroundColor(0, Qt::gray);
+    pHostedAccountsItem->setBackgroundColor(1, Qt::gray);
+    pHostedAccountsItem->setBackgroundColor(2, Qt::gray);
+    pHostedAccountsItem->setBackgroundColor(3, Qt::gray);
+    pHostedAccountsItem->setFlags(pHostedAccountsItem->flags()&~Qt::ItemIsSelectable);
+    // ----------------------------------------
+
+    auto& list = opentxs::OT::App().UI().AccountSummary(nymID, currencyType);
+    auto issuer = list.First();
+
+    if (false == issuer->Valid()) {
+
+        pTreeWidget->blockSignals(false);
+        return;
+    }
+
+    const QString qstrIssuerName = QString::fromStdString(issuer->Name());
+
+//    EXPORT virtual bool ConnectionState() const = 0;
+//    EXPORT virtual std::string Debug() const = 0;
+//    EXPORT virtual opentxs::SharedPimpl<opentxs::ui::AccountSummaryItem> First()
+//        const = 0;
+//    EXPORT virtual std::string Name() const = 0;
+//    EXPORT virtual opentxs::SharedPimpl<opentxs::ui::AccountSummaryItem> Next()
+//        const = 0;
+//    EXPORT virtual bool Trusted() const = 0;
+
+    // --------------------------------------------
+    QTreeWidgetItem * pWidgetIssuer = new QTreeWidgetItem((QTreeWidget *)nullptr,
+        QStringList(qstrIssuerName) << QString(""));
+    items.append(pWidgetIssuer);
+    pWidgetIssuer->setExpanded(false);
+//    pWidgetIssuer->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_ASSET_TOTAL));
+//    pWidgetIssuer->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_TOTALS));
+//    pWidgetIssuer->setData(0, Qt::UserRole+2, QVariant(qstrCurrencyCode));
+
+    pWidgetIssuer->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+
+    const QString qstrIconPath = QString(issuer->ConnectionState()
+                                         ? ":/icons/icons/green_dot.png"
+                                         : ":/icons/icons/red_dot.png");
+    pWidgetIssuer->setIcon(0, QIcon(qstrIconPath));
+
+    if (issuer->ConnectionState())
+    {
+//      pWidgetIssuer->setTextColor(0, Qt::black);
+//      pWidgetIssuer->setTextColor(1, Qt::black);
+    }
+    else
+    {
+        pWidgetIssuer->setTextColor(0, Qt::gray);
+        pWidgetIssuer->setTextColor(1, Qt::gray);
+    }
+    pWidgetIssuer->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+    auto account = issuer->First();
+
+    if (account->Valid()) {
+        const std::string account_id(account->AccountID());
+        const std::string account_widget_id(account->WidgetID()->str());
+        const std::string account_name(account->Name());
+        const std::string display_balance(account->DisplayBalance());
+        const QString qstrName = QString::fromStdString(account_name);
+        const QString qstrDisplayBalance = QString::fromStdString(display_balance);
+
+        QTreeWidgetItem * pWidgetItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
+            QStringList(qstrName) << qstrDisplayBalance);
+        items.append(pWidgetItem);
+        pWidgetItem->setExpanded(false);
+//            pWidgetItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_ASSET_TOTAL));
+//            pWidgetItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_TOTALS));
+//            pWidgetItem->setData(0, Qt::UserRole+2, QVariant(qstrCurrencyCode));
+
+        pWidgetItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+        auto lastAccount = account->Last();
+        while (false == lastAccount) {
+            account = issuer->Next();
+            if (false == account->Valid()) { break; }
+            lastAccount = account->Last();
+            const std::string account_id(account->AccountID());
+            const std::string account_widget_id(account->WidgetID()->str());
+            const std::string account_name(account->Name());
+            const std::string display_balance(account->DisplayBalance());
+            const QString qstrName = QString::fromStdString(account_name);
+            const QString qstrDisplayBalance = QString::fromStdString(display_balance);
+
+//            EXPORT virtual OTIdentifier WidgetID() const = 0;
+//            EXPORT virtual bool Last() const = 0;
+//            EXPORT virtual bool Valid() const = 0;
+//            EXPORT virtual std::string AccountID() const = 0;
+//            EXPORT virtual Amount Balance() const = 0;
+//            EXPORT virtual std::string DisplayBalance() const = 0;
+//            EXPORT virtual std::string Name() const = 0;
+
+
+            QTreeWidgetItem * pWidgetItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
+                QStringList(qstrName) << qstrDisplayBalance);
+            items.append(pWidgetItem);
+            pWidgetItem->setExpanded(false);
+//            pWidgetItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_ASSET_TOTAL));
+//            pWidgetItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_TOTALS));
+//            pWidgetItem->setData(0, Qt::UserRole+2, QVariant(qstrCurrencyCode));
+
+            pWidgetItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
 
 
 
-               // Here we have:
-               //   account_id, account_label
-               //   unit_type_id, unit_type_label
-               //   currency_type,
-           }
 
         }
     }
+
+
+    if (items.count() > 0)
+    {
+        pTreeWidget->insertTopLevelItems(0, items);
+//      pTreeWidget->resizeColumnToContents(0);
+    }
+
+    pTreeWidget->resizeColumnToContents(0);
+    pTreeWidget->resizeColumnToContents(1);
+
+    pTreeWidget->blockSignals(false);
+
+    // ----------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+//    std::set<int> currency_types = opentxs::SwigWrap::GetCurrencyTypesForLocalAccounts();
+
+//    for (const auto currency_type : currency_types)
+//    {
+//        std::set<std::string> set_unit_types = opentxs::SwigWrap::GetContractIdsForCurrencyType(currency_type);
+
+//        for (const auto & unit_type_id : set_unit_types)
+//        {
+//           std::set<std::string> accounts = opentxs::SwigWrap::GetAccountIdsForContractId(unit_type_id);
+
+//           for (const auto & account_id : accounts)
+//           {
+//               const std::string account_label   = opentxs::SwigWrap::GetAccountWallet_Name(account_id);
+//               const std::string unit_type_label = opentxs::SwigWrap::GetAssetType_Name(unit_type_id);
+
+
+
+//               // Here we have:
+//               //   account_id, account_label
+//               //   unit_type_id, unit_type_label
+//               //   currency_type,
+//           }
+
+//        }
+//    }
 
 
 
@@ -955,331 +1148,588 @@ void Activity::RefreshSummaryTree()
 
 void Activity::RefreshAccountTree()
 {
-    QTreeWidget * pTreeWidgetAccounts = ui->treeWidgetAccounts;
-    if (nullptr == pTreeWidgetAccounts) {
-        return;
-    }
-    // ----------------------------------------
-    ClearAccountTree();
-    // ----------------------------------------
-    pTreeWidgetAccounts->blockSignals(true);
-    // ----------------------------------------
-    QList<QTreeWidgetItem *> items;
-    // ------------------------------------
-    mapOfMapIDName bigMap;
+//    QTreeWidget * pTreeWidgetAccounts = ui->treeWidgetAccounts;
+//    if (nullptr == pTreeWidgetAccounts) {
+//        return;
+//    }
+//    // ----------------------------------------
+//    ClearAccountTree();
+//    // ----------------------------------------
+//    pTreeWidgetAccounts->blockSignals(true);
+//    // ----------------------------------------
+//    QList<QTreeWidgetItem *> items;
+//    // ------------------------------------
+//    mapOfMapIDName bigMap;
 
-    this->GetAssetIdMapsByCurrencyCode(bigMap);
+//    this->GetAssetIdMapsByCurrencyCode(bigMap);
 
-    if (bigMap.size() > 0)
-    {
-        // NOTE: Someday this "Totals" row is where we will someday replace with the USD value of the total wallet.
-        QTreeWidgetItem * pUnfilteredItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Totals")));
-        items.append(pUnfilteredItem);
-        pUnfilteredItem->setExpanded(true);
-        pUnfilteredItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HEADER));
-        pUnfilteredItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_TOTALS));
-        pUnfilteredItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-        pUnfilteredItem->setFlags(pUnfilteredItem->flags()&~Qt::ItemIsSelectable);
-        pUnfilteredItem->setTextColor(0, Qt::white);
-        pUnfilteredItem->setTextColor(1, Qt::white);
-        pUnfilteredItem->setBackgroundColor(0, Qt::gray);
-        pUnfilteredItem->setBackgroundColor(1, Qt::gray);
-        pUnfilteredItem->setBackgroundColor(2, Qt::gray);
-        pUnfilteredItem->setBackgroundColor(3, Qt::gray);
-        // ----------------------------------------
-        // Get the total balance for each list of unit types.
-        // (That is, the total balance for each currency code).
-        mapOfMapIDName::const_iterator ci = bigMap.begin();
+//    if (bigMap.size() > 0)
+//    {
+//        // NOTE: Someday this "Totals" row is where we will someday replace with the USD value of the total wallet.
+//        QTreeWidgetItem * pUnfilteredItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Totals")));
+//        items.append(pUnfilteredItem);
+//        pUnfilteredItem->setExpanded(true);
+//        pUnfilteredItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HEADER));
+//        pUnfilteredItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_TOTALS));
+//        pUnfilteredItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+//        pUnfilteredItem->setFlags(pUnfilteredItem->flags()&~Qt::ItemIsSelectable);
+//        pUnfilteredItem->setTextColor(0, Qt::white);
+//        pUnfilteredItem->setTextColor(1, Qt::white);
+//        pUnfilteredItem->setBackgroundColor(0, Qt::gray);
+//        pUnfilteredItem->setBackgroundColor(1, Qt::gray);
+//        pUnfilteredItem->setBackgroundColor(2, Qt::gray);
+//        pUnfilteredItem->setBackgroundColor(3, Qt::gray);
+//        // ----------------------------------------
+//        // Get the total balance for each list of unit types.
+//        // (That is, the total balance for each currency code).
+//        mapOfMapIDName::const_iterator ci = bigMap.begin();
 
-        while (ci != bigMap.end()) {
-            const QString qstrCurrencyCode = ci.key();
-            const mapIDName & mapTLA = ci.value();
-            const int64_t nBalanceTotal = GetAccountBalancesTotaledForUnitTypes(mapTLA);
-            const QString qstrFirstAssetTypeId = mapTLA.begin().key();
-            const std::string first_unit_type  = qstrFirstAssetTypeId.toStdString();
-            const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(first_unit_type, nBalanceTotal);
-            const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
+//        while (ci != bigMap.end()) {
+//            const QString qstrCurrencyCode = ci.key();
+//            const mapIDName & mapTLA = ci.value();
+//            const int64_t nBalanceTotal = GetAccountBalancesTotaledForUnitTypes(mapTLA);
+//            const QString qstrFirstAssetTypeId = mapTLA.begin().key();
+//            const std::string first_unit_type  = qstrFirstAssetTypeId.toStdString();
+//            const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(first_unit_type, nBalanceTotal);
+//            const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
 
-            const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(first_unit_type);
-            opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
-                                                            (opentxs::String(asset_contract));
-            const std::string str_shortname = contractProto.has_shortname() ? contractProto.shortname() : "";
-            const std::string str_name = contractProto.has_name() ? contractProto.name() : "";
-            const QString qstrName(QString::fromStdString(str_name));
-            const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
-            const QString qstrSymbol = QString::fromUtf8(str_symbol.c_str());
+//            const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(first_unit_type);
+//            opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
+//                                                            (opentxs::String(asset_contract));
+//            const std::string str_shortname = contractProto.has_shortname() ? contractProto.shortname() : "";
+//            const std::string str_name = contractProto.has_name() ? contractProto.name() : "";
+//            const QString qstrName(QString::fromStdString(str_name));
+//            const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
+//            const QString qstrSymbol = QString::fromUtf8(str_symbol.c_str());
 
-            QTreeWidgetItem * pCurrencyCodeWidgetItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrName) << qstrSymbol<< qstrFormattedAmount << QStringList(qstrCurrencyCode));
-            items.append(pCurrencyCodeWidgetItem);
-            pCurrencyCodeWidgetItem->setExpanded(false);
-            pCurrencyCodeWidgetItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_ASSET_TOTAL));
-            pCurrencyCodeWidgetItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_TOTALS));
-            pCurrencyCodeWidgetItem->setData(0, Qt::UserRole+2, QVariant(qstrCurrencyCode));
+//            QTreeWidgetItem * pCurrencyCodeWidgetItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrName) << qstrSymbol<< qstrFormattedAmount << QStringList(qstrCurrencyCode));
+//            items.append(pCurrencyCodeWidgetItem);
+//            pCurrencyCodeWidgetItem->setExpanded(false);
+//            pCurrencyCodeWidgetItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_ASSET_TOTAL));
+//            pCurrencyCodeWidgetItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_TOTALS));
+//            pCurrencyCodeWidgetItem->setData(0, Qt::UserRole+2, QVariant(qstrCurrencyCode));
 
-            pCurrencyCodeWidgetItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+//            pCurrencyCodeWidgetItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
 
-            ++ci;
-        }
+//            ++ci;
+//        }
 
-//        QTreeWidgetItem * pDefaultCurrency = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList("USD") << "3,487.32");
-//        items.append(pDefaultCurrency);
-//        pDefaultCurrency->setExpanded(false);
-//        pDefaultCurrency->setData(0, Qt::UserRole, QVariant(0));
-//        pDefaultCurrency->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-    }
+////        QTreeWidgetItem * pDefaultCurrency = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList("USD") << "3,487.32");
+////        items.append(pDefaultCurrency);
+////        pDefaultCurrency->setExpanded(false);
+////        pDefaultCurrency->setData(0, Qt::UserRole, QVariant(0));
+////        pDefaultCurrency->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+//    }
 
-    // ----------------------------------------
-    mapOfMapIDName bigMapPairedAccounts;
-    mapIDName mapTLAByAccountId;
+//    // ----------------------------------------
+//    mapOfMapIDName bigMapPairedAccounts;
+//    mapIDName mapTLAByAccountId;
 
-    // First we'll do paired notaries.
+//    // First we'll do paired notaries.
 
-    std::set<opentxs::Identifier> uniquePairedServers;
+//    std::set<opentxs::Identifier> uniquePairedServers;
 
-    const uint64_t paired_node_count = PairedNodeCount(&uniquePairedServers);
+//    const uint64_t paired_node_count = PairedNodeCount(&uniquePairedServers);
 
-    if (paired_node_count > 0)
-    {
-        this->GetAccountIdMapsByServerId(bigMapPairedAccounts, true, // True means, only give me accounts on paired servers.
-                                         &mapTLAByAccountId);
-        // ----------------------------------------
-        QTreeWidgetItem * pYourNodeItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Your Stash Node")));
-        items.append(pYourNodeItem);
-        pYourNodeItem->setExpanded(true);
-        pYourNodeItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HEADER));
-        pYourNodeItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
-        pYourNodeItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-        pYourNodeItem->setTextColor(0, Qt::white);
-        pYourNodeItem->setTextColor(1, Qt::white);
-        pYourNodeItem->setBackgroundColor(0, Qt::gray);
-        pYourNodeItem->setBackgroundColor(1, Qt::gray);
-        pYourNodeItem->setBackgroundColor(2, Qt::gray);
-        pYourNodeItem->setBackgroundColor(3, Qt::gray);
-        pYourNodeItem->setFlags(pYourNodeItem->flags()&~Qt::ItemIsSelectable);
-    }
+//    if (paired_node_count > 0)
+//    {
+//        this->GetAccountIdMapsByServerId(bigMapPairedAccounts, true, // True means, only give me accounts on paired servers.
+//                                         &mapTLAByAccountId);
+//        // ----------------------------------------
+//        QTreeWidgetItem * pYourNodeItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Your Stash Node")));
+//        items.append(pYourNodeItem);
+//        pYourNodeItem->setExpanded(true);
+//        pYourNodeItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HEADER));
+//        pYourNodeItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
+//        pYourNodeItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+//        pYourNodeItem->setTextColor(0, Qt::white);
+//        pYourNodeItem->setTextColor(1, Qt::white);
+//        pYourNodeItem->setBackgroundColor(0, Qt::gray);
+//        pYourNodeItem->setBackgroundColor(1, Qt::gray);
+//        pYourNodeItem->setBackgroundColor(2, Qt::gray);
+//        pYourNodeItem->setBackgroundColor(3, Qt::gray);
+//        pYourNodeItem->setFlags(pYourNodeItem->flags()&~Qt::ItemIsSelectable);
+//    }
 
-    /*
-Justus
-OT::App().Wallet().IssuerList() gives you the list of issuers
-06:58
-In fact, this is the only list you should display.
-06:59
-Don't worry about displaying accounts that were not added through the new Issuer interface.
-06:59
-TUESDAY 10:37
-C
-Chris
-Is there any differentiator between "Hosted Accounts" and "Paired Nodes" ?
-10:37
-used to be 2 lists
-10:37
-J
-Justus
-An issuer can be trusted or not
-10:38
-C
-Chris
-ok
-10:38
-J
-*/
+//    /*
+//Justus
+//OT::App().Wallet().IssuerList() gives you the list of issuers
+//06:58
+//In fact, this is the only list you should display.
+//06:59
+//Don't worry about displaying accounts that were not added through the new Issuer interface.
+//06:59
+//TUESDAY 10:37
+//C
+//Chris
+//Is there any differentiator between "Hosted Accounts" and "Paired Nodes" ?
+//10:37
+//used to be 2 lists
+//10:37
+//J
+//Justus
+//An issuer can be trusted or not
+//10:38
+//C
+//Chris
+//ok
+//10:38
+//J
+//*/
 
-    for (const opentxs::Identifier & serverId : uniquePairedServers)
-//  for (int index = 0; index < paired_node_count; index++) // FOR EACH PAIRED OR PAIRING NODE.
-    {
-        QString qstrSnpName = tr("Pairing Stash Node...");
-        QString qstrServerId;
-        //const std::string str_index = QString::number(index).toStdString();
+//    for (const opentxs::Identifier & serverId : uniquePairedServers)
+////  for (int index = 0; index < paired_node_count; index++) // FOR EACH PAIRED OR PAIRING NODE.
+//    {
+//        QString qstrSnpName = tr("Pairing Stash Node...");
+//        QString qstrServerId;
+//        //const std::string str_index = QString::number(index).toStdString();
 
-        // bPaireding means, paired or in the process of pairing.
-        // UPDATE: the fact we're even in this loop at all means we're paireding.
-        //
-        const bool bPaireding = true; //opentxs::OT::App().API().OTME_TOO().PairingStarted(str_index);
-        bool bConnected = false;
-        // ------------------------------------------------------------------------
-        if (bPaireding)  // If paired or pairing.
-        {
-            opentxs::String strServerId{serverId};
+//        // bPaireding means, paired or in the process of pairing.
+//        // UPDATE: the fact we're even in this loop at all means we're paireding.
+//        //
+//        const bool bPaireding = true; //opentxs::OT::App().API().OTME_TOO().PairingStarted(str_index);
+//        bool bConnected = false;
+//        // ------------------------------------------------------------------------
+//        if (bPaireding)  // If paired or pairing.
+//        {
+//            opentxs::String strServerId{serverId};
 
-            const std::string str_snp_server_id{strServerId.Get()};
-//          const std::string str_snp_server_id = opentxs::OT::App().API().OTME_TOO().GetPairedServer(str_index);
-            const bool bGotNotaryId = str_snp_server_id.size() > 0;
+//            const std::string str_snp_server_id{strServerId.Get()};
+////          const std::string str_snp_server_id = opentxs::OT::App().API().OTME_TOO().GetPairedServer(str_index);
+//            const bool bGotNotaryId = str_snp_server_id.size() > 0;
 
-            if (bGotNotaryId)
-            {
-                qstrServerId = QString::fromStdString(str_snp_server_id);
+//            if (bGotNotaryId)
+//            {
+//                qstrServerId = QString::fromStdString(str_snp_server_id);
 
-                bConnected = opentxs::OT::App().API().Exec().CheckConnection(str_snp_server_id);
-                QString strConnected = QString(bConnected ? "Connected" : "Not connected");
+//                bConnected = opentxs::OT::App().API().Exec().CheckConnection(str_snp_server_id);
+//                QString strConnected = QString(bConnected ? "Connected" : "Not connected");
 
-                //String strLog = "SNP Notary ID: " + str_snp_server_id + " - " + strConnected;
-                //Log.d("MService", strLog);
+//                //String strLog = "SNP Notary ID: " + str_snp_server_id + " - " + strConnected;
+//                //Log.d("MService", strLog);
 
-                QString strTemp = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(str_snp_server_id));
-                if (strTemp.size() > 0)
-                {
-                    qstrSnpName = strTemp;
-                }
-                else
-                {
-                    qDebug() << "Failed to get notary name for this notary ID: " << QString::fromStdString(str_snp_server_id);
-                }
-            }
-            else
-            {
-//              qDebug() << "Failed to get notary ID for this index: " << QString::fromStdString(str_index);
-            }
-        }
-        else
-        {
-//            qDebug() << "This index is NOT paired or pairing yet: str_index: " << QString::fromStdString(str_index);
-        }
-        // ------------------------------------------------------------------------
-        if (qstrServerId.isEmpty())
-        {
-            QTreeWidgetItem * pNodeItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrSnpName) );
-            items.append(pNodeItem);
-            pNodeItem->setExpanded(false);
-            const QString qstrIconPath(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
-            pNodeItem->setIcon(0, QIcon(qstrIconPath));
-            pNodeItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+//                QString strTemp = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(str_snp_server_id));
+//                if (strTemp.size() > 0)
+//                {
+//                    qstrSnpName = strTemp;
+//                }
+//                else
+//                {
+//                    qDebug() << "Failed to get notary name for this notary ID: " << QString::fromStdString(str_snp_server_id);
+//                }
+//            }
+//            else
+//            {
+////              qDebug() << "Failed to get notary ID for this index: " << QString::fromStdString(str_index);
+//            }
+//        }
+//        else
+//        {
+////            qDebug() << "This index is NOT paired or pairing yet: str_index: " << QString::fromStdString(str_index);
+//        }
+//        // ------------------------------------------------------------------------
+//        if (qstrServerId.isEmpty())
+//        {
+//            QTreeWidgetItem * pNodeItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrSnpName) );
+//            items.append(pNodeItem);
+//            pNodeItem->setExpanded(false);
+//            const QString qstrIconPath(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+//            pNodeItem->setIcon(0, QIcon(qstrIconPath));
+//            pNodeItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
 
-            pNodeItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
-            pNodeItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
+//            pNodeItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
+//            pNodeItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
 
-        }
-        else // We know for this paired node, there's a server Id.
-        {
-            // So let's see if there are any accounts for that server Id.
-            mapOfMapIDName::const_iterator ci_paired = bigMapPairedAccounts.find(qstrServerId);
+//        }
+//        else // We know for this paired node, there's a server Id.
+//        {
+//            // So let's see if there are any accounts for that server Id.
+//            mapOfMapIDName::const_iterator ci_paired = bigMapPairedAccounts.find(qstrServerId);
 
-            if (ci_paired != bigMapPairedAccounts.end() && (0 == qstrServerId.compare(ci_paired.key()))) // Found some.
-            {
+//            if (ci_paired != bigMapPairedAccounts.end() && (0 == qstrServerId.compare(ci_paired.key()))) // Found some.
+//            {
+////                mapOfMapIDName bigMapAccountsByTLA;
+////                const mapIDName & mapAccounts = ci_paired.value();
+////                const std::string str_server_id = qstrServerId.toStdString();
+////                qstrSnpName = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(str_server_id));
+////                // ------------------------------------------------------
+////                this->GetAccountsByTLAFromMap(mapAccounts, // input
+////                                              mapTLAByAccountId, // input
+////                                              bigMapAccountsByTLA); // output
+
+////                mapOfMapIDName::const_iterator ci_acct_TLA = bigMapAccountsByTLA.begin();
+
+////                bool bServerHasBeenShownAlready = false;
+
+////                while (ci_acct_TLA != bigMapAccountsByTLA.end())
+////                {
+
+////                    const QString qstrTLA              = ci_acct_TLA.key();
+////                    const mapIDName & mapAccountsByTLA = ci_acct_TLA.value();
+////                    // ------------------------------------------------------
+
+////                    // FOR EACH TLA:
+
+////                    if (!bServerHasBeenShownAlready &&
+////                            bigMapAccountsByTLA.size() > 1)  // If there are multiple TLAs
+////                    {
+////                        // ------------------
+////                        QString qstrTempSNPName;
+////                        if (!bServerHasBeenShownAlready) {
+////                            qstrTempSNPName = qstrSnpName;
+////                            //bServerHasBeenShownAlready = true;
+////                        }
+////                        // ------------------
+////                        QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
+////                                                                            QStringList(qstrTempSNPName) << QString("") << QString(""));
+////                        items.append(pPairedItem);
+////                        pPairedItem->setExpanded(true);
+
+//////                      if (!bServerHasBeenShownAlready)
+////                        {
+////                            bServerHasBeenShownAlready = true;
+////                            const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+////                            pPairedItem->setIcon(0, QIcon(qstrIconPath));
+////                            if (bConnected)
+////                            {
+////                                //pPairedItem->setTextColor(0, Qt::black);
+////                                //pPairedItem->setTextColor(1, Qt::black);
+////                            }
+////                            else
+////                            {
+////                                pPairedItem->setTextColor(0, Qt::gray);
+////                                pPairedItem->setTextColor(1, Qt::gray);
+////                            }
+////                            pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+////                        }
+
+////                        pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
+////                        pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
+////                        if (!qstrServerId.isEmpty()) {
+////                            pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+////                        }
+////                    }
+////                    // -------
+////                    //const mapIDName & mapAccountsByTLA = ci_acct_TLA.value();
+
+////                    mapIDName::const_iterator ci_accounts = mapAccountsByTLA.begin();
+
+////                    while (ci_accounts != mapAccountsByTLA.end())
+////                    {
+////                        const QString qstrAccountId = ci_accounts.key();
+
+////                        qDebug() << "DEBUGGING   qstrAccountId: " << qstrAccountId;
+
+
+////                        const std::string str_acct_id = qstrAccountId.toStdString();
+////                        const std::string str_asset_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+////                        const int64_t lBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_acct_id);
+////                        const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(str_asset_id, lBalance);
+////    //                  const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmount(str_asset_id, lBalance);
+////                        const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
+
+////                        const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id);
+////                        opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
+////                                                                        (opentxs::String(asset_contract));
+
+////                        const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
+////                        const QString qstrSymbol(QString::fromStdString(str_symbol));
+////                        const QString qstrAcctName = QString("     %1").arg(QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_acct_id)));
+////                        const QString qstrAssetTypeId = QString::fromStdString(str_asset_id);
+////                        //const QString qstrTLA = QString::fromStdString(opentxs::OT::App().API().Exec().GetCurrencyTLA(str_asset_id));
+////                        // ------------------
+////                        QTreeWidgetItem * pSubItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrAcctName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
+////                        items.append(pSubItem);
+////                        pSubItem->setExpanded(false);
+////                        //pSubItem->setIcon(0, QIcon(":/icons/icons/red_dot.png"));
+////                        if (bConnected)
+////                        {
+////                            //pSubItem->setTextColor(0, Qt::black);
+////                            //pSubItem->setTextColor(1, Qt::black);
+////                        }
+////                        else
+////                        {
+////                            pSubItem->setTextColor(0, Qt::gray);
+////                            pSubItem->setTextColor(1, Qt::gray);
+////                        }
+////                        pSubItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+////                        //todo
+////                        pSubItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_ACCOUNT));
+////                        pSubItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
+
+////                        if (!qstrTLA.isEmpty()) {
+////                            pSubItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
+////                        }
+////                        if (!qstrAssetTypeId.isEmpty()) {
+////                            pSubItem->setData(0, Qt::UserRole+3, QVariant(qstrAssetTypeId));
+////                        }
+////                        if (!qstrAccountId.isEmpty()) {
+////                            pSubItem->setData(0, Qt::UserRole+4, QVariant(qstrAccountId));
+////                        }
+
+////                        if (!qstrServerId.isEmpty()) {
+////                            pSubItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+////                        }
+
+
+
+////                        ++ci_accounts;
+////                    }
+////                    // ------------------------------------------------------
+////                    ci_acct_TLA++;
+////                }
+
+
+//                bool bServerHasBeenShownAlready = false;
 //                mapOfMapIDName bigMapAccountsByTLA;
+//                const QString qstrServerId = ci_paired.key();
 //                const mapIDName & mapAccounts = ci_paired.value();
 //                const std::string str_server_id = qstrServerId.toStdString();
-//                qstrSnpName = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(str_server_id));
+//                const bool bConnected = opentxs::OT::App().API().Exec().CheckConnection(str_server_id);
+
+//                QString qstrServerName = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(str_server_id));
+
+
 //                // ------------------------------------------------------
 //                this->GetAccountsByTLAFromMap(mapAccounts, // input
 //                                              mapTLAByAccountId, // input
 //                                              bigMapAccountsByTLA); // output
 
-//                mapOfMapIDName::const_iterator ci_acct_TLA = bigMapAccountsByTLA.begin();
+//                if (!bServerHasBeenShownAlready &&
+//                        bigMapAccountsByTLA.size() > 1)  // If there are multiple TLAs, then we HAVE to show the server above them on its own line.
+//                {
+//                    QString qstrTempSNPName;
+//                    if (!bServerHasBeenShownAlready) {
+//                        qstrTempSNPName = qstrServerName;
+//                    }
+//                    // ------------------
+//                    QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
+//                                                                        QStringList(qstrTempSNPName) << QString("") << QString(""));
+//                    items.append(pPairedItem);
+//                    pPairedItem->setExpanded(true);
 
-//                bool bServerHasBeenShownAlready = false;
+//                    const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+//                    pPairedItem->setIcon(0, QIcon(qstrIconPath));
+//                    if (bConnected)
+//                    {
+//                        //pPairedItem->setTextColor(0, Qt::black);
+//                        //pPairedItem->setTextColor(1, Qt::black);
+//                    }
+//                    else
+//                    {
+//                        pPairedItem->setTextColor(0, Qt::gray);
+//                        pPairedItem->setTextColor(1, Qt::gray);
+//                    }
+//                    pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+//                    pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
+//                    pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
+//                    if (!qstrServerId.isEmpty()) {
+//                        pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+//                    }
+
+//                    bServerHasBeenShownAlready = true;
+//                }
+
+
+//                mapOfMapIDName::const_iterator ci_acct_TLA = bigMapAccountsByTLA.begin();
 
 //                while (ci_acct_TLA != bigMapAccountsByTLA.end())
 //                {
 
+//                    // FOR EACH TLA:
+
 //                    const QString qstrTLA              = ci_acct_TLA.key();
 //                    const mapIDName & mapAccountsByTLA = ci_acct_TLA.value();
 //                    // ------------------------------------------------------
-
-//                    // FOR EACH TLA:
-
-//                    if (!bServerHasBeenShownAlready &&
-//                            bigMapAccountsByTLA.size() > 1)  // If there are multiple TLAs
-//                    {
-//                        // ------------------
-//                        QString qstrTempSNPName;
-//                        if (!bServerHasBeenShownAlready) {
-//                            qstrTempSNPName = qstrSnpName;
-//                            //bServerHasBeenShownAlready = true;
-//                        }
-//                        // ------------------
-//                        QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
-//                                                                            QStringList(qstrTempSNPName) << QString("") << QString(""));
-//                        items.append(pPairedItem);
-//                        pPairedItem->setExpanded(true);
-
-////                      if (!bServerHasBeenShownAlready)
-//                        {
-//                            bServerHasBeenShownAlready = true;
-//                            const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
-//                            pPairedItem->setIcon(0, QIcon(qstrIconPath));
-//                            if (bConnected)
-//                            {
-//                                //pPairedItem->setTextColor(0, Qt::black);
-//                                //pPairedItem->setTextColor(1, Qt::black);
-//                            }
-//                            else
-//                            {
-//                                pPairedItem->setTextColor(0, Qt::gray);
-//                                pPairedItem->setTextColor(1, Qt::gray);
-//                            }
-//                            pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-//                        }
-
-//                        pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
-//                        pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
-//                        if (!qstrServerId.isEmpty()) {
-//                            pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
-//                        }
-//                    }
-//                    // -------
-//                    //const mapIDName & mapAccountsByTLA = ci_acct_TLA.value();
-
 //                    mapIDName::const_iterator ci_accounts = mapAccountsByTLA.begin();
 
 //                    while (ci_accounts != mapAccountsByTLA.end())
 //                    {
-//                        const QString qstrAccountId = ci_accounts.key();
+//                            QString qstrDisplayName;
+//                            bool bRollingUp = true;
+//                            bool bAccountNamesExist = false;
+//                            int64_t lTotalBalance = 0;
+//                            int64_t lDisplayBalance = 0;
+//                            std::string str_acct_id;
+//                            std::string str_asset_id;
+//                            std::string str_asset_id_for_formatting;
+//                            std::string str_formatted_amount;
+//                            std::string str_symbol_for_display;
+//                            QString qstrAssetTypeId; // Used when known.
+//                            QString qstrAccountId;
 
-//                        qDebug() << "DEBUGGING   qstrAccountId: " << qstrAccountId;
+//                            bool bAllAcctsForTLAHaveSameUnitTypeId = true;
 
+//                            for (mapIDName::const_iterator ci_accounts2 = mapAccountsByTLA.begin();
+//                                 ci_accounts2 != mapAccountsByTLA.end(); ci_accounts2++)
+//                            {
 
-//                        const std::string str_acct_id = qstrAccountId.toStdString();
-//                        const std::string str_asset_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
-//                        const int64_t lBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_acct_id);
-//                        const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(str_asset_id, lBalance);
-//    //                  const std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmount(str_asset_id, lBalance);
-//                        const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
+//                                // TODO: set bAllAcctsForTLAHaveSameUnitTypeId to false in the case
+//                                // where the current iteration's unit type doesn't match the first
+//                                // iteration's unit type.
+//                                // Until that is coded, for now, set it to false:
+//                                bAllAcctsForTLAHaveSameUnitTypeId = false;
 
-//                        const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id);
-//                        opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
-//                                                                        (opentxs::String(asset_contract));
+//                                const QString qstrCurrentAccountId = ci_accounts2.key();
+//                                const std::string str_current_acct_id = qstrCurrentAccountId.toStdString();
+//                                str_asset_id_for_formatting = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_current_acct_id);
+//                                const QString qstrCurrentAcctName = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_current_acct_id));
+//                                const int64_t lCurrentBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_current_acct_id);
 
-//                        const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
-//                        const QString qstrSymbol(QString::fromStdString(str_symbol));
-//                        const QString qstrAcctName = QString("     %1").arg(QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_acct_id)));
-//                        const QString qstrAssetTypeId = QString::fromStdString(str_asset_id);
-//                        //const QString qstrTLA = QString::fromStdString(opentxs::OT::App().API().Exec().GetCurrencyTLA(str_asset_id));
-//                        // ------------------
-//                        QTreeWidgetItem * pSubItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrAcctName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
-//                        items.append(pSubItem);
-//                        pSubItem->setExpanded(false);
-//                        //pSubItem->setIcon(0, QIcon(":/icons/icons/red_dot.png"));
-//                        if (bConnected)
-//                        {
-//                            //pSubItem->setTextColor(0, Qt::black);
-//                            //pSubItem->setTextColor(1, Qt::black);
-//                        }
-//                        else
-//                        {
-//                            pSubItem->setTextColor(0, Qt::gray);
-//                            pSubItem->setTextColor(1, Qt::gray);
-//                        }
-//                        pSubItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+//                                if (str_symbol_for_display.empty())
+//                                {
+//                                    const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id_for_formatting);
+//                                    opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
+//                                                                                    (opentxs::String(asset_contract));
+//                                    const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
+//                                    str_symbol_for_display = str_symbol;
+//                                }
 
-//                        //todo
-//                        pSubItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_ACCOUNT));
-//                        pSubItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
+//                                if (lCurrentBalance < 0) { // We don't include negative accounts (issuer accounts) on this screen.
+//                                    continue;
+//                                }
+//                                lTotalBalance += lCurrentBalance; // Total balance for all non-negative accounts
+//                                if (!qstrCurrentAcctName.isEmpty()) {
+//                                    bAccountNamesExist = true;
+//                                    bRollingUp = false;
+//                                }
+//                            }
 
-//                        if (!qstrTLA.isEmpty()) {
-//                            pSubItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
-//                        }
-//                        if (!qstrAssetTypeId.isEmpty()) {
-//                            pSubItem->setData(0, Qt::UserRole+3, QVariant(qstrAssetTypeId));
-//                        }
-//                        if (!qstrAccountId.isEmpty()) {
-//                            pSubItem->setData(0, Qt::UserRole+4, QVariant(qstrAccountId));
-//                        }
+//                            // In this case display all the accounts (for this TLA) on a single line.
+//                            // Else multiple lines.
+//                            //
+//                            if (bRollingUp) // Rollup!
+//                            {
+//                                lDisplayBalance = lTotalBalance;
 
-//                        if (!qstrServerId.isEmpty()) {
-//                            pSubItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
-//                        }
+//                                qstrDisplayName = bServerHasBeenShownAlready ? QString("") : qstrServerName;
 
+//                                // If we're rolling up, we can still set CERTAIN IDs, IF they are known.
+//                                // (From case to case). For example, the TLA is already known for all of them, and the server ID.
+//                                // Also for example, if there's only one account, we have an account ID AND an asset type ID.
+//                                //
+//                                if (1 == mapAccountsByTLA.size()) {
+//                                    bAllAcctsForTLAHaveSameUnitTypeId = true;
+//                                    qstrAccountId = ci_accounts.key();
+//                                }
 
+//                                // Here if we knew that all the accounts for a given TLA were all also the
+//                                // same unit type ID, we could set the unit type for any of them as the official
+//                                // unit type for this line on the tree.
+
+//                                if (bAllAcctsForTLAHaveSameUnitTypeId) {
+//                                    qstrAssetTypeId = QString::fromStdString(str_asset_id_for_formatting);
+//                                }
+//                            }
+//                            // Else multiple lines.
+//                            //
+//                            else
+//                            {
+//                                // The server has not yet been shown, and we're NOT rolling up.
+//                                // Therefore we have to show the server on its own line before
+//                                // showing the accounts.
+//                                if (!bServerHasBeenShownAlready)
+//                                {
+//                                    QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
+//                                                                                        QStringList(qstrServerName) << QString("") << QString(""));
+//                                    items.append(pPairedItem);
+//                                    pPairedItem->setExpanded(true);
+
+//                                    const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+//                                    pPairedItem->setIcon(0, QIcon(qstrIconPath));
+//                                    if (bConnected)
+//                                    {
+//                                        //pPairedItem->setTextColor(0, Qt::black);
+//                                        //pPairedItem->setTextColor(1, Qt::black);
+//                                    }
+//                                    else
+//                                    {
+//                                        pPairedItem->setTextColor(0, Qt::gray);
+//                                        pPairedItem->setTextColor(1, Qt::gray);
+//                                    }
+//                                    pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+//                                    pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
+//                                    pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
+//                                    if (!qstrServerId.isEmpty()) {
+//                                        pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+//                                    }
+
+//                                    bServerHasBeenShownAlready = true;
+//                                }
+//                                // --------------------------------------------------
+//                                qstrAccountId = ci_accounts.key(); // Because we're on the first one.
+//                                str_acct_id = qstrAccountId.toStdString();
+//                                str_asset_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+//                                str_asset_id_for_formatting = str_asset_id;
+//                                qstrAssetTypeId = QString::fromStdString(str_asset_id);
+//                                lDisplayBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_acct_id);
+
+//                                const QString qstrCurrentAcctName = QString("     %1")
+//                                        .arg(QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_acct_id)));
+
+//                                qstrDisplayName = qstrCurrentAcctName;
+//                                // ------------------
+//                                const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id);
+//                                opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
+//                                                                                (opentxs::String(asset_contract));
+//                                const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
+//                                str_symbol_for_display = str_symbol;
+//                            }
+//                            // ------------------
+//                            if (lDisplayBalance < 0) {
+//                                ++ci_accounts;
+//                                continue;
+//                            }
+//                            // ------------------
+//                            str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(str_asset_id_for_formatting, lDisplayBalance);
+//                            const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
+//                            // ------------------
+//                            const QString qstrSymbol(QString::fromStdString(str_symbol_for_display)); // May be empty
+//                            // ------------------
+//                            QTreeWidgetItem * pHostedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrDisplayName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
+//                            items.append(pHostedItem);
+//                            pHostedItem->setExpanded(false);
+
+//                            pHostedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_ACCOUNT));
+//                            pHostedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
+//                            if (!qstrTLA.isEmpty()) {
+//                                pHostedItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
+//                            }
+//                            if (!qstrAssetTypeId.isEmpty()) {
+//                                pHostedItem->setData(0, Qt::UserRole+3, QVariant(qstrAssetTypeId));
+//                            }
+//                            if (!qstrAccountId.isEmpty()) {
+//                                pHostedItem->setData(0, Qt::UserRole+4, QVariant(qstrAccountId));
+//                            }
+//                            if (!qstrServerId.isEmpty()) {
+//                                pHostedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+//                            }
+//                            // --------------------------------------------
+//                            if (!bServerHasBeenShownAlready) {
+//                                const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+//                                pHostedItem->setIcon(0, QIcon(qstrIconPath));
+//                            }
+
+//                            if (bConnected)
+//                            {
+//            //                    pHostedItem->setTextColor(0, Qt::black);
+//            //                    pHostedItem->setTextColor(1, Qt::black);
+//                            }
+//                            else
+//                            {
+//                                pHostedItem->setTextColor(0, Qt::gray);
+//                                pHostedItem->setTextColor(1, Qt::gray);
+//                            }
+//                            pHostedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+//                            bServerHasBeenShownAlready = true;
+
+//                            if (bRollingUp) {
+//                                break; // Done, for this TLA anyway.
+//                            }
 
 //                        ++ci_accounts;
 //                    }
@@ -1287,770 +1737,513 @@ J
 //                    ci_acct_TLA++;
 //                }
 
-
-                bool bServerHasBeenShownAlready = false;
-                mapOfMapIDName bigMapAccountsByTLA;
-                const QString qstrServerId = ci_paired.key();
-                const mapIDName & mapAccounts = ci_paired.value();
-                const std::string str_server_id = qstrServerId.toStdString();
-                const bool bConnected = opentxs::OT::App().API().Exec().CheckConnection(str_server_id);
-
-                QString qstrServerName = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(str_server_id));
-
-
-                // ------------------------------------------------------
-                this->GetAccountsByTLAFromMap(mapAccounts, // input
-                                              mapTLAByAccountId, // input
-                                              bigMapAccountsByTLA); // output
-
-                if (!bServerHasBeenShownAlready &&
-                        bigMapAccountsByTLA.size() > 1)  // If there are multiple TLAs, then we HAVE to show the server above them on its own line.
-                {
-                    QString qstrTempSNPName;
-                    if (!bServerHasBeenShownAlready) {
-                        qstrTempSNPName = qstrServerName;
-                    }
-                    // ------------------
-                    QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
-                                                                        QStringList(qstrTempSNPName) << QString("") << QString(""));
-                    items.append(pPairedItem);
-                    pPairedItem->setExpanded(true);
-
-                    const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
-                    pPairedItem->setIcon(0, QIcon(qstrIconPath));
-                    if (bConnected)
-                    {
-                        //pPairedItem->setTextColor(0, Qt::black);
-                        //pPairedItem->setTextColor(1, Qt::black);
-                    }
-                    else
-                    {
-                        pPairedItem->setTextColor(0, Qt::gray);
-                        pPairedItem->setTextColor(1, Qt::gray);
-                    }
-                    pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-
-                    pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
-                    pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
-                    if (!qstrServerId.isEmpty()) {
-                        pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
-                    }
-
-                    bServerHasBeenShownAlready = true;
-                }
-
-
-                mapOfMapIDName::const_iterator ci_acct_TLA = bigMapAccountsByTLA.begin();
-
-                while (ci_acct_TLA != bigMapAccountsByTLA.end())
-                {
-
-                    // FOR EACH TLA:
-
-                    const QString qstrTLA              = ci_acct_TLA.key();
-                    const mapIDName & mapAccountsByTLA = ci_acct_TLA.value();
-                    // ------------------------------------------------------
-                    mapIDName::const_iterator ci_accounts = mapAccountsByTLA.begin();
-
-                    while (ci_accounts != mapAccountsByTLA.end())
-                    {
-                            QString qstrDisplayName;
-                            bool bRollingUp = true;
-                            bool bAccountNamesExist = false;
-                            int64_t lTotalBalance = 0;
-                            int64_t lDisplayBalance = 0;
-                            std::string str_acct_id;
-                            std::string str_asset_id;
-                            std::string str_asset_id_for_formatting;
-                            std::string str_formatted_amount;
-                            std::string str_symbol_for_display;
-                            QString qstrAssetTypeId; // Used when known.
-                            QString qstrAccountId;
-
-                            bool bAllAcctsForTLAHaveSameUnitTypeId = true;
-
-                            for (mapIDName::const_iterator ci_accounts2 = mapAccountsByTLA.begin();
-                                 ci_accounts2 != mapAccountsByTLA.end(); ci_accounts2++)
-                            {
-
-                                // TODO: set bAllAcctsForTLAHaveSameUnitTypeId to false in the case
-                                // where the current iteration's unit type doesn't match the first
-                                // iteration's unit type.
-                                // Until that is coded, for now, set it to false:
-                                bAllAcctsForTLAHaveSameUnitTypeId = false;
-
-                                const QString qstrCurrentAccountId = ci_accounts2.key();
-                                const std::string str_current_acct_id = qstrCurrentAccountId.toStdString();
-                                str_asset_id_for_formatting = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_current_acct_id);
-                                const QString qstrCurrentAcctName = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_current_acct_id));
-                                const int64_t lCurrentBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_current_acct_id);
-
-                                if (str_symbol_for_display.empty())
-                                {
-                                    const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id_for_formatting);
-                                    opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
-                                                                                    (opentxs::String(asset_contract));
-                                    const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
-                                    str_symbol_for_display = str_symbol;
-                                }
-
-                                if (lCurrentBalance < 0) { // We don't include negative accounts (issuer accounts) on this screen.
-                                    continue;
-                                }
-                                lTotalBalance += lCurrentBalance; // Total balance for all non-negative accounts
-                                if (!qstrCurrentAcctName.isEmpty()) {
-                                    bAccountNamesExist = true;
-                                    bRollingUp = false;
-                                }
-                            }
-
-                            // In this case display all the accounts (for this TLA) on a single line.
-                            // Else multiple lines.
-                            //
-                            if (bRollingUp) // Rollup!
-                            {
-                                lDisplayBalance = lTotalBalance;
-
-                                qstrDisplayName = bServerHasBeenShownAlready ? QString("") : qstrServerName;
-
-                                // If we're rolling up, we can still set CERTAIN IDs, IF they are known.
-                                // (From case to case). For example, the TLA is already known for all of them, and the server ID.
-                                // Also for example, if there's only one account, we have an account ID AND an asset type ID.
-                                //
-                                if (1 == mapAccountsByTLA.size()) {
-                                    bAllAcctsForTLAHaveSameUnitTypeId = true;
-                                    qstrAccountId = ci_accounts.key();
-                                }
-
-                                // Here if we knew that all the accounts for a given TLA were all also the
-                                // same unit type ID, we could set the unit type for any of them as the official
-                                // unit type for this line on the tree.
-
-                                if (bAllAcctsForTLAHaveSameUnitTypeId) {
-                                    qstrAssetTypeId = QString::fromStdString(str_asset_id_for_formatting);
-                                }
-                            }
-                            // Else multiple lines.
-                            //
-                            else
-                            {
-                                // The server has not yet been shown, and we're NOT rolling up.
-                                // Therefore we have to show the server on its own line before
-                                // showing the accounts.
-                                if (!bServerHasBeenShownAlready)
-                                {
-                                    QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
-                                                                                        QStringList(qstrServerName) << QString("") << QString(""));
-                                    items.append(pPairedItem);
-                                    pPairedItem->setExpanded(true);
-
-                                    const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
-                                    pPairedItem->setIcon(0, QIcon(qstrIconPath));
-                                    if (bConnected)
-                                    {
-                                        //pPairedItem->setTextColor(0, Qt::black);
-                                        //pPairedItem->setTextColor(1, Qt::black);
-                                    }
-                                    else
-                                    {
-                                        pPairedItem->setTextColor(0, Qt::gray);
-                                        pPairedItem->setTextColor(1, Qt::gray);
-                                    }
-                                    pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-
-                                    pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
-                                    pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
-                                    if (!qstrServerId.isEmpty()) {
-                                        pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
-                                    }
-
-                                    bServerHasBeenShownAlready = true;
-                                }
-                                // --------------------------------------------------
-                                qstrAccountId = ci_accounts.key(); // Because we're on the first one.
-                                str_acct_id = qstrAccountId.toStdString();
-                                str_asset_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
-                                str_asset_id_for_formatting = str_asset_id;
-                                qstrAssetTypeId = QString::fromStdString(str_asset_id);
-                                lDisplayBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_acct_id);
-
-                                const QString qstrCurrentAcctName = QString("     %1")
-                                        .arg(QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_acct_id)));
-
-                                qstrDisplayName = qstrCurrentAcctName;
-                                // ------------------
-                                const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id);
-                                opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
-                                                                                (opentxs::String(asset_contract));
-                                const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
-                                str_symbol_for_display = str_symbol;
-                            }
-                            // ------------------
-                            if (lDisplayBalance < 0) {
-                                ++ci_accounts;
-                                continue;
-                            }
-                            // ------------------
-                            str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(str_asset_id_for_formatting, lDisplayBalance);
-                            const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
-                            // ------------------
-                            const QString qstrSymbol(QString::fromStdString(str_symbol_for_display)); // May be empty
-                            // ------------------
-                            QTreeWidgetItem * pHostedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrDisplayName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
-                            items.append(pHostedItem);
-                            pHostedItem->setExpanded(false);
-
-                            pHostedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_ACCOUNT));
-                            pHostedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
-                            if (!qstrTLA.isEmpty()) {
-                                pHostedItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
-                            }
-                            if (!qstrAssetTypeId.isEmpty()) {
-                                pHostedItem->setData(0, Qt::UserRole+3, QVariant(qstrAssetTypeId));
-                            }
-                            if (!qstrAccountId.isEmpty()) {
-                                pHostedItem->setData(0, Qt::UserRole+4, QVariant(qstrAccountId));
-                            }
-                            if (!qstrServerId.isEmpty()) {
-                                pHostedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
-                            }
-                            // --------------------------------------------
-                            if (!bServerHasBeenShownAlready) {
-                                const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
-                                pHostedItem->setIcon(0, QIcon(qstrIconPath));
-                            }
-
-                            if (bConnected)
-                            {
-            //                    pHostedItem->setTextColor(0, Qt::black);
-            //                    pHostedItem->setTextColor(1, Qt::black);
-                            }
-                            else
-                            {
-                                pHostedItem->setTextColor(0, Qt::gray);
-                                pHostedItem->setTextColor(1, Qt::gray);
-                            }
-                            pHostedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-
-                            bServerHasBeenShownAlready = true;
-
-                            if (bRollingUp) {
-                                break; // Done, for this TLA anyway.
-                            }
-
-                        ++ci_accounts;
-                    }
-                    // ------------------------------------------------------
-                    ci_acct_TLA++;
-                }
-
-            }
-            else // found no accounts for this server ID.
-            {
-                QTreeWidgetItem * pNodeItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrSnpName) << QString("") << QString(""));
-                items.append(pNodeItem);
-                pNodeItem->setExpanded(false);
-                const QString qstrIconPath(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
-                pNodeItem->setIcon(0, QIcon(qstrIconPath));
-                pNodeItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-
-                pNodeItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
-                pNodeItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
-                if (!qstrServerId.isEmpty()) {
-                    pNodeItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
-                }
-            }
-        }
-    } // For each paired or pairing node.
-    // ------------------------------------------------------------------------
-
-    mapOfMapIDName bigMapAccounts;
-    mapTLAByAccountId.clear();
-//  mapIDName mapTLAByAccountId;
-
-    this->GetAccountIdMapsByServerId(bigMapAccounts, false, // false means, only give me non-paired servers.
-                                     &mapTLAByAccountId);
-
-    if (bigMapAccounts.size() > 0)
-    {
-        // ----------------------------------------
-        //QTreeWidgetItem * pHostedAccountsItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Your Stash Node")));
-        // TODO: put this back. I only changed it for the video.
-        QTreeWidgetItem * pHostedAccountsItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Hosted Accounts")));
-        items.append(pHostedAccountsItem);
-        pHostedAccountsItem->setExpanded(true);
-        pHostedAccountsItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HEADER));
-        pHostedAccountsItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
-        pHostedAccountsItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-        pHostedAccountsItem->setTextColor(0, Qt::white);
-        pHostedAccountsItem->setTextColor(1, Qt::white);
-        pHostedAccountsItem->setBackgroundColor(0, Qt::gray);
-        pHostedAccountsItem->setBackgroundColor(1, Qt::gray);
-        pHostedAccountsItem->setBackgroundColor(2, Qt::gray);
-        pHostedAccountsItem->setBackgroundColor(3, Qt::gray);
-        pHostedAccountsItem->setFlags(pHostedAccountsItem->flags()&~Qt::ItemIsSelectable);
-        // ----------------------------------------
-        // From Vaage:
-        // Retrieve a list of hosted accounts for each server.
-        // For each server, if the list is empty, skip it.
-        // If the list only contains one account, display
-        // the balance directly on the same line as the server name.
-        // Only give it a separate line if the user has gone
-        // out of his way to name the account.
-        // If the user has named it, or if there are multiple accounts
-        // for that server, then display the balances below that server
-        // on the tree.
-
-        mapOfMapIDName::const_iterator ci_servers = bigMapAccounts.begin();
-
-        while (ci_servers != bigMapAccounts.end()) {
-            bool bServerHasBeenShownAlready = false;
-            mapOfMapIDName bigMapAccountsByTLA;
-            const QString qstrServerId = ci_servers.key();
-            const mapIDName & mapAccounts = ci_servers.value();
-            const std::string str_server_id = qstrServerId.toStdString();
-            const bool bConnected = opentxs::OT::App().API().Exec().CheckConnection(str_server_id);
-
-            QString qstrServerName = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(str_server_id));
-
-
-            // ------------------------------------------------------
-            this->GetAccountsByTLAFromMap(mapAccounts, // input
-                                          mapTLAByAccountId, // input
-                                          bigMapAccountsByTLA); // output
-
-
-
-
-            if (!bServerHasBeenShownAlready &&
-                    bigMapAccountsByTLA.size() > 1)  // If there are multiple TLAs, then we HAVE to show the server above them on its own line.
-            {
-                QString qstrTempSNPName;
-                if (!bServerHasBeenShownAlready) {
-                    qstrTempSNPName = qstrServerName;
-                }
-                // ------------------
-                QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
-                                                                    QStringList(qstrTempSNPName) << QString("") << QString(""));
-                items.append(pPairedItem);
-                pPairedItem->setExpanded(true);
-
-                const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
-                pPairedItem->setIcon(0, QIcon(qstrIconPath));
-                if (bConnected)
-                {
-                    //pPairedItem->setTextColor(0, Qt::black);
-                    //pPairedItem->setTextColor(1, Qt::black);
-                }
-                else
-                {
-                    pPairedItem->setTextColor(0, Qt::gray);
-                    pPairedItem->setTextColor(1, Qt::gray);
-                }
-                pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-
-                pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HOSTED_NOTARY));
-                pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
-                if (!qstrServerId.isEmpty()) {
-                    pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
-                }
-
-                bServerHasBeenShownAlready = true;
-            }
-
-
-            mapOfMapIDName::const_iterator ci_acct_TLA = bigMapAccountsByTLA.begin();
-
-            while (ci_acct_TLA != bigMapAccountsByTLA.end())
-            {
-
-                // FOR EACH TLA:
-
-                const QString qstrTLA              = ci_acct_TLA.key();
-                const mapIDName & mapAccountsByTLA = ci_acct_TLA.value();
-                // ------------------------------------------------------
-                mapIDName::const_iterator ci_accounts = mapAccountsByTLA.begin();
-
-                while (ci_accounts != mapAccountsByTLA.end())
-                {
-                        QString qstrDisplayName;
-                        bool bRollingUp = true;
-                        bool bAccountNamesExist = false;
-                        int64_t lTotalBalance = 0;
-                        int64_t lDisplayBalance = 0;
-                        std::string str_acct_id;
-                        std::string str_asset_id;
-                        std::string str_asset_id_for_formatting;
-                        std::string str_formatted_amount;
-                        std::string str_symbol_for_display;
-                        QString qstrAssetTypeId; // Used when known.
-                        QString qstrAccountId;
-
-                        bool bAllAcctsForTLAHaveSameUnitTypeId = true;
-
-                        for (mapIDName::const_iterator ci_accounts2 = mapAccountsByTLA.begin();
-                             ci_accounts2 != mapAccountsByTLA.end(); ci_accounts2++)
-                        {
-
-                            // TODO: set bAllAcctsForTLAHaveSameUnitTypeId to false in the case
-                            // where the current iteration's unit type doesn't match the first
-                            // iteration's unit type.
-                            // Until that is coded, for now, set it to false:
-                            bAllAcctsForTLAHaveSameUnitTypeId = false;
-
-                            const QString qstrCurrentAccountId = ci_accounts2.key();
-                            const std::string str_current_acct_id = qstrCurrentAccountId.toStdString();
-                            str_asset_id_for_formatting = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_current_acct_id);
-                            const QString qstrCurrentAcctName = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_current_acct_id));
-                            const int64_t lCurrentBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_current_acct_id);
-
-                            if (str_symbol_for_display.empty())
-                            {
-                                const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id_for_formatting);
-                                opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
-                                                                                (opentxs::String(asset_contract));
-                                const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
-                                str_symbol_for_display = str_symbol;
-                            }
-
-                            if (lCurrentBalance < 0) { // We don't include negative accounts (issuer accounts) on this screen.
-                                continue;
-                            }
-                            lTotalBalance += lCurrentBalance; // Total balance for all non-negative accounts
-                            if (!qstrCurrentAcctName.isEmpty()) {
-                                bAccountNamesExist = true;
-                                bRollingUp = false;
-                            }
-                        }
-
-                        // In this case display all the accounts (for this TLA) on a single line.
-                        // Else multiple lines.
-                        //
-                        if (bRollingUp) // Rollup!
-                        {
-                            lDisplayBalance = lTotalBalance;
-
-                            qstrDisplayName = bServerHasBeenShownAlready ? QString("") : qstrServerName;
-
-                            // If we're rolling up, we can still set CERTAIN IDs, IF they are known.
-                            // (From case to case). For example, the TLA is already known for all of them, and the server ID.
-                            // Also for example, if there's only one account, we have an account ID AND an asset type ID.
-                            //
-                            if (1 == mapAccountsByTLA.size()) {
-                                bAllAcctsForTLAHaveSameUnitTypeId = true;
-                                qstrAccountId = ci_accounts.key();
-                            }
-
-                            // Here if we knew that all the accounts for a given TLA were all also the
-                            // same unit type ID, we could set the unit type for any of them as the official
-                            // unit type for this line on the tree.
-
-                            if (bAllAcctsForTLAHaveSameUnitTypeId) {
-                                qstrAssetTypeId = QString::fromStdString(str_asset_id_for_formatting);
-                            }
-
-
-                        }
-                        // Else multiple lines.
-                        //
-                        else
-                        {
-                            // The server has not yet been shown, and we're NOT rolling up.
-                            // Therefore we have to show the server on its own line before
-                            // showing the accounts.
-                            if (!bServerHasBeenShownAlready)
-                            {
-                                QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
-                                                                                    QStringList(qstrServerName) << QString("") << QString(""));
-                                items.append(pPairedItem);
-                                pPairedItem->setExpanded(true);
-
-                                const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
-                                pPairedItem->setIcon(0, QIcon(qstrIconPath));
-                                if (bConnected)
-                                {
-                                    //pPairedItem->setTextColor(0, Qt::black);
-                                    //pPairedItem->setTextColor(1, Qt::black);
-                                }
-                                else
-                                {
-                                    pPairedItem->setTextColor(0, Qt::gray);
-                                    pPairedItem->setTextColor(1, Qt::gray);
-                                }
-                                pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-
-                                pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HOSTED_NOTARY));
-                                pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
-                                if (!qstrServerId.isEmpty()) {
-                                    pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
-                                }
-
-                                bServerHasBeenShownAlready = true;
-                            }
-                            // --------------------------------------------------
-                            qstrAccountId = ci_accounts.key(); // Because we're on the first one.
-                            str_acct_id = qstrAccountId.toStdString();
-                            str_asset_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
-                            str_asset_id_for_formatting = str_asset_id;
-                            qstrAssetTypeId = QString::fromStdString(str_asset_id);
-                            lDisplayBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_acct_id);
-
-                            const QString qstrCurrentAcctName = QString("     %1")
-                                    .arg(QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_acct_id)));
-
-                            qstrDisplayName = qstrCurrentAcctName;
-                            // ------------------
-                            const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id);
-                            opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
-                                                                            (opentxs::String(asset_contract));
-                            const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
-                            str_symbol_for_display = str_symbol;
-                        }
-                        // ------------------
-                        if (lDisplayBalance < 0) {
-                            ++ci_accounts;
-                            continue;
-                        }
-                        // ------------------
-                        str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(str_asset_id_for_formatting, lDisplayBalance);
-                        const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
-                        // ------------------
-                        const QString qstrSymbol(QString::fromStdString(str_symbol_for_display)); // May be empty
-                        // ------------------
-                        QTreeWidgetItem * pHostedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrDisplayName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
-                        items.append(pHostedItem);
-                        pHostedItem->setExpanded(false);
-
-                        pHostedItem->setData(0, Qt::UserRole, QVariant(AC_NODE_TYPE_HOSTED_ACCOUNT));
-                        pHostedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
-                        if (!qstrTLA.isEmpty()) {
-                            pHostedItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
-                        }
-                        if (!qstrAssetTypeId.isEmpty()) {
-                            pHostedItem->setData(0, Qt::UserRole+3, QVariant(qstrAssetTypeId));
-                        }
-                        if (!qstrAccountId.isEmpty()) {
-                            pHostedItem->setData(0, Qt::UserRole+4, QVariant(qstrAccountId));
-                        }
-                        if (!qstrServerId.isEmpty()) {
-                            pHostedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
-                        }
-                        // --------------------------------------------
-                        if (!bServerHasBeenShownAlready) {
-                            const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
-                            pHostedItem->setIcon(0, QIcon(qstrIconPath));
-                        }
-
-                        if (bConnected)
-                        {
-        //                    pHostedItem->setTextColor(0, Qt::black);
-        //                    pHostedItem->setTextColor(1, Qt::black);
-                        }
-                        else
-                        {
-                            pHostedItem->setTextColor(0, Qt::gray);
-                            pHostedItem->setTextColor(1, Qt::gray);
-                        }
-                        pHostedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-
-                        bServerHasBeenShownAlready = true;
-
-                        if (bRollingUp) {
-                            break; // Done, for this TLA anyway.
-                        }
-
-                    ++ci_accounts;
-                }
-                // ------------------------------------------------------
-                ci_acct_TLA++;
-            }
-
-            ++ci_servers;
-        }
-
-
-
-    } // The hosted accounts
-    // ----------------------------------------
-
-//    {
-//    QTreeWidgetItem * pHostedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList("Ruritarian Reserve") << "BTC 1.686 46731");
-//    items.append(pHostedItem);
-//    pHostedItem->setExpanded(false);
-//    pHostedItem->setIcon(0, QIcon(":/icons/icons/red_dot.png"));
-//    pHostedItem->setTextColor(0, Qt::gray);
-//    pHostedItem->setTextColor(1, Qt::gray);
-//    pHostedItem->setData(0, Qt::UserRole, QVariant(0));
-//    pHostedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-//    }
-//    {
-//    QTreeWidgetItem * pHostedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList("Nakamoto Market") << "BTC 0.000 00000");
-//    items.append(pHostedItem);
-//    pHostedItem->setExpanded(false);
-//    pHostedItem->setIcon(0, QIcon(":/icons/icons/green_dot.png"));
-//    pHostedItem->setData(0, Qt::UserRole, QVariant(0));
-//    pHostedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-//    }
-
-    mapIDName mapContacts;
-
-    if (MTContactHandler::getInstance()->GetOpentxsContacts(mapContacts))
-    {
-        // ----------------------------------------
-        QTreeWidgetItem * pContactsItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Contacts")));
-        items.append(pContactsItem);
-        pContactsItem->setExpanded(true);
-        pContactsItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HEADER));
-        pContactsItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_CONTACTS));
-        pContactsItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-        pContactsItem->setTextColor(0, Qt::white);
-        pContactsItem->setTextColor(1, Qt::white);
-        pContactsItem->setBackgroundColor(0, Qt::gray);
-        pContactsItem->setBackgroundColor(1, Qt::gray);
-        pContactsItem->setBackgroundColor(2, Qt::gray);
-        pContactsItem->setBackgroundColor(3, Qt::gray);
-        pContactsItem->setFlags(pContactsItem->flags()&~Qt::ItemIsSelectable);
-        // ----------------------------------------
-        for (mapIDName::iterator ii = mapContacts.begin(); ii != mapContacts.end(); ii++)
-        {
-            QString qstrContactID   = ii.key();
-            QString qstrTemp = ii.value();
-            QString qstrContactName = QString("CONTACT_NAME_EMPTY");
-            if (!qstrTemp.isEmpty())
-            {
-                qstrContactName = qstrTemp;
-            }
-            // ------------------------------------
-            QTreeWidgetItem * pTopItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrContactName));
-
-            pTopItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_CONTACT));
-            pTopItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_CONTACTS));
-
-            if (!qstrContactID.isEmpty()) {
-                pTopItem->setData(0, Qt::UserRole+6, QVariant(qstrContactID));
-            }
-
-            pTopItem->setExpanded(true);
-            //pTopItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
-            items.append(pTopItem);
-        }
-        // ----------------------------------------
-        if (items.count() > 0)
-        {
-            pTreeWidgetAccounts->insertTopLevelItems(0, items);
-//            pTreeWidgetAccounts->resizeColumnToContents(0);
-        }
-    }
-
-    pTreeWidgetAccounts->resizeColumnToContents(0);
-    pTreeWidgetAccounts->resizeColumnToContents(1);
-    pTreeWidgetAccounts->resizeColumnToContents(2);
-    pTreeWidgetAccounts->resizeColumnToContents(3);
-    // ----------------------------------------
-    // Make sure the same item that was selected before, is selected again.
-    // (If it still exists, which it probably does.)
-
-    QTreeWidgetItem * previous = pTreeWidgetAccounts->currentItem();
-
-    QTreeWidgetItem * pItemToSelect {nullptr};
-
-    // In this case, just select the first thing on the list.
-    if (    qstrCurrentTLA_.isEmpty()
-         && qstrCurrentNotary_.isEmpty()
-         && qstrCurrentAccount_.isEmpty()
-         && qstrCurrentContact_.isEmpty() )
-    {
-//        qDebug() << "RefreshAccountTree: the strings were all empty\n";
-
-        if (pTreeWidgetAccounts->topLevelItemCount() > 0)
-        {
-            //qDebug() << "RefreshAccountTree: setting to 0th top level item. 1\n";
-
-//            pItemToSelect = pTreeWidgetAccounts->topLevelItem(0);
-        }
-    }
-    else // Find the one that was selected before the refresh.
-    {
-        bool bFoundIt = false;
-
-        QTreeWidgetItemIterator it(pTreeWidgetAccounts);
-
-//        qDebug() << "RefreshAccountTree: entering while loop...\n";
-
-        while (*it)
-        {
-            const int      nNodeType       = (*it)->data(0, Qt::UserRole+0).toInt();
-            const int      nHeader         = (*it)->data(0, Qt::UserRole+1).toInt();
-            const QVariant qvarTLA         = (*it)->data(0, Qt::UserRole+2);
-            const QVariant qvarAssetTypeId = (*it)->data(0, Qt::UserRole+3);
-            const QVariant qvarAccountId   = (*it)->data(0, Qt::UserRole+4);
-            const QVariant qvarServerId    = (*it)->data(0, Qt::UserRole+5);
-            const QVariant qvarContactId   = (*it)->data(0, Qt::UserRole+6);
-            // ------------------------------------------------------------
-            const QString  qstrTLA         = qvarTLA.isValid()         ? qvarTLA.toString()         : "";
-            const QString  qstrAssetTypeId = qvarAssetTypeId.isValid() ? qvarAssetTypeId.toString() : "";
-            const QString  qstrServerId    = qvarServerId.isValid()    ? qvarServerId.toString()    : "";
-            const QString  qstrAccountId   = qvarAccountId.isValid()   ? qvarAccountId.toString()   : "";
-            const QString  qstrContactId   = qvarContactId.isValid()   ? qvarContactId.toString()   : "";
-            // ------------------------------------------------------------
-            const bool bContactsMatch = !qstrContactId.isEmpty() && (0 == qstrContactId.compare(qstrCurrentContact_));
-            const bool bAccountsMatch = !qstrAccountId.isEmpty() && (0 == qstrAccountId.compare(qstrCurrentAccount_));
-            const bool bOtherMatch    = (   (0 == qstrTLA.compare(qstrCurrentTLA_ ))
-                                         && (0 == qstrServerId.compare(qstrCurrentNotary_))
-                                         && (0 == qstrAccountId.compare(qstrCurrentAccount_))
-                                         && (0 == qstrContactId.compare(qstrCurrentContact_))
-                                         );
-            if (bContactsMatch || bOtherMatch || bAccountsMatch)
-            {
-//                qDebug() << "RefreshAccountTree: MATCHED.\n";
-//
-//                if (bContactsMatch)
-//                    qDebug() << "RefreshAccountTree: Contacts MATCHED.\n";
-//                if (bOtherMatch)
-//                    qDebug() << "RefreshAccountTree: Other MATCHED.\n";
-//                if (bAccountsMatch)
-//                    qDebug() << "RefreshAccountTree: Accounts MATCHED.\n";
-
-                bFoundIt = true;
-                pItemToSelect = *it;
-
-                break;
-            }
-            else
-            {
-//                qDebug() << "RefreshAccountTree: DID NOT match:";
-//                qDebug() << "qstrTLA: " << qstrTLA << "qstrCurrentTLA_: " << qstrCurrentTLA_;
-//                qDebug() << "qstrServerId: " << qstrServerId << "qstrCurrentNotary_: " << qstrCurrentNotary_;
-//                qDebug() << "qstrAccountId: " << qstrAccountId << "qstrCurrentAccount_: " << qstrCurrentAccount_;
-//                qDebug() << "qstrContactId: " << qstrContactId << "qstrCurrentContact_: " << qstrCurrentContact_ << "\n";
-            }
-            // ------------------------
-            ++it;
-        } //while
-        if (!bFoundIt)
-        {
-//            if (pTreeWidgetAccounts->topLevelItemCount() > 0)
-//            {
-//                qDebug() << "RefreshAccountTree: setting to 0th top level item. 2\n";
-//
-//                pItemToSelect = pTreeWidgetAccounts->topLevelItem(0);
 //            }
-        }
-    }
-//  pTreeWidgetAccounts->expandAll();
-    // ----------------------------------------
-    pTreeWidgetAccounts->blockSignals(false);
-    // ----------------------------------------
-//    if (nullptr == pItemToSelect)
+//            else // found no accounts for this server ID.
+//            {
+//                QTreeWidgetItem * pNodeItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrSnpName) << QString("") << QString(""));
+//                items.append(pNodeItem);
+//                pNodeItem->setExpanded(false);
+//                const QString qstrIconPath(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+//                pNodeItem->setIcon(0, QIcon(qstrIconPath));
+//                pNodeItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+//                pNodeItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_SNP_NOTARY));
+//                pNodeItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_SNP));
+//                if (!qstrServerId.isEmpty()) {
+//                    pNodeItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+//                }
+//            }
+//        }
+//    } // For each paired or pairing node.
+//    // ------------------------------------------------------------------------
+
+//    mapOfMapIDName bigMapAccounts;
+//    mapTLAByAccountId.clear();
+////  mapIDName mapTLAByAccountId;
+
+//    this->GetAccountIdMapsByServerId(bigMapAccounts, false, // false means, only give me non-paired servers.
+//                                     &mapTLAByAccountId);
+
+//    if (bigMapAccounts.size() > 0)
 //    {
-//        pItemToSelect = pTreeWidgetAccounts->topLevelItem(0);
+//        // ----------------------------------------
+//        //QTreeWidgetItem * pHostedAccountsItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Your Stash Node")));
+//        // TODO: put this back. I only changed it for the video.
+//        QTreeWidgetItem * pHostedAccountsItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Hosted Accounts")));
+//        items.append(pHostedAccountsItem);
+//        pHostedAccountsItem->setExpanded(true);
+//        pHostedAccountsItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HEADER));
+//        pHostedAccountsItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
+//        pHostedAccountsItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+//        pHostedAccountsItem->setTextColor(0, Qt::white);
+//        pHostedAccountsItem->setTextColor(1, Qt::white);
+//        pHostedAccountsItem->setBackgroundColor(0, Qt::gray);
+//        pHostedAccountsItem->setBackgroundColor(1, Qt::gray);
+//        pHostedAccountsItem->setBackgroundColor(2, Qt::gray);
+//        pHostedAccountsItem->setBackgroundColor(3, Qt::gray);
+//        pHostedAccountsItem->setFlags(pHostedAccountsItem->flags()&~Qt::ItemIsSelectable);
+//        // ----------------------------------------
+//        // From Vaage:
+//        // Retrieve a list of hosted accounts for each server.
+//        // For each server, if the list is empty, skip it.
+//        // If the list only contains one account, display
+//        // the balance directly on the same line as the server name.
+//        // Only give it a separate line if the user has gone
+//        // out of his way to name the account.
+//        // If the user has named it, or if there are multiple accounts
+//        // for that server, then display the balances below that server
+//        // on the tree.
+
+//        mapOfMapIDName::const_iterator ci_servers = bigMapAccounts.begin();
+
+//        while (ci_servers != bigMapAccounts.end()) {
+//            bool bServerHasBeenShownAlready = false;
+//            mapOfMapIDName bigMapAccountsByTLA;
+//            const QString qstrServerId = ci_servers.key();
+//            const mapIDName & mapAccounts = ci_servers.value();
+//            const std::string str_server_id = qstrServerId.toStdString();
+//            const bool bConnected = opentxs::OT::App().API().Exec().CheckConnection(str_server_id);
+
+//            QString qstrServerName = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(str_server_id));
+
+
+//            // ------------------------------------------------------
+//            this->GetAccountsByTLAFromMap(mapAccounts, // input
+//                                          mapTLAByAccountId, // input
+//                                          bigMapAccountsByTLA); // output
+
+
+
+
+//            if (!bServerHasBeenShownAlready &&
+//                    bigMapAccountsByTLA.size() > 1)  // If there are multiple TLAs, then we HAVE to show the server above them on its own line.
+//            {
+//                QString qstrTempSNPName;
+//                if (!bServerHasBeenShownAlready) {
+//                    qstrTempSNPName = qstrServerName;
+//                }
+//                // ------------------
+//                QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
+//                                                                    QStringList(qstrTempSNPName) << QString("") << QString(""));
+//                items.append(pPairedItem);
+//                pPairedItem->setExpanded(true);
+
+//                const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+//                pPairedItem->setIcon(0, QIcon(qstrIconPath));
+//                if (bConnected)
+//                {
+//                    //pPairedItem->setTextColor(0, Qt::black);
+//                    //pPairedItem->setTextColor(1, Qt::black);
+//                }
+//                else
+//                {
+//                    pPairedItem->setTextColor(0, Qt::gray);
+//                    pPairedItem->setTextColor(1, Qt::gray);
+//                }
+//                pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+//                pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HOSTED_NOTARY));
+//                pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
+//                if (!qstrServerId.isEmpty()) {
+//                    pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+//                }
+
+//                bServerHasBeenShownAlready = true;
+//            }
+
+
+//            mapOfMapIDName::const_iterator ci_acct_TLA = bigMapAccountsByTLA.begin();
+
+//            while (ci_acct_TLA != bigMapAccountsByTLA.end())
+//            {
+
+//                // FOR EACH TLA:
+
+//                const QString qstrTLA              = ci_acct_TLA.key();
+//                const mapIDName & mapAccountsByTLA = ci_acct_TLA.value();
+//                // ------------------------------------------------------
+//                mapIDName::const_iterator ci_accounts = mapAccountsByTLA.begin();
+
+//                while (ci_accounts != mapAccountsByTLA.end())
+//                {
+//                        QString qstrDisplayName;
+//                        bool bRollingUp = true;
+//                        bool bAccountNamesExist = false;
+//                        int64_t lTotalBalance = 0;
+//                        int64_t lDisplayBalance = 0;
+//                        std::string str_acct_id;
+//                        std::string str_asset_id;
+//                        std::string str_asset_id_for_formatting;
+//                        std::string str_formatted_amount;
+//                        std::string str_symbol_for_display;
+//                        QString qstrAssetTypeId; // Used when known.
+//                        QString qstrAccountId;
+
+//                        bool bAllAcctsForTLAHaveSameUnitTypeId = true;
+
+//                        for (mapIDName::const_iterator ci_accounts2 = mapAccountsByTLA.begin();
+//                             ci_accounts2 != mapAccountsByTLA.end(); ci_accounts2++)
+//                        {
+
+//                            // TODO: set bAllAcctsForTLAHaveSameUnitTypeId to false in the case
+//                            // where the current iteration's unit type doesn't match the first
+//                            // iteration's unit type.
+//                            // Until that is coded, for now, set it to false:
+//                            bAllAcctsForTLAHaveSameUnitTypeId = false;
+
+//                            const QString qstrCurrentAccountId = ci_accounts2.key();
+//                            const std::string str_current_acct_id = qstrCurrentAccountId.toStdString();
+//                            str_asset_id_for_formatting = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_current_acct_id);
+//                            const QString qstrCurrentAcctName = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_current_acct_id));
+//                            const int64_t lCurrentBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_current_acct_id);
+
+//                            if (str_symbol_for_display.empty())
+//                            {
+//                                const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id_for_formatting);
+//                                opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
+//                                                                                (opentxs::String(asset_contract));
+//                                const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
+//                                str_symbol_for_display = str_symbol;
+//                            }
+
+//                            if (lCurrentBalance < 0) { // We don't include negative accounts (issuer accounts) on this screen.
+//                                continue;
+//                            }
+//                            lTotalBalance += lCurrentBalance; // Total balance for all non-negative accounts
+//                            if (!qstrCurrentAcctName.isEmpty()) {
+//                                bAccountNamesExist = true;
+//                                bRollingUp = false;
+//                            }
+//                        }
+
+//                        // In this case display all the accounts (for this TLA) on a single line.
+//                        // Else multiple lines.
+//                        //
+//                        if (bRollingUp) // Rollup!
+//                        {
+//                            lDisplayBalance = lTotalBalance;
+
+//                            qstrDisplayName = bServerHasBeenShownAlready ? QString("") : qstrServerName;
+
+//                            // If we're rolling up, we can still set CERTAIN IDs, IF they are known.
+//                            // (From case to case). For example, the TLA is already known for all of them, and the server ID.
+//                            // Also for example, if there's only one account, we have an account ID AND an asset type ID.
+//                            //
+//                            if (1 == mapAccountsByTLA.size()) {
+//                                bAllAcctsForTLAHaveSameUnitTypeId = true;
+//                                qstrAccountId = ci_accounts.key();
+//                            }
+
+//                            // Here if we knew that all the accounts for a given TLA were all also the
+//                            // same unit type ID, we could set the unit type for any of them as the official
+//                            // unit type for this line on the tree.
+
+//                            if (bAllAcctsForTLAHaveSameUnitTypeId) {
+//                                qstrAssetTypeId = QString::fromStdString(str_asset_id_for_formatting);
+//                            }
+
+
+//                        }
+//                        // Else multiple lines.
+//                        //
+//                        else
+//                        {
+//                            // The server has not yet been shown, and we're NOT rolling up.
+//                            // Therefore we have to show the server on its own line before
+//                            // showing the accounts.
+//                            if (!bServerHasBeenShownAlready)
+//                            {
+//                                QTreeWidgetItem * pPairedItem = new QTreeWidgetItem((QTreeWidget *)nullptr,
+//                                                                                    QStringList(qstrServerName) << QString("") << QString(""));
+//                                items.append(pPairedItem);
+//                                pPairedItem->setExpanded(true);
+
+//                                const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+//                                pPairedItem->setIcon(0, QIcon(qstrIconPath));
+//                                if (bConnected)
+//                                {
+//                                    //pPairedItem->setTextColor(0, Qt::black);
+//                                    //pPairedItem->setTextColor(1, Qt::black);
+//                                }
+//                                else
+//                                {
+//                                    pPairedItem->setTextColor(0, Qt::gray);
+//                                    pPairedItem->setTextColor(1, Qt::gray);
+//                                }
+//                                pPairedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+//                                pPairedItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HOSTED_NOTARY));
+//                                pPairedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
+//                                if (!qstrServerId.isEmpty()) {
+//                                    pPairedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+//                                }
+
+//                                bServerHasBeenShownAlready = true;
+//                            }
+//                            // --------------------------------------------------
+//                            qstrAccountId = ci_accounts.key(); // Because we're on the first one.
+//                            str_acct_id = qstrAccountId.toStdString();
+//                            str_asset_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+//                            str_asset_id_for_formatting = str_asset_id;
+//                            qstrAssetTypeId = QString::fromStdString(str_asset_id);
+//                            lDisplayBalance = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(str_acct_id);
+
+//                            const QString qstrCurrentAcctName = QString("     %1")
+//                                    .arg(QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_acct_id)));
+
+//                            qstrDisplayName = qstrCurrentAcctName;
+//                            // ------------------
+//                            const std::string asset_contract = opentxs::OT::App().API().Exec().GetAssetType_Contract(str_asset_id);
+//                            opentxs::proto::UnitDefinition contractProto = opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
+//                                                                            (opentxs::String(asset_contract));
+//                            const std::string str_symbol = (contractProto.has_currency() && contractProto.has_symbol()) ? contractProto.symbol() : "";
+//                            str_symbol_for_display = str_symbol;
+//                        }
+//                        // ------------------
+//                        if (lDisplayBalance < 0) {
+//                            ++ci_accounts;
+//                            continue;
+//                        }
+//                        // ------------------
+//                        str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmountWithoutSymbol(str_asset_id_for_formatting, lDisplayBalance);
+//                        const QString qstrFormattedAmount = QString::fromStdString(str_formatted_amount);
+//                        // ------------------
+//                        const QString qstrSymbol(QString::fromStdString(str_symbol_for_display)); // May be empty
+//                        // ------------------
+//                        QTreeWidgetItem * pHostedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrDisplayName) << qstrSymbol << qstrFormattedAmount << qstrTLA);
+//                        items.append(pHostedItem);
+//                        pHostedItem->setExpanded(false);
+
+//                        pHostedItem->setData(0, Qt::UserRole, QVariant(AC_NODE_TYPE_HOSTED_ACCOUNT));
+//                        pHostedItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_HOSTED));
+//                        if (!qstrTLA.isEmpty()) {
+//                            pHostedItem->setData(0, Qt::UserRole+2, QVariant(qstrTLA));
+//                        }
+//                        if (!qstrAssetTypeId.isEmpty()) {
+//                            pHostedItem->setData(0, Qt::UserRole+3, QVariant(qstrAssetTypeId));
+//                        }
+//                        if (!qstrAccountId.isEmpty()) {
+//                            pHostedItem->setData(0, Qt::UserRole+4, QVariant(qstrAccountId));
+//                        }
+//                        if (!qstrServerId.isEmpty()) {
+//                            pHostedItem->setData(0, Qt::UserRole+5, QVariant(qstrServerId));
+//                        }
+//                        // --------------------------------------------
+//                        if (!bServerHasBeenShownAlready) {
+//                            const QString qstrIconPath = QString(bConnected ? ":/icons/icons/green_dot.png" : ":/icons/icons/red_dot.png");
+//                            pHostedItem->setIcon(0, QIcon(qstrIconPath));
+//                        }
+
+//                        if (bConnected)
+//                        {
+//        //                    pHostedItem->setTextColor(0, Qt::black);
+//        //                    pHostedItem->setTextColor(1, Qt::black);
+//                        }
+//                        else
+//                        {
+//                            pHostedItem->setTextColor(0, Qt::gray);
+//                            pHostedItem->setTextColor(1, Qt::gray);
+//                        }
+//                        pHostedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+
+//                        bServerHasBeenShownAlready = true;
+
+//                        if (bRollingUp) {
+//                            break; // Done, for this TLA anyway.
+//                        }
+
+//                    ++ci_accounts;
+//                }
+//                // ------------------------------------------------------
+//                ci_acct_TLA++;
+//            }
+
+//            ++ci_servers;
+//        }
+
+
+
+//    } // The hosted accounts
+//    // ----------------------------------------
+
+////    {
+////    QTreeWidgetItem * pHostedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList("Ruritarian Reserve") << "BTC 1.686 46731");
+////    items.append(pHostedItem);
+////    pHostedItem->setExpanded(false);
+////    pHostedItem->setIcon(0, QIcon(":/icons/icons/red_dot.png"));
+////    pHostedItem->setTextColor(0, Qt::gray);
+////    pHostedItem->setTextColor(1, Qt::gray);
+////    pHostedItem->setData(0, Qt::UserRole, QVariant(0));
+////    pHostedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+////    }
+////    {
+////    QTreeWidgetItem * pHostedItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList("Nakamoto Market") << "BTC 0.000 00000");
+////    items.append(pHostedItem);
+////    pHostedItem->setExpanded(false);
+////    pHostedItem->setIcon(0, QIcon(":/icons/icons/green_dot.png"));
+////    pHostedItem->setData(0, Qt::UserRole, QVariant(0));
+////    pHostedItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+////    }
+
+//    mapIDName mapContacts;
+
+//    if (MTContactHandler::getInstance()->GetOpentxsContacts(mapContacts))
+//    {
+//        // ----------------------------------------
+//        QTreeWidgetItem * pContactsItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("Contacts")));
+//        items.append(pContactsItem);
+//        pContactsItem->setExpanded(true);
+//        pContactsItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_HEADER));
+//        pContactsItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_CONTACTS));
+//        pContactsItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+//        pContactsItem->setTextColor(0, Qt::white);
+//        pContactsItem->setTextColor(1, Qt::white);
+//        pContactsItem->setBackgroundColor(0, Qt::gray);
+//        pContactsItem->setBackgroundColor(1, Qt::gray);
+//        pContactsItem->setBackgroundColor(2, Qt::gray);
+//        pContactsItem->setBackgroundColor(3, Qt::gray);
+//        pContactsItem->setFlags(pContactsItem->flags()&~Qt::ItemIsSelectable);
+//        // ----------------------------------------
+//        for (mapIDName::iterator ii = mapContacts.begin(); ii != mapContacts.end(); ii++)
+//        {
+//            QString qstrContactID   = ii.key();
+//            QString qstrTemp = ii.value();
+//            QString qstrContactName = QString("CONTACT_NAME_EMPTY");
+//            if (!qstrTemp.isEmpty())
+//            {
+//                qstrContactName = qstrTemp;
+//            }
+//            // ------------------------------------
+//            QTreeWidgetItem * pTopItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrContactName));
+
+//            pTopItem->setData(0, Qt::UserRole+0, QVariant(AC_NODE_TYPE_CONTACT));
+//            pTopItem->setData(0, Qt::UserRole+1, QVariant(ACTIVITY_TREE_HEADER_CONTACTS));
+
+//            if (!qstrContactID.isEmpty()) {
+//                pTopItem->setData(0, Qt::UserRole+6, QVariant(qstrContactID));
+//            }
+
+//            pTopItem->setExpanded(true);
+//            //pTopItem->setChildIndicatorPolicy(QTreeWidgetItem::DontShowIndicator);
+//            items.append(pTopItem);
+//        }
+//        // ----------------------------------------
+//        if (items.count() > 0)
+//        {
+//            pTreeWidgetAccounts->insertTopLevelItems(0, items);
+////            pTreeWidgetAccounts->resizeColumnToContents(0);
+//        }
 //    }
-    // ----------------------------------------
-    if (nullptr != pItemToSelect)
-    {
-        pTreeWidgetAccounts->setCurrentItem(pItemToSelect);
-//        on_treeWidgetAccounts_currentItemChanged(pItemToSelect, previous);
-    }
+
+//    pTreeWidgetAccounts->resizeColumnToContents(0);
+//    pTreeWidgetAccounts->resizeColumnToContents(1);
+//    pTreeWidgetAccounts->resizeColumnToContents(2);
+//    pTreeWidgetAccounts->resizeColumnToContents(3);
+//    // ----------------------------------------
+//    // Make sure the same item that was selected before, is selected again.
+//    // (If it still exists, which it probably does.)
+
+//    QTreeWidgetItem * previous = pTreeWidgetAccounts->currentItem();
+
+//    QTreeWidgetItem * pItemToSelect {nullptr};
+
+//    // In this case, just select the first thing on the list.
+//    if (    qstrCurrentTLA_.isEmpty()
+//         && qstrCurrentNotary_.isEmpty()
+//         && qstrCurrentAccount_.isEmpty()
+//         && qstrCurrentContact_.isEmpty() )
+//    {
+////        qDebug() << "RefreshAccountTree: the strings were all empty\n";
+
+//        if (pTreeWidgetAccounts->topLevelItemCount() > 0)
+//        {
+//            //qDebug() << "RefreshAccountTree: setting to 0th top level item. 1\n";
+
+////            pItemToSelect = pTreeWidgetAccounts->topLevelItem(0);
+//        }
+//    }
+//    else // Find the one that was selected before the refresh.
+//    {
+//        bool bFoundIt = false;
+
+//        QTreeWidgetItemIterator it(pTreeWidgetAccounts);
+
+////        qDebug() << "RefreshAccountTree: entering while loop...\n";
+
+//        while (*it)
+//        {
+//            const int      nNodeType       = (*it)->data(0, Qt::UserRole+0).toInt();
+//            const int      nHeader         = (*it)->data(0, Qt::UserRole+1).toInt();
+//            const QVariant qvarTLA         = (*it)->data(0, Qt::UserRole+2);
+//            const QVariant qvarAssetTypeId = (*it)->data(0, Qt::UserRole+3);
+//            const QVariant qvarAccountId   = (*it)->data(0, Qt::UserRole+4);
+//            const QVariant qvarServerId    = (*it)->data(0, Qt::UserRole+5);
+//            const QVariant qvarContactId   = (*it)->data(0, Qt::UserRole+6);
+//            // ------------------------------------------------------------
+//            const QString  qstrTLA         = qvarTLA.isValid()         ? qvarTLA.toString()         : "";
+//            const QString  qstrAssetTypeId = qvarAssetTypeId.isValid() ? qvarAssetTypeId.toString() : "";
+//            const QString  qstrServerId    = qvarServerId.isValid()    ? qvarServerId.toString()    : "";
+//            const QString  qstrAccountId   = qvarAccountId.isValid()   ? qvarAccountId.toString()   : "";
+//            const QString  qstrContactId   = qvarContactId.isValid()   ? qvarContactId.toString()   : "";
+//            // ------------------------------------------------------------
+//            const bool bContactsMatch = !qstrContactId.isEmpty() && (0 == qstrContactId.compare(qstrCurrentContact_));
+//            const bool bAccountsMatch = !qstrAccountId.isEmpty() && (0 == qstrAccountId.compare(qstrCurrentAccount_));
+//            const bool bOtherMatch    = (   (0 == qstrTLA.compare(qstrCurrentTLA_ ))
+//                                         && (0 == qstrServerId.compare(qstrCurrentNotary_))
+//                                         && (0 == qstrAccountId.compare(qstrCurrentAccount_))
+//                                         && (0 == qstrContactId.compare(qstrCurrentContact_))
+//                                         );
+//            if (bContactsMatch || bOtherMatch || bAccountsMatch)
+//            {
+////                qDebug() << "RefreshAccountTree: MATCHED.\n";
+////
+////                if (bContactsMatch)
+////                    qDebug() << "RefreshAccountTree: Contacts MATCHED.\n";
+////                if (bOtherMatch)
+////                    qDebug() << "RefreshAccountTree: Other MATCHED.\n";
+////                if (bAccountsMatch)
+////                    qDebug() << "RefreshAccountTree: Accounts MATCHED.\n";
+
+//                bFoundIt = true;
+//                pItemToSelect = *it;
+
+//                break;
+//            }
+//            else
+//            {
+////                qDebug() << "RefreshAccountTree: DID NOT match:";
+////                qDebug() << "qstrTLA: " << qstrTLA << "qstrCurrentTLA_: " << qstrCurrentTLA_;
+////                qDebug() << "qstrServerId: " << qstrServerId << "qstrCurrentNotary_: " << qstrCurrentNotary_;
+////                qDebug() << "qstrAccountId: " << qstrAccountId << "qstrCurrentAccount_: " << qstrCurrentAccount_;
+////                qDebug() << "qstrContactId: " << qstrContactId << "qstrCurrentContact_: " << qstrCurrentContact_ << "\n";
+//            }
+//            // ------------------------
+//            ++it;
+//        } //while
+//        if (!bFoundIt)
+//        {
+////            if (pTreeWidgetAccounts->topLevelItemCount() > 0)
+////            {
+////                qDebug() << "RefreshAccountTree: setting to 0th top level item. 2\n";
+////
+////                pItemToSelect = pTreeWidgetAccounts->topLevelItem(0);
+////            }
+//        }
+//    }
+////  pTreeWidgetAccounts->expandAll();
+//    // ----------------------------------------
+//    pTreeWidgetAccounts->blockSignals(false);
+//    // ----------------------------------------
+////    if (nullptr == pItemToSelect)
+////    {
+////        pItemToSelect = pTreeWidgetAccounts->topLevelItem(0);
+////    }
+//    // ----------------------------------------
+//    if (nullptr != pItemToSelect)
+//    {
+//        pTreeWidgetAccounts->setCurrentItem(pItemToSelect);
+////        on_treeWidgetAccounts_currentItemChanged(pItemToSelect, previous);
+//    }
 }
 
 //void Activity::RefreshAccountList()
@@ -2702,7 +2895,7 @@ void Activity::onOpentxsWidgetUpdated(QString qstrWidgetID)
         }
 
         if (bNeedToRefreshSummaryTree) {
-            RefreshSummaryTree();
+            QTimer::singleShot(0, this, SLOT(RefreshSummaryTree()));
         }
         else
         {
@@ -2911,19 +3104,19 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         this->setWindowTitle(tr(MONEYCHANGER_APP_NAME));
 
         ui->horizontalLayout_4->setAlignment(ui->checkBoxSearchConversations, Qt::AlignRight);
-        ui->horizontalLayout_6->setAlignment(ui->checkBoxSearchPayments,      Qt::AlignRight);
-        ui->horizontalLayout_6->setAlignment(ui->toolButtonMyIdentity,        Qt::AlignLeft);
         ui->horizontalLayout_4->setAlignment(ui->toolButtonMyIdentity2,       Qt::AlignLeft);
 
         setup_tableview_conversation(ui->tableViewConversation);
 
-        ui->treeWidgetAccounts->header()->close();
-        ui->treeWidgetAccounts->setRootIsDecorated(false);
+//        ui->treeWidgetAccounts->header()->close();
+//        ui->treeWidgetAccounts->setRootIsDecorated(false);
 
-        ui->treeWidgetAccounts->setContextMenuPolicy(Qt::CustomContextMenu);
+        ui->treeWidgetSummary->header()->close();
+        ui->treeWidgetSummary->setRootIsDecorated(false);
 
-        connect(ui->treeWidgetAccounts, SIGNAL(customContextMenuRequested(const QPoint &)),
-                this, SLOT(on_treeWidgetAccounts_customContextMenuRequested(const QPoint &)));
+//        ui->treeWidgetSummary->setContextMenuPolicy(Qt::CustomContextMenu);
+//        connect(ui->treeWidgetSummary, SIGNAL(customContextMenuRequested(const QPoint &)),
+//                this, SLOT(on_treeWidgetSummary_customContextMenuRequested(const QPoint &)));
 
         // ******************************************************
 
@@ -2949,13 +3142,12 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
                     this, SLOT(on_tableViewReceivedSelectionModel_currentRowChanged(QModelIndex,QModelIndex)));
         }
         // --------------------------------------------------------
-        connect(ui->toolButtonMyIdentity , SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_defaultnym_slot()));
         connect(ui->toolButtonMyIdentity2, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_defaultnym_slot()));
         // --------------------------------------------------------
         connect(this, SIGNAL(showContact (QString)),         Moneychanger::It(), SLOT(mc_show_opentxs_contact_slot(QString)));
         connect(this, SIGNAL(showContacts()),                Moneychanger::It(), SLOT(mc_opentxs_contacts_slot()));
         // --------------------------------------------------------
-        connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(onNeedToPopulateRecordlist()));
+//      connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(onNeedToPopulateRecordlist()));
         connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(mc_show_opentxs_contact_slot(QString)));
         // --------------------------------------------------------
 
@@ -3040,17 +3232,85 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 
     PopulateIssuerWidgetIds();
 
+    Populate_comboBoxMyNym();
+    Populate_comboBoxCurrency();
+}
+
+void Activity::Populate_comboBoxMyNym()
+{
+    QComboBox * pComboBox = ui->comboBoxMyNym;
+    // ----------------------------------------
+    pComboBox->blockSignals(true);
+    // ----------------------------------------
+    pComboBox->clear();
+
+    const std::set<std::string> localNyms = opentxs::OT::App().DB().LocalNyms();
+
+    for (const auto & nym_id_str : localNyms)
+    {
+        const std::string nym_name = opentxs::SwigWrap::GetNym_Name(nym_id_str);
+        const QString qstrNymId    = QString::fromStdString(nym_id_str);
+        const QString qstrNymName  = QString::fromStdString(nym_name);
+        const QVariant qvarUserData(qstrNymId);
+        pComboBox->addItem(icon_nym_, qstrNymName, qvarUserData);
+    }
+    // ----------------------------------------
+    int nCurrentIndexToSet = -1;
+
+    if (pComboBox->count() > 0) {
+        nCurrentIndexToSet = 0;
+    }
+    pComboBox->setCurrentIndex(nCurrentIndexToSet);
+    // ----------------------------------------
+    pComboBox->blockSignals(false);
+    // ----------------------------------------
+    on_comboBoxMyNym_activated(nCurrentIndexToSet);
+}
+
+void Activity::Populate_comboBoxCurrency()
+{
+    QComboBox * pComboBox = ui->comboBoxCurrency;
+    // ----------------------------------------
+    pComboBox->blockSignals(true);
+    pComboBox->clear();
+    // ----------------------------------------
+    std::set<StringIntPair> set_currency_types;
+    GetCurrencyTypesByAssetContractsInWallet(set_currency_types);
+
+    for (const auto & currency_pair : set_currency_types)
+    {
+        const auto & currency_label = currency_pair.first;
+        const auto & currency_type  = currency_pair.second;
+        const QString qstrCurrencyLabel = QString::fromStdString(currency_label);
+        const QVariant qvarUserData(currency_type);
+        pComboBox->addItem(qstrCurrencyLabel, qvarUserData);
+    }
+    // ----------------------------------------
+    int nCurrentIndexToSet = -1;
+
+    if (pComboBox->count() > 0) {
+        nCurrentIndexToSet = 0;
+    }
+    pComboBox->setCurrentIndex(nCurrentIndexToSet);
+    // ----------------------------------------
+    pComboBox->blockSignals(false);
+    // ----------------------------------------
+    on_comboBoxCurrency_activated(nCurrentIndexToSet);
+}
+
+
+void Activity::on_comboBoxMyNym_activated(int index)
+{
+    QTimer::singleShot(0, this, SLOT(RefreshSummaryTree()));
+}
+
+void Activity::on_comboBoxCurrency_activated(int index)
+{
+    QTimer::singleShot(0, this, SLOT(RefreshSummaryTree()));
 }
 
 void Activity::PopulateIssuerWidgetIds()
 {
-
-
-
-
-
-    //resume
-
     std::set<int> currency_types = opentxs::SwigWrap::GetCurrencyTypesForLocalAccounts();
 
     for (const auto currency_type : currency_types)
@@ -3446,24 +3706,12 @@ void Activity::on_checkBoxSearchPayments_toggled(bool checked)
 {
     if (checked)
     {
-        ui->lineEditSearchPayments->setVisible(true);
-        ui->pushButtonSearchPayments->setVisible(true);
-
-        ui->labelMyIdentity->setVisible(false);
         ui->labelMyIdentity2->setVisible(false);
-        ui->toolButtonMyIdentity->setVisible(false);
         ui->toolButtonMyIdentity2->setVisible(false);
     }
     else
     {
-        ui->lineEditSearchPayments->setVisible(false);
-        ui->pushButtonSearchPayments->setVisible(false);
-
-        ui->lineEditSearchPayments->setText("");
-
-        ui->labelMyIdentity->setVisible(true);
         ui->labelMyIdentity2->setVisible(true);
-        ui->toolButtonMyIdentity->setVisible(true);
         ui->toolButtonMyIdentity2->setVisible(true);
     }
 }
@@ -3767,134 +4015,135 @@ void Activity::setAsCurrentPayment(int nSourceRow, int nFolder)
 #define AC_NODE_TYPE_HOSTED_NOTARY   7
 #define AC_NODE_TYPE_HOSTED_ACCOUNT  8
 */
-void Activity::on_treeWidgetAccounts_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
+void Activity::on_treeWidgetSummary_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
 {
+    Q_UNUSED(current);
     Q_UNUSED(previous);
 
-    if (nullptr != current)
-    {
-        const int nNodeType = current->data(0, Qt::UserRole+0).toInt();
-        const int nHeader   = current->data(0, Qt::UserRole+1).toInt();
+//    if (nullptr != current)
+//    {
+//        const int nNodeType = current->data(0, Qt::UserRole+0).toInt();
+//        const int nHeader   = current->data(0, Qt::UserRole+1).toInt();
 
-        switch (nNodeType) {
-            case AC_NODE_TYPE_HEADER: {
+//        switch (nNodeType) {
+//            case AC_NODE_TYPE_HEADER: {
+////                qstrCurrentTLA_      = QString("");
+////                qstrCurrentNotary_   = QString("");
+////                qstrCurrentAccount_  = QString("");
+////                qstrCurrentContact_  = QString("");
+//                ;
+//            } break;
+
+//            case AC_NODE_TYPE_ASSET_TOTAL: {
+//                const QVariant qvarTLA = current->data(0, Qt::UserRole+2);
+
+//                qstrCurrentTLA_      = qvarTLA.isValid() ? qvarTLA.toString() : QString("");
+//                qstrCurrentNotary_   = QString("");
+//                qstrCurrentAccount_  = QString("");
+//                qstrCurrentContact_  = QString("");
+
+////                qDebug() << "Setting qstrCurrentContact_ to empty string! 7\n";
+
+//                pPmntProxyModelInbox_ ->setFilterTLA(qstrCurrentTLA_);
+//                pPmntProxyModelOutbox_->setFilterTLA(qstrCurrentTLA_);
+//            } break;
+
+//            // Todo someday. Currently Moneychanger doesn't have its own local Bitcoin wallet.
+//            case AC_NODE_TYPE_LOCAL_WALLET:
+//            case AC_NODE_TYPE_LOCAL_ACCOUNT: {
 //                qstrCurrentTLA_      = QString("");
 //                qstrCurrentNotary_   = QString("");
 //                qstrCurrentAccount_  = QString("");
 //                qstrCurrentContact_  = QString("");
-                ;
-            } break;
 
-            case AC_NODE_TYPE_ASSET_TOTAL: {
-                const QVariant qvarTLA = current->data(0, Qt::UserRole+2);
+////                qDebug() << "Setting qstrCurrentContact_ to empty string! 8\n";
 
-                qstrCurrentTLA_      = qvarTLA.isValid() ? qvarTLA.toString() : QString("");
-                qstrCurrentNotary_   = QString("");
-                qstrCurrentAccount_  = QString("");
-                qstrCurrentContact_  = QString("");
+//                // Todo someday.
+//                pPmntProxyModelInbox_ ->setFilterNone();
+//                pPmntProxyModelOutbox_->setFilterNone();
+//            } break;
 
-//                qDebug() << "Setting qstrCurrentContact_ to empty string! 7\n";
+//            case AC_NODE_TYPE_SNP_NOTARY:
+//            case AC_NODE_TYPE_HOSTED_NOTARY: {
+//                // If a Notary has a single account, it may display them on a single line.
+//                // In which case, sometimes we'll want the Notary ID off that line, but
+//                // sometimes we'll want the account ID. (But the account ID will sometimes
+//                // not be there, if there are sub-accounts listed under the notary in the UI).
+//                //
+////              const QVariant qvarAccountId = current->data(0, Qt::UserRole+4);
+//                const QVariant qvarNotaryId  = current->data(0, Qt::UserRole+5);
 
-                pPmntProxyModelInbox_ ->setFilterTLA(qstrCurrentTLA_);
-                pPmntProxyModelOutbox_->setFilterTLA(qstrCurrentTLA_);
-            } break;
+//                qstrCurrentTLA_      = QString("");
+//                qstrCurrentAccount_  = QString("");
+////              qstrCurrentAccount_  = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
+//                qstrCurrentNotary_   = qvarNotaryId.isValid()  ? qvarNotaryId.toString()  : QString("");
+//                qstrCurrentContact_  = QString("");
 
-            // Todo someday. Currently Moneychanger doesn't have its own local Bitcoin wallet.
-            case AC_NODE_TYPE_LOCAL_WALLET:
-            case AC_NODE_TYPE_LOCAL_ACCOUNT: {
-                qstrCurrentTLA_      = QString("");
-                qstrCurrentNotary_   = QString("");
-                qstrCurrentAccount_  = QString("");
-                qstrCurrentContact_  = QString("");
+////                qDebug() << "Setting qstrCurrentContact_ to empty string! 9\n";
 
-//                qDebug() << "Setting qstrCurrentContact_ to empty string! 8\n";
+//                pPmntProxyModelInbox_ ->setFilterNotary(qstrCurrentNotary_);
+//                pPmntProxyModelOutbox_->setFilterNotary(qstrCurrentNotary_);
+//            } break;
 
-                // Todo someday.
-                pPmntProxyModelInbox_ ->setFilterNone();
-                pPmntProxyModelOutbox_->setFilterNone();
-            } break;
+//            case AC_NODE_TYPE_SNP_ACCOUNT:
+//            case AC_NODE_TYPE_HOSTED_ACCOUNT: {
+//                const QVariant qvarAccountId = current->data(0, Qt::UserRole+4);
 
-            case AC_NODE_TYPE_SNP_NOTARY:
-            case AC_NODE_TYPE_HOSTED_NOTARY: {
-                // If a Notary has a single account, it may display them on a single line.
-                // In which case, sometimes we'll want the Notary ID off that line, but
-                // sometimes we'll want the account ID. (But the account ID will sometimes
-                // not be there, if there are sub-accounts listed under the notary in the UI).
-                //
-//              const QVariant qvarAccountId = current->data(0, Qt::UserRole+4);
-                const QVariant qvarNotaryId  = current->data(0, Qt::UserRole+5);
+//                qstrCurrentTLA_      = QString("");
+//                qstrCurrentNotary_   = QString("");
+//                qstrCurrentAccount_  = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
+//                qstrCurrentContact_  = QString("");
 
-                qstrCurrentTLA_      = QString("");
-                qstrCurrentAccount_  = QString("");
-//              qstrCurrentAccount_  = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
-                qstrCurrentNotary_   = qvarNotaryId.isValid()  ? qvarNotaryId.toString()  : QString("");
-                qstrCurrentContact_  = QString("");
+////                qDebug() << "Setting qstrCurrentContact_ to empty string! 10\n";
 
-//                qDebug() << "Setting qstrCurrentContact_ to empty string! 9\n";
+//                pPmntProxyModelInbox_ ->setFilterAccount(qstrCurrentAccount_);
+//                pPmntProxyModelOutbox_->setFilterAccount(qstrCurrentAccount_);
+//            } break;
 
-                pPmntProxyModelInbox_ ->setFilterNotary(qstrCurrentNotary_);
-                pPmntProxyModelOutbox_->setFilterNotary(qstrCurrentNotary_);
-            } break;
+//            case AC_NODE_TYPE_CONTACT: {
+//                const QVariant qvarContactId = current->data(0, Qt::UserRole+6);
 
-            case AC_NODE_TYPE_SNP_ACCOUNT:
-            case AC_NODE_TYPE_HOSTED_ACCOUNT: {
-                const QVariant qvarAccountId = current->data(0, Qt::UserRole+4);
+//                qstrCurrentTLA_      = QString("");
+//                qstrCurrentNotary_   = QString("");
+//                qstrCurrentAccount_  = QString("");
+//                qstrCurrentContact_  = qvarContactId.isValid() ? qvarContactId.toString() : QString("");
 
-                qstrCurrentTLA_      = QString("");
-                qstrCurrentNotary_   = QString("");
-                qstrCurrentAccount_  = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
-                qstrCurrentContact_  = QString("");
+//                pPmntProxyModelInbox_ ->setFilterTopLevel(qstrCurrentContact_);
+//                pPmntProxyModelOutbox_->setFilterTopLevel(qstrCurrentContact_);
+//            } break;
 
-//                qDebug() << "Setting qstrCurrentContact_ to empty string! 10\n";
+//            default: {
+//                qstrCurrentTLA_      = QString("");
+//                qstrCurrentNotary_   = QString("");
+//                qstrCurrentAccount_  = QString("");
+//                qstrCurrentContact_  = QString("");
 
-                pPmntProxyModelInbox_ ->setFilterAccount(qstrCurrentAccount_);
-                pPmntProxyModelOutbox_->setFilterAccount(qstrCurrentAccount_);
-            } break;
+////                qDebug() << "Setting qstrCurrentContact_ to empty string! 11 default case\n";
 
-            case AC_NODE_TYPE_CONTACT: {
-                const QVariant qvarContactId = current->data(0, Qt::UserRole+6);
+////                qDebug() << "NODE TYPE: " << QString::number(nNodeType);
 
-                qstrCurrentTLA_      = QString("");
-                qstrCurrentNotary_   = QString("");
-                qstrCurrentAccount_  = QString("");
-                qstrCurrentContact_  = qvarContactId.isValid() ? qvarContactId.toString() : QString("");
+//                pPmntProxyModelInbox_ ->setFilterNone();
+//                pPmntProxyModelOutbox_->setFilterNone();
+//            } break;
+//        }
+//    }
+//    else
+//    {
+//        // NOTE: This may have been the bug that caused the left-hand of
+//        // activity page to lose selection after a few seconds delay.
+//        // Commenting it out now to test that. May keep it that way, if it fixes it.
+////        qstrCurrentTLA_      = QString("");
+////        qstrCurrentNotary_   = QString("");
+////        qstrCurrentAccount_  = QString("");
+////        qstrCurrentContact_  = QString("");
 
-                pPmntProxyModelInbox_ ->setFilterTopLevel(qstrCurrentContact_);
-                pPmntProxyModelOutbox_->setFilterTopLevel(qstrCurrentContact_);
-            } break;
+////        qDebug() << "Setting qstrCurrentContact_ to empty string! 12 (it was nullptr)\n";
 
-            default: {
-                qstrCurrentTLA_      = QString("");
-                qstrCurrentNotary_   = QString("");
-                qstrCurrentAccount_  = QString("");
-                qstrCurrentContact_  = QString("");
-
-//                qDebug() << "Setting qstrCurrentContact_ to empty string! 11 default case\n";
-
-//                qDebug() << "NODE TYPE: " << QString::number(nNodeType);
-
-                pPmntProxyModelInbox_ ->setFilterNone();
-                pPmntProxyModelOutbox_->setFilterNone();
-            } break;
-        }
-    }
-    else
-    {
-        // NOTE: This may have been the bug that caused the left-hand of
-        // activity page to lose selection after a few seconds delay.
-        // Commenting it out now to test that. May keep it that way, if it fixes it.
-//        qstrCurrentTLA_      = QString("");
-//        qstrCurrentNotary_   = QString("");
-//        qstrCurrentAccount_  = QString("");
-//        qstrCurrentContact_  = QString("");
-
-//        qDebug() << "Setting qstrCurrentContact_ to empty string! 12 (it was nullptr)\n";
-
-//        pPmntProxyModelInbox_ ->setFilterNone();
-//        pPmntProxyModelOutbox_->setFilterNone();
-    }
-    // --------------------------------------
-    RefreshPayments();
+////        pPmntProxyModelInbox_ ->setFilterNone();
+////        pPmntProxyModelOutbox_->setFilterNone();
+//    }
+//    // --------------------------------------
+//    RefreshPayments();
 }
 
 
@@ -5195,13 +5444,6 @@ void Activity::on_pushButtonSearchConversations_clicked()
 }
 
 
-void Activity::on_pushButtonSearchPayments_clicked()
-{
-    QString qstrSearchText = ui->lineEditSearchPayments->text();
-
-    this->doSearchPayments(qstrSearchText.simplified());
-}
-
 void Activity::doSearchConversations(QString qstrInput)
 {
     if (pThreadItemsProxyModel_)
@@ -5233,14 +5475,6 @@ void Activity::on_lineEditSearchPayments_textChanged(const QString &arg1)
         doSearchPayments(arg1);
 }
 
-void Activity::on_lineEditSearchPayments_returnPressed()
-{
-    QString qstrSearchText = ui->lineEditSearchPayments->text();
-
-    this->doSearchPayments(qstrSearchText.simplified());
-}
-
-
 void Activity::on_lineEditSearchConversations_textChanged(const QString &arg1)
 {
     // This means someone clicked the "clear" button on the search box.
@@ -5255,9 +5489,9 @@ void Activity::on_lineEditSearchConversations_returnPressed()
     this->doSearchConversations(qstrSearchText.simplified());
 }
 
-void Activity::on_treeWidgetAccounts_customContextMenuRequested(const QPoint &pos)
+void Activity::on_treeWidgetSummary_customContextMenuRequested(const QPoint &pos)
 {
-    treeWidgetAccounts_PopupMenu(pos, ui->treeWidgetAccounts);
+    treeWidgetSummary_PopupMenu(pos, ui->treeWidgetSummary);
 }
 
 void Activity::resetPopupMenus()
@@ -5443,1095 +5677,1095 @@ bool Activity::GetUnitAndTLAMapForAccountsOnServer(mapIDName& mapUnitTLA, // out
  * Therefore if it turns out to be a Contact, "node type" AC_NODE_TYPE_CONTACT, the Contact ID
  * itself, a new-style string-based Opentxs Contact ID, will preferably be in UserData(6).
  */
-void Activity::treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTreeWidget)
+void Activity::treeWidgetSummary_PopupMenu(const QPoint &pos, QTreeWidget * pTreeWidget)
 {
-    const std::string str_my_nym_id = Moneychanger::It()->get_default_nym_id().toStdString();
+//    const std::string str_my_nym_id = Moneychanger::It()->get_default_nym_id().toStdString();
 
-    int nTreeNodeType{-1};
-    int nUnderHeader {-1};
+//    int nTreeNodeType{-1};
+//    int nUnderHeader {-1};
 
-    QString  qstrTLA;
-    QString  qstrAssetTypeId;
-    QString  qstrAccountId;
-    QString  qstrServerId;
-    QString  qstrContactId;
-    // ------------------------
-    QTreeWidgetItem * pTreeItem = pTreeWidget->itemAt(pos); // Might be Null...
-    // ------------------------
-    if ( nullptr != pTreeItem )
-    {
-        const QVariant qvarTreeNodeType = pTreeItem->data(0, Qt::UserRole+0);
-        nTreeNodeType = qvarTreeNodeType.isValid() ? qvarTreeNodeType.toInt() : -1;
-        // ------------------------
-        const QVariant qvarUnderHeader = pTreeItem->data(0, Qt::UserRole+1);
-        nUnderHeader = qvarUnderHeader.isValid() ? qvarUnderHeader.toInt() : -1;
-        // ------------------------
-        if(   (-1) != nTreeNodeType
-           && (-1) != nUnderHeader)
-        {
-            const QVariant qvarTLA = pTreeItem->data(0, Qt::UserRole+2);
-            const QVariant qvarAssetTypeId = pTreeItem->data(0, Qt::UserRole+3);
-            const QVariant qvarAccountId = pTreeItem->data(0, Qt::UserRole+4);
-            const QVariant qvarServerId = pTreeItem->data(0, Qt::UserRole+5);
-            const QVariant qvarContactId = pTreeItem->data(0, Qt::UserRole+6);
-            // ------------------------
-            qstrTLA = qvarTLA.isValid() ? qvarTLA.toString() : QString("");
-            qstrAssetTypeId = qvarAssetTypeId.isValid() ? qvarAssetTypeId.toString() : QString("");
-            qstrAccountId = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
-            qstrServerId = qvarServerId.isValid() ? qvarServerId.toString() : QString("");
-            qstrContactId = qvarContactId.isValid() ? qvarContactId.toString() : QString("");
-        }
-    }
-    // ------------------------
-    /*
-    #define ACTIVITY_TREE_HEADER_TOTALS   0
-    #define ACTIVITY_TREE_HEADER_LOCAL    1
-    #define ACTIVITY_TREE_HEADER_SNP      2
-    #define ACTIVITY_TREE_HEADER_HOSTED   3
-    #define ACTIVITY_TREE_HEADER_CONTACTS 4
+//    QString  qstrTLA;
+//    QString  qstrAssetTypeId;
+//    QString  qstrAccountId;
+//    QString  qstrServerId;
+//    QString  qstrContactId;
+//    // ------------------------
+//    QTreeWidgetItem * pTreeItem = pTreeWidget->itemAt(pos); // Might be Null...
+//    // ------------------------
+//    if ( nullptr != pTreeItem )
+//    {
+//        const QVariant qvarTreeNodeType = pTreeItem->data(0, Qt::UserRole+0);
+//        nTreeNodeType = qvarTreeNodeType.isValid() ? qvarTreeNodeType.toInt() : -1;
+//        // ------------------------
+//        const QVariant qvarUnderHeader = pTreeItem->data(0, Qt::UserRole+1);
+//        nUnderHeader = qvarUnderHeader.isValid() ? qvarUnderHeader.toInt() : -1;
+//        // ------------------------
+//        if(   (-1) != nTreeNodeType
+//           && (-1) != nUnderHeader)
+//        {
+//            const QVariant qvarTLA = pTreeItem->data(0, Qt::UserRole+2);
+//            const QVariant qvarAssetTypeId = pTreeItem->data(0, Qt::UserRole+3);
+//            const QVariant qvarAccountId = pTreeItem->data(0, Qt::UserRole+4);
+//            const QVariant qvarServerId = pTreeItem->data(0, Qt::UserRole+5);
+//            const QVariant qvarContactId = pTreeItem->data(0, Qt::UserRole+6);
+//            // ------------------------
+//            qstrTLA = qvarTLA.isValid() ? qvarTLA.toString() : QString("");
+//            qstrAssetTypeId = qvarAssetTypeId.isValid() ? qvarAssetTypeId.toString() : QString("");
+//            qstrAccountId = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
+//            qstrServerId = qvarServerId.isValid() ? qvarServerId.toString() : QString("");
+//            qstrContactId = qvarContactId.isValid() ? qvarContactId.toString() : QString("");
+//        }
+//    }
+//    // ------------------------
+//    /*
+//    #define ACTIVITY_TREE_HEADER_TOTALS   0
+//    #define ACTIVITY_TREE_HEADER_LOCAL    1
+//    #define ACTIVITY_TREE_HEADER_SNP      2
+//    #define ACTIVITY_TREE_HEADER_HOSTED   3
+//    #define ACTIVITY_TREE_HEADER_CONTACTS 4
 
-    #define AC_NODE_TYPE_HEADER          0
-    #define AC_NODE_TYPE_ASSET_TOTAL     1
-    #define AC_NODE_TYPE_CONTACT         2
-    #define AC_NODE_TYPE_LOCAL_WALLET    3
-    #define AC_NODE_TYPE_LOCAL_ACCOUNT   4
-    #define AC_NODE_TYPE_SNP_NOTARY      5
-    #define AC_NODE_TYPE_SNP_ACCOUNT     6
-    #define AC_NODE_TYPE_HOSTED_NOTARY   7
-    #define AC_NODE_TYPE_HOSTED_ACCOUNT  8
-    */
+//    #define AC_NODE_TYPE_HEADER          0
+//    #define AC_NODE_TYPE_ASSET_TOTAL     1
+//    #define AC_NODE_TYPE_CONTACT         2
+//    #define AC_NODE_TYPE_LOCAL_WALLET    3
+//    #define AC_NODE_TYPE_LOCAL_ACCOUNT   4
+//    #define AC_NODE_TYPE_SNP_NOTARY      5
+//    #define AC_NODE_TYPE_SNP_ACCOUNT     6
+//    #define AC_NODE_TYPE_HOSTED_NOTARY   7
+//    #define AC_NODE_TYPE_HOSTED_ACCOUNT  8
+//    */
 
-    // By this point we know for a fact that no matter what the user clicked on,
-    // the necessary data is available from that item to construct the appropriate menu.
-    //
-    resetPopupMenus();
-    popupMenuAccounts_.reset(new QMenu(this));
-    // --------------------------------------------------
-    const bool bSelectedSNP = (AC_NODE_TYPE_SNP_NOTARY  == nTreeNodeType)
-                           || (AC_NODE_TYPE_SNP_ACCOUNT == nTreeNodeType);
-    // --------------------------------------------------
-    const bool bSelectedHosted = (AC_NODE_TYPE_HOSTED_NOTARY  == nTreeNodeType)
-                              || (AC_NODE_TYPE_HOSTED_ACCOUNT == nTreeNodeType);
-    // --------------------------------------------------
-    const bool bSelectedNotary = !qstrServerId.isEmpty() &&
-                                 (   AC_NODE_TYPE_SNP_NOTARY    == nTreeNodeType
-                                  || AC_NODE_TYPE_HOSTED_NOTARY == nTreeNodeType );
+//    // By this point we know for a fact that no matter what the user clicked on,
+//    // the necessary data is available from that item to construct the appropriate menu.
+//    //
+//    resetPopupMenus();
+//    popupMenuAccounts_.reset(new QMenu(this));
+//    // --------------------------------------------------
+//    const bool bSelectedSNP = (AC_NODE_TYPE_SNP_NOTARY  == nTreeNodeType)
+//                           || (AC_NODE_TYPE_SNP_ACCOUNT == nTreeNodeType);
+//    // --------------------------------------------------
+//    const bool bSelectedHosted = (AC_NODE_TYPE_HOSTED_NOTARY  == nTreeNodeType)
+//                              || (AC_NODE_TYPE_HOSTED_ACCOUNT == nTreeNodeType);
+//    // --------------------------------------------------
+//    const bool bSelectedNotary = !qstrServerId.isEmpty() &&
+//                                 (   AC_NODE_TYPE_SNP_NOTARY    == nTreeNodeType
+//                                  || AC_NODE_TYPE_HOSTED_NOTARY == nTreeNodeType );
 
-    const bool bSelectedAcctLowLevel = !qstrAccountId.isEmpty() &&
-                                        (   AC_NODE_TYPE_SNP_ACCOUNT    == nTreeNodeType
-                                         || AC_NODE_TYPE_HOSTED_ACCOUNT == nTreeNodeType);
+//    const bool bSelectedAcctLowLevel = !qstrAccountId.isEmpty() &&
+//                                        (   AC_NODE_TYPE_SNP_ACCOUNT    == nTreeNodeType
+//                                         || AC_NODE_TYPE_HOSTED_ACCOUNT == nTreeNodeType);
 
-    // If the user has selected an actual account tree node, or he has selected
-    // a notary tree node that also happens to be rolled up from a single account ID,
-    // either way, there's an account ID and the user has "selected an account".
-    //
-    const bool bSelectedAccount =  (bSelectedAcctLowLevel ||
-                                    (bSelectedNotary && !qstrAccountId.isEmpty()) );
-    const bool bSelectedAsset   = !qstrAssetTypeId.isEmpty();
-    const bool bSelectedContact = (ACTIVITY_TREE_HEADER_CONTACTS == nUnderHeader) && !qstrContactId.isEmpty();
-    // --------------------------------------------------
-    if (AC_NODE_TYPE_ASSET_TOTAL == nTreeNodeType) {
-        pActionManageAssets = popupMenuAccounts_->addAction(tr("Manage asset types"));
-        popupMenuAccounts_->addSeparator();
-    }
-    // The user has right-clicked on a CONTACT.
-    // (That is, he's right-clicked on a valid non-header item that appears under the "Contacts" header).
-    //
-    else if (bSelectedContact) {
-        pActionViewContact = popupMenuAccounts_->addAction(tr("View this contact"));
-        if (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(str_my_nym_id), opentxs::Identifier(qstrContactId.toStdString())))
-        {
-            pActionContactMsg = popupMenuAccounts_->addAction(tr("Message this contact"));
-            pActionContactPay = popupMenuAccounts_->addAction(tr("Pay this contact"));
-            pActionContactInvoice = popupMenuAccounts_->addAction(tr("Invoice this contact"));
-            pActionContactRecurring = popupMenuAccounts_->addAction(tr("Request recurring payments"));
-        }
-        //pActionExistingContact = popupMenuAccounts_->addAction(tr("Merge with existing Opentxs Contact"));
-        //pActionDownloadCredentials = popupMenuAccounts_->addAction(tr("Re-download contact"));
-        popupMenuAccounts_->addSeparator();
-    }
-    else if (bSelectedAccount) {
-        pActionManageAccounts = popupMenuAccounts_->addAction(tr("View account"));
-    }
-    // -----------------
-    if (bSelectedNotary) {
-        pActionManageNotaries = popupMenuAccounts_->addAction(tr("View notary"));
-    }
-    if (bSelectedAsset && (nullptr == pActionManageAssets)) {
-        pActionManageAssets = popupMenuAccounts_->addAction(tr("View asset type"));
-    }
-    popupMenuAccounts_->addSeparator();
-    // --------------------------------------------------
-    if (bSelectedNotary || bSelectedAccount) {
-        pActionBailment    = popupMenuAccounts_->addAction(tr("Deposit (from blockchain)"));
-        pActionOutbailment = popupMenuAccounts_->addAction(tr("Withdraw (to blockchain)"));
-        popupMenuAccounts_->addSeparator();
-    }
-    // --------------------------------------------------
-    if (nullptr == pActionManageContacts && nullptr == pActionViewContact) {
-        pActionManageContacts = popupMenuAccounts_->addAction(tr("Manage contacts"));
-    }
-    if (!bSelectedAccount && (nullptr == pActionManageAccounts)) {
-        pActionManageAccounts = popupMenuAccounts_->addAction(tr("Manage accounts"));
-    }
-    if (!bSelectedNotary && (nullptr == pActionManageNotaries)) {
-        pActionManageNotaries = popupMenuAccounts_->addAction(tr("Manage notaries"));
-    }
-    if (!bSelectedAsset && (nullptr == pActionManageAssets)) {
-        pActionManageAssets = popupMenuAccounts_->addAction(tr("Manage asset types"));
-    }
-    popupMenuAccounts_->addSeparator();
-    // --------------------------------------------------
-    if (!bSelectedContact)
-        pActionCreateContact = popupMenuAccounts_->addAction(tr("Create new contact"));
-    // --------------------------------------------------
-    popupMenuAccounts_->addSeparator();
-    // --------------------------------------------------
-    pActionPairWithSNP = popupMenuAccounts_->addAction(tr("Pair a Stash Node Pro"));
+//    // If the user has selected an actual account tree node, or he has selected
+//    // a notary tree node that also happens to be rolled up from a single account ID,
+//    // either way, there's an account ID and the user has "selected an account".
+//    //
+//    const bool bSelectedAccount =  (bSelectedAcctLowLevel ||
+//                                    (bSelectedNotary && !qstrAccountId.isEmpty()) );
+//    const bool bSelectedAsset   = !qstrAssetTypeId.isEmpty();
+//    const bool bSelectedContact = (ACTIVITY_TREE_HEADER_CONTACTS == nUnderHeader) && !qstrContactId.isEmpty();
+//    // --------------------------------------------------
+//    if (AC_NODE_TYPE_ASSET_TOTAL == nTreeNodeType) {
+//        pActionManageAssets = popupMenuAccounts_->addAction(tr("Manage asset types"));
+//        popupMenuAccounts_->addSeparator();
+//    }
+//    // The user has right-clicked on a CONTACT.
+//    // (That is, he's right-clicked on a valid non-header item that appears under the "Contacts" header).
+//    //
+//    else if (bSelectedContact) {
+//        pActionViewContact = popupMenuAccounts_->addAction(tr("View this contact"));
+//        if (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(str_my_nym_id), opentxs::Identifier(qstrContactId.toStdString())))
+//        {
+//            pActionContactMsg = popupMenuAccounts_->addAction(tr("Message this contact"));
+//            pActionContactPay = popupMenuAccounts_->addAction(tr("Pay this contact"));
+//            pActionContactInvoice = popupMenuAccounts_->addAction(tr("Invoice this contact"));
+//            pActionContactRecurring = popupMenuAccounts_->addAction(tr("Request recurring payments"));
+//        }
+//        //pActionExistingContact = popupMenuAccounts_->addAction(tr("Merge with existing Opentxs Contact"));
+//        //pActionDownloadCredentials = popupMenuAccounts_->addAction(tr("Re-download contact"));
+//        popupMenuAccounts_->addSeparator();
+//    }
+//    else if (bSelectedAccount) {
+//        pActionManageAccounts = popupMenuAccounts_->addAction(tr("View account"));
+//    }
+//    // -----------------
+//    if (bSelectedNotary) {
+//        pActionManageNotaries = popupMenuAccounts_->addAction(tr("View notary"));
+//    }
+//    if (bSelectedAsset && (nullptr == pActionManageAssets)) {
+//        pActionManageAssets = popupMenuAccounts_->addAction(tr("View asset type"));
+//    }
+//    popupMenuAccounts_->addSeparator();
+//    // --------------------------------------------------
+//    if (bSelectedNotary || bSelectedAccount) {
+//        pActionBailment    = popupMenuAccounts_->addAction(tr("Deposit (from blockchain)"));
+//        pActionOutbailment = popupMenuAccounts_->addAction(tr("Withdraw (to blockchain)"));
+//        popupMenuAccounts_->addSeparator();
+//    }
+//    // --------------------------------------------------
+//    if (nullptr == pActionManageContacts && nullptr == pActionViewContact) {
+//        pActionManageContacts = popupMenuAccounts_->addAction(tr("Manage contacts"));
+//    }
+//    if (!bSelectedAccount && (nullptr == pActionManageAccounts)) {
+//        pActionManageAccounts = popupMenuAccounts_->addAction(tr("Manage accounts"));
+//    }
+//    if (!bSelectedNotary && (nullptr == pActionManageNotaries)) {
+//        pActionManageNotaries = popupMenuAccounts_->addAction(tr("Manage notaries"));
+//    }
+//    if (!bSelectedAsset && (nullptr == pActionManageAssets)) {
+//        pActionManageAssets = popupMenuAccounts_->addAction(tr("Manage asset types"));
+//    }
+//    popupMenuAccounts_->addSeparator();
+//    // --------------------------------------------------
+//    if (!bSelectedContact)
+//        pActionCreateContact = popupMenuAccounts_->addAction(tr("Create new contact"));
+//    // --------------------------------------------------
+//    popupMenuAccounts_->addSeparator();
+//    // --------------------------------------------------
+//    pActionPairWithSNP = popupMenuAccounts_->addAction(tr("Pair a Stash Node Pro"));
 
-    // ==============================================================================
+//    // ==============================================================================
 
-    QPoint globalPos = pTreeWidget->mapToGlobal(pos);
-    const QAction* selectedAction = popupMenuAccounts_->exec(globalPos); // Here we popup the menu, and get the user's click.
-    if (nullptr == selectedAction)
-        return;
+//    QPoint globalPos = pTreeWidget->mapToGlobal(pos);
+//    const QAction* selectedAction = popupMenuAccounts_->exec(globalPos); // Here we popup the menu, and get the user's click.
+//    if (nullptr == selectedAction)
+//        return;
 
-    // ==============================================================================
+//    // ==============================================================================
 
-    if (selectedAction == pActionViewContact)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+//    if (selectedAction == pActionViewContact)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-        if (nullptr != pTreeItem)
-            pTreeItem->setSelected(true);
+//        if (nullptr != pTreeItem)
+//            pTreeItem->setSelected(true);
 
-        if (!qstrContactId.isEmpty())
-        {
-            emit showContact(qstrContactId);
-        }
-    }
-    // ----------------------------------
-    // Merge 2 existing opentxs contacts together.
-    //
-    else if (selectedAction == pActionExistingContact)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+//        if (!qstrContactId.isEmpty())
+//        {
+//            emit showContact(qstrContactId);
+//        }
+//    }
+//    // ----------------------------------
+//    // Merge 2 existing opentxs contacts together.
+//    //
+//    else if (selectedAction == pActionExistingContact)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-        if (nullptr != pTreeItem)
-            pTreeItem->setSelected(true);
+//        if (nullptr != pTreeItem)
+//            pTreeItem->setSelected(true);
 
-        // This should never happen since we wouldn't even have gotten this menu option
-        // in the first place, unless contact ID had been 0.
-        if (qstrContactId.isEmpty()) {
-            return;
-        }
+//        // This should never happen since we wouldn't even have gotten this menu option
+//        // in the first place, unless contact ID had been 0.
+//        if (qstrContactId.isEmpty()) {
+//            return;
+//        }
 
-        // TODO:  Make sure there are 2 or more Contacts selected first?
+//        // TODO:  Make sure there are 2 or more Contacts selected first?
 
-        // Then call Justus new Contact merging function.
+//        // Then call Justus new Contact merging function.
 
-        // until then...
-        qDebug() << "TOD: ******** Merging contacts. *********";
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionDownloadCredentials)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+//        // until then...
+//        qDebug() << "TOD: ******** Merging contacts. *********";
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionDownloadCredentials)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-        if (nullptr != pTreeItem)
-            pTreeItem->setSelected(true);
+//        if (nullptr != pTreeItem)
+//            pTreeItem->setSelected(true);
 
-        if (qstrContactId.isEmpty()) {
-            return;
-        }
+//        if (qstrContactId.isEmpty()) {
+//            return;
+//        }
 
-        if (str_my_nym_id.empty()) {
-            qDebug() << "Unable to download credentials without a default Nym ID being set";
-            return;
-        }
-        opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(str_my_nym_id), opentxs::Identifier(qstrContactId.toStdString()));
+//        if (str_my_nym_id.empty()) {
+//            qDebug() << "Unable to download credentials without a default Nym ID being set";
+//            return;
+//        }
+//        opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(str_my_nym_id), opentxs::Identifier(qstrContactId.toStdString()));
 
-        // Todo: emit some signal in a few seconds that an Opentxs Contact was just re-downloaded recently probably?
+//        // Todo: emit some signal in a few seconds that an Opentxs Contact was just re-downloaded recently probably?
 
-    }
-    // ----------------------------------------------
-    else if (selectedAction == pActionCreateContact)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+//    }
+//    // ----------------------------------------------
+//    else if (selectedAction == pActionCreateContact)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-        if (nullptr != pTreeItem)
-            pTreeItem->setSelected(true);
+//        if (nullptr != pTreeItem)
+//            pTreeItem->setSelected(true);
 
-        MTGetStringDialog nameDlg(this, tr("Enter a display label for the new contact"));
+//        MTGetStringDialog nameDlg(this, tr("Enter a display label for the new contact"));
 
-        if (QDialog::Accepted != nameDlg.exec()) {
-            return;
-        }
-        // --------------------------------------
-        const QString strNewContactLabel = nameDlg.GetOutputString();
-        const std::string str_new_contact_label = strNewContactLabel.toStdString();
-        // --------------------------------------------------
-        auto pContact = opentxs::OT::App().Contact().NewContact(str_new_contact_label);
+//        if (QDialog::Accepted != nameDlg.exec()) {
+//            return;
+//        }
+//        // --------------------------------------
+//        const QString strNewContactLabel = nameDlg.GetOutputString();
+//        const std::string str_new_contact_label = strNewContactLabel.toStdString();
+//        // --------------------------------------------------
+//        auto pContact = opentxs::OT::App().Contact().NewContact(str_new_contact_label);
 
-        if (!pContact) {
-            qDebug() << "Error: Failed trying to create new Contact.";
-            return;
-        }
-        // -----------------------------------------------------
-        const opentxs::Identifier idContact{pContact->ID()};
-        const opentxs::String     strContact(idContact);
-        const std::string         str_contact(strContact.Get());
-        qstrContactId = QString::fromStdString(str_contact);
-        // -----------------------------------------------------
-        if (!qstrContactId.isEmpty())
-        {
-            emit showContactAndRefreshHome(qstrContactId);
-        }
-    }
-    // ----------------------------------------------
-    else if (selectedAction == pActionPairWithSNP)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+//        if (!pContact) {
+//            qDebug() << "Error: Failed trying to create new Contact.";
+//            return;
+//        }
+//        // -----------------------------------------------------
+//        const opentxs::Identifier idContact{pContact->ID()};
+//        const opentxs::String     strContact(idContact);
+//        const std::string         str_contact(strContact.Get());
+//        qstrContactId = QString::fromStdString(str_contact);
+//        // -----------------------------------------------------
+//        if (!qstrContactId.isEmpty())
+//        {
+//            emit showContactAndRefreshHome(qstrContactId);
+//        }
+//    }
+//    // ----------------------------------------------
+//    else if (selectedAction == pActionPairWithSNP)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-        emit needToPairStashNode();
-    }
-    // ----------------------------------------------
-    else if (selectedAction == pActionManageNotaries)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+//        emit needToPairStashNode();
+//    }
+//    // ----------------------------------------------
+//    else if (selectedAction == pActionManageNotaries)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-        emit showServer(qstrServerId); // qstrServerId may be empty; that's okay.
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionManageAssets)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+//        emit showServer(qstrServerId); // qstrServerId may be empty; that's okay.
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionManageAssets)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-        emit showAsset(qstrAssetTypeId); // asset ID may be empty, which is okay.
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionManageAccounts)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+//        emit showAsset(qstrAssetTypeId); // asset ID may be empty, which is okay.
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionManageAccounts)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-        emit showAccount(qstrAccountId); // account ID may be empty, which is okay.
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionManageContacts)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+//        emit showAccount(qstrAccountId); // account ID may be empty, which is okay.
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionManageContacts)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-        emit showContacts();
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionContactMsg)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+//        emit showContacts();
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionContactMsg)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-        emit messageContact(QString::fromStdString(str_my_nym_id), qstrContactId);
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionContactPay)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+//        emit messageContact(QString::fromStdString(str_my_nym_id), qstrContactId);
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionContactPay)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-        // todo: qstrAccountId is empty here, so maybe should just have
-        // "pay to contact" signal.
-        emit payFromAccountToContact(qstrAccountId, qstrContactId);
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionContactInvoice)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+//        // todo: qstrAccountId is empty here, so maybe should just have
+//        // "pay to contact" signal.
+//        emit payFromAccountToContact(qstrAccountId, qstrContactId);
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionContactInvoice)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-        // todo: qstrAccountId is empty here, so maybe should just have
-        // "request from contact" signal.
-        emit requestToAccountFromContact(qstrAccountId, qstrContactId);
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionContactRecurring)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+//        // todo: qstrAccountId is empty here, so maybe should just have
+//        // "request from contact" signal.
+//        emit requestToAccountFromContact(qstrAccountId, qstrContactId);
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionContactRecurring)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-        // todo: qstrAccountId is empty here, so maybe should just have
-        // "propose from contact" signal.
-        emit proposeToAccountFromContact(qstrAccountId, qstrContactId);
-    }
-    // *****************************************************************
-    else if (selectedAction == pActionBailment)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+//        // todo: qstrAccountId is empty here, so maybe should just have
+//        // "propose from contact" signal.
+//        emit proposeToAccountFromContact(qstrAccountId, qstrContactId);
+//    }
+//    // *****************************************************************
+//    else if (selectedAction == pActionBailment)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-        if (str_my_nym_id.empty()) {
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Please set your default Nym and then try again."));
-            qDebug() << "Unable to request bailment without a default Nym ID being set";
-            return;
-        }
-        if (qstrServerId.isEmpty()) {
+//        if (str_my_nym_id.empty()) {
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Please set your default Nym and then try again."));
+//            qDebug() << "Unable to request bailment without a default Nym ID being set";
+//            return;
+//        }
+//        if (qstrServerId.isEmpty()) {
 
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Unable to request bailment without a Notary ID being set. (Should never happen in this case...)"));
-            qDebug() << "Unable to request bailment without a Notary ID being set. (Should never happen in this case...)";
-            return;
-        }
-        // ---------------------------------------
-        // These two cases (both selected or neither selected) are theoretically impossible.
-        //
-        if (!bSelectedSNP && !bSelectedHosted) {
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Unable to request bailment without a Notary ID being set. (Should never happen in this case...)"));
+//            qDebug() << "Unable to request bailment without a Notary ID being set. (Should never happen in this case...)";
+//            return;
+//        }
+//        // ---------------------------------------
+//        // These two cases (both selected or neither selected) are theoretically impossible.
+//        //
+//        if (!bSelectedSNP && !bSelectedHosted) {
 
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Weird, this problem should never happen."));
-            qDebug() << "Somehow, neither a paired SNP or account, nor a hosted notary or account, "
-                        "is available from the point of the click, and so I am unable to continue the "
-                        "bailment attempt. I'd have to ask you at this point to pick a notary/SNP from a list.";
-            return;
-        }
-        if (bSelectedSNP && bSelectedHosted) {
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Weird, this problem should never happen."));
+//            qDebug() << "Somehow, neither a paired SNP or account, nor a hosted notary or account, "
+//                        "is available from the point of the click, and so I am unable to continue the "
+//                        "bailment attempt. I'd have to ask you at this point to pick a notary/SNP from a list.";
+//            return;
+//        }
+//        if (bSelectedSNP && bSelectedHosted) {
 
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Weird, this problem should never happen."));
-            qDebug() << "Somehow, both a _paired_ SNP or account, AND a _hosted_ notary or account, "
-                        "is available from the point of the click, and so I am unable to continue the "
-                        "bailment attempt. Should never happen...";
-            return;
-        }
-        // -----------------------------------------------
-        // Grab the currently-selected default asset type ID (and its TLA),
-        // if there is one selected at all.
-        // We'll find it useful soon.
-        //
-        const QString qstrDefaultAssetId = Moneychanger::It()->get_default_asset_id();
-        const std::string default_asset_id = qstrDefaultAssetId.isEmpty()
-                ? ""
-                : qstrDefaultAssetId.toStdString();
-        const QString qstrDefaultTLA = qstrDefaultAssetId.isEmpty()
-                ? QString("")
-                : QString::fromStdString(opentxs::OT::App().API().Exec().GetCurrencyTLA( default_asset_id ));
-        // -----------------------------------------------
-        mapIDName mapUnitTLA;
-        mapOfMapIDName bigMapAccountsByServer, bigMapAssetsByTLA;
-        GetAccountIdMapsByServerId(bigMapAccountsByServer, bSelectedSNP); // true == paired, false == hosted.
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Weird, this problem should never happen."));
+//            qDebug() << "Somehow, both a _paired_ SNP or account, AND a _hosted_ notary or account, "
+//                        "is available from the point of the click, and so I am unable to continue the "
+//                        "bailment attempt. Should never happen...";
+//            return;
+//        }
+//        // -----------------------------------------------
+//        // Grab the currently-selected default asset type ID (and its TLA),
+//        // if there is one selected at all.
+//        // We'll find it useful soon.
+//        //
+//        const QString qstrDefaultAssetId = Moneychanger::It()->get_default_asset_id();
+//        const std::string default_asset_id = qstrDefaultAssetId.isEmpty()
+//                ? ""
+//                : qstrDefaultAssetId.toStdString();
+//        const QString qstrDefaultTLA = qstrDefaultAssetId.isEmpty()
+//                ? QString("")
+//                : QString::fromStdString(opentxs::OT::App().API().Exec().GetCurrencyTLA( default_asset_id ));
+//        // -----------------------------------------------
+//        mapIDName mapUnitTLA;
+//        mapOfMapIDName bigMapAccountsByServer, bigMapAssetsByTLA;
+//        GetAccountIdMapsByServerId(bigMapAccountsByServer, bSelectedSNP); // true == paired, false == hosted.
 
-        const bool bFoundSome = GetUnitAndTLAMapForAccountsOnServer(
-                    mapUnitTLA,
-                    bigMapAccountsByServer,
-                    bigMapAssetsByTLA,
-                    qstrServerId,
-                    str_my_nym_id);
+//        const bool bFoundSome = GetUnitAndTLAMapForAccountsOnServer(
+//                    mapUnitTLA,
+//                    bigMapAccountsByServer,
+//                    bigMapAssetsByTLA,
+//                    qstrServerId,
+//                    str_my_nym_id);
 
-        if (!bFoundSome) {
+//        if (!bFoundSome) {
 
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Sorry, you don't have any accounts on this notary that can receive a deposit. Make sure you have a default nym selected."
-                                                              "TODO: Ask the user to choose an asset type and nym right here, and then create the appropriate account automatically."));
-            qDebug() << "No accounts available to do a bailment into, for the given notary and nym.";
-            return;
-        }
-        // -----------------------------------------------
-        // Below this point, we know we found at least one account for the given server and nym.
-        // (And thus, at least one "TLA/asset type ID/issuer nym ID" to use in order to initiate a bailment).
-        //
-        mapIDName * pMapAssets = nullptr;
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Sorry, you don't have any accounts on this notary that can receive a deposit. Make sure you have a default nym selected."
+//                                                              "TODO: Ask the user to choose an asset type and nym right here, and then create the appropriate account automatically."));
+//            qDebug() << "No accounts available to do a bailment into, for the given notary and nym.";
+//            return;
+//        }
+//        // -----------------------------------------------
+//        // Below this point, we know we found at least one account for the given server and nym.
+//        // (And thus, at least one "TLA/asset type ID/issuer nym ID" to use in order to initiate a bailment).
+//        //
+//        mapIDName * pMapAssets = nullptr;
 
-        // NOTE: TLA can be empty here. Maybe I'm clicked on a Stash Node Pro,
-        // and the TLAs available there are listed BELOW this line (not ON it).
-        // In the case where it's empty, just ask the user to choose which TLA
-        // he wants to deposit.
-        //
-        if (qstrTLA.isEmpty() && (1 == bigMapAssetsByTLA.size())) {
-            qstrTLA = bigMapAssetsByTLA.begin().key();
-            mapIDName & mapAssets = bigMapAssetsByTLA.begin().value();
-            pMapAssets = &mapAssets;
-        }
-        else if (qstrTLA.isEmpty()) { // There are more than one TLA available in the wallet.
+//        // NOTE: TLA can be empty here. Maybe I'm clicked on a Stash Node Pro,
+//        // and the TLAs available there are listed BELOW this line (not ON it).
+//        // In the case where it's empty, just ask the user to choose which TLA
+//        // he wants to deposit.
+//        //
+//        if (qstrTLA.isEmpty() && (1 == bigMapAssetsByTLA.size())) {
+//            qstrTLA = bigMapAssetsByTLA.begin().key();
+//            mapIDName & mapAssets = bigMapAssetsByTLA.begin().value();
+//            pMapAssets = &mapAssets;
+//        }
+//        else if (qstrTLA.isEmpty()) { // There are more than one TLA available in the wallet.
 
-            // We can iterate bigMapAssetsByTLA to see all the available TLAs.
-            // We'll let the user choose which TLA he's bailing in.
-            //
-            DlgChooser theChooser(this);
-            mapIDName & the_map = theChooser.m_map;
+//            // We can iterate bigMapAssetsByTLA to see all the available TLAs.
+//            // We'll let the user choose which TLA he's bailing in.
+//            //
+//            DlgChooser theChooser(this);
+//            mapIDName & the_map = theChooser.m_map;
 
-            mapOfMapIDName::iterator it_TLA = bigMapAssetsByTLA.begin();
+//            mapOfMapIDName::iterator it_TLA = bigMapAssetsByTLA.begin();
 
-            // Set up the list of TLAs for the user to choose from.
-            //
-            while (it_TLA != bigMapAssetsByTLA.end()) {
-                const QString qstrTLA = it_TLA.key();
-                the_map.insert(qstrTLA, qstrTLA);
-                it_TLA++;
-            }
-            // -----------------------------------------------
-            // Pre-select the default TLA, if the application has a default asset type set already.
-            //
-            mapOfMapIDName::iterator it_default_TLA;
-
-            if (!qstrDefaultTLA.isEmpty()) {
-                it_default_TLA = bigMapAssetsByTLA.find(qstrDefaultTLA);
-            }
-            // If there's a default asset type ID already set in the application,
-            // and if the TLA for that asset type appears in the list we refined above
-            // for the set of accounts for a given notary and nym, then we pre-select it
-            // as the default TLA, when we ask the user to choose a TLA for the deposit.
-
-            if (!qstrDefaultTLA.isEmpty() && (it_default_TLA != bigMapAssetsByTLA.end()))
-            {
-                theChooser.SetPreSelected(qstrDefaultTLA);
-            }
-            // -----------------------------------------------
-            theChooser.setWindowTitle(tr("Choose asset type to deposit"));
-            // -----------------------------------------------
-
-            if (theChooser.exec() == QDialog::Accepted)
-            {
-                qstrTLA = theChooser.m_qstrCurrentID;    //  <============= qstrTLA is set.
-                mapOfMapIDName::iterator it_selected_TLA;
-                if (!qstrTLA.isEmpty()) {
-                    it_selected_TLA = bigMapAssetsByTLA.find(qstrTLA);
-                }
-                if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
-
-                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select a TLA. Should never happen."));
-                    qDebug() << "Somehow failed to select a TLA. Should never happen.";
-                    return;
-                }
-                mapIDName & mapAssets = it_selected_TLA.value();
-                pMapAssets = &mapAssets;     //  <============= pMapAssets is set.
-            }
-            else {
-                return;
-            }
-        }
-        else {
-            mapOfMapIDName::iterator it_selected_TLA;
-            it_selected_TLA = bigMapAssetsByTLA.find(qstrTLA);
-            if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
-
-                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select a TLA. Should never happen."));
-                qDebug() << "Somehow failed to select a TLA. Should never happen.";
-                return;
-            }
-            mapIDName & mapAssets = it_selected_TLA.value();
-            pMapAssets = &mapAssets;     //  <============= pMapAssets is set.
-        }
-        // ----------------------------------------
-        if (qstrTLA.isEmpty() || (nullptr == pMapAssets) || (0 == pMapAssets->size())) {
-
-//            qDebug() << "qstrTLA: " << qstrTLA;
-
-//            qDebug() << "pMapAssets: " << ((nullptr == pMapAssets) ? QString("is null") : QString("not null"));
-
-//            if (pMapAssets)
-//                qDebug() << "pMapAssets size: " << QString::number(pMapAssets->size());
-
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to choose an asset type for the deposit. "
-                                                              "Make sure there is a default nym selected, "
-                                                              "so the application knows which accounts to filter for."));
-            qDebug() << "Somehow failed to select a TLA.";
-            return;
-        }
-        mapIDName & mapAssets = *pMapAssets;
-        // =================================================
-//      QString  qstrTLA;
-//      QString  qstrAssetTypeId;
-//      QString  qstrServerId;
-        QString  qstrBailmentAssetTypeId;
-        QString  qstrIssuerNymId;
-
-        // Below this point, qstrTLA and its associated mapAssets are both guaranteed to exist.
-        // Next we need to find the exact unit type ID and its issuer Nym ID, so we can initiate
-        // the bailment request.
-        //
-        // In the case where there's only a single unit type ID for that TLA, then just use it.
-        //
-        if (1 == mapAssets.size()) {
-            const QString qstrSelectedAssetId = mapAssets.begin().key();
-            const QString qstrSelectedIssuerNymId = mapAssets.begin().value();
-
-//            if (!qstrAssetTypeId.isEmpty() && (0 != qstrAssetTypeId.compare(qstrSelectedAssetId))) {
-//                // NOTE: This is a case here where it's possible that the selected asset ID
-//                // doesn't match the one the user clicked on. Perhaps, for example, the right-click
-//                // happened to be on a gold account on Alice's SNP, but the default Nym is currently Bob,
-//                // and Bob only owns a Bitcoin account on this SNP. (This means the user has more than one
-//                // Nym in his desktop wallet, of course). So Bob's Bitcoin account's asset type of "Bitcoin"
-//                // doesn't match the "Gold" asset type that was right-clicked on. But anyway, the user will
-//                // have to confirm the bailment request before it goes out, and so we can deal with this case
-//                // later on.
+//            // Set up the list of TLAs for the user to choose from.
+//            //
+//            while (it_TLA != bigMapAssetsByTLA.end()) {
+//                const QString qstrTLA = it_TLA.key();
+//                the_map.insert(qstrTLA, qstrTLA);
+//                it_TLA++;
 //            }
+//            // -----------------------------------------------
+//            // Pre-select the default TLA, if the application has a default asset type set already.
+//            //
+//            mapOfMapIDName::iterator it_default_TLA;
 
-            qstrBailmentAssetTypeId = qstrSelectedAssetId;
-            qstrIssuerNymId = qstrSelectedIssuerNymId;
-        }
-        // Otherwise pop up a list of the unit type IDs, perhaps showing the short name, and ask
-        // the user to double-click one of them.
-        //
-        // At some point in the future we will use verified claims to prove which issuer (and unit
-        // type IDs from that issuer) are the "official" ones owned by your stash-node-manager bot,
-        // versus some other currency that also happens to be issued on that box by some other issuer.
-        // (Which is possible).
-        //
-        else {
-            DlgChooser theChooser(this);
-            mapIDName & the_map = theChooser.m_map;
+//            if (!qstrDefaultTLA.isEmpty()) {
+//                it_default_TLA = bigMapAssetsByTLA.find(qstrDefaultTLA);
+//            }
+//            // If there's a default asset type ID already set in the application,
+//            // and if the TLA for that asset type appears in the list we refined above
+//            // for the set of accounts for a given notary and nym, then we pre-select it
+//            // as the default TLA, when we ask the user to choose a TLA for the deposit.
 
-            mapIDName::iterator it_assets = mapAssets.begin();
+//            if (!qstrDefaultTLA.isEmpty() && (it_default_TLA != bigMapAssetsByTLA.end()))
+//            {
+//                theChooser.SetPreSelected(qstrDefaultTLA);
+//            }
+//            // -----------------------------------------------
+//            theChooser.setWindowTitle(tr("Choose asset type to deposit"));
+//            // -----------------------------------------------
 
-            QString qstrDefaultKeyToPreselect;
+//            if (theChooser.exec() == QDialog::Accepted)
+//            {
+//                qstrTLA = theChooser.m_qstrCurrentID;    //  <============= qstrTLA is set.
+//                mapOfMapIDName::iterator it_selected_TLA;
+//                if (!qstrTLA.isEmpty()) {
+//                    it_selected_TLA = bigMapAssetsByTLA.find(qstrTLA);
+//                }
+//                if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
 
-            // Set up the list of asset types for the user to choose from.
-            // (For a given TLA).
-            //
-            while (it_assets != mapAssets.end()) {
-                const QString qstrCurrentAssetTypeId = it_assets.key();
-                const QString qstrCurrentIssuerNymId = it_assets.value();
-                const QString qstrKey = QString("%1,%2").arg(qstrCurrentAssetTypeId).arg(qstrCurrentIssuerNymId);
-                // ------------------------------------------
-                MTNameLookupQT theLookup;
-                QString OT_issuer_name = QString::fromStdString(theLookup.GetNymName(qstrCurrentIssuerNymId.toStdString(), ""));
-                if (OT_issuer_name.isEmpty()) {
-                    OT_issuer_name = qstrCurrentIssuerNymId;
-                }
-                // ------------------------------------------
-                const opentxs::Identifier asset_id(qstrCurrentAssetTypeId.toStdString());
-                opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
-                const QString OT_asset_name = QString::fromStdString(unit_definition->Alias());
-//              const QString OT_asset_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrCurrentAssetTypeId.toStdString()));
-                const QString qstrValue = QString("'%1' %2: %3").arg(OT_asset_name).arg(tr("issued by")).arg(OT_issuer_name);
-                // ------------------------------------------
-                the_map.insert(qstrKey, qstrValue);
-
-                // So we can set the default selection in the chooser based on the application's
-                // default asset type ID -- if one is even set.
-                //
-                if (!qstrDefaultAssetId.isEmpty() && (0 == qstrDefaultAssetId.compare(qstrCurrentAssetTypeId))) {
-                    qstrDefaultKeyToPreselect = qstrKey;
-                }
-                it_assets++;
-            }
-            // -----------------------------------------------
-            // Preselect the application's default asset ID in the chooser dialog,
-            // if one is available.
-            //
-            if (!qstrDefaultKeyToPreselect.isEmpty())
-            {
-                theChooser.SetPreSelected(qstrDefaultKeyToPreselect);
-            }
-            // -----------------------------------------------
-            theChooser.setWindowTitle(tr("Choose exact asset type to deposit"));
-            // -----------------------------------------------
-
-            if (theChooser.exec() == QDialog::Accepted)
-            {
-                const QString qstrSelectedKey = theChooser.m_qstrCurrentID;
-                QStringList stringlist = qstrSelectedKey.split(",");
-                qstrBailmentAssetTypeId = stringlist.at(0);
-                qstrIssuerNymId = stringlist.at(1);
-            }
-            else {
-                return;
-            }
-        }
-        // ----------------------------------------
-        if (qstrBailmentAssetTypeId.isEmpty() || qstrIssuerNymId.isEmpty()) {
-
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen."));
-            qDebug() << "Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen.";
-            return;
-        }
-        // ----------------------------------------
-//      QString  qstrTLA;
-//      QString  qstrServerId;
-//      QString  qstrBailmentAssetTypeId;
-//      QString  qstrIssuerNymId;
-//      std::string str_my_nym_id;
-
-        opentxs::Identifier bailmentId;
-        std::string bailmentInstructions;
-
-        const bool bGotAddress = get_deposit_address(
-            qstrServerId.toStdString(),
-            str_my_nym_id,
-            qstrIssuerNymId.toStdString(),
-            qstrBailmentAssetTypeId.toStdString(),
-            bailmentId,
-            bailmentInstructions);
-
-        if (bGotAddress)
-        {
-            const opentxs::Identifier my_nym_id{str_my_nym_id};
-            const opentxs::Identifier issuer_nym_id{opentxs::String{qstrIssuerNymId.toStdString()}};
-
-            auto editor = opentxs::OT::App().Wallet().mutable_Issuer(my_nym_id, issuer_nym_id);
-            auto& issuer = editor.It();
-
-//          if (pIssuer)
-            {
-                issuer.SetUsed(opentxs::proto::PEERREQUEST_BAILMENT, bailmentId);
-
-                DlgInbailment * pDlgInbailment =
-                new DlgInbailment(this,
-                                  qstrServerId,
-                                  qstrIssuerNymId,
-                                  QString::fromStdString(str_my_nym_id),
-                                  qstrBailmentAssetTypeId,
-                                  QString::fromStdString(bailmentInstructions));
-
-                pDlgInbailment->setAttribute(Qt::WA_DeleteOnClose);
-                pDlgInbailment->show();
-            }
+//                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select a TLA. Should never happen."));
+//                    qDebug() << "Somehow failed to select a TLA. Should never happen.";
+//                    return;
+//                }
+//                mapIDName & mapAssets = it_selected_TLA.value();
+//                pMapAssets = &mapAssets;     //  <============= pMapAssets is set.
+//            }
 //            else {
-//                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
-//                                     tr("Sorry, but the issuer information is not current available. Failure."));
+//                return;
 //            }
+//        }
+//        else {
+//            mapOfMapIDName::iterator it_selected_TLA;
+//            it_selected_TLA = bigMapAssetsByTLA.find(qstrTLA);
+//            if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
 
-//          QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
-//            tr("Success requesting a deposit address. "
-//               "(Soon, it should pop up on the screen in a separate window). "
-//               "TODO: Reserve these addresses in advance, so the user doesn't have to wait."));
-        }
-        else {
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
-                                 tr("Sorry, but a deposit address is currently unavailable. A new one is already being requested (normally I keep a few laying around for these situations...) Please try again soon."));
-        }
-    }
+//                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select a TLA. Should never happen."));
+//                qDebug() << "Somehow failed to select a TLA. Should never happen.";
+//                return;
+//            }
+//            mapIDName & mapAssets = it_selected_TLA.value();
+//            pMapAssets = &mapAssets;     //  <============= pMapAssets is set.
+//        }
+//        // ----------------------------------------
+//        if (qstrTLA.isEmpty() || (nullptr == pMapAssets) || (0 == pMapAssets->size())) {
 
-    // *********************************************************************
+////            qDebug() << "qstrTLA: " << qstrTLA;
 
-    else if (selectedAction == pActionOutbailment)
-    {
-        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
+////            qDebug() << "pMapAssets: " << ((nullptr == pMapAssets) ? QString("is null") : QString("not null"));
 
-        if (str_my_nym_id.empty()) {
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Please set your default Nym and then try again."));
-            qDebug() << "Unable to request outbailment without a default Nym ID being set";
-            return;
-        }
-        if (qstrServerId.isEmpty()) {
+////            if (pMapAssets)
+////                qDebug() << "pMapAssets size: " << QString::number(pMapAssets->size());
 
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Unable to request a withdrawal without a Notary ID being set. (Should never happen in this case...)"));
-            qDebug() << "Unable to request outbailment without a Notary ID being set. (Should never happen in this case...)";
-            return;
-        }
-        // ---------------------------------------
-        // These two cases (both selected or neither selected) are theoretically impossible.
-        //
-        if (!bSelectedSNP && !bSelectedHosted) {
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to choose an asset type for the deposit. "
+//                                                              "Make sure there is a default nym selected, "
+//                                                              "so the application knows which accounts to filter for."));
+//            qDebug() << "Somehow failed to select a TLA.";
+//            return;
+//        }
+//        mapIDName & mapAssets = *pMapAssets;
+//        // =================================================
+////      QString  qstrTLA;
+////      QString  qstrAssetTypeId;
+////      QString  qstrServerId;
+//        QString  qstrBailmentAssetTypeId;
+//        QString  qstrIssuerNymId;
 
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Weird, this problem should never happen."));
-            qDebug() << "Somehow, neither a paired SNP or account, nor a hosted notary or account, "
-                        "is available from the point of the click, and so I am unable to continue the "
-                        "outbailment attempt. I'd have to ask you at this point to pick a notary/SNP from a list.";
-            return;
-        }
-        if (bSelectedSNP && bSelectedHosted) {
+//        // Below this point, qstrTLA and its associated mapAssets are both guaranteed to exist.
+//        // Next we need to find the exact unit type ID and its issuer Nym ID, so we can initiate
+//        // the bailment request.
+//        //
+//        // In the case where there's only a single unit type ID for that TLA, then just use it.
+//        //
+//        if (1 == mapAssets.size()) {
+//            const QString qstrSelectedAssetId = mapAssets.begin().key();
+//            const QString qstrSelectedIssuerNymId = mapAssets.begin().value();
 
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Weird, this problem should never happen."));
-            qDebug() << "Somehow, both a _paired_ SNP or account, AND a _hosted_ notary or account, "
-                        "is available from the point of the click, and so I am unable to continue the "
-                        "outbailment attempt. Should never happen...";
-            return;
-        }
-        // -----------------------------------------------
-        // Grab the currently-selected default account ID,
-        // if there is one selected at all.
-        // We'll find it useful soon.
-        //
-        const QString qstrDefaultAccountId = Moneychanger::It()->get_default_account_id();
-        const std::string default_account_id = qstrDefaultAccountId.isEmpty()
-                ? ""
-                : qstrDefaultAccountId.toStdString();
-        // -----------------------------------------------
-        // When you WITHDRAW funds back to the blockchain, you cannot withdraw merely
-        // from an asset ID. You must have an account ID. (For the funds withdrawn are
-        // coming out of an opentxs account).
-        //
-        // Once the account ID is selected, we will have the correct asset type ID,
-        // and we will also know the maximum amount we can try to withdraw. (Based on
-        // the account's balance...)
-        //
-        // Interestingly, however, the application doesn't need the account ID to send
-        // the actual outbailment request. Because the outbailment results in an invoice
-        // being sent to the user, and only then does the user need to choose which account
-        // he will process the invoice with.
-        //
-        // However, a good GUI will still acquire the account from the right-click whenever
-        // possible, and that way it can automate the processing of the invoice when it comes
-        // in, by remembering which account to process the invoice with. In the meantime,
-        // the user will actually choose the account when he manually pays the invoice.
-        //
-        // But here we do still try to see if the user has right-clicked an account, so we
-        // can derive the asset ID and issuer ID in that way. Otherwise we still have to get
-        // the user to choose an asset ID, based on those available from filtering the user's
-        // accounts on that server.
-        //
+////            if (!qstrAssetTypeId.isEmpty() && (0 != qstrAssetTypeId.compare(qstrSelectedAssetId))) {
+////                // NOTE: This is a case here where it's possible that the selected asset ID
+////                // doesn't match the one the user clicked on. Perhaps, for example, the right-click
+////                // happened to be on a gold account on Alice's SNP, but the default Nym is currently Bob,
+////                // and Bob only owns a Bitcoin account on this SNP. (This means the user has more than one
+////                // Nym in his desktop wallet, of course). So Bob's Bitcoin account's asset type of "Bitcoin"
+////                // doesn't match the "Gold" asset type that was right-clicked on. But anyway, the user will
+////                // have to confirm the bailment request before it goes out, and so we can deal with this case
+////                // later on.
+////            }
 
-        const QString qstrMyNymId(QString::fromStdString(str_my_nym_id));
-        const auto& db = opentxs::OT::App().DB();
-        std::vector<opentxs::OTIdentifier> filteredAccounts;
-        const auto nymAccounts = db.AccountsByOwner(opentxs::Identifier::Factory(str_my_nym_id));
-        const auto serverAccounts = db.AccountsByServer(opentxs::Identifier::Factory(qstrServerId.toStdString()));
-        std::set_intersection(nymAccounts.begin(), nymAccounts.end(), serverAccounts.begin(), serverAccounts.end(), filteredAccounts.begin());
+//            qstrBailmentAssetTypeId = qstrSelectedAssetId;
+//            qstrIssuerNymId = qstrSelectedIssuerNymId;
+//        }
+//        // Otherwise pop up a list of the unit type IDs, perhaps showing the short name, and ask
+//        // the user to double-click one of them.
+//        //
+//        // At some point in the future we will use verified claims to prove which issuer (and unit
+//        // type IDs from that issuer) are the "official" ones owned by your stash-node-manager bot,
+//        // versus some other currency that also happens to be issued on that box by some other issuer.
+//        // (Which is possible).
+//        //
+//        else {
+//            DlgChooser theChooser(this);
+//            mapIDName & the_map = theChooser.m_map;
 
-        if (filteredAccounts.size() < 1)
-        {
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
-                                 tr("Sorry, you don't have any accounts on this notary that can withdraw to blockchain. "
-                                    "Make sure you have a default nym selected, so we know we're looking at the right accounts. "
-                                    "(Accounts are filtered by the owner Nym)."));
-            qDebug() << "No accounts available to do an outbailment from, for the given notary " << qstrServerId << "and nym " << qstrMyNymId << ".";
-            return;
-        }
+//            mapIDName::iterator it_assets = mapAssets.begin();
 
-        mapIDName theAccountMap;
+//            QString qstrDefaultKeyToPreselect;
 
-        for (const auto& accountID : filteredAccounts) {
-            const auto str_current_acct_id = accountID->str();
-            const auto account_name = opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_current_acct_id);
+//            // Set up the list of asset types for the user to choose from.
+//            // (For a given TLA).
+//            //
+//            while (it_assets != mapAssets.end()) {
+//                const QString qstrCurrentAssetTypeId = it_assets.key();
+//                const QString qstrCurrentIssuerNymId = it_assets.value();
+//                const QString qstrKey = QString("%1,%2").arg(qstrCurrentAssetTypeId).arg(qstrCurrentIssuerNymId);
+//                // ------------------------------------------
+//                MTNameLookupQT theLookup;
+//                QString OT_issuer_name = QString::fromStdString(theLookup.GetNymName(qstrCurrentIssuerNymId.toStdString(), ""));
+//                if (OT_issuer_name.isEmpty()) {
+//                    OT_issuer_name = qstrCurrentIssuerNymId;
+//                }
+//                // ------------------------------------------
+//                const opentxs::Identifier asset_id(qstrCurrentAssetTypeId.toStdString());
+//                opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
+//                const QString OT_asset_name = QString::fromStdString(unit_definition->Alias());
+////              const QString OT_asset_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrCurrentAssetTypeId.toStdString()));
+//                const QString qstrValue = QString("'%1' %2: %3").arg(OT_asset_name).arg(tr("issued by")).arg(OT_issuer_name);
+//                // ------------------------------------------
+//                the_map.insert(qstrKey, qstrValue);
 
-            theAccountMap.insert(QString::fromStdString(str_current_acct_id),
-                                 QString::fromStdString(account_name));
-        }
-        // -----------------------------------------------
-//      QString  qstrTLA;
-//      QString  qstrAssetTypeId;
-//      QString  qstrAccountId;
-//      QString  qstrServerId;
+//                // So we can set the default selection in the chooser based on the application's
+//                // default asset type ID -- if one is even set.
+//                //
+//                if (!qstrDefaultAssetId.isEmpty() && (0 == qstrDefaultAssetId.compare(qstrCurrentAssetTypeId))) {
+//                    qstrDefaultKeyToPreselect = qstrKey;
+//                }
+//                it_assets++;
+//            }
+//            // -----------------------------------------------
+//            // Preselect the application's default asset ID in the chooser dialog,
+//            // if one is available.
+//            //
+//            if (!qstrDefaultKeyToPreselect.isEmpty())
+//            {
+//                theChooser.SetPreSelected(qstrDefaultKeyToPreselect);
+//            }
+//            // -----------------------------------------------
+//            theChooser.setWindowTitle(tr("Choose exact asset type to deposit"));
+//            // -----------------------------------------------
 
-        std::string  strIssuerNymId;
-        std::string  strBailmentAssetTypeId;
-        QString      qstrBailmentAssetTypeId;
-        QString      qstrIssuerNymId;
-        // -----------------------------------------------
-        // TODO: Make sure the above four variables are set properly,
-        // so we can initiate the outbailment.
-        //
-        // Starting with strBailmentAssetTypeId...
-        // -----------------------------------------------
-        // If a given account was already selected (via the right-click), let's see if
-        // it's on the map for the current Nym. If so, we can use its asset type ID.
-        //
-        if (!qstrAccountId.isEmpty()) {
-            mapIDName::iterator it_accounts = theAccountMap.find(qstrAccountId);
+//            if (theChooser.exec() == QDialog::Accepted)
+//            {
+//                const QString qstrSelectedKey = theChooser.m_qstrCurrentID;
+//                QStringList stringlist = qstrSelectedKey.split(",");
+//                qstrBailmentAssetTypeId = stringlist.at(0);
+//                qstrIssuerNymId = stringlist.at(1);
+//            }
+//            else {
+//                return;
+//            }
+//        }
+//        // ----------------------------------------
+//        if (qstrBailmentAssetTypeId.isEmpty() || qstrIssuerNymId.isEmpty()) {
 
-            if ((it_accounts != theAccountMap.end()) && (0 == qstrAccountId.compare(it_accounts.key()))) {
-                // Looks like the account the user right-clicked on, IS an available account based on
-                // filtering for the current nym and the selected notary.
-                //
-                strBailmentAssetTypeId = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(qstrAccountId.toStdString());
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen."));
+//            qDebug() << "Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen.";
+//            return;
+//        }
+//        // ----------------------------------------
+////      QString  qstrTLA;
+////      QString  qstrServerId;
+////      QString  qstrBailmentAssetTypeId;
+////      QString  qstrIssuerNymId;
+////      std::string str_my_nym_id;
 
-                if (!strBailmentAssetTypeId.empty()) {
-                    const opentxs::Identifier asset_id(strBailmentAssetTypeId);
-                    if (!asset_id.empty()) {
-                        opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
-                        if (unit_definition) {
-                            opentxs::ConstNym issuer_nym = unit_definition->Nym();
-                            if (issuer_nym) {
-                                const opentxs::Identifier & issuer_nym_id = issuer_nym->ID();
-                                const opentxs::String otstrIssuerNymId(issuer_nym_id);
-                                const std::string str_issuer_nym_id(otstrIssuerNymId.Get());
-                                strIssuerNymId = str_issuer_nym_id;
-                            }
-                        }
-                    }
-                    // ---------------------------------
-                    if (strIssuerNymId.empty()) {
-                        qDebug() << "Error: Found asset type ID based on selected account, "
-                                    "but couldn't find issuer Nym ID from there. Should never happen.";
+//        opentxs::Identifier bailmentId;
+//        std::string bailmentInstructions;
 
-                        return;
-                    }
-                }
-            }
-        } // if (!qstrAccountId.isEmpty())
-        // -----------------------------------------------
-        if (!strBailmentAssetTypeId.empty() && !strIssuerNymId.empty()) {
-            qstrBailmentAssetTypeId = QString::fromStdString(strBailmentAssetTypeId);
-            qstrIssuerNymId = QString::fromStdString(strIssuerNymId);
-        }
-        // -----------------------------------------------
-        else {
-            // Grab the currently-selected default asset type ID (and its TLA),
-            // if there is one selected at all. We'll find it useful soon.
-            //
-            const QString qstrDefaultAssetId = Moneychanger::It()->get_default_asset_id();
-            const std::string default_asset_id = qstrDefaultAssetId.isEmpty()
-                    ? ""
-                    : qstrDefaultAssetId.toStdString();
-            const QString qstrDefaultTLA = qstrDefaultAssetId.isEmpty()
-                    ? QString("")
-                    : QString::fromStdString(opentxs::OT::App().API().Exec().GetCurrencyTLA( default_asset_id ));
-            // -----------------------------------------------
-            mapIDName mapUnitTLA;
-            mapOfMapIDName bigMapAccountsByServer, bigMapAssetsByTLA;
-            GetAccountIdMapsByServerId(bigMapAccountsByServer, bSelectedSNP); // true == paired, false == hosted.
+//        const bool bGotAddress = get_deposit_address(
+//            qstrServerId.toStdString(),
+//            str_my_nym_id,
+//            qstrIssuerNymId.toStdString(),
+//            qstrBailmentAssetTypeId.toStdString(),
+//            bailmentId,
+//            bailmentInstructions);
 
-            const bool bFoundSome = GetUnitAndTLAMapForAccountsOnServer(
-                        mapUnitTLA,
-                        bigMapAccountsByServer,
-                        bigMapAssetsByTLA,
-                        qstrServerId,
-                        str_my_nym_id);
+//        if (bGotAddress)
+//        {
+//            const opentxs::Identifier my_nym_id{str_my_nym_id};
+//            const opentxs::Identifier issuer_nym_id{opentxs::String{qstrIssuerNymId.toStdString()}};
 
-            if (!bFoundSome) {
+//            auto editor = opentxs::OT::App().Wallet().mutable_Issuer(my_nym_id, issuer_nym_id);
+//            auto& issuer = editor.It();
 
-                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
-                    tr("Sorry, you don't have any accounts on this notary that can withdraw to blockchain. "
-                       "Make sure you have a default nym selected. (Accounts are filtered based on the owner Nym)."));
-                qDebug() << "No accounts available to do an outbailment from, for the given notary and nym.";
-                return;
-            }
-            // -----------------------------------------------
-            // Below this point, we know we found at least one account for the given server and nym.
-            // (And thus, at least one "TLA/asset type ID/issuer nym ID" to use in order to initiate an outbailment).
-            //
-            mapIDName * pMapAssets = nullptr;
+////          if (pIssuer)
+//            {
+//                issuer.SetUsed(opentxs::proto::PEERREQUEST_BAILMENT, bailmentId);
 
-            // NOTE: TLA can be empty here. Maybe I'm clicked on a Stash Node Pro,
-            // and the TLAs available there are listed BELOW this line (not ON it).
-            // In the case where it's empty, just ask the user to choose which TLA
-            // he wants to withdraw.
-            //
-            if (qstrTLA.isEmpty() && (1 == bigMapAssetsByTLA.size())) {
-                // If there is only one TLA, we just select it automatically.
-                //
-                qstrTLA = bigMapAssetsByTLA.begin().key();
-                mapIDName & mapAssets = bigMapAssetsByTLA.begin().value();
-                pMapAssets = &mapAssets;
-            }
-            else if (qstrTLA.isEmpty()) { // There must be multiple TLAs to choose from, since we already know there's not zero. (Above, bFoundSome).
+//                DlgInbailment * pDlgInbailment =
+//                new DlgInbailment(this,
+//                                  qstrServerId,
+//                                  qstrIssuerNymId,
+//                                  QString::fromStdString(str_my_nym_id),
+//                                  qstrBailmentAssetTypeId,
+//                                  QString::fromStdString(bailmentInstructions));
 
-                // We can iterate bigMapAssetsByTLA to see all the available TLAs.
-                // We'll let the user choose which TLA he's bailing in.
-                //
-                DlgChooser theChooser(this);
-                mapIDName & the_map = theChooser.m_map;
+//                pDlgInbailment->setAttribute(Qt::WA_DeleteOnClose);
+//                pDlgInbailment->show();
+//            }
+////            else {
+////                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+////                                     tr("Sorry, but the issuer information is not current available. Failure."));
+////            }
 
-                mapOfMapIDName::iterator it_TLA = bigMapAssetsByTLA.begin();
+////          QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
+////            tr("Success requesting a deposit address. "
+////               "(Soon, it should pop up on the screen in a separate window). "
+////               "TODO: Reserve these addresses in advance, so the user doesn't have to wait."));
+//        }
+//        else {
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+//                                 tr("Sorry, but a deposit address is currently unavailable. A new one is already being requested (normally I keep a few laying around for these situations...) Please try again soon."));
+//        }
+//    }
 
-                // Set up the list of TLAs for the user to choose from.
-                //
-                while (it_TLA != bigMapAssetsByTLA.end()) {
-                    const QString qstrTLA = it_TLA.key();
-                    the_map.insert(qstrTLA, qstrTLA);
-                    it_TLA++;
-                }
-                // -----------------------------------------------
-                // Pre-select the default TLA, if the application has a default asset type set already.
-                //
-                mapOfMapIDName::iterator it_default_TLA;
-                if (!qstrDefaultTLA.isEmpty()) {
-                    it_default_TLA = bigMapAssetsByTLA.find(qstrDefaultTLA);
-                }
-                // If there's a default asset type ID already set in the application,
-                // and if the TLA for that asset type appears in the list we refined above
-                // for the set of accounts for a given notary and nym, then we pre-select it
-                // as the default TLA, when we ask the user to choose a TLA for the withdrawal.
-                //
-                if (!qstrDefaultTLA.isEmpty() && (it_default_TLA != bigMapAssetsByTLA.end()))
-                {
-                    theChooser.SetPreSelected(qstrDefaultTLA);
-                }
-                // -----------------------------------------------
-                theChooser.setWindowTitle(tr("Choose asset type to withdraw"));
-                // -----------------------------------------------
-                if (theChooser.exec() == QDialog::Accepted)
-                {
-                    qstrTLA = theChooser.m_qstrCurrentID;    //  <============= qstrTLA is set.
-                    mapOfMapIDName::iterator it_selected_TLA;
-                    if (!qstrTLA.isEmpty()) {
-                        it_selected_TLA = bigMapAssetsByTLA.find(qstrTLA);
-                    }
-                    if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
+//    // *********************************************************************
 
-                        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select a TLA. Should never happen."));
-                        qDebug() << "Somehow failed to select a TLA. Should never happen.";
-                        return;
-                    }
-                    mapIDName & mapAssets = it_selected_TLA.value();
-                    pMapAssets = &mapAssets;     //  <============= pMapAssets is set.
-                }
-                else {
-                    // User canceled.
-                    return;
-                }
-            }
-            else {
-                mapOfMapIDName::iterator it_selected_TLA;
-                it_selected_TLA = bigMapAssetsByTLA.find(qstrTLA);
-                if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
+//    else if (selectedAction == pActionOutbailment)
+//    {
+//        QTimer::singleShot(0, this, SLOT(resetPopupMenus()));
 
-                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select a TLA. Should never happen."));
-                    qDebug() << "Somehow failed to select a TLA. Should never happen.";
-                    return;
-                }
-                mapIDName & mapAssets = it_selected_TLA.value();
-                pMapAssets = &mapAssets;     //  <============= pMapAssets is set.
-            }
-            // ----------------------------------------
-            if (qstrTLA.isEmpty() || (nullptr == pMapAssets) || (0 == pMapAssets->size())) {
+//        if (str_my_nym_id.empty()) {
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Please set your default Nym and then try again."));
+//            qDebug() << "Unable to request outbailment without a default Nym ID being set";
+//            return;
+//        }
+//        if (qstrServerId.isEmpty()) {
 
-                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to choose an asset type for the withdrawal to blockchain. "
-                                                                  "Make sure there is a default nym selected, since the application "
-                                                                  "filters accounts based on owner Nym."));
-                qDebug() << "Somehow failed to select a TLA. Should never happen.";
-                return;
-            }
-            mapIDName & mapAssets = *pMapAssets;
-            // =================================================
-    //      QString  qstrTLA;
-    //      QString  qstrAssetTypeId;
-    //      QString  qstrServerId;
-    //      QString  qstrBailmentAssetTypeId;
-    //      QString  qstrIssuerNymId;
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Unable to request a withdrawal without a Notary ID being set. (Should never happen in this case...)"));
+//            qDebug() << "Unable to request outbailment without a Notary ID being set. (Should never happen in this case...)";
+//            return;
+//        }
+//        // ---------------------------------------
+//        // These two cases (both selected or neither selected) are theoretically impossible.
+//        //
+//        if (!bSelectedSNP && !bSelectedHosted) {
 
-            // Below this point, qstrTLA and its associated mapAssets are both guaranteed to exist.
-            // Next we need to find the exact unit type ID from that list (and its issuer Nym ID),
-            // so we can initiate the outbailment request.
-            //
-            // In the case where there's only a single unit type ID for that TLA, then just use it.
-            //
-            if (1 == mapAssets.size()) {
-                const QString qstrSelectedAssetId = mapAssets.begin().key();
-                const QString qstrSelectedIssuerNymId = mapAssets.begin().value();
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Weird, this problem should never happen."));
+//            qDebug() << "Somehow, neither a paired SNP or account, nor a hosted notary or account, "
+//                        "is available from the point of the click, and so I am unable to continue the "
+//                        "outbailment attempt. I'd have to ask you at this point to pick a notary/SNP from a list.";
+//            return;
+//        }
+//        if (bSelectedSNP && bSelectedHosted) {
 
-    //            if (!qstrAssetTypeId.isEmpty() && (0 != qstrAssetTypeId.compare(qstrSelectedAssetId))) {
-    //                // NOTE: This is a case here where it's possible that the selected asset ID
-    //                // doesn't match the one the user clicked on. Perhaps, for example, the right-click
-    //                // happened to be on a gold account on Alice's SNP, but the default Nym is currently Bob,
-    //                // and Bob only owns a Bitcoin account on this SNP. (This means the user has more than one
-    //                // Nym in his desktop wallet, of course). So Bob's Bitcoin account's asset type of "Bitcoin"
-    //                // doesn't match the "Gold" asset type that was right-clicked on. But anyway, the user will
-    //                // have to confirm the bailment request before it goes out, and so we can deal with this case
-    //                // later on. No point causing some weird unexplained failure on this spot when we can just
-    //                // ask later.
-    //            }
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Weird, this problem should never happen."));
+//            qDebug() << "Somehow, both a _paired_ SNP or account, AND a _hosted_ notary or account, "
+//                        "is available from the point of the click, and so I am unable to continue the "
+//                        "outbailment attempt. Should never happen...";
+//            return;
+//        }
+//        // -----------------------------------------------
+//        // Grab the currently-selected default account ID,
+//        // if there is one selected at all.
+//        // We'll find it useful soon.
+//        //
+//        const QString qstrDefaultAccountId = Moneychanger::It()->get_default_account_id();
+//        const std::string default_account_id = qstrDefaultAccountId.isEmpty()
+//                ? ""
+//                : qstrDefaultAccountId.toStdString();
+//        // -----------------------------------------------
+//        // When you WITHDRAW funds back to the blockchain, you cannot withdraw merely
+//        // from an asset ID. You must have an account ID. (For the funds withdrawn are
+//        // coming out of an opentxs account).
+//        //
+//        // Once the account ID is selected, we will have the correct asset type ID,
+//        // and we will also know the maximum amount we can try to withdraw. (Based on
+//        // the account's balance...)
+//        //
+//        // Interestingly, however, the application doesn't need the account ID to send
+//        // the actual outbailment request. Because the outbailment results in an invoice
+//        // being sent to the user, and only then does the user need to choose which account
+//        // he will process the invoice with.
+//        //
+//        // However, a good GUI will still acquire the account from the right-click whenever
+//        // possible, and that way it can automate the processing of the invoice when it comes
+//        // in, by remembering which account to process the invoice with. In the meantime,
+//        // the user will actually choose the account when he manually pays the invoice.
+//        //
+//        // But here we do still try to see if the user has right-clicked an account, so we
+//        // can derive the asset ID and issuer ID in that way. Otherwise we still have to get
+//        // the user to choose an asset ID, based on those available from filtering the user's
+//        // accounts on that server.
+//        //
 
-                qstrBailmentAssetTypeId = qstrSelectedAssetId;
-                qstrIssuerNymId = qstrSelectedIssuerNymId;
-            }
-            // Otherwise pop up a list of the unit type IDs, perhaps showing the short name, and ask
-            // the user to double-click one of them.
-            //
-            // At some point in the future we will use verified claims to prove which issuer (and unit
-            // type IDs from that issuer) are the "official" ones owned by your stash-node-manager bot,
-            // versus some other currency that also happens to be issued on that box by some other issuer.
-            // (Which is possible).
-            //
-            else {
-                DlgChooser theChooser(this);
-                mapIDName & the_map = theChooser.m_map;
-                QString qstrDefaultKeyToPreselect;
-                mapIDName::iterator it_assets = mapAssets.begin();
+//        const QString qstrMyNymId(QString::fromStdString(str_my_nym_id));
+//        const auto& db = opentxs::OT::App().DB();
+//        std::vector<opentxs::OTIdentifier> filteredAccounts;
+//        const auto nymAccounts = db.AccountsByOwner(opentxs::Identifier::Factory(str_my_nym_id));
+//        const auto serverAccounts = db.AccountsByServer(opentxs::Identifier::Factory(qstrServerId.toStdString()));
+//        std::set_intersection(nymAccounts.begin(), nymAccounts.end(), serverAccounts.begin(), serverAccounts.end(), filteredAccounts.begin());
 
-                // Set up the list of asset types for the user to choose from.
-                // (For a given TLA).
-                //
-                while (it_assets != mapAssets.end()) {
-                    const QString qstrCurrentAssetTypeId = it_assets.key();
-                    const QString qstrCurrentIssuerNymId = it_assets.value();
-                    const QString qstrKey = QString("%1,%2").arg(qstrCurrentAssetTypeId).arg(qstrCurrentIssuerNymId);
-                    // ------------------------------------------
-                    MTNameLookupQT theLookup;
-                    QString OT_issuer_name = QString::fromStdString(theLookup.GetNymName(qstrCurrentIssuerNymId.toStdString(), ""));
-                    if (OT_issuer_name.isEmpty()) {
-                        OT_issuer_name = qstrCurrentIssuerNymId;
-                    }
-                    // ------------------------------------------
-                    const opentxs::Identifier asset_id(qstrCurrentAssetTypeId.toStdString());
-                    opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
-                    const QString OT_asset_name  = QString::fromStdString(unit_definition->Alias());
-    //              const QString OT_asset_name  = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrCurrentAssetTypeId.toStdString()));
-                    const QString qstrExtra = QString(" (%1: %2)").arg(tr("ID")).arg(qstrCurrentIssuerNymId);
-                    const QString qstrValue = QString("'%1' %2: %3%4").arg(OT_asset_name).arg(tr("issued by")).arg(OT_issuer_name)
-                            .arg( (0 == OT_issuer_name.compare(qstrCurrentIssuerNymId)) ? QString("") :  qstrExtra);
-                    // ------------------------------------------
-                    the_map.insert(qstrKey, qstrValue);
+//        if (filteredAccounts.size() < 1)
+//        {
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+//                                 tr("Sorry, you don't have any accounts on this notary that can withdraw to blockchain. "
+//                                    "Make sure you have a default nym selected, so we know we're looking at the right accounts. "
+//                                    "(Accounts are filtered by the owner Nym)."));
+//            qDebug() << "No accounts available to do an outbailment from, for the given notary " << qstrServerId << "and nym " << qstrMyNymId << ".";
+//            return;
+//        }
 
-                    // So we can set the default selection in the chooser based on the application's
-                    // default asset type ID -- if one is even set.
-                    //
-                    if (!qstrDefaultAssetId.isEmpty() && (0 == qstrDefaultAssetId.compare(qstrCurrentAssetTypeId))) {
-                        qstrDefaultKeyToPreselect = qstrKey;
-                    }
-                    it_assets++;
-                }
-                // -----------------------------------------------
-                // Preselect the application's default asset ID in the chooser dialog,
-                // if one is available.
-                //
-                if (!qstrDefaultKeyToPreselect.isEmpty())
-                {
-                    theChooser.SetPreSelected(qstrDefaultKeyToPreselect);
-                }
-                // -----------------------------------------------
-                theChooser.setWindowTitle(tr("Choose exact asset type to withdraw"));
-                // -----------------------------------------------
-                if (theChooser.exec() == QDialog::Accepted)
-                {
-                    const QString qstrSelectedKey = theChooser.m_qstrCurrentID;
-                    QStringList stringlist = qstrSelectedKey.split(",");
-                    qstrBailmentAssetTypeId = stringlist.at(0);
-                    qstrIssuerNymId = stringlist.at(1);
-                }
-                else {
-                    // User canceled.
-                    return;
-                }
-            } // dlgChooser
-            // ----------------------------------------
-            if (qstrBailmentAssetTypeId.isEmpty() || qstrIssuerNymId.isEmpty()) {
+//        mapIDName theAccountMap;
 
-                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
-                                     tr("Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen."));
-                qDebug() << "Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen.";
-                return;
-            }
-            strBailmentAssetTypeId = qstrBailmentAssetTypeId.toStdString();
-            strIssuerNymId = qstrIssuerNymId.toStdString();
-        }
-        // ******************************************************************
+//        for (const auto& accountID : filteredAccounts) {
+//            const auto str_current_acct_id = accountID->str();
+//            const auto account_name = opentxs::OT::App().API().Exec().GetAccountWallet_Name(str_current_acct_id);
 
-        OT_ASSERT(!strBailmentAssetTypeId.empty());
-        OT_ASSERT(!strIssuerNymId.empty());
-        OT_ASSERT(!qstrBailmentAssetTypeId.isEmpty());
-        OT_ASSERT(!qstrIssuerNymId.isEmpty());
+//            theAccountMap.insert(QString::fromStdString(str_current_acct_id),
+//                                 QString::fromStdString(account_name));
+//        }
+//        // -----------------------------------------------
+////      QString  qstrTLA;
+////      QString  qstrAssetTypeId;
+////      QString  qstrAccountId;
+////      QString  qstrServerId;
 
-        // ******************************************************************
+//        std::string  strIssuerNymId;
+//        std::string  strBailmentAssetTypeId;
+//        QString      qstrBailmentAssetTypeId;
+//        QString      qstrIssuerNymId;
+//        // -----------------------------------------------
+//        // TODO: Make sure the above four variables are set properly,
+//        // so we can initiate the outbailment.
+//        //
+//        // Starting with strBailmentAssetTypeId...
+//        // -----------------------------------------------
+//        // If a given account was already selected (via the right-click), let's see if
+//        // it's on the map for the current Nym. If so, we can use its asset type ID.
+//        //
+//        if (!qstrAccountId.isEmpty()) {
+//            mapIDName::iterator it_accounts = theAccountMap.find(qstrAccountId);
 
-        std::int64_t AMOUNT{0};
-        std::string  strToBlockchainAddress;
-        const std::string str_notary_id (qstrServerId.toStdString());
-        const std::string unit_type_id  (qstrBailmentAssetTypeId.toStdString());
-        // -----------------------------------------------
-        DlgOutbailment dlgOutbailment(this, AMOUNT, strToBlockchainAddress,
-                                      qstrBailmentAssetTypeId, qstrIssuerNymId, qstrServerId);
+//            if ((it_accounts != theAccountMap.end()) && (0 == qstrAccountId.compare(it_accounts.key()))) {
+//                // Looks like the account the user right-clicked on, IS an available account based on
+//                // filtering for the current nym and the selected notary.
+//                //
+//                strBailmentAssetTypeId = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(qstrAccountId.toStdString());
 
-        if (dlgOutbailment.exec() == QDialog::Accepted) {
+//                if (!strBailmentAssetTypeId.empty()) {
+//                    const opentxs::Identifier asset_id(strBailmentAssetTypeId);
+//                    if (!asset_id.empty()) {
+//                        opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
+//                        if (unit_definition) {
+//                            opentxs::ConstNym issuer_nym = unit_definition->Nym();
+//                            if (issuer_nym) {
+//                                const opentxs::Identifier & issuer_nym_id = issuer_nym->ID();
+//                                const opentxs::String otstrIssuerNymId(issuer_nym_id);
+//                                const std::string str_issuer_nym_id(otstrIssuerNymId.Get());
+//                                strIssuerNymId = str_issuer_nym_id;
+//                            }
+//                        }
+//                    }
+//                    // ---------------------------------
+//                    if (strIssuerNymId.empty()) {
+//                        qDebug() << "Error: Found asset type ID based on selected account, "
+//                                    "but couldn't find issuer Nym ID from there. Should never happen.";
 
-            const std::int64_t intZero{0};
+//                        return;
+//                    }
+//                }
+//            }
+//        } // if (!qstrAccountId.isEmpty())
+//        // -----------------------------------------------
+//        if (!strBailmentAssetTypeId.empty() && !strIssuerNymId.empty()) {
+//            qstrBailmentAssetTypeId = QString::fromStdString(strBailmentAssetTypeId);
+//            qstrIssuerNymId = QString::fromStdString(strIssuerNymId);
+//        }
+//        // -----------------------------------------------
+//        else {
+//            // Grab the currently-selected default asset type ID (and its TLA),
+//            // if there is one selected at all. We'll find it useful soon.
+//            //
+//            const QString qstrDefaultAssetId = Moneychanger::It()->get_default_asset_id();
+//            const std::string default_asset_id = qstrDefaultAssetId.isEmpty()
+//                    ? ""
+//                    : qstrDefaultAssetId.toStdString();
+//            const QString qstrDefaultTLA = qstrDefaultAssetId.isEmpty()
+//                    ? QString("")
+//                    : QString::fromStdString(opentxs::OT::App().API().Exec().GetCurrencyTLA( default_asset_id ));
+//            // -----------------------------------------------
+//            mapIDName mapUnitTLA;
+//            mapOfMapIDName bigMapAccountsByServer, bigMapAssetsByTLA;
+//            GetAccountIdMapsByServerId(bigMapAccountsByServer, bSelectedSNP); // true == paired, false == hosted.
 
-            if (AMOUNT <= intZero) {
-                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
-                                     tr("Failure: Cannot withdraw a negative or zero amount."));
-                return;
-            }
-            if (strToBlockchainAddress.empty()) {
-                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
-                                     tr("Failure: Blockchain address is empty."));
-                return;
-            }
-            // -----------------------------------------------
+//            const bool bFoundSome = GetUnitAndTLAMapForAccountsOnServer(
+//                        mapUnitTLA,
+//                        bigMapAccountsByServer,
+//                        bigMapAssetsByTLA,
+//                        qstrServerId,
+//                        str_my_nym_id);
+
+//            if (!bFoundSome) {
+
+//                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+//                    tr("Sorry, you don't have any accounts on this notary that can withdraw to blockchain. "
+//                       "Make sure you have a default nym selected. (Accounts are filtered based on the owner Nym)."));
+//                qDebug() << "No accounts available to do an outbailment from, for the given notary and nym.";
+//                return;
+//            }
+//            // -----------------------------------------------
+//            // Below this point, we know we found at least one account for the given server and nym.
+//            // (And thus, at least one "TLA/asset type ID/issuer nym ID" to use in order to initiate an outbailment).
+//            //
+//            mapIDName * pMapAssets = nullptr;
+
+//            // NOTE: TLA can be empty here. Maybe I'm clicked on a Stash Node Pro,
+//            // and the TLAs available there are listed BELOW this line (not ON it).
+//            // In the case where it's empty, just ask the user to choose which TLA
+//            // he wants to withdraw.
+//            //
+//            if (qstrTLA.isEmpty() && (1 == bigMapAssetsByTLA.size())) {
+//                // If there is only one TLA, we just select it automatically.
+//                //
+//                qstrTLA = bigMapAssetsByTLA.begin().key();
+//                mapIDName & mapAssets = bigMapAssetsByTLA.begin().value();
+//                pMapAssets = &mapAssets;
+//            }
+//            else if (qstrTLA.isEmpty()) { // There must be multiple TLAs to choose from, since we already know there's not zero. (Above, bFoundSome).
+
+//                // We can iterate bigMapAssetsByTLA to see all the available TLAs.
+//                // We'll let the user choose which TLA he's bailing in.
+//                //
+//                DlgChooser theChooser(this);
+//                mapIDName & the_map = theChooser.m_map;
+
+//                mapOfMapIDName::iterator it_TLA = bigMapAssetsByTLA.begin();
+
+//                // Set up the list of TLAs for the user to choose from.
+//                //
+//                while (it_TLA != bigMapAssetsByTLA.end()) {
+//                    const QString qstrTLA = it_TLA.key();
+//                    the_map.insert(qstrTLA, qstrTLA);
+//                    it_TLA++;
+//                }
+//                // -----------------------------------------------
+//                // Pre-select the default TLA, if the application has a default asset type set already.
+//                //
+//                mapOfMapIDName::iterator it_default_TLA;
+//                if (!qstrDefaultTLA.isEmpty()) {
+//                    it_default_TLA = bigMapAssetsByTLA.find(qstrDefaultTLA);
+//                }
+//                // If there's a default asset type ID already set in the application,
+//                // and if the TLA for that asset type appears in the list we refined above
+//                // for the set of accounts for a given notary and nym, then we pre-select it
+//                // as the default TLA, when we ask the user to choose a TLA for the withdrawal.
+//                //
+//                if (!qstrDefaultTLA.isEmpty() && (it_default_TLA != bigMapAssetsByTLA.end()))
+//                {
+//                    theChooser.SetPreSelected(qstrDefaultTLA);
+//                }
+//                // -----------------------------------------------
+//                theChooser.setWindowTitle(tr("Choose asset type to withdraw"));
+//                // -----------------------------------------------
+//                if (theChooser.exec() == QDialog::Accepted)
+//                {
+//                    qstrTLA = theChooser.m_qstrCurrentID;    //  <============= qstrTLA is set.
+//                    mapOfMapIDName::iterator it_selected_TLA;
+//                    if (!qstrTLA.isEmpty()) {
+//                        it_selected_TLA = bigMapAssetsByTLA.find(qstrTLA);
+//                    }
+//                    if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
+
+//                        QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select a TLA. Should never happen."));
+//                        qDebug() << "Somehow failed to select a TLA. Should never happen.";
+//                        return;
+//                    }
+//                    mapIDName & mapAssets = it_selected_TLA.value();
+//                    pMapAssets = &mapAssets;     //  <============= pMapAssets is set.
+//                }
+//                else {
+//                    // User canceled.
+//                    return;
+//                }
+//            }
+//            else {
+//                mapOfMapIDName::iterator it_selected_TLA;
+//                it_selected_TLA = bigMapAssetsByTLA.find(qstrTLA);
+//                if (qstrTLA.isEmpty() || (it_selected_TLA == bigMapAssetsByTLA.end())) {
+
+//                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to select a TLA. Should never happen."));
+//                    qDebug() << "Somehow failed to select a TLA. Should never happen.";
+//                    return;
+//                }
+//                mapIDName & mapAssets = it_selected_TLA.value();
+//                pMapAssets = &mapAssets;     //  <============= pMapAssets is set.
+//            }
+//            // ----------------------------------------
+//            if (qstrTLA.isEmpty() || (nullptr == pMapAssets) || (0 == pMapAssets->size())) {
+
+//                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Somehow failed to choose an asset type for the withdrawal to blockchain. "
+//                                                                  "Make sure there is a default nym selected, since the application "
+//                                                                  "filters accounts based on owner Nym."));
+//                qDebug() << "Somehow failed to select a TLA. Should never happen.";
+//                return;
+//            }
+//            mapIDName & mapAssets = *pMapAssets;
+//            // =================================================
+//    //      QString  qstrTLA;
+//    //      QString  qstrAssetTypeId;
+//    //      QString  qstrServerId;
+//    //      QString  qstrBailmentAssetTypeId;
+//    //      QString  qstrIssuerNymId;
+
+//            // Below this point, qstrTLA and its associated mapAssets are both guaranteed to exist.
+//            // Next we need to find the exact unit type ID from that list (and its issuer Nym ID),
+//            // so we can initiate the outbailment request.
+//            //
+//            // In the case where there's only a single unit type ID for that TLA, then just use it.
+//            //
+//            if (1 == mapAssets.size()) {
+//                const QString qstrSelectedAssetId = mapAssets.begin().key();
+//                const QString qstrSelectedIssuerNymId = mapAssets.begin().value();
+
+//    //            if (!qstrAssetTypeId.isEmpty() && (0 != qstrAssetTypeId.compare(qstrSelectedAssetId))) {
+//    //                // NOTE: This is a case here where it's possible that the selected asset ID
+//    //                // doesn't match the one the user clicked on. Perhaps, for example, the right-click
+//    //                // happened to be on a gold account on Alice's SNP, but the default Nym is currently Bob,
+//    //                // and Bob only owns a Bitcoin account on this SNP. (This means the user has more than one
+//    //                // Nym in his desktop wallet, of course). So Bob's Bitcoin account's asset type of "Bitcoin"
+//    //                // doesn't match the "Gold" asset type that was right-clicked on. But anyway, the user will
+//    //                // have to confirm the bailment request before it goes out, and so we can deal with this case
+//    //                // later on. No point causing some weird unexplained failure on this spot when we can just
+//    //                // ask later.
+//    //            }
+
+//                qstrBailmentAssetTypeId = qstrSelectedAssetId;
+//                qstrIssuerNymId = qstrSelectedIssuerNymId;
+//            }
+//            // Otherwise pop up a list of the unit type IDs, perhaps showing the short name, and ask
+//            // the user to double-click one of them.
+//            //
+//            // At some point in the future we will use verified claims to prove which issuer (and unit
+//            // type IDs from that issuer) are the "official" ones owned by your stash-node-manager bot,
+//            // versus some other currency that also happens to be issued on that box by some other issuer.
+//            // (Which is possible).
+//            //
+//            else {
+//                DlgChooser theChooser(this);
+//                mapIDName & the_map = theChooser.m_map;
+//                QString qstrDefaultKeyToPreselect;
+//                mapIDName::iterator it_assets = mapAssets.begin();
+
+//                // Set up the list of asset types for the user to choose from.
+//                // (For a given TLA).
+//                //
+//                while (it_assets != mapAssets.end()) {
+//                    const QString qstrCurrentAssetTypeId = it_assets.key();
+//                    const QString qstrCurrentIssuerNymId = it_assets.value();
+//                    const QString qstrKey = QString("%1,%2").arg(qstrCurrentAssetTypeId).arg(qstrCurrentIssuerNymId);
+//                    // ------------------------------------------
+//                    MTNameLookupQT theLookup;
+//                    QString OT_issuer_name = QString::fromStdString(theLookup.GetNymName(qstrCurrentIssuerNymId.toStdString(), ""));
+//                    if (OT_issuer_name.isEmpty()) {
+//                        OT_issuer_name = qstrCurrentIssuerNymId;
+//                    }
+//                    // ------------------------------------------
+//                    const opentxs::Identifier asset_id(qstrCurrentAssetTypeId.toStdString());
+//                    opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
+//                    const QString OT_asset_name  = QString::fromStdString(unit_definition->Alias());
+//    //              const QString OT_asset_name  = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrCurrentAssetTypeId.toStdString()));
+//                    const QString qstrExtra = QString(" (%1: %2)").arg(tr("ID")).arg(qstrCurrentIssuerNymId);
+//                    const QString qstrValue = QString("'%1' %2: %3%4").arg(OT_asset_name).arg(tr("issued by")).arg(OT_issuer_name)
+//                            .arg( (0 == OT_issuer_name.compare(qstrCurrentIssuerNymId)) ? QString("") :  qstrExtra);
+//                    // ------------------------------------------
+//                    the_map.insert(qstrKey, qstrValue);
+
+//                    // So we can set the default selection in the chooser based on the application's
+//                    // default asset type ID -- if one is even set.
+//                    //
+//                    if (!qstrDefaultAssetId.isEmpty() && (0 == qstrDefaultAssetId.compare(qstrCurrentAssetTypeId))) {
+//                        qstrDefaultKeyToPreselect = qstrKey;
+//                    }
+//                    it_assets++;
+//                }
+//                // -----------------------------------------------
+//                // Preselect the application's default asset ID in the chooser dialog,
+//                // if one is available.
+//                //
+//                if (!qstrDefaultKeyToPreselect.isEmpty())
+//                {
+//                    theChooser.SetPreSelected(qstrDefaultKeyToPreselect);
+//                }
+//                // -----------------------------------------------
+//                theChooser.setWindowTitle(tr("Choose exact asset type to withdraw"));
+//                // -----------------------------------------------
+//                if (theChooser.exec() == QDialog::Accepted)
+//                {
+//                    const QString qstrSelectedKey = theChooser.m_qstrCurrentID;
+//                    QStringList stringlist = qstrSelectedKey.split(",");
+//                    qstrBailmentAssetTypeId = stringlist.at(0);
+//                    qstrIssuerNymId = stringlist.at(1);
+//                }
+//                else {
+//                    // User canceled.
+//                    return;
+//                }
+//            } // dlgChooser
+//            // ----------------------------------------
+//            if (qstrBailmentAssetTypeId.isEmpty() || qstrIssuerNymId.isEmpty()) {
+
+//                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+//                                     tr("Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen."));
+//                qDebug() << "Somehow failed to select an asset type or its associated issuer Nym ID. Should never happen.";
+//                return;
+//            }
+//            strBailmentAssetTypeId = qstrBailmentAssetTypeId.toStdString();
+//            strIssuerNymId = qstrIssuerNymId.toStdString();
+//        }
+//        // ******************************************************************
+
+//        OT_ASSERT(!strBailmentAssetTypeId.empty());
+//        OT_ASSERT(!strIssuerNymId.empty());
+//        OT_ASSERT(!qstrBailmentAssetTypeId.isEmpty());
+//        OT_ASSERT(!qstrIssuerNymId.isEmpty());
+
+//        // ******************************************************************
+
+//        std::int64_t AMOUNT{0};
+//        std::string  strToBlockchainAddress;
+//        const std::string str_notary_id (qstrServerId.toStdString());
+//        const std::string unit_type_id  (qstrBailmentAssetTypeId.toStdString());
+//        // -----------------------------------------------
+//        DlgOutbailment dlgOutbailment(this, AMOUNT, strToBlockchainAddress,
+//                                      qstrBailmentAssetTypeId, qstrIssuerNymId, qstrServerId);
+
+//        if (dlgOutbailment.exec() == QDialog::Accepted) {
+
+//            const std::int64_t intZero{0};
+
+//            if (AMOUNT <= intZero) {
+//                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+//                                     tr("Failure: Cannot withdraw a negative or zero amount."));
+//                return;
+//            }
+//            if (strToBlockchainAddress.empty()) {
+//                QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+//                                     tr("Failure: Blockchain address is empty."));
+//                return;
+//            }
+//            // -----------------------------------------------
 
 
-            // TODO: Validate blockchain address here.
+//            // TODO: Validate blockchain address here.
 
 
-            // -----------------------------------------------
-            const bool bRequestOutbailment = request_outbailment(
-                str_notary_id,
-                str_my_nym_id,
-                strIssuerNymId,
-                unit_type_id,
-                AMOUNT,
-                strToBlockchainAddress);
-        }
-    } // Outbailment
-    // -----------------------------
+//            // -----------------------------------------------
+//            const bool bRequestOutbailment = request_outbailment(
+//                str_notary_id,
+//                str_my_nym_id,
+//                strIssuerNymId,
+//                unit_type_id,
+//                AMOUNT,
+//                strToBlockchainAddress);
+//        }
+//    } // Outbailment
+//    // -----------------------------
 }
 
 
@@ -6812,6 +7046,9 @@ Activity::Activity(QWidget *parent) :
 //    connect(ui->toolButtonMsgContact, SIGNAL(clicked()), this, SLOT(on_toolButtonMsgContact_clicked()));
 //    connect(ui->toolButtonInvoiceContact, SIGNAL(clicked()), this, SLOT(on_toolButtonInvoiceContact_clicked()));
 //    connect(ui->toolButtonImportCash, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_import_slot()));
+
+    icon_nym_ = QIcon(":/icons/icons/identity_BW.png");
+
 }
 
 void Activity::on_toolButtonAddContact_clicked()
@@ -6995,93 +7232,93 @@ void Activity::RetrieveSelectedIds(
    bool     & bSelectedContact
 )
 {
-    QTreeWidget * pTreeWidgetAccounts = ui->treeWidgetAccounts;
-    if (nullptr == pTreeWidgetAccounts) {
-        return;
-    }
-    // ----------------------------------------
-    int nTreeNodeType{-1};
-    int nUnderHeader {-1};
+//    QTreeWidget * pTreeWidgetAccounts = ui->treeWidgetAccounts;
+//    if (nullptr == pTreeWidgetAccounts) {
+//        return;
+//    }
+//    // ----------------------------------------
+//    int nTreeNodeType{-1};
+//    int nUnderHeader {-1};
 
-    QTreeWidgetItem * pTreeItem = pTreeWidgetAccounts->currentItem(); // Might be Null...
-    // ------------------------
-    if ( nullptr != pTreeItem )
-    {
-        const QVariant qvarTreeNodeType = pTreeItem->data(0, Qt::UserRole+0);
-        nTreeNodeType = qvarTreeNodeType.isValid() ? qvarTreeNodeType.toInt() : -1;
-        // ------------------------
-        const QVariant qvarUnderHeader = pTreeItem->data(0, Qt::UserRole+1);
-        nUnderHeader = qvarUnderHeader.isValid() ? qvarUnderHeader.toInt() : -1;
-        // ------------------------
-        if(   (-1) != nTreeNodeType
-           && (-1) != nUnderHeader)
-        {
-            const QVariant qvarTLA = pTreeItem->data(0, Qt::UserRole+2);
-            const QVariant qvarAssetTypeId = pTreeItem->data(0, Qt::UserRole+3);
-            const QVariant qvarAccountId = pTreeItem->data(0, Qt::UserRole+4);
-            const QVariant qvarServerId = pTreeItem->data(0, Qt::UserRole+5);
-            const QVariant qvarContactId = pTreeItem->data(0, Qt::UserRole+6);
-            // ------------------------
-            qstrTLA = qvarTLA.isValid() ? qvarTLA.toString() : QString("");
-            qstrAssetTypeId = qvarAssetTypeId.isValid() ? qvarAssetTypeId.toString() : QString("");
-            qstrAccountId = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
-            qstrServerId = qvarServerId.isValid() ? qvarServerId.toString() : QString("");
-            qstrContactId = qvarContactId.isValid() ? qvarContactId.toString() : QString("");
-        }
-    }
-    // ------------------------
-    /*
-     #define ACTIVITY_TREE_HEADER_TOTALS   0
-     #define ACTIVITY_TREE_HEADER_LOCAL    1
-     #define ACTIVITY_TREE_HEADER_SNP      2
-     #define ACTIVITY_TREE_HEADER_HOSTED   3
-     #define ACTIVITY_TREE_HEADER_CONTACTS 4
+//    QTreeWidgetItem * pTreeItem = pTreeWidgetAccounts->currentItem(); // Might be Null...
+//    // ------------------------
+//    if ( nullptr != pTreeItem )
+//    {
+//        const QVariant qvarTreeNodeType = pTreeItem->data(0, Qt::UserRole+0);
+//        nTreeNodeType = qvarTreeNodeType.isValid() ? qvarTreeNodeType.toInt() : -1;
+//        // ------------------------
+//        const QVariant qvarUnderHeader = pTreeItem->data(0, Qt::UserRole+1);
+//        nUnderHeader = qvarUnderHeader.isValid() ? qvarUnderHeader.toInt() : -1;
+//        // ------------------------
+//        if(   (-1) != nTreeNodeType
+//           && (-1) != nUnderHeader)
+//        {
+//            const QVariant qvarTLA = pTreeItem->data(0, Qt::UserRole+2);
+//            const QVariant qvarAssetTypeId = pTreeItem->data(0, Qt::UserRole+3);
+//            const QVariant qvarAccountId = pTreeItem->data(0, Qt::UserRole+4);
+//            const QVariant qvarServerId = pTreeItem->data(0, Qt::UserRole+5);
+//            const QVariant qvarContactId = pTreeItem->data(0, Qt::UserRole+6);
+//            // ------------------------
+//            qstrTLA = qvarTLA.isValid() ? qvarTLA.toString() : QString("");
+//            qstrAssetTypeId = qvarAssetTypeId.isValid() ? qvarAssetTypeId.toString() : QString("");
+//            qstrAccountId = qvarAccountId.isValid() ? qvarAccountId.toString() : QString("");
+//            qstrServerId = qvarServerId.isValid() ? qvarServerId.toString() : QString("");
+//            qstrContactId = qvarContactId.isValid() ? qvarContactId.toString() : QString("");
+//        }
+//    }
+//    // ------------------------
+//    /*
+//     #define ACTIVITY_TREE_HEADER_TOTALS   0
+//     #define ACTIVITY_TREE_HEADER_LOCAL    1
+//     #define ACTIVITY_TREE_HEADER_SNP      2
+//     #define ACTIVITY_TREE_HEADER_HOSTED   3
+//     #define ACTIVITY_TREE_HEADER_CONTACTS 4
 
-     #define AC_NODE_TYPE_HEADER          0
-     #define AC_NODE_TYPE_ASSET_TOTAL     1
-     #define AC_NODE_TYPE_CONTACT         2
-     #define AC_NODE_TYPE_LOCAL_WALLET    3
-     #define AC_NODE_TYPE_LOCAL_ACCOUNT   4
-     #define AC_NODE_TYPE_SNP_NOTARY      5
-     #define AC_NODE_TYPE_SNP_ACCOUNT     6
-     #define AC_NODE_TYPE_HOSTED_NOTARY   7
-     #define AC_NODE_TYPE_HOSTED_ACCOUNT  8
-     */
+//     #define AC_NODE_TYPE_HEADER          0
+//     #define AC_NODE_TYPE_ASSET_TOTAL     1
+//     #define AC_NODE_TYPE_CONTACT         2
+//     #define AC_NODE_TYPE_LOCAL_WALLET    3
+//     #define AC_NODE_TYPE_LOCAL_ACCOUNT   4
+//     #define AC_NODE_TYPE_SNP_NOTARY      5
+//     #define AC_NODE_TYPE_SNP_ACCOUNT     6
+//     #define AC_NODE_TYPE_HOSTED_NOTARY   7
+//     #define AC_NODE_TYPE_HOSTED_ACCOUNT  8
+//     */
 
-    bSelectedSNP = (AC_NODE_TYPE_SNP_NOTARY  == nTreeNodeType)
-    || (AC_NODE_TYPE_SNP_ACCOUNT == nTreeNodeType);
-    // --------------------------------------------------
-    bSelectedHosted = (AC_NODE_TYPE_HOSTED_NOTARY  == nTreeNodeType)
-    || (AC_NODE_TYPE_HOSTED_ACCOUNT == nTreeNodeType);
-    // --------------------------------------------------
-    bSelectedNotary = !qstrServerId.isEmpty() &&
-    (   AC_NODE_TYPE_SNP_NOTARY    == nTreeNodeType
-     || AC_NODE_TYPE_HOSTED_NOTARY == nTreeNodeType );
+//    bSelectedSNP = (AC_NODE_TYPE_SNP_NOTARY  == nTreeNodeType)
+//    || (AC_NODE_TYPE_SNP_ACCOUNT == nTreeNodeType);
+//    // --------------------------------------------------
+//    bSelectedHosted = (AC_NODE_TYPE_HOSTED_NOTARY  == nTreeNodeType)
+//    || (AC_NODE_TYPE_HOSTED_ACCOUNT == nTreeNodeType);
+//    // --------------------------------------------------
+//    bSelectedNotary = !qstrServerId.isEmpty() &&
+//    (   AC_NODE_TYPE_SNP_NOTARY    == nTreeNodeType
+//     || AC_NODE_TYPE_HOSTED_NOTARY == nTreeNodeType );
 
-    bSelectedAcctLowLevel = !qstrAccountId.isEmpty() &&
-    (   AC_NODE_TYPE_SNP_ACCOUNT    == nTreeNodeType
-     || AC_NODE_TYPE_HOSTED_ACCOUNT == nTreeNodeType);
+//    bSelectedAcctLowLevel = !qstrAccountId.isEmpty() &&
+//    (   AC_NODE_TYPE_SNP_ACCOUNT    == nTreeNodeType
+//     || AC_NODE_TYPE_HOSTED_ACCOUNT == nTreeNodeType);
 
-    // If the user has selected an actual account tree node, or he has selected
-    // a notary tree node that also happens to be rolled up from a single account ID,
-    // either way, there's an account ID and the user has "selected an account".
-    //
-    bSelectedAccount =  (bSelectedAcctLowLevel ||
-                                    (bSelectedNotary && !qstrAccountId.isEmpty()) );
-    bSelectedAsset   = !qstrAssetTypeId.isEmpty();
-    bSelectedContact = (ACTIVITY_TREE_HEADER_CONTACTS == nUnderHeader) && !qstrContactId.isEmpty();
-    // --------------------------------------------------
-    if (qstrAccountId.isEmpty()) {
-        qstrAccountId = Moneychanger::It()->get_default_account_id();
-    }
-    // --------------------------------------------------
-    if (qstrAccountId.isEmpty()) {
-        qstrAccountId = qstrCurrentAccount_;
-    }
-    // --------------------------------------------------
-    if (qstrContactId.isEmpty()) {
-        qstrContactId = qstrCurrentContact_;
-    }
+//    // If the user has selected an actual account tree node, or he has selected
+//    // a notary tree node that also happens to be rolled up from a single account ID,
+//    // either way, there's an account ID and the user has "selected an account".
+//    //
+//    bSelectedAccount =  (bSelectedAcctLowLevel ||
+//                                    (bSelectedNotary && !qstrAccountId.isEmpty()) );
+//    bSelectedAsset   = !qstrAssetTypeId.isEmpty();
+//    bSelectedContact = (ACTIVITY_TREE_HEADER_CONTACTS == nUnderHeader) && !qstrContactId.isEmpty();
+//    // --------------------------------------------------
+//    if (qstrAccountId.isEmpty()) {
+//        qstrAccountId = Moneychanger::It()->get_default_account_id();
+//    }
+//    // --------------------------------------------------
+//    if (qstrAccountId.isEmpty()) {
+//        qstrAccountId = qstrCurrentAccount_;
+//    }
+//    // --------------------------------------------------
+//    if (qstrContactId.isEmpty()) {
+//        qstrContactId = qstrCurrentContact_;
+//    }
 }
 
 
@@ -7272,4 +7509,5 @@ void Activity::on_toolButton_sign_clicked() { emit sig_on_toolButton_sign_clicke
 void Activity::on_toolButton_decrypt_clicked() { emit sig_on_toolButton_decrypt_clicked(); }
 void Activity::on_toolButton_transport_clicked() { emit sig_on_toolButton_transport_clicked(); }
 void Activity::on_toolButton_liveAgreements_clicked() { emit sig_on_toolButton_liveAgreements_clicked(); }
+
 

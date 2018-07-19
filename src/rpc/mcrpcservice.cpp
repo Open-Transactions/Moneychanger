@@ -4,7 +4,7 @@
 #include <core/stable.hpp>
 #endif
 
-#include <core/ot_worker.hpp>
+//#include <core/ot_worker.hpp>
 
 #include <QDebug>
 #include <QTimer>
