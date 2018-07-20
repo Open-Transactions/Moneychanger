@@ -321,8 +321,8 @@ void MTContactDetails::AddButtonClicked()
     // we're adding. (Though a contact may already exist, we'll find out next...)
     // --------------------------------------------------------
     QString qstrContactId;
-    const opentxs::Identifier existingContactId{opentxs::OT::App().Contact().ContactID(opentxs::Identifier{str_nym_id})};
-    const bool bPreexistingOpentxsContact{!existingContactId.IsEmpty()};
+    const auto existingContactId = opentxs::Identifier::Factory(opentxs::OT::App().Contact().ContactID(opentxs::Identifier::Factory(str_nym_id)));
+    const bool bPreexistingOpentxsContact{!existingContactId->empty()};
     bool bCreatedOpentxsContactJustNow{false};
 
     if (bPreexistingOpentxsContact) // It already exists.
@@ -683,7 +683,7 @@ void MTContactDetails::on_treeWidget_customContextMenuRequested(const QPoint &po
                             return;
                         // ----------------------------------------------
                         auto strClaimantNymId = opentxs::String(qstrClaimantNymId.toStdString());
-                        opentxs::Identifier claimant_nym_id(strClaimantNymId);
+                        auto claimant_nym_id = opentxs::Identifier::Factory(strClaimantNymId);
                         // ----------------------------------------------
                         // Get the Nym. Make sure we have the latest copy, since his credentials were apparently
                         // just downloaded and overwritten.
@@ -1091,7 +1091,7 @@ void MTContactDetails::on_pushButtonRefresh_clicked()
                 MTSpinner theSpinner;
 
                 auto action = opentxs::OT::App().API().ServerAction().DownloadNym(
-                		opentxs::Identifier(my_nym_id), opentxs::Identifier(notary_id), opentxs::Identifier(str_nym_id));
+                        opentxs::Identifier::Factory(my_nym_id), opentxs::Identifier::Factory(notary_id), opentxs::Identifier::Factory(str_nym_id));
                 response = action->Run();
             }
 
@@ -1169,7 +1169,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
         MTNameLookupQT theLookup;
         const std::string str_nym_id   = qstrNymID.toStdString();
         const std::string str_nym_name = theLookup.GetNymName(str_nym_id, "");
-        const opentxs::Identifier id_nym(str_nym_id);
+        const auto id_nym = opentxs::Identifier::Factory(str_nym_id);
 
         if (!str_nym_id.empty())
         {
@@ -1194,7 +1194,7 @@ void MTContactDetails::RefreshTree(int nContactId, QStringList & qstrlistNymIDs)
                         MTSpinner theSpinner;
 
                         auto action = opentxs::OT::App().API().ServerAction().DownloadNym(
-                        		opentxs::Identifier(my_nym_id), opentxs::Identifier(notary_id), opentxs::Identifier(str_nym_id));
+                                opentxs::Identifier::Factory(my_nym_id), opentxs::Identifier::Factory(notary_id), opentxs::Identifier::Factory(str_nym_id));
                         response = action->Run();
                     }
 

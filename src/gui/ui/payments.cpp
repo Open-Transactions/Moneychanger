@@ -21,6 +21,12 @@
 #include <core/handlers/focuser.h>
 
 #include <opentxs/opentxs.hpp>
+#include <opentxs/ui/IssuerItem.hpp>
+#include <opentxs/ui/ActivitySummary.hpp>
+#include <opentxs/ui/ActivityThread.hpp>
+#include <opentxs/ui/ActivityThreadItem.hpp>
+#include <opentxs/ui/ActivitySummaryItem.hpp>
+#include <opentxs/SharedPimpl.hpp>
 
 #include <QLabel>
 #include <QDebug>
@@ -38,6 +44,9 @@
 
 #include <string>
 #include <map>
+
+template class opentxs::SharedPimpl<opentxs::ui::IssuerItem>;
+template class opentxs::SharedPimpl<opentxs::ui::AccountSummaryItem>;
 
 
 PMNT_TREE_ITEM Payments::make_tree_item(int nCurrentContact, QString qstrMethodType, QString qstrViaTransport)
@@ -100,10 +109,11 @@ Payments::Payments(QWidget *parent) :
 
 //  if (!Moneychanger::It()->expertMode())
     {
-        QList<int> list;
-        list.append(0);
-        list.append(100);
-        ui->splitter->setSizes(list);
+        // To size the splitter properly:
+//        QList<int> list;
+//        list.append(0);
+//        list.append(100);
+//        ui->splitter->setSizes(list);
     }
 }
 
@@ -621,28 +631,28 @@ QWidget * Payments::CreateUserBarWidget()
 
 void Payments::on_tabWidget_currentChanged(int index)
 {
-    if (ui->tableViewSent      && ui->tableViewReceived &&
-        pPmntProxyModelOutbox_ && pPmntProxyModelInbox_)
-    {
-        pCurrentTabTableView_  = (0 == ui->tabWidget->currentIndex()) ? ui->tableViewReceived    : ui->tableViewSent;
-        pCurrentTabProxyModel_ = (0 == ui->tabWidget->currentIndex()) ? &(*pPmntProxyModelInbox_) : &(*pPmntProxyModelOutbox_);
-        // -------------------------------------------------
-        QModelIndex the_index  = pCurrentTabTableView_->currentIndex();
+//    if (ui->tableViewSent      && ui->tableViewReceived &&
+//        pPmntProxyModelOutbox_ && pPmntProxyModelInbox_)
+//    {
+//        pCurrentTabTableView_  = (0 == ui->tabWidget->currentIndex()) ? ui->tableViewReceived    : ui->tableViewSent;
+//        pCurrentTabProxyModel_ = (0 == ui->tabWidget->currentIndex()) ? &(*pPmntProxyModelInbox_) : &(*pPmntProxyModelOutbox_);
+//        // -------------------------------------------------
+//        QModelIndex the_index  = pCurrentTabTableView_->currentIndex();
 
-        if (the_index.isValid())
-            enableButtons();
-        else
-            disableButtons();
-        // --------------------------------------
-        RefreshPayments();
-    }
-    else
-    {
-        pCurrentTabTableView_  = nullptr;
-        pCurrentTabProxyModel_ = nullptr;
+//        if (the_index.isValid())
+//            enableButtons();
+//        else
+//            disableButtons();
+//        // --------------------------------------
+//        RefreshPayments();
+//    }
+//    else
+//    {
+//        pCurrentTabTableView_  = nullptr;
+//        pCurrentTabProxyModel_ = nullptr;
 
-        disableButtons();
-    }
+//        disableButtons();
+//    }
 }
 
 
@@ -1108,52 +1118,49 @@ void Payments::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         // ----------------------------------
 
         // ******************************************************
-        QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
+//        QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
-        if (pModel)
-        {
-            pPmntProxyModelInbox_  = new PaymentsProxyModel;
-            pPmntProxyModelOutbox_ = new PaymentsProxyModel;
-            pPmntProxyModelInbox_ ->setSourceModel(pModel);
-            pPmntProxyModelOutbox_->setSourceModel(pModel);
-            pPmntProxyModelOutbox_->setFilterFolder(0);
-            pPmntProxyModelInbox_ ->setFilterFolder(1);
+//        if (pModel)
+//        {
+//            pPmntProxyModelInbox_  = new PaymentsProxyModel;
+//            pPmntProxyModelOutbox_ = new PaymentsProxyModel;
+//            pPmntProxyModelInbox_ ->setSourceModel(pModel);
+//            pPmntProxyModelOutbox_->setSourceModel(pModel);
+//            pPmntProxyModelOutbox_->setFilterFolder(0);
+//            pPmntProxyModelInbox_ ->setFilterFolder(1);
             // ---------------------------------
 //            pPmntProxyModelInbox_ ->setFilterKeyColumn(-1);
 //            pPmntProxyModelOutbox_->setFilterKeyColumn(-1);
             // ---------------------------------
-            setup_tableview(ui->tableViewSent, pPmntProxyModelOutbox_);
-            setup_tableview(ui->tableViewReceived, pPmntProxyModelInbox_);
-            // ---------------------------------
-            QItemSelectionModel *sm1 = ui->tableViewSent->selectionModel();
-            connect(sm1, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-                    this, SLOT(on_tableViewSentSelectionModel_currentRowChanged(QModelIndex,QModelIndex)));
-            QItemSelectionModel *sm2 = ui->tableViewReceived->selectionModel();
-            connect(sm2, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-                    this, SLOT(on_tableViewReceivedSelectionModel_currentRowChanged(QModelIndex,QModelIndex)));
+//            setup_tableview(ui->tableViewSent, pPmntProxyModelOutbox_);
+//            setup_tableview(ui->tableViewReceived, pPmntProxyModelInbox_);
+//            // ---------------------------------
+//            QItemSelectionModel *sm1 = ui->tableViewSent->selectionModel();
+//            connect(sm1, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
+//                    this, SLOT(on_tableViewSentSelectionModel_currentRowChanged(QModelIndex,QModelIndex)));
+//            QItemSelectionModel *sm2 = ui->tableViewReceived->selectionModel();
+//            connect(sm2, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
+//                    this, SLOT(on_tableViewReceivedSelectionModel_currentRowChanged(QModelIndex,QModelIndex)));
             // ---------------------------------
 //            connect(pPmntProxyModelInbox_,  SIGNAL(modelReset()),
 //                    this,                  SLOT(RefreshPayments()));
 //            connect(pPmntProxyModelOutbox_, SIGNAL(modelReset()),
 //                    this,                  SLOT(RefreshPayments()));
-        }
+//        }
         // --------------------------------------------------------
         connect(this, SIGNAL(showContact(QString)),               Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
         // --------------------------------------------------------
         connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(onNeedToPopulateRecordlist()));
         connect(this, SIGNAL(showContactAndRefreshHome(QString)), Moneychanger::It(), SLOT(mc_showcontact_slot(QString)));
         // --------------------------------------------------------
-        QWidget* pTab0 = ui->tabWidget->widget(0);
-        QWidget* pTab1 = ui->tabWidget->widget(1);
+//        QWidget* pTab0 = ui->tabWidget->widget(0);
+//        QWidget* pTab1 = ui->tabWidget->widget(1);
 
-        pTab0->setStyleSheet("QWidget { margin: 0 }");
-        pTab1->setStyleSheet("QWidget { margin: 0 }");
+//        pTab0->setStyleSheet("QWidget { margin: 0 }");
+//        pTab1->setStyleSheet("QWidget { margin: 0 }");
 
-//        ui->splitter->setStretchFactor(0, 2);
-//        ui->splitter->setStretchFactor(1, 3);
-
-        ui->splitter->setStretchFactor(0, 1);
-        ui->splitter->setStretchFactor(1, 5);
+//        ui->splitter->setStretchFactor(0, 1);
+//        ui->splitter->setStretchFactor(1, 5);
         // ------------------------
         on_tabWidget_currentChanged(0);
 
@@ -1173,40 +1180,40 @@ void Payments::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 
 void Payments::setAsCurrentPayment(int nSourceRow, int nFolder)
 {
-    if (-1 == nSourceRow || -1 == nFolder)
-        return;
+//    if (-1 == nSourceRow || -1 == nFolder)
+//        return;
 
-    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
+//    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
-    if (!pModel)
-        return;
-    // -------------------
-    QTableView * pTableView = (0 == nFolder) ? ui->tableViewSent : ui->tableViewReceived;
-    if (nullptr == pTableView) return; // should never happen.
-    QPointer<PaymentsProxyModel> & pProxyModel = (0 == nFolder) ? pPmntProxyModelOutbox_ : pPmntProxyModelInbox_;
-    // ----------------------------
-    // If the table view we're switching to, is not the current one, then we
-    // need to make it the current one.
-    //
-    if (pTableView != pCurrentTabTableView_)
-    {
-        ui->tabWidget->setCurrentIndex((0 == nFolder) ? 1 : 0);
-    }
-    // ----------------------------
-    QModelIndex sourceIndex = pModel->index(nSourceRow, PMNT_SOURCE_COL_PMNT_ID);
-    QModelIndex proxyIndex;
-    if (sourceIndex.isValid())
-        proxyIndex = pProxyModel->mapFromSource(sourceIndex);
-    if (proxyIndex.isValid())
-        pTableView->setCurrentIndex(proxyIndex);
+//    if (!pModel)
+//        return;
+//    // -------------------
+//    QTableView * pTableView = (0 == nFolder) ? ui->tableViewSent : ui->tableViewReceived;
+//    if (nullptr == pTableView) return; // should never happen.
+//    QPointer<PaymentsProxyModel> & pProxyModel = (0 == nFolder) ? pPmntProxyModelOutbox_ : pPmntProxyModelInbox_;
+//    // ----------------------------
+//    // If the table view we're switching to, is not the current one, then we
+//    // need to make it the current one.
+//    //
+//    if (pTableView != pCurrentTabTableView_)
+//    {
+//        ui->tabWidget->setCurrentIndex((0 == nFolder) ? 1 : 0);
+//    }
+//    // ----------------------------
+//    QModelIndex sourceIndex = pModel->index(nSourceRow, PMNT_SOURCE_COL_PMNT_ID);
+//    QModelIndex proxyIndex;
+//    if (sourceIndex.isValid())
+//        proxyIndex = pProxyModel->mapFromSource(sourceIndex);
+//    if (proxyIndex.isValid())
+//        pTableView->setCurrentIndex(proxyIndex);
 }
 
 
 void Payments::ClearTree()
 {
-    ui->treeWidget->blockSignals(true);
-    ui->treeWidget->clear();
-    ui->treeWidget->blockSignals(false);
+    ui->treeWidgetSummary->blockSignals(true);
+    ui->treeWidgetSummary->clear();
+    ui->treeWidgetSummary->blockSignals(false);
 }
 
 
@@ -1272,257 +1279,262 @@ void Payments::onClaimsUpdatedForNym(QString nymId)
 
 void Payments::RefreshPayments()
 {
-    bRefreshingAfterUpdatedClaims_ = false;
-    // -------------------------------------------
-    ui->tableViewSent->reset();
-    ui->tableViewReceived->reset();
-    // -------------------------------------------
-    PMNT_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
+//    bRefreshingAfterUpdatedClaims_ = false;
+//    // -------------------------------------------
+//    ui->tableViewSent->reset();
+//    ui->tableViewReceived->reset();
+//    // -------------------------------------------
+//    PMNT_TREE_ITEM theItem = make_tree_item(nCurrentContact_, qstrMethodType_, qstrViaTransport_);
 
-    bool bIsInbox = (0 == ui->tabWidget->currentIndex());
-    int  nPmntID   = bIsInbox ? get_inbox_pmntid_for_tree_item(theItem) : get_outbox_pmntid_for_tree_item(theItem);
+//    bool bIsInbox = (0 == ui->tabWidget->currentIndex());
+//    int  nPmntID   = bIsInbox ? get_inbox_pmntid_for_tree_item(theItem) : get_outbox_pmntid_for_tree_item(theItem);
 
-    if (0 == nPmntID) // There's no "current selected payment ID" set for this tree item.
-    {
-        int nRowToSelect = -1;
+//    if (0 == nPmntID) // There's no "current selected payment ID" set for this tree item.
+//    {
+//        int nRowToSelect = -1;
 
-        if (pCurrentTabProxyModel_->rowCount() > 0) // But there ARE rows for this tree item...
-            nRowToSelect = 0;
+//        if (pCurrentTabProxyModel_->rowCount() > 0) // But there ARE rows for this tree item...
+//            nRowToSelect = 0;
 
-        // So let's select the first one in the list!
-        QModelIndex previous = pCurrentTabTableView_->currentIndex();
-        pCurrentTabTableView_->blockSignals(true);
-        pCurrentTabTableView_->selectRow(nRowToSelect);
-        pCurrentTabTableView_->blockSignals(false);
+//        // So let's select the first one in the list!
+//        QModelIndex previous = pCurrentTabTableView_->currentIndex();
+//        pCurrentTabTableView_->blockSignals(true);
+//        pCurrentTabTableView_->selectRow(nRowToSelect);
+//        pCurrentTabTableView_->blockSignals(false);
 
-        if (bIsInbox)
-            on_tableViewReceivedSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
-        else
-            on_tableViewSentSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
-    }
-    else // There IS a "current selected payment ID" for the current tree item.
-    {
-        // So let's try to select that in the tree again! (If it's still there. Otherwise set it to row 0.)
+//        if (bIsInbox)
+//            on_tableViewReceivedSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
+//        else
+//            on_tableViewSentSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
+//    }
+//    else // There IS a "current selected payment ID" for the current tree item.
+//    {
+//        // So let's try to select that in the tree again! (If it's still there. Otherwise set it to row 0.)
 
-        QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
+//        QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
-        if (pModel)
-        {
-            bool bFoundIt = false;
+//        if (pModel)
+//        {
+//            bool bFoundIt = false;
 
-            const int nRowCount = pCurrentTabProxyModel_->rowCount();
+//            const int nRowCount = pCurrentTabProxyModel_->rowCount();
 
-            for (int ii = 0; ii < nRowCount; ++ii)
-            {
-                QModelIndex indexProxy  = pCurrentTabProxyModel_->index(ii, 0);
-                QModelIndex indexSource = pCurrentTabProxyModel_->mapToSource(indexProxy);
+//            for (int ii = 0; ii < nRowCount; ++ii)
+//            {
+//                QModelIndex indexProxy  = pCurrentTabProxyModel_->index(ii, 0);
+//                QModelIndex indexSource = pCurrentTabProxyModel_->mapToSource(indexProxy);
 
-                QSqlRecord record = pModel->record(indexSource.row());
+//                QSqlRecord record = pModel->record(indexSource.row());
 
-                if (!record.isEmpty())
-                {
-                    QVariant the_value = record.value(PMNT_SOURCE_COL_PMNT_ID);
-                    const int nRecordpmntid = the_value.isValid() ? the_value.toInt() : 0;
+//                if (!record.isEmpty())
+//                {
+//                    QVariant the_value = record.value(PMNT_SOURCE_COL_PMNT_ID);
+//                    const int nRecordpmntid = the_value.isValid() ? the_value.toInt() : 0;
 
-                    if (nRecordpmntid == nPmntID)
-                    {
-                        bFoundIt = true;
+//                    if (nRecordpmntid == nPmntID)
+//                    {
+//                        bFoundIt = true;
 
-                        QModelIndex previous = pCurrentTabTableView_->currentIndex();
-                        pCurrentTabTableView_->blockSignals(true);
-                        pCurrentTabTableView_->selectRow(ii);
-                        pCurrentTabTableView_->blockSignals(false);
+//                        QModelIndex previous = pCurrentTabTableView_->currentIndex();
+//                        pCurrentTabTableView_->blockSignals(true);
+//                        pCurrentTabTableView_->selectRow(ii);
+//                        pCurrentTabTableView_->blockSignals(false);
 
-                        if (bIsInbox)
-                            on_tableViewReceivedSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
-                        else
-                            on_tableViewSentSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
-                        break;
-                    }
-                }
-            }
-            // ------------------------------------
-            if (!bFoundIt)
-            {
-                int nRowToSelect = -1;
+//                        if (bIsInbox)
+//                            on_tableViewReceivedSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
+//                        else
+//                            on_tableViewSentSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
+//                        break;
+//                    }
+//                }
+//            }
+//            // ------------------------------------
+//            if (!bFoundIt)
+//            {
+//                int nRowToSelect = -1;
 
-                if (nRowCount > 0)
-                    nRowToSelect = 0;
+//                if (nRowCount > 0)
+//                    nRowToSelect = 0;
 
-                QModelIndex previous = pCurrentTabTableView_->currentIndex();
-                pCurrentTabTableView_->blockSignals(true);
-                pCurrentTabTableView_->selectRow(nRowToSelect);
-                pCurrentTabTableView_->blockSignals(false);
+//                QModelIndex previous = pCurrentTabTableView_->currentIndex();
+//                pCurrentTabTableView_->blockSignals(true);
+//                pCurrentTabTableView_->selectRow(nRowToSelect);
+//                pCurrentTabTableView_->blockSignals(false);
 
-                if (bIsInbox)
-                    on_tableViewReceivedSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
-                else
-                    on_tableViewSentSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
-            }
-        }
-    }
-    // -------------------------------------------
-    ui->tableViewSent->resizeColumnsToContents();
-    ui->tableViewSent->resizeRowsToContents();
-    ui->tableViewReceived->resizeColumnsToContents();
-    ui->tableViewReceived->resizeRowsToContents();
-    {
-    int nWidthFirstColumn = ui->tableViewSent->columnWidth(0);
-    int nNewWidth = static_cast<int>( static_cast<float>(nWidthFirstColumn) * 1.2 );
-    ui->tableViewSent->setColumnWidth(0,nNewWidth);
-    }{
-    int nWidthFirstColumn = ui->tableViewReceived->columnWidth(0);
-    int nNewWidth = static_cast<int>( static_cast<float>(nWidthFirstColumn) * 1.2 );
-    ui->tableViewReceived->setColumnWidth(0,nNewWidth);
-    }
-    ui->tableViewSent->horizontalHeader()->setStretchLastSection(true);
-    ui->tableViewReceived->horizontalHeader()->setStretchLastSection(true);
+//                if (bIsInbox)
+//                    on_tableViewReceivedSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
+//                else
+//                    on_tableViewSentSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
+//            }
+//        }
+//    }
+//    // -------------------------------------------
+//    ui->tableViewSent->resizeColumnsToContents();
+//    ui->tableViewSent->resizeRowsToContents();
+//    ui->tableViewReceived->resizeColumnsToContents();
+//    ui->tableViewReceived->resizeRowsToContents();
+//    {
+//    int nWidthFirstColumn = ui->tableViewSent->columnWidth(0);
+//    int nNewWidth = static_cast<int>( static_cast<float>(nWidthFirstColumn) * 1.2 );
+//    ui->tableViewSent->setColumnWidth(0,nNewWidth);
+//    }{
+//    int nWidthFirstColumn = ui->tableViewReceived->columnWidth(0);
+//    int nNewWidth = static_cast<int>( static_cast<float>(nWidthFirstColumn) * 1.2 );
+//    ui->tableViewReceived->setColumnWidth(0,nNewWidth);
+//    }
+//    ui->tableViewSent->horizontalHeader()->setStretchLastSection(true);
+//    ui->tableViewReceived->horizontalHeader()->setStretchLastSection(true);
+}
+
+void Payments::RefreshSummaryTree()
+{
+
 }
 
 void Payments::RefreshTree()
 {
-    ClearTree();
-    // ----------------------------------------
-    ui->treeWidget->blockSignals(true);
-    // ----------------------------------------
-    QList<QTreeWidgetItem *> items;
-    // ------------------------------------
-    QTreeWidgetItem * pUnfilteredItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("All Payments (Unfiltered)")));
-    pUnfilteredItem->setData(0, Qt::UserRole, QVariant(0));
-    items.append(pUnfilteredItem);
-    // ----------------------------------------
-    mapIDName mapContacts;
+//    ClearTree();
+//    // ----------------------------------------
+//    ui->treeWidget->blockSignals(true);
+//    // ----------------------------------------
+//    QList<QTreeWidgetItem *> items;
+//    // ------------------------------------
+//    QTreeWidgetItem * pUnfilteredItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(tr("All Payments (Unfiltered)")));
+//    pUnfilteredItem->setData(0, Qt::UserRole, QVariant(0));
+//    items.append(pUnfilteredItem);
+//    // ----------------------------------------
+//    mapIDName mapContacts;
 
-    if (MTContactHandler::getInstance()->GetContacts(mapContacts))
-    {
-        for (mapIDName::iterator ii = mapContacts.begin(); ii != mapContacts.end(); ii++)
-        {
-            QString qstrContactID   = ii.key();
-            QString qstrContactName = ii.value();
-            int     nContactID      = qstrContactID.toInt();
-            // ------------------------------------
-            QTreeWidgetItem * pTopItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrContactName));
-            pTopItem->setData(0, Qt::UserRole, QVariant(nContactID));
-            items.append(pTopItem);
-            // ------------------------------------
-            mapIDName mapMethodTypes;
-            // So we can look up these names quickly without having to repeatedly hit the database
-            // for the same names over and over again.
-            MTContactHandler::getInstance()->GetMsgMethodTypes(mapMethodTypes);
-            // ------------------------------------
-            mapIDName mapTransport;
+//    if (MTContactHandler::getInstance()->GetContacts(mapContacts))
+//    {
+//        for (mapIDName::iterator ii = mapContacts.begin(); ii != mapContacts.end(); ii++)
+//        {
+//            QString qstrContactID   = ii.key();
+//            QString qstrContactName = ii.value();
+//            int     nContactID      = qstrContactID.toInt();
+//            // ------------------------------------
+//            QTreeWidgetItem * pTopItem = new QTreeWidgetItem((QTreeWidget *)nullptr, QStringList(qstrContactName));
+//            pTopItem->setData(0, Qt::UserRole, QVariant(nContactID));
+//            items.append(pTopItem);
+//            // ------------------------------------
+//            mapIDName mapMethodTypes;
+//            // So we can look up these names quickly without having to repeatedly hit the database
+//            // for the same names over and over again.
+//            MTContactHandler::getInstance()->GetMsgMethodTypes(mapMethodTypes);
+//            // ------------------------------------
+//            mapIDName mapTransport;
 
-            if (MTContactHandler::getInstance()->GetMsgMethodTypesByContact(mapTransport, nContactID, true)) // True means to add the OT servers as well.
-            {
-                for (mapIDName::iterator it_transport = mapTransport.begin(); it_transport != mapTransport.end(); it_transport++)
-                {
-                    QString qstrID   = it_transport.key();
-//                  QString qstrName = it_transport.value();
+//            if (MTContactHandler::getInstance()->GetMsgMethodTypesByContact(mapTransport, nContactID, true)) // True means to add the OT servers as well.
+//            {
+//                for (mapIDName::iterator it_transport = mapTransport.begin(); it_transport != mapTransport.end(); it_transport++)
+//                {
+//                    QString qstrID   = it_transport.key();
+////                  QString qstrName = it_transport.value();
 
-                    QStringList stringlist = qstrID.split("|");
+//                    QStringList stringlist = qstrID.split("|");
 
-                    if (stringlist.size() >= 2) // Should always be 2...
-                    {
-                        QString qstrViaTransport = stringlist.at(1);
-                        QString qstrTransportName = qstrViaTransport;
-                        QString qstrMethodType = stringlist.at(0);
-                        QString qstrMethodName = qstrMethodType;
+//                    if (stringlist.size() >= 2) // Should always be 2...
+//                    {
+//                        QString qstrViaTransport = stringlist.at(1);
+//                        QString qstrTransportName = qstrViaTransport;
+//                        QString qstrMethodType = stringlist.at(0);
+//                        QString qstrMethodName = qstrMethodType;
 
-                        mapIDName::iterator it_mapMethodTypes = mapMethodTypes.find(qstrMethodType);
+//                        mapIDName::iterator it_mapMethodTypes = mapMethodTypes.find(qstrMethodType);
 
-                        if (mapMethodTypes.end() != it_mapMethodTypes)
-                        {
-                            QString qstrTemp = it_mapMethodTypes.value();
-                            if (!qstrTemp.isEmpty())
-                                qstrMethodName = qstrTemp;
-                        }
-                        // ------------------------------------------------------
-                        else if (0 == QString("otserver").compare(qstrMethodType))
-                        {
-                            qstrMethodName = tr("Notary");
-                            // ------------------------------
-                            QString qstrTemp = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrViaTransport.toStdString()));
-                            if (!qstrTemp.isEmpty())
-                                qstrTransportName = qstrTemp;
-                        }
-                        // ------------------------------------------------------
-                        QTreeWidgetItem * pAddressItem = new QTreeWidgetItem(pTopItem, QStringList(qstrContactName) << qstrMethodName << qstrTransportName);
-                        pAddressItem->setData(0, Qt::UserRole, QVariant(nContactID));
-                        pAddressItem->setData(1, Qt::UserRole, QVariant(qstrMethodType));
-                        pAddressItem->setData(2, Qt::UserRole, QVariant(qstrViaTransport));
-                        items.append(pAddressItem);
-                    }
-                }
-            }
-        }
-        if (items.count() > 0)
-        {
-            ui->treeWidget->insertTopLevelItems(0, items);
-            ui->treeWidget->resizeColumnToContents(0);
-        }
-    }
-    // ----------------------------------------
-    // Make sure the same item that was selected before, is selected again.
-    // (If it still exists, which it probably does.)
+//                        if (mapMethodTypes.end() != it_mapMethodTypes)
+//                        {
+//                            QString qstrTemp = it_mapMethodTypes.value();
+//                            if (!qstrTemp.isEmpty())
+//                                qstrMethodName = qstrTemp;
+//                        }
+//                        // ------------------------------------------------------
+//                        else if (0 == QString("otserver").compare(qstrMethodType))
+//                        {
+//                            qstrMethodName = tr("Notary");
+//                            // ------------------------------
+//                            QString qstrTemp = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrViaTransport.toStdString()));
+//                            if (!qstrTemp.isEmpty())
+//                                qstrTransportName = qstrTemp;
+//                        }
+//                        // ------------------------------------------------------
+//                        QTreeWidgetItem * pAddressItem = new QTreeWidgetItem(pTopItem, QStringList(qstrContactName) << qstrMethodName << qstrTransportName);
+//                        pAddressItem->setData(0, Qt::UserRole, QVariant(nContactID));
+//                        pAddressItem->setData(1, Qt::UserRole, QVariant(qstrMethodType));
+//                        pAddressItem->setData(2, Qt::UserRole, QVariant(qstrViaTransport));
+//                        items.append(pAddressItem);
+//                    }
+//                }
+//            }
+//        }
+//        if (items.count() > 0)
+//        {
+//            ui->treeWidget->insertTopLevelItems(0, items);
+//            ui->treeWidget->resizeColumnToContents(0);
+//        }
+//    }
+//    // ----------------------------------------
+//    // Make sure the same item that was selected before, is selected again.
+//    // (If it still exists, which it probably does.)
 
-    QTreeWidgetItem * previous = ui->treeWidget->currentItem();
+//    QTreeWidgetItem * previous = ui->treeWidget->currentItem();
 
-    // In this case, just select the first thing on the list.
-    if ( (0 == nCurrentContact_) && qstrMethodType_.isEmpty() && qstrViaTransport_.isEmpty() )
-    {
-        if (ui->treeWidget->topLevelItemCount() > 0)
-            ui->treeWidget->setCurrentItem(ui->treeWidget->topLevelItem(0));
-    }
-    else // Find the one that was selected before the refresh.
-    {
-        bool bFoundIt = false;
+//    // In this case, just select the first thing on the list.
+//    if ( (0 == nCurrentContact_) && qstrMethodType_.isEmpty() && qstrViaTransport_.isEmpty() )
+//    {
+//        if (ui->treeWidget->topLevelItemCount() > 0)
+//            ui->treeWidget->setCurrentItem(ui->treeWidget->topLevelItem(0));
+//    }
+//    else // Find the one that was selected before the refresh.
+//    {
+//        bool bFoundIt = false;
 
-        QTreeWidgetItemIterator it(ui->treeWidget);
+//        QTreeWidgetItemIterator it(ui->treeWidget);
 
-        while (*it)
-        {
-            QVariant qvarContactID    = (*it)->data(0, Qt::UserRole);
-            QVariant qvarMethodType   = (*it)->data(1, Qt::UserRole);
-            QVariant qvarViaTransport = (*it)->data(2, Qt::UserRole);
+//        while (*it)
+//        {
+//            QVariant qvarContactID    = (*it)->data(0, Qt::UserRole);
+//            QVariant qvarMethodType   = (*it)->data(1, Qt::UserRole);
+//            QVariant qvarViaTransport = (*it)->data(2, Qt::UserRole);
 
-            const int     nContactID       = qvarContactID   .isValid() ? qvarContactID   .toInt()    :  0;
-            const QString qstrMethodType   = qvarMethodType  .isValid() ? qvarMethodType  .toString() : "";
-            const QString qstrViaTransport = qvarViaTransport.isValid() ? qvarViaTransport.toString() : "";
+//            const int     nContactID       = qvarContactID   .isValid() ? qvarContactID   .toInt()    :  0;
+//            const QString qstrMethodType   = qvarMethodType  .isValid() ? qvarMethodType  .toString() : "";
+//            const QString qstrViaTransport = qvarViaTransport.isValid() ? qvarViaTransport.toString() : "";
 
-            if ( (nContactID == nCurrentContact_ ) &&
-                 (0 == qstrMethodType.compare(qstrMethodType_)) &&
-                 (0 == qstrViaTransport.compare(qstrViaTransport_)) )
-            {
-                bFoundIt = true;
-                ui->treeWidget->setCurrentItem(*it);
-                break;
-            }
-            // ------------------------
-            ++it;
-        } //while
+//            if ( (nContactID == nCurrentContact_ ) &&
+//                 (0 == qstrMethodType.compare(qstrMethodType_)) &&
+//                 (0 == qstrViaTransport.compare(qstrViaTransport_)) )
+//            {
+//                bFoundIt = true;
+//                ui->treeWidget->setCurrentItem(*it);
+//                break;
+//            }
+//            // ------------------------
+//            ++it;
+//        } //while
 
-        if (!bFoundIt)
-        {
-            if (ui->treeWidget->topLevelItemCount() > 0)
-                ui->treeWidget->setCurrentItem(ui->treeWidget->topLevelItem(0));
-        }
-    }
-    // ----------------------------------------
-    ui->treeWidget->blockSignals(false);
-    // ----------------------------------------
-    on_treeWidget_currentItemChanged(ui->treeWidget->currentItem(), previous);
+//        if (!bFoundIt)
+//        {
+//            if (ui->treeWidget->topLevelItemCount() > 0)
+//                ui->treeWidget->setCurrentItem(ui->treeWidget->topLevelItem(0));
+//        }
+//    }
+//    // ----------------------------------------
+//    ui->treeWidget->blockSignals(false);
+//    // ----------------------------------------
+//    on_treeWidget_currentItemChanged(ui->treeWidget->currentItem(), previous);
 }
 
 // --------------------------------------------------
 
 void Payments::on_tableViewReceived_customContextMenuRequested(const QPoint &pos)
 {
-    tableViewPopupMenu(pos, ui->tableViewReceived, &(*pPmntProxyModelInbox_));
+//    tableViewPopupMenu(pos, ui->tableViewReceived, &(*pPmntProxyModelInbox_));
 }
 
 void Payments::on_tableViewSent_customContextMenuRequested(const QPoint &pos)
 {
-    tableViewPopupMenu(pos, ui->tableViewSent, &(*pPmntProxyModelOutbox_));
+//    tableViewPopupMenu(pos, ui->tableViewSent, &(*pPmntProxyModelOutbox_));
 }
 
 // --------------------------------------------------
@@ -1551,559 +1563,559 @@ void Payments::DiscardIncoming(QPointer<ModelPayments> & pModel, PaymentsProxyMo
 
 void Payments::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, PaymentsProxyModel * pProxyModel)
 {
-    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
+//    QPointer<ModelPayments> pModel = DBHandler::getInstance()->getPaymentModel();
 
-    if (!pModel)
-        return;
-    // ------------------------
-    QModelIndex indexAtRightClick = pTableView->indexAt(pos);
-    if (!indexAtRightClick.isValid())
-        return;
-    // I can't figure out how to ADD to the selection without UNSELECTING everything else.
-    // The Qt docs indicate that the below options should do that -- but it doesn't work.
-    // So this is commented out since it was deselecting everything.
-    //pTableView->selectionModel()->select( indexAtRightClick, QItemSelectionModel::SelectCurrent|QItemSelectionModel::Rows );
-    // ------------------------
-    QModelIndex sourceIndexAtRightClick = pProxyModel->mapToSource(indexAtRightClick);
-    const int nRow = sourceIndexAtRightClick.row();
-    // ----------------------------------
-    popupMenu_.reset(new QMenu(this));
-    pActionOpenNewWindow = popupMenu_->addAction(tr("View instrument(s)"));
-    pActionReply = popupMenu_->addAction(tr("Reply"));
-    pActionForward = popupMenu_->addAction(tr("Forward"));
-    popupMenu_->addSeparator();
-    pActionDelete = popupMenu_->addAction(tr("Delete"));
-    popupMenu_->addSeparator();
-    pActionMarkRead = popupMenu_->addAction(tr("Mark as read"));
-    pActionMarkUnread = popupMenu_->addAction(tr("Mark as unread"));
-    // ----------------------------------
-    pActionViewContact         = nullptr;
-    pActionCreateContact       = nullptr;
-    pActionExistingContact     = nullptr;
-    pActionAcceptIncoming      = nullptr;
-    pActionCancelOutgoing      = nullptr;
-    pActionDiscardOutgoingCash = nullptr;
-    pActionDiscardIncoming     = nullptr;
-    pActionDownloadCredentials = nullptr;
+//    if (!pModel)
+//        return;
+//    // ------------------------
+//    QModelIndex indexAtRightClick = pTableView->indexAt(pos);
+//    if (!indexAtRightClick.isValid())
+//        return;
+//    // I can't figure out how to ADD to the selection without UNSELECTING everything else.
+//    // The Qt docs indicate that the below options should do that -- but it doesn't work.
+//    // So this is commented out since it was deselecting everything.
+//    //pTableView->selectionModel()->select( indexAtRightClick, QItemSelectionModel::SelectCurrent|QItemSelectionModel::Rows );
+//    // ------------------------
+//    QModelIndex sourceIndexAtRightClick = pProxyModel->mapToSource(indexAtRightClick);
+//    const int nRow = sourceIndexAtRightClick.row();
+//    // ----------------------------------
+//    popupMenu_.reset(new QMenu(this));
+//    pActionOpenNewWindow = popupMenu_->addAction(tr("View instrument(s)"));
+//    pActionReply = popupMenu_->addAction(tr("Reply"));
+//    pActionForward = popupMenu_->addAction(tr("Forward"));
+//    popupMenu_->addSeparator();
+//    pActionDelete = popupMenu_->addAction(tr("Delete"));
+//    popupMenu_->addSeparator();
+//    pActionMarkRead = popupMenu_->addAction(tr("Mark as read"));
+//    pActionMarkUnread = popupMenu_->addAction(tr("Mark as unread"));
+//    // ----------------------------------
+//    pActionViewContact         = nullptr;
+//    pActionCreateContact       = nullptr;
+//    pActionExistingContact     = nullptr;
+//    pActionAcceptIncoming      = nullptr;
+//    pActionCancelOutgoing      = nullptr;
+//    pActionDiscardOutgoingCash = nullptr;
+//    pActionDiscardIncoming     = nullptr;
+//    pActionDownloadCredentials = nullptr;
 
-    int nContactId = 0;
+//    int nContactId = 0;
 
-    QString qstrSenderNymId;
-    QString qstrSenderAddr;
-    QString qstrRecipientNymId;
-    QString qstrRecipientAddr;
-    QString qstrMsgNotaryId;
-    QString qstrPmntNotaryId;
-    QString qstrMethodType;
-//  QString qstrSubject;
+//    QString qstrSenderNymId;
+//    QString qstrSenderAddr;
+//    QString qstrRecipientNymId;
+//    QString qstrRecipientAddr;
+//    QString qstrMsgNotaryId;
+//    QString qstrPmntNotaryId;
+//    QString qstrMethodType;
+////  QString qstrSubject;
 
-    int nSenderContactByNym     = 0;
-    int nSenderContactByAddr    = 0;
-    int nRecipientContactByNym  = 0;
-    int nRecipientContactByAddr = 0;
+//    int nSenderContactByNym     = 0;
+//    int nSenderContactByAddr    = 0;
+//    int nRecipientContactByNym  = 0;
+//    int nRecipientContactByAddr = 0;
 
-    ModelPayments::PaymentFlags flags = ModelPayments::NoFlags;
-    // ----------------------------------------------
-    // Look at the data for indexAtRightClick and see if I have a contact already in the
-    // address book. If so, add the "View Contact" option to the menu. But if not, add the
-    // "Create Contact" and "Add to Existing Contact" options to the menu instead.
-    //
-    // UPDATE: I've now also added similar functionality, for other actions specific
-    // to certain payment records, based on their flags. (Pay this invoice, deposit
-    // this cash, etc.)
-    //
-    if (nRow >= 0)
-    {
-        QModelIndex indexSenderNym     = pModel->index(nRow, PMNT_SOURCE_COL_SENDER_NYM);
-        QModelIndex indexSenderAddr    = pModel->index(nRow, PMNT_SOURCE_COL_SENDER_ADDR);
-        QModelIndex indexRecipientNym  = pModel->index(nRow, PMNT_SOURCE_COL_RECIP_NYM);
-        QModelIndex indexRecipientAddr = pModel->index(nRow, PMNT_SOURCE_COL_RECIP_ADDR);
-        QModelIndex indexMsgNotaryId   = pModel->index(nRow, PMNT_SOURCE_COL_MSG_NOTARY_ID);
-        QModelIndex indexPmntNotaryId  = pModel->index(nRow, PMNT_SOURCE_COL_PMNT_NOTARY_ID);
-        QModelIndex indexMethodType    = pModel->index(nRow, PMNT_SOURCE_COL_METHOD_TYPE);
-        QModelIndex indexFlags         = pModel->index(nRow, PMNT_SOURCE_COL_FLAGS);
-//      QModelIndex indexSubject       = pModel->index(nRow, PMNT_SOURCE_COL_MEMO);
+//    ModelPayments::PaymentFlags flags = ModelPayments::NoFlags;
+//    // ----------------------------------------------
+//    // Look at the data for indexAtRightClick and see if I have a contact already in the
+//    // address book. If so, add the "View Contact" option to the menu. But if not, add the
+//    // "Create Contact" and "Add to Existing Contact" options to the menu instead.
+//    //
+//    // UPDATE: I've now also added similar functionality, for other actions specific
+//    // to certain payment records, based on their flags. (Pay this invoice, deposit
+//    // this cash, etc.)
+//    //
+//    if (nRow >= 0)
+//    {
+//        QModelIndex indexSenderNym     = pModel->index(nRow, PMNT_SOURCE_COL_SENDER_NYM);
+//        QModelIndex indexSenderAddr    = pModel->index(nRow, PMNT_SOURCE_COL_SENDER_ADDR);
+//        QModelIndex indexRecipientNym  = pModel->index(nRow, PMNT_SOURCE_COL_RECIP_NYM);
+//        QModelIndex indexRecipientAddr = pModel->index(nRow, PMNT_SOURCE_COL_RECIP_ADDR);
+//        QModelIndex indexMsgNotaryId   = pModel->index(nRow, PMNT_SOURCE_COL_MSG_NOTARY_ID);
+//        QModelIndex indexPmntNotaryId  = pModel->index(nRow, PMNT_SOURCE_COL_PMNT_NOTARY_ID);
+//        QModelIndex indexMethodType    = pModel->index(nRow, PMNT_SOURCE_COL_METHOD_TYPE);
+//        QModelIndex indexFlags         = pModel->index(nRow, PMNT_SOURCE_COL_FLAGS);
+////      QModelIndex indexSubject       = pModel->index(nRow, PMNT_SOURCE_COL_MEMO);
 
-        QVariant varSenderNym     = pModel->rawData(indexSenderNym);
-        QVariant varSenderAddr    = pModel->rawData(indexSenderAddr);
-        QVariant varRecipientNym  = pModel->rawData(indexRecipientNym);
-        QVariant varRecipientAddr = pModel->rawData(indexRecipientAddr);
-        QVariant varMsgNotaryId   = pModel->rawData(indexMsgNotaryId);
-        QVariant varPmntNotaryId  = pModel->rawData(indexPmntNotaryId);
-        QVariant varMethodType    = pModel->rawData(indexMethodType);
-        QVariant varFlags         = pModel->rawData(indexFlags);
-//      QVariant varSubject       = pModel->rawData(indexSubject);
+//        QVariant varSenderNym     = pModel->rawData(indexSenderNym);
+//        QVariant varSenderAddr    = pModel->rawData(indexSenderAddr);
+//        QVariant varRecipientNym  = pModel->rawData(indexRecipientNym);
+//        QVariant varRecipientAddr = pModel->rawData(indexRecipientAddr);
+//        QVariant varMsgNotaryId   = pModel->rawData(indexMsgNotaryId);
+//        QVariant varPmntNotaryId  = pModel->rawData(indexPmntNotaryId);
+//        QVariant varMethodType    = pModel->rawData(indexMethodType);
+//        QVariant varFlags         = pModel->rawData(indexFlags);
+////      QVariant varSubject       = pModel->rawData(indexSubject);
 
-        qint64 lFlags      = varFlags        .isValid() ? varFlags        .toLongLong() : 0;
-        qstrSenderNymId    = varSenderNym    .isValid() ? varSenderNym    .toString()   : QString("");
-        qstrSenderAddr     = varSenderAddr   .isValid() ? varSenderAddr   .toString()   : QString("");
-        qstrRecipientNymId = varRecipientNym .isValid() ? varRecipientNym .toString()   : QString("");
-        qstrRecipientAddr  = varRecipientAddr.isValid() ? varRecipientAddr.toString()   : QString("");
-        qstrMsgNotaryId    = varMsgNotaryId  .isValid() ? varMsgNotaryId  .toString()   : QString("");
-        qstrPmntNotaryId   = varPmntNotaryId .isValid() ? varPmntNotaryId .toString()   : QString("");
-        qstrMethodType     = varMethodType   .isValid() ? varMethodType   .toString()   : QString("");
-//      qstrSubject        = varSubject      .isValid() ? varSubject      .toString()   : QString("");
+//        qint64 lFlags      = varFlags        .isValid() ? varFlags        .toLongLong() : 0;
+//        qstrSenderNymId    = varSenderNym    .isValid() ? varSenderNym    .toString()   : QString("");
+//        qstrSenderAddr     = varSenderAddr   .isValid() ? varSenderAddr   .toString()   : QString("");
+//        qstrRecipientNymId = varRecipientNym .isValid() ? varRecipientNym .toString()   : QString("");
+//        qstrRecipientAddr  = varRecipientAddr.isValid() ? varRecipientAddr.toString()   : QString("");
+//        qstrMsgNotaryId    = varMsgNotaryId  .isValid() ? varMsgNotaryId  .toString()   : QString("");
+//        qstrPmntNotaryId   = varPmntNotaryId .isValid() ? varPmntNotaryId .toString()   : QString("");
+//        qstrMethodType     = varMethodType   .isValid() ? varMethodType   .toString()   : QString("");
+////      qstrSubject        = varSubject      .isValid() ? varSubject      .toString()   : QString("");
 
-        nSenderContactByNym     = qstrSenderNymId.isEmpty()    ? 0 : MTContactHandler::getInstance()->FindContactIDByNymID(qstrSenderNymId);
-        nSenderContactByAddr    = qstrSenderAddr.isEmpty()     ? 0 : MTContactHandler::getInstance()->GetContactByAddress(qstrSenderAddr);
-        nRecipientContactByNym  = qstrRecipientNymId.isEmpty() ? 0 : MTContactHandler::getInstance()->FindContactIDByNymID(qstrRecipientNymId);
-        nRecipientContactByAddr = qstrRecipientAddr.isEmpty()  ? 0 : MTContactHandler::getInstance()->GetContactByAddress(qstrRecipientAddr);
+//        nSenderContactByNym     = qstrSenderNymId.isEmpty()    ? 0 : MTContactHandler::getInstance()->FindContactIDByNymID(qstrSenderNymId);
+//        nSenderContactByAddr    = qstrSenderAddr.isEmpty()     ? 0 : MTContactHandler::getInstance()->GetContactByAddress(qstrSenderAddr);
+//        nRecipientContactByNym  = qstrRecipientNymId.isEmpty() ? 0 : MTContactHandler::getInstance()->FindContactIDByNymID(qstrRecipientNymId);
+//        nRecipientContactByAddr = qstrRecipientAddr.isEmpty()  ? 0 : MTContactHandler::getInstance()->GetContactByAddress(qstrRecipientAddr);
 
-        nContactId = (nSenderContactByNym > 0) ? nSenderContactByNym : nSenderContactByAddr;
+//        nContactId = (nSenderContactByNym > 0) ? nSenderContactByNym : nSenderContactByAddr;
 
-        if (nContactId <= 0)
-            nContactId = (nRecipientContactByNym > 0) ? nRecipientContactByNym : nRecipientContactByAddr;
+//        if (nContactId <= 0)
+//            nContactId = (nRecipientContactByNym > 0) ? nRecipientContactByNym : nRecipientContactByAddr;
 
-        flags = ModelPayments::PaymentFlag(static_cast<ModelPayments::PaymentFlag>(lFlags));
-        // -------------------------------
-        popupMenu_->addSeparator();
-        // -------------------------------
-        if (nContactId > 0) // There's a known contact for this payment.
-            pActionViewContact = popupMenu_->addAction(tr("View contact in address book"));
-        else // There is no known contact for this payment.
-        {
-            pActionCreateContact = popupMenu_->addAction(tr("Create new contact in address book"));
-            pActionExistingContact = popupMenu_->addAction(tr("Add to existing contact in address book"));
-        }
-        // -------------------------------
-        popupMenu_->addSeparator();
-        // -------------------------------
-        pActionDownloadCredentials = popupMenu_->addAction(tr("Download credentials"));
-        // -------------------------------
-        popupMenu_->addSeparator();
-        // -------------------------------
-        if ( flags.testFlag(ModelPayments::CanAcceptIncoming))
-        {
-            QString nameString;
-            QString actionString;
+//        flags = ModelPayments::PaymentFlag(static_cast<ModelPayments::PaymentFlag>(lFlags));
+//        // -------------------------------
+//        popupMenu_->addSeparator();
+//        // -------------------------------
+//        if (nContactId > 0) // There's a known contact for this payment.
+//            pActionViewContact = popupMenu_->addAction(tr("View contact in address book"));
+//        else // There is no known contact for this payment.
+//        {
+//            pActionCreateContact = popupMenu_->addAction(tr("Create new contact in address book"));
+//            pActionExistingContact = popupMenu_->addAction(tr("Add to existing contact in address book"));
+//        }
+//        // -------------------------------
+//        popupMenu_->addSeparator();
+//        // -------------------------------
+//        pActionDownloadCredentials = popupMenu_->addAction(tr("Download credentials"));
+//        // -------------------------------
+//        popupMenu_->addSeparator();
+//        // -------------------------------
+//        if ( flags.testFlag(ModelPayments::CanAcceptIncoming))
+//        {
+//            QString nameString;
+//            QString actionString;
 
-            if ( flags.testFlag(ModelPayments::IsTransfer) )
-            {
-                nameString = tr("Accept this Transfer");
-                actionString = tr("Accepting...");
-            }
-            else if ( flags.testFlag(ModelPayments::IsReceipt) )
-            {
-                nameString = tr("Accept this Receipt");
-                actionString = tr("Accepting...");
-            }
-            else if ( flags.testFlag(ModelPayments::IsInvoice) )
-            {
-                nameString = tr("Pay this Invoice");
-                actionString = tr("Paying...");
-            }
-            else if ( flags.testFlag(ModelPayments::IsPaymentPlan) )
-            {
-                nameString = tr("Activate this Payment Plan");
-                actionString = tr("Activating...");
-            }
-            else if ( flags.testFlag(ModelPayments::IsContract) )
-            {
-                nameString = tr("Sign this Smart Contract");
-                actionString = tr("Signing...");
-            }
-            else if ( flags.testFlag(ModelPayments::IsCash) )
-            {
-                nameString = tr("Deposit this Cash");
-                actionString = tr("Depositing...");
-            }
-            else if ( flags.testFlag(ModelPayments::IsCheque) )
-            {
-                nameString = tr("Deposit this Cheque");
-                actionString = tr("Depositing...");
-            }
-            else if ( flags.testFlag(ModelPayments::IsVoucher) )
-            {
-                nameString = tr("Accept this Payment");
-                actionString = tr("Accepting...");
-            }
-            else
-            {
-                nameString = tr("Deposit this Payment");
-                actionString = tr("Depositing...");
-            }
+//            if ( flags.testFlag(ModelPayments::IsTransfer) )
+//            {
+//                nameString = tr("Accept this Transfer");
+//                actionString = tr("Accepting...");
+//            }
+//            else if ( flags.testFlag(ModelPayments::IsReceipt) )
+//            {
+//                nameString = tr("Accept this Receipt");
+//                actionString = tr("Accepting...");
+//            }
+//            else if ( flags.testFlag(ModelPayments::IsInvoice) )
+//            {
+//                nameString = tr("Pay this Invoice");
+//                actionString = tr("Paying...");
+//            }
+//            else if ( flags.testFlag(ModelPayments::IsPaymentPlan) )
+//            {
+//                nameString = tr("Activate this Payment Plan");
+//                actionString = tr("Activating...");
+//            }
+//            else if ( flags.testFlag(ModelPayments::IsContract) )
+//            {
+//                nameString = tr("Sign this Smart Contract");
+//                actionString = tr("Signing...");
+//            }
+//            else if ( flags.testFlag(ModelPayments::IsCash) )
+//            {
+//                nameString = tr("Deposit this Cash");
+//                actionString = tr("Depositing...");
+//            }
+//            else if ( flags.testFlag(ModelPayments::IsCheque) )
+//            {
+//                nameString = tr("Deposit this Cheque");
+//                actionString = tr("Depositing...");
+//            }
+//            else if ( flags.testFlag(ModelPayments::IsVoucher) )
+//            {
+//                nameString = tr("Accept this Payment");
+//                actionString = tr("Accepting...");
+//            }
+//            else
+//            {
+//                nameString = tr("Deposit this Payment");
+//                actionString = tr("Depositing...");
+//            }
 
-            pActionAcceptIncoming = popupMenu_->addAction(nameString);
-        }
+//            pActionAcceptIncoming = popupMenu_->addAction(nameString);
+//        }
 
-        if (flags.testFlag(ModelPayments::CanCancelOutgoing))
-        {
-            QString cancelString;
-            QString actionString = tr("Canceling...");
-//          QString msg = tr("Cancellation Failed. Perhaps recipient had already accepted it?");
+//        if (flags.testFlag(ModelPayments::CanCancelOutgoing))
+//        {
+//            QString cancelString;
+//            QString actionString = tr("Canceling...");
+////          QString msg = tr("Cancellation Failed. Perhaps recipient had already accepted it?");
 
-            if (flags.testFlag(ModelPayments::IsInvoice))
-                cancelString = tr("Cancel this Invoice");
-            else if (flags.testFlag(ModelPayments::IsPaymentPlan))
-                cancelString = tr("Cancel this Payment Plan");
-            else if (flags.testFlag(ModelPayments::IsContract))
-                cancelString = tr("Cancel this Smart Contract");
-            else if (flags.testFlag(ModelPayments::IsCash))
-            {
-                cancelString = tr("Recover this Cash");
-                actionString = tr("Recovering...");
-//              msg = tr("Recovery Failed. Perhaps recipient had already accepted it?");
-            }
-            else if (flags.testFlag(ModelPayments::IsCheque))
-                cancelString = tr("Cancel this Cheque");
-            else if (flags.testFlag(ModelPayments::IsVoucher))
-                cancelString = tr("Cancel this Payment");
-            else
-                cancelString = tr("Cancel this Payment");
+//            if (flags.testFlag(ModelPayments::IsInvoice))
+//                cancelString = tr("Cancel this Invoice");
+//            else if (flags.testFlag(ModelPayments::IsPaymentPlan))
+//                cancelString = tr("Cancel this Payment Plan");
+//            else if (flags.testFlag(ModelPayments::IsContract))
+//                cancelString = tr("Cancel this Smart Contract");
+//            else if (flags.testFlag(ModelPayments::IsCash))
+//            {
+//                cancelString = tr("Recover this Cash");
+//                actionString = tr("Recovering...");
+////              msg = tr("Recovery Failed. Perhaps recipient had already accepted it?");
+//            }
+//            else if (flags.testFlag(ModelPayments::IsCheque))
+//                cancelString = tr("Cancel this Cheque");
+//            else if (flags.testFlag(ModelPayments::IsVoucher))
+//                cancelString = tr("Cancel this Payment");
+//            else
+//                cancelString = tr("Cancel this Payment");
 
-            pActionCancelOutgoing = popupMenu_->addAction(cancelString);
-        }
+//            pActionCancelOutgoing = popupMenu_->addAction(cancelString);
+//        }
 
-        if (flags.testFlag(ModelPayments::CanDiscardOutgoingCash))
-        {
-            QString discardString = tr("Discard this Sent Cash");
+//        if (flags.testFlag(ModelPayments::CanDiscardOutgoingCash))
+//        {
+//            QString discardString = tr("Discard this Sent Cash");
 
-            pActionDiscardOutgoingCash = popupMenu_->addAction(discardString);
-        }
+//            pActionDiscardOutgoingCash = popupMenu_->addAction(discardString);
+//        }
 
-        if (flags.testFlag(ModelPayments::CanDiscardIncoming))
-        {
-            QString discardString;
+//        if (flags.testFlag(ModelPayments::CanDiscardIncoming))
+//        {
+//            QString discardString;
 
-            if (flags.testFlag(ModelPayments::IsInvoice))
-                discardString = tr("Discard this Invoice");
-            else if (flags.testFlag(ModelPayments::IsPaymentPlan))
-                discardString = tr("Discard this Payment Plan");
-            else if (flags.testFlag(ModelPayments::IsContract))
-                discardString = tr("Discard this Smart Contract");
-            else if (flags.testFlag(ModelPayments::IsCash))
-                discardString = tr("Discard this Cash");
-            else if (flags.testFlag(ModelPayments::IsCheque))
-                discardString = tr("Discard this Cheque");
-            else if (flags.testFlag(ModelPayments::IsVoucher))
-                discardString = tr("Discard this Payment");
-            else
-                discardString = tr("Discard this Payment");
+//            if (flags.testFlag(ModelPayments::IsInvoice))
+//                discardString = tr("Discard this Invoice");
+//            else if (flags.testFlag(ModelPayments::IsPaymentPlan))
+//                discardString = tr("Discard this Payment Plan");
+//            else if (flags.testFlag(ModelPayments::IsContract))
+//                discardString = tr("Discard this Smart Contract");
+//            else if (flags.testFlag(ModelPayments::IsCash))
+//                discardString = tr("Discard this Cash");
+//            else if (flags.testFlag(ModelPayments::IsCheque))
+//                discardString = tr("Discard this Cheque");
+//            else if (flags.testFlag(ModelPayments::IsVoucher))
+//                discardString = tr("Discard this Payment");
+//            else
+//                discardString = tr("Discard this Payment");
 
-            pActionDiscardIncoming = popupMenu_->addAction(discardString);
-        }
-    }
-    // --------------------------------------------------
-    QPoint globalPos = pTableView->mapToGlobal(pos);
-    const QAction* selectedAction = popupMenu_->exec(globalPos); // Here we popup the menu, and get the user's click.
-    if (nullptr == selectedAction)
-        return;
-    // ----------------------------------
-    if (selectedAction == pActionAcceptIncoming) // Only approves the current payment.
-    {
-        pTableView->setCurrentIndex(indexAtRightClick);
-        AcceptIncoming(pModel, pProxyModel, nRow, pTableView);
-        return;
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionCancelOutgoing) // Only cancels the current payment.
-    {
-        pTableView->setCurrentIndex(indexAtRightClick);
-        CancelOutgoing(pModel, pProxyModel, nRow, pTableView);
-        return;
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionDiscardOutgoingCash) // Only discards the current payment.
-    {
-        pTableView->setCurrentIndex(indexAtRightClick);
-        DiscardOutgoingCash(pModel, pProxyModel, nRow, pTableView);
-        return;
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionDiscardIncoming) // Only discards the current payment.
-    {
-        pTableView->setCurrentIndex(indexAtRightClick);
-        DiscardIncoming(pModel, pProxyModel, nRow, pTableView);
-        return;
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionReply) // Only replies to the current payment.
-    {
-        pTableView->setCurrentIndex(indexAtRightClick);
-        on_toolButtonReply_clicked();
-        return;
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionForward) // Only fowards the current payments.
-    {
-        pTableView->setCurrentIndex(indexAtRightClick);
-        on_toolButtonForward_clicked();
-        return;
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionDelete) // May delete many payments.
-    {
-        on_toolButtonDelete_clicked();
-        return;
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionOpenNewWindow) // May open many payments.
-    {
-        pTableView->setCurrentIndex(indexAtRightClick);
+//            pActionDiscardIncoming = popupMenu_->addAction(discardString);
+//        }
+//    }
+//    // --------------------------------------------------
+//    QPoint globalPos = pTableView->mapToGlobal(pos);
+//    const QAction* selectedAction = popupMenu_->exec(globalPos); // Here we popup the menu, and get the user's click.
+//    if (nullptr == selectedAction)
+//        return;
+//    // ----------------------------------
+//    if (selectedAction == pActionAcceptIncoming) // Only approves the current payment.
+//    {
+//        pTableView->setCurrentIndex(indexAtRightClick);
+//        AcceptIncoming(pModel, pProxyModel, nRow, pTableView);
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionCancelOutgoing) // Only cancels the current payment.
+//    {
+//        pTableView->setCurrentIndex(indexAtRightClick);
+//        CancelOutgoing(pModel, pProxyModel, nRow, pTableView);
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionDiscardOutgoingCash) // Only discards the current payment.
+//    {
+//        pTableView->setCurrentIndex(indexAtRightClick);
+//        DiscardOutgoingCash(pModel, pProxyModel, nRow, pTableView);
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionDiscardIncoming) // Only discards the current payment.
+//    {
+//        pTableView->setCurrentIndex(indexAtRightClick);
+//        DiscardIncoming(pModel, pProxyModel, nRow, pTableView);
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionReply) // Only replies to the current payment.
+//    {
+//        pTableView->setCurrentIndex(indexAtRightClick);
+//        on_toolButtonReply_clicked();
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionForward) // Only fowards the current payments.
+//    {
+//        pTableView->setCurrentIndex(indexAtRightClick);
+//        on_toolButtonForward_clicked();
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionDelete) // May delete many payments.
+//    {
+//        on_toolButtonDelete_clicked();
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionOpenNewWindow) // May open many payments.
+//    {
+//        pTableView->setCurrentIndex(indexAtRightClick);
 
-        if (pTableView == ui->tableViewReceived)
-            on_tableViewReceived_doubleClicked(indexAtRightClick); // just one for now. baby steps!
-        else if (pTableView == ui->tableViewSent)
-            on_tableViewSent_doubleClicked(indexAtRightClick); // just one for now. baby steps!
-        return;
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionMarkRead) // May mark many payments.
-    {
-        if (!pTableView->selectionModel()->hasSelection())
-            return;
-        // ----------------------------------------------
-        QItemSelection selection( pTableView->selectionModel()->selection() );
-        QList<int> rows;
-        foreach( const QModelIndex & index, selection.indexes() )
-        {
-            if (rows.indexOf(index.row()) != (-1)) // This row is already on the list, so skip it.
-                continue;
-            rows.append(index.row());
-            // -----------------------
-            QModelIndex sourceIndex = pProxyModel->mapToSource(index);
-            QModelIndex sourceIndexHaveRead = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_HAVE_READ, sourceIndex);
-            // --------------------------------
-            if (sourceIndexHaveRead.isValid())
-                listRecordsToMarkAsRead_.append(sourceIndexHaveRead);
-        }
-        if (listRecordsToMarkAsRead_.count() > 0)
-            QTimer::singleShot(0, this, SLOT(on_MarkAsRead_timer()));
-        return;
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionMarkUnread) // May mark many payments.
-    {
-        if (!pTableView->selectionModel()->hasSelection())
-            return;
-        // ----------------------------------------------
-        QItemSelection selection( pTableView->selectionModel()->selection() );
-        QList<int> rows;
-        foreach( const QModelIndex & index, selection.indexes() )
-        {
-            if (rows.indexOf(index.row()) != (-1)) // This row is already on the list, so skip it.
-                continue;
-            rows.append(index.row());
-            // -----------------------
-            QModelIndex sourceIndex = pProxyModel->mapToSource(index);
-            QModelIndex sourceIndexHaveRead = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_HAVE_READ, sourceIndex);
-            // --------------------------------
-            if (sourceIndexHaveRead.isValid())
-                listRecordsToMarkAsUnread_.append(sourceIndexHaveRead);
-        }
-        if (listRecordsToMarkAsUnread_.count() > 0)
-            QTimer::singleShot(0, this, SLOT(on_MarkAsUnread_timer()));
-        return;
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionViewContact)
-    {
-        pTableView->setCurrentIndex(indexAtRightClick);
+//        if (pTableView == ui->tableViewReceived)
+//            on_tableViewReceived_doubleClicked(indexAtRightClick); // just one for now. baby steps!
+//        else if (pTableView == ui->tableViewSent)
+//            on_tableViewSent_doubleClicked(indexAtRightClick); // just one for now. baby steps!
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionMarkRead) // May mark many payments.
+//    {
+//        if (!pTableView->selectionModel()->hasSelection())
+//            return;
+//        // ----------------------------------------------
+//        QItemSelection selection( pTableView->selectionModel()->selection() );
+//        QList<int> rows;
+//        foreach( const QModelIndex & index, selection.indexes() )
+//        {
+//            if (rows.indexOf(index.row()) != (-1)) // This row is already on the list, so skip it.
+//                continue;
+//            rows.append(index.row());
+//            // -----------------------
+//            QModelIndex sourceIndex = pProxyModel->mapToSource(index);
+//            QModelIndex sourceIndexHaveRead = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_HAVE_READ, sourceIndex);
+//            // --------------------------------
+//            if (sourceIndexHaveRead.isValid())
+//                listRecordsToMarkAsRead_.append(sourceIndexHaveRead);
+//        }
+//        if (listRecordsToMarkAsRead_.count() > 0)
+//            QTimer::singleShot(0, this, SLOT(on_MarkAsRead_timer()));
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionMarkUnread) // May mark many payments.
+//    {
+//        if (!pTableView->selectionModel()->hasSelection())
+//            return;
+//        // ----------------------------------------------
+//        QItemSelection selection( pTableView->selectionModel()->selection() );
+//        QList<int> rows;
+//        foreach( const QModelIndex & index, selection.indexes() )
+//        {
+//            if (rows.indexOf(index.row()) != (-1)) // This row is already on the list, so skip it.
+//                continue;
+//            rows.append(index.row());
+//            // -----------------------
+//            QModelIndex sourceIndex = pProxyModel->mapToSource(index);
+//            QModelIndex sourceIndexHaveRead = pModel->sibling(sourceIndex.row(), PMNT_SOURCE_COL_HAVE_READ, sourceIndex);
+//            // --------------------------------
+//            if (sourceIndexHaveRead.isValid())
+//                listRecordsToMarkAsUnread_.append(sourceIndexHaveRead);
+//        }
+//        if (listRecordsToMarkAsUnread_.count() > 0)
+//            QTimer::singleShot(0, this, SLOT(on_MarkAsUnread_timer()));
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionViewContact)
+//    {
+//        pTableView->setCurrentIndex(indexAtRightClick);
 
-        if (nContactId > 0)
-        {
-            QString qstrContactId = QString::number(nContactId);
-            emit showContact(qstrContactId);
-        }
-        return;
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionCreateContact)
-    {
-        pTableView->setCurrentIndex(indexAtRightClick);
+//        if (nContactId > 0)
+//        {
+//            QString qstrContactId = QString::number(nContactId);
+//            emit showContact(qstrContactId);
+//        }
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionCreateContact)
+//    {
+//        pTableView->setCurrentIndex(indexAtRightClick);
 
-        MTGetStringDialog nameDlg(this, tr("Enter a name for the new contact"));
+//        MTGetStringDialog nameDlg(this, tr("Enter a name for the new contact"));
 
-        if (QDialog::Accepted != nameDlg.exec())
-            return;
-        // --------------------------------------
-        QString strNewContactName = nameDlg.GetOutputString();
-        // --------------------------------------------------
-        // NOTE:
-        // if nSenderContactByNym > 0, then the sender Nym already has a contact.
-        // else if nSenderContactByNym == 0 but qstrSenderNymId exists, that means it
-        // contains a NymID that could be added to an existing contact, or used to
-        // create a new contact. (And the same is true for the Sender Address.)
-        //
-        // (And the same is also true for the recipient nymID and address.)
-        //
-        if ((0 == nSenderContactByNym) && !qstrSenderNymId.isEmpty())
-            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrSenderNymId, qstrMsgNotaryId);
-        else if ((0 == nSenderContactByAddr) && !qstrSenderAddr.isEmpty())
-            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnAddress(qstrSenderAddr, qstrMethodType);
-        else if ((0 == nRecipientContactByNym) && !qstrRecipientNymId.isEmpty())
-            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrRecipientNymId, qstrMsgNotaryId);
-        else if ((0 == nRecipientContactByAddr) && !qstrRecipientAddr.isEmpty())
-            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnAddress(qstrRecipientAddr, qstrMethodType);
-        // -----------------------------------------------------
-        if (nContactId > 0)
-        {
-            MTContactHandler::getInstance()->SetContactName(nContactId, strNewContactName);
-            // ---------------------------------
-            QString qstrContactID = QString("%1").arg(nContactId);
-            emit showContactAndRefreshHome(qstrContactID);
-        }
-        return;
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionDownloadCredentials)
-    {
-        pTableView->setCurrentIndex(indexAtRightClick);
+//        if (QDialog::Accepted != nameDlg.exec())
+//            return;
+//        // --------------------------------------
+//        QString strNewContactName = nameDlg.GetOutputString();
+//        // --------------------------------------------------
+//        // NOTE:
+//        // if nSenderContactByNym > 0, then the sender Nym already has a contact.
+//        // else if nSenderContactByNym == 0 but qstrSenderNymId exists, that means it
+//        // contains a NymID that could be added to an existing contact, or used to
+//        // create a new contact. (And the same is true for the Sender Address.)
+//        //
+//        // (And the same is also true for the recipient nymID and address.)
+//        //
+//        if ((0 == nSenderContactByNym) && !qstrSenderNymId.isEmpty())
+//            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrSenderNymId, qstrMsgNotaryId);
+//        else if ((0 == nSenderContactByAddr) && !qstrSenderAddr.isEmpty())
+//            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnAddress(qstrSenderAddr, qstrMethodType);
+//        else if ((0 == nRecipientContactByNym) && !qstrRecipientNymId.isEmpty())
+//            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnNym(qstrRecipientNymId, qstrMsgNotaryId);
+//        else if ((0 == nRecipientContactByAddr) && !qstrRecipientAddr.isEmpty())
+//            nContactId = MTContactHandler::getInstance()->CreateContactBasedOnAddress(qstrRecipientAddr, qstrMethodType);
+//        // -----------------------------------------------------
+//        if (nContactId > 0)
+//        {
+//            MTContactHandler::getInstance()->SetContactName(nContactId, strNewContactName);
+//            // ---------------------------------
+//            QString qstrContactID = QString("%1").arg(nContactId);
+//            emit showContactAndRefreshHome(qstrContactID);
+//        }
+//        return;
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionDownloadCredentials)
+//    {
+//        pTableView->setCurrentIndex(indexAtRightClick);
 
-        const bool bHaveContact = (nContactId > 0);
-        mapIDName mapNymIds;
+//        const bool bHaveContact = (nContactId > 0);
+//        mapIDName mapNymIds;
 
-        if (bHaveContact)
-        {
-            MTContactHandler::getInstance()->GetNyms(mapNymIds, nContactId);
+//        if (bHaveContact)
+//        {
+//            MTContactHandler::getInstance()->GetNyms(mapNymIds, nContactId);
 
-            // Check to see if there is more than one Nym for this contact.
-            // TODO: If so, get the user to select one of the Nyms, or give him the
-            // option to do them all.
-            // (Until then, we're just going to do them all.)
-        }
-        // ---------------------------------------------------
-        QString qstrAddress, qstrNymId;
+//            // Check to see if there is more than one Nym for this contact.
+//            // TODO: If so, get the user to select one of the Nyms, or give him the
+//            // option to do them all.
+//            // (Until then, we're just going to do them all.)
+//        }
+//        // ---------------------------------------------------
+//        QString qstrAddress, qstrNymId;
 
-        if      (!qstrSenderNymId.isEmpty())    qstrNymId   = qstrSenderNymId;
-        else if (!qstrRecipientNymId.isEmpty()) qstrNymId   = qstrRecipientNymId;
-        // ---------------------------------------------------
-        if      (!qstrSenderAddr.isEmpty())     qstrAddress = qstrSenderAddr;
-        else if (!qstrRecipientAddr.isEmpty())  qstrAddress = qstrRecipientAddr;
-        // ---------------------------------------------------
-        // Might not have a contact. Even if we did, he might not have any NymIds.
-        // Here, if there are no known NymIds, but there's one on the message,
-        // then we add it to the map.
-        if ( (0 == mapNymIds.size()) && (qstrNymId.size() > 0) )
-        {
-            mapNymIds.insert(qstrNymId, QString("Name not used here"));
-        }
-        // ---------------------------------------------------
-        // By this point if there's still no Nym, we need to take the address,
-        // and then loop through all the claims in the database to see if there's
-        // a Nym associated with that Bitmessage address via his claims.
-        //
-        if ( (0 == mapNymIds.size()) && (qstrAddress.size() > 0) )
-        {
-            qstrNymId = MTContactHandler::getInstance()->GetNymByAddress(qstrAddress);
+//        if      (!qstrSenderNymId.isEmpty())    qstrNymId   = qstrSenderNymId;
+//        else if (!qstrRecipientNymId.isEmpty()) qstrNymId   = qstrRecipientNymId;
+//        // ---------------------------------------------------
+//        if      (!qstrSenderAddr.isEmpty())     qstrAddress = qstrSenderAddr;
+//        else if (!qstrRecipientAddr.isEmpty())  qstrAddress = qstrRecipientAddr;
+//        // ---------------------------------------------------
+//        // Might not have a contact. Even if we did, he might not have any NymIds.
+//        // Here, if there are no known NymIds, but there's one on the message,
+//        // then we add it to the map.
+//        if ( (0 == mapNymIds.size()) && (qstrNymId.size() > 0) )
+//        {
+//            mapNymIds.insert(qstrNymId, QString("Name not used here"));
+//        }
+//        // ---------------------------------------------------
+//        // By this point if there's still no Nym, we need to take the address,
+//        // and then loop through all the claims in the database to see if there's
+//        // a Nym associated with that Bitmessage address via his claims.
+//        //
+//        if ( (0 == mapNymIds.size()) && (qstrAddress.size() > 0) )
+//        {
+//            qstrNymId = MTContactHandler::getInstance()->GetNymByAddress(qstrAddress);
 
-            if (qstrNymId.isEmpty())
-                qstrNymId = MTContactHandler::getInstance()->getNymIdFromClaimsByBtMsg(qstrAddress);
+//            if (qstrNymId.isEmpty())
+//                qstrNymId = MTContactHandler::getInstance()->getNymIdFromClaimsByBtMsg(qstrAddress);
 
-            if (qstrNymId.size() > 0)
-            {
-                mapNymIds.insert(qstrNymId, QString("Name not used here"));
-            }
-        }
-        // ---------------------------------------------------
-        if (0 == mapNymIds.size())
-        {
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Unable to find a NymId for this message. (Unable to download credentials without Id.)"));
-            qDebug() << "Unable to find a NymId for this message. (Unable to download credentials without Id.)";
-            return;
-        }
-        // Below this point we're guaranteed that there's at least one NymID.
-        // ---------------------------------------------------
-        int nFound = 0;
-        for (mapIDName::iterator
-             it_nyms  = mapNymIds.begin();
-             it_nyms != mapNymIds.end();
-             ++it_nyms)
-        {
-            nFound++;
-            emit needToCheckNym("", it_nyms.key(), qstrMsgNotaryId);
-        }
-    }
-    // ----------------------------------
-    else if (selectedAction == pActionExistingContact)
-    {
-        pTableView->setCurrentIndex(indexAtRightClick);
+//            if (qstrNymId.size() > 0)
+//            {
+//                mapNymIds.insert(qstrNymId, QString("Name not used here"));
+//            }
+//        }
+//        // ---------------------------------------------------
+//        if (0 == mapNymIds.size())
+//        {
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Unable to find a NymId for this message. (Unable to download credentials without Id.)"));
+//            qDebug() << "Unable to find a NymId for this message. (Unable to download credentials without Id.)";
+//            return;
+//        }
+//        // Below this point we're guaranteed that there's at least one NymID.
+//        // ---------------------------------------------------
+//        int nFound = 0;
+//        for (mapIDName::iterator
+//             it_nyms  = mapNymIds.begin();
+//             it_nyms != mapNymIds.end();
+//             ++it_nyms)
+//        {
+//            nFound++;
+//            emit needToCheckNym("", it_nyms.key(), qstrMsgNotaryId);
+//        }
+//    }
+//    // ----------------------------------
+//    else if (selectedAction == pActionExistingContact)
+//    {
+//        pTableView->setCurrentIndex(indexAtRightClick);
 
-        // This should never happen since we wouldn't even have gotten this menu option
-        // in the first place, unless contact ID had been 0.
-        if (nContactId > 0)
-            return;
+//        // This should never happen since we wouldn't even have gotten this menu option
+//        // in the first place, unless contact ID had been 0.
+//        if (nContactId > 0)
+//            return;
 
-        // (And that means no contact was found for ANY of the Nym IDs or Addresses on this payment.)
-        // That means we can add the first one we find (which will probably be the only one as well.)
-        // Because I'll EITHER have a SenderNymID OR SenderAddress,
-        // ...OR I'll have a RecipientNymID OR RecipientAddress.
-        // Thus, only one of the four IDs/Addresses will actually be found.
-        // Therefore I don't care which one I find first:
-        //
-        QString qstrAddress, qstrNymId;
+//        // (And that means no contact was found for ANY of the Nym IDs or Addresses on this payment.)
+//        // That means we can add the first one we find (which will probably be the only one as well.)
+//        // Because I'll EITHER have a SenderNymID OR SenderAddress,
+//        // ...OR I'll have a RecipientNymID OR RecipientAddress.
+//        // Thus, only one of the four IDs/Addresses will actually be found.
+//        // Therefore I don't care which one I find first:
+//        //
+//        QString qstrAddress, qstrNymId;
 
-        if      (!qstrSenderNymId.isEmpty())    qstrNymId   = qstrSenderNymId;
-        else if (!qstrSenderAddr.isEmpty())     qstrAddress = qstrSenderAddr;
-        else if (!qstrRecipientNymId.isEmpty()) qstrNymId   = qstrRecipientNymId;
-        else if (!qstrRecipientAddr.isEmpty())  qstrAddress = qstrRecipientAddr;
-        // ---------------------------------------------------
-        if (qstrNymId.isEmpty() && qstrAddress.isEmpty()) // Should never happen.
-            return;
-        // Below this point we're guaranteed that there's either a NymID or an Address.
-        // ---------------------------------------------------
-        if (!qstrNymId.isEmpty() && (MTContactHandler::getInstance()->FindContactIDByNymID(qstrNymId) > 0))
-        {
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
-                                 tr("Strange: NymID %1 already belongs to an existing contact.").arg(qstrNymId));
-            return;
-        }
-        // ---------------------------------------------------
-        if (!qstrAddress.isEmpty() && MTContactHandler::getInstance()->GetContactByAddress(qstrAddress) > 0)
-        {
-            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
-                                 tr("Strange: Address %1 already belongs to an existing contact.").arg(qstrAddress));
-            return;
-        }
-        // --------------------------------------------------------------------
-        // Pop up a Contact selection box. The user chooses an existing contact.
-        // If OK (vs Cancel) then add the Nym / Acct to the existing contact selected.
-        //
-        DlgChooser theChooser(this);
-        // -----------------------------------------------
-        mapIDName & the_map = theChooser.m_map;
-        MTContactHandler::getInstance()->GetContacts(the_map);
-        // -----------------------------------------------
-        theChooser.setWindowTitle(tr("Choose an Existing Contact"));
-        if (theChooser.exec() != QDialog::Accepted)
-            return;
-        // -----------------------------------------------
-        QString strContactID = theChooser.GetCurrentID();
-        nContactId = strContactID.isEmpty() ? 0 : strContactID.toInt();
+//        if      (!qstrSenderNymId.isEmpty())    qstrNymId   = qstrSenderNymId;
+//        else if (!qstrSenderAddr.isEmpty())     qstrAddress = qstrSenderAddr;
+//        else if (!qstrRecipientNymId.isEmpty()) qstrNymId   = qstrRecipientNymId;
+//        else if (!qstrRecipientAddr.isEmpty())  qstrAddress = qstrRecipientAddr;
+//        // ---------------------------------------------------
+//        if (qstrNymId.isEmpty() && qstrAddress.isEmpty()) // Should never happen.
+//            return;
+//        // Below this point we're guaranteed that there's either a NymID or an Address.
+//        // ---------------------------------------------------
+//        if (!qstrNymId.isEmpty() && (MTContactHandler::getInstance()->FindContactIDByNymID(qstrNymId) > 0))
+//        {
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+//                                 tr("Strange: NymID %1 already belongs to an existing contact.").arg(qstrNymId));
+//            return;
+//        }
+//        // ---------------------------------------------------
+//        if (!qstrAddress.isEmpty() && MTContactHandler::getInstance()->GetContactByAddress(qstrAddress) > 0)
+//        {
+//            QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
+//                                 tr("Strange: Address %1 already belongs to an existing contact.").arg(qstrAddress));
+//            return;
+//        }
+//        // --------------------------------------------------------------------
+//        // Pop up a Contact selection box. The user chooses an existing contact.
+//        // If OK (vs Cancel) then add the Nym / Acct to the existing contact selected.
+//        //
+//        DlgChooser theChooser(this);
+//        // -----------------------------------------------
+//        mapIDName & the_map = theChooser.m_map;
+//        MTContactHandler::getInstance()->GetContacts(the_map);
+//        // -----------------------------------------------
+//        theChooser.setWindowTitle(tr("Choose an Existing Contact"));
+//        if (theChooser.exec() != QDialog::Accepted)
+//            return;
+//        // -----------------------------------------------
+//        QString strContactID = theChooser.GetCurrentID();
+//        nContactId = strContactID.isEmpty() ? 0 : strContactID.toInt();
 
-        if (nContactId > 0)
-        {
-            if (!qstrNymId.isEmpty()) // We're adding this NymID to the contact.
-            {
-                if (!MTContactHandler::getInstance()->AddNymToExistingContact(nContactId, qstrNymId))
-                {
-                    QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactId));
-                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), QString("Failed while trying to add NymID %1 to existing contact '%2' with contact ID: %3").
-                                         arg(qstrNymId).arg(strContactName).arg(nContactId));
-                    return;
-                }
-                if (!qstrMsgNotaryId.isEmpty())
-                    MTContactHandler::getInstance()->NotifyOfNymServerPair(qstrNymId, qstrMsgNotaryId);
-            }
-            else if (!qstrAddress.isEmpty()) // We're adding this Address to the contact.
-            {
-                if (!MTContactHandler::getInstance()->AddMsgAddressToContact(nContactId, qstrMethodType, qstrAddress))
-                {
-                    QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactId));
-                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), QString("Failed while trying to add Address %1 to existing contact '%2' with contact ID: %3").
-                                         arg(qstrAddress).arg(strContactName).arg(nContactId));
-                    return;
-                }
-            }
-            // ---------------------------------
-            // Display the normal contacts dialog, with the new contact
-            // being the one selected.
-            //
-            QString qstrContactID = QString("%1").arg(nContactId);
-            emit showContactAndRefreshHome(qstrContactID);
-            // ---------------------------------
-        } // nContactID > 0
-    }
+//        if (nContactId > 0)
+//        {
+//            if (!qstrNymId.isEmpty()) // We're adding this NymID to the contact.
+//            {
+//                if (!MTContactHandler::getInstance()->AddNymToExistingContact(nContactId, qstrNymId))
+//                {
+//                    QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactId));
+//                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), QString("Failed while trying to add NymID %1 to existing contact '%2' with contact ID: %3").
+//                                         arg(qstrNymId).arg(strContactName).arg(nContactId));
+//                    return;
+//                }
+//                if (!qstrMsgNotaryId.isEmpty())
+//                    MTContactHandler::getInstance()->NotifyOfNymServerPair(qstrNymId, qstrMsgNotaryId);
+//            }
+//            else if (!qstrAddress.isEmpty()) // We're adding this Address to the contact.
+//            {
+//                if (!MTContactHandler::getInstance()->AddMsgAddressToContact(nContactId, qstrMethodType, qstrAddress))
+//                {
+//                    QString strContactName(MTContactHandler::getInstance()->GetContactName(nContactId));
+//                    QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), QString("Failed while trying to add Address %1 to existing contact '%2' with contact ID: %3").
+//                                         arg(qstrAddress).arg(strContactName).arg(nContactId));
+//                    return;
+//                }
+//            }
+//            // ---------------------------------
+//            // Display the normal contacts dialog, with the new contact
+//            // being the one selected.
+//            //
+//            QString qstrContactID = QString("%1").arg(nContactId);
+//            emit showContactAndRefreshHome(qstrContactID);
+//            // ---------------------------------
+//        } // nContactID > 0
+//    }
 }
 
 
@@ -2544,10 +2556,10 @@ void Payments::on_toolButtonDelete_clicked()
                         pCurrentTabTableView_->selectRow(nRowToSelect);
                         pCurrentTabTableView_->blockSignals(false);
 
-                        if (pCurrentTabTableView_ == ui->tableViewReceived)
-                            on_tableViewReceivedSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
-                        else
-                            on_tableViewSentSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
+//                        if (pCurrentTabTableView_ == ui->tableViewReceived)
+//                            on_tableViewReceivedSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
+//                        else
+//                            on_tableViewSentSelectionModel_currentRowChanged(pCurrentTabTableView_->currentIndex(), previous);
                     }
                 }
                 else
@@ -2575,7 +2587,9 @@ void Payments::onRecordlistPopulated()
 void Payments::RefreshAll()
 {
     RefreshUserBar();
-    RefreshTree();
+    RefreshTree();  // Deprecated in favor of the below.
+
+    RefreshSummaryTree();
 }
 
 void Payments::onBalancesChanged()
@@ -2599,9 +2613,8 @@ void Payments::onNeedToRefreshRecords()
 
 void Payments::on_pushButtonSearch_clicked()
 {
-    QString qstrSearchText = ui->lineEdit->text();
-
-    this->doSearch(qstrSearchText.simplified());
+//    QString qstrSearchText = ui->lineEdit->text();
+//    this->doSearch(qstrSearchText.simplified());
 }
 
 void Payments::doSearch(QString qstrInput)
@@ -2627,9 +2640,8 @@ void Payments::on_lineEdit_textChanged(const QString &arg1)
 
 void Payments::on_lineEdit_returnPressed()
 {
-    QString qstrSearchText = ui->lineEdit->text();
-
-    this->doSearch(qstrSearchText.simplified());
+//    QString qstrSearchText = ui->lineEdit->text();
+//    this->doSearch(qstrSearchText.simplified());
 }
 
 Payments::~Payments()

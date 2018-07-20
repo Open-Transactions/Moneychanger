@@ -105,38 +105,38 @@ public:
     /** Start **/
     void bootTray();
 
-    opentxs::OTRecordList & GetRecordlist();
-    void setupRecordList();  // Sets up the RecordList object with the IDs etc.
-    void populateRecords(bool bCurrentlyModifying=false);  // Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
+//    opentxs::OTRecordList & GetRecordlist();
+//    void setupRecordList();  // Sets up the RecordList object with the IDs etc.
+//    void populateRecords(bool bCurrentlyModifying=false);  // Calls OTRecordList::Populate(), and then additionally adds records from Bitmessage, etc.
 
-    void modifyRecords(); // After we populate the recordlist, we make some changes to the list (move messages to a separate db table, move receipts to a separate table, etc.)
-    void processImportRecord(
-            opentxs::OTRecord& recordmt,
-            const int nIndex,
-            MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
-            MapOfConversationsByNym & mapOfConversationsByNym,
-            SetNymThreadAndItem & setNewlyAddedNymThreadAndItem
-            );
+//    void modifyRecords(); // After we populate the recordlist, we make some changes to the list (move messages to a separate db table, move receipts to a separate table, etc.)
+//    void processImportRecord(
+//            opentxs::OTRecord& recordmt,
+//            const int nIndex,
+//            MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+//            MapOfConversationsByNym & mapOfConversationsByNym,
+//            SetNymThreadAndItem & setNewlyAddedNymThreadAndItem
+//            );
 
-    bool AddMailToMsgArchive(opentxs::OTRecord& recordmt,
-                             MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
-                             MapOfConversationsByNym & mapOfConversationsByNym,
-                             SetNymThreadAndItem & setNewlyAddedNymThreadAndItem);
-    bool low_level_AddMailToMsgArchive(
-        opentxs::OTRecord& recordmt,
-        MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
-        MapOfConversationsByNym & mapOfConversationsByNym);
-    bool AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord=true);
-    bool AddPaymentBasedOnNotice(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord=true);
-    void AddPaymentBasedOnNotification(const std::string & str_acct_id,
-                                       const std::string & p_nym_id,
-                                       const std::string & p_msg_notary_id,
-                                       const std::string & p_pmnt_notary_id,
-                                       const std::string & p_txn_contents,
-                                       int64_t & lTransactionNum,
-                                       int64_t & lTransNumForDisplay);
-    bool AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt);
-    bool AddAgreementRecord(opentxs::OTRecord& recordmt);
+//    bool AddMailToMsgArchive(opentxs::OTRecord& recordmt,
+//                             MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+//                             MapOfConversationsByNym & mapOfConversationsByNym,
+//                             SetNymThreadAndItem & setNewlyAddedNymThreadAndItem);
+//    bool low_level_AddMailToMsgArchive(
+//        opentxs::OTRecord& recordmt,
+//        MapOfPtrSetsOfStrings & mapOfSetsOfAlreadyImportedMsgs,
+//        MapOfConversationsByNym & mapOfConversationsByNym);
+//    bool AddPaymentToPmntArchive(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord=true);
+//    bool AddPaymentBasedOnNotice(opentxs::OTRecord& recordmt, const bool bCanDeleteRecord=true);
+//    void AddPaymentBasedOnNotification(const std::string & str_acct_id,
+//                                       const std::string & p_nym_id,
+//                                       const std::string & p_msg_notary_id,
+//                                       const std::string & p_pmnt_notary_id,
+//                                       const std::string & p_txn_contents,
+//                                       int64_t & lTransactionNum,
+//                                       int64_t & lTransNumForDisplay);
+//    bool AddFinalReceiptToTradeArchive(opentxs::OTRecord& recordmt);
+//    bool AddAgreementRecord(opentxs::OTRecord& recordmt);
 
 signals:
     void balancesChanged();

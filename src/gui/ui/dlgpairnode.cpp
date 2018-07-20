@@ -10,6 +10,7 @@
 #include <QSerialPort>
 #include <QTextStream>
 #include <QMessageBox>
+#include <QRegularExpression>
 #include <QKeyEvent>
 #include <QDebug>
 

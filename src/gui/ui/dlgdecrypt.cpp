@@ -114,9 +114,9 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                     {
                         std::string  str_nym    (qstrTempID.toStdString());
                         opentxs::String     strNym     (str_nym.c_str());
-                        opentxs::Identifier nym_id     (strNym);
+                        auto nym_id     = opentxs::Identifier::Factory(strNym);
 
-                        if (!nym_id.IsEmpty())
+                        if (!nym_id->empty())
                         {
                             opentxs::OTPasswordData thePWData("Recipient passphrase");
 
@@ -149,9 +149,9 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                             {
                                 std::string         str_nym    (OT_nym_id.toStdString());
                                 opentxs::String     strNym     (str_nym.c_str());
-                                opentxs::Identifier nym_id     (strNym);
+                                auto nym_id     = opentxs::Identifier::Factory(strNym);
 
-                                if (!nym_id.IsEmpty())
+                                if (!nym_id->empty())
                                 {
                                     opentxs::OTPasswordData thePWData("Recipient passphrase");
 
@@ -221,7 +221,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                         if (!str_signer_nym.empty())
                         {
                             opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
-                            opentxs::Identifier id_signer_nym(strSignerNymID);
+                            auto id_signer_nym = opentxs::Identifier::Factory(strSignerNymID);
                             std::shared_ptr<const opentxs::Nym> pNym = opentxs::OT::App().Wallet().Nym(id_signer_nym);
                             if (false != bool(pNym))
                             {

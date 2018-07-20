@@ -13,6 +13,7 @@
 
 #include <tuple>
 #include <map>
+#include <string>
 
 // These are used for re-selecting the row when you return
 // to a certain filter. Like if you clicked on Alice, then back
@@ -47,6 +48,8 @@ protected:
     void RefreshAll();
     void ClearTree();
     void RefreshTree();
+
+    void RefreshSummaryTree();
 
     void enableButtons();
     void disableButtons();

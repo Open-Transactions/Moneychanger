@@ -42,8 +42,8 @@ private:
     // ------------------------------------------------
     QPointer<QFrame>        m_pHeaderFrame;
     // ------------------------------------------------
-    opentxs::OTRecordList   m_list;
-    opentxs::OTRecordList & GetRecordlist();
+//    opentxs::OTRecordList   m_list;
+//    opentxs::OTRecordList & GetRecordlist();
     // ------------------------------------------------
     bool    m_bTurnRefreshBtnRed;
     // ------------------------------------------------
@@ -68,7 +68,7 @@ public:
 signals:
     void needToPopulateRecordlist();
     void needToDownloadAccountData();
-    void needToRefreshDetails(int nRow, opentxs::OTRecordList & theList);
+    void needToRefreshDetails(int nRow);
 
 public slots:
     void onRecordlistPopulated();

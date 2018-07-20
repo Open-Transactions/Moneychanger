@@ -18,9 +18,12 @@
 #include <QSqlRecord>
 #include <QTimer>
 #include <QDebug>
+#include <QIcon>
 
 #include <tuple>
 #include <map>
+#include <set>
+#include <string>
 
 
 namespace Ui {
@@ -64,12 +67,50 @@ class QTreeWidgetItem;
 typedef std::tuple<std::string, std::string, std::string, std::string> ACTIVITY_TREE_ITEM;
 typedef std::map< ACTIVITY_TREE_ITEM, int> mapOfActivityTreeItems;
 
+typedef std::map<std::string, int> StringIntMap;
+typedef std::pair<std::string, int> StringIntPair;
+//    std::map<std::pair<nym_id_str, currency>, widget_id_str> MapActivityWidgetIds;
+typedef std::map<StringIntPair, std::string> MapActivityWidgetIds;
+
+/*
+ std::set<int> currency_types = opentxs::SwigWrap::GetCurrencyTypesForLocalAccounts();
+
+ for (const auto currency_type : currency_types)
+ {
+     std::set<std::string> set_unit_types = opentxs::SwigWrap::GetContractIdsForCurrencyType(currency_type);
+
+     for (const auto & unit_type_id : set_unit_types)
+     {
+        std::set<std::string> accounts = opentxs::SwigWrap::GetAccountIdsForContractId(unit_type_id);
+
+        for (const auto & account_id : accounts)
+        {
+            // Here we have:
+            //   account_id
+            //   unit_type_id
+            //   currency_type
+        }
+
+     }
+ }
+
+ Okay these are now in SwigWrap:
+    EXPORT static std::string GetAccountsByCurrency(const int currency);
+    EXPORT static std::set<int> GetCurrencyTypesForLocalAccounts();
+    EXPORT static std::set<std::string> GetContractIdsForCurrencyType(
+        const int currency);
+    EXPORT static std::set<std::string> GetAccountIdsForContractId(
+        const std::string& ASSET_ID);
+*/
+
 class Activity : public QWidget
 {
     Q_OBJECT
 
 private:
     bool already_init{false};
+
+    QIcon icon_nym_;
 
 public:
     explicit Activity(QWidget *parent = 0);
@@ -79,8 +120,12 @@ public:
 
     int nSelectedTab_{0};
 
-    std::string active_thread_{""};
+    std::string active_thread_;
     std::map<std::string, std::string> thread_summary_;
+
+    std::map<std::string, std::string> accountWidgets_;
+
+    MapActivityWidgetIds issuers_;
 
     QString qstrCurrentTLA_;  // If the user clicks on "BTC" near the top, the current TLA is "BTC".
     QString qstrCurrentNotary_; // If the user clicks on "localhost" (hosted notary) then that Notary ID is set here.
@@ -92,6 +137,12 @@ public:
     void CancelOutgoing     (QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
     void DiscardOutgoingCash(QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
     void DiscardIncoming    (QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
+
+    void GetAssetContractIdsInWallet(std::map<std::string, std::string> & map_output);
+    void GetCurrencyTypesByAssetContractsInWallet(std::set<StringIntPair> & set_output);
+
+    void Populate_comboBoxMyNym();
+    void Populate_comboBoxCurrency();
 
 public slots:
     void onClaimsUpdatedForNym(QString nymId);
@@ -140,6 +191,9 @@ signals:
     void sig_on_toolButton_liveAgreements_clicked();
 
 protected:
+
+    void PopulateIssuerWidgetIds();
+
     void RetrieveSelectedIds(
         QString  & qstrTLA,
         QString  & qstrAssetTypeId,
@@ -184,8 +238,8 @@ protected:
         const std::string & activity_summary_id,
         QListWidgetItem  *& pItemToSelect);
 
-    int PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers=nullptr);
-    bool PairingStarted(const opentxs::Identifier & nymId, const opentxs::Identifier & issuerNymId);
+//    int PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers=nullptr);
+//    bool PairingStarted(const opentxs::Identifier & nymId, const opentxs::Identifier & issuerNymId);
 
     mapIDName & GetOrCreateAssetIdMapByCurrencyCode(QString qstrTLA, mapOfMapIDName & bigMap);
     void GetAssetIdMapsByCurrencyCode(mapOfMapIDName & bigMap);
@@ -231,13 +285,13 @@ protected:
     void tableViewPayments_PopupMenu(const QPoint &pos, QTableView * pTableView, ActivityPaymentsProxyModel * pProxyModel);
     void tableViewPayments_DoubleClicked(const QModelIndex &index, ActivityPaymentsProxyModel * pProxyModel);
 
-    void treeWidgetAccounts_PopupMenu(const QPoint &pos, QTreeWidget * pTreeWidget);
+    void treeWidgetSummary_PopupMenu(const QPoint &pos, QTreeWidget * pTreeWidget);
 
 private slots:
     void on_listWidgetConversations_currentRowChanged(int currentRow);
     void on_listWidgetConversations_customContextMenuRequested(const QPoint &pos);
 
-    void on_treeWidgetAccounts_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+    void on_treeWidgetSummary_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 
     void on_plainTextEditMsg_textChanged();
 
@@ -249,9 +303,7 @@ private slots:
     void on_lineEditSearchConversations_returnPressed();
 
     void on_checkBoxSearchPayments_toggled(bool checked);
-    void on_pushButtonSearchPayments_clicked();
     void on_lineEditSearchPayments_textChanged(const QString &arg1);
-    void on_lineEditSearchPayments_returnPressed();
 
     void on_tableViewSentSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous);
     void on_tableViewReceivedSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous);
@@ -264,6 +316,7 @@ private slots:
     void on_MarkAsForwarded_timer();
 
     void RefreshAccountTree();
+    void RefreshSummaryTree();
     void RefreshPayments();
 
     void on_tableViewReceived_customContextMenuRequested(const QPoint &pos);
@@ -284,7 +337,7 @@ private slots:
     void on_toolButtonImportCash_clicked();
     void on_toolButtonSettings_clicked();
 
-    void on_treeWidgetAccounts_customContextMenuRequested(const QPoint &pos);
+    void on_treeWidgetSummary_customContextMenuRequested(const QPoint &pos);
 
     void on_tabWidgetMain_currentChanged(int index);
 
@@ -304,6 +357,10 @@ private slots:
     void on_toolButton_liveAgreements_clicked();
 
     void on_tableViewConversation_clicked(const QModelIndex &index);
+
+    void on_comboBoxMyNym_activated(int index);
+    void on_comboBoxCurrency_activated(int index);
+
 
 private:
     Ui::Activity *ui{nullptr};

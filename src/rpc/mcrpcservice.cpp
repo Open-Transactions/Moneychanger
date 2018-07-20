@@ -4,7 +4,7 @@
 #include <core/stable.hpp>
 #endif
 
-#include <core/ot_worker.hpp>
+//#include <core/ot_worker.hpp>
 
 #include <QDebug>
 #include <QTimer>
@@ -25,8 +25,10 @@ MCRPCService::MCRPCService(QObject* parent)
 
 MCRPCService::~MCRPCService()
 {
-
-    if (m_RecordList != nullptr) delete m_RecordList;
+//    if (m_RecordList != nullptr) {
+//        delete m_RecordList;
+//    }
+//    m_RecordList = nullptr;
 }
 
 QJsonValue MCRPCService::CreateIndividualNym(
@@ -73,7 +75,9 @@ QJsonValue MCRPCService::registerAccount(
         return QJsonValue(object);
     }
 
-    const opentxs::Identifier notaryID{NotaryID.toStdString()}, nymID{NymID.toStdString()}, instrumentDefinitionID{InstrumentDefinitionID.toStdString()};
+    const auto notaryID = opentxs::Identifier::Factory(NotaryID.toStdString()),
+                nymID = opentxs::Identifier::Factory(NymID.toStdString()),
+            instrumentDefinitionID = opentxs::Identifier::Factory(InstrumentDefinitionID.toStdString());
     auto action = opentxs::OT::App().API().ServerAction().RegisterAccount(
     		nymID, notaryID, instrumentDefinitionID);
     std::string result = action->Run();
@@ -6584,304 +6588,303 @@ QJsonValue MCRPCService::mcListSmartContracts(QString Username, QString APIKey)
     return QJsonValue(object);
 }
 
-// RecordList Methods
+//QJsonValue MCRPCService::recordListPopulate(QString Username, QString APIKey)
+//{
+//    if (!validateAPIKey(Username, APIKey)) {
+//        QJsonObject object{{"Error", "Invalid API Key"}};
+//        return QJsonValue(object);
+//    }
+//
+//    if (m_RecordList == nullptr) createRecordList(Username, APIKey);
+//
+//    int nServerCount = opentxs::OT::App().API().Exec().GetServerCount();
+//    int nAssetCount = opentxs::OT::App().API().Exec().GetAssetTypeCount();
+//    int nNymCount = opentxs::OT::App().API().Exec().GetNymCount();
+//    // ----------------------------------------------------
+//    for (int ii = 0; ii < nServerCount; ++ii) {
+//        std::string NotaryID = opentxs::OT::App().API().Exec().GetServer_ID(ii);
+//        m_RecordList->AddNotaryID(NotaryID);
+//    }
+//    // ----------------------------------------------------
+//    for (int ii = 0; ii < nAssetCount; ++ii) {
+//        std::string InstrumentDefinitionID =
+//            opentxs::OT::App().API().Exec().GetAssetType_ID(ii);
+//        m_RecordList->AddInstrumentDefinitionID(InstrumentDefinitionID);
+//    }
+//    // ----------------------------------------------------
+//    for (int ii = 0; ii < nNymCount; ++ii) {
+//        std::string nymId = opentxs::OT::App().API().Exec().GetNym_ID(ii);
+//        m_RecordList->AddNymID(nymId);
+//    }
+//    // ----------------------------------------------------
+//    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
+//    {
+//        m_RecordList->AddAccountID(accountID);
+//    }
+//    // ----------------------------------------------------
+//    m_RecordList->AcceptChequesAutomatically(true);
+//    m_RecordList->AcceptReceiptsAutomatically(true);
+//    m_RecordList->AcceptTransfersAutomatically(false);
+//
+//    m_RecordList->Populate();
+//
+//    QJsonObject object{{"RecordListPopulated", "True"}};
+//
+//    return object;
+//}
+//
+//QJsonValue MCRPCService::recordListCount(QString Username, QString APIKey)
+//{
+//    if (!validateAPIKey(Username, APIKey)) {
+//        QJsonObject object{{"Error", "Invalid API Key"}};
+//        return QJsonValue(object);
+//    }
+//
+//    QJsonObject reply_obj;
+//    if (m_RecordList == nullptr) {
+//        qDebug() << QString("Record List Null");
+//        QJsonValue reply_val = recordListPopulate(Username, APIKey);
+//        reply_obj.insert("RecordListPopulated", reply_val);
+//    }
+//
+//    if (m_RecordList == nullptr) {
+//        QJsonObject object{{"Error", "Recordlist is a null pointer."}};
+//        return object;
+//    }
+//    /*
+//    if (QJsonValue("True") != reply_obj.value("RecordListPopulated"))
+//    {
+//        qDebug() << QString("Recordlist didn't populate properly:
+//    %1").arg(reply_obj.value("RecordListPopulated").toString());
+//        QJsonObject object{{"Error", QString("Recordlist didn't populate
+//    properly: %1").arg(reply_obj.value("RecordListPopulated").toString())}};
+//        return object;
+//    }
+//*/
+//    m_RecordList->Populate();
+//    int count = m_RecordList->size();
+//
+//    QJsonObject object{{"RecordListCount", count}};
+//
+//    return object;
+//}
+//
+//QJsonValue MCRPCService::recordListRetrieve(
+//    QString Username,
+//    QString APIKey,
+//    int Index)
+//{
+//    if (!validateAPIKey(Username, APIKey)) {
+//        QJsonObject object{{"Error", "Invalid API Key"}};
+//        return QJsonValue(object);
+//    }
+//
+//    // if(m_RecordList == nullptr)
+//    //    recordListPopulate(Username, APIKey);
+//    m_RecordList->Populate();
+//    int count = m_RecordList->size();
+//
+//    if (Index >= count) Index = count;
+//
+//    if (Index < 0) Index = 0;
+//
+//    QJsonObject object;
+//
+//    QJsonObject record{
+//        {"AccountID",
+//         QString(m_RecordList->GetRecord(Index).GetAccountID().c_str())},
+//        {"Address",
+//         QString(m_RecordList->GetRecord(Index).GetAddress().c_str())},
+//        {"Amount", QString(m_RecordList->GetRecord(Index).GetAmount().c_str())},
+//        {"BoxIndex", m_RecordList->GetRecord(Index).GetBoxIndex()},
+//        {"Contents",
+//         QString(m_RecordList->GetRecord(Index).GetContents().c_str())},
+//        {"CurrencyTLA",
+//         QString(m_RecordList->GetRecord(Index).GetCurrencyTLA().c_str())},
+//        {"Date", QString(m_RecordList->GetRecord(Index).GetDate().c_str())},
+//        {"InitialPaymentAmount",
+//         qint64(m_RecordList->GetRecord(Index).GetInitialPaymentAmount())},
+//        {"InitialPaymentDate",
+//         qint64(m_RecordList->GetRecord(Index).GetInitialPaymentDate())},
+//        {"UnitType",
+//         QString(m_RecordList->GetRecord(Index)
+//                     .GetUnitTypeID()
+//                     .c_str())},
+//        {"InstrumentType",
+//         QString(m_RecordList->GetRecord(Index).GetInstrumentType().c_str())},
+//        {"MaximumNoPayments",
+//         m_RecordList->GetRecord(Index).GetMaximumNoPayments()},
+//        {"Memo", QString(m_RecordList->GetRecord(Index).GetMemo().c_str())},
+//        {"MethodID", m_RecordList->GetRecord(Index).GetMethodID()},
+//        {"MesssageID",
+//         QString(m_RecordList->GetRecord(Index).GetMsgID().c_str())},
+//        {"MessageType",
+//         QString(m_RecordList->GetRecord(Index).GetMsgType().c_str())},
+//        {"MessageTypeDisplay",
+//         QString(m_RecordList->GetRecord(Index).GetMsgTypeDisplay().c_str())},
+//        {"Name", QString(m_RecordList->GetRecord(Index).GetName().c_str())},
+//        {"MsgNotaryID",
+//         QString(m_RecordList->GetRecord(Index).GetMsgNotaryID().c_str())},
+//        {"PmntNotaryID",
+//         QString(m_RecordList->GetRecord(Index).GetPmntNotaryID().c_str())},
+//        {"NymID", QString(m_RecordList->GetRecord(Index).GetNymID().c_str())},
+//        {"OtherAccountID",
+//         QString(m_RecordList->GetRecord(Index).GetOtherAccountID().c_str())},
+//        {"OtherAddress",
+//         QString(m_RecordList->GetRecord(Index).GetOtherAddress().c_str())},
+//        {"OtherNymID",
+//         QString(m_RecordList->GetRecord(Index).GetOtherNymID().c_str())},
+//        {"PaymentPlanAmount",
+//         qint64(m_RecordList->GetRecord(Index).GetPaymentPlanAmount())},
+//        {"PaymentPlanStartDate",
+//         qint64(m_RecordList->GetRecord(Index).GetPaymentPlanStartDate())},
+//        {"RecordType", m_RecordList->GetRecord(Index).GetRecordType()},
+//        {"TimeBetweenPayments",
+//         qint64(m_RecordList->GetRecord(Index).GetTimeBetweenPayments())},
+//        {"TransactionNum",
+//         qint64(m_RecordList->GetRecord(Index).GetTransactionNum())},
+//        {"TransNumForDisplay",
+//         qint64(m_RecordList->GetRecord(Index).GetTransNumForDisplay())},
+//        {"ValidFrom", qint64(m_RecordList->GetRecord(Index).GetValidFrom())},
+//        {"ValidTo", qint64(m_RecordList->GetRecord(Index).GetValidTo())}};
+//
+//    object.insert(QString(Index), record);
+//
+//    return object;
+//}
+//
+//QJsonValue MCRPCService::recordListRetrieve(
+//    QString Username,
+//    QString APIKey,
+//    int BeginIndex,
+//    int EndIndex)
+//{
+//    if (!validateAPIKey(Username, APIKey)) {
+//        QJsonObject object{{"Error", "Invalid API Key"}};
+//        return QJsonValue(object);
+//    }
+//
+//    // enum OTRecordType { Mail = 0, Transfer, Receipt, Instrument,ErrorState };
+//
+//    QJsonObject reply_obj;
+//    if (m_RecordList == nullptr) {
+//        QJsonValue reply_val = recordListPopulate(Username, APIKey);
+//        reply_obj.insert("RecordListPopulated", reply_val);
+//    }
+//
+//    if (m_RecordList == nullptr) {
+//        QJsonObject object{{"Error", "Recordlist is a null pointer."}};
+//        return object;
+//    }
+//
+//    /*if (QJsonValue("True") != reply_obj.value("RecordListPopulated"))
+//    {
+//        qDebug() << QString("Recordlist didn't populate properly:
+//    %1").arg(reply_obj.value("RecordListPopulated").toString());
+//        QJsonObject object{{"Error", QString("Recordlist didn't populate
+//    properly: %1").arg(reply_obj.value("RecordListPopulated").toString())}};
+//        return object;
+//    }*/
+//
+//    m_RecordList->Populate();
+//    int count = m_RecordList->size();
+//
+//    // Swap if Begin > End
+//    if (BeginIndex > EndIndex) {
+//        BeginIndex ^= EndIndex;
+//        EndIndex ^= BeginIndex;
+//        BeginIndex ^= EndIndex;
+//    }
+//
+//    if (BeginIndex < 0) BeginIndex = 0;
+//
+//    if (BeginIndex > count) {
+//        QJsonObject object{{"Error", "Out of Bound Request"}};
+//        return object;
+//    }
+//
+//    if (EndIndex > count) EndIndex = count;
+//
+//    QJsonObject object;
+//    for (auto x = BeginIndex; x < EndIndex; x++) {
+//
+//        QJsonObject record{
+//            {"AccountID",
+//             QString(m_RecordList->GetRecord(x).GetAccountID().c_str())},
+//            {"Address",
+//             QString(m_RecordList->GetRecord(x).GetAddress().c_str())},
+//            {"Amount", QString(m_RecordList->GetRecord(x).GetAmount().c_str())},
+//            {"BoxIndex", m_RecordList->GetRecord(x).GetBoxIndex()},
+//            {"Contents",
+//             QString(m_RecordList->GetRecord(x).GetContents().c_str())},
+//            {"CurrencyTLA",
+//             QString(m_RecordList->GetRecord(x).GetCurrencyTLA().c_str())},
+//            {"Date", QString(m_RecordList->GetRecord(x).GetDate().c_str())},
+//            {"InitialPaymentAmount",
+//             qint64(m_RecordList->GetRecord(x).GetInitialPaymentAmount())},
+//            {"InitialPaymentDate",
+//             qint64(m_RecordList->GetRecord(x).GetInitialPaymentDate())},
+//            {"UnitTypeID",
+//             QString(m_RecordList->GetRecord(x)
+//                         .GetUnitTypeID()
+//                         .c_str())},
+//            {"InstrumentType",
+//             QString(m_RecordList->GetRecord(x).GetInstrumentType().c_str())},
+//            {"MaximumNoPayments",
+//             m_RecordList->GetRecord(x).GetMaximumNoPayments()},
+//            {"Memo", QString(m_RecordList->GetRecord(x).GetMemo().c_str())},
+//            {"MethodID", m_RecordList->GetRecord(x).GetMethodID()},
+//            {"MesssageID",
+//             QString(m_RecordList->GetRecord(x).GetMsgID().c_str())},
+//            {"MessageType",
+//             QString(m_RecordList->GetRecord(x).GetMsgType().c_str())},
+//            {"MessageTypeDisplay",
+//             QString(m_RecordList->GetRecord(x).GetMsgTypeDisplay().c_str())},
+//            {"Name", QString(m_RecordList->GetRecord(x).GetName().c_str())},
+//            {"MsgNotaryID",
+//             QString(m_RecordList->GetRecord(x).GetMsgNotaryID().c_str())},
+//            {"PmntNotaryID",
+//             QString(m_RecordList->GetRecord(x).GetPmntNotaryID().c_str())},
+//            {"NymID", QString(m_RecordList->GetRecord(x).GetNymID().c_str())},
+//            {"OtherAccountID",
+//             QString(m_RecordList->GetRecord(x).GetOtherAccountID().c_str())},
+//            {"OtherAddress",
+//             QString(m_RecordList->GetRecord(x).GetOtherAddress().c_str())},
+//            {"OtherNymID",
+//             QString(m_RecordList->GetRecord(x).GetOtherNymID().c_str())},
+//            {"PaymentPlanAmount",
+//             qint64(m_RecordList->GetRecord(x).GetPaymentPlanAmount())},
+//            {"PaymentPlanStartDate",
+//             qint64(m_RecordList->GetRecord(x).GetPaymentPlanStartDate())},
+//            {"RecordType", m_RecordList->GetRecord(x).GetRecordType()},
+//            {"TimeBetweenPayments",
+//             qint64(m_RecordList->GetRecord(x).GetTimeBetweenPayments())},
+//            {"TransactionNum",
+//             qint64(m_RecordList->GetRecord(x).GetTransactionNum())},
+//            {"TransNumForDisplay",
+//             qint64(m_RecordList->GetRecord(x).GetTransNumForDisplay())},
+//            {"ValidFrom", qint64(m_RecordList->GetRecord(x).GetValidFrom())},
+//            {"ValidTo", qint64(m_RecordList->GetRecord(x).GetValidTo())}};
+//
+//        object.insert(QString(x), record);
+//    }
+//
+//    return object;
+//}
+//
+//bool MCRPCService::createRecordList(QString Username, QString APIKey)
+//{
+//    if (!validateAPIKey(Username, APIKey)) {
+//        QJsonObject object{{"Error", "Invalid API Key"}};
+//        return false;
+//    }
+//
+//    if (m_RecordList == nullptr)
+//        m_RecordList = new opentxs::OTRecordList(*(new MTNameLookupQT));
+//    qDebug() << QString("Record List Created");
+//    return true;
+//}
 
-QJsonValue MCRPCService::recordListPopulate(QString Username, QString APIKey)
-{
-    if (!validateAPIKey(Username, APIKey)) {
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-
-    if (m_RecordList == nullptr) createRecordList(Username, APIKey);
-
-    int nServerCount = opentxs::OT::App().API().Exec().GetServerCount();
-    int nAssetCount = opentxs::OT::App().API().Exec().GetAssetTypeCount();
-    int nNymCount = opentxs::OT::App().API().Exec().GetNymCount();
-    // ----------------------------------------------------
-    for (int ii = 0; ii < nServerCount; ++ii) {
-        std::string NotaryID = opentxs::OT::App().API().Exec().GetServer_ID(ii);
-        m_RecordList->AddNotaryID(NotaryID);
-    }
-    // ----------------------------------------------------
-    for (int ii = 0; ii < nAssetCount; ++ii) {
-        std::string InstrumentDefinitionID =
-            opentxs::OT::App().API().Exec().GetAssetType_ID(ii);
-        m_RecordList->AddInstrumentDefinitionID(InstrumentDefinitionID);
-    }
-    // ----------------------------------------------------
-    for (int ii = 0; ii < nNymCount; ++ii) {
-        std::string nymId = opentxs::OT::App().API().Exec().GetNym_ID(ii);
-        m_RecordList->AddNymID(nymId);
-    }
-    // ----------------------------------------------------
-    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
-    {
-        m_RecordList->AddAccountID(accountID);
-    }
-    // ----------------------------------------------------
-    m_RecordList->AcceptChequesAutomatically(true);
-    m_RecordList->AcceptReceiptsAutomatically(true);
-    m_RecordList->AcceptTransfersAutomatically(false);
-
-    m_RecordList->Populate();
-
-    QJsonObject object{{"RecordListPopulated", "True"}};
-
-    return object;
-}
-
-QJsonValue MCRPCService::recordListCount(QString Username, QString APIKey)
-{
-    if (!validateAPIKey(Username, APIKey)) {
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-
-    QJsonObject reply_obj;
-    if (m_RecordList == nullptr) {
-        qDebug() << QString("Record List Null");
-        QJsonValue reply_val = recordListPopulate(Username, APIKey);
-        reply_obj.insert("RecordListPopulated", reply_val);
-    }
-
-    if (m_RecordList == nullptr) {
-        QJsonObject object{{"Error", "Recordlist is a null pointer."}};
-        return object;
-    }
-    /*
-    if (QJsonValue("True") != reply_obj.value("RecordListPopulated"))
-    {
-        qDebug() << QString("Recordlist didn't populate properly:
-    %1").arg(reply_obj.value("RecordListPopulated").toString());
-        QJsonObject object{{"Error", QString("Recordlist didn't populate
-    properly: %1").arg(reply_obj.value("RecordListPopulated").toString())}};
-        return object;
-    }
-*/
-    m_RecordList->Populate();
-    int count = m_RecordList->size();
-
-    QJsonObject object{{"RecordListCount", count}};
-
-    return object;
-}
-
-QJsonValue MCRPCService::recordListRetrieve(
-    QString Username,
-    QString APIKey,
-    int Index)
-{
-    if (!validateAPIKey(Username, APIKey)) {
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-
-    // if(m_RecordList == nullptr)
-    //    recordListPopulate(Username, APIKey);
-    m_RecordList->Populate();
-    int count = m_RecordList->size();
-
-    if (Index >= count) Index = count;
-
-    if (Index < 0) Index = 0;
-
-    QJsonObject object;
-
-    QJsonObject record{
-        {"AccountID",
-         QString(m_RecordList->GetRecord(Index).GetAccountID().c_str())},
-        {"Address",
-         QString(m_RecordList->GetRecord(Index).GetAddress().c_str())},
-        {"Amount", QString(m_RecordList->GetRecord(Index).GetAmount().c_str())},
-        {"BoxIndex", m_RecordList->GetRecord(Index).GetBoxIndex()},
-        {"Contents",
-         QString(m_RecordList->GetRecord(Index).GetContents().c_str())},
-        {"CurrencyTLA",
-         QString(m_RecordList->GetRecord(Index).GetCurrencyTLA().c_str())},
-        {"Date", QString(m_RecordList->GetRecord(Index).GetDate().c_str())},
-        {"InitialPaymentAmount",
-         qint64(m_RecordList->GetRecord(Index).GetInitialPaymentAmount())},
-        {"InitialPaymentDate",
-         qint64(m_RecordList->GetRecord(Index).GetInitialPaymentDate())},
-        {"UnitType",
-         QString(m_RecordList->GetRecord(Index)
-                     .GetUnitTypeID()
-                     .c_str())},
-        {"InstrumentType",
-         QString(m_RecordList->GetRecord(Index).GetInstrumentType().c_str())},
-        {"MaximumNoPayments",
-         m_RecordList->GetRecord(Index).GetMaximumNoPayments()},
-        {"Memo", QString(m_RecordList->GetRecord(Index).GetMemo().c_str())},
-        {"MethodID", m_RecordList->GetRecord(Index).GetMethodID()},
-        {"MesssageID",
-         QString(m_RecordList->GetRecord(Index).GetMsgID().c_str())},
-        {"MessageType",
-         QString(m_RecordList->GetRecord(Index).GetMsgType().c_str())},
-        {"MessageTypeDisplay",
-         QString(m_RecordList->GetRecord(Index).GetMsgTypeDisplay().c_str())},
-        {"Name", QString(m_RecordList->GetRecord(Index).GetName().c_str())},
-        {"MsgNotaryID",
-         QString(m_RecordList->GetRecord(Index).GetMsgNotaryID().c_str())},
-        {"PmntNotaryID",
-         QString(m_RecordList->GetRecord(Index).GetPmntNotaryID().c_str())},
-        {"NymID", QString(m_RecordList->GetRecord(Index).GetNymID().c_str())},
-        {"OtherAccountID",
-         QString(m_RecordList->GetRecord(Index).GetOtherAccountID().c_str())},
-        {"OtherAddress",
-         QString(m_RecordList->GetRecord(Index).GetOtherAddress().c_str())},
-        {"OtherNymID",
-         QString(m_RecordList->GetRecord(Index).GetOtherNymID().c_str())},
-        {"PaymentPlanAmount",
-         qint64(m_RecordList->GetRecord(Index).GetPaymentPlanAmount())},
-        {"PaymentPlanStartDate",
-         qint64(m_RecordList->GetRecord(Index).GetPaymentPlanStartDate())},
-        {"RecordType", m_RecordList->GetRecord(Index).GetRecordType()},
-        {"TimeBetweenPayments",
-         qint64(m_RecordList->GetRecord(Index).GetTimeBetweenPayments())},
-        {"TransactionNum",
-         qint64(m_RecordList->GetRecord(Index).GetTransactionNum())},
-        {"TransNumForDisplay",
-         qint64(m_RecordList->GetRecord(Index).GetTransNumForDisplay())},
-        {"ValidFrom", qint64(m_RecordList->GetRecord(Index).GetValidFrom())},
-        {"ValidTo", qint64(m_RecordList->GetRecord(Index).GetValidTo())}};
-
-    object.insert(QString(Index), record);
-
-    return object;
-}
-
-QJsonValue MCRPCService::recordListRetrieve(
-    QString Username,
-    QString APIKey,
-    int BeginIndex,
-    int EndIndex)
-{
-    if (!validateAPIKey(Username, APIKey)) {
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return QJsonValue(object);
-    }
-
-    // enum OTRecordType { Mail = 0, Transfer, Receipt, Instrument,ErrorState };
-
-    QJsonObject reply_obj;
-    if (m_RecordList == nullptr) {
-        QJsonValue reply_val = recordListPopulate(Username, APIKey);
-        reply_obj.insert("RecordListPopulated", reply_val);
-    }
-
-    if (m_RecordList == nullptr) {
-        QJsonObject object{{"Error", "Recordlist is a null pointer."}};
-        return object;
-    }
-
-    /*if (QJsonValue("True") != reply_obj.value("RecordListPopulated"))
-    {
-        qDebug() << QString("Recordlist didn't populate properly:
-    %1").arg(reply_obj.value("RecordListPopulated").toString());
-        QJsonObject object{{"Error", QString("Recordlist didn't populate
-    properly: %1").arg(reply_obj.value("RecordListPopulated").toString())}};
-        return object;
-    }*/
-
-    m_RecordList->Populate();
-    int count = m_RecordList->size();
-
-    // Swap if Begin > End
-    if (BeginIndex > EndIndex) {
-        BeginIndex ^= EndIndex;
-        EndIndex ^= BeginIndex;
-        BeginIndex ^= EndIndex;
-    }
-
-    if (BeginIndex < 0) BeginIndex = 0;
-
-    if (BeginIndex > count) {
-        QJsonObject object{{"Error", "Out of Bound Request"}};
-        return object;
-    }
-
-    if (EndIndex > count) EndIndex = count;
-
-    QJsonObject object;
-    for (auto x = BeginIndex; x < EndIndex; x++) {
-
-        QJsonObject record{
-            {"AccountID",
-             QString(m_RecordList->GetRecord(x).GetAccountID().c_str())},
-            {"Address",
-             QString(m_RecordList->GetRecord(x).GetAddress().c_str())},
-            {"Amount", QString(m_RecordList->GetRecord(x).GetAmount().c_str())},
-            {"BoxIndex", m_RecordList->GetRecord(x).GetBoxIndex()},
-            {"Contents",
-             QString(m_RecordList->GetRecord(x).GetContents().c_str())},
-            {"CurrencyTLA",
-             QString(m_RecordList->GetRecord(x).GetCurrencyTLA().c_str())},
-            {"Date", QString(m_RecordList->GetRecord(x).GetDate().c_str())},
-            {"InitialPaymentAmount",
-             qint64(m_RecordList->GetRecord(x).GetInitialPaymentAmount())},
-            {"InitialPaymentDate",
-             qint64(m_RecordList->GetRecord(x).GetInitialPaymentDate())},
-            {"UnitTypeID",
-             QString(m_RecordList->GetRecord(x)
-                         .GetUnitTypeID()
-                         .c_str())},
-            {"InstrumentType",
-             QString(m_RecordList->GetRecord(x).GetInstrumentType().c_str())},
-            {"MaximumNoPayments",
-             m_RecordList->GetRecord(x).GetMaximumNoPayments()},
-            {"Memo", QString(m_RecordList->GetRecord(x).GetMemo().c_str())},
-            {"MethodID", m_RecordList->GetRecord(x).GetMethodID()},
-            {"MesssageID",
-             QString(m_RecordList->GetRecord(x).GetMsgID().c_str())},
-            {"MessageType",
-             QString(m_RecordList->GetRecord(x).GetMsgType().c_str())},
-            {"MessageTypeDisplay",
-             QString(m_RecordList->GetRecord(x).GetMsgTypeDisplay().c_str())},
-            {"Name", QString(m_RecordList->GetRecord(x).GetName().c_str())},
-            {"MsgNotaryID",
-             QString(m_RecordList->GetRecord(x).GetMsgNotaryID().c_str())},
-            {"PmntNotaryID",
-             QString(m_RecordList->GetRecord(x).GetPmntNotaryID().c_str())},
-            {"NymID", QString(m_RecordList->GetRecord(x).GetNymID().c_str())},
-            {"OtherAccountID",
-             QString(m_RecordList->GetRecord(x).GetOtherAccountID().c_str())},
-            {"OtherAddress",
-             QString(m_RecordList->GetRecord(x).GetOtherAddress().c_str())},
-            {"OtherNymID",
-             QString(m_RecordList->GetRecord(x).GetOtherNymID().c_str())},
-            {"PaymentPlanAmount",
-             qint64(m_RecordList->GetRecord(x).GetPaymentPlanAmount())},
-            {"PaymentPlanStartDate",
-             qint64(m_RecordList->GetRecord(x).GetPaymentPlanStartDate())},
-            {"RecordType", m_RecordList->GetRecord(x).GetRecordType()},
-            {"TimeBetweenPayments",
-             qint64(m_RecordList->GetRecord(x).GetTimeBetweenPayments())},
-            {"TransactionNum",
-             qint64(m_RecordList->GetRecord(x).GetTransactionNum())},
-            {"TransNumForDisplay",
-             qint64(m_RecordList->GetRecord(x).GetTransNumForDisplay())},
-            {"ValidFrom", qint64(m_RecordList->GetRecord(x).GetValidFrom())},
-            {"ValidTo", qint64(m_RecordList->GetRecord(x).GetValidTo())}};
-
-        object.insert(QString(x), record);
-    }
-
-    return object;
-}
-
-bool MCRPCService::createRecordList(QString Username, QString APIKey)
-{
-    if (!validateAPIKey(Username, APIKey)) {
-        QJsonObject object{{"Error", "Invalid API Key"}};
-        return false;
-    }
-
-    if (m_RecordList == nullptr)
-        m_RecordList = new opentxs::OTRecordList(*(new MTNameLookupQT));
-    qDebug() << QString("Record List Created");
-    return true;
-}
 
 QJsonValue MCRPCService::setDefaultNym(
     QString Username,

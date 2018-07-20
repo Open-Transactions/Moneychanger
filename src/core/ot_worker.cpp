@@ -10,203 +10,203 @@
 
 #include <QVariant>
 
-ot_worker::ot_worker(QObject *parent) : QObject(parent), list(*(new MTNameLookupQT))
+ot_worker::ot_worker(QObject *parent) : QObject(parent)//, list(*(new MTNameLookupQT))
 {
-    /** ** ** **
-     ** Init MTList
-     **/
-    overview_list = new QList< QMap<QString,QVariant> >();
+//    /** ** ** **
+//     ** Init MTList
+//     **/
+//    overview_list = new QList< QMap<QString,QVariant> >();
 
-    int nServerCount  = opentxs::OT::App().API().Exec().GetServerCount();
-    int nAssetCount   = opentxs::OT::App().API().Exec().GetAssetTypeCount();
-    int nNymCount     = opentxs::OT::App().API().Exec().GetNymCount();
-    // ----------------------------------------------------
-    for (int ii = 0; ii < nServerCount; ++ii)
-    {
-        std::string NotaryID = opentxs::OT::App().API().Exec().GetServer_ID(ii);
-        list.AddNotaryID(NotaryID);
-    }
-    // ----------------------------------------------------
-    for (int ii = 0; ii < nAssetCount; ++ii)
-    {
-        std::string InstrumentDefinitionID = opentxs::OT::App().API().Exec().GetAssetType_ID(ii);
-        list.AddInstrumentDefinitionID(InstrumentDefinitionID);
-    }
-    // ----------------------------------------------------
-    for (int ii = 0; ii < nNymCount; ++ii)
-    {
-        std::string nymId = opentxs::OT::App().API().Exec().GetNym_ID(ii);
-        list.AddNymID(nymId);
-    }
-    // ----------------------------------------------------
-    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
-    {
-        list.AddAccountID(accountID);
-    }
-    // ----------------------------------------------------
-    list.AcceptChequesAutomatically  (true);
-    list.AcceptReceiptsAutomatically (true);
-    list.AcceptTransfersAutomatically(false);
+//    int nServerCount  = opentxs::OT::App().API().Exec().GetServerCount();
+//    int nAssetCount   = opentxs::OT::App().API().Exec().GetAssetTypeCount();
+//    int nNymCount     = opentxs::OT::App().API().Exec().GetNymCount();
+//    // ----------------------------------------------------
+//    for (int ii = 0; ii < nServerCount; ++ii)
+//    {
+//        std::string NotaryID = opentxs::OT::App().API().Exec().GetServer_ID(ii);
+//        list.AddNotaryID(NotaryID);
+//    }
+//    // ----------------------------------------------------
+//    for (int ii = 0; ii < nAssetCount; ++ii)
+//    {
+//        std::string InstrumentDefinitionID = opentxs::OT::App().API().Exec().GetAssetType_ID(ii);
+//        list.AddInstrumentDefinitionID(InstrumentDefinitionID);
+//    }
+//    // ----------------------------------------------------
+//    for (int ii = 0; ii < nNymCount; ++ii)
+//    {
+//        std::string nymId = opentxs::OT::App().API().Exec().GetNym_ID(ii);
+//        list.AddNymID(nymId);
+//    }
+//    // ----------------------------------------------------
+//    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
+//    {
+//        list.AddAccountID(accountID);
+//    }
+//    // ----------------------------------------------------
+//    list.AcceptChequesAutomatically  (true);
+//    list.AcceptReceiptsAutomatically (true);
+//    list.AcceptTransfersAutomatically(false);
 
-    //Populate
-    list.Populate();
+//    //Populate
+//    list.Populate();
 }
 
 
 
 void ot_worker::mc_overview_ping(){
-    //Lock overview_list (Unlocks when function is returned)
-    QMutexLocker overview_list_mutex_locker(&overview_list_mutex);
+//    //Lock overview_list (Unlocks when function is returned)
+//    QMutexLocker overview_list_mutex_locker(&overview_list_mutex);
 
-    //Repopulate the list
-    list.Populate();
-    int listSize = list.size();
-    //Clear backend memory to the visual table.
-    for(int a = 0; a < overview_list->size();a++){
-        overview_list->removeAt(0);
-    }
+//    //Repopulate the list
+//    list.Populate();
+//    int listSize = list.size();
+//    //Clear backend memory to the visual table.
+//    for(int a = 0; a < overview_list->size();a++){
+//        overview_list->removeAt(0);
+//    }
 
-    //REadd to the backend memory to the visual table.
-    for(int a = 0;a < listSize;a++){
-        opentxs::OTRecord record = list.GetRecord(a);
-            {
-            opentxs::OTRecord recordmt = record;
+//    //REadd to the backend memory to the visual table.
+//    for(int a = 0;a < listSize;a++){
+//        opentxs::OTRecord record = list.GetRecord(a);
+//            {
+//            opentxs::OTRecord recordmt = record;
 
-            /** Refernce Comment/Code **
-             qDebug() << recordmt.IsOutgoing();
-             qDebug() << recordmt.IsPending();
-             qDebug() << recordmt.IsReceipt();
-             qDebug() << recordmt.IsRecord();
-             qDebug() << QString::fromStdString(recordmt.GetAccountID());
-             qDebug() << QString::fromStdString(recordmt.GetAmount());
-             qDebug() << QString::fromStdString(recordmt.GetInstrumentDefinitionID());
-             qDebug() << QString::fromStdString(recordmt.GetCurrencyTLA());
-             qDebug() << QString::fromStdString(recordmt.GetDate());
-             qDebug() << QString::fromStdString(recordmt.GetInstrumentType());
-             qDebug() << QString::fromStdString(recordmt.GetName());
-             qDebug() << QString::fromStdString(recordmt.GetNymID());
-             qDebug() << recordmt.GetRecordType();
-             qDebug() << QString::fromStdString(recordmt.GetNotaryID());
-             ** End of Reference Comment/Code **/
+//            /** Refernce Comment/Code **
+//             qDebug() << recordmt.IsOutgoing();
+//             qDebug() << recordmt.IsPending();
+//             qDebug() << recordmt.IsReceipt();
+//             qDebug() << recordmt.IsRecord();
+//             qDebug() << QString::fromStdString(recordmt.GetAccountID());
+//             qDebug() << QString::fromStdString(recordmt.GetAmount());
+//             qDebug() << QString::fromStdString(recordmt.GetInstrumentDefinitionID());
+//             qDebug() << QString::fromStdString(recordmt.GetCurrencyTLA());
+//             qDebug() << QString::fromStdString(recordmt.GetDate());
+//             qDebug() << QString::fromStdString(recordmt.GetInstrumentType());
+//             qDebug() << QString::fromStdString(recordmt.GetName());
+//             qDebug() << QString::fromStdString(recordmt.GetNymID());
+//             qDebug() << recordmt.GetRecordType();
+//             qDebug() << QString::fromStdString(recordmt.GetNotaryID());
+//             ** End of Reference Comment/Code **/
 
-            //Add to overview list
-            //Map of record
-            QMap<QString, QVariant> record_map = QMap<QString,QVariant>();
+//            //Add to overview list
+//            //Map of record
+//            QMap<QString, QVariant> record_map = QMap<QString,QVariant>();
 
-            /*
-             bool  IsPending()     const;
-             bool  IsOutgoing()    const;
-             bool  IsRecord()      const;
-             bool  IsReceipt()     const;
-             bool  IsMail()        const;
-             bool  IsTransfer()    const;
-             bool  IsCheque()      const;
-             bool  IsInvoice()     const;
-             bool  IsVoucher()     const;
-             bool  IsContract()    const;
-             bool  IsPaymentPlan() const;
-             bool  IsCash()        const;
-             bool  HasContents()   const;
-             bool  HasMemo()       const;
-             // ---------------------------------------
-             bool  IsExpired()     const;
-             bool  IsCanceled()    const;
+//            /*
+//             bool  IsPending()     const;
+//             bool  IsOutgoing()    const;
+//             bool  IsRecord()      const;
+//             bool  IsReceipt()     const;
+//             bool  IsMail()        const;
+//             bool  IsTransfer()    const;
+//             bool  IsCheque()      const;
+//             bool  IsInvoice()     const;
+//             bool  IsVoucher()     const;
+//             bool  IsContract()    const;
+//             bool  IsPaymentPlan() const;
+//             bool  IsCash()        const;
+//             bool  HasContents()   const;
+//             bool  HasMemo()       const;
+//             // ---------------------------------------
+//             bool  IsExpired()     const;
+//             bool  IsCanceled()    const;
 
-             time_t GetValidFrom();
-             time_t GetValidTo();
+//             time_t GetValidFrom();
+//             time_t GetValidTo();
 
-             bool  CanDeleteRecord()        const;  // For completed records (not pending.)
-             bool  CanAcceptIncoming()      const;  // For incoming, pending (not-yet-accepted) instruments.
-             bool  CanDiscardIncoming()     const;  // For INcoming, pending (not-yet-accepted) instruments.
-             bool  CanCancelOutgoing()      const;  // For OUTgoing, pending (not-yet-accepted) instruments.
-             bool  CanDiscardOutgoingCash() const;  // For OUTgoing cash. (No way to see if it's been accepted, so this lets you erase the record of sending it.)
+//             bool  CanDeleteRecord()        const;  // For completed records (not pending.)
+//             bool  CanAcceptIncoming()      const;  // For incoming, pending (not-yet-accepted) instruments.
+//             bool  CanDiscardIncoming()     const;  // For INcoming, pending (not-yet-accepted) instruments.
+//             bool  CanCancelOutgoing()      const;  // For OUTgoing, pending (not-yet-accepted) instruments.
+//             bool  CanDiscardOutgoingCash() const;  // For OUTgoing cash. (No way to see if it's been accepted, so this lets you erase the record of sending it.)
 
-             int   GetBoxIndex() const;
-             long  GetTransactionNum() const;
-             long  GetTransNumForDisplay() const;
+//             int   GetBoxIndex() const;
+//             long  GetTransactionNum() const;
+//             long  GetTransNumForDisplay() const;
 
-             OTRecordType  GetRecordType() const;
-             // ---------------------------------------
-             const std::string & GetNotaryID()       const;
-             const std::string & GetInstrumentDefinitionID()        const;
-             const std::string & GetCurrencyTLA()    const; // BTC, USD, etc.
-             const std::string & GetNymID()          const;
-             const std::string & GetAccountID()      const;
-             // ---------------------------------------
-             const std::string & GetOtherNymID()     const; // Could be sender OR recipient depending on whether incoming/outgoing.
-             const std::string & GetOtherAccountID() const; // Could be sender OR recipient depending on whether incoming/outgoing.
-             // ---------------------------------------
-             const std::string & GetName()           const;
-             const std::string & GetDate()           const;
-             const std::string & GetAmount()         const;
-             const std::string & GetInstrumentType() const;
-             const std::string & GetMemo()           const;
-             const std::string & GetContents()       const;
+//             OTRecordType  GetRecordType() const;
+//             // ---------------------------------------
+//             const std::string & GetNotaryID()       const;
+//             const std::string & GetInstrumentDefinitionID()        const;
+//             const std::string & GetCurrencyTLA()    const; // BTC, USD, etc.
+//             const std::string & GetNymID()          const;
+//             const std::string & GetAccountID()      const;
+//             // ---------------------------------------
+//             const std::string & GetOtherNymID()     const; // Could be sender OR recipient depending on whether incoming/outgoing.
+//             const std::string & GetOtherAccountID() const; // Could be sender OR recipient depending on whether incoming/outgoing.
+//             // ---------------------------------------
+//             const std::string & GetName()           const;
+//             const std::string & GetDate()           const;
+//             const std::string & GetAmount()         const;
+//             const std::string & GetInstrumentType() const;
+//             const std::string & GetMemo()           const;
+//             const std::string & GetContents()       const;
 
-             bool   HasInitialPayment();
-             bool   HasPaymentPlan();
+//             bool   HasInitialPayment();
+//             bool   HasPaymentPlan();
 
-             time_t GetInitialPaymentDate();
-             time_t GetPaymentPlanStartDate();
-             time_t GetTimeBetweenPayments();
+//             time_t GetInitialPaymentDate();
+//             time_t GetPaymentPlanStartDate();
+//             time_t GetTimeBetweenPayments();
 
-             long   GetInitialPaymentAmount();
-             long   GetPaymentPlanAmount();
+//             long   GetInitialPaymentAmount();
+//             long   GetPaymentPlanAmount();
 
-             int    GetMaximumNoPayments();
-             // ---------------------------------------
-             bool  FormatAmount              (std::string & str_output);
-             bool  FormatDescription         (std::string & str_output);
-             bool  FormatShortMailDescription(std::string & str_output);
-             // ---------------------------------------
+//             int    GetMaximumNoPayments();
+//             // ---------------------------------------
+//             bool  FormatAmount              (std::string & str_output);
+//             bool  FormatDescription         (std::string & str_output);
+//             bool  FormatShortMailDescription(std::string & str_output);
+//             // ---------------------------------------
 
-             */
+//             */
 
-            record_map.insert("isoutgoing", recordmt.IsOutgoing());
-            record_map.insert("ispending", recordmt.IsPending());
-            record_map.insert("isreceipt", recordmt.IsReceipt());
-            record_map.insert("isrecord", recordmt.IsRecord());
-            record_map.insert("ismail", recordmt.IsMail());
-            record_map.insert("accountId", QString::fromStdString(recordmt.GetAccountID()));
-            record_map.insert("amount", QString::fromStdString(recordmt.GetAmount()));
+//            record_map.insert("isoutgoing", recordmt.IsOutgoing());
+//            record_map.insert("ispending", recordmt.IsPending());
+//            record_map.insert("isreceipt", recordmt.IsReceipt());
+//            record_map.insert("isrecord", recordmt.IsRecord());
+//            record_map.insert("ismail", recordmt.IsMail());
+//            record_map.insert("accountId", QString::fromStdString(recordmt.GetAccountID()));
+//            record_map.insert("amount", QString::fromStdString(recordmt.GetAmount()));
 
-            std::string str_formatted;
-            QString qstrAmount = QString("");
-            if (recordmt.FormatAmount(str_formatted))
-                qstrAmount = QString(QString::fromStdString(str_formatted));
-            record_map.insert("formatAmount", qstrAmount);
+//            std::string str_formatted;
+//            QString qstrAmount = QString("");
+//            if (recordmt.FormatAmount(str_formatted))
+//                qstrAmount = QString(QString::fromStdString(str_formatted));
+//            record_map.insert("formatAmount", qstrAmount);
 
-            if (recordmt.IsMail())
-            {
-                std::string str_mail_desc;
-                QString qstrDesc = QString("");
-                if (recordmt.FormatShortMailDescription(str_mail_desc))
-                    qstrDesc = QString(QString::fromStdString(str_mail_desc));
-                record_map.insert("shortMail", qstrDesc);
-            }
+//            if (recordmt.IsMail())
+//            {
+//                std::string str_mail_desc;
+//                QString qstrDesc = QString("");
+//                if (recordmt.FormatShortMailDescription(str_mail_desc))
+//                    qstrDesc = QString(QString::fromStdString(str_mail_desc));
+//                record_map.insert("shortMail", qstrDesc);
+//            }
 
-            record_map.insert("InstrumentDefinitionID", QString::fromStdString(recordmt.GetUnitTypeID()));
-            record_map.insert("currencyTLA", QString::fromStdString(recordmt.GetCurrencyTLA()));
-            record_map.insert("date", QString::fromStdString(recordmt.GetDate()));
-            record_map.insert("instrumentType", QString::fromStdString(recordmt.GetInstrumentType()));
-            record_map.insert("name", QString::fromStdString(recordmt.GetName()));
-            record_map.insert("nymId", QString::fromStdString(recordmt.GetNymID()));
-            record_map.insert("recordType", recordmt.GetRecordType());
-            record_map.insert("MsgNotaryID", QString::fromStdString(recordmt.GetMsgNotaryID()));
-            record_map.insert("PmntNotaryID", QString::fromStdString(recordmt.GetPmntNotaryID()));
+//            record_map.insert("InstrumentDefinitionID", QString::fromStdString(recordmt.GetUnitTypeID()));
+//            record_map.insert("currencyTLA", QString::fromStdString(recordmt.GetCurrencyTLA()));
+//            record_map.insert("date", QString::fromStdString(recordmt.GetDate()));
+//            record_map.insert("instrumentType", QString::fromStdString(recordmt.GetInstrumentType()));
+//            record_map.insert("name", QString::fromStdString(recordmt.GetName()));
+//            record_map.insert("nymId", QString::fromStdString(recordmt.GetNymID()));
+//            record_map.insert("recordType", recordmt.GetRecordType());
+//            record_map.insert("MsgNotaryID", QString::fromStdString(recordmt.GetMsgNotaryID()));
+//            record_map.insert("PmntNotaryID", QString::fromStdString(recordmt.GetPmntNotaryID()));
 
-            //Special retrieval
-            //Format Description
-            std::string formatDescription_holder;
-            recordmt.FormatDescription(formatDescription_holder);
-            record_map.insert("formatDescription", QString::fromStdString(formatDescription_holder));
+//            //Special retrieval
+//            //Format Description
+//            std::string formatDescription_holder;
+//            recordmt.FormatDescription(formatDescription_holder);
+//            record_map.insert("formatDescription", QString::fromStdString(formatDescription_holder));
 
 
 
-            //Append
-            overview_list->append(record_map);
-        }
-    }
+//            //Append
+//            overview_list->append(record_map);
+//        }
+//    }
 }
 
 

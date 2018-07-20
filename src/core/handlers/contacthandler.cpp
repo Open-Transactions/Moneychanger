@@ -19,6 +19,9 @@
 
 #include <tuple>
 
+template class opentxs::Pimpl<opentxs::PaymentCode>;
+
+
 void MTNameLookupQT::notifyOfSuccessfulNotarization(const std::string & str_acct_id,
                                                     const std::string   p_nym_id,
                                                     const std::string   p_msg_notary_id,
@@ -30,13 +33,13 @@ void MTNameLookupQT::notifyOfSuccessfulNotarization(const std::string & str_acct
     // Add/update record to payments table for whatever
     // transaction just occurred.
 
-    Moneychanger::It()->AddPaymentBasedOnNotification(str_acct_id,
-                                                      p_nym_id,
-                                                      p_msg_notary_id,
-                                                      p_pmnt_notary_id,
-                                                      p_txn_contents,
-                                                      lTransactionNum,
-                                                      lTransNumForDisplay);
+//    Moneychanger::It()->AddPaymentBasedOnNotification(str_acct_id,
+//                                                      p_nym_id,
+//                                                      p_msg_notary_id,
+//                                                      p_pmnt_notary_id,
+//                                                      p_txn_contents,
+//                                                      lTransactionNum,
+//                                                      lTransNumForDisplay);
 }
 
 
@@ -828,7 +831,7 @@ bool MTContactHandler::upsertClaim(
 {
     QMutexLocker locker(&m_Mutex);
 
-    const opentxs::Identifier nym_id(nym);
+    const auto nym_id = opentxs::Identifier::Factory(nym);
     const opentxs::String     strNym(nym_id);
     const std::string         str_nym_id(strNym.Get());
     const QString             qstrNymId(QString::fromStdString(str_nym_id));
@@ -2254,7 +2257,7 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, const std::string & str_conta
     if (str_contact_id.empty() || !opentxs::Identifier::validateID(str_contact_id))
         return false;
     // ------------------------
-    const auto pContact = opentxs::OT::App().Contact().Contact(opentxs::Identifier{str_contact_id});
+    const auto pContact = opentxs::OT::App().Contact().Contact(opentxs::Identifier::Factory(str_contact_id));
     if (!pContact)
     {
         qDebug() << "No opentxs Contact found for the ID provided.";
@@ -2844,9 +2847,9 @@ int  MTContactHandler::CreateSmartContractTemplate(QString template_string)
 */
 QString MTContactHandler::GetOrCreateOpentxsContactBasedOnNym(QString qstrLabel, QString nym_id_string, QString payment_code/*=QString("")*/)
 {
-    const opentxs::Identifier contactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier{nym_id_string.toStdString()});
+    const auto contactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier::Factory(nym_id_string.toStdString()));
 
-    if (!contactId.IsEmpty()) // Found an existing one
+    if (!contactId->empty()) // Found an existing one
     {
         const opentxs::String strContactId(contactId);
         const std::string str_contact_id(strContactId.Get());
@@ -2857,7 +2860,8 @@ QString MTContactHandler::GetOrCreateOpentxsContactBasedOnNym(QString qstrLabel,
     // So let's create a new one instead.
     //
     const std::string str_label = qstrLabel.toStdString();
-    const auto response = opentxs::OT::App().Contact().NewContact(str_label, opentxs::Identifier{nym_id_string.toStdString()}, opentxs::PaymentCode::Factory(payment_code.toStdString()));
+    const auto response = opentxs::OT::App().Contact().NewContact(str_label, opentxs::Identifier::Factory(nym_id_string.toStdString()),
+                                                                  opentxs::PaymentCode::Factory(payment_code.toStdString()));
     return response ? QString::fromStdString(std::string(opentxs::String(response->ID()).Get())) : QString("");
 }
 

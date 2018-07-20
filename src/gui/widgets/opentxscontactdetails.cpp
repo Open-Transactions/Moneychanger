@@ -366,8 +366,8 @@ void MTOpentxsContactDetails::AddButtonClicked()
     // we're adding. (Though a contact may already exist, we'll find out next...)
     // --------------------------------------------------------
     QString qstrContactId;
-    const opentxs::Identifier existingContactId{opentxs::OT::App().Contact().ContactID(opentxs::Identifier{str_nym_id})};
-    const bool bPreexistingOpentxsContact{!existingContactId.IsEmpty()};
+    const auto existingContactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier::Factory(str_nym_id));
+    const bool bPreexistingOpentxsContact{!existingContactId->empty()};
     bool bCreatedOpentxsContactJustNow{false};
 
     if (bPreexistingOpentxsContact) // It already exists.
@@ -735,7 +735,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
                             return;
                         // ----------------------------------------------
                         auto strClaimantNymId = opentxs::String(qstrClaimantNymId.toStdString());
-                        opentxs::Identifier claimant_nym_id(strClaimantNymId);
+                        auto claimant_nym_id = opentxs::Identifier::Factory(strClaimantNymId);
                         // ----------------------------------------------
                         // Get the Nym. Make sure we have the latest copy, since his credentials were apparently
                         // just downloaded and overwritten.
@@ -1140,7 +1140,9 @@ void MTOpentxsContactDetails::on_pushButtonRefresh_clicked()
                 MTSpinner theSpinner;
 
                  auto action = opentxs::OT::App().API().ServerAction().DownloadNym(
-                		opentxs::Identifier(my_nym_id), opentxs::Identifier(notary_id), opentxs::Identifier(str_nym_id));
+                        opentxs::Identifier::Factory(my_nym_id),
+                        opentxs::Identifier::Factory(notary_id),
+                        opentxs::Identifier::Factory(str_nym_id));
                  response = action->Run();
             }
 
@@ -1218,7 +1220,7 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
         MTNameLookupQT theLookup;
         const std::string str_nym_id   = qstrNymID.toStdString();
         const std::string str_nym_name = theLookup.GetNymName(str_nym_id, "");
-        const opentxs::Identifier id_nym(str_nym_id);
+        const auto id_nym = opentxs::Identifier::Factory(str_nym_id);
 
         if (!str_nym_id.empty())
         {
@@ -1243,7 +1245,9 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
                         MTSpinner theSpinner;
 
                         auto action = opentxs::OT::App().API().ServerAction().DownloadNym(
-                        		opentxs::Identifier(my_nym_id), opentxs::Identifier(notary_id), opentxs::Identifier(str_nym_id));
+                                opentxs::Identifier::Factory(my_nym_id),
+                                opentxs::Identifier::Factory(notary_id),
+                                opentxs::Identifier::Factory(str_nym_id));
                         response = action->Run();
                     }
 
@@ -1996,7 +2000,9 @@ void MTOpentxsContactDetails::on_pushButtonMsg_clicked()
         {
             compose_window->setInitialSenderNym(qstrDefaultNym);
 
-            bCanMessage = (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(qstrDefaultNym.toStdString()), opentxs::Identifier(qstrContactID.toStdString())));
+            bCanMessage = (opentxs::Messagability::READY ==
+                opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier::Factory(qstrDefaultNym.toStdString()),
+                                                           opentxs::Identifier::Factory(qstrContactID.toStdString())));
         }
         compose_window->setInitialRecipientContactID(qstrContactID); // We definitely know this, since we're on the Contacts page.
         // --------------------------------------------------
@@ -2116,7 +2122,9 @@ void MTOpentxsContactDetails::refresh(QString strID, QString strName)
 
     if (!qstrDefaultNym.isEmpty())
     {
-        bCanMessage = (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(qstrDefaultNym.toStdString()), opentxs::Identifier(strID.toStdString())));
+        bCanMessage = (opentxs::Messagability::READY ==
+                       opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier::Factory(qstrDefaultNym.toStdString()),
+                                                                  opentxs::Identifier::Factory(strID.toStdString())));
     }
     // -----------------------------
     if (bCanMessage)
@@ -2256,7 +2264,7 @@ void MTOpentxsContactDetails::on_lineEditName_editingFinished()
         const std::string str_contact_id{m_pOwner->m_qstrCurrentID.toStdString()};
         const opentxs::String strContactId{str_contact_id};
         // -------------------------------
-        auto mutableContactEditor{opentxs::OT::App().Contact().mutable_Contact(opentxs::Identifier{strContactId})};
+        auto mutableContactEditor{opentxs::OT::App().Contact().mutable_Contact(opentxs::Identifier::Factory(strContactId))};
 
         if (mutableContactEditor) {
             auto & mutableContact = mutableContactEditor->It();

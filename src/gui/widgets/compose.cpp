@@ -315,7 +315,8 @@ void MTCompose::setInitialRecipientContactID(QString qstrContactid, QString addr
         m_senderNymId = qstrDefaultNym;
     }
     if (!qstrSenderNym.isEmpty() && !qstrContactid.isEmpty()) {
-        bCanMessage_ = (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(qstrSenderNym.toStdString()), opentxs::Identifier(qstrContactid.toStdString())));
+        bCanMessage_ = (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier::Factory(qstrSenderNym.toStdString()),
+                                                                                                    opentxs::Identifier::Factory(qstrContactid.toStdString())));
     }
     // -------------------------------------------
     mapIDName theMap;
@@ -539,9 +540,9 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
     // ----------------------------------------------------
     if (bCanMessage_)
     {
-        const opentxs::Identifier bgthreadId
-            {opentxs::OT::App().API().Sync().
-                MessageContact(opentxs::Identifier(str_fromNymId), opentxs::Identifier(qstrContactId_.toStdString()), contents.toStdString())};
+        const auto bgthreadId =
+            opentxs::OT::App().API().Sync().
+                MessageContact(opentxs::Identifier::Factory(str_fromNymId), opentxs::Identifier::Factory(qstrContactId_.toStdString()), contents.toStdString());
 
         const auto status = opentxs::OT::App().API().Sync().Status(bgthreadId);
 
@@ -558,7 +559,7 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
         std::string strResponse; {
             MTSpinner theSpinner;
             auto action = opentxs::OT::App().API().ServerAction().SendMessage(
-            		opentxs::Identifier(str_fromNymId), opentxs::Identifier(str_NotaryID), opentxs::Identifier(str_toNymId), contents.toStdString());
+                    opentxs::Identifier::Factory(str_fromNymId), opentxs::Identifier::Factory(str_NotaryID), opentxs::Identifier::Factory(str_toNymId), contents.toStdString());
             strResponse = action->Run();
         }
 
@@ -2475,7 +2476,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
                 {
                     MTSpinner theSpinner;
 
-                    response = opentxs::String(opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier(sender_id), opentxs::Identifier(notary_id), true)).Get();
+                    response = opentxs::String(opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier::Factory(sender_id), opentxs::Identifier::Factory(notary_id), true)).Get();
                 }
 
                 qDebug() << QString("Nym Registration Response: %1").arg(QString::fromStdString(response));
@@ -2544,7 +2545,7 @@ bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrNot
                         MTSpinner theSpinner;
 
                         auto action = opentxs::OT::App().API().ServerAction().DownloadNym(
-                        		opentxs::Identifier(sender_id), opentxs::Identifier(notary_id), opentxs::Identifier(recipient_id));
+                                opentxs::Identifier::Factory(sender_id), opentxs::Identifier::Factory(notary_id), opentxs::Identifier::Factory(recipient_id));
                         response = action->Run();
                     }
 

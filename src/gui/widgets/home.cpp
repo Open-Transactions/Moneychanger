@@ -33,7 +33,7 @@
 MTHome::MTHome(QWidget *parent) :
     QWidget(parent, Qt::Window),
     already_init(false),
-    m_list(*(new MTNameLookupQT)),
+//    m_list(*(new MTNameLookupQT)),
     m_bTurnRefreshBtnRed(false),
     ui(new Ui::MTHome)
 {
@@ -138,15 +138,15 @@ void MTHome::on_tableWidget_currentCellChanged(int row, int column, int previous
         else
             m_pDetailPane->setVisible(true);
 
-        emit needToRefreshDetails(row, GetRecordlist());
+        emit needToRefreshDetails(row);
     }
 }
 
 
-opentxs::OTRecordList & MTHome::GetRecordlist()
-{
-    return Moneychanger::It()->GetRecordlist();
-}
+//opentxs::OTRecordList & MTHome::GetRecordlist()
+//{
+//    return Moneychanger::It()->GetRecordlist();
+//}
 
 void MTHome::RefreshUserBar()
 {
@@ -721,7 +721,8 @@ void MTHome::OnDeletedRecord()
 
     if ((nRowCount > 0) && (nCurrentRow >= 0) && (nCurrentRow < nRowCount))
     {
-        bool bRemoved = GetRecordlist().RemoveRecord(nCurrentRow);
+//      bool bRemoved = GetRecordlist().RemoveRecord(nCurrentRow);
+        bool bRemoved = false;
 
         if (bRemoved)
         {
@@ -733,7 +734,7 @@ void MTHome::OnDeletedRecord()
             emit needToPopulateRecordlist();
         }
         else
-            qDebug() << QString("Failure removing opentxs::OTRecordat index %1.").arg(nCurrentRow);
+            qDebug() << QString("Failure removing opentxs::OTRecord at index %1.").arg(nCurrentRow);
     }
 }
 
@@ -744,7 +745,8 @@ void MTHome::RefreshRecords()
     // -------------------------------------------------------
     m_bTurnRefreshBtnRed = false;
     // -------------------------------------------------------
-    int listSize       = GetRecordlist().size();
+//  int listSize       = GetRecordlist().size();
+    int listSize       = 0;  // Since I'm removing the recordlist.
     int nTotalRecords  = listSize;
     // -------------------------------------------------------
     ui->tableWidget->blockSignals(true);
@@ -756,25 +758,26 @@ void MTHome::RefreshRecords()
         QTableWidgetItem * item = ui->tableWidget->takeItem(0,1); // Row 0, Column 1
         ui->tableWidget->removeRow(0); // Row 0.
 
-        if (NULL != item)
+        if (nullptr != item)
             delete item;
+        item = nullptr;
     }
     // -------------------------------------------------------
     ui->tableWidget->setRowCount(nTotalRecords);
     // -------------------------------------------------------
-    for (int nIndex = 0; nIndex < listSize; ++nIndex)
-    {
-        opentxs::OTRecord record = GetRecordlist().GetRecord(nIndex);
-        {
-            opentxs::OTRecord& recordmt = record;
-            QWidget  * pWidget  = MTHomeDetail::CreateDetailHeaderWidget(recordmt);
-            // -------------------------------------------
-            if (NULL != pWidget)
-                ui->tableWidget->setCellWidget( nIndex, 1, pWidget );
-            else
-                qDebug() << "Failed creating detail header widget based on OTRecord.";
-        }
-    }
+//    for (int nIndex = 0; nIndex < listSize; ++nIndex)
+//    {
+//        opentxs::OTRecord record = GetRecordlist().GetRecord(nIndex);
+//        {
+//            opentxs::OTRecord& recordmt = record;
+//            QWidget  * pWidget  = MTHomeDetail::CreateDetailHeaderWidget(recordmt);
+//            // -------------------------------------------
+//            if (NULL != pWidget)
+//                ui->tableWidget->setCellWidget( nIndex, 1, pWidget );
+//            else
+//                qDebug() << "Failed creating detail header widget based on OTRecord.";
+//        }
+//    }
     // -------------------------------------------------------
     ui->tableWidget->blockSignals(false);
 }
