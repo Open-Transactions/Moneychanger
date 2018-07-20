@@ -116,8 +116,8 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString toContactId, Q
         || str_fromNymId.empty()
         ||  (opentxs::Messagability::READY !=
              opentxs::OT::App().API().Sync()
-             .CanMessage(opentxs::Identifier(str_fromNymId),
-                         opentxs::Identifier(toContactId.toStdString()))))
+             .CanMessage(opentxs::Identifier::Factory(str_fromNymId),
+                         opentxs::Identifier::Factory(toContactId.toStdString()))))
     {
         QMessageBox::warning(this, tr("Not yet messageable"),
                              tr("This contact is not yet messageable. However, "
@@ -210,10 +210,10 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString toContactId, Q
             return false;
         }
         // ------------------------------------------------------------
-        const opentxs::Identifier bgthreadId
+        const auto bgthreadId
         {opentxs::OT::App().API().Sync().
-            PayContactCash(opentxs::Identifier(str_fromNymId),
-                       opentxs::Identifier(toContactId.toStdString()),
+            PayContactCash(opentxs::Identifier::Factory(str_fromNymId),
+                       opentxs::Identifier::Factory(toContactId.toStdString()),
                        pRecipientPurse,
                        pSenderPurse
                        )};
@@ -472,7 +472,8 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
 //                arg(nsChequeType).arg(str_NotaryID.c_str()).arg(str_fromNymId.c_str()).arg(str_fromAcctId.c_str()).
 //                arg(toNymId).arg(SignedAmount).arg(note);
     // ------------------------------------------------------------
-    const opentxs::Identifier notaryID{str_NotaryID}, nymID{str_fromNymId};
+    const auto notaryID = opentxs::Identifier::Factory(str_NotaryID),
+                  nymID = opentxs::Identifier::Factory(str_fromNymId);
     if (!opentxs::OT::App().API().ServerAction().GetTransactionNumbers(nymID, notaryID, 1)) {
         qDebug() << QString("Failed trying to acquire a transaction number to write the %1 with.").arg(nsChequeType);
         return false;
@@ -486,8 +487,8 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
         || str_fromNymId.empty()
         ||  (opentxs::Messagability::READY !=
              opentxs::OT::App().API().Sync()
-             .CanMessage(opentxs::Identifier(str_fromNymId),
-                         opentxs::Identifier(toContactId.toStdString()))))
+             .CanMessage(opentxs::Identifier::Factory(str_fromNymId),
+                         opentxs::Identifier::Factory(toContactId.toStdString()))))
     {
         QMessageBox::warning(this, tr("Not yet messageable"),
                              tr("This contact is not yet messageable. However, "
@@ -498,7 +499,9 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
     else
         canMessage_ = true;
     // --------------------------------
-    const opentxs::Identifier fromNymID{str_fromNymId}, toNymID{str_toNymId}, acctID{str_fromAcctId};
+    const auto fromNymID = opentxs::Identifier::Factory(str_fromNymId),
+            toNymID = opentxs::Identifier::Factory(str_toNymId),
+            acctID = opentxs::Identifier::Factory(str_fromAcctId);
     std::string strAttempt  = "withdraw_voucher";
     std::string strResponse;
     {
@@ -620,10 +623,10 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
         std::shared_ptr<const opentxs::OTPayment> pPayment
         (new opentxs::OTPayment(otstrCheque));
 
-        const opentxs::Identifier bgthreadId
+        const auto bgthreadId
         {opentxs::OT::App().API().Sync().
-            PayContact(opentxs::Identifier(str_fromNymId),
-                       opentxs::Identifier(toContactId.toStdString()),
+            PayContact(opentxs::Identifier::Factory(str_fromNymId),
+                       opentxs::Identifier::Factory(toContactId.toStdString()),
                        pPayment
                        )};
 
@@ -809,8 +812,8 @@ bool MTSendDlg::sendCheque(int64_t amount, QString toNymId, QString toContactId,
         || str_fromNymId.empty()
         ||  (opentxs::Messagability::READY !=
              opentxs::OT::App().API().Sync()
-             .CanMessage(opentxs::Identifier(str_fromNymId),
-                         opentxs::Identifier(toContactId.toStdString()))))
+             .CanMessage(opentxs::Identifier::Factory(str_fromNymId),
+                         opentxs::Identifier::Factory(toContactId.toStdString()))))
     {
         QMessageBox::warning(this, tr("Not yet messageable"),
                              tr("This contact is not yet messageable. However, "
@@ -897,7 +900,9 @@ bool MTSendDlg::sendChequeLowLevel (int64_t amount,
     time64_t tFrom = opentxs::OT::App().API().Exec().GetTime();
     time64_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
     // ------------------------------------------------------------
-    const opentxs::Identifier notaryID{str_NotaryID}, fromNymID{str_fromNymId}, toNymID{str_toNymId};
+    const auto notaryID = opentxs::Identifier::Factory(str_NotaryID),
+              fromNymID = opentxs::Identifier::Factory(str_fromNymId),
+                toNymID = opentxs::Identifier::Factory(str_toNymId);
     if (!opentxs::OT::App().API().ServerAction().GetTransactionNumbers(fromNymID, notaryID, 1)) {
         qDebug() << QString("Failed trying to acquire a transaction number to write the %1 with.").arg(nsChequeType);
         return false;
@@ -933,10 +938,10 @@ bool MTSendDlg::sendChequeLowLevel (int64_t amount,
         std::shared_ptr<const opentxs::OTPayment> pPayment
             (new opentxs::OTPayment(otstrCheque));
 
-        const opentxs::Identifier bgthreadId
+        const auto bgthreadId
             {opentxs::OT::App().API().Sync().
-                PayContact(opentxs::Identifier(str_fromNymId),
-                           opentxs::Identifier(toContactId.toStdString()),
+                PayContact(opentxs::Identifier::Factory(str_fromNymId),
+                           opentxs::Identifier::Factory(toContactId.toStdString()),
                            pPayment
                            )};
 
@@ -1073,8 +1078,8 @@ void MTSendDlg::setInitialHisContact (QString contactId, bool bUsedInternally/*=
 
         if (   !str_my_nym_id.empty()
             && (opentxs::Messagability::READY == opentxs::OT::App().API().Sync()
-                .CanMessage(opentxs::Identifier(str_my_nym_id),
-                            opentxs::Identifier(m_hisContactId.toStdString()))))
+                .CanMessage(opentxs::Identifier::Factory(str_my_nym_id),
+                            opentxs::Identifier::Factory(m_hisContactId.toStdString()))))
         {
             canMessage_ = true;
 
@@ -1218,10 +1223,10 @@ void MTSendDlg::on_sendButton_clicked()
     {
         if (!m_hisNymId.isEmpty())
         {
-            const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
-            .ContactID(opentxs::Identifier{m_hisNymId.toStdString()});
+            const auto toContact_Id = opentxs::OT::App().Contact()
+                .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
             const opentxs::String strToContactId(toContact_Id);
-            m_hisContactId = toContact_Id.empty()
+            m_hisContactId = toContact_Id->empty()
             ? QString("")
             : QString::fromStdString(std::string(strToContactId.Get()));
         }
@@ -1434,10 +1439,10 @@ void MTSendDlg::on_toolButton_clicked()
     // ------------------------------------------------
     if (!m_hisNymId.isEmpty())
     {
-        const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
-            .ContactID(opentxs::Identifier{m_hisNymId.toStdString()});
+        const auto toContact_Id = opentxs::OT::App().Contact()
+            .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
         const opentxs::String     strToContactId(toContact_Id);
-        m_hisContactId = toContact_Id.empty() ? QString("") : QString::fromStdString(std::string(strToContactId.Get()));
+        m_hisContactId = toContact_Id->empty() ? QString("") : QString::fromStdString(std::string(strToContactId.Get()));
 
         if (!m_hisContactId.isEmpty())
             emit ShowContact(m_hisContactId);
@@ -1466,10 +1471,10 @@ void MTSendDlg::on_toButton_clicked()
     }
     else if (!m_hisNymId.isEmpty())
     {
-        const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
-                .ContactID(opentxs::Identifier{m_hisNymId.toStdString()});
+        const auto toContact_Id = opentxs::OT::App().Contact()
+                .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
         const opentxs::String     strToContactId(toContact_Id);
-        m_hisContactId = toContact_Id.empty()
+        m_hisContactId = toContact_Id->empty()
             ? QString("")
             : QString::fromStdString(std::string(strToContactId.Get()));
         if (!m_hisContactId.isEmpty())

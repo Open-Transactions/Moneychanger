@@ -265,7 +265,7 @@ void Settings::on_pushButton_clicked()
                 const int32_t   planCompletedPaymentCount    = pPlan->GetNoPaymentsDone() ;
                 const int32_t   planFailedPaymentCount       = pPlan->GetNoFailedPayments() ;
                 // --------------------------------------------------------------------------------
-                const opentxs::Identifier idAssetType      = pPlan->GetInstrumentDefinitionID() ;
+                const auto idAssetType = opentxs::Identifier::Factory(pPlan->GetInstrumentDefinitionID());
                 const opentxs::String strAssetType(idAssetType);
                 const std::string str_asset_type(strAssetType.Get());
 
@@ -510,8 +510,8 @@ public:
         const bool onlyTrusted) const;
 */
 
-    const opentxs::Identifier localNymID{qstrUserNymID.toStdString()};
-    const opentxs::Identifier issuerNymID{qstrBridgeNymID.toStdString()};
+    const auto localNymID = opentxs::Identifier::Factory(qstrUserNymID.toStdString());
+    const auto issuerNymID = opentxs::Identifier::Factory(qstrBridgeNymID.toStdString());
     const std::string pairingCode{qstrAdminPassword.toStdString()};
 
     // NEW JUSTUS API

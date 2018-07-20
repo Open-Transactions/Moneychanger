@@ -126,7 +126,7 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
     // -------------------------------------
     std::string         str_nym_id  (nymId.toStdString());
     opentxs::String     strNymId    (str_nym_id);
-    opentxs::Identifier id_nym      (strNymId);
+    auto   id_nym      = opentxs::Identifier::Factory(strNymId);
     // -------------------------------------
     std::shared_ptr<const opentxs::Nym> pCurrentNym = opentxs::OT::App().Wallet().Nym(id_nym) ;
 
@@ -156,7 +156,8 @@ void MTNymDetails::onClaimsUpdatedForNym(QString nymId)
                 {
                     MTSpinner theSpinner;
 
-                    response = opentxs::String(opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier(str_nym_id), opentxs::Identifier(notary_id.toStdString()), true)).Get();
+                    response = opentxs::String(opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier::Factory(str_nym_id),
+                                                                                           opentxs::Identifier::Factory(notary_id.toStdString()), true)).Get();
                     if (response.empty() && !opentxs::OT::App().API().Exec().CheckConnection(notary_id.toStdString()))
                     {
                         QString qstrErrorMsg;
@@ -207,7 +208,7 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
     MTNameLookupQT theLookup;
     const std::string str_nym_id   = qstrNymId.toStdString();
     const std::string str_nym_name = theLookup.GetNymName(qstrNymId.toStdString(), "");
-    const opentxs::Identifier id_nym(str_nym_id);
+    const auto id_nym = opentxs::Identifier::Factory(str_nym_id);
 
     if (!str_nym_id.empty())
     {
@@ -2190,7 +2191,8 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                         {
                             MTSpinner theSpinner;
 
-                            auto strResponse = opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier(str_nym_id), opentxs::Identifier(str_notary_id), true);
+                            auto strResponse = opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier::Factory(str_nym_id),
+                                                                                           opentxs::Identifier::Factory(str_notary_id), true);
 
                             if (false == strResponse->empty()) {
                                 nSuccess = 1;
@@ -2275,7 +2277,7 @@ void MTNymDetails::on_tableWidget_customContextMenuRequested(const QPoint &pos)
                                 MTSpinner theSpinner;
 
                                 auto action = opentxs::OT::App().API().ServerAction().UnregisterNym(
-                                		opentxs::Identifier(str_nym_id), opentxs::Identifier(str_notary_id));
+                                        opentxs::Identifier::Factory(str_nym_id), opentxs::Identifier::Factory(str_notary_id));
                                 std::string strResponse = action->Run();
                                 nSuccess                = opentxs::VerifyMessageSuccess(strResponse);
                             }

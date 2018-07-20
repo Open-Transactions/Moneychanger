@@ -584,7 +584,8 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     const bool bHasRecurringPayment = ui->checkBoxRecurring->isChecked();
     const bool bExpires             = ui->checkBoxExpires  ->isChecked();
     // ----------------------------------------------------
-    const opentxs::Identifier notaryID{notaryId}, myNymID{myNymId};
+    const auto notaryID = opentxs::Identifier::Factory(notaryId),
+                myNymID = opentxs::Identifier::Factory(myNymId);
     {
         if (!opentxs::OT::App().API().ServerAction().GetTransactionNumbers(myNymID, notaryID, 2))
         {
@@ -650,7 +651,8 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
 
         OT_ASSERT(payment);
 
-        auto action = opentxs::OT::App().API().ServerAction().SendPayment(myNymID, notaryID, opentxs::Identifier(hisNymId), payment);
+        auto action = opentxs::OT::App().API().ServerAction().SendPayment(myNymID, notaryID,
+                                                                          opentxs::Identifier::Factory(hisNymId), payment);
         strResponse = action->Run();
     }
     // ------------------------------------------------------------

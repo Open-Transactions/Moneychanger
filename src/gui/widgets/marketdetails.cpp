@@ -189,7 +189,7 @@ bool MTMarketDetails::LowLevelRetrieveMarketOffers(opentxs::OTDB::MarketData & m
     {
         MTSpinner         theSpinner;
         auto action = opentxs::OT::App().API().ServerAction().DownloadMarketOffers(
-        		opentxs::Identifier(strNymID), opentxs::Identifier(marketData.notary_id), opentxs::Identifier(marketData.market_id), MAX_DEPTH);
+                opentxs::Identifier::Factory(strNymID), opentxs::Identifier::Factory(marketData.notary_id), opentxs::Identifier::Factory(marketData.market_id), MAX_DEPTH);
         const std::string str_reply = action->Run();
         const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);
 
@@ -518,7 +518,7 @@ bool MTMarketDetails::LowLevelRetrieveMarketTrades(opentxs::OTDB::MarketData & m
         MTSpinner theSpinner;
 
         auto action = opentxs::OT::App().API().ServerAction().DownloadMarketRecentTrades(
-        		opentxs::Identifier(strNymID), opentxs::Identifier(marketData.notary_id), opentxs::Identifier(marketData.market_id));
+                opentxs::Identifier::Factory(strNymID), opentxs::Identifier::Factory(marketData.notary_id), opentxs::Identifier::Factory(marketData.market_id));
         const std::string str_reply = action->Run();
         const int32_t     nResult   = opentxs::OT::App().API().Exec().Message_GetSuccess(str_reply);
 

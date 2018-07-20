@@ -492,7 +492,7 @@ bool Moneychanger::retrieve_nym(
     const std::string& strMyNymID) const
 {
     auto context = ot_.Wallet().mutable_ServerContext(
-        opentxs::Identifier(strMyNymID), opentxs::Identifier(strNotaryID));
+        opentxs::Identifier::Factory(strMyNymID), opentxs::Identifier::Factory(strNotaryID));
     opentxs::Utility MsgUtil(context.It(), ot_.API().OTAPI());
 
     if (0 >= context.It().UpdateRequestNumber()) {
@@ -615,7 +615,7 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
             std::string response;
             {
                 MTSpinner theSpinner;
-                response = opentxs::String(ot_.API().Sync().RegisterNym(opentxs::Identifier(my_nym_id), opentxs::Identifier(notary_id), true)).Get();
+                response = opentxs::String(ot_.API().Sync().RegisterNym(opentxs::Identifier::Factory(my_nym_id), opentxs::Identifier::Factory(notary_id), true)).Get();
                 if (response.empty() && !ot_.API().Exec().CheckConnection(notary_id))
                 {
                     QString qstrErrorMsg;
@@ -639,7 +639,10 @@ void Moneychanger::onNeedToCheckNym(QString myNymId, QString hisNymId, QString n
             std::string response;
             {
                 MTSpinner theSpinner;
-                const opentxs::Identifier notaryID{notary_id}, myNymID{my_nym_id}, hisNymID{his_nym_id};
+                const auto notaryID = opentxs::Identifier::Factory(notary_id);
+                const auto myNymID = opentxs::Identifier::Factory(my_nym_id);
+                const auto hisNymID = opentxs::Identifier::Factory(his_nym_id);
+
                 auto action = ot_.API().ServerAction().DownloadNym(myNymID, notaryID, hisNymID);
                 response = action->Run();
             }
@@ -673,7 +676,7 @@ void Moneychanger::onCheckNym(QString nymId)
 {
     // ----------------------------------------------
     auto strNymId = opentxs::String(nymId.toStdString());
-    opentxs::Identifier id_nym(strNymId);
+    auto id_nym = opentxs::Identifier::Factory(strNymId);
     // ----------------------------------------------
     // Get the Nym. Make sure we have the latest copy, since his credentials were apparently
     // just downloaded and overwritten.
@@ -1106,7 +1109,8 @@ int64_t Moneychanger::HasUsageCredits(const std::string & notary_id,
     {
         MTSpinner theSpinner;
 
-        const opentxs::Identifier notaryID{notary_id}, nymID{NYM_ID};
+        const auto notaryID = opentxs::Identifier::Factory(notary_id);
+        const auto nymID = opentxs::Identifier::Factory(NYM_ID);
         auto action = ot_.API().ServerAction().AdjustUsageCredits(nymID, notaryID, nymID, 0);
         strMessage = action->Run();
     }
@@ -2581,7 +2585,7 @@ void Moneychanger::onNeedToDownloadMail()
                 {
                     MTSpinner theSpinner;
 
-                    response = opentxs::String(ot_.API().Sync().RegisterNym(opentxs::Identifier(defaultNymID), opentxs::Identifier(defaultNotaryID), true)).Get();
+                    response = opentxs::String(ot_.API().Sync().RegisterNym(opentxs::Identifier::Factory(defaultNymID), opentxs::Identifier::Factory(defaultNotaryID), true)).Get();
 
                     if (!ot_.API().Exec().CheckConnection(defaultNotaryID))
                     {
@@ -4207,7 +4211,7 @@ void Moneychanger::ImportConversationsForNym(const std::string & str_nym_id,
 {
     OT_ASSERT(!str_nym_id.empty());
     // ----------------------------------------------
-    opentxs::ObjectList threadList = ot_.Activity().Threads(opentxs::Identifier{str_nym_id});
+    opentxs::ObjectList threadList = ot_.Activity().Threads(opentxs::Identifier::Factory(str_nym_id));
     opentxs::ObjectList::const_iterator ci = threadList.begin();
 
     while (threadList.end() != ci)
@@ -4966,13 +4970,18 @@ void Moneychanger::onNeedToDownloadSingleAcct(QString qstrAcctID, QString qstrOp
         MTSpinner theSpinner;
 
         bRetrievalAttemptedAcct = true;
-        const opentxs::Identifier notaryID{acctSvrID}, nymID{acctNymID}, accountID{accountId};
+        const auto notaryID = opentxs::Identifier::Factory(acctSvrID);
+        const auto nymID = opentxs::Identifier::Factory(acctNymID);
+        const auto accountID = opentxs::Identifier::Factory(accountId);
+
         bRetrievalSucceededAcct = ot_.API().ServerAction().DownloadAccount(nymID, notaryID, accountID, true);
 
         if (bRetrievalSucceededAcct && !qstrOptionalAcctID.isEmpty())
         {
-            const opentxs::Identifier notaryIDOptional{acctSvrIDOptional},
-				nymIDOptional{acctNymIDOptional}, accountIDOptional{accountIdOptional};
+            const auto notaryIDOptional = opentxs::Identifier::Factory(acctSvrIDOptional);
+            const auto nymIDOptional = opentxs::Identifier::Factory(acctNymIDOptional);
+            const auto accountIDOptional = opentxs::Identifier::Factory(accountIdOptional);
+
             bRetrievalSucceededAcct = ot_.API().ServerAction().DownloadAccount(
             		nymIDOptional, notaryIDOptional, accountIDOptional, true);
         }
@@ -5684,8 +5693,9 @@ public:
         const bool onlyTrusted) const = 0;
 
 */
-                    const opentxs::Identifier localNymID{qstrUserNymID.toStdString()};
-                    const opentxs::Identifier issuerNymID{qstrBridgeNymID.toStdString()};
+                    const auto localNymID = opentxs::Identifier::Factory(qstrUserNymID.toStdString());
+                    const auto issuerNymID = opentxs::Identifier::Factory(qstrBridgeNymID.toStdString());
+
                     const std::string pairingCode{qstrAdminPassword.toStdString()};
 
                     // NEW JUSTUS API
@@ -5885,7 +5895,10 @@ void Moneychanger::mc_import_slot()
         return;
     }
     // -----------------------------------------------
-    opentxs::Identifier recipient_nym_id, sender_nym_id, remitter_nym_id, notary_id;
+    auto recipient_nym_id   = opentxs::Identifier::Factory(),
+            sender_nym_id   = opentxs::Identifier::Factory(),
+            remitter_nym_id = opentxs::Identifier::Factory(),
+            notary_id       = opentxs::Identifier::Factory();
     const bool has_recipient_nym = payment->GetRecipientNymID(recipient_nym_id);
     const bool has_sender_nym    = payment->GetSenderNymID(sender_nym_id);
     const bool has_remitter_nym  = payment->IsVoucher() && payment->GetRemitterNymID(remitter_nym_id);
@@ -5978,7 +5991,7 @@ void Moneychanger::mc_import_slot()
                 const opentxs::String otstr_recip(recipient_nym_id);
                 const std::string str_recipient_nym_id(otstr_recip.Get());
 
-                opentxs::Identifier unit_type_id;
+                auto unit_type_id = opentxs::Identifier::Factory();
                 payment->GetInstrumentDefinitionID(unit_type_id);
                 const opentxs::String otstr_unit(unit_type_id);
                 const std::string str_unit_type_id(otstr_unit.Get());
@@ -6050,7 +6063,7 @@ void Moneychanger::mc_import_slot()
                     // compare behavior in terms of what receipts show up in the
                     // UI, and make sure that's behaving properly in the new code.
                     //
-                    const opentxs::Identifier taskId = ot_.API().Sync().
+                    const auto taskId = ot_.API().Sync().
                         DepositPayment(recipient_nym_id, payment);
                     const opentxs::String strTaskId(taskId);
                     const std::string str_task_id{strTaskId.Get()};
@@ -6079,7 +6092,7 @@ void Moneychanger::mc_import_slot()
                     {
                         MTSpinner theSpinner;
 
-                        opentxs::Identifier deposit_acct_id{str_deposit_acct_id};
+                        auto deposit_acct_id = opentxs::Identifier::Factory(str_deposit_acct_id);
 
                         std::unique_ptr<opentxs::Cheque> cheque = std::make_unique<opentxs::Cheque>();
                         cheque->LoadContractFromString(opentxs::String(strInstrument.c_str()));
@@ -6151,7 +6164,7 @@ void Moneychanger::mc_import_slot()
                         {
                             MTSpinner theSpinner;
 
-                            opentxs::Identifier deposit_acct_id{str_deposit_acct_id};
+                            auto deposit_acct_id = opentxs::Identifier::Factory(str_deposit_acct_id);
 
                             std::unique_ptr<opentxs::Cheque> cheque = std::make_unique<opentxs::Cheque>();
                             cheque->LoadContractFromString(opentxs::String(strInstrument.c_str()));
@@ -6893,7 +6906,7 @@ void Moneychanger::onNewAssetAdded(QString qstrID)
 
 void Moneychanger::PublicNymNotify(std::string id)
 {
-        auto pNym = ot_.Wallet().Nym(opentxs::Identifier(id));
+        auto pNym = ot_.Wallet().Nym(opentxs::Identifier::Factory((id)));
 
         if (pNym)
         {
@@ -6913,7 +6926,7 @@ void Moneychanger::PublicNymNotify(std::string id)
 void Moneychanger::ServerContractNotify(std::string id)
 {
     auto pContract =
-        ot_.Wallet().Server(opentxs::Identifier(id));
+        ot_.Wallet().Server(opentxs::Identifier::Factory((id)));
 
     if (pContract) {
         qDebug() << "I was notified that the DHT downloaded contract "
@@ -6930,7 +6943,7 @@ void Moneychanger::ServerContractNotify(std::string id)
 
 void Moneychanger::AssetContractNotify(std::string id)
 {
-    const opentxs::Identifier ot_id(id);
+    const auto ot_id = opentxs::Identifier::Factory(id);
 
     auto pContract = ot_.Wallet().UnitDefinition(ot_id);
 
@@ -7402,7 +7415,8 @@ void Moneychanger::onConfirmSmartContract(QString qstrTemplate, QString qstrLawy
     }
     // --------------------------------------------
 
-    const opentxs::Identifier notaryID{str_server}, nymID{str_lawyer_id};
+    const auto notaryID = opentxs::Identifier::Factory(str_server),
+                  nymID = opentxs::Identifier::Factory(str_lawyer_id);
     if (!ot_.API().ServerAction().GetTransactionNumbers(nymID, notaryID, needed + 1))
     {
         QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Failed trying to reserve enough transaction numbers from the notary."));
@@ -7678,7 +7692,8 @@ void Moneychanger::onRunSmartContract(QString qstrTemplate, QString qstrLawyerID
     }
     // --------------------------------------------
 
-    const opentxs::Identifier notaryID{str_server}, nymID{str_lawyer_id};
+    const auto notaryID = opentxs::Identifier::Factory(str_server),
+                  nymID = opentxs::Identifier::Factory(str_lawyer_id);
     if (!ot_.API().ServerAction().GetTransactionNumbers(nymID, notaryID, needed + 1))
     {
         QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Failed trying to reserve enough transaction numbers from the notary."));
@@ -7876,7 +7891,9 @@ int32_t Moneychanger::activateContract(const std::string& server, const std::str
         }
     }
 
-    const opentxs::Identifier notaryID{server}, myNymID{mynym}, accountID{myAcctID};
+    const auto notaryID = opentxs::Identifier::Factory(server),
+                myNymID = opentxs::Identifier::Factory(mynym),
+              accountID = opentxs::Identifier::Factory(myAcctID);
     std::unique_ptr<opentxs::OTSmartContract> smartContract = std::make_unique<opentxs::OTSmartContract>();
 
     OT_ASSERT(smartContract)
@@ -7924,7 +7941,7 @@ int32_t Moneychanger::sendToNextParty(const std::string& server, const std::stri
 
     OT_ASSERT(payment);
 
-    auto action = ot_.API().ServerAction().SendPayment(opentxs::Identifier(mynym), opentxs::Identifier(server), opentxs::Identifier(hisNymID), payment);
+    auto action = ot_.API().ServerAction().SendPayment(opentxs::Identifier::Factory(mynym), opentxs::Identifier::Factory(server), opentxs::Identifier::Factory(hisNymID), payment);
     std::string response = action->Run();
 
     if (1 != opentxs::VerifyMessageSuccess(response)) {

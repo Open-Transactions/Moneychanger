@@ -40,7 +40,7 @@ DlgOutbailment::DlgOutbailment(QWidget *parent, std::int64_t & AMOUNT, std::stri
     ui->lineEditIssuerNymId ->setText(issuer_nym);
     ui->lineEditNotaryId    ->setText(notary);
 
-    const opentxs::Identifier asset_id(asset_type_.toStdString());
+    const auto asset_id = opentxs::Identifier::Factory(asset_type_.toStdString());
     auto unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
     const QString qstrAssetAlias = QString::fromStdString(unit_definition->Alias());
 

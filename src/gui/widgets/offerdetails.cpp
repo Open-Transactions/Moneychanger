@@ -193,8 +193,8 @@ void MTOfferDetails::AddButtonClicked()
         {
             MTSpinner theSpinner;
             // --------------------------------------------------------------
-            auto action = opentxs::OT::App().API().ServerAction().CreateMarketOffer(opentxs::Identifier(str_asset_acct_id),
-            		opentxs::Identifier(str_currency_acct_id),
+            auto action = opentxs::OT::App().API().ServerAction().CreateMarketOffer(opentxs::Identifier::Factory(str_asset_acct_id),
+                    opentxs::Identifier::Factory(str_currency_acct_id),
                     lScale,
 					lMinIncrement,
 					lTotalAsset,
@@ -278,9 +278,9 @@ void MTOfferDetails::DeleteButtonClicked()
                 {
                     MTSpinner theSpinner;
                     // --------------------------------------------------------------
-                    auto action = opentxs::OT::App().API().ServerAction().KillMarketOffer(opentxs::Identifier(str_nym_id),
-                    		opentxs::Identifier(str_notary_id),
-							opentxs::Identifier(str_asset_acct_id),
+                    auto action = opentxs::OT::App().API().ServerAction().KillMarketOffer(opentxs::Identifier::Factory(str_nym_id),
+                            opentxs::Identifier::Factory(str_notary_id),
+                            opentxs::Identifier::Factory(str_asset_acct_id),
                             lTransID);
                     strResponse = action->Run();
                 }

@@ -1620,7 +1620,9 @@ void MTAccountDetails::DeleteButtonClicked()
         // Download all the intermediary files (account balance, inbox, outbox, etc)
         // to make sure we're looking at the latest inbox.
         //
-        const opentxs::Identifier theNotaryID{str_owner_nym_id}, theNymID{str_owner_nym_id}, theAcctID{str_account_id};
+        const auto theNotaryID = opentxs::Identifier::Factory(str_owner_nym_id),
+                      theNymID = opentxs::Identifier::Factory(str_owner_nym_id),
+                     theAcctID = opentxs::Identifier::Factory(str_account_id);
         bool bRetrieved = false;
         {
             MTSpinner theSpinner;
@@ -1756,7 +1758,8 @@ void MTAccountDetails::AddButtonClicked()
             {
                 MTSpinner theSpinner;
 
-                auto strResponse = opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier(qstrNymID.toStdString()), opentxs::Identifier(qstrNotaryID.toStdString()), true);
+                auto strResponse = opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier::Factory(qstrNymID.toStdString()),
+                                                                               opentxs::Identifier::Factory(qstrNotaryID.toStdString()), true);
 
                 if (false == strResponse->empty()) {
                     nSuccess = 1;
@@ -1810,7 +1813,7 @@ void MTAccountDetails::AddButtonClicked()
             std::string notaryID = qstrNotaryID.toStdString();
             std::string instrumentDefinitionID = qstrInstrumentDefinitionID.toStdString();
             auto action = opentxs::OT::App().API().ServerAction().RegisterAccount(
-            		opentxs::Identifier(nymID), opentxs::Identifier(notaryID), opentxs::Identifier(instrumentDefinitionID));
+                    opentxs::Identifier::Factory(nymID), opentxs::Identifier::Factory(notaryID), opentxs::Identifier::Factory(instrumentDefinitionID));
             strResponse = action->Run();
         }
         // -1 error, 0 failure, 1 success.

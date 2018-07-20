@@ -974,8 +974,8 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
     const std::string str_thread_item_id = qstrThreadItemId.toStdString();
 
     const auto& thread = opentxs::OT::App().UI().ActivityThread(
-        opentxs::Identifier(str_my_nym_id),
-        opentxs::Identifier(str_thread_id));
+        opentxs::Identifier::Factory(str_my_nym_id),
+        opentxs::Identifier::Factory(str_thread_id));
     const auto& first = thread.First();
 
 //    qDebug() << QString::fromStdString(thread.DisplayName()) << "\n";

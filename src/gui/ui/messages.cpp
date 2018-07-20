@@ -1291,9 +1291,9 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
             return;
         // Below this point we're guaranteed that there's a NymID.
         // ---------------------------------------------------
-        const opentxs::Identifier contactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier{qstrNymId.toStdString()});
+        const auto contactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier::Factory(qstrNymId.toStdString()));
 
-        if (!contactId.empty())
+        if (!contactId->empty())
         {
             QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Strange: NymID %1 already belongs to an existing contact.").arg(qstrNymId));
@@ -1513,14 +1513,16 @@ void Messages::on_toolButtonReply_clicked()
             // That means we can try to see if there's an opentxs contact associated with the
             // recipient's Nym Id, and if so, we can check Can_Message...
             //
-            const opentxs::Identifier otherContactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier{otherNymID.toStdString()});
+            const auto otherContactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier::Factory(otherNymID.toStdString()));
             const opentxs::String     strOtherContactId(otherContactId);
             const std::string         str_other_contact_id(strOtherContactId.Get());
             const QString             qstrOtherContactId(str_other_contact_id.empty() ? QString("") : QString::fromStdString(str_other_contact_id));
             // ---------------------------------------
             if (!str_other_contact_id.empty()) // An opentxs contact was found for the recipient Nym.
             {
-                if (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier(myNymID.toStdString()), opentxs::Identifier(str_other_contact_id)))
+                if (opentxs::Messagability::READY ==
+                    opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier::Factory(myNymID.toStdString()),
+                                                               opentxs::Identifier::Factory(str_other_contact_id)))
                 {
                     bCanMessage = true;
                     compose_window->setInitialRecipientContactID(qstrOtherContactId, otherAddress);

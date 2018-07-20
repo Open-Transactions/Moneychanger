@@ -238,8 +238,8 @@ protected:
         const std::string & activity_summary_id,
         QListWidgetItem  *& pItemToSelect);
 
-    int PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers=nullptr);
-    bool PairingStarted(const opentxs::Identifier & nymId, const opentxs::Identifier & issuerNymId);
+//    int PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers=nullptr);
+//    bool PairingStarted(const opentxs::Identifier & nymId, const opentxs::Identifier & issuerNymId);
 
     mapIDName & GetOrCreateAssetIdMapByCurrencyCode(QString qstrTLA, mapOfMapIDName & bigMap);
     void GetAssetIdMapsByCurrencyCode(mapOfMapIDName & bigMap);

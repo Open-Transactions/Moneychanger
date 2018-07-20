@@ -706,13 +706,13 @@ void MTServerDetails::refresh(QString strID, QString strName)
         // ----------------------------------
         auto contract =
             opentxs::OT::App().Wallet().Server(
-                opentxs::Identifier(strID.toStdString()));
+                opentxs::Identifier::Factory(strID.toStdString()));
 
         if (!contract) { return; }
 
         QString qstrNymID("");  // contract->PublicNym()->GetIdentifier(some_variable)
 
-        opentxs::Identifier id_nym;
+        auto id_nym = opentxs::Identifier::Factory();
         contract->Nym()->GetIdentifier(id_nym);
         qstrNymID = QString::fromStdString(opentxs::String(id_nym).Get());
         // ----------------------------------

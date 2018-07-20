@@ -407,8 +407,8 @@ bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrNotaryID, QString qstrNym
     {
         MTSpinner theSpinner;
 
-        auto action = opentxs::OT::App().API().ServerAction().DownloadNymMarketOffers(opentxs::Identifier(qstrNymID.toStdString()),
-                opentxs::Identifier(qstrNotaryID.toStdString()));
+        auto action = opentxs::OT::App().API().ServerAction().DownloadNymMarketOffers(opentxs::Identifier::Factory(qstrNymID.toStdString()),
+                opentxs::Identifier::Factory(qstrNotaryID.toStdString()));
         const std::string str_reply = action->Run();
         const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);
 
@@ -715,8 +715,8 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrNotaryID, QString qstrNy
     {
         MTSpinner theSpinner;
 
-        auto action = opentxs::OT::App().API().ServerAction().DownloadMarketList(opentxs::Identifier(qstrNymID.toStdString()),
-        	opentxs::Identifier(qstrNotaryID.toStdString()));
+        auto action = opentxs::OT::App().API().ServerAction().DownloadMarketList(opentxs::Identifier::Factory(qstrNymID.toStdString()),
+            opentxs::Identifier::Factory(qstrNotaryID.toStdString()));
         const std::string str_reply = action->Run();
         const int32_t nResult = opentxs::VerifyMessageSuccess(str_reply);
 

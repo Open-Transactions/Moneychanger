@@ -132,8 +132,8 @@ bool MTRequestDlg::sendInvoice(int64_t amount, QString toNymId, QString toContac
         || str_fromNymId.empty()
         ||  (opentxs::Messagability::READY !=
              opentxs::OT::App().API().Sync()
-             .CanMessage(opentxs::Identifier(str_fromNymId),
-                         opentxs::Identifier(toContactId.toStdString()))))
+             .CanMessage(opentxs::Identifier::Factory(str_fromNymId),
+                         opentxs::Identifier::Factory(toContactId.toStdString()))))
     {
         QMessageBox::warning(this, tr("Not yet messageable"),
                              tr("This contact is not yet messageable. However, "
@@ -211,7 +211,8 @@ bool MTRequestDlg::sendChequeLowLevel(
     time64_t tFrom = opentxs::OT::App().API().Exec().GetTime();
     time64_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
     // ------------------------------------------------------------
-    const opentxs::Identifier notaryID{str_NotaryID}, nymID{str_fromNymId};
+    const auto notaryID = opentxs::Identifier::Factory(str_NotaryID),
+               nymID    = opentxs::Identifier::Factory(str_fromNymId);
     if (!opentxs::OT::App().API().ServerAction().GetTransactionNumbers(nymID, notaryID, 1)) {
         qDebug() << QString("Failed trying to acquire a transaction number to write the %1 with.").arg(nsChequeType);
         return false;
@@ -242,10 +243,10 @@ bool MTRequestDlg::sendChequeLowLevel(
         std::shared_ptr<const opentxs::OTPayment> pPayment
             (new opentxs::OTPayment(otstrCheque));
 
-        const opentxs::Identifier bgthreadId
+        const auto bgthreadId
             {opentxs::OT::App().API().Sync().
-                PayContact(opentxs::Identifier(str_fromNymId),
-                           opentxs::Identifier(toContactId.toStdString()),
+                PayContact(opentxs::Identifier::Factory(str_fromNymId),
+                           opentxs::Identifier::Factory(toContactId.toStdString()),
                            pPayment
                            )};
 
@@ -323,8 +324,8 @@ void MTRequestDlg::setInitialHisContact (QString contactId, bool bUsedInternally
 
         if (   !str_my_nym_id.empty()
             && (opentxs::Messagability::READY == opentxs::OT::App().API().Sync()
-                .CanMessage(opentxs::Identifier(str_my_nym_id),
-                            opentxs::Identifier(m_hisContactId.toStdString()))))
+                .CanMessage(opentxs::Identifier::Factory(str_my_nym_id),
+                            opentxs::Identifier::Factory(m_hisContactId.toStdString()))))
         {
             canMessage_ = true;
 
@@ -438,10 +439,10 @@ void MTRequestDlg::on_requestButton_clicked()
     {
         if (!m_hisNymId.isEmpty())
         {
-            const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
-                .ContactID(opentxs::Identifier{m_hisNymId.toStdString()});
+            const auto toContact_Id = opentxs::OT::App().Contact()
+                .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
             const opentxs::String strToContactId(toContact_Id);
-            m_hisContactId = toContact_Id.empty()
+            m_hisContactId = toContact_Id->empty()
                 ? QString("")
                 : QString::fromStdString(std::string(strToContactId.Get()));
         }
@@ -670,10 +671,10 @@ void MTRequestDlg::on_toolButton_clicked()
     // ------------------------------------------------
     if (!m_hisNymId.isEmpty())
     {
-        const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
-                .ContactID(opentxs::Identifier{m_hisNymId.toStdString()});
+        const auto toContact_Id = opentxs::OT::App().Contact()
+                .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
         const opentxs::String     strToContactId(toContact_Id);
-        m_hisContactId = toContact_Id.empty() ? QString("") : QString::fromStdString(std::string(strToContactId.Get()));
+        m_hisContactId = toContact_Id->empty() ? QString("") : QString::fromStdString(std::string(strToContactId.Get()));
 
         if (!m_hisContactId.isEmpty())
             emit ShowContact(m_hisContactId);
@@ -698,10 +699,10 @@ void MTRequestDlg::on_fromButton_clicked()
     }
     else if (!m_hisNymId.isEmpty())
     {
-        const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
-                .ContactID(opentxs::Identifier{m_hisNymId.toStdString()});
+        const auto toContact_Id = opentxs::OT::App().Contact()
+                .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
         const opentxs::String     strToContactId(toContact_Id);
-        m_hisContactId = toContact_Id.empty()
+        m_hisContactId = toContact_Id->empty()
             ? QString("")
             : QString::fromStdString(std::string(strToContactId.Get()));
         if (!m_hisContactId.isEmpty())

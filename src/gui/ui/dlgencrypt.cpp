@@ -250,7 +250,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                 //
                 std::string  str_nym    (m_nymId.toStdString());
                 opentxs::String     strNym     (str_nym.c_str());
-                opentxs::Identifier nym_id     (strNym);
+                auto nym_id     = opentxs::Identifier::Factory(std::string(strNym.Get()));
 
                 std::string  str_text   (qstrText.toStdString());
                 opentxs::String     strText    (str_text.c_str());
@@ -259,7 +259,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
 //              opentxs::String     strEncoded (str_encoded.c_str());
 //              std::string  str_type   ("MESSAGE");
 
-                if (!nym_id.IsEmpty())
+                if (!nym_id->empty())
                 {
                     opentxs::OTPasswordData thePWData("Signer passphrase");
 
@@ -342,9 +342,9 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     QString             qstrNymID(qvarItem.toString());
                     std::string         str_nym(qstrNymID.toStdString());
                     opentxs::String     strNym(str_nym.c_str());
-                    opentxs::Identifier nym_id(strNym);
+                    auto nym_id = opentxs::Identifier::Factory(std::string(strNym.Get()));
 
-                    if (!nym_id.IsEmpty())
+                    if (!nym_id->empty())
                     {
                         opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
 
@@ -390,9 +390,9 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     {
                         bRecipientsShouldBeAvailable = true;
 
-                        opentxs::Identifier signer_nym_id(strSignerNymID);
+                        auto signer_nym_id = opentxs::Identifier::Factory(std::string(strSignerNymID.Get()));
 
-                        if (!signer_nym_id.IsEmpty())
+                        if (!signer_nym_id->empty())
                         {
                             opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
 

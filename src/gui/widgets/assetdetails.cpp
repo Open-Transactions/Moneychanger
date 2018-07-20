@@ -172,7 +172,8 @@ void MTAssetDetails::on_pushButton_clicked()
                                 {
                                     MTSpinner theSpinner;
 
-                                    auto strResponse = opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier(qstrNymID.toStdString()), opentxs::Identifier(qstrNotaryID.toStdString()), true);
+                                    auto strResponse = opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier::Factory(qstrNymID.toStdString()),
+                                                                                                   opentxs::Identifier::Factory(qstrNotaryID.toStdString()), true);
 
                                     if (false == strResponse->empty()) {
                                         nSuccess = 1;
@@ -218,7 +219,9 @@ void MTAssetDetails::on_pushButton_clicked()
                             //
                             if (bIsRegiseredAtServer)
                             {
-                            	const opentxs::Identifier notaryID{qstrNotaryID.toStdString()}, nymID{qstrNymID.toStdString()}, assetID{qstrAssetID.toStdString()};
+                                const auto notaryID = opentxs::Identifier::Factory(qstrNotaryID.toStdString()),
+                                        nymID = opentxs::Identifier::Factory(qstrNymID.toStdString()),
+                                        assetID = opentxs::Identifier::Factory(qstrAssetID.toStdString());
                                 // -----------------------------------
                                 {
                                     bool bSuccess = false;

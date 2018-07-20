@@ -75,7 +75,9 @@ QJsonValue MCRPCService::registerAccount(
         return QJsonValue(object);
     }
 
-    const opentxs::Identifier notaryID{NotaryID.toStdString()}, nymID{NymID.toStdString()}, instrumentDefinitionID{InstrumentDefinitionID.toStdString()};
+    const auto notaryID = opentxs::Identifier::Factory(NotaryID.toStdString()),
+                nymID = opentxs::Identifier::Factory(NymID.toStdString()),
+            instrumentDefinitionID = opentxs::Identifier::Factory(InstrumentDefinitionID.toStdString());
     auto action = opentxs::OT::App().API().ServerAction().RegisterAccount(
     		nymID, notaryID, instrumentDefinitionID);
     std::string result = action->Run();

@@ -511,131 +511,131 @@ int64_t Activity::GetAccountBalancesTotaledForUnitTypes(const mapIDName & mapUni
 // will return a "1" instead of a "2". Put another way, it returns a count based
 // on a DEDUPLICATED server list.
 //
-int Activity::PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers/*=nullptr*/)
-{
-    std::set<opentxs::Identifier> uniqueServers;
+//int Activity::PairedNodeCount(std::set<opentxs::Identifier> * pUniqueServers/*=nullptr*/)
+//{
+//    std::set<opentxs::Identifier> uniqueServers;
 
-    if (nullptr == pUniqueServers) {
-        pUniqueServers = &uniqueServers;
-    }
+//    if (nullptr == pUniqueServers) {
+//        pUniqueServers = &uniqueServers;
+//    }
 
-    pUniqueServers->clear();
+//    pUniqueServers->clear();
 
-    //auto servers = opentxs::OT::App().Wallet().ServerList();
+//    //auto servers = opentxs::OT::App().Wallet().ServerList();
 
-    /*
-    Justus
-    It depends
-    15:31
-    That returns all nyms known to the wallet, not just your nyms
-    15:31
-    C
-    Chris
-    what if I only want my own?
-    15:31
-    J
-    Justus
-    You have to use OTAPI_Exec still
-    */
-    opentxs::ObjectList myNyms;
-    const auto nNymCount = opentxs::OT::App().API().Exec().GetNymCount();
+//    /*
+//    Justus
+//    It depends
+//    15:31
+//    That returns all nyms known to the wallet, not just your nyms
+//    15:31
+//    C
+//    Chris
+//    what if I only want my own?
+//    15:31
+//    J
+//    Justus
+//    You have to use OTAPI_Exec still
+//    */
+//    opentxs::ObjectList myNyms;
+//    const auto nNymCount = opentxs::OT::App().API().Exec().GetNymCount();
 
-    for (int nym_index = 0; nym_index < nNymCount; ++nym_index)
-    {
-        const std::string nym_id = opentxs::OT::App().API().Exec().GetNym_ID(nym_index);
+//    for (int nym_index = 0; nym_index < nNymCount; ++nym_index)
+//    {
+//        const std::string nym_id = opentxs::OT::App().API().Exec().GetNym_ID(nym_index);
 
-        if (!nym_id.empty())
-        {
-            const std::string nym_name = opentxs::OT::App().API().Exec().GetNym_Name(nym_id);
-            myNyms.push_back(std::pair<std::string, std::string>{nym_id, nym_name});
-        }
-    }
-    if (0 == myNyms.size()) {
-        return 0;
-    }
-    // ----------------------------------------------------
-    const auto & nyms = myNyms;
-//  const auto   nyms = opentxs::OT::App().Wallet().NymList();
+//        if (!nym_id.empty())
+//        {
+//            const std::string nym_name = opentxs::OT::App().API().Exec().GetNym_Name(nym_id);
+//            myNyms.push_back(std::pair<std::string, std::string>{nym_id, nym_name});
+//        }
+//    }
+//    if (0 == myNyms.size()) {
+//        return 0;
+//    }
+//    // ----------------------------------------------------
+//    const auto & nyms = myNyms;
+////  const auto   nyms = opentxs::OT::App().Wallet().NymList();
 
-    for (const auto & [ nym_id, nym_alias] : nyms)
-    {
-        const opentxs::Identifier nymId{nym_id};
-        auto setIssuerIDs = opentxs::OT::App().Wallet().IssuerList(nymId);
+//    for (const auto & [ nym_id, nym_alias] : nyms)
+//    {
+//        const auto nymId = opentxs::Identifier::Factory(nym_id);
+//        auto setIssuerIDs = opentxs::OT::App().Wallet().IssuerList(nymId);
 
-        auto it_issuer = setIssuerIDs.begin();
+//        auto it_issuer = setIssuerIDs.begin();
 
-        while (it_issuer != setIssuerIDs.end())
-        {
-            const opentxs::Identifier issuerId = *it_issuer;
-            it_issuer++;
+//        while (it_issuer != setIssuerIDs.end())
+//        {
+//            const auto issuerId = opentxs::Identifier::Factory(*it_issuer);
+//            it_issuer++;
 
-            auto pIssuer = opentxs::OT::App().Wallet().Issuer(nymId, issuerId);
+//            auto pIssuer = opentxs::OT::App().Wallet().Issuer(nymId, issuerId);
 
-            if (!pIssuer) {
-                continue;
-            }
-            // -------------------------------------------------
-            // This call to Paired will soon be renamed to "Trusted"
-            // and it actually means "Paired or in the process of Pairing"
-            // (Aka "paireding").
-            //
-            if (pIssuer->Paired()) {
-                pUniqueServers->insert(pIssuer->PrimaryServer());
-                // -------------------------------
-                //
-                // The purpose of the below section is simply to notify Moneychanger
-                // about the various relationships, such as that account_id A is
-                // on notary B, and is owned by Nym C, and consists of asset type D.
-                // There are many places in the Moneychanger code that query for
-                // information about these relationships. So until all those places
-                // are ported to use the new API calls, I do the below code so that
-                // Moneychanger's existing system will continue functioning properly
-                // by, for example, being able to search for accounts of a given unit
-                // type or on a given notary.
-                //
-                auto pIssuerNym = opentxs::OT::App().Wallet().Nym(issuerId);
+//            if (!pIssuer) {
+//                continue;
+//            }
+//            // -------------------------------------------------
+//            // This call to Paired will soon be renamed to "Trusted"
+//            // and it actually means "Paired or in the process of Pairing"
+//            // (Aka "paireding").
+//            //
+//            if (pIssuer->Paired()) {
+//                pUniqueServers->insert(pIssuer->PrimaryServer());
+//                // -------------------------------
+//                //
+//                // The purpose of the below section is simply to notify Moneychanger
+//                // about the various relationships, such as that account_id A is
+//                // on notary B, and is owned by Nym C, and consists of asset type D.
+//                // There are many places in the Moneychanger code that query for
+//                // information about these relationships. So until all those places
+//                // are ported to use the new API calls, I do the below code so that
+//                // Moneychanger's existing system will continue functioning properly
+//                // by, for example, being able to search for accounts of a given unit
+//                // type or on a given notary.
+//                //
+//                auto pIssuerNym = opentxs::OT::App().Wallet().Nym(issuerId);
 
-                if (pIssuerNym)
-                {
-                    const opentxs::String strNotaryId{pIssuer->PrimaryServer()};
-                    const std::string str_notary_id{strNotaryId.Get()};
+//                if (pIssuerNym)
+//                {
+//                    const opentxs::String strNotaryId{pIssuer->PrimaryServer()};
+//                    const std::string str_notary_id{strNotaryId.Get()};
 
-                    auto units = pIssuerNym->Claims().Section(opentxs::proto::CONTACTSECTION_CONTRACT);
+//                    auto units = pIssuerNym->Claims().Section(opentxs::proto::CONTACTSECTION_CONTRACT);
 
-                    for (const auto& [type, group] : *units) {
-                        // type is a proto::ContactItemType which represents the unit of account
-                        // such as BTC or LTC etc. This is what the UI needs to be converted to
-                        // use, instead of the TLA or "3 digit code" it uses now.
+//                    for (const auto& [type, group] : *units) {
+//                        // type is a proto::ContactItemType which represents the unit of account
+//                        // such as BTC or LTC etc. This is what the UI needs to be converted to
+//                        // use, instead of the TLA or "3 digit code" it uses now.
 
-                        for (const auto& [id, claim] : *group) {
-                            // claim.Value() is a unit definition id;
+//                        for (const auto& [id, claim] : *group) {
+//                            // claim.Value() is a unit definition id;
 
-                            const std::string str_unit_type_id{claim->Value()};
-                            const opentxs::Identifier unit_type_id{str_unit_type_id};
+//                            const std::string str_unit_type_id{claim->Value()};
+//                            const auto unit_type_id = opentxs::Identifier::Factory(str_unit_type_id);
 
-                            auto accountList = pIssuer->AccountList(type, unit_type_id);
+//                            auto accountList = pIssuer->AccountList(type, unit_type_id);
 
-                            for (auto & accountId : accountList) {
-                                // Note: we don't actually need the below name.
-                                // We're just calling this function because it notifies
-                                // Moneychanger's internal DB about the relationships
-                                // between these IDs. This ensures that various queries
-                                // pre-existing all over Moneychanger's code will
-                                // continue to work properly until everything is converted
-                                // to the new API.
-                                //
-                                MTNameLookupQT theLookup;
-                                const std::string str_acct_name =
-                                    theLookup.GetAcctName(accountId->str(), nym_id, str_notary_id, str_unit_type_id);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return pUniqueServers->size();
-}
+//                            for (auto & accountId : accountList) {
+//                                // Note: we don't actually need the below name.
+//                                // We're just calling this function because it notifies
+//                                // Moneychanger's internal DB about the relationships
+//                                // between these IDs. This ensures that various queries
+//                                // pre-existing all over Moneychanger's code will
+//                                // continue to work properly until everything is converted
+//                                // to the new API.
+//                                //
+//                                MTNameLookupQT theLookup;
+//                                const std::string str_acct_name =
+//                                    theLookup.GetAcctName(accountId->str(), nym_id, str_notary_id, str_unit_type_id);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    return pUniqueServers->size();
+//}
 
 /*
 To loop through an issuer's claims about the currencies he's issued:
@@ -653,23 +653,23 @@ for (const auto& [type, group] : *issued_unit_types) {
 }
 */
 
-bool Activity::PairingStarted(const opentxs::Identifier & nymId, const opentxs::Identifier & issuerNymId)
-{
-    auto pIssuer = opentxs::OT::App().Wallet().Issuer(nymId, issuerNymId);
+//bool Activity::PairingStarted(const opentxs::Identifier & nymId, const opentxs::Identifier & issuerNymId)
+//{
+//    auto pIssuer = opentxs::OT::App().Wallet().Issuer(nymId, issuerNymId);
 
-    if (!pIssuer) {
-        return false;
-    }
-    // -------------------------------------------------
-    // This call to Paired will soon be renamed to "Trusted"
-    // and it actually means "Paired or in the process of Pairing"
-    // (Aka "paireding").
-    //
-    else if (pIssuer->Paired()) {
-        return true;
-    }
-    return false;
-}
+//    if (!pIssuer) {
+//        return false;
+//    }
+//    // -------------------------------------------------
+//    // This call to Paired will soon be renamed to "Trusted"
+//    // and it actually means "Paired or in the process of Pairing"
+//    // (Aka "paireding").
+//    //
+//    else if (pIssuer->Paired()) {
+//        return true;
+//    }
+//    return false;
+//}
 
 void Activity::GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, const bool bTrusted, // true == paired, false == hosted.
                                           mapIDName * pMapTLAbyAccountId/*=nullptr*/)
@@ -682,12 +682,12 @@ void Activity::GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, const bool bT
         const QString OT_id   = QString::fromStdString(account_id);
         const QString OT_name = QString::fromStdString(account_name);
         const std::string str_nym_id = opentxs::OT::App().API().Exec().GetAccountWallet_NymID(account_id);
-        const opentxs::Identifier nymId{str_nym_id};
+        const auto nymId = opentxs::Identifier::Factory(str_nym_id);
         const std::string str_server_id = opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID(account_id);
         const QString qstrServerId = QString::fromStdString(str_server_id);
 
         const std::string str_unit_type_id = opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(account_id);
-        const opentxs::Identifier unit_type_id{str_unit_type_id};
+        const auto unit_type_id = opentxs::Identifier::Factory(str_unit_type_id);
         const QString qstrUnitTypeId = QString::fromStdString(str_unit_type_id);
 
         const std::string OT_asset_TLA  = opentxs::OT::App().API().Exec().GetCurrencyTLA(str_unit_type_id);
@@ -700,11 +700,11 @@ void Activity::GetAccountIdMapsByServerId(mapOfMapIDName & bigMap, const bool bT
             continue;
         }
 
-        const opentxs::Identifier issuerNymId = unitTypeContract->Nym()->ID();
+        const auto issuerNymId = opentxs::Identifier::Factory(unitTypeContract->Nym()->ID());
         //std::string GetSignerNymID(const std::string& str_Contract) const;
 
         // bPaireding means, paired or in the process of pairing.
-        const bool bPaireding = PairingStarted(nymId, issuerNymId);
+        const bool bPaireding = false; //PairingStarted(nymId, issuerNymId);
         //const bool bPaireding = opentxs::OT::App().API().OTME_TOO().PairingStarted(str_server_id);
 
         // Basically the caller either wants a list of accounts by server ID for PAIRED servers,
@@ -953,7 +953,7 @@ void Activity::RefreshSummaryTree()
     const std::string mynym = currentDataMyNym.toString().toStdString();
 
     const auto currencyType = opentxs::proto::ContactItemType(currency_type);
-    const opentxs::Identifier nymID{mynym};
+    const auto nymID = opentxs::Identifier::Factory(mynym);
     // ------------------------------------
     //resume
     QList<QTreeWidgetItem *> items;
@@ -2476,7 +2476,7 @@ void Activity::PopulateConversationsForNym(
     // ------------------------
     const QString qstrMyNymName = QString::fromStdString(str_my_nym_name);
     // ------------------------
-    opentxs::ObjectList threadList = opentxs::OT::App().Activity().Threads(opentxs::Identifier{str_my_nym_id});
+    opentxs::ObjectList threadList = opentxs::OT::App().Activity().Threads(opentxs::Identifier::Factory(str_my_nym_id));
     opentxs::ObjectList::const_iterator ci = threadList.begin();
 
     while (threadList.end() != ci)
@@ -2516,8 +2516,8 @@ void Activity::PopulateConversationsForNym(
 
         if (!qstrMyNymId.isEmpty())
         {
-            auto& thread_summary = opentxs::OT::App().UI().ActivitySummary(
-                opentxs::Identifier(str_my_nym_id));
+            auto & thread_summary = opentxs::OT::App().UI().ActivitySummary(
+                opentxs::Identifier::Factory(str_my_nym_id));
 
             std::map<std::string,std::string>::iterator
                 it_thread_summary =
@@ -2642,7 +2642,7 @@ void Activity::RefreshConversationsTab()
 
     for (const auto & [ nym_id, nym_alias] : nyms)
     {
-        const opentxs::Identifier nymId{nym_id};
+        const auto nymId = opentxs::Identifier::Factory(nym_id);
 
         bool bMatchesActivitySummaryId {false};
         this->PopulateConversationsForNym(pListWidgetConversations,
@@ -2946,8 +2946,8 @@ void Activity::RefreshConversationDetails(int nRow)
         // -------------------------------------------
         if (!qstrMyNymId.isEmpty())
         {
-            auto& thread_summary = opentxs::OT::App().UI().ActivitySummary(
-                opentxs::Identifier(str_my_nym_id));
+            auto & thread_summary = opentxs::OT::App().UI().ActivitySummary(
+                opentxs::Identifier::Factory(str_my_nym_id));
 
             std::map<std::string,std::string>::iterator
                 it_thread_summary =
@@ -2979,8 +2979,8 @@ void Activity::RefreshConversationDetails(int nRow)
         // thread ID is the group ID (and thus NOT a contact ID). But it's okay
         // to pass it either way, because Opentxs handles it properly either way.
         //
-        const opentxs::Identifier nymID(str_my_nym_id);
-        const opentxs::Identifier threadID(str_thread_id);
+        const auto nymID = opentxs::Identifier::Factory(str_my_nym_id);
+        const auto threadID = opentxs::Identifier::Factory(str_thread_id);
         auto& thread = opentxs::OT::App().UI().ActivityThread(nymID, threadID);
 
         active_thread_ = thread.WidgetID()->str();
@@ -3322,7 +3322,7 @@ void Activity::PopulateIssuerWidgetIds()
         {
             std::string mynym = opentxs::OT::App().API().Exec().GetNym_ID(nymIndex);
 
-            const opentxs::Identifier nymID{mynym};
+            const auto nymID = opentxs::Identifier::Factory(mynym);
             auto& list = opentxs::OT::App().UI().AccountSummary(nymID, currencyType);
             auto issuer = list.First();
 
@@ -3584,8 +3584,8 @@ void Activity::on_pushButtonSendMsg_clicked()
                 // thread ID is the group ID (and thus NOT a contact ID). But it's okay
                 // to pass it either way, because Opentxs handles it properly either way.
                 //
-                const opentxs::Identifier nymID(str_my_nym_id);
-                const opentxs::Identifier threadID(str_thread_id);
+                const auto nymID = opentxs::Identifier::Factory(str_my_nym_id);
+                const auto threadID = opentxs::Identifier::Factory(str_thread_id);
                 auto& thread = opentxs::OT::App().UI().ActivityThread(nymID, threadID);
 
                 // NOTE: Normally I'd assume that the draft is already set by
@@ -3643,8 +3643,8 @@ void Activity::on_plainTextEditMsg_textChanged()
                 // thread ID is the group ID (and thus NOT a contact ID). But it's okay
                 // to pass it either way, because Opentxs handles it properly either way.
                 //
-                const opentxs::Identifier nymID(str_my_nym_id);
-                const opentxs::Identifier threadID(str_thread_id);
+                const auto nymID = opentxs::Identifier::Factory(str_my_nym_id);
+                const auto threadID = opentxs::Identifier::Factory(str_thread_id);
                 auto& thread = opentxs::OT::App().UI().ActivityThread(nymID, threadID);
                 const auto loaded = thread.SetDraft(message);
 
@@ -4527,13 +4527,13 @@ void Activity::tableViewPayments_PopupMenu(const QPoint &pos, QTableView * pTabl
 //      qstrSubject        = varSubject      .isValid() ? varSubject      .toString()   : QString("");
 
         // new-style
-        const opentxs::Identifier senderContactId    = opentxs::OT::App().Contact().ContactID(opentxs::Identifier{qstrSenderNymId.toStdString()});
-        const opentxs::Identifier recipientContactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier{qstrRecipientNymId.toStdString()});
+        const auto senderContactId    = opentxs::OT::App().Contact().ContactID(opentxs::Identifier::Factory(qstrSenderNymId.toStdString()));
+        const auto recipientContactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier::Factory(qstrRecipientNymId.toStdString()));
         const opentxs::String     strSenderContactId(senderContactId);
         const opentxs::String     strRecipientContactId(recipientContactId);
 
-        qstrSenderContactByNym     = senderContactId.empty()    ? "" : QString::fromStdString(std::string(strSenderContactId.Get()));
-        qstrRecipientContactByNym  = recipientContactId.empty() ? "" : QString::fromStdString(std::string(strRecipientContactId.Get()));
+        qstrSenderContactByNym     = senderContactId->empty()    ? "" : QString::fromStdString(std::string(strSenderContactId.Get()));
+        qstrRecipientContactByNym  = recipientContactId->empty() ? "" : QString::fromStdString(std::string(strRecipientContactId.Get()));
 
         qstrContactId = (!qstrSenderContactByNym.isEmpty()) ? qstrSenderContactByNym : qstrRecipientContactByNym;
 
@@ -4895,9 +4895,9 @@ void Activity::tableViewPayments_PopupMenu(const QPoint &pos, QTableView * pTabl
             return;
         // Below this point we're guaranteed that there's a NymID.
         // ---------------------------------------------------
-        const opentxs::Identifier contactId    = opentxs::OT::App().Contact().ContactID(opentxs::Identifier{qstrNymId.toStdString()});
+        const auto contactId    = opentxs::OT::App().Contact().ContactID(opentxs::Identifier::Factory(qstrNymId.toStdString()));
 
-        if (!contactId.empty())
+        if (!contactId->empty())
         {
             QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("Strange: NymID %1 already belongs to an existing contact.").arg(qstrNymId));
@@ -5586,7 +5586,7 @@ bool Activity::GetUnitAndTLAMapForAccountsOnServer(mapIDName& mapUnitTLA, // out
                 bFoundSome = true;
             }
             // ---------------------------------
-            const opentxs::Identifier asset_id(str_asset_id);
+            const auto asset_id = opentxs::Identifier::Factory(str_asset_id);
             opentxs::ConstUnitDefinition unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
             opentxs::ConstNym issuer_nym = unit_definition->Nym();
             const opentxs::Identifier & issuer_nym_id = issuer_nym->ID();
@@ -6802,10 +6802,10 @@ bool Activity::request_outbailment(
 
     try {
         auto action = opentxs::OT::App().API().ServerAction().InitiateOutbailment(
-            opentxs::Identifier(str_my_nym_id),
-			opentxs::Identifier(str_notary_id),
-			opentxs::Identifier(str_issuer_nym_id),
-			opentxs::Identifier(str_unit_type_id),
+            opentxs::Identifier::Factory(str_my_nym_id),
+            opentxs::Identifier::Factory(str_notary_id),
+            opentxs::Identifier::Factory(str_issuer_nym_id),
+            opentxs::Identifier::Factory(str_unit_type_id),
             amount,
             str_blockchain_address);
         result = action->Run();
@@ -6876,11 +6876,11 @@ bool Activity::get_deposit_address(
     call SetUsed() to cause the state machine to grab a new one.
      */
 
-    const opentxs::Identifier nymId{str_my_nym_id};
-    const opentxs::Identifier issuerNymId{str_issuer_nym_id};
-    const opentxs::Identifier unitTypeId{str_unit_type_id};
+    const auto nymId = opentxs::Identifier::Factory(str_my_nym_id);
+    const auto issuerNymId = opentxs::Identifier::Factory(str_issuer_nym_id);
+    const auto unitTypeId = opentxs::Identifier::Factory(str_unit_type_id);
 
-    if (nymId.empty() || issuerNymId.empty() || unitTypeId.empty()) {
+    if (nymId->empty() || issuerNymId->empty() || unitTypeId->empty()) {
         qDebug() << "get_deposit_address: Error: Local Nym, Issuer Nym, or Unit Type was empty...";
         return false;
     }
@@ -7101,8 +7101,8 @@ void Activity::on_toolButtonAddContact_clicked()
     // we're adding. (Though a contact may already exist, we'll find out next...)
     // --------------------------------------------------------
     QString qstrContactId;
-    const opentxs::Identifier existingContactId{opentxs::OT::App().Contact().ContactID(opentxs::Identifier{str_nym_id})};
-    const bool bPreexistingOpentxsContact{!existingContactId.IsEmpty()};
+    const auto existingContactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier::Factory(str_nym_id));
+    const bool bPreexistingOpentxsContact{!existingContactId->empty()};
     bool bCreatedOpentxsContactJustNow{false};
 
     if (bPreexistingOpentxsContact) // It already exists.
