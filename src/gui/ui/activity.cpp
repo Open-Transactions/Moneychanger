@@ -3602,11 +3602,11 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         // --------------------------------------------------------
 
 
-        QWidget* pTab0 = ui->tabWidgetTransactions->widget(0);
-        QWidget* pTab1 = ui->tabWidgetTransactions->widget(1);
+//        QWidget* pTab0 = ui->tabWidgetTransactions->widget(0);
+//        QWidget* pTab1 = ui->tabWidgetTransactions->widget(1);
 
-        pTab0->setStyleSheet("QWidget { margin: 0 }");
-        pTab1->setStyleSheet("QWidget { margin: 0 }");
+//        pTab0->setStyleSheet("QWidget { margin: 0 }");
+//        pTab1->setStyleSheet("QWidget { margin: 0 }");
 
 //        ui->splitter->setStretchFactor(0, 2);
 //        ui->splitter->setStretchFactor(1, 3);
@@ -3759,9 +3759,23 @@ void Activity::on_comboBoxCurrency_activated(int index)
     QTimer::singleShot(0, this, SLOT(RefreshSummaryTree()));
 }
 
+std::set<int> Activity::GetCurrencyTypesForLocalAccounts()
+{
+    std::set<int> set_currency;
+    opentxs::ObjectList account_list = opentxs::OT::App().DB().AccountList();
+
+    for (const auto& [id, alias] : account_list) {
+        const auto account_id = opentxs::Identifier::Factory(id);
+        const auto currency_type = opentxs::OT::App().DB().AccountUnit(account_id);
+        set_currency.insert(static_cast<int>(currency_type));
+    }
+
+    return set_currency;
+}
+
 void Activity::PopulateIssuerWidgetIds()
 {
-    std::set<int> currency_types = opentxs::SwigWrap::GetCurrencyTypesForLocalAccounts();
+    std::set<int> currency_types = GetCurrencyTypesForLocalAccounts();
 
     for (const auto currency_type : currency_types)
     {
@@ -7338,7 +7352,7 @@ bool Activity::get_deposit_address(
             continue;
         }
 
-        returnBailmentId = bailmentId;
+        returnBailmentId.SetString(bailmentId->str());
         returnBailmentInstructions = bailmentReply.instructions();
         return true;
     }

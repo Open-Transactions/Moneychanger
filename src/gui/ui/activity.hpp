@@ -159,6 +159,8 @@ public:
     QString qstrCurrentContact_; // If the user clicks on one of his contacts, we put the Opentxs Contact ID here.
 //  QString qstrCurrentWallet_; // If the user clicks on his local BTC wallet, then we set something in here I guess to distinguish it from the local LTC wallet.
 
+    std::set<int> GetCurrencyTypesForLocalAccounts();
+
     void AcceptIncoming     (QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
     void CancelOutgoing     (QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
     void DiscardOutgoingCash(QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
