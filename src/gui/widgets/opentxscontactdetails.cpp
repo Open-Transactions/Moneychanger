@@ -1217,9 +1217,8 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
         if (qstrNymID.isEmpty()) // should never happen.
             continue;
         // ---------------------------------------
-        MTNameLookupQT theLookup;
         const std::string str_nym_id   = qstrNymID.toStdString();
-        const std::string str_nym_name = theLookup.GetNymName(str_nym_id, "");
+        const std::string str_nym_name = opentxs::OT::App().API().Exec().GetNym_Name(str_nym_id);
         const auto id_nym = opentxs::Identifier::Factory(str_nym_id);
 
         if (!str_nym_id.empty())
@@ -1442,8 +1441,7 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
             if (it_typeNames != mapTypeNames.end())
                 qstrTypeName = it_typeNames.value();
             // ---------------------------------------
-            MTNameLookupQT theLookup;
-            const std::string str_claimant_name = theLookup.GetNymName(claim_nym_id, "");
+            const std::string str_claimant_name = opentxs::OT::App().API().Exec().GetNym_Name(claim_nym_id);
 
             // Add the claim to the tree.
             //
@@ -1844,14 +1842,13 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
 //                    , tr("Polarity")
 //                };
                 // ---------------------------------------
-                MTNameLookupQT theLookup;
                 mapOfNymNames::iterator it_names = nym_names.find(verifier_id);
                 std::string str_verifier_name;
 
                 if (nym_names.end() != it_names)
                     str_verifier_name =  it_names->second;
                 else
-                    str_verifier_name = theLookup.GetNymName(verifier_id, "");
+                    str_verifier_name = opentxs::OT::App().API().Exec().GetNym_Name(verifier_id);
 
 //              const QString qstrClaimIdLabel = QString("%1: %2").arg(tr("Claim Id")).arg(qstrVerificationClaimId);
                 const QString qstrClaimantIdLabel = QString("%1: %2").arg(tr("Claimant")).arg(qstrClaimantId);
@@ -2270,8 +2267,6 @@ void MTOpentxsContactDetails::on_lineEditName_editingFinished()
             auto & mutableContact = mutableContactEditor->It();
             mutableContact.SetLabel(ui->lineEditName->text().toStdString());
         }
-
-        qDebug() << "WARNING: I'm NOT calling the Opentxs Contact-renaming function since it won't compile (yet).";
 
         m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
         m_pOwner->m_map.insert(m_pOwner->m_qstrCurrentID, ui->lineEditName->text());

@@ -22,222 +22,222 @@
 template class opentxs::Pimpl<opentxs::PaymentCode>;
 
 
-void MTNameLookupQT::notifyOfSuccessfulNotarization(const std::string & str_acct_id,
-                                                    const std::string   p_nym_id,
-                                                    const std::string   p_msg_notary_id,
-                                                    const std::string   p_pmnt_notary_id,
-                                                    const std::string   p_txn_contents,
-                                                    int64_t lTransactionNum,
-                                                    int64_t lTransNumForDisplay) const
-{
-    // Add/update record to payments table for whatever
-    // transaction just occurred.
-
-//    Moneychanger::It()->AddPaymentBasedOnNotification(str_acct_id,
-//                                                      p_nym_id,
-//                                                      p_msg_notary_id,
-//                                                      p_pmnt_notary_id,
-//                                                      p_txn_contents,
-//                                                      lTransactionNum,
-//                                                      lTransNumForDisplay);
-}
-
-
-// ----------------------------------------------------------------------------
-
-std::string MTNameLookupQT::GetContactName(const std::string & str_id) const
-{
-    if (str_id.empty() || !opentxs::Identifier::Validate(str_id))
-        return{};
-    // ------------------------
-    // This searches the new Opentxs Contacts directly:
-    //
-    std::string str_result = this->opentxs::OTNameLookup::GetContactName(str_id);
-    // --------------------
-    if (!str_result.empty()) // Opentxs FOUND a name. (Supplied by Opentxs ContactManager).
-    {
-        // Help local DB to associate which Nyms are known to use which notaries.
-//        if (!p_notary_id.empty() && opentxs::Identifier::validateID(p_notary_id))
+//void MTNameLookupQT::notifyOfSuccessfulNotarization(const std::string & str_acct_id,
+//                                                    const std::string   p_nym_id,
+//                                                    const std::string   p_msg_notary_id,
+//                                                    const std::string   p_pmnt_notary_id,
+//                                                    const std::string   p_txn_contents,
+//                                                    int64_t lTransactionNum,
+//                                                    int64_t lTransNumForDisplay) const
+//{
+//    // Add/update record to payments table for whatever
+//    // transaction just occurred.
+//
+////    Moneychanger::It()->AddPaymentBasedOnNotification(str_acct_id,
+////                                                      p_nym_id,
+////                                                      p_msg_notary_id,
+////                                                      p_pmnt_notary_id,
+////                                                      p_txn_contents,
+////                                                      lTransactionNum,
+////                                                      lTransNumForDisplay);
+//}
+//
+//
+//// ----------------------------------------------------------------------------
+//
+//std::string MTNameLookupQT::GetContactName(const std::string & str_id) const
+//{
+//    if (str_id.empty() || !opentxs::Identifier::Validate(str_id))
+//        return{};
+//    // ------------------------
+//    // This searches the new Opentxs Contacts directly:
+//    //
+//    std::string str_result = this->opentxs::OTNameLookup::GetContactName(str_id);
+//    // --------------------
+//    if (!str_result.empty()) // Opentxs FOUND a name. (Supplied by Opentxs ContactManager).
+//    {
+//        // Help local DB to associate which Nyms are known to use which notaries.
+////        if (!p_notary_id.empty() && opentxs::Identifier::validateID(p_notary_id))
+////            MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
+////                                                                   QString::fromStdString(p_notary_id));
+//        // -----------------------------------------------
+//        return str_result;
+//    }
+////  const auto pContact2 = opentxs::OT::App().Contact().Contact(opentxs::Identifier{str_id});
+//    //
+//    // NOTE: No need to do the OT::App().Contact() thing, since the above call to
+//    // GetContactName already calls it. If we're in this block, that means it already
+//    // failed.
+//
+//    return str_result;
+//}
+//
+//std::string MTNameLookupQT::GetNymName(const std::string & str_id,
+//                                       const std::string   p_notary_id) const
+//{
+//    if (str_id.empty() || !opentxs::Identifier::Validate(str_id))
+//        return{}; // p_notary_id is optional.
+//    // ------------------------
+//    // First we try and look it up through Opentxs itself:
+//    // (including OT nym names, AND Opentxs "New Contacts" names.)
+//    //
+//    std::string str_result = this->OTNameLookup::GetNymName(str_id, p_notary_id);
+//
+//    // Above call also tries the Opentxs ContactManager to see if there's a Contact
+//    // with the Nym ID str_id, and retrieves the Contact Name if one is available.
+//    //
+//    if (!str_result.empty()) // FOUND a name. (Supplied by Opentxs, based on the NymId in str_id).
+//    {
+//        // Help local DB to associate which Nyms are known to use which notaries.
+//        if (!p_notary_id.empty() && opentxs::Identifier::Validate(p_notary_id))
 //            MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
 //                                                                   QString::fromStdString(p_notary_id));
-        // -----------------------------------------------
-        return str_result;
-    }
-//  const auto pContact2 = opentxs::OT::App().Contact().Contact(opentxs::Identifier{str_id});
-    //
-    // NOTE: No need to do the OT::App().Contact() thing, since the above call to
-    // GetContactName already calls it. If we're in this block, that means it already
-    // failed.
-
-    return str_result;
-}
-
-std::string MTNameLookupQT::GetNymName(const std::string & str_id,
-                                       const std::string   p_notary_id) const
-{
-    if (str_id.empty() || !opentxs::Identifier::Validate(str_id))
-        return{}; // p_notary_id is optional.
-    // ------------------------
-    // First we try and look it up through Opentxs itself:
-    // (including OT nym names, AND Opentxs "New Contacts" names.)
-    //
-    std::string str_result = this->OTNameLookup::GetNymName(str_id, p_notary_id);
-
-    // Above call also tries the Opentxs ContactManager to see if there's a Contact
-    // with the Nym ID str_id, and retrieves the Contact Name if one is available.
-    //
-    if (!str_result.empty()) // FOUND a name. (Supplied by Opentxs, based on the NymId in str_id).
-    {
-        // Help local DB to associate which Nyms are known to use which notaries.
-        if (!p_notary_id.empty() && opentxs::Identifier::Validate(p_notary_id))
-            MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
-                                                                   QString::fromStdString(p_notary_id));
-        // -----------------------------------------------
-        return str_result;
-    }
-    // Otherwise, we try the old way.
-    // IF nothing's found yet, we fall back to Moneychanger's internal tracking system
-    // in case it can turn up a useful name for the Nym in question.
-    //
-    // ------------------------
-    //
-    // Maybe the old-school "Moneychanger-style Contacts", which are still running in parallel, have
-    // a ContactID (and Name) for the passed in Nym ID.
-    //
-    // NOTE: These are NOT the new-style Opentxs contacts, which were already searched by Opentxs
-    // in the above block. These are the old ones.
-    int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID(QString::fromStdString(str_id));
-
-    if (nContactID > 0) // Found an old-style contact.
-    {
-        QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
-
-        if (!contact_name.isEmpty()) // Found a name.
-            str_result = contact_name.toStdString();
-        else // Old-style Contact existed, but had no name.
-        {
-            // Next, checking for imported claims for a name:
-            QString qstrName = MTContactHandler::getInstance()->getDisplayNameFromClaims(QString::fromStdString(str_id));
-            // Try moneychanger's nym table
-            if (qstrName.isEmpty())
-                qstrName = MTContactHandler::getInstance()->GetValueByID(QString::fromStdString(str_id), "nym_display_name", "nym", "nym_id");
-
-            if (!qstrName.isEmpty()) // Found one in the claims.
-            {
-                // We'll set the Contact's name to the one from the claims,
-                // since this code path is where we DO have a contact, but he DOESN'T
-                // have a name set. So we set it.
-                MTContactHandler::getInstance()->SetContactName(nContactID, qstrName);
-                str_result = qstrName.toStdString(); // Result found.
-            }
-        }
-        // -----------------------------------------------
-        // Since in this code path, we found a Contact based on the NymID arg,
-        // we know the NymID is good. Therefore as long as the notary ID is good
-        // as well, we know we can associate them.
-        if (!p_notary_id.empty() && opentxs::Identifier::Validate(p_notary_id))
-            MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
-                                                                   QString::fromStdString(p_notary_id));
-    }
-    else // No old-style Moneychanger contact found either.
-    {
-        // Try to get the name for the passed-in NymID (str_id) from
-        // previously imported Claims and other data in the local DB:
-        QString qstrName = MTContactHandler::getInstance()->getDisplayNameFromClaims(QString::fromStdString(str_id));
-        // Try moneychanger's nym table
-        if (qstrName.isEmpty())
-            qstrName = MTContactHandler::getInstance()->GetValueByID(QString::fromStdString(str_id), "nym_display_name", "nym", "nym_id");
-
-        if (!qstrName.isEmpty()) // Found a name.
-        {
-            str_result = qstrName.toStdString();
-            // -----------------------------------------------
-            // If Opentxs didn't have a Nym or Contact name for this NymId (str_id)
-            // and Moneychanger didn't have an old-style contact name for him either,
-            // AND Moneychanger had no other associations in the local database in the
-            // nym table or claims table, **then how do we know it's even a real Nym ID
-            // at all? Maybe we don't want to associate it with the accompanying NotaryID
-            // (if one was passed in).
-            // Maybe we only want to associate them if both check out as valid IDs...
-            // (Nym is done at the top of this function. Notary we'll do now)
-            //
-            if (!p_notary_id.empty() && opentxs::Identifier::Validate(p_notary_id))
-                MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
-                                                                       QString::fromStdString(p_notary_id));
-        }
-    }
-    // ------------------------
-    return str_result;
-}
-
-std::string MTNameLookupQT::GetAcctName(const std::string & str_id,
-                                        const std::string   p_nym_id,
-                                        const std::string   p_notary_id,
-                                        const std::string   p_asset_id) const
-{
-    std::string str_result("");
-    // ------------------------
-    str_result = this->OTNameLookup::GetAcctName(str_id, p_nym_id, p_notary_id, p_asset_id);
-    // ------------------------
-    if (str_result.empty())
-    {
-        int nContactID = MTContactHandler::getInstance()->FindContactIDByAcctID(QString::fromStdString(str_id),
-                                                                                QString::fromStdString(p_nym_id),
-                                                                                QString::fromStdString(p_notary_id),
-                                                                                QString::fromStdString(p_asset_id));
-        if (nContactID > 0)
-        {
-            QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
-
-            if (!contact_name.isEmpty())
-                str_result = contact_name.toStdString();
-        }
-    }
-    // ------------------------
-    return str_result;
-}
-
-
-//virtual
-std::string MTNameLookupQT::GetAddressName(const std::string & str_address) const // Used for Bitmessage addresses (etc.)
-{
-    std::string str_result("");
-    // ------------------------
-    if (!str_address.empty())
-    {
-        int nContactID = MTContactHandler::getInstance()->GetContactByAddress(QString::fromStdString(str_address));
-
-        if (nContactID > 0)
-        {
-            QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
-
-            if (!contact_name.isEmpty())
-                str_result = contact_name.toStdString();
-            else
-            {
-                QString qstrNymId = MTContactHandler::getInstance()->GetNymByAddress(QString::fromStdString(str_address));
-
-                if (qstrNymId.isEmpty())
-                    qstrNymId = MTContactHandler::getInstance()->getNymIdFromClaimsByBtMsg(QString::fromStdString(str_address));
-
-                if (!qstrNymId.isEmpty())
-                    str_result = this->GetNymName(qstrNymId.toStdString(), "");
-            }
-        }
-        else
-        {
-            QString qstrNymId = MTContactHandler::getInstance()->GetNymByAddress(QString::fromStdString(str_address));
-
-            if (qstrNymId.isEmpty())
-                qstrNymId = MTContactHandler::getInstance()->getNymIdFromClaimsByBtMsg(QString::fromStdString(str_address));
-
-            if (!qstrNymId.isEmpty())
-                str_result = this->GetNymName(qstrNymId.toStdString(), "");
-        }
-    }
-    // ------------------------
-    return str_result;
-}
+//        // -----------------------------------------------
+//        return str_result;
+//    }
+//    // Otherwise, we try the old way.
+//    // IF nothing's found yet, we fall back to Moneychanger's internal tracking system
+//    // in case it can turn up a useful name for the Nym in question.
+//    //
+//    // ------------------------
+//    //
+//    // Maybe the old-school "Moneychanger-style Contacts", which are still running in parallel, have
+//    // a ContactID (and Name) for the passed in Nym ID.
+//    //
+//    // NOTE: These are NOT the new-style Opentxs contacts, which were already searched by Opentxs
+//    // in the above block. These are the old ones.
+//    int nContactID = MTContactHandler::getInstance()->FindContactIDByNymID(QString::fromStdString(str_id));
+//
+//    if (nContactID > 0) // Found an old-style contact.
+//    {
+//        QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
+//
+//        if (!contact_name.isEmpty()) // Found a name.
+//            str_result = contact_name.toStdString();
+//        else // Old-style Contact existed, but had no name.
+//        {
+//            // Next, checking for imported claims for a name:
+//            QString qstrName = MTContactHandler::getInstance()->getDisplayNameFromClaims(QString::fromStdString(str_id));
+//            // Try moneychanger's nym table
+//            if (qstrName.isEmpty())
+//                qstrName = MTContactHandler::getInstance()->GetValueByID(QString::fromStdString(str_id), "nym_display_name", "nym", "nym_id");
+//
+//            if (!qstrName.isEmpty()) // Found one in the claims.
+//            {
+//                // We'll set the Contact's name to the one from the claims,
+//                // since this code path is where we DO have a contact, but he DOESN'T
+//                // have a name set. So we set it.
+//                MTContactHandler::getInstance()->SetContactName(nContactID, qstrName);
+//                str_result = qstrName.toStdString(); // Result found.
+//            }
+//        }
+//        // -----------------------------------------------
+//        // Since in this code path, we found a Contact based on the NymID arg,
+//        // we know the NymID is good. Therefore as long as the notary ID is good
+//        // as well, we know we can associate them.
+//        if (!p_notary_id.empty() && opentxs::Identifier::Validate(p_notary_id))
+//            MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
+//                                                                   QString::fromStdString(p_notary_id));
+//    }
+//    else // No old-style Moneychanger contact found either.
+//    {
+//        // Try to get the name for the passed-in NymID (str_id) from
+//        // previously imported Claims and other data in the local DB:
+//        QString qstrName = MTContactHandler::getInstance()->getDisplayNameFromClaims(QString::fromStdString(str_id));
+//        // Try moneychanger's nym table
+//        if (qstrName.isEmpty())
+//            qstrName = MTContactHandler::getInstance()->GetValueByID(QString::fromStdString(str_id), "nym_display_name", "nym", "nym_id");
+//
+//        if (!qstrName.isEmpty()) // Found a name.
+//        {
+//            str_result = qstrName.toStdString();
+//            // -----------------------------------------------
+//            // If Opentxs didn't have a Nym or Contact name for this NymId (str_id)
+//            // and Moneychanger didn't have an old-style contact name for him either,
+//            // AND Moneychanger had no other associations in the local database in the
+//            // nym table or claims table, **then how do we know it's even a real Nym ID
+//            // at all? Maybe we don't want to associate it with the accompanying NotaryID
+//            // (if one was passed in).
+//            // Maybe we only want to associate them if both check out as valid IDs...
+//            // (Nym is done at the top of this function. Notary we'll do now)
+//            //
+//            if (!p_notary_id.empty() && opentxs::Identifier::Validate(p_notary_id))
+//                MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
+//                                                                       QString::fromStdString(p_notary_id));
+//        }
+//    }
+//    // ------------------------
+//    return str_result;
+//}
+//
+//std::string MTNameLookupQT::GetAcctName(const std::string & str_id,
+//                                        const std::string   p_nym_id,
+//                                        const std::string   p_notary_id,
+//                                        const std::string   p_asset_id) const
+//{
+//    std::string str_result("");
+//    // ------------------------
+//    str_result = this->OTNameLookup::GetAcctName(str_id, p_nym_id, p_notary_id, p_asset_id);
+//    // ------------------------
+//    if (str_result.empty())
+//    {
+//        int nContactID = MTContactHandler::getInstance()->FindContactIDByAcctID(QString::fromStdString(str_id),
+//                                                                                QString::fromStdString(p_nym_id),
+//                                                                                QString::fromStdString(p_notary_id),
+//                                                                                QString::fromStdString(p_asset_id));
+//        if (nContactID > 0)
+//        {
+//            QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
+//
+//            if (!contact_name.isEmpty())
+//                str_result = contact_name.toStdString();
+//        }
+//    }
+//    // ------------------------
+//    return str_result;
+//}
+//
+//
+////virtual
+//std::string MTNameLookupQT::GetAddressName(const std::string & str_address) const // Used for Bitmessage addresses (etc.)
+//{
+//    std::string str_result("");
+//    // ------------------------
+//    if (!str_address.empty())
+//    {
+//        int nContactID = MTContactHandler::getInstance()->GetContactByAddress(QString::fromStdString(str_address));
+//
+//        if (nContactID > 0)
+//        {
+//            QString contact_name = MTContactHandler::getInstance()->GetContactName(nContactID);
+//
+//            if (!contact_name.isEmpty())
+//                str_result = contact_name.toStdString();
+//            else
+//            {
+//                QString qstrNymId = MTContactHandler::getInstance()->GetNymByAddress(QString::fromStdString(str_address));
+//
+//                if (qstrNymId.isEmpty())
+//                    qstrNymId = MTContactHandler::getInstance()->getNymIdFromClaimsByBtMsg(QString::fromStdString(str_address));
+//
+//                if (!qstrNymId.isEmpty())
+//                    str_result = this->GetNymName(qstrNymId.toStdString(), "");
+//            }
+//        }
+//        else
+//        {
+//            QString qstrNymId = MTContactHandler::getInstance()->GetNymByAddress(QString::fromStdString(str_address));
+//
+//            if (qstrNymId.isEmpty())
+//                qstrNymId = MTContactHandler::getInstance()->getNymIdFromClaimsByBtMsg(QString::fromStdString(str_address));
+//
+//            if (!qstrNymId.isEmpty())
+//                str_result = this->GetNymName(qstrNymId.toStdString(), "");
+//        }
+//    }
+//    // ------------------------
+//    return str_result;
+//}
 
 
 //static
@@ -2212,8 +2212,7 @@ bool MTContactHandler::GetPaymentCodes(mapIDName & theMap, int nFilterByContact)
             }
             else
             {
-                MTNameLookupQT theLookup;
-                nym_name = QString::fromStdString(theLookup.GetNymName(nym_id.toStdString(), ""));
+                nym_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(nym_id.toStdString()));
             }
             // ----------------------------
             // At this point we have the payment code *and* the nym name.
@@ -2269,8 +2268,7 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, const std::string & str_conta
 
     if (str_opentxs_label.empty())
     {
-        MTNameLookupQT theLookup;
-        str_alternate_label = theLookup.GetContactName(str_contact_id);
+        str_alternate_label = str_contact_id;
     }
     const QString qstrContactLabel = str_opentxs_label.empty() ? QString::fromStdString(str_alternate_label) : QString::fromStdString(str_opentxs_label);
     // ------------------------
@@ -2335,8 +2333,7 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact)
             }
             else
             {
-                MTNameLookupQT theLookup;
-                nym_name = QString::fromStdString(theLookup.GetNymName(nym_id.toStdString(), ""));
+                nym_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(nym_id.toStdString()));
             }
             // ----------------------------
             // At this point we have the nym ID *and* the nym name.
@@ -3338,6 +3335,43 @@ QString MTContactHandler::GetContactName(int nContactID)
 bool MTContactHandler::SetContactName(int nContactID, QString contact_name_string)
 {
     return this->SetValueByID(nContactID, contact_name_string, "contact_display_name", "contact", "contact_id");
+}
+
+std::string MTContactHandler::GetContactName(const std::string& str_id)
+{
+    if (str_id.empty()) {
+        qDebug() << "I should assert here. Empty ID passed to MTContactHandler::GetContactName.";
+        return {};
+    }
+
+    const auto pContact =
+        opentxs::OT::App().Contact().Contact(opentxs::Identifier::Factory(str_id));
+
+    if (!pContact || pContact->Label().empty())
+        return {};
+
+    return pContact->Label();
+}
+
+bool MTContactHandler::SetContactName(const std::string& str_id, const std::string& contact_name_string)
+{
+    if (str_id.empty()) {
+        qDebug() << "I should assert here. Empty ID passed to MTContactHandler::SetContactName.";
+        return false;
+    }
+
+    // -------------------------------
+    auto mutableContactEditor{opentxs::OT::App().Contact().mutable_Contact(opentxs::Identifier::Factory(str_id))};
+
+    if (!mutableContactEditor) {
+        return false;
+    }
+    else {
+        auto & mutableContact = mutableContactEditor->It();
+        mutableContact.SetLabel(contact_name_string);
+    }
+
+    return true;
 }
 
 // ---------------------------------------------------

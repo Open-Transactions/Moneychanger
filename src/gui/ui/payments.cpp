@@ -352,8 +352,7 @@ void Payments::RefreshUserBar()
 //        payment_code = opentxs::OT::App().API().Exec().GetNym_Description(qstr_acct_nym.toStdString());
 //        qstrPaymentCode = QString::fromStdString(payment_code);
 //        // ----------------------------
-//        MTNameLookupQT theLookup;
-//        QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_acct_nym.toStdString(), ""));
+//        QString qstr_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(qstr_acct_nym.toStdString()));
 
 //        if (!qstr_name.isEmpty())
 //            nym_label_string = qstr_name;
@@ -568,8 +567,7 @@ QWidget * Payments::CreateUserBarWidget()
         payment_code = opentxs::OT::App().API().Exec().GetNym_Description(qstr_acct_nym.toStdString());
         qstrPaymentCode = QString::fromStdString(payment_code);
         // ----------------------------
-        MTNameLookupQT theLookup;
-        QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_acct_nym.toStdString(), ""));
+        QString qstr_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(qstr_acct_nym.toStdString()));
 
         if (!qstr_name.isEmpty())
             nym_label_string = qstr_name;

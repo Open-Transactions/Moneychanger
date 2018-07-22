@@ -137,9 +137,7 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
             // ---------------------------------------
             std::string str_nym_id = qstrNymID.toStdString();
             // ---------------------------------------
-            MTNameLookupQT theLookup;
-
-            std::string str_nym_name = theLookup.GetNymName(qstrNymID.toStdString(), "");
+            std::string str_nym_name = opentxs::OT::App().API().Exec().GetNym_Name(qstrNymID.toStdString());
             QString     qstrNymName  = QString::fromStdString(str_nym_name);
             // ---------------------------------------
             // Insert Nym into Tree.

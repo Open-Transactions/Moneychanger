@@ -156,9 +156,7 @@ void MTCompose::setSenderNameBasedOnAvailableData()
 
         if (!m_senderNymId.isEmpty())
         {
-            MTNameLookupQT theLookup;
-
-            qstrNymName = QString::fromStdString(theLookup.GetNymName(m_senderNymId.toStdString(), ""));
+            qstrNymName = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(m_senderNymId.toStdString()));
         }
         // ---------------------------
         QString qstrAddressPortion("");
@@ -205,13 +203,11 @@ void MTCompose::setRecipientNameBasedOnAvailableData()
 
         if (bCanMessage_)
         {
-            MTNameLookupQT theLookup;
-            qstrContactName = QString::fromStdString(theLookup.GetContactName(qstrContactId_.toStdString()));
+            qstrContactName = QString::fromStdString(MTContactHandler::getInstance()->GetContactName(qstrContactId_.toStdString()));
         }
         else if (!m_recipientNymId.isEmpty())
         {
-            MTNameLookupQT theLookup;
-            qstrNymName = QString::fromStdString(theLookup.GetNymName(m_recipientNymId.toStdString(), ""));
+            qstrNymName = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(m_recipientNymId.toStdString()));
         }
         else if (qstrContactName.isEmpty() && m_recipientContactId > 0)
         {
@@ -229,8 +225,8 @@ void MTCompose::setRecipientNameBasedOnAvailableData()
             // ---------------------------
             if (qstrContactName.isEmpty())
             {
-                MTNameLookupQT theLookup;
-                qstrContactName = QString::fromStdString(theLookup.GetAddressName(this->m_recipientAddress.toStdString()));
+                qstrContactName = this->m_recipientAddress;
+//              qstrContactName = QString::fromStdString(theLookup.GetAddressName(this->m_recipientAddress.toStdString()));
             }
         }
         else if (!bCanMessage_ && !sendingThroughOTServer())
@@ -2609,9 +2605,7 @@ void MTCompose::on_fromButton_clicked()
             if (!m_senderNymId.isEmpty() && (OT_nym_id == m_senderNymId))
                 bFoundDefault = true;
             // -----------------------------------------------
-            MTNameLookupQT theLookup;
-
-            OT_nym_name = QString::fromStdString(theLookup.GetNymName(OT_nym_id.toStdString(), ""));
+            OT_nym_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(OT_nym_id.toStdString()));
             // -----------------------------------------------
             the_map.insert(OT_nym_id, OT_nym_name);
         }
@@ -2907,14 +2901,13 @@ void MTCompose::setVariousIds(QString senderNymId, QString recipientNymId, QStri
     // ----------------------------------------------
     if (!m_forwardSenderNymId.isEmpty())
     {
-        MTNameLookupQT theLookup;
-        m_forwardSenderName = QString::fromStdString(theLookup.GetNymName(m_forwardSenderNymId.toStdString(), ""));
+        m_forwardSenderName = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(m_forwardSenderNymId.toStdString()));
     }
-    if (m_forwardSenderName.isEmpty() && !m_forwardSenderAddress.isEmpty())
-    {
-        MTNameLookupQT theLookup;
-        m_forwardSenderName = QString::fromStdString(theLookup.GetAddressName(m_forwardSenderAddress.toStdString()));
-    }
+//    if (m_forwardSenderName.isEmpty() && !m_forwardSenderAddress.isEmpty())
+//    {
+//        MTNameLookupQT theLookup;
+//        m_forwardSenderName = QString::fromStdString(theLookup.GetAddressName(m_forwardSenderAddress.toStdString()));
+//    }
     if (m_forwardSenderName.isEmpty() && !m_forwardSenderNymId.isEmpty())
         m_forwardSenderName = m_forwardSenderNymId;
     else if (m_forwardSenderName.isEmpty() && !m_forwardSenderAddress.isEmpty())
@@ -2922,13 +2915,11 @@ void MTCompose::setVariousIds(QString senderNymId, QString recipientNymId, QStri
     // ----------------------------------------------
     if (!m_forwardRecipientNymId.isEmpty())
     {
-        MTNameLookupQT theLookup;
-        m_forwardRecipientName = QString::fromStdString(theLookup.GetNymName(m_forwardRecipientNymId.toStdString(), ""));
+        m_forwardRecipientName = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(m_forwardRecipientNymId.toStdString()));
     }
     if (m_forwardRecipientName.isEmpty() && !m_forwardRecipientAddress.isEmpty())
     {
-        MTNameLookupQT theLookup;
-        m_forwardRecipientName = QString::fromStdString(theLookup.GetAddressName(m_forwardRecipientAddress.toStdString()));
+        m_forwardRecipientName = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(m_forwardRecipientAddress.toStdString()));
     }
     if (m_forwardRecipientName.isEmpty() && !m_forwardRecipientNymId.isEmpty())
         m_forwardRecipientName = m_forwardRecipientNymId;

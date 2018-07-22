@@ -339,8 +339,7 @@ void MTRequestDlg::setInitialHisContact (QString contactId, bool bUsedInternally
                 ui->toolButton->setVisible(false);
             }
 
-            MTNameLookupQT theLookup;
-            const std::string str_contact_label = theLookup.GetContactName(m_hisContactId.toStdString());
+            const std::string str_contact_label = MTContactHandler::getInstance()->GetContactName(m_hisContactId.toStdString());
             ui->fromButton->setText(QString::fromStdString(str_contact_label));
         }
     }
@@ -589,9 +588,7 @@ void MTRequestDlg::on_toButton_clicked()
             if (!m_myAcctId.isEmpty() && (OT_acct_id == m_myAcctId))
                 bFoundDefault = true;
             // -----------------------------------------------
-            MTNameLookupQT theLookup;
-
-            OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString(), "", "", ""));
+            OT_acct_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(OT_acct_id.toStdString()));
             // -----------------------------------------------
             the_map.insert(OT_acct_id, OT_acct_name);
         }
@@ -847,10 +844,7 @@ void MTRequestDlg::dialog()
         // -------------------------------------------
         if (!m_myAcctId.isEmpty()) // myAcct was provided.
         {
-            MTNameLookupQT theLookup;
-
-            str_my_name = theLookup.GetAcctName(m_myAcctId.toStdString(), "", "", "");
-
+            str_my_name = opentxs::OT::App().API().Exec().GetAccountWallet_Name(m_myAcctId.toStdString());
             if (str_my_name.empty())
                 str_my_name = m_myAcctId.toStdString();
         }
@@ -872,9 +866,7 @@ void MTRequestDlg::dialog()
         // -------------------------------------------
         if (!m_hisNymId.isEmpty()) // hisNym was provided.
         {
-            MTNameLookupQT theLookup;
-
-            str_his_name = theLookup.GetNymName(m_hisNymId.toStdString(), "");
+            str_his_name = opentxs::OT::App().API().Exec().GetNym_Name(m_hisNymId.toStdString());
 
             if (str_his_name.empty())
                 str_his_name = m_hisNymId.toStdString();

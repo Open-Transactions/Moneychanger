@@ -286,8 +286,7 @@ void Activity::RefreshUserBar()
 {
     const std::string str_my_nym_id = Moneychanger::It()->get_default_nym_id().toStdString();
     // ----------------------------------------
-    MTNameLookupQT theLookup;
-    const QString qstrNymName = QString::fromStdString(theLookup.GetNymName(str_my_nym_id, ""));
+    const QString qstrNymName = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(str_my_nym_id));
     ui->toolButtonMyIdentity2->setText(qstrNymName);
 }
 
@@ -1311,11 +1310,11 @@ void Activity::NewRefreshPayments()
     QSharedPointer<QStandardItemModel>  pModel = getAccountActivityModel();
 
     if (!pModel) {
-        // Empty the tree and return.
+        // Empty the payments list and return.
 
         return;
     }
-    // else empty the tree and re-populate it.
+    // else empty the payments list and re-populate it.
 
 
 
@@ -2900,7 +2899,6 @@ void Activity::PopulateConversationsForNym(
     OT_ASSERT(nNymCount > 0);
     const bool bOnlyOneNymInWallet = (1 == nNymCount);
     // ------------------
-    MTNameLookupQT theLookup;
     std::string str_my_nym_name ("");
     // ------------------
     if (bOnlyOneNymInWallet)
@@ -2909,7 +2907,7 @@ void Activity::PopulateConversationsForNym(
     }
     else
     {
-        str_my_nym_name = theLookup.GetNymName(str_my_nym_id, "");
+        str_my_nym_name = opentxs::OT::App().API().Exec().GetNym_Name(str_my_nym_id);
 
         if (str_my_nym_name.empty()) {
             str_my_nym_name = "Me";
@@ -6666,8 +6664,7 @@ void Activity::treeWidgetSummary_PopupMenu(const QPoint &pos, QTreeWidget * pTre
 //                const QString qstrCurrentIssuerNymId = it_assets.value();
 //                const QString qstrKey = QString("%1,%2").arg(qstrCurrentAssetTypeId).arg(qstrCurrentIssuerNymId);
 //                // ------------------------------------------
-//                MTNameLookupQT theLookup;
-//                QString OT_issuer_name = QString::fromStdString(theLookup.GetNymName(qstrCurrentIssuerNymId.toStdString(), ""));
+//                QString OT_issuer_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(qstrCurrentIssuerNymId.toStdString()));
 //                if (OT_issuer_name.isEmpty()) {
 //                    OT_issuer_name = qstrCurrentIssuerNymId;
 //                }
@@ -7111,8 +7108,7 @@ void Activity::treeWidgetSummary_PopupMenu(const QPoint &pos, QTreeWidget * pTre
 //                    const QString qstrCurrentIssuerNymId = it_assets.value();
 //                    const QString qstrKey = QString("%1,%2").arg(qstrCurrentAssetTypeId).arg(qstrCurrentIssuerNymId);
 //                    // ------------------------------------------
-//                    MTNameLookupQT theLookup;
-//                    QString OT_issuer_name = QString::fromStdString(theLookup.GetNymName(qstrCurrentIssuerNymId.toStdString(), ""));
+//                    QString OT_issuer_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(qstrCurrentIssuerNymId.toStdString()));
 //                    if (OT_issuer_name.isEmpty()) {
 //                        OT_issuer_name = qstrCurrentIssuerNymId;
 //                    }
