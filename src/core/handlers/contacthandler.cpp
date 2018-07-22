@@ -47,7 +47,7 @@ void MTNameLookupQT::notifyOfSuccessfulNotarization(const std::string & str_acct
 
 std::string MTNameLookupQT::GetContactName(const std::string & str_id) const
 {
-    if (str_id.empty() || !opentxs::Identifier::validateID(str_id))
+    if (str_id.empty() || !opentxs::Identifier::Validate(str_id))
         return{};
     // ------------------------
     // This searches the new Opentxs Contacts directly:
@@ -75,7 +75,7 @@ std::string MTNameLookupQT::GetContactName(const std::string & str_id) const
 std::string MTNameLookupQT::GetNymName(const std::string & str_id,
                                        const std::string   p_notary_id) const
 {
-    if (str_id.empty() || !opentxs::Identifier::validateID(str_id))
+    if (str_id.empty() || !opentxs::Identifier::Validate(str_id))
         return{}; // p_notary_id is optional.
     // ------------------------
     // First we try and look it up through Opentxs itself:
@@ -89,7 +89,7 @@ std::string MTNameLookupQT::GetNymName(const std::string & str_id,
     if (!str_result.empty()) // FOUND a name. (Supplied by Opentxs, based on the NymId in str_id).
     {
         // Help local DB to associate which Nyms are known to use which notaries.
-        if (!p_notary_id.empty() && opentxs::Identifier::validateID(p_notary_id))
+        if (!p_notary_id.empty() && opentxs::Identifier::Validate(p_notary_id))
             MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
                                                                    QString::fromStdString(p_notary_id));
         // -----------------------------------------------
@@ -135,7 +135,7 @@ std::string MTNameLookupQT::GetNymName(const std::string & str_id,
         // Since in this code path, we found a Contact based on the NymID arg,
         // we know the NymID is good. Therefore as long as the notary ID is good
         // as well, we know we can associate them.
-        if (!p_notary_id.empty() && opentxs::Identifier::validateID(p_notary_id))
+        if (!p_notary_id.empty() && opentxs::Identifier::Validate(p_notary_id))
             MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
                                                                    QString::fromStdString(p_notary_id));
     }
@@ -161,7 +161,7 @@ std::string MTNameLookupQT::GetNymName(const std::string & str_id,
             // Maybe we only want to associate them if both check out as valid IDs...
             // (Nym is done at the top of this function. Notary we'll do now)
             //
-            if (!p_notary_id.empty() && opentxs::Identifier::validateID(p_notary_id))
+            if (!p_notary_id.empty() && opentxs::Identifier::Validate(p_notary_id))
                 MTContactHandler::getInstance()->NotifyOfNymServerPair(QString::fromStdString(str_id),
                                                                        QString::fromStdString(p_notary_id));
         }
@@ -2254,7 +2254,7 @@ bool MTContactHandler::GetAssetIdsForTLA(mapIDName & theMap, const std::string &
 //
 bool MTContactHandler::GetNyms(mapIDName & theMap, const std::string & str_contact_id)
 {
-    if (str_contact_id.empty() || !opentxs::Identifier::validateID(str_contact_id))
+    if (str_contact_id.empty() || !opentxs::Identifier::Validate(str_contact_id))
         return false;
     // ------------------------
     const auto pContact = opentxs::OT::App().Contact().Contact(opentxs::Identifier::Factory(str_contact_id));

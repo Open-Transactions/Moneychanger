@@ -42,11 +42,23 @@ class Activity;
 #define AC_NODE_TYPE_ASSET_TOTAL     1
 #define AC_NODE_TYPE_LOCAL_WALLET    2
 #define AC_NODE_TYPE_LOCAL_ACCOUNT   3
-#define AC_NODE_TYPE_SNP_NOTARY      4
+#define AC_NODE_TYPE_SNP_ISSUER      4
 #define AC_NODE_TYPE_SNP_ACCOUNT     5
-#define AC_NODE_TYPE_HOSTED_NOTARY   6
+#define AC_NODE_TYPE_HOSTED_ISSUER   6
 #define AC_NODE_TYPE_HOSTED_ACCOUNT  7
 #define AC_NODE_TYPE_CONTACT         8
+
+#define USER_ROLE_NODE_TYPE         (Qt::UserRole+0)
+#define USER_ROLE_HEADER_TYPE       (Qt::UserRole+1)
+#define USER_ROLE_CURRENCY_TYPE     (Qt::UserRole+2)
+#define USER_ROLE_MY_NYM_ID         (Qt::UserRole+3)
+#define USER_ROLE_ACCOUNT_ID        (Qt::UserRole+4)
+#define USER_ROLE_ACCOUNT_UNIT_TYPE (Qt::UserRole+5)
+#define USER_ROLE_ACCOUNT_SERVER_ID (Qt::UserRole+6)
+#define USER_ROLE_CONTACT_ID        (Qt::UserRole+7)
+#define USER_ROLE_ISSUER_WIDGET_ID  (Qt::UserRole+8)
+#define USER_ROLE_ACCOUNT_WIDGET_ID (Qt::UserRole+9)
+
 
 //class ActivityPaymentsProxyModel;
 //class ModelPayments;
@@ -71,6 +83,17 @@ typedef std::map<std::string, int> StringIntMap;
 typedef std::pair<std::string, int> StringIntPair;
 //    std::map<std::pair<nym_id_str, currency>, widget_id_str> MapActivityWidgetIds;
 typedef std::map<StringIntPair, std::string> MapActivityWidgetIds;
+
+
+
+typedef std::tuple<bool, bool, bool, bool, bool, bool> ActivitySelectionInfo;
+//bool     & bSelectedTrusted,  // Is the selection on an SNP?
+//bool     & bSelectedHosted,   // or maybe is it (account or issuer) operated by a third party? (Neither might be true -- might be an asset or contact that's selected).
+//bool     & bSelectedCurrencyType, // The user has selected the "BTC" total at the top of the list. There is no unit type ID however, but only the currency enum.
+//bool     & bSelectedIssuer,   // The user has selected an issuer, which appears as "Stash Demonstration Notary" or "Your Stash Node Pro" (just for a few examples)
+//bool     & bSelectedAccount,  // This one is assumed to be accompanied by a nym ID, an asset ID, and a server ID. Also issuer and account widget IDs.
+//bool     & bSelectedContact   // This means a Contact is selected, so the user wants to see payments filtered by Contact.
+
 
 /*
  std::set<int> currency_types = opentxs::SwigWrap::GetCurrencyTypesForLocalAccounts();
@@ -120,6 +143,9 @@ public:
 
     int nSelectedTab_{0};
 
+    std::string active_account_summary_issuer_widget_id_;
+    std::map<std::string, std::string> active_account_widget_id_for_issuer_;
+
     std::string active_thread_;
     std::map<std::string, std::string> thread_summary_;
 
@@ -132,6 +158,8 @@ public:
     QString qstrCurrentAccount_; // If the user clicks on one of his Opentxs accounts, or a notary with only 1 account under it, we put the acct ID here.
     QString qstrCurrentContact_; // If the user clicks on one of his contacts, we put the Opentxs Contact ID here.
 //  QString qstrCurrentWallet_; // If the user clicks on his local BTC wallet, then we set something in here I guess to distinguish it from the local LTC wallet.
+
+    std::set<int> GetCurrencyTypesForLocalAccounts();
 
     void AcceptIncoming     (QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
     void CancelOutgoing     (QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
@@ -194,20 +222,22 @@ protected:
 
     void PopulateIssuerWidgetIds();
 
-    void RetrieveSelectedIds(
-        QString  & qstrTLA,
-        QString  & qstrAssetTypeId,
-        QString  & qstrAccountId,
-        QString  & qstrServerId,
-        QString  & qstrContactId,
-        bool     & bSelectedSNP,
-        bool     & bSelectedHosted,
-        bool     & bSelectedNotary,
-        bool     & bSelectedAcctLowLevel,
-        bool     & bSelectedAccount,
-        bool     & bSelectedAsset,
-        bool     & bSelectedContact
-        );
+    bool RetrieveSelectedIds(
+            int      & nNodeType,
+            int      & nUnderHeader,
+            int      & nCurrencyType,
+            QString  & qstrMyNymId,
+            QString  & qstrAccountId,
+            QString  & qstrAssetTypeId,
+            QString  & qstrServerId,
+            QString  & qstrContactId,
+            QString  & qstrIssuerWidgetId,
+            QString  & qstrAccountWidgetId,
+            ActivitySelectionInfo & aboutSelection
+            );
+
+
+    QSharedPointer<QStandardItemModel>  getAccountActivityModel();
 
     void enableButtons();
     void disableButtons();
@@ -305,8 +335,8 @@ private slots:
     void on_checkBoxSearchPayments_toggled(bool checked);
     void on_lineEditSearchPayments_textChanged(const QString &arg1);
 
-    void on_tableViewSentSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous);
-    void on_tableViewReceivedSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous);
+    void on_tableViewPaymentsSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous);
+//    void on_tableViewReceivedSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous);
 
     void on_tabWidgetTransactions_currentChanged(int index);
 
@@ -317,13 +347,14 @@ private slots:
 
     void RefreshAccountTree();
     void RefreshSummaryTree();
-    void RefreshPayments();
+//    void RefreshPayments();
+    void NewRefreshPayments();
 
-    void on_tableViewReceived_customContextMenuRequested(const QPoint &pos);
-    void on_tableViewSent_customContextMenuRequested(const QPoint &pos);
+//    void on_tableViewReceived_customContextMenuRequested(const QPoint &pos);
+    void on_tableViewPayments_customContextMenuRequested(const QPoint &pos);
 
-    void on_tableViewSent_doubleClicked(const QModelIndex &index);
-    void on_tableViewReceived_doubleClicked(const QModelIndex &index);
+    void on_tableViewPayments_doubleClicked(const QModelIndex &index);
+//    void on_tableViewReceived_doubleClicked(const QModelIndex &index);
 
     void on_toolButtonReply_clicked();
     void on_toolButtonForward_clicked();
@@ -411,8 +442,9 @@ private:
     QSharedPointer<QStandardItemModel> pModelMessages_;
     QSharedPointer<ConvMsgsProxyModel> pThreadItemsProxyModel_;
 
-    QPointer<ActivityPaymentsProxyModel> pPmntProxyModelInbox_;
-    QPointer<ActivityPaymentsProxyModel> pPmntProxyModelOutbox_;
+    QPointer<ActivityPaymentsProxyModel> pPmntProxyModel_;
+//  QPointer<ActivityPaymentsProxyModel> pPmntProxyModelInbox_;
+//  QPointer<ActivityPaymentsProxyModel> pPmntProxyModelOutbox_;
 
     QTableView                 * pCurrentTabTableView_  {nullptr};
     ActivityPaymentsProxyModel * pCurrentTabProxyModel_ {nullptr};

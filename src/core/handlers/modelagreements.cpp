@@ -554,208 +554,210 @@ QVariant AgreementReceiptsProxyModel::rawData ( const QModelIndex & index, int r
 
 QWidget * AgreementReceiptsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, bool bExternal/*=true*/) const
 {
-    QModelIndex sourceIndex_Folder         = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_FOLDER);
-    QModelIndex sourceIndex_AssetId        = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_MY_ASSET_TYPE);
-    QModelIndex sourceIndex_Date           = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_TIMESTAMP);
-    QModelIndex sourceIndex_Desc           = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_DESCRIPTION);
-    QModelIndex sourceIndex_RecordName     = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_RECORD_NAME);
-    QModelIndex sourceIndex_InstrumentType = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_INSTRUMENT_TYPE);
-    QModelIndex sourceIndex_Amount         = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_AMOUNT);
-    QModelIndex sourceIndex_Flags          = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_FLAGS);
+//    QModelIndex sourceIndex_Folder         = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_FOLDER);
+//    QModelIndex sourceIndex_AssetId        = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_MY_ASSET_TYPE);
+//    QModelIndex sourceIndex_Date           = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_TIMESTAMP);
+//    QModelIndex sourceIndex_Desc           = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_DESCRIPTION);
+//    QModelIndex sourceIndex_RecordName     = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_RECORD_NAME);
+//    QModelIndex sourceIndex_InstrumentType = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_INSTRUMENT_TYPE);
+//    QModelIndex sourceIndex_Amount         = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_AMOUNT);
+//    QModelIndex sourceIndex_Flags          = sourceModel()->index(nSourceRow, AGRMT_RECEIPT_COL_FLAGS);
 
-    QVariant    sourceData_Folder     = sourceModel()->data(sourceIndex_Folder,  Qt::DisplayRole);
-    QVariant    sourceData_AssetId    = sourceModel()->data(sourceIndex_AssetId, Qt::DisplayRole);
-    QVariant    sourceData_Date       = sourceModel()->data(sourceIndex_Date,    Qt::DisplayRole);
-    QVariant    sourceData_Desc       = sourceModel()->data(sourceIndex_Desc,    Qt::DisplayRole);
-    QVariant    sourceData_RecordName = sourceModel()->data(sourceIndex_RecordName,    Qt::DisplayRole);
-    QVariant    sourceData_InstrumentType = sourceModel()->data(sourceIndex_InstrumentType,Qt::DisplayRole);
-    QVariant    sourceData_Amount  = sourceModel()->data(sourceIndex_Amount,   Qt::DisplayRole);
-    QVariant    sourceData_Flags      = sourceModel()->data(sourceIndex_Flags,  Qt::DisplayRole);
+//    QVariant    sourceData_Folder     = sourceModel()->data(sourceIndex_Folder,  Qt::DisplayRole);
+//    QVariant    sourceData_AssetId    = sourceModel()->data(sourceIndex_AssetId, Qt::DisplayRole);
+//    QVariant    sourceData_Date       = sourceModel()->data(sourceIndex_Date,    Qt::DisplayRole);
+//    QVariant    sourceData_Desc       = sourceModel()->data(sourceIndex_Desc,    Qt::DisplayRole);
+//    QVariant    sourceData_RecordName = sourceModel()->data(sourceIndex_RecordName,    Qt::DisplayRole);
+//    QVariant    sourceData_InstrumentType = sourceModel()->data(sourceIndex_InstrumentType,Qt::DisplayRole);
+//    QVariant    sourceData_Amount  = sourceModel()->data(sourceIndex_Amount,   Qt::DisplayRole);
+//    QVariant    sourceData_Flags      = sourceModel()->data(sourceIndex_Flags,  Qt::DisplayRole);
 
-    QString     qstrAssetId     = sourceData_AssetId.isValid() ? sourceData_AssetId.toString() : "";
-    QString     qstrDescription = sourceData_Desc   .isValid() ? sourceData_Desc   .toString() : "";
-    QString     qstrRecordName  = sourceData_RecordName       .isValid() ? sourceData_RecordName    .toString() : "";
-    QString     qstrInstrumentType = sourceData_InstrumentType.isValid() ? sourceData_InstrumentType.toString() : "";
+//    QString     qstrAssetId     = sourceData_AssetId.isValid() ? sourceData_AssetId.toString() : "";
+//    QString     qstrDescription = sourceData_Desc   .isValid() ? sourceData_Desc   .toString() : "";
+//    QString     qstrRecordName  = sourceData_RecordName       .isValid() ? sourceData_RecordName    .toString() : "";
+//    QString     qstrInstrumentType = sourceData_InstrumentType.isValid() ? sourceData_InstrumentType.toString() : "";
 
-    ModelPayments::PaymentFlags flags = sourceData_Flags.isValid() ? (ModelPayments::PaymentFlag)sourceData_Flags.toLongLong()
-                                                                   :  ModelPayments::NoFlags;
+//    ModelPayments::PaymentFlags flags = sourceData_Flags.isValid() ? (ModelPayments::PaymentFlag)sourceData_Flags.toLongLong()
+//                                                                   :  ModelPayments::NoFlags;
 
-    const int64_t lAmount = sourceData_Amount.isValid() ? sourceData_Amount.toLongLong() : 0;
+//    const int64_t lAmount = sourceData_Amount.isValid() ? sourceData_Amount.toLongLong() : 0;
 
-    time64_t the_time = sourceData_Date.isValid() ? sourceData_Date.toLongLong() : 0;
-    QDateTime timestamp;
-    timestamp.setTime_t(the_time);
-    QString qstrTimestamp = QString(timestamp.toString(Qt::SystemLocaleShortDate));
+//    time64_t the_time = sourceData_Date.isValid() ? sourceData_Date.toLongLong() : 0;
+//    QDateTime timestamp;
+//    timestamp.setTime_t(the_time);
+//    QString qstrTimestamp = QString(timestamp.toString(Qt::SystemLocaleShortDate));
 
-    const bool bIsOutgoing     = flags.testFlag(ModelPayments::IsOutgoing);
-    const bool bIsPending      = flags.testFlag(ModelPayments::IsPending);
+//    const bool bIsOutgoing     = flags.testFlag(ModelPayments::IsOutgoing);
+//    const bool bIsPending      = flags.testFlag(ModelPayments::IsPending);
 
-//    qDebug() << "bIsOutgoing: " << (bIsOutgoing ? QString("true") :  QString("false"))
-//    << " bPendingFound: " << (bPendingFound ? QString("true") :  QString("false")) <<
-//    " bCompletedFound: " << (bCompletedFound ? QString("true") :  QString("false")) <<
-//    " bIsPending: " << (bIsPending ? QString("true") :  QString("false")) << "\n";
+////    qDebug() << "bIsOutgoing: " << (bIsOutgoing ? QString("true") :  QString("false"))
+////    << " bPendingFound: " << (bPendingFound ? QString("true") :  QString("false")) <<
+////    " bCompletedFound: " << (bCompletedFound ? QString("true") :  QString("false")) <<
+////    " bIsPending: " << (bIsPending ? QString("true") :  QString("false")) << "\n";
 
-    TransactionTableViewCellType cellType = (bIsOutgoing ?
-                                                 // -------------------------------------------------
-                                                 (bIsPending ?
-                                                      TransactionTableViewCellTypeOutgoing :  // outgoing
-                                                      TransactionTableViewCellTypeSent) :     // sent
-                                                 // -------------------------------------------------
-                                                 (bIsPending ?
-                                                      TransactionTableViewCellTypeIncoming :  // incoming
-                                                      TransactionTableViewCellTypeReceived)); // received
-    // --------------------------------------------------------------------------------------------
-    // For invoices and invoice receipts.
-    //
-    const bool bIsInvoice       = flags.testFlag(ModelPayments::IsInvoice);
-    const bool bIsPlan          = flags.testFlag(ModelPayments::IsPaymentPlan);
-    const bool bIsNotice        = flags.testFlag(ModelPayments::IsNotice);
-    const bool bIsChequeReceipt = (0 == qstrInstrumentType.compare("chequeReceipt"));
-    const bool bIsMarketReceipt = (0 == qstrInstrumentType.compare("marketReceipt"));
+//    TransactionTableViewCellType cellType = (bIsOutgoing ?
+//                                                 // -------------------------------------------------
+//                                                 (bIsPending ?
+//                                                      TransactionTableViewCellTypeOutgoing :  // outgoing
+//                                                      TransactionTableViewCellTypeSent) :     // sent
+//                                                 // -------------------------------------------------
+//                                                 (bIsPending ?
+//                                                      TransactionTableViewCellTypeIncoming :  // incoming
+//                                                      TransactionTableViewCellTypeReceived)); // received
+//    // --------------------------------------------------------------------------------------------
+//    // For invoices and invoice receipts.
+//    //
+//    const bool bIsInvoice       = flags.testFlag(ModelPayments::IsInvoice);
+//    const bool bIsPlan          = flags.testFlag(ModelPayments::IsPaymentPlan);
+//    const bool bIsNotice        = flags.testFlag(ModelPayments::IsNotice);
+//    const bool bIsChequeReceipt = (0 == qstrInstrumentType.compare("chequeReceipt"));
+//    const bool bIsMarketReceipt = (0 == qstrInstrumentType.compare("marketReceipt"));
 
-    if (bIsInvoice || bIsPlan || bIsNotice ||
-        ( bIsChequeReceipt &&
-          (( bIsOutgoing && lAmount > 0) ||
-           (!bIsOutgoing && lAmount < 0))
-        ) )
-        cellType = (bIsOutgoing ?
-                    (bIsPending ?
-                     TransactionTableViewCellTypeIncoming  : // outgoing
-                     TransactionTableViewCellTypeReceived) : // sent
-                    // -------------------------------------------------
-                    (bIsPending ?
-                     TransactionTableViewCellTypeOutgoing  : // incoming
-                     TransactionTableViewCellTypeSent));     // received
-    // --------------------------------------------------------------------------------------------
-    if (bIsMarketReceipt)
-    {
-        cellType = (lAmount > 0) ? TransactionTableViewCellTypeReceived : TransactionTableViewCellTypeSent;
-    }
-    // --------------------------------------------------------------------------------------------
-    std::string str_desc = qstrDescription.toStdString();
-    // ---------------------------------------
-    QString strColor("black");
+//    if (bIsInvoice || bIsPlan || bIsNotice ||
+//        ( bIsChequeReceipt &&
+//          (( bIsOutgoing && lAmount > 0) ||
+//           (!bIsOutgoing && lAmount < 0))
+//        ) )
+//        cellType = (bIsOutgoing ?
+//                    (bIsPending ?
+//                     TransactionTableViewCellTypeIncoming  : // outgoing
+//                     TransactionTableViewCellTypeReceived) : // sent
+//                    // -------------------------------------------------
+//                    (bIsPending ?
+//                     TransactionTableViewCellTypeOutgoing  : // incoming
+//                     TransactionTableViewCellTypeSent));     // received
+//    // --------------------------------------------------------------------------------------------
+//    if (bIsMarketReceipt)
+//    {
+//        cellType = (lAmount > 0) ? TransactionTableViewCellTypeReceived : TransactionTableViewCellTypeSent;
+//    }
+//    // --------------------------------------------------------------------------------------------
+//    std::string str_desc = qstrDescription.toStdString();
+//    // ---------------------------------------
+//    QString strColor("black");
 
-    switch (cellType)
-    {
-        case TransactionTableViewCellTypeReceived:
-            strColor = QString("green");
-            break;
-        case TransactionTableViewCellTypeSent:
-            strColor = QString("red");
-            break;
-        case TransactionTableViewCellTypeIncoming:
-            strColor = QString("LightGreen");
-            break;
-        case TransactionTableViewCellTypeOutgoing:
-            strColor = QString("Crimson");
-            break;
-        default:
-            qDebug() << "CELL TYPE: " << cellType;
-            OT_FAIL_MSG("Expected all cell types to be handled for color.");
-            break;
-    }
-    // --------------------------------------------------------------------------------------------
-    //Append to transactions list in overview dialog.
-    QWidget * row_widget = new QWidget;
-    QGridLayout * row_widget_layout = new QGridLayout;
+//    switch (cellType)
+//    {
+//        case TransactionTableViewCellTypeReceived:
+//            strColor = QString("green");
+//            break;
+//        case TransactionTableViewCellTypeSent:
+//            strColor = QString("red");
+//            break;
+//        case TransactionTableViewCellTypeIncoming:
+//            strColor = QString("LightGreen");
+//            break;
+//        case TransactionTableViewCellTypeOutgoing:
+//            strColor = QString("Crimson");
+//            break;
+//        default:
+//            qDebug() << "CELL TYPE: " << cellType;
+//            OT_FAIL_MSG("Expected all cell types to be handled for color.");
+//            break;
+//    }
+//    // --------------------------------------------------------------------------------------------
+//    //Append to transactions list in overview dialog.
+//    QWidget * row_widget = new QWidget;
+//    QGridLayout * row_widget_layout = new QGridLayout;
 
-    row_widget_layout->setSpacing(4);
-    row_widget_layout->setContentsMargins(10, 4, 10, 4);
+//    row_widget_layout->setSpacing(4);
+//    row_widget_layout->setContentsMargins(10, 4, 10, 4);
 
-    row_widget->setLayout(row_widget_layout);
-    row_widget->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");
-    // -------------------------------------------
-    //Render row.
-    //Header of row
-    QString tx_name = qstrRecordName;
+//    row_widget->setLayout(row_widget_layout);
+//    row_widget->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");
+//    // -------------------------------------------
+//    //Render row.
+//    //Header of row
+//    QString tx_name = qstrRecordName;
 
-    if (tx_name.trimmed() == "")
-    {
-        //Tx has no name
-        tx_name.clear();
-        tx_name = "Receipt";
-    }
+//    if (tx_name.trimmed() == "")
+//    {
+//        //Tx has no name
+//        tx_name.clear();
+//        tx_name = "Receipt";
+//    }
 
-    QLabel * header_of_row = new QLabel;
-    QString header_of_row_string = QString("");
-    header_of_row_string.append(tx_name);
+//    QLabel * header_of_row = new QLabel;
+//    QString header_of_row_string = QString("");
+//    header_of_row_string.append(tx_name);
 
-    header_of_row->setText(header_of_row_string);
+//    header_of_row->setText(header_of_row_string);
 
-    //Append header to layout
-    row_widget_layout->addWidget(header_of_row, 0, 0, 1,1, Qt::AlignLeft);
-    // -------------------------------------------
-    // Amount (with currency tla)
-    QLabel * currency_amount_label = new QLabel;
-    QString currency_amount;
+//    //Append header to layout
+//    row_widget_layout->addWidget(header_of_row, 0, 0, 1,1, Qt::AlignLeft);
+//    // -------------------------------------------
+//    // Amount (with currency tla)
+//    QLabel * currency_amount_label = new QLabel;
+//    QString currency_amount;
 
-    currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(strColor));
-    // ----------------------------------------------------------------
-    bool bLabelAdded = false;
+//    currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(strColor));
+//    // ----------------------------------------------------------------
+//    bool bLabelAdded = false;
 
-    std::string str_formatted;
-    bool bFormatted = false;
+//    std::string str_formatted;
+//    bool bFormatted = false;
 
-    if ( !qstrAssetId.isEmpty() )
-    {
-        str_formatted = opentxs::OT::App().API().Exec().FormatAmount(qstrAssetId.toStdString(), lAmount);
-        bFormatted = !str_formatted.empty();
-    }
-    // ----------------------------------------
-    if (bFormatted)
-        currency_amount = QString::fromStdString(str_formatted);
-    else
-        currency_amount = QString("");
-    // ----------------------------------------------------------------
-    currency_amount_label->setText(currency_amount);
-    // ----------------------------------------------------------------
-    if (!bLabelAdded)
-        row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
-    // -------------------------------------------
-    //Sub-info
-    QWidget * row_content_container = new QWidget;
-    QGridLayout * row_content_grid = new QGridLayout;
+//    if ( !qstrAssetId.isEmpty() )
+//    {
+//        str_formatted = opentxs::OT::App().API().Exec().FormatAmount(qstrAssetId.toStdString(), lAmount);
+//        bFormatted = !str_formatted.empty();
+//    }
+//    // ----------------------------------------
+//    if (bFormatted)
+//        currency_amount = QString::fromStdString(str_formatted);
+//    else
+//        currency_amount = QString("");
+//    // ----------------------------------------------------------------
+//    currency_amount_label->setText(currency_amount);
+//    // ----------------------------------------------------------------
+//    if (!bLabelAdded)
+//        row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
+//    // -------------------------------------------
+//    //Sub-info
+//    QWidget * row_content_container = new QWidget;
+//    QGridLayout * row_content_grid = new QGridLayout;
 
-    // left top right bottom
+//    // left top right bottom
 
-    row_content_grid->setSpacing(4);
-    row_content_grid->setContentsMargins(3, 4, 3, 4);
+//    row_content_grid->setSpacing(4);
+//    row_content_grid->setContentsMargins(3, 4, 3, 4);
 
-    row_content_container->setLayout(row_content_grid);
+//    row_content_container->setLayout(row_content_grid);
 
-    row_widget_layout->addWidget(row_content_container, 1,0, 1,2);
-    // -------------------------------------------
-    // Column one
-    QLabel * row_content_date_label = new QLabel;
-    QString row_content_date_label_string;
-    row_content_date_label_string.append(qstrTimestamp);
+//    row_widget_layout->addWidget(row_content_container, 1,0, 1,2);
+//    // -------------------------------------------
+//    // Column one
+//    QLabel * row_content_date_label = new QLabel;
+//    QString row_content_date_label_string;
+//    row_content_date_label_string.append(qstrTimestamp);
 
-    row_content_date_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
-    row_content_date_label->setText(row_content_date_label_string);
+//    row_content_date_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
+//    row_content_date_label->setText(row_content_date_label_string);
 
-    row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
-    // -------------------------------------------
-    // Column two
-    //Status
-    QLabel * row_content_status_label = new QLabel;
-    QString row_content_status_string;
+//    row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
+//    // -------------------------------------------
+//    // Column two
+//    //Status
+//    QLabel * row_content_status_label = new QLabel;
+//    QString row_content_status_string;
 
-    row_content_status_string.append(QString::fromStdString(str_desc));
-    // -------------------------------------------
-    //add string to label
-    row_content_status_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
-    row_content_status_label->setWordWrap(false);
-    row_content_status_string.replace("\r\n"," ");
-    row_content_status_string.replace("\n\r"," ");
-    row_content_status_string.replace("\n",  " ");
-    row_content_status_label->setText(row_content_status_string);
+//    row_content_status_string.append(QString::fromStdString(str_desc));
+//    // -------------------------------------------
+//    //add string to label
+//    row_content_status_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
+//    row_content_status_label->setWordWrap(false);
+//    row_content_status_string.replace("\r\n"," ");
+//    row_content_status_string.replace("\n\r"," ");
+//    row_content_status_string.replace("\n",  " ");
+//    row_content_status_label->setText(row_content_status_string);
 
-    //add to row_content grid
-    row_content_grid->addWidget(row_content_status_label, 0,1, 1,1, Qt::AlignRight);
-    // -------------------------------------------
-    row_widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    return row_widget;
+//    //add to row_content grid
+//    row_content_grid->addWidget(row_content_status_label, 0,1, 1,1, Qt::AlignRight);
+//    // -------------------------------------------
+//    row_widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+//    return row_widget;
+
+    return nullptr;
 }
 
 
@@ -1131,169 +1133,169 @@ bool AgreementReceiptsProxyModel::filterAcceptsColumn(int source_column, const Q
 
 bool AgreementReceiptsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
-    QModelIndex indexAgreementId  = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_AGRMT_ID,       sourceParent); // agreement_id
-    QModelIndex indexReceiptId    = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_RECEIPT_ID,     sourceParent); // receipt_id
-    QModelIndex indexTxnIdDisplay = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_TXN_ID_DISPLAY, sourceParent); // txn_id_display
-    QModelIndex indexMyNym        = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_MY_NYM,         sourceParent); // my_nym_id
-    QModelIndex indexMyAcct       = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_MY_ACCT,        sourceParent); // my_acct_id
-    QModelIndex indexAssetType    = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_MY_ASSET_TYPE,  sourceParent); // my_asset_type_id
-    QModelIndex indexSenderNym    = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_SENDER_NYM,     sourceParent); // sender_nym_id
-    QModelIndex indexSenderAcct   = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_SENDER_ACCT,    sourceParent); // sender_acct_id
-    QModelIndex indexSenderAddr   = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_SENDER_ADDR,    sourceParent); // sender_address
-    QModelIndex indexRecipNym     = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_RECIP_NYM,      sourceParent); // recipient_nym_id
-    QModelIndex indexRecipAcct    = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_RECIP_ACCT,     sourceParent); // recipient_acct_id
-    QModelIndex indexRecipAddr    = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_RECIP_ADDR,     sourceParent); // recipient_address
-    QModelIndex indexMethodType   = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_METHOD_TYPE,    sourceParent); // method_type
-    QModelIndex indexNotary       = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_NOTARY_ID,      sourceParent); // notary_id
-    QModelIndex indexFolder       = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_FOLDER,         sourceParent); // folder
-    QModelIndex indexDescription  = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_DESCRIPTION,    sourceParent); // description
-    QModelIndex indexFlags        = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_FLAGS,          sourceParent); // flags
+//    QModelIndex indexAgreementId  = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_AGRMT_ID,       sourceParent); // agreement_id
+//    QModelIndex indexReceiptId    = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_RECEIPT_ID,     sourceParent); // receipt_id
+//    QModelIndex indexTxnIdDisplay = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_TXN_ID_DISPLAY, sourceParent); // txn_id_display
+//    QModelIndex indexMyNym        = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_MY_NYM,         sourceParent); // my_nym_id
+//    QModelIndex indexMyAcct       = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_MY_ACCT,        sourceParent); // my_acct_id
+//    QModelIndex indexAssetType    = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_MY_ASSET_TYPE,  sourceParent); // my_asset_type_id
+//    QModelIndex indexSenderNym    = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_SENDER_NYM,     sourceParent); // sender_nym_id
+//    QModelIndex indexSenderAcct   = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_SENDER_ACCT,    sourceParent); // sender_acct_id
+//    QModelIndex indexSenderAddr   = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_SENDER_ADDR,    sourceParent); // sender_address
+//    QModelIndex indexRecipNym     = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_RECIP_NYM,      sourceParent); // recipient_nym_id
+//    QModelIndex indexRecipAcct    = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_RECIP_ACCT,     sourceParent); // recipient_acct_id
+//    QModelIndex indexRecipAddr    = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_RECIP_ADDR,     sourceParent); // recipient_address
+//    QModelIndex indexMethodType   = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_METHOD_TYPE,    sourceParent); // method_type
+//    QModelIndex indexNotary       = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_NOTARY_ID,      sourceParent); // notary_id
+//    QModelIndex indexFolder       = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_FOLDER,         sourceParent); // folder
+//    QModelIndex indexDescription  = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_DESCRIPTION,    sourceParent); // description
+//    QModelIndex indexFlags        = sourceModel()->index(sourceRow, AGRMT_RECEIPT_COL_FLAGS,          sourceParent); // flags
 
-    QAbstractItemModel     * pModel    = sourceModel();
-    ModelAgreementReceipts * pMsgModel = dynamic_cast<ModelAgreementReceipts*>(pModel);
+//    QAbstractItemModel     * pModel    = sourceModel();
+//    ModelAgreementReceipts * pMsgModel = dynamic_cast<ModelAgreementReceipts*>(pModel);
 
-    if (nullptr != pMsgModel)
-    {
-        // Check the folder here.
-        QVariant dataFolder = pMsgModel->data(indexFolder);
-        const int nFolder = dataFolder.isValid() ? dataFolder.toInt() : (-1);
+//    if (nullptr != pMsgModel)
+//    {
+//        // Check the folder here.
+//        QVariant dataFolder = pMsgModel->data(indexFolder);
+//        const int nFolder = dataFolder.isValid() ? dataFolder.toInt() : (-1);
 
-        if ((nFolder != -1) && (FilterNone != filterType_))
-        {
-            if ( (FilterSent == filterType_) && (0 != nFolder) )
-                return false;
-            else if ( (FilterReceived == filterType_) && !(nFolder > 0) )
-                return false;
-        }
-        // ------------------------------------
-        // Grab the data for the current row.
-        //
-        ModelPayments::PaymentFlags flags = ModelPayments::NoFlags;
+//        if ((nFolder != -1) && (FilterNone != filterType_))
+//        {
+//            if ( (FilterSent == filterType_) && (0 != nFolder) )
+//                return false;
+//            else if ( (FilterReceived == filterType_) && !(nFolder > 0) )
+//                return false;
+//        }
+//        // ------------------------------------
+//        // Grab the data for the current row.
+//        //
+//        ModelPayments::PaymentFlags flags = ModelPayments::NoFlags;
 
-        const QVariant dataAgreementId      = pMsgModel->data(indexAgreementId);
-        const QVariant dataReceiptId        = pMsgModel->data(indexReceiptId);
-        const QVariant dataTxnIdDisplay     = pMsgModel->data(indexTxnIdDisplay);
-        const QVariant dataMyNym            = pMsgModel->data(indexMyNym);
-        const QVariant dataMyAcct           = pMsgModel->data(indexMyAcct);
-        const QVariant dataAssetType        = pMsgModel->data(indexAssetType);
-        const QVariant dataMethodType       = pMsgModel->data(indexMethodType);
-        const QVariant dataSenderNym        = pMsgModel->data(indexSenderNym);
-        const QVariant dataRecipientNym     = pMsgModel->data(indexRecipNym);
-        const QVariant dataSenderAcct       = pMsgModel->data(indexSenderAcct);
-        const QVariant dataRecipientAcct    = pMsgModel->data(indexRecipAcct);
-        const QVariant dataSenderAddress    = pMsgModel->data(indexSenderAddr);
-        const QVariant dataRecipientAddress = pMsgModel->data(indexRecipAddr);
-        const QVariant dataNotaryID         = pMsgModel->data(indexNotary);
-        const QVariant dataDescription      = pMsgModel->data(indexDescription);
-        const QVariant varFlags             = pMsgModel->rawData(indexFlags);
+//        const QVariant dataAgreementId      = pMsgModel->data(indexAgreementId);
+//        const QVariant dataReceiptId        = pMsgModel->data(indexReceiptId);
+//        const QVariant dataTxnIdDisplay     = pMsgModel->data(indexTxnIdDisplay);
+//        const QVariant dataMyNym            = pMsgModel->data(indexMyNym);
+//        const QVariant dataMyAcct           = pMsgModel->data(indexMyAcct);
+//        const QVariant dataAssetType        = pMsgModel->data(indexAssetType);
+//        const QVariant dataMethodType       = pMsgModel->data(indexMethodType);
+//        const QVariant dataSenderNym        = pMsgModel->data(indexSenderNym);
+//        const QVariant dataRecipientNym     = pMsgModel->data(indexRecipNym);
+//        const QVariant dataSenderAcct       = pMsgModel->data(indexSenderAcct);
+//        const QVariant dataRecipientAcct    = pMsgModel->data(indexRecipAcct);
+//        const QVariant dataSenderAddress    = pMsgModel->data(indexSenderAddr);
+//        const QVariant dataRecipientAddress = pMsgModel->data(indexRecipAddr);
+//        const QVariant dataNotaryID         = pMsgModel->data(indexNotary);
+//        const QVariant dataDescription      = pMsgModel->data(indexDescription);
+//        const QVariant varFlags             = pMsgModel->rawData(indexFlags);
 
-//        const QVariant dataSenderName       = this->data(mapFromSource(indexSenderNym));
-//        const QVariant dataRecipientName    = this->data(mapFromSource(indexRecipNym));
-//        const QVariant dataNotaryName       = this->data(mapFromSource(indexNotary));
+////        const QVariant dataSenderName       = this->data(mapFromSource(indexSenderNym));
+////        const QVariant dataRecipientName    = this->data(mapFromSource(indexRecipNym));
+////        const QVariant dataNotaryName       = this->data(mapFromSource(indexNotary));
 
-        qint64 lFlags = varFlags.isValid() ? varFlags.toLongLong() : 0;
+//        qint64 lFlags = varFlags.isValid() ? varFlags.toLongLong() : 0;
 
-        flags = ModelPayments::PaymentFlag(static_cast<ModelPayments::PaymentFlag>(lFlags)); // Note: isn't this line redundant??
+//        flags = ModelPayments::PaymentFlag(static_cast<ModelPayments::PaymentFlag>(lFlags)); // Note: isn't this line redundant??
 
-//        if ( flags.testFlag(ModelPayments::IsFinalReceipt))
+////        if ( flags.testFlag(ModelPayments::IsFinalReceipt))
+////            return false;
+//        // -----------------------------------------------
+//        const int64_t lAgreementId         = dataAgreementId.isValid() ? dataAgreementId.toLongLong() : 0;
+//        const int64_t lReceiptId           = dataReceiptId.isValid() ? dataReceiptId.toLongLong() : 0;
+//        const int64_t lTxnIdDisplay        = dataTxnIdDisplay.isValid() ? dataTxnIdDisplay.toLongLong() : 0;
+//        const QString qstrAgreementId      = lAgreementId > 0 ? QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lAgreementId)) : "";
+//        const QString qstrReceiptId        = lReceiptId > 0 ? QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lReceiptId)) : "";
+//        const QString qstrTxnIdDisplay     = lTxnIdDisplay > 0 ? QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lTxnIdDisplay)) : "";
+//        const QString qstrMyNym            = dataMyNym.isValid() ? dataMyNym.toString() : "";
+//        const QString qstrMyAcct           = dataMyAcct.isValid() ? dataMyAcct.toString() : "";
+//        const QString qstrAssetType        = dataAssetType.isValid() ? dataAssetType.toString() : "";
+//        const QString qstrMethodType       = dataMethodType.isValid() ? dataMethodType.toString() : "";
+//        const QString qstrSenderNym        = dataSenderNym.isValid() ? dataSenderNym.toString() : "";
+//        const QString qstrRecipientNym     = dataRecipientNym.isValid() ? dataRecipientNym.toString() : "";
+//        const QString qstrSenderAcct       = dataSenderAcct.isValid() ? dataSenderAcct.toString() : "";
+//        const QString qstrRecipientAcct    = dataRecipientAcct.isValid() ? dataRecipientAcct.toString() : "";
+//        const QString qstrSenderAddress    = dataSenderAddress.isValid() ? dataSenderAddress.toString() : "";
+//        const QString qstrRecipientAddress = dataRecipientAddress.isValid() ? dataRecipientAddress.toString() : "";
+//        const QString qstrNotaryID         = dataNotaryID.isValid() ? dataNotaryID.toString() : "";
+//        // ------------------------------------
+//        // Here we check the filterString (optional string the user can type.)
+//        //
+//        if (!filterString_.isEmpty())
+//        {
+//            const QString qstrDescription = dataDescription.isValid() ? dataDescription.toString() : "";
+
+//            const QString qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
+//                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrNotaryID.toStdString()));
+
+//            const QString qstrMyAcctName = qstrMyAcct.isEmpty() ? QString("") :
+//                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(qstrMyAcct.toStdString()));
+//            const QString qstrAssetName = qstrAssetType.isEmpty() ? QString("") :
+//                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrAssetType.toStdString()));
+
+//            MTNameLookupQT theLookup;
+//            QString qstrMyName        = qstrMyNym       .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrMyNym       .toStdString(), ""));
+//            QString qstrSenderName    = qstrSenderNym   .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrSenderNym   .toStdString(), ""));
+//            QString qstrRecipientName = qstrRecipientNym.isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrRecipientNym.toStdString(), ""));
+
+//            if (qstrSenderName.isEmpty() && !qstrSenderAddress.isEmpty())
+//                qstrSenderName = QString::fromStdString(theLookup.GetAddressName(qstrSenderAddress.toStdString()));
+//            if (qstrRecipientName.isEmpty() && !qstrRecipientAddress.isEmpty())
+//                qstrRecipientName = QString::fromStdString(theLookup.GetAddressName(qstrRecipientAddress.toStdString()));
+
+//            if (qstrSenderName.isEmpty() && !qstrSenderAcct.isEmpty())
+//                qstrSenderName = QString::fromStdString(theLookup.GetAcctName(qstrSenderAcct.toStdString(), "", "", ""));
+//            if (qstrRecipientName.isEmpty() && !qstrRecipientAcct.isEmpty())
+//                qstrRecipientName = QString::fromStdString(theLookup.GetAcctName(qstrRecipientAcct.toStdString(), "", "", ""));
+
+//            if (qstrMyName.isEmpty() && !qstrMyAcctName.isEmpty())
+//                qstrMyName = qstrMyAcctName;
+
+//            if (!qstrAgreementId.contains(filterString_) &&
+//                !qstrReceiptId.contains(filterString_) &&
+//                !qstrTxnIdDisplay.contains(filterString_) &&
+//                !qstrDescription.contains(filterString_) &&
+//                !qstrMethodType.contains(filterString_) &&
+//                !qstrMyNym.contains(filterString_) &&
+//                !qstrSenderNym.contains(filterString_) &&
+//                !qstrRecipientNym.contains(filterString_) &&
+//                !qstrMyAcct.contains(filterString_) &&
+//                !qstrSenderAcct.contains(filterString_) &&
+//                !qstrRecipientAcct.contains(filterString_) &&
+//                !qstrSenderAddress.contains(filterString_) &&
+//                !qstrRecipientAddress.contains(filterString_) &&
+//                !qstrAssetType.contains(filterString_) &&
+//                !qstrNotaryID.contains(filterString_) &&
+//                !qstrMyName.contains(filterString_) &&
+//                !qstrMyAcctName.contains(filterString_) &&
+//                !qstrSenderName.contains(filterString_) &&
+//                !qstrRecipientName.contains(filterString_) &&
+//                !qstrAssetName.contains(filterString_) &&
+//                !qstrNotaryName.contains(filterString_) )
+//                return false;
+//        }
+//        // ------------------------------------
+//        if (!filterAccountId_.isEmpty() && !qstrMyAcct.isEmpty())
+//        {
+//            if (0 != qstrMyAcct.compare(filterAccountId_))
+//                return false;
+//        }
+//        // ------------------------------------
+//        if (!filterMySignerId_.isEmpty() && !qstrMyNym.isEmpty())
+//        {
+//            if (0 != qstrMyNym.compare(filterMySignerId_))
+//                return false;
+//        }
+//        // ------------------------------------
+//        if (0 == filterAgreementId_)
 //            return false;
-        // -----------------------------------------------
-        const int64_t lAgreementId         = dataAgreementId.isValid() ? dataAgreementId.toLongLong() : 0;
-        const int64_t lReceiptId           = dataReceiptId.isValid() ? dataReceiptId.toLongLong() : 0;
-        const int64_t lTxnIdDisplay        = dataTxnIdDisplay.isValid() ? dataTxnIdDisplay.toLongLong() : 0;
-        const QString qstrAgreementId      = lAgreementId > 0 ? QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lAgreementId)) : "";
-        const QString qstrReceiptId        = lReceiptId > 0 ? QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lReceiptId)) : "";
-        const QString qstrTxnIdDisplay     = lTxnIdDisplay > 0 ? QString::fromStdString(opentxs::OT::App().API().Exec().LongToString(lTxnIdDisplay)) : "";
-        const QString qstrMyNym            = dataMyNym.isValid() ? dataMyNym.toString() : "";
-        const QString qstrMyAcct           = dataMyAcct.isValid() ? dataMyAcct.toString() : "";
-        const QString qstrAssetType        = dataAssetType.isValid() ? dataAssetType.toString() : "";
-        const QString qstrMethodType       = dataMethodType.isValid() ? dataMethodType.toString() : "";
-        const QString qstrSenderNym        = dataSenderNym.isValid() ? dataSenderNym.toString() : "";
-        const QString qstrRecipientNym     = dataRecipientNym.isValid() ? dataRecipientNym.toString() : "";
-        const QString qstrSenderAcct       = dataSenderAcct.isValid() ? dataSenderAcct.toString() : "";
-        const QString qstrRecipientAcct    = dataRecipientAcct.isValid() ? dataRecipientAcct.toString() : "";
-        const QString qstrSenderAddress    = dataSenderAddress.isValid() ? dataSenderAddress.toString() : "";
-        const QString qstrRecipientAddress = dataRecipientAddress.isValid() ? dataRecipientAddress.toString() : "";
-        const QString qstrNotaryID         = dataNotaryID.isValid() ? dataNotaryID.toString() : "";
-        // ------------------------------------
-        // Here we check the filterString (optional string the user can type.)
-        //
-        if (!filterString_.isEmpty())
-        {
-            const QString qstrDescription = dataDescription.isValid() ? dataDescription.toString() : "";
-
-            const QString qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrNotaryID.toStdString()));
-
-            const QString qstrMyAcctName = qstrMyAcct.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(qstrMyAcct.toStdString()));
-            const QString qstrAssetName = qstrAssetType.isEmpty() ? QString("") :
-                                           QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(qstrAssetType.toStdString()));
-
-            MTNameLookupQT theLookup;
-            QString qstrMyName        = qstrMyNym       .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrMyNym       .toStdString(), ""));
-            QString qstrSenderName    = qstrSenderNym   .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrSenderNym   .toStdString(), ""));
-            QString qstrRecipientName = qstrRecipientNym.isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrRecipientNym.toStdString(), ""));
-
-            if (qstrSenderName.isEmpty() && !qstrSenderAddress.isEmpty())
-                qstrSenderName = QString::fromStdString(theLookup.GetAddressName(qstrSenderAddress.toStdString()));
-            if (qstrRecipientName.isEmpty() && !qstrRecipientAddress.isEmpty())
-                qstrRecipientName = QString::fromStdString(theLookup.GetAddressName(qstrRecipientAddress.toStdString()));
-
-            if (qstrSenderName.isEmpty() && !qstrSenderAcct.isEmpty())
-                qstrSenderName = QString::fromStdString(theLookup.GetAcctName(qstrSenderAcct.toStdString(), "", "", ""));
-            if (qstrRecipientName.isEmpty() && !qstrRecipientAcct.isEmpty())
-                qstrRecipientName = QString::fromStdString(theLookup.GetAcctName(qstrRecipientAcct.toStdString(), "", "", ""));
-
-            if (qstrMyName.isEmpty() && !qstrMyAcctName.isEmpty())
-                qstrMyName = qstrMyAcctName;
-
-            if (!qstrAgreementId.contains(filterString_) &&
-                !qstrReceiptId.contains(filterString_) &&
-                !qstrTxnIdDisplay.contains(filterString_) &&
-                !qstrDescription.contains(filterString_) &&
-                !qstrMethodType.contains(filterString_) &&
-                !qstrMyNym.contains(filterString_) &&
-                !qstrSenderNym.contains(filterString_) &&
-                !qstrRecipientNym.contains(filterString_) &&
-                !qstrMyAcct.contains(filterString_) &&
-                !qstrSenderAcct.contains(filterString_) &&
-                !qstrRecipientAcct.contains(filterString_) &&
-                !qstrSenderAddress.contains(filterString_) &&
-                !qstrRecipientAddress.contains(filterString_) &&
-                !qstrAssetType.contains(filterString_) &&
-                !qstrNotaryID.contains(filterString_) &&
-                !qstrMyName.contains(filterString_) &&
-                !qstrMyAcctName.contains(filterString_) &&
-                !qstrSenderName.contains(filterString_) &&
-                !qstrRecipientName.contains(filterString_) &&
-                !qstrAssetName.contains(filterString_) &&
-                !qstrNotaryName.contains(filterString_) )
-                return false;
-        }
-        // ------------------------------------
-        if (!filterAccountId_.isEmpty() && !qstrMyAcct.isEmpty())
-        {
-            if (0 != qstrMyAcct.compare(filterAccountId_))
-                return false;
-        }
-        // ------------------------------------
-        if (!filterMySignerId_.isEmpty() && !qstrMyNym.isEmpty())
-        {
-            if (0 != qstrMyNym.compare(filterMySignerId_))
-                return false;
-        }
-        // ------------------------------------
-        if (0 == filterAgreementId_)
-            return false;
-        // ------------------------------------
-        if ((filterAgreementId_ > 0) && (lAgreementId > 0))
-        {
-            if (lAgreementId != filterAgreementId_)
-                return false;
-        }
-        // ------------------------------------
-    }
+//        // ------------------------------------
+//        if ((filterAgreementId_ > 0) && (lAgreementId > 0))
+//        {
+//            if (lAgreementId != filterAgreementId_)
+//                return false;
+//        }
+//        // ------------------------------------
+//    }
 
     return true;
 }
