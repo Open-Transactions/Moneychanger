@@ -13,38 +13,31 @@
 #include <memory>
 #include <string>
 
-#define PMNT_SOURCE_COL_PMNT_ID 0
-#define PMNT_SOURCE_COL_HAVE_READ 1
-#define PMNT_SOURCE_COL_HAVE_REPLIED 2
-#define PMNT_SOURCE_COL_HAVE_FORWARDED 3
-#define PMNT_SOURCE_COL_MEMO 4
-#define PMNT_SOURCE_COL_MY_ASSET_TYPE 5
-#define PMNT_SOURCE_COL_MY_NYM 6
-#define PMNT_SOURCE_COL_MY_ACCT 7
-#define PMNT_SOURCE_COL_MY_ADDR 8
-#define PMNT_SOURCE_COL_DESCRIPTION 9
-#define PMNT_SOURCE_COL_SENDER_NYM 10
-#define PMNT_SOURCE_COL_SENDER_ACCT 11
-#define PMNT_SOURCE_COL_SENDER_ADDR 12
-#define PMNT_SOURCE_COL_RECIP_NYM 13
-#define PMNT_SOURCE_COL_RECIP_ACCT 14
-#define PMNT_SOURCE_COL_RECIP_ADDR 15
-#define PMNT_SOURCE_COL_AMOUNT 16
-#define PMNT_SOURCE_COL_PENDING_FOUND 17
-#define PMNT_SOURCE_COL_COMPLETED_FOUND 18
-#define PMNT_SOURCE_COL_TIMESTAMP 19
-#define PMNT_SOURCE_COL_TXN_ID 20
-#define PMNT_SOURCE_COL_TXN_ID_DISPLAY 21
-#define PMNT_SOURCE_COL_METHOD_TYPE 22
-#define PMNT_SOURCE_COL_METHOD_TYPE_DISP 23
-#define PMNT_SOURCE_COL_PMNT_NOTARY_ID 24
-#define PMNT_SOURCE_COL_RECORD_NAME 25
-#define PMNT_SOURCE_COL_INSTRUMENT_TYPE 26
-#define PMNT_SOURCE_COL_FOLDER 27
-#define PMNT_SOURCE_COL_FLAGS 28
-#define PMNT_SOURCE_COL_MSG_NOTARY_ID 29
+#define PMNT_SOURCE_COL_ROW_WIDGET_ID 0
+#define PMNT_SOURCE_COL_CURRENCY_TYPE 1
+#define PMNT_SOURCE_COL_MY_NYM_ID 2
+#define PMNT_SOURCE_COL_ACCOUNT_ID 3
+#define PMNT_SOURCE_COL_UNIT_TYPE_ID 4
+#define PMNT_SOURCE_COL_NOTARY_ID 5
+#define PMNT_SOURCE_COL_AMOUNT 6
+#define PMNT_SOURCE_COL_DISPLAY_AMOUNT 7
+#define PMNT_SOURCE_COL_MEMO 8
+#define PMNT_SOURCE_COL_TEXT 9
+#define PMNT_SOURCE_COL_TIMESTAMP 10
+#define PMNT_SOURCE_COL_STORAGE_BOX_TYPE 11
 
-
+//pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("row_widget_id"));
+//pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("currency_type"));
+//pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("my_nym_id"));
+//pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("account_id"));
+//pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("unit_type_id"));
+//pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("notary_id"));
+//pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("amount"));
+//pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("display_amount"));
+//pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("memo"));
+//pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("text"));
+//pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("timestamp"));
+//pModel->setHeaderData(column++, Qt::Horizontal, QObject::tr("storage_box_type"));
 
 
 class ModelPayments : public QSqlTableModel
@@ -69,34 +62,34 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(MyClass::Options)
 
 You can then use the MyClass::Options type to store combinations of MyClass::Option values.
     */
-    enum PaymentFlag {
-         NoFlags                 =  0x0
-        ,IsSpecialMail           =  0x1
-        ,IsPending               =  0x1 <<  1
-        ,IsOutgoing              =  0x1 <<  2
-        ,IsRecord                =  0x1 <<  3
-        ,IsReceipt               =  0x1 <<  4
-        ,IsFinalReceipt          =  0x1 <<  5
-        ,IsMail                  =  0x1 <<  6
-        ,IsTransfer              =  0x1 <<  7
-        ,IsCheque                =  0x1 <<  8
-        ,IsInvoice               =  0x1 <<  9
-        ,IsVoucher               =  0x1 << 10
-        ,IsContract              =  0x1 << 11
-        ,IsPaymentPlan           =  0x1 << 12
-        ,IsCash                  =  0x1 << 13
-        ,IsNotice                =  0x1 << 14
-        ,IsExpired               =  0x1 << 15
-        ,IsCanceled              =  0x1 << 16
-        ,CanDelete               =  0x1 << 17
-        ,CanAcceptIncoming       =  0x1 << 18
-        ,CanDiscardIncoming      =  0x1 << 19
-        ,CanCancelOutgoing       =  0x1 << 20
-        ,CanDiscardOutgoingCash  =  0x1 << 21
-        ,OriginTypePaymentPlan   =  0x1 << 22 // For notices, finalReceipts and paymentReceipts re: a payment plan
-        ,OriginTypeSmartContract =  0x1 << 23 // For notices, finalReceipts and paymentReceipts re: a smart contract
-    };
-    Q_DECLARE_FLAGS(PaymentFlags, PaymentFlag)
+//    enum PaymentFlag {
+//         NoFlags                 =  0x0
+//        ,IsSpecialMail           =  0x1
+//        ,IsPending               =  0x1 <<  1
+//        ,IsOutgoing              =  0x1 <<  2
+//        ,IsRecord                =  0x1 <<  3
+//        ,IsReceipt               =  0x1 <<  4
+//        ,IsFinalReceipt          =  0x1 <<  5
+//        ,IsMail                  =  0x1 <<  6
+//        ,IsTransfer              =  0x1 <<  7
+//        ,IsCheque                =  0x1 <<  8
+//        ,IsInvoice               =  0x1 <<  9
+//        ,IsVoucher               =  0x1 << 10
+//        ,IsContract              =  0x1 << 11
+//        ,IsPaymentPlan           =  0x1 << 12
+//        ,IsCash                  =  0x1 << 13
+//        ,IsNotice                =  0x1 << 14
+//        ,IsExpired               =  0x1 << 15
+//        ,IsCanceled              =  0x1 << 16
+//        ,CanDelete               =  0x1 << 17
+//        ,CanAcceptIncoming       =  0x1 << 18
+//        ,CanDiscardIncoming      =  0x1 << 19
+//        ,CanCancelOutgoing       =  0x1 << 20
+//        ,CanDiscardOutgoingCash  =  0x1 << 21
+//        ,OriginTypePaymentPlan   =  0x1 << 22 // For notices, finalReceipts and paymentReceipts re: a payment plan
+//        ,OriginTypeSmartContract =  0x1 << 23 // For notices, finalReceipts and paymentReceipts re: a smart contract
+//    };
+//    Q_DECLARE_FLAGS(PaymentFlags, PaymentFlag)
 
     explicit ModelPayments(QObject *parent = 0, QSqlDatabase db = QSqlDatabase());
 
@@ -114,7 +107,7 @@ signals:
 public slots:
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(ModelPayments::PaymentFlags)
+//Q_DECLARE_OPERATORS_FOR_FLAGS(ModelPayments::PaymentFlags)
 
 
 class QTableView;
@@ -193,7 +186,7 @@ class ActivityPaymentsProxyModel : public QSortFilterProxyModel
         FilterNone = 0,
         FilterTopLevel = 1,
         FilterNotary = 2,
-        FilterTLA = 3,
+        FilterCurrency = 3,
         FilterAccount = 4
     };
 
@@ -205,7 +198,7 @@ public:
     void setFilterNone(); // Doesn't affect the filterFolder, but DOES affect all the others below. (Top level, notary, method address.)
     void setFilterTopLevel(QString qstrContactID);
     void setFilterNotary(QString qstrNotaryId);
-    void setFilterTLA(QString qstrTLA);
+    void setFilterCurrency(int nCurrencyType);
     void setFilterAccount(QString qstrAccountId);
 
     void setFilterString(QString qstrFilter);
