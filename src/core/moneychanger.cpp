@@ -141,7 +141,7 @@ Moneychanger::Moneychanger(QWidget *parent)
               this->process_widget_update(message);
           })),
   widget_update_(ot_.ZMQ().Context().SubscribeSocket(widget_update_callback_)),
-  m_list(*(new MTNameLookupQT)),
+//  m_list(*(new MTNameLookupQT)),
   nmc(new NMC_Interface ()),
   nmc_names(NULL),
   mc_overall_init(false),
@@ -6039,9 +6039,7 @@ void Moneychanger::mc_import_slot()
                     if (!default_account_id.isEmpty() && (OT_acct_id == default_account_id))
                         bFoundDefault = true;
                     // -----------------------------------------------
-                    MTNameLookupQT theLookup;
-
-                    OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString(), "", "", ""));
+                    OT_acct_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(OT_acct_id.toStdString()));
                     // -----------------------------------------------
                     the_map.insert(OT_acct_id, OT_acct_name);
                 }
@@ -6203,10 +6201,9 @@ void Moneychanger::mc_import_slot()
             } // recipient Nym is mine.
             // ----------------------------
             //else: There's a recipient Nym, but it's not mine.
-            MTNameLookupQT theLookup;
             const opentxs::String strRecipientNymId{recipient_nym_id};
             const std::string str_recipient_nym_id{strRecipientNymId.Get()};
-            std::string str_recipient_name = theLookup.GetNymName(str_recipient_nym_id, str_notary_id);
+            std::string str_recipient_name = opentxs::OT::App().API().Exec().GetNym_Name(str_recipient_nym_id);
 
             QString qstrRecipientId = str_recipient_nym_id.empty()
                 ? QString("")
@@ -6345,9 +6342,7 @@ void Moneychanger::mc_import_slot()
                     if (!default_nym_id.isEmpty() && (OT_nym_id == default_nym_id))
                         bFoundDefault = true;
                     // -----------------------------------------------
-                    MTNameLookupQT theLookup;
-
-                    OT_nym_name = QString::fromStdString(theLookup.GetNymName(OT_nym_id.toStdString(), ""));
+                    OT_nym_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(OT_nym_id.toStdString()));
                     // -----------------------------------------------
                     the_map.insert(OT_nym_id, OT_nym_name);
                 }
@@ -6429,9 +6424,7 @@ void Moneychanger::mc_import_slot()
             if (!default_account_id.isEmpty() && (OT_acct_id == default_account_id))
                 bFoundDefault = true;
             // -----------------------------------------------
-            MTNameLookupQT theLookup;
-
-            OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString(), "", "", ""));
+            OT_acct_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(OT_acct_id.toStdString()));
             // -----------------------------------------------
             the_map.insert(OT_acct_id, OT_acct_name);
         }
@@ -6857,8 +6850,7 @@ void Moneychanger::onNewNymAdded(QString qstrID)
 
 //    if (!qstrID.isEmpty())
 //    {
-//        MTNameLookupQT theLookup;
-//        qstrNymName = QString::fromStdString(theLookup.GetNymName(qstrID.toStdString(), ""));
+//        qstrNymName = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(qstrID.toStdString()));
 //        if (!qstrNymName.isEmpty())
 //            qstrNymName += QString(" (%1)").arg(tr("Me"));
 ////      QString qstrContactID  = MTContactHandler::getInstance()->GetOrCreateOpentxsContactBasedOnNym(qstrNymName, qstrID, "");

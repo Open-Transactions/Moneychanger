@@ -945,8 +945,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString().trimmed() : "";
             const std::string str_id = qstrID.isEmpty() ? "" : qstrID.toStdString();
-            MTNameLookupQT theLookup;
-            const std::string str_name = str_id.empty() ? "" : theLookup.GetNymName(str_id, "");
+            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetNym_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -979,8 +978,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString().trimmed() : "";
             const std::string str_id = qstrID.isEmpty() ? "" : qstrID.toStdString();
-            MTNameLookupQT theLookup;
-            const std::string str_name = str_id.empty() ? "" : theLookup.GetNymName(str_id, "");
+            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetNym_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -1317,14 +1315,13 @@ bool MessagesProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
             const QString  qstrSubject    = dataSubject.isValid()  ? dataSubject.toString() : "";
             const QString  qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
                                                 QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrNotaryID.toStdString()));
-            MTNameLookupQT theLookup;
-            QString qstrSenderName    = qstrSenderNym   .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrSenderNym   .toStdString(), ""));
-            QString qstrRecipientName = qstrRecipientNym.isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrRecipientNym.toStdString(), ""));
+            QString qstrSenderName    = qstrSenderNym   .isEmpty() ? "" : QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(qstrSenderNym   .toStdString()));
+            QString qstrRecipientName = qstrRecipientNym.isEmpty() ? "" : QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(qstrRecipientNym.toStdString()));
 
             if (qstrSenderName.isEmpty() && !qstrSenderAddress.isEmpty())
-                qstrSenderName = QString::fromStdString(theLookup.GetAddressName(qstrSenderAddress.toStdString()));
+                qstrSenderName = qstrSenderAddress;
             if (qstrRecipientName.isEmpty() && !qstrRecipientAddress.isEmpty())
-                qstrRecipientName = QString::fromStdString(theLookup.GetAddressName(qstrRecipientAddress.toStdString()));
+                qstrRecipientName = qstrRecipientAddress;
 
             if (!qstrSubject.contains(filterString_) &&
                 !qstrMethodType.contains(filterString_) &&

@@ -30,41 +30,41 @@ int claimPolarityToInt(opentxs::ClaimPolarity polarity);
 opentxs::ClaimPolarity intToClaimPolarity(int polarity);
 
 
-class MTNameLookupQT : public opentxs::OTNameLookup
-{
-public:
-    virtual ~MTNameLookupQT() {}
-
-    virtual std::string GetNymName(const std::string & str_id,
-                                   const std::string   p_notary_id) const;
-
-    virtual std::string GetContactName(const std::string & str_id) const;
-
-    virtual std::string GetAcctName(const std::string & str_id,
-                                    const std::string   p_nym_id,
-                                    const std::string   p_notary_id,
-                                    const std::string   p_asset_id) const;
-
-    virtual std::string GetAddressName(const std::string & str_address) const; // Used for Bitmessage addresses (etc.)
-
-    // Let's say that OTRecordList just deposited a cheque. (Which it does automatically.)
-    // Or let's say the user just asked it to activate a smart contract. Whatever. RecordList
-    // will call this and pass the server's "success" transaction contents, along with whatever
-    // other useful IDs it's gleaned.
-    //
-    // That way, when Moneychanger overrides notifyOfSuccessfulNotarization, Moneychanger will
-    // get a notification whenever the recordlist has deposited a cheque. Then Moneychanger can
-    // take the cheque deposit (transaction reply from server) and add it to its internal database,
-    // in its payment table.
-    //
-    virtual void notifyOfSuccessfulNotarization(const std::string & str_acct_id,
-                                                const std::string   p_nym_id,
-                                                const std::string   p_msg_notary_id,
-                                                const std::string   p_pmnt_notary_id,
-                                                const std::string   p_txn_contents,
-                                                int64_t lTransactionNum,
-                                                int64_t lTransNumForDisplay) const;
-};
+//class MTNameLookupQT : public opentxs::OTNameLookup
+//{
+//public:
+//    virtual ~MTNameLookupQT() {}
+//
+//    virtual std::string GetNymName(const std::string & str_id,
+//                                   const std::string   p_notary_id) const;
+//
+//    virtual std::string GetContactName(const std::string & str_id) const;
+//
+//    virtual std::string GetAcctName(const std::string & str_id,
+//                                    const std::string   p_nym_id,
+//                                    const std::string   p_notary_id,
+//                                    const std::string   p_asset_id) const;
+//
+//    virtual std::string GetAddressName(const std::string & str_address) const; // Used for Bitmessage addresses (etc.)
+//
+//    // Let's say that OTRecordList just deposited a cheque. (Which it does automatically.)
+//    // Or let's say the user just asked it to activate a smart contract. Whatever. RecordList
+//    // will call this and pass the server's "success" transaction contents, along with whatever
+//    // other useful IDs it's gleaned.
+//    //
+//    // That way, when Moneychanger overrides notifyOfSuccessfulNotarization, Moneychanger will
+//    // get a notification whenever the recordlist has deposited a cheque. Then Moneychanger can
+//    // take the cheque deposit (transaction reply from server) and add it to its internal database,
+//    // in its payment table.
+//    //
+//    virtual void notifyOfSuccessfulNotarization(const std::string & str_acct_id,
+//                                                const std::string   p_nym_id,
+//                                                const std::string   p_msg_notary_id,
+//                                                const std::string   p_pmnt_notary_id,
+//                                                const std::string   p_txn_contents,
+//                                                int64_t lTransactionNum,
+//                                                int64_t lTransNumForDisplay) const;
+//};
 
 
 
@@ -91,8 +91,12 @@ public:
                             QString notary_id_string=QString(""),
                             QString asset_id_string=QString(""));
 
+  // Old style:
   QString GetContactName(int nContactID);
   bool    SetContactName(int nContactID, QString contact_name_string);
+  // New Style:
+  std::string GetContactName(const std::string& str_id);
+  bool SetContactName(const std::string& str_id, const std::string& contact_name_string);
 
   void NotifyOfNymNamePair(QString nym_id_string, QString name_string);
   void NotifyOfNymServerPair(QString nym_id_string, QString notary_id_string);

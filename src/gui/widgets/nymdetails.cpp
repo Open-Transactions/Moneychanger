@@ -205,9 +205,8 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
 //  mapOfNymClaims nym_claims; // Each pair in this map has a NymID and a ClaimSet.
     mapOfNymNames  nym_names;  // Each pair in this map has a NymID and a Nym Name.
     // ---------------------------------------
-    MTNameLookupQT theLookup;
     const std::string str_nym_id   = qstrNymId.toStdString();
-    const std::string str_nym_name = theLookup.GetNymName(qstrNymId.toStdString(), "");
+    const std::string str_nym_name = opentxs::OT::App().API().Exec().GetNym_Name(qstrNymId.toStdString());
     const auto id_nym = opentxs::Identifier::Factory(str_nym_id);
 
     if (!str_nym_id.empty())
@@ -357,8 +356,7 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
             if (it_typeNames != mapTypeNames.end())
                 qstrTypeName = it_typeNames.value();
             // ---------------------------------------
-            MTNameLookupQT theLookup;
-            const std::string str_claimant_name = theLookup.GetNymName(claim_nym_id, "");
+            const std::string str_claimant_name = opentxs::OT::App().API().Exec().GetNym_Name(claim_nym_id);
 
             // Add the claim to the tree.
             //
@@ -688,14 +686,13 @@ void MTNymDetails::RefreshTree(const QString & qstrNymId)
 //                    , tr("Polarity")
 //                };
                 // ---------------------------------------
-                MTNameLookupQT theLookup;
                 mapOfNymNames::iterator it_names = nym_names.find(verifier_id);
                 std::string str_verifier_name;
 
                 if (nym_names.end() != it_names)
                     str_verifier_name =  it_names->second;
                 else
-                    str_verifier_name = theLookup.GetNymName(verifier_id, "");
+                    str_verifier_name = opentxs::OT::App().API().Exec().GetNym_Name(verifier_id);
 
 //              const QString qstrClaimIdLabel = QString("%1: %2").arg(tr("Claim Id")).arg(qstrVerificationClaimId);
                 const QString qstrClaimantIdLabel = QString("%1: %2").arg(tr("Claimant")).arg(qstrClaimantId);

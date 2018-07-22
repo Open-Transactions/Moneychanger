@@ -27,20 +27,20 @@ void shutdown_app()
 
 }
 
-bool SetupAddressBookCallback(opentxs::OTLookupCaller & theCaller, opentxs::OTNameLookup & theCallback)
-{
-    theCaller.setCallback(&theCallback);
-
-    bool bSuccess = OT_API_Set_AddrBookCallback(theCaller);
-
-    if (!bSuccess)
-    {
-        qDebug() << QString("Error setting address book callback!");
-        return false;
-    }
-
-    return true;
-}
+//bool SetupAddressBookCallback(opentxs::OTLookupCaller & theCaller, opentxs::OTNameLookup & theCallback)
+//{
+//    theCaller.setCallback(&theCallback);
+//
+//    bool bSuccess = OT_API_Set_AddrBookCallback(theCaller);
+//
+//    if (!bSuccess)
+//    {
+//        qDebug() << QString("Error setting address book callback!");
+//        return false;
+//    }
+//
+//    return true;
+//}
 
 
 
@@ -61,14 +61,14 @@ public:
         // ----------------------------------------
         // Set Address Book Callback.
         //
-        static opentxs::OTLookupCaller theCaller;
-        static MTNameLookupQT theCallback;
-
-        if (!SetupAddressBookCallback(theCaller, theCallback))
-        {
-            qDebug() << "Failure setting address book callback in MTApplicationMC";
-            abort();
-        }
+//        static opentxs::OTLookupCaller theCaller;
+//        static MTNameLookupQT theCallback;
+//
+//        if (!SetupAddressBookCallback(theCaller, theCallback))
+//        {
+//            qDebug() << "Failure setting address book callback in MTApplicationMC";
+//            abort();
+//        }
 
          opentxs::OT::ClientFactory({}, {}, password_caller_.get());
     }

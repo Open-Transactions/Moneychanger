@@ -853,8 +853,7 @@ QVariant AgreementReceiptsProxyModel::data ( const QModelIndex & index, int role
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString().trimmed() : "";
             const std::string str_id = qstrID.isEmpty() ? "" : qstrID.toStdString();
-            MTNameLookupQT theLookup;
-            const std::string str_name = str_id.empty() ? "" : theLookup.GetNymName(str_id, "");
+            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetNym_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -887,8 +886,7 @@ QVariant AgreementReceiptsProxyModel::data ( const QModelIndex & index, int role
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString().trimmed() : "";
             const std::string str_id = qstrID.isEmpty() ? "" : qstrID.toStdString();
-            MTNameLookupQT theLookup;
-            const std::string str_name = str_id.empty() ? "" : theLookup.GetNymName(str_id, "");
+            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetNym_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));

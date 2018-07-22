@@ -53,7 +53,7 @@ class Moneychanger : public QWidget
 
 private:
     // ------------------------------------------------
-    opentxs::OTRecordList   m_list;
+//    opentxs::OTRecordList   m_list;
     // ------------------------------------------------
     /** Constructor & Destructor **/
     Moneychanger(QWidget *parent = 0);

@@ -262,13 +262,12 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
             //
             if (!qstrText.isEmpty())
             {
-                MTNameLookupQT theLookup;
                 QString qstrNymWhoDecryptedName(""), qstrNymWhoVerifiedName("");
 
                 if (!qstrNymWhoDecrypted.isEmpty())
-                    qstrNymWhoDecryptedName = QString::fromStdString(theLookup.GetNymName(qstrNymWhoDecrypted.toStdString(), ""));
+                    qstrNymWhoDecryptedName = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(qstrNymWhoDecrypted.toStdString()));
                 if (!qstrNymWhoVerified.isEmpty())
-                    qstrNymWhoVerifiedName = QString::fromStdString(theLookup.GetNymName(qstrNymWhoVerified.toStdString(), ""));
+                    qstrNymWhoVerifiedName = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(qstrNymWhoVerified.toStdString()));
                 // -------------------------------
                 if (qstrNymWhoDecryptedName.isEmpty())
                     qstrNymWhoDecryptedName = qstrNymWhoDecrypted;

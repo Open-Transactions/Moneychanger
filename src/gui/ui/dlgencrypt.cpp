@@ -102,9 +102,7 @@ void DlgEncrypt::PopulateCombo()
                     nDefaultNymIndex = ii;
                 }
                 // -----------------------------------------------
-                MTNameLookupQT theLookup;
-
-                OT_nym_name = QString::fromStdString(theLookup.GetNymName(OT_nym_id.toStdString(), ""));
+                OT_nym_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(OT_nym_id.toStdString()));
                 // -----------------------------------------------
                 m_mapNyms.insert(OT_nym_id, OT_nym_name);
                 ui->comboBoxNym->insertItem(ii, OT_nym_name);

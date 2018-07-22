@@ -523,9 +523,7 @@ QString MTHomeDetail::FindAppropriateDepositAccount(opentxs::OTRecord& recordmt)
                     (0 == qstr_record_asset .compare(qstr_acct_asset) ) &&
                     (0 == str_acct_type.compare("user")  )  ) // DO NOT INTERNATIONALIZE "user".
                 {
-                    MTNameLookupQT theLookup;
-
-                    OT_acct_name = QString::fromStdString(theLookup.GetAcctName(OT_acct_id.toStdString(), "", "", ""));
+                    OT_acct_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(OT_acct_id.toStdString()));
                     // -----------------------------------------------
                     the_map.insert(OT_acct_id, OT_acct_name);
                 }
@@ -1828,8 +1826,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     {
         QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(tr("My")).arg(tr("Nym")) );
 
-        MTNameLookupQT theLookup;
-        QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_NymID.toStdString(), ""));
+        QString qstr_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(qstr_NymID.toStdString()));
 
         m_pLineEdit_Nym_ID          = new QLineEdit(qstr_NymID);
         m_pLineEdit_Nym_Name        = new QLineEdit(qstr_name);
@@ -1856,8 +1853,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     {
         QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(qstr_OtherType).arg(tr("Nym")));
 
-        MTNameLookupQT theLookup;
-        QString qstr_name = QString::fromStdString(theLookup.GetNymName(qstr_OtherNymID.toStdString(), ""));
+        QString qstr_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(qstr_OtherNymID.toStdString()));
 
         m_pLineEdit_OtherNym_ID     = new QLineEdit(qstr_OtherNymID);
         m_pLineEdit_OtherNym_Name   = new QLineEdit(qstr_name);
@@ -1886,8 +1882,8 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     {
         QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(tr("My")).arg(tr("Address")) );
 
-        MTNameLookupQT theLookup;
-        QString qstr_name = QString::fromStdString(theLookup.GetAddressName(qstr_Address.toStdString()));
+        QString qstr_name = qstr_Address;
+//      QString qstr_name = QString::fromStdString(theLookup.GetAddressName(qstr_Address.toStdString()));
 
         m_pLineEdit_Address        = new QLineEdit(qstr_Address);
         m_pLineEdit_Address_Name   = new QLineEdit(qstr_name);
@@ -1915,8 +1911,8 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     {
         QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(qstr_OtherType).arg(tr("Address")));
 
-        MTNameLookupQT theLookup;
-        QString qstr_name = QString::fromStdString(theLookup.GetAddressName(qstr_OtherAddress.toStdString()));
+        QString qstr_name = qstr_OtherAddress;
+//      QString qstr_name = QString::fromStdString(theLookup.GetAddressName(qstr_OtherAddress.toStdString()));
 
         m_pLineEdit_OtherAddress      = new QLineEdit(qstr_OtherAddress);
         m_pLineEdit_OtherAddress_Name = new QLineEdit(qstr_name);
@@ -1944,8 +1940,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     {
         QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(tr("My")).arg(tr("Account")) );
 
-        MTNameLookupQT theLookup;
-        QString qstr_name = QString::fromStdString(theLookup.GetAcctName(qstr_AccountID.toStdString(), "", "", ""));
+        QString qstr_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(qstr_AccountID.toStdString()));
 
         m_pLineEdit_Acct_ID         = new QLineEdit(qstr_AccountID);
         m_pLineEdit_Acct_Name       = new QLineEdit(qstr_name);
@@ -1973,8 +1968,7 @@ void MTHomeDetail::refresh(opentxs::OTRecord& recordmt)
     {
         QLabel    * pLabel    = new QLabel(QString("%1 %2: ").arg(qstr_OtherType).arg(tr("Acct")));
 
-        MTNameLookupQT theLookup;
-        QString qstr_name = QString::fromStdString(theLookup.GetAcctName(qstr_OtherAcctID.toStdString(), "", "", ""));
+        QString qstr_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(qstr_OtherAcctID.toStdString()));
 
         m_pLineEdit_OtherAcct_ID    = new QLineEdit(qstr_OtherAcctID);
         m_pLineEdit_OtherAcct_Name  = new QLineEdit(qstr_name);
