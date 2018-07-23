@@ -4,8 +4,6 @@ CONFIG     += debug_and_release silent
 SOLUTION_DIR=$${PWD}/
 
 INCLUDEPATH += $${SOLUTION_DIR}../src
-INCLUDEPATH += $${SOLUTION_DIR}../src/jsoncpp
-INCLUDEPATH += $${SOLUTION_DIR}qjsonrpc/src/
 INCLUDEPATH += $${SOLUTION_DIR}../src/quazip
 
 #-------------------------------------------------

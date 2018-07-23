@@ -11,7 +11,6 @@
 #include <core/moneychanger.hpp>
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
-#include <core/mtcomms.h>
 
 #include <opentxs/opentxs.hpp>
 
@@ -138,7 +137,7 @@ void MTCompose::setTransportDisplayBasedOnAvailableData()
         // --------------------------------------------------
         else if (!m_msgtype.isEmpty() && !sendingThroughOTServer())
         {
-            qstrMsgTypeDisplay = QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
+            qstrMsgTypeDisplay = QString("DEPRECATED");
 
             if (qstrMsgTypeDisplay.isEmpty())
                 qstrMsgTypeDisplay = m_msgtype;
@@ -166,7 +165,7 @@ void MTCompose::setSenderNameBasedOnAvailableData()
         else if (!bCanMessage_ && !sendingThroughOTServer())
         {
             QString qstrMsgTypeDisplay = m_msgtype.isEmpty() ? QString(tr("transport or ")) :
-                                                               QString("%1 ").arg(QString::fromStdString(MTComms::displayName(m_msgtype.toStdString())));
+                                                               QString("%1 ").arg(QString("DEPRECATED"));
 
             qstrAddressPortion = QString(" (%1 %2%3)").arg(tr("No")).arg(qstrMsgTypeDisplay).arg(tr("address available"));
         }
@@ -232,7 +231,7 @@ void MTCompose::setRecipientNameBasedOnAvailableData()
         else if (!bCanMessage_ && !sendingThroughOTServer())
         {
             QString qstrMsgTypeDisplay = m_msgtype.isEmpty() ? QString(tr("transport or ")) :
-                                                               QString("%1 ").arg(QString::fromStdString(MTComms::displayName(m_msgtype.toStdString())));
+                                                               QString("%1 ").arg(QString("DEPRECATED"));
 
             qstrAddressPortion = QString(" (%1 %2%3)").arg(tr("No")).arg(qstrMsgTypeDisplay).arg(tr("address available"));
         }
@@ -441,8 +440,6 @@ void MTCompose::setInitialServer(QString NotaryID)
 bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, QString toNymId, QString fromAddress, QString toAddress,
                             QString viaServer, QString viaTransport, int viaMethodID)
 {
-    NetworkModule * pModule = NULL;
-
     if (!bCanMessage_ && viaTransport.isEmpty())
     {
         qDebug() << "Cannot send a message via a blank transport type, aborting.";
@@ -499,17 +496,17 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
         }
         else
         {
-            pModule = MTComms::find(qstrCommString.toStdString());
-
-            if ((NULL == pModule) && MTComms::add(viaTransport.toStdString(), qstrCommString.toStdString()))
-                pModule = MTComms::find(qstrCommString.toStdString());
-
-            if (NULL == pModule)
-            {
+//            pModule = nullptr;//MTComms::find(qstrCommString.toStdString());
+//
+////            if ((nullptr == pModule) && MTComms::add(viaTransport.toStdString(), qstrCommString.toStdString()))
+////                pModule = MTComms::find(qstrCommString.toStdString());
+//
+//            if (nullptr == pModule)
+//            {
                 // todo probably need a messagebox here.
                 qDebug() << QString("Unable to add a %1 interface with connection string: %2").arg(viaTransport).arg(qstrCommString);
                 return false;
-            }
+//            }
         }
     }
     // ----------------------------------------------------
@@ -570,23 +567,23 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
         m_bSent = true; // In this case it means it actually sent it through the notary.
     }
     // ---------------------------------------------------------
-    else if (NULL != pModule) // Anything but otserver. (Bitmessage, probably.)
-    {
-        bool bSuccessSending = false;
-        {
-            MTSpinner   theSpinner;
-            NetworkMail message(str_fromAddr, str_toAddr, subject.toStdString(), body.toStdString());
-
-            bSuccessSending = pModule->sendMail(message);
-        }
-        if (!bSuccessSending)
-        {
-            qDebug() << "send_message: Failed.";
-            return false;
-        }
-        qDebug() << "Success in send_message!";
-        m_bSent = true; // Sent via whatever the msg method is for this address.
-    }
+//    else if (NULL != pModule) // Anything but otserver. (Bitmessage, probably.)
+//    {
+//        bool bSuccessSending = false;
+//        {
+//            MTSpinner   theSpinner;
+//            NetworkMail message(str_fromAddr, str_toAddr, subject.toStdString(), body.toStdString());
+//
+//            bSuccessSending = pModule->sendMail(message);
+//        }
+//        if (!bSuccessSending)
+//        {
+//            qDebug() << "send_message: Failed.";
+//            return false;
+//        }
+//        qDebug() << "Success in send_message!";
+//        m_bSent = true; // Sent via whatever the msg method is for this address.
+//    }
     // ---------------------------------------------------------
     return m_bSent;
 }
@@ -649,7 +646,7 @@ bool MTCompose::hasSender()
             {
                 mapIDName theMap;
 
-                QString qstrMsgTypeDisplay = QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
+                QString qstrMsgTypeDisplay = QString("DEPRECATED");
 
                 if ((m_senderMethodId > 0) && MTContactHandler::getInstance()->GetAddressesByNym(theMap, m_senderNymId, m_senderMethodId))
                     return this->chooseSenderAddress(theMap, qstrMsgTypeDisplay);
@@ -756,7 +753,7 @@ bool MTCompose::hasRecipient()
             {
                 mapIDName theMap;
 
-                QString qstrMsgTypeDisplay = QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
+                QString qstrMsgTypeDisplay = QString("DEPRECATED");
 
                 if ((m_recipientContactId > 0) && MTContactHandler::getInstance()->GetAddressesByContact(theMap, m_recipientContactId, m_msgtype))
                     return this->chooseRecipientAddress(theMap, qstrMsgTypeDisplay);
@@ -1512,71 +1509,71 @@ void MTCompose::FindSenderMsgMethod()
     // recipient. And IF WE FIND ONE, we'll THEN ask the user if he wants us to automatically
     // coordinate the transport type, giving him a simple yes/no option.
     //
-    mapOfCommTypes mapTypes;
+//    mapOfCommTypes mapTypes;
     bool bFoundOneInCommon = false;
-    bool bGotCommTypes     = MTComms::types(mapTypes);
+    bool bGotCommTypes     = false;//MTComms::types(mapTypes);
 
     // Here we're looping through the list of transport types OTHER than "otserver",
     // such as "bitmessage". See if we can find one that both parties have in common.
     //
     if (bGotCommTypes)
     {
-        QString qstrMsgTypeAttempt, qstrMsgTypeDisplay;
-        mapIDName mapSenderAddresses, mapRecipientAddresses;
-
-        for (mapOfCommTypes::iterator it = mapTypes.begin(); it != mapTypes.end(); ++it)
-        {
-            qstrMsgTypeAttempt = QString("");
-            qstrMsgTypeDisplay = QString("");
-
-            std::string strTypeName    = it->first;
-            std::string strTypeDisplay = it->second;
-
-            if (!strTypeName.empty() && !strTypeDisplay.empty())
-            {
-                qstrMsgTypeAttempt = QString::fromStdString(strTypeName);
-                qstrMsgTypeDisplay = QString::fromStdString(strTypeDisplay);
-
-                mapSenderAddresses   .clear();
-                mapRecipientAddresses.clear();
-
-                if (this->CheckPotentialCommonMsgMethod(qstrMsgTypeAttempt, &mapSenderAddresses, &mapRecipientAddresses))
-                {
-                    bFoundOneInCommon = true;
-                    break;
-                }
-            }
-        } // for
-        // -------------------------------
-        // Did we find one?
-        //
-        if (bFoundOneInCommon)
-        {
-            QMessageBox::StandardButton reply;
-
-            reply = QMessageBox::question(this, "",
-                                          tr("Recipient and Sender have different transport types. Shall I auto-match? (You probably want to choose Yes.)"),
-                                          QMessageBox::Yes|QMessageBox::No);
-            if (reply == QMessageBox::Yes)
-            {
-                // Okay then, let's set the msgtype to qstrMsgTypeAttempt, and we'll set the sender and
-                // recipient addresses. (And sender method ID.) If there's only one address to choose from
-                // for either, we can just go with it. But if there are more than one, we must ask the user
-                // to choose which he prefers.
-                //
-                if (!this->chooseSenderAddress(mapSenderAddresses, qstrMsgTypeDisplay))
-                    return; // failure
-
-                if (!this->chooseRecipientAddress(mapRecipientAddresses, qstrMsgTypeDisplay))
-                    return; // failure.
-                // -------------------------------------------
-                // If both addresses were selected (we got this far, didn't we?)
-                // then we go ahead and set the msgtype.
-                //
-                this->setInitialMsgType(qstrMsgTypeAttempt); // (server="" by default.)
-                return; // SUCCESS!
-            }
-        } // if (bFoundOneInCommon)
+//        QString qstrMsgTypeAttempt, qstrMsgTypeDisplay;
+//        mapIDName mapSenderAddresses, mapRecipientAddresses;
+//
+//        for (mapOfCommTypes::iterator it = mapTypes.begin(); it != mapTypes.end(); ++it)
+//        {
+//            qstrMsgTypeAttempt = QString("");
+//            qstrMsgTypeDisplay = QString("");
+//
+//            std::string strTypeName    = it->first;
+//            std::string strTypeDisplay = it->second;
+//
+//            if (!strTypeName.empty() && !strTypeDisplay.empty())
+//            {
+//                qstrMsgTypeAttempt = QString::fromStdString(strTypeName);
+//                qstrMsgTypeDisplay = QString::fromStdString(strTypeDisplay);
+//
+//                mapSenderAddresses   .clear();
+//                mapRecipientAddresses.clear();
+//
+//                if (this->CheckPotentialCommonMsgMethod(qstrMsgTypeAttempt, &mapSenderAddresses, &mapRecipientAddresses))
+//                {
+//                    bFoundOneInCommon = true;
+//                    break;
+//                }
+//            }
+//        } // for
+//        // -------------------------------
+//        // Did we find one?
+//        //
+//        if (bFoundOneInCommon)
+//        {
+//            QMessageBox::StandardButton reply;
+//
+//            reply = QMessageBox::question(this, "",
+//                                          tr("Recipient and Sender have different transport types. Shall I auto-match? (You probably want to choose Yes.)"),
+//                                          QMessageBox::Yes|QMessageBox::No);
+//            if (reply == QMessageBox::Yes)
+//            {
+//                // Okay then, let's set the msgtype to qstrMsgTypeAttempt, and we'll set the sender and
+//                // recipient addresses. (And sender method ID.) If there's only one address to choose from
+//                // for either, we can just go with it. But if there are more than one, we must ask the user
+//                // to choose which he prefers.
+//                //
+//                if (!this->chooseSenderAddress(mapSenderAddresses, qstrMsgTypeDisplay))
+//                    return; // failure
+//
+//                if (!this->chooseRecipientAddress(mapRecipientAddresses, qstrMsgTypeDisplay))
+//                    return; // failure.
+//                // -------------------------------------------
+//                // If both addresses were selected (we got this far, didn't we?)
+//                // then we go ahead and set the msgtype.
+//                //
+//                this->setInitialMsgType(qstrMsgTypeAttempt); // (server="" by default.)
+//                return; // SUCCESS!
+//            }
+//        } // if (bFoundOneInCommon)
     } // if (bGotCommTypes)
     // ----------------------
     // By this point, oh well. We gave it the old college try.
@@ -1801,72 +1798,72 @@ void MTCompose::FindRecipientMsgMethod()
     // recipient. And IF WE FIND ONE, we'll THEN ask the user if he wants us to automatically
     // coordinate the transport type, giving him a simple yes/no option.
     //
-    mapOfCommTypes mapTypes;
+//    mapOfCommTypes mapTypes;
     bool bFoundOneInCommon = false;
-    bool bGotCommTypes     = MTComms::types(mapTypes);
+    bool bGotCommTypes     = false;//MTComms::types(mapTypes);
 
     // Here we're looping through the list of transport types OTHER than "otserver",
     // such as "bitmessage". See if we can find one that both parties have in common.
     //
     if (bGotCommTypes)
     {
-        QString qstrMsgTypeAttempt, qstrMsgTypeDisplay;
-        mapIDName mapSenderAddresses, mapRecipientAddresses;
-
-        for (mapOfCommTypes::iterator it = mapTypes.begin(); it != mapTypes.end(); ++it)
-        {
-            qstrMsgTypeAttempt = QString("");
-            qstrMsgTypeDisplay = QString("");
-
-            std::string strTypeName    = it->first;
-            std::string strTypeDisplay = it->second;
-
-            if (!strTypeName.empty() && !strTypeDisplay.empty())
-            {
-                qstrMsgTypeAttempt = QString::fromStdString(strTypeName);
-                qstrMsgTypeDisplay = QString::fromStdString(strTypeDisplay);
-
-                mapSenderAddresses   .clear();
-                mapRecipientAddresses.clear();
-
-                if (this->CheckPotentialCommonMsgMethod(qstrMsgTypeAttempt, &mapSenderAddresses, &mapRecipientAddresses))
-                {
-                    bFoundOneInCommon = true;
-                    break;
-                }
-            }
-        } // for
-        // -------------------------------
-        // Did we find one?
-        //
-        if (bFoundOneInCommon)
-        {
-            QMessageBox::StandardButton reply;
-
-            reply = QMessageBox::question(this, "",
-                                          tr("Sender and Recipient have different transport types. Shall I auto-match? (You probably want to choose Yes.)"),
-                                          QMessageBox::Yes|QMessageBox::No);
-            if (reply == QMessageBox::Yes)
-            {
-                // Okay then, let's set the msgtype to qstrMsgTypeAttempt, and we'll set the sender and
-                // recipient addresses. (And sender method ID.) If there's only one address to choose from
-                // for either, we can just go with it. But if there are more than one, we must ask the user
-                // to choose which he prefers.
-                //
-                if (!this->chooseSenderAddress(mapSenderAddresses, qstrMsgTypeDisplay))
-                    return; // failure
-
-                if (!this->chooseRecipientAddress(mapRecipientAddresses, qstrMsgTypeDisplay))
-                    return; // failure.
-                // -------------------------------------------
-                // If both addresses were selected (we got this far, didn't we?)
-                // then we go ahead and set the msgtype.
-                //
-                this->setInitialMsgType(qstrMsgTypeAttempt); // (server="" by default.)
-                return; // SUCCESS!
-            }
-
-        } // if (bFoundOneInCommon)
+//        QString qstrMsgTypeAttempt, qstrMsgTypeDisplay;
+//        mapIDName mapSenderAddresses, mapRecipientAddresses;
+//
+//        for (mapOfCommTypes::iterator it = mapTypes.begin(); it != mapTypes.end(); ++it)
+//        {
+//            qstrMsgTypeAttempt = QString("");
+//            qstrMsgTypeDisplay = QString("");
+//
+//            std::string strTypeName    = it->first;
+//            std::string strTypeDisplay = it->second;
+//
+//            if (!strTypeName.empty() && !strTypeDisplay.empty())
+//            {
+//                qstrMsgTypeAttempt = QString::fromStdString(strTypeName);
+//                qstrMsgTypeDisplay = QString::fromStdString(strTypeDisplay);
+//
+//                mapSenderAddresses   .clear();
+//                mapRecipientAddresses.clear();
+//
+//                if (this->CheckPotentialCommonMsgMethod(qstrMsgTypeAttempt, &mapSenderAddresses, &mapRecipientAddresses))
+//                {
+//                    bFoundOneInCommon = true;
+//                    break;
+//                }
+//            }
+//        } // for
+//        // -------------------------------
+//        // Did we find one?
+//        //
+//        if (bFoundOneInCommon)
+//        {
+//            QMessageBox::StandardButton reply;
+//
+//            reply = QMessageBox::question(this, "",
+//                                          tr("Sender and Recipient have different transport types. Shall I auto-match? (You probably want to choose Yes.)"),
+//                                          QMessageBox::Yes|QMessageBox::No);
+//            if (reply == QMessageBox::Yes)
+//            {
+//                // Okay then, let's set the msgtype to qstrMsgTypeAttempt, and we'll set the sender and
+//                // recipient addresses. (And sender method ID.) If there's only one address to choose from
+//                // for either, we can just go with it. But if there are more than one, we must ask the user
+//                // to choose which he prefers.
+//                //
+//                if (!this->chooseSenderAddress(mapSenderAddresses, qstrMsgTypeDisplay))
+//                    return; // failure
+//
+//                if (!this->chooseRecipientAddress(mapRecipientAddresses, qstrMsgTypeDisplay))
+//                    return; // failure.
+//                // -------------------------------------------
+//                // If both addresses were selected (we got this far, didn't we?)
+//                // then we go ahead and set the msgtype.
+//                //
+//                this->setInitialMsgType(qstrMsgTypeAttempt); // (server="" by default.)
+//                return; // SUCCESS!
+//            }
+//
+//        } // if (bFoundOneInCommon)
     } // if (bGotCommTypes)
     // ----------------------
     // By this point, oh well. We gave it the old college try.
@@ -2166,63 +2163,63 @@ bool MTCompose::MakeSureCommonMsgMethod()
             //
 //          m_NotaryID = QString(""); // Now done farther below.
             // -------------------------------------
-            mapOfCommTypes mapTypes;
+//            mapOfCommTypes mapTypes;
             bool bFoundOneInCommon = false;
-            bool bGotCommTypes     = MTComms::types(mapTypes);
+            bool bGotCommTypes     = false; //MTComms::types(mapTypes);
 
             // Here we're looping through the list of transport types OTHER than "otserver",
             // such as "bitmessage". See if we can find one that both parties have in common.
             //
             if (bGotCommTypes)
             {
-                QString qstrMsgTypeAttempt, qstrMsgTypeDisplay;
-                mapIDName mapSenderAddresses, mapRecipientAddresses;
-
-                for (mapOfCommTypes::iterator it = mapTypes.begin(); it != mapTypes.end(); ++it)
-                {
-                    qstrMsgTypeAttempt = QString("");
-                    qstrMsgTypeDisplay = QString("");
-
-                    std::string strTypeName    = it->first;
-                    std::string strTypeDisplay = it->second;
-
-                    if (!strTypeName.empty() && !strTypeDisplay.empty())
-                    {
-                        qstrMsgTypeAttempt = QString::fromStdString(strTypeName);
-                        qstrMsgTypeDisplay = QString::fromStdString(strTypeDisplay);
-
-                        mapSenderAddresses   .clear();
-                        mapRecipientAddresses.clear();
-
-                        if (this->CheckPotentialCommonMsgMethod(qstrMsgTypeAttempt, &mapSenderAddresses, &mapRecipientAddresses))
-                        {
-                            bFoundOneInCommon = true;
-                            break;
-                        }
-                    }
-                } // for
-                // -------------------------------
-                // Did we find one?
-                //
-                if (bFoundOneInCommon)
-                {
-                    // Okay then, let's set the msgtype to qstrMsgTypeAttempt, and we'll set the sender and
-                    // recipient addresses. (And sender method ID.) If there's only one address to choose from
-                    // for either, we can just go with it. But if there are more than one, we must ask the user
-                    // to choose which he prefers.
-                    //
-                    if (!this->chooseSenderAddress(mapSenderAddresses, qstrMsgTypeDisplay))
-                        return false;
-
-                    if (!this->chooseRecipientAddress(mapRecipientAddresses, qstrMsgTypeDisplay))
-                        return false;
-                    // -------------------------------------------
-                    // If both addresses were selected (we got this far, didn't we?)
-                    // then we go ahead and set the msgtype.
-                    //
-                    this->setInitialMsgType(qstrMsgTypeAttempt); // (server="" by default.)
-
-                } // if (bFoundOneInCommon)
+//                QString qstrMsgTypeAttempt, qstrMsgTypeDisplay;
+//                mapIDName mapSenderAddresses, mapRecipientAddresses;
+//
+//                for (mapOfCommTypes::iterator it = mapTypes.begin(); it != mapTypes.end(); ++it)
+//                {
+//                    qstrMsgTypeAttempt = QString("");
+//                    qstrMsgTypeDisplay = QString("");
+//
+//                    std::string strTypeName    = it->first;
+//                    std::string strTypeDisplay = it->second;
+//
+//                    if (!strTypeName.empty() && !strTypeDisplay.empty())
+//                    {
+//                        qstrMsgTypeAttempt = QString::fromStdString(strTypeName);
+//                        qstrMsgTypeDisplay = QString::fromStdString(strTypeDisplay);
+//
+//                        mapSenderAddresses   .clear();
+//                        mapRecipientAddresses.clear();
+//
+//                        if (this->CheckPotentialCommonMsgMethod(qstrMsgTypeAttempt, &mapSenderAddresses, &mapRecipientAddresses))
+//                        {
+//                            bFoundOneInCommon = true;
+//                            break;
+//                        }
+//                    }
+//                } // for
+//                // -------------------------------
+//                // Did we find one?
+//                //
+//                if (bFoundOneInCommon)
+//                {
+//                    // Okay then, let's set the msgtype to qstrMsgTypeAttempt, and we'll set the sender and
+//                    // recipient addresses. (And sender method ID.) If there's only one address to choose from
+//                    // for either, we can just go with it. But if there are more than one, we must ask the user
+//                    // to choose which he prefers.
+//                    //
+//                    if (!this->chooseSenderAddress(mapSenderAddresses, qstrMsgTypeDisplay))
+//                        return false;
+//
+//                    if (!this->chooseRecipientAddress(mapRecipientAddresses, qstrMsgTypeDisplay))
+//                        return false;
+//                    // -------------------------------------------
+//                    // If both addresses were selected (we got this far, didn't we?)
+//                    // then we go ahead and set the msgtype.
+//                    //
+//                    this->setInitialMsgType(qstrMsgTypeAttempt); // (server="" by default.)
+//
+//                } // if (bFoundOneInCommon)
             } // if (bGotCommTypes)
         }
     } // if (m_msgtype.isEmpty())
@@ -2317,7 +2314,7 @@ bool MTCompose::MakeSureCommonMsgMethod()
         // But if one (or both) of the addresses doesn't exist, then we have to choose
         // it from among the available addresses for the msgtype.
         //
-        QString qstrMsgTypeDisplay = QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
+        QString qstrMsgTypeDisplay = QString("DEPRECATED");
 
         if (m_senderAddress.isEmpty())
         {
@@ -2624,7 +2621,7 @@ void MTCompose::on_fromButton_clicked()
             // ---------------------------------------------
             if (!m_msgtype.isEmpty() && !sendingThroughOTServer())
             {
-                QString qstrMsgTypeDisplay = QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
+                QString qstrMsgTypeDisplay = QString("DEPRECATED");
 
                 if (qstrMsgTypeDisplay.isEmpty())
                     qstrMsgTypeDisplay = m_msgtype;
@@ -2760,7 +2757,7 @@ void MTCompose::on_toButton_clicked()
         // ---------------------------------------------
         if (!m_msgtype.isEmpty() && !sendingThroughOTServer())
         {
-            QString qstrMsgTypeDisplay = QString::fromStdString(MTComms::displayName(m_msgtype.toStdString()));
+            QString qstrMsgTypeDisplay = QString("DEPRECATED");
 
             if (qstrMsgTypeDisplay.isEmpty())
                 qstrMsgTypeDisplay = m_msgtype;

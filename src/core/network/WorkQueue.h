@@ -1,5 +1,0 @@
-//
-//  WorkQueue.h
-//  
-
-#include <list>

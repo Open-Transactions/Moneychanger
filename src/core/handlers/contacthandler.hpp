@@ -10,8 +10,6 @@
 
 #include <opentxs/opentxs.hpp>
 
-#include <core/network/Network.h>
-
 #include <QMutex>
 #include <QString>
 #include <QVariant>

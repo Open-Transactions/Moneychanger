@@ -14,8 +14,6 @@
 #include <core/handlers/modelmessages.hpp>
 #include <core/handlers/modelpayments.hpp>
 
-#include <core/mtcomms.h>
-#include <core/network/Network.h>
 #include <core/handlers/focuser.h>
 
 #include <opentxs/opentxs.hpp>

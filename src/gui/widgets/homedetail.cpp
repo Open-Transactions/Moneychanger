@@ -13,7 +13,6 @@
 
 #include <core/moneychanger.hpp>
 #include <core/handlers/contacthandler.hpp>
-#include <core/mtcomms.h>
 
 #include <opentxs/opentxs.hpp>
 
@@ -341,23 +340,23 @@ void MTHomeDetail::on_deleteButton_clicked(bool checked /*=false*/)
                 //
                 if (!qstrConnect.isEmpty())
                 {
-                    NetworkModule * pModule = MTComms::find(qstrConnect.toStdString());
-
-                    // Use net module to delete msg ID
-                    //
-                    if (NULL != pModule)
-                    {
-                        if (recordmt.IsOutgoing())
-                        {
-                            if (pModule->deleteOutMessage(strMsgID))
-                                bSuccess = true;
-                        }
-                        else // incoming
-                        {
-                            if (pModule->deleteMessage(strMsgID))
-                                bSuccess = true;
-                        }
-                    }
+//                    NetworkModule * pModule = MTComms::find(qstrConnect.toStdString());
+//
+//                    // Use net module to delete msg ID
+//                    //
+//                    if (NULL != pModule)
+//                    {
+//                        if (recordmt.IsOutgoing())
+//                        {
+//                            if (pModule->deleteOutMessage(strMsgID))
+//                                bSuccess = true;
+//                        }
+//                        else // incoming
+//                        {
+//                            if (pModule->deleteMessage(strMsgID))
+//                                bSuccess = true;
+//                        }
+//                    }
                 }
             }
         }

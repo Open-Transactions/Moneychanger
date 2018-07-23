@@ -18,12 +18,9 @@
 #endif
 
 #include <core/moneychanger.hpp>
-#include <core/mtcomms.h>
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/modeltradearchive.hpp>
-
-#include <rpc/rpcserver.h>
 
 #include <gui/widgets/compose.hpp>
 #include <gui/widgets/home.hpp>
@@ -38,12 +35,6 @@
 #include <gui/widgets/wizardrunsmartcontract.hpp>
 #include <gui/widgets/wizardpartyacct.hpp>
 #include <gui/widgets/settings.hpp>
-#include <gui/widgets/btcguitest.hpp>
-#include <gui/widgets/btcpoolmanager.hpp>
-#include <gui/widgets/btctransactionmanager.hpp>
-#include <gui/widgets/btcconnectdlg.hpp>
-#include <gui/widgets/btcsenddlg.hpp>
-#include <gui/widgets/btcreceivedlg.hpp>
 #include <gui/ui/dlgimport.hpp>
 #include <gui/ui/dlglog.hpp>
 #include <gui/ui/dlgmenu.hpp>
@@ -77,10 +68,12 @@
 #include <functional>
 #include <sstream>
 #include <utility>
+#include <memory>
 
 
 template class opentxs::Pimpl<opentxs::network::zeromq::PairEventCallback>;
 
+template class std::shared_ptr<const opentxs::OTPayment>;
 
 bool Moneychanger::is_base64(QString string)
 {
@@ -142,10 +135,7 @@ Moneychanger::Moneychanger(QWidget *parent)
           })),
   widget_update_(ot_.ZMQ().Context().SubscribeSocket(widget_update_callback_)),
 //  m_list(*(new MTNameLookupQT)),
-  nmc(new NMC_Interface ()),
-  nmc_names(NULL),
   mc_overall_init(false),
-  nmc_update_timer(NULL),
   nym_list_id(NULL),
   nym_list_name(NULL),
   server_list_id(NULL),
@@ -165,17 +155,6 @@ Moneychanger::Moneychanger(QWidget *parent)
 
     widget_update_->Start(
         opentxs::network::zeromq::Socket::WidgetUpdateEndpoint);
-
-    /* Set up Namecoin name manager.  */
-    nmc_names = new NMC_NameManager (*nmc);
-
-    /* Set up the Namecoin update timer.  */
-    nmc_update_timer = new QTimer (this);
-    connect (nmc_update_timer, SIGNAL(timeout()),
-             this, SLOT(nmc_timer_event()));
-    nmc_update_timer->start (1000 * 60 * 10);
-    nmc_timer_event ();
-
 
     ot_.Schedule(
         std::chrono::seconds(5),
@@ -315,13 +294,6 @@ Moneychanger::Moneychanger(QWidget *parent)
 //        else
 //            qDebug() << "Error loading DEFAULT ACCOUNT from SQL";
     }
-
-    // Check for RPCServer Settings (Config read will populate the database)
-
-    RPCServer::getInstance()->init();
-
-    qDebug() << "Database Populated";
-
 
     // ----------------------------------------------------------------------------
 
@@ -849,13 +821,7 @@ static void blah()
 
 Moneychanger::~Moneychanger()
 {
-    delete nmc_update_timer;
-    delete nmc_names;
-    delete nmc;
 
-    nmc_update_timer = nullptr;
-    nmc_names = nullptr;
-    nmc = nullptr;
 }
 
 //opentxs::OTRecordList & Moneychanger::GetRecordlist()
@@ -8054,221 +8020,4 @@ void Moneychanger::mc_settings_slot()
     f.show();
     f.focus();
 }
-
-
-/**
- * Namecoin update timer event.
- */
-void Moneychanger::nmc_timer_event()
-{
-    nmc_names->timerUpdate ();
-}
-
-
-/**
-  * (Bitcoin ->) Test Window
-  **/
-void Moneychanger::mc_bitcoin_slot()
-{
-    if(!bitcoinwindow)
-        bitcoinwindow = new BtcGuiTest(this);
-    Focuser f(bitcoinwindow);
-    f.show();
-    f.focus();
-}
-
-/**
-  * (Bitcoin ->) Connect to wallet
-  **/
-void Moneychanger::mc_bitcoin_connect_slot()
-{
-    if(!bitcoinConnectWindow)
-        bitcoinConnectWindow = new BtcConnectDlg(this);
-    Focuser f(bitcoinConnectWindow);
-    f.show();
-    f.focus();
-}
-
-/**
-  * (Bitcoin ->) Pools
-  **/
-void Moneychanger::mc_bitcoin_pools_slot()
-{
-    if(!bitcoinPoolWindow)
-        bitcoinPoolWindow = new BtcPoolManager(this);
-    Focuser f(bitcoinPoolWindow);
-    f.show();
-    f.focus();
-}
-
-/**
-  * (Bitcoin ->) Transactions
-  **/
-void Moneychanger::mc_bitcoin_transactions_slot()
-{
-    if(!bitcoinTxWindow)
-        bitcoinTxWindow = new BtcTransactionManager(this);
-    Focuser f(bitcoinTxWindow);
-    f.show();
-    f.focus();
-}
-
-/**
-  * (Bitcoin ->) Send
-  **/
-void Moneychanger::mc_bitcoin_send_slot()
-{
-    if(!bitcoinSendWindow)
-        bitcoinSendWindow = new BtcSendDlg(this);
-    Focuser f(bitcoinSendWindow);
-    f.show();
-    f.focus();
-}
-
-/**
-  * (Bitcoin ->) Receive
-  **/
-void Moneychanger::mc_bitcoin_receive_slot()
-{
-    if(!bitcoinReceiveWindow)
-        bitcoinReceiveWindow = new BtcReceiveDlg(this);
-    bitcoinReceiveWindow->show();
-}
-
-/*
- * Moneychanger RPC Callback Functions
- *
- */
-
-
-void Moneychanger::mc_rpc_sendfunds_show_dialog(QString qstrAcct/*=QString("")*/, QString qstrRecipientNym/*=QString("")*/,
-                                                QString qstrAsset/*=QString("")*/, QString qstrAmount/*=QString("")*/)
-{
-    // --------------------------------------------------
-    MTSendDlg * send_window = new MTSendDlg(NULL);
-    send_window->setAttribute(Qt::WA_DeleteOnClose);
-    // --------------------------------------------------
-    QString qstr_acct_id;
-    QString qstr_recipient_id;
-
-
-    if(!qstrAcct.isEmpty())
-    {
-        qstr_acct_id = qstrAcct;
-    }
-    else if(qstrAcct.isEmpty() && qstrAsset.isEmpty())
-    {
-        qstr_acct_id = this->get_default_account_id();
-    }
-    else if(qstrAcct.isEmpty() && !qstrAsset.isEmpty())
-    {
-        mapIDName theAccountMap;
-
-        if (MTContactHandler::getInstance()->GetAccounts(theAccountMap, QString(""), QString(""), qstrAsset))
-        {
-            // This will be replaced with a popup dialog to select
-            // from the accounts rather than using the first in the map.
-            qstr_acct_id = theAccountMap.begin().key();
-        }
-
-        // If the asset is empty and the account is empty,
-        // or no account exists for the asset given, use the default account id.
-        if(qstrAsset.isEmpty())
-        {
-            qstr_acct_id = this->get_default_account_id();
-        }
-    }
-
-    if (!qstr_acct_id.isEmpty())
-        send_window->setInitialMyAcct(qstr_acct_id);
-
-    if (!qstrAmount.isEmpty())
-        send_window->setInitialAmount(qstrAmount);
-    else
-        send_window->setInitialAmount("0");
-
-    if(!qstrRecipientNym.isEmpty())
-        send_window->setInitialHisNym(qstrRecipientNym);
-    // ---------------------------------------
-//    Focuser f(send_window);
-    send_window->dialog();
-    // --------------------------------------------------
-}
-
-void Moneychanger::mc_rpc_requestfunds_show_dialog(QString qstrAcct/*=QString("")*/, QString qstrRecipientNym/*=QString("")*/,
-                                                   QString qstrAsset/*=QString("")*/, QString qstrAmount/*=QString("")*/)
-{
-    // --------------------------------------------------
-    MTRequestDlg * request_window = new MTRequestDlg(NULL);
-    request_window->setAttribute(Qt::WA_DeleteOnClose);
-    // --------------------------------------------------
-
-    QString qstr_acct_id;
-
-    if(!qstrAcct.isEmpty())
-    {
-        qstr_acct_id = qstrAcct;
-    }
-    else if(qstrAcct.isEmpty() && qstrAsset.isEmpty())
-    {
-        qstr_acct_id = this->get_default_account_id();
-    }
-    else if(qstrAcct.isEmpty() && !qstrAsset.isEmpty())
-    {
-        mapIDName theAccountMap;
-
-        if (MTContactHandler::getInstance()->GetAccounts(theAccountMap, QString(""), QString(""), qstrAsset))
-        {
-            // This will be replaced with a popup dialog to select
-            // from the accounts rather than using the first in the map.
-            qstr_acct_id = theAccountMap.begin().key();
-        }
-
-        // If the asset is empty and the account is empty,
-        // or no account exists for the asset given, use the default account id.
-        if(qstrAsset.isEmpty())
-        {
-            qstr_acct_id = this->get_default_account_id();
-        }
-    }
-
-    if (!qstr_acct_id.isEmpty())
-        request_window->setInitialMyAcct(qstr_acct_id);
-
-    if (!qstrAmount.isEmpty())
-        request_window->setInitialAmount(qstrAmount);
-
-    if(!qstrRecipientNym.isEmpty())
-        request_window->setInitialHisNym(qstrRecipientNym);
-
-    // ---------------------------------------
-    request_window->dialog();
-    // --------------------------------------------------
-}
-
-void Moneychanger::mc_rpc_messages_show_dialog(){
-    mc_messages_dialog();
-}
-
-void Moneychanger::mc_rpc_exchange_show_dialog(){
-    mc_market_dialog();
-}
-
-//void mc_rpc_payments_show_dialog();
-void Moneychanger::mc_rpc_manage_accounts_show_dialog(){
-    mc_accountmanager_dialog();
-}
-
-void Moneychanger::mc_rpc_manage_nyms_show_dialog(){
-    mc_nymmanager_dialog();
-}
-
-void Moneychanger::mc_rpc_manage_assets_show_dialog(){
-    mc_assetmanager_dialog();
-}
-
-void Moneychanger::mc_rpc_manage_smartcontracts_show_dialog(){
-
-}
-
 
