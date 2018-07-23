@@ -19,7 +19,6 @@
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/modelclaims.hpp>
 #include <core/handlers/modelverifications.hpp>
-#include <core/mtcomms.h>
 
 #include <opentxs/opentxs.hpp>
 

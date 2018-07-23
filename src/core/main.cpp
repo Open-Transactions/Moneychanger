@@ -6,11 +6,8 @@
 #include <core/passwordcallback.hpp>
 #include <core/moneychanger.hpp>
 #include <core/applicationmc.hpp>
-#include <core/modules.hpp>
 #include <core/translation.hpp>
 #include <core/handlers/contacthandler.hpp>
-
-#include <bitcoin-api/btcmodules.hpp>
 
 #include <opentxs/opentxs.hpp>
 
@@ -110,9 +107,6 @@ int main(int argc, char *argv[])
     MTApplicationMC theApplication(argc, argv);  // <====== THIRD constructor (they are destroyed in reverse order.)
     theApplication.setApplicationName(MONEYCHANGER_APP_NAME); // Access later using QCoreApplication::applicationName()
     theApplication.setQuitOnLastWindowClosed(false);
-
-    { Modules modules; }    // run constructor once, initialize static pointers
-    BtcModulesPtr btcModules = BtcModulesPtr(new BtcModules());
 
     //Set language
     Translation appTranslation;

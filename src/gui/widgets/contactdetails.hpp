@@ -94,7 +94,7 @@ private slots:
 
 private:
     QPointer<QWidget>   m_pHeaderWidget;
-    QPointer<QGroupBox> m_pAddresses;
+//    QPointer<QGroupBox> m_pAddresses;
 
     bool bTimerFired_=false;
 

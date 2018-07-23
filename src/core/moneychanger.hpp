@@ -11,8 +11,6 @@
 
 #include <opentxs/opentxs.hpp>
 
-#include <namecoin/Namecoin.hpp>
-
 #include _CINTTYPES
 #include _MEMORY
 
@@ -232,12 +230,6 @@ public:
 
 
 private:
-
-    /** Namecoin interface used for the NameManager.  */
-    NMC_Interface* nmc=nullptr;
-    /** Namecoin name manager.  */
-    NMC_NameManager* nmc_names=nullptr;
-
     /**
      * Booleans for tracking initialization
      **/
@@ -246,9 +238,6 @@ private:
 
     bool bExpertMode_=false;
     bool bHideNav_=false;
-
-    /** Timer used to update Namecoin names.  */
-    QTimer* nmc_update_timer=nullptr;
 
     /**
      * Window Classes
@@ -280,13 +269,6 @@ private:
     QPointer<DlgTradeArchive  > trade_archive_window;
 
     QPointer<Settings> settingswindow;
-
-    QPointer<BtcGuiTest> bitcoinwindow;
-    QPointer<BtcPoolManager> bitcoinPoolWindow;
-    QPointer<BtcTransactionManager> bitcoinTxWindow;
-    QPointer<BtcConnectDlg> bitcoinConnectWindow;
-    QPointer<BtcSendDlg> bitcoinSendWindow;
-    QPointer<BtcReceiveDlg> bitcoinReceiveWindow;
 
 private:
     void SetupMainMenu();
@@ -534,11 +516,6 @@ private:
 public slots:
 
     /**
-     * Namecoin update timer event.
-     */
-    void nmc_timer_event();
-
-    /**
      * Systray Menu Slots
      **/
 
@@ -614,31 +591,6 @@ public slots:
     void mc_createinsurancecompany_slot();  // Create Insurance Company Slot
     // ---------------------------------------------------------------------------
     void mc_settings_slot();                //Settings
-    // ---------------------------------------------------------------------------
-    void mc_bitcoin_slot();                 // Bitcoin -> Test
-    void mc_bitcoin_connect_slot();         // Bitcoin -> Connect to wallet
-    void mc_bitcoin_pools_slot();           // Bitcoin -> Mange Pools
-    void mc_bitcoin_transactions_slot();    // Bitcoin -> Transactions
-    void mc_bitcoin_send_slot();            // Bitcoin -> Send
-    void mc_bitcoin_receive_slot();            // Bitcoin -> Receive
-
-    // ---------------------------------------------------------------------------
-    // RPC callback functions
-    // ---------------------------------------------------------------------------
-
-    void mc_rpc_sendfunds_show_dialog(QString qstrAcct=QString(""), QString qstrRecipientNym=QString(""),
-                                      QString qstrAsset=QString(""), QString qstrAmount=QString(""));
-
-    void mc_rpc_requestfunds_show_dialog(QString qstrAcct=QString(""), QString qstrRecipientNym=QString(""),
-                                         QString qstrAsset=QString(""), QString qstrAmount=QString(""));
-    void mc_rpc_messages_show_dialog();
-    void mc_rpc_exchange_show_dialog();
-    //void mc_rpc_payments_show_dialog();
-    void mc_rpc_manage_accounts_show_dialog();
-    void mc_rpc_manage_nyms_show_dialog();
-    void mc_rpc_manage_assets_show_dialog();
-    void mc_rpc_manage_smartcontracts_show_dialog();
-
 };
 
 #endif // MONEYCHANGER_HPP

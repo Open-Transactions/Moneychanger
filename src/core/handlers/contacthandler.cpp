@@ -6,7 +6,6 @@
 
 #include <core/handlers/contacthandler.hpp>
 #include <core/handlers/DBHandler.hpp>
-#include <core/mtcomms.h>
 #include <core/moneychanger.hpp>
 
 #include <opentxs/opentxs.hpp>
@@ -3570,10 +3569,9 @@ bool MTContactHandler::MethodExists(int nMethodID)
 bool MTContactHandler::MethodTypeExists(QString method_type)
 {
     const std::string str_method_type = method_type.toStdString();
-    mapOfNetModules   mapOutput;
-
-    if (MTComms::get(str_method_type, mapOutput))
-        return true;
+//    mapOfNetModules   mapOutput;
+//    if (MTComms::get(str_method_type, mapOutput))
+//        return true;
 
     return false;
 }
@@ -3844,25 +3842,25 @@ bool MTContactHandler::GetMsgMethodTypes(mapIDName & theMap, bool bAddServers/*=
 {
     bool bFoundAny = false;
 
-    mapOfCommTypes mapTypes;
-
-    if (MTComms::types(mapTypes))
-    {
-        for(mapOfCommTypes::iterator it = mapTypes.begin(); it != mapTypes.end(); it++)
-        {
-            std::string strType = it->first;
-            std::string strName = it->second;
-
-            QString    qstrType = QString::fromStdString(strType);
-            QString    qstrName = QString::fromStdString(strName);
-
-            if ((qstrType.size() > 0) && (qstrName.size() > 0))
-            {
-                theMap.insert(qstrType, qstrName);
-                bFoundAny = true;
-            }
-        }
-    }
+//    mapOfCommTypes mapTypes;
+//
+//    if (MTComms::types(mapTypes))
+//    {
+//        for(mapOfCommTypes::iterator it = mapTypes.begin(); it != mapTypes.end(); it++)
+//        {
+//            std::string strType = it->first;
+//            std::string strName = it->second;
+//
+//            QString    qstrType = QString::fromStdString(strType);
+//            QString    qstrName = QString::fromStdString(strName);
+//
+//            if ((qstrType.size() > 0) && (qstrName.size() > 0))
+//            {
+//                theMap.insert(qstrType, qstrName);
+//                bFoundAny = true;
+//            }
+//        }
+//    }
     // --------------------------------------------
     bool bGotServers = false;
 
@@ -4028,7 +4026,7 @@ bool MTContactHandler::GetMethodsAndAddrByNym(mapIDName & theMap, QString filter
             QString qstrType           = Decode(qstrEncType);
 //          QString qstrTypeDisplay    = Decode(qstrEncTypeDisplay);
             // -----------------------------------------------------
-            std::string strTypeDisplay = MTComms::displayName(qstrType.toStdString());
+            std::string strTypeDisplay = "DEPRECATED";//MTComms::displayName(qstrType.toStdString());
             QString    qstrTypeDisplay = QString::fromStdString(strTypeDisplay);
 
             // For a Bitmessage address, the ID would be:
@@ -4076,7 +4074,7 @@ bool MTContactHandler::GetAddressesByNym(mapIDName & theMap, QString filterByNym
             QString qstrType           = Decode(qstrEncType);
 //          QString qstrTypeDisplay    = Decode(qstrEncTypeDisplay);
             // -----------------------------------------------------
-            std::string strTypeDisplay = MTComms::displayName(qstrType.toStdString());
+            std::string strTypeDisplay = "DEPRECATED";//MTComms::displayName(qstrType.toStdString());
             QString    qstrTypeDisplay = QString::fromStdString(strTypeDisplay);
 
             // For a Bitmessage address, the ID would be:
@@ -4291,7 +4289,7 @@ bool MTContactHandler::GetMsgMethodTypesByContact(mapIDName & theMap, int nFilte
             QString qstrType       = Decode(qstrEncType);
             QString qstrAddress    = Decode(qstrEncAddress);
             // -----------------------------------------------------
-            std::string strTypeDisplay = MTComms::displayName(qstrType.toStdString());
+            std::string strTypeDisplay = "DEPRECATED";//MTComms::displayName(qstrType.toStdString());
             QString    qstrTypeDisplay = QString::fromStdString(strTypeDisplay);
 
             // For a Bitmessage address, the ID would be:

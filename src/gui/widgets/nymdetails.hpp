@@ -103,13 +103,9 @@ protected:
     void FavorLeftSideForIDs();
     void clearNotaryTable();
 
-    QGroupBox * createAddressGroupBox    (QString strNymID);
-    QWidget   * createSingleAddressWidget(QString strNymID, int nMethodID, QString qstrAddress, QString qstrDisplayAddr);
-    QWidget   * createNewAddressWidget   (QString strNymID);
-
 private:
     QPointer<QWidget>   m_pHeaderWidget;
-    QPointer<QGroupBox> m_pAddresses;
+//    QPointer<QGroupBox> m_pAddresses;
 
     Ui::MTNymDetails *ui;
 };

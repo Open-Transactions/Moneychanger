@@ -37,12 +37,8 @@ include(../common.pri)
 #PRECOMPILED_HEADER = $${SOLUTION_DIR}../src/core/stable.hpp
 
 include($${SOLUTION_DIR}../project/QtQREncoder/QtQREncoder.pri)
-include($${SOLUTION_DIR}../project/qjsonrpc/qjsonrpc.pri)
 include($${SOLUTION_DIR}../src/core/core.pri)
 include($${SOLUTION_DIR}../src/gui/gui.pri)
-include($${SOLUTION_DIR}../src/rpc/rpc.pri)
-include($${SOLUTION_DIR}../src/bitcoin/bitcoin.pri)
-include($${SOLUTION_DIR}../src/namecoin/namecoin.pri)
 include($${SOLUTION_DIR}../src/quazip/quazip.pri)
 
 #-------------------------------------------------
@@ -71,38 +67,16 @@ win32:{
 #-------------------------------------------------
 # Linked Libs
 
-LIBS += -lopentxs
+#LIBS += -lopentxs
+LIBS += -lprotobuf-lite
 LIBS += -lopentxs-proto
 LIBS += -lopentxs
-LIBS += -lprotobuf-lite
 
 # MAC AND LINUX:
 unix: {
 
 ##  LIBS += -L$${OUT_PWD}/../curl
 ##  LIBS += -lcurl
-
-    LIBS += -L$${OUT_PWD}/../bitcoin-api
-    LIBS += -lbitcoin-api
-
-    LIBS += -L$${OUT_PWD}/../jsoncpp
-    LIBS += -ljsoncpp
-
-    INCLUDEPATH += $${PWD}/../qjsonrpc/src
-    LIBS += -L$${OUT_PWD}/../qjsonrpc/src
-    LIBS += -lqjsonrpc
-
-    INCLUDEPATH += $${PWD}/../QtQREncoder
-    INCLUDEPATH += $${PWD}/../QtQREncoder/qrencode
-    LIBS += -L$${OUT_PWD}/../QtQREncoder
-    LIBS += -lqrencode
-
-    LIBS += -L$${OUT_PWD}/../nmcrpc
-    LIBS += -lnmcrpc
-
-    LIBS += -L$${OUT_PWD}/../quazip
-    LIBS += -lquazip -lz
-
 
     mac:{
         QMAKE_MAC_SDK = macosx10.13
@@ -121,6 +95,14 @@ unix: {
         LIBS += -L/usr/local/lib/
         LIBS += -framework Cocoa -framework CoreFoundation
     }
+
+    INCLUDEPATH += $${PWD}/../QtQREncoder
+    INCLUDEPATH += $${PWD}/../QtQREncoder/qrencode
+    LIBS += -L$${OUT_PWD}/../QtQREncoder
+    LIBS += -lqrencode
+
+    LIBS += -L$${OUT_PWD}/../quazip
+    LIBS += -lquazip -lz
 
     LIBS += -lzmq   # needed for sampleescrowserverzmq
 }
@@ -153,12 +135,8 @@ win32: {
         }
     }
 
-    LIBS += bitcoin-api.lib
-    LIBS += jsoncpp.lib
-    LIBS += qjsonrpc.lib
     LIBS += qrencode.lib
     LIBS += curl.lib
-    LIBS += nmcrpc.lib
     LIBS += quazip.lib
 
     LIBS += otlib.lib
@@ -175,9 +153,6 @@ win32: {
 unix:{
     LIBS += -ldl
     LIBS += -lcurl
-    LIBS += -lxmlrpc
-    LIBS += -lxmlrpc++
-    LIBS += -lxmlrpc_client++
 }
 
 

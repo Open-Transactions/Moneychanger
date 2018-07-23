@@ -13,7 +13,6 @@
 #include <core/moneychanger.hpp>
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
-#include <core/mtcomms.h>
 
 #include <opentxs/opentxs.hpp>
 
@@ -105,7 +104,9 @@ void TransportDetails::AddButtonClicked()
                 QString qstrType        = theChooser.m_qstrCurrentID;   // "bitmessage"
                 QString qstrTypeDisplay = theChooser.m_qstrCurrentName; // "Bitmessage"
                 // ----------------------------
-                MTGetStringDialog connectDlg(this, tr("Enter connect info:"), QString::fromStdString(MTComms::connectPlaceholder(qstrType.toStdString())));
+                MTGetStringDialog connectDlg(this, tr("Enter connect info:"),
+                                             QString("DEPRECATED FOR NOW"));
+//                                           QString::fromStdString(MTComms::connectPlaceholder(qstrType.toStdString())));
                 connectDlg.setWindowTitle(tr("Connection String"));
 
                 if (QDialog::Accepted == connectDlg.exec())
