@@ -45,40 +45,37 @@ class __OTclient_RAII
 {
 public:
     __OTclient_RAII()
+#ifndef OT_NO_PASSWORD
         : password_callback_{new MTPasswordCallback}
         , password_caller_{new opentxs::OTCaller}
+#endif
     {
+#ifndef OT_NO_PASSWORD
         assert(password_callback_);
         assert(password_caller_);
-
         password_caller_->setCallback(password_callback_.get());
-
         assert(password_caller_->isCallbackSet());
-
         // ----------------------------------------
-        // Set Address Book Callback.
-        //
-//        static opentxs::OTLookupCaller theCaller;
-//        static MTNameLookupQT theCallback;
-//
-//        if (!SetupAddressBookCallback(theCaller, theCallback))
-//        {
-//            qDebug() << "Failure setting address book callback in MTApplicationMC";
-//            abort();
-//        }
-
-         opentxs::OT::ClientFactory({}, {}, password_caller_.get());
+        opentxs::OT::ClientFactory({}, {}, password_caller_.get());
+#else
+        opentxs::OT::ClientFactory({}, {});
+#endif
     }
     ~__OTclient_RAII()
     {
         opentxs::OT::Cleanup();
+
+#ifndef OT_NO_PASSWORD
         password_caller_.reset();
         password_callback_.reset();
+#endif
     }
 
+#ifndef OT_NO_PASSWORD
 private:
     std::unique_ptr<MTPasswordCallback> password_callback_{nullptr};
     std::unique_ptr<opentxs::OTCaller> password_caller_{nullptr};
+#endif
 };
 
 // ----------------------------------------
