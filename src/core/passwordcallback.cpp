@@ -11,7 +11,7 @@
 
 #include <QDebug>
 
-
+#ifndef OT_NO_PASSWORD
 void MTPasswordCallback::runOne(const char * szDisplay, opentxs::OTPassword & theOutput) const
 {
     if (NULL == szDisplay)
@@ -49,5 +49,5 @@ void MTPasswordCallback::runTwo(const char * szDisplay, opentxs::OTPassword & th
 
     pDlg->exec();
 }
-
+#endif
 
