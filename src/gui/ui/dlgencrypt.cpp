@@ -252,7 +252,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
 
                 std::string  str_text   (qstrText.toStdString());
                 opentxs::String     strText    (str_text.c_str());
-//              opentxs::OTASCIIArmor ascText    (strText);
+//              opentxs::Armored ascText    (strText);
 //              std::string  str_encoded(ascText.Get());
 //              opentxs::String     strEncoded (str_encoded.c_str());
 //              std::string  str_type   ("MESSAGE");
@@ -426,7 +426,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                         // Success encrypting!
                         //
                         opentxs::String     strOutput;
-                        opentxs::OTASCIIArmor ascCiphertext(theEnvelope);
+                        opentxs::Armored ascCiphertext(theEnvelope);
 
                         if (ascCiphertext.WriteArmoredString(strOutput, "ENVELOPE")) // -----BEGIN OT ARMORED ENVELOPE-----
                         {
@@ -453,7 +453,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
             std::string  str_text(qstrText.toStdString());
             opentxs::String     strText (str_text.c_str());
             opentxs::String     strOutput;
-            opentxs::OTASCIIArmor ascText (strText);
+            opentxs::Armored ascText (strText);
 
             if (ascText.WriteArmoredString(strOutput, "SIGNED FILE")) // -----BEGIN OT ARMORED SIGNED FILE-----
             {

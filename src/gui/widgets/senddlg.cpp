@@ -970,7 +970,7 @@ bool MTSendDlg::sendChequeLowLevel (int64_t amount,
 //    const QString qstrToContactName   = ui->toButton->text();
 //    // ------------------------------------------------------------
 //    opentxs::String otstr_cheque(strCheque.c_str());
-//    opentxs::OTASCIIArmor asc_cheque(otstr_cheque);
+//    opentxs::Armored asc_cheque(otstr_cheque);
 //    opentxs::String strArmoredCheque; // TODO: Encrypt to contact's pubkey if available.
 //    if (asc_cheque.WriteArmoredString(strArmoredCheque, "CHEQUE"))
 //    {
