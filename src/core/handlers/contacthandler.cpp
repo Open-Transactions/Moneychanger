@@ -3439,7 +3439,7 @@ QString MTContactHandler::Encode(QString plaintext)
     {
         // Encode base64.
         opentxs::String        strValue(plaintext.toStdString());
-        opentxs::OTASCIIArmor    ascValue;
+        opentxs::Armored    ascValue;
         ascValue.SetString(strValue, false); //bLineBreaks=true by default
         encoded_value = QString(ascValue.Get());
     }
@@ -3455,7 +3455,7 @@ QString MTContactHandler::Decode(QString encoded)
     if (!encoded.isEmpty())
     {
         // Decode base64.
-        opentxs::OTASCIIArmor ascValue;
+        opentxs::Armored ascValue;
         ascValue.Set(encoded.toStdString().c_str());
         opentxs::String strValue;
         ascValue.GetString(strValue, false); //bLineBreaks=true by default

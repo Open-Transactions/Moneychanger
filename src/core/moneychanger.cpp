@@ -5775,7 +5775,7 @@ void Moneychanger::mc_import_slot()
     //
     if (Moneychanger::is_base64(qstrInstrument))
     {
-        opentxs::OTASCIIArmor ascInstrument(strInstrument.c_str());
+        opentxs::Armored ascInstrument(strInstrument.c_str());
         ascInstrument.GetString(otstrInstrument);
         strInstrument  = otstrInstrument.Get();
         qstrInstrument = QString::fromStdString(strInstrument);

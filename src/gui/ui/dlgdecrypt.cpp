@@ -99,8 +99,8 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
             if (strInput.Contains("-----BEGIN OT ARMORED ENVELOPE-----"))
             {
                 opentxs::OTEnvelope theEnvelope;
-                opentxs::OTASCIIArmor armor;
-                opentxs::OTASCIIArmor::LoadFromString(armor, strInput);
+                opentxs::Armored armor;
+                opentxs::Armored::LoadFromString(armor, strInput);
 
                 if (theEnvelope.SetCiphertext(armor))
                 {
@@ -249,7 +249,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
 
             if (Moneychanger::is_base64(qstrText))
             {
-                opentxs::OTASCIIArmor ascText{str_input.c_str()};
+                opentxs::Armored ascText{str_input.c_str()};
                 ascText.GetString(strInput);
                 str_input = strInput.Get();
                 qstrText  = QString::fromStdString(str_input);
