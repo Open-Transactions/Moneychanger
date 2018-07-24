@@ -5550,13 +5550,13 @@ void Moneychanger::mc_pair_node_slot()
 //    if (QDialog::Accepted != dlgPair.exec())
 //        return;
     // ----------------------------------------
-    QString serialPortName = QString("/dev/tty.usbserial-A104CNRS"); // todo
-//  QString serialPortName = QString("/dev/cu.usbserial-A104CNRS");
+    QString serialPortName = QString(infos.first().systemLocation());
+
     QSerialPort serialPort;
     serialPort.setPortName(serialPortName);
 
-//  int serialPortBaudRate = QSerialPort::Baud38400;
-//  serialPort.setBaudRate(serialPortBaudRate);
+    int serialPortBaudRate = QSerialPort::Baud38400;
+    serialPort.setBaudRate(serialPortBaudRate);
 
     if (!serialPort.open(QIODevice::ReadOnly)) {
         qDebug() << QObject::tr("Failed to open port %1, error: %2").arg(serialPortName).arg(serialPort.error()) << endl;
@@ -5588,7 +5588,7 @@ void Moneychanger::mc_pair_node_slot()
             qDebug() << QObject::tr("No data was currently available for reading from port: %1").arg(serialPortName);
         }
         else {
-            QString qstrData = QString::fromUtf8(readData);
+            QString qstrData = QString::fromUtf8(readData, readData.length());
             qDebug() << QObject::tr("Data successfully received from port %1.").arg(serialPortName);
             //qDebug() << qstrData << endl;
             //qDebug() << readData << endl;
@@ -8020,4 +8020,3 @@ void Moneychanger::mc_settings_slot()
     f.show();
     f.focus();
 }
-
