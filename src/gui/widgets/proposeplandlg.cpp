@@ -647,7 +647,7 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     {
         MTSpinner      theSpinner;
         std::shared_ptr<const opentxs::OTPayment> payment =
-            std::make_shared<const opentxs::OTPayment>(opentxs::String(str_plan.c_str()));
+            std::make_shared<const opentxs::OTPayment>(opentxs::OT::App().Legacy().ClientDataFolder(), opentxs::String(str_plan.c_str()));
 
         OT_ASSERT(payment);
 

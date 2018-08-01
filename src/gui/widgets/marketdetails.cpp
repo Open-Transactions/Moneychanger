@@ -210,9 +210,9 @@ opentxs::OTDB::OfferListMarket * MTMarketDetails::LoadOfferListForMarket(opentxs
     // ------------------------------------------
     QString qstrFilename = QString("%1.bin").arg(QString::fromStdString(marketData.market_id));
 
-    if (opentxs::OTDB::Exists("markets", marketData.notary_id, "offers", qstrFilename.toStdString()))
+    if (opentxs::OTDB::Exists(opentxs::OT::App().Legacy().ClientDataFolder(), "markets", marketData.notary_id, "offers", qstrFilename.toStdString()))
     {
-        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_OFFER_LIST_MARKET, "markets",
+        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_OFFER_LIST_MARKET, opentxs::OT::App().Legacy().ClientDataFolder(), "markets",
                                       marketData.notary_id, "offers", qstrFilename.toStdString());
         if (nullptr == pStorable)
             return NULL;
@@ -539,9 +539,9 @@ opentxs::OTDB::TradeListMarket * MTMarketDetails::LoadTradeListForMarket(opentxs
     // ------------------------------------------
     QString qstrFilename = QString("%1.bin").arg(QString::fromStdString(marketData.market_id));
 
-    if (opentxs::OTDB::Exists("markets", marketData.notary_id, "recent", qstrFilename.toStdString()))
+    if (opentxs::OTDB::Exists(opentxs::OT::App().Legacy().ClientDataFolder(), "markets", marketData.notary_id, "recent", qstrFilename.toStdString()))
     {
-        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_TRADE_LIST_MARKET, "markets",
+        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_TRADE_LIST_MARKET, opentxs::OT::App().Legacy().ClientDataFolder(), "markets",
                                       marketData.notary_id, "recent", qstrFilename.toStdString());
         if (nullptr == pStorable)
             return NULL;

@@ -561,7 +561,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
         // it just puts a copy into my outpayments box for safe-keeping.
         //
         std::shared_ptr<const opentxs::OTPayment> payment =
-            std::make_shared<const opentxs::OTPayment>(opentxs::String(strVoucher.c_str()));
+            std::make_shared<const opentxs::OTPayment>(opentxs::OT::App().Legacy().ClientDataFolder(), opentxs::String(strVoucher.c_str()));
 
         OT_ASSERT(payment);
         // SENDING HERE TO MYSELF (FOR OUTBOX)
@@ -621,7 +621,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
         const opentxs::String otstrCheque(strVoucher.c_str());
 
         std::shared_ptr<const opentxs::OTPayment> pPayment
-        (new opentxs::OTPayment(otstrCheque));
+        (new opentxs::OTPayment(opentxs::OT::App().Legacy().ClientDataFolder(), otstrCheque));
 
         const auto bgthreadId
         {opentxs::OT::App().API().Sync().
@@ -936,7 +936,7 @@ bool MTSendDlg::sendChequeLowLevel (int64_t amount,
         const opentxs::String otstrCheque(strCheque.c_str());
 
         std::shared_ptr<const opentxs::OTPayment> pPayment
-            (new opentxs::OTPayment(otstrCheque));
+            (new opentxs::OTPayment(opentxs::OT::App().Legacy().ClientDataFolder(), otstrCheque));
 
         const auto bgthreadId
             {opentxs::OT::App().API().Sync().

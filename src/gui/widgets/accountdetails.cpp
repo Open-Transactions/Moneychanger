@@ -1644,7 +1644,7 @@ void MTAccountDetails::DeleteButtonClicked()
         if (!bCanRemove)
         {
             const auto id_acct = opentxs::Identifier::Factory(str_account_id);
-            const auto account = opentxs::OT::App().Wallet().Account(id_acct);
+            const auto account = opentxs::OT::App().Wallet().Account(opentxs::OT::App().Legacy().ClientDataFolder(), id_acct);
 
             QString qstrMessage = QString("%1. %2")
                     .arg(tr("This Account cannot be deleted until it has a zero balance and an empty inbox"))

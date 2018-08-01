@@ -1804,7 +1804,7 @@ void MTAgreementDetails::ImportContract(QString qstrContents)
     {
         opentxs::String strContract(qstrContents.toStdString());
 
-        opentxs::OTScriptable    * pScriptable    = opentxs::OTScriptable::InstantiateScriptable(strContract);
+        opentxs::OTScriptable    * pScriptable    = opentxs::OTScriptable::InstantiateScriptable(opentxs::OT::App().Legacy().ClientDataFolder(), strContract);
         opentxs::OTSmartContract * pSmartContract = (nullptr == pScriptable) ? nullptr : dynamic_cast<opentxs::OTSmartContract*>(pScriptable);
 
         std::unique_ptr<opentxs::OTScriptable> theContractAngel(pScriptable);

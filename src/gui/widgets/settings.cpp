@@ -212,7 +212,7 @@ void Settings::on_pushButton_clicked()
         if (!strCronItem.Exists())
             continue;
         // --------------------------------------
-        std::unique_ptr<opentxs::OTCronItem> pCronItem ( opentxs::OTCronItem::NewCronItem(strCronItem) );
+        std::unique_ptr<opentxs::OTCronItem> pCronItem ( opentxs::OTCronItem::NewCronItem(opentxs::OT::App().Legacy().ClientDataFolder(), strCronItem) );
 
         if (!pCronItem)
             continue;
@@ -222,7 +222,7 @@ void Settings::on_pushButton_clicked()
         // --------------------------------------
         if ( (nullptr != pPlan) || (nullptr != pSmart) )
         {
-            opentxs::OTPayment thePayment(strCronItem);
+            opentxs::OTPayment thePayment(opentxs::OT::App().Legacy().ClientDataFolder(), strCronItem);
 
             if (!thePayment.IsValid() || !thePayment.SetTempValues())
                 continue;
