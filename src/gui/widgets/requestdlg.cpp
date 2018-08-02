@@ -241,7 +241,7 @@ bool MTRequestDlg::sendChequeLowLevel(
         const opentxs::String otstrCheque(strCheque.c_str());
 
         std::shared_ptr<const opentxs::OTPayment> pPayment
-            (new opentxs::OTPayment(otstrCheque));
+            (new opentxs::OTPayment(opentxs::OT::App().Legacy().ClientDataFolder(), otstrCheque));
 
         const auto bgthreadId
             {opentxs::OT::App().API().Sync().

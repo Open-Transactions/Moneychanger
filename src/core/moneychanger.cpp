@@ -465,7 +465,7 @@ bool Moneychanger::retrieve_nym(
 {
     auto context = ot_.Wallet().mutable_ServerContext(
         opentxs::Identifier::Factory(strMyNymID), opentxs::Identifier::Factory(strNotaryID));
-    opentxs::Utility MsgUtil(context.It(), ot_.API().OTAPI());
+    opentxs::Utility MsgUtil(context.It(), ot_.API().OTAPI(), opentxs::OT::App().Legacy());
 
     if (0 >= context.It().UpdateRequestNumber()) {
         return false;
@@ -5750,7 +5750,7 @@ void Moneychanger::mc_import_slot()
     // This handles "BEGIN SIGNED CHEQUE"
     // as well as "BEGIN OT ARMORED CHEQUE"
     //
-    std::shared_ptr<opentxs::OTPayment> payment(new opentxs::OTPayment(otstrInstrument));
+    std::shared_ptr<opentxs::OTPayment> payment(new opentxs::OTPayment(opentxs::OT::App().Legacy().ClientDataFolder(), otstrInstrument));
 
     if (!payment) {
         QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
@@ -6058,7 +6058,7 @@ void Moneychanger::mc_import_slot()
 
                         auto deposit_acct_id = opentxs::Identifier::Factory(str_deposit_acct_id);
 
-                        std::unique_ptr<opentxs::Cheque> cheque = std::make_unique<opentxs::Cheque>();
+                        std::unique_ptr<opentxs::Cheque> cheque = std::make_unique<opentxs::Cheque>(opentxs::OT::App().Legacy().ClientDataFolder());
                         cheque->LoadContractFromString(opentxs::String(strInstrument.c_str()));
 
                         OT_ASSERT(cheque);
@@ -6130,7 +6130,7 @@ void Moneychanger::mc_import_slot()
 
                             auto deposit_acct_id = opentxs::Identifier::Factory(str_deposit_acct_id);
 
-                            std::unique_ptr<opentxs::Cheque> cheque = std::make_unique<opentxs::Cheque>();
+                            std::unique_ptr<opentxs::Cheque> cheque = std::make_unique<opentxs::Cheque>(opentxs::OT::App().Legacy().ClientDataFolder());
                             cheque->LoadContractFromString(opentxs::String(strInstrument.c_str()));
 
                             OT_ASSERT(cheque);
@@ -7852,7 +7852,7 @@ int32_t Moneychanger::activateContract(const std::string& server, const std::str
     const auto notaryID = opentxs::Identifier::Factory(server),
                 myNymID = opentxs::Identifier::Factory(mynym),
               accountID = opentxs::Identifier::Factory(myAcctID);
-    std::unique_ptr<opentxs::OTSmartContract> smartContract = std::make_unique<opentxs::OTSmartContract>();
+    std::unique_ptr<opentxs::OTSmartContract> smartContract = std::make_unique<opentxs::OTSmartContract>(opentxs::OT::App().Legacy().ClientDataFolder());
 
     OT_ASSERT(smartContract)
 
@@ -7895,7 +7895,7 @@ int32_t Moneychanger::sendToNextParty(const std::string& server, const std::stri
     std::string hisNymID = hisnym;
 
     std::shared_ptr<const opentxs::OTPayment> payment =
-        std::make_shared<const opentxs::OTPayment>(opentxs::String(contract.c_str()));
+        std::make_shared<const opentxs::OTPayment>(opentxs::OT::App().Legacy().ClientDataFolder(), opentxs::String(contract.c_str()));
 
     OT_ASSERT(payment);
 
