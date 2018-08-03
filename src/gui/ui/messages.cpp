@@ -858,7 +858,7 @@ void Messages::RefreshTree()
 //                        {
 //                            qstrMethodName = tr("Notary");
 //                            // ------------------------------
-//                            QString qstrTemp = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(qstrViaTransport.toStdString()));
+//                            QString qstrTemp = QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_Name(qstrViaTransport.toStdString()));
 //                            if (!qstrTemp.isEmpty())
 //                                qstrTransportName = qstrTemp;
 //                        }
@@ -1291,7 +1291,7 @@ void Messages::tableViewPopupMenu(const QPoint &pos, QTableView * pTableView, Me
             return;
         // Below this point we're guaranteed that there's a NymID.
         // ---------------------------------------------------
-        const auto contactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier::Factory(qstrNymId.toStdString()));
+        const auto contactId = opentxs::OT::App().Client().Contacts().ContactID(opentxs::Identifier::Factory(qstrNymId.toStdString()));
 
         if (!contactId->empty())
         {
@@ -1513,7 +1513,7 @@ void Messages::on_toolButtonReply_clicked()
             // That means we can try to see if there's an opentxs contact associated with the
             // recipient's Nym Id, and if so, we can check Can_Message...
             //
-            const auto otherContactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier::Factory(otherNymID.toStdString()));
+            const auto otherContactId = opentxs::OT::App().Client().Contacts().ContactID(opentxs::Identifier::Factory(otherNymID.toStdString()));
             const opentxs::String     strOtherContactId(otherContactId);
             const std::string         str_other_contact_id(strOtherContactId.Get());
             const QString             qstrOtherContactId(str_other_contact_id.empty() ? QString("") : QString::fromStdString(str_other_contact_id));
@@ -1521,7 +1521,7 @@ void Messages::on_toolButtonReply_clicked()
             if (!str_other_contact_id.empty()) // An opentxs contact was found for the recipient Nym.
             {
                 if (opentxs::Messagability::READY ==
-                    opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier::Factory(myNymID.toStdString()),
+                    opentxs::OT::App().Client().Sync().CanMessage(opentxs::Identifier::Factory(myNymID.toStdString()),
                                                                opentxs::Identifier::Factory(str_other_contact_id)))
                 {
                     bCanMessage = true;

@@ -62,9 +62,9 @@ template class opentxs::Pimpl<opentxs::PaymentCode>;
 //        // -----------------------------------------------
 //        return str_result;
 //    }
-////  const auto pContact2 = opentxs::OT::App().Contact().Contact(opentxs::Identifier{str_id});
+////  const auto pContact2 = opentxs::OT::App().Client().Contacts().Contact(opentxs::Identifier{str_id});
 //    //
-//    // NOTE: No need to do the OT::App().Contact() thing, since the above call to
+//    // NOTE: No need to do the OT::App().Client().Contacts() thing, since the above call to
 //    // GetContactName already calls it. If we're in this block, that means it already
 //    // failed.
 //
@@ -414,7 +414,7 @@ static void blah()
 //    opentxs::String strVerifierNymId = qstrVerifierNymId.toStdString();
 //    opentxs::Identifier verifierNymId(strVerifierNymId);
 
-//    opentxs::Nym * pVerifierNym = opentxs::OT::App().API().OTAPI().GetOrLoadPrivateNym(verifierNymId, false, __FUNCTION__);
+//    opentxs::Nym * pVerifierNym = opentxs::OT::App().Client().OTAPI().GetOrLoadPrivateNym(verifierNymId, false, __FUNCTION__);
 
 //    if (nullptr == pVerifierNym)
 //    {
@@ -438,7 +438,7 @@ static void blah()
 
 
 
-//    opentxs::proto::VerificationSet   verification_set = opentxs::OT::App().API().OTAPI().GetVerificationSet(*pVerifierNym);
+//    opentxs::proto::VerificationSet   verification_set = opentxs::OT::App().Client().OTAPI().GetVerificationSet(*pVerifierNym);
 //    opentxs::proto::VerificationSetMap & internal         = std::get<0>(verification_set);
 //    opentxs::proto::VerificationSetMap & external         = std::get<1>(verification_set);
 //    std::set<std::string>            & repudiatedIDs    = std::get<2>(verification_set);
@@ -554,7 +554,7 @@ bool MTContactHandler::claimVerificationLowlevel(const QString & qstrClaimId, co
 
     opentxs::OTPasswordData thePWData(QString(QObject::tr("We've almost bubbled up to the top!! Confirming/refuting a claim.")).toStdString().c_str());
 
-    auto data = opentxs::OT::App().API().Exec().SetVerification(
+    auto data = opentxs::OT::App().Client().Exec().SetVerification(
                 bChanged,
                 qstrVerifierNymId.toStdString(),
                 qstrClaimantNymId.toStdString(),
@@ -1131,7 +1131,7 @@ bool MTContactHandler::GetServers(mapIDName & theMap, QString filterByNym, bool 
 
         if (!notary_id.isEmpty())
         {
-            QString server_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(notary_id.toStdString()));
+            QString server_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_Name(notary_id.toStdString()));
 
             if (!server_name.isEmpty())
             {
@@ -1168,12 +1168,12 @@ bool MTContactHandler::GetServers(mapIDName & theMap, QString filterByNym, bool 
 bool MTContactHandler::GetServers(mapIDName & theMap, bool bPrependOTType/*=false*/)
 {
     bool    bFoundAny    = false;
-    int32_t nServerCount = opentxs::OT::App().API().Exec().GetServerCount();
+    int32_t nServerCount = opentxs::OT::App().Client().Exec().GetServerCount();
 
     for (int32_t ii = 0; ii < nServerCount; ++ii)
     {
-        std::string str_notary_id   = opentxs::OT::App().API().Exec().GetServer_ID(ii);
-        std::string str_server_name = opentxs::OT::App().API().Exec().GetServer_Name(str_notary_id);
+        std::string str_notary_id   = opentxs::OT::App().Client().Exec().GetServer_ID(ii);
+        std::string str_server_name = opentxs::OT::App().Client().Exec().GetServer_Name(str_notary_id);
 
         QString qstrNotaryID   = QString::fromStdString(str_notary_id);
         QString qstrServerName = QString::fromStdString(str_server_name);
@@ -1218,7 +1218,7 @@ bool MTContactHandler::GetServers(mapIDName & theMap, int nFilterByContact, bool
 
         if (!notary_id.isEmpty())
         {
-            QString server_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(notary_id.toStdString()));
+            QString server_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_Name(notary_id.toStdString()));
 
             if (!server_name.isEmpty())
             {
@@ -2127,7 +2127,7 @@ bool MTContactHandler::LowLevelUpdatePaymentBody(int nPaymentID, const QString q
 bool MTContactHandler::GetOpentxsContacts(mapIDName & theMap)
 {
     bool bFoundAny{false};
-    for (const auto& it : opentxs::OT::App().Contact().ContactList()) {
+    for (const auto& it : opentxs::OT::App().Client().Contacts().ContactList()) {
         bFoundAny = true;
         const auto& contactID    = it.first;
         const auto& contactLabel = it.second;
@@ -2211,7 +2211,7 @@ bool MTContactHandler::GetPaymentCodes(mapIDName & theMap, int nFilterByContact)
             }
             else
             {
-                nym_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(nym_id.toStdString()));
+                nym_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(nym_id.toStdString()));
             }
             // ----------------------------
             // At this point we have the payment code *and* the nym name.
@@ -2231,12 +2231,12 @@ bool MTContactHandler::GetAssetIdsForTLA(mapIDName & theMap, const std::string &
     // ------------------------
     bool bFoundAny{false};
 
-    int32_t asset_count = opentxs::OT::App().API().Exec().GetAssetTypeCount();
+    int32_t asset_count = opentxs::OT::App().Client().Exec().GetAssetTypeCount();
     for (int aa = 0; aa < asset_count; aa++)
     {
-        QString OT_asset_id   = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_ID(aa));
-        QString OT_asset_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(OT_asset_id.toStdString()));
-        const std::string OT_asset_tla  = opentxs::OT::App().API().Exec().GetCurrencyTLA(OT_asset_id.toStdString());
+        QString OT_asset_id   = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_ID(aa));
+        QString OT_asset_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Name(OT_asset_id.toStdString()));
+        const std::string OT_asset_tla  = opentxs::OT::App().Client().Exec().GetCurrencyTLA(OT_asset_id.toStdString());
 
         if (0 == OT_asset_tla.compare(str_tla)) {
             theMap.insert(OT_asset_id, OT_asset_name);
@@ -2255,7 +2255,7 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, const std::string & str_conta
     if (str_contact_id.empty() || !opentxs::Identifier::Validate(str_contact_id))
         return false;
     // ------------------------
-    const auto pContact = opentxs::OT::App().Contact().Contact(opentxs::Identifier::Factory(str_contact_id));
+    const auto pContact = opentxs::OT::App().Client().Contacts().Contact(opentxs::Identifier::Factory(str_contact_id));
     if (!pContact)
     {
         qDebug() << "No opentxs Contact found for the ID provided.";
@@ -2332,7 +2332,7 @@ bool MTContactHandler::GetNyms(mapIDName & theMap, int nFilterByContact)
             }
             else
             {
-                nym_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(nym_id.toStdString()));
+                nym_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(nym_id.toStdString()));
             }
             // ----------------------------
             // At this point we have the nym ID *and* the nym name.
@@ -2824,7 +2824,7 @@ int  MTContactHandler::CreateSmartContractTemplate(QString template_string)
         const QString strNewContactLabel = nameDlg.GetOutputString();
         const std::string str_new_contact_label = strNewContactLabel.toStdString();
         // --------------------------------------------------
-        auto pContact = opentxs::OT::App().Contact().NewContact(str_new_contact_label);
+        auto pContact = opentxs::OT::App().Client().Contacts().NewContact(str_new_contact_label);
 
         if (!pContact) {
             qDebug() << "Error: Failed trying to create new Contact.";
@@ -2843,7 +2843,7 @@ int  MTContactHandler::CreateSmartContractTemplate(QString template_string)
 */
 QString MTContactHandler::GetOrCreateOpentxsContactBasedOnNym(QString qstrLabel, QString nym_id_string, QString payment_code/*=QString("")*/)
 {
-    const auto contactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier::Factory(nym_id_string.toStdString()));
+    const auto contactId = opentxs::OT::App().Client().Contacts().ContactID(opentxs::Identifier::Factory(nym_id_string.toStdString()));
 
     if (!contactId->empty()) // Found an existing one
     {
@@ -2856,8 +2856,8 @@ QString MTContactHandler::GetOrCreateOpentxsContactBasedOnNym(QString qstrLabel,
     // So let's create a new one instead.
     //
     const std::string str_label = qstrLabel.toStdString();
-    const auto response = opentxs::OT::App().Contact().NewContact(str_label, opentxs::Identifier::Factory(nym_id_string.toStdString()),
-                                                                  opentxs::PaymentCode::Factory(payment_code.toStdString()));
+    const auto response = opentxs::OT::App().Client().Contacts().NewContact(str_label, opentxs::Identifier::Factory(nym_id_string.toStdString()),
+                                                                  opentxs::OT::App().Client().Factory().PaymentCode(payment_code.toStdString()));
     return response ? QString::fromStdString(std::string(opentxs::String(response->ID()).Get())) : QString("");
 }
 
@@ -2880,8 +2880,8 @@ int MTContactHandler::CreateContactBasedOnNym(QString nym_id_string, QString not
     //
     //
 //    const std::string str_label;
-//    const auto response = opentxs::OT::App().Contact().NewContact(str_label, opentxs::Identifier{nym_id_string.toStdString()}, opentxs::PaymentCode{payment_code.toStdString()});
-//  const auto pContact = opentxs::OT::App().Contact().Contact(opentxs::Identifier{contact});
+//    const auto response = opentxs::OT::App().Client().Contacts().NewContact(str_label, opentxs::Identifier{nym_id_string.toStdString()}, opentxs::PaymentCode{payment_code.toStdString()});
+//  const auto pContact = opentxs::OT::App().Client().Contacts().Contact(opentxs::Identifier{contact});
     // -----------------------------------------------------------------------
     // Here's the old Moneychanger Contacts, which we still create in parallel (for now):
     //
@@ -3344,7 +3344,7 @@ std::string MTContactHandler::GetContactName(const std::string& str_id)
     }
 
     const auto pContact =
-        opentxs::OT::App().Contact().Contact(opentxs::Identifier::Factory(str_id));
+        opentxs::OT::App().Client().Contacts().Contact(opentxs::Identifier::Factory(str_id));
 
     if (!pContact || pContact->Label().empty())
         return {};
@@ -3360,7 +3360,7 @@ bool MTContactHandler::SetContactName(const std::string& str_id, const std::stri
     }
 
     // -------------------------------
-    auto mutableContactEditor{opentxs::OT::App().Contact().mutable_Contact(opentxs::Identifier::Factory(str_id))};
+    auto mutableContactEditor{opentxs::OT::App().Client().Contacts().mutable_Contact(opentxs::Identifier::Factory(str_id))};
 
     if (!mutableContactEditor) {
         return false;
@@ -3382,7 +3382,7 @@ QString MTContactHandler::Encrypt(QString plaintext)
 
     if (!plaintext.isEmpty())
     {
-        opentxs::OTWallet * pWallet = opentxs::OT::App().API().OTAPI().GetWallet("MTContactHandler::Encrypt"); // This logs and ASSERTs already.
+        opentxs::OTWallet * pWallet = opentxs::OT::App().Client().OTAPI().GetWallet("MTContactHandler::Encrypt"); // This logs and ASSERTs already.
 
         if (NULL != pWallet)
         {
@@ -3409,7 +3409,7 @@ QString MTContactHandler::Decrypt(QString ciphertext)
 
     if (!ciphertext.isEmpty())
     {
-        opentxs::OTWallet * pWallet = opentxs::OT::App().API().OTAPI().GetWallet("MTContactHandler::Decrypt"); // This logs and ASSERTs already.
+        opentxs::OTWallet * pWallet = opentxs::OT::App().Client().OTAPI().GetWallet("MTContactHandler::Decrypt"); // This logs and ASSERTs already.
 
         if (NULL != pWallet)
         {

@@ -325,11 +325,11 @@ void MTAgreementDetails::refresh(QString strID, QString strName)
             if (m_pPlainTextEdit)
                 m_pPlainTextEdit->setPlainText(m_qstrTemplate);
             // ------------------------------------------------
-            std::string contract_id = opentxs::OT::App().API().Exec().CalculateContractID(str_template);
+            std::string contract_id = opentxs::OT::App().Client().Exec().CalculateContractID(str_template);
             ui->lineEditContractID->setText(QString::fromStdString(contract_id));
             // ------------------------------------------------
-            time64_t dateFrom = opentxs::OT::App().API().Exec().Instrmnt_GetValidFrom(str_template);
-            time64_t dateTo   = opentxs::OT::App().API().Exec().Instrmnt_GetValidTo(str_template);
+            time64_t dateFrom = opentxs::OT::App().Client().Exec().Instrmnt_GetValidFrom(str_template);
+            time64_t dateTo   = opentxs::OT::App().Client().Exec().Instrmnt_GetValidTo(str_template);
 
             m_dateTimeValidFrom = QDateTime::fromTime_t(dateFrom);
             m_dateTimeValidTo   = QDateTime::fromTime_t(dateTo);
@@ -342,8 +342,8 @@ void MTAgreementDetails::refresh(QString strID, QString strName)
             ui->dateTimeEditValidTo  ->setDateTime(m_dateTimeValidTo);
             ui->dateTimeEditValidTo  ->blockSignals(false);
 
-            bool bSpecifyAsset = opentxs::OT::App().API().Exec().Smart_AreAssetTypesSpecified(str_template);
-            bool bSpecifyNym   = opentxs::OT::App().API().Exec().Smart_ArePartiesSpecified(str_template);
+            bool bSpecifyAsset = opentxs::OT::App().Client().Exec().Smart_AreAssetTypesSpecified(str_template);
+            bool bSpecifyNym   = opentxs::OT::App().Client().Exec().Smart_ArePartiesSpecified(str_template);
             // ------------------------------------------------
             if (0 == dateFrom)
             {
@@ -449,11 +449,11 @@ void MTAgreementDetails::PopulateBylaws()
     // ----------------------------------
     std::string str_template = m_qstrTemplate.toStdString();
     // ----------------------------------
-    const int32_t nCount = opentxs::OT::App().API().Exec().Smart_GetBylawCount(str_template);
+    const int32_t nCount = opentxs::OT::App().Client().Exec().Smart_GetBylawCount(str_template);
 
     for (int32_t nIndex = 0; nIndex < nCount; ++nIndex)
     {
-        std::string str_bylaw = opentxs::OT::App().API().Exec().Smart_GetBylawByIndex(str_template, nIndex);
+        std::string str_bylaw = opentxs::OT::App().Client().Exec().Smart_GetBylawByIndex(str_template, nIndex);
 
         m_mapBylaws.insert(QString::fromStdString(str_bylaw), QString::fromStdString(str_bylaw));
     }
@@ -479,11 +479,11 @@ void MTAgreementDetails::PopulateBylawGrid()
     {
         QString qstrName           = it_top.key();
         std::string str_name       = qstrName.toStdString();
-        std::string str_lang       = opentxs::OT::App().API().Exec().Bylaw_GetLanguage(str_template, str_name);
-        int32_t     nVariableCount = opentxs::OT::App().API().Exec().Bylaw_GetVariableCount(str_template, str_name);
-        int32_t     nClauseCount   = opentxs::OT::App().API().Exec().Bylaw_GetClauseCount(str_template, str_name);
-        int32_t     nHookCount     = opentxs::OT::App().API().Exec().Bylaw_GetHookCount(str_template, str_name);
-        int32_t     nCallbackCount = opentxs::OT::App().API().Exec().Bylaw_GetCallbackCount(str_template, str_name);
+        std::string str_lang       = opentxs::OT::App().Client().Exec().Bylaw_GetLanguage(str_template, str_name);
+        int32_t     nVariableCount = opentxs::OT::App().Client().Exec().Bylaw_GetVariableCount(str_template, str_name);
+        int32_t     nClauseCount   = opentxs::OT::App().Client().Exec().Bylaw_GetClauseCount(str_template, str_name);
+        int32_t     nHookCount     = opentxs::OT::App().Client().Exec().Bylaw_GetHookCount(str_template, str_name);
+        int32_t     nCallbackCount = opentxs::OT::App().Client().Exec().Bylaw_GetCallbackCount(str_template, str_name);
         // -----------------------------------------------------------------------
         QLabel * pLabelName          = new QLabel(QString::fromStdString(str_name));
         QLabel * pLabelLanguage      = new QLabel(QString::fromStdString(str_lang));
@@ -715,9 +715,9 @@ void MTAgreementDetails::RefreshAccountDetails(int nRow)
 
                     if (ui->checkBoxSpecifyAsset->isChecked())
                     {
-                        std::string str_asset = opentxs::OT::App().API().Exec().Party_GetAcctInstrumentDefinitionID(str_template, party_name, str_name);
+                        std::string str_asset = opentxs::OT::App().Client().Exec().Party_GetAcctInstrumentDefinitionID(str_template, party_name, str_name);
                         ui->lineEditAssetID->setText(QString::fromStdString(str_asset));
-                        ui->lineEditAssetName->setText(QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(str_asset)));
+                        ui->lineEditAssetName->setText(QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Name(str_asset)));
                     }
                     else
                     {
@@ -771,9 +771,9 @@ void MTAgreementDetails::RefreshVariableDetails(int nRow)
 
                     ui->lineEditVariableName->setText(QString::fromStdString(str_name));
 
-                    std::string str_type     = opentxs::OT::App().API().Exec().Variable_GetType    (str_template, bylaw_name, str_name);
-                    std::string str_access   = opentxs::OT::App().API().Exec().Variable_GetAccess  (str_template, bylaw_name, str_name);
-                    std::string str_contents = opentxs::OT::App().API().Exec().Variable_GetContents(str_template, bylaw_name, str_name);
+                    std::string str_type     = opentxs::OT::App().Client().Exec().Variable_GetType    (str_template, bylaw_name, str_name);
+                    std::string str_access   = opentxs::OT::App().Client().Exec().Variable_GetAccess  (str_template, bylaw_name, str_name);
+                    std::string str_contents = opentxs::OT::App().Client().Exec().Variable_GetContents(str_template, bylaw_name, str_name);
 
                     if (0 == str_access.compare("constant"))
                         ui->comboBoxVariableAccess->setCurrentIndex(0);
@@ -854,7 +854,7 @@ void MTAgreementDetails::RefreshClauseDetails(int nRow)
 
                     ui->lineEditClauseName->setText(QString::fromStdString(str_name));
 
-                    std::string str_script = opentxs::OT::App().API().Exec().Clause_GetContents(str_template, bylaw_name, str_name);
+                    std::string str_script = opentxs::OT::App().Client().Exec().Clause_GetContents(str_template, bylaw_name, str_name);
 
                     ui->plainTextEditScript->blockSignals(true);
                     ui->plainTextEditScript->setPlainText(QString::fromStdString(str_script));
@@ -1017,11 +1017,11 @@ QWidget * MTAgreementDetails::createHookGroupWidget(std::string & str_template, 
 
     vbox->setContentsMargins(1, 1, 1, 1);
     // -----------------------------------------------------------------
-    int32_t nClauseCount = opentxs::OT::App().API().Exec().Hook_GetClauseCount(str_template, bylaw_name, hook_name);
+    int32_t nClauseCount = opentxs::OT::App().Client().Exec().Hook_GetClauseCount(str_template, bylaw_name, hook_name);
 
     for (int32_t ii = 0; ii < nClauseCount; ++ii)
     {
-        std::string clause_name = opentxs::OT::App().API().Exec().Hook_GetClauseAtIndex(str_template, bylaw_name, hook_name, ii);
+        std::string clause_name = opentxs::OT::App().Client().Exec().Hook_GetClauseAtIndex(str_template, bylaw_name, hook_name, ii);
 
         QWidget * pWidget = createSingleHookWidget(bylaw_name, hook_name, clause_name);
 
@@ -1075,7 +1075,7 @@ void MTAgreementDetails::on_btnHookDelete_clicked()
 
             if (NULL != pWidget)
             {
-                std::string strTempResult = opentxs::OT::App().API().Exec().SmartContract_RemoveHook(str_template, str_lawyer_id,
+                std::string strTempResult = opentxs::OT::App().Client().Exec().SmartContract_RemoveHook(str_template, str_lawyer_id,
                                                                                                 bylaw_name, hook_name, clause_name);
 
                 if (!strTempResult.empty()) // Let's remove it from the GUI, too, then, and save it to the database as well.
@@ -1137,7 +1137,7 @@ void MTAgreementDetails::RefreshCallbackDetails(int nRow)
 
                     ui->lineEditCallbackName->setText(QString::fromStdString(str_name));
 
-                    std::string str_clause = opentxs::OT::App().API().Exec().Callback_GetClause(str_template, bylaw_name, str_name);
+                    std::string str_clause = opentxs::OT::App().Client().Exec().Callback_GetClause(str_template, bylaw_name, str_name);
 
                     ui->lineEditCallbackClause->setText(QString::fromStdString(str_clause));
 
@@ -1174,7 +1174,7 @@ void MTAgreementDetails::RefreshBylawDetails(int nRow)
         {
             bylaw_name = label->text().toStdString();
 
-            QString qstrLanguage = QString::fromStdString(opentxs::OT::App().API().Exec().Bylaw_GetLanguage(str_template, bylaw_name));
+            QString qstrLanguage = QString::fromStdString(opentxs::OT::App().Client().Exec().Bylaw_GetLanguage(str_template, bylaw_name));
 
             ui->lineEditBylawName->setText(QString::fromStdString(bylaw_name));
             ui->lineEditLanguage->setText(qstrLanguage);
@@ -1226,7 +1226,7 @@ void MTAgreementDetails::RefreshPartyDetails(int nRow)
 
             if (ui->checkBoxSpecifyNym->isChecked())
             {
-                QString qstrPartyNymID = QString::fromStdString(opentxs::OT::App().API().Exec().Party_GetID(str_template, party_name));
+                QString qstrPartyNymID = QString::fromStdString(opentxs::OT::App().Client().Exec().Party_GetID(str_template, party_name));
                 ui->lineEditPartyNymID->setText(qstrPartyNymID);
             }
             else
@@ -1259,11 +1259,11 @@ void MTAgreementDetails::RefreshAgents(std::string str_template, std::string str
     // -----------------------------------
     ui->listWidgetAgents->clear();
     // -----------------------------------
-    const int32_t nCount = opentxs::OT::App().API().Exec().Party_GetAgentCount(str_template, str_party);
+    const int32_t nCount = opentxs::OT::App().Client().Exec().Party_GetAgentCount(str_template, str_party);
 
     for (int32_t ii = 0; ii < nCount; ++ii)
     {
-        std::string str_agent = opentxs::OT::App().API().Exec().Party_GetAgentNameByIndex(str_template, str_party, ii);
+        std::string str_agent = opentxs::OT::App().Client().Exec().Party_GetAgentNameByIndex(str_template, str_party, ii);
 
         if (!str_agent.empty())
         {
@@ -1291,11 +1291,11 @@ void MTAgreementDetails::RefreshAccounts(std::string str_template, std::string s
     // -----------------------------------
     ui->listWidgetAccounts->clear();
     // -----------------------------------
-    const int32_t nCount = opentxs::OT::App().API().Exec().Party_GetAcctCount(str_template, str_party);
+    const int32_t nCount = opentxs::OT::App().Client().Exec().Party_GetAcctCount(str_template, str_party);
 
     for (int32_t ii = 0; ii < nCount; ++ii)
     {
-        std::string str_acct = opentxs::OT::App().API().Exec().Party_GetAcctNameByIndex(str_template, str_party, ii);
+        std::string str_acct = opentxs::OT::App().Client().Exec().Party_GetAcctNameByIndex(str_template, str_party, ii);
 
         if (!str_acct.empty())
         {
@@ -1323,11 +1323,11 @@ void MTAgreementDetails::RefreshVariables(std::string str_template, std::string 
     // -----------------------------------
     ui->listWidgetVariables->clear();
     // -----------------------------------
-    const int32_t nCount = opentxs::OT::App().API().Exec().Bylaw_GetVariableCount(str_template, str_bylaw);
+    const int32_t nCount = opentxs::OT::App().Client().Exec().Bylaw_GetVariableCount(str_template, str_bylaw);
 
     for (int32_t ii = 0; ii < nCount; ++ii)
     {
-        std::string str_name = opentxs::OT::App().API().Exec().Variable_GetNameByIndex(str_template, str_bylaw, ii);
+        std::string str_name = opentxs::OT::App().Client().Exec().Variable_GetNameByIndex(str_template, str_bylaw, ii);
 
         if (!str_name.empty())
         {
@@ -1355,11 +1355,11 @@ void MTAgreementDetails::RefreshClauses(std::string str_template, std::string st
     // -----------------------------------
     ui->listWidgetClauses->clear();
     // -----------------------------------
-    const int32_t nCount = opentxs::OT::App().API().Exec().Bylaw_GetClauseCount(str_template, str_bylaw);
+    const int32_t nCount = opentxs::OT::App().Client().Exec().Bylaw_GetClauseCount(str_template, str_bylaw);
 
     for (int32_t ii = 0; ii < nCount; ++ii)
     {
-        std::string str_name = opentxs::OT::App().API().Exec().Clause_GetNameByIndex(str_template, str_bylaw, ii);
+        std::string str_name = opentxs::OT::App().Client().Exec().Clause_GetNameByIndex(str_template, str_bylaw, ii);
 
         if (!str_name.empty())
         {
@@ -1389,11 +1389,11 @@ void MTAgreementDetails::RefreshHooks(std::string str_template, std::string str_
     // -----------------------------------
     std::map<std::string, std::string> string_map;
 
-    const int32_t nCount = opentxs::OT::App().API().Exec().Bylaw_GetHookCount(str_template, str_bylaw);
+    const int32_t nCount = opentxs::OT::App().Client().Exec().Bylaw_GetHookCount(str_template, str_bylaw);
 
     for (int32_t ii = 0; ii < nCount; ++ii)
     {
-        std::string str_name = opentxs::OT::App().API().Exec().Hook_GetNameByIndex(str_template, str_bylaw, ii);
+        std::string str_name = opentxs::OT::App().Client().Exec().Hook_GetNameByIndex(str_template, str_bylaw, ii);
 
         if (!str_name.empty())
         {
@@ -1432,11 +1432,11 @@ void MTAgreementDetails::RefreshCallbacks(std::string str_template, std::string 
     // -----------------------------------
     ui->listWidgetCallbacks->clear();
     // -----------------------------------
-    const int32_t nCount = opentxs::OT::App().API().Exec().Bylaw_GetCallbackCount(str_template, str_bylaw);
+    const int32_t nCount = opentxs::OT::App().Client().Exec().Bylaw_GetCallbackCount(str_template, str_bylaw);
 
     for (int32_t ii = 0; ii < nCount; ++ii)
     {
-        std::string str_name = opentxs::OT::App().API().Exec().Callback_GetNameByIndex(str_template, str_bylaw, ii);
+        std::string str_name = opentxs::OT::App().Client().Exec().Callback_GetNameByIndex(str_template, str_bylaw, ii);
 
         if (!str_name.empty())
         {
@@ -1539,11 +1539,11 @@ void MTAgreementDetails::PopulateParties()
     // ----------------------------------
     std::string str_template = m_qstrTemplate.toStdString();
     // ----------------------------------
-    const int32_t nCount = opentxs::OT::App().API().Exec().Smart_GetPartyCount(str_template);
+    const int32_t nCount = opentxs::OT::App().Client().Exec().Smart_GetPartyCount(str_template);
 
     for (int32_t nIndex = 0; nIndex < nCount; ++nIndex)
     {
-        std::string str_party = opentxs::OT::App().API().Exec().Smart_GetPartyByIndex(str_template, nIndex);
+        std::string str_party = opentxs::OT::App().Client().Exec().Smart_GetPartyByIndex(str_template, nIndex);
 
         m_mapParties.insert(QString::fromStdString(str_party), QString::fromStdString(str_party));
     }
@@ -1571,8 +1571,8 @@ void MTAgreementDetails::PopulatePartyGrid()
     {
         QString     qstrName      = it_top.key();
         std::string str_name      = qstrName.toStdString();
-        int32_t     nAgentCount   = opentxs::OT::App().API().Exec().Party_GetAgentCount(str_template, str_name);
-        int32_t     nAccountCount = opentxs::OT::App().API().Exec().Party_GetAcctCount(str_template, str_name);
+        int32_t     nAgentCount   = opentxs::OT::App().Client().Exec().Party_GetAgentCount(str_template, str_name);
+        int32_t     nAccountCount = opentxs::OT::App().Client().Exec().Party_GetAcctCount(str_template, str_name);
         // -----------------------------------------------------------------------
         QLabel * pLabelName         = new QLabel(QString::fromStdString(str_name));
         QLabel * pLabelAgentCount   = new QLabel(QString("%1").arg(nAgentCount));
@@ -1755,7 +1755,7 @@ void MTAgreementDetails::AddButtonClicked()
             time64_t tDate1   = 0;  // 0 means "replace the 0 with the current time."
             time64_t tDate2   = 0;  // 0 means "never expires."
 
-            std::string str_template = opentxs::OT::App().API().Exec().Create_SmartContract(qstrNymID.toStdString(), tDate1, tDate2, bSpecifyAssets, bSpecifyParties);
+            std::string str_template = opentxs::OT::App().Client().Exec().Create_SmartContract(qstrNymID.toStdString(), tDate1, tDate2, bSpecifyAssets, bSpecifyParties);
 
             if (str_template.empty())
             {
@@ -2013,7 +2013,7 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
     QString qstrNewName("");
 
     int nCurrentComboIndex = ui->comboBoxBylaw->currentIndex();
-    int nBylawCount        = opentxs::OT::App().API().Exec().Smart_GetBylawCount(str_template);
+    int nBylawCount        = opentxs::OT::App().Client().Exec().Smart_GetBylawCount(str_template);
     // ------------------------------------------------
     if ((nCurrentComboIndex >= 0) && (nCurrentComboIndex <= 4))
     {
@@ -2148,7 +2148,7 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
         {
         case 0: // Bylaw
         {
-            strSmartResult = opentxs::OT::App().API().Exec().SmartContract_AddBylaw(str_template, str_lawyer_id, qstrNewName.toStdString());
+            strSmartResult = opentxs::OT::App().Client().Exec().SmartContract_AddBylaw(str_template, str_lawyer_id, qstrNewName.toStdString());
             break;
         }
         case 1: // Variable
@@ -2191,7 +2191,7 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
                 return;
             }
             // ----------------------------------------------
-            strSmartResult = opentxs::OT::App().API().Exec().SmartContract_AddVariable(str_template, str_lawyer_id,
+            strSmartResult = opentxs::OT::App().Client().Exec().SmartContract_AddVariable(str_template, str_lawyer_id,
                                                                                   bylaw_name, qstrNewName.toStdString(),
                                                                                   qstrAccess.toStdString(), qstrType.toStdString(),
                                                                                   qstrValue.toStdString());
@@ -2212,7 +2212,7 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
             // --------------------------
             QString qstrScript("// script code goes here");
 
-            strSmartResult = opentxs::OT::App().API().Exec().SmartContract_AddClause(str_template, str_lawyer_id,
+            strSmartResult = opentxs::OT::App().Client().Exec().SmartContract_AddClause(str_template, str_lawyer_id,
                                                                                 bylaw_name, qstrNewName.toStdString(),
                                                                                 qstrScript.toStdString());
             break;
@@ -2247,13 +2247,13 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
 
             int boxResult = QMessageBox::Cancel;
 
-            if ( (0 == opentxs::OT::App().API().Exec().Bylaw_GetClauseCount(str_template, bylaw_name)) ||
+            if ( (0 == opentxs::OT::App().Client().Exec().Bylaw_GetClauseCount(str_template, bylaw_name)) ||
                  (QMessageBox::Yes == (boxResult = msgBox.exec())) )
             {
                 qstrClauseName = qstrNewName.right(qstrNewName.length() - 4); // Remove the "hook" or "cron" prefix and add "on" to derive the clause name.
                 qstrClauseName = QString("on%1").arg(qstrClauseName);
 
-                std::string strTempResult = opentxs::OT::App().API().Exec().SmartContract_AddClause(str_template, str_lawyer_id,
+                std::string strTempResult = opentxs::OT::App().Client().Exec().SmartContract_AddClause(str_template, str_lawyer_id,
                                                                                                bylaw_name, qstrClauseName.toStdString(),
                                                                                                qstrScript.toStdString());
                 if (!strTempResult.empty())
@@ -2274,12 +2274,12 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
                 // -----------------------------------------------
                 mapIDName & the_map = theChooser.m_map;
                 // -----------------------------------------------
-                const int32_t the_count = opentxs::OT::App().API().Exec().Bylaw_GetClauseCount(str_template, bylaw_name);
+                const int32_t the_count = opentxs::OT::App().Client().Exec().Bylaw_GetClauseCount(str_template, bylaw_name);
                 // -----------------------------------------------
                 for (int32_t ii = 0; ii < the_count; ++ii)
                 {
 
-                    QString OT_id = QString::fromStdString(opentxs::OT::App().API().Exec().Clause_GetNameByIndex(str_template, bylaw_name, ii));
+                    QString OT_id = QString::fromStdString(opentxs::OT::App().Client().Exec().Clause_GetNameByIndex(str_template, bylaw_name, ii));
                     QString OT_name = OT_id;
                     // -----------------------------------------------
                     if (!OT_id.isEmpty())
@@ -2300,13 +2300,13 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
             // --------------------------------------------------------
             // If the hook/clause association already exists, we'll just remove it first.
             //
-            std::string strTempResult = opentxs::OT::App().API().Exec().SmartContract_RemoveHook(str_template, str_lawyer_id,
+            std::string strTempResult = opentxs::OT::App().Client().Exec().SmartContract_RemoveHook(str_template, str_lawyer_id,
                                                                                             bylaw_name, qstrNewName.toStdString(),
                                                                                             qstrClauseName.toStdString());
             if (!strTempResult.empty())
                 str_template = strTempResult;
             // ---------------------------------------------------------
-            strSmartResult = opentxs::OT::App().API().Exec().SmartContract_AddHook(str_template, str_lawyer_id,
+            strSmartResult = opentxs::OT::App().Client().Exec().SmartContract_AddHook(str_template, str_lawyer_id,
                                                                               bylaw_name, qstrNewName.toStdString(),
                                                                               qstrClauseName.toStdString());
             break;
@@ -2328,7 +2328,7 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
             // contract. If it is, we pop up a message and return. Otherwise we can just
             // create the clause ourselves.
             //
-            std::string str_clause = opentxs::OT::App().API().Exec().Callback_GetClause(str_template, bylaw_name, qstrNewName.toStdString());
+            std::string str_clause = opentxs::OT::App().Client().Exec().Callback_GetClause(str_template, bylaw_name, qstrNewName.toStdString());
 
             if (!str_clause.empty())
             {
@@ -2342,13 +2342,13 @@ void MTAgreementDetails::on_pushButtonNewBylaw_clicked()
             QString qstrClauseName = qstrNewName.right(qstrNewName.length() - 9); // Remove the "callback_" prefix to derive the clause name.
             QString qstrScript("return false;");
 
-            std::string strTempResult = opentxs::OT::App().API().Exec().SmartContract_AddClause(str_template, str_lawyer_id,
+            std::string strTempResult = opentxs::OT::App().Client().Exec().SmartContract_AddClause(str_template, str_lawyer_id,
                                                                                            bylaw_name, qstrClauseName.toStdString(),
                                                                                            qstrScript.toStdString());
             if (!strTempResult.empty())
                 str_template = strTempResult;
             // -------------------------------
-            strSmartResult = opentxs::OT::App().API().Exec().SmartContract_AddCallback(str_template, str_lawyer_id,
+            strSmartResult = opentxs::OT::App().Client().Exec().SmartContract_AddCallback(str_template, str_lawyer_id,
                                                                                   bylaw_name, qstrNewName.toStdString(),
                                                                                   qstrClauseName.toStdString());
             break;
@@ -2433,7 +2433,7 @@ void MTAgreementDetails::on_pushButtonDeleteVariable_clicked()
     if (QMessageBox::Yes != reply)
         return;
     // ------------------------------
-    std::string strTempResult = opentxs::OT::App().API().Exec().SmartContract_RemoveVariable(str_template, str_lawyer_id, bylaw_name, str_name);
+    std::string strTempResult = opentxs::OT::App().Client().Exec().SmartContract_RemoveVariable(str_template, str_lawyer_id, bylaw_name, str_name);
 
     if (!strTempResult.empty())
     {
@@ -2508,7 +2508,7 @@ void MTAgreementDetails::on_pushButtonDeleteClause_clicked()
     if (QMessageBox::Yes != reply)
         return;
     // ------------------------------
-    std::string strTempResult = opentxs::OT::App().API().Exec().SmartContract_RemoveClause(str_template, str_lawyer_id, bylaw_name, str_name);
+    std::string strTempResult = opentxs::OT::App().Client().Exec().SmartContract_RemoveClause(str_template, str_lawyer_id, bylaw_name, str_name);
 
     if (!strTempResult.empty())
     {
@@ -2592,7 +2592,7 @@ void MTAgreementDetails::on_pushButtonDeleteCallback_clicked()
     if (QMessageBox::Yes != reply)
         return;
     // ------------------------------
-    std::string strTempResult = opentxs::OT::App().API().Exec().SmartContract_RemoveCallback(str_template, str_lawyer_id, bylaw_name, str_name);
+    std::string strTempResult = opentxs::OT::App().Client().Exec().SmartContract_RemoveCallback(str_template, str_lawyer_id, bylaw_name, str_name);
 
     if (!strTempResult.empty())
     {
@@ -2667,7 +2667,7 @@ void MTAgreementDetails::on_pushButtonDeleteAccount_clicked()
     if (QMessageBox::Yes != reply)
         return;
     // ------------------------------
-    std::string strTempResult = opentxs::OT::App().API().Exec().SmartContract_RemoveAccount(str_template, str_lawyer_id, party_name, str_name);
+    std::string strTempResult = opentxs::OT::App().Client().Exec().SmartContract_RemoveAccount(str_template, str_lawyer_id, party_name, str_name);
 
     if (!strTempResult.empty())
     {
@@ -2719,7 +2719,7 @@ void MTAgreementDetails::on_pushButtonDeleteParty_clicked()
     if (QMessageBox::Yes != reply)
         return;
     // ------------------------------
-    std::string strTempResult = opentxs::OT::App().API().Exec().SmartContract_RemoveParty(str_template, str_lawyer_id, party_name);
+    std::string strTempResult = opentxs::OT::App().Client().Exec().SmartContract_RemoveParty(str_template, str_lawyer_id, party_name);
 
     if (!strTempResult.empty())
     {
@@ -2771,7 +2771,7 @@ void MTAgreementDetails::on_pushButtonDeleteBylaw_clicked()
     if (QMessageBox::Yes != reply)
         return;
     // ------------------------------
-    std::string strTempResult = opentxs::OT::App().API().Exec().SmartContract_RemoveBylaw(str_template, str_lawyer_id, bylaw_name);
+    std::string strTempResult = opentxs::OT::App().Client().Exec().SmartContract_RemoveBylaw(str_template, str_lawyer_id, bylaw_name);
 
     if (!strTempResult.empty())
     {
@@ -2856,7 +2856,7 @@ void MTAgreementDetails::on_pushButtonNewParty_clicked()
                     return;
              }
 
-            strSmartResult = opentxs::OT::App().API().Exec().SmartContract_AddParty(str_template, str_lawyer_id, qstrPartyNymID.toStdString(),
+            strSmartResult = opentxs::OT::App().Client().Exec().SmartContract_AddParty(str_template, str_lawyer_id, qstrPartyNymID.toStdString(),
                                                                                strParty, strAgent);
             break;
         }
@@ -2894,16 +2894,16 @@ void MTAgreementDetails::on_pushButtonNewParty_clicked()
                 // -----------------------------------------------
                 mapIDName & the_map = theChooser.m_map;
                 // -----------------------------------------------
-                const int32_t the_count = opentxs::OT::App().API().Exec().GetAssetTypeCount();
+                const int32_t the_count = opentxs::OT::App().Client().Exec().GetAssetTypeCount();
                 // -----------------------------------------------
                 for (int32_t ii = 0; ii < the_count; ++ii)
                 {
-                    QString OT_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_ID(ii));
+                    QString OT_id = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_ID(ii));
                     QString OT_name("");
                     // -----------------------------------------------
                     if (!OT_id.isEmpty())
                     {
-                        OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAssetType_Name(OT_id.toStdString()));
+                        OT_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Name(OT_id.toStdString()));
                         // -----------------------------------------------
                         the_map.insert(OT_id, OT_name);
                     }
@@ -2920,7 +2920,7 @@ void MTAgreementDetails::on_pushButtonNewParty_clicked()
                 }
             }
 
-            strSmartResult = opentxs::OT::App().API().Exec().SmartContract_AddAccount(str_template,
+            strSmartResult = opentxs::OT::App().Client().Exec().SmartContract_AddAccount(str_template,
                                                            str_lawyer_id,
                                                            party_name,	// The Party's NAME as referenced in the smart contract.
                                                            // ----------------------------------------
@@ -3038,7 +3038,7 @@ void MTAgreementDetails::on_pushButtonSave_clicked()
                     // ------------------------------------------
                     QString qstrScript = ui->plainTextEditScript->toPlainText();
 
-                    std::string strTemp = opentxs::OT::App().API().Exec().SmartContract_UpdateClause(str_template,
+                    std::string strTemp = opentxs::OT::App().Client().Exec().SmartContract_UpdateClause(str_template,
                                                                                                 qstrLawyerID.toStdString(),
                                                                                                 bylaw_name,
                                                                                                 str_name,
@@ -3104,7 +3104,7 @@ void MTAgreementDetails::on_pushButtonCancel_clicked()
                 if (NULL != item)
                 {
                     std::string str_name   = item->text().toStdString();
-                    std::string str_script = opentxs::OT::App().API().Exec().Clause_GetContents(str_template, bylaw_name, str_name);
+                    std::string str_script = opentxs::OT::App().Client().Exec().Clause_GetContents(str_template, bylaw_name, str_name);
 
                     ui->plainTextEditScript->blockSignals(true);
                     ui->plainTextEditScript->setPlainText(QString::fromStdString(str_script));
@@ -3253,7 +3253,7 @@ void MTAgreementDetails::SaveDates()
     time64_t validFrom = m_dateTimeValidFrom.toTime_t();
     time64_t validTo   = m_dateTimeValidTo  .toTime_t();
     // ------------------------------------------------------
-    std::string strTempResult = opentxs::OT::App().API().Exec().SmartContract_SetDates(str_template, str_lawyer_id, validFrom, validTo);
+    std::string strTempResult = opentxs::OT::App().Client().Exec().SmartContract_SetDates(str_template, str_lawyer_id, validFrom, validTo);
 
     if (!strTempResult.empty())
     {
@@ -3268,7 +3268,7 @@ void MTAgreementDetails::SaveDates()
 
             if (!m_qstrTemplate.isEmpty())
             {
-                std::string contract_id = opentxs::OT::App().API().Exec().CalculateContractID(strTempResult);
+                std::string contract_id = opentxs::OT::App().Client().Exec().CalculateContractID(strTempResult);
                 ui->lineEditContractID->setText(QString::fromStdString(contract_id));
             }
         }

@@ -89,7 +89,7 @@ Settings::Settings(QWidget *parent) :
     ui->lineEditNotaryId->setContextMenuPolicy(Qt::CustomContextMenu);
 
     // ----------------------------------------------
-    ui->plainTextEditSeed->setPlainText(QString::fromStdString(opentxs::OT::App().API().OTAPI().Wallet_GetWords()));
+    ui->plainTextEditSeed->setPlainText(QString::fromStdString(opentxs::OT::App().Client().OTAPI().Wallet_GetWords()));
 }
 
 Settings::~Settings()
@@ -187,7 +187,7 @@ void Settings::on_pushButton_clicked()
     const QString NymID    = ui->lineEditNymId   ->text();
     const QString NotaryID = ui->lineEditNotaryId->text();
     // ---------------------------
-    opentxs::NumList numlistCronIds ( opentxs::OT::App().API().Exec().GetNym_ActiveCronItemIDs(NymID   .toStdString(),
+    opentxs::NumList numlistCronIds ( opentxs::OT::App().Client().Exec().GetNym_ActiveCronItemIDs(NymID   .toStdString(),
                                                                                           NotaryID.toStdString()) );
     std::set<int64_t> cronIds;
     const bool bIdsArePresent = numlistCronIds.Output(cronIds);
@@ -205,7 +205,7 @@ void Settings::on_pushButton_clicked()
         QString qstrMyColumn1, qstrMyColumn2;
         // --------------------------------------
         const auto strCronItem =
-            opentxs::String(opentxs::OT::App().API().Exec().GetActiveCronItem(
+            opentxs::String(opentxs::OT::App().Client().Exec().GetActiveCronItem(
                 NotaryID.toStdString(),
                 cronId));
 
@@ -278,7 +278,7 @@ void Settings::on_pushButton_clicked()
 
                     if ( !str_asset_type.empty() )
                     {
-                        str_formatted = opentxs::OT::App().API().Exec().FormatAmount(str_asset_type, initialPaymentAmount);
+                        str_formatted = opentxs::OT::App().Client().Exec().FormatAmount(str_asset_type, initialPaymentAmount);
                         bFormatted = !str_formatted.empty();
                     }
                     // ----------------------------------------
@@ -465,7 +465,7 @@ The ways in which a user should connect to an issuer:
 If you have a manual pairing dialog it should be hidden in expert mode in a debug window with plenty of warnings
 */
     // -----------------------------------
-    const std::string str_introduction_notary_id{opentxs::String(opentxs::OT::App().API().Sync().IntroductionServer()).Get()};
+    const std::string str_introduction_notary_id{opentxs::String(opentxs::OT::App().Client().Sync().IntroductionServer()).Get()};
 
     if (str_introduction_notary_id.empty()) {
         errorMessage = tr("Introduction Notary Id not available.");
@@ -515,8 +515,8 @@ public:
     const std::string pairingCode{qstrAdminPassword.toStdString()};
 
     // NEW JUSTUS API
-    const bool bPairNode = opentxs::OT::App().API().Pair().AddIssuer(localNymID, issuerNymID, pairingCode);
-//  const bool bPairNode = opentxs::OT::App().API().OTME_TOO().PairNode(qstrUserNymID.toStdString(), qstrBridgeNymID.toStdString(), qstrAdminPassword.toStdString());
+    const bool bPairNode = opentxs::OT::App().Client().Pair().AddIssuer(localNymID, issuerNymID, pairingCode);
+//  const bool bPairNode = opentxs::OT::App().Client().OTME_TOO().PairNode(qstrUserNymID.toStdString(), qstrBridgeNymID.toStdString(), qstrAdminPassword.toStdString());
 
     if (!bPairNode) {
         QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Pairing failed."));
@@ -529,7 +529,7 @@ public:
 void Settings::on_pushButtonSetSocksProxy_clicked()
 {
     const QString qstrProxy = ui->lineEditSocksProxy->text();
-    const bool bSuccess = opentxs::OT::App().ZMQ().SetSocksProxy(qstrProxy.toStdString());
+    const bool bSuccess = opentxs::OT::App().Client().ZMQ().SetSocksProxy(qstrProxy.toStdString());
     const QString qstrSuccess = QString("%1").arg(bSuccess ? tr("Success") : tr("Failure"));
     QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), qstrSuccess);
 }

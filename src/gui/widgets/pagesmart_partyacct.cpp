@@ -85,12 +85,12 @@ void PageSmart_PartyAcct::on_pushButtonSelect_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    int32_t acct_count = opentxs::OT::App().API().Exec().Party_GetAcctCount(str_template, str_party);
+    int32_t acct_count = opentxs::OT::App().Client().Exec().Party_GetAcctCount(str_template, str_party);
 
     for (int32_t i = 0; i < acct_count; i++)
     {
         std::string acctName =
-            opentxs::OT::App().API().Exec().Party_GetAcctNameByIndex(str_template, str_party, i);
+            opentxs::OT::App().Client().Exec().Party_GetAcctNameByIndex(str_template, str_party, i);
 
         if ("" == acctName) {
             QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Strange, there is an account on this smart contract without a name. Failure."));
@@ -102,7 +102,7 @@ void PageSmart_PartyAcct::on_pushButtonSelect_clicked()
 
         bool alreadyConfirmed = (mapConfirmed.end() != it);
 
-        std::string partyAcctID = opentxs::OT::App().API().Exec().Party_GetAcctID(str_template, str_party, acctName);
+        std::string partyAcctID = opentxs::OT::App().Client().Exec().Party_GetAcctID(str_template, str_party, acctName);
 
         if (alreadyConfirmed || "" != partyAcctID) {
             continue;

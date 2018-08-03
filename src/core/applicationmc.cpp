@@ -42,7 +42,7 @@ void MTApplicationMC::appStarting()
     // ----------------------------------------
     // Load OTAPI Wallet
     //
-    opentxs::OT::App().API().Exec().LoadWallet();
+    opentxs::OT::App().Client().Exec().LoadWallet();
     // ----------------------------------------
     /** Init Moneychanger code (Start when necessary below) **/
 

@@ -25,18 +25,18 @@ DlgGetAmount::DlgGetAmount(QWidget *parent, QString qstrAcctId, QString qstrInst
     // ----------------------
     ui->labelReason->setText(qstrReason);
     // ----------------------
-    std::string str_asset_name  = opentxs::OT::App().API().Exec().GetAssetType_Name(qstrInstrumentDefinitionID.toStdString());
+    std::string str_asset_name  = opentxs::OT::App().Client().Exec().GetAssetType_Name(qstrInstrumentDefinitionID.toStdString());
     QString     qstr_asset_name = QString("<font color=grey>%1</font>").arg(QString::fromStdString(str_asset_name));
     // ----------------------
     ui->labelAsset->setText(qstr_asset_name);
     // ----------------------
     QString     qstrBalance   = MTHome::shortAcctBalance(qstrAcctId);
-    std::string str_acct_name = opentxs::OT::App().API().Exec().GetAccountWallet_Name(qstrAcctId.toStdString());
+    std::string str_acct_name = opentxs::OT::App().Client().Exec().GetAccountWallet_Name(qstrAcctId.toStdString());
     QString     qstrAcctName  = QString::fromStdString(str_acct_name);
     // ----------------------
     ui->labelBalance->setText(QString("<font color=grey>%1:</font> <big>%2</big>").arg(qstrAcctName).arg(qstrBalance));
     // ----------------------
-    std::string str_amount = opentxs::OT::App().API().Exec().FormatAmount(m_qstrInstrumentDefinitionID.toStdString(), m_lAmount);
+    std::string str_amount = opentxs::OT::App().Client().Exec().FormatAmount(m_qstrInstrumentDefinitionID.toStdString(), m_lAmount);
     // ----------------------
     ui->lineEdit->setText(QString::fromStdString(str_amount));
     // ----------------------
@@ -79,7 +79,7 @@ void DlgGetAmount::on_buttonBox_accepted()
         return;
     }
     // ------------------------------------
-    std::string str_amount = opentxs::OT::App().API().Exec().FormatAmount(m_qstrInstrumentDefinitionID.toStdString(), m_lAmount);
+    std::string str_amount = opentxs::OT::App().Client().Exec().FormatAmount(m_qstrInstrumentDefinitionID.toStdString(), m_lAmount);
     // ------------------------------------
     QMessageBox::StandardButton reply;
 
@@ -104,8 +104,8 @@ void DlgGetAmount::on_buttonBox_accepted()
 void DlgGetAmount::on_lineEdit_editingFinished()
 {
     std::string   str_amount;
-    m_lAmount   = opentxs::OT::App().API().Exec().StringToAmount(m_qstrInstrumentDefinitionID.toStdString(), ui->lineEdit->text().toStdString());
-    str_amount  = opentxs::OT::App().API().Exec().FormatAmount  (m_qstrInstrumentDefinitionID.toStdString(), m_lAmount);
+    m_lAmount   = opentxs::OT::App().Client().Exec().StringToAmount(m_qstrInstrumentDefinitionID.toStdString(), ui->lineEdit->text().toStdString());
+    str_amount  = opentxs::OT::App().Client().Exec().FormatAmount  (m_qstrInstrumentDefinitionID.toStdString(), m_lAmount);
 
     ui->lineEdit->setText(QString::fromStdString(str_amount));
     // --------------------------------

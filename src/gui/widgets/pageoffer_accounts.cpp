@@ -80,12 +80,12 @@ void PageOffer_Accounts::on_pushButtonManageServer_clicked()
     QString qstrPreselected   = field("NotaryID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
-    int32_t the_count = opentxs::OT::App().API().Exec().GetServerCount();
+    int32_t the_count = opentxs::OT::App().Client().Exec().GetServerCount();
 
     for (int32_t ii = 0; ii < the_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_ID(ii));
-        QString OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
 
@@ -114,12 +114,12 @@ void PageOffer_Accounts::on_pushButtonManageNym_clicked()
     QString qstrPreselected   = field("NymID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
-    int32_t the_count = opentxs::OT::App().API().Exec().GetNymCount();
+    int32_t the_count = opentxs::OT::App().Client().Exec().GetNymCount();
 
     for (int32_t ii = 0; ii < the_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_ID(ii));
-        QString OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
 
@@ -148,7 +148,7 @@ void PageOffer_Accounts::on_pushButtonManageAssetAcct_clicked()
     QString qstrPreselected   = field("AssetAcctID").toString();
     bool    bFoundPreselected = false;
 
-    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
+    for (const auto& [accountID, alias] : opentxs::OT::App().Client().Storage().AccountList())
     {
         QString OT_id   = QString::fromStdString(accountID);
         QString OT_name = QString::fromStdString(alias);
@@ -180,7 +180,7 @@ void PageOffer_Accounts::on_pushButtonManageCurrencyAcct_clicked()
     QString qstrPreselected   = field("CurrencyAcctID").toString();
     bool    bFoundPreselected = false;
 
-    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
+    for (const auto& [accountID, alias] : opentxs::OT::App().Client().Storage().AccountList())
     {
         QString OT_id   = QString::fromStdString(accountID);
         QString OT_name = QString::fromStdString(alias);
@@ -222,7 +222,7 @@ bool PageOffer_Accounts::setupMapOfAccounts(mapIDName & accountMap, bool bIsAsse
     // -------------------------------------------
     bool bFoundDefault = false;
 
-    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
+    for (const auto& [accountID, alias] : opentxs::OT::App().Client().Storage().AccountList())
     {
         QString OT_id = QString::fromStdString(accountID);
         QString OT_name("");
@@ -231,9 +231,9 @@ bool PageOffer_Accounts::setupMapOfAccounts(mapIDName & accountMap, bool bIsAsse
         {
             // Filter the accounts shown based on asset type, server ID, and Nym ID.
             //
-            QString qstrAcctNymID    = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_NymID(OT_id.toStdString()));
-            QString qstrAcctInstrumentDefinitionID  = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID (OT_id.toStdString()));
-            QString qstrAcctNotaryID = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID(OT_id.toStdString()));
+            QString qstrAcctNymID    = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAccountWallet_NymID(OT_id.toStdString()));
+            QString qstrAcctInstrumentDefinitionID  = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID (OT_id.toStdString()));
+            QString qstrAcctNotaryID = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAccountWallet_NotaryID(OT_id.toStdString()));
             // -----------------------------------------------
             if ((qstrAcctNymID    != qstrNymID)   ||
                 (qstrAcctInstrumentDefinitionID  != qstrInstrumentDefinitionID) ||
@@ -243,7 +243,7 @@ bool PageOffer_Accounts::setupMapOfAccounts(mapIDName & accountMap, bool bIsAsse
             if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                 bFoundDefault = true;
             // -----------------------------------------------
-            OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(OT_id.toStdString()));
+            OT_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAccountWallet_Name(OT_id.toStdString()));
             // -----------------------------------------------
             accountMap.insert(OT_id, OT_name);
         }
@@ -260,7 +260,7 @@ void PageOffer_Accounts::on_pushButtonSelectAssetAcct_clicked()
     QString qstrNotaryID = field("NotaryID").toString();
     // -------------------------------------------
     QString qstr_current_id = field("AssetAcctID").toString();
-    const auto accounts = opentxs::OT::App().DB().AccountList();
+    const auto accounts = opentxs::OT::App().Client().Storage().AccountList();
 
     if (qstr_current_id.isEmpty() && (accounts.size() > 0))
         qstr_current_id = QString::fromStdString(std::get<0>(accounts.front()));
@@ -288,8 +288,8 @@ void PageOffer_Accounts::on_pushButtonSelectAssetAcct_clicked()
             // -----------------------------------------
             ui->lineEditAssetAcctID->home(false);
             // -----------------------------------------
-            int64_t     lBalance      = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(theChooser.m_qstrCurrentID.toStdString());
-            std::string str_formatted = opentxs::OT::App().API().Exec().FormatAmount(qstrInstrumentDefinitionID.toStdString(), lBalance);
+            int64_t     lBalance      = opentxs::OT::App().Client().Exec().GetAccountWallet_Balance(theChooser.m_qstrCurrentID.toStdString());
+            std::string str_formatted = opentxs::OT::App().Client().Exec().FormatAmount(qstrInstrumentDefinitionID.toStdString(), lBalance);
             QString     qstrBalance   = QString::fromStdString(str_formatted);
 
             setField("AssetAcctBalance", qstrBalance);
@@ -304,7 +304,7 @@ void PageOffer_Accounts::on_pushButtonSelectCurrencyAcct_clicked()
     QString qstrNotaryID                = field("NotaryID")   .toString();
     // -------------------------------------------
     QString qstr_current_id = field("CurrencyAcctID").toString();
-    const auto accounts = opentxs::OT::App().DB().AccountList();
+    const auto accounts = opentxs::OT::App().Client().Storage().AccountList();
 
     if (qstr_current_id.isEmpty() && (accounts.size() > 0))
         qstr_current_id = QString::fromStdString(std::get<0>(accounts.front()));
@@ -332,8 +332,8 @@ void PageOffer_Accounts::on_pushButtonSelectCurrencyAcct_clicked()
             // -----------------------------------------
             ui->lineEditCurrencyAcctID->home(false);
             // -----------------------------------------
-            int64_t     lBalance      = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(theChooser.m_qstrCurrentID.toStdString());
-            std::string str_formatted = opentxs::OT::App().API().Exec().FormatAmount(qstrInstrumentDefinitionID.toStdString(), lBalance);
+            int64_t     lBalance      = opentxs::OT::App().Client().Exec().GetAccountWallet_Balance(theChooser.m_qstrCurrentID.toStdString());
+            std::string str_formatted = opentxs::OT::App().Client().Exec().FormatAmount(qstrInstrumentDefinitionID.toStdString(), lBalance);
             QString     qstrBalance   = QString::fromStdString(str_formatted);
 
             setField("CurrencyAcctBalance", qstrBalance);
@@ -480,8 +480,8 @@ void PageOffer_Accounts::initializePage()
     {
         ui->lineEditAssetAcctID->home(false);
         // -----------------------------------------
-        int64_t     lBalance      = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(qstrAssetAccountID.toStdString());
-        std::string str_formatted = opentxs::OT::App().API().Exec().FormatAmount(qstrAssetID.toStdString(), lBalance);
+        int64_t     lBalance      = opentxs::OT::App().Client().Exec().GetAccountWallet_Balance(qstrAssetAccountID.toStdString());
+        std::string str_formatted = opentxs::OT::App().Client().Exec().FormatAmount(qstrAssetID.toStdString(), lBalance);
         QString     qstrBalance   = QString::fromStdString(str_formatted);
 
         setField("AssetAcctBalance", qstrBalance);
@@ -490,8 +490,8 @@ void PageOffer_Accounts::initializePage()
     {
         ui->lineEditCurrencyAcctID->home(false);
         // -----------------------------------------
-        int64_t     lBalance      = opentxs::OT::App().API().Exec().GetAccountWallet_Balance(qstrCurrencyAccountID.toStdString());
-        std::string str_formatted = opentxs::OT::App().API().Exec().FormatAmount(qstrCurrencyID.toStdString(), lBalance);
+        int64_t     lBalance      = opentxs::OT::App().Client().Exec().GetAccountWallet_Balance(qstrCurrencyAccountID.toStdString());
+        std::string str_formatted = opentxs::OT::App().Client().Exec().FormatAmount(qstrCurrencyID.toStdString(), lBalance);
         QString     qstrBalance   = QString::fromStdString(str_formatted);
 
         setField("CurrencyAcctBalance", qstrBalance);

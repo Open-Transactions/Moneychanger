@@ -108,14 +108,14 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString toContactId, Q
     std::string str_toNymId   (toNymId   .toStdString());
     std::string str_fromAcctId(fromAcctId.toStdString());
     // ------------------------------------------------------------
-    std::string str_fromNymId(opentxs::OT::App().API().Exec().GetAccountWallet_NymID      (str_fromAcctId));
-    std::string str_NotaryID (opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID   (str_fromAcctId));
-    std::string str_InstrumentDefinitionID  (opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(str_fromAcctId));
+    std::string str_fromNymId(opentxs::OT::App().Client().Exec().GetAccountWallet_NymID      (str_fromAcctId));
+    std::string str_NotaryID (opentxs::OT::App().Client().Exec().GetAccountWallet_NotaryID   (str_fromAcctId));
+    std::string str_InstrumentDefinitionID  (opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(str_fromAcctId));
     // --------------------------------
     if (   toContactId.isEmpty()
         || str_fromNymId.empty()
         ||  (opentxs::Messagability::READY !=
-             opentxs::OT::App().API().Sync()
+             opentxs::OT::App().Client().Sync()
              .CanMessage(opentxs::Identifier::Factory(str_fromNymId),
                          opentxs::Identifier::Factory(toContactId.toStdString()))))
     {
@@ -174,7 +174,7 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString toContactId, Q
 //        MTSpinner theSpinner;
 //        // NOTE: We don't retrieve the account files in the case of success, because the
 //        // below function already does all that internally.
-//        bReturnValue = opentxs::OT::App().API().Cash().withdraw_and_send_cash(str_fromAcctId, str_toNymId, SignedAmount);
+//        bReturnValue = opentxs::OT::App().Client().Cash().withdraw_and_send_cash(str_fromAcctId, str_toNymId, SignedAmount);
 //    }
 //    // ------------------------------------------------------------
 //    if (!bReturnValue)
@@ -196,7 +196,7 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString toContactId, Q
             MTSpinner theSpinner;
             // NOTE: We don't retrieve the account files in the case of success, because the
             // below function already does all that internally.
-            bReturnValue = opentxs::OT::App().API().Cash().withdraw_and_export_cash(
+            bReturnValue = opentxs::OT::App().Client().Cash().withdraw_and_export_cash(
                                 str_fromAcctId,
                                 str_toNymId,
                                 SignedAmount,
@@ -211,7 +211,7 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString toContactId, Q
         }
         // ------------------------------------------------------------
         const auto bgthreadId
-        {opentxs::OT::App().API().Sync().
+        {opentxs::OT::App().Client().Sync().
             PayContactCash(opentxs::Identifier::Factory(str_fromNymId),
                        opentxs::Identifier::Factory(toContactId.toStdString()),
                        pRecipientPurse,
@@ -226,7 +226,7 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString toContactId, Q
         // placed in the sender's outbox, the sender wouldn't even be able to
         // read it.)
         //
-        const auto status = opentxs::OT::App().API().Sync().Status(bgthreadId);
+        const auto status = opentxs::OT::App().Client().Sync().Status(bgthreadId);
 
         const bool bAddToGUI = (opentxs::ThreadStatus::FINISHED_SUCCESS == status) ||
                                (opentxs::ThreadStatus::RUNNING == status);
@@ -310,7 +310,7 @@ int32_t CmdSendCash::sendCash(
     OT_ASSERT(recipientCopy);
     OT_ASSERT(senderCopy);
 
-    response = OT::App()
+    response = OT::App().Client()
                    .API()
                    .ServerAction()
                    .SendCash(
@@ -464,8 +464,8 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
     std::string str_toNymId   (toNymId   .toStdString());
     std::string str_fromAcctId(fromAcctId.toStdString());
     // ------------------------------------------------------------
-    std::string str_fromNymId(opentxs::OT::App().API().Exec().GetAccountWallet_NymID   (str_fromAcctId));
-    std::string str_NotaryID (opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID(str_fromAcctId));
+    std::string str_fromNymId(opentxs::OT::App().Client().Exec().GetAccountWallet_NymID   (str_fromAcctId));
+    std::string str_NotaryID (opentxs::OT::App().Client().Exec().GetAccountWallet_NotaryID(str_fromAcctId));
     // ------------------------------------------------------------
     int64_t SignedAmount = amount;
 //    qDebug() << QString("Sending %1:\n Server:'%2'\n Nym:'%3'\n Acct:'%4'\n ToNym:'%5'\n Amount:'%6'\n Note:'%7'").
@@ -474,7 +474,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
     // ------------------------------------------------------------
     const auto notaryID = opentxs::Identifier::Factory(str_NotaryID),
                   nymID = opentxs::Identifier::Factory(str_fromNymId);
-    if (!opentxs::OT::App().API().ServerAction().GetTransactionNumbers(nymID, notaryID, 1)) {
+    if (!opentxs::OT::App().Client().ServerAction().GetTransactionNumbers(nymID, notaryID, 1)) {
         qDebug() << QString("Failed trying to acquire a transaction number to write the %1 with.").arg(nsChequeType);
         return false;
     }
@@ -486,7 +486,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
     if (   toContactId.isEmpty()
         || str_fromNymId.empty()
         ||  (opentxs::Messagability::READY !=
-             opentxs::OT::App().API().Sync()
+             opentxs::OT::App().Client().Sync()
              .CanMessage(opentxs::Identifier::Factory(str_fromNymId),
                          opentxs::Identifier::Factory(toContactId.toStdString()))))
     {
@@ -507,7 +507,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
     {
         MTSpinner theSpinner;
 
-        auto action = opentxs::OT::App().API().ServerAction().WithdrawVoucher(fromNymID, notaryID, acctID,
+        auto action = opentxs::OT::App().Client().ServerAction().WithdrawVoucher(fromNymID, notaryID, acctID,
         		toNymID, SignedAmount, note.toStdString());
         strResponse = action->Run();
     }
@@ -525,7 +525,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
     }
     // ---------------------------------------------------------
     //else Success!
-    std::string strLedger = opentxs::OT::App().API().Exec().Message_GetLedger(strResponse);
+    std::string strLedger = opentxs::OT::App().Client().Exec().Message_GetLedger(strResponse);
 
     if (strLedger.empty())
     {
@@ -533,7 +533,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
         return false;
     }
     // ---------------------------------------------------------
-    std::string strTransReply = opentxs::OT::App().API().Exec().Ledger_GetTransactionByIndex(str_NotaryID, str_fromNymId, str_fromAcctId, strLedger, 0); // index 0.
+    std::string strTransReply = opentxs::OT::App().Client().Exec().Ledger_GetTransactionByIndex(str_NotaryID, str_fromNymId, str_fromAcctId, strLedger, 0); // index 0.
 
     if (strTransReply.empty())
     {
@@ -543,7 +543,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
         return false;
     }
     // ---------------------------------------------------------
-    std::string strVoucher = opentxs::OT::App().API().Exec().Transaction_GetVoucher(str_NotaryID, str_fromNymId, str_fromAcctId, strTransReply);
+    std::string strVoucher = opentxs::OT::App().Client().Exec().Transaction_GetVoucher(str_NotaryID, str_fromNymId, str_fromAcctId, strTransReply);
 
     if (strVoucher.empty())
     {
@@ -565,7 +565,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
 
         OT_ASSERT(payment);
         // SENDING HERE TO MYSELF (FOR OUTBOX)
-        auto action = opentxs::OT::App().API().ServerAction().SendPayment(fromNymID, notaryID, fromNymID, payment);
+        auto action = opentxs::OT::App().Client().ServerAction().SendPayment(fromNymID, notaryID, fromNymID, payment);
         action->Run();
     }
     // ---------------------------------------------------------
@@ -576,7 +576,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
     {
         MTSpinner theSpinner;
 
-        bRetrieved = opentxs::OT::App().API().ServerAction().DownloadAccount(
+        bRetrieved = opentxs::OT::App().Client().ServerAction().DownloadAccount(
         		fromNymID, notaryID, acctID, true);
     }
     qDebug() << QString("%1 retrieving intermediary files for account %2. (After withdraw voucher.)").
@@ -597,7 +597,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
 //
 //        OT_ASSERT(payment);
 //
-//        auto action = opentxs::OT::App().API().ServerAction().SendPayment(fromNymID, notaryID, toNymID, payment);
+//        auto action = opentxs::OT::App().Client().ServerAction().SendPayment(fromNymID, notaryID, toNymID, payment);
 //        strSendResponse = action->Run();
 //    }
 //
@@ -624,7 +624,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
         (new opentxs::OTPayment(opentxs::OT::App().Legacy().ClientDataFolder(), otstrCheque));
 
         const auto bgthreadId
-        {opentxs::OT::App().API().Sync().
+        {opentxs::OT::App().Client().Sync().
             PayContact(opentxs::Identifier::Factory(str_fromNymId),
                        opentxs::Identifier::Factory(toContactId.toStdString()),
                        pPayment
@@ -633,7 +633,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
         // Instead of MessageContact we use PayContact, so that it does
         // a send_user_instrument instead of a send_user_message.
         //
-        const auto status = opentxs::OT::App().API().Sync().Status(bgthreadId);
+        const auto status = opentxs::OT::App().Client().Sync().Status(bgthreadId);
 
         const bool bAddToGUI = (opentxs::ThreadStatus::FINISHED_SUCCESS == status) ||
         (opentxs::ThreadStatus::RUNNING == status);
@@ -717,7 +717,7 @@ bool MTSendDlg::sendCheque(int64_t amount, QString toNymId, QString toContactId,
 //        return false;
 //    }
     std::string str_fromAcctId(fromAcctId.toStdString());
-    std::string str_fromNymId(opentxs::OT::App().API().Exec().GetAccountWallet_NymID(str_fromAcctId));
+    std::string str_fromNymId(opentxs::OT::App().Client().Exec().GetAccountWallet_NymID(str_fromAcctId));
     // ------------------------------------------------------------
     // If there's a contact ID for recipient but no Nym ID, then we need to find
     // out the Nym ID, so we can WRITE him the cheque. (Unless we deliberately leave
@@ -738,7 +738,7 @@ bool MTSendDlg::sendCheque(int64_t amount, QString toNymId, QString toContactId,
 //    {
 //        if (!toNymId.isEmpty())
 //        {
-//            const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
+//            const opentxs::Identifier toContact_Id = opentxs::OT::App().Client().Contacts()
 //                .ContactID(opentxs::Identifier{toNymId.toStdString()});
 //            const opentxs::String     strToContactId(toContact_Id);
 //            toContactId = toContact_Id.empty() ? QString("") : QString::fromStdString(std::string(strToContactId.Get()));
@@ -811,7 +811,7 @@ bool MTSendDlg::sendCheque(int64_t amount, QString toNymId, QString toContactId,
     if (   toContactId.isEmpty()
         || str_fromNymId.empty()
         ||  (opentxs::Messagability::READY !=
-             opentxs::OT::App().API().Sync()
+             opentxs::OT::App().Client().Sync()
              .CanMessage(opentxs::Identifier::Factory(str_fromNymId),
                          opentxs::Identifier::Factory(toContactId.toStdString()))))
     {
@@ -877,17 +877,17 @@ bool MTSendDlg::sendChequeLowLevel (int64_t amount,
     std::string str_toNymId   (toNymId   .toStdString());
     std::string str_fromAcctId(fromAcctId.toStdString());
     // ------------------------------------------------------------
-    std::string str_fromNymId(opentxs::OT::App().API().Exec().GetAccountWallet_NymID   (str_fromAcctId));
-    std::string str_NotaryID (opentxs::OT::App().API().Exec().GetAccountWallet_NotaryID(str_fromAcctId));
+    std::string str_fromNymId(opentxs::OT::App().Client().Exec().GetAccountWallet_NymID   (str_fromAcctId));
+    std::string str_NotaryID (opentxs::OT::App().Client().Exec().GetAccountWallet_NotaryID(str_fromAcctId));
     // ------------------------------------------------------------
     int64_t SignedAmount = amount;
     int64_t trueAmount   = isInvoice ? (SignedAmount*(-1)) : SignedAmount;
     // ------------------------------------------------------------
-//    std::string str_InstrumentDefinitionID(opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(fromAcctId.toStdString()));
+//    std::string str_InstrumentDefinitionID(opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(fromAcctId.toStdString()));
 //
 //    if (!str_InstrumentDefinitionID.empty())
 //    {
-//        std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmount(str_InstrumentDefinitionID, amount);
+//        std::string str_formatted_amount = opentxs::OT::App().Client().Exec().FormatAmount(str_InstrumentDefinitionID, amount);
 //        QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
 //    }
 
@@ -897,13 +897,13 @@ bool MTSendDlg::sendChequeLowLevel (int64_t amount,
 //                arg(nsChequeType).arg(QString::fromStdString(str_NotaryID)).arg(QString::fromStdString(str_fromNymId)).
 //                arg(fromAcctId).arg(toNymId).arg(SignedAmount).arg(note);
     // ------------------------------------------------------------
-    time64_t tFrom = opentxs::OT::App().API().Exec().GetTime();
+    time64_t tFrom = opentxs::OT::App().Client().Exec().GetTime();
     time64_t tTo   = tFrom + DEFAULT_CHEQUE_EXPIRATION;
     // ------------------------------------------------------------
     const auto notaryID = opentxs::Identifier::Factory(str_NotaryID),
               fromNymID = opentxs::Identifier::Factory(str_fromNymId),
                 toNymID = opentxs::Identifier::Factory(str_toNymId);
-    if (!opentxs::OT::App().API().ServerAction().GetTransactionNumbers(fromNymID, notaryID, 1)) {
+    if (!opentxs::OT::App().Client().ServerAction().GetTransactionNumbers(fromNymID, notaryID, 1)) {
         qDebug() << QString("Failed trying to acquire a transaction number to write the %1 with.").arg(nsChequeType);
         return false;
     }
@@ -913,7 +913,7 @@ bool MTSendDlg::sendChequeLowLevel (int64_t amount,
     //
     if (canMessage_)
     {
-        std::string strCheque = opentxs::OT::App().API().Exec().WriteCheque(
+        std::string strCheque = opentxs::OT::App().Client().Exec().WriteCheque(
                                     str_NotaryID, trueAmount, tFrom, tTo,
                                     str_fromAcctId, str_fromNymId, note.toStdString(),
                                     str_toNymId);
@@ -939,7 +939,7 @@ bool MTSendDlg::sendChequeLowLevel (int64_t amount,
             (new opentxs::OTPayment(opentxs::OT::App().Legacy().ClientDataFolder(), otstrCheque));
 
         const auto bgthreadId
-            {opentxs::OT::App().API().Sync().
+            {opentxs::OT::App().Client().Sync().
                 PayContact(opentxs::Identifier::Factory(str_fromNymId),
                            opentxs::Identifier::Factory(toContactId.toStdString()),
                            pPayment
@@ -948,7 +948,7 @@ bool MTSendDlg::sendChequeLowLevel (int64_t amount,
         // Instead of MessageContact we use PayContact, so that it does
         // a send_user_instrument instead of a send_user_message.
         //
-        const auto status = opentxs::OT::App().API().Sync().Status(bgthreadId);
+        const auto status = opentxs::OT::App().Client().Sync().Status(bgthreadId);
 
         const bool bAddToGUI = (opentxs::ThreadStatus::FINISHED_SUCCESS == status) ||
                                (opentxs::ThreadStatus::RUNNING == status);
@@ -1006,7 +1006,7 @@ bool MTSendDlg::sendChequeLowLevel (int64_t amount,
 //
 //        OT_ASSERT(payment);
 //
-//        auto action = opentxs::OT::App().API().ServerAction().SendPayment(fromNymID, notaryID, toNymID, payment);
+//        auto action = opentxs::OT::App().Client().ServerAction().SendPayment(fromNymID, notaryID, toNymID, payment);
 //        strResponse = action->Run();
 //    }
 //
@@ -1036,7 +1036,7 @@ void MTSendDlg::on_amountEdit_editingFinished()
 {
     if (!m_myAcctId.isEmpty() && !m_bSent)
     {
-        std::string str_InstrumentDefinitionID(opentxs::OT::App().API().Exec().GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
+        std::string str_InstrumentDefinitionID(opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
         QString     amt = ui->amountEdit->text();
 
         if (!amt.isEmpty() && !str_InstrumentDefinitionID.empty())
@@ -1046,8 +1046,8 @@ void MTSendDlg::on_amountEdit_editingFinished()
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
 
-            int64_t     amount               = opentxs::OT::App().API().Exec().StringToAmount(str_InstrumentDefinitionID, str_temp);
-            std::string str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
+            int64_t     amount               = opentxs::OT::App().Client().Exec().StringToAmount(str_InstrumentDefinitionID, str_temp);
+            std::string str_formatted_amount = opentxs::OT::App().Client().Exec().FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
             QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
             ui->amountEdit->setText(qstr_FinalAmount);
         }
@@ -1073,11 +1073,11 @@ void MTSendDlg::setInitialHisContact (QString contactId, bool bUsedInternally/*=
 
     if (!m_myAcctId.isEmpty() && !m_hisContactId.isEmpty())
     {
-        const std::string str_my_nym_id = opentxs::OT::App().API().Exec()
+        const std::string str_my_nym_id = opentxs::OT::App().Client().Exec()
             .GetAccountWallet_NymID(m_myAcctId.toStdString());
 
         if (   !str_my_nym_id.empty()
-            && (opentxs::Messagability::READY == opentxs::OT::App().API().Sync()
+            && (opentxs::Messagability::READY == opentxs::OT::App().Client().Sync()
                 .CanMessage(opentxs::Identifier::Factory(str_my_nym_id),
                             opentxs::Identifier::Factory(m_hisContactId.toStdString()))))
         {
@@ -1113,7 +1113,7 @@ bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
 //    {
 //        if (!toNymId.isEmpty())
 //        {
-//            const opentxs::Identifier toContact_Id = opentxs::OT::App().Contact()
+//            const opentxs::Identifier toContact_Id = opentxs::OT::App().Client().Contacts()
 //            .ContactID(opentxs::Identifier{toNymId.toStdString()});
 //            const opentxs::String strToContactId(toContact_Id);
 //            toContactId = toContact_Id.empty() ? QString("") : QString::fromStdString(std::string(strToContactId.Get()));
@@ -1151,7 +1151,7 @@ bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
         qstr_amount = QString("0");
     // ----------------------------------------------------
     int64_t     amount = 0;
-    std::string str_InstrumentDefinitionID(opentxs::OT::App().API().Exec()
+    std::string str_InstrumentDefinitionID(opentxs::OT::App().Client().Exec()
         .GetAccountWallet_InstrumentDefinitionID(fromAcctId.toStdString()));
 
     if (!str_InstrumentDefinitionID.empty())
@@ -1161,7 +1161,7 @@ bool MTSendDlg::sendFunds(QString memo, QString qstr_amount)
         if (std::string::npos == str_amount.find(".")) // not found
             str_amount += '.';
 
-        amount = opentxs::OT::App().API().Exec().StringToAmount(str_InstrumentDefinitionID, str_amount);
+        amount = opentxs::OT::App().Client().Exec().StringToAmount(str_InstrumentDefinitionID, str_amount);
     }
     // ----------------------------------------------------
     if (amount <= 0)
@@ -1222,7 +1222,7 @@ void MTSendDlg::on_sendButton_clicked()
     {
         if (!m_hisNymId.isEmpty())
         {
-            const auto toContact_Id = opentxs::OT::App().Contact()
+            const auto toContact_Id = opentxs::OT::App().Client().Contacts()
                 .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
             const opentxs::String strToContactId(toContact_Id);
             m_hisContactId = toContact_Id->empty()
@@ -1288,7 +1288,7 @@ void MTSendDlg::on_sendButton_clicked()
     // Make sure I'm not sending to myself (since that will fail...)
     //
     std::string str_fromAcctId(m_myAcctId.toStdString());
-    QString     qstr_fromNymId(QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_NymID(str_fromAcctId)));
+    QString     qstr_fromNymId(QString::fromStdString(opentxs::OT::App().Client().Exec().GetAccountWallet_NymID(str_fromAcctId)));
 
     if (0 == qstr_fromNymId.compare(m_hisNymId))
     {
@@ -1352,7 +1352,7 @@ void MTSendDlg::on_fromButton_clicked()
 
     bool bFoundDefault = false;
 
-    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
+    for (const auto& [accountID, alias] : opentxs::OT::App().Client().Storage().AccountList())
     {
         //Get OT Acct ID
         QString OT_acct_id = QString::fromStdString(accountID);
@@ -1363,7 +1363,7 @@ void MTSendDlg::on_fromButton_clicked()
             if (!m_myAcctId.isEmpty() && (OT_acct_id == m_myAcctId))
                 bFoundDefault = true;
             // -----------------------------------------------
-            OT_acct_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetAccountWallet_Name(OT_acct_id.toStdString()));
+            OT_acct_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAccountWallet_Name(OT_acct_id.toStdString()));
             // -----------------------------------------------
             the_map.insert(OT_acct_id, OT_acct_name);
         }
@@ -1436,7 +1436,7 @@ void MTSendDlg::on_toolButton_clicked()
     // ------------------------------------------------
     if (!m_hisNymId.isEmpty())
     {
-        const auto toContact_Id = opentxs::OT::App().Contact()
+        const auto toContact_Id = opentxs::OT::App().Client().Contacts()
             .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
         const opentxs::String     strToContactId(toContact_Id);
         m_hisContactId = toContact_Id->empty() ? QString("") : QString::fromStdString(std::string(strToContactId.Get()));
@@ -1468,7 +1468,7 @@ void MTSendDlg::on_toButton_clicked()
     }
     else if (!m_hisNymId.isEmpty())
     {
-        const auto toContact_Id = opentxs::OT::App().Contact()
+        const auto toContact_Id = opentxs::OT::App().Client().Contacts()
                 .ContactID(opentxs::Identifier::Factory(m_hisNymId.toStdString()));
         const opentxs::String     strToContactId(toContact_Id);
         m_hisContactId = toContact_Id->empty()
@@ -1618,7 +1618,7 @@ void MTSendDlg::dialog()
         // -------------------------------------------
         if (!m_myAcctId.isEmpty()) // myAcct was provided.
         {
-            str_my_name = opentxs::OT::App().API().Exec().GetAccountWallet_Name(m_myAcctId.toStdString());
+            str_my_name = opentxs::OT::App().Client().Exec().GetAccountWallet_Name(m_myAcctId.toStdString());
 
             if (str_my_name.empty())
                 str_my_name = m_myAcctId.toStdString();
@@ -1643,7 +1643,7 @@ void MTSendDlg::dialog()
         // -------------------------------------------
         if (!m_hisNymId.isEmpty()) // hisNym was provided.
         {
-            str_his_name = opentxs::OT::App().API().Exec().GetNym_Name(m_hisNymId.toStdString());
+            str_his_name = opentxs::OT::App().Client().Exec().GetNym_Name(m_hisNymId.toStdString());
 
             if (str_his_name.empty())
                 str_his_name = m_hisNymId.toStdString();

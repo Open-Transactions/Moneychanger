@@ -71,7 +71,7 @@ void MTCredentials::on_treeWidget_itemSelectionChanged()
     {
         QString qstrNymID = pItem->text(1);
         // --------------------------------
-        const std::string str_source = opentxs::OT::App().API().Exec().GetNym_SourceForID(qstrNymID.toStdString());
+        const std::string str_source = opentxs::OT::App().Client().Exec().GetNym_SourceForID(qstrNymID.toStdString());
         // --------------------------------
         ui->label->setText(tr("Nym Source:"));
         ui->plainTextEdit->setPlainText(QString::fromStdString(str_source));
@@ -82,7 +82,7 @@ void MTCredentials::on_treeWidget_itemSelectionChanged()
         QString qstrNymID  = pParent->text(1);
         QString qstrCredID = pItem  ->text(1);
         // --------------------------------
-        const std::string str_contents = opentxs::OT::App().API().Exec().GetNym_MasterCredentialContents(qstrNymID .toStdString(),
+        const std::string str_contents = opentxs::OT::App().Client().Exec().GetNym_MasterCredentialContents(qstrNymID .toStdString(),
                                                                                qstrCredID.toStdString());
         // --------------------------------
         ui->label->setText(tr("Master Credential Contents:"));
@@ -95,7 +95,7 @@ void MTCredentials::on_treeWidget_itemSelectionChanged()
         QString qstrCredID = pParent      ->text(1);
         QString qstrSubID  = pItem        ->text(1);
         // --------------------------------
-        const std::string str_contents = opentxs::OT::App().API().Exec().GetNym_ChildCredentialContents(qstrNymID .toStdString(),
+        const std::string str_contents = opentxs::OT::App().Client().Exec().GetNym_ChildCredentialContents(qstrNymID .toStdString(),
                                                                                   qstrCredID.toStdString(),
                                                                                   qstrSubID .toStdString());
         // --------------------------------
@@ -135,7 +135,7 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
             // ---------------------------------------
             std::string str_nym_id = qstrNymID.toStdString();
             // ---------------------------------------
-            std::string str_nym_name = opentxs::OT::App().API().Exec().GetNym_Name(qstrNymID.toStdString());
+            std::string str_nym_name = opentxs::OT::App().Client().Exec().GetNym_Name(qstrNymID.toStdString());
             QString     qstrNymName  = QString::fromStdString(str_nym_name);
             // ---------------------------------------
             // Insert Nym into Tree.
@@ -150,7 +150,7 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
             // ------------------------------------------
             // Next: any credentials under this Nym?
             //
-            auto nym = opentxs::OT::App().Wallet().Nym(opentxs::Identifier::Factory(str_nym_id));
+            auto nym = opentxs::OT::App().Client().Wallet().Nym(opentxs::Identifier::Factory(str_nym_id));
             OT_ASSERT(nym);
             auto masterCredentialIDs = nym->GetMasterCredentialIDs();
             for (auto masterCredentialID : masterCredentialIDs)
@@ -172,7 +172,7 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
                 // ---------------------------------------
                 // If you need the credential contents later, you can use this:
                 //
-                // std::string opentxs::OT::App().API().Exec().GetNym_CredentialContents(const std::string & NYM_ID, const std::string & CREDENTIAL_ID);
+                // std::string opentxs::OT::App().Client().Exec().GetNym_CredentialContents(const std::string & NYM_ID, const std::string & CREDENTIAL_ID);
                 // ---------------------------------------
                 // Next: any subcredentials under this credential?
                 //
@@ -197,8 +197,8 @@ void MTCredentials::refresh(QStringList & qstrlistNymIDs)
                     // std::string GetNym_SubCredentialContents(const std::string & NYM_ID, const std::string & MASTER_CRED_ID, const std::string & SUB_CRED_ID);
                     //
                     // Also useful:
-                    // std::string opentxs::OT::App().API().Exec().AddSubcredential(const std::string & NYM_ID, const std::string & MASTER_CRED_ID, const int32_t & nKeySize);
-                    // bool        opentxs::OT::App().API().Exec().RevokeSubcredential(const std::string & NYM_ID, const std::string & MASTER_CRED_ID, const std::string & SUB_CRED_ID);
+                    // std::string opentxs::OT::App().Client().Exec().AddSubcredential(const std::string & NYM_ID, const std::string & MASTER_CRED_ID, const int32_t & nKeySize);
+                    // bool        opentxs::OT::App().Client().Exec().RevokeSubcredential(const std::string & NYM_ID, const std::string & MASTER_CRED_ID, const std::string & SUB_CRED_ID);
                     //
                 } // for (subcredentials.)
             } // for (credentials.)

@@ -129,7 +129,7 @@ void MTCompose::setTransportDisplayBasedOnAvailableData()
 
         if (sendingThroughOTServer() && !m_NotaryID.isEmpty())
         {
-            qstrMsgTypeDisplay = QString::fromStdString(opentxs::OT::App().API().Exec().GetServer_Name(m_NotaryID.toStdString()));
+            qstrMsgTypeDisplay = QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_Name(m_NotaryID.toStdString()));
 
             if (qstrMsgTypeDisplay.isEmpty())
                 qstrMsgTypeDisplay = m_NotaryID;
@@ -155,7 +155,7 @@ void MTCompose::setSenderNameBasedOnAvailableData()
 
         if (!m_senderNymId.isEmpty())
         {
-            qstrNymName = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(m_senderNymId.toStdString()));
+            qstrNymName = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(m_senderNymId.toStdString()));
         }
         // ---------------------------
         QString qstrAddressPortion("");
@@ -206,7 +206,7 @@ void MTCompose::setRecipientNameBasedOnAvailableData()
         }
         else if (!m_recipientNymId.isEmpty())
         {
-            qstrNymName = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(m_recipientNymId.toStdString()));
+            qstrNymName = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(m_recipientNymId.toStdString()));
         }
         else if (qstrContactName.isEmpty() && m_recipientContactId > 0)
         {
@@ -310,7 +310,7 @@ void MTCompose::setInitialRecipientContactID(QString qstrContactid, QString addr
         m_senderNymId = qstrDefaultNym;
     }
     if (!qstrSenderNym.isEmpty() && !qstrContactid.isEmpty()) {
-        bCanMessage_ = (opentxs::Messagability::READY == opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier::Factory(qstrSenderNym.toStdString()),
+        bCanMessage_ = (opentxs::Messagability::READY == opentxs::OT::App().Client().Sync().CanMessage(opentxs::Identifier::Factory(qstrSenderNym.toStdString()),
                                                                                                     opentxs::Identifier::Factory(qstrContactid.toStdString())));
     }
     // -------------------------------------------
@@ -534,10 +534,10 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
     if (bCanMessage_)
     {
         const auto bgthreadId =
-            opentxs::OT::App().API().Sync().
+            opentxs::OT::App().Client().Sync().
                 MessageContact(opentxs::Identifier::Factory(str_fromNymId), opentxs::Identifier::Factory(qstrContactId_.toStdString()), contents.toStdString());
 
-        const auto status = opentxs::OT::App().API().Sync().Status(bgthreadId);
+        const auto status = opentxs::OT::App().Client().Sync().Status(bgthreadId);
 
         const bool bAddToGUI = (opentxs::ThreadStatus::FINISHED_SUCCESS == status) ||
                                (opentxs::ThreadStatus::RUNNING == status);
@@ -551,7 +551,7 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
     {
         std::string strResponse; {
             MTSpinner theSpinner;
-            auto action = opentxs::OT::App().API().ServerAction().SendMessage(
+            auto action = opentxs::OT::App().Client().ServerAction().SendMessage(
                     opentxs::Identifier::Factory(str_fromNymId), opentxs::Identifier::Factory(str_NotaryID), opentxs::Identifier::Factory(str_toNymId), contents.toStdString());
             strResponse = action->Run();
         }
@@ -1402,7 +1402,7 @@ void MTCompose::FindSenderMsgMethod()
                         std::string notary_id    = qstrNotaryID.toStdString();
                         std::string sender_id    = m_senderNymId.toStdString();
 
-                        if (opentxs::OT::App().API().Exec().IsNym_RegisteredAtServer(sender_id, notary_id))
+                        if (opentxs::OT::App().Client().Exec().IsNym_RegisteredAtServer(sender_id, notary_id))
                         {
                             setInitialServer(qstrNotaryID);
                             return; // SUCCESS!
@@ -1693,7 +1693,7 @@ void MTCompose::FindRecipientMsgMethod()
                         std::string notary_id    = qstrNotaryID.toStdString();
                         std::string sender_id    = m_senderNymId.toStdString();
 
-                        if (opentxs::OT::App().API().Exec().IsNym_RegisteredAtServer(sender_id, notary_id))
+                        if (opentxs::OT::App().Client().Exec().IsNym_RegisteredAtServer(sender_id, notary_id))
                         {
                             setInitialServer(qstrNotaryID);
                             return; // SUCCESS!
@@ -2454,7 +2454,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
     std::string notary_id    = qstrNotaryID .toStdString();
     std::string sender_id    = m_senderNymId.toStdString();
 
-    if (!opentxs::OT::App().API().Exec().IsNym_RegisteredAtServer(sender_id, notary_id))
+    if (!opentxs::OT::App().Client().Exec().IsNym_RegisteredAtServer(sender_id, notary_id))
     {
         if (bAsk)
         {
@@ -2469,7 +2469,7 @@ bool MTCompose::verifySenderAgainstServer(bool bAsk/*=true*/, QString qstrNotary
                 {
                     MTSpinner theSpinner;
 
-                    response = opentxs::String(opentxs::OT::App().API().Sync().RegisterNym(opentxs::Identifier::Factory(sender_id), opentxs::Identifier::Factory(notary_id), true)).Get();
+                    response = opentxs::String(opentxs::OT::App().Client().Sync().RegisterNym(opentxs::Identifier::Factory(sender_id), opentxs::Identifier::Factory(notary_id), true)).Get();
                 }
 
                 qDebug() << QString("Nym Registration Response: %1").arg(QString::fromStdString(response));
@@ -2537,7 +2537,7 @@ bool MTCompose::verifyRecipientAgainstServer(bool bAsk/*=true*/, QString qstrNot
                     {
                         MTSpinner theSpinner;
 
-                        auto action = opentxs::OT::App().API().ServerAction().DownloadNym(
+                        auto action = opentxs::OT::App().Client().ServerAction().DownloadNym(
                                 opentxs::Identifier::Factory(sender_id), opentxs::Identifier::Factory(notary_id), opentxs::Identifier::Factory(recipient_id));
                         response = action->Run();
                     }
@@ -2589,12 +2589,12 @@ void MTCompose::on_fromButton_clicked()
     mapIDName & the_map = theChooser.m_map;
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t nym_count = opentxs::OT::App().API().Exec().GetNymCount();
+    const int32_t nym_count = opentxs::OT::App().Client().Exec().GetNymCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < nym_count; ++ii)
     {
         //Get OT Nym ID
-        QString OT_nym_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_ID(ii));
+        QString OT_nym_id = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_ID(ii));
         QString OT_nym_name("");
         // -----------------------------------------------
         if (!OT_nym_id.isEmpty())
@@ -2602,7 +2602,7 @@ void MTCompose::on_fromButton_clicked()
             if (!m_senderNymId.isEmpty() && (OT_nym_id == m_senderNymId))
                 bFoundDefault = true;
             // -----------------------------------------------
-            OT_nym_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(OT_nym_id.toStdString()));
+            OT_nym_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(OT_nym_id.toStdString()));
             // -----------------------------------------------
             the_map.insert(OT_nym_id, OT_nym_name);
         }
@@ -2898,7 +2898,7 @@ void MTCompose::setVariousIds(QString senderNymId, QString recipientNymId, QStri
     // ----------------------------------------------
     if (!m_forwardSenderNymId.isEmpty())
     {
-        m_forwardSenderName = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(m_forwardSenderNymId.toStdString()));
+        m_forwardSenderName = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(m_forwardSenderNymId.toStdString()));
     }
 //    if (m_forwardSenderName.isEmpty() && !m_forwardSenderAddress.isEmpty())
 //    {
@@ -2912,11 +2912,11 @@ void MTCompose::setVariousIds(QString senderNymId, QString recipientNymId, QStri
     // ----------------------------------------------
     if (!m_forwardRecipientNymId.isEmpty())
     {
-        m_forwardRecipientName = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(m_forwardRecipientNymId.toStdString()));
+        m_forwardRecipientName = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(m_forwardRecipientNymId.toStdString()));
     }
     if (m_forwardRecipientName.isEmpty() && !m_forwardRecipientAddress.isEmpty())
     {
-        m_forwardRecipientName = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(m_forwardRecipientAddress.toStdString()));
+        m_forwardRecipientName = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(m_forwardRecipientAddress.toStdString()));
     }
     if (m_forwardRecipientName.isEmpty() && !m_forwardRecipientNymId.isEmpty())
         m_forwardRecipientName = m_forwardRecipientNymId;
