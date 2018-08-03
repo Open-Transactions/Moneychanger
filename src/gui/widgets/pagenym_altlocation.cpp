@@ -581,7 +581,7 @@ void MTPageNym_AltLocation::initializePage() //virtual
         int nCurrentTab = 0;
 
         const auto sections =
-            opentxs::OT::App().API().Exec().ContactSectionList();
+            opentxs::OT::App().Client().Exec().ContactSectionList();
 
         for (auto & indexSection: sections) {
             if (opentxs::proto::CONTACTSECTION_RELATIONSHIP == indexSection) {
@@ -596,7 +596,7 @@ void MTPageNym_AltLocation::initializePage() //virtual
             // Create a new (tab page) Widget.
             QWidget * pTab = new QWidget;
             const std::string sectionName =
-                opentxs::OT::App().API().Exec().ContactSectionName(indexSection);
+                opentxs::OT::App().Client().Exec().ContactSectionName(indexSection);
 
             qDebug() << "-- SECTION NAME: " << QString::fromStdString(sectionName);
 
@@ -604,11 +604,11 @@ void MTPageNym_AltLocation::initializePage() //virtual
             QList<GroupBoxContactItems *> * pListGroupBoxes = new QList<GroupBoxContactItems *>;
 
             const auto sectionTypes =
-                opentxs::OT::App().API().Exec().ContactSectionTypeList(indexSection);
+                opentxs::OT::App().Client().Exec().ContactSectionTypeList(indexSection);
 
             for (const auto& indexSectionType: sectionTypes) {
                 const std::string typeName =
-                    opentxs::OT::App().API().Exec().ContactTypeName(indexSectionType);
+                    opentxs::OT::App().Client().Exec().ContactTypeName(indexSectionType);
 
 //                qDebug() << "  section type: " << QString::fromStdString(typeName);
 

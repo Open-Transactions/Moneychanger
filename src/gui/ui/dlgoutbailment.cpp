@@ -41,7 +41,7 @@ DlgOutbailment::DlgOutbailment(QWidget *parent, std::int64_t & AMOUNT, std::stri
     ui->lineEditNotaryId    ->setText(notary);
 
     const auto asset_id = opentxs::Identifier::Factory(asset_type_.toStdString());
-    auto unit_definition = opentxs::OT::App().Wallet().UnitDefinition(asset_id);
+    auto unit_definition = opentxs::OT::App().Client().Wallet().UnitDefinition(asset_id);
     const QString qstrAssetAlias = QString::fromStdString(unit_definition->Alias());
 
     ui->labelAsset->setText(qstrAssetAlias);
@@ -120,9 +120,9 @@ void DlgOutbailment::on_lineEditAmount_editingFinished()
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
 
-            AMOUNT_ = opentxs::OT::App().API().Exec().StringToAmount(asset_type_.toStdString(), str_temp);
+            AMOUNT_ = opentxs::OT::App().Client().Exec().StringToAmount(asset_type_.toStdString(), str_temp);
 
-            std::string  str_formatted_amount = opentxs::OT::App().API().Exec().FormatAmount(
+            std::string  str_formatted_amount = opentxs::OT::App().Client().Exec().FormatAmount(
                          asset_type_.toStdString(),
                          static_cast<int64_t>(AMOUNT_));
 

@@ -63,7 +63,7 @@ QVariant ClaimsProxyModel::data ( const QModelIndex & index, int role/* = Qt::Di
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::OT::App().API().Exec().GetNym_Name(str_id);
+                str_name = str_id.empty() ? "" : opentxs::OT::App().Client().Exec().GetNym_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())

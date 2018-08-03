@@ -44,8 +44,8 @@ void MTPageAcct_Nym::on_pushButtonSelect_clicked()
     if (qstr_current_id.isEmpty())
         qstr_current_id = qstr_default_id;
     // -------------------------------------------
-    if (qstr_current_id.isEmpty() && (opentxs::OT::App().API().Exec().GetNymCount() > 0))
-        qstr_current_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_ID(0));
+    if (qstr_current_id.isEmpty() && (opentxs::OT::App().Client().Exec().GetNymCount() > 0))
+        qstr_current_id = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_ID(0));
     // -------------------------------------------
     // Select from Nyms in local wallet.
     //
@@ -55,11 +55,11 @@ void MTPageAcct_Nym::on_pushButtonSelect_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    const int32_t the_count = opentxs::OT::App().API().Exec().GetNymCount();
+    const int32_t the_count = opentxs::OT::App().Client().Exec().GetNymCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < the_count; ++ii)
     {
-        QString OT_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_ID(ii));
+        QString OT_id = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_ID(ii));
         QString OT_name("");
         // -----------------------------------------------
         if (!OT_id.isEmpty())
@@ -67,7 +67,7 @@ void MTPageAcct_Nym::on_pushButtonSelect_clicked()
             if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                 bFoundDefault = true;
             // -----------------------------------------------
-            OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(OT_id.toStdString()));
+            OT_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(OT_id.toStdString()));
             // -----------------------------------------------
             the_map.insert(OT_id, OT_name);
         }
@@ -120,11 +120,11 @@ void MTPageAcct_Nym::initializePage() //virtual
     // -------------------------------------------
     qstr_id = qstr_current_id.isEmpty() ? qstr_default_id : qstr_current_id;
     // -------------------------------------------
-    if (qstr_id.isEmpty() && (opentxs::OT::App().API().Exec().GetNymCount() > 0))
-        qstr_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_ID(0));
+    if (qstr_id.isEmpty() && (opentxs::OT::App().Client().Exec().GetNymCount() > 0))
+        qstr_id = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_ID(0));
     // -------------------------------------------
     if (!qstr_id.isEmpty())
-        str_name = opentxs::OT::App().API().Exec().GetNym_Name(qstr_id.toStdString());
+        str_name = opentxs::OT::App().Client().Exec().GetNym_Name(qstr_id.toStdString());
     // -------------------------------------------
     if (str_name.empty() || qstr_id.isEmpty())
         SetFieldsBlank();
@@ -157,13 +157,13 @@ void MTPageAcct_Nym::on_pushButtonManage_clicked()
     QString qstrPreSelected   = field("NymID").toString();
     bool    bFoundPreselected = false;
     // -------------------------------------
-    int32_t the_count = opentxs::OT::App().API().Exec().GetNymCount();
+    int32_t the_count = opentxs::OT::App().Client().Exec().GetNymCount();
     bool    bStartingWithNone = (the_count < 1);
 
     for (int32_t ii = 0; ii < the_count; ii++)
     {
-        QString OT_id   = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_ID(ii));
-        QString OT_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(OT_id.toStdString()));
+        QString OT_id   = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_ID(ii));
+        QString OT_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(OT_id.toStdString()));
 
         the_map.insert(OT_id, OT_name);
 
@@ -178,13 +178,13 @@ void MTPageAcct_Nym::on_pushButtonManage_clicked()
     // -------------------------------------
     pWindow->dialog(MTDetailEdit::DetailEditTypeNym, true);
     // -------------------------------------
-    if (bStartingWithNone && (opentxs::OT::App().API().Exec().GetNymCount() > 0))
+    if (bStartingWithNone && (opentxs::OT::App().Client().Exec().GetNymCount() > 0))
     {
-        std::string str_id = opentxs::OT::App().API().Exec().GetNym_ID(0);
+        std::string str_id = opentxs::OT::App().Client().Exec().GetNym_ID(0);
 
         if (!str_id.empty())
         {
-            std::string str_name = opentxs::OT::App().API().Exec().GetNym_Name(str_id);
+            std::string str_name = opentxs::OT::App().Client().Exec().GetNym_Name(str_id);
 
             if (str_name.empty())
                 str_name = str_id;
@@ -196,7 +196,7 @@ void MTPageAcct_Nym::on_pushButtonManage_clicked()
         }
     }
     // -------------------------------------
-    else if (opentxs::OT::App().API().Exec().GetNymCount() < 1)
+    else if (opentxs::OT::App().Client().Exec().GetNymCount() < 1)
         SetFieldsBlank();
 }
 

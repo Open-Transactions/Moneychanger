@@ -87,11 +87,11 @@ void DlgEncrypt::PopulateCombo()
         int nDefaultNymIndex    = 0;
         bool bFoundNymDefault   = false;
         // -----------------------------------------------
-        const int32_t nym_count = opentxs::OT::App().API().Exec().GetNymCount();
+        const int32_t nym_count = opentxs::OT::App().Client().Exec().GetNymCount();
         // -----------------------------------------------
         for (int32_t ii = 0; ii < nym_count; ++ii)
         {
-            QString OT_nym_id = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_ID(ii));
+            QString OT_nym_id = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_ID(ii));
             QString OT_nym_name("");
             // -----------------------------------------------
             if (!OT_nym_id.isEmpty())
@@ -102,7 +102,7 @@ void DlgEncrypt::PopulateCombo()
                     nDefaultNymIndex = ii;
                 }
                 // -----------------------------------------------
-                OT_nym_name = QString::fromStdString(opentxs::OT::App().API().Exec().GetNym_Name(OT_nym_id.toStdString()));
+                OT_nym_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(OT_nym_id.toStdString()));
                 // -----------------------------------------------
                 m_mapNyms.insert(OT_nym_id, OT_nym_name);
                 ui->comboBoxNym->insertItem(ii, OT_nym_name);
@@ -261,7 +261,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                 {
                     opentxs::OTPasswordData thePWData("Signer passphrase");
 
-                    std::shared_ptr<const opentxs::Nym> pNym = opentxs::OT::App().Wallet().Nym(nym_id);
+                    std::shared_ptr<const opentxs::Nym> pNym = opentxs::OT::App().Client().Wallet().Nym(nym_id);
                     if (false == bool(pNym))
                     {
                         QString qstrErrorMsg = QString("%1: %2").arg(tr("Failed loading the signer; unable to continue. NymID")).arg(m_nymId);
@@ -312,7 +312,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                         }
                     } // else (we have pNym.)
                 }
-//              std::string  str_output (opentxs::OT::App().API().Exec().FlatSign(str_nym, str_encoded, str_type));
+//              std::string  str_output (opentxs::OT::App().Client().Exec().FlatSign(str_nym, str_encoded, str_type));
             }
         }
         // --------------------------------
@@ -346,7 +346,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                     {
                         opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
 
-                        std::shared_ptr<const opentxs::Nym> pNym = opentxs::OT::App().Wallet().Nym(nym_id);
+                        std::shared_ptr<const opentxs::Nym> pNym = opentxs::OT::App().Client().Wallet().Nym(nym_id);
                         if (false == bool(pNym))
                         {
                             QString qstrErrorMsg = QString("%1: %2").arg(tr("Failed loading a recipient; attempting to continue without. NymID")).arg(qstrNymID);
@@ -395,7 +395,7 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
                             opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
 
                             auto pNym =
-                                opentxs::OT::App().Wallet().Nym(signer_nym_id);
+                                opentxs::OT::App().Client().Wallet().Nym(signer_nym_id);
                             if (!pNym)
                             {
                                 QString qstrErrorMsg = QString("%1: %2").

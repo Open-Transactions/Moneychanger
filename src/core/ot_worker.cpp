@@ -17,29 +17,29 @@ ot_worker::ot_worker(QObject *parent) : QObject(parent)//, list(*(new MTNameLook
 //     **/
 //    overview_list = new QList< QMap<QString,QVariant> >();
 
-//    int nServerCount  = opentxs::OT::App().API().Exec().GetServerCount();
-//    int nAssetCount   = opentxs::OT::App().API().Exec().GetAssetTypeCount();
-//    int nNymCount     = opentxs::OT::App().API().Exec().GetNymCount();
+//    int nServerCount  = opentxs::OT::App().Client().Exec().GetServerCount();
+//    int nAssetCount   = opentxs::OT::App().Client().Exec().GetAssetTypeCount();
+//    int nNymCount     = opentxs::OT::App().Client().Exec().GetNymCount();
 //    // ----------------------------------------------------
 //    for (int ii = 0; ii < nServerCount; ++ii)
 //    {
-//        std::string NotaryID = opentxs::OT::App().API().Exec().GetServer_ID(ii);
+//        std::string NotaryID = opentxs::OT::App().Client().Exec().GetServer_ID(ii);
 //        list.AddNotaryID(NotaryID);
 //    }
 //    // ----------------------------------------------------
 //    for (int ii = 0; ii < nAssetCount; ++ii)
 //    {
-//        std::string InstrumentDefinitionID = opentxs::OT::App().API().Exec().GetAssetType_ID(ii);
+//        std::string InstrumentDefinitionID = opentxs::OT::App().Client().Exec().GetAssetType_ID(ii);
 //        list.AddInstrumentDefinitionID(InstrumentDefinitionID);
 //    }
 //    // ----------------------------------------------------
 //    for (int ii = 0; ii < nNymCount; ++ii)
 //    {
-//        std::string nymId = opentxs::OT::App().API().Exec().GetNym_ID(ii);
+//        std::string nymId = opentxs::OT::App().Client().Exec().GetNym_ID(ii);
 //        list.AddNymID(nymId);
 //    }
 //    // ----------------------------------------------------
-//    for (const auto& [accountID, alias] : opentxs::OT::App().DB().AccountList())
+//    for (const auto& [accountID, alias] : opentxs::OT::App().Client().Storage().AccountList())
 //    {
 //        list.AddAccountID(accountID);
 //    }

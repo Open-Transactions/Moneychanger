@@ -281,7 +281,7 @@ void MTOpentxsContactDetails::DeleteButtonClicked()
         const QString strNewContactLabel = nameDlg.GetOutputString();
         const std::string str_new_contact_label = strNewContactLabel.toStdString();
         // --------------------------------------------------
-        auto pContact = opentxs::OT::App().Contact().NewContact(str_new_contact_label);
+        auto pContact = opentxs::OT::App().Client().Contacts().NewContact(str_new_contact_label);
 
         if (!pContact) {
             qDebug() << "Error: Failed trying to create new Contact.";
@@ -298,7 +298,7 @@ void MTOpentxsContactDetails::DeleteButtonClicked()
             emit showContactAndRefreshHome(qstrContactId);
         }
 
-    const opentxs::Identifier contactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier{nym_id_string.toStdString()});
+    const opentxs::Identifier contactId = opentxs::OT::App().Client().Contacts().ContactID(opentxs::Identifier{nym_id_string.toStdString()});
 
     if (!contactId.IsEmpty()) // Found an existing one
     {
@@ -311,7 +311,7 @@ void MTOpentxsContactDetails::DeleteButtonClicked()
     // So let's create a new one instead.
     //
     const std::string str_label = qstrLabel.toStdString();
-    const auto response = opentxs::OT::App().Contact().NewContact(str_label, opentxs::Identifier{nym_id_string.toStdString()}, opentxs::PaymentCode{payment_code.toStdString()});
+    const auto response = opentxs::OT::App().Client().Contacts().NewContact(str_label, opentxs::Identifier{nym_id_string.toStdString()}, opentxs::PaymentCode{payment_code.toStdString()});
     return response ? QString::fromStdString(std::string(opentxs::String(response->ID()).Get())) : QString("");
 
 */
@@ -340,12 +340,12 @@ void MTOpentxsContactDetails::AddButtonClicked()
         return;
     // --------------------------------------------------------
     // Might be a Payment Code.
-    if (!opentxs::OT::App().API().Exec().IsValidID(raw_id))
+    if (!opentxs::OT::App().Client().Exec().IsValidID(raw_id))
     {
         nymID = "";
         str_nym_id = "";
 
-        const std::string str_temp = opentxs::OT::App().API().Exec().NymIDFromPaymentCode(raw_id);
+        const std::string str_temp = opentxs::OT::App().Client().Exec().NymIDFromPaymentCode(raw_id);
 
         if (!str_temp.empty())
         {
@@ -355,7 +355,7 @@ void MTOpentxsContactDetails::AddButtonClicked()
         }
     }
     // --------------------------------------------------------
-    if (!opentxs::OT::App().API().Exec().IsValidID(str_nym_id))
+    if (!opentxs::OT::App().Client().Exec().IsValidID(str_nym_id))
     {
         QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
                              tr("Sorry, that is not a valid Open-Transactions Nym ID."));
@@ -365,7 +365,7 @@ void MTOpentxsContactDetails::AddButtonClicked()
     // we're adding. (Though a contact may already exist, we'll find out next...)
     // --------------------------------------------------------
     QString qstrContactId;
-    const auto existingContactId = opentxs::OT::App().Contact().ContactID(opentxs::Identifier::Factory(str_nym_id));
+    const auto existingContactId = opentxs::OT::App().Client().Contacts().ContactID(opentxs::Identifier::Factory(str_nym_id));
     const bool bPreexistingOpentxsContact{!existingContactId->empty()};
     bool bCreatedOpentxsContactJustNow{false};
 
@@ -386,7 +386,7 @@ void MTOpentxsContactDetails::AddButtonClicked()
         bCreatedOpentxsContactJustNow = !qstrContactId.isEmpty();
     }
     // --------------------------------------------------------
-    const bool bHaveAValidOpentxsContact = opentxs::OT::App().API().Exec().IsValidID(qstrContactId.toStdString());
+    const bool bHaveAValidOpentxsContact = opentxs::OT::App().Client().Exec().IsValidID(qstrContactId.toStdString());
     if (      !bHaveAValidOpentxsContact)
     {
         QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
@@ -564,7 +564,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
                     // --------------------------------
                     const std::string str_claimant_nym_id = qstrClaimantNymId.toStdString();
 
-                    if (!opentxs::OT::App().API().Exec().VerifyUserPrivateKey(str_claimant_nym_id))
+                    if (!opentxs::OT::App().Client().Exec().VerifyUserPrivateKey(str_claimant_nym_id))
                         return;
                     // ----------------------------------
                     pActionConfirm_ = nullptr;
@@ -595,7 +595,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
 
                         // ------------------------------------------------
                         std::string str_claim_id(qstrClaimId.toStdString());
-                        if (opentxs::OT::App().API().Exec().DeleteClaim(qstrClaimantNymId.toStdString(), str_claim_id))
+                        if (opentxs::OT::App().Client().Exec().DeleteClaim(qstrClaimantNymId.toStdString(), str_claim_id))
                         {
                             emit nymWasJustChecked(qstrClaimantNymId);
                             return;
@@ -707,13 +707,13 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
                         mapIDName & the_map = theChooser.m_map;
                         // -----------------------------------------------
                         auto sectionTypes =
-                                opentxs::OT::App().API().Exec().ContactSectionTypeList(
+                                opentxs::OT::App().Client().Exec().ContactSectionTypeList(
                                     opentxs::proto::CONTACTSECTION_RELATIONSHIP);
                         QMap<uint32_t, QString> mapTypeNames;
 
                         for (auto & indexSectionType: sectionTypes) {
                             auto typeName =
-                                opentxs::OT::App().API().Exec().ContactTypeName(
+                                opentxs::OT::App().Client().Exec().ContactTypeName(
                                     indexSectionType);
                             mapTypeNames.insert(indexSectionType, QString::fromStdString(typeName));
 
@@ -740,7 +740,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
                         // just downloaded and overwritten.
                         //
                         opentxs::OTPasswordData thePWData("Adding relationship claim.");
-                        std::shared_ptr<const opentxs::Nym> pClaimantNym = opentxs::OT::App().Wallet().Nym(claimant_nym_id);
+                        std::shared_ptr<const opentxs::Nym> pClaimantNym = opentxs::OT::App().Client().Wallet().Nym(claimant_nym_id);
 
                         if (false == bool(pClaimantNym))
                         {
@@ -762,7 +762,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
                         // Nym's data. (So we'll need to broadcast that, so
                         // Moneychanger can re-import the Nym.)
                         const bool set =
-                            opentxs::OT::App().API().Exec().SetClaim(
+                            opentxs::OT::App().Client().Exec().SetClaim(
                                 qstrClaimantNymId.toStdString(),
                                 opentxs::proto::CONTACTSECTION_RELATIONSHIP,
                                 opentxs::proto::ProtoAsString(item));
@@ -968,7 +968,7 @@ void MTOpentxsContactDetails::on_treeWidget_customContextMenuRequested(const QPo
                     // If I'm the verifier, then I can change my verification.
                     // (Otherwise I can't.)
                     //
-                    if (!opentxs::OT::App().API().Exec().VerifyUserPrivateKey(verifier_nym_id))
+                    if (!opentxs::OT::App().Client().Exec().VerifyUserPrivateKey(verifier_nym_id))
                         return;
                     // ----------------------------------
                     pActionConfirm_ = nullptr;
@@ -1138,7 +1138,7 @@ void MTOpentxsContactDetails::on_pushButtonRefresh_clicked()
             {
                 MTSpinner theSpinner;
 
-                 auto action = opentxs::OT::App().API().ServerAction().DownloadNym(
+                 auto action = opentxs::OT::App().Client().ServerAction().DownloadNym(
                         opentxs::Identifier::Factory(my_nym_id),
                         opentxs::Identifier::Factory(notary_id),
                         opentxs::Identifier::Factory(str_nym_id));
@@ -1217,14 +1217,14 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
             continue;
         // ---------------------------------------
         const std::string str_nym_id   = qstrNymID.toStdString();
-        const std::string str_nym_name = opentxs::OT::App().API().Exec().GetNym_Name(str_nym_id);
+        const std::string str_nym_name = opentxs::OT::App().Client().Exec().GetNym_Name(str_nym_id);
         const auto id_nym = opentxs::Identifier::Factory(str_nym_id);
 
         if (!str_nym_id.empty())
         {
-            auto pCurrentNym = opentxs::OT::App().Wallet().Nym(id_nym);
+            auto pCurrentNym = opentxs::OT::App().Client().Wallet().Nym(id_nym);
 //          const opentxs::Nym * pCurrentNym =
-//                opentxs::OT::App().API().OTAPI().GetOrLoadNym(id_nym);
+//                opentxs::OT::App().Client().OTAPI().GetOrLoadNym(id_nym);
 
             // check_nym if not already downloaded.
             if (!pCurrentNym)
@@ -1242,7 +1242,7 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
                     {
                         MTSpinner theSpinner;
 
-                        auto action = opentxs::OT::App().API().ServerAction().DownloadNym(
+                        auto action = opentxs::OT::App().Client().ServerAction().DownloadNym(
                                 opentxs::Identifier::Factory(my_nym_id),
                                 opentxs::Identifier::Factory(notary_id),
                                 opentxs::Identifier::Factory(str_nym_id));
@@ -1253,8 +1253,8 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
 
                     if (1 == nReturnVal)
                     {
-                        pCurrentNym = opentxs::OT::App().Wallet().Nym(id_nym);
-//                      pCurrentNym = opentxs::OT::App().API().OTAPI().reloadAndGetNym(id_nym);
+                        pCurrentNym = opentxs::OT::App().Client().Wallet().Nym(id_nym);
+//                      pCurrentNym = opentxs::OT::App().Client().OTAPI().reloadAndGetNym(id_nym);
                         bANymWasChecked = true;
                         emit nymWasJustChecked(qstrNymID);
                     }
@@ -1374,15 +1374,15 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
         QMap<uint32_t, QString> mapTypeNames;
         // ----------------------------------------
         const std::string sectionName =
-            opentxs::OT::App().API().Exec().ContactSectionName(
+            opentxs::OT::App().Client().Exec().ContactSectionName(
                 opentxs::proto::CONTACTSECTION_RELATIONSHIP);
         const auto sectionTypes =
-            opentxs::OT::App().API().Exec().ContactSectionTypeList(
+            opentxs::OT::App().Client().Exec().ContactSectionTypeList(
                 opentxs::proto::CONTACTSECTION_RELATIONSHIP);
 
         for (const auto& indexSectionType: sectionTypes) {
             const std::string typeName =
-                opentxs::OT::App().API().Exec().ContactTypeName(indexSectionType);
+                opentxs::OT::App().Client().Exec().ContactTypeName(indexSectionType);
             mapTypeNames.insert(
                 indexSectionType,
                 QString::fromStdString(typeName));
@@ -1440,7 +1440,7 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
             if (it_typeNames != mapTypeNames.end())
                 qstrTypeName = it_typeNames.value();
             // ---------------------------------------
-            const std::string str_claimant_name = opentxs::OT::App().API().Exec().GetNym_Name(claim_nym_id);
+            const std::string str_claimant_name = opentxs::OT::App().Client().Exec().GetNym_Name(claim_nym_id);
 
             // Add the claim to the tree.
             //
@@ -1580,7 +1580,7 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
 //        }
 //    }
 //    // ------------------------------------------------
-//    if (!opentxs::OT::App().API().OTAPI().SetContactData(*pCurrentNym, contactData))
+//    if (!opentxs::OT::App().Client().OTAPI().SetContactData(*pCurrentNym, contactData))
 //        qDebug() << __FUNCTION__ << ": ERROR: Failed trying to Set Contact Data!";
 ////      else
 ////          qDebug() << __FUNCTION__ << "SetContactData SUCCESS. items.size(): " << items.size();
@@ -1593,7 +1593,7 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
     // Now we loop through the sections, and for each, we populate its
     // itemwidgets by looping through the nym_claims we got above.
     //
-    const auto sections = opentxs::OT::App().API().Exec().ContactSectionList();
+    const auto sections = opentxs::OT::App().Client().Exec().ContactSectionList();
 
     for (const auto& indexSection: sections) {
         if (opentxs::proto::CONTACTSECTION_RELATIONSHIP == indexSection) {
@@ -1603,13 +1603,13 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
         QMap<uint32_t, QString> mapTypeNames;
 
         const std::string sectionName =
-            opentxs::OT::App().API().Exec().ContactSectionName(indexSection);
+            opentxs::OT::App().Client().Exec().ContactSectionName(indexSection);
         const auto sectionTypes =
-            opentxs::OT::App().API().Exec().ContactSectionTypeList(indexSection);
+            opentxs::OT::App().Client().Exec().ContactSectionTypeList(indexSection);
 
         for (const auto& indexSectionType: sectionTypes) {
             const std::string typeName =
-                opentxs::OT::App().API().Exec().ContactTypeName(indexSectionType);
+                opentxs::OT::App().Client().Exec().ContactTypeName(indexSectionType);
             mapTypeNames.insert(
                 indexSectionType,
                 QString::fromStdString(typeName));
@@ -1847,7 +1847,7 @@ void MTOpentxsContactDetails::RefreshTree(QString qstrContactId, QStringList & q
                 if (nym_names.end() != it_names)
                     str_verifier_name =  it_names->second;
                 else
-                    str_verifier_name = opentxs::OT::App().API().Exec().GetNym_Name(verifier_id);
+                    str_verifier_name = opentxs::OT::App().Client().Exec().GetNym_Name(verifier_id);
 
 //              const QString qstrClaimIdLabel = QString("%1: %2").arg(tr("Claim Id")).arg(qstrVerificationClaimId);
                 const QString qstrClaimantIdLabel = QString("%1: %2").arg(tr("Claimant")).arg(qstrClaimantId);
@@ -1997,7 +1997,7 @@ void MTOpentxsContactDetails::on_pushButtonMsg_clicked()
             compose_window->setInitialSenderNym(qstrDefaultNym);
 
             bCanMessage = (opentxs::Messagability::READY ==
-                opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier::Factory(qstrDefaultNym.toStdString()),
+                opentxs::OT::App().Client().Sync().CanMessage(opentxs::Identifier::Factory(qstrDefaultNym.toStdString()),
                                                            opentxs::Identifier::Factory(qstrContactID.toStdString())));
         }
         compose_window->setInitialRecipientContactID(qstrContactID); // We definitely know this, since we're on the Contacts page.
@@ -2119,7 +2119,7 @@ void MTOpentxsContactDetails::refresh(QString strID, QString strName)
     if (!qstrDefaultNym.isEmpty())
     {
         bCanMessage = (opentxs::Messagability::READY ==
-                       opentxs::OT::App().API().Sync().CanMessage(opentxs::Identifier::Factory(qstrDefaultNym.toStdString()),
+                       opentxs::OT::App().Client().Sync().CanMessage(opentxs::Identifier::Factory(qstrDefaultNym.toStdString()),
                                                                   opentxs::Identifier::Factory(strID.toStdString())));
     }
     // -----------------------------
@@ -2260,7 +2260,7 @@ void MTOpentxsContactDetails::on_lineEditName_editingFinished()
         const std::string str_contact_id{m_pOwner->m_qstrCurrentID.toStdString()};
         const opentxs::String strContactId{str_contact_id};
         // -------------------------------
-        auto mutableContactEditor{opentxs::OT::App().Contact().mutable_Contact(opentxs::Identifier::Factory(strContactId))};
+        auto mutableContactEditor{opentxs::OT::App().Client().Contacts().mutable_Contact(opentxs::Identifier::Factory(strContactId))};
 
         if (mutableContactEditor) {
             auto & mutableContact = mutableContactEditor->It();
