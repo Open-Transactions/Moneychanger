@@ -136,7 +136,7 @@ private:
     QIcon icon_nym_;
 
 public:
-    explicit Activity(QWidget *parent = 0);
+    explicit Activity(QWidget *parent = nullptr);
     ~Activity();
 
     void dialog(int nSourceRow=-1, int nFolder=-1);
@@ -345,9 +345,9 @@ private slots:
     void on_MarkAsReplied_timer();
     void on_MarkAsForwarded_timer();
 
-    void RefreshAccountTree();
+//  void RefreshAccountTree();
     void RefreshSummaryTree();
-//    void RefreshPayments();
+//  void RefreshPayments();
     void NewRefreshPayments();
 
 //    void on_tableViewReceived_customContextMenuRequested(const QPoint &pos);

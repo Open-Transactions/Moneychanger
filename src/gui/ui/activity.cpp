@@ -301,7 +301,7 @@ void Activity::RefreshAll()
 
 void Activity::RefreshAccountTab()
 {
-    QTimer::singleShot(0, this, SLOT(RefreshAccountTree()));
+//    QTimer::singleShot(0, this, SLOT(RefreshAccountTree()));
 }
 
 void Activity::ClearAccountTree()
@@ -423,17 +423,17 @@ void Activity::ClearAccountTree()
 
 //typedef QMap<QString, mapIDName> mapOfMapIDName; // TLA or share symbol, map of IDs/display names.
 
-mapIDName & Activity::GetOrCreateAssetIdMapByCurrencyCode(QString qstrTLA, mapOfMapIDName & bigMap)
-{
-    mapOfMapIDName::iterator i = bigMap.find(qstrTLA);
-    while (i != bigMap.end() && i.key() == qstrTLA) {
-        return i.value();
-    }
-    // else create it.
-    bigMap[qstrTLA] = mapIDName{};
-    i = bigMap.find(qstrTLA);
-    return i.value();
-}
+//mapIDName & Activity::GetOrCreateAssetIdMapByCurrencyCode(QString qstrTLA, mapOfMapIDName & bigMap)
+//{
+//    mapOfMapIDName::iterator i = bigMap.find(qstrTLA);
+//    while (i != bigMap.end() && i.key() == qstrTLA) {
+//        return i.value();
+//    }
+//    // else create it.
+//    bigMap[qstrTLA] = mapIDName{};
+//    i = bigMap.find(qstrTLA);
+//    return i.value();
+//}
 
 void Activity::GetAssetContractIdsInWallet(std::map<std::string, std::string> & map_output)
 {
@@ -441,7 +441,7 @@ void Activity::GetAssetContractIdsInWallet(std::map<std::string, std::string> & 
     for (int32_t ii = 0; ii < asset_count; ii++)
     {
         const std::string OT_id   = opentxs::OT::App().Client().Exec().GetAssetType_ID(ii);
-        const std::string OT_name = opentxs::OT::App().Client().Exec().GetAssetType_TLA(OT_id);
+        const std::string OT_name = opentxs::OT::App().Client().Exec().GetAssetType_Name(OT_id);
         map_output.insert(std::pair<std::string, std::string>(OT_id, OT_name));
     }
 }
@@ -454,26 +454,38 @@ void Activity::GetCurrencyTypesByAssetContractsInWallet(std::set<StringIntPair> 
     for (const auto & unit : map_units)
     {
         const auto & unit_type_id = unit.first;
-        const auto & unit_TLA     = unit.second;
+        const auto & unit_Name    = unit.second;
         auto unitTypeId = opentxs::Identifier::Factory(unit_type_id);
         const opentxs::proto::ContactItemType currency_type =
                 opentxs::OT::App().Client().Wallet().CurrencyTypeBasedOnUnitType(unitTypeId);
-        set_output.insert(StringIntPair(unit_TLA, static_cast<int>(currency_type)));
+        std::string display_currency_name;
+        const auto currency_name = opentxs::proto::TranslateSectionName(currency_type);
+        if (currency_name.empty()) {
+            const QString qstrDisplay = QString("BLANK TranslateSectionName(%1)").arg(QString::number(static_cast<int>(currency_type)));
+//          display_currency_name = qstrDisplay.toStdString();
+            display_currency_name = unit_Name;
+            qDebug() << __FUNCTION__ << ": Error in OPENTXS library: " << qstrDisplay << ". Substituting using deprecated 'GetAssetType_Name' method.";
+        }
+        else {
+            display_currency_name = currency_name;
+        }
+
+        set_output.insert(StringIntPair(display_currency_name, static_cast<int>(currency_type)));
     }
 }
 
-void Activity::GetAssetIdMapsByCurrencyCode(mapOfMapIDName & bigMap)
-{
-    int32_t  asset_count = opentxs::OT::App().Client().Exec().GetAssetTypeCount();
-    for (int32_t ii = 0; ii < asset_count; ii++)
-    {
-        const QString OT_id   = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_ID(ii));
-        const QString OT_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Name(OT_id.toStdString()));
-        const QString qstrTLA = QString::fromStdString(opentxs::OT::App().Client().Exec().GetCurrencyTLA(OT_id.toStdString()));
-        mapIDName & mapTLA = GetOrCreateAssetIdMapByCurrencyCode(qstrTLA, bigMap);
-        mapTLA.insert(OT_id, OT_name);
-    }
-}
+//void Activity::GetAssetIdMapsByCurrencyCode(mapOfMapIDName & bigMap)
+//{
+//    int32_t  asset_count = opentxs::OT::App().Client().Exec().GetAssetTypeCount();
+//    for (int32_t ii = 0; ii < asset_count; ii++)
+//    {
+//        const QString OT_id   = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_ID(ii));
+//        const QString OT_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Name(OT_id.toStdString()));
+//        const QString qstrTLA = QString::fromStdString(opentxs::OT::App().Client().Exec().GetCurrencyTLA(OT_id.toStdString()));
+//        mapIDName & mapTLA = GetOrCreateAssetIdMapByCurrencyCode(qstrTLA, bigMap);
+//        mapTLA.insert(OT_id, OT_name);
+//    }
+//}
 
 int64_t Activity::GetAccountBalancesTotaledForUnitTypes(const mapIDName & mapUnitTypeIds)
 {
@@ -1060,8 +1072,20 @@ void Activity::RefreshSummaryTree()
     if (account->Valid()) {
         const std::string account_id(account->AccountID());
         const std::string account_widget_id(account->WidgetID()->str());
-        const std::string account_name(account->Name());
+        std::string account_name(account->Name());
         const std::string display_balance(account->DisplayBalance());
+
+        if (account_name.empty()) {
+            const auto currency_name = opentxs::proto::TranslateSectionName(currencyType);
+            if (currency_name.empty()) {
+                const std::string err_string = std::string(__FUNCTION__) + std::string(": Opentxs returned a blank TranslateSectionName for currency enum (") + std::to_string(currency_type) + ")";
+                qDebug() << QString::fromStdString(err_string);
+            }
+            else {
+                account_name = currency_name;
+            }
+        }
+
         const QString qstrAccountId = QString::fromStdString(account_id);
         const QString qstrAccountWidgetId = QString::fromStdString(account_widget_id);
         const QString qstrName = QString::fromStdString(account_name);
@@ -1148,8 +1172,17 @@ void Activity::RefreshSummaryTree()
             // ---------------------------------------------------------------
             const std::string account_id(account->AccountID());
             const std::string account_widget_id(account->WidgetID()->str());
-            const std::string account_name(account->Name());
+            std::string account_name(account->Name());
             const std::string display_balance(account->DisplayBalance());
+
+            if (account_name.empty()) {
+                const auto currency_name = opentxs::proto::TranslateSectionName(currencyType);
+                if (currency_name.empty())
+                    account_name = std::string(__FUNCTION__) + std::string(": Blank TranslateSectionName(") + std::to_string(currency_type) + ") in Opentxs";
+                else
+                    account_name = currency_name;
+            }
+
             const QString qstrAccountId = QString::fromStdString(account_id);
             const QString qstrAccountWidgetId = QString::fromStdString(account_widget_id);
             const QString qstrName = QString::fromStdString(account_name);
@@ -1434,7 +1467,7 @@ bool Activity::RetrieveSelectedIds(
 
 QSharedPointer<QStandardItemModel>  Activity::getAccountActivityModel()
 {
-    QSharedPointer<QStandardItemModel> pModel{new QStandardItemModel(0)};
+    QSharedPointer<QStandardItemModel> pModel{new QStandardItemModel(nullptr)};
 
     if (!pModel)
     {
@@ -1597,8 +1630,8 @@ QSharedPointer<QStandardItemModel>  Activity::getAccountActivityModel()
     return pModel;
 }
 
-void Activity::RefreshAccountTree()
-{
+//void Activity::RefreshAccountTree()
+//{
 //    QTreeWidget * pTreeWidgetAccounts = ui->treeWidgetAccounts;
 //    if (nullptr == pTreeWidgetAccounts) {
 //        return;
@@ -2695,7 +2728,7 @@ void Activity::RefreshAccountTree()
 //        pTreeWidgetAccounts->setCurrentItem(pItemToSelect);
 ////        on_treeWidgetAccounts_currentItemChanged(pItemToSelect, previous);
 //    }
-}
+//}
 
 //void Activity::RefreshAccountList()
 //{
@@ -2852,7 +2885,7 @@ void Activity::ClearListWidgetConversations()
     // -----------------------------------
     ui->listWidgetConversations->clear();
     // -----------------------------------
-    ui->listWidgetConversations->setCurrentRow(-1, 0);
+    ui->listWidgetConversations->setCurrentRow(-1, nullptr);
     ui->listWidgetConversations->blockSignals(false);
 
     on_listWidgetConversations_currentRowChanged(-1);
@@ -3190,7 +3223,7 @@ void Activity::resetConversationItemsDataModel(const bool bProvidedIds/*=false*/
 
     if (!bProvidedIds)
     {
-        pNewSourceModel.reset(new QStandardItemModel(0)); // An empty one, since there's no IDs for a real one.
+        pNewSourceModel.reset(new QStandardItemModel(nullptr)); // An empty one, since there's no IDs for a real one.
     }
     else // bProvidedIds is definitely true...
     {
