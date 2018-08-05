@@ -284,10 +284,11 @@ int Activity::get_outbox_pmntid_for_tree_item(ACTIVITY_TREE_ITEM & theItem)
 
 void Activity::RefreshUserBar()
 {
-    const std::string str_my_nym_id = Moneychanger::It()->get_default_nym_id().toStdString();
-    // ----------------------------------------
-    const QString qstrNymName = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(str_my_nym_id));
-    ui->toolButtonMyIdentity2->setText(qstrNymName);
+//    const std::string str_my_nym_id = Moneychanger::It()->get_default_nym_id().toStdString();
+//    // ----------------------------------------
+//    const QString qstrNymName = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(str_my_nym_id));
+//    ui->toolButtonMyIdentity->setText(qstrNymName);
+//    ui->toolButtonMyIdentity2->setText(qstrNymName);
 }
 
 
@@ -301,7 +302,7 @@ void Activity::RefreshAll()
 
 void Activity::RefreshAccountTab()
 {
-    QTimer::singleShot(0, this, SLOT(RefreshAccountTree()));
+//    QTimer::singleShot(0, this, SLOT(RefreshAccountTree()));
 }
 
 void Activity::ClearAccountTree()
@@ -423,17 +424,17 @@ void Activity::ClearAccountTree()
 
 //typedef QMap<QString, mapIDName> mapOfMapIDName; // TLA or share symbol, map of IDs/display names.
 
-mapIDName & Activity::GetOrCreateAssetIdMapByCurrencyCode(QString qstrTLA, mapOfMapIDName & bigMap)
-{
-    mapOfMapIDName::iterator i = bigMap.find(qstrTLA);
-    while (i != bigMap.end() && i.key() == qstrTLA) {
-        return i.value();
-    }
-    // else create it.
-    bigMap[qstrTLA] = mapIDName{};
-    i = bigMap.find(qstrTLA);
-    return i.value();
-}
+//mapIDName & Activity::GetOrCreateAssetIdMapByCurrencyCode(QString qstrTLA, mapOfMapIDName & bigMap)
+//{
+//    mapOfMapIDName::iterator i = bigMap.find(qstrTLA);
+//    while (i != bigMap.end() && i.key() == qstrTLA) {
+//        return i.value();
+//    }
+//    // else create it.
+//    bigMap[qstrTLA] = mapIDName{};
+//    i = bigMap.find(qstrTLA);
+//    return i.value();
+//}
 
 void Activity::GetAssetContractIdsInWallet(std::map<std::string, std::string> & map_output)
 {
@@ -441,7 +442,7 @@ void Activity::GetAssetContractIdsInWallet(std::map<std::string, std::string> & 
     for (int32_t ii = 0; ii < asset_count; ii++)
     {
         const std::string OT_id   = opentxs::OT::App().Client().Exec().GetAssetType_ID(ii);
-        const std::string OT_name = opentxs::OT::App().Client().Exec().GetAssetType_TLA(OT_id);
+        const std::string OT_name = opentxs::OT::App().Client().Exec().GetAssetType_Name(OT_id);
         map_output.insert(std::pair<std::string, std::string>(OT_id, OT_name));
     }
 }
@@ -454,26 +455,38 @@ void Activity::GetCurrencyTypesByAssetContractsInWallet(std::set<StringIntPair> 
     for (const auto & unit : map_units)
     {
         const auto & unit_type_id = unit.first;
-        const auto & unit_TLA     = unit.second;
+        const auto & unit_Name    = unit.second;
         auto unitTypeId = opentxs::Identifier::Factory(unit_type_id);
         const opentxs::proto::ContactItemType currency_type =
                 opentxs::OT::App().Client().Wallet().CurrencyTypeBasedOnUnitType(unitTypeId);
-        set_output.insert(StringIntPair(unit_TLA, static_cast<int>(currency_type)));
+        std::string display_currency_name;
+        const auto currency_name = opentxs::proto::TranslateItemType(currency_type);
+        if (currency_name.empty()) {
+            const QString qstrDisplay = QString("BLANK TranslateItemType(%1)").arg(QString::number(static_cast<int>(currency_type)));
+//          display_currency_name = qstrDisplay.toStdString();
+            display_currency_name = unit_Name;
+            qDebug() << __FUNCTION__ << ": Error in OPENTXS library: " << qstrDisplay << ". Substituting using deprecated 'GetAssetType_Name' method.";
+        }
+        else {
+            display_currency_name = currency_name;
+        }
+
+        set_output.insert(StringIntPair(display_currency_name, static_cast<int>(currency_type)));
     }
 }
 
-void Activity::GetAssetIdMapsByCurrencyCode(mapOfMapIDName & bigMap)
-{
-    int32_t  asset_count = opentxs::OT::App().Client().Exec().GetAssetTypeCount();
-    for (int32_t ii = 0; ii < asset_count; ii++)
-    {
-        const QString OT_id   = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_ID(ii));
-        const QString OT_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Name(OT_id.toStdString()));
-        const QString qstrTLA = QString::fromStdString(opentxs::OT::App().Client().Exec().GetCurrencyTLA(OT_id.toStdString()));
-        mapIDName & mapTLA = GetOrCreateAssetIdMapByCurrencyCode(qstrTLA, bigMap);
-        mapTLA.insert(OT_id, OT_name);
-    }
-}
+//void Activity::GetAssetIdMapsByCurrencyCode(mapOfMapIDName & bigMap)
+//{
+//    int32_t  asset_count = opentxs::OT::App().Client().Exec().GetAssetTypeCount();
+//    for (int32_t ii = 0; ii < asset_count; ii++)
+//    {
+//        const QString OT_id   = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_ID(ii));
+//        const QString OT_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Name(OT_id.toStdString()));
+//        const QString qstrTLA = QString::fromStdString(opentxs::OT::App().Client().Exec().GetCurrencyTLA(OT_id.toStdString()));
+//        mapIDName & mapTLA = GetOrCreateAssetIdMapByCurrencyCode(qstrTLA, bigMap);
+//        mapTLA.insert(OT_id, OT_name);
+//    }
+//}
 
 int64_t Activity::GetAccountBalancesTotaledForUnitTypes(const mapIDName & mapUnitTypeIds)
 {
@@ -1060,8 +1073,20 @@ void Activity::RefreshSummaryTree()
     if (account->Valid()) {
         const std::string account_id(account->AccountID());
         const std::string account_widget_id(account->WidgetID()->str());
-        const std::string account_name(account->Name());
+        std::string account_name(account->Name());
         const std::string display_balance(account->DisplayBalance());
+
+        if (account_name.empty()) {
+            const auto currency_name = opentxs::proto::TranslateItemType(currencyType);
+            if (currency_name.empty()) {
+                const std::string err_string = std::string(__FUNCTION__) + std::string(": Opentxs returned a blank TranslateItemType for currency enum (") + std::to_string(currency_type) + ")";
+                qDebug() << QString::fromStdString(err_string);
+            }
+            else {
+                account_name = currency_name;
+            }
+        }
+
         const QString qstrAccountId = QString::fromStdString(account_id);
         const QString qstrAccountWidgetId = QString::fromStdString(account_widget_id);
         const QString qstrName = QString::fromStdString(account_name);
@@ -1148,8 +1173,17 @@ void Activity::RefreshSummaryTree()
             // ---------------------------------------------------------------
             const std::string account_id(account->AccountID());
             const std::string account_widget_id(account->WidgetID()->str());
-            const std::string account_name(account->Name());
+            std::string account_name(account->Name());
             const std::string display_balance(account->DisplayBalance());
+
+            if (account_name.empty()) {
+                const auto currency_name = opentxs::proto::TranslateItemType(currencyType);
+                if (currency_name.empty())
+                    account_name = std::string(__FUNCTION__) + std::string(": Blank TranslateItemType(") + std::to_string(currency_type) + ") in Opentxs";
+                else
+                    account_name = currency_name;
+            }
+
             const QString qstrAccountId = QString::fromStdString(account_id);
             const QString qstrAccountWidgetId = QString::fromStdString(account_widget_id);
             const QString qstrName = QString::fromStdString(account_name);
@@ -1434,7 +1468,7 @@ bool Activity::RetrieveSelectedIds(
 
 QSharedPointer<QStandardItemModel>  Activity::getAccountActivityModel()
 {
-    QSharedPointer<QStandardItemModel> pModel{new QStandardItemModel(0)};
+    QSharedPointer<QStandardItemModel> pModel{new QStandardItemModel(nullptr)};
 
     if (!pModel)
     {
@@ -1597,8 +1631,8 @@ QSharedPointer<QStandardItemModel>  Activity::getAccountActivityModel()
     return pModel;
 }
 
-void Activity::RefreshAccountTree()
-{
+//void Activity::RefreshAccountTree()
+//{
 //    QTreeWidget * pTreeWidgetAccounts = ui->treeWidgetAccounts;
 //    if (nullptr == pTreeWidgetAccounts) {
 //        return;
@@ -2695,7 +2729,7 @@ void Activity::RefreshAccountTree()
 //        pTreeWidgetAccounts->setCurrentItem(pItemToSelect);
 ////        on_treeWidgetAccounts_currentItemChanged(pItemToSelect, previous);
 //    }
-}
+//}
 
 //void Activity::RefreshAccountList()
 //{
@@ -2852,7 +2886,7 @@ void Activity::ClearListWidgetConversations()
     // -----------------------------------
     ui->listWidgetConversations->clear();
     // -----------------------------------
-    ui->listWidgetConversations->setCurrentRow(-1, 0);
+    ui->listWidgetConversations->setCurrentRow(-1, nullptr);
     ui->listWidgetConversations->blockSignals(false);
 
     on_listWidgetConversations_currentRowChanged(-1);
@@ -3190,7 +3224,7 @@ void Activity::resetConversationItemsDataModel(const bool bProvidedIds/*=false*/
 
     if (!bProvidedIds)
     {
-        pNewSourceModel.reset(new QStandardItemModel(0)); // An empty one, since there's no IDs for a real one.
+        pNewSourceModel.reset(new QStandardItemModel(nullptr)); // An empty one, since there's no IDs for a real one.
     }
     else // bProvidedIds is definitely true...
     {
@@ -3553,8 +3587,9 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
     {
         this->setWindowTitle(tr(MONEYCHANGER_APP_NAME));
 
-        ui->horizontalLayout_4->setAlignment(ui->checkBoxSearchConversations, Qt::AlignRight);
-        ui->horizontalLayout_4->setAlignment(ui->toolButtonMyIdentity2,       Qt::AlignLeft);
+//      ui->horizontalLayout_4->setAlignment(ui->checkBoxSearchConversations, Qt::AlignRight);
+        ui->horizontalLayout_6->setAlignment(ui->toolButtonMyIdentity,       Qt::AlignLeft);
+        ui->horizontalLayout_8->setAlignment(ui->toolButtonMyIdentity2,       Qt::AlignLeft);
 
         setup_tableview_conversation(ui->tableViewConversation);
 
@@ -3590,6 +3625,7 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 //                    this, SLOT(on_tableViewReceivedSelectionModel_currentRowChanged(QModelIndex,QModelIndex)));
         }
         // --------------------------------------------------------
+        connect(ui->toolButtonMyIdentity,  SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_defaultnym_slot()));
         connect(ui->toolButtonMyIdentity2, SIGNAL(clicked()), Moneychanger::It(), SLOT(mc_defaultnym_slot()));
         // --------------------------------------------------------
         connect(this, SIGNAL(showContact (QString)),         Moneychanger::It(), SLOT(mc_show_opentxs_contact_slot(QString)));
@@ -3614,8 +3650,8 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
         // ------------------------
         on_tabWidgetTransactions_currentChanged(0);
 
-        this->on_checkBoxSearchConversations_toggled(false);
-        this->on_checkBoxSearchPayments_toggled(false);
+//        this->on_checkBoxSearchConversations_toggled(false);
+//        this->on_checkBoxSearchPayments_toggled(false);
         // ------------------------
         //ui->tabWidgetMain->setStyleSheet("QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: none; }");
 
@@ -3680,13 +3716,12 @@ void Activity::dialog(int nSourceRow/*=-1*/, int nFolder/*=-1*/)
 
     PopulateIssuerWidgetIds();
 
-    Populate_comboBoxMyNym();
+    populateNymComboBoxes();
     Populate_comboBoxCurrency();
 }
 
-void Activity::Populate_comboBoxMyNym()
+void Activity::populateNymComboBox(QComboBox * pComboBox)
 {
-    QComboBox * pComboBox = ui->comboBoxMyNym;
     // ----------------------------------------
     pComboBox->blockSignals(true);
     // ----------------------------------------
@@ -3713,6 +3748,12 @@ void Activity::Populate_comboBoxMyNym()
     pComboBox->blockSignals(false);
     // ----------------------------------------
     on_comboBoxMyNym_activated(nCurrentIndexToSet);
+}
+
+void Activity::populateNymComboBoxes()
+{
+    populateNymComboBox(ui->comboBoxMyNym);
+    populateNymComboBox(ui->comboBoxMyNym_2);
 }
 
 void Activity::Populate_comboBoxCurrency()
@@ -4146,36 +4187,38 @@ Activity::~Activity()
 
 
 
-void Activity::on_checkBoxSearchConversations_toggled(bool checked)
-{
-    if (checked)
-    {
-        ui->lineEditSearchConversations->setVisible(true);
-        ui->pushButtonSearchConversations->setVisible(true);
-    }
-    else
-    {
-        ui->lineEditSearchConversations->setVisible(false);
-        ui->pushButtonSearchConversations->setVisible(false);
-    }
-}
+//void Activity::on_checkBoxSearchConversations_toggled(bool checked)
+//{
+//    if (checked)
+//    {
+//        ui->lineEditSearchConversations->setVisible(true);
+//        ui->pushButtonSearchConversations->setVisible(true);
+//    }
+//    else
+//    {
+//        ui->lineEditSearchConversations->setVisible(false);
+//        ui->pushButtonSearchConversations->setVisible(false);
+//    }
+//}
 
 
 
 
-void Activity::on_checkBoxSearchPayments_toggled(bool checked)
-{
-    if (checked)
-    {
-        ui->labelMyIdentity2->setVisible(false);
-        ui->toolButtonMyIdentity2->setVisible(false);
-    }
-    else
-    {
-        ui->labelMyIdentity2->setVisible(true);
-        ui->toolButtonMyIdentity2->setVisible(true);
-    }
-}
+//void Activity::on_checkBoxSearchPayments_toggled(bool checked)
+//{
+//    if (checked)
+//    {
+//        ui->labelMyIdentity2->setVisible(false);
+//        ui->toolButtonMyIdentity->setVisible(false);
+//        ui->toolButtonMyIdentity2->setVisible(false);
+//    }
+//    else
+//    {
+//        ui->labelMyIdentity2->setVisible(true);
+//        ui->toolButtonMyIdentity->setVisible(true);
+//        ui->toolButtonMyIdentity2->setVisible(true);
+//    }
+//}
 
 
 
@@ -5889,54 +5932,54 @@ void Activity::onNeedToRefreshRecords()
 }
 
 
-void Activity::on_pushButtonSearchConversations_clicked()
-{
-    QString qstrSearchText = ui->lineEditSearchConversations->text();
+//void Activity::on_pushButtonSearchConversations_clicked()
+//{
+//    QString qstrSearchText = ui->lineEditSearchConversations->text();
 
-    this->doSearchConversations(qstrSearchText.simplified());
-}
+//    this->doSearchConversations(qstrSearchText.simplified());
+//}
 
 
-void Activity::doSearchConversations(QString qstrInput)
-{
-    if (pThreadItemsProxyModel_)
-    {
-        pThreadItemsProxyModel_->setFilterString(qstrInput);
-    }
+//void Activity::doSearchConversations(QString qstrInput)
+//{
+//    if (pThreadItemsProxyModel_)
+//    {
+//        pThreadItemsProxyModel_->setFilterString(qstrInput);
+//    }
 
-//  RefreshConversationsTab(); // NOTE: Possibly not necessary since setting the filter string might be all it takes in this case.
-}
+////  RefreshConversationsTab(); // NOTE: Possibly not necessary since setting the filter string might be all it takes in this case.
+//}
 
-void Activity::doSearchPayments(QString qstrInput)
-{
-    if (pPmntProxyModel_)
-    {
-        pPmntProxyModel_ ->setFilterString(qstrInput);
-    }
+//void Activity::doSearchPayments(QString qstrInput)
+//{
+//    if (pPmntProxyModel_)
+//    {
+//        pPmntProxyModel_ ->setFilterString(qstrInput);
+//    }
 
-    NewRefreshPayments();
-}
+//    NewRefreshPayments();
+//}
 
-void Activity::on_lineEditSearchPayments_textChanged(const QString &arg1)
-{
-    // This means someone clicked the "clear" button on the search box.
-    if (arg1.isEmpty())
-        doSearchPayments(arg1);
-}
+//void Activity::on_lineEditSearchPayments_textChanged(const QString &arg1)
+//{
+//    // This means someone clicked the "clear" button on the search box.
+//    if (arg1.isEmpty())
+//        doSearchPayments(arg1);
+//}
 
-void Activity::on_lineEditSearchConversations_textChanged(const QString &arg1)
-{
-    // This means someone clicked the "clear" button on the search box.
-    if (arg1.isEmpty())
-        doSearchConversations(arg1);
-}
+//void Activity::on_lineEditSearchConversations_textChanged(const QString &arg1)
+//{
+//    // This means someone clicked the "clear" button on the search box.
+//    if (arg1.isEmpty())
+//        doSearchConversations(arg1);
+//}
 
-void Activity::on_lineEditSearchConversations_returnPressed()
-{
-    QString qstrSearchText = ui->lineEditSearchConversations->text();
+//void Activity::on_lineEditSearchConversations_returnPressed()
+//{
+//    QString qstrSearchText = ui->lineEditSearchConversations->text();
 
-    this->doSearchConversations(qstrSearchText.simplified());
-}
+//    this->doSearchConversations(qstrSearchText.simplified());
+//}
 
 void Activity::on_treeWidgetSummary_customContextMenuRequested(const QPoint &pos)
 {
