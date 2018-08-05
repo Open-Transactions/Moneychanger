@@ -19,6 +19,7 @@
 #include <QTimer>
 #include <QDebug>
 #include <QIcon>
+#include <QComboBox>
 
 #include <tuple>
 #include <map>
@@ -169,8 +170,10 @@ public:
     void GetAssetContractIdsInWallet(std::map<std::string, std::string> & map_output);
     void GetCurrencyTypesByAssetContractsInWallet(std::set<StringIntPair> & set_output);
 
-    void Populate_comboBoxMyNym();
     void Populate_comboBoxCurrency();
+
+    void populateNymComboBoxes();
+    void populateNymComboBox(QComboBox * pComboBox);
 
 public slots:
     void onClaimsUpdatedForNym(QString nymId);
@@ -242,8 +245,8 @@ protected:
     void enableButtons();
     void disableButtons();
 
-    void doSearchConversations(QString qstrInput);
-    void doSearchPayments(QString qstrInput);
+//    void doSearchConversations(QString qstrInput);
+//    void doSearchPayments(QString qstrInput);
 
     ACTIVITY_TREE_ITEM make_tree_item(QString & qstrCurrentTLA, QString & qstrCurrentNotary, QString & qstrCurrentAccount, QString & qstrCurrentContact);
     void set_inbox_pmntid_for_tree_item(ACTIVITY_TREE_ITEM & theItem, int nPmntID);
@@ -327,13 +330,13 @@ private slots:
 
     void on_pushButtonSendMsg_clicked();
 
-    void on_checkBoxSearchConversations_toggled(bool checked);
-    void on_pushButtonSearchConversations_clicked();
-    void on_lineEditSearchConversations_textChanged(const QString &arg1);
-    void on_lineEditSearchConversations_returnPressed();
+//    void on_checkBoxSearchConversations_toggled(bool checked);
+//    void on_pushButtonSearchConversations_clicked();
+//    void on_lineEditSearchConversations_textChanged(const QString &arg1);
+//    void on_lineEditSearchConversations_returnPressed();
 
-    void on_checkBoxSearchPayments_toggled(bool checked);
-    void on_lineEditSearchPayments_textChanged(const QString &arg1);
+//    void on_checkBoxSearchPayments_toggled(bool checked);
+//    void on_lineEditSearchPayments_textChanged(const QString &arg1);
 
     void on_tableViewPaymentsSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous);
 //    void on_tableViewReceivedSelectionModel_currentRowChanged(const QModelIndex & current, const QModelIndex & previous);

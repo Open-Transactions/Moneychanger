@@ -61,9 +61,29 @@
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_9">
+            <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,0,0,1">
              <item>
               <widget class="QComboBox" name="comboBoxMyNym"/>
+             </item>
+             <item>
+              <widget class="QToolButton" name="toolButtonMyIdentity">
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
              </item>
              <item>
               <widget class="QComboBox" name="comboBoxCurrency"/>
@@ -90,21 +110,25 @@
                <height>40</height>
               </size>
              </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
               <item>
-               <widget class="QToolButton" name="toolButtonAddContact">
-                <property name="toolTip">
-                 <string/>
-                </property>
+               <widget class="QToolButton" name="toolButtonImportCash">
                 <property name="text">
-                 <string>Add Contact</string>
+                 <string>Import</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="toolButtonInvite">
+               <widget class="QToolButton" name="toolButtonDeposit">
                 <property name="text">
-                 <string>Invite</string>
+                 <string>Deposit</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButtonWithdrawal">
+                <property name="text">
+                 <string>Withdrawal</string>
                 </property>
                </widget>
               </item>
@@ -116,25 +140,17 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="toolButtonMsgContact">
-                <property name="text">
-                 <string>Message</string>
+               <spacer name="horizontalSpacer_5">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
                 </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="toolButtonInvoiceContact">
-                <property name="text">
-                 <string>Invoice</string>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
                 </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="toolButtonImportCash">
-                <property name="text">
-                 <string>Import</string>
-                </property>
-               </widget>
+               </spacer>
               </item>
               <item>
                <widget class="QToolButton" name="toolButtonSettings">
@@ -158,19 +174,6 @@
                   <normaloff>:/icons/icons/gear.jpg</normaloff>:/icons/icons/gear.jpg</iconset>
                 </property>
                </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_5">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
               </item>
              </layout>
             </widget>
@@ -212,91 +215,113 @@
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_3">
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_4">
-               <item>
-                <widget class="QLabel" name="labelMyIdentity2">
-                 <property name="text">
-                  <string>My Identity:</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QToolButton" name="toolButtonMyIdentity2">
-                 <property name="text">
-                  <string/>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <spacer name="horizontalSpacer_2">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="lineEditSearchConversations">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>21</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>360</width>
-                   <height>21</height>
-                  </size>
-                 </property>
-                 <property name="clearButtonEnabled">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="pushButtonSearchConversations">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>32</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>100</width>
-                   <height>32</height>
-                  </size>
-                 </property>
-                 <property name="text">
-                  <string>Search</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="checkBoxSearchConversations">
-                 <property name="text">
-                  <string>Search</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
               <widget class="QListWidget" name="listWidgetConversations"/>
              </item>
             </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,0,0">
+             <item>
+              <widget class="QComboBox" name="comboBoxMyNym_2"/>
+             </item>
+             <item>
+              <widget class="QToolButton" name="toolButtonMyIdentity2">
+               <property name="text">
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_7">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>118</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QWidget" name="widgetActions_2" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>40</width>
+               <height>40</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>12000</width>
+               <height>40</height>
+              </size>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_10">
+              <item>
+               <widget class="QToolButton" name="toolButtonAddContact">
+                <property name="toolTip">
+                 <string/>
+                </property>
+                <property name="text">
+                 <string>Add Contact</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButtonInvite">
+                <property name="text">
+                 <string>Invite</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_6">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButtonSettings_2">
+                <property name="minimumSize">
+                 <size>
+                  <width>20</width>
+                  <height>20</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>25</width>
+                  <height>25</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Settings</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="../resource.qrc">
+                  <normaloff>:/icons/icons/gear.jpg</normaloff>:/icons/icons/gear.jpg</iconset>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -348,6 +373,27 @@
                     </size>
                    </property>
                   </spacer>
+                 </item>
+                 <item>
+                  <widget class="QToolButton" name="toolButtonPayContact_2">
+                   <property name="text">
+                    <string>Pay</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QToolButton" name="toolButtonMsgContact">
+                   <property name="text">
+                    <string>Message</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QToolButton" name="toolButtonInvoiceContact">
+                   <property name="text">
+                    <string>Invoice</string>
+                   </property>
+                  </widget>
                  </item>
                  <item>
                   <widget class="QLabel" name="label">
