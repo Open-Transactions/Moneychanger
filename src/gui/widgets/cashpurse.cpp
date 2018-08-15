@@ -5,7 +5,6 @@
 #include <gui/widgets/cashpurse.hpp>
 #include <ui_cashpurse.h>
 
-#include <gui/widgets/home.hpp>
 #include <gui/widgets/editdetails.hpp>
 #include <gui/widgets/dlggetamount.hpp>
 #include <gui/widgets/overridecursor.hpp>

@@ -2124,16 +2124,71 @@ bool MTContactHandler::LowLevelUpdatePaymentBody(int nPaymentID, const QString q
 
 // ----------------------------------------------------------
 
-bool MTContactHandler::GetOpentxsContacts(mapIDName & theMap)
+bool MTContactHandler::GetOpentxsContacts(mapIDName & theMap, const opentxs::OTIdentifier nymID/*=opentxs::Identifier::Factory()*/, int nCurrencyType/*=0*/)
 {
     bool bFoundAny{false};
-    for (const auto& it : opentxs::OT::App().Client().Contacts().ContactList()) {
-        bFoundAny = true;
-        const auto& contactID    = it.first;
-        const auto& contactLabel = it.second;
 
-        theMap.insert(QString::fromStdString(contactID), QString::fromStdString(contactLabel));
+    if ((nymID->size() > 0) && nCurrencyType > 0) {
+        const auto currencyType = opentxs::proto::ContactItemType(nCurrencyType);
+        const auto &list = opentxs::OT::App().Client().UI().PayableList(nymID, currencyType);
+
+        auto line = list.First();
+        auto last = line->Last();
+
+        if (line->Valid()) {
+            bFoundAny = true;
+
+            const auto contactLabel = line->DisplayName();
+            const auto contactID    = line->ContactID();
+            theMap.insert(QString::fromStdString(contactID), QString::fromStdString(contactLabel));
+
+            while (false == last) {
+                line = list.Next();
+                last = line->Last();
+
+                if (false == line->Valid()) { break; }
+                const auto contactLabel = line->DisplayName();
+                const auto contactID    = line->ContactID();
+                theMap.insert(QString::fromStdString(contactID), QString::fromStdString(contactLabel));
+            }
+        }
     }
+    else if (nymID->size() > 0) {
+        const auto &list = opentxs::OT::App().Client().UI().MessagableList(nymID);
+
+        auto line = list.First();
+        auto last = line->Last();
+
+        if (line->Valid()) {
+            bFoundAny = true;
+
+            const auto contactLabel = line->DisplayName();
+            const auto contactID    = line->ContactID();
+            theMap.insert(QString::fromStdString(contactID), QString::fromStdString(contactLabel));
+
+            while (false == last) {
+                line = list.Next();
+                last = line->Last();
+
+                if (false == line->Valid()) { break; }
+                const auto contactLabel = line->DisplayName();
+                const auto contactID    = line->ContactID();
+                theMap.insert(QString::fromStdString(contactID), QString::fromStdString(contactLabel));
+            }
+        }
+    }
+    else {
+        const auto &list = opentxs::OT::App().Client().Contacts().ContactList();
+
+        for (const auto& it : list) {
+            bFoundAny = true;
+            const auto& contactID    = it.first;
+            const auto& contactLabel = it.second;
+
+            theMap.insert(QString::fromStdString(contactID), QString::fromStdString(contactLabel));
+        }
+    }
+
     return bFoundAny;
 }
 

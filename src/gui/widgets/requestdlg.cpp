@@ -5,7 +5,6 @@
 #include <gui/widgets/requestdlg.hpp>
 #include <ui_requestdlg.h>
 
-#include <gui/widgets/home.hpp>
 #include <gui/widgets/overridecursor.hpp>
 #include <gui/widgets/dlgchooser.hpp>
 

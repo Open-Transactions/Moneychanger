@@ -9,7 +9,6 @@
 #include <gui/ui/dlgexportedtopass.hpp>
 #include <gui/ui/dlgexportedcash.hpp>
 
-#include <gui/widgets/home.hpp>
 #include <gui/widgets/dlgchooser.hpp>
 #include <gui/widgets/qrwidget.hpp>
 #include <gui/ui/getstringdialog.hpp>

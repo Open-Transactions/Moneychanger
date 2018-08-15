@@ -6,7 +6,6 @@
 #include <gui/widgets/proposeplandlg.hpp>
 #include <ui_proposeplandlg.h>
 
-#include <gui/widgets/home.hpp>
 #include <gui/widgets/overridecursor.hpp>
 #include <gui/widgets/dlgchooser.hpp>
 

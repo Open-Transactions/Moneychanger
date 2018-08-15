@@ -9,6 +9,8 @@
 #include "core/handlers/DBHandler.hpp"
 #include "core/handlers/modelmessages.hpp"
 
+#include <opentxs/opentxs.hpp>
+
 #include <QWidget>
 #include <QMenu>
 #include <QScopedPointer>
@@ -162,6 +164,8 @@ public:
 
     std::set<int> GetCurrencyTypesForLocalAccounts();
 
+    bool GetAccounts(mapIDName & mapOutput, const int nCurrencyType = 0, const std::string str_nym_id = "");
+
     void AcceptIncoming     (QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
     void CancelOutgoing     (QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
     void DiscardOutgoingCash(QPointer<ModelPayments> & pModel, ActivityPaymentsProxyModel * pProxyModel, const int nSourceRow, QTableView * pTableView);
@@ -225,7 +229,7 @@ protected:
 
     void PopulateIssuerWidgetIds();
 
-    bool RetrieveSelectedIds(
+    bool RetrieveSelectedIdsAccountTab(
             int      & nNodeType,
             int      & nUnderHeader,
             int      & nCurrencyType,
@@ -239,6 +243,11 @@ protected:
             ActivitySelectionInfo & aboutSelection
             );
 
+    bool RetrieveSelectedIdsChatTab(
+            QString  & qstrSelectedMyNymId,
+            QString  & qstrSelectedThreadId,
+            QString  & qstrActivitySummaryId
+        );
 
     QSharedPointer<QStandardItemModel>  getAccountActivityModel();
 
@@ -328,8 +337,6 @@ private slots:
 
     void on_plainTextEditMsg_textChanged();
 
-    void on_pushButtonSendMsg_clicked();
-
 //    void on_checkBoxSearchConversations_toggled(bool checked);
 //    void on_pushButtonSearchConversations_clicked();
 //    void on_lineEditSearchConversations_textChanged(const QString &arg1);
@@ -365,8 +372,8 @@ private slots:
     void on_toolButtonRefresh_clicked();
 
     void on_toolButtonAddContact_clicked();
-    void on_toolButtonPayContact_clicked();
-    void on_toolButtonMsgContact_clicked();
+//  void on_toolButtonPayContact_clicked();
+//  void on_toolButtonMsgContact_clicked();
     void on_toolButtonInvoiceContact_clicked();
     void on_toolButtonImportCash_clicked();
     void on_toolButtonSettings_clicked();
@@ -395,6 +402,16 @@ private slots:
     void on_comboBoxMyNym_activated(int index);
     void on_comboBoxCurrency_activated(int index);
 
+    void on_comboBoxMyNymChat_activated(int index);
+
+    void on_toolButtonPayContact_triggered(QAction *arg1);
+    void on_toolButtonPay_triggered(QAction *arg1);
+
+    void on_toolButtonMsgContact_triggered(QAction *arg1);
+
+    void on_toolButtonDeposit_triggered(QAction *arg1);
+
+    void on_toolButtonWithdraw_triggered(QAction *arg1);
 
 private:
     Ui::Activity *ui{nullptr};

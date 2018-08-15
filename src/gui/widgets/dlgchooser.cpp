@@ -5,7 +5,6 @@
 #include <gui/widgets/dlgchooser.hpp>
 #include <ui_dlgchooser.h>
 
-#include <gui/widgets/home.hpp>
 
 #include <QDebug>
 #include <QLabel>
