@@ -126,14 +126,14 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="toolButtonWithdrawal">
+               <widget class="QToolButton" name="toolButtonWithdraw">
                 <property name="text">
-                 <string>Withdrawal</string>
+                 <string>Withdraw</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="toolButtonPayContact">
+               <widget class="QToolButton" name="toolButtonPay">
                 <property name="text">
                  <string>Pay</string>
                 </property>
@@ -222,7 +222,7 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_8" stretch="1,0,0">
              <item>
-              <widget class="QComboBox" name="comboBoxMyNym_2"/>
+              <widget class="QComboBox" name="comboBoxMyNymChat"/>
              </item>
              <item>
               <widget class="QToolButton" name="toolButtonMyIdentity2">
@@ -375,16 +375,9 @@
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QToolButton" name="toolButtonPayContact_2">
+                  <widget class="QToolButton" name="toolButtonPayContact">
                    <property name="text">
                     <string>Pay</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QToolButton" name="toolButtonMsgContact">
-                   <property name="text">
-                    <string>Message</string>
                    </property>
                   </widget>
                  </item>
@@ -396,16 +389,9 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QLabel" name="label">
+                  <widget class="QToolButton" name="toolButtonMsgContact">
                    <property name="text">
-                    <string>Ctrl-Enter</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pushButtonSendMsg">
-                   <property name="text">
-                    <string>Send</string>
+                    <string>Message</string>
                    </property>
                   </widget>
                  </item>

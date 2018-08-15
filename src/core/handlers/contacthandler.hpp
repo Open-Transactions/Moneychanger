@@ -251,7 +251,10 @@ public:
 
   bool GetAccounts(mapIDName & theMap, QString filterByNym, QString filterByServer, QString filterByAsset);
 
-  bool GetOpentxsContacts(mapIDName & theMap);
+  // This retrieves the ContactList, unless you include a NymID, in which case it does
+  // the Messagable list. If you also include a currency type enum, then it does the Payable list.
+  bool GetOpentxsContacts(mapIDName & theMap, const opentxs::OTIdentifier nymID = opentxs::Identifier::Factory(), int nCurrencyType = 0);
+
   bool GetContacts(mapIDName & theMap);
   bool GetNyms    (mapIDName & theMap, int nFilterByContact);
   bool GetNyms    (mapIDName & theMap, const std::string & str_contact_id);
