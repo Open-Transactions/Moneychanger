@@ -12,7 +12,6 @@
 #include <gui/widgets/dlgchooser.hpp>
 
 #include <gui/widgets/cashpurse.hpp>
-#include <gui/widgets/home.hpp>
 #include <gui/widgets/wizardaddaccount.hpp>
 #include <gui/widgets/overridecursor.hpp>
 

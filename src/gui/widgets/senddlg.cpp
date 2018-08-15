@@ -6,7 +6,6 @@
 #include <ui_senddlg.h>
 
 #include <gui/ui/dlgexportedtopass.hpp>
-#include <gui/widgets/home.hpp>
 #include <gui/widgets/overridecursor.hpp>
 #include <gui/widgets/dlgchooser.hpp>
 

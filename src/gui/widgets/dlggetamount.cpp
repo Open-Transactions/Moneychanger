@@ -5,8 +5,6 @@
 #include <gui/widgets/dlggetamount.hpp>
 #include <ui_dlggetamount.h>
 
-#include <gui/widgets/home.hpp>
-
 #include <QMessageBox>
 #include <QKeyEvent>
 

@@ -6,7 +6,6 @@
 #include "ui_pagesmart_nymacct.h"
 
 #include <gui/widgets/wizardpartyacct.hpp>
-#include <gui/widgets/home.hpp>
 #include <gui/widgets/dlgchooser.hpp>
 #include <gui/widgets/detailedit.hpp>
 

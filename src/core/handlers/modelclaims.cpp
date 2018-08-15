@@ -5,7 +5,6 @@
 #include <core/moneychanger.hpp>
 #include <core/handlers/DBHandler.hpp>
 #include <core/handlers/contacthandler.hpp>
-#include <gui/widgets/homedetail.hpp>
 
 #include <core/handlers/modelclaims.hpp>
 

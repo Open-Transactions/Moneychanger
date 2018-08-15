@@ -13,7 +13,6 @@
 #include <gui/ui/dlgoutbailment.hpp>
 #include <gui/ui/getstringdialog.hpp>
 
-#include <gui/widgets/home.hpp>
 #include <gui/widgets/dlgchooser.hpp>
 #include <gui/widgets/qrwidget.hpp>
 

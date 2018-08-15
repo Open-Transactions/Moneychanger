@@ -23,7 +23,6 @@
 #include <core/handlers/modeltradearchive.hpp>
 
 #include <gui/widgets/compose.hpp>
-#include <gui/widgets/home.hpp>
 #include <gui/widgets/overridecursor.hpp>
 #include <gui/widgets/editdetails.hpp>
 #include <gui/widgets/requestdlg.hpp>

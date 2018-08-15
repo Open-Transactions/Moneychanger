@@ -16,7 +16,6 @@
 #include <gui/widgets/marketdetails.hpp>
 #include <gui/widgets/accountdetails.hpp>
 #include <gui/widgets/transportdetails.hpp>
-#include <gui/widgets/home.hpp>
 
 #include <core/moneychanger.hpp>
 #include <core/handlers/focuser.h>
