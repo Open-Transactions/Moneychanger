@@ -3839,6 +3839,11 @@ void Activity::on_comboBoxMyNym_activated(int index)
     QTimer::singleShot(0, this, SLOT(RefreshSummaryTree()));
 }
 
+void Activity::on_comboBoxMyNymChat_activated(int index)
+{
+    QTimer::singleShot(0, this, SLOT(RefreshSummaryTree()));
+}
+
 void Activity::on_comboBoxCurrency_activated(int index)
 {
     QTimer::singleShot(0, this, SLOT(RefreshSummaryTree()));

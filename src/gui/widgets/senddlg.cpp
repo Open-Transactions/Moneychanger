@@ -136,10 +136,10 @@ bool MTSendDlg::sendCash(int64_t amount, QString toNymId, QString toContactId, Q
     // the server will be able to tell who the recipient is purely by timing
     // analysis, without having to break the Chaumian blinding.
     //
-    int64_t theCashBalance = MTHome::rawCashBalance(QString::fromStdString(str_NotaryID),
+    int64_t theCashBalance = Moneychanger::rawCashBalance(QString::fromStdString(str_NotaryID),
                                                     QString::fromStdString(str_InstrumentDefinitionID),
                                                     QString::fromStdString(str_fromNymId));
-    int64_t theAcctBalance = MTHome::rawAcctBalance(this->m_myAcctId);
+    int64_t theAcctBalance = Moneychanger::rawAcctBalance(this->m_myAcctId);
 
     if ((amount > theCashBalance) && (amount > (theAcctBalance + theCashBalance)))
     {
@@ -379,7 +379,7 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
         qDebug() << QString("Why send 0 (or less) units? Aborting send %1.").arg(nsChequeType);
         return false;
     }
-    if (amount > MTHome::rawAcctBalance(fromAcctId)) {
+    if (amount > Moneychanger::rawAcctBalance(fromAcctId)) {
         qDebug() << QString("Aborting send %1: Amount is larger than account balance.").arg(nsChequeType);
         return false;
     }
@@ -559,8 +559,8 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
         // Notice how I can send an instrument to myself. This doesn't actually send anything --
         // it just puts a copy into my outpayments box for safe-keeping.
         //
-        std::shared_ptr<const opentxs::OTPayment> payment =
-            std::make_shared<const opentxs::OTPayment>(opentxs::OT::App().Legacy().ClientDataFolder(), opentxs::String(strVoucher.c_str()));
+        auto payment =
+            std::make_shared<const opentxs::OTPayment>(opentxs::OT::App().Client().Wallet(), opentxs::OT::App().Legacy().ClientDataFolder(), opentxs::String(strVoucher.c_str()));
 
         OT_ASSERT(payment);
         // SENDING HERE TO MYSELF (FOR OUTBOX)
@@ -619,8 +619,8 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
     {
         const opentxs::String otstrCheque(strVoucher.c_str());
 
-        std::shared_ptr<const opentxs::OTPayment> pPayment
-        (new opentxs::OTPayment(opentxs::OT::App().Legacy().ClientDataFolder(), otstrCheque));
+        auto pPayment = std::make_shared<opentxs::OTPayment>(opentxs::OT::App().Client().Wallet(),
+                opentxs::OT::App().Legacy().ClientDataFolder(), otstrCheque);
 
         const auto bgthreadId
         {opentxs::OT::App().Client().Sync().
@@ -934,8 +934,8 @@ bool MTSendDlg::sendChequeLowLevel (int64_t amount,
 
         const opentxs::String otstrCheque(strCheque.c_str());
 
-        std::shared_ptr<const opentxs::OTPayment> pPayment
-            (new opentxs::OTPayment(opentxs::OT::App().Legacy().ClientDataFolder(), otstrCheque));
+        auto pPayment = std::make_shared<opentxs::OTPayment>(opentxs::OT::App().Client().Wallet(),
+                opentxs::OT::App().Legacy().ClientDataFolder(), otstrCheque);
 
         const auto bgthreadId
             {opentxs::OT::App().Client().Sync().
@@ -1389,7 +1389,7 @@ void MTSendDlg::on_fromButton_clicked()
             else
                 display_name = theChooser.m_qstrCurrentName;
             // -----------------------------------------
-            from_button_text = MTHome::FormDisplayLabelForAcctButton(m_myAcctId, display_name);
+            from_button_text = Moneychanger::FormDisplayLabelForAcctButton(m_myAcctId, display_name);
             // -----------------------------------------
             ui->fromButton->setText(from_button_text);
             // -----------------------------------------
@@ -1630,7 +1630,7 @@ void MTSendDlg::dialog()
         }
         else
         {
-            QString from_button_text = MTHome::FormDisplayLabelForAcctButton(m_myAcctId, QString::fromStdString(str_my_name));
+            QString from_button_text = Moneychanger::FormDisplayLabelForAcctButton(m_myAcctId, QString::fromStdString(str_my_name));
 
             ui->fromButton->setText(from_button_text);
         }

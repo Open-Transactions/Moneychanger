@@ -210,7 +210,8 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                 //
                 if (strInput.Contains("-----BEGIN SIGNED FILE-----"))
                 {
-                    opentxs::OTSignedFile theSignedFile{opentxs::OT::App().Legacy().ClientDataFolder()};
+                    opentxs::OTSignedFile theSignedFile{opentxs::OT::App().Client().Wallet(),
+                                opentxs::OT::App().Legacy().ClientDataFolder()};
 
                     if (theSignedFile.LoadContractFromString(strInput))
                     {

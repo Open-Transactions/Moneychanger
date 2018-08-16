@@ -472,7 +472,7 @@ QWidget * Payments::CreateUserBarWidget()
         std::string str_tla = opentxs::OT::App().Client().Exec().GetCurrencyTLA(str_acct_asset);
         qstr_tla = QString("<font color=grey>%1</font>").arg(QString::fromStdString(str_tla));
 
-        qstr_balance = MTHome::shortAcctBalance(qstr_acct_id, qstr_acct_asset, false);
+        qstr_balance = Moneychanger::shortAcctBalance(qstr_acct_id, qstr_acct_asset, false);
         // -----------------------------------
         std::string str_acct_name  = opentxs::OT::App().Client().Exec().GetAccountWallet_Name(str_acct_id);
         // -----------------------------------
@@ -506,11 +506,11 @@ QWidget * Payments::CreateUserBarWidget()
 
     if (!qstr_acct_nym.isEmpty() && !qstr_acct_server.isEmpty() && !qstr_acct_asset.isEmpty())
     {
-        int64_t  raw_cash_balance = MTHome::rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
+        int64_t  raw_cash_balance = Moneychanger::rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
 
         if (raw_cash_balance > 0)
         {
-            cash_label_string = MTHome::cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
+            cash_label_string = Moneychanger::cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
             qstrCash += QString(" <small><font color=grey>(%2 %3 %4)</font></small>").arg(tr("plus")).arg(cash_label_string).arg(tr("in cash"));
         }
     }

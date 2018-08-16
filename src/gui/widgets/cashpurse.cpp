@@ -85,7 +85,7 @@ void MTCashPurse::refresh(QString strID, QString strName)
         m_qstrAcctId   = strID;
         m_qstrAcctName = strName;
         // ----------------------------------
-        if (MTHome::rawAcctBalance(strID) > 0)
+        if (Moneychanger::rawAcctBalance(strID) > 0)
             ui->pushButtonWithdraw->setEnabled(true);
         else
             ui->pushButtonWithdraw->setEnabled(false);
@@ -98,7 +98,7 @@ void MTCashPurse::refresh(QString strID, QString strName)
 //      int nNumberChecked =
                 this->TallySelections(selectedIndices, lAmount);
         // ----------------------------------
-        QString   qstrAmount    = MTHome::shortAcctBalance(strID);
+        QString   qstrAmount    = Moneychanger::shortAcctBalance(strID);
         QWidget * pHeaderWidget = MTEditDetails::CreateDetailHeaderWidget(MTDetailEdit::DetailEditTypeAccount, strID, strName, qstrAmount, "", ":/icons/icons/vault.png", false);
 
         pHeaderWidget->setObjectName(QString("DetailHeader")); // So the stylesheet doesn't get applied to all its sub-widgets.
@@ -133,10 +133,10 @@ void MTCashPurse::refresh(QString strID, QString strName)
             qstr_asset_name = QString("   (%1)").arg(
                     QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Name(str_acct_asset)));
         // -----------------------------------
-        int64_t  raw_cash_balance = MTHome::rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
+        int64_t  raw_cash_balance = Moneychanger::rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
 
         ui->labelCashBalance->setText(QString("<font color=grey><big>%1</big></font>").
-                                      arg(MTHome::cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym)) );
+                                      arg(Moneychanger::cashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym)) );
         ui->labelAssetType->setText(QString("<font color=grey>%1</font>").arg(qstr_asset_name) );
         // -----------------------------------
         if (raw_cash_balance > 0)

@@ -1439,7 +1439,7 @@ void MTAccountDetails::refresh(QString strID, QString strName)
 
         m_qstrID = strID;
         // -------------------------------------
-        QString qstrAmount = MTHome::shortAcctBalance(strID);
+        QString qstrAmount = Moneychanger::shortAcctBalance(strID);
 
         QWidget * pHeaderWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, strID, strName, qstrAmount, "", ":/icons/icons/vault.png", false);
 
@@ -1643,7 +1643,7 @@ void MTAccountDetails::DeleteButtonClicked()
         if (!bCanRemove)
         {
             const auto id_acct = opentxs::Identifier::Factory(str_account_id);
-            const auto account = opentxs::OT::App().Client().Wallet().Account(opentxs::OT::App().Legacy().ClientDataFolder(), id_acct);
+            const auto account = opentxs::OT::App().Client().Wallet().Account(id_acct);
 
             QString qstrMessage = QString("%1. %2")
                     .arg(tr("This Account cannot be deleted until it has a zero balance and an empty inbox"))

@@ -591,6 +591,13 @@ public slots:
     void mc_createinsurancecompany_slot();  // Create Insurance Company Slot
     // ---------------------------------------------------------------------------
     void mc_settings_slot();                //Settings
+
+public:
+    static QString shortAcctBalance(QString qstr_acct_id,   QString qstr_asset_id=QString(""), bool bWithSymbol=true);
+    static QString cashBalance     (QString qstr_notary_id, QString qstr_asset_id, QString qstr_nym_id);
+    static int64_t rawCashBalance  (QString qstr_notary_id, QString qstr_asset_id, QString qstr_nym_id);
+    static int64_t rawAcctBalance  (QString qstrAcctId);
+    static QString FormDisplayLabelForAcctButton(QString qstr_acct_id, QString qstr_display_name);
 };
 
 #endif // MONEYCHANGER_HPP

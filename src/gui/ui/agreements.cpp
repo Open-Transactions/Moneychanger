@@ -208,7 +208,7 @@ QWidget * Agreements::CreateUserBarWidget()
         std::string str_tla = opentxs::OT::App().Client().Exec().GetCurrencyTLA(str_acct_asset);
         qstr_tla = QString("<font color=grey>%1</font>").arg(QString::fromStdString(str_tla));
 
-        qstr_balance = MTHome::shortAcctBalance(qstr_acct_id, qstr_acct_asset, false);
+        qstr_balance = Moneychanger::shortAcctBalance(qstr_acct_id, qstr_acct_asset, false);
         // -----------------------------------
         std::string str_acct_name  = opentxs::OT::App().Client().Exec().GetAccountWallet_Name(str_acct_id);
         // -----------------------------------

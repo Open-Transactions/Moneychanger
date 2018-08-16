@@ -205,7 +205,7 @@ void PageSmart_NymAcct::on_pushButtonSelect_clicked()
             setField("AcctID", theChooser.m_qstrCurrentID);
             ui->pushButtonSelect->setText(theChooser.m_qstrCurrentName);
 
-            QString qstrBalance = MTHome::shortAcctBalance(theChooser.m_qstrCurrentID);
+            QString qstrBalance = Moneychanger::shortAcctBalance(theChooser.m_qstrCurrentID);
 
             ui->lineEditBalance->setText(qstrBalance);
 

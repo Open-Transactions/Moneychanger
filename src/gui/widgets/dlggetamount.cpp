@@ -5,6 +5,8 @@
 #include <gui/widgets/dlggetamount.hpp>
 #include <ui_dlggetamount.h>
 
+#include <core/moneychanger.hpp>
+
 #include <QMessageBox>
 #include <QKeyEvent>
 
@@ -28,7 +30,7 @@ DlgGetAmount::DlgGetAmount(QWidget *parent, QString qstrAcctId, QString qstrInst
     // ----------------------
     ui->labelAsset->setText(qstr_asset_name);
     // ----------------------
-    QString     qstrBalance   = MTHome::shortAcctBalance(qstrAcctId);
+    QString     qstrBalance   = Moneychanger::shortAcctBalance(qstrAcctId);
     std::string str_acct_name = opentxs::OT::App().Client().Exec().GetAccountWallet_Name(qstrAcctId.toStdString());
     QString     qstrAcctName  = QString::fromStdString(str_acct_name);
     // ----------------------

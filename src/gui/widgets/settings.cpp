@@ -212,7 +212,9 @@ void Settings::on_pushButton_clicked()
         if (!strCronItem.Exists())
             continue;
         // --------------------------------------
-        std::unique_ptr<opentxs::OTCronItem> pCronItem ( opentxs::OTCronItem::NewCronItem(opentxs::OT::App().Legacy().ClientDataFolder(), strCronItem) );
+        std::unique_ptr<opentxs::OTCronItem> pCronItem (
+                    opentxs::OTCronItem::NewCronItem(opentxs::OT::App().Client().Wallet(),
+                                                     opentxs::OT::App().Legacy().ClientDataFolder(), strCronItem) );
 
         if (!pCronItem)
             continue;
@@ -222,20 +224,21 @@ void Settings::on_pushButton_clicked()
         // --------------------------------------
         if ( (nullptr != pPlan) || (nullptr != pSmart) )
         {
-            opentxs::OTPayment thePayment(opentxs::OT::App().Legacy().ClientDataFolder(), strCronItem);
+            auto thePayment = std::make_shared<opentxs::OTPayment>(opentxs::OT::App().Client().Wallet(),
+                    opentxs::OT::App().Legacy().ClientDataFolder(), strCronItem);
 
-            if (!thePayment.IsValid() || !thePayment.SetTempValues())
+            if (!thePayment->IsValid())
                 continue;
 
             int64_t lTransNumDisplay = 0;
 
-            if (!thePayment.GetTransNumDisplay(lTransNumDisplay) || (0 >= lTransNumDisplay) )
+            if (!thePayment->GetTransNumDisplay(lTransNumDisplay) || (0 >= lTransNumDisplay) )
                 continue; // todo log an error here.
 
             qstrDisplayNum = QString::number(lTransNumDisplay);
 
             opentxs::String strMemo;
-            if (thePayment.GetMemo(strMemo))
+            if (thePayment->GetMemo(strMemo))
             {
                 const std::string str_memo(strMemo.Get());
                 qstrMyColumn1 = QString::fromStdString(str_memo);
