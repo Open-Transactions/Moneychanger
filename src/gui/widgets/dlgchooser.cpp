@@ -5,6 +5,7 @@
 #include <gui/widgets/dlgchooser.hpp>
 #include <ui_dlgchooser.h>
 
+#include <core/moneychanger.hpp>
 
 #include <QDebug>
 #include <QLabel>
@@ -119,7 +120,7 @@ void DlgChooser::showEvent(QShowEvent * event)
 
             if (m_bIsAccounts)
             {
-                currency_amount = MTHome::shortAcctBalance(qstrID);
+                currency_amount = Moneychanger::shortAcctBalance(qstrID);
             }
 
             currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(QString("black")));

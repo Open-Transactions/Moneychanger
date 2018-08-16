@@ -239,8 +239,8 @@ bool MTRequestDlg::sendChequeLowLevel(
 
         const opentxs::String otstrCheque(strCheque.c_str());
 
-        std::shared_ptr<const opentxs::OTPayment> pPayment
-            (new opentxs::OTPayment(opentxs::OT::App().Legacy().ClientDataFolder(), otstrCheque));
+        auto pPayment = std::make_shared<opentxs::OTPayment>(opentxs::OT::App().Client().Wallet(),
+                opentxs::OT::App().Legacy().ClientDataFolder(), otstrCheque);
 
         const auto bgthreadId
             {opentxs::OT::App().Client().Sync().
@@ -614,7 +614,7 @@ void MTRequestDlg::on_toButton_clicked()
             else
                 display_name = theChooser.m_qstrCurrentName;
             // -----------------------------------------
-            button_text = MTHome::FormDisplayLabelForAcctButton(m_myAcctId, display_name);
+            button_text = Moneychanger::FormDisplayLabelForAcctButton(m_myAcctId, display_name);
             // -----------------------------------------
             ui->toButton->setText(button_text);
             // -----------------------------------------
@@ -855,7 +855,7 @@ void MTRequestDlg::dialog()
         }
         else
         {
-            QString to_button_text = MTHome::FormDisplayLabelForAcctButton(m_myAcctId,
+            QString to_button_text = Moneychanger::FormDisplayLabelForAcctButton(m_myAcctId,
                                         QString::fromStdString(str_my_name));
 
             ui->toButton->setText(to_button_text);

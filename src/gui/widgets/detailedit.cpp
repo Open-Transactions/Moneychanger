@@ -957,7 +957,7 @@ void MTDetailEdit::RefreshRecords()
 
         case MTDetailEdit::DetailEditTypeAccount:
         {
-            QString qstrAmount = MTHome::shortAcctBalance(qstrID);
+            QString qstrAmount = Moneychanger::shortAcctBalance(qstrID);
 
             pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, qstrAmount, "");
 //          pWidget  = MTEditDetails::CreateDetailHeaderWidget(m_Type, qstrID, qstrValue, qstrAmount, "", ":/icons/icons/vault.png");

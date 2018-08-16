@@ -76,152 +76,153 @@ void AccountRecordsProxyModel::setFilterAccountId(QString qstrFilter)
 
 QWidget * AccountRecordsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, bool bExternal/*=true*/) const
 {
-    QModelIndex sourceIndex_RowWidgetId    = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_ROW_WIDGET_ID);
-    QModelIndex sourceIndex_CurrencyType   = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_CURRENCY_TYPE);
-    QModelIndex sourceIndex_MyNymId        = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_MY_NYM_ID);
-    QModelIndex sourceIndex_AccountId      = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_ACCOUNT_ID);
-    QModelIndex sourceIndex_UnitTypeId     = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_UNIT_TYPE_ID);
-    QModelIndex sourceIndex_NotaryId       = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_NOTARY_ID);
-    QModelIndex sourceIndex_Amount         = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_AMOUNT);
-    QModelIndex sourceIndex_DisplayAmount  = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_DISPLAY_AMOUNT);
-    QModelIndex sourceIndex_Memo           = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_MEMO);
-    QModelIndex sourceIndex_Text           = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_TEXT);
-    QModelIndex sourceIndex_Timestamp      = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_TIMESTAMP);
-    QModelIndex sourceIndex_StorageBoxType = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_STORAGE_BOX_TYPE);
+//    QModelIndex sourceIndex_RowWidgetId    = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_ROW_WIDGET_ID);
+//    QModelIndex sourceIndex_CurrencyType   = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_CURRENCY_TYPE);
+//    QModelIndex sourceIndex_MyNymId        = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_MY_NYM_ID);
+//    QModelIndex sourceIndex_AccountId      = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_ACCOUNT_ID);
+//    QModelIndex sourceIndex_UnitTypeId     = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_UNIT_TYPE_ID);
+//    QModelIndex sourceIndex_NotaryId       = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_NOTARY_ID);
+//    QModelIndex sourceIndex_Amount         = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_AMOUNT);
+//    QModelIndex sourceIndex_DisplayAmount  = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_DISPLAY_AMOUNT);
+//    QModelIndex sourceIndex_Memo           = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_MEMO);
+//    QModelIndex sourceIndex_Text           = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_TEXT);
+//    QModelIndex sourceIndex_Timestamp      = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_TIMESTAMP);
+//    QModelIndex sourceIndex_StorageBoxType = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_STORAGE_BOX_TYPE);
 
-    QVariant    sourceData_RowWidgetId    = sourceModel()->data(sourceIndex_RowWidgetId,    Qt::DisplayRole);
-    QVariant    sourceData_CurrencyType   = sourceModel()->data(sourceIndex_CurrencyType,   Qt::DisplayRole);
-    QVariant    sourceData_MyNymId        = sourceModel()->data(sourceIndex_MyNymId,        Qt::DisplayRole);
-    QVariant    sourceData_AccountId      = sourceModel()->data(sourceIndex_AccountId,      Qt::DisplayRole);
-    QVariant    sourceData_UnitTypeId     = sourceModel()->data(sourceIndex_UnitTypeId,     Qt::DisplayRole);
-    QVariant    sourceData_NotaryId       = sourceModel()->data(sourceIndex_NotaryId,       Qt::DisplayRole);
-    QVariant    sourceData_Amount         = sourceModel()->data(sourceIndex_Amount,         Qt::DisplayRole);
-    QVariant    sourceData_DisplayAmount  = sourceModel()->data(sourceIndex_DisplayAmount,  Qt::DisplayRole);
-    QVariant    sourceData_Memo           = sourceModel()->data(sourceIndex_Memo,           Qt::DisplayRole);
-    QVariant    sourceData_Text           = sourceModel()->data(sourceIndex_Text,           Qt::DisplayRole);
-    QVariant    sourceData_Timestamp      = sourceModel()->data(sourceIndex_Timestamp,      Qt::DisplayRole);
-    QVariant    sourceData_StorageBoxType = sourceModel()->data(sourceIndex_StorageBoxType, Qt::DisplayRole);
+//    QVariant    sourceData_RowWidgetId    = sourceModel()->data(sourceIndex_RowWidgetId,    Qt::DisplayRole);
+//    QVariant    sourceData_CurrencyType   = sourceModel()->data(sourceIndex_CurrencyType,   Qt::DisplayRole);
+//    QVariant    sourceData_MyNymId        = sourceModel()->data(sourceIndex_MyNymId,        Qt::DisplayRole);
+//    QVariant    sourceData_AccountId      = sourceModel()->data(sourceIndex_AccountId,      Qt::DisplayRole);
+//    QVariant    sourceData_UnitTypeId     = sourceModel()->data(sourceIndex_UnitTypeId,     Qt::DisplayRole);
+//    QVariant    sourceData_NotaryId       = sourceModel()->data(sourceIndex_NotaryId,       Qt::DisplayRole);
+//    QVariant    sourceData_Amount         = sourceModel()->data(sourceIndex_Amount,         Qt::DisplayRole);
+//    QVariant    sourceData_DisplayAmount  = sourceModel()->data(sourceIndex_DisplayAmount,  Qt::DisplayRole);
+//    QVariant    sourceData_Memo           = sourceModel()->data(sourceIndex_Memo,           Qt::DisplayRole);
+//    QVariant    sourceData_Text           = sourceModel()->data(sourceIndex_Text,           Qt::DisplayRole);
+//    QVariant    sourceData_Timestamp      = sourceModel()->data(sourceIndex_Timestamp,      Qt::DisplayRole);
+//    QVariant    sourceData_StorageBoxType = sourceModel()->data(sourceIndex_StorageBoxType, Qt::DisplayRole);
 
-    QString     qstrAssetId       = sourceData_UnitTypeId   .isValid() ? sourceData_UnitTypeId   .toString() : "";
-    QString     qstrMemo          = sourceData_Memo         .isValid() ? sourceData_Memo         .toString() : "";
-    QString     qstrText          = sourceData_Text         .isValid() ? sourceData_Text         .toString() : "";
-    QString     qstrDisplayAmount = sourceData_DisplayAmount.isValid() ? sourceData_DisplayAmount.toString() : "";
+//    QString     qstrAssetId       = sourceData_UnitTypeId   .isValid() ? sourceData_UnitTypeId   .toString() : "";
+//    QString     qstrMemo          = sourceData_Memo         .isValid() ? sourceData_Memo         .toString() : "";
+//    QString     qstrText          = sourceData_Text         .isValid() ? sourceData_Text         .toString() : "";
+//    QString     qstrDisplayAmount = sourceData_DisplayAmount.isValid() ? sourceData_DisplayAmount.toString() : "";
 
-    const opentxs::Amount lAmount = sourceData_Amount.isValid() ? sourceData_Amount.toLongLong() : 0;
-    const int nStorageBoxType = sourceData_StorageBoxType.isValid() ? sourceData_StorageBoxType.toInt() : 0;
+//    const opentxs::Amount lAmount = sourceData_Amount.isValid() ? sourceData_Amount.toLongLong() : 0;
+//    const int nStorageBoxType = sourceData_StorageBoxType.isValid() ? sourceData_StorageBoxType.toInt() : 0;
 
-    time64_t the_time = sourceData_Timestamp.isValid() ? sourceData_Timestamp.toLongLong() : 0;
-    QDateTime timestamp;
-    timestamp.setTime_t(the_time);
-    QString qstrTimestamp = QString(timestamp.toString(Qt::SystemLocaleShortDate));
+//    time64_t the_time = sourceData_Timestamp.isValid() ? sourceData_Timestamp.toLongLong() : 0;
+//    QDateTime timestamp;
+//    timestamp.setTime_t(the_time);
+//    QString qstrTimestamp = QString(timestamp.toString(Qt::SystemLocaleShortDate));
 
-    const bool bIsIncoming = (opentxs::StorageBox::INCOMINGBLOCKCHAIN == opentxs::StorageBox(nStorageBoxType))
-                          || (opentxs::StorageBox::INCOMINGCHEQUE     == opentxs::StorageBox(nStorageBoxType));
+//    const bool bIsIncoming = (opentxs::StorageBox::INCOMINGBLOCKCHAIN == opentxs::StorageBox(nStorageBoxType))
+//                          || (opentxs::StorageBox::INCOMINGCHEQUE     == opentxs::StorageBox(nStorageBoxType));
 
-    const bool bIsOutgoing = (opentxs::StorageBox::OUTGOINGBLOCKCHAIN == opentxs::StorageBox(nStorageBoxType))
-                          || (opentxs::StorageBox::OUTGOINGCHEQUE     == opentxs::StorageBox(nStorageBoxType));
+//    const bool bIsOutgoing = (opentxs::StorageBox::OUTGOINGBLOCKCHAIN == opentxs::StorageBox(nStorageBoxType))
+//                          || (opentxs::StorageBox::OUTGOINGCHEQUE     == opentxs::StorageBox(nStorageBoxType));
 
-    const bool bIsPending = false; // Todo Justus.
+//    const bool bIsPending = false; // Todo Justus.
 
-    TransactionTableViewCellType cellType = (bIsOutgoing ?
-                                                 // -------------------------------------------------
-                                                 (bIsPending ?
-                                                      TransactionTableViewCellTypeOutgoing :  // outgoing
-                                                      TransactionTableViewCellTypeSent) :     // sent
-                                                 // -------------------------------------------------
-                                                 (bIsPending ?
-                                                      TransactionTableViewCellTypeIncoming :  // incoming
-                                                      TransactionTableViewCellTypeReceived)); // received
-    // --------------------------------------------------------------------------------------------
-    QString qstrRecordName(tr("Receipt"));
-    switch(opentxs::StorageBox(nStorageBoxType)) {
-    case opentxs::StorageBox::INCOMINGBLOCKCHAIN: qstrRecordName = QString(tr("Incoming blockchain payment")); break;
-    case opentxs::StorageBox::OUTGOINGBLOCKCHAIN: qstrRecordName = QString(tr("Outgoing blockchain payment")); break;
-    case opentxs::StorageBox::INCOMINGCHEQUE:     qstrRecordName = QString(tr("Incoming cheque")); break;
-    case opentxs::StorageBox::OUTGOINGCHEQUE:     qstrRecordName = QString(tr("Outgoing cheque")); break;
-    default:
-        break;
-    }
-    // ---------------------------------------
-    QString strColor("black");
+//    TransactionTableViewCellType cellType = (bIsOutgoing ?
+//                                                 // -------------------------------------------------
+//                                                 (bIsPending ?
+//                                                      TransactionTableViewCellTypeOutgoing :  // outgoing
+//                                                      TransactionTableViewCellTypeSent) :     // sent
+//                                                 // -------------------------------------------------
+//                                                 (bIsPending ?
+//                                                      TransactionTableViewCellTypeIncoming :  // incoming
+//                                                      TransactionTableViewCellTypeReceived)); // received
+//    // --------------------------------------------------------------------------------------------
+//    QString qstrRecordName(tr("Receipt"));
+//    switch(opentxs::StorageBox(nStorageBoxType)) {
+//    case opentxs::StorageBox::INCOMINGBLOCKCHAIN: qstrRecordName = QString(tr("Incoming blockchain payment")); break;
+//    case opentxs::StorageBox::OUTGOINGBLOCKCHAIN: qstrRecordName = QString(tr("Outgoing blockchain payment")); break;
+//    case opentxs::StorageBox::INCOMINGCHEQUE:     qstrRecordName = QString(tr("Incoming cheque")); break;
+//    case opentxs::StorageBox::OUTGOINGCHEQUE:     qstrRecordName = QString(tr("Outgoing cheque")); break;
+//    default:
+//        break;
+//    }
+//    // ---------------------------------------
+//    QString strColor("black");
 
-    switch (cellType)
-    {
-        case TransactionTableViewCellTypeReceived:
-            strColor = QString("green");
-            break;
-        case TransactionTableViewCellTypeSent:
-            strColor = QString("red");
-            break;
-        case TransactionTableViewCellTypeIncoming:
-            strColor = QString("LightGreen");
-            break;
-        case TransactionTableViewCellTypeOutgoing:
-            strColor = QString("Crimson");
-            break;
-        default:
-            qDebug() << "CELL TYPE: " << cellType;
-            OT_FAIL_MSG("Expected all cell types to be handled for color.");
-            break;
-    }
-    // --------------------------------------------------------------------------------------------
-    QWidget * row_widget = new QWidget;
-    QGridLayout * row_widget_layout = new QGridLayout;
+//    switch (cellType)
+//    {
+//        case TransactionTableViewCellTypeReceived:
+//            strColor = QString("green");
+//            break;
+//        case TransactionTableViewCellTypeSent:
+//            strColor = QString("red");
+//            break;
+//        case TransactionTableViewCellTypeIncoming:
+//            strColor = QString("LightGreen");
+//            break;
+//        case TransactionTableViewCellTypeOutgoing:
+//            strColor = QString("Crimson");
+//            break;
+//        default:
+//            qDebug() << "CELL TYPE: " << cellType;
+//            OT_FAIL_MSG("Expected all cell types to be handled for color.");
+//            break;
+//    }
+//    // --------------------------------------------------------------------------------------------
+//    QWidget * row_widget = new QWidget;
+//    QGridLayout * row_widget_layout = new QGridLayout;
 
-    row_widget_layout->setSpacing(4);
-    row_widget_layout->setContentsMargins(10, 4, 10, 4);
+//    row_widget_layout->setSpacing(4);
+//    row_widget_layout->setContentsMargins(10, 4, 10, 4);
 
-    row_widget->setLayout(row_widget_layout);
-    row_widget->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");
-    // -------------------------------------------
-    //Render row.
-    //Header of row
-    QLabel * header_of_row = new QLabel(qstrRecordName);
+//    row_widget->setLayout(row_widget_layout);
+//    row_widget->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");
+//    // -------------------------------------------
+//    //Render row.
+//    //Header of row
+//    QLabel * header_of_row = new QLabel(qstrRecordName);
 
-    //Append header to layout
-    row_widget_layout->addWidget(header_of_row, 0, 0, 1,1, Qt::AlignLeft);
-    // -------------------------------------------
-    // Amount (with currency tla)
-    QLabel * currency_amount_label = new QLabel(qstrDisplayAmount);
-    currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(strColor));
-    // ----------------------------------------------------------------
-    row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
-    // -------------------------------------------
-    //Sub-info
-    QWidget * row_content_container = new QWidget;
-    QGridLayout * row_content_grid = new QGridLayout;
+//    //Append header to layout
+//    row_widget_layout->addWidget(header_of_row, 0, 0, 1,1, Qt::AlignLeft);
+//    // -------------------------------------------
+//    // Amount (with currency tla)
+//    QLabel * currency_amount_label = new QLabel(qstrDisplayAmount);
+//    currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(strColor));
+//    // ----------------------------------------------------------------
+//    row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
+//    // -------------------------------------------
+//    //Sub-info
+//    QWidget * row_content_container = new QWidget;
+//    QGridLayout * row_content_grid = new QGridLayout;
 
-    // left top right bottom
+//    // left top right bottom
 
-    row_content_grid->setSpacing(4);
-    row_content_grid->setContentsMargins(3, 4, 3, 4);
+//    row_content_grid->setSpacing(4);
+//    row_content_grid->setContentsMargins(3, 4, 3, 4);
 
-    row_content_container->setLayout(row_content_grid);
+//    row_content_container->setLayout(row_content_grid);
 
-    row_widget_layout->addWidget(row_content_container, 1,0, 1,2);
-    // -------------------------------------------
-    // Column one
-    QLabel * row_content_date_label = new QLabel(qstrTimestamp);
-    row_content_date_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
-    //row_content_date_label->setText(row_content_date_label_string);
+//    row_widget_layout->addWidget(row_content_container, 1,0, 1,2);
+//    // -------------------------------------------
+//    // Column one
+//    QLabel * row_content_date_label = new QLabel(qstrTimestamp);
+//    row_content_date_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
+//    //row_content_date_label->setText(row_content_date_label_string);
 
-    row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
-    // -------------------------------------------
-    // Column two
-    //Status
-    QLabel * row_content_status_label = new QLabel(qstrText);
-    row_content_status_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
-    row_content_status_label->setWordWrap(false);
-//    row_content_status_string.replace("\r\n"," ");
-//    row_content_status_string.replace("\n\r"," ");
-//    row_content_status_string.replace("\n",  " ");
-//    row_content_status_label->setText(row_content_status_string);
-    // -------------------------------------------
-    //add to row_content grid
-    row_content_grid->addWidget(row_content_status_label, 0,1, 1,1, Qt::AlignRight);
-    // -------------------------------------------
-    row_widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    return row_widget;
+//    row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
+//    // -------------------------------------------
+//    // Column two
+//    //Status
+//    QLabel * row_content_status_label = new QLabel(qstrText);
+//    row_content_status_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
+//    row_content_status_label->setWordWrap(false);
+////    row_content_status_string.replace("\r\n"," ");
+////    row_content_status_string.replace("\n\r"," ");
+////    row_content_status_string.replace("\n",  " ");
+////    row_content_status_label->setText(row_content_status_string);
+//    // -------------------------------------------
+//    //add to row_content grid
+//    row_content_grid->addWidget(row_content_status_label, 0,1, 1,1, Qt::AlignRight);
+//    // -------------------------------------------
+//    row_widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+//    return row_widget;
+    return nullptr;
 }
 
 QVariant AccountRecordsProxyModel::data ( const QModelIndex & index, int role/* = Qt::DisplayRole */) const
@@ -890,152 +891,154 @@ void PaymentsProxyModel::clearFilterType()
 
 QWidget * PaymentsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, bool bExternal/*=true*/) const
 {
-    QModelIndex sourceIndex_RowWidgetId    = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_ROW_WIDGET_ID);
-    QModelIndex sourceIndex_CurrencyType   = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_CURRENCY_TYPE);
-    QModelIndex sourceIndex_MyNymId        = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_MY_NYM_ID);
-    QModelIndex sourceIndex_AccountId      = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_ACCOUNT_ID);
-    QModelIndex sourceIndex_UnitTypeId     = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_UNIT_TYPE_ID);
-    QModelIndex sourceIndex_NotaryId       = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_NOTARY_ID);
-    QModelIndex sourceIndex_Amount         = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_AMOUNT);
-    QModelIndex sourceIndex_DisplayAmount  = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_DISPLAY_AMOUNT);
-    QModelIndex sourceIndex_Memo           = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_MEMO);
-    QModelIndex sourceIndex_Text           = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_TEXT);
-    QModelIndex sourceIndex_Timestamp      = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_TIMESTAMP);
-    QModelIndex sourceIndex_StorageBoxType = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_STORAGE_BOX_TYPE);
+//    QModelIndex sourceIndex_RowWidgetId    = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_ROW_WIDGET_ID);
+//    QModelIndex sourceIndex_CurrencyType   = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_CURRENCY_TYPE);
+//    QModelIndex sourceIndex_MyNymId        = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_MY_NYM_ID);
+//    QModelIndex sourceIndex_AccountId      = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_ACCOUNT_ID);
+//    QModelIndex sourceIndex_UnitTypeId     = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_UNIT_TYPE_ID);
+//    QModelIndex sourceIndex_NotaryId       = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_NOTARY_ID);
+//    QModelIndex sourceIndex_Amount         = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_AMOUNT);
+//    QModelIndex sourceIndex_DisplayAmount  = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_DISPLAY_AMOUNT);
+//    QModelIndex sourceIndex_Memo           = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_MEMO);
+//    QModelIndex sourceIndex_Text           = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_TEXT);
+//    QModelIndex sourceIndex_Timestamp      = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_TIMESTAMP);
+//    QModelIndex sourceIndex_StorageBoxType = sourceModel()->index(nSourceRow, PMNT_SOURCE_COL_STORAGE_BOX_TYPE);
 
-    QVariant    sourceData_RowWidgetId    = sourceModel()->data(sourceIndex_RowWidgetId,    Qt::DisplayRole);
-    QVariant    sourceData_CurrencyType   = sourceModel()->data(sourceIndex_CurrencyType,   Qt::DisplayRole);
-    QVariant    sourceData_MyNymId        = sourceModel()->data(sourceIndex_MyNymId,        Qt::DisplayRole);
-    QVariant    sourceData_AccountId      = sourceModel()->data(sourceIndex_AccountId,      Qt::DisplayRole);
-    QVariant    sourceData_UnitTypeId     = sourceModel()->data(sourceIndex_UnitTypeId,     Qt::DisplayRole);
-    QVariant    sourceData_NotaryId       = sourceModel()->data(sourceIndex_NotaryId,       Qt::DisplayRole);
-    QVariant    sourceData_Amount         = sourceModel()->data(sourceIndex_Amount,         Qt::DisplayRole);
-    QVariant    sourceData_DisplayAmount  = sourceModel()->data(sourceIndex_DisplayAmount,  Qt::DisplayRole);
-    QVariant    sourceData_Memo           = sourceModel()->data(sourceIndex_Memo,           Qt::DisplayRole);
-    QVariant    sourceData_Text           = sourceModel()->data(sourceIndex_Text,           Qt::DisplayRole);
-    QVariant    sourceData_Timestamp      = sourceModel()->data(sourceIndex_Timestamp,      Qt::DisplayRole);
-    QVariant    sourceData_StorageBoxType = sourceModel()->data(sourceIndex_StorageBoxType, Qt::DisplayRole);
+//    QVariant    sourceData_RowWidgetId    = sourceModel()->data(sourceIndex_RowWidgetId,    Qt::DisplayRole);
+//    QVariant    sourceData_CurrencyType   = sourceModel()->data(sourceIndex_CurrencyType,   Qt::DisplayRole);
+//    QVariant    sourceData_MyNymId        = sourceModel()->data(sourceIndex_MyNymId,        Qt::DisplayRole);
+//    QVariant    sourceData_AccountId      = sourceModel()->data(sourceIndex_AccountId,      Qt::DisplayRole);
+//    QVariant    sourceData_UnitTypeId     = sourceModel()->data(sourceIndex_UnitTypeId,     Qt::DisplayRole);
+//    QVariant    sourceData_NotaryId       = sourceModel()->data(sourceIndex_NotaryId,       Qt::DisplayRole);
+//    QVariant    sourceData_Amount         = sourceModel()->data(sourceIndex_Amount,         Qt::DisplayRole);
+//    QVariant    sourceData_DisplayAmount  = sourceModel()->data(sourceIndex_DisplayAmount,  Qt::DisplayRole);
+//    QVariant    sourceData_Memo           = sourceModel()->data(sourceIndex_Memo,           Qt::DisplayRole);
+//    QVariant    sourceData_Text           = sourceModel()->data(sourceIndex_Text,           Qt::DisplayRole);
+//    QVariant    sourceData_Timestamp      = sourceModel()->data(sourceIndex_Timestamp,      Qt::DisplayRole);
+//    QVariant    sourceData_StorageBoxType = sourceModel()->data(sourceIndex_StorageBoxType, Qt::DisplayRole);
 
-    QString     qstrAssetId       = sourceData_UnitTypeId   .isValid() ? sourceData_UnitTypeId   .toString() : "";
-    QString     qstrMemo          = sourceData_Memo         .isValid() ? sourceData_Memo         .toString() : "";
-    QString     qstrText          = sourceData_Text         .isValid() ? sourceData_Text         .toString() : "";
-    QString     qstrDisplayAmount = sourceData_DisplayAmount.isValid() ? sourceData_DisplayAmount.toString() : "";
+//    QString     qstrAssetId       = sourceData_UnitTypeId   .isValid() ? sourceData_UnitTypeId   .toString() : "";
+//    QString     qstrMemo          = sourceData_Memo         .isValid() ? sourceData_Memo         .toString() : "";
+//    QString     qstrText          = sourceData_Text         .isValid() ? sourceData_Text         .toString() : "";
+//    QString     qstrDisplayAmount = sourceData_DisplayAmount.isValid() ? sourceData_DisplayAmount.toString() : "";
 
-    const opentxs::Amount lAmount = sourceData_Amount.isValid() ? sourceData_Amount.toLongLong() : 0;
-    const int nStorageBoxType = sourceData_StorageBoxType.isValid() ? sourceData_StorageBoxType.toInt() : 0;
+//    const opentxs::Amount lAmount = sourceData_Amount.isValid() ? sourceData_Amount.toLongLong() : 0;
+//    const int nStorageBoxType = sourceData_StorageBoxType.isValid() ? sourceData_StorageBoxType.toInt() : 0;
 
-    time64_t the_time = sourceData_Timestamp.isValid() ? sourceData_Timestamp.toLongLong() : 0;
-    QDateTime timestamp;
-    timestamp.setTime_t(the_time);
-    QString qstrTimestamp = QString(timestamp.toString(Qt::SystemLocaleShortDate));
+//    time64_t the_time = sourceData_Timestamp.isValid() ? sourceData_Timestamp.toLongLong() : 0;
+//    QDateTime timestamp;
+//    timestamp.setTime_t(the_time);
+//    QString qstrTimestamp = QString(timestamp.toString(Qt::SystemLocaleShortDate));
 
-    const bool bIsIncoming = (opentxs::StorageBox::INCOMINGBLOCKCHAIN == opentxs::StorageBox(nStorageBoxType))
-                          || (opentxs::StorageBox::INCOMINGCHEQUE     == opentxs::StorageBox(nStorageBoxType));
+//    const bool bIsIncoming = (opentxs::StorageBox::INCOMINGBLOCKCHAIN == opentxs::StorageBox(nStorageBoxType))
+//                          || (opentxs::StorageBox::INCOMINGCHEQUE     == opentxs::StorageBox(nStorageBoxType));
 
-    const bool bIsOutgoing = (opentxs::StorageBox::OUTGOINGBLOCKCHAIN == opentxs::StorageBox(nStorageBoxType))
-                          || (opentxs::StorageBox::OUTGOINGCHEQUE     == opentxs::StorageBox(nStorageBoxType));
+//    const bool bIsOutgoing = (opentxs::StorageBox::OUTGOINGBLOCKCHAIN == opentxs::StorageBox(nStorageBoxType))
+//                          || (opentxs::StorageBox::OUTGOINGCHEQUE     == opentxs::StorageBox(nStorageBoxType));
 
-    const bool bIsPending = false; // Todo Justus.
+//    const bool bIsPending = false; // Todo Justus.
 
-    TransactionTableViewCellType cellType = (bIsOutgoing ?
-                                                 // -------------------------------------------------
-                                                 (bIsPending ?
-                                                      TransactionTableViewCellTypeOutgoing :  // outgoing
-                                                      TransactionTableViewCellTypeSent) :     // sent
-                                                 // -------------------------------------------------
-                                                 (bIsPending ?
-                                                      TransactionTableViewCellTypeIncoming :  // incoming
-                                                      TransactionTableViewCellTypeReceived)); // received
-    // --------------------------------------------------------------------------------------------
-    QString qstrRecordName(tr("Receipt"));
-    switch(opentxs::StorageBox(nStorageBoxType)) {
-    case opentxs::StorageBox::INCOMINGBLOCKCHAIN: qstrRecordName = QString(tr("Incoming blockchain payment")); break;
-    case opentxs::StorageBox::OUTGOINGBLOCKCHAIN: qstrRecordName = QString(tr("Outgoing blockchain payment")); break;
-    case opentxs::StorageBox::INCOMINGCHEQUE:     qstrRecordName = QString(tr("Incoming cheque")); break;
-    case opentxs::StorageBox::OUTGOINGCHEQUE:     qstrRecordName = QString(tr("Outgoing cheque")); break;
-    default:
-        break;
-    }
-    // ---------------------------------------
-    QString strColor("black");
+//    TransactionTableViewCellType cellType = (bIsOutgoing ?
+//                                                 // -------------------------------------------------
+//                                                 (bIsPending ?
+//                                                      TransactionTableViewCellTypeOutgoing :  // outgoing
+//                                                      TransactionTableViewCellTypeSent) :     // sent
+//                                                 // -------------------------------------------------
+//                                                 (bIsPending ?
+//                                                      TransactionTableViewCellTypeIncoming :  // incoming
+//                                                      TransactionTableViewCellTypeReceived)); // received
+//    // --------------------------------------------------------------------------------------------
+//    QString qstrRecordName(tr("Receipt"));
+//    switch(opentxs::StorageBox(nStorageBoxType)) {
+//    case opentxs::StorageBox::INCOMINGBLOCKCHAIN: qstrRecordName = QString(tr("Incoming blockchain payment")); break;
+//    case opentxs::StorageBox::OUTGOINGBLOCKCHAIN: qstrRecordName = QString(tr("Outgoing blockchain payment")); break;
+//    case opentxs::StorageBox::INCOMINGCHEQUE:     qstrRecordName = QString(tr("Incoming cheque")); break;
+//    case opentxs::StorageBox::OUTGOINGCHEQUE:     qstrRecordName = QString(tr("Outgoing cheque")); break;
+//    default:
+//        break;
+//    }
+//    // ---------------------------------------
+//    QString strColor("black");
 
-    switch (cellType)
-    {
-        case TransactionTableViewCellTypeReceived:
-            strColor = QString("green");
-            break;
-        case TransactionTableViewCellTypeSent:
-            strColor = QString("red");
-            break;
-        case TransactionTableViewCellTypeIncoming:
-            strColor = QString("LightGreen");
-            break;
-        case TransactionTableViewCellTypeOutgoing:
-            strColor = QString("Crimson");
-            break;
-        default:
-            qDebug() << "CELL TYPE: " << cellType;
-            OT_FAIL_MSG("Expected all cell types to be handled for color.");
-            break;
-    }
-    // --------------------------------------------------------------------------------------------
-    QWidget * row_widget = new QWidget;
-    QGridLayout * row_widget_layout = new QGridLayout;
+//    switch (cellType)
+//    {
+//        case TransactionTableViewCellTypeReceived:
+//            strColor = QString("green");
+//            break;
+//        case TransactionTableViewCellTypeSent:
+//            strColor = QString("red");
+//            break;
+//        case TransactionTableViewCellTypeIncoming:
+//            strColor = QString("LightGreen");
+//            break;
+//        case TransactionTableViewCellTypeOutgoing:
+//            strColor = QString("Crimson");
+//            break;
+//        default:
+//            qDebug() << "CELL TYPE: " << cellType;
+//            OT_FAIL_MSG("Expected all cell types to be handled for color.");
+//            break;
+//    }
+//    // --------------------------------------------------------------------------------------------
+//    QWidget * row_widget = new QWidget;
+//    QGridLayout * row_widget_layout = new QGridLayout;
 
-    row_widget_layout->setSpacing(4);
-    row_widget_layout->setContentsMargins(10, 4, 10, 4);
+//    row_widget_layout->setSpacing(4);
+//    row_widget_layout->setContentsMargins(10, 4, 10, 4);
 
-    row_widget->setLayout(row_widget_layout);
-    row_widget->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");
-    // -------------------------------------------
-    //Render row.
-    //Header of row
-    QLabel * header_of_row = new QLabel(qstrRecordName);
+//    row_widget->setLayout(row_widget_layout);
+//    row_widget->setStyleSheet("QWidget{background-color:#c0cad4;selection-background-color:#a0aac4;}");
+//    // -------------------------------------------
+//    //Render row.
+//    //Header of row
+//    QLabel * header_of_row = new QLabel(qstrRecordName);
 
-    //Append header to layout
-    row_widget_layout->addWidget(header_of_row, 0, 0, 1,1, Qt::AlignLeft);
-    // -------------------------------------------
-    // Amount (with currency tla)
-    QLabel * currency_amount_label = new QLabel(qstrDisplayAmount);
-    currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(strColor));
-    // ----------------------------------------------------------------
-    row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
-    // -------------------------------------------
-    //Sub-info
-    QWidget * row_content_container = new QWidget;
-    QGridLayout * row_content_grid = new QGridLayout;
+//    //Append header to layout
+//    row_widget_layout->addWidget(header_of_row, 0, 0, 1,1, Qt::AlignLeft);
+//    // -------------------------------------------
+//    // Amount (with currency tla)
+//    QLabel * currency_amount_label = new QLabel(qstrDisplayAmount);
+//    currency_amount_label->setStyleSheet(QString("QLabel { color : %1; }").arg(strColor));
+//    // ----------------------------------------------------------------
+//    row_widget_layout->addWidget(currency_amount_label, 0, 1, 1,1, Qt::AlignRight);
+//    // -------------------------------------------
+//    //Sub-info
+//    QWidget * row_content_container = new QWidget;
+//    QGridLayout * row_content_grid = new QGridLayout;
 
-    // left top right bottom
+//    // left top right bottom
 
-    row_content_grid->setSpacing(4);
-    row_content_grid->setContentsMargins(3, 4, 3, 4);
+//    row_content_grid->setSpacing(4);
+//    row_content_grid->setContentsMargins(3, 4, 3, 4);
 
-    row_content_container->setLayout(row_content_grid);
+//    row_content_container->setLayout(row_content_grid);
 
-    row_widget_layout->addWidget(row_content_container, 1,0, 1,2);
-    // -------------------------------------------
-    // Column one
-    QLabel * row_content_date_label = new QLabel(qstrTimestamp);
-    row_content_date_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
-    //row_content_date_label->setText(row_content_date_label_string);
+//    row_widget_layout->addWidget(row_content_container, 1,0, 1,2);
+//    // -------------------------------------------
+//    // Column one
+//    QLabel * row_content_date_label = new QLabel(qstrTimestamp);
+//    row_content_date_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
+//    //row_content_date_label->setText(row_content_date_label_string);
 
-    row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
-    // -------------------------------------------
-    // Column two
-    //Status
-    QLabel * row_content_status_label = new QLabel(qstrText);
-    row_content_status_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
-    row_content_status_label->setWordWrap(false);
-//    row_content_status_string.replace("\r\n"," ");
-//    row_content_status_string.replace("\n\r"," ");
-//    row_content_status_string.replace("\n",  " ");
-//    row_content_status_label->setText(row_content_status_string);
-    // -------------------------------------------
-    //add to row_content grid
-    row_content_grid->addWidget(row_content_status_label, 0,1, 1,1, Qt::AlignRight);
-    // -------------------------------------------
-    row_widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    return row_widget;
+//    row_content_grid->addWidget(row_content_date_label, 0,0, 1,1, Qt::AlignLeft);
+//    // -------------------------------------------
+//    // Column two
+//    //Status
+//    QLabel * row_content_status_label = new QLabel(qstrText);
+//    row_content_status_label->setStyleSheet("QLabel { color : grey; font-size:11pt;}");
+//    row_content_status_label->setWordWrap(false);
+////    row_content_status_string.replace("\r\n"," ");
+////    row_content_status_string.replace("\n\r"," ");
+////    row_content_status_string.replace("\n",  " ");
+////    row_content_status_label->setText(row_content_status_string);
+//    // -------------------------------------------
+//    //add to row_content grid
+//    row_content_grid->addWidget(row_content_status_label, 0,1, 1,1, Qt::AlignRight);
+//    // -------------------------------------------
+//    row_widget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+//    return row_widget;
+
+    return nullptr;
 }
 
 QVariant PaymentsProxyModel::data ( const QModelIndex & index, int role/* = Qt::DisplayRole */) const
@@ -2159,7 +2162,13 @@ QWidget * ActivityPaymentsProxyModel::CreateDetailHeaderWidget(const int nSource
 
     const bool bIsPending = false; // Todo Justus.
 
-    TransactionTableViewCellType cellType = (bIsOutgoing ?
+#define TransactionTableViewCellTypeOutgoing 0
+#define TransactionTableViewCellTypeSent 1
+#define TransactionTableViewCellTypeIncoming 2
+#define TransactionTableViewCellTypeReceived 3
+
+//  TransactionTableViewCellType cellType = (bIsOutgoing ?
+    int cellType = (bIsOutgoing ?
                                                  // -------------------------------------------------
                                                  (bIsPending ?
                                                       TransactionTableViewCellTypeOutgoing :  // outgoing

@@ -274,7 +274,9 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
     //                  inline opentxs::String & opentxs::OTSignedFile::GetFilePayload()                       { return m_strSignedFilePayload;   }
 
                         opentxs::String     strSignedOutput;
-                        opentxs::OTSignedFile theSignedFile{opentxs::OT::App().Legacy().ClientDataFolder()};
+
+                        opentxs::OTSignedFile theSignedFile{opentxs::OT::App().Client().Wallet(),
+                                    opentxs::OT::App().Legacy().ClientDataFolder()};
 
                         theSignedFile.SetSignerNymID(strNym);
 

@@ -28,8 +28,6 @@ FORMS += \
     $${PWD}/widgets/dlgchooser.ui \
     $${PWD}/widgets/dlggetamount.ui \
     $${PWD}/widgets/editdetails.ui \
-    $${PWD}/widgets/home.ui \
-    $${PWD}/widgets/homedetail.ui \
     $${PWD}/widgets/identifierwidget.ui \
     $${PWD}/widgets/marketdetails.ui \
     $${PWD}/widgets/nymdetails.ui \
@@ -114,8 +112,6 @@ HEADERS += \
     $${PWD}/widgets/dlgchooser.hpp \
     $${PWD}/widgets/dlggetamount.hpp \
     $${PWD}/widgets/editdetails.hpp \
-    $${PWD}/widgets/home.hpp \
-    $${PWD}/widgets/homedetail.hpp \
     $${PWD}/widgets/identifierwidget.hpp \
     $${PWD}/widgets/marketdetails.hpp \
     $${PWD}/widgets/nymdetails.hpp \
@@ -201,8 +197,6 @@ SOURCES += \
     $${PWD}/widgets/dlgchooser.cpp \
     $${PWD}/widgets/dlggetamount.cpp \
     $${PWD}/widgets/editdetails.cpp \
-    $${PWD}/widgets/home.cpp \
-    $${PWD}/widgets/homedetail.cpp \
     $${PWD}/widgets/identifierwidget.cpp \
     $${PWD}/widgets/marketdetails.cpp \
     $${PWD}/widgets/nymdetails.cpp \

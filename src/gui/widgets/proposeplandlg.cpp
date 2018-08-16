@@ -645,8 +645,8 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     std::string  strResponse;
     {
         MTSpinner      theSpinner;
-        std::shared_ptr<const opentxs::OTPayment> payment =
-            std::make_shared<const opentxs::OTPayment>(opentxs::OT::App().Legacy().ClientDataFolder(), opentxs::String(str_plan.c_str()));
+        auto payment =
+            std::make_shared<const opentxs::OTPayment>(opentxs::OT::App().Client().Wallet(), opentxs::OT::App().Legacy().ClientDataFolder(), opentxs::String(str_plan.c_str()));
 
         OT_ASSERT(payment);
 
@@ -783,7 +783,7 @@ void ProposePlanDlg::on_merchantButton_clicked()
             else
                 display_name = theChooser.m_qstrCurrentName;
             // -----------------------------------------
-            from_button_text = MTHome::FormDisplayLabelForAcctButton(m_myAcctId, display_name);
+            from_button_text = Moneychanger::FormDisplayLabelForAcctButton(m_myAcctId, display_name);
             // -----------------------------------------
             ui->merchantButton->setText(from_button_text);
             // -----------------------------------------
@@ -987,7 +987,7 @@ void ProposePlanDlg::dialog()
         }
         else
         {
-            QString from_button_text = MTHome::FormDisplayLabelForAcctButton(m_myAcctId, QString::fromStdString(str_my_name));
+            QString from_button_text = Moneychanger::FormDisplayLabelForAcctButton(m_myAcctId, QString::fromStdString(str_my_name));
 
             ui->merchantButton->setText(from_button_text);
         }
