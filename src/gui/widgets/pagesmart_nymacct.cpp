@@ -57,7 +57,7 @@ void PageSmart_NymAcct::on_pushButtonManageAcct_clicked()
     bool    bFoundPreselected = false;
     // -------------------------------------
 
-    for (const auto& [accountID, alias] : opentxs::OT::App().Client().Storage().AccountList())
+    for (const auto& [accountID, alias] : Moneychanger::It()->OT().Storage().AccountList())
     {
         QString OT_id   = QString::fromStdString(accountID);
         QString OT_name = QString::fromStdString(alias);
@@ -118,7 +118,7 @@ void PageSmart_NymAcct::on_pushButtonSelect_clicked()
     std::string str_acct_name = qstrAcctName.toStdString();
     // -------------------------------------------
     std::string templateInstrumentDefinitionID =
-        opentxs::OT::App().Client().Exec().Party_GetAcctInstrumentDefinitionID(str_template, str_party, str_acct_name);
+        Moneychanger::It()->OT().Exec().Party_GetAcctInstrumentDefinitionID(str_template, str_party, str_acct_name);
     bool foundTemplateInstrumentDefinitionID = "" != templateInstrumentDefinitionID;
     // -------------------------------------------
     QString qstr_current_id = field("AcctID").toString();
@@ -129,7 +129,7 @@ void PageSmart_NymAcct::on_pushButtonSelect_clicked()
 
     bool bFoundDefault = false;
 
-    for (const auto& [acctID, alias] : opentxs::OT::App().Client().Storage().AccountList())
+    for (const auto& [acctID, alias] : Moneychanger::It()->OT().Storage().AccountList())
     {
         if ("" == acctID) {
             QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
@@ -150,10 +150,10 @@ void PageSmart_NymAcct::on_pushButtonSelect_clicked()
         if (alreadyConfirmed)
             continue;
         // --------------------------------------
-        std::string acctNotaryID = opentxs::OT::App().Client().Exec().GetAccountWallet_NotaryID(acctID);
-        std::string acctNymID = opentxs::OT::App().Client().Exec().GetAccountWallet_NymID(acctID);
+        std::string acctNotaryID = Moneychanger::It()->OT().Exec().GetAccountWallet_NotaryID(acctID);
+        std::string acctNymID = Moneychanger::It()->OT().Exec().GetAccountWallet_NymID(acctID);
         std::string acctInstrumentDefinitionID =
-            opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(acctID);
+            Moneychanger::It()->OT().Exec().GetAccountWallet_InstrumentDefinitionID(acctID);
 
         if (str_notary_id != acctNotaryID || str_nym_id != acctNymID)
             continue;
@@ -173,7 +173,7 @@ void PageSmart_NymAcct::on_pushButtonSelect_clicked()
                 if (!qstr_current_id.isEmpty() && (0 == qstr_current_id.compare(OT_id)))
                     bFoundDefault = true;
                 // -----------------------------------------------
-                QString qstrTemp = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAccountWallet_Name(OT_id.toStdString()));
+                QString qstrTemp = QString::fromStdString(Moneychanger::It()->OT().Exec().GetAccountWallet_Name(OT_id.toStdString()));
 
                 if (!qstrTemp.isEmpty())
                     OT_name = qstrTemp;

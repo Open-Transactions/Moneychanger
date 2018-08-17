@@ -197,24 +197,24 @@ QWidget * Agreements::CreateUserBarWidget()
     {
         // -----------------------------------
         std::string str_acct_id     = qstr_acct_id.toStdString();
-        std::string str_acct_nym    = opentxs::OT::App().Client().Exec().GetAccountWallet_NymID(str_acct_id);
-        std::string str_acct_server = opentxs::OT::App().Client().Exec().GetAccountWallet_NotaryID(str_acct_id);
-        std::string str_acct_asset  = opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+        std::string str_acct_nym    = Moneychanger::It()->OT().Exec().GetAccountWallet_NymID(str_acct_id);
+        std::string str_acct_server = Moneychanger::It()->OT().Exec().GetAccountWallet_NotaryID(str_acct_id);
+        std::string str_acct_asset  = Moneychanger::It()->OT().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
         // -----------------------------------
         qstr_acct_nym    = QString::fromStdString(str_acct_nym);
         qstr_acct_server = QString::fromStdString(str_acct_server);
         qstr_acct_asset  = QString::fromStdString(str_acct_asset);
         // -----------------------------------
-        std::string str_tla = opentxs::OT::App().Client().Exec().GetCurrencyTLA(str_acct_asset);
+        std::string str_tla = Moneychanger::It()->OT().Exec().GetCurrencyTLA(str_acct_asset);
         qstr_tla = QString("<font color=grey>%1</font>").arg(QString::fromStdString(str_tla));
 
         qstr_balance = Moneychanger::shortAcctBalance(qstr_acct_id, qstr_acct_asset, false);
         // -----------------------------------
-        std::string str_acct_name  = opentxs::OT::App().Client().Exec().GetAccountWallet_Name(str_acct_id);
+        std::string str_acct_name  = Moneychanger::It()->OT().Exec().GetAccountWallet_Name(str_acct_id);
         // -----------------------------------
         if (!str_acct_asset.empty())
         {
-            std::string str_asset_name = opentxs::OT::App().Client().Exec().GetAssetType_Name(str_acct_asset);
+            std::string str_asset_name = Moneychanger::It()->OT().Exec().GetAssetType_Name(str_acct_asset);
             qstr_acct_asset_name = QString::fromStdString(str_asset_name);
         }
         // -----------------------------------
@@ -299,10 +299,10 @@ QWidget * Agreements::CreateUserBarWidget()
 
     if (!qstr_acct_nym.isEmpty())
     {
-        payment_code = opentxs::OT::App().Client().Exec().GetNym_Description(qstr_acct_nym.toStdString());
+        payment_code = Moneychanger::It()->OT().Exec().GetNym_Description(qstr_acct_nym.toStdString());
         qstrPaymentCode = QString::fromStdString(payment_code);
         // ----------------------------
-        QString qstr_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(qstr_acct_nym.toStdString()));
+        QString qstr_name = QString::fromStdString(Moneychanger::It()->OT().Exec().GetNym_Name(qstr_acct_nym.toStdString()));
 
         if (!qstr_name.isEmpty())
             nym_label_string = qstr_name;

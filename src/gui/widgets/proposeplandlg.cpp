@@ -268,7 +268,7 @@ void ProposePlanDlg::on_initialAmountEdit_textChanged(const QString &arg1)
             return;
         }
         // --------------------------------------
-        std::string str_InstrumentDefinitionID(opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
+        std::string str_InstrumentDefinitionID(Moneychanger::It()->OT().Exec().GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
         QString     amt = ui->initialAmountEdit->text();
 
         if (!amt.isEmpty() && !str_InstrumentDefinitionID.empty())
@@ -278,8 +278,8 @@ void ProposePlanDlg::on_initialAmountEdit_textChanged(const QString &arg1)
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
 
-            int64_t     amount               = opentxs::OT::App().Client().Exec().StringToAmount(str_InstrumentDefinitionID, str_temp);
-            std::string str_formatted_amount = opentxs::OT::App().Client().Exec().FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
+            int64_t     amount               = Moneychanger::It()->OT().Exec().StringToAmount(str_InstrumentDefinitionID, str_temp);
+            std::string str_formatted_amount = Moneychanger::It()->OT().Exec().FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
             QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
 
             ui->labelInitialAmountFormatted->setText(qstr_FinalAmount);
@@ -299,7 +299,7 @@ void ProposePlanDlg::on_recurringAmountEdit_textChanged(const QString &arg1)
             return;
         }
         // --------------------------------------
-        std::string str_InstrumentDefinitionID(opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
+        std::string str_InstrumentDefinitionID(Moneychanger::It()->OT().Exec().GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
         QString     amt = ui->recurringAmountEdit->text();
 
         if (!amt.isEmpty() && !str_InstrumentDefinitionID.empty())
@@ -309,8 +309,8 @@ void ProposePlanDlg::on_recurringAmountEdit_textChanged(const QString &arg1)
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
 
-            int64_t     amount               = opentxs::OT::App().Client().Exec().StringToAmount(str_InstrumentDefinitionID, str_temp);
-            std::string str_formatted_amount = opentxs::OT::App().Client().Exec().FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
+            int64_t     amount               = Moneychanger::It()->OT().Exec().StringToAmount(str_InstrumentDefinitionID, str_temp);
+            std::string str_formatted_amount = Moneychanger::It()->OT().Exec().FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
             QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
 
             ui->labelRecurringAmountFormatted->setText(qstr_FinalAmount);
@@ -439,7 +439,7 @@ void ProposePlanDlg::on_sendButton_clicked()
     // Make sure I'm not sending to myself (since that will fail...)
     //
     std::string str_fromAcctId(m_myAcctId.toStdString());
-    QString     qstr_fromNymId(QString::fromStdString(opentxs::OT::App().Client().Exec().GetAccountWallet_NymID(str_fromAcctId)));
+    QString     qstr_fromNymId(QString::fromStdString(Moneychanger::It()->OT().Exec().GetAccountWallet_NymID(str_fromAcctId)));
 
     if (0 == qstr_fromNymId.compare(m_hisNymId))
     {
@@ -507,7 +507,7 @@ void ProposePlanDlg::on_sendButton_clicked()
     int64_t     initial_amount   = 0;
     int64_t     recurring_amount = 0;
 
-    std::string str_InstrumentDefinitionID(opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
+    std::string str_InstrumentDefinitionID(Moneychanger::It()->OT().Exec().GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
 
     if (!str_InstrumentDefinitionID.empty())
     {
@@ -516,14 +516,14 @@ void ProposePlanDlg::on_sendButton_clicked()
         if (std::string::npos == str_initial_amount.find(".")) // not found
             str_initial_amount += '.';
 
-        initial_amount = opentxs::OT::App().Client().Exec().StringToAmount(str_InstrumentDefinitionID, str_initial_amount);
+        initial_amount = Moneychanger::It()->OT().Exec().StringToAmount(str_InstrumentDefinitionID, str_initial_amount);
         // ----------------------------------------------------
         std::string str_recurring_amount(qstr_recurring_amount.toStdString());
 
         if (std::string::npos == str_recurring_amount.find(".")) // not found
             str_recurring_amount += '.';
 
-        recurring_amount = opentxs::OT::App().Client().Exec().StringToAmount(str_InstrumentDefinitionID, str_recurring_amount);
+        recurring_amount = Moneychanger::It()->OT().Exec().StringToAmount(str_InstrumentDefinitionID, str_recurring_amount);
     }
     // ----------------------------------------------------
     if (initial_amount < 0)
@@ -561,8 +561,8 @@ void ProposePlanDlg::on_sendButton_clicked()
 bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t recurring_amount, const int32_t total_recurring_payment_count)
 {
     const std::string myAcctId = m_myAcctId.toStdString();
-    const std::string myNymId  = opentxs::OT::App().Client().Exec().GetAccountWallet_NymID(myAcctId);
-    const std::string notaryId = opentxs::OT::App().Client().Exec().GetAccountWallet_NotaryID(myAcctId);
+    const std::string myNymId  = Moneychanger::It()->OT().Exec().GetAccountWallet_NymID(myAcctId);
+    const std::string notaryId = Moneychanger::It()->OT().Exec().GetAccountWallet_NotaryID(myAcctId);
     const std::string hisNymId = m_hisNymId.toStdString();
     // ----------------------------------------------------
     const QDateTime qtimeFrom    = ui->dateTimeEditFrom->dateTime();
@@ -586,7 +586,7 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     const auto notaryID = opentxs::Identifier::Factory(notaryId),
                 myNymID = opentxs::Identifier::Factory(myNymId);
     {
-        if (!opentxs::OT::App().Client().ServerAction().GetTransactionNumbers(myNymID, notaryID, 2))
+        if (!Moneychanger::It()->OT().ServerAction().GetTransactionNumbers(myNymID, notaryID, 2))
         {
             const QString qstrErr("Failed trying to acquire 2 transaction numbers (to write the recurring payment with.)");
             qDebug() << qstrErr;
@@ -600,7 +600,7 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     const time64_t recurringPaymentDelay = timeFirstRecurring - timeFrom;
     const time64_t recurringPeriod       = timeNextRecurring  - timeFirstRecurring;
     // ------------------------------------------------------------
-    const std::string str_plan = opentxs::OT::App().Client().Exec().ProposePaymentPlan(
+    const std::string str_plan = Moneychanger::It()->OT().Exec().ProposePaymentPlan(
         notaryId,
         timeFrom,
         validityLength, //"valid to" is apparently ADDED to "valid from" so it's a bit misnamed.
@@ -645,12 +645,17 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     std::string  strResponse;
     {
         MTSpinner      theSpinner;
-        auto payment =
-            std::make_shared<const opentxs::OTPayment>(opentxs::OT::App().Client().Wallet(), opentxs::OT::App().Legacy().ClientDataFolder(), opentxs::String(str_plan.c_str()));
+        std::shared_ptr<const opentxs::OTPayment> payment{
+            Moneychanger::It()
+                ->OT()
+                .Factory()
+                .Payment(
+                    Moneychanger::It()->OT(), opentxs::String(str_plan.c_str()))
+                .release()};
 
-        OT_ASSERT(payment);
+        OT_ASSERT(false != bool(payment));
 
-        auto action = opentxs::OT::App().Client().ServerAction().SendPayment(myNymID, notaryID,
+        auto action = Moneychanger::It()->OT().ServerAction().SendPayment(myNymID, notaryID,
                                                                           opentxs::Identifier::Factory(hisNymId), payment);
         strResponse = action->Run();
     }
@@ -660,7 +665,7 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
     if (1 != nReturnVal)
     {
         // We can't forget to do this, or we'll leak transaction numbers here.
-        opentxs::OT::App().Client().Exec().Msg_HarvestTransactionNumbers(str_plan, myNymId, false, false, false, false, false);
+        Moneychanger::It()->OT().Exec().Msg_HarvestTransactionNumbers(str_plan, myNymId, false, false, false, false, false);
         // ------------------------------------
         const QString qstrErr("Failed trying to send proposed recurring payment plan to recipient. Perhaps network is down? (Or notary is down?)");
         qDebug() << qstrErr;
@@ -688,7 +693,7 @@ void ProposePlanDlg::on_initialAmountEdit_editingFinished()
 {
     if (!m_myAcctId.isEmpty() && !m_bSent)
     {
-        std::string str_InstrumentDefinitionID(opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
+        std::string str_InstrumentDefinitionID(Moneychanger::It()->OT().Exec().GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
         QString     amt = ui->initialAmountEdit->text();
 
         if (!amt.isEmpty() && !str_InstrumentDefinitionID.empty())
@@ -698,8 +703,8 @@ void ProposePlanDlg::on_initialAmountEdit_editingFinished()
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
 
-            int64_t     amount               = opentxs::OT::App().Client().Exec().StringToAmount(str_InstrumentDefinitionID, str_temp);
-            std::string str_formatted_amount = opentxs::OT::App().Client().Exec().FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
+            int64_t     amount               = Moneychanger::It()->OT().Exec().StringToAmount(str_InstrumentDefinitionID, str_temp);
+            std::string str_formatted_amount = Moneychanger::It()->OT().Exec().FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
             QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
 
             ui->initialAmountEdit->setText(qstr_FinalAmount);
@@ -712,7 +717,7 @@ void ProposePlanDlg::on_recurringAmountEdit_editingFinished()
 {
     if (!m_myAcctId.isEmpty() && !m_bSent)
     {
-        std::string str_InstrumentDefinitionID(opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
+        std::string str_InstrumentDefinitionID(Moneychanger::It()->OT().Exec().GetAccountWallet_InstrumentDefinitionID(m_myAcctId.toStdString()));
         QString     amt = ui->recurringAmountEdit->text();
 
         if (!amt.isEmpty() && !str_InstrumentDefinitionID.empty())
@@ -722,8 +727,8 @@ void ProposePlanDlg::on_recurringAmountEdit_editingFinished()
             if (std::string::npos == str_temp.find(".")) // not found
                 str_temp += '.';
 
-            int64_t     amount               = opentxs::OT::App().Client().Exec().StringToAmount(str_InstrumentDefinitionID, str_temp);
-            std::string str_formatted_amount = opentxs::OT::App().Client().Exec().FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
+            int64_t     amount               = Moneychanger::It()->OT().Exec().StringToAmount(str_InstrumentDefinitionID, str_temp);
+            std::string str_formatted_amount = Moneychanger::It()->OT().Exec().FormatAmount(str_InstrumentDefinitionID, static_cast<int64_t>(amount));
             QString     qstr_FinalAmount     = QString::fromStdString(str_formatted_amount);
 
             ui->recurringAmountEdit->setText(qstr_FinalAmount);
@@ -745,7 +750,7 @@ void ProposePlanDlg::on_merchantButton_clicked()
 
     bool bFoundDefault = false;
     // -----------------------------------------------
-    for (const auto& [accountID, alias] : opentxs::OT::App().Client().Storage().AccountList())
+    for (const auto& [accountID, alias] : Moneychanger::It()->OT().Storage().AccountList())
     {
         //Get OT Acct ID
         QString OT_acct_id = QString::fromStdString(accountID);
@@ -756,7 +761,7 @@ void ProposePlanDlg::on_merchantButton_clicked()
             if (!m_myAcctId.isEmpty() && (OT_acct_id == m_myAcctId))
                 bFoundDefault = true;
             // -----------------------------------------------
-            OT_acct_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAccountWallet_Name(OT_acct_id.toStdString()));
+            OT_acct_name = QString::fromStdString(Moneychanger::It()->OT().Exec().GetAccountWallet_Name(OT_acct_id.toStdString()));
             // -----------------------------------------------
             the_map.insert(OT_acct_id, OT_acct_name);
         }
@@ -974,7 +979,7 @@ void ProposePlanDlg::dialog()
         // -------------------------------------------
         if (!m_myAcctId.isEmpty()) // myAcct was provided.
         {
-            str_my_name = opentxs::OT::App().Client().Exec().GetAccountWallet_Name(m_myAcctId.toStdString());
+            str_my_name = Moneychanger::It()->OT().Exec().GetAccountWallet_Name(m_myAcctId.toStdString());
 
             if (str_my_name.empty())
                 str_my_name = m_myAcctId.toStdString();
@@ -996,7 +1001,7 @@ void ProposePlanDlg::dialog()
         // -------------------------------------------
         if (!m_hisNymId.isEmpty()) // hisNym was provided.
         {
-            str_his_name = opentxs::OT::App().Client().Exec().GetNym_Name(m_hisNymId.toStdString());
+            str_his_name = Moneychanger::It()->OT().Exec().GetNym_Name(m_hisNymId.toStdString());
 
             if (str_his_name.empty())
                 str_his_name = m_hisNymId.toStdString();

@@ -117,9 +117,9 @@ void MTCashPurse::refresh(QString strID, QString strName)
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
         std::string str_acct_id     = strID.toStdString();
-        std::string str_acct_nym    = opentxs::OT::App().Client().Exec().GetAccountWallet_NymID(str_acct_id);
-        std::string str_acct_server = opentxs::OT::App().Client().Exec().GetAccountWallet_NotaryID(str_acct_id);
-        std::string str_acct_asset  = opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+        std::string str_acct_nym    = Moneychanger::It()->OT().Exec().GetAccountWallet_NymID(str_acct_id);
+        std::string str_acct_server = Moneychanger::It()->OT().Exec().GetAccountWallet_NotaryID(str_acct_id);
+        std::string str_acct_asset  = Moneychanger::It()->OT().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
         // -----------------------------------
         QString qstr_acct_nym    = QString::fromStdString(str_acct_nym);
         QString qstr_acct_server = QString::fromStdString(str_acct_server);
@@ -131,7 +131,7 @@ void MTCashPurse::refresh(QString strID, QString strName)
 
         if (!qstr_acct_asset.isEmpty())
             qstr_asset_name = QString("   (%1)").arg(
-                    QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Name(str_acct_asset)));
+                    QString::fromStdString(Moneychanger::It()->OT().Exec().GetAssetType_Name(str_acct_asset)));
         // -----------------------------------
         int64_t  raw_cash_balance = Moneychanger::rawCashBalance(qstr_acct_server, qstr_acct_asset, qstr_acct_nym);
 
@@ -142,30 +142,30 @@ void MTCashPurse::refresh(QString strID, QString strName)
         if (raw_cash_balance > 0)
         {
 #if OT_CASH
-            std::string str_purse = opentxs::OT::App().Client().Exec().LoadPurse(str_acct_server, str_acct_asset, str_acct_nym);
+            std::string str_purse = Moneychanger::It()->OT().Exec().LoadPurse(str_acct_server, str_acct_asset, str_acct_nym);
 
             if (!str_purse.empty())
             {
-                int32_t purse_count = opentxs::OT::App().Client().Exec().Purse_Count(str_acct_server, str_acct_asset, str_purse);
+                int32_t purse_count = Moneychanger::It()->OT().Exec().Purse_Count(str_acct_server, str_acct_asset, str_purse);
 
                 // -------------------------------------------------------
                 ui->tableWidget->setRowCount(static_cast<int>(purse_count));
                 // -------------------------------------------------------
                 for (int ii = 0; ii < purse_count; ii++)
                 {
-                    std::string cash_token = opentxs::OT::App().Client().Exec().Purse_Peek(str_acct_server, str_acct_asset, str_acct_nym, str_purse);
+                    std::string cash_token = Moneychanger::It()->OT().Exec().Purse_Peek(str_acct_server, str_acct_asset, str_acct_nym, str_purse);
 
                     if (!cash_token.empty())
                     {
-                        std::string str_amount = opentxs::OT::App().Client().Exec().FormatAmount(str_acct_asset,
-                                                                          opentxs::OT::App().Client().Exec().Token_GetDenomination(str_acct_server,
+                        std::string str_amount = Moneychanger::It()->OT().Exec().FormatAmount(str_acct_asset,
+                                                                          Moneychanger::It()->OT().Exec().Token_GetDenomination(str_acct_server,
                                                                                                             str_acct_asset,
                                                                                                             cash_token));
                         // ------------------------------------------------------
-                        QDateTime qdate_expires     = QDateTime::fromTime_t(opentxs::OT::App().Client().Exec().Token_GetValidTo(str_acct_server, str_acct_asset, cash_token));
-                        QString   qstr_token_id     = QString::fromStdString(opentxs::OT::App().Client().Exec().Token_GetID(str_acct_server, str_acct_asset, cash_token));
+                        QDateTime qdate_expires     = QDateTime::fromTime_t(Moneychanger::It()->OT().Exec().Token_GetValidTo(str_acct_server, str_acct_asset, cash_token));
+                        QString   qstr_token_id     = QString::fromStdString(Moneychanger::It()->OT().Exec().Token_GetID(str_acct_server, str_acct_asset, cash_token));
                         QString   qstr_denomination = QString::fromStdString(str_amount);
-                        QString   qstr_series       = QString("%1").arg(opentxs::OT::App().Client().Exec().Token_GetSeries(str_acct_server, str_acct_asset, cash_token));
+                        QString   qstr_series       = QString("%1").arg(Moneychanger::It()->OT().Exec().Token_GetSeries(str_acct_server, str_acct_asset, cash_token));
                         QString   qstr_expires      = qdate_expires.toString(QString("MMM d yyyy hh:mm:ss"));
 
                         QLabel * pLabelDenomination = new QLabel(qstr_denomination);
@@ -204,7 +204,7 @@ void MTCashPurse::refresh(QString strID, QString strName)
                     }
 
 #if OT_CASH
-                    str_purse = opentxs::OT::App().Client().Exec().Purse_Pop(str_acct_server, str_acct_asset, str_acct_nym, str_purse);
+                    str_purse = Moneychanger::It()->OT().Exec().Purse_Pop(str_acct_server, str_acct_asset, str_acct_nym, str_purse);
 #endif  // OT_CASH
                 } // for
                 // -------------------------------------------------------
@@ -267,13 +267,13 @@ void MTCashPurse::on_pushButtonWithdraw_clicked()
 
         MTSpinner theSpinner;
 
-        bSent = (1 == opentxs::OT::App().Client().Cash().easy_withdraw_cash(accountID, lAmount));
+        bSent = (1 == Moneychanger::It()->OT().Cash().easy_withdraw_cash(accountID, lAmount));
     }
     // -----------------------------------------------------------------
     if (!bSent)
     {
-        const std::string str_server = opentxs::OT::App().Client().Exec().GetAccountWallet_NotaryID(accountID);
-        const std::string str_nym    = opentxs::OT::App().Client().Exec().GetAccountWallet_NymID   (accountID);
+        const std::string str_server = Moneychanger::It()->OT().Exec().GetAccountWallet_NotaryID(accountID);
+        const std::string str_nym    = Moneychanger::It()->OT().Exec().GetAccountWallet_NymID   (accountID);
 
         const int64_t lUsageCredits  = Moneychanger::It()->HasUsageCredits(str_server, str_nym);
 
@@ -306,9 +306,9 @@ void MTCashPurse::on_pushButtonExport_clicked()
             this->TallySelections(selectedIndices, lAmount);
     // ------------------------------------------------------------------
     std::string str_acct_id     = m_qstrAcctId.toStdString();
-    std::string str_acct_nym    = opentxs::OT::App().Client().Exec().GetAccountWallet_NymID(str_acct_id);
-    std::string str_acct_server = opentxs::OT::App().Client().Exec().GetAccountWallet_NotaryID(str_acct_id);
-    std::string str_acct_asset  = opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+    std::string str_acct_nym    = Moneychanger::It()->OT().Exec().GetAccountWallet_NymID(str_acct_id);
+    std::string str_acct_server = Moneychanger::It()->OT().Exec().GetAccountWallet_NotaryID(str_acct_id);
+    std::string str_acct_asset  = Moneychanger::It()->OT().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
     // ------------------------------------------------------------------
     QString qstrSelectedIndices = selectedIndices.join(","); // Create a comma-separated list of selected indices.
 
@@ -318,7 +318,7 @@ void MTCashPurse::on_pushButtonExport_clicked()
     if (qstrSelectedIndices.isEmpty())
         return;
     // ------------------------------------
-    std::string str_amount = opentxs::OT::App().Client().Exec().FormatAmount(str_acct_asset, lAmount);
+    std::string str_amount = Moneychanger::It()->OT().Exec().FormatAmount(str_acct_asset, lAmount);
     // ------------------------------------
     // Find out if they want it to be password-protected, and if not,
     // find out who the recipient Nym is meant to be.
@@ -368,7 +368,7 @@ void MTCashPurse::on_pushButtonExport_clicked()
         std::string str_exported,  // The exported cash, encrypted to recipient (or passphrase.)
                     str_retained;  // The exported cash, encrypted to sender (just in case...)
 
-        str_exported = opentxs::OT::App().Client().Cash().export_cash(str_acct_server,
+        str_exported = Moneychanger::It()->OT().Cash().export_cash(str_acct_server,
                                             str_acct_nym,
                                             str_acct_asset,
                                             qstrRecipNymID.toStdString(),
@@ -430,9 +430,9 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
             this->TallySelections(selectedIndices, lAmount);
     // ------------------------------------------------------------------
     std::string str_acct_id     = m_qstrAcctId.toStdString();
-    std::string str_acct_nym    = opentxs::OT::App().Client().Exec().GetAccountWallet_NymID(str_acct_id);
-    std::string str_acct_server = opentxs::OT::App().Client().Exec().GetAccountWallet_NotaryID(str_acct_id);
-    std::string str_acct_asset  = opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
+    std::string str_acct_nym    = Moneychanger::It()->OT().Exec().GetAccountWallet_NymID(str_acct_id);
+    std::string str_acct_server = Moneychanger::It()->OT().Exec().GetAccountWallet_NotaryID(str_acct_id);
+    std::string str_acct_asset  = Moneychanger::It()->OT().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id);
     // ------------------------------------------------------------------
     QString qstrSelectedIndices = selectedIndices.join(","); // Create a comma-separated list of selected indices.
 
@@ -442,7 +442,7 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
     if (qstrSelectedIndices.isEmpty())
         return;
     // ------------------------------------
-    std::string str_amount = opentxs::OT::App().Client().Exec().FormatAmount(str_acct_asset, lAmount);
+    std::string str_amount = Moneychanger::It()->OT().Exec().FormatAmount(str_acct_asset, lAmount);
     // ------------------------------------
     QMessageBox::StandardButton reply;
 
@@ -461,7 +461,7 @@ void MTCashPurse::on_pushButtonDeposit_clicked()
             MTSpinner    theSpinner;
             std::string  str_selected_indices(qstrSelectedIndices.toStdString()); // (FYI, you can also use "all" for all indices.)
 
-            bSent = (1 == opentxs::OT::App().Client().Cash().deposit_local_purse(str_acct_server, // <=======
+            bSent = (1 == Moneychanger::It()->OT().Cash().deposit_local_purse(str_acct_server, // <=======
                                                        str_acct_nym,
                                                        str_acct_id,
                                                        str_selected_indices));
@@ -537,7 +537,7 @@ int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmoun
                 // -------------------------
                 if (NULL != pValueLabel)
                 {
-                    int64_t lTokenAmount = opentxs::OT::App().Client().Exec().StringToAmount(m_qstrInstrumentDefinitionID.toStdString(),
+                    int64_t lTokenAmount = Moneychanger::It()->OT().Exec().StringToAmount(m_qstrInstrumentDefinitionID.toStdString(),
                                                                       pValueLabel->text().toStdString());
                     lSelectedAmount += lTokenAmount;
                 }
@@ -562,7 +562,7 @@ int MTCashPurse::TallySelections(QStringList & selectedIndices, int64_t & lAmoun
         if (m_qstrInstrumentDefinitionID.isEmpty())
             qstr_amount = QString("%1").arg(lAmount);
         else
-            qstr_amount = QString::fromStdString(opentxs::OT::App().Client().Exec().FormatAmount(m_qstrInstrumentDefinitionID.toStdString(), lAmount));
+            qstr_amount = QString::fromStdString(Moneychanger::It()->OT().Exec().FormatAmount(m_qstrInstrumentDefinitionID.toStdString(), lAmount));
         // ---------------------------------------
         ui->pushButtonDeposit ->setText(QString("%1: %2").arg(tr("Deposit Cash")).arg(qstr_amount));
     }

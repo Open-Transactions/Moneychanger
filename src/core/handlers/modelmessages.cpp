@@ -329,7 +329,7 @@ QVariant ConvMsgsProxyModel::data ( const QModelIndex & index, int role/* = Qt::
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::OT::App().Client().Exec().GetNym_Name(str_id);
+                str_name = str_id.empty() ? "" : Moneychanger::It()->OT().Exec().GetNym_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())
@@ -463,7 +463,7 @@ QWidget * ConvMsgsProxyModel::CreateDetailHeaderWidget(const int nSourceRow, boo
 
 //    if ( !qstrAssetId.isEmpty() )
 //    {
-//        str_formatted = opentxs::OT::App().Client().Exec().FormatAmount(qstrAssetId.toStdString(), lAmount);
+//        str_formatted = Moneychanger::It()->OT().Exec().FormatAmount(qstrAssetId.toStdString(), lAmount);
 //        bFormatted = !str_formatted.empty();
 //    }
 //    // ----------------------------------------
@@ -680,7 +680,7 @@ bool ConvMsgsProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
 ////            const QVariant dataSubject    = pMsgModel->data(indexSubject);
 ////            const QString  qstrSubject    = dataSubject.isValid()  ? dataSubject.toString() : "";
 //            const QString  qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
-//                                                QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_Name(qstrNotaryID.toStdString()));
+//                                                QString::fromStdString(Moneychanger::It()->OT().Exec().GetServer_Name(qstrNotaryID.toStdString()));
 //            MTNameLookupQT theLookup;
 //            QString qstrSenderName    = qstrSenderNym   .isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrSenderNym   .toStdString(), ""));
 //            QString qstrRecipientName = qstrRecipientNym.isEmpty() ? "" : QString::fromStdString(theLookup.GetNymName(qstrRecipientNym.toStdString(), ""));
@@ -919,7 +919,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
             if (!qstrID.isEmpty())
             {
                 const std::string str_id = qstrID.trimmed().toStdString();
-                str_name = str_id.empty() ? "" : opentxs::OT::App().Client().Exec().GetNym_Name(str_id);
+                str_name = str_id.empty() ? "" : Moneychanger::It()->OT().Exec().GetNym_Name(str_id);
             }
             // ------------------------
             if (str_name.empty() && !qstrID.isEmpty())
@@ -934,7 +934,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
 //            if (!qstrNymID.isEmpty())
 //            {
 //                const std::string str_id = qstrNymID.toStdString();
-//                const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().Client().Exec().GetNym_Name(str_id);
+//                const std::string str_name = str_id.empty() ? "" : Moneychanger::It()->OT().Exec().GetNym_Name(str_id);
 //                // ------------------------
 //                if (!str_name.empty())
 //                    return QVariant(QString::fromStdString(str_name));
@@ -945,7 +945,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString().trimmed() : "";
             const std::string str_id = qstrID.isEmpty() ? "" : qstrID.toStdString();
-            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().Client().Exec().GetNym_Name(str_id);
+            const std::string str_name = str_id.empty() ? "" : Moneychanger::It()->OT().Exec().GetNym_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -978,7 +978,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
         {
             QString qstrID = sourceData.isValid() ? sourceData.toString().trimmed() : "";
             const std::string str_id = qstrID.isEmpty() ? "" : qstrID.toStdString();
-            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().Client().Exec().GetNym_Name(str_id);
+            const std::string str_name = str_id.empty() ? "" : Moneychanger::It()->OT().Exec().GetNym_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -1013,7 +1013,7 @@ QVariant MessagesProxyModel::data ( const QModelIndex & index, int role/* = Qt::
             // Else if the method t
             QString qstrID = sourceData.isValid() ? sourceData.toString() : "";
             const std::string str_id = qstrID.toStdString();
-            const std::string str_name = str_id.empty() ? "" : opentxs::OT::App().Client().Exec().GetServer_Name(str_id);
+            const std::string str_name = str_id.empty() ? "" : Moneychanger::It()->OT().Exec().GetServer_Name(str_id);
             // ------------------------
             if (!str_name.empty())
                 return QVariant(QString::fromStdString(str_name));
@@ -1314,9 +1314,9 @@ bool MessagesProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sour
             const QVariant dataSubject    = pMsgModel->data(indexSubject);
             const QString  qstrSubject    = dataSubject.isValid()  ? dataSubject.toString() : "";
             const QString  qstrNotaryName = qstrNotaryID.isEmpty() ? QString("") :
-                                                QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_Name(qstrNotaryID.toStdString()));
-            QString qstrSenderName    = qstrSenderNym   .isEmpty() ? "" : QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(qstrSenderNym   .toStdString()));
-            QString qstrRecipientName = qstrRecipientNym.isEmpty() ? "" : QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(qstrRecipientNym.toStdString()));
+                                                QString::fromStdString(Moneychanger::It()->OT().Exec().GetServer_Name(qstrNotaryID.toStdString()));
+            QString qstrSenderName    = qstrSenderNym   .isEmpty() ? "" : QString::fromStdString(Moneychanger::It()->OT().Exec().GetNym_Name(qstrSenderNym   .toStdString()));
+            QString qstrRecipientName = qstrRecipientNym.isEmpty() ? "" : QString::fromStdString(Moneychanger::It()->OT().Exec().GetNym_Name(qstrRecipientNym.toStdString()));
 
             if (qstrSenderName.isEmpty() && !qstrSenderAddress.isEmpty())
                 qstrSenderName = qstrSenderAddress;

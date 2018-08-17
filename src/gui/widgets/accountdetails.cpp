@@ -1461,17 +1461,17 @@ void MTAccountDetails::refresh(QString strID, QString strName)
 //      ui->lineEditID  ->setText(strID);
         ui->lineEditName->setText(strName);
         // ----------------------------------
-        std::string str_notary_id = opentxs::OT::App().Client().Exec().GetAccountWallet_NotaryID   (strID.toStdString());
-        std::string str_asset_id  = opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(strID.toStdString());
-        std::string str_nym_id    = opentxs::OT::App().Client().Exec().GetAccountWallet_NymID      (strID.toStdString());
+        std::string str_notary_id = Moneychanger::It()->OT().Exec().GetAccountWallet_NotaryID   (strID.toStdString());
+        std::string str_asset_id  = Moneychanger::It()->OT().Exec().GetAccountWallet_InstrumentDefinitionID(strID.toStdString());
+        std::string str_nym_id    = Moneychanger::It()->OT().Exec().GetAccountWallet_NymID      (strID.toStdString());
         // ----------------------------------
         QString qstr_notary_id    = QString::fromStdString(str_notary_id);
         QString qstr_asset_id     = QString::fromStdString(str_asset_id);
         QString qstr_nym_id       = QString::fromStdString(str_nym_id);
         // ----------------------------------
-        QString qstr_server_name  = QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_Name   (str_notary_id));
-        QString qstr_asset_name   = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Name(str_asset_id));
-        QString qstr_nym_name     = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name      (str_nym_id));
+        QString qstr_server_name  = QString::fromStdString(Moneychanger::It()->OT().Exec().GetServer_Name   (str_notary_id));
+        QString qstr_asset_name   = QString::fromStdString(Moneychanger::It()->OT().Exec().GetAssetType_Name(str_asset_id));
+        QString qstr_nym_name     = QString::fromStdString(Moneychanger::It()->OT().Exec().GetNym_Name      (str_nym_id));
         // ----------------------------------
         // MAIN TAB
         //
@@ -1556,7 +1556,7 @@ void MTAccountDetails::on_pushButtonMakeDefault_clicked()
 {
     if ((NULL != m_pOwner) && !m_qstrID.isEmpty())
     {
-        std::string str_acct_name = opentxs::OT::App().Client().Exec().GetAccountWallet_Name(m_qstrID.toStdString());
+        std::string str_acct_name = Moneychanger::It()->OT().Exec().GetAccountWallet_Name(m_qstrID.toStdString());
         ui->pushButtonMakeDefault->setEnabled(false);
         // --------------------------------------------------
         QString qstrAcctName = QString::fromStdString(str_acct_name);
@@ -1573,7 +1573,7 @@ void MTAccountDetails::on_toolButtonAsset_clicked()
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
-        QString qstr_id = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id));
+        QString qstr_id = QString::fromStdString(Moneychanger::It()->OT().Exec().GetAccountWallet_InstrumentDefinitionID(str_acct_id));
         // --------------------------------------------------
         emit ShowAsset(qstr_id);
     }
@@ -1585,7 +1585,7 @@ void MTAccountDetails::on_toolButtonNym_clicked()
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
-        QString qstr_id = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAccountWallet_NymID(str_acct_id));
+        QString qstr_id = QString::fromStdString(Moneychanger::It()->OT().Exec().GetAccountWallet_NymID(str_acct_id));
         // --------------------------------------------------
         emit ShowNym(qstr_id);
     }
@@ -1597,7 +1597,7 @@ void MTAccountDetails::on_toolButtonServer_clicked()
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
         // -------------------------------------------------------------------
-        QString qstr_id = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAccountWallet_NotaryID(str_acct_id));
+        QString qstr_id = QString::fromStdString(Moneychanger::It()->OT().Exec().GetAccountWallet_NotaryID(str_acct_id));
         // --------------------------------------------------
         emit ShowServer(qstr_id);
     }
@@ -1613,8 +1613,8 @@ void MTAccountDetails::DeleteButtonClicked()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         const std::string str_account_id   = m_pOwner->m_qstrCurrentID.toStdString();
-        const std::string str_owner_nym_id = opentxs::OT::App().Client().Exec().GetAccountWallet_NymID   (str_account_id);
-        const std::string str_notary_id    = opentxs::OT::App().Client().Exec().GetAccountWallet_NotaryID(str_account_id);
+        const std::string str_owner_nym_id = Moneychanger::It()->OT().Exec().GetAccountWallet_NymID   (str_account_id);
+        const std::string str_notary_id    = Moneychanger::It()->OT().Exec().GetAccountWallet_NotaryID(str_account_id);
         // ----------------------------------------------------
         // Download all the intermediary files (account balance, inbox, outbox, etc)
         // to make sure we're looking at the latest inbox.
@@ -1626,7 +1626,7 @@ void MTAccountDetails::DeleteButtonClicked()
         {
             MTSpinner theSpinner;
 
-            bRetrieved = opentxs::OT::App().Client().ServerAction().DownloadAccount(
+            bRetrieved = Moneychanger::It()->OT().ServerAction().DownloadAccount(
             		theNymID, theNotaryID, theAcctID, true);
         }
         qDebug() << QString("%1 retrieving intermediary files for account %2. (Precursor to delete account.)").
@@ -1638,12 +1638,12 @@ void MTAccountDetails::DeleteButtonClicked()
             return;
         }
         // ---------------------------------------------------------
-        bool bCanRemove = opentxs::OT::App().Client().Exec().Wallet_CanRemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
+        bool bCanRemove = Moneychanger::It()->OT().Exec().Wallet_CanRemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
 
         if (!bCanRemove)
         {
             const auto id_acct = opentxs::Identifier::Factory(str_account_id);
-            const auto account = opentxs::OT::App().Client().Wallet().Account(id_acct);
+            const auto account = Moneychanger::It()->OT().Wallet().Account(id_acct);
 
             QString qstrMessage = QString("%1. %2")
                     .arg(tr("This Account cannot be deleted until it has a zero balance and an empty inbox"))
@@ -1664,7 +1664,7 @@ void MTAccountDetails::DeleteButtonClicked()
             {
                 MTSpinner theSpinner;
 
-                auto action = opentxs::OT::App().Client().ServerAction().UnregisterAccount(theNymID, theNotaryID, theAcctID);
+                auto action = Moneychanger::It()->OT().ServerAction().UnregisterAccount(theNymID, theNotaryID, theAcctID);
                 std::string strResponse = action->Run();
                 nSuccess                = opentxs::VerifyMessageSuccess(strResponse);
             }
@@ -1705,7 +1705,7 @@ void MTAccountDetails::DeleteButtonClicked()
                 // from the above server message to unregisterAccount. So we don't have to do this
                 // here, since it's already done by the time we reach this point.
                 //
-//              bool bSuccess = opentxs::OT::App().Client().Exec().Wallet_RemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
+//              bool bSuccess = Moneychanger::It()->OT().Exec().Wallet_RemoveAccount(m_pOwner->m_qstrCurrentID.toStdString());
                 // ------------------------------------------------
                 m_pOwner->m_map.remove(m_pOwner->m_qstrCurrentID);
                 // ------------------------------------------------
@@ -1733,9 +1733,9 @@ void MTAccountDetails::AddButtonClicked()
         QString qstrNymID    = theWizard.field("NymID")   .toString();
         QString qstrNotaryID = theWizard.field("NotaryID").toString();
         // ---------------------------------------------------
-        QString qstrAssetName  = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Name(qstrInstrumentDefinitionID .toStdString()));
-        QString qstrNymName    = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name      (qstrNymID   .toStdString()));
-        QString qstrServerName = QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_Name   (qstrNotaryID.toStdString()));
+        QString qstrAssetName  = QString::fromStdString(Moneychanger::It()->OT().Exec().GetAssetType_Name(qstrInstrumentDefinitionID .toStdString()));
+        QString qstrNymName    = QString::fromStdString(Moneychanger::It()->OT().Exec().GetNym_Name      (qstrNymID   .toStdString()));
+        QString qstrServerName = QString::fromStdString(Moneychanger::It()->OT().Exec().GetServer_Name   (qstrNotaryID.toStdString()));
         // ---------------------------------------------------
         QMessageBox::information(this, tr("Confirm Create Account"),
                                  QString("%1: '%2'<br/>%3: %4<br/>%5: %6<br/>%7: %8").arg(tr("Confirm Create Account:<br/>Name")).
@@ -1747,7 +1747,7 @@ void MTAccountDetails::AddButtonClicked()
         // ------------------------------
         // First make sure the Nym is registered at the server, and if not, register him.
         //
-        bool bIsRegiseredAtServer = opentxs::OT::App().Client().Exec().IsNym_RegisteredAtServer(qstrNymID.toStdString(),
+        bool bIsRegiseredAtServer = Moneychanger::It()->OT().Exec().IsNym_RegisteredAtServer(qstrNymID.toStdString(),
                                                                          qstrNotaryID.toStdString());
         if (!bIsRegiseredAtServer)
         {
@@ -1757,7 +1757,7 @@ void MTAccountDetails::AddButtonClicked()
             {
                 MTSpinner theSpinner;
 
-                auto strResponse = opentxs::OT::App().Client().Sync().RegisterNym(opentxs::Identifier::Factory(qstrNymID.toStdString()),
+                auto strResponse = Moneychanger::It()->OT().Sync().RegisterNym(opentxs::Identifier::Factory(qstrNymID.toStdString()),
                                                                                opentxs::Identifier::Factory(qstrNotaryID.toStdString()), true);
 
                 if (false == strResponse->empty()) {
@@ -1811,7 +1811,7 @@ void MTAccountDetails::AddButtonClicked()
             std::string nymID = qstrNymID.toStdString();
             std::string notaryID = qstrNotaryID.toStdString();
             std::string instrumentDefinitionID = qstrInstrumentDefinitionID.toStdString();
-            auto action = opentxs::OT::App().Client().ServerAction().RegisterAccount(
+            auto action = Moneychanger::It()->OT().ServerAction().RegisterAccount(
                     opentxs::Identifier::Factory(nymID), opentxs::Identifier::Factory(notaryID), opentxs::Identifier::Factory(instrumentDefinitionID));
             strResponse = action->Run();
         }
@@ -1831,7 +1831,7 @@ void MTAccountDetails::AddButtonClicked()
         // ------------------------------------------------------
         // Get the ID of the new account.
         //
-        QString qstrID = QString::fromStdString(opentxs::OT::App().Client().Exec().Message_GetNewAcctID(strResponse));
+        QString qstrID = QString::fromStdString(Moneychanger::It()->OT().Exec().Message_GetNewAcctID(strResponse));
 
         if (qstrID.isEmpty())
         {
@@ -1843,7 +1843,7 @@ void MTAccountDetails::AddButtonClicked()
         // Set the Name of the new account.
         //
         //bool bNameSet =
-                opentxs::OT::App().Client().Exec().SetAccountWallet_Name(qstrID   .toStdString(),
+                Moneychanger::It()->OT().Exec().SetAccountWallet_Name(qstrID   .toStdString(),
                                                   qstrNymID.toStdString(),
                                                   qstrName .toStdString());
         // -----------------------------------------------
@@ -1868,11 +1868,11 @@ void MTAccountDetails::on_lineEditName_editingFinished()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         std::string str_acct_id = m_pOwner->m_qstrCurrentID.toStdString();
-        std::string str_nym_id  = opentxs::OT::App().Client().Exec().GetAccountWallet_NymID(str_acct_id);
+        std::string str_nym_id  = Moneychanger::It()->OT().Exec().GetAccountWallet_NymID(str_acct_id);
 
         if (!str_acct_id.empty() && !str_nym_id.empty())
         {
-            bool bSuccess = opentxs::OT::App().Client().Exec().SetAccountWallet_Name(str_acct_id,  // Account
+            bool bSuccess = Moneychanger::It()->OT().Exec().SetAccountWallet_Name(str_acct_id,  // Account
                                                               str_nym_id,   // Nym (Account Owner.)
                                                               ui->lineEditName->text().toStdString()); // New Name
             if (bSuccess)
