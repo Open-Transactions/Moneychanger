@@ -55,7 +55,7 @@ void MTAssetDetails::on_pushButton_clicked()
 //    if (m_pPlainTextEdit)
 //        qstrContents = m_pPlainTextEdit->toPlainText();
     // --------------------------
-    if (opentxs::OT::App().Client().Exec().GetServerCount() <= 0)
+    if (Moneychanger::It()->OT().Exec().GetServerCount() <= 0)
     {
         QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME),
                                  tr("There are no server contracts in this wallet. "
@@ -69,7 +69,7 @@ void MTAssetDetails::on_pushButton_clicked()
 
     if (!qstrAssetID.isEmpty())
     {
-        QString qstrContents = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Contract(qstrAssetID.toStdString()));
+        QString qstrContents = QString::fromStdString(Moneychanger::It()->OT().Exec().GetAssetType_Contract(qstrAssetID.toStdString()));
         opentxs::proto::UnitDefinition contractProto =
             opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
                 (opentxs::String(qstrContents.toStdString()));
@@ -85,7 +85,7 @@ void MTAssetDetails::on_pushButton_clicked()
                 // --------------------------
                 // Then we see if the local wallet actually contains the private key
                 // for that Nym.
-                if (opentxs::OT::App().Client().Exec().VerifyUserPrivateKey(str_signer_nym))
+                if (Moneychanger::It()->OT().Exec().VerifyUserPrivateKey(str_signer_nym))
                 {
                     // Ideally at this point, we will already have some way of differentiating
                     // between the notaries where the assets have, and have not, already been
@@ -116,8 +116,8 @@ void MTAssetDetails::on_pushButton_clicked()
                     QString qstr_current_id = qstr_default_id;
                     // -------------------------------------------
                     if (qstr_current_id.isEmpty())
-                        //&& (opentxs::OT::App().Client().Exec().GetServerCount() > 0)) // Already checked at the top of this function.
-                        qstr_current_id = QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_ID(0));
+                        //&& (Moneychanger::It()->OT().Exec().GetServerCount() > 0)) // Already checked at the top of this function.
+                        qstr_current_id = QString::fromStdString(Moneychanger::It()->OT().Exec().GetServer_ID(0));
                     // -------------------------------------------
                     // Select from Servers in local wallet.
                     //
@@ -127,11 +127,11 @@ void MTAssetDetails::on_pushButton_clicked()
 
                     bool bFoundDefault = false;
                     // -----------------------------------------------
-                    const int32_t the_count = opentxs::OT::App().Client().Exec().GetServerCount();
+                    const int32_t the_count = Moneychanger::It()->OT().Exec().GetServerCount();
                     // -----------------------------------------------
                     for (int32_t ii = 0; ii < the_count; ++ii)
                     {
-                        QString OT_id = QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_ID(ii));
+                        QString OT_id = QString::fromStdString(Moneychanger::It()->OT().Exec().GetServer_ID(ii));
                         QString OT_name("");
                         // -----------------------------------------------
                         if (!OT_id.isEmpty())
@@ -139,7 +139,7 @@ void MTAssetDetails::on_pushButton_clicked()
                             if (!qstr_current_id.isEmpty() && (0 == OT_id.compare(qstr_current_id)))
                                 bFoundDefault = true;
                             // -----------------------------------------------
-                            OT_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_Name(OT_id.toStdString()));
+                            OT_name = QString::fromStdString(Moneychanger::It()->OT().Exec().GetServer_Name(OT_id.toStdString()));
                             // -----------------------------------------------
                             the_map.insert(OT_id, OT_name);
                         }
@@ -162,7 +162,7 @@ void MTAssetDetails::on_pushButton_clicked()
                             // Then check to see if that Nym is registered on that server.
                             //
                             bool bIsRegiseredAtServer =
-                                    opentxs::OT::App().Client().Exec().IsNym_RegisteredAtServer(qstrNymID   .toStdString(),
+                                    Moneychanger::It()->OT().Exec().IsNym_RegisteredAtServer(qstrNymID   .toStdString(),
                                                                                         qstrNotaryID.toStdString());
                             if (!bIsRegiseredAtServer)
                             {
@@ -172,7 +172,7 @@ void MTAssetDetails::on_pushButton_clicked()
                                 {
                                     MTSpinner theSpinner;
 
-                                    auto strResponse = opentxs::OT::App().Client().Sync().RegisterNym(opentxs::Identifier::Factory(qstrNymID.toStdString()),
+                                    auto strResponse = Moneychanger::It()->OT().Sync().RegisterNym(opentxs::Identifier::Factory(qstrNymID.toStdString()),
                                                                                                    opentxs::Identifier::Factory(qstrNotaryID.toStdString()), true);
 
                                     if (false == strResponse->empty()) {
@@ -228,7 +228,7 @@ void MTAssetDetails::on_pushButton_clicked()
                                     {
                                         MTSpinner theSpinner;
 
-                                        auto action = opentxs::OT::App().Client().ServerAction().DownloadContract(nymID, notaryID, assetID);
+                                        auto action = Moneychanger::It()->OT().ServerAction().DownloadContract(nymID, notaryID, assetID);
                                         const std::string str_reply = action->Run();
                                         const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);
 
@@ -251,7 +251,7 @@ void MTAssetDetails::on_pushButton_clicked()
                                     {
                                         MTSpinner theSpinner;
 
-                                        auto action = opentxs::OT::App().Client().ServerAction().IssueUnitDefinition(nymID, notaryID,
+                                        auto action = Moneychanger::It()->OT().ServerAction().IssueUnitDefinition(nymID, notaryID,
                                         		contractProto);
                                         const std::string str_reply = action->Run();
                                         const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);
@@ -259,7 +259,7 @@ void MTAssetDetails::on_pushButton_clicked()
                                         bSuccess = (1 == nResult);
 
                                         if (bSuccess)
-                                            str_issuer_acct = opentxs::OT::App().Client().Exec().Message_GetNewIssuerAcctID(str_reply);
+                                            str_issuer_acct = Moneychanger::It()->OT().Exec().Message_GetNewIssuerAcctID(str_reply);
                                     }
                                     // -----------------------------------
                                     if (!bSuccess)
@@ -289,7 +289,7 @@ void MTAssetDetails::on_pushButton_clicked()
                                                              arg(qstrNewIssuerAcct));
 
                                     QString qstrAcctNewName(tr("New Issuer Account"));
-                                    opentxs::OT::App().Client().Exec().SetAccountWallet_Name(str_issuer_acct, str_signer_nym,
+                                    Moneychanger::It()->OT().Exec().SetAccountWallet_Name(str_issuer_acct, str_signer_nym,
                                                                                     qstrAcctNewName.toStdString());
                                     emit newAccountAdded(qstrNewIssuerAcct);
                                     return;
@@ -478,7 +478,7 @@ void MTAssetDetails::DeleteButtonClicked()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         // ----------------------------------------------------
-        bool bCanRemove = opentxs::OT::App().Client().Exec().Wallet_CanRemoveAssetType(m_pOwner->m_qstrCurrentID.toStdString());
+        bool bCanRemove = Moneychanger::It()->OT().Exec().Wallet_CanRemoveAssetType(m_pOwner->m_qstrCurrentID.toStdString());
 
         if (!bCanRemove)
         {
@@ -493,7 +493,7 @@ void MTAssetDetails::DeleteButtonClicked()
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
-            bool bSuccess = opentxs::OT::App().Client().Exec().Wallet_RemoveAssetType(m_pOwner->m_qstrCurrentID.toStdString());
+            bool bSuccess = Moneychanger::It()->OT().Exec().Wallet_RemoveAssetType(m_pOwner->m_qstrCurrentID.toStdString());
 
             if (bSuccess)
             {
@@ -542,7 +542,7 @@ void MTAssetDetails::ImportContract(QString qstrContents)
     }
     // ------------------------------------------------------
     QString qstrContractID =
-        QString::fromStdString(opentxs::OT::App().Client().Exec().
+        QString::fromStdString(Moneychanger::It()->OT().Exec().
             AddUnitDefinition(qstrContents.toStdString()));
 
     if (qstrContractID.isEmpty())
@@ -556,7 +556,7 @@ void MTAssetDetails::ImportContract(QString qstrContents)
     {
         // -----------------------------------------------
         QString qstrContractName =
-            QString::fromStdString(opentxs::OT::App().Client().Exec().
+            QString::fromStdString(Moneychanger::It()->OT().Exec().
                 GetAssetType_Name(qstrContractID.toStdString()));
         m_pOwner->m_map.insert(qstrContractID, qstrContractName);
         m_pOwner->SetPreSelected(qstrContractID);
@@ -741,7 +741,7 @@ void MTAssetDetails::AddButtonClicked()
                 const std::uint32_t uDecimalSpaces = strDecimalSpaces.ToUint();
 
                 strContractID =
-                    opentxs::OT::App().Client().Exec().CreateCurrencyContract(
+                    Moneychanger::It()->OT().Exec().CreateCurrencyContract(
                         qstrNymID.toStdString(),
                         qstrContractName.toStdString(),  //  "Coinbase Dollars" (refers to the contract.) shortname
                         qstrTerms.toStdString(), // terms
@@ -761,7 +761,7 @@ void MTAssetDetails::AddButtonClicked()
                 //qstrTLA          = theWizard.field("security_tla").toString();
 
                 strContractID =
-                    opentxs::OT::App().Client().Exec().CreateSecurityContract(
+                    Moneychanger::It()->OT().Exec().CreateSecurityContract(
                         qstrNymID.toStdString(),
                         qstrContractName.toStdString(),  //  "Sample Co. Share" (refers to the contract.)
                         qstrTerms.toStdString(),
@@ -780,7 +780,7 @@ void MTAssetDetails::AddButtonClicked()
                 return;
             }
             else {
-                std::string strNewContract = opentxs::OT::App().Client().Exec().GetAssetType_Contract(strContractID);
+                std::string strNewContract = Moneychanger::It()->OT().Exec().GetAssetType_Contract(strContractID);
 
                 if ("" == strNewContract) {
                     QMessageBox::warning(this, tr("Unable to Load"),
@@ -789,7 +789,7 @@ void MTAssetDetails::AddButtonClicked()
                 }
                 else { // Success.
                     QString qstrContractID   = QString::fromStdString(strContractID);
-                    QString qstrContractName = QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Name(strContractID));
+                    QString qstrContractName = QString::fromStdString(Moneychanger::It()->OT().Exec().GetAssetType_Name(strContractID));
 
                     std::cout << "New asset contract name: " << qstrContractName.toStdString() << std::endl;
 
@@ -830,7 +830,7 @@ void MTAssetDetails::refresh(QString strID, QString strName)
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
         QString qstrContents =
-            QString::fromStdString(opentxs::OT::App().Client().Exec().
+            QString::fromStdString(Moneychanger::It()->OT().Exec().
                 GetAssetType_Contract(strID.toStdString()));
         opentxs::proto::UnitDefinition contractProto =
             opentxs::proto::StringToProto<opentxs::proto::UnitDefinition>
@@ -881,7 +881,7 @@ void MTAssetDetails::refresh(QString strID, QString strName)
             if (!str_signer_nym.empty()) {
                 qstrNymID = QString::fromStdString(str_signer_nym);
                 // --------------------------
-                if (opentxs::OT::App().Client().Exec().VerifyUserPrivateKey(str_signer_nym)) {
+                if (Moneychanger::It()->OT().Exec().VerifyUserPrivateKey(str_signer_nym)) {
                     ui->pushButton->setVisible(true);
                 }
             }
@@ -901,7 +901,7 @@ void MTAssetDetails::on_lineEditName_editingFinished()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = opentxs::OT::App().Client().Exec().SetAssetType_Name(m_pOwner->m_qstrCurrentID.toStdString(),  // Asset Type
+        bool bSuccess = Moneychanger::It()->OT().Exec().SetAssetType_Name(m_pOwner->m_qstrCurrentID.toStdString(),  // Asset Type
                                                       ui->lineEditName->text(). toStdString()); // New Name
         if (bSuccess)
         {

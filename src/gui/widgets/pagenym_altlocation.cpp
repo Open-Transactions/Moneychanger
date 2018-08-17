@@ -8,6 +8,7 @@
 #include <gui/widgets/editdetails.hpp>
 #include <gui/widgets/wizardaddnym.hpp>
 #include <gui/widgets/wizardeditprofile.hpp>
+#include <core/moneychanger.hpp>
 
 #include <QComboBox>
 #include <QVBoxLayout>
@@ -581,7 +582,7 @@ void MTPageNym_AltLocation::initializePage() //virtual
         int nCurrentTab = 0;
 
         const auto sections =
-            opentxs::OT::App().Client().Exec().ContactSectionList();
+            Moneychanger::It()->OT().Exec().ContactSectionList();
 
         for (auto & indexSection: sections) {
             if (opentxs::proto::CONTACTSECTION_RELATIONSHIP == indexSection) {
@@ -596,7 +597,7 @@ void MTPageNym_AltLocation::initializePage() //virtual
             // Create a new (tab page) Widget.
             QWidget * pTab = new QWidget;
             const std::string sectionName =
-                opentxs::OT::App().Client().Exec().ContactSectionName(indexSection);
+                Moneychanger::It()->OT().Exec().ContactSectionName(indexSection);
 
             qDebug() << "-- SECTION NAME: " << QString::fromStdString(sectionName);
 
@@ -604,11 +605,11 @@ void MTPageNym_AltLocation::initializePage() //virtual
             QList<GroupBoxContactItems *> * pListGroupBoxes = new QList<GroupBoxContactItems *>;
 
             const auto sectionTypes =
-                opentxs::OT::App().Client().Exec().ContactSectionTypeList(indexSection);
+                Moneychanger::It()->OT().Exec().ContactSectionTypeList(indexSection);
 
             for (const auto& indexSectionType: sectionTypes) {
                 const std::string typeName =
-                    opentxs::OT::App().Client().Exec().ContactTypeName(indexSectionType);
+                    Moneychanger::It()->OT().Exec().ContactTypeName(indexSectionType);
 
 //                qDebug() << "  section type: " << QString::fromStdString(typeName);
 

@@ -120,7 +120,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                         {
                             opentxs::OTPasswordData thePWData("Recipient passphrase");
 
-                            std::shared_ptr<const opentxs::Nym> pNym = opentxs::OT::App().Client().Wallet().Nym(nym_id);
+                            std::shared_ptr<const opentxs::Nym> pNym = Moneychanger::It()->OT().Wallet().Nym(nym_id);
                             if (false != bool(pNym))
                             {
                                 if (theEnvelope.Open(*pNym, strOutput) && strOutput.Exists())
@@ -138,12 +138,12 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                     // ------------
                     if (!bSuccessDecrypting) // Default nym is NOT available. Okay let's loop through all the Nyms in the wallet then, and try then all...
                     {
-                        const int32_t nym_count = opentxs::OT::App().Client().Exec().GetNymCount();
+                        const int32_t nym_count = Moneychanger::It()->OT().Exec().GetNymCount();
                         // -----------------------------------------------
                         for (int32_t ii = 0; ii < nym_count; ++ii)
                         {
                             //Get OT Nym ID
-                            QString OT_nym_id = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_ID(ii));
+                            QString OT_nym_id = QString::fromStdString(Moneychanger::It()->OT().Exec().GetNym_ID(ii));
 
                             if (!OT_nym_id.isEmpty())
                             {
@@ -155,7 +155,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                                 {
                                     opentxs::OTPasswordData thePWData("Recipient passphrase");
 
-                                    std::shared_ptr<const opentxs::Nym> pNym = opentxs::OT::App().Client().Wallet().Nym(nym_id);
+                                    std::shared_ptr<const opentxs::Nym> pNym = Moneychanger::It()->OT().Wallet().Nym(nym_id);
                                     if (false != bool(pNym))
                                     {
                                         // Okay there is a private key available for this Nym, so let's
@@ -210,12 +210,13 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                 //
                 if (strInput.Contains("-----BEGIN SIGNED FILE-----"))
                 {
-                    opentxs::OTSignedFile theSignedFile{opentxs::OT::App().Client().Wallet(),
-                                opentxs::OT::App().Legacy().ClientDataFolder()};
+                    auto theSignedFile{Moneychanger::It()->OT().Factory().SignedFile(Moneychanger::It()->OT())};
+                    
+                    OT_ASSERT(false != bool(theSignedFile));
 
-                    if (theSignedFile.LoadContractFromString(strInput))
+                    if (theSignedFile->LoadContractFromString(strInput))
                     {
-                        opentxs::String strSignerNymID = theSignedFile.GetSignerNymID();
+                        opentxs::String strSignerNymID = theSignedFile->GetSignerNymID();
                         std::string str_signer_nym(strSignerNymID.Get());
                         QString qstrSignerNym(QString::fromStdString(str_signer_nym));
 
@@ -223,15 +224,15 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                         {
                             opentxs::OTPasswordData thePWData("Sometimes need to load private part of nym in order to use its public key. (Fix that!)");
                             auto id_signer_nym = opentxs::Identifier::Factory(strSignerNymID);
-                            std::shared_ptr<const opentxs::Nym> pNym = opentxs::OT::App().Client().Wallet().Nym(id_signer_nym);
+                            std::shared_ptr<const opentxs::Nym> pNym = Moneychanger::It()->OT().Wallet().Nym(id_signer_nym);
                             if (false != bool(pNym))
                             {
-                                if (theSignedFile.VerifySignature(*pNym, &thePWData))
+                                if (theSignedFile->VerifySignature(*pNym, &thePWData))
                                 {
                                     bSuccessVerifying = true;
                                     qstrNymWhoVerified = qstrSignerNym;
 
-                                    opentxs::String strContents = theSignedFile.GetFilePayload();
+                                    opentxs::String strContents = theSignedFile->GetFilePayload();
 
                                     if (strContents.Exists())
                                     {
@@ -266,9 +267,9 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                 QString qstrNymWhoDecryptedName(""), qstrNymWhoVerifiedName("");
 
                 if (!qstrNymWhoDecrypted.isEmpty())
-                    qstrNymWhoDecryptedName = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(qstrNymWhoDecrypted.toStdString()));
+                    qstrNymWhoDecryptedName = QString::fromStdString(Moneychanger::It()->OT().Exec().GetNym_Name(qstrNymWhoDecrypted.toStdString()));
                 if (!qstrNymWhoVerified.isEmpty())
-                    qstrNymWhoVerifiedName = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(qstrNymWhoVerified.toStdString()));
+                    qstrNymWhoVerifiedName = QString::fromStdString(Moneychanger::It()->OT().Exec().GetNym_Name(qstrNymWhoVerified.toStdString()));
                 // -------------------------------
                 if (qstrNymWhoDecryptedName.isEmpty())
                     qstrNymWhoDecryptedName = qstrNymWhoDecrypted;

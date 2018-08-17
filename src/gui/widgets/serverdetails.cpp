@@ -4,6 +4,7 @@
 
 #include <gui/widgets/serverdetails.hpp>
 #include <ui_serverdetails.h>
+#include <core/moneychanger.hpp>
 
 #include <gui/widgets/wizardaddcontract.hpp>
 
@@ -215,7 +216,7 @@ void MTServerDetails::DeleteButtonClicked()
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
         // ----------------------------------------------------
-        bool bCanRemove = opentxs::OT::App().Client().Exec().Wallet_CanRemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
+        bool bCanRemove = Moneychanger::It()->OT().Exec().Wallet_CanRemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
 
         if (!bCanRemove)
         {
@@ -230,7 +231,7 @@ void MTServerDetails::DeleteButtonClicked()
                                       QMessageBox::Yes|QMessageBox::No);
         if (reply == QMessageBox::Yes)
         {
-            bool bSuccess = opentxs::OT::App().Client().Exec().Wallet_RemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
+            bool bSuccess = Moneychanger::It()->OT().Exec().Wallet_RemoveServer(m_pOwner->m_qstrCurrentID.toStdString());
 
             if (bSuccess)
             {
@@ -275,7 +276,7 @@ void MTServerDetails::ImportContract(QString qstrContents)
         return;
     }
     // ---------------------------------------------------
-    std::string newID = opentxs::OT::App().Client().Exec().AddServerContract(qstrContents.toStdString());
+    std::string newID = Moneychanger::It()->OT().Exec().AddServerContract(qstrContents.toStdString());
 
     if (newID.empty())
     {
@@ -284,7 +285,7 @@ void MTServerDetails::ImportContract(QString qstrContents)
         return;
     }
     // -----------------------------------------------
-    QString qstrContractName = QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_Name(newID));
+    QString qstrContractName = QString::fromStdString(Moneychanger::It()->OT().Exec().GetServer_Name(newID));
     // -----------------------------------------------
     // Commenting this out for now.
     //
@@ -670,7 +671,7 @@ void MTServerDetails::refresh(QString strID, QString strName)
         m_pHeaderWidget = pHeaderWidget;
         // ----------------------------------
         QString qstrContents =
-            QString::fromStdString(opentxs::OT::App().Client().Exec().
+            QString::fromStdString(Moneychanger::It()->OT().Exec().
                 GetServer_Contract(strID.toStdString()));
         opentxs::proto::ServerContract contractProto =
             opentxs::proto::StringToProto<opentxs::proto::ServerContract>
@@ -705,7 +706,7 @@ void MTServerDetails::refresh(QString strID, QString strName)
         ui->plainTextEditDetails->setPlainText(qstrDetails);
         // ----------------------------------
         auto contract =
-            opentxs::OT::App().Client().Wallet().Server(
+            Moneychanger::It()->OT().Wallet().Server(
                 opentxs::Identifier::Factory(strID.toStdString()));
 
         if (!contract) { return; }
@@ -730,7 +731,7 @@ void MTServerDetails::on_lineEditName_editingFinished()
 {
     if (!m_pOwner->m_qstrCurrentID.isEmpty())
     {
-        bool bSuccess = opentxs::OT::App().Client().Exec().SetServer_Name(m_pOwner->m_qstrCurrentID.toStdString(),  // Server
+        bool bSuccess = Moneychanger::It()->OT().Exec().SetServer_Name(m_pOwner->m_qstrCurrentID.toStdString(),  // Server
                                                    ui->lineEditName->text(). toStdString()); // New Name
         if (bSuccess)
         {

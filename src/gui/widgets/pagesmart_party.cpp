@@ -80,11 +80,11 @@ void PageSmart_Party::on_pushButtonSelect_clicked()
     // -----------------------------------------------
     // Iterate parties using Smart_GetPartyCount and Smart_GetPartyByIndex and get a list of unconfirmed parties using Smart_IsPartyConfirmed.
 
-    int32_t party_count = opentxs::OT::App().Client().Exec().Smart_GetPartyCount(str_template);
+    int32_t party_count = Moneychanger::It()->OT().Exec().Smart_GetPartyCount(str_template);
 
     for (int32_t i = 0; i < party_count; i++)
     {
-        std::string name = opentxs::OT::App().Client().Exec().Smart_GetPartyByIndex(str_template, i);
+        std::string name = Moneychanger::It()->OT().Exec().Smart_GetPartyByIndex(str_template, i);
 
         if ("" == name) {
             QMessageBox::information(this, tr(MONEYCHANGER_APP_NAME), tr("Strange, there is a party on this smart contract without a name. Failure."));
@@ -92,7 +92,7 @@ void PageSmart_Party::on_pushButtonSelect_clicked()
             return;
         }
 
-        if (!opentxs::OT::App().Client().Exec().Smart_IsPartyConfirmed(str_template, name))
+        if (!Moneychanger::It()->OT().Exec().Smart_IsPartyConfirmed(str_template, name))
         {
             QString OT_id = QString::fromStdString(name);
             QString OT_name = OT_id;

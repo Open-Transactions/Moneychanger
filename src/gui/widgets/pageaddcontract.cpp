@@ -4,6 +4,7 @@
 
 #include <gui/widgets/pageaddcontract.hpp>
 #include <ui_pageaddcontract.h>
+#include <core/moneychanger.hpp>
 
 #include <gui/widgets/wizardaddcontract.hpp>
 
@@ -58,7 +59,7 @@ bool MTPageAddContract::validatePage()
     //
     if ((0 == qstrType.compare("server")) &&
         ui->radioButton_2->isChecked() && // "Create" (versus "Import".)
-        (opentxs::OT::App().Client().Storage().AccountList().size() > 0)) {
+        (Moneychanger::It()->OT().Storage().AccountList().size() > 0)) {
         QMessageBox::StandardButton reply;
 
         reply = QMessageBox::question(this, "", QString("%1<br/><br/>%2<br/><br/>%3").arg(tr("Are you sure you want to create a server contract?")).

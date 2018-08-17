@@ -285,7 +285,7 @@ void Activity::RefreshUserBar()
 {
 //    const std::string str_my_nym_id = Moneychanger::It()->get_default_nym_id().toStdString();
 //    // ----------------------------------------
-//    const QString qstrNymName = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(str_my_nym_id));
+//    const QString qstrNymName = QString::fromStdString(Moneychanger::It()->OT().Exec().GetNym_Name(str_my_nym_id));
 //    ui->toolButtonMyIdentity->setText(qstrNymName);
 //    ui->toolButtonMyIdentity2->setText(qstrNymName);
 }

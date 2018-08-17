@@ -56,7 +56,7 @@ private:
     /** Constructor & Destructor **/
     Moneychanger(QWidget *parent = 0);
 
-    const opentxs::api::Native& ot_;
+    const opentxs::api::client::Manager& ot_;
     std::atomic<std::uint64_t> refresh_count_;
     opentxs::OTZMQListenCallback notify_bailment_callback_;
     opentxs::OTZMQSubscribeSocket notify_bailment_;
@@ -75,6 +75,8 @@ private:
         const std::string& strNotaryID,
         const std::string& strMyNymID) const;
 public:
+    const opentxs::api::client::Manager& OT() { return ot_; }
+    
     // Note: These are callback functions needed by OT.
     // Specifically, whenever the DHT downloads a contract, it notifies interested parties
     // using this contract.

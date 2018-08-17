@@ -407,7 +407,7 @@ bool DlgMarkets::LowLevelRetrieveOfferList(QString qstrNotaryID, QString qstrNym
     {
         MTSpinner theSpinner;
 
-        auto action = opentxs::OT::App().Client().ServerAction().DownloadNymMarketOffers(opentxs::Identifier::Factory(qstrNymID.toStdString()),
+        auto action = Moneychanger::It()->OT().ServerAction().DownloadNymMarketOffers(opentxs::Identifier::Factory(qstrNymID.toStdString()),
                 opentxs::Identifier::Factory(qstrNotaryID.toStdString()));
         const std::string str_reply = action->Run();
         const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);
@@ -518,13 +518,13 @@ bool DlgMarkets::LowLevelLoadOfferList(QString qstrNotaryID, QString qstrNymID, 
                 // -----------------------------------------------------------------------
                 QString qstrBuySell = pOfferData->selling ? tr("Sell") : tr("Buy");
 
-                const std::string str_asset_name = opentxs::OT::App().Client().Exec().GetAssetType_Name(pOfferData->instrument_definition_id);
+                const std::string str_asset_name = Moneychanger::It()->OT().Exec().GetAssetType_Name(pOfferData->instrument_definition_id);
                 // --------------------------
-                int64_t lTotalAssets   = opentxs::OT::App().Client().Exec().StringToLong(pOfferData->total_assets);
-                int64_t lFinishedSoFar = opentxs::OT::App().Client().Exec().StringToLong(pOfferData->finished_so_far);
+                int64_t lTotalAssets   = Moneychanger::It()->OT().Exec().StringToLong(pOfferData->total_assets);
+                int64_t lFinishedSoFar = Moneychanger::It()->OT().Exec().StringToLong(pOfferData->finished_so_far);
                 // --------------------------
-                const std::string str_total_assets    = opentxs::OT::App().Client().Exec().FormatAmount(pOfferData->instrument_definition_id, lTotalAssets);
-                const std::string str_finished_so_far = opentxs::OT::App().Client().Exec().FormatAmount(pOfferData->instrument_definition_id, lFinishedSoFar);
+                const std::string str_total_assets    = Moneychanger::It()->OT().Exec().FormatAmount(pOfferData->instrument_definition_id, lTotalAssets);
+                const std::string str_finished_so_far = Moneychanger::It()->OT().Exec().FormatAmount(pOfferData->instrument_definition_id, lFinishedSoFar);
                 // --------------------------
                 QString qstrAmounts;
 
@@ -657,8 +657,8 @@ bool DlgMarkets::LowLevelLoadMarketList(QString qstrNotaryID, QString qstrNymID,
 
             if (the_map.end() == it_map)
             {
-                const std::string str_asset_name    = opentxs::OT::App().Client().Exec().GetAssetType_Name(pMarketData->instrument_definition_id);
-                const std::string str_currency_name = opentxs::OT::App().Client().Exec().GetAssetType_Name(pMarketData->currency_type_id);
+                const std::string str_asset_name    = Moneychanger::It()->OT().Exec().GetAssetType_Name(pMarketData->instrument_definition_id);
+                const std::string str_currency_name = Moneychanger::It()->OT().Exec().GetAssetType_Name(pMarketData->currency_type_id);
                 // --------------------------
                 QString qstrMarketName = QString("%1 for %2").
                         arg(QString::fromStdString(str_asset_name)).
@@ -715,7 +715,7 @@ bool DlgMarkets::LowLevelRetrieveMarketList(QString qstrNotaryID, QString qstrNy
     {
         MTSpinner theSpinner;
 
-        auto action = opentxs::OT::App().Client().ServerAction().DownloadMarketList(opentxs::Identifier::Factory(qstrNymID.toStdString()),
+        auto action = Moneychanger::It()->OT().ServerAction().DownloadMarketList(opentxs::Identifier::Factory(qstrNymID.toStdString()),
             opentxs::Identifier::Factory(qstrNotaryID.toStdString()));
         const std::string str_reply = action->Run();
         const int32_t nResult = opentxs::VerifyMessageSuccess(str_reply);
@@ -832,10 +832,10 @@ void DlgMarkets::LoadOrRetrieveMarkets()
                     if (NULL != pMarketData) // Should never be NULL.
                     {
                         // ------------------------------------------------------
-                        int64_t     lScale    = opentxs::OT::App().Client().Exec().StringToLong(pMarketData->scale);
+                        int64_t     lScale    = Moneychanger::It()->OT().Exec().StringToLong(pMarketData->scale);
                         if (lScale > 1)
                         {
-                            std::string str_scale = opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->instrument_definition_id, lScale);
+                            std::string str_scale = Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->instrument_definition_id, lScale);
                             // ------------------------------------------------------
                             QString qstrFormattedScale = QString::fromStdString(str_scale);
                             // ------------------------------------------------------
@@ -980,13 +980,13 @@ void DlgMarkets::RefreshRecords()
         nDefaultServerIndex = 0;
     }
     // ----------------------------
-    const int32_t server_count = opentxs::OT::App().Client().Exec().GetServerCount();
+    const int32_t server_count = Moneychanger::It()->OT().Exec().GetServerCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < server_count; ++ii)
     {
         //Get OT Server ID
         //
-        QString OT_notary_id = QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_ID(ii));
+        QString OT_notary_id = QString::fromStdString(Moneychanger::It()->OT().Exec().GetServer_ID(ii));
         QString OT_server_name("");
         // -----------------------------------------------
         if (!OT_notary_id.isEmpty())
@@ -997,7 +997,7 @@ void DlgMarkets::RefreshRecords()
                 nDefaultServerIndex = ii+1; // the +1 is because of "all" in the 0 position. (Servers only.)
             }
             // -----------------------------------------------
-            OT_server_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetServer_Name(OT_notary_id.toStdString()));
+            OT_server_name = QString::fromStdString(Moneychanger::It()->OT().Exec().GetServer_Name(OT_notary_id.toStdString()));
             // -----------------------------------------------
             m_mapServers.insert(OT_notary_id, OT_server_name);
             ui->comboBoxServer->insertItem(ii+1, OT_server_name);
@@ -1007,12 +1007,12 @@ void DlgMarkets::RefreshRecords()
 
     // -----------------------------------------------
     bool bFoundNymDefault = false;
-    const int32_t nym_count = opentxs::OT::App().Client().Exec().GetNymCount();
+    const int32_t nym_count = Moneychanger::It()->OT().Exec().GetNymCount();
     // -----------------------------------------------
     for (int32_t ii = 0; ii < nym_count; ++ii)
     {
         //Get OT Nym ID
-        QString OT_nym_id = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_ID(ii));
+        QString OT_nym_id = QString::fromStdString(Moneychanger::It()->OT().Exec().GetNym_ID(ii));
         QString OT_nym_name("");
         // -----------------------------------------------
         if (!OT_nym_id.isEmpty())
@@ -1023,7 +1023,7 @@ void DlgMarkets::RefreshRecords()
                 nDefaultNymIndex = ii;
             }
             // -----------------------------------------------
-            OT_nym_name = QString::fromStdString(opentxs::OT::App().Client().Exec().GetNym_Name(OT_nym_id.toStdString()));
+            OT_nym_name = QString::fromStdString(Moneychanger::It()->OT().Exec().GetNym_Name(OT_nym_id.toStdString()));
             // -----------------------------------------------
             m_mapNyms.insert(OT_nym_id, OT_nym_name);
             ui->comboBoxNym->insertItem(ii, OT_nym_name);

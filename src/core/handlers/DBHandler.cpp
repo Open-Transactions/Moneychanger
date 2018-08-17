@@ -6,6 +6,7 @@
 #include <core/handlers/modeltradearchive.hpp>
 #include <core/handlers/modelmessages.hpp>
 #include <core/handlers/modelpayments.hpp>
+#include <core/moneychanger.hpp>
 
 #include <opentxs/opentxs.hpp>
 
@@ -973,7 +974,7 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
     const std::string str_thread_id      = qstrThreadId.toStdString();
     const std::string str_thread_item_id = qstrThreadItemId.toStdString();
 
-    const auto& thread = opentxs::OT::App().Client().UI().ActivityThread(
+    const auto& thread = Moneychanger::It()->OT().UI().ActivityThread(
         opentxs::Identifier::Factory(str_my_nym_id),
         opentxs::Identifier::Factory(str_thread_id));
     const auto& first = thread.First();
