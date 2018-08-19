@@ -650,7 +650,7 @@ bool ProposePlanDlg::proposePlan(QString memo, int64_t initial_amount, int64_t r
                 ->OT()
                 .Factory()
                 .Payment(
-                    Moneychanger::It()->OT(), opentxs::String(str_plan.c_str()))
+                      opentxs::String(str_plan.c_str()))
                 .release()};
 
         OT_ASSERT(false != bool(payment));

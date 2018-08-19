@@ -212,7 +212,7 @@ void Settings::on_pushButton_clicked()
         if (!strCronItem.Exists())
             continue;
         // --------------------------------------
-        std::unique_ptr<opentxs::OTCronItem> pCronItem{Moneychanger::It()->OT().Factory().CronItem(Moneychanger::It()->OT(), strCronItem)};
+        std::unique_ptr<opentxs::OTCronItem> pCronItem{Moneychanger::It()->OT().Factory().CronItem(  strCronItem)};
 
         if (false != bool(pCronItem))
             continue;
@@ -222,7 +222,7 @@ void Settings::on_pushButton_clicked()
         // --------------------------------------
         if ( (nullptr != pPlan) || (nullptr != pSmart) )
         {
-            std::shared_ptr<opentxs::OTPayment> thePayment{Moneychanger::It()->OT().Factory().Payment(Moneychanger::It()->OT(), strCronItem)};
+            std::shared_ptr<opentxs::OTPayment> thePayment{Moneychanger::It()->OT().Factory().Payment(  strCronItem)};
             
             OT_ASSERT(false != bool(thePayment));
 

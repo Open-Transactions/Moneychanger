@@ -210,7 +210,7 @@ void DlgDecrypt::on_pushButtonDecrypt_clicked()
                 //
                 if (strInput.Contains("-----BEGIN SIGNED FILE-----"))
                 {
-                    auto theSignedFile{Moneychanger::It()->OT().Factory().SignedFile(Moneychanger::It()->OT())};
+                    auto theSignedFile{Moneychanger::It()->OT().Factory().SignedFile()};
                     
                     OT_ASSERT(false != bool(theSignedFile));
 

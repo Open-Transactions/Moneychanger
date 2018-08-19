@@ -275,8 +275,8 @@ void DlgEncrypt::on_pushButtonEncrypt_clicked()
 
                         opentxs::String     strSignedOutput;
 
-                        auto theSignedFile{Moneychanger::It()->OT().Factory().SignedFile(Moneychanger::It()->OT())};
-                        
+                        auto theSignedFile{Moneychanger::It()->OT().Factory().SignedFile()};
+
                         OT_ASSERT(false != bool(theSignedFile));
 
                         theSignedFile->SetSignerNymID(strNym);

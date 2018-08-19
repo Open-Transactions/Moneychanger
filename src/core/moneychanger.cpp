@@ -117,7 +117,7 @@ Moneychanger * Moneychanger::It(QWidget *parent/*=0*/, bool bShuttingDown/*=fals
 
 Moneychanger::Moneychanger(QWidget *parent)
 : QWidget(parent),
-  ot_(opentxs::OT::App().Client()),
+  ot_(Moneychanger::It()->OT()),
   notify_bailment_callback_(opentxs::network::zeromq::ListenCallback::Factory(
           [this](const opentxs::network::zeromq::Message& message) -> void {
               this->process_notify_bailment(message);
@@ -127,7 +127,7 @@ Moneychanger::Moneychanger(QWidget *parent)
           [this](const opentxs::proto::PairEvent& event) -> void {
               this->process_pair_event(event);
           })),
-  pair_events_(ot_.ZMQ().Context().PairEventListener(pair_event_callback_)),
+  pair_events_(ot_.ZMQ().Context().PairEventListener(pair_event_callback_, ot_.Instance())),
   widget_update_callback_(opentxs::network::zeromq::ListenCallback::Factory(
           [this](const opentxs::network::zeromq::Message& message) -> void {
               this->process_widget_update(message);
@@ -149,11 +149,8 @@ Moneychanger::Moneychanger(QWidget *parent)
      **/
 
     refresh_count_.store(0);
-    notify_bailment_->Start(
-        opentxs::network::zeromq::Socket::PendingBailmentEndpoint);
-
-    widget_update_->Start(
-        opentxs::network::zeromq::Socket::WidgetUpdateEndpoint);
+    notify_bailment_->Start(ot_.Endpoints().PendingBailment());
+    widget_update_->Start(ot_.Endpoints().WidgetUpdate());
 
     ot_.Schedule(
         std::chrono::seconds(5),
@@ -464,7 +461,7 @@ bool Moneychanger::retrieve_nym(
 {
     auto context = ot_.Wallet().mutable_ServerContext(
         opentxs::Identifier::Factory(strMyNymID), opentxs::Identifier::Factory(strNotaryID));
-    opentxs::Utility MsgUtil(context.It(), ot_.OTAPI(), ot_);
+    opentxs::Utility MsgUtil(context.It(), ot_);
 
     if (0 >= context.It().UpdateRequestNumber()) {
         return false;
@@ -5749,7 +5746,7 @@ void Moneychanger::mc_import_slot()
     // This handles "BEGIN SIGNED CHEQUE"
     // as well as "BEGIN OT ARMORED CHEQUE"
     //
-    std::shared_ptr<opentxs::OTPayment> payment{ot_.Factory().Payment(ot_, otstrInstrument).release()};
+    std::shared_ptr<opentxs::OTPayment> payment{ot_.Factory().Payment(otstrInstrument).release()};
 
     if (false == bool(payment)) {
         QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME),
@@ -6057,10 +6054,10 @@ void Moneychanger::mc_import_slot()
 
                         auto deposit_acct_id = opentxs::Identifier::Factory(str_deposit_acct_id);
 
-                        auto cheque{ot_.Factory().Cheque(ot_)};
-                        
+                        auto cheque{ot_.Factory().Cheque()};
+
                         OT_ASSERT(false != bool(cheque));
-                        
+
                         cheque->LoadContractFromString(opentxs::String(strInstrument.c_str()));
 
                         auto action = ot_.ServerAction().DepositCheque(recipient_nym_id,
@@ -6130,12 +6127,12 @@ void Moneychanger::mc_import_slot()
 
                             auto deposit_acct_id = opentxs::Identifier::Factory(str_deposit_acct_id);
 
-                            auto cheque{ot_.Factory().Cheque(ot_)};
+                            auto cheque{ot_.Factory().Cheque()};
 
                             OT_ASSERT(false != bool(cheque));
 
                             cheque->LoadContractFromString(opentxs::String(strInstrument.c_str()));
-                            
+
                             auto action = ot_.ServerAction().DepositCheque(recipient_nym_id,
                             		notary_id,
     								deposit_acct_id,
@@ -7853,7 +7850,7 @@ int32_t Moneychanger::activateContract(const std::string& server, const std::str
     const auto notaryID = opentxs::Identifier::Factory(server),
                 myNymID = opentxs::Identifier::Factory(mynym),
               accountID = opentxs::Identifier::Factory(myAcctID);
-    auto smartContract{ot_.Factory().SmartContract(ot_)};
+    auto smartContract{ot_.Factory().SmartContract()};
 
     OT_ASSERT(false != bool(smartContract));
 
@@ -7895,7 +7892,7 @@ int32_t Moneychanger::sendToNextParty(const std::string& server, const std::stri
     // ID or Name as well (I think there's an API call for that...)
     std::string hisNymID = hisnym;
 
-    std::shared_ptr<const opentxs::OTPayment> payment{ot_.Factory().Payment(ot_, opentxs::String(contract.c_str())).release()};
+    std::shared_ptr<const opentxs::OTPayment> payment{ot_.Factory().Payment(opentxs::String(contract.c_str())).release()};
 
     OT_ASSERT(false != bool(payment));
 

@@ -188,7 +188,7 @@ bool MTMarketDetails::LowLevelRetrieveMarketOffers(opentxs::OTDB::MarketData & m
     bool bSuccess = false;
     {
         MTSpinner         theSpinner;
-        auto action = opentxs::OT::App().Client().ServerAction().DownloadMarketOffers(
+        auto action = Moneychanger::It()->OT().ServerAction().DownloadMarketOffers(
                 opentxs::Identifier::Factory(strNymID), opentxs::Identifier::Factory(marketData.notary_id), opentxs::Identifier::Factory(marketData.market_id), MAX_DEPTH);
         const std::string str_reply = action->Run();
         const int32_t     nResult   = opentxs::VerifyMessageSuccess(str_reply);
@@ -210,9 +210,9 @@ opentxs::OTDB::OfferListMarket * MTMarketDetails::LoadOfferListForMarket(opentxs
     // ------------------------------------------
     QString qstrFilename = QString("%1.bin").arg(QString::fromStdString(marketData.market_id));
 
-    if (opentxs::OTDB::Exists(opentxs::OT::App().Legacy().ClientDataFolder(), "markets", marketData.notary_id, "offers", qstrFilename.toStdString()))
+    if (opentxs::OTDB::Exists(Moneychanger::It()->OT().DataFolder(), "markets", marketData.notary_id, "offers", qstrFilename.toStdString()))
     {
-        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_OFFER_LIST_MARKET, opentxs::OT::App().Legacy().ClientDataFolder(), "markets",
+        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_OFFER_LIST_MARKET, Moneychanger::It()->OT().DataFolder(), "markets",
                                       marketData.notary_id, "offers", qstrFilename.toStdString());
         if (nullptr == pStorable)
             return NULL;
@@ -266,12 +266,12 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
         if (NULL != pMarketData) // Should never be NULL.
         {
             std::string & str_server         = pMarketData->notary_id;
-            std::string   str_server_display = opentxs::OT::App().Client().Exec().GetServer_Name(str_server);
+            std::string   str_server_display = Moneychanger::It()->OT().Exec().GetServer_Name(str_server);
             QString       qstrServerName     = QString::fromStdString(str_server_display);
             // -----------------------------------------
-            int64_t lScale = opentxs::OT::App().Client().Exec().StringToLong(pMarketData->scale);
+            int64_t lScale = Moneychanger::It()->OT().Exec().StringToLong(pMarketData->scale);
 
-            const std::string str_price_per_scale(opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->instrument_definition_id,
+            const std::string str_price_per_scale(Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->instrument_definition_id,
                                                                            lScale));
             // -----------------------------------------
             {
@@ -320,24 +320,24 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
                     QString qstrTransactionID = QString::fromStdString(pData->transaction_id);
                     // -----------------------------------------------------------------------
                     std::string & str_price         = pData->price_per_scale;
-                    int64_t       lPrice            = opentxs::OT::App().Client().Exec().StringToLong(str_price); // this price is "per scale"
-                    std::string   str_price_display = opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->currency_type_id, lPrice);
+                    int64_t       lPrice            = Moneychanger::It()->OT().Exec().StringToLong(str_price); // this price is "per scale"
+                    std::string   str_price_display = Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->currency_type_id, lPrice);
 
                     QString qstrPrice = QString::fromStdString(str_price_display);
                     // -----------------------------------------------------------------------
                     std::string & str_available         = pData->available_assets;
-                    int64_t       lQuantity             = opentxs::OT::App().Client().Exec().StringToLong(str_available); // Total overall quantity available
-                    std::string   str_available_display = opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->instrument_definition_id, lQuantity);
+                    int64_t       lQuantity             = Moneychanger::It()->OT().Exec().StringToLong(str_available); // Total overall quantity available
+                    std::string   str_available_display = Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->instrument_definition_id, lQuantity);
 
                     QString qstrAvailable = QString::fromStdString(str_available_display);
                     // -----------------------------------------------------------------------
                     std::string & str_min_inc         = pData->minimum_increment;
-                    int64_t       lMinInc             = opentxs::OT::App().Client().Exec().StringToLong(str_min_inc);
-                    std::string   str_min_inc_display = opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->instrument_definition_id, lMinInc);
+                    int64_t       lMinInc             = Moneychanger::It()->OT().Exec().StringToLong(str_min_inc);
+                    std::string   str_min_inc_display = Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->instrument_definition_id, lMinInc);
 
                     QString qstrMinInc = QString::fromStdString(str_min_inc_display);
                     // -----------------------------------------------------------------------
-                    time_t tDate = static_cast<time_t>(opentxs::OT::App().Client().Exec().StringToLong(pData->date));
+                    time_t tDate = static_cast<time_t>(Moneychanger::It()->OT().Exec().StringToLong(pData->date));
 
                     QDateTime qdate_added   = QDateTime::fromTime_t(tDate);
                     QString   qstrDateAdded = qdate_added.toString(QString("MMM d yyyy hh:mm:ss"));
@@ -353,7 +353,7 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
                     }
                     // -----------------------------------------------------------------------
                     int64_t       lTotalCost     = (lPrice * lScaleUnits);
-                    std::string   str_total_cost = opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->currency_type_id,
+                    std::string   str_total_cost = Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->currency_type_id,
                                                                             lTotalCost);
 
                     QString qstrTotalCost = QString::fromStdString(str_total_cost);
@@ -396,24 +396,24 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
                     QString qstrTransactionID = QString::fromStdString(pData->transaction_id);
                     // -----------------------------------------------------------------------
                     std::string & str_price         = pData->price_per_scale;
-                    int64_t       lPrice            = opentxs::OT::App().Client().Exec().StringToLong(str_price); // this price is "per scale"
-                    std::string   str_price_display = opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->currency_type_id, lPrice);
+                    int64_t       lPrice            = Moneychanger::It()->OT().Exec().StringToLong(str_price); // this price is "per scale"
+                    std::string   str_price_display = Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->currency_type_id, lPrice);
 
                     QString qstrPrice = QString::fromStdString(str_price_display);
                     // -----------------------------------------------------------------------
                     std::string & str_available         = pData->available_assets;
-                    int64_t       lQuantity             = opentxs::OT::App().Client().Exec().StringToLong(str_available); // Total overall quantity available
-                    std::string   str_available_display = opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->instrument_definition_id, lQuantity);
+                    int64_t       lQuantity             = Moneychanger::It()->OT().Exec().StringToLong(str_available); // Total overall quantity available
+                    std::string   str_available_display = Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->instrument_definition_id, lQuantity);
 
                     QString qstrAvailable = QString::fromStdString(str_available_display);
                     // -----------------------------------------------------------------------
                     std::string & str_min_inc         = pData->minimum_increment;
-                    int64_t       lMinInc             = opentxs::OT::App().Client().Exec().StringToLong(str_min_inc);
-                    std::string   str_min_inc_display = opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->instrument_definition_id, lMinInc);
+                    int64_t       lMinInc             = Moneychanger::It()->OT().Exec().StringToLong(str_min_inc);
+                    std::string   str_min_inc_display = Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->instrument_definition_id, lMinInc);
 
                     QString qstrMinInc = QString::fromStdString(str_min_inc_display);
                     // -----------------------------------------------------------------------
-                    time_t tDate = static_cast<time_t>(opentxs::OT::App().Client().Exec().StringToLong(pData->date));
+                    time_t tDate = static_cast<time_t>(Moneychanger::It()->OT().Exec().StringToLong(pData->date));
 
                     QDateTime qdate_added   = QDateTime::fromTime_t(tDate);
                     QString   qstrDateAdded = qdate_added.toString(QString("MMM d yyyy hh:mm:ss"));
@@ -429,7 +429,7 @@ void MTMarketDetails::PopulateMarketOffersGrids(QString & qstrID, QMultiMap<QStr
                     }
                     // -----------------------------------------------------------------------
                     int64_t       lTotalCost     = (lPrice * lScaleUnits);
-                    std::string   str_total_cost = opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->currency_type_id, lTotalCost);
+                    std::string   str_total_cost = Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->currency_type_id, lTotalCost);
 
                     QString qstrTotalCost = QString::fromStdString(str_total_cost);
                     // -----------------------------------------------------------------------
@@ -517,10 +517,10 @@ bool MTMarketDetails::LowLevelRetrieveMarketTrades(opentxs::OTDB::MarketData & m
     {
         MTSpinner theSpinner;
 
-        auto action = opentxs::OT::App().Client().ServerAction().DownloadMarketRecentTrades(
+        auto action = Moneychanger::It()->OT().ServerAction().DownloadMarketRecentTrades(
                 opentxs::Identifier::Factory(strNymID), opentxs::Identifier::Factory(marketData.notary_id), opentxs::Identifier::Factory(marketData.market_id));
         const std::string str_reply = action->Run();
-        const int32_t     nResult   = opentxs::OT::App().Client().Exec().Message_GetSuccess(str_reply);
+        const int32_t     nResult   = Moneychanger::It()->OT().Exec().Message_GetSuccess(str_reply);
 
         bSuccess = (1 == nResult);
     }
@@ -539,9 +539,9 @@ opentxs::OTDB::TradeListMarket * MTMarketDetails::LoadTradeListForMarket(opentxs
     // ------------------------------------------
     QString qstrFilename = QString("%1.bin").arg(QString::fromStdString(marketData.market_id));
 
-    if (opentxs::OTDB::Exists(opentxs::OT::App().Legacy().ClientDataFolder(), "markets", marketData.notary_id, "recent", qstrFilename.toStdString()))
+    if (opentxs::OTDB::Exists(Moneychanger::It()->OT().DataFolder(), "markets", marketData.notary_id, "recent", qstrFilename.toStdString()))
     {
-        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_TRADE_LIST_MARKET, opentxs::OT::App().Legacy().ClientDataFolder(), "markets",
+        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_TRADE_LIST_MARKET, Moneychanger::It()->OT().DataFolder(), "markets",
                                       marketData.notary_id, "recent", qstrFilename.toStdString());
         if (nullptr == pStorable)
             return NULL;
@@ -583,16 +583,16 @@ void MTMarketDetails::PopulateRecentTradesGrid(QString & qstrID, QMultiMap<QStri
         if (NULL != pMarketData) // Should never be NULL.
         {
             std::string & str_server         = pMarketData->notary_id;
-            std::string   str_server_display = opentxs::OT::App().Client().Exec().GetServer_Name(str_server);
+            std::string   str_server_display = Moneychanger::It()->OT().Exec().GetServer_Name(str_server);
             QString       qstrServerName     = QString::fromStdString(str_server_display);
             // -----------------------------------------
-            int64_t lScale = opentxs::OT::App().Client().Exec().StringToLong(pMarketData->scale);
+            int64_t lScale = Moneychanger::It()->OT().Exec().StringToLong(pMarketData->scale);
             // -----------------------------------------
             QTableWidgetItem * pPriceHeader = ui->tableWidgetTrades->horizontalHeaderItem(0);
 
             if (NULL != pPriceHeader)
             {
-                const std::string str_price_per_scale(opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->instrument_definition_id,
+                const std::string str_price_per_scale(Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->instrument_definition_id,
                                                                                lScale));
                 pPriceHeader->setText(QString("%1 %2").arg(tr("Price per")).
                                       arg(QString::fromStdString(str_price_per_scale)));
@@ -618,20 +618,20 @@ void MTMarketDetails::PopulateRecentTradesGrid(QString & qstrID, QMultiMap<QStri
                     // -----------------------------------------------------------------------
                     QString qstrTransactionID = QString::fromStdString(pData->transaction_id);
                     // -----------------------------------------------------------------------
-                    time_t tDate = static_cast<time_t>(opentxs::OT::App().Client().Exec().StringToLong(pData->date));
+                    time_t tDate = static_cast<time_t>(Moneychanger::It()->OT().Exec().StringToLong(pData->date));
 
                     QDateTime qdate_added   = QDateTime::fromTime_t(tDate);
                     QString   qstrDateAdded = qdate_added.toString(QString("MMM d yyyy hh:mm:ss"));
                     // -----------------------------------------------------------------------
                     std::string & str_price         = pData->price;
-                    int64_t       lPrice            = opentxs::OT::App().Client().Exec().StringToLong(str_price); // this price is "per scale"
-                    std::string   str_price_display = opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->currency_type_id, lPrice);
+                    int64_t       lPrice            = Moneychanger::It()->OT().Exec().StringToLong(str_price); // this price is "per scale"
+                    std::string   str_price_display = Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->currency_type_id, lPrice);
 
                     QString qstrPrice = QString::fromStdString(str_price_display);
                     // -----------------------------------------------------------------------
                     std::string & str_amount_sold    = pData->amount_sold;
-                    int64_t       lQuantity          = opentxs::OT::App().Client().Exec().StringToLong(str_amount_sold); // Total amount of asset sold.
-                    std::string   str_amount_display = opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->instrument_definition_id, lQuantity);
+                    int64_t       lQuantity          = Moneychanger::It()->OT().Exec().StringToLong(str_amount_sold); // Total amount of asset sold.
+                    std::string   str_amount_display = Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->instrument_definition_id, lQuantity);
 
                     QString qstrAmountSold = QString::fromStdString(str_amount_display);
                     // -----------------------------------------------------------------------
@@ -646,7 +646,7 @@ void MTMarketDetails::PopulateRecentTradesGrid(QString & qstrID, QMultiMap<QStri
                     }
                     // -----------------------------------------------------------------------
                     int64_t       lTotalCost     = (lPrice * lScaleUnits);
-                    std::string   str_total_cost = opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->currency_type_id, lTotalCost);
+                    std::string   str_total_cost = Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->currency_type_id, lTotalCost);
 
                     QString qstrTotalCost = QString::fromStdString(str_total_cost);
                     // -----------------------------------------------------------------------
@@ -741,8 +741,8 @@ void MTMarketDetails::refresh(QString strID, QString strName)
                 if (NULL != pMarketData) // Should never be NULL.
                 {
                     // ------------------------------------------------------
-                    int64_t     lScale    = opentxs::OT::App().Client().Exec().StringToLong(pMarketData->scale);
-                    std::string str_scale = opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->instrument_definition_id, lScale);
+                    int64_t     lScale    = Moneychanger::It()->OT().Exec().StringToLong(pMarketData->scale);
+                    std::string str_scale = Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->instrument_definition_id, lScale);
                     // ------------------------------------------------------
                     QString qstrFormattedScale = QString::fromStdString(str_scale);
                     // ------------------------------------------------------
@@ -782,8 +782,8 @@ void MTMarketDetails::refresh(QString strID, QString strName)
                     // but across multiple servers.)
                     //
                     // ------------------------------------------------------
-                    ui->lineEditAsset       ->setText(QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Name(pMarketData->instrument_definition_id)));
-                    ui->lineEditCurrency    ->setText(QString::fromStdString(opentxs::OT::App().Client().Exec().GetAssetType_Name(pMarketData->currency_type_id)));
+                    ui->lineEditAsset       ->setText(QString::fromStdString(Moneychanger::It()->OT().Exec().GetAssetType_Name(pMarketData->instrument_definition_id)));
+                    ui->lineEditCurrency    ->setText(QString::fromStdString(Moneychanger::It()->OT().Exec().GetAssetType_Name(pMarketData->currency_type_id)));
                     // ------------------------------------------------------
                     ui->lineEditInstrumentDefinitionID     ->setText(QString::fromStdString(pMarketData->instrument_definition_id));
                     ui->lineEditCurrencyID  ->setText(QString::fromStdString(pMarketData->currency_type_id));
@@ -825,11 +825,11 @@ QString MTMarketDetails::CalculateTotalAssets(QString & qstrID, QMultiMap<QStrin
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
         // -----------------------------
         if (bFirstIteration)
-            qstrReturnValue = QString::fromStdString(opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->instrument_definition_id, 0));
+            qstrReturnValue = QString::fromStdString(Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->instrument_definition_id, 0));
 
         bFirstIteration = false;
         // -----------------------------
-        lTotal += opentxs::OT::App().Client().Exec().StringToLong(pMarketData->total_assets);
+        lTotal += Moneychanger::It()->OT().Exec().StringToLong(pMarketData->total_assets);
         // --------------------
         ++it_market;
         // --------------------
@@ -837,7 +837,7 @@ QString MTMarketDetails::CalculateTotalAssets(QString & qstrID, QMultiMap<QStrin
         //
         if ((multimap.end() == it_market) || (0 != qstrID.compare(it_market.key())))
         {
-            qstrReturnValue = QString::fromStdString(opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->instrument_definition_id, lTotal));
+            qstrReturnValue = QString::fromStdString(Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->instrument_definition_id, lTotal));
             break;
         }
     }
@@ -870,9 +870,9 @@ QString MTMarketDetails::CalculateNumberOffers(QString & qstrID, QMultiMap<QStri
         if (NULL != pMarketData) // Should never be NULL.
         {
             if (bIsBid)
-                lTotal += opentxs::OT::App().Client().Exec().StringToLong(pMarketData->number_bids);
+                lTotal += Moneychanger::It()->OT().Exec().StringToLong(pMarketData->number_bids);
             else
-                lTotal += opentxs::OT::App().Client().Exec().StringToLong(pMarketData->number_asks);
+                lTotal += Moneychanger::It()->OT().Exec().StringToLong(pMarketData->number_asks);
         }
         // --------------------
         ++it_market;
@@ -904,12 +904,12 @@ QString MTMarketDetails::CalculateLastSalePrice(QString & qstrID, QMultiMap<QStr
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
         // -----------------------------
         if (bFirstIteration)
-            qstrReturnValue = QString::fromStdString(opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->currency_type_id, 0));
+            qstrReturnValue = QString::fromStdString(Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->currency_type_id, 0));
 
         bFirstIteration = false;
         // -----------------------------
-        int64_t lCurrentLastSaleDate  = opentxs::OT::App().Client().Exec().StringToLong(pMarketData->last_sale_date);
-        int64_t lCurrentLastSalePrice = opentxs::OT::App().Client().Exec().StringToLong(pMarketData->last_sale_price);
+        int64_t lCurrentLastSaleDate  = Moneychanger::It()->OT().Exec().StringToLong(pMarketData->last_sale_date);
+        int64_t lCurrentLastSalePrice = Moneychanger::It()->OT().Exec().StringToLong(pMarketData->last_sale_price);
 
         if (lCurrentLastSaleDate > lLastSaleDate)
         {
@@ -923,7 +923,7 @@ QString MTMarketDetails::CalculateLastSalePrice(QString & qstrID, QMultiMap<QStr
         //
         if ((multimap.end() == it_market) || (0 != qstrID.compare(it_market.key())))
         {
-            qstrReturnValue = QString::fromStdString(opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->currency_type_id, lLastSalePrice));
+            qstrReturnValue = QString::fromStdString(Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->currency_type_id, lLastSalePrice));
             break;
         }
     }
@@ -945,11 +945,11 @@ QString MTMarketDetails::CalculateCurrentBid(QString & qstrID, QMultiMap<QString
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
         // -----------------------------
         if (bFirstIteration)
-            qstrReturnValue = QString::fromStdString(opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->currency_type_id, 0));
+            qstrReturnValue = QString::fromStdString(Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->currency_type_id, 0));
 
         bFirstIteration = false;
         // -----------------------------
-        int64_t lCurrentHighestBid = opentxs::OT::App().Client().Exec().StringToLong(pMarketData->current_bid);
+        int64_t lCurrentHighestBid = Moneychanger::It()->OT().Exec().StringToLong(pMarketData->current_bid);
 
         if (lCurrentHighestBid > lHighestBid)
             lHighestBid = lCurrentHighestBid;
@@ -960,7 +960,7 @@ QString MTMarketDetails::CalculateCurrentBid(QString & qstrID, QMultiMap<QString
         //
         if ((multimap.end() == it_market) || (0 != qstrID.compare(it_market.key())))
         {
-            qstrReturnValue = QString::fromStdString(opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->currency_type_id, lHighestBid));
+            qstrReturnValue = QString::fromStdString(Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->currency_type_id, lHighestBid));
             break;
         }
     }
@@ -982,11 +982,11 @@ QString MTMarketDetails::CalculateCurrentAsk(QString & qstrID, QMultiMap<QString
         opentxs::OTDB::MarketData * pMarketData = VPtr<opentxs::OTDB::MarketData>::asPtr(it_market.value());
         // -----------------------------
         if (bFirstIteration)
-            qstrReturnValue = QString::fromStdString(opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->currency_type_id, 0));
+            qstrReturnValue = QString::fromStdString(Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->currency_type_id, 0));
 
         bFirstIteration = false;
         // -----------------------------
-        int64_t lCurrentLowestAsk = opentxs::OT::App().Client().Exec().StringToLong(pMarketData->current_ask);
+        int64_t lCurrentLowestAsk = Moneychanger::It()->OT().Exec().StringToLong(pMarketData->current_ask);
 
         if ((0 == lLowestAsk) || ((0 != lCurrentLowestAsk) && (lCurrentLowestAsk < lLowestAsk)))
             lLowestAsk = lCurrentLowestAsk;
@@ -997,7 +997,7 @@ QString MTMarketDetails::CalculateCurrentAsk(QString & qstrID, QMultiMap<QString
         //
         if ((multimap.end() == it_market) || (0 != qstrID.compare(it_market.key())))
         {
-            qstrReturnValue = QString::fromStdString(opentxs::OT::App().Client().Exec().FormatAmount(pMarketData->currency_type_id, lLowestAsk));
+            qstrReturnValue = QString::fromStdString(Moneychanger::It()->OT().Exec().FormatAmount(pMarketData->currency_type_id, lLowestAsk));
             break;
         }
     }

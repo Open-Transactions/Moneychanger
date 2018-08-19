@@ -96,10 +96,6 @@ int main(int argc, char *argv[])
     // by this same object's destructor.)
     //
     __OTclient_RAII the_client_cleanup;  // <===== SECOND constructor is called here.
-    // ----------------------------------------
-    // Will assert if AppInit has not been called.
-    opentxs::OT::App().Client().Exec(); // deprecated?
-    // ----------------------------------------
     //Init qApp
     MTApplicationMC theApplication(argc, argv);  // <====== THIRD constructor (they are destroyed in reverse order.)
     theApplication.setApplicationName(MONEYCHANGER_APP_NAME); // Access later using QCoreApplication::applicationName()
