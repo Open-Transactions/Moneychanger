@@ -1804,7 +1804,7 @@ void MTAgreementDetails::ImportContract(QString qstrContents)
     {
         opentxs::String strContract(qstrContents.toStdString());
 
-        auto pScriptable{Moneychanger::It()->OT().Factory().Scriptable(Moneychanger::It()->OT(), strContract)};
+        auto pScriptable{Moneychanger::It()->OT().Factory().Scriptable(  strContract)};
         opentxs::OTSmartContract * pSmartContract = (false == bool(pScriptable)) ? nullptr : dynamic_cast<opentxs::OTSmartContract*>(pScriptable.get());
 
         if (nullptr == pSmartContract)

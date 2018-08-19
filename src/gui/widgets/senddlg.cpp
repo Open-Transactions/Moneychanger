@@ -564,12 +564,12 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
                 ->OT()
                 .Factory()
                 .Payment(
-                    Moneychanger::It()->OT(),
+
                     opentxs::String(strVoucher.c_str()))
                 .release()};
 
         OT_ASSERT(false != bool(payment));
-        
+
         // SENDING HERE TO MYSELF (FOR OUTBOX)
         auto action = Moneychanger::It()->OT().ServerAction().SendPayment(fromNymID, notaryID, fromNymID, payment);
         action->Run();
@@ -626,8 +626,8 @@ bool MTSendDlg::sendCashierCheque(int64_t amount, QString toNymId, QString toCon
     {
         const opentxs::String otstrCheque(strVoucher.c_str());
 
-        std::shared_ptr<const opentxs::OTPayment> pPayment{Moneychanger::It()->OT().Factory().Payment(Moneychanger::It()->OT(), otstrCheque).release()};
-        
+        std::shared_ptr<const opentxs::OTPayment> pPayment{Moneychanger::It()->OT().Factory().Payment(  otstrCheque).release()};
+
         OT_ASSERT(false != bool(pPayment));
 
         const auto bgthreadId
@@ -942,8 +942,8 @@ bool MTSendDlg::sendChequeLowLevel (int64_t amount,
 
         const opentxs::String otstrCheque(strCheque.c_str());
 
-        std::shared_ptr<const opentxs::OTPayment> pPayment{Moneychanger::It()->OT().Factory().Payment(Moneychanger::It()->OT(), otstrCheque).release()};
-        
+        std::shared_ptr<const opentxs::OTPayment> pPayment{Moneychanger::It()->OT().Factory().Payment(  otstrCheque).release()};
+
         OT_ASSERT(false != bool(pPayment));
 
         const auto bgthreadId

@@ -239,7 +239,7 @@ bool MTRequestDlg::sendChequeLowLevel(
 
         const opentxs::String otstrCheque(strCheque.c_str());
 
-        std::shared_ptr<const opentxs::OTPayment> pPayment{Moneychanger::It()->OT().Factory().Payment(Moneychanger::It()->OT(), otstrCheque).release()};
+        std::shared_ptr<const opentxs::OTPayment> pPayment{Moneychanger::It()->OT().Factory().Payment(  otstrCheque).release()};
         
         OT_ASSERT(false != bool(pPayment));
 

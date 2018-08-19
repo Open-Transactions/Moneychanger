@@ -554,7 +554,7 @@ void ModelTradeArchive::updateDBFromOT(const std::string & strNotaryID, const st
             if (this->submitAll())
             {
                 if (this->database().commit())
-                    opentxs::OTDB::StoreObject(*pTradeList, opentxs::OT::App().Legacy().ClientDataFolder(), "nyms", "trades",
+                    opentxs::OTDB::StoreObject(*pTradeList, Moneychanger::It()->OT().DataFolder(), "nyms", "trades",
                         strNotaryID, strNymID);
             }
             else
@@ -600,9 +600,9 @@ std::shared_ptr<opentxs::OTDB::TradeListNym> ModelTradeArchive::LoadTradeListFor
     if (strNotaryID.empty() || strNymID.empty())
         return nullptr;
     // ------------------------------------------
-    if (opentxs::OTDB::Exists(opentxs::OT::App().Legacy().ClientDataFolder(), "nyms", "trades", strNotaryID, strNymID))
+    if (opentxs::OTDB::Exists(Moneychanger::It()->OT().DataFolder(), "nyms", "trades", strNotaryID, strNymID))
     {
-        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_TRADE_LIST_NYM, opentxs::OT::App().Legacy().ClientDataFolder(), "nyms", "trades",
+        pStorable = opentxs::OTDB::QueryObject(opentxs::OTDB::STORED_OBJ_TRADE_LIST_NYM, Moneychanger::It()->OT().DataFolder(), "nyms", "trades",
                                       strNotaryID, strNymID);
         if (nullptr == pStorable) {
             return nullptr;
