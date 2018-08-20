@@ -982,8 +982,8 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
     qDebug() << "str_thread_id: " << QString::fromStdString(str_thread_id);
 
     if (opentxs::Messagability::READY !=
-        opentxs::OT::App().Client().Sync().CanMessage(opentxs::Identifier::Factory(str_my_nym_id),
-                                                      opentxs::Identifier::Factory(str_thread_id)))
+        Moneychanger::It()->OT().Sync().CanMessage(opentxs::Identifier::Factory(str_my_nym_id),
+                                                   opentxs::Identifier::Factory(str_thread_id)))
     {
         qDebug() << "Returning empty conversational model for contact, since he is not yet messagable.";
 
@@ -991,7 +991,7 @@ QSharedPointer<QStandardItemModel>  DBHandler::getNewConversationItemModel(
     }
     // --------------------------------------------
 
-    const auto& thread = opentxs::OT::App().Client().UI().ActivityThread(
+    const auto& thread = Moneychanger::It()->OT().UI().ActivityThread(
         opentxs::Identifier::Factory(str_my_nym_id),
         opentxs::Identifier::Factory(str_thread_id));
 

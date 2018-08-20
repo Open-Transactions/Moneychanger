@@ -3533,7 +3533,7 @@ void Activity::RefreshConversationDetails(int nRow)
         qDebug() << "str_thread_id: " << QString::fromStdString(str_thread_id);
 
         if (opentxs::Messagability::READY !=
-            opentxs::OT::App().Client().Sync().CanMessage(nymID, threadID))
+            Moneychanger::It()->OT().Sync().CanMessage(nymID, threadID))
         {
             qDebug() << "Skipping contact since he is not yet messagable.";
 
@@ -4215,7 +4215,7 @@ void Activity::on_plainTextEditMsg_textChanged()
 
 
                 if (opentxs::Messagability::READY !=
-                    opentxs::OT::App().Client().Sync().CanMessage(nymID, threadID))
+                    Moneychanger::It()->OT().Sync().CanMessage(nymID, threadID))
                 {
         //          QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Sorry, but the selected contact is not yet messagable.") );
 
@@ -8089,7 +8089,7 @@ void Activity::on_toolButtonMsgContact_clicked()
         qDebug() << "str_thread_id: " << QString::fromStdString(str_thread_id);
 
         if (opentxs::Messagability::READY !=
-            opentxs::OT::App().Client().Sync().CanMessage(nymID, threadID))
+            Moneychanger::It()->OT().Sync().CanMessage(nymID, threadID))
         {
             QMessageBox::warning(this, tr(MONEYCHANGER_APP_NAME), tr("Sorry, but the selected contact is not yet messagable.") );
             return;

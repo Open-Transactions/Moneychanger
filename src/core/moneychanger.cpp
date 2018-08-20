@@ -6582,8 +6582,8 @@ void Moneychanger::mc_composemessage_slot()
 void Moneychanger::mc_message_contact_slot(QString qstrFromNym, QString qstrToOpentxsContact) // Compose Message to specific opentxs contact
 {
     if (opentxs::Messagability::READY ==
-        opentxs::OT::App().Client().Sync().CanMessage(opentxs::Identifier::Factory(qstrFromNym.toStdString()),
-                                                      opentxs::Identifier::Factory(qstrToOpentxsContact.toStdString())))
+        Moneychanger::It()->OT().Sync().CanMessage(opentxs::Identifier::Factory(qstrFromNym.toStdString()),
+                                                   opentxs::Identifier::Factory(qstrToOpentxsContact.toStdString())))
     {
         mc_composemessage_show_dialog(qstrToOpentxsContact, qstrFromNym);
     }
