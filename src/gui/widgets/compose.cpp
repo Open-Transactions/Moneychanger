@@ -561,14 +561,14 @@ bool MTCompose::sendMessage(QString subject,   QString body, QString fromNymId, 
             qDebug() << "str_thread_id: " << QString::fromStdString(str_thread_id);
 
             if (opentxs::Messagability::READY !=
-                opentxs::OT::App().Client().Sync().CanMessage(nymID, threadID))
+                Moneychanger::It()->OT().Sync().CanMessage(nymID, threadID))
             {
                 qDebug() << "Contact is not yet messageable, aborting.";
                 return false;
             }
             // --------------------------------------------
 
-            auto& thread = opentxs::OT::App().Client().UI().ActivityThread(nymID, threadID);
+            auto& thread = Moneychanger::It()->OT().UI().ActivityThread(nymID, threadID);
 
 
             qDebug() << "MTCompose::sendMessage:  fromNymId: " << fromNymId << " and threadID: " << qstrContactId_;
